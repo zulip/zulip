@@ -319,6 +319,19 @@ test("update_property", ({override}) => {
         assert.equal(args.val, 3);
     }
 
+    // Test stream can_resolve_topics_group change event
+    {
+        const stub = make_stub();
+        override(stream_settings_ui, "update_stream_permission_group_setting", stub.f);
+        override(message_live_update, "rerender_messages_view", noop);
+        stream_events.update_property(stream_id, "can_resolve_topics_group", 3);
+        assert.equal(stub.num_calls, 1);
+        const args = stub.get_args("setting_name", "sub", "val");
+        assert.equal(args.setting_name, "can_resolve_topics_group");
+        assert.equal(args.sub.stream_id, stream_id);
+        assert.equal(args.val, 3);
+    }
+
     // Test stream can_subscribe_group change event
     {
         const stub = make_stub();

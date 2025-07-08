@@ -34,7 +34,6 @@ import * as popovers from "./popovers.ts";
 import * as reactions from "./reactions.ts";
 import * as rendered_markdown from "./rendered_markdown.ts";
 import * as rows from "./rows.ts";
-import * as settings_data from "./settings_data.ts";
 import * as sidebar_ui from "./sidebar_ui.ts";
 import * as stream_color from "./stream_color.ts";
 import * as stream_data from "./stream_data.ts";
@@ -406,6 +405,7 @@ function populate_group_from_message(
 
         const is_subscribed = stream_data.is_subscribed(stream_id);
         const topic_is_resolved = resolved_topic.is_resolved(topic);
+        const user_can_resolve_topic = stream_data.can_resolve_topics(sub);
         const visibility_policy = user_topics.get_topic_visibility_policy(stream_id, topic);
         // The following field is not specific to this group, but this is the
         // easiest way we've figured out for passing the data to the template rendering.
@@ -418,7 +418,7 @@ function populate_group_from_message(
             message_containers: [],
             is_stream,
             ...get_topic_edit_properties(message),
-            user_can_resolve_topic: settings_data.user_can_resolve_topic(),
+            user_can_resolve_topic,
             ...subscription_markers,
             date,
             display_recipient,

@@ -466,6 +466,7 @@ def send_subscription_add_events(
                 ],
                 can_send_message_group=stream_dict["can_send_message_group"],
                 can_remove_subscribers_group=stream_dict["can_remove_subscribers_group"],
+                can_resolve_topics_group=stream_dict["can_resolve_topics_group"],
                 can_subscribe_group=stream_dict["can_subscribe_group"],
                 creator_id=stream_dict["creator_id"],
                 date_created=stream_dict["date_created"],

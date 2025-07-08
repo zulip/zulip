@@ -116,6 +116,13 @@ export function update_property<P extends keyof UpdatableStreamProperties>(
             const settings_sub = stream_settings_data.get_sub_for_settings(sub);
             stream_ui_updates.update_add_subscriptions_elements(settings_sub);
         }
+        if (property === "can_resolve_topics_group") {
+            // Technically we just need to rerender the message recipient
+            // bars to update the buttons for editing or resolving a topic,
+            // but because these policies are changed rarely, it's fine to
+            // rerender the entire message feed.
+            message_live_update.rerender_messages_view();
+        }
         user_group_edit.update_stream_setting_in_permissions_panel(
             stream_permission_group_settings_schema.parse(property),
             group_setting_value_schema.parse(value),
