@@ -720,10 +720,10 @@ function get_is_filter_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Sugge
                 ],
             },
             {
-                search_string: "is:alerted",
-                description_html: "alerted messages",
+                search_string: "is:watched",
+                description_html: "messages containing watched phrases",
                 is_people: false,
-                incompatible_patterns: [{operator: "is", operand: "alerted"}],
+                incompatible_patterns: [{operator: "is", operand: "watched"}],
             },
             {
                 search_string: "is:unread",

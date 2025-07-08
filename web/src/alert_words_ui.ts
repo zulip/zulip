@@ -53,7 +53,7 @@ const open_alert_word_status_banner = (alert_word: string, is_error: boolean): v
     if (is_error) {
         alert_word_status_banner.label = new Handlebars.SafeString(
             $t_html(
-                {defaultMessage: "Error removing alert word <b>{alert_word}</b>!"},
+                {defaultMessage: "Error removing watched phrase <b>{alert_word}</b>!"},
                 {alert_word},
             ),
         );
@@ -61,7 +61,7 @@ const open_alert_word_status_banner = (alert_word: string, is_error: boolean): v
     } else {
         alert_word_status_banner.label = new Handlebars.SafeString(
             $t_html(
-                {defaultMessage: "Alert word <b>{alert_word}</b> removed successfully!"},
+                {defaultMessage: "Watched phrase <b>{alert_word}</b> removed successfully!"},
                 {alert_word},
             ),
         );
@@ -75,7 +75,7 @@ function add_alert_word(): void {
 
     if (alert_words.has_alert_word(alert_word)) {
         ui_report.client_error(
-            $t({defaultMessage: "Alert word already exists!"}),
+            $t({defaultMessage: "Watched phrase already exists!"}),
             $("#dialog_error"),
         );
         dialog_widget.hide_dialog_spinner();
@@ -119,7 +119,7 @@ export function show_add_alert_word_modal(): void {
     }
 
     dialog_widget.launch({
-        html_heading: $t_html({defaultMessage: "Add a new alert word"}),
+        html_heading: $t_html({defaultMessage: "Add a new watched phrase"}),
         html_body,
         html_submit_button: $t_html({defaultMessage: "Add"}),
         help_link: "/help/dm-mention-alert-notifications#alert-words",

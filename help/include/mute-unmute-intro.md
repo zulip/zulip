@@ -5,8 +5,8 @@ that channel. You can also manually **mute** a topic in an unmuted channel, or
 
 Muting has the following effects:
 
-- Messages in muted topics do not generate notifications (including [alert
-  word](/help/dm-mention-alert-notifications#alert-words) notifications), unless
+- Messages in muted topics do not generate notifications (including [watched
+phrases](/help/dm-mention-alert-notifications#watched-phrases) notifications), unless
   you are [mentioned](/help/mention-a-user-or-group).
 - Messages in muted topics do not appear in the [**Combined feed**
   view](/help/combined-feed) or the mobile **Inbox** view.

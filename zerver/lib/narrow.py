@@ -427,7 +427,8 @@ class NarrowBuilder:
             )
             cond = column("flags", Integer).op("&")(mention_flags_mask) != 0
             return query.where(maybe_negate(cond))
-        elif operand == "alerted":
+        elif operand in ["alerted", "watched"]:
+            # "is:alerted" is a legacy alias for "is:watched"
             cond = column("flags", Integer).op("&")(UserMessage.flags.has_alert_word.mask) != 0
             return query.where(maybe_negate(cond))
         elif operand == "followed":
