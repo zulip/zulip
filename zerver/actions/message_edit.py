@@ -57,6 +57,7 @@ from zerver.lib.streams import (
     can_access_stream_history,
     can_edit_topic,
     can_move_messages_out_of_channel,
+    can_resolve_topics,
     check_stream_access_based_on_can_send_message_group,
     get_stream_topics_policy,
     notify_stream_is_recently_active_update,
@@ -1564,8 +1565,12 @@ def check_update_message(
         and message_edit_request.is_topic_edited
     ):
         if message_edit_request.topic_resolved or message_edit_request.topic_unresolved:
-            if not user_profile.can_resolve_topic():
-                raise JsonableError(_("You don't have permission to resolve topics."))
+            if not can_resolve_topics(
+                user_profile, message_edit_request.orig_stream, message_edit_request.target_stream
+            ):
+                raise JsonableError(
+                    _("You don't have permission to resolve topics in this channel.")
+                )
         else:
             if not can_edit_topic(
                 user_profile, message_edit_request.orig_stream, message_edit_request.target_stream

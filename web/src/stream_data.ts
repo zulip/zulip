@@ -753,6 +753,24 @@ export function can_subscribe_others(sub: StreamSubscription): boolean {
     );
 }
 
+export function can_resolve_topics(sub: StreamSubscription | undefined): boolean {
+    if (settings_data.user_can_resolve_topic()) {
+        return true;
+    }
+
+    if (sub === undefined) {
+        // If we're in a context without a channel, only the global
+        // permission is relevant.
+        return false;
+    }
+
+    return settings_data.user_has_permission_for_group_setting(
+        sub.can_resolve_topics_group,
+        "can_resolve_topics_group",
+        "stream",
+    );
+}
+
 export function can_subscribe_user(sub: StreamSubscription, user_id: number): boolean {
     if (people.is_my_user_id(user_id)) {
         return can_toggle_subscription(sub);

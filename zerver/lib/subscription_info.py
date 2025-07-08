@@ -83,6 +83,9 @@ def get_web_public_subs(
         can_remove_subscribers_group = get_group_setting_value_for_register_api(
             stream.can_remove_subscribers_group_id, anonymous_group_membership
         )
+        can_resolve_topics_group = get_group_setting_value_for_register_api(
+            stream.can_resolve_topics_group_id, anonymous_group_membership
+        )
         can_subscribe_group = get_group_setting_value_for_register_api(
             stream.can_subscribe_group_id, anonymous_group_membership
         )
@@ -129,6 +132,7 @@ def get_web_public_subs(
             can_move_messages_within_channel_group=can_move_messages_within_channel_group,
             can_send_message_group=can_send_message_group,
             can_remove_subscribers_group=can_remove_subscribers_group,
+            can_resolve_topics_group=can_resolve_topics_group,
             can_subscribe_group=can_subscribe_group,
             color=color,
             creator_id=creator_id,
@@ -210,6 +214,9 @@ def build_stream_api_dict(
     can_remove_subscribers_group = get_group_setting_value_for_register_api(
         raw_stream_dict["can_remove_subscribers_group_id"], anonymous_group_membership
     )
+    can_resolve_topics_group = get_group_setting_value_for_register_api(
+        raw_stream_dict["can_resolve_topics_group_id"], anonymous_group_membership
+    )
     can_subscribe_group = get_group_setting_value_for_register_api(
         raw_stream_dict["can_subscribe_group_id"], anonymous_group_membership
     )
@@ -223,6 +230,7 @@ def build_stream_api_dict(
         can_send_message_group=can_send_message_group,
         can_remove_subscribers_group=can_remove_subscribers_group,
         can_subscribe_group=can_subscribe_group,
+        can_resolve_topics_group=can_resolve_topics_group,
         creator_id=raw_stream_dict["creator_id"],
         date_created=datetime_to_timestamp(raw_stream_dict["date_created"]),
         description=raw_stream_dict["description"],
@@ -257,6 +265,7 @@ def build_stream_dict_for_sub(
     can_move_messages_within_channel_group = stream_dict["can_move_messages_within_channel_group"]
     can_send_message_group = stream_dict["can_send_message_group"]
     can_remove_subscribers_group = stream_dict["can_remove_subscribers_group"]
+    can_resolve_topics_group = stream_dict["can_resolve_topics_group"]
     can_subscribe_group = stream_dict["can_subscribe_group"]
     creator_id = stream_dict["creator_id"]
     date_created = stream_dict["date_created"]
@@ -301,6 +310,7 @@ def build_stream_dict_for_sub(
         can_move_messages_within_channel_group=can_move_messages_within_channel_group,
         can_send_message_group=can_send_message_group,
         can_remove_subscribers_group=can_remove_subscribers_group,
+        can_resolve_topics_group=can_resolve_topics_group,
         can_subscribe_group=can_subscribe_group,
         color=color,
         creator_id=creator_id,
@@ -379,6 +389,9 @@ def build_stream_dict_for_never_sub(
     can_remove_subscribers_group_value = get_group_setting_value_for_register_api(
         raw_stream_dict["can_remove_subscribers_group_id"], anonymous_group_membership
     )
+    can_resolve_topics_group_value = get_group_setting_value_for_register_api(
+        raw_stream_dict["can_resolve_topics_group_id"], anonymous_group_membership
+    )
     can_subscribe_group_value = get_group_setting_value_for_register_api(
         raw_stream_dict["can_subscribe_group_id"], anonymous_group_membership
     )
@@ -395,6 +408,7 @@ def build_stream_dict_for_never_sub(
         can_move_messages_within_channel_group=can_move_messages_within_channel_group_value,
         can_send_message_group=can_send_message_group_value,
         can_remove_subscribers_group=can_remove_subscribers_group_value,
+        can_resolve_topics_group=can_resolve_topics_group_value,
         can_subscribe_group=can_subscribe_group_value,
         creator_id=creator_id,
         date_created=date_created,
