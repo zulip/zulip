@@ -11749,6 +11749,8 @@ paths:
                   $ref: "#/components/schemas/CanSendMessageGroup"
                 can_subscribe_group:
                   $ref: "#/components/schemas/CanSubscribeGroup"
+                can_resolve_topics_group:
+                  $ref: "#/components/schemas/CanResolveTopicsGroup"
                 folder_id:
                   description: |
                     This parameter determines the folder to which the newly
@@ -11811,6 +11813,8 @@ paths:
               can_send_message_group:
                 contentType: application/json
               can_subscribe_group:
+                contentType: application/json
+              can_resolve_topics_group:
                 contentType: application/json
               folder_id:
                 contentType: application/json
@@ -16475,6 +16479,7 @@ paths:
                                 can_move_messages_within_channel_group: {}
                                 can_send_message_group: {}
                                 can_subscribe_group: {}
+                                can_resolve_topics_group: {}
                                 subscriber_count: {}
                                 stream_weekly_traffic:
                                   type: integer
@@ -21760,6 +21765,7 @@ paths:
                                 can_move_messages_out_of_channel_group: {}
                                 can_move_messages_within_channel_group: {}
                                 can_send_message_group: {}
+                                can_resolve_topics_group: {}
                                 can_subscribe_group: {}
                                 subscriber_count: {}
                                 stream_weekly_traffic:
@@ -22281,6 +22287,25 @@ paths:
                           "old": 15,
                         }
                     - $ref: "#/components/schemas/GroupSettingValueUpdate"
+                can_resolve_topics_group:
+                  allOf:
+                    - description: |
+                        The set of users who have permission to to resolve topics in this channel
+                        expressed as an [update to a group-setting value][update-group-setting].
+
+                        [update-group-setting]: /api/group-setting-values#updating-group-setting-values
+
+                        Users who have similar realm-level permissions can resolve topics
+                        in a channel regardless of the value of this setting.
+
+                        **Changes**: New in Zulip 11.0 (feature level 402).
+                      example:
+                        {
+                          "new":
+                            {"direct_members": [10], "direct_subgroups": [11]},
+                          "old": 15,
+                        }
+                    - $ref: "#/components/schemas/GroupSettingValueUpdate"
 
             encoding:
               is_private:
@@ -22306,6 +22331,8 @@ paths:
               can_send_message_group:
                 contentType: application/json
               can_subscribe_group:
+                contentType: application/json
+              can_resolve_topics_group:
                 contentType: application/json
       responses:
         "200":
@@ -24293,6 +24320,7 @@ components:
             can_move_messages_within_channel_group: {}
             can_send_message_group: {}
             can_subscribe_group: {}
+            can_resolve_topics_group: {}
             subscriber_count: {}
             stream_weekly_traffic:
               type: integer
@@ -24494,6 +24522,8 @@ components:
           $ref: "#/components/schemas/CanSendMessageGroup"
         can_subscribe_group:
           $ref: "#/components/schemas/CanSubscribeGroup"
+        can_resolve_topics_group:
+          $ref: "#/components/schemas/CanResolveTopicsGroup"
         subscriber_count:
           type: number
           description: |
@@ -25589,6 +25619,8 @@ components:
           $ref: "#/components/schemas/CanSendMessageGroup"
         can_subscribe_group:
           $ref: "#/components/schemas/CanSubscribeGroup"
+        can_resolve_topics_group:
+          $ref: "#/components/schemas/CanResolveTopicsGroup"
         is_archived:
           type: boolean
           description: |
@@ -27599,6 +27631,19 @@ components:
             modify this setting.
 
             **Changes**: New in Zulip 10.0 (feature level 357).
+
+            [setting-values]: /api/group-setting-values
+    CanResolveTopicsGroup:
+      allOf:
+        - $ref: "#/components/schemas/GroupSettingValue"
+        - description: |
+            A [group-setting value][setting-values] defining the set of users
+            who have permission to resolve topics in the channel.
+
+            Users who have similar realm-level permissions can resolve topics
+            in a channel regardless of the value of this setting.
+
+            **Changes**: New in Zulip 11.0 (feature level 402).
 
             [setting-values]: /api/group-setting-values
     LinkifierPattern:
