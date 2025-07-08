@@ -1073,8 +1073,12 @@ export class Filter {
         return this.has_operator("search");
     }
 
-    is_non_group_direct_message(): boolean {
-        return this.has_operator("dm") && this.operands("dm")[0]!.split(",").length === 1;
+    is_search_for_specific_group_or_user(): boolean {
+        return (
+            this.has_operator("dm") ||
+            this.has_operator("dm-including") ||
+            this.has_operator("sender")
+        );
     }
 
     contains_no_partial_conversations(): boolean {

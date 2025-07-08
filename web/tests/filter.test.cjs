@@ -403,7 +403,7 @@ test("basics", () => {
 
     terms = [{operator: "dm", operand: "joe@example.com"}];
     filter = new Filter(terms);
-    assert.ok(filter.is_non_group_direct_message());
+    assert.ok(filter.is_search_for_specific_group_or_user());
     assert.ok(filter.contains_only_private_messages());
     assert.ok(filter.can_mark_messages_read());
     assert.ok(filter.contains_no_partial_conversations());
@@ -421,7 +421,7 @@ test("basics", () => {
         {operator: "near", operand: "17"},
     ];
     filter = new Filter(terms);
-    assert.ok(filter.is_non_group_direct_message());
+    assert.ok(filter.is_search_for_specific_group_or_user());
     assert.ok(filter.contains_only_private_messages());
     assert.ok(!filter.can_mark_messages_read());
     assert.ok(filter.contains_no_partial_conversations());
@@ -436,7 +436,7 @@ test("basics", () => {
 
     terms = [{operator: "dm", operand: "joe@example.com,jack@example.com"}];
     filter = new Filter(terms);
-    assert.ok(!filter.is_non_group_direct_message());
+    assert.ok(filter.is_search_for_specific_group_or_user());
     assert.ok(filter.contains_only_private_messages());
     assert.ok(filter.can_mark_messages_read());
     assert.ok(filter.contains_no_partial_conversations());
@@ -474,7 +474,7 @@ test("basics", () => {
 
     terms = [{operator: "dm-including", operand: "joe@example.com"}];
     filter = new Filter(terms);
-    assert.ok(!filter.is_non_group_direct_message());
+    assert.ok(filter.is_search_for_specific_group_or_user());
     assert.ok(filter.contains_only_private_messages());
     assert.ok(!filter.has_operator("search"));
     assert.ok(!filter.can_mark_messages_read());
