@@ -112,6 +112,11 @@ export function is_topic_editable(message: Message, edit_limit_seconds_buffer = 
         return false;
     }
 
+    // Cannot edit topics only in the channel with topics disabled.
+    if (stream_data.is_empty_topic_only_channel(message.stream_id)) {
+        return false;
+    }
+
     const stream = stream_data.get_sub_by_id(message.stream_id);
     assert(stream !== undefined);
     if (!stream_data.user_can_move_messages_within_channel(stream)) {

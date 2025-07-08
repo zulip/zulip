@@ -45,6 +45,7 @@ from zerver.lib.exceptions import (
     DirectMessagePermissionError,
     JsonableError,
     MessagesNotAllowedInEmptyTopicError,
+    TopicsNotAllowedError,
 )
 from zerver.lib.message import get_raw_unread_data, get_recent_private_conversations
 from zerver.lib.message_cache import MessageDict
@@ -3684,3 +3685,36 @@ class CheckMessageTest(ZulipTestCase):
             "Sending messages to the general chat is not allowed in this channel.",
         ):
             check_message(sender, client, addressee, message_content, realm)
+
+    def test_message_send_in_channel_with_topics_disabled(self) -> None:
+        realm = get_realm("zulip")
+        sender = self.example_user("iago")
+        client = make_client(name="test suite")
+        stream = get_stream("Denmark", realm)
+        empty_topic = ""
+        named_topic = "test topic"
+        message_content = "whatever"
+        addressee_named_topic = Addressee.for_stream(stream, named_topic)
+        addressee_empty_topic = Addressee.for_stream(stream, empty_topic)
+        self.login_user(sender)
+
+        realm.refresh_from_db()
+        ret = check_message(sender, client, addressee_named_topic, message_content, realm)
+        self.assertEqual(ret.message.topic_name(), named_topic)
+
+        ret = check_message(sender, client, addressee_empty_topic, message_content, realm)
+        self.assertEqual(ret.message.topic_name(), empty_topic)
+
+        do_set_stream_property(
+            stream, "topics_policy", StreamTopicsPolicyEnum.empty_topic_only.value, sender
+        )
+
+        # Can only send messages to empty topics when `topics_policy` is set to `empty_topic_only`.
+        ret = check_message(sender, client, addressee_empty_topic, message_content, realm)
+        self.assertEqual(ret.message.topic_name(), empty_topic)
+
+        with self.assertRaisesRegex(
+            TopicsNotAllowedError,
+            "Only the general chat topic is allowed in this channel.",
+        ):
+            check_message(sender, client, addressee_named_topic, message_content, realm)

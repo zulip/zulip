@@ -672,6 +672,11 @@ export async function build_move_topic_to_stream_popover(
         const send_notification_to_old_thread = params.send_notification_to_old_thread === "on";
         const current_stream_id = Number.parseInt(params.current_stream_id, 10);
 
+        // Can only move to empty topic if topics are disabled in the destination channel.
+        if (stream_data.is_empty_topic_only_channel(select_stream_id ?? current_stream_id)) {
+            new_topic_name = "";
+        }
+
         if (new_topic_name !== undefined) {
             // new_topic_name can be undefined when the new topic input is disabled when
             // user does not have permission to edit topic.
@@ -794,6 +799,11 @@ export async function build_move_topic_to_stream_popover(
             // user does not have permission to edit topic.
             new_topic_name = args.topic_name;
         }
+
+        if (stream_data.is_empty_topic_only_channel(selected_stream.stream_id)) {
+            new_topic_name = "";
+        }
+
         assert(new_topic_name !== undefined);
         // Don't show warning for empty topic as the user is probably
         // about to type a new topic name. Note that if topics are
@@ -849,6 +859,19 @@ export async function build_move_topic_to_stream_popover(
         }
     }
 
+    function disable_topic_input_if_topics_are_disabled_in_channel(stream_id: number): void {
+        const $topic_input = $<HTMLInputElement>("#move_topic_form input.move_messages_edit_topic");
+        if (stream_data.is_empty_topic_only_channel(stream_id)) {
+            $topic_input.val("");
+            $topic_input.prop("disabled", true);
+            $topic_input.addClass("empty-topic-only");
+            update_topic_input_placeholder_on_blur();
+        } else {
+            // Removes tooltip if topics are allowed.
+            $topic_input.removeClass("empty-topic-only");
+        }
+    }
+
     function move_topic_on_update(event: JQuery.ClickEvent, dropdown: {hide: () => void}): void {
         stream_widget_value = Number.parseInt($(event.currentTarget).attr("data-unique-id")!, 10);
         const $topic_input = $<HTMLInputElement>("#move_topic_form input.move_messages_edit_topic");
@@ -877,6 +900,8 @@ export async function build_move_topic_to_stream_popover(
             $topic_input.prop("disabled", true);
         }
 
+        disable_topic_input_if_topics_are_disabled_in_channel(selected_stream.stream_id);
+
         const topic_input_value = $topic_input.val();
         assert(topic_input_value !== undefined);
 
@@ -893,8 +918,11 @@ export async function build_move_topic_to_stream_popover(
         event.preventDefault();
         event.stopPropagation();
 
-        // Move focus to the topic input after a new stream is selected.
-        $topic_input.trigger("focus");
+        // Move focus to the topic input after a new stream is selected
+        // if it is not disabled.
+        if (!$topic_input.prop("disabled")) {
+            $topic_input.trigger("focus");
+        }
     }
 
     // The following logic is correct only when
@@ -1085,14 +1113,21 @@ export async function build_move_topic_to_stream_popover(
                 // If the user can't edit the topic, it is not possible for them to make
                 // following kind of moves:
                 //  1) messages from empty topics to channels where empty topics are disabled.
+                //  2) messages from named topics to channels where topics are disabled.
                 // So we filter them out here.
                 if (
                     !stream_data.user_can_move_messages_within_channel(current_stream) &&
-                    !stream_data.user_can_move_messages_within_channel(stream) &&
-                    topic_name === "" &&
-                    !stream_data.can_use_empty_topic(stream.stream_id)
+                    !stream_data.user_can_move_messages_within_channel(stream)
                 ) {
-                    return false;
+                    if (
+                        topic_name !== "" &&
+                        stream_data.is_empty_topic_only_channel(stream.stream_id)
+                    ) {
+                        return false;
+                    }
+                    if (topic_name === "" && !stream_data.can_use_empty_topic(stream.stream_id)) {
+                        return false;
+                    }
                 }
                 return stream_data.can_post_messages_in_stream(stream);
             });
@@ -1152,6 +1187,7 @@ export async function build_move_topic_to_stream_popover(
                 update_move_messages_count_text(selected_option, message?.id);
             });
         }
+        disable_topic_input_if_topics_are_disabled_in_channel(current_stream_id);
     }
 
     function focus_on_move_modal_render(): void {

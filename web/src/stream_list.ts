@@ -919,6 +919,14 @@ export function set_event_handlers({
         const current_narrow_stream_id = narrow_state.stream_id();
         const current_topic = narrow_state.topic();
 
+        if (stream_data.is_empty_topic_only_channel(stream_id)) {
+            // If the channel doesn't support topics, take you
+            // directly to general chat regardless of settings.
+            const empty_topic_url = hash_util.by_channel_topic_permalink(stream_id, "");
+            browser_history.go_to_location(empty_topic_url);
+            return;
+        }
+
         if (
             user_settings.web_channel_default_view ===
             web_channel_default_view_values.list_of_topics.code

@@ -325,6 +325,8 @@ function on_hidden_callback(): void {
         return;
     }
     if (compose_state.get_message_type() === "stream") {
+        // Enable or disable topic input based on `topics_policy`.
+        update_topic_displayed_text(compose_state.topic());
         // Always move focus to the topic input even if it's not empty,
         // since it's likely the user will want to update the topic
         // after updating the stream.
@@ -399,16 +401,17 @@ export function update_topic_displayed_text(topic_name = "", has_topic_focus = f
     compose_state.topic(topic_name);
 
     const $input = $("input#stream_message_recipient_topic");
-    const is_empty_string_topic = topic_name === "";
     const recipient_widget_hidden =
         $(".compose_select_recipient-dropdown-list-container").length === 0;
     const $topic_not_mandatory_placeholder = $("#topic-not-mandatory-placeholder");
 
     // reset
+    $input.prop("disabled", false);
     $input.attr("placeholder", "");
-    $input.removeClass("empty-topic-display");
+    $input.removeClass("empty-topic-display empty-topic-only");
     $topic_not_mandatory_placeholder.removeClass("visible");
     $topic_not_mandatory_placeholder.hide();
+    $("#compose_recipient_box").removeClass("disabled");
 
     if (!stream_data.can_use_empty_topic(compose_state.stream_id())) {
         $input.attr("placeholder", $t({defaultMessage: "Topic"}));
@@ -417,6 +420,17 @@ export function update_topic_displayed_text(topic_name = "", has_topic_focus = f
         // placeholder will always be "Topic" and never "general chat".
         return;
     }
+
+    // If `topics_policy` is set to `empty_topic_only`, disable the topic input
+    // and empty the input box.
+    if (stream_data.is_empty_topic_only_channel(compose_state.stream_id())) {
+        compose_state.topic("");
+        $input.prop("disabled", true);
+        $input.addClass("empty-topic-only");
+        $("#compose_recipient_box").addClass("disabled");
+        $("textarea#compose-textarea").trigger("focus");
+        has_topic_focus = false;
+    }
     // Otherwise, we have some adjustments to make to display:
     // * a placeholder with the default topic name stylized
     // * the empty string topic stylized
@@ -424,6 +438,7 @@ export function update_topic_displayed_text(topic_name = "", has_topic_focus = f
         $topic_not_mandatory_placeholder.toggleClass("visible", $input.val() === "");
     }
 
+    const is_empty_string_topic = compose_state.topic() === "";
     if (is_empty_string_topic && !has_topic_focus && recipient_widget_hidden) {
         $input.attr("placeholder", util.get_final_topic_display_name(""));
         $input.addClass("empty-topic-display");

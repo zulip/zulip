@@ -54,13 +54,16 @@ class MessageMoveStreamTest(ZulipTestCase):
         self,
         user: str,
         orig_stream: Stream,
+        orig_topic_name: str = "test",
         stream_id: int | None = None,
         topic_name: str | None = None,
         expected_error: str | None = None,
     ) -> None:
         user_profile = self.example_user(user)
         self.subscribe(user_profile, orig_stream.name)
-        message_id = self.send_stream_message(user_profile, orig_stream.name)
+        message_id = self.send_stream_message(
+            user_profile, orig_stream.name, topic_name=orig_topic_name
+        )
 
         params_dict: dict[str, str | int] = {}
         if stream_id is not None:
@@ -1330,6 +1333,23 @@ class MessageMoveStreamTest(ZulipTestCase):
         # But can send messages to empty topic in "stream_1" as `topics_policy`
         # is set to `allow_empty_topic`.
         self.assert_move_message("desdemona", stream_2, stream_id=stream_1.id, topic_name="")
+
+        do_set_stream_property(
+            stream_2,
+            "topics_policy",
+            StreamTopicsPolicyEnum.empty_topic_only.value,
+            acting_user=desdemona,
+        )
+
+        # Cannot move messages to topics other than empty topic in the channels with
+        # `topics_policy` set to `empty_topic_only`.
+        self.assert_move_message(
+            "desdemona",
+            stream_1,
+            stream_id=stream_2.id,
+            expected_error="Only the general chat topic is allowed in this channel.",
+        )
+        self.assert_move_message("desdemona", stream_1, stream_id=stream_2.id, topic_name="")
 
     def test_move_message_to_stream_with_topic_editing_not_allowed(self) -> None:
         (user_profile, old_stream, new_stream, msg_id, msg_id_later) = self.prepare_move_topics(

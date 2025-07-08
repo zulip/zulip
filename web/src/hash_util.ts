@@ -93,7 +93,8 @@ export function by_stream_url(stream_id: number): string {
 export function channel_url_by_user_setting(channel_id: number): string {
     if (
         user_settings.web_channel_default_view ===
-        web_channel_default_view_values.list_of_topics.code
+            web_channel_default_view_values.list_of_topics.code &&
+        !stream_data.is_empty_topic_only_channel(channel_id)
     ) {
         return by_channel_topic_list_url(channel_id);
     }
