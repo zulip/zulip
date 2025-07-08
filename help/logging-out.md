@@ -12,7 +12,8 @@
 
 {!mobile-switch-account.md!}
 
-1. Tap on the Zulip organization you want to log out of.
+1. Tap the **ellipsis** (<i class="zulip-icon zulip-icon-more-vertical mobile-help"></i>)
+   to the right of the Zulip organization you want to log out of.
 
 1. Tap **Log out**.
 
