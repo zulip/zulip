@@ -24,7 +24,6 @@ The import will include your:
   which include [default notifications for channels](/help/channel-notifications),
   [notifications for topics you follow](/help/topic-notifications), and
   [the sound used for audible desktop notifications](/help/desktop-notifications#notification-sound).
-- Tutorial completion status.
 
 ### Import your settings
 
