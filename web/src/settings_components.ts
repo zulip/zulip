@@ -29,6 +29,7 @@ import type {CustomProfileField, GroupSettingValue} from "./state_data.ts";
 import {current_user, realm, realm_schema} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import * as stream_settings_containers from "./stream_settings_containers.ts";
+import * as stream_topic_history from "./stream_topic_history.ts";
 import {
     type StreamPermissionGroupSetting,
     stream_permission_group_settings_schema,
@@ -1471,8 +1472,36 @@ function should_disable_save_button_for_group_settings(settings: string[]): bool
     return false;
 }
 
+function should_disable_save_button_for_stream_settings(stream_id: number): boolean {
+    // Disable save button if "Only general chat topic allowed" option is selected
+    // for `topics_policy` and there are topics other than the general chat in the
+    // current channel.
+    const topics_policy_value = $("#id_topics_policy").val();
+    if (
+        topics_policy_value ===
+            settings_config.get_stream_topics_policy_values().empty_topic_only.code &&
+        stream_topic_history.stream_has_locally_available_named_topics(stream_id)
+    ) {
+        $("#settings-topics-already-exist-error").show();
+        return true;
+    }
+    $("#settings-topics-already-exist-error").hide();
+    return false;
+}
+
 function enable_or_disable_save_button($subsection_elem: JQuery): void {
     const $save_button = $subsection_elem.find(".save-button");
+
+    if ($subsection_elem.closest(".advanced-configurations-container").length > 0) {
+        const $settings_container = $subsection_elem.closest(".subscription_settings");
+        const stream_id_string = $settings_container.attr("data-stream-id");
+        assert(stream_id_string !== undefined);
+        const stream_id = Number.parseInt(stream_id_string, 10);
+        if (should_disable_save_button_for_stream_settings(stream_id)) {
+            $save_button.prop("disabled", true);
+            return;
+        }
+    }
 
     const time_limit_settings = [...$subsection_elem.find(".time-limit-setting")];
     if (

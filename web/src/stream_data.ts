@@ -1111,7 +1111,25 @@ export function can_use_empty_topic(stream_id: number | undefined): boolean {
         topics_policy = realm.realm_topics_policy;
     }
     return (
-        topics_policy === settings_config.get_realm_topics_policy_values().allow_empty_topic.code
+        topics_policy ===
+            settings_config.get_stream_topics_policy_values().allow_empty_topic.code ||
+        topics_policy === settings_config.get_stream_topics_policy_values().empty_topic_only.code
+    );
+}
+
+export function is_empty_topic_only_channel(stream_id: number | undefined): boolean {
+    if (stream_id === undefined) {
+        return false;
+    }
+    const sub = sub_store.get(stream_id);
+    assert(sub !== undefined);
+
+    let topics_policy = sub.topics_policy;
+    if (sub.topics_policy === settings_config.get_stream_topics_policy_values().inherit.code) {
+        topics_policy = realm.realm_topics_policy;
+    }
+    return (
+        topics_policy === settings_config.get_stream_topics_policy_values().empty_topic_only.code
     );
 }
 

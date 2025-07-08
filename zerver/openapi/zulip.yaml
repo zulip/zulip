@@ -27514,14 +27514,23 @@ components:
         - inherit
         - allow_empty_topic
         - disable_empty_topic
+        - empty_topic_only
       description: |
-        Configuration defining the default policy for sending messages in the empty topic.
+        Setting defining the policy for sending messages to the empty topic in
+        this channel.
 
         - inherit - Channel will inherit the organization-level setting, `realm_topics_policy`.
         - allow_empty_topic - Topics are not required to send messages in the channel.
         - disable_empty_topic - Topics are required to send messages in the channel.
+        - empty_topic_only - Only the empty topic is available in this channel.
 
-        **Changes**: New in Zulip 11.0 (feature level 392).
+        The `empty_topic_only` policy can only be enabled in a channel if all
+        messages in the channel are already in the empty topic.
+
+        **Changes**: In Zulip 11.0 (feature level 404), `empty_topic_only` option
+        was added.
+
+        New in Zulip 11.0 (feature level 392).
     ChannelCanAddSubscribersGroup:
       allOf:
         - $ref: "#/components/schemas/GroupSettingValue"
