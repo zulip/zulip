@@ -56,10 +56,17 @@ export const NO_PRIVATE_RECIPIENT_ERROR_MESSAGE = $t({
     defaultMessage: "Please add a valid recipient.",
 });
 export const NO_CHANNEL_SELECTED_ERROR_MESSAGE = $t({defaultMessage: "Please select a channel."});
-export const get_topics_required_error_message_html = (): string =>
-    render_topics_required_error_message({
+export const get_topics_required_error_tooltip_message_html = (): string => {
+    const error_message_html = render_topics_required_error_message({
         empty_string_topic_display_name: util.get_final_topic_display_name(""),
     });
+    // The `.tippy-content` element uses `display: flex`, which prevents the empty
+    // topic name from appearing italicized and inline within the error message text.
+    // To resolve this, we wrap the message in a `.tooltip-inner-content` div,
+    // allowing inline formatting and benefiting from the line height adjustment
+    // accompanying the class suitable for multi-line tooltips such as this one.
+    return `<div class="tooltip-inner-content">${error_message_html}</div>`;
+};
 export const get_message_too_long_for_compose_error = (): string =>
     $t(
         {defaultMessage: `Message length shouldn't be greater than {max_length} characters.`},
@@ -858,7 +865,8 @@ function validate_stream_message(scheduling_message: boolean, show_banner = true
                 compose_banner.topic_missing_error(util.get_final_topic_display_name(""));
             }
             if (is_validating_compose_box) {
-                disabled_send_tooltip_message_html = get_topics_required_error_message_html();
+                disabled_send_tooltip_message_html =
+                    get_topics_required_error_tooltip_message_html();
             }
             return false;
         }
