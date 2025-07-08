@@ -34,6 +34,16 @@ you use Zulip.
 
 {end_tabs}
 
+## Review your notification settings
+
+{start_tabs}
+
+{relative|gear|settings}
+
+1. Click on the **Notifications** tab on the left.
+
+{end_tabs}
+
 ## Related articles
 
 * [Import your settings](/help/import-your-settings)

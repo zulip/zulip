@@ -22,6 +22,6 @@
 - Decide whether you want <kbd>Enter</kbd> [to send your message or add a
   new line](/help/configure-send-message-keys).
 
-- [Configure your notifications](/#settings/notifications) to work the way
-  you do. If you're joining a low traffic organization and aren't using the
-  desktop app, consider sending all messages to email.
+- [Configure your notifications](/help/review-your-settings#review-your-notification-settings)
+  to work the way you do. If you're joining a low traffic organization and
+  aren't using the desktop app, consider sending all messages to email.
