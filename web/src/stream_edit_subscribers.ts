@@ -73,15 +73,21 @@ function get_sub(stream_id: number): StreamSubscription | undefined {
 function generate_subscribe_success_messages(
     subscribed_users: User[],
     already_subscribed_users: User[],
+    ignored_deactivated_users: User[],
 ): {
     subscribed_users_message: string;
     already_subscribed_users_message: string;
+    ignored_deactivated_users_message: string;
 } {
     const subscribed_user_links = subscribed_users.map(
         (user) =>
             `<a data-user-id="${user.user_id}" class="view_user_profile">${Handlebars.Utils.escapeExpression(user.full_name)}</a>`,
     );
     const already_subscribed_user_links = already_subscribed_users.map(
+        (user) =>
+            `<a data-user-id="${user.user_id}" class="view_user_profile">${Handlebars.Utils.escapeExpression(user.full_name)}</a>`,
+    );
+    const ignored_deactivated_user_links = ignored_deactivated_users.map(
         (user) =>
             `<a data-user-id="${user.user_id}" class="view_user_profile">${Handlebars.Utils.escapeExpression(user.full_name)}</a>`,
     );
@@ -94,9 +100,14 @@ function generate_subscribe_success_messages(
         already_subscribed_user_links,
         "long",
     );
+    const ignored_deactivated_users_message = util.format_array_as_list_with_conjunction(
+        ignored_deactivated_user_links,
+        "long",
+    );
     return {
         subscribed_users_message,
         already_subscribed_users_message,
+        ignored_deactivated_users_message,
     };
 }
 
@@ -121,8 +132,10 @@ function show_stream_subscription_request_success_result({
 }): void {
     const subscribed_users_count = subscribed_users.length;
     const already_subscribed_users_count = already_subscribed_users.length;
+    const ignored_deactivated_users_count = ignored_deactivated_users.length;
     const is_total_subscriber_more_than_five =
-        subscribed_users_count + already_subscribed_users_count > 5;
+        subscribed_users_count + already_subscribed_users_count + ignored_deactivated_users_count >
+        5;
 
     const $stream_subscription_req_result_elem = $(
         ".stream_subscription_request_result",
@@ -133,6 +146,7 @@ function show_stream_subscription_request_success_result({
         subscribe_success_messages = generate_subscribe_success_messages(
             subscribed_users,
             already_subscribed_users,
+            ignored_deactivated_users,
         );
     }
     const html = render_stream_subscription_request_result({
@@ -143,6 +157,7 @@ function show_stream_subscription_request_success_result({
         already_subscribed_users_count,
         is_total_subscriber_more_than_five,
         ignored_deactivated_users,
+        ignored_deactivated_users_count,
     });
     scroll_util.get_content_element($stream_subscription_req_result_elem).html(html);
 }

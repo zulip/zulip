@@ -10,7 +10,9 @@
     <div class="banner-wrapper">
         <div class="banner banner-success">
             <span class="banner-label">
-                {{#if (eq subscribed_users_count 0)}}
+                {{!-- We want to show ignored deactivated users message even when there are
+                no new subscribers --}}
+                {{#if (and (eq subscribed_users_count 0) (eq ignored_deactivated_users_count 0))}}
                     {{t "All users were already subscribed."}}
                 {{else}}
                     {{#if (not is_total_subscriber_more_than_five) }}
@@ -19,6 +21,9 @@
                         {{/if}}
                         {{#if already_subscribed_users}}
                             {{t "Already a subscriber:" }} {{{subscribe_success_messages.already_subscribed_users_message}}}.
+                        {{/if}}
+                        {{#if ignored_deactivated_users}}
+                            {{t "Ignored deactivated users:" }} {{{subscribe_success_messages.ignored_deactivated_users_message}}}.
                         {{/if}}
                     {{else}}
                         {{#if subscribed_users}}
@@ -31,6 +36,12 @@
                             {{t "{already_subscribed_users_count, plural,
                               one {Already subscribed: {already_subscribed_users_count} user.}
                                 other {Already subscribed: {already_subscribed_users_count} users.}
+                            }"}}
+                        {{/if}}
+                        {{#if ignored_deactivated_users}}
+                            {{t "{ignored_deactivated_users_count, plural,
+                              one {Ignored deactivated: {ignored_deactivated_users_count} user.}
+                            other {Ignored deactivated: {ignored_deactivated_users_count} users.}
                         }"}}
                         {{/if}}
                     {{/if}}
@@ -38,12 +49,4 @@
             </span>
         </div>
     </div>
-{{/if}}
-{{#if ignored_deactivated_users}}
-    {{#each ignored_deactivated_users}}
-        {{#if @first}}
-        {{t "Ignored deactivated users:" }}
-        {{/if}}
-        <a data-user-id="{{user_id}}" class="view_user_profile">{{full_name}}</a>{{#unless @last}},{{else}}.{{/unless}}
-    {{/each}}
 {{/if}}

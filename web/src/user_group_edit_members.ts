@@ -195,14 +195,22 @@ function generate_members_added_success_messages(
     newly_added_subgroups: UserGroup[],
     already_added_users: User[],
     already_added_subgroups: UserGroup[],
+    ignored_deactivated_groups: UserGroup[],
+    ignored_deactivated_users: User[],
 ): {
     newly_added_members_message: string;
     already_added_members_message: string;
+    ignored_deactivated_users_message: string;
+    ignored_deactivated_groups_message: string;
 } {
     const new_user_links = newly_added_users.map((user) => generate_user_link(user));
     const new_group_links = newly_added_subgroups.map((group) => generate_group_link(group));
     const old_user_links = already_added_users.map((user) => generate_user_link(user));
     const old_group_links = already_added_subgroups.map((group) => generate_group_link(group));
+    const ignored_group_links = ignored_deactivated_groups.map((group) =>
+        generate_group_link(group),
+    );
+    const ignored_user_links = ignored_deactivated_users.map((user) => generate_user_link(user));
 
     const newly_added_members_message = util.format_array_as_list_with_conjunction(
         [...new_user_links, ...new_group_links],
@@ -212,9 +220,19 @@ function generate_members_added_success_messages(
         [...old_user_links, ...old_group_links],
         "long",
     );
+    const ignored_deactivated_users_message = util.format_array_as_list_with_conjunction(
+        ignored_user_links,
+        "long",
+    );
+    const ignored_deactivated_groups_message = util.format_array_as_list_with_conjunction(
+        ignored_group_links,
+        "long",
+    );
     return {
         newly_added_members_message,
         already_added_members_message,
+        ignored_deactivated_users_message,
+        ignored_deactivated_groups_message,
     };
 }
 
@@ -247,16 +265,22 @@ function show_user_group_membership_request_success_result({
     const newly_added_subgroups_count = newly_added_subgroups.length;
     const already_added_user_count = already_added_users.length;
     const already_added_subgroups_count = already_added_subgroups.length;
+    const ignored_deactivated_groups_count = ignored_deactivated_groups.length;
+    const ignored_deactivated_users_count = ignored_deactivated_users.length;
 
     const total_member_count_exceeds_five =
         newly_added_user_count +
             newly_added_subgroups_count +
             already_added_user_count +
-            already_added_subgroups_count >
+            already_added_subgroups_count +
+            ignored_deactivated_groups_count +
+            ignored_deactivated_users_count >
         5;
 
     const newly_added_member_count = newly_added_user_count + newly_added_subgroups_count;
     const already_added_member_count = already_added_user_count + already_added_subgroups_count;
+    const ignored_deactivated_member_count =
+        ignored_deactivated_users_count + ignored_deactivated_groups_count;
     let addition_success_messages;
     if (!total_member_count_exceeds_five) {
         addition_success_messages = generate_members_added_success_messages(
@@ -264,6 +288,8 @@ function show_user_group_membership_request_success_result({
             newly_added_subgroups,
             already_added_users,
             already_added_subgroups,
+            ignored_deactivated_groups,
+            ignored_deactivated_users,
         );
     }
 
@@ -278,11 +304,10 @@ function show_user_group_membership_request_success_result({
         newly_added_subgroups_count,
         already_added_user_count,
         already_added_subgroups_count,
-        already_added_users,
-        ignored_deactivated_users,
-        already_added_subgroups,
-        ignored_deactivated_groups,
         total_member_count_exceeds_five,
+        ignored_deactivated_groups_count,
+        ignored_deactivated_users_count,
+        ignored_deactivated_member_count,
     });
     scroll_util.get_content_element($user_group_subscription_req_result_elem).html(html);
 }
