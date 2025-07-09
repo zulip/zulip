@@ -26,7 +26,6 @@ import * as message_live_update from "./message_live_update.ts";
 import * as message_view_header from "./message_view_header.ts";
 import * as narrow_state from "./narrow_state.ts";
 import * as overlays from "./overlays.ts";
-import {page_params} from "./page_params.ts";
 import {postprocess_content} from "./postprocess_content.ts";
 import * as resize from "./resize.ts";
 import * as scroll_util from "./scroll_util.ts";
@@ -886,7 +885,6 @@ function setup_page(callback: () => void): void {
             realm_has_archived_channels,
             has_billing_access: settings_data.user_has_billing_access(),
             is_admin: current_user.is_admin,
-            is_development_environment: page_params.development_environment,
             empty_string_topic_display_name: util.get_final_topic_display_name(""),
         };
 
