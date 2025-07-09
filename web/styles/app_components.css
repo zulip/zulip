@@ -59,6 +59,10 @@ kbd {
     font-weight: 300;
 }
 
+.highlighted-element {
+    font-weight: 600;
+}
+
 .inline-block {
     display: inline-block;
 }
