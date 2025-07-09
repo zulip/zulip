@@ -5,6 +5,7 @@ import * as tippy from "tippy.js";
 
 import render_filter_topics from "../templates/filter_topics.hbs";
 import render_go_to_channel_feed_tooltip from "../templates/go_to_channel_feed_tooltip.hbs";
+import render_go_to_channel_list_of_topics_tooltip from "../templates/go_to_channel_list_of_topics_tooltip.hbs";
 import render_stream_privacy from "../templates/stream_privacy.hbs";
 import render_stream_sidebar_row from "../templates/stream_sidebar_row.hbs";
 import render_stream_subheader from "../templates/streams_subheader.hbs";
@@ -878,7 +879,16 @@ export function initialize_tippy_tooltips(): void {
             const current_narrow_stream_id = narrow_state.stream_id();
             const current_topic = narrow_state.topic();
             if (current_narrow_stream_id === stream_id && current_topic !== undefined) {
-                instance.setContent(ui_util.parse_html(render_go_to_channel_feed_tooltip()));
+                if (
+                    user_settings.web_channel_default_view ===
+                    web_channel_default_view_values.list_of_topics.code
+                ) {
+                    instance.setContent(
+                        ui_util.parse_html(render_go_to_channel_list_of_topics_tooltip()),
+                    );
+                } else {
+                    instance.setContent(ui_util.parse_html(render_go_to_channel_feed_tooltip()));
+                }
                 return undefined;
             }
             // Then check for truncation
