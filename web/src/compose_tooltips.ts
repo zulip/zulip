@@ -12,11 +12,13 @@ import * as compose_validate from "./compose_validate.ts";
 import {$t} from "./i18n.ts";
 import {pick_empty_narrow_banner} from "./narrow_banner.ts";
 import * as narrow_state from "./narrow_state.ts";
+import * as people from "./people.ts";
 import * as popover_menus from "./popover_menus.ts";
 import {realm} from "./state_data.ts";
 import {EXTRA_LONG_HOVER_DELAY, INSTANT_HOVER_DELAY, LONG_HOVER_DELAY} from "./tippyjs.ts";
 import {parse_html} from "./ui_util.ts";
 import {user_settings} from "./user_settings.ts";
+import * as util from "./util.ts";
 
 export function initialize(): void {
     tippy.delegate("body", {
@@ -51,7 +53,29 @@ export function initialize(): void {
                 case "direct_disabled": {
                     const narrow_filter = narrow_state.filter();
                     assert(narrow_filter !== undefined);
-                    instance.setContent(pick_empty_narrow_banner(narrow_filter).title);
+                    // We disable the reply button for DMs based on the recipients.
+                    // Below block is necessary for the search-views such as:
+                    // dm-including:user, dm:user1, where the reply button state is
+                    // dependent on the user in the 'dm' narrow. So, we check for
+                    // that only to show the tooltip for the different state of the
+                    // reply button.
+                    const recipient = narrow_filter._terms
+                        .filter((term) => term.operator === "dm")
+                        .map((term) => term.operand)
+                        .join(",");
+                    const user_ids = people.emails_strings_to_user_ids_array(recipient);
+                    if (user_ids) {
+                        const user_ids_string = util.sorted_ids(user_ids).join(",");
+                        const direct_message_error_string =
+                            compose_validate.check_dm_permissions_and_get_error_string(
+                                user_ids_string,
+                            );
+                        if (direct_message_error_string) {
+                            instance.setContent(direct_message_error_string);
+                        }
+                    } else {
+                        instance.setContent(pick_empty_narrow_banner(narrow_filter).title);
+                    }
                     return;
                 }
                 case "stream_disabled": {

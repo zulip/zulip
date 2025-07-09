@@ -40,6 +40,8 @@ const compose_notifications = mock_esm("../src/compose_notifications");
 const compose_pm_pill = mock_esm("../src/compose_pm_pill");
 const loading = mock_esm("../src/loading");
 const markdown = mock_esm("../src/markdown");
+const message_lists = mock_esm("../src/message_lists");
+const message_util = mock_esm("../src/message_util");
 const narrow_state = mock_esm("../src/narrow_state");
 const rendered_markdown = mock_esm("../src/rendered_markdown");
 const resize = mock_esm("../src/resize");
@@ -51,6 +53,9 @@ const onboarding_steps = mock_esm("../src/onboarding_steps");
 mock_esm("../src/settings_data", {
     user_has_permission_for_group_setting: () => true,
 });
+message_lists.current = {
+    id: "1",
+};
 
 const compose_ui = zrequire("compose_ui");
 const compose_banner = zrequire("compose_banner");
@@ -479,6 +484,7 @@ test_ui("finish", ({override, override_rewire}) => {
     const fake_compose_box = new FakeComposeBox();
 
     override_rewire(compose_banner, "clear_message_sent_banners", noop);
+    override(message_util, "get_direct_message_permission_hints", () => (false, false));
 
     let show_button_spinner_called = false;
     override(loading, "show_button_spinner", ($spinner) => {
@@ -880,14 +886,52 @@ test_ui("DM policy disabled", ({override, override_rewire}) => {
     override_rewire(compose_closed_ui, "update_reply_button_state", (disabled = false) => {
         reply_disabled = disabled;
     });
-    // For single bot recipient, Bot, the "Message X" button is not disabled
-    override(narrow_state, "pm_ids_string", () => "33");
+    let msg = {
+        type: "private",
+        is_private: true,
+        is_stream: false,
+        display_recipient: [
+            {email: alice.email, full_name: alice.full_name, id: alice.user_id},
+            {email: bob.email, full_name: bob.full_name, id: bob.user_id},
+        ],
+    };
+    override(message_lists, "current", {
+        selected_message() {
+            return msg;
+        },
+    });
+
+    override(message_util, "user_can_send_direct_message", () => true);
+    compose_closed_ui.should_disable_compose_reply_button_for_selected_message();
+    override(narrow_state, "pm_ids_string", () => "31");
     compose_closed_ui.update_buttons_for_private();
     assert.ok(!reply_disabled);
-    // For human user, Alice, the "Message X" button is disabled
+
+    override(message_util, "user_can_send_direct_message", () => false);
+    compose_closed_ui.should_disable_compose_reply_button_for_selected_message();
     override(narrow_state, "pm_ids_string", () => "31");
     compose_closed_ui.update_buttons_for_private();
     assert.ok(reply_disabled);
+
+    msg = {
+        type: "private",
+        is_private: true,
+        is_stream: false,
+        display_recipient: [
+            {email: alice.email, full_name: alice.full_name, id: alice.user_id},
+            {email: bot.email, full_name: bot.full_name, id: bot.user_id},
+        ],
+    };
+    override(message_lists, "current", {
+        selected_message() {
+            return msg;
+        },
+    });
+    override(message_util, "user_can_send_direct_message", () => true);
+    compose_closed_ui.should_disable_compose_reply_button_for_selected_message();
+    override(narrow_state, "pm_ids_string", () => undefined);
+    compose_closed_ui.update_buttons_for_private();
+    assert.ok(!reply_disabled);
 });
 
 run_test("reset MockDate", () => {

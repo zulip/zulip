@@ -2,6 +2,7 @@ import $ from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
 
+import * as compose_closed_ui from "./compose_closed_ui.ts";
 import * as compose_validate from "./compose_validate.ts";
 import type {Filter} from "./filter.ts";
 import {$t, $t_html} from "./i18n.ts";
@@ -135,7 +136,15 @@ export function pick_empty_narrow_banner(current_filter: Filter): NarrowBannerDa
                   },
               ),
     };
-
+    const default_banner_for_multiple_filters = $t({defaultMessage: "No search results."});
+    if (compose_closed_ui.should_disable_compose_reply_button_for_selected_message()) {
+        return {
+            title: $t({
+                defaultMessage:
+                    "This conversation does not include any users who can authorize it.",
+            }),
+        };
+    }
     if (current_filter.is_in_home()) {
         // We're in the combined feed view.
         return {
@@ -309,7 +318,7 @@ export function pick_empty_narrow_banner(current_filter: Filter): NarrowBannerDa
             const stream_sub = stream_data.get_sub_by_id_string(first_operand);
             if (!stream_sub?.subscribed) {
                 // You are narrowed to a channel that either does not exist,
-                // is private, or a channel you're not currently subscribed to.
+                //  console.log(first_operand)is private, or a channel you're not currently subscribed to.
                 if (page_params.is_spectator) {
                     spectators.login_to_access(true);
                     return SPECTATOR_STREAM_NARROW_BANNER;
@@ -482,12 +491,7 @@ export function pick_empty_narrow_banner(current_filter: Filter): NarrowBannerDa
                 };
             }
             return {
-                title: $t(
-                    {
-                        defaultMessage: "You have no direct messages including {person} yet.",
-                    },
-                    {person: person_in_dms.full_name},
-                ),
+                title: default_banner_for_multiple_filters,
             };
         }
     }
