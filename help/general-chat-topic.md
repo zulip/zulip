@@ -8,7 +8,9 @@ example, this could be appropriate for social chatter, or for a one-off request
 {!general-chat-intro.md!}
 
 The “*general chat*” topic can be used only if [allowed](/help/require-topics)
-by your organization's administrators.
+by your organization's administrators, and channels can be
+[configured](/help/general-chat-channels) to only allow the “*general chat*”
+topic.
 
 ## Sending a message to the “*general chat*” topic
 
@@ -49,4 +51,5 @@ topic, or follow the instructions below.
 ## Related articles
 
 - [Introduction to topics](/help/introduction-to-topics)
+- [“*General chat*” channels](/help/general-chat-channels)
 - [Require topics in channel messages](/help/require-topics)
