@@ -1069,7 +1069,7 @@ li.top_left_scheduled_messages {
             var(--left-sidebar-toggle-width-offset) -
                 var(--input-icon-starting-offset)
         )
-        minmax(0, 1fr) var(--left-sidebar-vdots-width);
+        minmax(0, 1fr) 0;
 
     .filter-input,
     .filter-topics {
