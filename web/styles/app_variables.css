@@ -2629,28 +2629,24 @@
     );
 
     /* Inputs */
-    --color-text-input: light-dark(
-        color-mix(in oklch, hsl(0deg 0% 15%) 50%, transparent),
-        color-mix(in oklch, hsl(0deg 0% 83%) 50%, transparent)
-    );
-    --color-text-input-focus: light-dark(hsl(0deg 0% 15%), hsl(0deg 0% 83%));
+    --color-text-input: light-dark(hsl(0deg 0% 14%), hsl(0deg 0% 95%));
     /* TODO: Light mode uses browser-default white
        backgrounds; we should extend the use of this
        color variable to 1) explicitly set the
        background color of inputs, and 2) clean up a
        lingering stack of selectors in dark_theme.css. */
-    --color-background-input: light-dark(hsl(0deg 0% 100%), hsl(220deg 6% 10%));
+    --color-background-input: light-dark(hsl(0deg 0% 100%), hsl(225deg 6% 10%));
     --color-background-input-focus: light-dark(
         hsl(0deg 0% 100%),
-        hsl(240deg 6% 7%)
+        hsl(225deg 6% 7%)
     );
     --color-border-input: light-dark(
         color-mix(in oklch, hsl(229deg 22% 10%) 30%, transparent),
         color-mix(in oklch, hsl(0deg 0% 100%) 20%, transparent)
     );
     --color-border-input-hover: light-dark(
-        color-mix(in oklch, hsl(229deg 22% 10%) 30%, transparent),
-        color-mix(in oklch, hsl(0deg 0% 100%) 20%, transparent)
+        color-mix(in oklch, hsl(229deg 22% 10%) 60%, transparent),
+        color-mix(in oklch, hsl(0deg 0% 100%) 40%, transparent)
     );
     --color-border-input-focus: light-dark(
         color-mix(in oklch, hsl(229deg 22% 10%) 80%, transparent),
