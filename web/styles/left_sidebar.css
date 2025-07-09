@@ -1363,31 +1363,8 @@ li.top_left_scheduled_messages {
     }
 }
 
-.topic-list-filter {
-    grid-area: filter-box;
-    padding-right: var(--line-height-sidebar-row-prominent);
-    box-shadow: none;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    overflow: hidden;
-    gap: 0.125em; /* 2px at 16px em */
-    background-color: var(--color-background-active-narrow-filter);
-    font-weight: 400;
-
-    .input:empty::before {
-        color: var(--color-text-placeholder);
-        content: attr(data-placeholder);
-    }
-
-    .input {
-        flex-grow: 1;
-        min-width: 0;
-    }
-}
-
-#clear_search_topic_button {
-    visibility: hidden;
-    height: 2em; /* 32px at 16px/1em */
+.filter-topics {
+    font-weight: initial;
 }
 
 .searching-for-more-topics img {

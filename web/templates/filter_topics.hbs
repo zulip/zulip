@@ -1,13 +1,7 @@
 <div class="left-sidebar-filter-input-container">
-    <div class="topic_search_section filter-topics left-sidebar-filter-row">
-        <div class="topic-list-filter home-page-input filter_text_input pill-container" id="left-sidebar-filter-topic-input">
-            <div class="input" contenteditable="true" id="topic_filter_query"
-              data-placeholder="{{t 'Filter topics' }}">
-                {{~! Squash whitespace so that placeholder is displayed when empty. ~}}
-            </div>
+    {{#> input_wrapper input_type="filter-input" custom_classes="topic_search_section filter-topics has-input-pills" icon="search" input_button_icon="close"}}
+        <div class="input-element home-page-input pill-container" id="left-sidebar-filter-topic-input">
+            <div class="input" contenteditable="true" id="topic_filter_query" data-placeholder="{{t 'Filter topics' }}"></div>
         </div>
-        <button type="button" class="clear_search_button" id="clear_search_topic_button">
-            <i class="zulip-icon zulip-icon-close" aria-hidden="true"></i>
-        </button>
-    </div>
+    {{/input_wrapper}}
 </div>

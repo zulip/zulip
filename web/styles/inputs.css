@@ -60,6 +60,38 @@
                 var(--input-button-ending-offset)
         );
     }
+
+    /* Special styles for input with pills */
+    &.has-input-pills .pill-container {
+        .input {
+            flex-grow: 1;
+            /* Override default values in web/styles/input_pill.css  */
+            padding: 0;
+            line-height: inherit;
+
+            &:empty::before {
+                color: var(--color-text-placeholder);
+                content: attr(data-placeholder);
+            }
+        }
+
+        .pill {
+            height: 1.25em; /* 20px at 16px/1em */
+        }
+
+        &:has(.input:hover) {
+            border-color: var(--color-border-input-hover);
+        }
+
+        &:has(.input:focus) {
+            box-shadow: 0 0 5px var(--color-box-shadow-input-focus);
+        }
+
+        &:has(.input:focus),
+        &.input-element-nonempty:has(.input) {
+            @extend .input-active-styles;
+        }
+    }
 }
 
 .input-icon {
@@ -77,11 +109,15 @@
     padding: 0.25em; /* 4px at 16px/1em */
 }
 
-.filter-input .input-element {
+/* We use the `input` tag in the selector to avoid conflicts
+   with the pill containing counterpart, which uses a `contenteditable`
+   div instead of an input element, and thus doesn't support the
+   placeholder pseudo-classes. */
+.filter-input input.input-element {
     &:placeholder-shown {
         /* In case of filter inputs, when the input field
-        is empty, we hide the input button and adjust
-        the right padding to compensate for the same. */
+           is empty, we hide the input button and adjust
+           the right padding to compensate for the same. */
         padding-right: 0.5em;
 
         ~ .input-button {
