@@ -120,6 +120,14 @@ input:focus:invalid:focus {
   border-color: #eed3d7;
   color: #b94a48;
 }
+.alert.alert-success {
+  background-color: #dff0d8;
+  border-color: #d6e9c6;
+  color: #468847;
+}
+.alert.alert-success h4 {
+  color: #468847;
+}
 .alert,
 .alert h4 {
   color: #c09853;
