@@ -1,0 +1,31 @@
+#!/usr/bin/env python3
+import os
+import sys
+from pathlib import Path
+
+
+def get_build_url_from_environment() -> str:
+    server = os.environ["GITHUB_SERVER_URL"]
+    repo = os.environ["GITHUB_REPOSITORY"]
+    run_id = os.environ["GITHUB_RUN_ID"]
+    return f"{server}/{repo}/actions/runs/{run_id}"
+
+
+if __name__ == "__main__":
+    branch = os.environ.get("GITHUB_REF", "unknown branch").split("/")[-1]
+    topic = f"{branch} failing"
+    build_url = get_build_url_from_environment()
+    github_actor = os.environ.get("GITHUB_ACTOR", "unknown user")
+
+    api_docs_folder = Path("api_docs")
+    api_docs_paths = list(api_docs_folder.glob("*.md"))
+    api_docs_paths.append(Path("zerver/openapi/zulip.yaml"))
+
+    for api_docs_path in api_docs_paths:
+        with open(api_docs_path) as file:
+            if "ZF-" in file.read():
+                content = f"[Build]({build_url}) triggered by {github_actor} on branch `{branch}` has failed: Feature level not replaced in '{api_docs_path}'."
+                print(f"fail=true\ntopic={topic}\ncontent={content}")
+                sys.exit(0)
+
+    print("fail=false")
