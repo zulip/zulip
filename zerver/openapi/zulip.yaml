@@ -24717,7 +24717,7 @@ components:
         This is an unstable API. Please discuss in chat.zulip.org before
         using it.
 
-        **Changes**: As of Zulip 11.0 (feature level ZF-f9d19d), this
+        **Changes**: As of Zulip 11.0 (feature level 403), this
         object is reserved for integration-specific configuration options
         that can be set when creating a bot user. Previously, this object
         also included optional webhook URL parameters, which are now
@@ -24752,7 +24752,7 @@ components:
         This is an unstable API expected to be used only by the Zulip web
         app. Please discuss in chat.zulip.org before using it.
 
-        **Changes**: New in Zulip 11.0 (feature level ZF-f9d19d). Previously,
+        **Changes**: New in Zulip 11.0 (feature level 403). Previously,
         these optional URL parameter options were included in the
         `config_options` object.
       items:
