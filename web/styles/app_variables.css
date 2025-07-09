@@ -1924,6 +1924,11 @@
         hsl(0deg 0% 20%)
     );
     --color-icons-inbox: light-dark(hsl(0deg 0% 0%), hsl(0deg 0% 100%));
+    --color-folder-header: light-dark(hsl(216deg 43% 20%), hsl(216deg 50% 75%));
+    --color-inbox-row-unread-count: light-dark(
+        hsl(0deg 0% 20%),
+        hsl(0deg 0% 100% / 80%)
+    );
 
     /* Navbar dropdown menu constants - Values from Figma design */
     --box-shadow-popover-menu:

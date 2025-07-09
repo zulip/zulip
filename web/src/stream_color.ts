@@ -62,6 +62,11 @@ export function get_stream_privacy_icon_color(
     return corrected_color_light;
 }
 
+export function get_channel_unread_count_color(hex_color: string): string {
+    const privacy_icon_color = get_stream_privacy_icon_color(hex_color);
+    return colord(privacy_icon_color).alpha(0.2).toHex();
+}
+
 export function get_recipient_bar_color(color: string): string {
     // Mixes 50% of color to 40% of white (light theme) / black (dark theme).
     const using_dark_theme = settings_data.using_dark_theme();
