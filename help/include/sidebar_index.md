@@ -216,6 +216,7 @@
 * [Private channels](/help/channel-permissions#private-channels)
 * [Public channels](/help/channel-permissions#public-channels)
 * [Public access option](/help/public-access-option)
+* [“*General chat*” channels](/help/general-chat-channels)
 * [Channel permissions](/help/channel-permissions)
 * [Channel posting policy](/help/channel-posting-policy)
 * [Configure who can administer a channel](/help/configure-who-can-administer-a-channel)
