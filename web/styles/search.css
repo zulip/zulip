@@ -301,7 +301,11 @@
             /* Set the minimum width on the pill container;
                 this accommodates the avatar, a minimum
                 two-character username, and the closing X.
-                90px at 20px/1em */
+                90px at 20px/1em.
+
+               TODO: This would ideally be reworked, as we need to
+               override it for search suggestion pills (with no X) below.
+           */
             min-width: 4.5em;
             display: grid;
             grid-template-columns:
@@ -399,6 +403,15 @@
         .pill {
             align-items: baseline;
             margin: 0;
+
+            /* We remove the close button's column space from the grid template
+               for search suggestions, since there's no exit button.
+               The min-width here prevents extra space on very short names. */
+            min-width: 0;
+            grid-template-columns: var(--length-search-input-pill-image) minmax(
+                    0,
+                    1fr
+                );
 
             &:focus {
                 /* Keep the border the same color, there's no user interaction for users in the typeahead menu */
