@@ -25,29 +25,37 @@ import {
 import {parse_html} from "./ui_util.ts";
 import {user_settings} from "./user_settings.ts";
 
-let compose_tooltips: tippy.Instance[] | null = null;
-let compose_tooltip_singleton: tippy.CreateSingletonInstance | null = null;
+type SingletonContext = "compose" | "edit_message";
+type SingletonTooltips = {
+    tooltip_instances: tippy.Instance[] | null;
+    singleton_instance: tippy.CreateSingletonInstance | null;
+};
 
-export function initialize_compose_tooltips(): void {
+const compose_button_singleton_context_map = new Map<SingletonContext, SingletonTooltips>();
+
+export function initialize_compose_tooltips(context: SingletonContext, selector: string): void {
     // Clean up existing instances first
-    if (compose_tooltip_singleton) {
-        compose_tooltip_singleton.destroy();
-        if (compose_tooltips) {
-            for (const tippy_instance of compose_tooltips) {
+    const singleton_tooltips = compose_button_singleton_context_map.get(context);
+    if (singleton_tooltips) {
+        singleton_tooltips.singleton_instance?.destroy();
+        if (singleton_tooltips.tooltip_instances) {
+            for (const tippy_instance of singleton_tooltips.tooltip_instances) {
                 if (!tippy_instance.state.isDestroyed) {
                     tippy_instance.destroy();
                 }
             }
         }
+        compose_button_singleton_context_map.delete(context);
     }
 
-    compose_tooltips = tippy.default(".compose_button_tooltip", {
+    const tooltip_instances = tippy.default(selector, {
         trigger: "mouseenter",
         placement: "top",
     });
 
-    compose_tooltip_singleton = tippy.createSingleton(compose_tooltips, {
+    const singleton_instance = tippy.createSingleton(tooltip_instances, {
         delay: LONG_HOVER_DELAY,
+        appendTo: () => document.body,
         onTrigger(instance, event) {
             const currentTarget = event.currentTarget;
             if (currentTarget instanceof HTMLElement) {
@@ -62,6 +70,11 @@ export function initialize_compose_tooltips(): void {
                 }
             }
         },
+    });
+
+    compose_button_singleton_context_map.set(context, {
+        tooltip_instances,
+        singleton_instance,
     });
 }
 

@@ -668,6 +668,10 @@ function edit_message($row: JQuery, raw_content: string): void {
         $message_edit_content.on("keyup", (event) => {
             compose_ui.handle_keyup(event, $message_edit_content);
         });
+        compose_tooltips.initialize_compose_tooltips(
+            "edit_message",
+            ".message_edit .compose_button_tooltip",
+        );
     }
 
     // Add tooltip and timer
