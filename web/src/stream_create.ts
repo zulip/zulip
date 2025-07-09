@@ -466,10 +466,13 @@ export function new_stream_clicked(stream_name: string, folder_id: number | unde
         $("#create_stream_name").val(stream_name);
     }
     show_new_stream_modal();
-    if (folder_id) {
-        folder_widget!.render(folder_id);
-    } else {
-        folder_widget!.render(-1);
+    if (page_params.development_environment) {
+        assert(folder_widget !== undefined);
+        if (folder_id) {
+            folder_widget.render(folder_id);
+        } else {
+            folder_widget.render(-1);
+        }
     }
     $("#create_stream_name").trigger("focus");
 }
