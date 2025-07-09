@@ -23,7 +23,6 @@ mock_esm("../src/message_list_view", {
     MessageListView,
 });
 mock_esm("../src/settings_data", {
-    user_has_permission_for_group_setting: () => true,
     user_can_access_all_other_users: () => true,
 });
 
