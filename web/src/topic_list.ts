@@ -494,7 +494,7 @@ export function zoom_in(): void {
 }
 
 export function get_left_sidebar_topic_search_term(): string {
-    return $("#left-sidebar-filter-topic-input .input").text().trim();
+    return $("#topic_filter_query").text().trim();
 }
 
 export function get_typeahead_search_term(): string {
