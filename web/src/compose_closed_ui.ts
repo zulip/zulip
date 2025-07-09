@@ -207,6 +207,7 @@ export function update_buttons_for_stream_views(): void {
 export function update_buttons_for_non_specific_views(): void {
     $("#new_conversation_button").attr("data-conversation-type", "non-specific");
     update_buttons(should_disable_compose_reply_button_for_stream());
+    set_standard_text_for_reply_button();
 }
 
 function set_reply_button_label(label: string): void {
