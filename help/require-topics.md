@@ -38,8 +38,7 @@ topic](/help/general-chat-channels).
 {!select-channel-view-general-advanced.md!}
 
 1. Under **Messaging permissions**, choose the desired option from the **Allow
-   posting to the *general chat* topic?** dropdown. The **Automatic** option
-   follows the default setting for the organization.
+   posting to the *general chat* topic?** dropdown.
 
 {!save-changes.md!}
 
