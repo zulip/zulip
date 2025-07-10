@@ -318,14 +318,11 @@ export const get_realm_topics_policy_values = (): RealmTopicsPolicyValues => {
     return {
         allow_empty_topic: {
             code: "allow_empty_topic",
-            description: $t(
-                {defaultMessage: '"{empty_topic_name}" topic allowed'},
-                {empty_topic_name},
-            ),
+            description: $t({defaultMessage: "Allow “{empty_topic_name}”"}, {empty_topic_name}),
         },
         disable_empty_topic: {
             code: "disable_empty_topic",
-            description: $t({defaultMessage: 'No "{empty_topic_name}" topic'}, {empty_topic_name}),
+            description: $t({defaultMessage: "No “{empty_topic_name}” topic"}, {empty_topic_name}),
         },
     };
 };
@@ -337,13 +334,13 @@ export const get_stream_topics_policy_values = (): StreamTopicsPolicyValues => {
     return {
         inherit: {
             code: "inherit",
-            description: $t({defaultMessage: "Automatic"}),
+            description: $t({defaultMessage: "Organization default"}),
         },
         ...realm_topics_policy_values,
         empty_topic_only: {
             code: "empty_topic_only",
             description: $t(
-                {defaultMessage: 'Only "{empty_topic_name}" topic allowed'},
+                {defaultMessage: "Only “{empty_topic_name}” topic allowed"},
                 {empty_topic_name},
             ),
         },
