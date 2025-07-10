@@ -699,7 +699,7 @@ export class Filter {
 
         switch (operator) {
             case "channel":
-                return verb + "messages in #";
+                return verb + "messages in a channel";
             case "channels":
                 return verb + "channels";
             case "near":
@@ -842,10 +842,11 @@ export class Filter {
             if (prefix_for_operator !== "") {
                 if (canonicalized_operator === "channel") {
                     const stream = stream_data.get_sub_by_id_string(operand);
+                    const verb = term.negated ? "exclude " : "";
                     if (stream) {
                         return {
                             type: "channel",
-                            prefix_for_operator,
+                            prefix_for_operator: verb + "messages in #",
                             operand: stream.name,
                         };
                     }
