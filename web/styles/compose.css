@@ -1571,9 +1571,6 @@ textarea.new_message_textarea {
         height: 1.2727em;
         /* 30px at 22px/1em */
         width: 1.3636em;
-        /* Adhere to the width of formatting buttons,
-           despite flexbox context. */
-        flex: 0 0 auto;
         display: flex;
         align-items: center;
         justify-content: center;
