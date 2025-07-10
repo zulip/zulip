@@ -395,6 +395,48 @@ for details and how to share your feedback.
             flutter_release_blog_post="https://blog.zulip.com/2025/06/17/flutter-mobile-app-launched/",
         ),
     ),
+    ZulipUpdateAnnouncement(
+        level=18,
+        message="""
+- You can now [schedule yourself a direct message
+  reminder]({schedule_a_reminder_url}) about a message you want to come back to.
+- Permissions to [move]({restrict_moving_messages_url}) and
+  [resolve]({restrict_resolving_topics_url}) topics can now be configured
+  separately for each channel.
+
+**Mobile updates**
+
+We've been hard at work adding the most highly
+[requested]({what_about_feature_x_url}) features to the next-generation mobile
+app released in June.
+- You can now [search for messages]({search_for_messages_url}) in the mobile
+  app.
+- You can now see other users' [availability]({availability_url}) and
+  [status]({view_a_status_url}), and toggle [invisible
+  mode]({invisible_mode_url}).
+- You can check [who reacted]({view_who_reacted_url}) to a message, and [when
+  each message was sent]({view_exact_time_url}).
+
+**Web and desktop updates**
+- There are two new options for [where you
+  navigate]({left_sidebar_channel_links_url}) by clicking on a channel name in
+  the left sidebar: a [list of topics]({list_of_topics_url}) in the channel, or
+  the top unread topic.
+""".format(
+            schedule_a_reminder_url="/help/schedule-a-reminder",
+            restrict_moving_messages_url="/help/restrict-moving-messages",
+            restrict_resolving_topics_url="/help/restrict-resolving-topics",
+            what_about_feature_x_url="https://blog.zulip.com/2025/06/17/flutter-mobile-app-launched/#what-about-insert-feature-here",
+            left_sidebar_channel_links_url="/help/left-sidebar#configure-where-channel-links-in-the-left-sidebar-go",
+            list_of_topics_url="/help/list-of-topics",
+            search_for_messages_url="/help/search-for-messages",
+            availability_url="/help/status-and-availability#availability",
+            view_a_status_url="/help/status-and-availability#view-a-status",
+            invisible_mode_url="/help/status-and-availability#toggle-invisible-mode",
+            view_who_reacted_url="/help/emoji-reactions#view-who-reacted-to-a-message",
+            view_exact_time_url="/help/view-the-exact-time-a-message-was-sent",
+        ),
+    ),
 ]
 
 
