@@ -556,6 +556,10 @@ export function unsaved_message_user_mention_event_handler(
     this: HTMLElement,
     e: JQuery.ClickEvent,
 ): void {
+    if (document.getSelection()?.type === "Range") {
+        return;
+    }
+
     e.stopPropagation();
 
     const id_string = $(this).attr("data-user-id")!;
