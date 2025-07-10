@@ -98,6 +98,19 @@ const {set_realm} = zrequire("state_data");
 
 const realm = {
     realm_topics_policy: "disable_empty_topic",
+    server_supported_permission_settings: {
+        stream: {
+            can_send_message_group: {
+                require_system_group: false,
+                allow_internet_group: false,
+                allow_nobody_group: true,
+                allow_everyone_group: false,
+                default_group_name: "group_creator",
+                default_for_system_groups: "role:nobody",
+                allowed_system_groups: [],
+            },
+        },
+    },
 };
 set_realm(realm);
 
@@ -171,7 +184,6 @@ test("start", ({override, override_rewire, mock_template}) => {
     override_rewire(compose_recipient, "on_compose_select_recipient_update", noop);
     override_rewire(compose_recipient, "check_posting_policy_for_compose_box", noop);
     override_rewire(compose_recipient, "update_recipient_row_attention_level", noop);
-    override_rewire(stream_data, "can_post_messages_in_stream", () => true);
     mock_template("inline_decorated_channel_name.hbs", false, noop);
 
     let compose_defaults;
@@ -205,11 +217,23 @@ test("start", ({override, override_rewire, mock_template}) => {
     assert.equal(compose_state.get_message_type(), "stream");
     assert.ok(compose_state.composing());
 
+    const me = make_user();
+    set_current_user(me);
+
+    const user_group = make_user_group({
+        id: 1,
+        members: [me.user_id],
+        creator_id: me.creator_id,
+    });
+
+    user_groups.add(user_group);
+
     // Autofill stream field for single subscription
     const denmark = make_stream({
         color: "blue",
         name: "Denmark",
         stream_id: 1,
+        can_send_message_group: 1,
     });
     stream_data.add_sub(denmark);
 
@@ -254,8 +278,6 @@ test("start", ({override, override_rewire, mock_template}) => {
 
     const user1 = make_user();
     people._add_user(user1);
-    const me = make_user();
-    set_current_user(me);
 
     // Start direct message
     compose_defaults = {
