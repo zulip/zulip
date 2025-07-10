@@ -1558,18 +1558,20 @@ textarea.new_message_textarea {
 .compose-control-buttons-container {
     display: flex;
     align-items: center;
+    /* 30px at 15px/1em */
+    height: var(--compose-formatting-buttons-row-height);
 
     .compose_control_button {
-        /* 22px at 14px/1em */
-        font-size: 1.5714em;
+        /* 22px at 15px/1em */
+        font-size: 1.4667em;
         /* Constrain icon fonts to a perfect
-           box (22px at 14px/1em) */
+           box (22px at 15px/1em) to sit centered
+           in the 30px by 30px button area. */
         line-height: 1;
         /* Coordinate with the value of
            --compose-formatting-buttons-row-height */
-        /* 28px at 22px/1em */
-        height: 1.2727em;
         /* 30px at 22px/1em */
+        height: 1.3636em;
         width: 1.3636em;
         display: flex;
         align-items: center;
