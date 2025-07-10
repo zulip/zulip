@@ -855,12 +855,6 @@ export let can_post_messages_in_stream = function (
     );
 };
 
-export function rewire_can_post_messages_in_stream(
-    value: typeof can_post_messages_in_stream,
-): void {
-    can_post_messages_in_stream = value;
-}
-
 export function user_can_move_messages_out_of_channel(stream: StreamSubscription): boolean {
     if (page_params.is_spectator) {
         return false;
