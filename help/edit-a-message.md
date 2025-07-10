@@ -65,6 +65,6 @@ any pending email notifications for that message will be canceled, including
 
 ## Related articles
 
-* [View the Markdown source of a message](/help/view-the-markdown-source-of-a-message)
+* [View, copy, and share message content as Markdown](/help/view-the-markdown-source-of-a-message)
 * [Restrict message editing and deletion](/help/restrict-message-editing-and-deletion)
 * [Delete a message](/help/delete-a-message)
