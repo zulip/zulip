@@ -638,6 +638,9 @@ class DeleteMessageTest(ZulipTestCase):
                 self.assert_json_error(result, error_msg)
 
         realm = get_realm("zulip")
+        stream = get_stream("Verona", realm)
+        hamlet = self.example_user("hamlet")
+        iago = self.example_user("iago")
 
         administrators_system_group = NamedUserGroup.objects.get(
             name=SystemGroups.ADMINISTRATORS, realm=realm, is_system_group=True
@@ -651,11 +654,20 @@ class DeleteMessageTest(ZulipTestCase):
         members_system_group = NamedUserGroup.objects.get(
             name=SystemGroups.MEMBERS, realm=realm, is_system_group=True
         )
+        nobody_system_group = NamedUserGroup.objects.get(
+            name=SystemGroups.NOBODY, realm=realm, is_system_group=True
+        )
 
         do_change_realm_permission_group_setting(
             realm,
             "can_delete_own_message_group",
             administrators_system_group,
+            acting_user=None,
+        )
+        do_change_realm_permission_group_setting(
+            realm,
+            "can_delete_any_message_group",
+            nobody_system_group,
             acting_user=None,
         )
         check_delete_message_by_sender("shiva", "You don't have permission to delete this message")
@@ -688,6 +700,45 @@ class DeleteMessageTest(ZulipTestCase):
         )
         check_delete_message_by_sender("cordelia")
         check_delete_message_by_sender("polonius")
+
+        do_change_realm_permission_group_setting(
+            realm, "can_delete_own_message_group", nobody_system_group, acting_user=None
+        )
+
+        do_change_stream_group_based_setting(
+            stream,
+            "can_delete_own_message_group",
+            members_system_group,
+            acting_user=iago,
+        )
+        # Users in per-channel `can_delete_own_message_group` can delete their
+        # own messages.
+        check_delete_message_by_sender("hamlet")
+        check_delete_message_by_sender(
+            "polonius", "You don't have permission to delete this message"
+        )
+
+        message_id = self.send_personal_message(hamlet, iago)
+        self.login("hamlet")
+        result = self.client_delete(f"/json/messages/{message_id}")
+        self.assert_json_error(result, "You don't have permission to delete this message")
+
+        do_change_stream_group_based_setting(
+            stream,
+            "can_delete_own_message_group",
+            nobody_system_group,
+            acting_user=iago,
+        )
+        do_change_stream_group_based_setting(
+            stream,
+            "can_administer_channel_group",
+            moderators_system_group,
+            acting_user=iago,
+        )
+        # Channel administrators can't delete messages if they don't have
+        # the required permissions.
+        check_delete_message_by_sender("shiva", "You don't have permission to delete this message")
+        check_delete_message_by_sender("iago", "You don't have permission to delete this message")
 
     def test_delete_event_sent_after_transaction_commits(self) -> None:
         """

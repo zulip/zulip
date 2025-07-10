@@ -249,7 +249,14 @@ export function get_deletability(message: Message): boolean {
     if (message.locally_echoed) {
         return false;
     }
-    if (!settings_data.user_can_delete_own_message()) {
+
+    if (message.type === "stream") {
+        const stream = stream_data.get_sub_by_id(message.stream_id);
+        assert(stream !== undefined);
+        if (!stream_data.user_can_delete_own_message_in_channel(stream)) {
+            return false;
+        }
+    } else if (!settings_data.user_can_delete_own_message()) {
         return false;
     }
 

@@ -89,6 +89,7 @@ class StreamDict(TypedDict, total=False):
     can_add_subscribers_group: UserGroup | None
     can_administer_channel_group: UserGroup | None
     can_delete_any_message_group: UserGroup | None
+    can_delete_own_message_group: UserGroup | None
     can_move_messages_out_of_channel_group: UserGroup | None
     can_move_messages_within_channel_group: UserGroup | None
     can_send_message_group: UserGroup | None
@@ -292,6 +293,7 @@ def create_stream_if_needed(
     can_add_subscribers_group: UserGroup | None = None,
     can_administer_channel_group: UserGroup | None = None,
     can_delete_any_message_group: UserGroup | None = None,
+    can_delete_own_message_group: UserGroup | None = None,
     can_move_messages_out_of_channel_group: UserGroup | None = None,
     can_move_messages_within_channel_group: UserGroup | None = None,
     can_send_message_group: UserGroup | None = None,
@@ -421,6 +423,7 @@ def create_streams_if_needed(
             can_add_subscribers_group=stream_dict.get("can_add_subscribers_group", None),
             can_administer_channel_group=stream_dict.get("can_administer_channel_group", None),
             can_delete_any_message_group=stream_dict.get("can_delete_any_message_group", None),
+            can_delete_own_message_group=stream_dict.get("can_delete_own_message_group", None),
             can_move_messages_out_of_channel_group=stream_dict.get(
                 "can_move_messages_out_of_channel_group", None
             ),
@@ -1114,6 +1117,15 @@ def can_delete_any_message_in_channel(user_profile: UserProfile, stream: Stream)
     )
 
 
+def can_delete_own_message_in_channel(user_profile: UserProfile, stream: Stream) -> bool:
+    return user_has_permission_for_group_setting(
+        stream.can_delete_own_message_group_id,
+        user_profile,
+        Stream.stream_permission_group_settings["can_delete_own_message_group"],
+        direct_member_only=False,
+    )
+
+
 def can_move_messages_out_of_channel(user_profile: UserProfile, stream: Stream) -> bool:
     if user_profile.is_realm_admin:
         return True
@@ -1620,6 +1632,9 @@ def stream_to_dict(
     can_delete_any_message_group = get_group_setting_value_for_register_api(
         stream.can_delete_any_message_group_id, anonymous_group_membership
     )
+    can_delete_own_message_group = get_group_setting_value_for_register_api(
+        stream.can_delete_own_message_group_id, anonymous_group_membership
+    )
     can_move_messages_out_of_channel_group = get_group_setting_value_for_register_api(
         stream.can_move_messages_out_of_channel_group_id, anonymous_group_membership
     )
@@ -1648,6 +1663,7 @@ def stream_to_dict(
         can_add_subscribers_group=can_add_subscribers_group,
         can_administer_channel_group=can_administer_channel_group,
         can_delete_any_message_group=can_delete_any_message_group,
+        can_delete_own_message_group=can_delete_own_message_group,
         can_move_messages_out_of_channel_group=can_move_messages_out_of_channel_group,
         can_move_messages_within_channel_group=can_move_messages_within_channel_group,
         can_send_message_group=can_send_message_group,

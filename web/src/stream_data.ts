@@ -862,6 +862,25 @@ export function user_can_delete_any_message_in_channel(stream: StreamSubscriptio
     );
 }
 
+export function user_can_delete_own_message_in_channel(stream: StreamSubscription): boolean {
+    if (page_params.is_spectator) {
+        return false;
+    }
+
+    if (stream.is_archived) {
+        return false;
+    }
+
+    return (
+        settings_data.user_can_delete_own_message() ||
+        settings_data.user_has_permission_for_group_setting(
+            stream.can_delete_own_message_group,
+            "can_delete_own_message_group",
+            "stream",
+        )
+    );
+}
+
 export function user_can_move_messages_out_of_channel(stream: StreamSubscription): boolean {
     if (page_params.is_spectator) {
         return false;

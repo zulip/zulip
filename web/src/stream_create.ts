@@ -77,6 +77,7 @@ const group_setting_widget_map = new Map<string, GroupSettingPillContainer | nul
     ["can_add_subscribers_group", null],
     ["can_administer_channel_group", null],
     ["can_delete_any_message_group", null],
+    ["can_delete_own_message_group", null],
     ["can_move_messages_out_of_channel_group", null],
     ["can_move_messages_within_channel_group", null],
     ["can_remove_subscribers_group", null],
