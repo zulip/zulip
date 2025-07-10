@@ -121,7 +121,7 @@ function on_pill_exit(
 // pill. We can probably simplify things by separating out a function
 // that generates `description_html` from the information in a single
 // search pill, and remove `description_html` from the `Suggestion` type.
-export function generate_pills_html(suggestion: Suggestion): string {
+export function generate_pills_html(suggestion: Suggestion, query: string): string {
     const search_terms = Filter.parse(suggestion.search_string);
 
     const pill_render_data = search_terms.map((term, index) => {
@@ -136,11 +136,32 @@ export function generate_pills_html(suggestion: Suggestion): string {
         };
 
         if (search_pill.operator === "topic" && search_pill.operand === "") {
+            // There are two variants of this suggestion state: One is the user
+            // has selected a topic operator and operator, and and thus has
+            // exactly `topic:` or `-topic:` written out, and it's be
+            // appropriate to suggest the "general chat" value.
+            //
+            // The other variant is where we're suggesting `topic` as a
+            // potential operator to add, say if the user has typed `-to` so
+            // far. For that case, we want to suggest adding a topic operator,
+            // but the user hasn't done anything that would suggest we should
+            // further complete "general chat" as value for that topic operator.
+            //
+            // We can simply differentiate these cases by checking if `:` is
+            // present in the query. See `set_search_bar_contents` for more
+            // context.
+            if (query.includes(":")) {
+                return {
+                    ...search_pill,
+                    is_empty_string_topic: true,
+                    sign: search_pill.negated ? "-" : "",
+                    topic_display_name: util.get_final_topic_display_name(""),
+                };
+            }
             return {
                 ...search_pill,
                 is_empty_string_topic: true,
                 sign: search_pill.negated ? "-" : "",
-                topic_display_name: util.get_final_topic_display_name(""),
             };
         }
         if (search_pill.operator === "search") {
