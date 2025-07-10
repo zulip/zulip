@@ -109,10 +109,12 @@ function build_stream_popover(opts: {elt: HTMLElement; stream_id: number}): void
     const stream_hash = hash_util.channel_url_by_user_setting(stream_id);
     const show_go_to_channel_feed =
         user_settings.web_channel_default_view !==
-        web_channel_default_view_values.channel_feed.code;
+            web_channel_default_view_values.channel_feed.code &&
+        !stream_data.is_empty_topic_only_channel(stream_id);
     const show_go_to_list_of_topics =
         user_settings.web_channel_default_view !==
-        web_channel_default_view_values.list_of_topics.code;
+            web_channel_default_view_values.list_of_topics.code &&
+        !stream_data.is_empty_topic_only_channel(stream_id);
     const stream_unread = unread.unread_count_info_for_stream(stream_id);
     const stream_unread_count = stream_unread.unmuted_count + stream_unread.muted_count;
     const has_unread_messages = stream_unread_count > 0;
