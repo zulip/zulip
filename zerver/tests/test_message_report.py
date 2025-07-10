@@ -8,7 +8,10 @@ from zerver.lib.message import truncate_content
 from zerver.lib.message_report import MAX_REPORT_MESSAGE_SNIPPET_LENGTH
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.topic import DB_TOPIC_NAME
-from zerver.lib.topic_link_util import get_message_link_syntax
+from zerver.lib.topic_link_util import (
+    get_message_link_syntax,
+    will_produce_broken_stream_topic_link,
+)
 from zerver.models import UserProfile
 from zerver.models.messages import Message
 from zerver.models.recipients import get_or_create_direct_message_group
@@ -145,9 +148,16 @@ class ReportMessageTest(ZulipTestCase):
         result = self.report_message(reporting_user, private_message.id, report_type, description)
         self.assert_json_error(result, msg="Invalid message(s)")
 
+    def test_reported_channel_message_narrow_link(self) -> None:
+        reporting_user = self.example_user("hamlet")
+        report_type = "harassment"
+        description = "this is crime against food"
+
         # Check object IDs in message link syntax is accurate.
         # This channel name will generate a narrow URL for its link syntax.
-        obscure_channel = self.make_stream("Sw*den", self.realm)
+        obscure_channel_name = "Sw*den"
+        self.assertTrue(will_produce_broken_stream_topic_link(obscure_channel_name))
+        obscure_channel = self.make_stream(obscure_channel_name, self.realm)
         self.subscribe(self.reported_user, obscure_channel.name, True)
         message_id = self.send_stream_message(
             self.reported_user,
@@ -162,6 +172,7 @@ class ReportMessageTest(ZulipTestCase):
             report_type,
             description,
         )
+        self.assert_json_success(result)
         expected_message_link_syntax = get_message_link_syntax(
             obscure_channel.id,
             obscure_channel.name,
@@ -169,6 +180,7 @@ class ReportMessageTest(ZulipTestCase):
             message_id,
         )
         reports = self.get_submitted_moderation_requests()
+        assert len(reports) == 1
         self.assertIn(expected_message_link_syntax, reports[0]["content"])
 
     def test_dm_report(self) -> None:
