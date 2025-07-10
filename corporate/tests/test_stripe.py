@@ -1795,6 +1795,15 @@ class StripeTest(StripeTestCase):
             self.assertEqual(customer_plan.next_invoice_date, free_trial_end_date)
 
             [last_event] = iter(stripe.Event.list(limit=1))
+            last_renewal_ledger = (
+                LicenseLedger.objects.filter(plan=plan, is_renewal=True).order_by("-id").first()
+            )
+            assert last_renewal_ledger is not None
+            self.assertEqual(
+                last_renewal_ledger.event_time,
+                self.now,
+            )
+
             # Customer pays the invoice
             assert invoice.id is not None
             stripe.Invoice.pay(invoice.id, paid_out_of_band=True)
@@ -1806,11 +1815,21 @@ class StripeTest(StripeTestCase):
             self.assert_in_success_response(["You have no outstanding invoices."], response)
 
             invoice_plans_as_needed(free_trial_end_date)
+            last_renewal_ledger.refresh_from_db()
             customer_plan.refresh_from_db()
             realm.refresh_from_db()
+            plan.refresh_from_db()
             self.assertEqual(customer_plan.status, CustomerPlan.ACTIVE)
             self.assertEqual(customer_plan.next_invoice_date, add_months(free_trial_end_date, 1))
             self.assertEqual(realm.plan_type, Realm.PLAN_TYPE_STANDARD)
+            self.assertEqual(last_renewal_ledger.event_time, free_trial_end_date)
+            self.assertEqual(customer_plan.billing_cycle_anchor, free_trial_end_date)
+
+            before_ledger_count = LicenseLedger.objects.filter(plan=plan).count()
+            self.billing_session.make_end_of_cycle_updates_if_needed(plan, free_trial_end_date)
+            after_ledger_count = LicenseLedger.objects.filter(plan=plan).count()
+            # No additional ledger entries are created.
+            self.assertEqual(before_ledger_count, after_ledger_count)
 
     @mock_stripe()
     def test_free_trial_upgrade_by_invoice_customer_fails_to_pay(self, *mocks: Mock) -> None:
