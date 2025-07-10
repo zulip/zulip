@@ -1962,10 +1962,15 @@ li.topic-list-item {
 .zoom-in {
     .narrow-filter > .bottom_left_row {
         position: sticky;
-        /* We subtract a quarter pixel of space to correct
-           for possible bleedthrough under certain viewing
-           conditions (e.g., external monitors.) */
-        top: -0.25px;
+        /* We need to hold the space where the BACK TO CHANNELS
+           line sits, so the channel info doesn't run over the
+           top of it when scrolling down. These are the same
+           variables for setting the space on the BACK TO CHANNELS
+           grid row plus its top padding: */
+        top: calc(
+            var(--line-height-sidebar-row-prominent) +
+                var(--left-sidebar-sections-vertical-gutter)
+        );
         z-index: 2;
         padding-bottom: 1px;
         background-color: var(--color-background);
