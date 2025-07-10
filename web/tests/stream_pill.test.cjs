@@ -2,6 +2,7 @@
 
 const assert = require("node:assert/strict");
 
+const {make_user_group} = require("./lib/example_group.cjs");
 const example_settings = require("./lib/example_settings.cjs");
 const {zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
@@ -24,20 +25,20 @@ const me = {
     full_name: "Me Myself",
 };
 
-const me_group = {
+const me_group = make_user_group({
     name: "me_group",
     id: 1,
     members: new Set([me.user_id]),
     is_system_group: false,
     direct_subgroup_ids: new Set([]),
-};
-const nobody_group = {
+});
+const nobody_group = make_user_group({
     name: "nobody_group",
     id: 2,
     members: new Set([]),
     is_system_group: false,
     direct_subgroup_ids: new Set([]),
-};
+});
 
 const denmark = {
     stream_id: 101,

@@ -3,6 +3,7 @@
 const assert = require("node:assert/strict");
 
 const {mock_banners} = require("./lib/compose_banner.cjs");
+const {make_user_group} = require("./lib/example_group.cjs");
 const {make_stream} = require("./lib/example_stream.cjs");
 const {make_user} = require("./lib/example_user.cjs");
 const {mock_esm, set_global, zrequire} = require("./lib/namespace.cjs");
@@ -12,20 +13,20 @@ const $ = require("./lib/zjquery.cjs");
 const {set_current_user} = zrequire("state_data");
 const user_groups = zrequire("user_groups");
 
-const nobody = {
+const nobody = make_user_group({
     name: "role:nobody",
     id: 1,
     members: new Set([]),
     is_system_group: true,
     direct_subgroup_ids: new Set([]),
-};
-const everyone = {
+});
+const everyone = make_user_group({
     name: "role:everyone",
     id: 2,
     members: new Set([30]),
     is_system_group: true,
     direct_subgroup_ids: new Set([]),
-};
+});
 user_groups.initialize({realm_user_groups: [nobody, everyone]});
 
 set_global("document", {
