@@ -867,7 +867,7 @@ export async function build_move_topic_to_stream_popover(
             $topic_input.val("");
             $topic_input.prop("disabled", true);
             $topic_input.addClass("empty-topic-only");
-            update_topic_input_placeholder_visibility();
+            update_topic_input_placeholder();
         } else {
             // Removes tooltip if topics are allowed.
             $topic_input.removeClass("empty-topic-only");
@@ -908,7 +908,7 @@ export async function build_move_topic_to_stream_popover(
         set_stream_topic_typeahead();
         render_selected_stream();
         maybe_show_topic_already_exists_warning();
-        update_topic_input_placeholder_visibility();
+        update_topic_input_placeholder();
         const selected_propagate_mode = String($("#message_move_select_options").val());
         void warn_unsubscribed_participants(selected_propagate_mode);
 
@@ -991,7 +991,7 @@ export async function build_move_topic_to_stream_popover(
         $("#move_messages_count").text(message_text);
     }
 
-    function update_topic_input_placeholder_visibility(): void {
+    function update_topic_input_placeholder(): void {
         const $topic_not_mandatory_placeholder = $(".move-topic-new-topic-placeholder");
         const $topic_input = $<HTMLInputElement>("#move_topic_form input.move_messages_edit_topic");
         const topic_input_value = $topic_input.val();
@@ -1059,10 +1059,10 @@ export async function build_move_topic_to_stream_popover(
         }
 
         $topic_input.on("focus", () => {
-            update_topic_input_placeholder_visibility();
+            update_topic_input_placeholder();
 
             $topic_input.one("blur", () => {
-                update_topic_input_placeholder_visibility();
+                update_topic_input_placeholder();
             });
         });
 
@@ -1085,7 +1085,7 @@ export async function build_move_topic_to_stream_popover(
             $topic_input.on("input", () => {
                 update_submit_button_disabled_state(select_stream_id);
                 maybe_show_topic_already_exists_warning();
-                update_topic_input_placeholder_visibility();
+                update_topic_input_placeholder();
             });
             return;
         }
@@ -1136,10 +1136,10 @@ export async function build_move_topic_to_stream_popover(
             assert(stream_widget_value !== undefined);
             update_submit_button_disabled_state(stream_widget_value);
             maybe_show_topic_already_exists_warning();
-            update_topic_input_placeholder_visibility();
+            update_topic_input_placeholder();
         });
 
-        update_topic_input_placeholder_visibility();
+        update_topic_input_placeholder();
 
         if (!args.from_message_actions_popover) {
             update_move_messages_count_text("change_all");
