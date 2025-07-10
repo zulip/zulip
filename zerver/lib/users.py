@@ -134,7 +134,7 @@ def check_valid_bot_config(
                     option.name: option.validator for option in integration.config_options
                 }
                 break
-        if not config_options:
+        if config_options is None:
             raise JsonableError(
                 _("Invalid integration '{integration_name}'.").format(integration_name=service_name)
             )
