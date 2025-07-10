@@ -865,7 +865,7 @@ export async function build_move_topic_to_stream_popover(
             $topic_input.val("");
             $topic_input.prop("disabled", true);
             $topic_input.addClass("empty-topic-only");
-            update_topic_input_placeholder_on_blur();
+            update_topic_input_placeholder_visibility();
         } else {
             // Removes tooltip if topics are allowed.
             $topic_input.removeClass("empty-topic-only");
@@ -902,15 +902,11 @@ export async function build_move_topic_to_stream_popover(
 
         disable_topic_input_if_topics_are_disabled_in_channel(selected_stream.stream_id);
 
-        const topic_input_value = $topic_input.val();
-        assert(topic_input_value !== undefined);
-
         update_submit_button_disabled_state(stream_widget_value);
         set_stream_topic_typeahead();
         render_selected_stream();
         maybe_show_topic_already_exists_warning();
-        update_clear_move_topic_button_state();
-        update_topic_input_placeholder_visibility(topic_input_value);
+        update_topic_input_placeholder_visibility();
         const selected_propagate_mode = String($("#message_move_select_options").val());
         void warn_unsubscribed_participants(selected_propagate_mode);
 
@@ -993,12 +989,30 @@ export async function build_move_topic_to_stream_popover(
         $("#move_messages_count").text(message_text);
     }
 
-    function update_topic_input_placeholder_visibility(topic_input_value: string): void {
+    function update_topic_input_placeholder_visibility(): void {
         const $topic_not_mandatory_placeholder = $(".move-topic-new-topic-placeholder");
-        $topic_not_mandatory_placeholder.toggleClass(
-            "move-topic-new-topic-placeholder-visible",
-            topic_input_value === "" && stream_data.can_use_empty_topic(stream_widget_value),
-        );
+        const $topic_input = $<HTMLInputElement>("#move_topic_form input.move_messages_edit_topic");
+        const topic_input_value = $topic_input.val();
+        const has_input_focus = $topic_input.is(":focus");
+
+        // reset
+        $topic_input.attr("placeholder", "");
+        $topic_input.removeClass("empty-topic-display");
+        $topic_not_mandatory_placeholder.removeClass("move-topic-new-topic-placeholder-visible");
+        update_clear_move_topic_button_state();
+
+        if (topic_input_value !== "" || !stream_data.can_use_empty_topic(stream_widget_value)) {
+            // Don't add any placeholder if either topic input is not empty or empty topic
+            // is disabled in the channel.
+            return;
+        }
+
+        if (has_input_focus) {
+            $topic_not_mandatory_placeholder.addClass("move-topic-new-topic-placeholder-visible");
+        } else {
+            $topic_input.attr("placeholder", empty_string_topic_display_name);
+            $topic_input.addClass("empty-topic-display");
+        }
     }
 
     function setup_resize_observer($topic_input: JQuery<HTMLInputElement>): void {
@@ -1025,32 +1039,6 @@ export async function build_move_topic_to_stream_popover(
         }
     }
 
-    function update_topic_input_placeholder_on_focus(): void {
-        const $topic_input = $<HTMLInputElement>("#move_topic_form input.move_messages_edit_topic");
-        const $topic_not_mandatory_placeholder = $(".move-topic-new-topic-placeholder");
-
-        $topic_input.attr("placeholder", "");
-        $topic_input.removeClass("empty-topic-display");
-
-        if ($topic_input.val() === "" && stream_data.can_use_empty_topic(stream_widget_value)) {
-            $topic_not_mandatory_placeholder.addClass("move-topic-new-topic-placeholder-visible");
-            update_clear_move_topic_button_state();
-        }
-    }
-
-    function update_topic_input_placeholder_on_blur(): void {
-        const $topic_input = $<HTMLInputElement>("#move_topic_form input.move_messages_edit_topic");
-        const $topic_not_mandatory_placeholder = $(".move-topic-new-topic-placeholder");
-
-        $topic_not_mandatory_placeholder.removeClass("move-topic-new-topic-placeholder-visible");
-
-        if ($topic_input.val() === "" && stream_data.can_use_empty_topic(stream_widget_value)) {
-            $topic_input.attr("placeholder", empty_string_topic_display_name);
-            $topic_input.addClass("empty-topic-display");
-            update_clear_move_topic_button_state();
-        }
-    }
-
     function move_topic_post_render(): void {
         $("#move_topic_modal .dialog_submit_button").prop("disabled", true);
         $("#move_topic_modal .move_topic_warning_container").hide();
@@ -1069,10 +1057,10 @@ export async function build_move_topic_to_stream_popover(
         }
 
         $topic_input.on("focus", () => {
-            update_topic_input_placeholder_on_focus();
+            update_topic_input_placeholder_visibility();
 
             $topic_input.one("blur", () => {
-                update_topic_input_placeholder_on_blur();
+                update_topic_input_placeholder_visibility();
             });
         });
 
@@ -1095,10 +1083,7 @@ export async function build_move_topic_to_stream_popover(
             $topic_input.on("input", () => {
                 update_submit_button_disabled_state(select_stream_id);
                 maybe_show_topic_already_exists_warning();
-                const topic_input_value = $topic_input.val();
-                assert(topic_input_value !== undefined);
-                update_topic_input_placeholder_visibility(topic_input_value);
-                update_clear_move_topic_button_state();
+                update_topic_input_placeholder_visibility();
             });
             return;
         }
@@ -1149,15 +1134,10 @@ export async function build_move_topic_to_stream_popover(
             assert(stream_widget_value !== undefined);
             update_submit_button_disabled_state(stream_widget_value);
             maybe_show_topic_already_exists_warning();
-            const topic_input_value = $topic_input.val();
-            assert(topic_input_value !== undefined);
-            update_topic_input_placeholder_visibility(topic_input_value);
-            update_clear_move_topic_button_state();
+            update_topic_input_placeholder_visibility();
         });
 
-        const topic_input_value = $topic_input.val();
-        assert(topic_input_value !== undefined);
-        update_topic_input_placeholder_visibility(topic_input_value);
+        update_topic_input_placeholder_visibility();
 
         if (!args.from_message_actions_popover) {
             update_move_messages_count_text("change_all");
