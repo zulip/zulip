@@ -168,6 +168,10 @@ export function remove_scheduled_message_id(scheduled_msg_id: number): void {
 
 export function initialize(): void {
     $("body").on("click", ".scheduled-message-row .restore-overlay-message", (e) => {
+        if (document.getSelection()?.type === "Range") {
+            return;
+        }
+
         const scheduled_msg_id = Number.parseInt(
             $(e.currentTarget).closest(".scheduled-message-row").attr("data-scheduled-message-id")!,
             10,

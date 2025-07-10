@@ -310,6 +310,10 @@ function setup_event_handlers(): void {
         "click",
         ".user-group-mention",
         function (this: HTMLElement, e) {
+            if (document.getSelection()?.type === "Range") {
+                return;
+            }
+
             user_group_popover.toggle_user_group_info_popover(this, undefined);
             e.stopPropagation();
         },
