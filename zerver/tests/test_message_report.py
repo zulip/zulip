@@ -119,6 +119,7 @@ class ReportMessageTest(ZulipTestCase):
         )
         self.assert_json_success(result)
         reports = self.get_submitted_moderation_requests()
+        assert len(reports) == 1
         self.assertEqual(reports[0]["content"], expected_message.strip())
         expected_report_topic = f"{self.reported_user.full_name}'s moderation requests"
         self.assertEqual(reports[0][DB_TOPIC_NAME], expected_report_topic)
@@ -131,6 +132,7 @@ class ReportMessageTest(ZulipTestCase):
         )
         self.assert_json_success(result)
         reports = self.get_submitted_moderation_requests()
+        assert len(reports) == 2
         self.assertEqual(reports[0]["content"], expected_message.strip())
         expected_report_topic = f"{self.reported_user.full_name}'s moderation requests"
         self.assertEqual(reports[0][DB_TOPIC_NAME], expected_report_topic)
@@ -222,6 +224,7 @@ class ReportMessageTest(ZulipTestCase):
         result = self.report_message(reporting_user, reported_dm_id, report_type, description)
         self.assert_json_success(result)
         reports = self.get_submitted_moderation_requests()
+        assert len(reports) == 1
         self.assertEqual(reports[0]["content"], expected_message.strip())
 
         # User can't report DM they're not a part of.
@@ -273,6 +276,7 @@ class ReportMessageTest(ZulipTestCase):
         result = self.report_message(reporting_user, reported_dm_id, report_type, description)
         self.assert_json_success(result)
         reports = self.get_submitted_moderation_requests()
+        assert len(reports) == 1
         self.assertEqual(reports[0]["content"], expected_message.strip())
 
         # User can't report DM they're not a part of.
@@ -323,6 +327,7 @@ class ReportMessageTest(ZulipTestCase):
         result = self.report_message(reporting_user, reported_gdm_id, report_type, description)
         self.assert_json_success(result)
         reports = self.get_submitted_moderation_requests()
+        assert len(reports) == 1
         self.assertEqual(reports[0]["content"], expected_message.strip())
 
         # User can't report group direct messages they're not a part of.
@@ -347,6 +352,7 @@ class ReportMessageTest(ZulipTestCase):
         self.assert_json_success(result)
 
         reports = self.get_submitted_moderation_requests()
+        assert len(reports) == 1
         self.assertNotIn(large_message, reports[0]["content"])
 
         expected_truncated_message = truncate_content(
