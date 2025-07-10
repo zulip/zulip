@@ -59,11 +59,15 @@ class ReportMessageTest(ZulipTestCase):
     def get_submitted_moderation_requests(self) -> list[dict[str, Any]]:
         notification_bot = get_system_bot(settings.NOTIFICATION_BOT, self.realm.id)
 
-        return Message.objects.filter(
-            realm_id=self.realm.id,
-            sender_id=notification_bot.id,
-            recipient=self.moderation_request_channel.recipient,
-        ).values(*["id", "content", DB_TOPIC_NAME])
+        return (
+            Message.objects.filter(
+                realm_id=self.realm.id,
+                sender_id=notification_bot.id,
+                recipient=self.moderation_request_channel.recipient,
+            )
+            .order_by("-id")
+            .values(*["id", "content", DB_TOPIC_NAME])
+        )
 
     def test_disabled_moderation_request_feature(self) -> None:
         # Disable moderation request feature
@@ -164,8 +168,8 @@ class ReportMessageTest(ZulipTestCase):
             "",
             message_id,
         )
-        reports = list(self.get_submitted_moderation_requests())
-        self.assertIn(expected_message_link_syntax, reports[-1]["content"])
+        reports = self.get_submitted_moderation_requests()
+        self.assertIn(expected_message_link_syntax, reports[0]["content"])
 
     def test_dm_report(self) -> None:
         # Send a DM to be reported
