@@ -6,6 +6,7 @@ const MockDate = require("mockdate");
 
 const {mock_banners} = require("./lib/compose_banner.cjs");
 const {FakeComposeBox} = require("./lib/compose_helpers.cjs");
+const {make_user_group} = require("./lib/example_group.cjs");
 const {mock_esm, set_global, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
 const $ = require("./lib/zjquery.cjs");
@@ -130,20 +131,20 @@ const social = {
 };
 stream_data.add_sub(social);
 
-const nobody = {
+const nobody = make_user_group({
     name: "role:nobody",
     id: 1,
     members: new Set([]),
     is_system_group: true,
     direct_subgroup_ids: new Set([]),
-};
-const everyone = {
+});
+const everyone = make_user_group({
     name: "role:everyone",
     id: 2,
     members: new Set([30, 101]),
     is_system_group: true,
     direct_subgroup_ids: new Set([]),
-};
+});
 
 user_groups.initialize({realm_user_groups: [nobody, everyone]});
 
