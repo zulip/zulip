@@ -150,6 +150,10 @@ export function close_overlay(name: string): void {
     $(".app").attr("aria-hidden", "false");
     $("#navbar-fixed-container").attr("aria-hidden", "false");
 
+    // Prevent a bug where a blank settings section appears
+    // when the settings panel is reopened.
+    $(".settings-section").removeClass("show");
+
     active_overlay.close_handler();
     overlay_util.enable_scrolling();
 }
