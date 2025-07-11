@@ -1235,7 +1235,9 @@ def do_send_messages(
             }
             queue_event_on_commit("embed_links", event_data)
 
-        if send_request.message.recipient.type == Recipient.PERSONAL:
+        # Check if this is a 1:1 DM between a user and the Welcome Bot,
+        # in which case we may want to send an automated response.
+        if not send_request.message.is_stream_message() and len(send_request.active_user_ids) == 2:
             welcome_bot_id = get_system_bot(settings.WELCOME_BOT, send_request.realm.id).id
             if (
                 welcome_bot_id in send_request.active_user_ids
