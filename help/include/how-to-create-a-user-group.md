@@ -4,8 +4,9 @@
 
 {relative|gear|group-settings}
 
-1. Click **Create user group** on the right, or click the **plus**
-   (<i class="fa fa-plus"></i>) icon in the upper right.
+1. Click **Create user group** on the right, or click the
+   **create new user group** (<i class="zulip-icon zulip-icon-user-group-plus"></i>)
+   icon in the upper right.
 
 1. Fill out the requested information, and click **Continue to add
    members**.

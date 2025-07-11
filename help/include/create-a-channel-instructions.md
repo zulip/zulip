@@ -4,8 +4,9 @@
 
 {relative|gear|channel-settings}
 
-1. Click **Create channel** on the right, or click the **plus**
-   (<i class="fa fa-plus"></i>) icon in the upper right.
+1. Click **Create channel** on the right, or click the
+   **create new channel** (<i class="zulip-icon zulip-icon-square-plus"></i>)
+   icon in the upper right.
 
 1. Fill out the requested information.
 

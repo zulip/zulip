@@ -27,8 +27,8 @@
 
 1. Select the **General** tab on the right.
 
-1. Click the **pencil** (<i class="fa fa-pencil"></i>) icon
-   to the right of the user group, and enter a new name or description.
+1. Click the **change group info** (<i class="zulip-icon zulip-icon-user-group-edit"></i>)
+   icon to the right of the user group, and enter a new name or description.
 
 {!save-changes.md!}
 

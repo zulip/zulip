@@ -12,10 +12,11 @@ Organization administrators can
 
 {settings_tab|account-and-privacy}
 
-1. Under **Account**, click on the **pencil** (<i class="fa fa-pencil"></i>)
-   to the right of your current email. If you do not see the **pencil**
-   (<i class="fa fa-pencil"></i>), you do not have permission to change
-   your email address.
+1. Under **Account**, click on the
+   **change your email** (<i class="zulip-icon zulip-icon-edit"></i>) icon
+   to the right of your current email. If you do not see the
+   **change your email** (<i class="zulip-icon zulip-icon-edit"></i>) icon,
+   you do not have permission to change your email address.
 
 1. Enter your new email, and click **Change**.
 
