@@ -1375,7 +1375,11 @@ def custom_fetch_user_profile_cross_realm(response: TableData, context: Context)
         bot_default_email = bot_name_to_default_email[bot_name]
         bot_user_id = get_system_bot(bot_email, internal_realm.id).id
 
-        recipient_id = Recipient.objects.get(type_id=bot_user_id, type=Recipient.PERSONAL).id
+        try:
+            recipient_id = Recipient.objects.get(type_id=bot_user_id, type=Recipient.PERSONAL).id
+        except Recipient.DoesNotExist:
+            recipient_id = None
+
         response["zerver_userprofile_crossrealm"].append(
             dict(
                 email=bot_default_email,
