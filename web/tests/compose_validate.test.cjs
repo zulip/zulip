@@ -36,7 +36,10 @@ mock_esm("../src/group_permission_settings", {
 });
 
 const REALM_EMPTY_TOPIC_DISPLAY_NAME = "general chat";
-const realm = {realm_empty_topic_display_name: REALM_EMPTY_TOPIC_DISPLAY_NAME};
+const realm = {
+    realm_empty_topic_display_name: REALM_EMPTY_TOPIC_DISPLAY_NAME,
+    realm_topics_policy: "allow_empty_topic",
+};
 set_realm(realm);
 const current_user = {};
 set_current_user(current_user);

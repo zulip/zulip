@@ -30,7 +30,7 @@ const text_field_edit = mock_esm("text-field-edit");
 const {set_realm} = zrequire("state_data");
 const {initialize_user_settings} = zrequire("user_settings");
 
-const realm = {};
+const realm = {realm_topics_policy: "allow_empty_topic"};
 set_realm(realm);
 initialize_user_settings({user_settings: {}});
 
