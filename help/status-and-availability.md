@@ -190,13 +190,11 @@ Your activity will still be included in your organization's [statistics](/help/a
 
 {tab|mobile}
 
-Access this feature by following the web app instructions in your
-mobile device browser.
+{!mobile-menu.md!}
 
-Implementation of this feature in the mobile app is tracked [on
-GitHub](https://github.com/zulip/zulip-flutter/issues/1578). If
-you're interested in this feature, please react to the issue's
-description with 👍.
+1. Tap **My profile**.
+
+1. Toggle **Invisible mode**.
 
 {end_tabs}
 
