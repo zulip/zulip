@@ -1484,6 +1484,11 @@ export class Filter {
                 case "in-all":
                     return $t({defaultMessage: "All messages including muted channels"});
                 case "channels-public":
+                    if (page_params.is_spectator || current_user.is_guest) {
+                        return $t({
+                            defaultMessage: "Messages in all public channels that you can view",
+                        });
+                    }
                     return $t({defaultMessage: "Messages in all public channels"});
                 case "is-starred":
                     return $t({defaultMessage: "Starred messages"});
