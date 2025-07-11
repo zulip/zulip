@@ -8,7 +8,7 @@ const $ = require("./lib/zjquery.cjs");
 const {page_params} = require("./lib/zpage_params.cjs");
 
 const people = zrequire("people");
-const {set_current_user} = zrequire("state_data");
+const {set_current_user, set_realm} = zrequire("state_data");
 
 set_global("document", "document-stub");
 
@@ -56,6 +56,11 @@ const user_settings = {
 };
 initialize_user_settings({user_settings});
 stream_list_sort.set_filter_out_inactives();
+
+const realm = {
+    realm_topics_policy: "allow_empty_topic",
+};
+set_realm(realm);
 
 const me = {
     email: "me@example.com",
@@ -730,6 +735,7 @@ test_ui("rename_stream", ({mock_template, override}) => {
             pin_to_top: true,
             hide_unread_count: true,
             can_post_messages: true,
+            is_empty_topic_only_channel: false,
         });
         return {to_$: () => $li_stub};
     });
