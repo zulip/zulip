@@ -317,12 +317,12 @@ test("muted_message_vars", () => {
         muted_users.add_muted_user(10);
         result = calculate_variables(list, messages);
 
-        // Check that `is_hidden` is true and `include_sender` is false on all messages.
+        // Check that `is_hidden` is true on all messages and `include_sender` is true for the first one.
         assert.equal(result[0].is_hidden, true);
         assert.equal(result[1].is_hidden, true);
         assert.equal(result[2].is_hidden, true);
 
-        assert.equal(result[0].include_sender, false);
+        assert.equal(result[0].include_sender, true);
         assert.equal(result[1].include_sender, false);
         assert.equal(result[2].include_sender, false);
 
@@ -350,14 +350,14 @@ test("muted_message_vars", () => {
         is_revealed = false;
         result = calculate_variables(list, messages, is_revealed);
 
-        // Check that `is_hidden` is false and `include_sender` is false on all messages.
+        // Check that `is_hidden` is true and `include_sender` is true on all messages.
         assert.equal(result[0].is_hidden, true);
         assert.equal(result[1].is_hidden, true);
         assert.equal(result[2].is_hidden, true);
 
-        assert.equal(result[0].include_sender, false);
-        assert.equal(result[1].include_sender, false);
-        assert.equal(result[2].include_sender, false);
+        assert.equal(result[0].include_sender, true);
+        assert.equal(result[1].include_sender, true);
+        assert.equal(result[2].include_sender, true);
 
         // Additionally test that, both there is no mention classname even on that message
         // which has a mention, since we don't want to display hidden mentions so visibly.
