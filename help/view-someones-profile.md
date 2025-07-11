@@ -29,6 +29,8 @@ Additional tabs showing:
 {tab|mobile}
 
 - Their name.
+- Their [availability](/help/status-and-availability#availability) and
+  [status](/help/status-and-availability#statuses).
 - Their email address, if you [have
   permission](/help/configure-email-visibility) to view it.
 - Their [role](/help/user-roles) in the organization.

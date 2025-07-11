@@ -65,8 +65,11 @@ description with 👍.
 ### View a status
 
 Status emoji are shown next to a user's name in the sidebars, message feed,
-and compose box. Status emoji and status messages are also shown on
-[user cards](/help/user-cards).
+and compose box in the web and desktop apps, and next to the user's profile
+picture and name in the mobile app.
+
+Status emoji and status messages are also shown on [user cards](/help/user-cards)
+in the web and desktop apps.
 
 {start_tabs}
 
@@ -84,13 +87,9 @@ and compose box. Status emoji and status messages are also shown on
 
 {tab|mobile}
 
-Access this feature by following the web app instructions in your
-mobile device browser.
+1. Tap on a user's profile picture or name to view their status message.
 
-Implementation of this feature in the mobile app is tracked [on
-GitHub](https://github.com/zulip/zulip-flutter/issues/197). If
-you're interested in this feature, please react to the issue's
-description with 👍.
+1. If they have one set, it will appear under their name on their profile.
 
 {end_tabs}
 
