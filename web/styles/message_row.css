@@ -78,10 +78,21 @@
       padding on either side of the message box. */
     padding: 0 5px 0 3px;
 
-    &:hover .message_controls {
-        > .message_control_button {
-            opacity: 1;
-            visibility: visible;
+    &:hover {
+        .message_controls {
+            > .message_control_button {
+                opacity: 1;
+                visibility: visible;
+            }
+        }
+
+        .message-moved-icon {
+            /* We use !important here because of the order of
+               styles in the CSS file. If we decide to go with
+               showing the icon for moved messages only on hover,
+               we should restructure the file to handle this case,
+               and remove !important. */
+            visibility: visible !important;
         }
     }
 }
@@ -123,12 +134,18 @@
             );
     }
 
+    .edit-notifications,
     .message_edit_notice {
         grid-area: edited;
-    }
+        /* We pull the icon out of the grid's baseline group,
+           and set a height so that the icon is properly
+           aligned with the first or only line of a senderless
+           message. */
+        align-self: center;
 
-    .edit-notifications {
-        grid-area: edited;
+        &.hide {
+            display: none;
+        }
     }
 
     .slow-send-spinner {
@@ -392,16 +409,16 @@
             margin-top: 1px;
         }
 
+        .edit-notifications,
         .message_edit_notice {
-            /* When the edit notice is inline, as on edited me-messages,
-              the inline-block and accompanying vertical-align styles will
-              apply */
-            display: inline-block;
-            vertical-align: baseline;
-            /* A bit of margin here helps these not look associated with the name. */
-            margin-left: 4px;
-            /* Unset the padding used on edited notices under the avatar. */
-            padding-right: 0;
+            width: fit-content;
+            display: flex;
+
+            &:not(:empty) {
+                /* A bit of margin here helps these not
+                   look associated with the name. */
+                margin-left: 8px;
+            }
 
             &.hide {
                 display: none;
@@ -836,11 +853,6 @@ of the base style defined for a read-only textarea in dark mode. */
 
 .message-editing-animation {
     display: inline-flex;
-    align-items: baseline;
-    margin-left: 3px;
-    width: 40px;
-    height: 5px;
-
     /* Avoid this animation element blocking clicks on .edit-notifications
        to display the message's edit history. */
     pointer-events: none;
@@ -969,17 +981,42 @@ of the base style defined for a read-only textarea in dark mode. */
     }
 }
 
+.edit-notifications,
 .message_edit_notice {
-    /* 10px at 14px/1em */
-    font-size: 0.7143em;
+    /* 14px at 16px/1em */
+    font-size: 0.875em;
     opacity: 0.5;
     user-select: none;
-    white-space: nowrap;
-    overflow-x: hidden;
-    overflow-x: clip;
-    text-overflow: ellipsis;
-    padding-right: 5.5px;
     cursor: pointer;
+    /* 40px + 2px righthand icon padding = 42px at 14px/1em */
+    width: 3em;
+    display: flex;
+    justify-content: end;
+
+    .zulip-icon {
+        align-self: center;
+        /* 2px at 14px/1em */
+        padding: 0 0.1429em;
+    }
+
+    /* Display moved icons only on hover except in
+       touchscreen environments. */
+    .message-moved-icon {
+        visibility: hidden;
+
+        @media (hover: none) {
+            visibility: visible;
+        }
+    }
+
+    &.hide {
+        display: none;
+    }
+}
+
+/* Display moved icons in the selected message. */
+.selected_message .message-moved-icon {
+    visibility: visible;
 }
 
 .fade-in-message {
