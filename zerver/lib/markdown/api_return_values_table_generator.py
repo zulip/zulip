@@ -165,6 +165,14 @@ class APIReturnValuesTablePreprocessor(Preprocessor):
             # of its keys.
             if "properties" in element:
                 ans += self.render_table(element["properties"], spacing + 4)
+
+            if "items" in element:
+                if "properties" in element["items"]:
+                    ans += self.render_table(element["items"]["properties"], spacing + 4)
+                elif "oneOf" in element["items"]:  #  nocoverage
+                    # This block is for completeness.
+                    ans += self.render_oneof_block(element["items"], spacing + 4)
+
             if element.get("additionalProperties", False):
                 additional_properties = element["additionalProperties"]
                 if "description" in additional_properties:
