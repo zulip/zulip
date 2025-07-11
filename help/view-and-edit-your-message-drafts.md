@@ -23,9 +23,9 @@ to automatically appears in the compose box.
 1. Type at least 3 characters of text into the compose box.
 
 1. Close the compose box. For example, you can click the
-   <i class="fa fa-remove"></i> icon in the top right corner of the compose
-   box, or click on an empty area of the app to close the compose box and save
-   your message as a draft.
+   **close** (<i class="zulip-icon zulip-icon-close"></i>) icon in the top right
+   corner of the compose box, or click on an empty area of the app to close the
+   compose box and save your message as a draft.
 
 !!! keyboard_tip ""
 
