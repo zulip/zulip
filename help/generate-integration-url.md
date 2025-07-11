@@ -39,7 +39,7 @@ integration URL.
 
 {!admin-only.md!}
 
-{settings_tab|bot-list-admin}
+{settings_tab|bots}
 
 1. In the **Actions** column, click the **manage bot** (<i class="zulip-icon
    zulip-icon-user-cog"></i>) icon for an **Incoming webhook** bot.
