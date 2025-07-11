@@ -11,7 +11,7 @@ In the mobile app, the message actions menu lets you:
 - [Star](/help/star-a-message) the message.
 - [Quote](/help/quote-or-forward-a-message) the message.
 - [Copy message
-  content](/help/view-the-markdown-source-of-a-message#copy-message-content) in
+  content](/help/view-the-markdown-source-of-a-message#copy-message-content-as-markdown) in
   Markdown, or [share
   it](/help/view-the-markdown-source-of-a-message#share-message-content) to
   other apps.
