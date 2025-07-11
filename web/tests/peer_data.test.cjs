@@ -8,6 +8,7 @@
 
 const assert = require("node:assert/strict");
 
+const {make_user_group} = require("./lib/example_group.cjs");
 const example_settings = require("./lib/example_settings.cjs");
 const {mock_esm, set_global, zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
@@ -56,13 +57,13 @@ const bot_botson = {
     role: 300,
 };
 
-const nobody_group = {
+const nobody_group = make_user_group({
     name: "Nobody",
     id: 1,
     members: new Set([]),
     is_system_group: true,
     direct_subgroup_ids: new Set([]),
-};
+});
 
 function contains_sub(subs, sub) {
     return subs.some((s) => s.name === sub.name);

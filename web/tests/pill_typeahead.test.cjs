@@ -2,6 +2,7 @@
 
 const assert = require("node:assert/strict");
 
+const {make_user_group} = require("./lib/example_group.cjs");
 const {zrequire, mock_esm} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 const blueslip = require("./lib/zblueslip.cjs");
@@ -721,27 +722,27 @@ run_test("set_up_group_setting_typeahead", ({mock_template, override, override_r
         },
     });
 
-    const moderators_system_group = {
+    const moderators_system_group = make_user_group({
         name: "role:moderators",
         id: 3,
         description: "Moderators",
         members: [],
         is_system_group: true,
-    };
-    const nobody_system_group = {
+    });
+    const nobody_system_group = make_user_group({
         name: "role:nobody",
         id: 4,
         description: "Nobody",
         members: [],
         is_system_group: true,
-    };
-    const full_members_system_group = {
+    });
+    const full_members_system_group = make_user_group({
         name: "role:fullmembers",
         id: 5,
         description: "Full members",
         members: [],
         is_system_group: true,
-    };
+    });
     user_groups.add(moderators_system_group);
     user_groups.add(nobody_system_group);
     user_groups.add(full_members_system_group);
