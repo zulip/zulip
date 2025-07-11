@@ -140,7 +140,7 @@ run_test("muting", () => {
         // mentions override muting
         {id: 3, type: "stream", stream_id: 1, topic: "muted", mentioned: true},
 
-        // 10 = muted user, 9 = non-muted user, 11 = you
+        // 10,12 = muted users, 9 = non-muted user, 11 = you
         // muted to group direct message
         {id: 4, type: "private", to_user_ids: "9,10,11", sender_id: 10},
         // non-muted to group direct message
@@ -153,6 +153,8 @@ run_test("muting", () => {
         {id: 8, type: "private", to_user_ids: "10", sender_id: 11},
         // 1:1 direct message to non-muted
         {id: 9, type: "private", to_user_ids: "9", sender_id: 11},
+        // group direct message with everyone muted
+        {id: 10, type: "private", to_user_ids: "10,12", sender_id: 10},
     ];
 
     user_topics.update_user_topics(
@@ -162,6 +164,7 @@ run_test("muting", () => {
         user_topics.all_visibility_policies.MUTED,
     );
     muted_users.add_muted_user(10);
+    muted_users.add_muted_user(12);
 
     // `messages_filtered_for_topic_mutes` should skip filtering
     // messages if `excludes_muted_topics` is false.
@@ -186,6 +189,7 @@ run_test("muting", () => {
         {id: 7, type: "private", to_user_ids: "11", sender_id: 9},
         {id: 8, type: "private", to_user_ids: "10", sender_id: 11},
         {id: 9, type: "private", to_user_ids: "9", sender_id: 11},
+        {id: 10, type: "private", to_user_ids: "10,12", sender_id: 10},
     ]);
 
     const res_user = mld.messages_filtered_for_user_mutes(msgs);

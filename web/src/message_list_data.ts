@@ -249,7 +249,9 @@ export class MessageListData {
             const recipients = util.extract_pm_recipients(message.to_user_ids);
             if (recipients.length > 1) {
                 // Direct message group message
-                return true;
+                const recipient_ids = recipients.map((recipient) => Number.parseInt(recipient, 10));
+                const unmuted_recipient_ids = muted_users.filter_muted_user_ids(recipient_ids);
+                return unmuted_recipient_ids.length > 0;
             }
 
             const recipient_id = Number.parseInt(util.the(recipients), 10);
