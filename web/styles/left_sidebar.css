@@ -1444,6 +1444,7 @@ li.top_left_scheduled_messages {
     .unread_mention_info {
         /* Unset margin in favor of flex gap. */
         margin: 0;
+        display: flex;
     }
 
     .unread_count {
@@ -1457,6 +1458,12 @@ li.top_left_scheduled_messages {
 .dm-markers-and-unreads,
 .conversation-partners {
     align-self: baseline;
+}
+
+.topic-markers-and-unreads {
+    .unread_mention_info {
+        display: flex;
+    }
 }
 
 .channel-new-topic-button {
