@@ -707,15 +707,16 @@ h4.user_group_setting_subsection_title {
     border-bottom: 1px solid var(--color-border-modal-bar);
     cursor: pointer;
     display: flex;
+    align-items: center;
 
     .check {
         width: 1.5625em; /* 25px at 16px font size */
         height: 1.5625em; /* 25px at 16px font size */
         margin-right: 0.75em; /* 12px at 16px font size */
-        margin-top: 0.5625em; /* 9px at 16px font size */
         background-size: 60% auto;
         background-repeat: no-repeat;
         background-position: center center;
+        display: flex;
 
         & svg {
             fill: hsl(0deg 0% 72%);
@@ -769,7 +770,6 @@ h4.user_group_setting_subsection_title {
         width: 2.1875em; /* 35px at 16px font size */
         height: 2.1875em; /* 35px at 16px font size */
         margin-right: 0.75em; /* 12px at 16px font size */
-        margin-top: 0.25em; /* 4px at 16px font size */
         background-color: hsl(300deg 100% 25%);
         border-radius: 4px;
         color: hsl(0deg 0% 100%);
@@ -843,7 +843,6 @@ h4.user_group_setting_subsection_title {
         }
 
         .bottom-bar {
-            margin-top: 0.125em; /* 2px at 16px font size */
             line-height: 1.5;
         }
     }
