@@ -36,7 +36,7 @@ Permissions for moving messages between channels can be configured separately.
 
 {end_tabs}
 
-## Configure who can edit topics in a channel
+## Configure who can edit topics in a specific channel
 
 {start_tabs}
 
