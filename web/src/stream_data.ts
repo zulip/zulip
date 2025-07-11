@@ -635,6 +635,24 @@ export function can_administer_channel(sub: StreamSubscription): boolean {
     );
 }
 
+export function user_can_set_delete_message_policy(sub?: StreamSubscription): boolean {
+    if (current_user.is_admin) {
+        return true;
+    }
+
+    const user_can_set_delete_message_policy = settings_data.user_has_permission_for_group_setting(
+        realm.realm_can_set_delete_message_policy_group,
+        "can_set_delete_message_policy_group",
+        "realm",
+    );
+
+    // This handles the case when the stream is being created.
+    if (sub === undefined) {
+        return user_can_set_delete_message_policy;
+    }
+    return user_can_set_delete_message_policy && can_administer_channel(sub);
+}
+
 export function user_can_set_topics_policy(sub?: StreamSubscription): boolean {
     if (current_user.is_admin) {
         return true;
@@ -841,6 +859,44 @@ export function rewire_can_post_messages_in_stream(
     value: typeof can_post_messages_in_stream,
 ): void {
     can_post_messages_in_stream = value;
+}
+
+export function user_can_delete_any_message_in_channel(stream: StreamSubscription): boolean {
+    if (page_params.is_spectator) {
+        return false;
+    }
+
+    if (stream.is_archived) {
+        return false;
+    }
+
+    return (
+        settings_data.user_can_delete_any_message() ||
+        settings_data.user_has_permission_for_group_setting(
+            stream.can_delete_any_message_group,
+            "can_delete_any_message_group",
+            "stream",
+        )
+    );
+}
+
+export function user_can_delete_own_message_in_channel(stream: StreamSubscription): boolean {
+    if (page_params.is_spectator) {
+        return false;
+    }
+
+    if (stream.is_archived) {
+        return false;
+    }
+
+    return (
+        settings_data.user_can_delete_own_message() ||
+        settings_data.user_has_permission_for_group_setting(
+            stream.can_delete_own_message_group,
+            "can_delete_own_message_group",
+            "stream",
+        )
+    );
 }
 
 export function user_can_move_messages_out_of_channel(stream: StreamSubscription): boolean {

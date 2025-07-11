@@ -754,6 +754,10 @@ export const all_group_setting_labels = {
         can_mention_many_users_group: $t({
             defaultMessage: "Who can notify a large number of users with a wildcard mention",
         }),
+        can_set_delete_message_policy_group: $t({
+            defaultMessage:
+                "Who can configure message deletion permissions for channels they administer",
+        }),
         can_set_topics_policy_group: new Handlebars.SafeString(
             $t_html({
                 defaultMessage:
@@ -763,6 +767,12 @@ export const all_group_setting_labels = {
     },
     stream: {
         can_add_subscribers_group: $t({defaultMessage: "Who can subscribe anyone to this channel"}),
+        can_delete_any_message_group: $t({
+            defaultMessage: "Who can delete any message in this channel",
+        }),
+        can_delete_own_message_group: $t({
+            defaultMessage: "Who can delete their own messages in this channel",
+        }),
         can_move_messages_out_of_channel_group: $t({
             defaultMessage: "Who can move messages out of this channel",
         }),
@@ -811,6 +821,7 @@ export const realm_group_permission_settings: {
             "can_create_private_channel_group",
             "can_add_subscribers_group",
             "can_mention_many_users_group",
+            "can_set_delete_message_policy_group",
             "can_set_topics_policy_group",
         ],
     },
@@ -868,6 +879,8 @@ export const owner_editable_realm_group_permission_settings = new Set([
 export const stream_group_permission_settings: StreamGroupSettingName[] = [
     "can_send_message_group",
     "can_administer_channel_group",
+    "can_delete_any_message_group",
+    "can_delete_own_message_group",
     "can_move_messages_out_of_channel_group",
     "can_move_messages_within_channel_group",
     "can_subscribe_group",
