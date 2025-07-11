@@ -102,7 +102,7 @@ class ZulipSCIMUser(SCIMUser):
 
         return {
             "schemas": [scim_constants.SchemaURI.USER],
-            "id": self.obj.id,
+            "id": str(self.obj.id),
             "userName": self.obj.delivery_email,
             "name": name,
             "displayName": self.display_name,
