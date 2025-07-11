@@ -37,8 +37,7 @@ can schedule a message for next morning to avoid disturbing others.
 
 {!go-to-scheduled-messages.md!}
 
-1. Click the **pencil** (<i class="fa fa-pencil"></i>) icon on the message you
-   want to edit or reschedule.
+1. Click on the message you want to edit or reschedule.
 
 1. *(optional)* Edit the message.
 
@@ -64,8 +63,7 @@ can schedule a message for next morning to avoid disturbing others.
 
 {!go-to-scheduled-messages.md!}
 
-1. Click the **pencil** (<i class="fa fa-pencil"></i>) icon on the message you
-   want to send now.
+1. Click on the message you want to send now.
 
 1. *(optional)* Edit the message.
 
