@@ -281,7 +281,23 @@
         flex-grow: 1;
         display: grid;
         grid-template-columns: 1fr;
+        position: relative;
         align-items: stretch;
+
+        #add_dm_recipient_button {
+            display: flex;
+            align-items: center;
+            height: 1.75em;
+            background: none;
+            border: none;
+            position: absolute;
+            right: 0.0625em;
+            top: 0.0625em;
+        }
+
+        .pill-container {
+            padding-right: 1.8125em;
+        }
     }
 
     .message_header {
@@ -1159,26 +1175,6 @@ textarea.new_message_textarea {
     /* Styles for new conversation button in the recipient_box */
     #recipient_box_clear_topic_button {
         grid-area: topic-clear-button;
-        /* Set the border radius smaller, relative to the parent */
-        border-radius: 2px;
-        padding: 6px;
-        margin: 1px;
-        color: var(--color-compose-embedded-button-text-color);
-
-        .zulip-icon {
-            display: block;
-        }
-
-        &:hover {
-            background-color: var(
-                --color-compose-embedded-button-background-hover
-            );
-            color: var(--color-compose-embedded-button-text-color-hover);
-        }
-
-        &:focus {
-            outline: 0;
-        }
     }
 
     #stream_message_recipient_topic:not(.empty-topic-display):placeholder-shown
@@ -1198,6 +1194,28 @@ textarea.new_message_textarea {
     &.disabled {
         background-color: transparent;
         border-color: transparent;
+    }
+}
+
+#compose_recipient_box #recipient_box_clear_topic_button,
+#compose-direct-recipient #add_dm_recipient_button {
+    /* Set the border radius smaller, relative to the parent */
+    border-radius: 2px;
+    padding: 6px;
+    margin: 1px;
+    color: var(--color-compose-embedded-button-text-color);
+
+    .zulip-icon {
+        display: block;
+    }
+
+    &:hover {
+        background-color: var(--color-compose-embedded-button-background-hover);
+        color: var(--color-compose-embedded-button-text-color-hover);
+    }
+
+    &:focus {
+        outline: 0;
     }
 }
 
@@ -1257,7 +1275,8 @@ textarea.new_message_textarea {
             transition-property: color;
         }
 
-        #recipient_box_clear_topic_button {
+        #recipient_box_clear_topic_button,
+        #add_dm_recipient_button {
             transition: var(--compose-recipient-row-transition);
             transition-delay: var(--compose-recipient-row-transition-delay);
             transition-property: color, background-color, opacity;
@@ -1327,7 +1346,8 @@ textarea.new_message_textarea {
             }
         }
 
-        #recipient_box_clear_topic_button:hover {
+        #recipient_box_clear_topic_button:hover,
+        #add_dm_recipient_button:hover {
             opacity: 1;
         }
     }

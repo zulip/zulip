@@ -139,6 +139,10 @@ export let emoji_collection: Emoji[] = [];
 let completing: string | null;
 let token: string;
 
+export let private_message_recipient_typeahead: Typeahead<
+    UserGroupPillData | user_pill.UserPillData
+>;
+
 export function get_or_set_token_for_testing(val?: string): string {
     if (val !== undefined) {
         token = val;
@@ -1568,7 +1572,7 @@ export function initialize({
         $element: $("#private_message_recipient"),
         type: "contenteditable",
     };
-    new Typeahead(private_message_typeahead_input, {
+    private_message_recipient_typeahead = new Typeahead(private_message_typeahead_input, {
         source: get_pm_people,
         items: max_num_items,
         dropup: true,
