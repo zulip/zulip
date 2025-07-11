@@ -181,6 +181,9 @@ export function process_notification(notification: {
     if (notice_memory) {
         msg_count = notice_memory.msg_count + 1;
         notification_object = notice_memory.obj;
+        // Stop old close_handler from firing up and deleting the
+        // new notification_object from notice memory.
+        notification_object.removeEventListener("close", notice_memory.close_handler);
         notification_object.close();
     }
 
@@ -196,10 +199,14 @@ export function process_notification(notification: {
             body: content,
             tag: message.id.toString(),
         });
+        function close_handler(): void {
+            desktop_notifications.notice_memory.delete(key);
+        }
         desktop_notifications.notice_memory.set(key, {
             obj: notification_object,
             msg_count,
             message_id: message.id,
+            close_handler,
         });
 
         if (typeof notification_object.addEventListener === "function") {
@@ -214,9 +221,7 @@ export function process_notification(notification: {
                 }
                 window.focus();
             });
-            notification_object.addEventListener("close", () => {
-                desktop_notifications.notice_memory.delete(key);
-            });
+            notification_object.addEventListener("close", close_handler);
         }
     }
 }

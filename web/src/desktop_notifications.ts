@@ -10,6 +10,7 @@ type NoticeMemory = Map<
         obj: Notification | ElectronBridgeNotification;
         msg_count: number;
         message_id: number;
+        close_handler: () => void;
     }
 >;
 
