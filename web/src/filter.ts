@@ -212,6 +212,21 @@ function message_matches_search_term(message: Message, operator: string, operand
             return message.stream_id.toString() === operand;
         }
 
+        case "channels": {
+            if (message.type !== "stream") {
+                return false;
+            }
+            const stream_privacy_policy = stream_data.get_stream_privacy_policy(message.stream_id);
+            switch (operand) {
+                case "public":
+                    return ["public", "web-public"].includes(stream_privacy_policy);
+                case "web-public":
+                    return stream_privacy_policy === "web-public";
+                default:
+                    return false;
+            }
+        }
+
         case "topic":
             if (message.type !== "stream") {
                 return false;
@@ -575,7 +590,7 @@ export class Filter {
                 return stream_data.get_sub_by_id_string(term.operand) !== undefined;
             case "channels":
             case "streams":
-                return term.operand === "public";
+                return ["public", "web-public"].includes(term.operand);
             case "topic":
                 return true;
             case "sender":
@@ -647,6 +662,7 @@ export class Filter {
         const levels = [
             "in",
             "channels-public",
+            "channels-web-public",
             "channel",
             "topic",
             "dm",
@@ -808,10 +824,13 @@ export class Filter {
                     };
                 }
             }
-            if (canonicalized_operator === "channels" && operand === "public") {
+            if (
+                canonicalized_operator === "channels" &&
+                ["public", "web-public"].includes(operand)
+            ) {
                 return {
                     type: "plain_text",
-                    content: this.describe_public_channels(term.negated ?? false),
+                    content: this.describe_channels_operator(term.negated ?? false, operand),
                 };
             }
             const prefix_for_operator = Filter.operator_to_prefix(
@@ -875,12 +894,18 @@ export class Filter {
         return [...parts, ...more_parts];
     }
 
-    static describe_public_channels(negated: boolean): string {
+    static describe_channels_operator(negated: boolean, operand: string): string {
         const possible_prefix = negated ? "exclude " : "";
-        if (page_params.is_spectator || current_user.is_guest) {
+        assert(["public", "web-public"].includes(operand));
+        if ((page_params.is_spectator || current_user.is_guest) && operand === "public") {
             return possible_prefix + "all public channels that you can view";
         }
-        return possible_prefix + "all public channels";
+        switch (operand) {
+            case "web-public":
+                return possible_prefix + "all web-public channels";
+            default:
+                return possible_prefix + "all public channels";
+        }
     }
 
     static search_description_as_html(
@@ -1248,6 +1273,9 @@ export class Filter {
         if (_.isEqual(term_types, ["channels-public"])) {
             return true;
         }
+        if (_.isEqual(term_types, ["channels-web-public"])) {
+            return true;
+        }
         if (_.isEqual(term_types, ["sender"])) {
             return true;
         }
@@ -1317,6 +1345,8 @@ export class Filter {
                     return "/#narrow/is/mentioned";
                 case "channels-public":
                     return "/#narrow/channels/public";
+                case "channels-web-public":
+                    return "/#narrow/channels/web-public";
                 case "dm":
                     return "/#narrow/dm/" + people.emails_to_slug(this.operands("dm").join(","));
                 case "is-resolved":
@@ -1485,6 +1515,8 @@ export class Filter {
                     return $t({defaultMessage: "All messages including muted channels"});
                 case "channels-public":
                     return $t({defaultMessage: "Messages in all public channels"});
+                case "channels-web-public":
+                    return $t({defaultMessage: "Messages in all web-public channels"});
                 case "is-starred":
                     return $t({defaultMessage: "Starred messages"});
                 case "is-mentioned":
@@ -1597,12 +1629,6 @@ export class Filter {
             // rendered by the backend; links, attachments, and images
             // are not handled properly by the local echo Markdown
             // processor.
-            return false;
-        }
-
-        // TODO: It's not clear why `channels:` filters would not be
-        // applicable locally.
-        if (this.has_operator("channels") || this.has_negated_operand("channels", "public")) {
             return false;
         }
 
@@ -1883,6 +1909,8 @@ export class Filter {
             "not-is-resolved",
             "channels-public",
             "not-channels-public",
+            "channels-web-public",
+            "not-channels-web-public",
             "is-muted",
             "not-is-muted",
             "in-home",
