@@ -7,7 +7,12 @@
 .input-element-wrapper {
     display: grid;
     grid-template:
-        [input-element-start] "icon-starting-offset input-icon icon-content-gap content button-content-gap input-button button-ending-offset" auto [input-element-end] / [input-element-start] var(
+        /* We present a variable to set a uniform row height when needed;
+           otherwise, we fall back to the sensible `auto` value. */
+        [input-element-start] "icon-starting-offset input-icon icon-content-gap content button-content-gap input-button button-ending-offset" var(
+            --input-element-row-height,
+            auto
+        ) [input-element-end] / [input-element-start] var(
             --input-icon-starting-offset
         )
         var(--input-icon-width) var(--input-icon-content-gap) minmax(0, 1fr)

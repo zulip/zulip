@@ -433,7 +433,7 @@ export function process_escape_key(e) {
         }
 
         if (stream_list.searching()) {
-            stream_list.clear_and_hide_search();
+            stream_list.clear_search();
             return true;
         }
 
@@ -589,14 +589,6 @@ export function process_enter_key(e) {
     }
 
     if (processing_text()) {
-        if (stream_list.searching()) {
-            // This is sort of funny behavior, but I think
-            // the intention is that we want it super easy
-            // to close stream search.
-            stream_list.clear_and_hide_search();
-            return true;
-        }
-
         // Don't send the message if topic box is focused.
         if (compose.is_topic_input_focused()) {
             return true;

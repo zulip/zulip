@@ -1,6 +1,8 @@
 import $ from "jquery";
 import _ from "lodash";
+import assert from "minimalistic-assert";
 
+import * as channel_folders from "./channel_folders.ts";
 import type {Filter} from "./filter.ts";
 import {localstorage} from "./localstorage.ts";
 import * as message_reminder from "./message_reminder.ts";
@@ -9,8 +11,12 @@ import * as people from "./people.ts";
 import * as resize from "./resize.ts";
 import * as scheduled_messages from "./scheduled_messages.ts";
 import * as settings_config from "./settings_config.ts";
+import * as settings_data from "./settings_data.ts";
+import * as stream_list_sort from "./stream_list_sort.ts";
+import * as sub_store from "./sub_store.ts";
 import * as ui_util from "./ui_util.ts";
 import * as unread from "./unread.ts";
+import {user_settings} from "./user_settings.ts";
 
 let last_mention_count = 0;
 const ls_key = "left_sidebar_views_state";
@@ -71,6 +77,19 @@ export function update_reminders_row(): void {
     ui_util.update_unread_count_in_dom($reminders_li, count);
 }
 
+function should_mask_unread_count(showing_muted: boolean): boolean {
+    if (!user_settings.web_left_sidebar_unreads_count_summary) {
+        return true;
+    }
+    if (settings_data.should_mask_unread_count(false)) {
+        return true;
+    }
+    if (showing_muted && settings_data.should_mask_unread_count(true)) {
+        return true;
+    }
+    return false;
+}
+
 export function update_dom_with_unread_counts(
     counts: unread.FullUnreadCountsData,
     skip_animations: boolean,
@@ -80,13 +99,111 @@ export function update_dom_with_unread_counts(
     // mentioned/home views have simple integer counts
     const $mentioned_li = $(".top_left_mentions");
     const $home_view_li = $(".selected-home-view");
-    const $streams_header = $("#streams_header");
     const $back_to_streams = $("#topics_header");
 
     ui_util.update_unread_count_in_dom($mentioned_li, counts.mentioned_message_count);
     ui_util.update_unread_count_in_dom($home_view_li, counts.home_unread_messages);
-    ui_util.update_unread_count_in_dom($streams_header, counts.stream_unread_messages);
     ui_util.update_unread_count_in_dom($back_to_streams, counts.stream_unread_messages);
+
+    // TODO(evy) Make some data structures to clean up this function a bit.
+    let pinned_unmuted_unread_count = 0;
+    let pinned_muted_unread_count = 0;
+    const folder_unmuted_unread_counts = new Map<number, number>();
+    const folder_muted_unread_counts = new Map<number, number>();
+    // These are used for the "+ n inactive channels" button
+    const folder_inactive_muted_unread_counts = new Map<number, number>();
+    const folder_inactive_unmuted_unread_counts = new Map<number, number>();
+    let normal_unmuted_unread_count = 0;
+    let normal_muted_unread_count = 0;
+    let inactive_unmuted_unread_count = 0;
+    let inactive_muted_unread_count = 0;
+
+    for (const [stream_id, stream_count_info] of counts.stream_count.entries()) {
+        const sub = sub_store.get(stream_id);
+        assert(sub);
+        if (sub.pin_to_top) {
+            pinned_unmuted_unread_count += stream_count_info.unmuted_count;
+            pinned_muted_unread_count += stream_count_info.muted_count;
+        } else if (sub.folder_id !== null) {
+            const prev_unmuted_count = folder_unmuted_unread_counts.get(sub.folder_id) ?? 0;
+            folder_unmuted_unread_counts.set(
+                sub.folder_id,
+                prev_unmuted_count + stream_count_info.unmuted_count,
+            );
+            const prev_muted_count = folder_muted_unread_counts.get(sub.folder_id) ?? 0;
+            folder_muted_unread_counts.set(
+                sub.folder_id,
+                prev_muted_count + stream_count_info.muted_count,
+            );
+
+            if (!stream_list_sort.has_recent_activity(sub)) {
+                const prev_muted_inactive_count =
+                    folder_inactive_muted_unread_counts.get(sub.folder_id) ?? 0;
+                folder_inactive_muted_unread_counts.set(
+                    sub.folder_id,
+                    prev_muted_inactive_count + stream_count_info.muted_count,
+                );
+                const prev_unmuted_inactive_count =
+                    folder_inactive_unmuted_unread_counts.get(sub.folder_id) ?? 0;
+                folder_inactive_unmuted_unread_counts.set(
+                    sub.folder_id,
+                    prev_unmuted_inactive_count + stream_count_info.unmuted_count,
+                );
+            }
+        } else if (stream_list_sort.has_recent_activity(sub)) {
+            normal_unmuted_unread_count += stream_count_info.unmuted_count;
+            normal_muted_unread_count += stream_count_info.muted_count;
+        } else {
+            inactive_unmuted_unread_count += stream_count_info.unmuted_count;
+            inactive_muted_unread_count += stream_count_info.muted_count;
+        }
+    }
+
+    function update_section_unread_count(
+        $unread_elem: JQuery,
+        unmuted_count: number,
+        muted_count: number,
+    ): void {
+        const show_muted_count = unmuted_count === 0 && muted_count > 0;
+        if (show_muted_count) {
+            ui_util.update_unread_count_in_dom($unread_elem, muted_count);
+        } else {
+            ui_util.update_unread_count_in_dom($unread_elem, unmuted_count);
+        }
+        $unread_elem.toggleClass("muted_count", show_muted_count);
+        $unread_elem.toggleClass(
+            "hide-unread-messages-count",
+            should_mask_unread_count(show_muted_count),
+        );
+    }
+    update_section_unread_count(
+        $("#stream-list-pinned-streams-container .stream-list-subsection-header"),
+        pinned_unmuted_unread_count,
+        pinned_muted_unread_count,
+    );
+    update_section_unread_count(
+        $("#stream-list-normal-streams-container .stream-list-subsection-header"),
+        normal_unmuted_unread_count,
+        normal_muted_unread_count,
+    );
+    update_section_unread_count(
+        $("#stream-list-dormant-streams-container .stream-list-subsection-header"),
+        inactive_unmuted_unread_count,
+        inactive_muted_unread_count,
+    );
+
+    for (const folder_id of channel_folders.get_channel_ids()) {
+        update_section_unread_count(
+            $(`#stream-list-${folder_id}-container .stream-list-subsection-header`),
+            folder_unmuted_unread_counts.get(folder_id) ?? 0,
+            folder_muted_unread_counts.get(folder_id) ?? 0,
+        );
+        update_section_unread_count(
+            $(`#stream-list-${folder_id}-container .show-inactive-channels`),
+            folder_inactive_unmuted_unread_counts.get(folder_id) ?? 0,
+            folder_inactive_muted_unread_counts.get(folder_id) ?? 0,
+        );
+    }
 
     if (!skip_animations) {
         animate_mention_changes($mentioned_li, counts.mentioned_message_count);
