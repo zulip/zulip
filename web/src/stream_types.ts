@@ -56,6 +56,7 @@ export const stream_schema = z.object({
     rendered_description: z.string(),
     stream_id: z.number(),
     stream_post_policy: z.nativeEnum(StreamPostPolicy),
+    subscriber_count: z.number(),
     topics_policy: stream_topics_policy_schema,
 });
 

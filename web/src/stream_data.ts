@@ -1065,17 +1065,17 @@ export function create_sub_from_server_data(
         ...attrs,
     };
 
-    if (attrs.partial_subscribers !== undefined) {
-        peer_data.set_subscribers(sub.stream_id, attrs.partial_subscribers, false);
-    } else {
-        peer_data.set_subscribers(sub.stream_id, subscriber_user_ids ?? []);
-    }
-
     clean_up_description(sub);
 
     stream_info.set(sub.stream_id, sub);
     stream_ids_by_name.set(sub.name, sub.stream_id);
     sub_store.add_hydrated_sub(sub.stream_id, sub);
+
+    if (attrs.partial_subscribers !== undefined) {
+        peer_data.set_subscribers(sub.stream_id, attrs.partial_subscribers, false);
+    } else {
+        peer_data.set_subscribers(sub.stream_id, subscriber_user_ids ?? []);
+    }
 
     return sub;
 }
