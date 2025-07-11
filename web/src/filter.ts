@@ -212,6 +212,22 @@ function message_matches_search_term(message: Message, operator: string, operand
             return message.stream_id.toString() === operand;
         }
 
+        case "channels":
+            if (message.type !== "stream") {
+                return false;
+            }
+            switch (operand) {
+                case "web-public":
+                    return stream_data.is_web_public(message.stream_id);
+                case "public":
+                    return !stream_data.is_invite_only_by_stream_id(message.stream_id);
+                case "archived":
+                    return stream_data.is_stream_archived(message.stream_id);
+                default:
+                    blueslip.error(`Invalid channels operand: ${operand}`);
+                    return false;
+            }
+
         case "topic":
             if (message.type !== "stream") {
                 return false;
@@ -575,7 +591,7 @@ export class Filter {
                 return stream_data.get_sub_by_id_string(term.operand) !== undefined;
             case "channels":
             case "streams":
-                return term.operand === "public";
+                return ["public", "web-public", "archived"].includes(term.operand);
             case "topic":
                 return true;
             case "sender":
@@ -646,7 +662,9 @@ export class Filter {
     static sorted_term_types(term_types: string[]): string[] {
         const levels = [
             "in",
+            "channels-web-public",
             "channels-public",
+            "channels-archived",
             "channel",
             "topic",
             "dm",
@@ -1142,6 +1160,8 @@ export class Filter {
             "not-is-muted",
             "in-home",
             "in-all",
+            "channels-archived",
+            "not-channels-archived",
             "channels-public",
             "not-channels-public",
             "channels-web-public",
@@ -1245,7 +1265,13 @@ export class Filter {
         if (_.isEqual(term_types, ["is-starred"])) {
             return true;
         }
+        if (_.isEqual(term_types, ["channels-archived"])) {
+            return true;
+        }
         if (_.isEqual(term_types, ["channels-public"])) {
+            return true;
+        }
+        if (_.isEqual(term_types, ["channels-web-public"])) {
             return true;
         }
         if (_.isEqual(term_types, ["sender"])) {
@@ -1483,8 +1509,12 @@ export class Filter {
                     return $t({defaultMessage: "Combined feed"});
                 case "in-all":
                     return $t({defaultMessage: "All messages including muted channels"});
+                case "channels-archived":
+                    return $t({defaultMessage: "Messages in all archived channels"});
                 case "channels-public":
                     return $t({defaultMessage: "Messages in all public channels"});
+                case "channels-web-public":
+                    return $t({defaultMessage: "Messages in all web-public channels"});
                 case "is-starred":
                     return $t({defaultMessage: "Starred messages"});
                 case "is-mentioned":
@@ -1599,13 +1629,6 @@ export class Filter {
             // processor.
             return false;
         }
-
-        // TODO: It's not clear why `channels:` filters would not be
-        // applicable locally.
-        if (this.has_operator("channels") || this.has_negated_operand("channels", "public")) {
-            return false;
-        }
-
         // If we get this far, we're good!
         return true;
     }
@@ -1881,8 +1904,12 @@ export class Filter {
             "not-is-followed",
             "is-resolved",
             "not-is-resolved",
+            "channels-archived",
+            "not-channels-archived",
             "channels-public",
             "not-channels-public",
+            "channels-web-public",
+            "not-channels-web-public",
             "is-muted",
             "not-is-muted",
             "in-home",
