@@ -331,10 +331,18 @@ p.n-margin {
     }
 
     .exit-me {
-        font-size: 20pt;
-        font-weight: 200;
-        margin: 0 0 0 10px;
-        cursor: pointer;
+        margin: 0 0 0 5px;
+    }
+
+    .float-header {
+        display: flex;
+        align-items: center;
+    }
+
+    .feedback-button-container {
+        display: flex;
+        align-items: center;
+        margin-left: auto;
     }
 }
 
