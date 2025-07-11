@@ -1,5 +1,5 @@
 /* common CSS for all image upload widget's */
-.image_upload_widget {
+.widget-image-container {
     position: relative;
     border-radius: 5px;
     box-shadow: 0 0 10px hsl(0deg 0% 0% / 10%);
