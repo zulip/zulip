@@ -4,7 +4,6 @@ import assert from "minimalistic-assert";
 import type * as tippy from "tippy.js";
 
 import render_stream_creation_confirmation_banner from "../templates/modal_banner/stream_creation_confirmation_banner.hbs";
-import render_stream_info_banner from "../templates/modal_banner/stream_info_banner.hbs";
 import render_browse_streams_list from "../templates/stream_settings/browse_streams_list.hbs";
 import render_browse_streams_list_item from "../templates/stream_settings/browse_streams_list_item.hbs";
 import render_stream_settings_overlay from "../templates/stream_settings/stream_settings_overlay.hbs";
@@ -31,6 +30,7 @@ import {postprocess_content} from "./postprocess_content.ts";
 import * as resize from "./resize.ts";
 import * as scroll_util from "./scroll_util.ts";
 import * as search_util from "./search_util.ts";
+import * as settings_banner from "./settings_banner.ts";
 import * as settings_config from "./settings_config.ts";
 import * as settings_data from "./settings_data.ts";
 import {type GroupSettingValue, current_user, realm} from "./state_data.ts";
@@ -900,17 +900,7 @@ function setup_page(callback: () => void): void {
             throttled_redraw_left_panel();
         });
 
-        const context = {
-            banner_type: compose_banner.INFO,
-            classname: "stream_info",
-            hide_close_button: true,
-            button_text: $t({defaultMessage: "Learn more"}),
-            button_link: "/help/introduction-to-channels",
-        };
-
-        $("#channels_overlay_container .nothing-selected .stream-info-banner").html(
-            render_stream_info_banner(context),
-        );
+        settings_banner.set_up_stream_info_banner();
 
         // When hitting Enter in the stream creation box, we open the
         // "create stream" UI with the stream name prepopulated.  This
