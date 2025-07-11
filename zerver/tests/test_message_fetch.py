@@ -312,29 +312,45 @@ class NarrowBuilderTest(ZulipTestCase):
         term = NarrowParameter(operator="is", operand="non_supported")
         self.assertRaises(BadNarrowOperatorError, self._build_query, term)
 
-    def test_add_term_using_topic_operator_and_lunch_operand(self) -> None:
-        term = NarrowParameter(operator="topic", operand="lunch")
+    def test_add_term_using_exact_topic_operator_and_lunch_operand(self) -> None:
+        term = NarrowParameter(operator="exact-topic", operand="lunch")
         self._do_add_term_test(
             term, "WHERE upper(subject) = upper(%(param_1)s) AND is_channel_message"
         )
 
-    def test_add_term_using_topic_operator_lunch_operand_and_negated(self) -> None:  # NEGATED
-        term = NarrowParameter(operator="topic", operand="lunch", negated=True)
+    def test_add_term_using_exact_topic_operator_lunch_operand_and_negated(self) -> None:
+        term = NarrowParameter(operator="exact-topic", operand="lunch", negated=True)
         self._do_add_term_test(
             term, "WHERE NOT (upper(subject) = upper(%(param_1)s) AND is_channel_message)"
         )
+
+    def test_add_term_using_exact_topic_operator_and_personal_operand(self) -> None:
+        term = NarrowParameter(operator="exact-topic", operand="personal")
+        self._do_add_term_test(
+            term, "WHERE upper(subject) = upper(%(param_1)s) AND is_channel_message"
+        )
+
+    def test_add_term_using_exact_topic_operator_personal_operand_and_negated(self) -> None:
+        term = NarrowParameter(operator="exact-topic", operand="personal", negated=True)
+        self._do_add_term_test(
+            term, "WHERE NOT (upper(subject) = upper(%(param_1)s) AND is_channel_message)"
+        )
+
+    def test_add_term_using_topic_operator_and_lunch_operand(self) -> None:
+        term = NarrowParameter(operator="topic", operand="lunch")
+        self._do_add_term_test(term, "WHERE CAST(subject ~* %(subject_1)s AS BOOLEAN)")
+
+    def test_add_term_using_topic_operator_lunch_operand_and_negated(self) -> None:
+        term = NarrowParameter(operator="topic", operand="lunch", negated=True)
+        self._do_add_term_test(term, "WHERE NOT CAST(subject ~* %(subject_1)s AS BOOLEAN)")
 
     def test_add_term_using_topic_operator_and_personal_operand(self) -> None:
         term = NarrowParameter(operator="topic", operand="personal")
-        self._do_add_term_test(
-            term, "WHERE upper(subject) = upper(%(param_1)s) AND is_channel_message"
-        )
+        self._do_add_term_test(term, "WHERE CAST(subject ~* %(subject_1)s AS BOOLEAN)")
 
-    def test_add_term_using_topic_operator_personal_operand_and_negated(self) -> None:  # NEGATED
+    def test_add_term_using_topic_operator_personal_operand_and_negated(self) -> None:
         term = NarrowParameter(operator="topic", operand="personal", negated=True)
-        self._do_add_term_test(
-            term, "WHERE NOT (upper(subject) = upper(%(param_1)s) AND is_channel_message)"
-        )
+        self._do_add_term_test(term, "WHERE NOT CAST(subject ~* %(subject_1)s AS BOOLEAN)")
 
     def test_add_term_using_sender_operator(self) -> None:
         term = NarrowParameter(operator="sender", operand=self.othello_email)
@@ -377,6 +393,11 @@ class NarrowBuilderTest(ZulipTestCase):
         self._build_query(term1)
 
         topic_term = NarrowParameter(operator="topic", operand="bogus")
+        with self.assertRaises(BadNarrowOperatorError) as error:
+            self._build_query(topic_term)
+        self.assertEqual(expected_error_message, str(error.exception))
+
+        topic_term = NarrowParameter(operator="exact-topic", operand="bogus")
         with self.assertRaises(BadNarrowOperatorError) as error:
             self._build_query(topic_term)
         self.assertEqual(expected_error_message, str(error.exception))
@@ -836,6 +857,91 @@ class NarrowLibraryTest(ZulipTestCase):
         self.assertFalse(
             narrow_predicate(
                 message={"type": "stream", "topic": "play with tail"},
+                flags=[],
+            )
+        )
+        ###
+
+        narrow_predicate = build_narrow_predicate(
+            [NeverNegatedNarrowTerm(operator="exact-topic", operand="python")]
+        )
+
+        # Exact match (case-sensitive)
+        self.assertTrue(
+            narrow_predicate(
+                message={"type": "stream", "topic": "python"},
+                flags=[],
+            )
+        )
+        self.assertTrue(
+            narrow_predicate(
+                message={"type": "stream", "subject": "python"},
+                flags=[],
+            )
+        )
+
+        # Mismatched case (should fail)
+        self.assertFalse(
+            narrow_predicate(
+                message={"type": "stream", "topic": "Python"},
+                flags=[],
+            )
+        )
+        self.assertFalse(
+            narrow_predicate(
+                message={"type": "stream", "subject": "Python"},
+                flags=[],
+            )
+        )
+
+        # Wrong topic
+        self.assertFalse(
+            narrow_predicate(
+                message={"type": "stream", "topic": "pythons"},
+                flags=[],
+            )
+        )
+
+        # Wrong message type
+        self.assertFalse(
+            narrow_predicate(
+                message={"type": "private"},
+                flags=[],
+            )
+        )
+
+        # "topic" should match if the operand is a word in the topic (case-insensitive)
+        narrow_predicate = build_narrow_predicate(
+            [NeverNegatedNarrowTerm(operator="topic", operand="bark")]
+        )
+
+        self.assertTrue(
+            narrow_predicate(
+                message={"type": "stream", "topic": "dog bark sounds"},
+                flags=[],
+            )
+        )
+
+        # Should not match "pyth" in "python" — not a full word
+        narrow_predicate = build_narrow_predicate(
+            [NeverNegatedNarrowTerm(operator="topic", operand="pyth")]
+        )
+
+        self.assertFalse(
+            narrow_predicate(
+                message={"type": "stream", "topic": "python"},
+                flags=[],
+            )
+        )
+
+        # Should match exact string (case-insensitive) in topic
+        narrow_predicate = build_narrow_predicate(
+            [NeverNegatedNarrowTerm(operator="topic", operand="python")]
+        )
+
+        self.assertTrue(
+            narrow_predicate(
+                message={"type": "stream", "topic": "PYTHON"},
                 flags=[],
             )
         )
@@ -5009,7 +5115,8 @@ WHERE zerver_subscription.user_profile_id = {hamlet_id} AND zerver_subscription.
 """
         sql = sql_template.format(**query_ids)
         self.common_check_get_messages_query(
-            {"anchor": 0, "num_before": 0, "num_after": 9, "narrow": '[["topic", "blah"]]'}, sql
+            {"anchor": 0, "num_before": 0, "num_after": 9, "narrow": '[["exact-topic", "blah"]]'},
+            sql,
         )
 
         sql_template = """\
@@ -5025,11 +5132,43 @@ WHERE realm_id = 2 AND recipient_id = {scotland_recipient} AND upper(subject) = 
                 "anchor": 0,
                 "num_before": 0,
                 "num_after": 9,
+                "narrow": '[["channel", "Scotland"], ["exact-topic", "blah"]]',
+            },
+            sql,
+        )
+        sql_template = """\
+SELECT anon_1.message_id, anon_1.flags \n\
+FROM (SELECT message_id, flags \n\
+FROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id JOIN zerver_recipient ON zerver_message.recipient_id = zerver_recipient.id \n\
+WHERE user_profile_id = {hamlet_id} AND (zerver_recipient.type != 2 OR (EXISTS (SELECT  \n\
+FROM zerver_stream \n\
+WHERE zerver_stream.recipient_id = zerver_recipient.id AND (NOT zerver_stream.invite_only AND NOT zerver_stream.is_in_zephyr_realm OR zerver_stream.can_subscribe_group_id IN {hamlet_groups} OR zerver_stream.can_add_subscribers_group_id IN {hamlet_groups}))) OR (EXISTS (SELECT  \n\
+FROM zerver_subscription \n\
+WHERE zerver_subscription.user_profile_id = {hamlet_id} AND zerver_subscription.recipient_id = zerver_recipient.id AND zerver_subscription.active))) AND CAST(subject ~* '\\yblah\\y' AS BOOLEAN) ORDER BY message_id ASC \n\
+ LIMIT 10) AS anon_1 ORDER BY message_id ASC\
+"""
+        sql = sql_template.format(**query_ids)
+        self.common_check_get_messages_query(
+            {"anchor": 0, "num_before": 0, "num_after": 9, "narrow": '[["topic", "blah"]]'}, sql
+        )
+
+        sql_template = """\
+SELECT anon_1.message_id \n\
+FROM (SELECT id AS message_id \n\
+FROM zerver_message \n\
+WHERE realm_id = 2 AND recipient_id = {scotland_recipient} AND CAST(subject ~* '\\yblah\\y' AS BOOLEAN) ORDER BY zerver_message.id ASC \n\
+ LIMIT 10) AS anon_1 ORDER BY message_id ASC\
+"""
+        sql = sql_template.format(**query_ids)
+        self.common_check_get_messages_query(
+            {
+                "anchor": 0,
+                "num_before": 0,
+                "num_after": 9,
                 "narrow": '[["channel", "Scotland"], ["topic", "blah"]]',
             },
             sql,
         )
-
         # Narrow to direct messages with yourself
         sql_template = """\
 SELECT anon_1.message_id, anon_1.flags \n\

@@ -153,6 +153,7 @@ def is_spectator_compatible(narrow: Iterable[NarrowParameter]) -> bool:
         *channel_operators,
         *channels_operators,
         "topic",
+        "exact-topic",
         "sender",
         "has",
         "search",
@@ -285,6 +286,7 @@ class NarrowBuilder:
             # "streams" is a legacy alias for "channels"
             "streams": self.by_channels,
             "topic": self.by_topic,
+            "exact-topic": self.by_exact_topic,
             "sender": self.by_sender,
             "near": self.by_near,
             "id": self.by_id,
@@ -532,7 +534,9 @@ class NarrowBuilder:
         cond = column("recipient_id", Integer).in_(recipient_ids)
         return query.where(maybe_negate(cond))
 
-    def by_topic(self, query: Select, operand: str, maybe_negate: ConditionTransform) -> Select:
+    def narrow_by_topic(
+        self, query: Select, operand: str, maybe_negate: ConditionTransform, exact: bool
+    ) -> Select:
         self.check_not_both_channel_and_dm_narrow(maybe_negate, is_channel_narrow=True)
 
         if self.realm.is_zephyr_mirror_realm:
@@ -547,37 +551,45 @@ class NarrowBuilder:
             # instance "personal" to be the same.
             if base_topic in ("", "personal", '(instance "")'):
                 cond: ClauseElement = or_(
-                    topic_match_sa(""),
-                    topic_match_sa(".d"),
-                    topic_match_sa(".d.d"),
-                    topic_match_sa(".d.d.d"),
-                    topic_match_sa(".d.d.d.d"),
-                    topic_match_sa("personal"),
-                    topic_match_sa("personal.d"),
-                    topic_match_sa("personal.d.d"),
-                    topic_match_sa("personal.d.d.d"),
-                    topic_match_sa("personal.d.d.d.d"),
-                    topic_match_sa('(instance "")'),
-                    topic_match_sa('(instance "").d'),
-                    topic_match_sa('(instance "").d.d'),
-                    topic_match_sa('(instance "").d.d.d'),
-                    topic_match_sa('(instance "").d.d.d.d'),
+                    topic_match_sa("", exact=exact),
+                    topic_match_sa(".d", exact=exact),
+                    topic_match_sa(".d.d", exact=exact),
+                    topic_match_sa(".d.d.d", exact=exact),
+                    topic_match_sa(".d.d.d.d", exact=exact),
+                    topic_match_sa("personal", exact=exact),
+                    topic_match_sa("personal.d", exact=exact),
+                    topic_match_sa("personal.d.d", exact=exact),
+                    topic_match_sa("personal.d.d.d", exact=exact),
+                    topic_match_sa("personal.d.d.d.d", exact=exact),
+                    topic_match_sa('(instance "")', exact=exact),
+                    topic_match_sa('(instance "").d', exact=exact),
+                    topic_match_sa('(instance "").d.d', exact=exact),
+                    topic_match_sa('(instance "").d.d.d', exact=exact),
+                    topic_match_sa('(instance "").d.d.d.d', exact=exact),
                 )
             else:
                 # We limit `.d` counts, since PostgreSQL has much better
                 # query planning for this than they do for a regular
                 # expression (which would sometimes table scan).
                 cond = or_(
-                    topic_match_sa(base_topic),
-                    topic_match_sa(base_topic + ".d"),
-                    topic_match_sa(base_topic + ".d.d"),
-                    topic_match_sa(base_topic + ".d.d.d"),
-                    topic_match_sa(base_topic + ".d.d.d.d"),
+                    topic_match_sa(base_topic, exact=exact),
+                    topic_match_sa(base_topic + ".d", exact=exact),
+                    topic_match_sa(base_topic + ".d.d", exact=exact),
+                    topic_match_sa(base_topic + ".d.d.d", exact=exact),
+                    topic_match_sa(base_topic + ".d.d.d.d", exact=exact),
                 )
             return query.where(maybe_negate(cond))
 
-        cond = topic_match_sa(operand)
+        cond = topic_match_sa(operand, exact=exact)
         return query.where(maybe_negate(cond))
+
+    def by_topic(self, query: Select, operand: str, maybe_negate: ConditionTransform) -> Select:
+        return self.narrow_by_topic(query, operand, maybe_negate, exact=False)
+
+    def by_exact_topic(
+        self, query: Select, operand: str, maybe_negate: ConditionTransform
+    ) -> Select:
+        return self.narrow_by_topic(query, operand, maybe_negate, exact=True)
 
     def by_sender(
         self, query: Select, operand: str | int, maybe_negate: ConditionTransform
@@ -925,7 +937,7 @@ def can_narrow_define_conversation(narrow: list[NarrowParameter]) -> bool:
         elif term.operator in ["stream", "channel"]:
             contains_channel_term = True
 
-        elif term.operator == "topic":
+        elif term.operator in ["topic", "exact-topic"]:
             contains_topic_term = True
 
         if contains_channel_term and contains_topic_term:
@@ -941,7 +953,7 @@ def update_narrow_terms_containing_empty_topic_fallback_name(
         return narrow
 
     for term in narrow:
-        if term.operator == "topic":
+        if term.operator in ["topic", "exact-topic"]:
             term.operand = maybe_rename_general_chat_to_empty_topic(term.operand)
             break
 
@@ -1012,7 +1024,7 @@ def update_narrow_terms_containing_with_operator(
     filtered_terms = [
         term
         for term in narrow
-        if term.operator not in ["stream", "channel", "topic", "dm", "pm-with"]
+        if term.operator not in ["stream", "channel", "topic", "exact-topic", "dm", "pm-with"]
     ]
 
     if message.recipient.type == Recipient.STREAM:
@@ -1021,6 +1033,7 @@ def update_narrow_terms_containing_with_operator(
         channel_conversation_terms = [
             NarrowParameter(operator="channel", operand=channel_id),
             NarrowParameter(operator="topic", operand=topic),
+            NarrowParameter(operator="exact-topic", operand=topic),
         ]
         return channel_conversation_terms + filtered_terms
 
