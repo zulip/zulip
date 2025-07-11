@@ -1803,6 +1803,42 @@ def redirect_deactivated_user_to_login(realm: Realm, email: str) -> HttpResponse
     return HttpResponseRedirect(redirect_url)
 
 
+@transaction.atomic(savepoint=False)
+def sync_groups_for_prereg_user(
+    prereg_user: PreregistrationUser, group_memberships_sync_map: dict[str, bool]
+) -> None:
+    assert prereg_user.realm is not None
+    realm = prereg_user.realm
+
+    group_names_to_ensure_member = [
+        group_name for group_name, is_member in group_memberships_sync_map.items() if is_member
+    ]
+    group_names_to_ensure_not_member = [
+        group_name for group_name, is_member in group_memberships_sync_map.items() if not is_member
+    ]
+
+    groups_to_ensure_member = list(
+        NamedUserGroup.objects.filter(realm=realm, name__in=group_names_to_ensure_member)
+    )
+    groups_to_ensure_not_member = list(
+        NamedUserGroup.objects.filter(realm=realm, name__in=group_names_to_ensure_not_member)
+    )
+
+    prereg_user.groups.add(*groups_to_ensure_member)
+    prereg_user.groups.remove(*groups_to_ensure_not_member)
+
+    final_group_names = set(prereg_user.groups.all().values_list("name", flat=True))
+
+    stringified_dict = json.dumps(group_memberships_sync_map, sort_keys=True)
+    logging.info(
+        "Synced user groups for PreregistrationUser %s in %s: %s. Final groups set: %s",
+        prereg_user.id,
+        realm.id,
+        stringified_dict,
+        final_group_names,
+    )
+
+
 def sync_groups(
     all_group_names: set[str],
     intended_group_names: set[str],

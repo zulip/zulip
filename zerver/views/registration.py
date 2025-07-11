@@ -135,7 +135,6 @@ from zproject.backends import (
     get_external_method_dicts,
     ldap_auth_enabled,
     password_auth_enabled,
-    sync_groups,
 )
 
 logger = logging.getLogger("")
@@ -843,8 +842,6 @@ def registration_helper(
                 # duplicate email address.  Redirect them to the login
                 # form.
                 return redirect_to_email_login_url(email)
-            else:
-                sync_groups_post_registration(request=request, user_profile=user_profile)
 
         if realm_creation:
             # Because for realm creation, registration happens on the
@@ -915,34 +912,6 @@ def registration_helper(
         context.update(get_realm_create_form_context())
 
     return TemplateResponse(request, "zerver/register.html", context=context)
-
-
-def sync_groups_post_registration(request: HttpRequest, user_profile: UserProfile) -> None:
-    group_memberships_sync_data = get_expirable_session_var(
-        request.session, "registration_group_memberships_sync_map", delete=True
-    )
-    if not group_memberships_sync_data:
-        return
-
-    group_memberships_sync_map = orjson.loads(group_memberships_sync_data)
-    if group_memberships_sync_map:
-        logger.info(
-            "Syncing groups post-registration for new user %s in realm %s: %s",
-            user_profile.id,
-            user_profile.realm_id,
-            group_memberships_sync_map,
-        )
-        assert isinstance(group_memberships_sync_map, dict)
-        sync_groups(
-            all_group_names=set(group_memberships_sync_map.keys()),
-            intended_group_names={
-                group_name
-                for group_name, is_member in group_memberships_sync_map.items()
-                if is_member
-            },
-            user_profile=user_profile,
-            logger=logger,
-        )
 
 
 def login_and_go_to_home(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
