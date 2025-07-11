@@ -278,7 +278,10 @@ export function user_can_delete_own_message(): boolean {
     );
 }
 
-export function should_mask_unread_count(sub_muted: boolean): boolean {
+export function should_mask_unread_count(
+    sub_muted: boolean,
+    unmuted_unread_counts: number,
+): boolean {
     if (
         user_settings.web_stream_unreads_count_display_policy ===
         settings_config.web_stream_unreads_count_display_policy_values.no_streams.code
@@ -290,6 +293,10 @@ export function should_mask_unread_count(sub_muted: boolean): boolean {
         user_settings.web_stream_unreads_count_display_policy ===
         settings_config.web_stream_unreads_count_display_policy_values.unmuted_streams.code
     ) {
+        // For muted channels with unmuted unread counts, we still want to show those counts.
+        if (sub_muted && unmuted_unread_counts > 0) {
+            return false;
+        }
         return sub_muted;
     }
 

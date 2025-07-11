@@ -343,6 +343,7 @@ const testSub = {
     subscribed: true,
     is_recently_active: true,
     can_send_message_group: everyone_group.id,
+    is_muted: true,
 };
 
 const announceSub = {

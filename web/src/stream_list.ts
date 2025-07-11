@@ -23,7 +23,10 @@ import * as pm_list from "./pm_list.ts";
 import * as popovers from "./popovers.ts";
 import * as resize from "./resize.ts";
 import * as scroll_util from "./scroll_util.ts";
-import {web_channel_default_view_values} from "./settings_config.ts";
+import {
+    web_channel_default_view_values,
+    web_stream_unreads_count_display_policy_values,
+} from "./settings_config.ts";
 import * as settings_data from "./settings_data.ts";
 import * as sidebar_ui from "./sidebar_ui.ts";
 import * as stream_data from "./stream_data.ts";
@@ -122,6 +125,9 @@ export let update_count_in_dom = (
     // and it also has sensitive margins related to whether the
     // count is there or not.
     const $subscription_block = $stream_li.find(".subscription_block");
+    const hide_count_for_muted_channels_only =
+        user_settings.web_stream_unreads_count_display_policy ===
+        web_stream_unreads_count_display_policy_values.unmuted_streams.code;
 
     ui_util.update_unread_mention_info_in_dom(
         $subscription_block,
@@ -157,6 +163,16 @@ export let update_count_in_dom = (
         $subscription_block.addClass("stream-with-count");
         $subscription_block.addClass("has-unmuted-unreads");
         $subscription_block.removeClass("has-only-muted-unreads");
+
+        // Ideally, this should be handled with the help of should_mask_unread_count function.
+        // However, when that function is evaluated before unread counts are updated,
+        // it returns true incorrectly -- because the unmuted unread count is still 0 at that point.
+        // As a workaround, we manually toggle the 'hide_unread_counts'.
+        if (hide_count_for_muted_channels_only) {
+            $subscription_block.removeClass("hide_unread_counts");
+        } else {
+            $subscription_block.addClass("hide_unread_counts");
+        }
     } else if (stream_counts.muted_count > 0 && stream_counts.stream_is_muted) {
         // Muted stream, only muted unreads.
         ui_util.update_unread_count_in_dom($subscription_block, stream_counts.muted_count);
@@ -467,6 +483,7 @@ function build_stream_sidebar_li(sub: StreamSubscription): JQuery {
     const is_muted = stream_data.is_muted(sub.stream_id);
     const can_post_messages = stream_data.can_post_messages_in_stream(sub);
     const url = hash_util.channel_url_by_user_setting(sub.stream_id);
+    const stream_counts = unread.unread_count_info_for_stream(sub.stream_id);
     const args = {
         name,
         id: sub.stream_id,
@@ -476,7 +493,10 @@ function build_stream_sidebar_li(sub: StreamSubscription): JQuery {
         is_web_public: sub.is_web_public,
         color: sub.color,
         pin_to_top: sub.pin_to_top,
-        hide_unread_count: settings_data.should_mask_unread_count(is_muted),
+        hide_unread_count: settings_data.should_mask_unread_count(
+            is_muted,
+            stream_counts.unmuted_count,
+        ),
         can_post_messages,
         is_empty_topic_only_channel: stream_data.is_empty_topic_only_channel(sub.stream_id),
     };
@@ -646,7 +666,11 @@ export function update_dom_unread_counts_visibility(): void {
         const $subscription_block = stream.get_li().find(".subscription_block");
 
         const is_muted = stream_data.is_muted(stream.sub.stream_id);
-        const hide_count = settings_data.should_mask_unread_count(is_muted);
+        const stream_counts = unread.unread_count_info_for_stream(stream.sub.stream_id);
+        const hide_count = settings_data.should_mask_unread_count(
+            is_muted,
+            stream_counts.unmuted_count,
+        );
 
         if (hide_count) {
             $subscription_block.addClass("hide_unread_counts");
