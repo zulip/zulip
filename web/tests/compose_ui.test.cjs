@@ -1210,6 +1210,15 @@ run_test("markdown_shortcuts", ({override_rewire}) => {
         compose_ui.handle_keydown(event, $("textarea#compose-textarea"));
         assert.equal(format_text_type, "link");
         format_text_type = undefined;
+
+        // Test code block insertion:
+        // Mac = Cmd+Shift+C
+        // Windows/Linux = Ctrl+Shift+C
+        event.key = "c";
+        event.shiftKey = true;
+        compose_ui.handle_keydown(event, $("textarea#compose-textarea"));
+        assert.equal(format_text_type, "code");
+        format_text_type = undefined;
     }
 
     // This function cross tests the Cmd/Ctrl + Markdown shortcuts in
