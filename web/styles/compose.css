@@ -1198,6 +1198,7 @@ textarea.new_message_textarea {
     &.disabled {
         background-color: transparent;
         border-color: transparent;
+        max-width: fit-content;
     }
 }
 
