@@ -334,7 +334,13 @@ export const get_stream_topics_policy_values = (): StreamTopicsPolicyValues => {
     return {
         inherit: {
             code: "inherit",
-            description: $t({defaultMessage: "Organization default"}),
+            description: $t(
+                {defaultMessage: "Organization default ({org_level_topics_policy})"},
+                {
+                    org_level_topics_policy:
+                        realm_topics_policy_values[realm.realm_topics_policy].description,
+                },
+            ),
         },
         ...realm_topics_policy_values,
         empty_topic_only: {
