@@ -290,7 +290,7 @@ audio elements into a link to the original URL.
 The Zulip server does not validate whether uploaded files with an
 audio `Content-Type` are actually playable.
 
-**Changes**: New in Zulip 11.0 (feature level ZF-79b5ee.md).
+**Changes**: New in Zulip 11.0 (feature level 405).
 
 ## Mentions and silent mentions
 
