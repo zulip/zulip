@@ -26,7 +26,7 @@ You can also pin messages for yourself by [starring](/help/star-a-message) them.
 
 {!select-channel-view-general.md!}
 
-1. Click the **pencil** (<i class="fa fa-pencil"></i>) icon
+1. Click the **edit** (<i class="zulip-icon zulip-icon-edit"></i>) icon
    to the right of the channel name to edit the description.
 
 1. Add any number of links, which you can separate with `|` or another symbol.
