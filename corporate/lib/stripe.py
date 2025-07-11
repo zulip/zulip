@@ -3046,7 +3046,7 @@ class BillingSession(ABC):
 
         licenses = update_plan_request.licenses
         if licenses is not None:
-            if plan.is_free_trial():  # nocoverage
+            if plan.is_free_trial():
                 raise JsonableError(
                     _("Cannot update licenses in the current billing period for free trial plan.")
                 )
