@@ -378,7 +378,7 @@ export let insert_new_reaction = (
         count: 1,
         label: new_label,
         local_id: get_local_reaction_id(clean_reaction_object),
-        emoji_alt_code: user_settings.emojiset === "text",
+        ...(user_settings.emojiset === "text" && {emoji_alt_code: true}),
         is_realm_emoji,
         vote_text: "", // Updated below
         class: reaction_class,
@@ -613,7 +613,6 @@ function make_clean_reaction({
         emoji_code,
         reaction_type,
     });
-    const emoji_alt_code = user_settings.emojiset === "text";
     const is_realm_emoji =
         emoji_details.reaction_type === "realm_emoji" ||
         emoji_details.reaction_type === "zulip_extra_emoji";
@@ -622,7 +621,7 @@ function make_clean_reaction({
         local_id,
         user_ids,
         ...emoji_details,
-        emoji_alt_code,
+        ...(user_settings.emojiset === "text" && {emoji_alt_code: true}),
         is_realm_emoji,
         ...build_reaction_data(user_ids, emoji_name, should_display_reactors),
     };
