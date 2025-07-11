@@ -278,6 +278,8 @@ function item_click_callback(event: JQuery.ClickEvent, dropdown: tippy.Instance)
     }
     compose_state.set_selected_recipient_id(recipient_id);
     compose_state.set_recipient_edited_manually(true);
+    // Enable or disable topic input based on `topics_policy`.
+    update_topic_displayed_text(compose_state.topic());
     on_compose_select_recipient_update();
     compose_select_recipient_dropdown_widget.item_clicked = true;
     dropdown.hide();
@@ -325,8 +327,6 @@ function on_hidden_callback(): void {
         return;
     }
     if (compose_state.get_message_type() === "stream") {
-        // Enable or disable topic input based on `topics_policy`.
-        update_topic_displayed_text(compose_state.topic());
         // Always move focus to the topic input even if it's not empty,
         // since it's likely the user will want to update the topic
         // after updating the stream.
@@ -439,7 +439,10 @@ export function update_topic_displayed_text(topic_name = "", has_topic_focus = f
     }
 
     const is_empty_string_topic = compose_state.topic() === "";
-    if (is_empty_string_topic && !has_topic_focus && recipient_widget_hidden) {
+    if (
+        is_empty_string_topic &&
+        ($input.prop("disabled") || (!has_topic_focus && recipient_widget_hidden))
+    ) {
         $input.attr("placeholder", util.get_final_topic_display_name(""));
         $input.addClass("empty-topic-display");
     } else {
