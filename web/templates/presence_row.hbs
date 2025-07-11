@@ -2,7 +2,7 @@
     <div class="selectable_sidebar_block">
         {{#if user_list_style.WITH_STATUS}}
             <span class="zulip-icon zulip-icon-{{user_circle_class}} {{user_circle_class}} user-circle"></span>
-            <a class="user-presence-link" href="{{href}}">
+            <a class="user-presence-link" href="{{href}}" draggable="false">
                 <div class="user-name-and-status-wrapper">
                     <div class="user-name-and-status-emoji">
                         {{> user_full_name .}}
@@ -18,7 +18,7 @@
                     <span class="zulip-icon zulip-icon-{{user_circle_class}} {{user_circle_class}} user-circle"></span>
                 </div>
             </div>
-            <a class="user-presence-link" href="{{href}}">
+            <a class="user-presence-link" href="{{href}}" draggable="false">
                 <div class="user-name-and-status-wrapper">
                     <div class="user-name-and-status-emoji">
                         {{> user_full_name .}}
@@ -29,7 +29,7 @@
             </a>
         {{else}}
             <span class="zulip-icon zulip-icon-{{user_circle_class}} {{user_circle_class}} user-circle"></span>
-            <a class="user-presence-link" href="{{href}}">
+            <a class="user-presence-link" href="{{href}}" draggable="false">
                 <div class="user-name-and-status-emoji">
                     {{> user_full_name .}}
                     {{> status_emoji status_emoji_info}}

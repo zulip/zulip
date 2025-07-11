@@ -427,6 +427,11 @@ export function initialize(): void {
                 return;
             }
             e.preventDefault();
+            if (document.getSelection()?.type === "Range") {
+                // To prevent blur caused by other link click handlers.
+                e.stopPropagation();
+                return;
+            }
             const row_id = get_row_id_for_narrowing(this);
             // TODO: Navigate user according to `web_channel_default_view` setting.
             // Also, update the tooltip hotkey in recipient bar.
@@ -439,6 +444,9 @@ export function initialize(): void {
             return;
         }
         e.preventDefault();
+        if (document.getSelection()?.type === "Range") {
+            return;
+        }
         const row_id = get_row_id_for_narrowing(this);
         message_view.narrow_by_topic(row_id, {trigger: "message header"});
     });
@@ -460,6 +468,12 @@ export function initialize(): void {
             return;
         }
         if ($(e.target).parents(".user-profile-picture").length === 1) {
+            return;
+        }
+        if (document.getSelection()?.type === "Range") {
+            e.preventDefault();
+            // To prevent blur caused by other link click handlers.
+            e.stopPropagation();
             return;
         }
 
@@ -709,6 +723,13 @@ export function initialize(): void {
         ].join(", ");
 
         $(sel).on("click", "a", function (this: HTMLElement) {
+            // Don't blur if topic text is selected
+            if (
+                this.closest("#stream_filters") !== null &&
+                document.getSelection()?.type === "Range"
+            ) {
+                return;
+            }
             this.blur();
         });
     }
