@@ -449,6 +449,7 @@ export function left_sidebar_scroll_zoomed_in_topic_into_view(): void {
 
 // For zooming, we only do topic-list stuff here...let stream_list
 // handle hiding/showing the non-narrowed streams
+// Local history is available at this point, so we call "add_unresolved_pill_by_default" again here.
 export function zoom_in(): void {
     zoomed = true;
 
@@ -482,6 +483,7 @@ export function zoom_in(): void {
             // position since we just added some topics to the list which moved user
             // to a different position anyway.
             left_sidebar_scroll_zoomed_in_topic_into_view();
+            add_unresolved_pill_by_default();
             topic_state_typeahead?.lookup(true);
         }
     }
@@ -530,6 +532,18 @@ export function update_clear_button(): void {
     }
 }
 
+function add_unresolved_pill_by_default(): void {
+    // Add the "Unresolved topics" pill by default when
+    // there are resolved topics and rebuild the topic list.
+    const stream_id = active_stream_id();
+    assert(stream_id !== undefined);
+    if (stream_topic_history.stream_has_locally_available_resolved_topics(stream_id)) {
+        const default_filter = filter_options.get($t({defaultMessage: "Unresolved topics"}))!;
+        search_pill_widget?.appendValue(default_filter);
+        update_widget_for_stream(stream_id);
+    }
+}
+
 export function setup_topic_search_typeahead(): void {
     const $input = $("#topic_filter_query");
     const $pill_container = $("#left-sidebar-filter-topic-input");
@@ -540,17 +554,19 @@ export function setup_topic_search_typeahead(): void {
 
     search_pill_widget = search_pill.create_pills($pill_container);
 
+    add_unresolved_pill_by_default();
+
     const typeahead_input: TypeaheadInputElement = {
         $element: $input,
         type: "contenteditable",
     };
 
+    const stream_id = active_stream_id();
+    assert(stream_id !== undefined);
+
     const options = {
         items: filter_options.size,
         source() {
-            const stream_id = active_stream_id();
-            assert(stream_id !== undefined);
-
             if (!stream_topic_history.stream_has_locally_available_resolved_topics(stream_id)) {
                 return [];
             }
@@ -602,13 +618,7 @@ export function setup_topic_search_typeahead(): void {
 
     search_pill_widget.onPillRemove(() => {
         update_clear_button();
-        const stream_id = active_stream_id();
-        if (stream_id !== undefined) {
-            const widget = active_widgets.get(stream_id);
-            if (widget) {
-                widget.build();
-            }
-        }
+        update_widget_for_stream(stream_id);
     });
 }
 
