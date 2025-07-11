@@ -21,13 +21,15 @@ is allowed to rename topics.
 
 {start_tabs}
 
-1. Click the **pencil** (<i class="fa fa-pencil"></i>) icon in the message
-   recipient bar. If you do not see the **pencil** (<i class="fa
-   fa-pencil"></i>) icon, you do not have permission to rename this topic.
+1. Click the **edit topic** (<i class="zulip-icon zulip-icon-pencil"></i>) icon in
+   the message recipient bar. If you do not see the
+   **edit topic** (<i class="zulip-icon zulip-icon-pencil"></i>) icon, you do not
+   have permission to rename this topic.
 
 1. Edit the topic name.
 
-1. Click the **checkmark** (<i class="fa fa-check"></i>) icon to save your changes.
+1. Click the **save** (<i class="zulip-icon zulip-icon-check"></i>) icon
+   to save your changes.
 
 {end_tabs}
 
