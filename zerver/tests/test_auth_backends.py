@@ -3656,8 +3656,11 @@ class SAMLAuthBackendTest(SocialAuthBase):
             self.logger_output("Returning role owner for user creation", type="info"),
         )
 
-        self.assertIn(
-            f"INFO:root:Syncing groups post-registration for new user {user_profile.id} in realm {realm.id}",
+        prereg_user = PreregistrationUser.objects.last()
+        assert prereg_user is not None
+        self.assertEqual(
+            f"INFO:root:Synced user groups for PreregistrationUser {prereg_user.id} in {realm.id}: "
+            '{"testgroup1": true, "testgroup2": false}. Final groups set: {\'testgroup1\'}',
             mock_root_logger.output[0],
         )
 
@@ -3735,8 +3738,11 @@ class SAMLAuthBackendTest(SocialAuthBase):
             )
         )
 
-        self.assertIn(
-            f"INFO:root:Syncing groups post-registration for new user {user_profile.id} in realm {realm.id}",
+        prereg_user = PreregistrationUser.objects.last()
+        assert prereg_user is not None
+        self.assertEqual(
+            f"INFO:root:Synced user groups for PreregistrationUser {prereg_user.id} in {realm.id}: "
+            '{"testgroup1": true, "testgroup2": false}. Final groups set: {\'testgroup1\'}',
             mock_root_logger.output[0],
         )
 

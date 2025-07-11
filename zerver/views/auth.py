@@ -103,6 +103,7 @@ from zproject.backends import (
     ldap_auth_enabled,
     password_auth_enabled,
     saml_auth_enabled,
+    sync_groups_for_prereg_user,
     validate_otp_params,
 )
 
@@ -232,18 +233,6 @@ def maybe_send_to_registration(
                 expiry_seconds=EXPIRABLE_SESSION_VAR_DEFAULT_EXPIRY_SECS,
             )
 
-    if group_memberships_sync_map:
-        set_expirable_session_var(
-            request.session,
-            "registration_group_memberships_sync_map",
-            orjson.dumps(group_memberships_sync_map).decode(),
-            expiry_seconds=EXPIRABLE_SESSION_VAR_DEFAULT_EXPIRY_SECS,
-        )
-    elif "registration_group_memberships_sync_map" in request.session:  # nocoverage
-        # Ensure it isn't possible to leak this state across
-        # registration attempts.
-        del request.session["registration_group_memberships_sync_map"]
-
     try:
         # TODO: This should use get_realm_from_request, but a bunch of tests
         # rely on mocking get_subdomain here, so they'll need to be tweaked first.
@@ -327,8 +316,10 @@ def maybe_send_to_registration(
 
         if streams_to_subscribe:
             prereg_user.streams.set(streams_to_subscribe)
-        if user_groups:
-            prereg_user.groups.set(user_groups)
+        if user_groups or group_memberships_sync_map:
+            prereg_user.groups.set(user_groups or [])
+            if group_memberships_sync_map:
+                sync_groups_for_prereg_user(prereg_user, group_memberships_sync_map)
         if include_realm_default_subscriptions is not None:
             prereg_user.include_realm_default_subscriptions = include_realm_default_subscriptions
 
