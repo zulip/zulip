@@ -577,7 +577,7 @@ export async function manage_organization(page: Page): Promise<void> {
     const organization_settings = '.link-item a[href="#organization"]';
     await page.waitForSelector(organization_settings, {visible: true});
     await page.click(organization_settings);
-    await page.waitForSelector("#settings_overlay_container.show", {visible: true});
+    await page.waitForSelector("#settings_overlay_container .overlay.show", {visible: true});
 
     const url = await page_url_with_fragment(page);
     assert.match(url, /^http:\/\/[^/]+\/#organization/, "Unexpected organization settings URL");
