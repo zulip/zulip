@@ -2578,19 +2578,19 @@ test("message people", ({override, override_rewire}) => {
         filter_pills: false,
     };
 
-    results = ct.get_person_suggestions("Ha", opts);
+    results = ct.get_person_suggestions("Ha", ct.max_num_items, opts);
     assert.deepEqual(results, [harry_item, hal_item]);
 
     // Now let's exclude Hal and include King Hamlet.
     user_ids = [hamlet.user_id, harry.user_id];
 
-    results = ct.get_person_suggestions("Ha", opts);
+    results = ct.get_person_suggestions("Ha", ct.max_num_items, opts);
     assert.deepEqual(results, [harry_item, hamlet_item]);
 
     // Reincluding Hal and deactivating harry
     user_ids = [hamlet.user_id, harry.user_id, hal.user_id];
     people.deactivate(harry);
-    results = ct.get_person_suggestions("Ha", opts);
+    results = ct.get_person_suggestions("Ha", ct.max_num_items, opts);
     // harry is excluded since it has been deactivated.
     assert.deepEqual(results, [hal_item, hamlet_item]);
 
@@ -2598,18 +2598,22 @@ test("message people", ({override, override_rewire}) => {
     // as it has more than 20 members.
     opts.filter_groups_for_dm = true;
     override_rewire(ct, "max_group_size_for_dm", 4);
-    results = ct.get_person_suggestions("rs", opts);
+    results = ct.get_person_suggestions("rs", ct.max_num_items, opts);
     assert.deepEqual(results, [hamletcharacters, admins]);
 });
 
 test("person suggestion for unique full name syntax", () => {
-    let results = ct.get_person_suggestions(`${ali.full_name}|${ali.user_id}`, {});
+    let results = ct.get_person_suggestions(
+        `${ali.full_name}|${ali.user_id}`,
+        ct.max_num_items,
+        {},
+    );
     // Ali is not a valid user, so we should get no results.
     assert.deepEqual(results, []);
 
     // Add Ali as a valid user.
     people.add_valid_user_id(ali.user_id);
-    results = ct.get_person_suggestions(`${ali.full_name}|${ali.user_id}`, {});
+    results = ct.get_person_suggestions(`${ali.full_name}|${ali.user_id}`, ct.max_num_items, {});
     assert.deepEqual(results, [ali_item]);
 });
 
@@ -2622,17 +2626,17 @@ test("muted users excluded from results", () => {
     };
 
     // Nobody is muted
-    results = ct.get_person_suggestions("corde", opts);
+    results = ct.get_person_suggestions("corde", ct.max_num_items, opts);
     assert.deepEqual(results, [cordelia_item]);
 
     // Mute Cordelia, and test that she's excluded from results.
     muted_users.add_muted_user(cordelia.user_id);
-    results = ct.get_person_suggestions("corde", opts);
+    results = ct.get_person_suggestions("corde", ct.max_num_items, opts);
     assert.deepEqual(results, []);
 
     // Make sure our muting logic doesn't break wildcard mentions
     // or user group mentions.
-    results = ct.get_person_suggestions("all", opts);
+    results = ct.get_person_suggestions("all", ct.max_num_items, opts);
     const mention_all = broadcast_item(ct.broadcast_mentions()[0]);
     assert.deepEqual(results, [mention_all, call_center]);
 });
@@ -2657,13 +2661,13 @@ test("direct message recipients sorted according to stream / topic being viewed"
 
     // When viewing no stream, sorting is alphabetical
     compose_state.set_stream_id("");
-    results = ct.get_pm_people("li");
+    results = ct.get_pm_people("li", ct.max_num_items);
     // `get_pm_people` can't return mentions, so the items are all user items.
     assert.deepEqual(results, [ali_item, alice_item, cordelia_item]);
 
     // When viewing denmark stream, subscriber cordelia is placed higher
     compose_state.set_stream_id(denmark_stream.stream_id);
-    results = ct.get_pm_people("li");
+    results = ct.get_pm_people("li", ct.max_num_items);
     assert.deepEqual(results, [cordelia_item, ali_item, alice_item]);
 
     // Simulating just alice being subscribed to denmark.
@@ -2675,6 +2679,6 @@ test("direct message recipients sorted according to stream / topic being viewed"
 
     // When viewing denmark stream to which alice is subscribed, ali is not
     // 1st despite having an exact name match with the query.
-    results = ct.get_pm_people("ali");
+    results = ct.get_pm_people("ali", ct.max_num_items);
     assert.deepEqual(results, [alice_item, ali_item]);
 });
