@@ -30,7 +30,7 @@ API](/api/send-message).
 
 {!select-channel-view-general.md!}
 
-1. Click **Generate email address** under **Email address**.
+1. Under **Channel details**, click **Generate email address**.
 
 1. Select **Who should be the sender of the Zulip messages for this email
    address**.
