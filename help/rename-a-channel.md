@@ -13,7 +13,7 @@ and Unicode emoji.
 
 {!select-channel-view-general.md!}
 
-1. Click the **pencil** (<i class="fa fa-pencil"></i>) icon
+1. Click the **edit** (<i class="zulip-icon zulip-icon-edit"></i>) icon
    to the right of the channel name, and enter a new channel name.
 
 {!save-changes.md!}
