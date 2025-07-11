@@ -25,7 +25,7 @@ topic](/help/general-chat-channels).
 
 {end_tabs}
 
-## Configure permission to post to “*general chat*” in a channel
+## Configure permission to post to “*general chat*” in a specific channel
 
 {start_tabs}
 
