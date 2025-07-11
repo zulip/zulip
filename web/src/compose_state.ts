@@ -102,7 +102,9 @@ export function composing(): boolean {
 
 function get_or_set(
     input_selector: string,
-    keep_leading_whitespace?: boolean,
+    // For the compose box, it's important to preserve leading spaces,
+    // but not newlines.
+    keep_leading_spaces?: boolean,
     no_trim?: boolean,
 ): (newval?: string) => string {
     // We can't hoist the assignment of '$elem' out of this lambda,
@@ -116,8 +118,8 @@ function get_or_set(
         }
         if (no_trim) {
             return oldval;
-        } else if (keep_leading_whitespace) {
-            return oldval.trimEnd();
+        } else if (keep_leading_spaces) {
+            return oldval.trimEnd().replace(/^(\r?\n)+/, "");
         }
         return oldval.trim();
     };
