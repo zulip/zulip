@@ -478,6 +478,7 @@ function build_stream_sidebar_li(sub: StreamSubscription): JQuery {
         pin_to_top: sub.pin_to_top,
         hide_unread_count: settings_data.should_mask_unread_count(is_muted),
         can_post_messages,
+        is_empty_topic_only_channel: stream_data.is_empty_topic_only_channel(sub.stream_id),
     };
     const $list_item = $(render_stream_sidebar_row(args));
     return $list_item;
