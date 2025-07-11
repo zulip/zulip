@@ -3197,7 +3197,7 @@ paths:
                                 [message-flags]: /api/update-message-flags#available-flags
                                 [message-event]: /api/get-events#message
                                 [message-delete]: /api/get-events#delete_message
-                                [all-read]: /help/marking-messages-as-read#mark-all-messages-as-read
+                                [all-read]: /help/marking-messages-as-read#mark-messages-in-multiple-topics-and-channels-as-read
                               properties:
                                 id:
                                   $ref: "#/components/schemas/EventIdSchema"
