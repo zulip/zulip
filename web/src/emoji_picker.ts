@@ -759,7 +759,7 @@ function handle_status_emoji_clicked(emoji_name: string): void {
     }
     user_status_ui.set_selected_emoji_info(emoji_info);
     user_status_ui.update_button();
-    user_status_ui.toggle_clear_message_button();
+    user_status_ui.toggle_clear_status_button();
 }
 
 function handle_composition_emoji_clicked(emoji_name: string): void {
