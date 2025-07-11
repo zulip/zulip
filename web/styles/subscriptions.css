@@ -155,6 +155,10 @@ h4.user_group_setting_subsection_title {
 .subscriber_list_settings_container {
     display: flex;
     flex-direction: column;
+
+    .input-group {
+        margin-bottom: 10px;
+    }
 }
 
 .add-group-member-loading-spinner,
@@ -242,13 +246,14 @@ h4.user_group_setting_subsection_title {
 .member_list_add {
     width: 100%;
     margin: 0 0 10px;
+}
 
-    .user_group_subscription_request_result,
-    .stream_subscription_request_result {
-        & a {
-            color: inherit;
-        }
+.user_group_subscription_request_result,
+.stream_subscription_request_result {
+    & a {
+        color: inherit;
     }
+    margin-bottom: 10px;
 }
 
 .member-search,
@@ -284,6 +289,31 @@ h4.user_group_setting_subsection_title {
        container. */
     .input {
         flex-grow: 1;
+    }
+}
+
+.add_subscriber_button_wrapper,
+.add_member_button_wrapper {
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr;
+    place-items: center;
+
+    .check,
+    .add-subscriber-button,
+    .add-member-button {
+        grid-column: 1 / 2;
+        grid-row: 1 / 2;
+        z-index: 1;
+        visibility: visible;
+        max-height: 1.75em;
+        width: 100%;
+        position: relative;
+
+        &.hidden-below {
+            visibility: hidden;
+            z-index: -1;
+        }
     }
 }
 
@@ -875,6 +905,7 @@ h4.user_group_setting_subsection_title {
 
     .pill-container {
         cursor: not-allowed;
+        pointer-events: none;
     }
 }
 

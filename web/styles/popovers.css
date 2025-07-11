@@ -230,7 +230,14 @@
     pointer-events: none;
 }
 
-.hidden-remove-button-row:hover .hidden-remove-button {
+.hidden-remove-button:has(.button-loading-indicator) {
+    visibility: visible;
+    cursor: default;
+    opacity: 1;
+}
+
+.hidden-remove-button-row:hover
+    .hidden-remove-button:not(:has(.button-loading-indicator)) {
     opacity: 1;
     visibility: visible;
     pointer-events: auto;
