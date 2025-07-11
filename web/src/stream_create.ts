@@ -13,7 +13,6 @@ import {$t, $t_html} from "./i18n.ts";
 import * as keydown_util from "./keydown_util.ts";
 import * as loading from "./loading.ts";
 import * as onboarding_steps from "./onboarding_steps.ts";
-import {page_params} from "./page_params.ts";
 import * as settings_components from "./settings_components.ts";
 import * as settings_config from "./settings_config.ts";
 import * as settings_data from "./settings_data.ts";
@@ -405,14 +404,12 @@ function create_stream(): void {
         ...group_setting_values,
     };
 
-    if (page_params.development_environment) {
-        assert(folder_widget !== undefined);
-        const folder_id = folder_widget.value();
-        if (folder_id !== settings_config.no_folder_selected) {
-            // We do not include "folder_id" in request data if
-            // new stream will not be added to any folder.
-            data.folder_id = JSON.stringify(folder_id);
-        }
+    assert(folder_widget !== undefined);
+    const folder_id = folder_widget.value();
+    if (folder_id !== settings_config.no_folder_selected) {
+        // We do not include "folder_id" in request data if
+        // new stream will not be added to any folder.
+        data.folder_id = JSON.stringify(folder_id);
     }
 
     // Subscribe yourself and possible other people to a new stream.
@@ -466,13 +463,11 @@ export function new_stream_clicked(stream_name: string, folder_id: number | unde
         $("#create_stream_name").val(stream_name);
     }
     show_new_stream_modal();
-    if (page_params.development_environment) {
-        assert(folder_widget !== undefined);
-        if (folder_id) {
-            folder_widget.render(folder_id);
-        } else {
-            folder_widget.render(-1);
-        }
+    assert(folder_widget !== undefined);
+    if (folder_id) {
+        folder_widget.render(folder_id);
+    } else {
+        folder_widget.render(-1);
     }
     $("#create_stream_name").trigger("focus");
 }

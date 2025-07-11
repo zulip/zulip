@@ -16,7 +16,6 @@ import * as group_permission_settings from "./group_permission_settings.ts";
 import type {AssignedGroupPermission, GroupGroupSettingName} from "./group_permission_settings.ts";
 import * as group_setting_pill from "./group_setting_pill.ts";
 import {$t} from "./i18n.ts";
-import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
 import {
     realm_default_settings_schema,
@@ -2002,13 +2001,7 @@ export function get_group_assigned_user_group_permissions(group: UserGroup): {
     return group_assigned_user_group_permissions;
 }
 
-export function set_up_folder_dropdown_widget(
-    sub?: StreamSubscription,
-): DropdownWidget | undefined {
-    if (!page_params.development_environment) {
-        return undefined;
-    }
-
+export function set_up_folder_dropdown_widget(sub?: StreamSubscription): DropdownWidget {
     const folder_options = (): dropdown_widget.Option[] => {
         const folders = channel_folders.get_channel_folders();
         const options: dropdown_widget.Option[] = folders.map((folder) => ({
