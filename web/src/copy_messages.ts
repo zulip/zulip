@@ -328,7 +328,10 @@ export function analyze_selection(selection: Selection): {
 
         $startc = $(range.startContainer);
         start_data = find_boundary_tr(
-            $startc.parents(".selectable_row, .message_header").first(),
+            $startc
+                .parents(".selectable_row, .message_header")
+                .not(".overlay-message-header")
+                .first(),
             ($row) => $row.next(),
         );
         if (start_data === undefined) {
