@@ -155,6 +155,7 @@
 * [Fetch an API key (production)](/api/fetch-api-key)
 * [Fetch an API key (development only)](/api/dev-fetch-api-key)
 * [Send a test notification to mobile device(s)](/api/test-notify)
+* [Register E2EE push device](/api/register-push-device)
 * [Add an APNs device token](/api/add-apns-token)
 * [Remove an APNs device token](/api/remove-apns-token)
 * [Add an FCM registration token](/api/add-fcm-token)
