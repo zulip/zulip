@@ -63,8 +63,7 @@ counter next to the **Drafts** button in the compose box shows how many there ar
 
 {!go-to-draft-messages.md!}
 
-1. Click the **pencil** (<i class="fa fa-pencil"></i>) icon on the draft you
-   want to restore.
+1. Click on the draft you want to restore.
 
 !!! keyboard_tip ""
 
@@ -77,8 +76,7 @@ counter next to the **Drafts** button in the compose box shows how many there ar
 
 1. Click the **Drafts** button on the right side of the compose box.
 
-1. Click the **pencil** (<i class="fa fa-pencil"></i>) icon on the draft you
-   want to restore.
+1. Click on the draft you want to restore.
 
 !!! keyboard_tip ""
 
