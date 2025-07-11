@@ -1960,6 +1960,14 @@ li.topic-list-item {
 }
 
 .zoom-in {
+    .stream-list-section-container {
+        /* We don't want any top margin when zoomed in,
+           which would otherwise cause the BACK TO CHANNELS
+           row to appear to shift around once a user begins
+           to scroll through zoomed-in topics. */
+        margin-top: 0;
+    }
+
     .narrow-filter > .bottom_left_row {
         position: sticky;
         /* We need to hold the space where the BACK TO CHANNELS
