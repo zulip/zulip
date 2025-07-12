@@ -2033,11 +2033,40 @@ export function initialize(): void {
                             parsed.success &&
                             parsed.data.code === "CANNOT_DEACTIVATE_GROUP_IN_USE"
                         ) {
+                            const subgroup_objections = parsed.data.objections.filter(
+                                (objection) => objection.type === "subgroup",
+                            );
+                            let group_used_for_permissions = true;
+                            let supergroups;
+                            if (subgroup_objections.length === parsed.data.objections.length) {
+                                // If the user group is only used as subgroups and not in
+                                // any of the permission, then we show a different error
+                                // message.
+                                const supergroup_ids = z
+                                    .array(z.number())
+                                    .parse(subgroup_objections[0]!.supergroup_ids);
+                                supergroups = supergroup_ids.map((group_id) => {
+                                    const group = user_groups.get_user_group_from_id(group_id);
+                                    const group_name = user_groups.get_display_group_name(
+                                        group.name,
+                                    );
+                                    return {
+                                        group_id,
+                                        group_name,
+                                        settings_url: hash_util.group_edit_url(group, "members"),
+                                    };
+                                });
+                                group_used_for_permissions = false;
+                            }
                             $("#deactivation-confirm-modal .dialog_submit_button").prop(
                                 "disabled",
                                 true,
                             );
-                            const rendered_error_banner = render_cannot_deactivate_group_banner();
+                            const rendered_error_banner = render_cannot_deactivate_group_banner({
+                                group_used_for_permissions,
+                                supergroups,
+                            });
+
                             $("#dialog_error")
                                 .html(rendered_error_banner)
                                 .addClass("alert-error")
