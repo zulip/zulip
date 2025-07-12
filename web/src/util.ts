@@ -622,3 +622,12 @@ export async function sha256_hash(text: string): Promise<string | undefined> {
     const hashHex = hashArray.map((byte) => byte.toString(16).padStart(2, "0")).join("");
     return hashHex;
 }
+
+export function generate_idempotency_key(): string | undefined {
+    // The Web Crypto API is only available in secure contexts (HTTPS or localhost).
+    if (!window.isSecureContext) {
+        return undefined;
+    }
+
+    return crypto.randomUUID();
+}
