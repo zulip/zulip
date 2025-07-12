@@ -112,7 +112,15 @@ from zerver.lib.user_groups import (
 from zerver.lib.user_topics import get_users_with_user_topic_visibility_policy
 from zerver.lib.users import access_bot_by_id, bulk_access_users_by_email, bulk_access_users_by_id
 from zerver.lib.utils import assert_is_not_none
-from zerver.models import ChannelFolder, Stream, UserMessage, UserProfile, UserTopic
+from zerver.models import (
+    ChannelFolder,
+    Realm,
+    Stream,
+    UserGroup,
+    UserMessage,
+    UserProfile,
+    UserTopic,
+)
 from zerver.models.groups import SystemGroups
 from zerver.models.streams import StreamTopicsPolicyEnum
 from zerver.models.users import get_system_bot
@@ -648,6 +656,42 @@ def you_were_just_subscribed_message(
 RETENTION_DEFAULT: str | int = "realm_default"
 
 
+def access_requested_group_permissions(
+    user_profile: UserProfile,
+    realm: Realm,
+    request_settings_dict: dict[str, Any],
+) -> tuple[dict[str, UserGroup], dict[int, UserGroupMembersData]]:
+    anonymous_group_membership = {}
+    group_settings_map = {}
+    system_groups_name_dict = get_role_based_system_groups_dict(realm)
+    for setting_name, permission_configuration in Stream.stream_permission_group_settings.items():
+        assert setting_name in request_settings_dict
+        if request_settings_dict[setting_name] is not None:
+            setting_request_value = request_settings_dict[setting_name]
+            setting_value = parse_group_setting_value(
+                setting_request_value, system_groups_name_dict[SystemGroups.NOBODY]
+            )
+            group_settings_map[setting_name] = access_user_group_for_setting(
+                setting_value,
+                user_profile,
+                setting_name=setting_name,
+                permission_configuration=permission_configuration,
+            )
+            if not isinstance(setting_value, int):
+                anonymous_group_membership[group_settings_map[setting_name].id] = setting_value
+        else:
+            group_settings_map[setting_name] = get_stream_permission_default_group(
+                setting_name, system_groups_name_dict, creator=user_profile
+            )
+            if permission_configuration.default_group_name == "stream_creator_or_nobody":
+                # Default for some settings like "can_administer_channel_group"
+                # is anonymous group with stream creator.
+                anonymous_group_membership[group_settings_map[setting_name].id] = (
+                    UserGroupMembersData(direct_subgroups=[], direct_members=[user_profile.id])
+                )
+    return group_settings_map, anonymous_group_membership
+
+
 @transaction.atomic(savepoint=False)
 @require_non_guest_user
 @typed_endpoint
@@ -694,35 +738,12 @@ def add_subscriptions_backend(
     if principals is None:
         principals = []
 
-    anonymous_group_membership = {}
-    group_settings_map = {}
     request_settings_dict = locals()
-    system_groups_name_dict = get_role_based_system_groups_dict(realm)
-    for setting_name, permission_configuration in Stream.stream_permission_group_settings.items():
-        assert setting_name in request_settings_dict
-        if request_settings_dict[setting_name] is not None:
-            setting_request_value = request_settings_dict[setting_name]
-            setting_value = parse_group_setting_value(
-                setting_request_value, system_groups_name_dict[SystemGroups.NOBODY]
-            )
-            group_settings_map[setting_name] = access_user_group_for_setting(
-                setting_value,
-                user_profile,
-                setting_name=setting_name,
-                permission_configuration=permission_configuration,
-            )
-            if not isinstance(setting_value, int):
-                anonymous_group_membership[group_settings_map[setting_name].id] = setting_value
-        else:
-            group_settings_map[setting_name] = get_stream_permission_default_group(
-                setting_name, system_groups_name_dict, creator=user_profile
-            )
-            if permission_configuration.default_group_name == "stream_creator_or_nobody":
-                # Default for some settings like "can_administer_channel_group"
-                # is anonymous group with stream creator.
-                anonymous_group_membership[group_settings_map[setting_name].id] = (
-                    UserGroupMembersData(direct_subgroups=[], direct_members=[user_profile.id])
-                )
+    group_settings_map, anonymous_group_membership = access_requested_group_permissions(
+        user_profile,
+        realm,
+        request_settings_dict,
+    )
 
     folder: ChannelFolder | None = None
     if folder_id is not None:
