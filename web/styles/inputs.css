@@ -48,16 +48,18 @@
     }
 
     &.has-input-icon .input-element {
+        /* Subtract 1px to compensate for the left border */
         padding-left: calc(
             var(--input-icon-starting-offset) + var(--input-icon-width) +
-                var(--input-icon-content-gap)
+                var(--input-icon-content-gap) - 1px
         );
     }
 
     &.has-input-button .input-element {
+        /* Subtract 1px to compensate for the right border */
         padding-right: calc(
             var(--input-button-content-gap) + var(--input-button-width) +
-                var(--input-button-ending-offset)
+                var(--input-button-ending-offset) - 1px
         );
     }
 
