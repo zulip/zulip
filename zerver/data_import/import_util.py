@@ -359,7 +359,7 @@ def build_recipients(
 
 
 def build_realm(
-    zerver_realm: list[ZerverFieldsT], realm_id: int, domain_name: str
+    zerver_realm: list[ZerverFieldsT], realm_id: int, domain_name: str, import_source: str
 ) -> ZerverFieldsT:
     realm = dict(
         zerver_client=[
@@ -386,6 +386,7 @@ def build_realm(
             {"realm": realm_id, "name": name, "id": i}
             for i, name in enumerate(all_default_backend_names(), start=1)
         ],
+        import_source=import_source,
     )
     return realm
 

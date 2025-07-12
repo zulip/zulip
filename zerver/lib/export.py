@@ -435,8 +435,9 @@ def write_table_data(output_file: str, data: dict[str, Any]) -> None:
     # We sort by ids mostly so that humans can quickly do diffs
     # on two export jobs to see what changed (either due to new
     # data arriving or new code being deployed).
-    for table in data.values():
-        table.sort(key=lambda row: row["id"])
+    for value in data.values():
+        if isinstance(value, list):
+            value.sort(key=lambda row: row["id"])
 
     assert output_file.endswith(".json")
 
@@ -2462,6 +2463,8 @@ def do_export_realm(
     # Override the "deactivated" flag on the realm
     if export_as_active is not None:
         response["zerver_realm"][0]["deactivated"] = not export_as_active
+
+    response["import_source"] = "zulip"  # type: ignore[assignment]  # this is an extra info field, not TableData
 
     # Write realm data
     export_file = os.path.join(output_dir, "realm.json")

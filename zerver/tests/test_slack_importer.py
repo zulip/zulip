@@ -1053,7 +1053,8 @@ class SlackImporter(ZulipTestCase):
             passed_realm["zerver_realm"][0]["description"], "Organization imported from Slack!"
         )
         self.assertEqual(passed_realm["zerver_userpresence"], [])
-        self.assert_length(passed_realm.keys(), 16)
+        self.assertEqual(passed_realm["import_source"], "slack")
+        self.assert_length(passed_realm.keys(), 17)
 
         self.assertEqual(realm["zerver_stream"], [])
         self.assertEqual(realm["zerver_userprofile"], [])
