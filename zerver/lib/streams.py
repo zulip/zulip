@@ -123,6 +123,19 @@ def get_stream_topics_policy(realm: Realm, stream: Stream) -> int:
     return stream.topics_policy
 
 
+def validate_topics_policy(
+    topics_policy: str | None, user_profile: UserProfile
+) -> StreamTopicsPolicyEnum | None:
+    if topics_policy is not None and isinstance(topics_policy, StreamTopicsPolicyEnum):
+        if (
+            topics_policy != StreamTopicsPolicyEnum.inherit
+            and not user_profile.can_set_topics_policy()
+        ):
+            raise JsonableError(_("Insufficient permission"))
+        return topics_policy
+    return None
+
+
 def get_default_value_for_history_public_to_subscribers(
     realm: Realm,
     invite_only: bool,

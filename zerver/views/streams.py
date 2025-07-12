@@ -85,6 +85,7 @@ from zerver.lib.streams import (
     list_to_streams,
     stream_to_dict,
     user_has_content_access,
+    validate_topics_policy,
 )
 from zerver.lib.subscription_info import gather_subscriptions
 from zerver.lib.topic import (
@@ -266,6 +267,14 @@ def remove_default_stream(
     return json_success(request)
 
 
+ChannelDescription = Annotated[
+    str | None,
+    StringConstraints(max_length=Stream.MAX_DESCRIPTION_LENGTH),
+    # We don't allow newline characters in stream descriptions.
+    AfterValidator(lambda val: val.replace("\n", " ") if val is not None else None),
+]
+
+
 @typed_endpoint
 def update_stream_backend(
     request: HttpRequest,
@@ -279,8 +288,7 @@ def update_stream_backend(
     can_resolve_topics_group: Json[GroupSettingChangeRequest] | None = None,
     can_send_message_group: Json[GroupSettingChangeRequest] | None = None,
     can_subscribe_group: Json[GroupSettingChangeRequest] | None = None,
-    description: Annotated[str, StringConstraints(max_length=Stream.MAX_DESCRIPTION_LENGTH)]
-    | None = None,
+    description: ChannelDescription = None,
     folder_id: Json[int | None] | MissingType = Missing,
     history_public_to_subscribers: Json[bool] | None = None,
     is_archived: Json[bool] | None = None,
@@ -390,20 +398,16 @@ def update_stream_backend(
         if not user_profile.can_create_web_public_streams():
             raise JsonableError(_("Insufficient permission"))
 
-    if topics_policy is not None and isinstance(topics_policy, StreamTopicsPolicyEnum):
-        if not user_profile.can_set_topics_policy():
-            raise JsonableError(_("Insufficient permission"))
-
-        # Cannot set `topics_policy` to `empty_topic_only` when there are messages
-        # in non-empty topics in the current channel.
-        if topics_policy == StreamTopicsPolicyEnum.empty_topic_only and channel_has_named_topics(
-            stream
-        ):
-            raise CannotSetTopicsPolicyError(
-                get_topic_display_name("", user_profile.default_language)
-            )
-
-        do_set_stream_property(stream, "topics_policy", topics_policy.value, user_profile)
+    validated_topics_policy = validate_topics_policy(topics_policy, user_profile)
+    # Cannot set `topics_policy` to `empty_topic_only` when there are messages
+    # in non-empty topics in the current channel.
+    if (
+        validated_topics_policy == StreamTopicsPolicyEnum.empty_topic_only
+        and channel_has_named_topics(stream)
+    ):
+        raise CannotSetTopicsPolicyError(get_topic_display_name("", user_profile.default_language))
+    if validated_topics_policy is not None:
+        do_set_stream_property(stream, "topics_policy", validated_topics_policy.value, user_profile)
 
     if (
         is_private is not None
@@ -441,9 +445,6 @@ def update_stream_backend(
         do_unarchive_stream(stream, stream.name, acting_user=None)
 
     if description is not None:
-        if "\n" in description:
-            # We don't allow newline characters in stream descriptions.
-            description = description.replace("\n", " ")
         do_change_stream_description(stream, description, acting_user=user_profile)
     if new_name is not None:
         new_name = new_name.strip()
@@ -529,9 +530,7 @@ def list_subscriptions_backend(
 class AddSubscriptionData(BaseModel):
     name: str
     color: str | None = None
-    description: (
-        Annotated[str, StringConstraints(max_length=Stream.MAX_DESCRIPTION_LENGTH)] | None
-    ) = None
+    description: ChannelDescription = None
 
     @model_validator(mode="after")
     def validate_terms(self) -> "AddSubscriptionData":
@@ -743,9 +742,8 @@ def add_subscriptions_backend(
         stream_dict_copy: StreamDict = {}
         stream_dict_copy["name"] = stream_obj.name.strip()
 
-        # We don't allow newline characters in stream descriptions.
         if stream_obj.description is not None:
-            stream_dict_copy["description"] = stream_obj.description.replace("\n", " ")
+            stream_dict_copy["description"] = stream_obj.description
 
         stream_dict_copy["invite_only"] = invite_only
         stream_dict_copy["is_web_public"] = is_web_public
@@ -753,13 +751,9 @@ def add_subscriptions_backend(
         stream_dict_copy["message_retention_days"] = parse_message_retention_days(
             message_retention_days, Stream.MESSAGE_RETENTION_SPECIAL_VALUES_MAP
         )
-        if topics_policy is not None and isinstance(topics_policy, StreamTopicsPolicyEnum):
-            if (
-                topics_policy != StreamTopicsPolicyEnum.inherit
-                and not user_profile.can_set_topics_policy()
-            ):
-                raise JsonableError(_("Insufficient permission"))
-            stream_dict_copy["topics_policy"] = topics_policy.value
+        validated_topics_policy = validate_topics_policy(topics_policy, user_profile)
+        if validated_topics_policy is not None:
+            stream_dict_copy["topics_policy"] = validated_topics_policy.value
         stream_dict_copy["can_add_subscribers_group"] = group_settings_map[
             "can_add_subscribers_group"
         ]
