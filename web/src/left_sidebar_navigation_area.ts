@@ -4,6 +4,7 @@ import _ from "lodash";
 import type {Filter} from "./filter.ts";
 import {localstorage} from "./localstorage.ts";
 import * as message_reminder from "./message_reminder.ts";
+import * as navigation_views from "./navigation_views.ts";
 import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
 import * as resize from "./resize.ts";
@@ -260,6 +261,14 @@ export function handle_home_view_changed(new_home_view: string): void {
 
     reorder_left_sidebar_navigation_list(new_home_view);
     update_dom_with_unread_counts(res, true);
+}
+
+export function get_built_in_primary_condensed_views(): navigation_views.BuiltInViewMetadata[] {
+    return navigation_views.get_built_in_views().slice(0, 5);
+}
+
+export function get_built_in_views(): navigation_views.BuiltInViewMetadata[] {
+    return navigation_views.get_built_in_views();
 }
 
 export function initialize(): void {
