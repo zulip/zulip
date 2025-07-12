@@ -272,6 +272,14 @@ def remove_default_stream(
     return json_success(request)
 
 
+ChannelDescription = Annotated[
+    str | None,
+    StringConstraints(max_length=Stream.MAX_DESCRIPTION_LENGTH),
+    # We don't allow newline characters in stream descriptions.
+    AfterValidator(lambda val: val.replace("\n", " ") if val is not None else None),
+]
+
+
 @typed_endpoint
 def update_stream_backend(
     request: HttpRequest,
@@ -285,8 +293,7 @@ def update_stream_backend(
     can_resolve_topics_group: Json[GroupSettingChangeRequest] | None = None,
     can_send_message_group: Json[GroupSettingChangeRequest] | None = None,
     can_subscribe_group: Json[GroupSettingChangeRequest] | None = None,
-    description: Annotated[str, StringConstraints(max_length=Stream.MAX_DESCRIPTION_LENGTH)]
-    | None = None,
+    description: ChannelDescription = None,
     folder_id: Json[int | None] | MissingType = Missing,
     history_public_to_subscribers: Json[bool] | None = None,
     is_archived: Json[bool] | None = None,
@@ -436,9 +443,6 @@ def update_stream_backend(
         do_unarchive_stream(stream, stream.name, acting_user=None)
 
     if description is not None:
-        if "\n" in description:
-            # We don't allow newline characters in stream descriptions.
-            description = description.replace("\n", " ")
         do_change_stream_description(stream, description, acting_user=user_profile)
     if new_name is not None:
         new_name = new_name.strip()
@@ -524,9 +528,7 @@ def list_subscriptions_backend(
 class AddSubscriptionData(BaseModel):
     name: str
     color: str | None = None
-    description: (
-        Annotated[str, StringConstraints(max_length=Stream.MAX_DESCRIPTION_LENGTH)] | None
-    ) = None
+    description: ChannelDescription = None
 
     @model_validator(mode="after")
     def validate_terms(self) -> "AddSubscriptionData":
@@ -745,9 +747,8 @@ def add_subscriptions_backend(
         stream_dict_copy: StreamDict = {}
         stream_dict_copy["name"] = stream_obj.name.strip()
 
-        # We don't allow newline characters in stream descriptions.
         if stream_obj.description is not None:
-            stream_dict_copy["description"] = stream_obj.description.replace("\n", " ")
+            stream_dict_copy["description"] = stream_obj.description
 
         stream_dict_copy["invite_only"] = invite_only
         stream_dict_copy["is_web_public"] = is_web_public
