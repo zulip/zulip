@@ -22785,38 +22785,25 @@ paths:
               description: |
                 An object containing the top-level fields used to create a channel.
               properties:
-                channel:
+                name:
+                  type: string
                   description: |
-                    The details of the channel you want to create.
-                  additionalProperties: false
-                  type: object
-                  properties:
-                    name:
-                      type: string
-                      description: |
-                        The name of the new channel.
+                    The name of the new channel.
 
-                        Clients should use the `max_stream_name_length` returned by the
-                        [`POST /register`](/api/register-queue) endpoint to determine
-                        the maximum channel name length.
-                    description:
-                      type: string
-                      description: |
-                        The [description](/help/change-the-channel-description)
-                        to use for the new channel being created, in text/markdown format.
+                    Clients should use the `max_stream_name_length` returned by the
+                    [`POST /register`](/api/register-queue) endpoint to determine
+                    the maximum channel name length.
+                  example: "music"
+                description:
+                  type: string
+                  description: |
+                    The [description](/help/change-the-channel-description)
+                    to use for the new channel being created, in text/markdown format.
 
-                        Clients should use the `max_stream_description_length` returned
-                        by the [`POST /register`](/api/register-queue) endpoint to
-                        determine the maximum channel description length.
-                    color:
-                      type: string
-                      description: "The user's personal color for the channel."
-                  required:
-                    - name
-                  example:
-                    name: "music"
-                    description: "Channel for discussing music"
-                    color: "#76FF03"
+                    Clients should use the `max_stream_description_length` returned
+                    by the [`POST /register`](/api/register-queue) endpoint to
+                    determine the maximum channel description length.
+                  example: "Channel for discussing all things music!"
                 subscribers:
                   description: |
                     A list of user IDs (preferred) or Zulip API email
@@ -22831,8 +22818,7 @@ paths:
                     - type: array
                       items:
                         type: integer
-                  example: ["ZOE@zulip.com"]
-
+                  example: [16, 12]
                 announce:
                   description: |
                     This determines whether [notification bot](/help/configure-automated-notices)
@@ -22954,19 +22940,9 @@ paths:
                   - type: object
                     additionalProperties: false
                     properties:
-                      result:
-                        type: string
-                        description: "Whether the request was successful or not."
-                        example: "success"
-                      msg:
-                        type: string
-                        description: "A short message describing the result."
-                        example: ""
-                      ignored_parameters_unsupported:
-                        type: array
-                        description: "List of parameters the server ignored."
-                        items:
-                          type: string
+                      result: {}
+                      msg: {}
+                      ignored_parameters_unsupported: {}
                       id:
                         type: integer
                         description: "The ID of the newly created channel."
@@ -22987,18 +22963,14 @@ paths:
                       msg:
                         type: string
                         example: "Channel 'discussions' already exists"
-                      stream:
-                        type: string
-                        example: "discussions"
                       code:
                         type: string
-                        example: "STREAM_ALREADY_EXISTS"
+                        example: "CHANNEL_ALREADY_EXISTS"
                 example:
                   {
                     result: "error",
                     msg: "Channel 'discussions' already exists",
-                    stream: "discussions",
-                    code: "STREAM_ALREADY_EXISTS",
+                    code: "CHANNEL_ALREADY_EXISTS",
                   }
 
   /user_groups/create:

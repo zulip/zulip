@@ -331,7 +331,7 @@ class TestCreateStreams(ZulipTestCase):
         self.assertEqual(stream.name, "no-sub-channel")
         self.assertEqual(stream.subscriber_count, 0)
 
-    def test_channel_creation_miscallaneous(self) -> None:
+    def test_channel_creation_miscellaneous(self) -> None:
         iago = self.example_user("iago")
         desdemona = self.example_user("desdemona")
         cordelia = self.example_user("cordelia")
