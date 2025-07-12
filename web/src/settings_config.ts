@@ -318,11 +318,14 @@ export const get_realm_topics_policy_values = (): RealmTopicsPolicyValues => {
     return {
         allow_empty_topic: {
             code: "allow_empty_topic",
-            description: $t({defaultMessage: "Allow “{empty_topic_name}”"}, {empty_topic_name}),
+            description: $t(
+                {defaultMessage: '"{empty_topic_name}" topic allowed'},
+                {empty_topic_name},
+            ),
         },
         disable_empty_topic: {
             code: "disable_empty_topic",
-            description: $t({defaultMessage: "No “{empty_topic_name}” topic"}, {empty_topic_name}),
+            description: $t({defaultMessage: 'No "{empty_topic_name}" topic'}, {empty_topic_name}),
         },
     };
 };
@@ -346,7 +349,7 @@ export const get_stream_topics_policy_values = (): StreamTopicsPolicyValues => {
         empty_topic_only: {
             code: "empty_topic_only",
             description: $t(
-                {defaultMessage: "Only “{empty_topic_name}” topic allowed"},
+                {defaultMessage: 'Only "{empty_topic_name}" topic allowed'},
                 {empty_topic_name},
             ),
         },
@@ -1349,6 +1352,24 @@ export const bot_type_values = {
         name: $t({defaultMessage: "Embedded bot"}),
     },
 };
+
+export const message_delete_action_values = [
+    {
+        code: 1,
+        key: "delete_public_stream_messages",
+        value: $t({defaultMessage: "Delete messages in public channels"}),
+    },
+    {
+        code: 2,
+        key: "delete_private_stream_messages",
+        value: $t({defaultMessage: "Delete messages in private channels"}),
+    },
+    {
+        code: 3,
+        key: "delete_direct_messages",
+        value: $t({defaultMessage: "Delete direct messages"}),
+    },
+];
 
 export const realm_plan_types = {
     self_hosted: {code: 1},
