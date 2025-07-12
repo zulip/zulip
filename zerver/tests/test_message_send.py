@@ -1508,6 +1508,66 @@ class MessagePOSTTest(ZulipTestCase):
         result = self.api_post(sender, "/api/v1/messages", payload)
         self.assert_json_success(result)
 
+    def test_message_idempotency(self) -> None:
+        """
+        Ensure message idempotency through Idempotency-Key.
+
+        This simulates the issue of 'HTTP request replay' by sending duplicate POST requests.
+        """
+        realm = get_realm("zulip")
+        self.login("hamlet")
+        user = self.example_user("hamlet")
+
+        # Change the default setting to enable automatic follow/unmute policy,
+        # to ensure it would be also included in the cached response as extra parameter.
+        do_change_user_setting(
+            user,
+            "automatically_follow_topics_policy",
+            UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_SEND,
+            acting_user=None,
+        )
+
+        post_data = {
+            "type": "channel",
+            "to": orjson.dumps("Verona").decode(),
+            "content": "Test message",
+            "topic": "Test topic",
+        }
+
+        # Set a UUID V4 Idempotency-Key.
+        headers = {"Idempotency-Key": "8e118d41-39d7-4a82-8da9-a6a3162d57eb"}
+
+        first_msg_sent_id = None
+        # Send 4 identical requests, all of which should succeed.
+        for _ in range(4):
+            result = self.client_post("/json/messages", post_data, headers=headers)
+            content = self.assert_json_success(result)
+            if first_msg_sent_id is None:
+                first_msg_sent_id = content["id"]
+
+            # Ensure response always contain the expected response fields,
+            # indicating the response was cached successfully.
+            self.assertEqual(content["id"], first_msg_sent_id)
+            assert "automatic_new_visibility_policy" in content
+            self.assertEqual(content["automatic_new_visibility_policy"], 3)
+
+        # ONLY a single message should be inserted i.e. ensuring Idempotency.
+        self.assert_length(Message.objects.filter(realm_id=realm.id, content="Test message"), 1)
+
+        # Send without Idempotency-key
+        result = self.client_post("/json/messages", post_data)
+        content = self.assert_json_success(result)
+        # Another 2nd message should be inserted with a new ID.
+        self.assert_length(Message.objects.filter(realm_id=realm.id, content="Test message"), 2)
+
+        # Changing Idempotency-key inserts a new message.
+        headers["Idempotency-Key"] = "38eb6668-c46d-4380-bf78-10c66698ab82"
+        result = self.client_post("/json/messages", post_data, headers=headers)
+        content = self.assert_json_success(result)
+
+        # Another 3rd message should be inserted with a new ID.
+        self.assert_length(Message.objects.filter(realm_id=realm.id, content="Test message"), 3)
+
 
 class StreamMessagesTest(ZulipTestCase):
     def assert_stream_message(

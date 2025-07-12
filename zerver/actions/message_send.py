@@ -1,3 +1,4 @@
+import json
 import logging
 from collections import defaultdict
 from collections.abc import Callable, Collection, Sequence
@@ -5,13 +6,13 @@ from collections.abc import Set as AbstractSet
 from dataclasses import dataclass
 from datetime import timedelta
 from email.headerregistry import Address
-from typing import Any, TypedDict
+from typing import Any, Literal, TypedDict
 
 import orjson
 from django.conf import settings
 from django.core.exceptions import ValidationError
-from django.db import IntegrityError, transaction
-from django.db.models import F, Q, QuerySet
+from django.db import IntegrityError
+from django.db.models import F, Field, Q, QuerySet
 from django.utils.html import escape
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
@@ -26,6 +27,7 @@ from zerver.lib.addressee import Addressee
 from zerver.lib.alert_words import get_alert_word_automaton
 from zerver.lib.cache import cache_with_key, user_profile_delivery_email_cache_key
 from zerver.lib.create_user import create_user
+from zerver.lib.custom_zulip_transaction import do_idempotent_work, zulip_transaction
 from zerver.lib.exceptions import (
     DirectMessageInitiationError,
     DirectMessagePermissionError,
@@ -224,6 +226,7 @@ class ActiveUserDict(TypedDict):
 @dataclass
 class SentMessageResult:
     message_id: int
+    status: Literal["NEW", "DUPLICATE"] = "NEW"
     automatic_new_visibility_policy: int | None = None
 
 
@@ -858,11 +861,59 @@ def get_active_presence_idle_user_ids(
     return filter_presence_idle_user_ids(user_ids)
 
 
-@transaction.atomic(savepoint=False)
+def insert_idempotent_msg(message: Message, idempotency_key: str) -> SentMessageResult | None:
+    """
+    Insert a single Message in db, ensuring Idempotency using Idempotency-Key header.
+
+    New Message: Inserts it and proceed with the normal flow of do_send_messages.
+    Duplicate: Returns the cached message as SentMessageResult.
+    """
+
+    # Get Message db column names.
+    field_names: list[str] = [
+        field.column
+        for field in Message._meta.get_fields()
+        if isinstance(field, Field)
+        and field.concrete
+        and not field.auto_created
+        and not field.primary_key
+    ]
+
+    column_to_value: dict[str, Any] = {
+        col_name: getattr(message, col_name) for col_name in field_names
+    }
+
+    result = do_idempotent_work(
+        idempotency_key=idempotency_key,
+        destination_model=Message,
+        field_names=field_names,
+        column_to_value=column_to_value,
+    )
+
+    # NEW/DUPLICATE message.
+    status = result[0][0]
+
+    # The DB-generated id of the inserted Message (None in case of no insertion).
+    new_msg_id = result[0][1]
+
+    if status == "NEW":
+        # Set new_msg_id on the Message object manually,
+        # since we're using raw SQL instead of bulk_create() which would have done this for us.
+        setattr(message, Message._meta.pk.name, new_msg_id)
+        return None
+
+    # Duplicate Message
+    cached_response = result[0][2]
+    assert cached_response is not None
+    return SentMessageResult(**json.loads(cached_response), status=status)
+
+
+@zulip_transaction(savepoint=False)
 def do_send_messages(
     send_message_requests_maybe_none: Sequence[SendMessageRequest | None],
     *,
     mark_as_read: Sequence[int] = [],
+    idempotency_key: str | None = None,
 ) -> list[SentMessageResult]:
     """See
     https://zulip.readthedocs.io/en/latest/subsystems/sending-messages.html
@@ -879,7 +930,15 @@ def do_send_messages(
     # Save the message receipts in the database
     user_message_flags: dict[int, dict[int, list[str]]] = defaultdict(dict)
 
-    Message.objects.bulk_create(send_request.message for send_request in send_message_requests)
+    if idempotency_key is not None:
+        maybe_sent_message_result = insert_idempotent_msg(
+            send_message_requests[0].message, idempotency_key
+        )
+        # If it's a db-cached message (Duplicate), return result immediately.
+        if maybe_sent_message_result:
+            return [maybe_sent_message_result]
+    else:
+        Message.objects.bulk_create(send_request.message for send_request in send_message_requests)
 
     # Claim attachments in message
     for send_request in send_message_requests:
@@ -1436,6 +1495,7 @@ def check_send_message(
     *,
     skip_stream_access_check: bool = False,
     read_by_sender: bool = False,
+    idempotency_key: str | None = None,
 ) -> SentMessageResult:
     addressee = Addressee.legacy_build(sender, recipient_type_name, message_to, topic_name)
     try:
@@ -1455,7 +1515,11 @@ def check_send_message(
         )
     except ZephyrMessageAlreadySentError as e:
         return SentMessageResult(message_id=e.message_id)
-    return do_send_messages([message], mark_as_read=[sender.id] if read_by_sender else [])[0]
+    return do_send_messages(
+        [message],
+        mark_as_read=[sender.id] if read_by_sender else [],
+        idempotency_key=idempotency_key,
+    )[0]
 
 
 def send_rate_limited_pm_notification_to_bot_owner(
