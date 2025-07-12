@@ -606,7 +606,6 @@ INTEGRATIONS: dict[str, Integration] = {
     "mastodon": Integration("mastodon", ["communication"]),
     "notion": Integration("notion", ["productivity"]),
     "onyx": Integration("onyx", ["productivity"], logo="images/integrations/logos/onyx.png"),
-    "phabricator": Integration("phabricator", ["version-control"]),
     "puppet": Integration("puppet", ["deployment"]),
     "redmine": Integration("redmine", ["project-management"]),
     "zoom": Integration("zoom", ["communication"]),

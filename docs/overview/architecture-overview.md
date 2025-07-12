@@ -22,7 +22,6 @@ other glue code: [Python API
 bindings](https://github.com/zulip/python-zulip-api); [JavaScript API
 bindings](https://github.com/zulip/zulip-js); a [Hubot
 adapter](https://github.com/zulip/hubot-zulip); integrations with
-[Phabricator](https://github.com/zulip/phabricator-to-zulip),
 [Jenkins](https://github.com/zulip/zulip-jenkins-plugin),
 [Puppet](https://github.com/matthewbarr/puppet-zulip),
 [Redmine](https://github.com/zulip/zulip-redmine-plugin), and
