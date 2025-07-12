@@ -51,6 +51,7 @@ const realm_playground = mock_esm("../src/realm_playground");
 const reload = mock_esm("../src/reload");
 const message_reminder = mock_esm("../src/message_reminder");
 const reminders_overlay_ui = mock_esm("../src/reminders_overlay_ui");
+const navigation_views = mock_esm("../src/navigation_views");
 const saved_snippets = mock_esm("../src/saved_snippets");
 const saved_snippets_ui = mock_esm("../src/saved_snippets_ui");
 const scheduled_messages = mock_esm("../src/scheduled_messages");
@@ -193,6 +194,37 @@ run_test("alert_words", ({override}) => {
     assert.deepEqual(alert_words.get_word_list(), [{word: "lunch"}, {word: "fire"}]);
     assert.ok(alert_words.has_alert_word("fire"));
     assert.ok(alert_words.has_alert_word("lunch"));
+});
+
+run_test("navigation_views", ({override}) => {
+    const add_event = event_fixtures.navigation_view__add;
+    {
+        const stub = make_stub();
+        override(navigation_views, "add_navigation_view", stub.f);
+
+        dispatch(add_event);
+        assert.equal(stub.num_calls, 1);
+        assert_same(stub.get_args("event").event, add_event.navigation_view);
+    }
+    const update_event = event_fixtures.navigation_view__update;
+    {
+        const stub = make_stub();
+        override(navigation_views, "update_navigation_view", stub.f);
+
+        dispatch(update_event);
+        assert.equal(stub.num_calls, 1);
+        assert_same(stub.get_args("event").event, update_event.fragment);
+    }
+
+    const remove_event = event_fixtures.navigation_view__remove;
+    {
+        const stub = make_stub();
+        override(navigation_views, "remove_navigation_view", stub.f);
+
+        dispatch(remove_event);
+        assert.equal(stub.num_calls, 1);
+        assert_same(stub.get_args("event").event, remove_event.fragment);
+    }
 });
 
 run_test("saved_snippets", ({override}) => {

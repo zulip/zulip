@@ -3,14 +3,16 @@ import assert from "minimalistic-assert";
 import type * as tippy from "tippy.js";
 
 import render_left_sidebar_all_messages_popover from "../templates/popovers/left_sidebar/left_sidebar_all_messages_popover.hbs";
-import render_left_sidebar_condensed_views_popover from "../templates/popovers/left_sidebar/left_sidebar_condensed_views_popover.hbs";
 import render_left_sidebar_drafts_popover from "../templates/popovers/left_sidebar/left_sidebar_drafts_popover.hbs";
 import render_left_sidebar_inbox_popover from "../templates/popovers/left_sidebar/left_sidebar_inbox_popover.hbs";
 import render_left_sidebar_recent_view_popover from "../templates/popovers/left_sidebar/left_sidebar_recent_view_popover.hbs";
 import render_left_sidebar_starred_messages_popover from "../templates/popovers/left_sidebar/left_sidebar_starred_messages_popover.hbs";
+import render_left_sidebar_views_popover from "../templates/popovers/left_sidebar/left_sidebar_views_popover.hbs";
 
 import * as channel from "./channel.ts";
 import * as drafts from "./drafts.ts";
+import * as left_sidebar_navigation_area from "./left_sidebar_navigation_area.ts";
+import {built_in_views_meta_data} from "./navigation_views.ts";
 import * as popover_menus from "./popover_menus.ts";
 import * as popovers from "./popovers.ts";
 import * as scheduled_messages from "./scheduled_messages.ts";
@@ -286,17 +288,25 @@ export function initialize(): void {
     popover_menus.register_popover_menu(".left-sidebar-navigation-menu-icon", {
         ...popover_menus.left_sidebar_tippy_options,
         onShow(instance) {
+            let built_in_popover_condensed_views = left_sidebar_navigation_area
+                .get_built_in_views()
+                .slice(5);
             // Determine at show time whether there are scheduled messages,
             // so that Tippy properly calculates the height of the popover
             const scheduled_message_count = scheduled_messages.get_count();
-            let has_scheduled_messages = false;
-            if (scheduled_message_count > 0) {
-                has_scheduled_messages = true;
+            if (scheduled_message_count <= 0) {
+                built_in_popover_condensed_views = built_in_popover_condensed_views.filter(
+                    (view) =>
+                        view.fragment !== built_in_views_meta_data.scheduled_messages.fragment,
+                );
             }
+
             popovers.hide_all();
             instance.setContent(
                 ui_util.parse_html(
-                    render_left_sidebar_condensed_views_popover({has_scheduled_messages}),
+                    render_left_sidebar_views_popover({
+                        views: built_in_popover_condensed_views,
+                    }),
                 ),
             );
         },
