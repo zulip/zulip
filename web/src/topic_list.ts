@@ -506,21 +506,6 @@ const filter_options = new Map<string, string>([
     [$t({defaultMessage: "All topics"}), ""],
 ]);
 
-export function update_clear_button(): void {
-    const $filter_query = $("#topic_filter_query");
-    const $clear_button = $(".filter-topics .input-button");
-    if (get_left_sidebar_topic_search_term() === "" && get_typeahead_search_term() === "") {
-        $clear_button.css("visibility", "hidden");
-        // When we use backspace to clear the content of the search box,
-        // a <br> tag is left inside it, preventing the data-placeholder
-        // value from reappearing as the element never becomes truly empty.
-        // Therefore, we manually set the text to empty.
-        $filter_query.empty();
-    } else {
-        $clear_button.css("visibility", "visible");
-    }
-}
-
 export function setup_topic_search_typeahead(): void {
     const $input = $("#topic_filter_query");
     const $pill_container = $("#left-sidebar-filter-topic-input");
@@ -592,7 +577,6 @@ export function setup_topic_search_typeahead(): void {
     });
 
     search_pill_widget.onPillRemove(() => {
-        update_clear_button();
         const stream_id = active_stream_id();
         if (stream_id !== undefined) {
             const widget = active_widgets.get(stream_id);
@@ -639,8 +623,5 @@ export function initialize({
         const stream_id = active_stream_id();
         assert(stream_id !== undefined);
         active_widgets.get(stream_id)?.build();
-        update_clear_button();
     });
-
-    update_clear_button();
 }
