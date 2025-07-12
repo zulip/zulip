@@ -121,7 +121,7 @@ from zerver.models import (
     UserTopic,
 )
 from zerver.models.groups import SystemGroups
-from zerver.models.streams import StreamTopicsPolicyEnum, ensure_stream_does_not_exist_already
+from zerver.models.streams import StreamTopicsPolicyEnum
 from zerver.models.users import get_system_bot
 
 
@@ -703,7 +703,7 @@ def access_requested_group_permissions(
 @transaction.atomic(savepoint=False)
 @require_non_guest_user
 @typed_endpoint
-def add_channel(
+def create_channel(
     request: HttpRequest,
     user_profile: UserProfile,
     *,
@@ -716,13 +716,14 @@ def add_channel(
     can_resolve_topics_group: Json[int | UserGroupMembersData] | None = None,
     can_send_message_group: Json[int | UserGroupMembersData] | None = None,
     can_subscribe_group: Json[int | UserGroupMembersData] | None = None,
-    channel: Annotated[Json[AddSubscriptionData], ApiParamConfig("channel")],
+    description: Annotated[str, StringConstraints(max_length=Stream.MAX_DESCRIPTION_LENGTH)] | None,
     folder_id: Json[int] | None = None,
     history_public_to_subscribers: Json[bool] | None = None,
     invite_only: Json[bool] = False,
     is_web_public: Json[bool] = False,
     is_default_stream: Json[bool] = False,
     message_retention_days: Json[str] | Json[int] = RETENTION_DEFAULT,
+    name: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1)],
     send_new_subscription_messages: Json[bool] = True,
     subscribers: Json[list[str] | list[int]],
     topics_policy: Json[
@@ -739,52 +740,24 @@ def add_channel(
     ] = None,
 ) -> HttpResponse:
     realm = user_profile.realm
-    ensure_stream_does_not_exist_already(channel.name, realm)
-    color_map = {}
-    anonymous_group_membership = {}
-    group_settings_map = {}
     request_settings_dict = locals()
+
+    check_stream_name_available(realm, name)
+
     folder: ChannelFolder | None = None
     if folder_id is not None:
         folder = get_channel_folder_by_id(folder_id, realm)
 
-    system_groups_name_dict = get_role_based_system_groups_dict(realm)
-    for setting_name, permission_configuration in Stream.stream_permission_group_settings.items():
-        assert setting_name in request_settings_dict
-        if request_settings_dict[setting_name] is not None:
-            setting_request_value = request_settings_dict[setting_name]
-            setting_value = parse_group_setting_value(
-                setting_request_value, system_groups_name_dict[SystemGroups.NOBODY]
-            )
-            group_settings_map[setting_name] = access_user_group_for_setting(
-                setting_value,
-                user_profile,
-                setting_name=setting_name,
-                permission_configuration=permission_configuration,
-            )
-            if not isinstance(setting_value, int):
-                anonymous_group_membership[group_settings_map[setting_name].id] = setting_value
-        else:
-            group_settings_map[setting_name] = get_stream_permission_default_group(
-                setting_name, system_groups_name_dict, creator=user_profile
-            )
-            if permission_configuration.default_group_name == "stream_creator_or_nobody":
-                # Default for some settings like "can_administer_channel_group"
-                # is anonymous group with stream creator.
-                anonymous_group_membership[group_settings_map[setting_name].id] = (
-                    UserGroupMembersData(direct_subgroups=[], direct_members=[user_profile.id])
-                )
-    if channel.color is not None:
-        color_map[channel.name] = channel.color
-
     # We don't allow newline characters in stream descriptions.
-    if channel.description is not None:
-        channel.description = channel.description.replace("\n", " ")
+    if description is not None:
+        description = description.replace("\n", " ")
     else:
-        channel.description = ""
+        description = ""
+
     parsed_message_retention_days = parse_message_retention_days(
         message_retention_days, Stream.MESSAGE_RETENTION_SPECIAL_VALUES_MAP
     )
+
     topics_policy_value = None
     if topics_policy is not None and isinstance(topics_policy, StreamTopicsPolicyEnum):
         if (
@@ -793,6 +766,15 @@ def add_channel(
         ):
             raise JsonableError(_("Insufficient permission"))
         topics_policy_value = topics_policy.value
+
+    is_subscribing_other_users = False
+    if len(subscribers) > 0 and not all(user_id == user_profile.id for user_id in subscribers):
+        is_subscribing_other_users = True
+    if is_subscribing_other_users and realm.is_zephyr_mirror_realm and not invite_only:
+        raise JsonableError(
+            _("You can only invite other Zephyr mirroring users to private channels.")
+        )
+
     check_channel_creation_permissions(
         user_profile,
         is_default_stream=is_default_stream,
@@ -801,10 +783,16 @@ def add_channel(
         message_retention_days=parsed_message_retention_days,
     )
 
+    group_settings_map, anonymous_group_membership = access_requested_group_permissions(
+        user_profile,
+        realm,
+        request_settings_dict,
+    )
+
     new_channel, created = create_stream_if_needed(
         realm,
-        channel.name.strip(),
-        stream_description=channel.description,
+        name,
+        stream_description=description,
         invite_only=invite_only,
         history_public_to_subscribers=history_public_to_subscribers,
         is_web_public=is_web_public,
@@ -838,7 +826,10 @@ def add_channel(
 
     new_subscribers = bulk_principals_to_user_profiles(subscribers, user_profile)
     bulk_add_subscriptions(
-        realm, [new_channel], new_subscribers, acting_user=user_profile, color_map=color_map
+        realm,
+        [new_channel],
+        new_subscribers,
+        acting_user=user_profile,
     )
     if (
         send_new_subscription_messages
@@ -847,11 +838,12 @@ def add_channel(
         send_messages_for_new_subscribers(
             user_profile=user_profile,
             subscribers=new_subscribers,
-            new_subscriptions={str(user.id): [new_channel.name] for user in new_subscribers},
+            new_subscriptions={str(user.id): [name] for user in new_subscribers},
             id_to_user_profile={str(user.id): user for user in new_subscribers},
             created_streams=[new_channel],
             announce=announce,
         )
+
     return json_success(
         request,
         data={"id": new_channel.id},
