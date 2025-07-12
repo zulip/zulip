@@ -7,7 +7,7 @@ import render_right_sidebar from "../templates/right_sidebar.hbs";
 import {buddy_list} from "./buddy_list.ts";
 import * as channel from "./channel.ts";
 import * as compose_ui from "./compose_ui.ts";
-import {reorder_left_sidebar_navigation_list} from "./left_sidebar_navigation_area.ts";
+import * as left_sidebar_navigation_area from "./left_sidebar_navigation_area.ts";
 import {localstorage} from "./localstorage.ts";
 import * as message_lists from "./message_lists.ts";
 import * as message_viewport from "./message_viewport.ts";
@@ -302,7 +302,7 @@ export function initialize_left_sidebar(): void {
 
     $("#left-sidebar-container").html(rendered_sidebar);
     // make sure home-view and left_sidebar order persists
-    reorder_left_sidebar_navigation_list(user_settings.web_home_view);
+    left_sidebar_navigation_area.reorder_left_sidebar_navigation_list(user_settings.web_home_view);
     update_unread_counts_visibility();
 }
 
