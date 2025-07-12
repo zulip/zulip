@@ -46,7 +46,7 @@ def make_realm(
     created_at = float(rc_instance["_createdAt"].timestamp())
 
     zerver_realm = build_zerver_realm(realm_id, realm_subdomain, created_at, "Rocket.Chat")
-    realm = build_realm(zerver_realm, realm_id, domain_name)
+    realm = build_realm(zerver_realm, realm_id, domain_name, import_source="rocketchat")
 
     # We may override these later.
     realm["zerver_defaultstream"] = []

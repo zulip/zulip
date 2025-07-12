@@ -54,7 +54,7 @@ def make_realm(realm_id: int, team: dict[str, Any]) -> ZerverFieldsT:
     realm_subdomain = team["name"]
 
     zerver_realm = build_zerver_realm(realm_id, realm_subdomain, NOW, "Mattermost")
-    realm = build_realm(zerver_realm, realm_id, domain_name)
+    realm = build_realm(zerver_realm, realm_id, domain_name, import_source="mattermost")
 
     # We may override these later.
     realm["zerver_defaultstream"] = []

@@ -172,7 +172,7 @@ def slack_workspace_to_realm(
     NOW = float(timezone_now().timestamp())
 
     zerver_realm: list[ZerverFieldsT] = build_zerver_realm(realm_id, realm_subdomain, NOW, "Slack")
-    realm = build_realm(zerver_realm, realm_id, domain_name)
+    realm = build_realm(zerver_realm, realm_id, domain_name, import_source="slack")
 
     (
         zerver_userprofile,
