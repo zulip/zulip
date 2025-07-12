@@ -114,23 +114,42 @@
     padding: 0.25em; /* 4px at 16px/1em */
 }
 
-/* We use the `input` tag in the selector to avoid conflicts
-   with the pill containing counterpart, which uses a `contenteditable`
-   div instead of an input element, and thus doesn't support the
-   placeholder pseudo-classes. */
-.filter-input input.input-element {
-    &:placeholder-shown {
-        /* In case of filter inputs, when the input field
-           is empty, we hide the input button and adjust
-           the right padding to compensate for the same. */
-        padding-right: 0.5em;
+.filter-input {
+    /* We use the `input` tag in the selector to avoid conflicts
+       with the pill containing counterpart, which uses a `contenteditable`
+       div instead of an input element, and thus doesn't support the
+       placeholder pseudo-classes. */
+    input.input-element {
+        &:placeholder-shown {
+            /* In case of filter inputs, when the input field
+            is empty, we hide the input button and adjust
+            the right padding to compensate for the same. */
+            padding-right: 0.5em;
 
-        ~ .input-button {
-            visibility: hidden;
+            ~ .input-button {
+                visibility: hidden;
+            }
+        }
+
+        &:not(:placeholder-shown) {
+            @extend .input-active-styles;
         }
     }
 
-    &:not(:placeholder-shown) {
-        @extend .input-active-styles;
+    /* Specific styles for filter input with pills */
+    &.has-input-pills {
+        &:not(:has(.pill)):has(.input:empty) {
+            .input-element {
+                padding-right: 0.5em;
+            }
+
+            .input-button {
+                visibility: hidden;
+            }
+        }
+
+        &:has(.pill):not(:has(.input:empty)) .input-element {
+            @extend .input-active-styles;
+        }
     }
 }
