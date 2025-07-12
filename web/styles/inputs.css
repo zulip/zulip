@@ -38,12 +38,9 @@
         }
 
         &:focus {
-            box-shadow: 0 0 5px var(--color-box-shadow-input-focus);
-        }
-
-        &:focus,
-        &.input-element-nonempty {
             @extend .input-active-styles;
+
+            box-shadow: 0 0 5px var(--color-box-shadow-input-focus);
         }
     }
 
@@ -86,12 +83,9 @@
         }
 
         &:has(.input:focus) {
-            box-shadow: 0 0 5px var(--color-box-shadow-input-focus);
-        }
-
-        &:has(.input:focus),
-        &.input-element-nonempty:has(.input) {
             @extend .input-active-styles;
+
+            box-shadow: 0 0 5px var(--color-box-shadow-input-focus);
         }
     }
 }
