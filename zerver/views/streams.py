@@ -57,7 +57,6 @@ from zerver.lib.default_streams import get_default_stream_ids_for_realm
 from zerver.lib.email_mirror_helpers import encode_email_address, get_channel_email_token
 from zerver.lib.exceptions import (
     CannotManageDefaultChannelError,
-    CannotSetTopicsPolicyError,
     JsonableError,
     OrganizationOwnerRequiredError,
 )
@@ -75,7 +74,6 @@ from zerver.lib.streams import (
     access_stream_for_delete_or_update_requiring_metadata_access,
     access_web_public_stream,
     channel_events_topic_name,
-    channel_has_named_topics,
     check_stream_name_available,
     do_get_streams,
     filter_stream_authorization_for_adding_subscribers,
@@ -85,10 +83,10 @@ from zerver.lib.streams import (
     list_to_streams,
     stream_to_dict,
     user_has_content_access,
+    validate_topics_policy,
 )
 from zerver.lib.subscription_info import gather_subscriptions
 from zerver.lib.topic import (
-    get_topic_display_name,
     get_topic_history_for_public_stream,
     get_topic_history_for_stream,
     maybe_rename_general_chat_to_empty_topic,
@@ -398,20 +396,9 @@ def update_stream_backend(
         if not user_profile.can_create_web_public_streams():
             raise JsonableError(_("Insufficient permission"))
 
-    if topics_policy is not None and isinstance(topics_policy, StreamTopicsPolicyEnum):
-        if not user_profile.can_set_topics_policy():
-            raise JsonableError(_("Insufficient permission"))
-
-        # Cannot set `topics_policy` to `empty_topic_only` when there are messages
-        # in non-empty topics in the current channel.
-        if topics_policy == StreamTopicsPolicyEnum.empty_topic_only and channel_has_named_topics(
-            stream
-        ):
-            raise CannotSetTopicsPolicyError(
-                get_topic_display_name("", user_profile.default_language)
-            )
-
-        do_set_stream_property(stream, "topics_policy", topics_policy.value, user_profile)
+    validated_topics_policy = validate_topics_policy(topics_policy, user_profile, stream)
+    if validated_topics_policy is not None:
+        do_set_stream_property(stream, "topics_policy", validated_topics_policy.value, user_profile)
 
     if (
         is_private is not None
@@ -768,13 +755,9 @@ def add_subscriptions_backend(
         stream_dict_copy["message_retention_days"] = parse_message_retention_days(
             message_retention_days, Stream.MESSAGE_RETENTION_SPECIAL_VALUES_MAP
         )
-        if topics_policy is not None and isinstance(topics_policy, StreamTopicsPolicyEnum):
-            if (
-                topics_policy != StreamTopicsPolicyEnum.inherit
-                and not user_profile.can_set_topics_policy()
-            ):
-                raise JsonableError(_("Insufficient permission"))
-            stream_dict_copy["topics_policy"] = topics_policy.value
+        validated_topics_policy = validate_topics_policy(topics_policy, user_profile)
+        if validated_topics_policy is not None:
+            stream_dict_copy["topics_policy"] = validated_topics_policy.value
         stream_dict_copy["can_add_subscribers_group"] = group_settings_map[
             "can_add_subscribers_group"
         ]

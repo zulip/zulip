@@ -12,6 +12,7 @@ from django.utils.translation import gettext as _
 from zerver.lib.default_streams import get_default_stream_ids_for_realm
 from zerver.lib.exceptions import (
     CannotAdministerChannelError,
+    CannotSetTopicsPolicyError,
     IncompatibleParametersError,
     JsonableError,
     OrganizationOwnerRequiredError,
@@ -24,6 +25,7 @@ from zerver.lib.stream_subscription import (
 from zerver.lib.stream_traffic import get_average_weekly_stream_traffic, get_streams_traffic
 from zerver.lib.string_validation import check_stream_name
 from zerver.lib.timestamp import datetime_to_timestamp
+from zerver.lib.topic import get_topic_display_name
 from zerver.lib.types import APIStreamDict, UserGroupMembersData
 from zerver.lib.user_groups import (
     UserGroupMembershipDetails,
@@ -121,6 +123,33 @@ def get_stream_topics_policy(realm: Realm, stream: Stream) -> int:
     if stream.topics_policy == StreamTopicsPolicyEnum.inherit.value:
         return realm.topics_policy
     return stream.topics_policy
+
+
+def validate_topics_policy(
+    topics_policy: str | None,
+    user_profile: UserProfile,
+    # Pass None when creating a channel and the channel being edited when editing a channel's settings
+    stream: Stream | None = None,
+) -> StreamTopicsPolicyEnum | None:
+    if topics_policy is not None and isinstance(topics_policy, StreamTopicsPolicyEnum):
+        if (
+            topics_policy != StreamTopicsPolicyEnum.inherit
+            and not user_profile.can_set_topics_policy()
+        ):
+            raise JsonableError(_("Insufficient permission"))
+
+        # Cannot set `topics_policy` to `empty_topic_only` when there are messages
+        # in non-empty topics in the current channel.
+        if (
+            stream is not None
+            and topics_policy == StreamTopicsPolicyEnum.empty_topic_only
+            and channel_has_named_topics(stream)
+        ):
+            raise CannotSetTopicsPolicyError(
+                get_topic_display_name("", user_profile.default_language)
+            )
+        return topics_policy
+    return None
 
 
 def get_default_value_for_history_public_to_subscribers(
