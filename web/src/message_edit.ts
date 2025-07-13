@@ -310,6 +310,15 @@ export function can_move_message(message: Message): boolean {
     return is_topic_editable(message) || is_stream_editable(message);
 }
 
+export function remaining_message_move_time(message: Message): number {
+    if (!can_move_message(message)) {
+        return 0;
+    }
+
+    const limit_seconds = realm.realm_move_messages_within_stream_limit_seconds ?? Infinity;
+    return limit_seconds + (message.timestamp - Date.now() / 1000);
+}
+
 export function stream_and_topic_exist_in_edit_history(
     message: Message,
     stream_id: number,
