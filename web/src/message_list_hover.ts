@@ -9,9 +9,14 @@ import * as thumbnail from "./thumbnail.ts";
 import {user_settings} from "./user_settings.ts";
 
 let $current_message_hover: JQuery | undefined;
+let edit_timeout: ReturnType<typeof setTimeout> | undefined;
 export function message_unhover(): void {
     if ($current_message_hover === undefined) {
         return;
+    }
+    if (edit_timeout !== undefined) {
+        clearTimeout(edit_timeout);
+        edit_timeout = undefined;
     }
     $current_message_hover.removeClass("can-edit-content can-move-message");
     $current_message_hover = undefined;
@@ -59,6 +64,19 @@ function change_edit_content_button($message_row: JQuery, message: Message): voi
         $edit_content.attr("data-tooltip-template-id", "move-message-tooltip-template");
     } else if (!is_content_editable && !can_move_message) {
         $edit_content.removeClass("can-edit-content can-move-message");
+    }
+
+    if (edit_timeout === undefined) {
+        const remaining_edit_time = message_edit.remaining_content_edit_time(message) * 1000;
+        if (remaining_edit_time > 0 && remaining_edit_time < Infinity) {
+            edit_timeout = setTimeout(() => {
+                const visible = $.contains(document.body, $edit_content[0]!);
+                if (!visible) {
+                    return;
+                }
+                change_edit_content_button($message_row, message);
+            }, remaining_edit_time);
+        }
     }
 }
 

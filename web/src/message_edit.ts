@@ -215,6 +215,14 @@ export function is_content_editable(message: Message, edit_limit_seconds_buffer 
     return false;
 }
 
+export function remaining_content_edit_time(message: Message): number {
+    if (!is_content_editable(message)) {
+        return 0;
+    }
+    const limit_seconds = realm.realm_message_content_edit_limit_seconds ?? Infinity;
+    return limit_seconds + (message.timestamp - Date.now() / 1000);
+}
+
 export function is_message_sent_by_my_bot(message: Message): boolean {
     const user = people.get_by_user_id(message.sender_id);
     if (!user.is_bot || user.bot_owner_id === null) {
