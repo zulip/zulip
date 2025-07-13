@@ -575,6 +575,8 @@ paths:
                                                 This user-generated HTML content should be rendered
                                                 using the same CSS and client-side security protections
                                                 as are used for message content.
+
+                                                See [Markdown message formatting](/api/message-formatting) for details on Zulip's HTML format.
                                     - type: object
                                       additionalProperties: false
                                       description: |
@@ -1552,6 +1554,8 @@ paths:
                                     work correctly. And any client-side security logic for
                                     user-generated message content should be applied when displaying
                                     this HTML as though it were the body of a Zulip message.
+
+                                    See [Markdown message formatting](/api/message-formatting) for details on Zulip's HTML format.
                                 history_public_to_subscribers:
                                   type: boolean
                                   description: |
@@ -2727,7 +2731,7 @@ paths:
                                     Only present if this event changed the message content.
 
                                     The original content of the message with ID `message_id`
-                                    immediately prior to this edit, in the original markdown.
+                                    immediately prior to this edit, in the original [Zulip-flavored Markdown](/help/format-your-message-using-markdown) format.
                                 orig_rendered_content:
                                   type: string
                                   description: |
@@ -2735,6 +2739,8 @@ paths:
 
                                     The original content of the message with ID `message_id`
                                     immediately prior to this edit, rendered as HTML.
+
+                                    See [Markdown message formatting](/api/message-formatting) for details on Zulip's HTML format.
                                 content:
                                   type: string
                                   description: |
@@ -2743,7 +2749,7 @@ paths:
                                     [inline URL preview][inline-url-previews].
 
                                     The new content of the message with ID `message_id`, in the
-                                    original Markdown.
+                                    original [Zulip-flavored Markdown](/help/format-your-message-using-markdown) format.
                                 rendered_content:
                                   type: string
                                   description: |
@@ -2753,6 +2759,8 @@ paths:
 
                                     The new content of the message with ID `message_id`,
                                     rendered in HTML.
+
+                                    See [Markdown message formatting](/api/message-formatting) for details on Zulip's HTML format.
                                 is_me_message:
                                   type: boolean
                                   description: |
@@ -6073,6 +6081,8 @@ paths:
                                       description: |
                                         The new description of the channel folder. Only present if the
                                         description changed.
+
+                                        See [Markdown message formatting](/api/message-formatting) for details on Zulip's HTML format.
                                     rendered_description:
                                       type: string
                                       description: |
@@ -7010,7 +7020,7 @@ paths:
                 content:
                   type: string
                   description: |
-                    The content of the saved snippet in text/markdown format.
+                    The content of the saved snippet in [Zulip-flavored Markdown](/help/format-your-message-using-markdown) format.
 
                     Clients should insert this content into a message when using
                     a saved snippet.
@@ -7085,7 +7095,7 @@ paths:
                 content:
                   type: string
                   description: |
-                    The content of the saved snippet in text/markdown format.
+                    The content of the saved snippet in the original [Zulip-flavored Markdown](/help/format-your-message-using-markdown) format.
 
                     Clients should insert this content into a message when using
                     a saved snippet.
@@ -7952,6 +7962,8 @@ paths:
             If `true`, message content is returned in the rendered HTML
             format. If `false`, message content is returned in the raw
             Markdown-format text that user entered.
+
+            See [Markdown message formatting](/api/message-formatting) for details on Zulip's HTML format.
           schema:
             type: boolean
             default: true
@@ -8523,18 +8535,21 @@ paths:
                             content:
                               type: string
                               description: |
-                                The raw Markdown content of the message
+                                The raw [Zulip-flavored Markdown](/help/format-your-message-using-markdown) content of the message
                                 immediately after this edit event.
+
                             rendered_content:
                               type: string
                               description: |
                                 The rendered HTML representation of `content`.
+
+                                See [Markdown message formatting](/api/message-formatting) for details on Zulip's HTML format.
                             prev_content:
                               type: string
                               description: |
                                 Only present if message's content was edited.
 
-                                The raw Markdown content of the message immediately
+                                The raw [Zulip-flavored Markdown](/help/format-your-message-using-markdown) content of the message immediately
                                 prior to this edit event.
                             prev_rendered_content:
                               type: string
@@ -8542,6 +8557,8 @@ paths:
                                 Only present if message's content was edited.
 
                                 The rendered HTML representation of `prev_content`.
+
+                                See [Markdown message formatting](/api/message-formatting) for details on Zulip's HTML format.
                             user_id:
                               type: integer
                               nullable: true
@@ -9375,7 +9392,7 @@ paths:
         Additionally, a `raw_content` field is included. This field is
         useful for clients that primarily work with HTML-rendered
         messages but might need to occasionally fetch the message's
-        raw Markdown (e.g. for [view
+        raw [Zulip-flavored Markdown](/help/format-your-message-using-markdown) (e.g. for [view
         source](/help/view-the-markdown-source-of-a-message) or
         prefilling a message edit textarea).
 
@@ -9388,7 +9405,7 @@ paths:
           description: |
             If `true`, message content is returned in the rendered HTML
             format. If `false`, message content is returned in the raw
-            Markdown-format text that user entered.
+            [Zulip-flavored Markdown format](/help/format-your-message-using-markdown) text that user entered.
 
             **Changes**: New in Zulip 5.0 (feature level 120).
           schema:
@@ -9429,6 +9446,8 @@ paths:
                         deprecated: true
                         description: |
                           The raw Markdown content of the message.
+
+                          See the help center article on [message formatting](/help/format-your-message-using-markdown) for details on Zulip-flavored Markdown.
 
                           **Deprecated** and to be removed once no longer required for
                           legacy clients. Modern clients should prefer passing
@@ -11707,6 +11726,8 @@ paths:
                         description: |
                           The [description](/help/change-the-channel-description)
                           to use for a new channel being created, in text/markdown format.
+
+                          See the help center article on [message formatting](/help/format-your-message-using-markdown) for details on Zulip-flavored Markdown.
 
                           Clients should use the `max_stream_description_length` returned
                           by the [`POST /register`](/api/register-queue) endpoint to
@@ -22175,7 +22196,7 @@ paths:
                 description:
                   description: |
                     The new [description](/help/change-the-channel-description) for
-                    the channel, in text/markdown format.
+                    the channel, in [Zulip-flavored Markdown](/help/format-your-message-using-markdown) format.
 
                     Clients should use the `max_stream_description_length` returned
                     by the [`POST /register`](/api/register-queue) endpoint to
@@ -24227,7 +24248,7 @@ paths:
                   data:
                     type: string
                     description: |
-                      The message content, in raw Markdown format (not rendered to HTML).
+                      The message content, in raw [Zulip-flavored Markdown](/help/format-your-message-using-markdown) format (not rendered to HTML).
                   trigger:
                     type: string
                     description: |
@@ -24277,6 +24298,8 @@ paths:
                             type: string
                             description: |
                               The content/body of the message rendered in HTML.
+
+                              See [Markdown message formatting](/api/message-formatting) for details on Zulip's HTML format.
                 example:
                   {
                     "data": "@**Outgoing webhook test** Zulip is the world\u2019s most productive group chat!",
@@ -24557,9 +24580,11 @@ components:
         description:
           type: string
           description: |
-            The short description of the channel in text/markdown format,
+            The short description of the channel in [Zulip-flavored Markdown](/help/format-your-message-using-markdown) format,
             intended to be used to prepopulate UI for editing a channel's
             description.
+
+            See [Markdown message formatting](/api/message-formatting) for details on Zulip's HTML format.
         date_created:
           type: integer
           description: |
@@ -25589,9 +25614,11 @@ components:
         description:
           type: string
           description: |
-            The [description](/help/change-the-channel-description) of the channel in text/markdown format,
+            The [description](/help/change-the-channel-description) of the channel in [Zulip-flavored Markdown](/help/format-your-message-using-markdown) format,
             intended to be used to prepopulate UI for editing a channel's
             description.
+
+            See [Markdown message formatting](/api/message-formatting) for details on Zulip's HTML format.
 
             See also `rendered_description`.
         rendered_description:
@@ -26068,12 +26095,17 @@ components:
           type: string
           description: |
             The content/body of the message.
+            When `apply_markdown` is set, it will be in HTML format.
+
+            See [Markdown message formatting](/api/message-formatting) for details on Zulip's HTML format.
         content_type:
           type: string
           description: |
             The HTTP `content_type` for the message content. This
             will be `text/html` or `text/x-markdown`, depending on
             whether `apply_markdown` was set.
+
+            See the help center article on [message formatting](/help/format-your-message-using-markdown) for details on Zulip-flavored Markdown.
         display_recipient:
           oneOf:
             - type: string
@@ -26121,6 +26153,8 @@ components:
                   Only present if message's content was edited.
 
                   The rendered HTML representation of `prev_content`.
+
+                  See [Markdown message formatting](/api/message-formatting) for details on Zulip's HTML format.
               prev_stream:
                 type: integer
                 description: |
@@ -26609,7 +26643,7 @@ components:
         content:
           type: string
           description: |
-            The content of the saved snippet in text/markdown format.
+            The content of the saved snippet in [Zulip-flavored Markdown](/help/format-your-message-using-markdown) format.
 
             Clients should insert this content into a message when using
             a saved snippet.
@@ -26659,7 +26693,9 @@ components:
         content:
           type: string
           description: |
-            The content/body of the scheduled message, in text/markdown format.
+            The content/body of the scheduled message, in [Zulip-flavored Markdown](/help/format-your-message-using-markdown) format.
+
+            See [Markdown message formatting](/api/message-formatting) for details on Zulip's HTML format.
         rendered_content:
           type: string
           description: |
@@ -26735,7 +26771,9 @@ components:
         content:
           type: string
           description: |
-            The content/body of the reminder, in text/markdown format.
+            The content/body of the reminder, in [Zulip-flavored Markdown](/help/format-your-message-using-markdown) format.
+
+            See [Markdown message formatting](/api/message-formatting) for details on Zulip's HTML format.
         rendered_content:
           type: string
           description: |
@@ -27021,6 +27059,8 @@ components:
               This user-generated HTML content should be rendered
               using the same CSS and client-side security protections
               as are used for message content.
+
+              See [Markdown message formatting](/api/message-formatting) for details on Zulip's HTML format.
     ChannelFolder:
       type: object
       additionalProperties: false
@@ -27046,6 +27086,8 @@ components:
           type: string
           description: |
             The description of the channel folder.
+
+            See [Markdown message formatting](/api/message-formatting) for details on Zulip's HTML format.
         rendered_description:
           type: string
           description: |
