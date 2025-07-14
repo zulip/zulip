@@ -1460,11 +1460,15 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
 
 
 class CompiledInlineProcessor(markdown.inlinepatterns.InlineProcessor):
-    def __init__(self, compiled_re: Pattern[str], zmd: "ZulipMarkdown") -> None:
+    def __init__(
+        self, compiled_re: "Pattern[str] | re2._Regexp[str]", zmd: "ZulipMarkdown"
+    ) -> None:
         # This is similar to the superclass's small __init__ function,
         # but we skip the compilation step and let the caller give us
         # a compiled regex.
-        self.compiled_re = compiled_re
+        self.compiled_re = cast(
+            Pattern[str], compiled_re
+        )  # Python-Markdown doesn't expect re2, but it works well enough
         self.md = zmd
         self.zmd = zmd
 
