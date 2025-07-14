@@ -763,6 +763,7 @@ export const all_group_setting_labels = {
     },
     stream: {
         can_add_subscribers_group: $t({defaultMessage: "Who can subscribe anyone to this channel"}),
+        can_create_topic_group: $t({defaultMessage: "Who can start new topics"}),
         can_move_messages_out_of_channel_group: $t({
             defaultMessage: "Who can move messages out of this channel",
         }),
@@ -868,6 +869,7 @@ export const owner_editable_realm_group_permission_settings = new Set([
 export const stream_group_permission_settings: StreamGroupSettingName[] = [
     "can_send_message_group",
     "can_administer_channel_group",
+    "can_create_topic_group",
     "can_move_messages_out_of_channel_group",
     "can_move_messages_within_channel_group",
     "can_subscribe_group",
