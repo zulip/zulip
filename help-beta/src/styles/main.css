@@ -65,4 +65,15 @@
     li > ol {
         margin-top: 0.25rem;
     }
+
+    & .sl-heading-wrapper:has(> :first-child:target) {
+        /* Increase the highlighted space around the text... */
+        /* We are trying to recreate `padding: 6px 0 6px 8px` below
+           using box-shadow since we don't want padding to affect the
+           layout. A spread of 6px will make sure of the 6px part of
+           the padding, and -2px will ensure a padding of 8px is
+           recreated on the left side.  */
+        box-shadow: -2px 0 0 6px var(--sl-color-accent-low);
+        background-color: var(--sl-color-accent-low);
+    }
 }
