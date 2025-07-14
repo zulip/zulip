@@ -36,4 +36,9 @@
             vertical-align: text-top;
         }
     }
+
+    li > ul,
+    li > ol {
+        margin-top: 0.25rem;
+    }
 }
