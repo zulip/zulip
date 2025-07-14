@@ -78,5 +78,7 @@ def remove_user_alert_words(user_profile: UserProfile, delete_words: Iterable[st
     # We can clean this up if/when PostgreSQL has more native support for case-insensitive fields.
     # If we turn this into a bulk operation, we will need to call flush_realm_alert_words() here.
     for delete_word in delete_words:
-        AlertWord.objects.filter(user_profile=user_profile, word__iexact=delete_word).delete()
+        # Mark the alert word as deactivated instead of deleting it.
+        # This is to retain historical data for more accurate highlighting logic
+        AlertWord.objects.filter(user_profile=user_profile, word__iexact=delete_word).update(deactivated =True)
     return user_alert_words(user_profile)
