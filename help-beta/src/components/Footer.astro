@@ -1,0 +1,22 @@
+---
+import {CORPORATE_ENABLED, SUPPORT_EMAIL} from "astro:env/client";
+
+let footer_html = `<p>Don't see an answer to your question? <a href="mailto:{{ ${SUPPORT_EMAIL} }}">Contact this Zulip server's administrators</a> for support.</p>`;
+if (CORPORATE_ENABLED) {
+    footer_html = `<p>Your feedback helps us make Zulip better for everyone! Please <a href="/help-beta/contact-support">contact us</a> with questions, suggestions, and feature requests.</p>`;
+}
+---
+
+<footer class="sl-flex">
+    <hr />
+    <Fragment set:html={footer_html} />
+</footer>
+
+<style>
+    @layer starlight.core {
+        footer {
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+    }
+</style>
