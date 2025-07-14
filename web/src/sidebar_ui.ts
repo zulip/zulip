@@ -376,6 +376,14 @@ export function initialize_right_sidebar(): void {
         "mouseenter",
         ".user_sidebar_entry",
         (e) => {
+            if (
+                user_settings.web_animate_image_previews ===
+                    settings_config.web_animate_image_previews_values.always.code ||
+                user_settings.web_animate_image_previews ===
+                    settings_config.web_animate_image_previews_values.never.code
+            ) {
+                return;
+            }
             const $status_emoji = $(e.target)
                 .closest(".user_sidebar_entry")
                 .find("img.status-emoji");
@@ -392,6 +400,14 @@ export function initialize_right_sidebar(): void {
         "mouseleave",
         ".user_sidebar_entry",
         (e) => {
+            if (
+                user_settings.web_animate_image_previews ===
+                    settings_config.web_animate_image_previews_values.always.code ||
+                user_settings.web_animate_image_previews ===
+                    settings_config.web_animate_image_previews_values.never.code
+            ) {
+                return;
+            }
             const $status_emoji = $(e.target)
                 .closest(".user_sidebar_entry")
                 .find("img.status-emoji");
