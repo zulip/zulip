@@ -758,9 +758,10 @@ class EditMessageTest(ZulipTestCase):
             (
                 '<div><p>Here is a link to <a href="http://www.zulipchat.com"'
                 ">zulip "
-                '<span class="highlight_text_inserted"> Link: http://www.zulipchat.com .'
+                '<span class="highlight_text_inserted"> Link: http://www.zulipchat.com'
+                '</span> </a> <span class="highlight_text_inserted">.'
                 '</span> <span class="highlight_text_deleted"> Link: http://www.zulip.org .'
-                "</span> </a></p></div>"
+                "</span> </p></div>"
             ),
         )
 

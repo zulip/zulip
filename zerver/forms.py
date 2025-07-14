@@ -432,14 +432,12 @@ class CaptchaRealmCreationForm(RealmCreationForm):
 
 # https://github.com/typeddjango/django-stubs/pull/2384#pullrequestreview-2813849209
 if TYPE_CHECKING:
-    BaseSetPasswordForm: TypeAlias = SetPasswordForm[UserProfile]  # type: ignore[type-var]  # we don't subclass AbstractUser
+    BaseSetPasswordForm: TypeAlias = SetPasswordForm[UserProfile]
 else:
     BaseSetPasswordForm = SetPasswordForm
 
 
-class LoggingSetPasswordForm(
-    BaseSetPasswordForm  # type: ignore[type-var]  # we don't subclass AbstractUser
-):
+class LoggingSetPasswordForm(BaseSetPasswordForm):
     new_password1 = forms.CharField(
         label=_("New password"),
         widget=forms.PasswordInput(attrs={"autocomplete": "new-password"}),
