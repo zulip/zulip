@@ -5,7 +5,7 @@
             <a class="user-presence-link" href="{{href}}" draggable="false">
                 <div class="user-name-and-status-emoji">
                     {{> user_full_name .}}
-                    {{> status_emoji status_emoji_info}}
+                    {{> status_emoji status_emoji_info animate_status_emoji=animate_status_emoji}}
                 </div>
                 <span class="status-text">{{status_text}}</span>
             </a>
