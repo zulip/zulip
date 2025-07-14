@@ -1,9 +1,12 @@
 import urllib.parse
+from collections.abc import Sequence
 from typing import Any
 from urllib.parse import urlsplit
 
 import re2
 
+from zerver.lib.narrow_helpers import NarrowTerm
+from zerver.lib.streams import get_stream_by_narrow_operand_access_unchecked
 from zerver.lib.topic import get_topic_from_message_info
 from zerver.lib.types import UserDisplayRecipient
 from zerver.models import Realm, Stream, UserProfile
@@ -196,3 +199,54 @@ def append_url_query_string(original_url: str, query: str) -> str:
     u = urlsplit(original_url)
     query = u.query + ("&" if u.query and query else "") + query
     return u._replace(query=query).geturl()
+
+
+def generate_narrow_link_from_narrow_terms(
+    terms: Sequence[NarrowTerm],
+    realm: Realm,
+    sort_terms: bool = True,
+) -> str:
+    """
+    This converts a list of narrow terms into a narrow URL link.
+
+    If one of the terms is not supported, an `AssertionError`
+    will be raised.
+
+    If `sort_terms` is `True`, the operators in the narrow links
+    will be sorted from general("channel") to specific("near", "with").
+    """
+    from zerver.lib.narrow import BadNarrowOperatorError
+    from zerver.lib.url_decoding import Filter
+
+    if len(terms) == 0:
+        # Return to home-view
+        return "#"
+
+    narrow_terms = terms
+    if sort_terms:
+        narrow_terms = Filter.sorted_terms(list(terms))
+
+    link = ["/#narrow"]
+    for term in narrow_terms:
+        match term.operator:
+            case "channel":
+                channel_id_or_name = term.operand
+                assert isinstance(channel_id_or_name, str | int)
+                try:
+                    channel = get_stream_by_narrow_operand_access_unchecked(
+                        channel_id_or_name, realm
+                    )
+                except Stream.DoesNotExist:
+                    raise BadNarrowOperatorError("unknown channel " + str(channel_id_or_name))
+                link.append(encode_channel(channel.id, channel.name, with_operator=True))
+            case "topic":
+                topic_name = term.operand
+                assert isinstance(topic_name, str)
+                link.append(f"topic/{encode_hash_component(topic_name)}")
+            case "near" | "with":
+                assert isinstance(term.operand, int)
+                message_id = str(term.operand)
+                link.append(f"{term.operator}/{message_id}")
+            case _:
+                raise AssertionError(f"This operator is not yet supported: '{term.operator}'.")
+    return "/".join(link)
