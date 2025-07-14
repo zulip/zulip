@@ -21,7 +21,7 @@ from django.conf import settings
 def run() -> None:
     subprocess.check_call(["./tools/convert-help-center-docs-to-mdx"])
     env = os.environ.copy()
-    env["SHOW_BILLING_HELP_LINKS"] = str(settings.CORPORATE_ENABLED).lower()
+    env["CORPORATE_ENABLED"] = str(settings.CORPORATE_ENABLED).lower()
     subprocess.check_call(
         ["/usr/local/bin/corepack", "pnpm", "build"],
         cwd="help-beta",
