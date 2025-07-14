@@ -17,6 +17,7 @@ from scripts.lib.supervisor import list_supervisor_processes
 from scripts.lib.zulip_tools import (
     DEPLOYMENTS_DIR,
     ENDC,
+    LOCK_DIR,
     OKGREEN,
     WARNING,
     get_config,
@@ -50,6 +51,10 @@ elif username != "zulip":
     logging.error("Must be run as user 'zulip'.")
     sys.exit(1)
 
+
+if os.environ.get("RUNNING_UNDER_CRON") and os.path.exists(LOCK_DIR):
+    logging.info("Skipping cron-triggered restart during deploy.")
+    sys.exit(1)
 
 if not args.skip_checks:
     logging.info("Running syntax and database checks")
