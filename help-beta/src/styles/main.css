@@ -1,4 +1,24 @@
 :root {
+    /* Start of the block of variables taken from app_variables.css,
+       we need to cross-check for modifications while changing the
+       variables below. */
+    /* stylelint-disable color-no-hex */
+    --color-text-generic-link: #08c;
+    --color-text-generic-link-interactive: light-dark(
+        #005580,
+        hsl(200deg 79% 66%)
+    );
+    /* stylelint-enable color-no-hex */
+    --color-markdown-link: light-dark(
+        hsl(200deg 100% 40%),
+        var(--color-text-generic-link)
+    );
+    --color-markdown-link-hover: light-dark(
+        hsl(200deg 100% 25%),
+        var(--color-text-generic-link-interactive)
+    );
+    /* End of the block of variables taken from app_variables.css */
+
     /* Each of the following heading font sizes has been decreased
        by a factor of 1. --sl-text-h1 used to be equal to
        var(--sl-text-5xl), but now it is equal to var(--sl-text-4xl). */
@@ -59,6 +79,14 @@
             border: none;
             vertical-align: text-top;
         }
+    }
+
+    a:not(:where(.not-content *)) {
+        color: var(--color-markdown-link);
+    }
+
+    a:hover:not(:where(.not-content *)) {
+        color: var(--color-markdown-link-hover);
     }
 
     li > ul,
