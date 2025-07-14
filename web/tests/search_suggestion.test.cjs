@@ -1029,3 +1029,60 @@ test("queries_with_spaces", () => {
     expected = [`channel:${dev_help_id}`];
     assert.deepEqual(suggestions.strings, expected);
 });
+
+test("topic_prefix_matching", () => {
+    // Test ordered word prefix matching for topics
+    const candidate_topics = ["new user logo design", "logo new user", "user interface"];
+
+    // Test ordered matching - "new log" should match "new user logo design"
+    const result1 = search.get_topic_suggestions_from_candidates({
+        candidate_topics,
+        guess: "new log",
+    });
+
+    // Add debugging to see what we're getting
+    console.log("Query: 'new log'");
+    console.log("Result1:", result1);
+    console.log("Includes 'new user logo design':", result1.includes("new user logo design"));
+
+    assert.ok(result1.includes("new user logo design"));
+    assert.ok(!result1.includes("logo new user")); // Order matters
+
+    // Test "user des" should match "new user logo design"
+    const result2 = search.get_topic_suggestions_from_candidates({
+        candidate_topics,
+        guess: "user des",
+    });
+    assert.ok(result2.includes("new user logo design"));
+
+    // Test empty query matches all (limited to 10)
+    const result3 = search.get_topic_suggestions_from_candidates({
+        candidate_topics,
+        guess: "",
+    });
+    assert.equal(result3.length, 3); // All 3 topics
+
+    // Test no matches
+    const result4 = search.get_topic_suggestions_from_candidates({
+        candidate_topics,
+        guess: "xyz",
+    });
+    assert.equal(result4.length, 0);
+});
+
+test("channel_prefix_matching", ({override: _override}) => {
+    // Test unordered word prefix matching for channels
+    // Since channel suggestions with multiple words aren't supported through
+    // the main API (they get parsed as separate terms), we'll test the
+    // channel_matches_query function directly
+
+    // Test that our unordered prefix matching function works
+    assert.ok(search.test_channel_matches_query("john doe", "doe jo"));
+    assert.ok(search.test_channel_matches_query("doe john", "doe jo"));
+    assert.ok(search.test_channel_matches_query("john doe", "jo do"));
+    assert.ok(search.test_channel_matches_query("doe john", "jo do"));
+
+    // Test that order doesn't matter but prefix matching still applies
+    assert.ok(!search.test_channel_matches_query("john doe", "ohn oe")); // "ohn" is not a prefix of any word
+    assert.ok(search.test_channel_matches_query("john doe", "j d")); // "j" is prefix of "john", "d" is prefix of "doe"
+});
