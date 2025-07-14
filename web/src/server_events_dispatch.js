@@ -944,6 +944,7 @@ export function dispatch_normal_event(event) {
                 for (const msg_list of message_lists.all_rendered_message_lists()) {
                     msg_list.rerender();
                 }
+                activity_ui.redraw();
             }
             if (event.property === "web_stream_unreads_count_display_policy") {
                 stream_list.update_dom_unread_counts_visibility();
