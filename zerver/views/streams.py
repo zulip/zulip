@@ -58,6 +58,7 @@ from zerver.lib.email_mirror_helpers import encode_email_address, get_channel_em
 from zerver.lib.exceptions import (
     CannotManageDefaultChannelError,
     CannotSetTopicsPolicyError,
+    IncompatibleParametersError,
     JsonableError,
     OrganizationOwnerRequiredError,
 )
@@ -121,7 +122,7 @@ from zerver.models import (
     UserProfile,
     UserTopic,
 )
-from zerver.models.groups import SystemGroups
+from zerver.models.groups import SystemGroups, get_realm_system_groups_name_dict
 from zerver.models.streams import StreamTopicsPolicyEnum
 from zerver.models.users import get_system_bot
 
@@ -280,6 +281,7 @@ def update_stream_backend(
     user_profile: UserProfile,
     *,
     can_add_subscribers_group: Json[GroupSettingChangeRequest] | None = None,
+    can_create_topic_group: Json[GroupSettingChangeRequest] | None = None,
     can_administer_channel_group: Json[GroupSettingChangeRequest] | None = None,
     can_move_messages_out_of_channel_group: Json[GroupSettingChangeRequest] | None = None,
     can_move_messages_within_channel_group: Json[GroupSettingChangeRequest] | None = None,
@@ -412,6 +414,35 @@ def update_stream_backend(
             )
 
         do_set_stream_property(stream, "topics_policy", topics_policy.value, user_profile)
+
+    system_groups_name_dict = get_realm_system_groups_name_dict(stream.realm_id)
+    if not proposed_history_public_to_subscribers:
+        if can_create_topic_group is None:
+            if stream.can_create_topic_group_id in system_groups_name_dict:
+                is_everyone_group = (
+                    system_groups_name_dict[stream.can_create_topic_group_id]
+                    == SystemGroups.EVERYONE
+                )
+                if not is_everyone_group:
+                    raise IncompatibleParametersError(
+                        ["history_public_to_subscribers", "can_create_topic_group"]
+                    )
+            else:
+                raise IncompatibleParametersError(
+                    ["history_public_to_subscribers", "can_create_topic_group"]
+                )
+        else:
+            everyone_group = get_system_user_group_by_name(SystemGroups.EVERYONE, stream.realm_id)
+            new_can_create_topic_group = can_create_topic_group.new
+            if isinstance(new_can_create_topic_group, int):
+                if new_can_create_topic_group != everyone_group.id:
+                    raise IncompatibleParametersError(
+                        ["history_public_to_subscribers", "can_create_topic_group"]
+                    )
+            else:
+                raise IncompatibleParametersError(
+                    ["history_public_to_subscribers", "can_create_topic_group"]
+                )
 
     if (
         is_private is not None
@@ -703,6 +734,7 @@ def add_subscriptions_backend(
     authorization_errors_fatal: Json[bool] = True,
     can_add_subscribers_group: Json[int | UserGroupMembersData] | None = None,
     can_administer_channel_group: Json[int | UserGroupMembersData] | None = None,
+    can_create_topic_group: Json[int | UserGroupMembersData] | None = None,
     can_move_messages_out_of_channel_group: Json[int | UserGroupMembersData] | None = None,
     can_move_messages_within_channel_group: Json[int | UserGroupMembersData] | None = None,
     can_remove_subscribers_group: Json[int | UserGroupMembersData] | None = None,
@@ -781,6 +813,7 @@ def add_subscriptions_backend(
         stream_dict_copy["can_administer_channel_group"] = group_settings_map[
             "can_administer_channel_group"
         ]
+        stream_dict_copy["can_create_topic_group"] = group_settings_map["can_create_topic_group"]
         stream_dict_copy["can_move_messages_out_of_channel_group"] = group_settings_map[
             "can_move_messages_out_of_channel_group"
         ]
