@@ -69,7 +69,9 @@ def handle_registration_to_bouncer_failure(
         )
 
 
-def handle_register_push_device_to_bouncer(queue_item: RegisterPushDeviceToBouncerQueueItem) -> None:
+def handle_register_push_device_to_bouncer(
+    queue_item: RegisterPushDeviceToBouncerQueueItem,
+) -> None:
     user_profile_id = queue_item["user_profile_id"]
     user_profile = get_user_profile_by_id(user_profile_id)
     bouncer_public_key = queue_item["bouncer_public_key"]
