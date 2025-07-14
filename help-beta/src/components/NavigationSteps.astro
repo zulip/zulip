@@ -1,7 +1,7 @@
 ---
 import assert from "node:assert";
 
-import {SHOW_BILLING_HELP_LINKS, SHOW_RELATIVE_LINKS} from "astro:env/client";
+import {CORPORATE_ENABLED, SHOW_RELATIVE_LINKS} from "astro:env/client";
 
 /* eslint-disable import/extensions */
 import RawZulipIconBarChart from "~icons/zulip-icon/bar-chart?raw";
@@ -22,6 +22,7 @@ import RawZulipIconUserGroupCog from "~icons/zulip-icon/user-group-cog?raw";
 
 const PERSONAL_SETTINGS_TYPE = "Personal settings";
 const ORGANIZATION_SETTINGS_TYPE = "Organization settings";
+const SHOW_BILLING_HELP_LINKS = CORPORATE_ENABLED;
 
 // This list has been transformed one-off from `help_settings_links.py`, we
 // have added a comment in that file to update this list in case of any
