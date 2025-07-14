@@ -25,7 +25,9 @@ class ZerverConfig(AppConfig):
 
             setup_sentry(settings.SENTRY_DSN, get_config("machine", "deploy_type", "development"))
 
-        django_stubs_ext.monkeypatch()
+        from django.contrib.auth.forms import SetPasswordMixin
+
+        django_stubs_ext.monkeypatch(extra_classes=[SetPasswordMixin])
 
         # We import zerver.signals here for the side effect of
         # registering the user_logged_in signal receiver.  This import
