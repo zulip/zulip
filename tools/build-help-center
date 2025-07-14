@@ -3,6 +3,7 @@
 import os
 import subprocess
 import sys
+from email.utils import parseaddr
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
@@ -21,6 +22,7 @@ from django.conf import settings
 def run() -> None:
     subprocess.check_call(["./tools/convert-help-center-docs-to-mdx"])
     env = os.environ.copy()
+    env["SUPPORT_EMAIL"] = parseaddr(settings.ZULIP_ADMINISTRATOR)[1]
     env["CORPORATE_ENABLED"] = str(settings.CORPORATE_ENABLED).lower()
     subprocess.check_call(
         ["/usr/local/bin/corepack", "pnpm", "build"],
