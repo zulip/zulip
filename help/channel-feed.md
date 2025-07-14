@@ -21,6 +21,19 @@ quick overview of recent messages in a channel.
 
     Use <kbd>S</kbd> to go from a topic view to the channel feed.
 
+{tab|mobile}
+
+{!mobile-channels.md!}
+
+1. Select a channel.
+
+!!! tip ""
+
+    You can also go to the channel feed from a conversation view or from the
+    [list of topics in a channel](/help/list-of-topics), by tapping the
+    **channel feed** (<i class="zulip-icon zulip-icon-all-messages mobile-help"></i>)
+    icon in the upper right corner of the app.
+
 {end_tabs}
 
 ## Go to channel feed for an unsubscribed channel
