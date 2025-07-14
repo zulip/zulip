@@ -4,7 +4,7 @@ from typing import Any
 from django.conf import settings
 from typing_extensions import override
 
-from zerver.lib.management import ZulipBaseCommand, abort_unless_locked
+from zerver.lib.management import ZulipBaseCommand, abort_cron_during_deploy, abort_unless_locked
 from zerver.lib.zulip_update_announcements import send_zulip_update_announcements
 from zerver.models import Realm
 
@@ -26,6 +26,7 @@ class Command(ZulipBaseCommand):
         )
 
     @override
+    @abort_cron_during_deploy
     @abort_unless_locked
     def handle(self, *args: Any, **options: Any) -> None:
         if options["reset_level"] is not None:
