@@ -1,5 +1,3 @@
-from re import Pattern
-
 import re2
 import uri_template
 from django.core.exceptions import ValidationError
@@ -19,7 +17,7 @@ from zerver.lib.types import LinkifierDict
 from zerver.models.realms import Realm
 
 
-def filter_pattern_validator(value: str) -> Pattern[str]:
+def filter_pattern_validator(value: str) -> "re2._Regexp[str]":
     try:
         # Do not write errors to stderr (this still raises exceptions)
         options = re2.Options()

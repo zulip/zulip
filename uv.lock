@@ -1414,6 +1414,18 @@ wheels = [
 ]
 
 [[package]]
+name = "google-re2-stubs"
+version = "0.1.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "google-re2" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/e5/a4/d8d16007eb6a6eb137ec3b6344a67199837e14a73709efeaa7285d2660eb/google_re2_stubs-0.1.1.tar.gz", hash = "sha256:f5ebef2f4188957bf980a5ad88ab266589638e5090329e6a0fde99f6bb684657", size = 4009, upload-time = "2024-10-21T15:22:43.861Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/7e/86/2134e8ff65a22e30883bfc38ac34c5c76fd88cc9cef02ff3561f05db2b68/google_re2_stubs-0.1.1-py3-none-any.whl", hash = "sha256:a82eb6c3accd20879d711cd38151583d8a154fcca755f43a5595143a484c8118", size = 3676, upload-time = "2024-10-21T15:22:43.08Z" },
+]
+
+[[package]]
 name = "google-resumable-media"
 version = "2.7.2"
 source = { registry = "https://pypi.org/simple" }
@@ -5307,6 +5319,7 @@ dev = [
     { name = "firebase-admin" },
     { name = "gitlint-core" },
     { name = "google-re2" },
+    { name = "google-re2-stubs" },
     { name = "greenlet" },
     { name = "html2text" },
     { name = "ipython" },
@@ -5529,6 +5542,7 @@ dev = [
     { name = "firebase-admin" },
     { name = "gitlint-core" },
     { name = "google-re2" },
+    { name = "google-re2-stubs" },
     { name = "greenlet" },
     { name = "html2text" },
     { name = "ipython" },

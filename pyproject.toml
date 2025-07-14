@@ -269,6 +269,7 @@ dev = [
 
   "boto3-stubs[s3,ses,sns,sqs]",
   "django-stubs",
+  "google-re2-stubs",
   "lxml-stubs",
   "SQLAlchemy[mypy]",
   "types-beautifulsoup4",
@@ -408,7 +409,6 @@ module = [
     "pyoembed.*",
     "pyuca.*",
     "pyvips.*",
-    "re2.*",
     "scim2_filter_parser.attr_paths",
     "social_django.*",
     "talon_core.*",
