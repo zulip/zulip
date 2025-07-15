@@ -83,7 +83,7 @@ def parser() -> argparse.ArgumentParser:
     filtering.add_argument(
         "--all-lines",
         "-L",
-        help="Show all matching lines; equivalent to -suemtpr",
+        help="Show all matching lines; equivalent to -suaemtpr",
         action="store_true",
     )
     filtering.add_argument("--static", "-s", help="Include static file paths", action="store_true")
