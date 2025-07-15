@@ -544,9 +544,18 @@ export function setup_topic_search_typeahead(): void {
             return typeahead_helper.render_topic_state(item.label);
         },
         matcher(item: TopicFilterPill, query: string) {
-            return item.syntax.toLowerCase().startsWith(query.toLowerCase());
+            // This basically only matches if `is:` is in the query.
+            return (
+                query.includes(":") &&
+                (item.syntax.toLowerCase().startsWith(query.toLowerCase()) ||
+                    (item.syntax.startsWith("-") &&
+                        item.syntax.slice(1).toLowerCase().startsWith(query.toLowerCase())))
+            );
         },
         sorter(items: TopicFilterPill[]) {
+            // This sort order places "Unresolved topics" first
+            // always, which is good because that's almost always what
+            // users will want.
             return items;
         },
         updater(item: TopicFilterPill) {
@@ -562,10 +571,6 @@ export function setup_topic_search_typeahead(): void {
         stopAdvance: true,
         // Use dropup, to match compose typeahead.
         dropup: true,
-        // Display typeahead menu when input gains focus and is empty.
-        helpOnEmptyStrings: true,
-        // Prevents displaying the typeahead menu when a pill is deleted via backspace.
-        hideOnEmptyAfterBackspace: true,
     };
 
     topic_state_typeahead = new Typeahead(typeahead_input, options);
