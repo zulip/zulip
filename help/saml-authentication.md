@@ -221,11 +221,9 @@ log in.
 
 Your IdP directory's group names don't have to match the associated Zulip group
 names (e.g., membership in your IdP's group **finance** can be synced to
-membership in the Zulip group **finance-department**).
-
-How Zulip translates received SAML groups to Zulip group memberships
-is detailed in the [relevant section][saml-group-sync-readthedocs] the
-main SAML documentation. [Contact support](/help/contact-support) with any questions.
+membership in the Zulip group **finance-department**). See the [technical
+documentation][saml-group-sync-readthedocs] on how your IdP's groups are mapped
+to Zulip groups for details.
 
 !!! tip ""
 
