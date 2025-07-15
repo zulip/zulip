@@ -938,7 +938,6 @@ input[type="checkbox"] {
 .org-permissions-form .pill-container {
     /* Subtract 2 * (2px padding) + 2 * (1px border) */
     min-width: calc(var(--modal-input-width) - 6px);
-    background-color: hsl(0deg 0% 100%);
 
     .input {
         flex-grow: 1;
@@ -1812,7 +1811,6 @@ label.preferences-radio-choice-label {
     .pill-container {
         min-height: 24px;
         max-width: 206px;
-        background-color: hsl(0deg 0% 100%);
 
         &:focus-within {
             border-color: hsl(206deg 80% 62% / 80%);
@@ -2302,7 +2300,6 @@ label.preferences-radio-choice-label {
     .settings_text_input,
     .settings_textarea,
     .pill-container {
-        border-color: hsl(0deg 0% 100%);
         margin-bottom: 0;
 
         &:focus {
