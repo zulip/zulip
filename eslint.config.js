@@ -272,6 +272,18 @@ export default tseslint.config(
         },
     },
     {
+        files: ["help-beta/src/scripts/client/**"],
+        rules: {
+            "unicorn/prefer-module": "off",
+        },
+        languageOptions: {
+            globals: {
+                ...globals.browser,
+            },
+            sourceType: "script",
+        },
+    },
+    {
         files: ["web/shared/**"],
         languageOptions: {
             globals: globals["shared-node-browser"],
