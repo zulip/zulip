@@ -1,3 +1,5 @@
+<!-- Changes to this file should be propagated to help-beta/astro.config.mjs. -->
+
 ## Guides
 * [Getting started with Zulip](/help/getting-started-with-zulip)
 * [Choosing a team chat app](https://blog.zulip.com/2024/11/04/choosing-a-team-chat-app/)
