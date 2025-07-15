@@ -123,6 +123,13 @@ Zulip's list of [recent conversations](/help/recent-conversations) offers a
 quick overview of what's been happening in your community. It's easy to scan the
 list of topics to find which ones you want to dive into.
 
+> “I had never engaged with the Changelog podcast community in Slack because I
+> always got too overwhelmed with the linear flow of conversations. Topic based
+> systems are such a fresh breath of air.”
+
+> — [Siddhartha Golu](https://www.siddharthagolu.com/),
+>   [Changelog](https://changelog.com/podcast) community member
+
 ### Many ways to participate
 
 You can use Zulip from the browser, a [desktop app](/apps), and Android and iOS
@@ -204,6 +211,10 @@ eligible for discounted pricing or full sponsorship.
 We’ve talked to hundreds of people about their experiences with
 community chat. Here are some reasons why folks choose Zulip over
 other apps you might consider for hosting your community.
+
+> “Zulip makes all my Slack and Discord communities feel tedious by comparison.”
+
+> — AJ Kerrigan, [Changelog](https://changelog.com/podcast) community member
 
 ### Group chat apps (WhatsApp, Telegram, Signal, Messenger, etc.)
 
