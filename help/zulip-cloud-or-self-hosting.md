@@ -23,7 +23,7 @@ organization. For additional guidance, reach out to
   compliance by self-hosting Zulip behind your firewall.
 * **Access to all of Zulip's features**: All [self-hosted
   plans](https://zulip.com/plans/#self-hosted) offer the same [100% open-source
-  software] [zulip-github]. Organizations that do not require support with their
+  software][zulip-github]. Organizations that do not require support with their
   installation can always use Zulip for free with no limitations.
 * **Simple set-up process**: It's easy to [install][install-zulip] Zulip
   directly on Ubuntu or Debian Linux, in <a
