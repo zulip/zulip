@@ -26,17 +26,28 @@ import type {TopicInfo} from "./topic_list_data.ts";
 import * as typeahead_helper from "./typeahead_helper.ts";
 import * as vdom from "./vdom.ts";
 
-/*
-    Track all active widgets with a Map by stream_id.
+type TopicFilterPill = {
+    label: string;
+    syntax: string;
+};
 
-    (We have at max one for now, but we may
-    eventually allow multiple streams to be
-    expanded.)
-*/
+const filter_options: TopicFilterPill[] = [
+    {
+        label: $t({defaultMessage: "Unresolved topics"}),
+        syntax: "-is:resolved",
+    },
+    {
+        label: $t({defaultMessage: "Resolved topics"}),
+        syntax: "is:resolved",
+    },
+];
 
+/* Track all active widgets with a Map by stream_id. We have at max
+   one for now, but we may eventually allow multiple streams to be
+   expanded. */
 const active_widgets = new Map<number, LeftSidebarTopicListWidget>();
 export let search_pill_widget: SearchPillWidget | null = null;
-export let topic_state_typeahead: Typeahead<string> | undefined;
+export let topic_state_typeahead: Typeahead<TopicFilterPill> | undefined;
 
 // We know whether we're zoomed or not.
 let zoomed = false;
@@ -500,12 +511,6 @@ function set_search_bar_text(text: string): void {
     $input.trigger("input");
 }
 
-const filter_options = new Map<string, string>([
-    [$t({defaultMessage: "Unresolved topics"}), "-is:resolved"],
-    [$t({defaultMessage: "Resolved topics"}), "is:resolved"],
-    [$t({defaultMessage: "All topics"}), ""],
-]);
-
 export function setup_topic_search_typeahead(): void {
     const $input = $("#topic_filter_query");
     const $pill_container = $("#left-sidebar-filter-topic-input");
@@ -522,7 +527,6 @@ export function setup_topic_search_typeahead(): void {
     };
 
     const options = {
-        items: filter_options.size,
         source() {
             const stream_id = active_stream_id();
             assert(stream_id !== undefined);
@@ -534,27 +538,27 @@ export function setup_topic_search_typeahead(): void {
             if ($pills.length > 0) {
                 return [];
             }
-            return [...filter_options.keys()];
+            return [...filter_options];
         },
-        item_html(item: string) {
-            return typeahead_helper.render_topic_state(item);
+        item_html(item: TopicFilterPill) {
+            return typeahead_helper.render_topic_state(item.label);
         },
-        matcher(item: string, query: string) {
-            return item.toLowerCase().startsWith(query.toLowerCase());
+        matcher(item: TopicFilterPill, query: string) {
+            return item.syntax.toLowerCase().startsWith(query.toLowerCase());
         },
-        sorter(items: string[]) {
+        sorter(items: TopicFilterPill[]) {
             return items;
         },
-        updater(item: string) {
-            const value = filter_options.get(item)!;
+        updater(item: TopicFilterPill) {
             assert(search_pill_widget !== null);
             search_pill_widget.clear(true);
-            search_pill_widget.appendValue(value);
+            search_pill_widget.appendValue(item.syntax);
             set_search_bar_text("");
             $input.trigger("focus");
             return get_left_sidebar_topic_search_term();
         },
-        // Prevents key events from propagating to other handlers or triggering default browser actions.
+        // Prevents key events from propagating to other handlers or
+        // triggering default browser actions.
         stopAdvance: true,
         // Use dropup, to match compose typeahead.
         dropup: true,
