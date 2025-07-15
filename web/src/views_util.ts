@@ -158,6 +158,7 @@ export function is_in_focus(): boolean {
         !modals.any_active_or_animating() &&
         !$(".home-page-input").is(":focus") &&
         !$("#search_query").is(":focus") &&
+        !$("#topic_filter_query").is(":focus") &&
         !$(".navbar-item").is(":focus")
     );
 }
