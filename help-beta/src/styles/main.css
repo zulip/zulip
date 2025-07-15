@@ -16,6 +16,18 @@
     cursor: default;
 }
 
+/* Eliminate the border inserted between the title and the rest of
+   the content. */
+.content-panel + .content-panel {
+    border-top: 0;
+}
+
+/* Decrease padding for the content panel from 1.5rem to 1rem since
+   the padding looked too big after removing the content panel border. */
+.content-panel {
+    padding: 1rem var(--sl-content-pad-x);
+}
+
 .sl-markdown-content {
     img {
         vertical-align: top;
