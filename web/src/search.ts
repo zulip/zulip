@@ -106,6 +106,9 @@ function narrow_to_search_contents_with_search_bar_open(): void {
         return;
     }
     if (!validate_text_terms()) {
+        // The shake animation will show if there is any invalid term in the,
+        // search bar, even if it's not what the user just typed or selected.
+        $("#search_query").addClass("shake");
         return;
     }
     const terms = full_search_query_in_terms();
@@ -125,10 +128,7 @@ function narrow_to_search_contents_with_search_bar_open(): void {
 
 function validate_text_terms(): boolean {
     const text_terms = Filter.parse(get_search_bar_text());
-    // The shake animation will show if there is any invalid term in the,
-    // search bar, even if it's not what the user just typed or selected.
     if (!text_terms.every((term) => Filter.is_valid_search_term(term))) {
-        $("#search_query").addClass("shake");
         return false;
     }
     return true;
@@ -163,6 +163,7 @@ export function initialize(opts: {on_narrow_search: OnNarrowSearch}): void {
     // field.  There's also a "search_string" field on each element that actually
     // just represents the key of the hash, so it's redundant.)
     let search_map = new Map<string, search_suggestion.Suggestion>();
+    let handled_enter_in_typeahead = false;
 
     const bootstrap_typeahead_input: TypeaheadInputElement = {
         $element: $search_query_box,
@@ -227,6 +228,7 @@ export function initialize(opts: {on_narrow_search: OnNarrowSearch}): void {
                     search_typeahead.shown,
                     set_search_bar_text,
                 );
+                handled_enter_in_typeahead = true;
                 narrow_to_search_contents_with_search_bar_open();
                 focus_search_input_at_end();
             }
@@ -274,7 +276,6 @@ export function initialize(opts: {on_narrow_search: OnNarrowSearch}): void {
         is_using_input_method = true;
     });
 
-    let typeahead_was_open_on_enter = false;
     $searchbox_form
         .on("keydown", (e: JQuery.KeyDownEvent): void => {
             if (keydown_util.is_enter_event(e) && $search_query_box.is(":focus")) {
@@ -283,10 +284,6 @@ export function initialize(opts: {on_narrow_search: OnNarrowSearch}): void {
                 // to be done will be handled in the keyup.
                 e.preventDefault();
             }
-
-            // Record this on keydown before the typeahead code closes the
-            // typeahead, so we can use this information on keyup.
-            typeahead_was_open_on_enter = keydown_util.is_enter_event(e) && search_typeahead.shown;
         })
         .on("keyup", (e: JQuery.KeyUpEvent): void => {
             if (is_using_input_method) {
@@ -299,17 +296,19 @@ export function initialize(opts: {on_narrow_search: OnNarrowSearch}): void {
             } else if (
                 keydown_util.is_enter_event(e) &&
                 $search_query_box.is(":focus") &&
-                !typeahead_was_open_on_enter
+                !handled_enter_in_typeahead
             ) {
-                // If the typeahead was just open, the Enter event was selecting an item
-                // from the typeahead. When that's the case, we don't want to call
-                // narrow_or_search_for_term which exits the search bar, since the user
-                // might have more terms to add still.
-                if (!validate_text_terms()) {
+                // We did not handle the Enter event in typeahead when focus
+                // was in search box.
+                handled_enter_in_typeahead = false;
+                if (validate_text_terms()) {
+                    narrow_or_search_for_term({on_narrow_search});
                     return;
                 }
-                narrow_or_search_for_term({on_narrow_search});
+                $("#search_query").addClass("shake");
+                return;
             }
+            handled_enter_in_typeahead = false;
         });
 
     $("#searchbox-input-container").on("click", (): void => {
