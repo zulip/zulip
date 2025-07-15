@@ -1,3 +1,15 @@
+:root {
+    /* Each of the following heading font sizes has been decreased
+       by a factor of 1. --sl-text-h1 used to be equal to
+       var(--sl-text-5xl), but now it is equal to var(--sl-text-4xl). */
+    --sl-text-h1: var(--sl-text-4xl);
+    --sl-text-h2: var(--sl-text-3xl);
+    --sl-text-h3: var(--sl-text-2xl);
+    --sl-text-h4: var(--sl-text-xl);
+    /* Changed from 1.2 to 1 */
+    --sl-line-height-headings: 1;
+}
+
 .non-clickable-sidebar-heading {
     font-size: 1.15rem;
     pointer-events: none;
