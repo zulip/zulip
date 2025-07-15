@@ -234,7 +234,7 @@ An organization is considered to be a new customer if:
 
 {!manage-billing-intro.md!}
 
-Here are instructions to log in to billing management:
+### Manage billing
 
 {start_tabs}
 
