@@ -234,6 +234,8 @@ An organization is considered to be a new customer if:
 
 {!manage-billing-intro.md!}
 
+### Manage billing
+
 {start_tabs}
 
 {!self-hosted-billing-log-in-step.md!}
