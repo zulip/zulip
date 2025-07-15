@@ -343,6 +343,7 @@ const testSub = {
     subscribed: true,
     is_recently_active: true,
     can_send_message_group: everyone_group.id,
+    is_muted: true,
 };
 
 const announceSub = {
@@ -733,7 +734,6 @@ test_ui("rename_stream", ({mock_template, override}) => {
             is_web_public: undefined,
             color: payload.color,
             pin_to_top: true,
-            hide_unread_count: true,
             can_post_messages: true,
             is_empty_topic_only_channel: false,
         });

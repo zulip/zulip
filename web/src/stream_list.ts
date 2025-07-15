@@ -190,6 +190,12 @@ export let update_count_in_dom = (
         $subscription_block.removeClass("has-only-muted-unreads");
         $subscription_block.removeClass("stream-with-count");
     }
+
+    toggle_hide_unread_counts(
+        $subscription_block,
+        stream_counts.stream_is_muted,
+        stream_counts.unmuted_count,
+    );
 };
 
 export function rewire_update_count_in_dom(value: typeof update_count_in_dom): void {
@@ -476,7 +482,6 @@ function build_stream_sidebar_li(sub: StreamSubscription): JQuery {
         is_web_public: sub.is_web_public,
         color: sub.color,
         pin_to_top: sub.pin_to_top,
-        hide_unread_count: settings_data.should_mask_unread_count(is_muted),
         can_post_messages,
         is_empty_topic_only_channel: stream_data.is_empty_topic_only_channel(sub.stream_id),
     };
@@ -641,18 +646,32 @@ export function update_dom_with_unread_counts(counts: FullUnreadCountsData): voi
     }
 }
 
+function toggle_hide_unread_counts(
+    $subscription_block: JQuery,
+    sub_muted: boolean,
+    unmuted_unread_counts: number,
+): void {
+    const hide_count = settings_data.should_mask_unread_count(sub_muted, unmuted_unread_counts);
+
+    $subscription_block.toggleClass("hide_unread_counts", hide_count);
+}
+
 export function update_dom_unread_counts_visibility(): void {
+    // TODO: It's not obviously why this function exists; can't we
+    // just do a full left sidebar rebuild?
     for (const stream of stream_sidebar.rows.values()) {
         const $subscription_block = stream.get_li().find(".subscription_block");
 
         const is_muted = stream_data.is_muted(stream.sub.stream_id);
-        const hide_count = settings_data.should_mask_unread_count(is_muted);
-
-        if (hide_count) {
-            $subscription_block.addClass("hide_unread_counts");
-        } else {
-            $subscription_block.removeClass("hide_unread_counts");
-        }
+        // Technically, we just need to know if there's at least one
+        // unmuted unread here, so this could be optimized by using a
+        // faster `unread.ts` API optimized to compute just the set of
+        // channels with at least one unmuted unread.
+        //
+        // That optimization is inessential as long as this function
+        // is only called when changing a global personal setting.
+        const stream_counts = unread.unread_count_info_for_stream(stream.sub.stream_id);
+        toggle_hide_unread_counts($subscription_block, is_muted, stream_counts.unmuted_count);
     }
 }
 

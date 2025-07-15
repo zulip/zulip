@@ -172,16 +172,6 @@
         }
     }
 
-    .has-unmuted-unreads.hide_unread_counts {
-        .masked_unread_count {
-            display: none;
-        }
-
-        .unread_count {
-            display: inline;
-        }
-    }
-
     .toggle_stream_mute {
         margin-right: 3px;
         opacity: 0.5;
