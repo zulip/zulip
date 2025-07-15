@@ -902,7 +902,6 @@ h4.user_group_setting_subsection_title {
         }
 
         .pill-container {
-            background-color: hsl(0deg 0% 93%);
             opacity: 0.7;
 
             .pill {
@@ -1293,7 +1292,6 @@ div.settings-radio-input-parent {
 .advanced-configurations-container .pill-container {
     /* Subtract 2 * (2px padding) + 2 * (1px border) */
     min-width: calc(var(--modal-input-width) - 6px);
-    background-color: hsl(0deg 0% 100%);
 
     .input {
         flex-grow: 1;
