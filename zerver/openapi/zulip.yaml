@@ -1821,7 +1821,7 @@ paths:
                                   description: |
                                     The push account ID for this client registration.
 
-                                    See [`POST /mobile_push/register`)(/api/register-push-device)
+                                    See [`POST /mobile_push/register`](/api/register-push-device)
                                     for details on push account IDs.
                                 status:
                                   type: string
@@ -1830,8 +1830,8 @@ paths:
                                     - failed
                                     - pending
                                   description: |
-                                    The updated registration status. Will be "active", "failed", or
-                                    "pending".
+                                    The updated registration status. Will be `"active"`, `"failed"`, or
+                                    `"pending"`.
                                 error_code:
                                   type: string
                                   nullable: true
