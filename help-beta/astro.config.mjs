@@ -64,6 +64,7 @@ export default defineConfig({
             title: "Zulip help center",
             components: {
                 Footer: "./src/components/Footer.astro",
+                Head: "./src/components/Head.astro",
             },
             pagination: false,
             customCss: ["./src/styles/main.css", "./src/styles/steps.css"],
