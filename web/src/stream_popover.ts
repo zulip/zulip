@@ -699,6 +699,26 @@ export async function build_move_topic_to_stream_popover(
         }
 
         let propagate_mode = "change_all";
+
+        const final_stream_id = select_stream_id ?? current_stream_id;
+        const final_topic_name = new_topic_name ?? old_topic_name;
+        if (!stream_data.can_create_new_topics_in_stream(final_stream_id)) {
+            const existing_topics_in_stream = stream_topic_history
+                .get_recent_topic_names(final_stream_id)
+                .map((topic) => topic.toLowerCase());
+            if (!existing_topics_in_stream.includes(final_topic_name.trim().toLowerCase())) {
+                ui_report.client_error(
+                    $t_html({
+                        defaultMessage:
+                            "You do not have permission to create new topics in this channel.",
+                    }),
+                    $("#move_topic_modal .new_topic_error"),
+                );
+                dialog_widget.hide_dialog_spinner();
+                return;
+            }
+        }
+
         if (message !== undefined) {
             // We already have the message_id here which means that modal is opened using
             // message popover.
@@ -707,8 +727,8 @@ export async function build_move_topic_to_stream_popover(
             const toast_params =
                 propagate_mode === "change_one"
                     ? {
-                          new_stream_id: select_stream_id ?? current_stream_id,
-                          new_topic_name: new_topic_name ?? old_topic_name,
+                          new_stream_id: final_stream_id,
+                          new_topic_name: final_topic_name,
                       }
                     : undefined;
             message_edit.move_topic_containing_message_to_stream(
@@ -875,6 +895,7 @@ export async function build_move_topic_to_stream_popover(
     }
 
     function move_topic_on_update(event: JQuery.ClickEvent, dropdown: {hide: () => void}): void {
+        $("#move_topic_modal .new_topic_error").hide();
         stream_widget_value = Number.parseInt($(event.currentTarget).attr("data-unique-id")!, 10);
         const $topic_input = $<HTMLInputElement>("#move_topic_form input.move_messages_edit_topic");
         curr_selected_stream = stream_widget_value;
@@ -1044,6 +1065,7 @@ export async function build_move_topic_to_stream_popover(
     function move_topic_post_render(): void {
         $("#move_topic_modal .dialog_submit_button").prop("disabled", true);
         $("#move_topic_modal .move_topic_warning_container").hide();
+        $("#move_topic_modal .new_topic_error").hide();
 
         const $topic_input = $<HTMLInputElement>("#move_topic_form input.move_messages_edit_topic");
         move_topic_to_stream_topic_typeahead = composebox_typeahead.initialize_topic_edit_typeahead(
@@ -1086,6 +1108,7 @@ export async function build_move_topic_to_stream_popover(
                 update_submit_button_disabled_state(select_stream_id);
                 maybe_show_topic_already_exists_warning();
                 update_topic_input_placeholder();
+                $("#move_topic_modal .new_topic_error").hide();
             });
             return;
         }
@@ -1137,6 +1160,7 @@ export async function build_move_topic_to_stream_popover(
             update_submit_button_disabled_state(stream_widget_value);
             maybe_show_topic_already_exists_warning();
             update_topic_input_placeholder();
+            $("#move_topic_modal .new_topic_error").hide();
         });
 
         update_topic_input_placeholder();
