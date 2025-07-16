@@ -527,14 +527,14 @@ test_ui("narrowing", ({mock_template}) => {
 });
 
 test_ui("focusout_user_filter", () => {
-    stream_list.set_event_handlers({narrow_show_channel_feed() {}});
+    stream_list.set_event_handlers({show_channel_feed() {}});
     const e = {};
     const click_handler = $(".stream-list-filter").get_on_handler("focusout");
     click_handler(e);
 });
 
 test_ui("focus_user_filter", () => {
-    stream_list.set_event_handlers({narrow_show_channel_feed() {}});
+    stream_list.set_event_handlers({show_channel_feed() {}});
 
     initialize_stream_data();
     stream_list.build_stream_list();

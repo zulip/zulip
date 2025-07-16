@@ -922,6 +922,108 @@ export function initialize_tippy_tooltips(): void {
     });
 }
 
+function on_sidebar_channel_click(
+    stream_id: number,
+    // Null is used when this is called via `Enter`, because the
+    // keyboard abstraction we're using doesn't need to pass on the event.
+    e: JQuery.ClickEvent | null,
+    show_channel_feed: (stream_id: number, trigger: string) => void,
+): void {
+    clear_and_hide_search();
+    if (e !== null) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+
+    const current_narrow_stream_id = narrow_state.stream_id();
+    const current_topic = narrow_state.topic();
+
+    if (stream_data.is_empty_topic_only_channel(stream_id)) {
+        // If the channel doesn't support topics, take you
+        // directly to general chat regardless of settings.
+        const empty_topic_url = hash_util.by_channel_topic_permalink(stream_id, "");
+        browser_history.go_to_location(empty_topic_url);
+        return;
+    }
+
+    if (
+        user_settings.web_channel_default_view ===
+        web_channel_default_view_values.list_of_topics.code
+    ) {
+        browser_history.go_to_location(hash_util.by_channel_topic_list_url(stream_id));
+        return;
+    }
+
+    if (current_narrow_stream_id === stream_id && current_topic !== undefined) {
+        const channel_feed_url = hash_util.channel_url_by_user_setting(stream_id);
+        browser_history.go_to_location(channel_feed_url);
+        return;
+    }
+
+    if (
+        user_settings.web_channel_default_view === web_channel_default_view_values.channel_feed.code
+    ) {
+        show_channel_feed(stream_id, "sidebar");
+        return;
+    }
+
+    let topics = stream_topic_history.get_recent_topic_names(stream_id);
+
+    const navigate_to_stream = (): void => {
+        const topic_list_info = topic_list_data.get_list_info(
+            stream_id,
+            false,
+            (topic_names: string[]) => topic_names,
+        );
+        // This initial value handles both the
+        // top_topic_in_channel mode as well as the
+        // top_unread_topic_in_channel fallback when there are no
+        // (unmuted) unreads in the channel.
+        let topic_item = topic_list_info.items[0];
+
+        if (
+            user_settings.web_channel_default_view ===
+            web_channel_default_view_values.top_unread_topic_in_channel.code
+        ) {
+            for (const topic_list_item of topic_list_info.items) {
+                if (
+                    unread.topic_has_any_unread(stream_id, topic_list_item.topic_name) &&
+                    !user_topics.is_topic_muted(stream_id, topic_list_item.topic_name)
+                ) {
+                    topic_item = topic_list_item;
+                    break;
+                }
+            }
+        }
+
+        if (topic_item !== undefined) {
+            const destination_url = hash_util.by_channel_topic_permalink(
+                stream_id,
+                topic_item.topic_name,
+            );
+            browser_history.go_to_location(destination_url);
+        } else {
+            show_channel_feed(stream_id, "sidebar");
+            return;
+        }
+    };
+
+    if (topics.length === 0) {
+        stream_topic_history_util.get_server_history(stream_id, () => {
+            topics = stream_topic_history.get_recent_topic_names(stream_id);
+            if (topics.length === 0) {
+                show_channel_feed(stream_id, "sidebar");
+                return;
+            }
+            navigate_to_stream();
+            return;
+        });
+    } else {
+        navigate_to_stream();
+        return;
+    }
+}
+
 export function set_event_handlers({
     show_channel_feed,
 }: {
@@ -938,99 +1040,8 @@ export function set_event_handlers({
             return;
         }
 
-        clear_and_hide_search();
-        e.preventDefault();
-        e.stopPropagation();
-
         const stream_id = stream_id_for_elt($(e.target).parents("li.narrow-filter"));
-        const current_narrow_stream_id = narrow_state.stream_id();
-        const current_topic = narrow_state.topic();
-
-        if (stream_data.is_empty_topic_only_channel(stream_id)) {
-            // If the channel doesn't support topics, take you
-            // directly to general chat regardless of settings.
-            const empty_topic_url = hash_util.by_channel_topic_permalink(stream_id, "");
-            browser_history.go_to_location(empty_topic_url);
-            return;
-        }
-
-        if (
-            user_settings.web_channel_default_view ===
-            web_channel_default_view_values.list_of_topics.code
-        ) {
-            browser_history.go_to_location(hash_util.by_channel_topic_list_url(stream_id));
-            return;
-        }
-
-        if (current_narrow_stream_id === stream_id && current_topic !== undefined) {
-            const channel_feed_url = hash_util.channel_url_by_user_setting(stream_id);
-            browser_history.go_to_location(channel_feed_url);
-            return;
-        }
-
-        if (
-            user_settings.web_channel_default_view ===
-            web_channel_default_view_values.channel_feed.code
-        ) {
-            show_channel_feed(stream_id, "sidebar");
-            return;
-        }
-
-        let topics = stream_topic_history.get_recent_topic_names(stream_id);
-
-        const navigate_to_stream = (): void => {
-            const topic_list_info = topic_list_data.get_list_info(
-                stream_id,
-                false,
-                (topic_names: string[]) => topic_names,
-            );
-            // This initial value handles both the
-            // top_topic_in_channel mode as well as the
-            // top_unread_topic_in_channel fallback when there are no
-            // (unmuted) unreads in the channel.
-            let topic_item = topic_list_info.items[0];
-
-            if (
-                user_settings.web_channel_default_view ===
-                web_channel_default_view_values.top_unread_topic_in_channel.code
-            ) {
-                for (const topic_list_item of topic_list_info.items) {
-                    if (
-                        unread.topic_has_any_unread(stream_id, topic_list_item.topic_name) &&
-                        !user_topics.is_topic_muted(stream_id, topic_list_item.topic_name)
-                    ) {
-                        topic_item = topic_list_item;
-                        break;
-                    }
-                }
-            }
-
-            if (topic_item !== undefined) {
-                const destination_url = hash_util.by_channel_topic_permalink(
-                    stream_id,
-                    topic_item.topic_name,
-                );
-                browser_history.go_to_location(destination_url);
-            } else {
-                show_channel_feed(stream_id, "sidebar");
-                return;
-            }
-        };
-
-        if (topics.length === 0) {
-            stream_topic_history_util.get_server_history(stream_id, () => {
-                topics = stream_topic_history.get_recent_topic_names(stream_id);
-                if (topics.length === 0) {
-                    show_channel_feed(stream_id, "sidebar");
-                    return;
-                }
-                navigate_to_stream();
-                return;
-            });
-        } else {
-            navigate_to_stream();
-            return;
-        }
+        on_sidebar_channel_click(stream_id, e, show_channel_feed);
     });
 
     $("#stream_filters").on("click", ".channel-new-topic-button", function (this: HTMLElement, e) {
@@ -1095,8 +1106,7 @@ export function set_event_handlers({
             return;
         }
 
-        clear_and_hide_search();
-        show_channel_feed(stream_id, "sidebar enter key");
+        on_sidebar_channel_click(stream_id, null, show_channel_feed);
     }
 
     keydown_util.handle({
