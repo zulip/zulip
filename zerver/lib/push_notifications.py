@@ -1,7 +1,6 @@
 # See https://zulip.readthedocs.io/en/latest/subsystems/notifications.html
 
 import asyncio
-import base64
 import copy
 import logging
 import re
@@ -83,23 +82,13 @@ PUSH_REGISTRATION_LIVENESS_TIMEOUT = 24 * 60 * 60
 DeviceToken: TypeAlias = Union[PushDeviceToken, "RemotePushDeviceToken"]
 
 
-# We store the token as b64, but apns-client wants hex strings
-def b64_to_hex(data: str) -> str:
-    return base64.b64decode(data).hex()
-
-
-def hex_to_b64(data: str) -> str:
-    return base64.b64encode(bytes.fromhex(data)).decode()
-
-
 def validate_token(token_str: str, kind: int) -> None:
     if token_str == "" or len(token_str) > 4096:
         raise JsonableError(_("Empty or invalid length token"))
     if kind == PushDeviceToken.APNS:
-        # Validate that we can actually decode the token.
         try:
-            b64_to_hex(token_str)
-        except Exception:
+            bytes.fromhex(token_str)
+        except ValueError:
             raise JsonableError(_("Invalid APNS token"))
 
 

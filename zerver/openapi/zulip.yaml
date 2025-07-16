@@ -12670,7 +12670,7 @@ paths:
                   description: |
                     The token provided by the device.
                   type: string
-                  example: apple-tokenbb
+                  example: c0ffee
                 appid:
                   description: |
                     The ID of the Zulip app that is making the request.
@@ -12731,7 +12731,7 @@ paths:
                   description: |
                     The token provided by the device.
                   type: string
-                  example: apple-tokenbb
+                  example: c0ffee
               required:
                 - token
       responses:

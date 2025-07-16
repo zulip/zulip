@@ -57,7 +57,6 @@ from zerver.lib.push_notifications import (
     HostnameAlreadyInUseBouncerError,
     InvalidRemotePushDeviceTokenError,
     UserPushIdentityCompat,
-    b64_to_hex,
     send_android_push_notification,
     send_apple_push_notification,
     send_test_push_notification_directly_to_devices,
@@ -498,10 +497,9 @@ class PushRegistration(BaseModel):
             return False
 
         if self.token_kind == RemotePushDevice.TokenKind.APNS:
-            # Validate that we can actually decode the token.
             try:
-                b64_to_hex(self.token)
-            except Exception:
+                bytes.fromhex(self.token)
+            except ValueError:
                 return False
         return True
 

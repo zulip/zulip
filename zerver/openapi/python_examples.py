@@ -1632,7 +1632,7 @@ def get_stream_topics(client: Client, stream_id: int) -> None:
 @openapi_test_function("/users/me/apns_device_token:post")
 def add_apns_token(client: Client) -> None:
     # {code_example|start}
-    request = {"token": "apple-tokenbb", "appid": "org.zulip.Zulip"}
+    request = {"token": "c0ffee", "appid": "org.zulip.Zulip"}
     result = client.call_endpoint(url="/users/me/apns_device_token", method="POST", request=request)
     # {code_example|end}
     assert_success_response(result)
@@ -1643,7 +1643,7 @@ def add_apns_token(client: Client) -> None:
 def remove_apns_token(client: Client) -> None:
     # {code_example|start}
     request = {
-        "token": "apple-tokenbb",
+        "token": "c0ffee",
     }
     result = client.call_endpoint(
         url="/users/me/apns_device_token", method="DELETE", request=request

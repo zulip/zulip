@@ -50,11 +50,7 @@ from zerver.actions.user_activity import update_user_activity_interval
 from zerver.actions.users import do_deactivate_user
 from zerver.lib.create_user import create_user
 from zerver.lib.exceptions import InvitationError
-from zerver.lib.push_notifications import (
-    get_message_payload_apns,
-    get_message_payload_gcm,
-    hex_to_b64,
-)
+from zerver.lib.push_notifications import get_message_payload_apns, get_message_payload_gcm
 from zerver.lib.streams import get_default_values_for_stream_permission_group_settings
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import activate_push_notification_service
@@ -1369,19 +1365,19 @@ class TestLoggingCountStats(AnalyticsTestCase):
 
         RemotePushDeviceToken.objects.create(
             kind=RemotePushDeviceToken.FCM,
-            token=hex_to_b64(token),
+            token=token,
             user_uuid=(hamlet.uuid),
             server=self.server,
         )
         RemotePushDeviceToken.objects.create(
             kind=RemotePushDeviceToken.FCM,
-            token=hex_to_b64(token + "aa"),
+            token=token + "aa",
             user_uuid=(hamlet.uuid),
             server=self.server,
         )
         RemotePushDeviceToken.objects.create(
             kind=RemotePushDeviceToken.APNS,
-            token=hex_to_b64(token),
+            token=token,
             user_uuid=str(hamlet.uuid),
             server=self.server,
         )
