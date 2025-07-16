@@ -4,6 +4,8 @@ import assert from "minimalistic-assert";
 import type * as tippy from "tippy.js";
 import {z} from "zod";
 
+import render_inbox_folder_row from "../templates/inbox_view/inbox_folder_row.hbs";
+import render_inbox_folder_with_channels from "../templates/inbox_view/inbox_folder_with_channels.hbs";
 import render_inbox_row from "../templates/inbox_view/inbox_row.hbs";
 import render_inbox_stream_container from "../templates/inbox_view/inbox_stream_container.hbs";
 import render_inbox_view from "../templates/inbox_view/inbox_view.hbs";
@@ -11,13 +13,14 @@ import render_introduce_zulip_view_modal from "../templates/introduce_zulip_view
 import render_user_with_status_icon from "../templates/user_with_status_icon.hbs";
 
 import * as buddy_data from "./buddy_data.ts";
+import * as channel_folders from "./channel_folders.ts";
 import * as compose_closed_ui from "./compose_closed_ui.ts";
 import * as compose_state from "./compose_state.ts";
 import * as dialog_widget from "./dialog_widget.ts";
 import * as dropdown_widget from "./dropdown_widget.ts";
 import type {Filter} from "./filter";
 import * as hash_util from "./hash_util.ts";
-import {$t_html} from "./i18n.ts";
+import {$t, $t_html} from "./i18n.ts";
 import * as inbox_util from "./inbox_util.ts";
 import * as keydown_util from "./keydown_util.ts";
 import * as left_sidebar_navigation_area from "./left_sidebar_navigation_area.ts";
@@ -97,6 +100,7 @@ type StreamContext = {
     mention_in_unread: boolean;
     unread_count?: number;
     column_indexes: typeof COLUMNS;
+    folder_id: number;
 };
 
 const stream_context_properties: (keyof StreamContext)[] = [
@@ -134,6 +138,7 @@ type TopicContext = {
     all_visibility_policies: typeof user_topics.all_visibility_policies;
     visibility_policy: number | false;
     column_indexes: typeof COLUMNS;
+    channel_folder_id?: number;
 };
 
 const topic_context_properties: (keyof TopicContext)[] = [
@@ -153,11 +158,38 @@ const topic_context_properties: (keyof TopicContext)[] = [
     "all_visibility_policies",
     "visibility_policy",
     "column_indexes",
+    "channel_folder_id",
+];
+
+type ChannelFolderContext = {
+    header_id: string;
+    is_header_visible: boolean;
+    name: string;
+    id: number;
+    unread_count: number | undefined;
+    is_collapsed: boolean;
+    has_unread_mention: boolean;
+};
+
+const channel_folder_context_properties: (keyof ChannelFolderContext)[] = [
+    "header_id",
+    "is_header_visible",
+    "name",
+    "id",
+    "unread_count",
+    "is_collapsed",
+    "has_unread_mention",
 ];
 
 let dms_dict = new Map<string, DirectMessageContext>();
 let topics_dict = new Map<string, Map<string, TopicContext>>();
 let streams_dict = new Map<string, StreamContext>();
+const OTHER_CHANNELS_FOLDER_ID = -1;
+const OTHER_CHANNEL_HEADER_ID = "inbox-channels-no-folder-header";
+const CHANNEL_FOLDER_HEADER_ID_PREFIX = "inbox-channel-folder-header-";
+const PINNED_CHANNEL_FOLDER_ID = -2;
+const PINNED_CHANNEL_HEADER_ID = "inbox-channels-pinned-folder-header";
+let channel_folders_dict = new Map<number, ChannelFolderContext>();
 let update_triggered_by_user = false;
 let filters_dropdown_widget;
 let channel_view_topic_widget: InboxTopicListWidget | undefined;
@@ -388,13 +420,6 @@ function get_stream_container(stream_key: string): JQuery {
     return $(`#${CSS.escape(stream_key)}`);
 }
 
-function get_topics_container(stream_id: number): JQuery {
-    const $topics_container = get_stream_header_row(stream_id)
-        .next(".inbox-topic-container")
-        .expectOne();
-    return $topics_container;
-}
-
 function get_stream_header_row(stream_id: number): JQuery {
     const $stream_header_row = $(`#${CSS.escape(STREAM_HEADER_PREFIX + stream_id)}`);
     return $stream_header_row;
@@ -527,6 +552,16 @@ function rerender_dm_inbox_row_if_needed(
     }
 }
 
+function get_channel_folder_id(info: {folder_id: number | null; is_pinned: boolean}): number {
+    if (info.is_pinned) {
+        return PINNED_CHANNEL_FOLDER_ID;
+    }
+    if (info.folder_id === null) {
+        return OTHER_CHANNELS_FOLDER_ID;
+    }
+    return info.folder_id;
+}
+
 function format_stream(stream_id: number): StreamContext {
     // NOTE: Unread count is not included in this function as it is more
     // efficient for the callers to calculate it based on filters.
@@ -541,6 +576,10 @@ function format_stream(stream_id: number): StreamContext {
         stream_name: stream_info.name,
         pin_to_top: stream_info.pin_to_top,
         is_muted: stream_info.is_muted,
+        folder_id: get_channel_folder_id({
+            folder_id: stream_info.folder_id,
+            is_pinned: stream_info.pin_to_top,
+        }),
         stream_color: stream_color.get_stream_privacy_icon_color(stream_info.color),
         stream_header_color: stream_color.get_recipient_bar_color(stream_info.color),
         stream_url: hash_util.channel_url_by_user_setting(stream_id),
@@ -597,6 +636,28 @@ function rerender_stream_inbox_header_if_needed(
     }
 }
 
+function get_channel_folder_header_id(folder_id: number): string {
+    if (folder_id === OTHER_CHANNELS_FOLDER_ID) {
+        return OTHER_CHANNEL_HEADER_ID;
+    } else if (folder_id === PINNED_CHANNEL_FOLDER_ID) {
+        return PINNED_CHANNEL_HEADER_ID;
+    }
+    return CHANNEL_FOLDER_HEADER_ID_PREFIX + folder_id;
+}
+
+function rerender_channel_folder_header_if_needed(
+    old_folder_data: ChannelFolderContext,
+    new_folder_data: ChannelFolderContext,
+): void {
+    for (const property of channel_folder_context_properties) {
+        if (new_folder_data[property] !== old_folder_data[property]) {
+            const $rendered_row = $(`#${get_channel_folder_header_id(new_folder_data.id)}`);
+            $rendered_row.replaceWith($(render_inbox_folder_row(new_folder_data)));
+            return;
+        }
+    }
+}
+
 function format_topic(
     stream_id: number,
     stream_archived: boolean,
@@ -645,26 +706,21 @@ function format_topic(
     };
 }
 
-function insert_stream(
-    stream_id: number,
-    topic_dict: Map<string, {topic_count: number; latest_msg_id: number}>,
-): boolean {
-    const stream_key = get_stream_key(stream_id);
-    update_stream_data(stream_id, stream_key, topic_dict);
-    const sorted_stream_keys = get_sorted_stream_keys();
+function insert_stream(stream_key: string): void {
+    const channel_folder_id = streams_dict.get(stream_key)!.folder_id;
+    const sorted_stream_keys = get_sorted_stream_keys(channel_folder_id);
     const stream_index = sorted_stream_keys.indexOf(stream_key);
     const rendered_stream = render_inbox_stream_container({
         topics_dict: new Map([[stream_key, topics_dict.get(stream_key)]]),
         streams_dict,
     });
-
+    const $channel_folder_header = $(`#${get_channel_folder_header_id(channel_folder_id)}`);
     if (stream_index === 0) {
-        $("#inbox-streams-container").prepend($(rendered_stream));
+        $channel_folder_header.next(".inbox-folder-components").prepend($(rendered_stream));
     } else {
         const previous_stream_key = sorted_stream_keys[stream_index - 1]!;
         $(rendered_stream).insertAfter(get_stream_container(previous_stream_key));
     }
-    return !streams_dict.get(stream_key)!.is_hidden;
 }
 
 function insert_topics(keys: string[], stream_key: string): void {
@@ -717,23 +773,23 @@ function rerender_topic_inbox_row_if_needed(
     }
 }
 
-function get_sorted_stream_keys(): string[] {
+function get_sorted_stream_keys(channel_folder_id: number | undefined = undefined): string[] {
     function compare_function(a: string, b: string): number {
         const stream_a = streams_dict.get(a);
         const stream_b = streams_dict.get(b);
         assert(stream_a !== undefined && stream_b !== undefined);
 
-        // If one of the streams is pinned, they are sorted higher.
-        if (stream_a.pin_to_top && !stream_b.pin_to_top) {
-            return -1;
-        }
-
-        if (stream_b.pin_to_top && !stream_a.pin_to_top) {
-            return 1;
+        if (channel_folder_id !== undefined) {
+            // Sort streams not in the folder to the end.
+            if (stream_a.folder_id !== channel_folder_id) {
+                return 1;
+            }
+            if (stream_b.folder_id !== channel_folder_id) {
+                return -1;
+            }
         }
 
         // The muted stream is sorted lower.
-        // (Both stream are either pinned or not pinned right now)
         if (stream_a.is_muted && !stream_b.is_muted) {
             return 1;
         }
@@ -766,6 +822,64 @@ function get_sorted_row_dict<T extends DirectMessageContext | TopicContext>(
     return new Map([...row_dict].sort(([, a], [, b]) => b.latest_msg_id - a.latest_msg_id));
 }
 
+function sort_channel_folders(): void {
+    const sorted_channel_folders = [...channel_folders_dict.values()].sort((a, b) => {
+        // Sort OTHER_CHANNELS_FOLDER_ID last, then by name with PINNED_CHANNEL_FOLDER_ID first.
+        if (a.id === OTHER_CHANNELS_FOLDER_ID) {
+            return 1;
+        }
+        if (b.id === OTHER_CHANNELS_FOLDER_ID) {
+            return -1;
+        }
+        if (a.id === PINNED_CHANNEL_FOLDER_ID) {
+            return -1;
+        }
+        if (b.id === PINNED_CHANNEL_FOLDER_ID) {
+            return 1;
+        }
+        return util.strcmp(a.name, b.name);
+    });
+
+    channel_folders_dict = new Map(sorted_channel_folders.map((folder) => [folder.id, folder]));
+}
+
+function get_folder_name_from_id(folder_id: number): string {
+    if (folder_id === PINNED_CHANNEL_FOLDER_ID) {
+        return $t({defaultMessage: "PINNED CHANNELS"});
+    }
+
+    if (folder_id === OTHER_CHANNELS_FOLDER_ID) {
+        return $t({defaultMessage: "OTHER CHANNELS"});
+    }
+
+    return channel_folders.get_channel_folder_by_id(folder_id).name;
+}
+
+function update_channel_folder_data(channel_context: StreamContext): void {
+    const folder_id = channel_context.folder_id;
+    const folder_header_id = get_channel_folder_header_id(folder_id);
+    let folder_context = channel_folders_dict.get(folder_id);
+    if (folder_context === undefined) {
+        folder_context = {
+            id: folder_id,
+            header_id: folder_header_id,
+            name: get_folder_name_from_id(folder_id),
+            is_header_visible: !channel_context.is_hidden,
+            unread_count: channel_context.unread_count,
+            is_collapsed: collapsed_containers.has(folder_header_id),
+            has_unread_mention: channel_context.mention_in_unread,
+        };
+        channel_folders_dict.set(folder_id, folder_context);
+    } else {
+        folder_context.unread_count =
+            (folder_context.unread_count ?? 0) + (channel_context.unread_count ?? 0);
+        folder_context.is_header_visible =
+            folder_context.is_header_visible || !channel_context.is_hidden;
+        folder_context.has_unread_mention =
+            folder_context.has_unread_mention || channel_context.mention_in_unread;
+    }
+}
+
 function reset_data(): {
     unread_dms_count: number;
     is_dms_collapsed: boolean;
@@ -776,6 +890,7 @@ function reset_data(): {
     dms_dict = new Map();
     topics_dict = new Map();
     streams_dict = new Map();
+    channel_folders_dict = new Map();
 
     const unread_dms = unread.get_unread_pm();
     const unread_dms_count = unread_dms.total_count;
@@ -821,6 +936,19 @@ function reset_data(): {
     topics_dict = get_sorted_stream_topic_dict();
     const is_dms_collapsed = collapsed_containers.has("inbox-dm-header");
 
+    for (const [, channel_context] of streams_dict) {
+        update_channel_folder_data(channel_context);
+    }
+
+    if (is_other_channels_only_visible_folder()) {
+        const other_channels_folder = channel_folders_dict.get(OTHER_CHANNELS_FOLDER_ID);
+        if (other_channels_folder !== undefined) {
+            other_channels_folder.name = $t({defaultMessage: "CHANNELS"});
+        }
+    }
+
+    sort_channel_folders();
+
     return {
         has_unread_mention,
         unread_dms_count,
@@ -828,6 +956,20 @@ function reset_data(): {
         has_dms_post_filter,
         has_visible_unreads,
     };
+}
+
+function is_other_channels_only_visible_folder(): boolean {
+    const visible_channel_folders = channel_folders_dict
+        .values()
+        .filter((folder) => folder.is_header_visible)
+        .toArray();
+
+    if (visible_channel_folders.length !== 1) {
+        return false;
+    }
+
+    const only_visible_folder = visible_channel_folders[0]!;
+    return only_visible_folder.id === OTHER_CHANNELS_FOLDER_ID;
 }
 
 function show_empty_inbox_text(has_visible_unreads: boolean): void {
@@ -1050,6 +1192,7 @@ export function complete_rerender(): void {
                 dms_dict,
                 topics_dict,
                 streams_dict,
+                channel_folders_dict,
                 ...additional_context,
             }),
         );
@@ -1152,21 +1295,7 @@ function filter_should_hide_stream_row({
 }
 
 export function collapse_or_expand(container_id: string): void {
-    let $toggle_icon;
-    let $container;
-    if (container_id === "inbox-dm-header") {
-        $container = $(`#inbox-direct-messages-container`);
-        $container.children().toggleClass("collapsed_container");
-        $toggle_icon = $("#inbox-dm-header .toggle-inbox-header-icon");
-    } else {
-        const stream_id = Number(container_id.slice(STREAM_HEADER_PREFIX.length));
-        $container = get_topics_container(stream_id);
-        $container.children().toggleClass("collapsed_container");
-        $toggle_icon = $(
-            `#${CSS.escape(STREAM_HEADER_PREFIX + stream_id)} .toggle-inbox-header-icon`,
-        );
-    }
-    $toggle_icon.toggleClass("icon-collapsed-state");
+    $(`#${container_id}`).toggleClass("inbox-collapsed-state");
 
     if (collapsed_containers.has(container_id)) {
         collapsed_containers.delete(container_id);
@@ -1195,9 +1324,24 @@ function is_list_focused(): boolean {
 }
 
 function get_all_rows(): JQuery {
-    return $("#inbox-main .inbox-header, #inbox-main .inbox-row").not(
-        ".hidden_by_filters, .collapsed_container",
-    );
+    // Get all rows in the inbox list that are not hidden by filters.
+    if (inbox_util.is_channel_view()) {
+        return $(".inbox-row").not(".hidden_by_filters");
+    }
+
+    // This includes channel folder headers, DM / channel headers and rows.
+    const visible_inbox_folder_components =
+        "#inbox-list .inbox-folder:not(.inbox-collapsed-state) + .inbox-folder-components";
+    return $(
+        // Inbox folder headers
+        "#inbox-list .inbox-folder, " +
+            // Inbox folder components which display row without any header, i.e. DM row
+            `${visible_inbox_folder_components} > .inbox-row, ` +
+            // Inbox folder components which display header row, i.e. channel row
+            `${visible_inbox_folder_components} .inbox-header, ` +
+            // Inbox rows whose folder and header is not collapsed.
+            `${visible_inbox_folder_components} .inbox-header:not(.inbox-collapsed-state) + .inbox-topic-container > .inbox-row`,
+    ).not(".hidden_by_filters");
 }
 
 function get_row_index($elt: JQuery): number {
@@ -1339,7 +1483,7 @@ function is_row_a_header($row: JQuery): boolean {
 
 function set_list_focus(input_key?: string): void {
     // This function is used for both revive_current_focus and
-    // setting focus after modify col_focus and row_focus as per
+    // setting focus after we modify col_focus and row_focus as per
     // hotkey pressed by user.
     //
     // When to focus on entire row?
@@ -1626,7 +1770,42 @@ export function change_focused_element(input_key: string): boolean {
     return false;
 }
 
+function bulk_insert_channel_folders(channel_folders: Set<number>): void {
+    sort_channel_folders();
+    // Insert missing channel folders.
+    let index = 0;
+    let previous_folder_id;
+    for (const [folder_id, folder_context] of channel_folders_dict) {
+        if (channel_folders.has(folder_id)) {
+            const $folder_row_html = render_inbox_folder_with_channels({
+                ...folder_context,
+                topics_dict,
+                streams_dict,
+            });
+            if (index === 0) {
+                const $dm_container = $("#inbox-direct-messages-container");
+                $dm_container.after($folder_row_html);
+            } else {
+                assert(previous_folder_id !== undefined);
+                const $previous_folder = $(
+                    `#${CSS.escape(get_channel_folder_header_id(previous_folder_id))} + .inbox-folder-components`,
+                );
+                $previous_folder.after($folder_row_html);
+            }
+        }
+        previous_folder_id = folder_id;
+        index += 1;
+    }
+}
+
 export function update(): void {
+    // Since inbox shows a vast amount of sorted data,
+    // doing surgical updates for everything is hard.
+    // So, we focus on updating commonly changed data
+    // like unread counts, mentions, collapse state, etc.
+    // For rare changes like stream rename, channel folder
+    // rename and channel folder updates, we expect the event
+    // path to do a complete rerender of the inbox view.
     if (!inbox_util.is_visible()) {
         return;
     }
@@ -1676,6 +1855,9 @@ export function update(): void {
         $inbox_dm_header.find(".unread_mention_info").toggleClass("hidden", !has_unread_mention);
     }
 
+    const folders_info = new Map<number, {unread_count: number; has_unread_mention: boolean}>();
+    const channel_folders_to_insert = new Set<number>();
+
     let has_topics_post_filter = false;
     for (const [stream_id, topic_dict] of unread_streams_dict) {
         const stream_unread = unread.unread_count_info_for_stream(stream_id);
@@ -1687,10 +1869,25 @@ export function update(): void {
 
             // Stream isn't rendered.
             if (stream_topics_data === undefined) {
-                const is_stream_visible = insert_stream(stream_id, topic_dict);
-                if (is_stream_visible) {
+                update_stream_data(stream_id, stream_key, topic_dict);
+                const channel_data = streams_dict.get(stream_key);
+                assert(channel_data !== undefined);
+                // If the folder is also not rendered, it will be once we render
+                // the folder, so we skip adding it.
+                if (channel_folders_dict.get(channel_data.folder_id)) {
+                    insert_stream(stream_key);
+                }
+                if (!channel_data.is_hidden) {
                     has_topics_post_filter = true;
                 }
+                const folder_id = channel_data.folder_id;
+                const folder_unread_count = folders_info.get(folder_id)?.unread_count ?? 0;
+                const folder_has_unread_mention =
+                    folders_info.get(folder_id)?.has_unread_mention ?? false;
+                folders_info.set(folder_id, {
+                    unread_count: folder_unread_count + channel_data.unread_count!,
+                    has_unread_mention: folder_has_unread_mention || channel_data.mention_in_unread,
+                });
                 continue;
             }
 
@@ -1729,6 +1926,14 @@ export function update(): void {
             assert(old_stream_data !== undefined);
             new_stream_data.is_hidden = stream_post_filter_unread_count === 0;
             new_stream_data.unread_count = stream_post_filter_unread_count;
+            const folder_id = new_stream_data.folder_id;
+            const folder_unread_count = folders_info.get(folder_id)?.unread_count ?? 0;
+            const folder_has_unread_mention =
+                folders_info.get(folder_id)?.has_unread_mention ?? false;
+            folders_info.set(folder_id, {
+                unread_count: folder_unread_count + stream_post_filter_unread_count,
+                has_unread_mention: folder_has_unread_mention || new_stream_data.mention_in_unread,
+            });
             streams_dict.set(stream_key, new_stream_data);
             rerender_stream_inbox_header_if_needed(new_stream_data, old_stream_data);
             topics_dict.set(stream_key, get_sorted_row_dict(stream_topics_data));
@@ -1738,6 +1943,55 @@ export function update(): void {
             streams_dict.delete(stream_key);
             get_stream_container(stream_key).remove();
         }
+    }
+
+    for (const [folder_id, folder_info] of folders_info.entries()) {
+        const folder_dict = channel_folders_dict.get(folder_id);
+        const name = get_folder_name_from_id(folder_id);
+        const is_collapsed = collapsed_containers.has(get_channel_folder_header_id(folder_id));
+        const header_id = get_channel_folder_header_id(folder_id);
+        const is_header_visible = folder_info.unread_count > 0;
+        channel_folders_dict.set(folder_id, {
+            header_id,
+            is_header_visible,
+            id: folder_id,
+            unread_count: folder_info.unread_count,
+            has_unread_mention: folder_info.has_unread_mention,
+            name,
+            is_collapsed,
+        });
+
+        if (folder_dict === undefined) {
+            channel_folders_to_insert.add(folder_id);
+        } else {
+            rerender_channel_folder_header_if_needed(
+                folder_dict,
+                channel_folders_dict.get(folder_id)!,
+            );
+        }
+    }
+
+    // Remove channel folders that are not in the updated folders_info.
+    const folder_ids_to_keep = new Set(folders_info.keys());
+    for (const [folder_id] of channel_folders_dict) {
+        if (!folder_ids_to_keep.has(folder_id)) {
+            channel_folders_dict.delete(folder_id);
+            const $rendered_folder_row = $(
+                `#${CSS.escape(get_channel_folder_header_id(folder_id))}`,
+            );
+            $rendered_folder_row.next(".inbox-folder-components").remove();
+            $rendered_folder_row.remove();
+        }
+    }
+
+    bulk_insert_channel_folders(channel_folders_to_insert);
+
+    // Set name of other channels folder to CHANNELS if it is the only folder.
+    if (is_other_channels_only_visible_folder()) {
+        const channel_folder = channel_folders_dict.get(OTHER_CHANNELS_FOLDER_ID)!;
+        channel_folder.name = $t({defaultMessage: "CHANNELS"});
+        const $channel_folder_header = $(`#${CSS.escape(OTHER_CHANNEL_HEADER_ID)}`);
+        $channel_folder_header.find(".inbox-header-name a").text(channel_folder.name);
     }
 
     const has_visible_unreads = has_dms_post_filter || has_topics_post_filter;
@@ -1949,12 +2203,17 @@ export function initialize({hide_other_views}: {hide_other_views: () => void}): 
             return;
         }
 
-        const $elt = $(this);
-        col_focus = COLUMNS.RECIPIENT;
-        focus_clicked_list_element($elt);
+        let $elt = $(this);
         const href = $elt.find("a").attr("href");
-        assert(href !== undefined);
-        window.location.href = href;
+        if (href !== undefined) {
+            col_focus = COLUMNS.RECIPIENT;
+            window.location.href = href;
+        } else {
+            $elt = $elt.closest(".inbox-header");
+            col_focus = COLUMNS.COLLAPSE_BUTTON;
+            collapse_or_expand($elt.attr("id")!);
+        }
+        focus_clicked_list_element($elt);
     });
 
     $("body").on("click", "#inbox-list .on_hover_dm_read", function (this: HTMLElement, e) {
@@ -1968,20 +2227,6 @@ export function initialize({hide_other_views}: {hide_other_views: () => void}): 
             // direct message row
             unread_ops.mark_pm_as_read(user_ids_string);
         }
-    });
-
-    $("body").on("click", "#inbox-list .on_hover_all_dms_read", (e) => {
-        e.stopPropagation();
-        e.preventDefault();
-        const unread_dms_msg_ids = unread.get_msg_ids_for_private();
-        const unread_dms_messages = unread_dms_msg_ids.map((msg_id) => {
-            const message = message_store.get(msg_id);
-            assert(message !== undefined);
-            return message;
-        });
-        unread_ops.notify_server_messages_read(unread_dms_messages);
-        focus_inbox_search();
-        update_triggered_by_user = true;
     });
 
     $("body").on("click", "#inbox-list .on_hover_topic_read", function (this: HTMLElement, e) {
