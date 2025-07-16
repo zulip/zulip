@@ -1006,7 +1006,7 @@ export function show_edit_bot_info_modal(user_id: number, $container: JQuery): v
             $(".edit_bot_avatar_file_input").trigger("input");
         });
 
-        $("#bot-edit-form").on("click", ".deactivate_bot_button", (e) => {
+        $("#bot-edit-form").on("click", ".deactivate-bot-button", (e) => {
             e.preventDefault();
             e.stopPropagation();
             const bot_id = Number($("#bot-edit-form").attr("data-user-id"));
@@ -1018,7 +1018,7 @@ export function show_edit_bot_info_modal(user_id: number, $container: JQuery): v
         });
 
         // Handle reactivation
-        $("#bot-edit-form").on("click", ".reactivate_user_button", (e) => {
+        $("#bot-edit-form").on("click", ".reactivate-user-button", (e) => {
             e.preventDefault();
             e.stopPropagation();
             const user_id = Number($("#bot-edit-form").attr("data-user-id"));
@@ -1162,7 +1162,7 @@ export function show_edit_user_info_modal(user_id: number, $container: JQuery): 
     original_values = get_current_values($("#edit-user-form"));
 
     // Handle deactivation
-    $("#edit-user-form").on("click", ".deactivate_user_button", (e) => {
+    $("#edit-user-form").on("click", ".deactivate-user-button", (e) => {
         e.preventDefault();
         e.stopPropagation();
         const user_id = Number($("#edit-user-form").attr("data-user-id"));
@@ -1174,7 +1174,7 @@ export function show_edit_user_info_modal(user_id: number, $container: JQuery): 
     });
 
     // Handle reactivation
-    $("#edit-user-form").on("click", ".reactivate_user_button", (e) => {
+    $("#edit-user-form").on("click", ".reactivate-user-button", (e) => {
         e.preventDefault();
         e.stopPropagation();
         const user_id = Number($("#edit-user-form").attr("data-user-id"));
