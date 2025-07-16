@@ -90,17 +90,17 @@ class HandlePushNotificationTest(PushNotificationTestCase):
             self.assertLogs("zerver.lib.push_notifications", level="INFO") as pn_logger,
             self.assertLogs("zilencer.views", level="INFO") as views_logger,
         ):
-            apns_devices = [
-                (device.token, device.ios_app_id, device.token)
-                for device in RemotePushDeviceToken.objects.filter(kind=PushDeviceToken.APNS)
-            ]
-            gcm_devices = [
-                (device.token, device.ios_app_id, device.token)
-                for device in RemotePushDeviceToken.objects.filter(kind=PushDeviceToken.FCM)
-            ]
-            mock_fcm_messaging.send_each.return_value = self.make_fcm_success_response(
-                [device[2] for device in gcm_devices]
+            apns_devices = list(
+                RemotePushDeviceToken.objects.filter(kind=PushDeviceToken.APNS)
+                .order_by("id")
+                .values_list("token", flat=True)
             )
+            gcm_devices = list(
+                RemotePushDeviceToken.objects.filter(kind=PushDeviceToken.FCM)
+                .order_by("id")
+                .values_list("token", flat=True)
+            )
+            mock_fcm_messaging.send_each.return_value = self.make_fcm_success_response(gcm_devices)
             send_notification.return_value.is_successful = True
             handle_push_notification(self.user_profile.id, missed_message)
             self.assertEqual(
@@ -124,13 +124,13 @@ class HandlePushNotificationTest(PushNotificationTestCase):
                     f"{len(gcm_devices)} via FCM devices, {len(apns_devices)} via APNs devices",
                 ],
             )
-            for _, _, token in apns_devices:
+            for token in apns_devices:
                 self.assertIn(
                     "INFO:zerver.lib.push_notifications:"
                     f"APNs: Success sending for user <id:{self.user_profile.id}><uuid:{self.user_profile.uuid}> to device {token}",
                     pn_logger.output,
                 )
-            for idx, (_, _, token) in enumerate(gcm_devices):
+            for idx, token in enumerate(gcm_devices):
                 self.assertIn(
                     f"INFO:zerver.lib.push_notifications:FCM: Sent message with ID: {idx} to {token}",
                     pn_logger.output,
@@ -258,14 +258,16 @@ class HandlePushNotificationTest(PushNotificationTestCase):
             self.assertLogs("zerver.lib.push_notifications", level="INFO") as pn_logger,
             self.assertLogs("zilencer.views", level="INFO") as views_logger,
         ):
-            apns_devices = [
-                (device.token, device.ios_app_id, device.token)
-                for device in RemotePushDeviceToken.objects.filter(kind=PushDeviceToken.APNS)
-            ]
-            gcm_devices = [
-                (device.token, device.ios_app_id, device.token)
-                for device in RemotePushDeviceToken.objects.filter(kind=PushDeviceToken.FCM)
-            ]
+            apns_devices = list(
+                RemotePushDeviceToken.objects.filter(kind=PushDeviceToken.APNS)
+                .order_by("id")
+                .values_list("token", flat=True)
+            )
+            gcm_devices = list(
+                RemotePushDeviceToken.objects.filter(kind=PushDeviceToken.FCM)
+                .order_by("id")
+                .values_list("token", flat=True)
+            )
 
             # Reset the local registrations for the user to make them compatible
             # with the RemotePushDeviceToken entries.
@@ -291,7 +293,7 @@ class HandlePushNotificationTest(PushNotificationTestCase):
             ]
 
             mock_fcm_messaging.send_each.return_value = self.make_fcm_success_response(
-                [gcm_devices[0][2]]
+                [gcm_devices[0]]
             )
             send_notification.return_value.is_successful = False
             send_notification.return_value.description = "Unregistered"
@@ -312,7 +314,7 @@ class HandlePushNotificationTest(PushNotificationTestCase):
                     f"{len(gcm_devices)} via FCM devices, {len(apns_devices)} via APNs devices",
                 ],
             )
-            for _, _, token in apns_devices:
+            for token in apns_devices:
                 self.assertIn(
                     "INFO:zerver.lib.push_notifications:"
                     f"APNs: Removing invalid/expired token {token} (Unregistered)",
@@ -320,7 +322,7 @@ class HandlePushNotificationTest(PushNotificationTestCase):
                 )
             self.assertIn(
                 "INFO:zerver.lib.push_notifications:Deleting push tokens based on response from bouncer: "
-                f"Android: [], Apple: {sorted([token for _, _, token in apns_devices])}",
+                f"Android: [], Apple: {sorted(apns_devices)}",
                 pn_logger.output,
             )
             self.assertEqual(
