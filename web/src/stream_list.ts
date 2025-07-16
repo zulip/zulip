@@ -13,6 +13,7 @@ import render_subscribe_to_more_streams from "../templates/subscribe_to_more_str
 
 import * as blueslip from "./blueslip.ts";
 import * as browser_history from "./browser_history.ts";
+import * as compose_actions from "./compose_actions.ts";
 import type {Filter} from "./filter.ts";
 import * as hash_util from "./hash_util.ts";
 import {$t} from "./i18n.ts";
@@ -926,7 +927,13 @@ export function set_event_handlers({
 }: {
     on_stream_click: (stream_id: number, trigger: string) => void;
 }): void {
-    $("#stream_filters").on("click", "li .subscription_block .stream-name", (e) => {
+    $("#stream_filters").on("click", "li .subscription_block", (e) => {
+        // Left sidebar channel links have an `href` so that the
+        // browser will preview the URL and you can middle-click it.
+        //
+        // But we want to control what the click does to follow the
+        // user's default left sidebar click action, rather than
+        // taking you to the channel feed.
         if (e.metaKey || e.ctrlKey || e.shiftKey) {
             return;
         }
@@ -1024,6 +1031,19 @@ export function set_event_handlers({
             navigate_to_stream();
             return;
         }
+    });
+
+    $("#stream_filters").on("click", ".channel-new-topic-button", function (this: HTMLElement, e) {
+        e.stopPropagation();
+        e.preventDefault();
+        const stream_id = Number.parseInt(this.dataset.streamId!, 10);
+        compose_actions.start({
+            message_type: "stream",
+            stream_id,
+            topic: "",
+            trigger: "clear topic button",
+            keep_composebox_empty: true,
+        });
     });
 
     $("#streams_header")

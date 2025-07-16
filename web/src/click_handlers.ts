@@ -660,20 +660,6 @@ export function initialize(): void {
         });
     });
 
-    // Left sidebar channel rows
-    $("body").on("click", ".channel-new-topic-button", function (this: HTMLElement, e) {
-        e.stopPropagation();
-        e.preventDefault();
-        const stream_id = Number.parseInt(this.dataset.streamId!, 10);
-        compose_actions.start({
-            message_type: "stream",
-            stream_id,
-            topic: "",
-            trigger: "clear topic button",
-            keep_composebox_empty: true,
-        });
-    });
-
     // Recent conversations direct messages (Not displayed on small widths)
     $("body").on(
         "mouseenter",
