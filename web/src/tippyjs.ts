@@ -908,4 +908,69 @@ export function initialize(): void {
             instance.destroy();
         },
     });
+
+    // Show expand / collapse tooltip in inbox view on hover over inbox header.
+    let collapse_or_expand_tooltip: tippy.Instance | undefined;
+    let collapse_or_expand_timeout: ReturnType<typeof setTimeout> | undefined;
+    $("body").on(
+        "mouseenter",
+        ".inbox-header-name, .inbox-left-part .collapsible-button",
+        function (this: HTMLElement) {
+            function show_inbox_collapse_expand_tooltip(elt: HTMLElement): void {
+                const $collapse_button = $(elt)
+                    .closest(".inbox-header")
+                    .find(".collapsible-button .zulip-icon");
+                collapse_or_expand_tooltip = tippy.default($collapse_button[0]!, {
+                    showOnCreate: true,
+                    trigger: "manual",
+                    delay: 0,
+                    appendTo: () => document.body,
+                    content(reference) {
+                        const $header = $(reference).closest(".inbox-header");
+                        const is_folder = $header.hasClass("inbox-folder");
+                        const is_collapsed = $header.hasClass("inbox-collapsed-state");
+                        if (is_folder) {
+                            if (is_collapsed) {
+                                return $t({
+                                    defaultMessage: "Expand channel folder",
+                                });
+                            }
+                            return $t({
+                                defaultMessage: "Collapse channel folder",
+                            });
+                        }
+
+                        if (is_collapsed) {
+                            return $t({
+                                defaultMessage: "Expand channel",
+                            });
+                        }
+                        return $t({
+                            defaultMessage: "Collapse channel",
+                        });
+                    },
+                    onHidden(instance) {
+                        instance.destroy();
+                    },
+                });
+            }
+
+            // Show tooltip after a delay.
+            collapse_or_expand_timeout = setTimeout(() => {
+                show_inbox_collapse_expand_tooltip(this);
+            }, LONG_HOVER_DELAY[0]);
+        },
+    );
+
+    $("body").on("mouseleave", ".inbox-header-name, .inbox-left-part .collapsible-button", () => {
+        // Destroy the tooltip and clear the timeout.
+        if (collapse_or_expand_tooltip) {
+            collapse_or_expand_tooltip.destroy();
+            collapse_or_expand_tooltip = undefined;
+        }
+        if (collapse_or_expand_timeout !== undefined) {
+            clearTimeout(collapse_or_expand_timeout);
+            collapse_or_expand_timeout = undefined;
+        }
+    });
 }
