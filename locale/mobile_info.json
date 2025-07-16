@@ -48,7 +48,7 @@
     "total": 457
   },
   "fa": {
-    "not_translated": 1,
+    "not_translated": 0,
     "total": 457
   },
   "fi": {
@@ -119,10 +119,6 @@
     "not_translated": 1,
     "total": 457
   },
-  "pt_BR": {
-    "not_translated": 339,
-    "total": 388
-  },
   "pt_PT": {
     "not_translated": 1,
     "total": 457
@@ -151,10 +147,6 @@
     "not_translated": 395,
     "total": 457
   },
-  "tl": {
-    "not_translated": 373,
-    "total": 396
-  },
   "tr": {
     "not_translated": 1,
     "total": 457
@@ -168,7 +160,7 @@
     "total": 457
   },
   "zh_Hans": {
-    "not_translated": 1,
+    "not_translated": 0,
     "total": 457
   },
   "zh_TW": {
