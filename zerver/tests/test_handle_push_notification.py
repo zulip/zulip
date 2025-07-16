@@ -95,12 +95,12 @@ class HandlePushNotificationTest(PushNotificationTestCase):
                 .order_by("id")
                 .values_list("token", flat=True)
             )
-            gcm_devices = list(
+            fcm_devices = list(
                 RemotePushDeviceToken.objects.filter(kind=PushDeviceToken.FCM)
                 .order_by("id")
                 .values_list("token", flat=True)
             )
-            mock_fcm_messaging.send_each.return_value = self.make_fcm_success_response(gcm_devices)
+            mock_fcm_messaging.send_each.return_value = self.make_fcm_success_response(fcm_devices)
             send_notification.return_value.is_successful = True
             handle_push_notification(self.user_profile.id, missed_message)
             self.assertEqual(
@@ -121,7 +121,7 @@ class HandlePushNotificationTest(PushNotificationTestCase):
                     "is 1 seconds",
                     "INFO:zilencer.views:"
                     f"Sending mobile push notifications for remote user 6cde5f7a-1f7e-4978-9716-49f69ebfc9fe:<id:{self.user_profile.id}><uuid:{self.user_profile.uuid}>: "
-                    f"{len(gcm_devices)} via FCM devices, {len(apns_devices)} via APNs devices",
+                    f"{len(fcm_devices)} via FCM devices, {len(apns_devices)} via APNs devices",
                 ],
             )
             for token in apns_devices:
@@ -130,7 +130,7 @@ class HandlePushNotificationTest(PushNotificationTestCase):
                     f"APNs: Success sending for user <id:{self.user_profile.id}><uuid:{self.user_profile.uuid}> to device {token}",
                     pn_logger.output,
                 )
-            for idx, token in enumerate(gcm_devices):
+            for idx, token in enumerate(fcm_devices):
                 self.assertIn(
                     f"INFO:zerver.lib.push_notifications:FCM: Sent message with ID: {idx} to {token}",
                     pn_logger.output,
@@ -142,7 +142,7 @@ class HandlePushNotificationTest(PushNotificationTestCase):
                 dict(
                     property="mobile_pushes_sent::day",
                     subgroup=None,
-                    value=len(gcm_devices) + len(apns_devices),
+                    value=len(fcm_devices) + len(apns_devices),
                 ),
             )
 
@@ -263,7 +263,7 @@ class HandlePushNotificationTest(PushNotificationTestCase):
                 .order_by("id")
                 .values_list("token", flat=True)
             )
-            gcm_devices = list(
+            fcm_devices = list(
                 RemotePushDeviceToken.objects.filter(kind=PushDeviceToken.FCM)
                 .order_by("id")
                 .values_list("token", flat=True)
@@ -293,7 +293,7 @@ class HandlePushNotificationTest(PushNotificationTestCase):
             ]
 
             mock_fcm_messaging.send_each.return_value = self.make_fcm_success_response(
-                [gcm_devices[0]]
+                [fcm_devices[0]]
             )
             send_notification.return_value.is_successful = False
             send_notification.return_value.description = "Unregistered"
@@ -311,7 +311,7 @@ class HandlePushNotificationTest(PushNotificationTestCase):
                     "is 1 seconds",
                     "INFO:zilencer.views:"
                     f"Sending mobile push notifications for remote user 6cde5f7a-1f7e-4978-9716-49f69ebfc9fe:<id:{self.user_profile.id}><uuid:{self.user_profile.uuid}>: "
-                    f"{len(gcm_devices)} via FCM devices, {len(apns_devices)} via APNs devices",
+                    f"{len(fcm_devices)} via FCM devices, {len(apns_devices)} via APNs devices",
                 ],
             )
             for token in apns_devices:
