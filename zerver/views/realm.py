@@ -6,6 +6,7 @@ from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render
+from django.urls import reverse
 from django.utils.translation import gettext as _
 from django.views.decorators.http import require_safe
 from pydantic import Json, NonNegativeInt, StringConstraints
@@ -28,7 +29,7 @@ from zerver.actions.realm_settings import (
     parse_and_set_setting_value_if_required,
     validate_authentication_methods_dict_from_api,
 )
-from zerver.decorator import require_realm_admin, require_realm_owner
+from zerver.decorator import require_post, require_realm_admin, require_realm_owner
 from zerver.forms import check_subdomain_available as check_subdomain
 from zerver.lib.demo_organizations import check_demo_organization_has_set_email
 from zerver.lib.exceptions import JsonableError, OrganizationOwnerRequiredError
@@ -576,11 +577,29 @@ def check_subdomain_available(request: HttpRequest, subdomain: str) -> HttpRespo
         return json_success(request, data={"msg": e.message})
 
 
-def realm_reactivation(request: HttpRequest, confirmation_key: str) -> HttpResponse:
+def realm_reactivation_get(request: HttpRequest, confirmation_key: str) -> HttpResponse:
     try:
-        obj = get_object_from_key(
-            confirmation_key, [Confirmation.REALM_REACTIVATION], mark_object_used=True
+        get_object_from_key(
+            confirmation_key, [Confirmation.REALM_REACTIVATION], mark_object_used=False
         )
+    except ConfirmationKeyError:  # nocoverage
+        return render(request, "zerver/realm_reactivation_link_error.html", status=404)
+
+    return render(
+        request,
+        "confirmation/redirect_to_post.html",
+        context={
+            "target_url": reverse("realm_reactivation"),
+            "key": confirmation_key,
+        },
+    )
+
+
+@require_post
+@typed_endpoint
+def realm_reactivation(request: HttpRequest, *, key: str) -> HttpResponse:
+    try:
+        obj = get_object_from_key(key, [Confirmation.REALM_REACTIVATION], mark_object_used=True)
     except ConfirmationKeyError:
         return render(request, "zerver/realm_reactivation_link_error.html", status=404)
 

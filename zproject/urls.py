@@ -124,6 +124,7 @@ from zerver.views.realm import (
     check_subdomain_available,
     deactivate_realm,
     realm_reactivation,
+    realm_reactivation_get,
     update_realm,
     update_realm_user_settings_defaults,
 )
@@ -698,7 +699,8 @@ i18n_urls = [
     path("new/", create_realm),
     path("new/<creation_key>", create_realm, name="create_realm"),
     # Realm reactivation
-    path("reactivate/<confirmation_key>", realm_reactivation, name="realm_reactivation"),
+    path("reactivate/", realm_reactivation, name="realm_reactivation"),
+    path("reactivate/<confirmation_key>", realm_reactivation_get, name="realm_reactivation_get"),
     # Login/registration
     path("register/", accounts_home, name="register"),
     path("login/", login_page, {"template_name": "zerver/login.html"}, name="login_page"),

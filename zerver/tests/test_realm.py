@@ -514,7 +514,11 @@ class RealmTest(ZulipTestCase):
 
         obj = RealmReactivationStatus.objects.create(realm=realm)
         confirmation_url = create_confirmation_link(obj, Confirmation.REALM_REACTIVATION)
+        key = confirmation_url.split("/")[-1]
         response = self.client_get(confirmation_url)
+        self.assert_in_success_response(["redirect-to-post-form"], response)
+
+        response = self.client_post("/reactivate/", {"key": key})
         self.assert_in_success_response(
             ["Your organization has been successfully reactivated"], response
         )
@@ -526,6 +530,8 @@ class RealmTest(ZulipTestCase):
             realm, acting_user=None, deactivation_reason="owner_request", email_owners=False
         )
         response = self.client_get(confirmation_url)
+        self.assertEqual(response.status_code, 404)
+        response = self.client_post("/reactivate/", {"key": key})
         self.assertEqual(response.status_code, 404)
 
     def test_realm_reactivation_confirmation_object(self) -> None:
@@ -650,7 +656,12 @@ class RealmTest(ZulipTestCase):
         self.assertIn("Dear former administrators", mail.outbox[0].body)
         admins = realm.get_human_admin_users()
         confirmation_url = self.get_confirmation_url_from_outbox(admins[0].delivery_email)
+        key = confirmation_url.split("/")[-1]
+
         response = self.client_get(confirmation_url)
+        self.assert_in_success_response(["redirect-to-post-form"], response)
+
+        response = self.client_post("/reactivate/", {"key": key})
         self.assert_in_success_response(
             ["Your organization has been successfully reactivated"], response
         )
