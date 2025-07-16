@@ -288,6 +288,7 @@ def update_stream_backend(
     can_add_subscribers_group: Json[GroupSettingChangeRequest] | None = None,
     can_administer_channel_group: Json[GroupSettingChangeRequest] | None = None,
     can_delete_any_message_group: Json[GroupSettingChangeRequest] | None = None,
+    can_delete_own_message_group: Json[GroupSettingChangeRequest] | None = None,
     can_move_messages_out_of_channel_group: Json[GroupSettingChangeRequest] | None = None,
     can_move_messages_within_channel_group: Json[GroupSettingChangeRequest] | None = None,
     can_remove_subscribers_group: Json[GroupSettingChangeRequest] | None = None,
@@ -693,6 +694,7 @@ def add_subscriptions_backend(
     authorization_errors_fatal: Json[bool] = True,
     can_add_subscribers_group: Json[int | UserGroupMembersData] | None = None,
     can_delete_any_message_group: Json[int | UserGroupMembersData] | None = None,
+    can_delete_own_message_group: Json[int | UserGroupMembersData] | None = None,
     can_administer_channel_group: Json[int | UserGroupMembersData] | None = None,
     can_move_messages_out_of_channel_group: Json[int | UserGroupMembersData] | None = None,
     can_move_messages_within_channel_group: Json[int | UserGroupMembersData] | None = None,
@@ -769,6 +771,9 @@ def add_subscriptions_backend(
         ]
         stream_dict_copy["can_delete_any_message_group"] = group_settings_map[
             "can_delete_any_message_group"
+        ]
+        stream_dict_copy["can_delete_own_message_group"] = group_settings_map[
+            "can_delete_own_message_group"
         ]
         stream_dict_copy["can_move_messages_out_of_channel_group"] = group_settings_map[
             "can_move_messages_out_of_channel_group"

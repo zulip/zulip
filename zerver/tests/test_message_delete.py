@@ -664,9 +664,15 @@ class DeleteMessageTest(ZulipTestCase):
         )
 
     def test_delete_message_according_to_can_delete_own_message_group(self) -> None:
-        def check_delete_message_by_sender(sender_name: str, error_msg: str | None = None) -> None:
+        def check_delete_message_by_sender(
+            sender_name: str, error_msg: str | None = None, is_stream_message: bool = True
+        ) -> None:
             sender = self.example_user(sender_name)
-            msg_id = self.send_stream_message(sender, "Verona")
+            if is_stream_message:
+                msg_id = self.send_stream_message(sender, "Verona")
+            else:
+                msg_id = self.send_personal_message(sender, self.example_user("desdemona"))
+
             self.login_user(sender)
             result = self.client_delete(f"/json/messages/{msg_id}")
             if error_msg is None:
@@ -675,6 +681,8 @@ class DeleteMessageTest(ZulipTestCase):
                 self.assert_json_error(result, error_msg)
 
         realm = get_realm("zulip")
+        stream = get_stream("Verona", realm)
+        iago = self.example_user("iago")
 
         administrators_system_group = NamedUserGroup.objects.get(
             name=SystemGroups.ADMINISTRATORS, realm=realm, is_system_group=True
@@ -688,11 +696,20 @@ class DeleteMessageTest(ZulipTestCase):
         members_system_group = NamedUserGroup.objects.get(
             name=SystemGroups.MEMBERS, realm=realm, is_system_group=True
         )
+        nobody_system_group = NamedUserGroup.objects.get(
+            name=SystemGroups.NOBODY, realm=realm, is_system_group=True
+        )
 
         do_change_realm_permission_group_setting(
             realm,
             "can_delete_own_message_group",
             administrators_system_group,
+            acting_user=None,
+        )
+        do_change_realm_permission_group_setting(
+            realm,
+            "can_delete_any_message_group",
+            nobody_system_group,
             acting_user=None,
         )
         check_delete_message_by_sender("shiva", "You don't have permission to delete this message")
@@ -725,6 +742,53 @@ class DeleteMessageTest(ZulipTestCase):
         )
         check_delete_message_by_sender("cordelia")
         check_delete_message_by_sender("polonius")
+
+        do_change_realm_permission_group_setting(
+            realm, "can_delete_own_message_group", nobody_system_group, acting_user=None
+        )
+
+        do_change_stream_group_based_setting(
+            stream,
+            "can_delete_own_message_group",
+            members_system_group,
+            acting_user=iago,
+        )
+        # Users in per-channel `can_delete_own_message_group` can delete their
+        # own messages.
+        check_delete_message_by_sender("hamlet")
+        check_delete_message_by_sender(
+            "polonius", "You don't have permission to delete this message"
+        )
+
+        do_change_stream_group_based_setting(
+            stream,
+            "can_delete_own_message_group",
+            nobody_system_group,
+            acting_user=iago,
+        )
+        do_change_stream_group_based_setting(
+            stream,
+            "can_administer_channel_group",
+            moderators_system_group,
+            acting_user=iago,
+        )
+        # Channel administrators can't delete messages if they don't have
+        # the required permissions.
+        check_delete_message_by_sender("shiva", "You don't have permission to delete this message")
+        check_delete_message_by_sender("iago", "You don't have permission to delete this message")
+
+        do_change_stream_group_based_setting(
+            stream,
+            "can_delete_own_message_group",
+            everyone_system_group,
+            acting_user=iago,
+        )
+        check_delete_message_by_sender("iago")
+
+        # Cannot delete DMs as organization-level permission is set to nobody.
+        check_delete_message_by_sender(
+            "iago", "You don't have permission to delete this message", is_stream_message=False
+        )
 
     def test_delete_event_sent_after_transaction_commits(self) -> None:
         """

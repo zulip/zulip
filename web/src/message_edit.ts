@@ -270,7 +270,22 @@ export function get_deletability(message: Message): boolean {
         return false;
     }
     if (!settings_data.user_can_delete_own_message()) {
-        return false;
+        if (message.type !== "stream") {
+            return false;
+        }
+
+        const stream = stream_data.get_sub_by_id(message.stream_id);
+        assert(stream !== undefined);
+
+        const can_delete_own_message_in_channel =
+            settings_data.user_has_permission_for_group_setting(
+                stream.can_delete_own_message_group,
+                "can_delete_own_message_group",
+                "stream",
+            );
+        if (!can_delete_own_message_in_channel) {
+            return false;
+        }
     }
 
     if (realm.realm_message_content_delete_limit_seconds === null) {

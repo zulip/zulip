@@ -2260,13 +2260,12 @@ run_test("get_deletability", ({override}) => {
         name: "denmark",
         stream_id: 3,
         can_delete_any_message_group: nobody_group.id,
-        can_delete_own_message_group: nobody_group.id,
+        can_delete_own_message_group: moderators_group.id,
     };
     stream_data.add_sub(social);
     stream_data.add_sub(denmark);
 
     const message = {
-        sent_by_me: false,
         locally_echoed: true,
         type: "stream",
         stream_id: social.stream_id,
@@ -2289,5 +2288,25 @@ run_test("get_deletability", ({override}) => {
 
     message.sender_id = moderator_user_id;
     initialize_and_override_current_user(moderator_user_id, override);
+    assert.equal(message_edit.get_deletability(message), false);
+
+    // Test per-channel delete permissions for deleting own messages.
+    message.stream_id = social.stream_id;
+
+    message.sender_id = moderator_user_id;
+    initialize_and_override_current_user(moderator_user_id, override);
+    assert.equal(message_edit.get_deletability(message), true);
+
+    message.sender_id = me.user_id;
+    initialize_and_override_current_user(me.user_id, override);
+    assert.equal(message_edit.get_deletability(message), false);
+
+    message.stream_id = denmark.stream_id;
+    assert.equal(message_edit.get_deletability(message), false);
+
+    initialize_and_override_current_user(moderator_user_id, override);
+    assert.equal(message_edit.get_deletability(message), false);
+
+    message.sender_id = moderator_user_id;
     assert.equal(message_edit.get_deletability(message), false);
 });
