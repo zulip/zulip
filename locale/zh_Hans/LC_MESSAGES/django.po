@@ -6,6 +6,7 @@
 # Chriser Chaoo <jsf.chris@foxmail.com>, 2017
 # Clay Cheng <569735195@qq.com>, 2023-2024
 # Cranyozen, 2024
+# Don Trueno, 2025
 # FaZang, 2022
 # Greg Price <gnprice@gmail.com>, 2017
 # Hanson Sin <yeehangsin@yahoo.com>, 2020
@@ -24,7 +25,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-03-20 06:34+0000\n"
 "PO-Revision-Date: 2015-12-06 00:18+0000\n"
-"Last-Translator: Yidan Wang <wangyidan@westlake.edu.cn>, 2024-2025\n"
+"Last-Translator: Don Trueno, 2025\n"
 "Language-Team: Chinese Simplified (http://app.transifex.com/zulip/zulip/language/zh-Hans/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -55,7 +56,7 @@ msgstr "私信"
 
 #: analytics/views/stats.py:394
 msgid "Group direct messages"
-msgstr "私聊群组消息"
+msgstr "群组私信消息"
 
 #: analytics/views/stats.py:417
 #, python-brace-format
@@ -1886,7 +1887,7 @@ msgid ""
 " Congratulations, you have created a new demo Zulip organization. Note that "
 "this organization will be automatically deleted in 30 days. Learn more about"
 " demo organizations here: %(demo_organizations_help_link)s!"
-msgstr ""
+msgstr "恭喜，您已经创建了一个演示 Zulip 组织。请注意，此组织将在 30 天内自动删除。在此处了解有关演示组织的更多信息：\n%(demo_organizations_help_link)s"
 
 #: templates/zerver/emails/account_registered.txt:7
 #, python-format
@@ -2326,7 +2327,7 @@ msgstr "您收到此邮件是因为您被用户提及。"
 #, python-format
 msgid ""
 "You are receiving this because @%(mentioned_user_group_name)s was mentioned."
-msgstr ""
+msgstr "您受到此邮件是因为@%(mentioned_user_group_name)s被提及"
 
 #: templates/zerver/emails/missed_message.html:33
 #: templates/zerver/emails/missed_message.html:37
@@ -2400,12 +2401,12 @@ msgstr "\n    请勿回复此电子邮件。 (<a href=\"%(url)s\">help</a>).\n  
 #: templates/zerver/emails/missed_message.subject.txt:2
 #, python-format
 msgid "Group DMs with %(huddle_display_name)s"
-msgstr ""
+msgstr "与%(huddle_display_name)s的群组私信"
 
 #: templates/zerver/emails/missed_message.subject.txt:3
 #, python-format
 msgid "DMs with %(sender_str)s"
-msgstr ""
+msgstr "与%(sender_str)s的私信"
 
 #: templates/zerver/emails/missed_message.subject.txt:12
 #, python-format
@@ -5496,7 +5497,7 @@ msgstr ""
 #: zerver/lib/streams.py:818 zerver/lib/streams.py:845
 #: zerver/lib/streams.py:916 zerver/views/user_topics.py:107
 msgid "Invalid channel ID"
-msgstr ""
+msgstr "无效的频道ID"
 
 #: zerver/lib/streams.py:887
 msgid "Channel name is already in use."
@@ -5980,7 +5981,7 @@ msgstr "外部账号"
 
 #: zerver/models/custom_profile_fields.py:127
 msgid "Pronouns"
-msgstr ""
+msgstr "称谓"
 
 #: zerver/models/groups.py:22 zerver/models/users.py:294
 msgid "Nobody"
@@ -6119,11 +6120,11 @@ msgstr "公开的、受保护的历史"
 
 #: zerver/models/users.py:290
 msgid "Admins, moderators, members and guests"
-msgstr ""
+msgstr "管理员、版主、成员和访客"
 
 #: zerver/models/users.py:291
 msgid "Admins, moderators and members"
-msgstr ""
+msgstr "管理员、版主和成员"
 
 #: zerver/models/users.py:292
 msgid "Admins and moderators"
@@ -6976,7 +6977,7 @@ msgstr "无法处理Pivotal的payload"
 
 #: zerver/webhooks/slack/view.py:157
 msgid "Error: channels_map_to_topics parameter other than 0 or 1"
-msgstr "channels_map_to_topics 不应该有除了0和1以外的参数"
+msgstr "错误：channels_map_to_topics 参数必须是 0 或 1"
 
 #: zerver/webhooks/wordpress/view.py:39
 #, python-brace-format
