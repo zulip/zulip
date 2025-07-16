@@ -91,7 +91,9 @@
                 }
 
                 .inbox-left-part {
-                    grid-template: auto / min-content auto min-content min-content;
+                    grid-template:
+                        auto / minmax(auto, min-content)
+                        auto min-content min-content;
                     grid-template-areas: "header_name collapse_button unread_mention_info unread_count";
                 }
 
@@ -293,7 +295,6 @@
                 overflow: hidden;
                 text-overflow: ellipsis;
                 white-space: nowrap;
-                width: 100%;
 
                 & a {
                     padding: 1px 0;
