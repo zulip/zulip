@@ -1,5 +1,4 @@
 import calendar
-import os
 import time
 from dataclasses import dataclass
 from urllib.parse import urlsplit
@@ -110,7 +109,7 @@ def build_page_params_for_home_page_load(
     if user_profile is not None:
         client = RequestNotes.get_notes(request).client
         assert client is not None
-        partial_subscribers = os.environ.get("PARTIAL_SUBSCRIBERS") is not None
+        partial_subscribers = True
         state_data = do_events_register(
             user_profile,
             realm,

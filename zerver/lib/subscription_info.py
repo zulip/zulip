@@ -898,8 +898,9 @@ def gather_subscriptions_helper(
         }
 
         # If the client only wants partial subscriber data, we send:
-        # - all subscribers (full data) for channels with fewer than 250 subscribers
-        # - only bots and recently active users for channels with >= 250 subscribers
+        # - all subscribers (full data) for channels with fewer than
+        #   MIN_PARTIAL_SUBSCRIBERS_CHANNEL_SIZE subscribers.
+        # - only bots and recently active users for other channels.
         streams_to_partially_fetch = []
         if include_subscribers == "partial":
             streams_to_partially_fetch = [
