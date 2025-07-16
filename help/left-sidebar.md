@@ -75,6 +75,10 @@ information you need in the moment.
 
 {end_tabs}
 
+### Filter by whether topics are resolved
+
+{!filter-resolved-left-sidebar.md!}
+
 ### Show the left sidebar
 
 {start_tabs}
