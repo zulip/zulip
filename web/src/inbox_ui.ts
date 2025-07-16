@@ -1422,6 +1422,10 @@ export function get_focused_row_message(): {message?: Message | undefined} & (
         }
 
         const stream_id = Number($focused_row.attr("data-stream-id"));
+        if (Number.isNaN(stream_id)) {
+            // This is a channel folder header.
+            return {};
+        }
         compose_state.set_compose_recipient_id(stream_id);
         return {message: undefined, msg_type: "stream", stream_id};
     }
