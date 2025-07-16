@@ -67,6 +67,7 @@ class TestCreateStreams(ZulipTestCase):
                 can_administer_channel_group=aaron_group,
                 can_add_subscribers_group=prospero_group,
                 can_subscribe_group=cordelia_group,
+                can_unsubscribe_group=cordelia_group,
             )
 
         self.assertEqual(events[0]["event"]["type"], "stream")
@@ -611,6 +612,7 @@ class TestCreateStreams(ZulipTestCase):
         self.assertEqual(stream.can_remove_subscribers_group_id, admins_group.id)
         self.assertEqual(stream.can_send_message_group_id, everyone_group.id)
         self.assertEqual(stream.can_subscribe_group_id, nobody_group.id)
+        self.assertEqual(stream.can_unsubscribe_group_id, everyone_group.id)
 
         # Check setting values sent in stream creation events.
         event_stream = events[0]["event"]["streams"][0]
@@ -623,6 +625,7 @@ class TestCreateStreams(ZulipTestCase):
         self.assertEqual(event_stream["can_remove_subscribers_group"], admins_group.id)
         self.assertEqual(event_stream["can_send_message_group"], everyone_group.id)
         self.assertEqual(event_stream["can_subscribe_group"], nobody_group.id)
+        self.assertEqual(event_stream["can_unsubscribe_group"], everyone_group.id)
 
     def test_acting_user_is_creator(self) -> None:
         """
