@@ -516,58 +516,72 @@ export function clear_topic_moved_info(): void {
 export function inform_if_topic_is_moved(orig_topic: string, old_stream_id: number): void {
     const stream_id = compose_state.stream_id();
     if (stream_id === undefined) {
+        clear_topic_moved_info();
         return;
     }
-    const message_content = compose_state.message_content();
     const sub = stream_data.get_sub_by_id(stream_id);
-    const topic_name = compose_state.topic();
+    if (sub === undefined) {
+        clear_topic_moved_info();
+        return;
+    }
 
+    const message_content = compose_state.message_content();
+    if (message_content === "") {
+        // Don't warn if the compose box is empty, as you've not done anything yet.
+        clear_topic_moved_info();
+        return;
+    }
+
+    const topic_name = compose_state.topic();
     const stream_edited = stream_id !== old_stream_id;
     const topic_edited = topic_name !== orig_topic;
     const topic_is_renamed =
         topic_edited &&
         resolved_topic.unresolve_name(orig_topic) !== resolved_topic.unresolve_name(topic_name);
-    if (sub && message_content !== "" && (stream_edited || topic_is_renamed)) {
-        const old_stream = stream_data.get_sub_by_id(old_stream_id);
-        if (!old_stream) {
-            return;
-        }
 
-        let is_empty_string_topic;
-        if (orig_topic !== "") {
-            is_empty_string_topic = false;
-        } else {
-            is_empty_string_topic = true;
-        }
-        const narrow_url = hash_util.by_stream_topic_url(old_stream_id, orig_topic);
-        const context = {
-            banner_type: compose_banner.INFO,
-            stream_id: sub.stream_id,
-            topic_name,
-            narrow_url,
-            orig_topic,
-            old_stream: old_stream.name,
-            classname: compose_banner.CLASSNAMES.topic_is_moved,
-            show_colored_icon: false,
-            is_empty_string_topic,
-        };
-        const new_row_html = render_topic_moved_banner(context);
-
-        if (compose_state.has_recipient_viewed_topic_moved_banner()) {
-            // Replace any existing banner of this type to avoid showing
-            // two banners if a conversation is moved twice in quick succession.
-            clear_topic_moved_info();
-        }
-
-        const appended = compose_banner.append_compose_banner_to_banner_list(
-            $(new_row_html),
-            $("#compose_banners"),
-        );
-        if (appended) {
-            compose_state.set_recipient_viewed_topic_moved_banner(true);
-        }
-    } else {
+    if (!(stream_edited || topic_is_renamed)) {
         clear_topic_moved_info();
+        return;
+    }
+
+    const old_stream = stream_data.get_sub_by_id(old_stream_id);
+    if (!old_stream) {
+        clear_topic_moved_info();
+        return;
+    }
+
+    let is_empty_string_topic;
+    if (orig_topic !== "") {
+        is_empty_string_topic = false;
+    } else {
+        is_empty_string_topic = true;
+    }
+    const narrow_url = hash_util.by_stream_topic_url(old_stream_id, orig_topic);
+    const context = {
+        banner_type: compose_banner.INFO,
+        stream_id: sub.stream_id,
+        topic_name,
+        narrow_url,
+        orig_topic,
+        old_stream: old_stream.name,
+        classname: compose_banner.CLASSNAMES.topic_is_moved,
+        show_colored_icon: false,
+        is_empty_string_topic,
+    };
+    const new_row_html = render_topic_moved_banner(context);
+
+    if (compose_state.has_recipient_viewed_topic_moved_banner()) {
+        // Replace any existing banner of this type to avoid showing
+        // two banners if a conversation is moved twice in quick succession.
+        clear_topic_moved_info();
+    }
+
+    const appended = compose_banner.append_compose_banner_to_banner_list(
+        $(new_row_html),
+        $("#compose_banners"),
+    );
+    if (appended) {
+        compose_state.set_recipient_viewed_topic_moved_banner(true);
     }
 }
 
