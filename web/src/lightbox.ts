@@ -484,16 +484,39 @@ function supports_heic(): boolean {
 
 // retrieve the metadata from the DOM and store into the asset_map.
 export function parse_media_data(media: HTMLMediaElement | HTMLImageElement): Media {
-    const message_id = rows.get_message_id(media);
-    const canonical_url = canonical_url_of_media(media);
-    if (asset_map.has(message_id) && asset_map.get(message_id)?.has(canonical_url)) {
-        // Use the cached value
-        const payload = asset_map.get(message_id)!.get(canonical_url);
-        assert(payload !== undefined);
-        return payload;
-    }
-
     const $media = $(media);
+    const canonical_url = canonical_url_of_media(media);
+    let message_id;
+
+    // This includes the preview feature in the message-edit UI as well as compose.
+    const is_compose_preview_media = $media.closest(".preview_content").length > 0;
+    const $message_row = rows.get_closest_row($media);
+    let use_asset_map;
+    let sender_full_name;
+
+    if (is_compose_preview_media || rows.is_overlay_row($message_row)) {
+        // We don't use the asset map cache in compose/edit UIs or
+        // overlays, since the content is not stable.
+        sender_full_name = people.my_full_name();
+        use_asset_map = false;
+    } else if ($message_row.length > 0) {
+        use_asset_map = true;
+        message_id = rows.id($message_row);
+
+        if (asset_map.has(message_id) && asset_map.get(message_id)?.has(canonical_url)) {
+            // Use the cached value
+            const payload = asset_map.get(message_id)!.get(canonical_url);
+            assert(payload !== undefined);
+            return payload;
+        }
+
+        const message = message_store.get(message_id);
+        if (message === undefined) {
+            blueslip.error("Lightbox for unknown message", {message_id});
+        } else {
+            sender_full_name = message.sender_full_name;
+        }
+    }
 
     // if wrapped in the .youtube-video class, it will be length = 1, and therefore
     // cast to true.
@@ -501,9 +524,6 @@ export function parse_media_data(media: HTMLMediaElement | HTMLImageElement): Me
     const is_vimeo_video = $media.closest(".vimeo-video").length > 0;
     const is_embed_video = $media.closest(".embed-video").length > 0;
     const is_inline_video = $media.closest(".message_inline_video").length > 0;
-
-    // check if media is descendent of #compose .preview_content
-    const is_compose_preview_media = $media.closest("#compose .preview_content").length === 1;
 
     const $parent = $media.parent();
     let type: MediaType;
@@ -563,17 +583,6 @@ export function parse_media_data(media: HTMLMediaElement | HTMLImageElement): Me
             source = url;
         }
     }
-    let sender_full_name;
-    if (is_compose_preview_media) {
-        sender_full_name = people.my_full_name();
-    } else {
-        const message = message_store.get(message_id);
-        if (message === undefined) {
-            blueslip.error("Lightbox for unknown message", {message_id});
-        } else {
-            sender_full_name = message.sender_full_name;
-        }
-    }
 
     const payload = {
         user: sender_full_name,
@@ -586,7 +595,9 @@ export function parse_media_data(media: HTMLMediaElement | HTMLImageElement): Me
         url: util.is_valid_url(url) ? url : "",
     };
 
-    if (!is_loading_placeholder && canonical_url !== "") {
+    if (use_asset_map && !is_loading_placeholder && canonical_url !== "") {
+        // Update the asset_map, if we had a message ID involved.
+        assert(message_id !== undefined);
         if (!asset_map.has(message_id)) {
             asset_map.set(message_id, new Map<string, Media>());
         }
