@@ -850,10 +850,10 @@ export function initialize_stream_cursor(): void {
 }
 
 export function initialize({
-    on_stream_click,
+    show_channel_feed,
     update_inbox_channel_view,
 }: {
-    on_stream_click: (stream_id: number, trigger: string) => void;
+    show_channel_feed: (stream_id: number, trigger: string) => void;
     update_inbox_channel_view: (channel_id: number) => void;
 }): void {
     update_inbox_channel_view_callback = update_inbox_channel_view;
@@ -865,7 +865,7 @@ export function initialize({
     update_subscribe_to_more_streams_link();
     initialize_stream_cursor();
     initialize_tippy_tooltips();
-    set_event_handlers({on_stream_click});
+    set_event_handlers({show_channel_feed});
 
     $("#stream_filters").on("click", ".show-more-topics", (e) => {
         zoom_in();
@@ -923,9 +923,9 @@ export function initialize_tippy_tooltips(): void {
 }
 
 export function set_event_handlers({
-    on_stream_click,
+    show_channel_feed,
 }: {
-    on_stream_click: (stream_id: number, trigger: string) => void;
+    show_channel_feed: (stream_id: number, trigger: string) => void;
 }): void {
     $("#stream_filters").on("click", "li .subscription_block", (e) => {
         // Left sidebar channel links have an `href` so that the
@@ -972,7 +972,7 @@ export function set_event_handlers({
             user_settings.web_channel_default_view ===
             web_channel_default_view_values.channel_feed.code
         ) {
-            on_stream_click(stream_id, "sidebar");
+            show_channel_feed(stream_id, "sidebar");
             return;
         }
 
@@ -1012,7 +1012,7 @@ export function set_event_handlers({
                 );
                 browser_history.go_to_location(destination_url);
             } else {
-                on_stream_click(stream_id, "sidebar");
+                show_channel_feed(stream_id, "sidebar");
                 return;
             }
         };
@@ -1021,7 +1021,7 @@ export function set_event_handlers({
             stream_topic_history_util.get_server_history(stream_id, () => {
                 topics = stream_topic_history.get_recent_topic_names(stream_id);
                 if (topics.length === 0) {
-                    on_stream_click(stream_id, "sidebar");
+                    show_channel_feed(stream_id, "sidebar");
                     return;
                 }
                 navigate_to_stream();
@@ -1096,7 +1096,7 @@ export function set_event_handlers({
         }
 
         clear_and_hide_search();
-        on_stream_click(stream_id, "sidebar enter key");
+        show_channel_feed(stream_id, "sidebar enter key");
     }
 
     keydown_util.handle({

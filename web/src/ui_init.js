@@ -561,7 +561,7 @@ export async function initialize_everything(state_data) {
     left_sidebar_navigation_area.initialize();
     stream_list_sort.initialize();
     stream_list.initialize({
-        on_stream_click(stream_id, trigger) {
+        show_channel_feed(stream_id, trigger) {
             const sub = sub_store.get(stream_id);
             sidebar_ui.hide_all();
             popovers.hide_all();
