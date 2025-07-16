@@ -56,7 +56,6 @@ import * as sidebar_ui from "./sidebar_ui.ts";
 import * as spectators from "./spectators.ts";
 import * as starred_messages_ui from "./starred_messages_ui.ts";
 import {realm} from "./state_data.ts";
-import * as stream_data from "./stream_data.ts";
 import * as stream_list from "./stream_list.ts";
 import * as stream_popover from "./stream_popover.ts";
 import * as stream_settings_ui from "./stream_settings_ui.ts";
@@ -1101,6 +1100,7 @@ export function process_hotkey(e, hotkey) {
     }
 
     // Shortcuts that don't require a message
+    let list_of_channel_topics_channel_id;
     switch (event_name) {
         case "narrow_private":
             message_view.show(
@@ -1184,25 +1184,39 @@ export function process_hotkey(e, hotkey) {
             }
             return false;
         case "list_of_channel_topics":
+            if (recent_view_ui.is_in_focus()) {
+                const msg = recent_view_ui.get_focused_row_message();
+                if (msg !== undefined && msg.type === "stream") {
+                    list_of_channel_topics_channel_id = msg.stream_id;
+                }
+            }
+            if (inbox_ui.is_in_focus()) {
+                const msg = inbox_ui.get_focused_row_message();
+                if (msg !== undefined && msg.msg_type === "stream") {
+                    list_of_channel_topics_channel_id = msg.stream_id;
+                }
+            }
             if (message_lists.current !== undefined) {
-                let channel_id;
                 const selected_message = message_lists.current.selected_message();
                 if (selected_message === undefined) {
                     const only_valid_id = true;
-                    channel_id = narrow_state.stream_id(narrow_state.filter(), only_valid_id);
+                    list_of_channel_topics_channel_id = narrow_state.stream_id(
+                        narrow_state.filter(),
+                        only_valid_id,
+                    );
                 } else if (selected_message.type === "stream") {
-                    channel_id = stream_data.get_stream_id(selected_message.stream);
+                    list_of_channel_topics_channel_id = selected_message.stream_id;
                 }
-
-                if (channel_id === undefined) {
-                    return false;
-                }
-
-                const channel_topic_list_url = hash_util.by_channel_topic_list_url(channel_id);
-                browser_history.go_to_location(channel_topic_list_url);
-                return true;
             }
-            return false;
+
+            if (list_of_channel_topics_channel_id === undefined) {
+                return false;
+            }
+
+            browser_history.go_to_location(
+                hash_util.by_channel_topic_list_url(list_of_channel_topics_channel_id),
+            );
+            return true;
     }
 
     // Shortcuts that are useful with an empty message feed, like opening compose.
