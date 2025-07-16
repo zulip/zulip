@@ -25,19 +25,15 @@ for mime_type, extension in EXTRA_MIME_TYPES:
 AUDIO_INLINE_MIME_TYPES = [
     "audio/aac",
     "audio/flac",
+    "audio/mp4",
     "audio/mpeg",
     "audio/wav",
+    "audio/webm",
 ]
 
 INLINE_MIME_TYPES = [
     *AUDIO_INLINE_MIME_TYPES,
     "application/pdf",
-    # We don't want to include `audio/mp4` and `audio/webm` in the
-    # `AUDIO_INLINE_MIME` TYPES because despite their ability to be
-    # used for both audio and video, they happen to be parsed only
-    # in their video form.
-    "audio/mp4",
-    "audio/webm",
     "image/apng",
     "image/avif",
     "image/gif",
