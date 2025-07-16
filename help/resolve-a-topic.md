@@ -148,6 +148,10 @@ accident.
 
 {end_tabs}
 
+## Filter by whether topics are resolved
+
+{!filter-resolved-left-sidebar.md!}
+
 ## Details
 
 * Resolving a topic works by moving the messages to a new topic.
