@@ -521,7 +521,13 @@ export function inform_if_topic_is_moved(orig_topic: string, old_stream_id: numb
     const message_content = compose_state.message_content();
     const sub = stream_data.get_sub_by_id(stream_id);
     const topic_name = compose_state.topic();
-    if (sub && message_content !== "") {
+
+    const stream_edited = stream_id !== old_stream_id;
+    const topic_edited = topic_name !== orig_topic;
+    const topic_is_renamed =
+        topic_edited &&
+        resolved_topic.unresolve_name(orig_topic) !== resolved_topic.unresolve_name(topic_name);
+    if (sub && message_content !== "" && (stream_edited || topic_is_renamed)) {
         const old_stream = stream_data.get_sub_by_id(old_stream_id);
         if (!old_stream) {
             return;
