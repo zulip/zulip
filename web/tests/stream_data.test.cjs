@@ -15,6 +15,7 @@ const color_data = zrequire("color_data");
 const peer_data = zrequire("peer_data");
 const people = zrequire("people");
 const sub_store = zrequire("sub_store");
+const message_edit = zrequire("message_edit");
 const stream_data = zrequire("stream_data");
 const hash_util = zrequire("hash_util");
 const {set_current_user, set_realm} = zrequire("state_data");
@@ -53,6 +54,13 @@ const test_user = {
 
 const admin_user_id = 1;
 const moderator_user_id = 2;
+
+const moderator = {
+    email: "moderator@zulip.com",
+    full_name: "Moderator",
+    user_id: moderator_user_id,
+    is_moderator: true,
+};
 // set up user data
 const admins_group = {
     name: "Admins",
@@ -2235,4 +2243,51 @@ run_test("is_empty_topic_only_channel", ({override}) => {
     override(current_user, "is_admin", true);
     assert.equal(stream_data.is_empty_topic_only_channel(social.stream_id), true);
     assert.equal(stream_data.is_empty_topic_only_channel(scotland.stream_id), false);
+});
+
+run_test("get_deletability", ({override}) => {
+    const social = {
+        subscribed: true,
+        color: "red",
+        name: "social",
+        stream_id: 2,
+        can_delete_any_message_group: moderators_group.id,
+        can_delete_own_message_group: moderators_group.id,
+    };
+    const denmark = {
+        subscribed: true,
+        color: "red",
+        name: "denmark",
+        stream_id: 3,
+        can_delete_any_message_group: nobody_group.id,
+        can_delete_own_message_group: nobody_group.id,
+    };
+    stream_data.add_sub(social);
+    stream_data.add_sub(denmark);
+
+    const message = {
+        sent_by_me: false,
+        locally_echoed: true,
+        type: "stream",
+        stream_id: social.stream_id,
+    };
+    people.add_active_user(moderator);
+    override(realm, "realm_can_delete_any_message_group", nobody_group.id);
+    override(realm, "realm_can_delete_own_message_group", nobody_group.id);
+
+    // Test per-channel delete permission for deleting any message in the channel.
+    message.sender_id = moderator_user_id;
+    initialize_and_override_current_user(moderator_user_id, override);
+    assert.equal(message_edit.get_deletability(message), true);
+
+    message.sender_id = me.user_id;
+    initialize_and_override_current_user(me.user_id, override);
+    assert.equal(message_edit.get_deletability(message), false);
+
+    message.stream_id = denmark.stream_id;
+    assert.equal(message_edit.get_deletability(message), false);
+
+    message.sender_id = moderator_user_id;
+    initialize_and_override_current_user(moderator_user_id, override);
+    assert.equal(message_edit.get_deletability(message), false);
 });

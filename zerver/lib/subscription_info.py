@@ -71,6 +71,9 @@ def get_web_public_subs(
         can_administer_channel_group = get_group_setting_value_for_register_api(
             stream.can_administer_channel_group_id, anonymous_group_membership
         )
+        can_delete_any_message_group = get_group_setting_value_for_register_api(
+            stream.can_delete_any_message_group_id, anonymous_group_membership
+        )
         can_move_messages_out_of_channel_group = get_group_setting_value_for_register_api(
             stream.can_move_messages_out_of_channel_group_id, anonymous_group_membership
         )
@@ -128,6 +131,7 @@ def get_web_public_subs(
             audible_notifications=audible_notifications,
             can_add_subscribers_group=can_add_subscribers_group,
             can_administer_channel_group=can_administer_channel_group,
+            can_delete_any_message_group=can_delete_any_message_group,
             can_move_messages_out_of_channel_group=can_move_messages_out_of_channel_group,
             can_move_messages_within_channel_group=can_move_messages_within_channel_group,
             can_send_message_group=can_send_message_group,
@@ -202,6 +206,9 @@ def build_stream_api_dict(
     can_administer_channel_group = get_group_setting_value_for_register_api(
         raw_stream_dict["can_administer_channel_group_id"], anonymous_group_membership
     )
+    can_delete_any_message_group = get_group_setting_value_for_register_api(
+        raw_stream_dict["can_delete_any_message_group_id"], anonymous_group_membership
+    )
     can_move_messages_out_of_channel_group = get_group_setting_value_for_register_api(
         raw_stream_dict["can_move_messages_out_of_channel_group_id"], anonymous_group_membership
     )
@@ -225,6 +232,7 @@ def build_stream_api_dict(
         is_archived=raw_stream_dict["deactivated"],
         can_add_subscribers_group=can_add_subscribers_group,
         can_administer_channel_group=can_administer_channel_group,
+        can_delete_any_message_group=can_delete_any_message_group,
         can_move_messages_out_of_channel_group=can_move_messages_out_of_channel_group,
         can_move_messages_within_channel_group=can_move_messages_within_channel_group,
         can_send_message_group=can_send_message_group,
@@ -261,6 +269,7 @@ def build_stream_dict_for_sub(
     is_archived = stream_dict["is_archived"]
     can_add_subscribers_group = stream_dict["can_add_subscribers_group"]
     can_administer_channel_group = stream_dict["can_administer_channel_group"]
+    can_delete_any_message_group = stream_dict["can_delete_any_message_group"]
     can_move_messages_out_of_channel_group = stream_dict["can_move_messages_out_of_channel_group"]
     can_move_messages_within_channel_group = stream_dict["can_move_messages_within_channel_group"]
     can_send_message_group = stream_dict["can_send_message_group"]
@@ -306,6 +315,7 @@ def build_stream_dict_for_sub(
         audible_notifications=audible_notifications,
         can_add_subscribers_group=can_add_subscribers_group,
         can_administer_channel_group=can_administer_channel_group,
+        can_delete_any_message_group=can_delete_any_message_group,
         can_move_messages_out_of_channel_group=can_move_messages_out_of_channel_group,
         can_move_messages_within_channel_group=can_move_messages_within_channel_group,
         can_send_message_group=can_send_message_group,
@@ -377,6 +387,9 @@ def build_stream_dict_for_never_sub(
     can_administer_channel_group_value = get_group_setting_value_for_register_api(
         raw_stream_dict["can_administer_channel_group_id"], anonymous_group_membership
     )
+    can_delete_any_message_group_value = get_group_setting_value_for_register_api(
+        raw_stream_dict["can_delete_any_message_group_id"], anonymous_group_membership
+    )
     can_move_messages_out_of_channel_group_value = get_group_setting_value_for_register_api(
         raw_stream_dict["can_move_messages_out_of_channel_group_id"], anonymous_group_membership
     )
@@ -404,6 +417,7 @@ def build_stream_dict_for_never_sub(
         is_archived=is_archived,
         can_add_subscribers_group=can_add_subscribers_group_value,
         can_administer_channel_group=can_administer_channel_group_value,
+        can_delete_any_message_group=can_delete_any_message_group_value,
         can_move_messages_out_of_channel_group=can_move_messages_out_of_channel_group_value,
         can_move_messages_within_channel_group=can_move_messages_within_channel_group_value,
         can_send_message_group=can_send_message_group_value,

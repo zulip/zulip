@@ -23,12 +23,14 @@ from zerver.lib.message import (
 )
 from zerver.lib.request import RequestNotes
 from zerver.lib.response import json_success
+from zerver.lib.streams import can_delete_any_message_in_channel
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.topic import maybe_rename_empty_topic_to_general_chat
 from zerver.lib.typed_endpoint import OptionalTopic, PathOnly, typed_endpoint
 from zerver.lib.types import EditHistoryEvent, FormattedEditHistoryEvent
 from zerver.models import Message, UserProfile
 from zerver.models.realms import MessageEditHistoryVisibilityPolicyEnum
+from zerver.models.streams import get_stream_by_id_in_realm
 
 
 def fill_edit_history_entries(
@@ -181,6 +183,12 @@ def update_message_backend(
 def validate_can_delete_message(user_profile: UserProfile, message: Message) -> None:
     if user_profile.can_delete_any_message():
         return
+
+    if message.is_stream_message():
+        stream = get_stream_by_id_in_realm(message.recipient.type_id, user_profile.realm)
+        if can_delete_any_message_in_channel(user_profile, stream):
+            return
+
     if message.sender != user_profile and message.sender.bot_owner_id != user_profile.id:
         # Users can only delete messages sent by them or by their bots.
         raise JsonableError(_("You don't have permission to delete this message"))

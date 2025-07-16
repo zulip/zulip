@@ -8,7 +8,7 @@ from django.utils.timezone import now as timezone_now
 
 from zerver.actions.message_delete import do_delete_messages
 from zerver.actions.realm_settings import do_change_realm_permission_group_setting
-from zerver.actions.streams import do_deactivate_stream
+from zerver.actions.streams import do_change_stream_group_based_setting, do_deactivate_stream
 from zerver.actions.user_groups import check_add_user_group
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import Message, NamedUserGroup, UserProfile
@@ -476,9 +476,15 @@ class DeleteMessageTest(ZulipTestCase):
         self.assert_json_success(result)
 
     def test_delete_message_according_to_can_delete_any_message_group(self) -> None:
-        def check_delete_message_by_sender(sender_name: str, error_msg: str | None = None) -> None:
+        def check_delete_message_by_sender(
+            sender_name: str, error_msg: str | None = None, is_stream_message: bool = True
+        ) -> None:
             sender = self.example_user(sender_name)
-            msg_id = self.send_stream_message(sender, "Verona")
+            if is_stream_message:
+                msg_id = self.send_stream_message(sender, "Verona")
+            else:
+                msg_id = self.send_personal_message(sender, self.example_user("desdemona"))
+
             self.login_user(sender)
             result = self.client_delete(f"/json/messages/{msg_id}")
             if error_msg is None:
@@ -487,11 +493,17 @@ class DeleteMessageTest(ZulipTestCase):
                 self.assert_json_error(result, error_msg)
 
         def check_delete_message_by_other_user(
-            sender_name: str, other_user_name: str, error_msg: str | None = None
+            sender_name: str,
+            other_user_name: str,
+            error_msg: str | None = None,
+            is_stream_message: bool = True,
         ) -> None:
             sender = self.example_user(sender_name)
             other_user = self.example_user(other_user_name)
-            msg_id = self.send_stream_message(sender, "Verona")
+            if is_stream_message:
+                msg_id = self.send_stream_message(sender, "Verona")
+            else:
+                msg_id = self.send_personal_message(sender, other_user)
             self.login_user(other_user)
             result = self.client_delete(f"/json/messages/{msg_id}")
             if error_msg is None:
@@ -500,6 +512,8 @@ class DeleteMessageTest(ZulipTestCase):
                 self.assert_json_error(result, error_msg)
 
         realm = get_realm("zulip")
+        stream = get_stream("Verona", realm)
+        iago = self.example_user("iago")
 
         administrators_system_group = NamedUserGroup.objects.get(
             name=SystemGroups.ADMINISTRATORS, realm=realm, is_system_group=True
@@ -509,6 +523,9 @@ class DeleteMessageTest(ZulipTestCase):
         )
         everyone_system_group = NamedUserGroup.objects.get(
             name=SystemGroups.EVERYONE, realm=realm, is_system_group=True
+        )
+        nobody_system_group = NamedUserGroup.objects.get(
+            name=SystemGroups.NOBODY, realm=realm, is_system_group=True
         )
 
         do_change_realm_permission_group_setting(
@@ -572,6 +589,78 @@ class DeleteMessageTest(ZulipTestCase):
         check_delete_message_by_other_user("cordelia", "hamlet")
         check_delete_message_by_other_user(
             "cordelia", "polonius", "You don't have permission to delete this message"
+        )
+
+        do_change_realm_permission_group_setting(
+            realm,
+            "can_delete_any_message_group",
+            nobody_system_group,
+            acting_user=None,
+        )
+        do_change_realm_permission_group_setting(
+            realm,
+            "can_delete_own_message_group",
+            nobody_system_group,
+            acting_user=None,
+        )
+
+        check_delete_message_by_other_user(
+            "cordelia", "shiva", "You don't have permission to delete this message"
+        )
+
+        do_change_stream_group_based_setting(
+            stream,
+            "can_delete_any_message_group",
+            moderators_system_group,
+            acting_user=iago,
+        )
+        # Users in channel-level `can_delete_any_message_group` can delete
+        # any message in the channel.
+        check_delete_message_by_other_user("cordelia", "shiva")
+        check_delete_message_by_sender(
+            "polonius", "You don't have permission to delete this message"
+        )
+
+        do_change_stream_group_based_setting(
+            stream,
+            "can_delete_any_message_group",
+            nobody_system_group,
+            acting_user=iago,
+        )
+        do_change_stream_group_based_setting(
+            stream,
+            "can_administer_channel_group",
+            moderators_system_group,
+            acting_user=iago,
+        )
+        # Channel administrators can't delete messages if they don't have
+        # the required permissions.
+        check_delete_message_by_other_user(
+            "cordelia", "shiva", "You don't have permission to delete this message"
+        )
+        check_delete_message_by_other_user(
+            "cordelia", "iago", "You don't have permission to delete this message"
+        )
+
+        do_change_stream_group_based_setting(
+            stream,
+            "can_delete_any_message_group",
+            everyone_system_group,
+            acting_user=iago,
+        )
+        # Everyone is allowed to delete any message in the channel.
+        check_delete_message_by_other_user("cordelia", "polonius")
+        check_delete_message_by_other_user("cordelia", "iago")
+
+        # Cannot delete DMs as organization-level permission is set to nobody.
+        check_delete_message_by_other_user(
+            "cordelia",
+            "iago",
+            "You don't have permission to delete this message",
+            is_stream_message=False,
+        )
+        check_delete_message_by_sender(
+            "iago", "You don't have permission to delete this message", is_stream_message=False
         )
 
     def test_delete_message_according_to_can_delete_own_message_group(self) -> None:
