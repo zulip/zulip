@@ -268,7 +268,6 @@
 .add-user-group-container .pill-container,
 .add_members_container .pill-container {
     width: 100%;
-    background-color: hsl(0deg 0% 100%);
 
     .input:first-child:empty::before {
         opacity: 0.5;
