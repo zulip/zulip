@@ -120,6 +120,7 @@ export function dispatch_normal_event(event) {
             switch (event.op) {
                 case "add": {
                     channel_folders.add(event.channel_folder);
+                    inbox_ui.complete_rerender();
                     break;
                 }
                 default:
