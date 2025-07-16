@@ -27,7 +27,7 @@ class RegisterPushDeviceToBouncer(BouncerTestCase):
 
     def get_register_push_device_payload(
         self,
-        token: str = "apple-tokenaz",
+        token: str = "c0ffee",
         token_kind: str = RemotePushDevice.TokenKind.APNS,
         ios_app_id: str | None = "example.app",
         timestamp: int | None = None,
@@ -205,7 +205,7 @@ class RegisterPushDeviceToBouncer(BouncerTestCase):
 class RegisterPushDeviceToServer(BouncerTestCase):
     def get_register_push_device_payload(
         self,
-        token: str = "apple-tokenaz",
+        token: str = "c0ffee",
         token_kind: str = RemotePushDevice.TokenKind.APNS,
         ios_app_id: str | None = "example.app",
         timestamp: int | None = None,

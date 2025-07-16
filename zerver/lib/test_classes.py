@@ -57,7 +57,7 @@ from zerver.lib.mdiff import diff_strings
 from zerver.lib.message import access_message
 from zerver.lib.notification_data import UserMessageNotificationsData
 from zerver.lib.per_request_cache import flush_per_request_caches
-from zerver.lib.push_notifications import APNsContext, hex_to_b64
+from zerver.lib.push_notifications import APNsContext
 from zerver.lib.redis_utils import bounce_redis_key_prefix_for_testing
 from zerver.lib.response import MutableJsonResponse
 from zerver.lib.sessions import get_session_dict_user
@@ -2761,7 +2761,7 @@ class PushNotificationTestCase(BouncerTestCase):
         for token, appid in self.tokens:
             PushDeviceToken.objects.create(
                 kind=PushDeviceToken.APNS,
-                token=hex_to_b64(token),
+                token=token,
                 user=self.user_profile,
                 ios_app_id=appid,
             )
@@ -2777,14 +2777,14 @@ class PushNotificationTestCase(BouncerTestCase):
             # do their own setup.
             RemotePushDeviceToken.objects.create(
                 kind=RemotePushDeviceToken.APNS,
-                token=hex_to_b64(id_token),
+                token=id_token,
                 ios_app_id=appid,
                 user_id=self.user_profile.id,
                 server=self.server,
             )
             RemotePushDeviceToken.objects.create(
                 kind=RemotePushDeviceToken.APNS,
-                token=hex_to_b64(uuid_token),
+                token=uuid_token,
                 ios_app_id=appid,
                 user_uuid=self.user_profile.uuid,
                 server=self.server,
@@ -2803,7 +2803,7 @@ class PushNotificationTestCase(BouncerTestCase):
         for token in self.fcm_tokens:
             PushDeviceToken.objects.create(
                 kind=PushDeviceToken.FCM,
-                token=hex_to_b64(token),
+                token=token,
                 user=self.user_profile,
                 ios_app_id=None,
             )
@@ -2812,13 +2812,13 @@ class PushNotificationTestCase(BouncerTestCase):
         for id_token, uuid_token in self.remote_fcm_tokens:
             RemotePushDeviceToken.objects.create(
                 kind=RemotePushDeviceToken.FCM,
-                token=hex_to_b64(id_token),
+                token=id_token,
                 user_id=self.user_profile.id,
                 server=self.server,
             )
             RemotePushDeviceToken.objects.create(
                 kind=RemotePushDeviceToken.FCM,
-                token=hex_to_b64(uuid_token),
+                token=uuid_token,
                 user_uuid=self.user_profile.uuid,
                 server=self.server,
             )

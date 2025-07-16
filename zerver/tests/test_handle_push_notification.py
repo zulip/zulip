@@ -18,7 +18,6 @@ from zerver.actions.user_settings import do_change_user_setting
 from zerver.actions.user_topics import do_set_user_topic_visibility_policy
 from zerver.lib.push_notifications import (
     UserPushIdentityCompat,
-    b64_to_hex,
     handle_push_notification,
     handle_remove_push_notification,
 )
@@ -92,11 +91,11 @@ class HandlePushNotificationTest(PushNotificationTestCase):
             self.assertLogs("zilencer.views", level="INFO") as views_logger,
         ):
             apns_devices = [
-                (b64_to_hex(device.token), device.ios_app_id, device.token)
+                (device.token, device.ios_app_id, device.token)
                 for device in RemotePushDeviceToken.objects.filter(kind=PushDeviceToken.APNS)
             ]
             gcm_devices = [
-                (b64_to_hex(device.token), device.ios_app_id, device.token)
+                (device.token, device.ios_app_id, device.token)
                 for device in RemotePushDeviceToken.objects.filter(kind=PushDeviceToken.FCM)
             ]
             mock_fcm_messaging.send_each.return_value = self.make_fcm_success_response(
@@ -260,11 +259,11 @@ class HandlePushNotificationTest(PushNotificationTestCase):
             self.assertLogs("zilencer.views", level="INFO") as views_logger,
         ):
             apns_devices = [
-                (b64_to_hex(device.token), device.ios_app_id, device.token)
+                (device.token, device.ios_app_id, device.token)
                 for device in RemotePushDeviceToken.objects.filter(kind=PushDeviceToken.APNS)
             ]
             gcm_devices = [
-                (b64_to_hex(device.token), device.ios_app_id, device.token)
+                (device.token, device.ios_app_id, device.token)
                 for device in RemotePushDeviceToken.objects.filter(kind=PushDeviceToken.FCM)
             ]
 
