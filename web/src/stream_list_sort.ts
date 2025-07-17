@@ -23,6 +23,26 @@ export function get_stream_ids(): number[] {
     return [...all_streams];
 }
 
+function current_section_ids_for_streams(): Map<number, StreamListSection> {
+    const map = new Map<number, StreamListSection>();
+    for (const section of current_sections) {
+        for (const stream_id of [
+            ...section.streams,
+            ...section.muted_streams,
+        ]) {
+            map.set(stream_id, section);
+        }
+    }
+    return map;
+}
+
+export function current_section_id_for_stream(stream_id: number): string {
+    // Warning: This function is O(n), so it should not be called in a loop.
+    const section = current_section_ids_for_streams().get(stream_id);
+    assert(section !== undefined);
+    return section.id;
+}
+
 function compare_function(a: number, b: number): number {
     const stream_a = sub_store.get(a);
     const stream_b = sub_store.get(b);

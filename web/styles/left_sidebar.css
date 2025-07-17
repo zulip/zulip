@@ -368,7 +368,10 @@
 }
 
 .stream-list-section-container.collapsed {
-    .narrow-filter {
+    .narrow-filter:not(.stream-expanded),
+    .topic-list-item:not(.active-sub-filter),
+    &.hide-topic-bracket ul.topic-list.topic-list-has-topics::before,
+    &.hide-topic-bracket ul.topic-list.topic-list-has-topics::after {
         display: none;
     }
 }
