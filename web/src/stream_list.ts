@@ -1256,6 +1256,11 @@ export function set_event_handlers({
         if (e.metaKey || e.ctrlKey || e.shiftKey) {
             return;
         }
+        if (document.getSelection()?.type === "Range") {
+            // To avoid the click behavior if a channel name is selected.
+            e.preventDefault();
+            return;
+        }
 
         const stream_id = stream_id_for_elt($(e.target).parents("li.narrow-filter"));
         on_sidebar_channel_click(stream_id, e, show_channel_feed);

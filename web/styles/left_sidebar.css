@@ -1549,6 +1549,7 @@ li.active-sub-filter {
 }
 
 .subscription_block {
+    user-select: text;
     grid-template-columns:
         var(--left-sidebar-toggle-width-offset) var(
             --left-sidebar-icon-column-width
