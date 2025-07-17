@@ -13,18 +13,26 @@ log][commit-log] for an up-to-date list of all changes.
 
 _Unreleased_
 
-#### Highlights
+This section details some features planned for version 11.0 that are
+not present in 11.0-beta1.
 
-- Added support for scheduling message reminders.
-- Added support for per-channel configuration of whether _general
-  chat_ is available. In particular, channels without topics are now
-  supported.
 - (Unfinished) Added server support for end-to-end encryption of
   mobile push notifications. Note that the mobile apps do not yet
   support this protocol.
 - (Unfinished) Added channel folders, which organize the channels
   within an organization visually. Permission settings for channel
   folders will be introduced in a future release.
+
+### Zulip Server 11.0-beta1
+
+_Released 2025-07-17_
+
+#### Highlights
+
+- Added support for scheduling message reminders.
+- Added support for per-channel configuration of whether _general
+  chat_ is available. In particular, channels without topics are now
+  supported.
 - Redesigned the compose recipient area with modernized icons, to be
   more compact and not draw as much attention when not being actively
   edited.
@@ -52,7 +60,7 @@ _Unreleased_
 - The LDAP integration now supports automatically handling changes in
   user email addresses, when provided with a unique ID for each user
   (typically, the LDAP Distinguished Name).
-- (Unfinished) Migrated translation platform from Transifex to Weblate.
+- Migrated translation platform from Transifex to Weblate.
 
 #### Full feature changelog
 
@@ -127,7 +135,7 @@ _Unreleased_
   user has permission to rejoin later.
 - Improved message feed UI to only use a pointer cursor for UI
   elements.
-- Improved handling of various message/toic link corner cases.
+- Improved handling of various message/topic link corner cases.
 - Improved handling of a slow-to-load avatar in the navbar.
 - Improved borders for avatars in user pills.
 - Improved help center documentation considerably. Added mobile tabs
