@@ -7168,6 +7168,14 @@ paths:
                     The UNIX timestamp for when the reminder will be sent,
                     in UTC seconds.
                   example: 5681662420
+                note_text:
+                  type: string
+                  description: |
+                    A note associated with the reminder shown in the Notification Bot message.
+                    Newlines in this text are replaced by a space.
+
+                    **Changes**: New in Zulip 11.0 (feature level ZF-694134).
+                  example: "This is a reminder note."
       responses:
         "200":
           description: Success.
