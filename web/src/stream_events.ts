@@ -367,7 +367,7 @@ export function raise_blueslip_error_if_deactivated_user_shows_up_as_subscribed(
         // If they're not loaded, we don't have to worry about unsubscribing
         // them since they were never marked as subscribed to begin with.
         /* istanbul ignore next */
-        if (stream_data.is_user_subscribed(sub.stream_id, user_id)) {
+        if (stream_data.is_user_loaded_and_subscribed(sub.stream_id, user_id)) {
             blueslip.error(
                 "The user should have been removed by the `peer_remove` event before reaching this code path. Something went wrong.",
             );
