@@ -55,7 +55,7 @@ Collective](https://opencollective.com/zulip).
   your experience with Zulip (good or bad) helps them evaluate whether Zulip
   might work for their needs.
 
-- **Subscribe** to [our blog](https://blog.zulip.org/), and share our posts.
+* **Subscribe** to [our blog](https://blog.zulip.org/), and share our posts.
 
 * **Mention** Zulip on social media, or like and retweet [Zulip's
   tweets](https://twitter.com/zulip), or retoot [Zulip's
