@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import argparse
 import os
 import subprocess
 import sys
@@ -18,12 +19,22 @@ import django
 django.setup()
 from django.conf import settings
 
+parser = argparse.ArgumentParser()
+parser.add_argument(
+    "--no-relative-links",
+    action="store_false",
+    dest="show_relative_links",
+    help="Disable relative links when using NavigationSteps component. Typically only set to true in case of the help center being hosted on zulip.com.",
+)
+args = parser.parse_args()
+
 
 def run() -> None:
     subprocess.check_call(["./tools/convert-help-center-docs-to-mdx"])
     env = os.environ.copy()
     env["SUPPORT_EMAIL"] = parseaddr(settings.ZULIP_ADMINISTRATOR)[1]
     env["CORPORATE_ENABLED"] = str(settings.CORPORATE_ENABLED).lower()
+    env["SHOW_RELATIVE_LINKS"] = str(args.show_relative_links).lower()
     subprocess.check_call(
         ["/usr/local/bin/corepack", "pnpm", "build"],
         cwd="help-beta",
