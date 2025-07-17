@@ -927,10 +927,15 @@ export function initialize(): void {
         }
 
         if (compose_state.composing() && $(e.target).parents("#compose").length === 0) {
-            if (
-                $(e.target).closest("a").length > 0 ||
-                $(e.target).closest(".copy_codeblock").length > 0
-            ) {
+            const is_inside_link = $(e.target).closest("a").length > 0;
+            if (is_inside_link || $(e.target).closest(".copy_codeblock").length > 0) {
+                // We want to avoid blurring a selected link by triggering a
+                // focus event on the compose textarea.
+                if (is_inside_link && document.getSelection()?.type === "Range") {
+                    // To avoid the click behavior if a link is selected.
+                    e.preventDefault();
+                    return;
+                }
                 // Refocus compose message text box if one clicks an external
                 // link/url to view something else while composing a message.
                 // See issue #4331 for more details.
