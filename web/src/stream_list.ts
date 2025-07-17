@@ -285,7 +285,7 @@ export function rewire_stream_list_section_container_html(
 function get_section_channel_plus_icon_url(section: StreamListSection): string | undefined {
     if (section.id === "normal-streams") {
         return "#channels/new";
-    } else if (!["pinned-streams", "dormant-streams"].includes(section.id)) {
+    } else if (section.id !== "pinned-streams") {
         return `#channels/folders/${section.id}/new`;
     }
     return undefined;
@@ -341,7 +341,6 @@ export function build_stream_list(force_rerender: boolean): void {
         for (const stream_id of [...section.streams, ...section.muted_streams]) {
             add_sidebar_li(stream_id, $(`#stream-list-${section.id}`));
         }
-        // This should only be relevant for folders
         for (const stream_id of section.inactive_streams) {
             add_sidebar_li(stream_id, $(`#stream-list-${section.id}`), true);
         }
