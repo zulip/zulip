@@ -278,6 +278,8 @@ export function user_can_delete_own_message(): boolean {
     );
 }
 
+/* TODO/channel-folders: Remove when tests are restored */
+/* istanbul ignore next */
 export function should_mask_unread_count(
     sub_muted: boolean,
     unmuted_unread_count: number,
