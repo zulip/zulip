@@ -11,6 +11,10 @@
     "not_translated": 305,
     "total": 457
   },
+  "bn": {
+    "not_translated": 446,
+    "total": 457
+  },
   "bqi": {
     "not_translated": 391,
     "total": 457
@@ -33,6 +37,10 @@
   },
   "de": {
     "not_translated": 1,
+    "total": 457
+  },
+  "el": {
+    "not_translated": 426,
     "total": 457
   },
   "en_GB": {
@@ -111,6 +119,10 @@
     "not_translated": 265,
     "total": 457
   },
+  "no": {
+    "not_translated": 449,
+    "total": 457
+  },
   "pl": {
     "not_translated": 0,
     "total": 457
@@ -135,6 +147,10 @@
     "not_translated": 307,
     "total": 457
   },
+  "sl": {
+    "not_translated": 0,
+    "total": 457
+  },
   "sr": {
     "not_translated": 62,
     "total": 457
@@ -145,6 +161,10 @@
   },
   "ta": {
     "not_translated": 395,
+    "total": 457
+  },
+  "tl": {
+    "not_translated": 435,
     "total": 457
   },
   "tr": {

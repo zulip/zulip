@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-07-16 18:53+0000\n"
+"POT-Creation-Date: 2025-07-17 00:39+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -280,8 +280,8 @@ msgstr ""
 msgid "Invalid billing access token."
 msgstr ""
 
-#: corporate/views/remote_billing_page.py:213 zilencer/views.py:1446
-#: zilencer/views.py:1471
+#: corporate/views/remote_billing_page.py:213 zilencer/views.py:1444
+#: zilencer/views.py:1469
 #, python-brace-format
 msgid ""
 "Couldn't reconcile billing data between server and realm. Please contact "
@@ -4545,7 +4545,7 @@ msgid "Subdomain reserved. Please choose a different one."
 msgstr ""
 
 #: zerver/forms.py:134 zerver/forms.py:304 zerver/lib/email_validation.py:111
-#: zilencer/views.py:226
+#: zilencer/views.py:225
 msgid "Please use your real email address."
 msgstr ""
 
@@ -5533,61 +5533,61 @@ msgstr ""
 msgid "Invalid response format"
 msgstr ""
 
-#: zerver/lib/push_notifications.py:97
+#: zerver/lib/push_notifications.py:87
 msgid "Empty or invalid length token"
 msgstr ""
 
-#: zerver/lib/push_notifications.py:103
+#: zerver/lib/push_notifications.py:92
 msgid "Invalid APNS token"
 msgstr ""
 
-#: zerver/lib/push_notifications.py:457
+#: zerver/lib/push_notifications.py:446
 msgid "Invalid GCM option to bouncer: priority {priority!r}"
 msgstr ""
 
-#: zerver/lib/push_notifications.py:467
+#: zerver/lib/push_notifications.py:456
 #, python-brace-format
 msgid "Invalid GCM options to bouncer: {options}"
 msgstr ""
 
 #. error
-#: zerver/lib/push_notifications.py:746 zilencer/views.py:631
+#: zerver/lib/push_notifications.py:735 zilencer/views.py:629
 msgid "Token does not exist"
 msgstr ""
 
-#: zerver/lib/push_notifications.py:967
+#: zerver/lib/push_notifications.py:956
 msgid "New message"
 msgstr ""
 
-#: zerver/lib/push_notifications.py:1086
+#: zerver/lib/push_notifications.py:1075
 #, python-brace-format
 msgid "{full_name} mentioned @{user_group_name}:"
 msgstr ""
 
-#: zerver/lib/push_notifications.py:1090
+#: zerver/lib/push_notifications.py:1079
 #, python-brace-format
 msgid "{full_name} mentioned you:"
 msgstr ""
 
-#: zerver/lib/push_notifications.py:1097
+#: zerver/lib/push_notifications.py:1086
 #, python-brace-format
 msgid "{full_name} mentioned everyone:"
 msgstr ""
 
-#: zerver/lib/push_notifications.py:1503
+#: zerver/lib/push_notifications.py:1492
 msgid "Test notification"
 msgstr ""
 
-#: zerver/lib/push_notifications.py:1504
+#: zerver/lib/push_notifications.py:1493
 #, python-brace-format
 msgid "This is a test notification from {realm_name} ({realm_url})."
 msgstr ""
 
-#: zerver/lib/push_notifications.py:1556
+#: zerver/lib/push_notifications.py:1545
 msgid "Device not recognized"
 msgstr ""
 
-#: zerver/lib/push_notifications.py:1568
+#: zerver/lib/push_notifications.py:1557
 msgid "Device not recognized by the push bouncer"
 msgstr ""
 
@@ -6046,7 +6046,7 @@ msgstr ""
 msgid "Unexpected arguments: {keys}"
 msgstr ""
 
-#: zerver/lib/validator.py:302 zerver/views/realm.py:87
+#: zerver/lib/validator.py:302 zerver/views/realm.py:88
 #, python-brace-format
 msgid "{var_name} is not an allowed_type"
 msgstr ""
@@ -6710,36 +6710,36 @@ msgstr ""
 msgid "Read receipts are disabled in this organization."
 msgstr ""
 
-#: zerver/views/realm.py:214
+#: zerver/views/realm.py:215
 #, python-brace-format
 msgid "Invalid language '{language}'"
 msgstr ""
 
-#: zerver/views/realm.py:221
+#: zerver/views/realm.py:222
 msgid "At least one authentication method must be enabled."
 msgstr ""
 
-#: zerver/views/realm.py:227
+#: zerver/views/realm.py:228
 #, python-brace-format
 msgid "Invalid video_chat_provider {video_chat_provider}"
 msgstr ""
 
-#: zerver/views/realm.py:235
+#: zerver/views/realm.py:236
 #, python-brace-format
 msgid "Invalid giphy_rating {giphy_rating}"
 msgstr ""
 
-#: zerver/views/realm.py:515
+#: zerver/views/realm.py:516
 msgid "Must be a demo organization."
 msgstr ""
 
-#: zerver/views/realm.py:543
+#: zerver/views/realm.py:544
 #, python-brace-format
 msgid ""
 "Data deletion time must be at most {max_allowed_days} days in the future."
 msgstr ""
 
-#: zerver/views/realm.py:554
+#: zerver/views/realm.py:555
 #, python-brace-format
 msgid ""
 "Data deletion time must be at least {min_allowed_days} days in the future."
@@ -7340,101 +7340,101 @@ msgid "Must validate with valid Zulip server API key"
 msgstr ""
 
 #. error
-#: zilencer/views.py:117 zilencer/views.py:119
+#: zilencer/views.py:116 zilencer/views.py:118
 msgid "Invalid UUID"
 msgstr ""
 
 #. error
-#: zilencer/views.py:124
+#: zilencer/views.py:123
 msgid "Invalid token type"
 msgstr ""
 
-#: zilencer/views.py:161
+#: zilencer/views.py:160
 #, python-brace-format
 msgid "{hostname} contains invalid components (e.g., path, query, fragment)."
 msgstr ""
 
-#: zilencer/views.py:168
+#: zilencer/views.py:167
 #, python-brace-format
 msgid "{hostname} is not a valid hostname"
 msgstr ""
 
-#: zilencer/views.py:178
+#: zilencer/views.py:177
 #, python-brace-format
 msgid "{hostname} not yet registered"
 msgstr ""
 
-#: zilencer/views.py:230
+#: zilencer/views.py:229
 msgid "Invalid email address."
 msgstr ""
 
-#: zilencer/views.py:246
+#: zilencer/views.py:245
 #, python-brace-format
 msgid "{domain} is invalid because it does not have any MX records"
 msgstr ""
 
-#: zilencer/views.py:251
+#: zilencer/views.py:250
 #, python-brace-format
 msgid "{domain} does not exist"
 msgstr ""
 
-#: zilencer/views.py:350
+#: zilencer/views.py:349
 #, python-brace-format
 msgid ""
 "The global limits on recent usage of this endpoint have been reached. Please "
 "try again later or reach out to {support_email} for assistance."
 msgstr ""
 
-#: zilencer/views.py:358
+#: zilencer/views.py:357
 msgid "Registration not found for this hostname"
 msgstr ""
 
-#: zilencer/views.py:370
+#: zilencer/views.py:369
 msgid "The host reported it has no verification secret."
 msgstr ""
 
-#: zilencer/views.py:372
+#: zilencer/views.py:371
 #, python-brace-format
 msgid "Error response received from the host: {status_code}"
 msgstr ""
 
-#: zilencer/views.py:442
+#: zilencer/views.py:441
 msgid "Missing ios_app_id"
 msgstr ""
 
-#: zilencer/views.py:445
+#: zilencer/views.py:444
 msgid "Missing user_id or user_uuid"
 msgstr ""
 
-#: zilencer/views.py:821
+#: zilencer/views.py:819
 #, python-brace-format
 msgid ""
 "Your plan doesn't allow sending push notifications. Reason provided by the "
 "server: {reason}"
 msgstr ""
 
-#: zilencer/views.py:869
+#: zilencer/views.py:867
 msgid "Your plan doesn't allow sending push notifications."
 msgstr ""
 
-#: zilencer/views.py:1085
+#: zilencer/views.py:1083
 #, python-brace-format
 msgid "Invalid property {property}"
 msgstr ""
 
-#: zilencer/views.py:1088
+#: zilencer/views.py:1086
 msgid "Invalid event type."
 msgstr ""
 
-#: zilencer/views.py:1095
+#: zilencer/views.py:1093
 msgid "Data is out of order."
 msgstr ""
 
-#: zilencer/views.py:1200
+#: zilencer/views.py:1198
 msgid "Duplicate registration detected."
 msgstr ""
 
-#: zilencer/views.py:1618
+#: zilencer/views.py:1616
 msgid "Malformed audit log data"
 msgstr ""
 
