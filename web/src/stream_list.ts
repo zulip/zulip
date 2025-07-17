@@ -314,6 +314,19 @@ export function build_stream_list(force_rerender: boolean): void {
     collapse_collapsed_sections();
 }
 
+/* When viewing a channel in a collapsed folder, we show that active
+   highlighted channel in the left sidebar even though the folder is
+   collapsed. If there's an active highlighted topic within the
+   channel, we show it too. If there's no highlighted topic within the
+   channel, then we should treat this like an empty topic list and remove
+   the left bracket. */
+export function maybe_hide_topic_bracket(section_id: string): void {
+    const $container = $(`#stream-list-${section_id}-container`);
+    const is_collapsed = collapsed_sections.has(section_id);
+    const $highlighted_topic = $container.find(".topic-list-item.active-sub-filter");
+    $container.toggleClass("hide-topic-bracket", is_collapsed && $highlighted_topic.length === 0);
+}
+
 function toggle_section_collapse($container: JQuery): void {
     $container.toggleClass("collapsed");
     const is_collapsed = $container.hasClass("collapsed");
@@ -328,6 +341,7 @@ function toggle_section_collapse($container: JQuery): void {
     } else {
         collapsed_sections.delete(section_id);
     }
+    maybe_hide_topic_bracket(section_id);
 }
 
 function collapse_collapsed_sections(): void {
@@ -651,6 +665,8 @@ export function refresh_pinned_or_unpinned_stream(sub: StreamSubscription): void
     // We use kind of brute force now, which is probably fine.
     build_stream_sidebar_row(sub);
     update_streams_sidebar();
+    const section_id = stream_list_sort.current_section_id_for_stream(sub.stream_id);
+    maybe_hide_topic_bracket(section_id);
 
     // Only scroll pinned topics into view.  If we're unpinning
     // a topic, we may be literally trying to get it out of
