@@ -265,7 +265,7 @@ export function create_initial_sidebar_rows(force_rerender = false): void {
 function get_section_channel_plus_icon_url(section: StreamListSection): string | undefined {
     if (section.id === "normal-streams") {
         return "#channels/new";
-    } else if (!["pinned-streams", "dormant-streams"].includes(section.id)) {
+    } else if (section.id !== "pinned-streams") {
         return `#channels/folders/${section.id}/new`;
     }
     return undefined;
@@ -329,7 +329,6 @@ export function build_stream_list(force_rerender: boolean): void {
         for (const stream_id of [...section.streams, ...section.muted_streams]) {
             add_sidebar_li(stream_id, $(`#stream-list-${section.id}`));
         }
-        // This should only be relevant for folders
         for (const stream_id of section.inactive_streams) {
             add_sidebar_li(stream_id, $(`#stream-list-${section.id}`), true);
         }
@@ -353,7 +352,7 @@ export function build_stream_list(force_rerender: boolean): void {
     $("#streams_list").toggleClass("is_searching", get_search_term() !== "");
 }
 
-const collapsed_sections = new Set<string>(["stream-list-dormant-streams-container"]);
+const collapsed_sections = new Set<string>();
 const sections_showing_inactive = new Set<string>();
 
 function toggle_section_collapse($container: JQuery): void {

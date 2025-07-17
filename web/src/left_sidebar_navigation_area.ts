@@ -147,12 +147,13 @@ export function update_dom_with_unread_counts(
                     prev_unmuted_inactive_count + stream_count_info.unmuted_count,
                 );
             }
-        } else if (stream_list_sort.has_recent_activity(sub)) {
+        } else {
             normal_unmuted_unread_count += stream_count_info.unmuted_count;
             normal_muted_unread_count += stream_count_info.muted_count;
-        } else {
-            inactive_unmuted_unread_count += stream_count_info.unmuted_count;
-            inactive_muted_unread_count += stream_count_info.muted_count;
+            if (!stream_list_sort.has_recent_activity(sub)) {
+                inactive_unmuted_unread_count += stream_count_info.unmuted_count;
+                inactive_muted_unread_count += stream_count_info.muted_count;
+            }
         }
     }
 
@@ -184,7 +185,7 @@ export function update_dom_with_unread_counts(
         normal_muted_unread_count,
     );
     update_section_unread_count(
-        $("#stream-list-dormant-streams-container .stream-list-subsection-header"),
+        $("#stream-list-normal-streams-container .show-inactive-channels"),
         inactive_unmuted_unread_count,
         inactive_muted_unread_count,
     );
