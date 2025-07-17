@@ -2652,7 +2652,7 @@ test("direct message recipients sorted according to stream / topic being viewed"
     // Simulating just cordelia being subscribed to denmark.
     override_rewire(
         stream_data,
-        "is_user_subscribed",
+        "is_user_loaded_and_subscribed",
         (stream_id, user_id) =>
             stream_id === denmark_stream.stream_id && user_id === cordelia.user_id,
     );
@@ -2672,7 +2672,7 @@ test("direct message recipients sorted according to stream / topic being viewed"
     // Simulating just alice being subscribed to denmark.
     override_rewire(
         stream_data,
-        "is_user_subscribed",
+        "is_user_loaded_and_subscribed",
         (stream_id, user_id) => stream_id === denmark_stream.stream_id && user_id === alice.user_id,
     );
 

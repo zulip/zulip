@@ -243,7 +243,13 @@ export function rewire_get_subscriber_count(value: typeof get_subscriber_count):
     get_subscriber_count = value;
 }
 
-export function get_subscribers(stream_id: number): number[] {
+export function get_subscriber_ids_assert_loaded(stream_id: number): number[] {
+    if (!fetched_stream_ids.has(stream_id)) {
+        blueslip.error("Getting subscribers for stream without full subscriber data", {
+            stream_id,
+        });
+    }
+
     // This is our external interface for callers who just
     // want an array of user_ids who are subscribed to a stream.
     const subscribers = get_loaded_subscriber_subset(stream_id);
@@ -251,7 +257,7 @@ export function get_subscribers(stream_id: number): number[] {
     return [...subscribers.keys()];
 }
 
-export async function get_all_subscribers(
+export async function get_subscribers_with_possible_fetch(
     stream_id: number,
     retry_on_failure = true,
 ): Promise<number[] | null> {
@@ -366,8 +372,8 @@ export function bulk_remove_subscribers({
     }
 }
 
-export function is_user_subscribed(stream_id: number, user_id: number): boolean {
-    // Most callers should call stream_data.is_user_subscribed,
+export function is_user_loaded_and_subscribed(stream_id: number, user_id: number): boolean {
+    // Most callers should call stream_data.is_user_loaded_and_subscribed,
     // which does additional checks.
 
     const subscribers = get_loaded_subscriber_subset(stream_id);

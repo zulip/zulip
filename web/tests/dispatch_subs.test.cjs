@@ -85,13 +85,13 @@ test("peer add/remove", ({override}) => {
     dispatch(event);
     assert.equal(stream_stub.num_calls, 1);
 
-    assert.ok(peer_data.is_user_subscribed(event.stream_ids[0], event.user_ids[0]));
+    assert.ok(peer_data.is_user_loaded_and_subscribed(event.stream_ids[0], event.user_ids[0]));
 
     event = event_fixtures.subscription__peer_remove;
     dispatch(event);
     assert.equal(stream_stub.num_calls, 2);
 
-    assert.ok(!peer_data.is_user_subscribed(event.stream_ids[0], event.user_ids[0]));
+    assert.ok(!peer_data.is_user_loaded_and_subscribed(event.stream_ids[0], event.user_ids[0]));
 });
 
 test("remove", ({override}) => {
