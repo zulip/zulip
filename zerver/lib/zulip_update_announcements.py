@@ -437,6 +437,28 @@ app released in June.
             view_exact_time_url="/help/view-the-exact-time-a-message-was-sent",
         ),
     ),
+    ZulipUpdateAnnouncement(
+        level=19,
+        message="""
+- Zulip's topics help you keep conversations organized, but you may not need
+  topics in some channels (e.g., a social channel, or one with a narrow
+  purpose). For these situations, you can now [configure “general chat”
+  channels]({general_chat_channels_url}) without topics.
+
+**Web and desktop updates**
+- When viewing all topics in a channel in the left sidebar, you can now [filter
+  topics]({filter_by_whether_resolved_url}) by whether they are resolved.
+- Your [home view]({home_view_url}) menu now has an option to [mark as
+  read]({marking_messages_as_read_url}) all messages in muted topics or topics
+  you don't follow. Zulip is snappier when you don't have thousands of unread
+  messages.
+""".format(
+            general_chat_channels_url="/help/general-chat-channels",
+            home_view_url="/help/configure-home-view",
+            marking_messages_as_read_url="/help/marking-messages-as-read",
+            filter_by_whether_resolved_url="/help/resolve-a-topic#filter-by-whether-topics-are-resolved",
+        ),
+    ),
 ]
 
 
