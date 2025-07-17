@@ -1,7 +1,9 @@
 # Message formatting
 
-[//]: # (All screenshots here require line-height: 22px and font-size: 16px in .message-content.)
-[//]: # (Requires some additional fiddling for the LaTeX picture, inline code span, and maybe a few others.)
+<!--
+- All screenshots here require line-height: 22px and font-size: 16px in .message-content.
+- Requires some additional fiddling for the LaTeX picture, inline code span, and maybe a few others.
+-->
 
 Zulip uses Markdown to allow you to easily format your messages. Even if you've
 never heard of Markdown, you are probably familiar with basic Markdown
