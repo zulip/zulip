@@ -19,6 +19,8 @@ run_test("all_notifications", ({override}) => {
     override(user_settings, "enable_stream_audible_notifications", true);
     override(user_settings, "enable_stream_push_notifications", true);
     override(user_settings, "enable_stream_email_notifications", false);
+    override(user_settings, "enable_reaction_desktop_notifications", true);
+    override(user_settings, "enable_reaction_audible_notifications", true);
     override(user_settings, "enable_desktop_notifications", false);
     override(user_settings, "enable_sounds", true);
     override(user_settings, "enable_offline_push_notifications", false);
@@ -166,6 +168,47 @@ run_test("all_notifications", ({override}) => {
                     is_mobile_checkbox: false,
                     setting_name: "enable_followed_topic_wildcard_mentions_notify",
                     push_notifications_disabled: true,
+                },
+            ],
+        },
+        {
+            label: "translated: Reactions",
+            help_link: "/help/reactions",
+            notification_settings: [
+                {
+                    is_checked: true,
+                    is_disabled: false,
+                    is_mobile_checkbox: false,
+                    setting_name: "enable_reaction_desktop_notifications",
+                    push_notifications_disabled: true,
+                },
+                {
+                    is_checked: true,
+                    is_disabled: false,
+                    is_mobile_checkbox: false,
+                    setting_name: "enable_reaction_audible_notifications",
+                    push_notifications_disabled: true,
+                },
+                {
+                    is_checked: false,
+                    is_disabled: true,
+                    is_mobile_checkbox: false,
+                    setting_name: "",
+                    push_notifications_disabled: false,
+                },
+                {
+                    is_checked: false,
+                    is_disabled: true,
+                    is_mobile_checkbox: false,
+                    setting_name: "",
+                    push_notifications_disabled: false,
+                },
+                {
+                    is_checked: false,
+                    is_disabled: true,
+                    is_mobile_checkbox: false,
+                    setting_name: "",
+                    push_notifications_disabled: false,
                 },
             ],
         },
