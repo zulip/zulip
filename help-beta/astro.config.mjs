@@ -82,8 +82,14 @@ export default defineConfig({
                     label: "Guides",
                     items: [
                         "getting-started-with-zulip",
-                        "choosing-a-team-chat-app",
-                        "why-zulip",
+                        {
+                            label: "Choosing a team chat app",
+                            link: "https://blog.zulip.com/2024/11/04/choosing-a-team-chat-app/",
+                        },
+                        {
+                            label: "Why Zulip",
+                            link: "https://zulip.com/why-zulip/",
+                        },
                         "trying-out-zulip",
                         "zulip-cloud-or-self-hosting",
                         "moving-to-zulip",
