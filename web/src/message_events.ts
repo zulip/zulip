@@ -551,7 +551,7 @@ export function update_messages(events: UpdateMessageEvent[]): void {
                 }
 
                 compose_validate.warn_if_topic_resolved(true);
-                compose_validate.inform_if_topic_is_moved(orig_topic, old_stream_id);
+                compose_validate.inform_if_topic_is_moved(orig_topic, old_stream_id, event.user_id);
                 compose_fade.set_focused_recipient("stream");
             }
 
