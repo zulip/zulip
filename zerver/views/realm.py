@@ -115,6 +115,7 @@ def update_realm(
     can_move_messages_between_channels_group: Json[GroupSettingChangeRequest] | None = None,
     can_move_messages_between_topics_group: Json[GroupSettingChangeRequest] | None = None,
     can_resolve_topics_group: Json[GroupSettingChangeRequest] | None = None,
+    can_set_delete_message_policy_group: Json[GroupSettingChangeRequest] | None = None,
     can_set_topics_policy_group: Json[GroupSettingChangeRequest] | None = None,
     can_summarize_topics_group: Json[GroupSettingChangeRequest] | None = None,
     create_multiuse_invite_group: Json[GroupSettingChangeRequest] | None = None,

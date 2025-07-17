@@ -1250,6 +1250,13 @@ class ChannelAdministerPermissionTest(ZulipTestCase):
         hamlet = self.example_user("hamlet")
         prospero = self.example_user("prospero")
 
+        do_change_realm_permission_group_setting(
+            hamlet.realm,
+            "can_set_delete_message_policy_group",
+            self.members_group,
+            acting_user=None,
+        )
+
         for setting_name in Stream.stream_permission_group_settings:
             self.do_test_updating_channel_group_settings(setting_name)
 
@@ -1333,3 +1340,136 @@ class ChannelAdministerPermissionTest(ZulipTestCase):
         check_channel_topics_policy_update(self.admin)
         check_channel_topics_policy_update(self.moderator)
         check_channel_topics_policy_update(hamlet)
+
+    def test_can_set_delete_message_policy_group(self) -> None:
+        user = self.example_user("hamlet")
+        iago = self.example_user("iago")
+        realm = user.realm
+        stream = get_stream("Verona", realm)
+        owners_system_group = NamedUserGroup.objects.get(
+            realm=realm, name=SystemGroups.OWNERS, is_system_group=True
+        )
+        moderators_system_group = NamedUserGroup.objects.get(
+            realm=realm, name=SystemGroups.MODERATORS, is_system_group=True
+        )
+        members_system_group = NamedUserGroup.objects.get(
+            realm=realm, name=SystemGroups.MEMBERS, is_system_group=True
+        )
+        do_change_realm_permission_group_setting(
+            realm,
+            "can_set_delete_message_policy_group",
+            moderators_system_group,
+            acting_user=None,
+        )
+        do_change_stream_group_based_setting(
+            stream, "can_administer_channel_group", members_system_group, acting_user=iago
+        )
+        # Only moderators can change channel-level delete permissions.
+        # Hamlet is not a moderator.
+        subscriptions = [{"name": "new_test_stream"}]
+        result = self.subscribe_via_post(
+            user,
+            subscriptions,
+            subdomain="zulip",
+            extra_post_data={
+                "can_delete_any_message_group": orjson.dumps(owners_system_group.id).decode()
+            },
+            allow_fail=True,
+        )
+        self.assert_json_error(result, "Insufficient permission")
+
+        result = self.subscribe_via_post(
+            user,
+            subscriptions,
+            subdomain="zulip",
+            extra_post_data={
+                "can_delete_own_message_group": orjson.dumps(owners_system_group.id).decode()
+            },
+            allow_fail=True,
+        )
+        self.assert_json_error(result, "Insufficient permission")
+
+        self.login("hamlet")
+        result = self.client_patch(
+            f"/json/streams/{stream.id}",
+            {
+                "can_delete_any_message_group": orjson.dumps(
+                    {
+                        "new": {
+                            "direct_members": [user.id],
+                            "direct_subgroups": [
+                                owners_system_group.id,
+                                moderators_system_group.id,
+                            ],
+                        }
+                    }
+                ).decode(),
+                "can_delete_own_message_group": orjson.dumps(
+                    {
+                        "new": {
+                            "direct_members": [user.id],
+                            "direct_subgroups": [
+                                owners_system_group.id,
+                                moderators_system_group.id,
+                            ],
+                        }
+                    }
+                ).decode(),
+            },
+        )
+        self.assert_json_error(result, "Insufficient permission")
+
+        moderator = self.example_user("shiva")
+
+        # Shiva is a moderator.
+        result = self.subscribe_via_post(
+            moderator,
+            subscriptions,
+            subdomain="zulip",
+            extra_post_data={
+                "can_delete_any_message_group": orjson.dumps(owners_system_group.id).decode()
+            },
+            allow_fail=True,
+        )
+        self.assert_json_success(result)
+
+        result = self.subscribe_via_post(
+            moderator,
+            subscriptions,
+            subdomain="zulip",
+            extra_post_data={
+                "can_delete_own_message_group": orjson.dumps(owners_system_group.id).decode()
+            },
+            allow_fail=True,
+        )
+        self.assert_json_success(result)
+
+        self.login("shiva")
+        result = self.client_patch(
+            f"/json/streams/{stream.id}",
+            {
+                "can_delete_any_message_group": orjson.dumps(
+                    {
+                        "new": {
+                            "direct_members": [user.id],
+                            "direct_subgroups": [
+                                owners_system_group.id,
+                                moderators_system_group.id,
+                            ],
+                        }
+                    }
+                ).decode(),
+                "can_delete_own_message_group": orjson.dumps(
+                    {
+                        "new": {
+                            "direct_members": [user.id],
+                            "direct_subgroups": [
+                                owners_system_group.id,
+                                moderators_system_group.id,
+                            ],
+                        }
+                    }
+                ).decode(),
+            },
+        )
+        self.assert_json_success(result)

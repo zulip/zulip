@@ -599,6 +599,7 @@ class GroupSettingUpdateData(GroupSettingUpdateDataCore):
     can_move_messages_between_channels_group: int | UserGroupMembersDict | None = None
     can_move_messages_between_topics_group: int | UserGroupMembersDict | None = None
     can_resolve_topics_group: int | UserGroupMembersDict | None = None
+    can_set_delete_message_policy_group: int | UserGroupMembersDict | None = None
     can_set_topics_policy_group: int | UserGroupMembersDict | None = None
     can_summarize_topics_group: int | UserGroupMembersDict | None = None
     direct_message_initiator_group: int | UserGroupMembersDict | None = None

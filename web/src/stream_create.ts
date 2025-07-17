@@ -549,6 +549,15 @@ export function show_new_stream_modal(): void {
         $("#id_new_topics_policy").prop("disabled", true);
     }
 
+    if (!stream_data.user_can_set_delete_message_policy()) {
+        settings_components.disable_group_permission_setting(
+            $("#id_new_can_delete_any_message_group"),
+        );
+        settings_components.disable_group_permission_setting(
+            $("#id_new_can_delete_own_message_group"),
+        );
+    }
+
     // set default state for "announce stream" and "default stream" option.
     $("#stream_creation_form .default-stream input").prop("checked", false);
     update_announce_stream_state();

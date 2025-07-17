@@ -754,6 +754,10 @@ export const all_group_setting_labels = {
         can_mention_many_users_group: $t({
             defaultMessage: "Who can notify a large number of users with a wildcard mention",
         }),
+        can_set_delete_message_policy_group: $t({
+            defaultMessage:
+                "Who can allow users to delete messages in channels they administer",
+        }),
         can_set_topics_policy_group: new Handlebars.SafeString(
             $t_html({
                 defaultMessage:
@@ -817,6 +821,7 @@ export const realm_group_permission_settings: {
             "can_create_private_channel_group",
             "can_add_subscribers_group",
             "can_mention_many_users_group",
+            "can_set_delete_message_policy_group",
             "can_set_topics_policy_group",
         ],
     },

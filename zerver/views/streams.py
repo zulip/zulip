@@ -444,6 +444,11 @@ def update_stream_backend(
     if is_archived is not None and not is_archived:
         do_unarchive_stream(stream, stream.name, acting_user=None)
 
+    if (
+        can_delete_any_message_group is not None or can_delete_own_message_group is not None
+    ) and not user_profile.can_set_delete_message_policy():
+        raise JsonableError(_("Insufficient permission"))
+
     if description is not None:
         do_change_stream_description(stream, description, acting_user=user_profile)
     if new_name is not None:
@@ -668,6 +673,14 @@ def access_requested_group_permissions(
                 setting_name=setting_name,
                 permission_configuration=permission_configuration,
             )
+            if (
+                setting_name in ["can_delete_any_message_group", "can_delete_own_message_group"]
+                and group_settings_map[setting_name].id
+                != system_groups_name_dict[SystemGroups.NOBODY].id
+                and not user_profile.can_set_delete_message_policy()
+            ):
+                raise JsonableError(_("Insufficient permission"))
+
             if not isinstance(setting_value, int):
                 anonymous_group_membership[group_settings_map[setting_name].id] = setting_value
         else:
