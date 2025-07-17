@@ -391,6 +391,10 @@
             align-items: center;
         }
 
+        .search_list_item .description {
+            margin: 2px 0;
+        }
+
         .search_list_item .pill-container {
             margin: 2px 0;
             /* This contains only one pill, which handles its own border */
