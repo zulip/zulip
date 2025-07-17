@@ -119,16 +119,7 @@ export function update_dom_with_unread_counts(
         inactive_muted: 0,
     };
     const folder_unread_counts = new Map<number, SectionUnreadCount>();
-    // TODO: In an upcoming commit, the normal and inactive sections will be
-    // merged. For this commit, the normal section has no inactive channels
-    // and the inactive section has no active channels.
     const normal_section_unread_counts: SectionUnreadCount = {
-        unmuted: 0,
-        muted: 0,
-        inactive_unmuted: 0,
-        inactive_muted: 0,
-    };
-    const inactive_section_unread_counts: SectionUnreadCount = {
         unmuted: 0,
         muted: 0,
         inactive_unmuted: 0,
@@ -157,12 +148,13 @@ export function update_dom_with_unread_counts(
                 unread_counts.inactive_unmuted += stream_count_info.unmuted_count;
                 unread_counts.inactive_muted += stream_count_info.muted_count;
             }
-        } else if (stream_list_sort.has_recent_activity(sub)) {
+        } else {
             normal_section_unread_counts.unmuted += stream_count_info.unmuted_count;
             normal_section_unread_counts.muted += stream_count_info.muted_count;
-        } else {
-            inactive_section_unread_counts.unmuted += stream_count_info.unmuted_count;
-            inactive_section_unread_counts.muted += stream_count_info.muted_count;
+            if (!stream_list_sort.has_recent_activity(sub)) {
+                normal_section_unread_counts.inactive_unmuted += stream_count_info.unmuted_count;
+                normal_section_unread_counts.inactive_muted += stream_count_info.muted_count;
+            }
         }
     }
 
@@ -183,20 +175,22 @@ export function update_dom_with_unread_counts(
             should_mask_header_unread_count(show_muted_count, unmuted_count),
         );
     }
+
     update_section_unread_count(
         $("#stream-list-pinned-streams-container .stream-list-subsection-header"),
         pinned_unread_counts.unmuted,
         pinned_unread_counts.muted,
     );
+
     update_section_unread_count(
         $("#stream-list-normal-streams-container .stream-list-subsection-header"),
         normal_section_unread_counts.unmuted,
         normal_section_unread_counts.muted,
     );
     update_section_unread_count(
-        $("#stream-list-dormant-streams-container .stream-list-subsection-header"),
-        inactive_section_unread_counts.unmuted,
-        inactive_section_unread_counts.muted,
+        $("#stream-list-normal-streams-container .show-inactive-channels"),
+        normal_section_unread_counts.inactive_unmuted,
+        normal_section_unread_counts.inactive_muted,
     );
 
     for (const folder_id of channel_folders.get_all_folder_ids()) {

@@ -94,7 +94,7 @@ export type StreamListSection = {
     id: string;
     section_title: string;
     streams: number[];
-    muted_streams: number[]; // Not used for the inactive section
+    muted_streams: number[];
     inactive_streams: number[]; // Only used for folder sections
 };
 
@@ -114,10 +114,6 @@ export function sort_groups(stream_ids: number[], search_term: string): StreamLi
         word_separator_regex,
     );
 
-    function is_normal(sub: StreamSubscription): boolean {
-        return has_recent_activity(sub);
-    }
-
     const pinned_section: StreamListSection = {
         id: "pinned-streams",
         section_title: $t({defaultMessage: "PINNED CHANNELS"}),
@@ -130,13 +126,6 @@ export function sort_groups(stream_ids: number[], search_term: string): StreamLi
         section_title: $t({defaultMessage: "OTHER CHANNELS"}),
         streams: [],
         muted_streams: [],
-        inactive_streams: [],
-    };
-    const dormant_section: StreamListSection = {
-        id: "dormant-streams",
-        section_title: $t({defaultMessage: "INACTIVE CHANNELS"}),
-        streams: [],
-        muted_streams: [], // Not used for the dormant section
         inactive_streams: [],
     };
 
@@ -174,14 +163,14 @@ export function sort_groups(stream_ids: number[], search_term: string): StreamLi
             } else {
                 section.streams.push(stream_id);
             }
-        } else if (is_normal(sub)) {
-            if (sub.is_muted) {
+        } else {
+            if (!has_recent_activity(sub)) {
+                normal_section.inactive_streams.push(stream_id);
+            } else if (sub.is_muted) {
                 normal_section.muted_streams.push(stream_id);
             } else {
                 normal_section.streams.push(stream_id);
             }
-        } else {
-            dormant_section.streams.push(stream_id);
         }
     }
 
@@ -190,7 +179,7 @@ export function sort_groups(stream_ids: number[], search_term: string): StreamLi
     );
 
     // This needs to have the same ordering as the order they're displayed in the sidebar.
-    const new_sections = [pinned_section, ...folder_sections_sorted, normal_section, dormant_section];
+    const new_sections = [pinned_section, ...folder_sections_sorted, normal_section];
 
     // Don't call it "other channels" if there's nothing above it.
     if (

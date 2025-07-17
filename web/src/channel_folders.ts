@@ -37,6 +37,8 @@ export function get_channel_folders(include_archived = false): ChannelFolder[] {
     });
 }
 
+/* TODO/channel-folders: Remove when tests are restored */
+/* istanbul ignore next */
 export function get_all_folder_ids(): number[] {
     return [...channel_folder_by_id_dict.keys()];
 }

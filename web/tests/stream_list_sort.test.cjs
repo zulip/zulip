@@ -115,13 +115,6 @@ test("no_subscribed_streams", () => {
                 section_title: "translated: CHANNELS",
                 streams: [],
             },
-            {
-                id: "dormant-streams",
-                inactive_streams: [],
-                muted_streams: [],
-                section_title: "translated: INACTIVE CHANNELS",
-                streams: [],
-            },
         ],
         same_as_before: sorted.same_as_before,
     });
@@ -153,9 +146,6 @@ test("basics", () => {
         stream_hyphen_underscore_slash_colon.stream_id,
     ]);
     assert.deepEqual(normal.muted_streams, [muted_active.stream_id]);
-    const dormant = sorted_sections[2];
-    assert.deepEqual(dormant.id, "dormant-streams");
-    assert.deepEqual(dormant.streams, [pneumonia.stream_id]);
 
     // Test cursor helpers.
     assert.equal(stream_list_sort.first_stream_id(), scalene.stream_id);
@@ -181,12 +171,13 @@ test("basics", () => {
 
     // Test filtering
     sorted_sections = sort_groups("s").sections;
-    assert.deepEqual(sorted_sections.length, 3);
+    assert.deepEqual(sorted_sections.length, 2);
     assert.deepEqual(sorted_sections[0].id, "pinned-streams");
     assert.deepEqual(sorted_sections[0].streams, [scalene.stream_id]);
+    assert.deepEqual(sorted_sections[0].inactive_streams, []);
     assert.deepEqual(sorted_sections[1].id, "normal-streams");
+    assert.deepEqual(sorted_sections[1].inactive_streams, []);
     assert.deepEqual(sorted_sections[1].streams, [stream_hyphen_underscore_slash_colon.stream_id]);
-    assert.deepEqual(sorted_sections[2].streams, []);
 
     assert.equal(stream_list_sort.prev_stream_id(clarinet.stream_id), undefined);
 
@@ -194,56 +185,68 @@ test("basics", () => {
 
     // Test searching entire word, case-insensitive
     sorted_sections = sort_groups("PnEuMoNiA").sections;
-    assert.deepEqual(sorted_sections.length, 3);
+    assert.deepEqual(sorted_sections.length, 2);
     assert.deepEqual(sorted_sections[0].streams, []);
+    assert.deepEqual(sorted_sections[0].inactive_streams, []);
     assert.deepEqual(sorted_sections[1].streams, []);
-    assert.deepEqual(sorted_sections[2].id, "dormant-streams");
-    assert.deepEqual(sorted_sections[2].streams, [pneumonia.stream_id]);
+    assert.deepEqual(sorted_sections[1].inactive_streams, [pneumonia.stream_id]);
 
     // Test searching part of word
     sorted_sections = sort_groups("tortoise").sections;
+<<<<<<< HEAD
     assert.deepEqual(sorted_sections.length, 3);
+||||||| parent of e3f8b5fa9f (left_sidebar: Remove inactive section, put inactive channels in regular section.)
+        assert.deepEqual(sorted_sections.length, 3);
+=======
+        assert.deepEqual(sorted_sections.length, 2);
+>>>>>>> e3f8b5fa9f (left_sidebar: Remove inactive section, put inactive channels in regular section.)
     assert.deepEqual(sorted_sections[0].streams, []);
+    assert.deepEqual(sorted_sections[0].inactive_streams, []);
     assert.deepEqual(sorted_sections[1].id, "normal-streams");
     assert.deepEqual(sorted_sections[1].streams, [fast_tortoise.stream_id]);
-    assert.deepEqual(sorted_sections[2].streams, []);
+    assert.deepEqual(sorted_sections[1].inactive_streams, []);
 
     // Test searching stream with spaces
     sorted_sections = sort_groups("fast t").sections;
-    assert.deepEqual(sorted_sections.length, 3);
+    assert.deepEqual(sorted_sections.length, 2);
     assert.deepEqual(sorted_sections[0].streams, []);
+    assert.deepEqual(sorted_sections[0].inactive_streams, []);
     assert.deepEqual(sorted_sections[1].id, "normal-streams");
+    assert.deepEqual(sorted_sections[1].inactive_streams, []);
     assert.deepEqual(sorted_sections[1].streams, [fast_tortoise.stream_id]);
-    assert.deepEqual(sorted_sections[2].streams, []);
 
     // Test searching part of stream name with non space word separators
     sorted_sections = sort_groups("hyphen").sections;
-    assert.deepEqual(sorted_sections.length, 3);
+    assert.deepEqual(sorted_sections.length, 2);
     assert.deepEqual(sorted_sections[0].streams, []);
+    assert.deepEqual(sorted_sections[0].inactive_streams, []);
     assert.deepEqual(sorted_sections[1].id, "normal-streams");
     assert.deepEqual(sorted_sections[1].streams, [stream_hyphen_underscore_slash_colon.stream_id]);
-    assert.deepEqual(sorted_sections[2].streams, []);
+    assert.deepEqual(sorted_sections[1].inactive_streams, []);
 
     sorted_sections = sort_groups("hyphen_underscore").sections;
-    assert.deepEqual(sorted_sections.length, 3);
+    assert.deepEqual(sorted_sections.length, 2);
     assert.deepEqual(sorted_sections[0].streams, []);
+    assert.deepEqual(sorted_sections[0].inactive_streams, []);
     assert.deepEqual(sorted_sections[1].id, "normal-streams");
     assert.deepEqual(sorted_sections[1].streams, [stream_hyphen_underscore_slash_colon.stream_id]);
-    assert.deepEqual(sorted_sections[2].streams, []);
+    assert.deepEqual(sorted_sections[1].inactive_streams, []);
 
     sorted_sections = sort_groups("colon").sections;
-    assert.deepEqual(sorted_sections.length, 3);
+    assert.deepEqual(sorted_sections.length, 2);
     assert.deepEqual(sorted_sections[0].streams, []);
+    assert.deepEqual(sorted_sections[0].inactive_streams, []);
     assert.deepEqual(sorted_sections[1].id, "normal-streams");
     assert.deepEqual(sorted_sections[1].streams, [stream_hyphen_underscore_slash_colon.stream_id]);
-    assert.deepEqual(sorted_sections[2].streams, []);
+    assert.deepEqual(sorted_sections[1].inactive_streams, []);
 
     sorted_sections = sort_groups("underscore").sections;
-    assert.deepEqual(sorted_sections.length, 3);
+    assert.deepEqual(sorted_sections.length, 2);
     assert.deepEqual(sorted_sections[0].streams, []);
+    assert.deepEqual(sorted_sections[0].inactive_streams, []);
     assert.deepEqual(sorted_sections[1].id, "normal-streams");
     assert.deepEqual(sorted_sections[1].streams, [stream_hyphen_underscore_slash_colon.stream_id]);
-    assert.deepEqual(sorted_sections[2].streams, []);
+    assert.deepEqual(sorted_sections[1].inactive_streams, []);
 });
 
 test("filter inactives", ({override}) => {
