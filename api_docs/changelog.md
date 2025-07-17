@@ -20,6 +20,34 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 11.0
 
+**Feature level 407**
+
+* [`GET /users/me/subscriptions`](/api/get-subscriptions),
+  [`GET /streams`](/api/get-streams), [`GET /events`](/api/get-events),
+  [`POST /register`](/api/register-queue): Added `can_delete_any_message_group`
+  field which is a [group-setting value](/api/group-setting-values) describing the
+  set of users with permissions to delete any message in the channel.
+* [`POST /users/me/subscriptions`](/api/subscribe),
+  [`PATCH /streams/{stream_id}`](/api/update-stream): Added
+  `can_delete_any_message_group` parameter to support setting and
+  changing the user group whose members can delete any message in the specified
+  channel.
+* `PATCH /realm`, [`POST /register`](/api/register-queue),
+  [`GET /events`](/api/get-events): Added `can_set_delete_message_policy_group`
+  realm setting, which is a [group-setting value](/api/group-setting-values)
+  describing the set of users with permission to change per-channel
+  `can_delete_any_message_group` and `can_delete_own_message_group` settings.
+* [`GET /users/me/subscriptions`](/api/get-subscriptions),
+  [`GET /streams`](/api/get-streams), [`GET /events`](/api/get-events),
+  [`POST /register`](/api/register-queue): Added `can_delete_own_message_group`
+  field which is a [group-setting value](/api/group-setting-values) describing the
+  set of users with permissions to delete the messages they have sent in the channel.
+* [`POST /users/me/subscriptions`](/api/subscribe),
+  [`PATCH /streams/{stream_id}`](/api/update-stream): Added
+  `can_delete_own_message_group` parameter to support setting and
+  changing the user group whose members can delete the messages they have sent
+  in the channel.
+
 **Feature level 406**
 
 * [`POST /register`](/api/register-queue): Added `push_devices`

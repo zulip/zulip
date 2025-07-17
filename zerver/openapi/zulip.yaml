@@ -4860,7 +4860,7 @@ paths:
                                             Organization administrators can always change these settings of
                                             every channel.
 
-                                            **Changes**: New in Zulip 11.0 (feature level ZF-4ce648).
+                                            **Changes**: New in Zulip 11.0 (feature level 407).
                                         - $ref: "#/components/schemas/GroupSettingValue"
                                     can_set_topics_policy_group:
                                       allOf:
@@ -18340,7 +18340,7 @@ paths:
                               Organization administrators can always change these settings of
                               every channel.
 
-                              **Changes**: New in Zulip 11.0 (feature level ZF-4ce648).
+                              **Changes**: New in Zulip 11.0 (feature level 407).
                           - $ref: "#/components/schemas/GroupSettingValue"
                       realm_can_set_topics_policy_group:
                         allOf:
@@ -22442,7 +22442,7 @@ paths:
                         can always delete any message in the channel if they
                         [have content access](/help/channel-permissions) to that channel.
 
-                        **Changes**: New in Zulip 11.0 (feature level ZF-f80828). Prior to this
+                        **Changes**: New in Zulip 11.0 (feature level 407). Prior to this
                         change, only the users in `can_delete_any_message_group` were able
                         delete any message in the organization.
                       example:
@@ -22468,7 +22468,7 @@ paths:
                         can always delete their own messages in the channel if they
                         [have content access](/help/channel-permissions) to that channel.
 
-                        **Changes**: New in Zulip 11.0 (feature level ZF-e165db). Prior to this
+                        **Changes**: New in Zulip 11.0 (feature level 407). Prior to this
                         change, only the users in the organization-level `can_delete_any_message_group`
                         and `can_delete_own_message_group` settings were able delete their own messages in
                         the organization.
@@ -27943,7 +27943,7 @@ components:
             setting can always delete any message in the channel if they
             [have content access](/help/channel-permissions) to that channel.
 
-            **Changes**: New in Zulip 11.0 (feature level ZF-f80828). Prior to this
+            **Changes**: New in Zulip 11.0 (feature level 407). Prior to this
             change, only the users in `can_delete_any_message_group` were able
             delete any message in the organization.
 
@@ -27965,7 +27965,7 @@ components:
             can always delete their own messages in the channel if they
             [have content access](/help/channel-permissions) to that channel.
 
-            **Changes**: New in Zulip 11.0 (feature level ZF-e165db). Prior to this
+            **Changes**: New in Zulip 11.0 (feature level 407). Prior to this
             change, only the users in the organization-level `can_delete_any_message_group`
             and `can_delete_own_message_group` settings were able delete their own messages in
             the organization.
