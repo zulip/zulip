@@ -195,15 +195,14 @@ let filters_dropdown_widget;
 let channel_view_topic_widget: InboxTopicListWidget | undefined;
 
 const COLUMNS = {
-    COLLAPSE_BUTTON: 0,
-    RECIPIENT: 1,
-    UNREAD_COUNT: 2,
-    TOPIC_VISIBILITY: 3,
-    ACTION_MENU: 4,
+    FULL_ROW: 0,
+    UNREAD_COUNT: 1,
+    TOPIC_VISIBILITY: 2,
+    ACTION_MENU: 3,
 };
 
 const DEFAULT_ROW_FOCUS = 0;
-const DEFAULT_COL_FOCUS = COLUMNS.COLLAPSE_BUTTON;
+const DEFAULT_COL_FOCUS = COLUMNS.FULL_ROW;
 
 const channel_view_navigation_state = {
     channel_id: -1,
@@ -298,13 +297,6 @@ export function show(filter?: Filter): void {
     assert(hide_other_views_callback !== undefined);
     hide_other_views_callback();
     const was_inbox_already_visible = inbox_util.is_visible();
-    // Avoid setting col_focus to recipient when moving to inbox from other narrows.
-    // We prefer to focus entire row instead of stream name for inbox-header.
-    // Since inbox-row doesn't has a collapse button, focus on COLUMNS.COLLAPSE_BUTTON
-    // is same as focus on COLUMNS.RECIPIENT. See `set_list_focus` for details.
-    if (!inbox_util.is_visible() && col_focus === COLUMNS.RECIPIENT) {
-        col_focus = COLUMNS.COLLAPSE_BUTTON;
-    }
 
     // Check if we are already narrowed to the same channel view.
     const was_inbox_channel_view = inbox_util.is_channel_view();
@@ -1489,10 +1481,6 @@ function set_list_focus(input_key?: string): void {
     // This function is used for both revive_current_focus and
     // setting focus after we modify col_focus and row_focus as per
     // hotkey pressed by user.
-    //
-    // When to focus on entire row?
-    // For `inbox-header`, when focus on COLUMNS.COLLAPSE_BUTTON
-    // For `inbox-row`, when focus on COLUMNS.COLLAPSE_BUTTON (fake) or COLUMNS.RECIPIENT
 
     const $all_rows = get_all_rows();
     const max_row_focus = $all_rows.length - 1;
@@ -1510,82 +1498,48 @@ function set_list_focus(input_key?: string): void {
     const row_to_focus = $all_rows.get(row_focus);
     assert(row_to_focus !== undefined);
     const $row_to_focus = $(row_to_focus);
-    // This includes a fake collapse button for `inbox-row` and a fake topic visibility
-    // button for `inbox-header`. The fake buttons help simplify code here and
-    // `$($cols_to_focus[col_focus]).trigger("focus");` at the end of this function.
-    const cols_to_focus = [row_to_focus, ...$row_to_focus.find("[tabindex=0]")];
-    const total_cols = cols_to_focus.length;
+
     current_focus_id = $row_to_focus.attr("id");
     const is_header_row = is_row_a_header($row_to_focus);
     update_closed_compose_text($row_to_focus, is_header_row);
-
-    // Loop through columns.
-    if (col_focus > total_cols - 1) {
-        col_focus = 0;
-    } else if (col_focus < 0) {
-        col_focus = total_cols - 1;
+    if (col_focus > COLUMNS.ACTION_MENU) {
+        col_focus = COLUMNS.FULL_ROW;
+        $row_to_focus.trigger("focus");
+        return;
     }
 
-    // Since header rows always have a collapse button, other rows have one less element to focus.
-    if (col_focus === COLUMNS.COLLAPSE_BUTTON) {
-        if (!is_header_row && input_key !== undefined && LEFT_NAVIGATION_KEYS.includes(input_key)) {
-            // In `inbox-row` user pressed left on COLUMNS.RECIPIENT, so
-            // go to the last column.
-            col_focus = total_cols - 1;
-        }
-    } else if (!is_header_row && col_focus === COLUMNS.RECIPIENT) {
-        if (input_key !== undefined && RIGHT_NAVIGATION_KEYS.includes(input_key)) {
-            // In `inbox-row` user pressed right on COLUMNS.COLLAPSE_BUTTON.
-            // Since `inbox-row` has no collapse button, user wants to go
-            // to the unread count button.
-            col_focus = COLUMNS.UNREAD_COUNT;
-        } else if (input_key !== undefined && LEFT_NAVIGATION_KEYS.includes(input_key)) {
-            // In `inbox-row` user pressed left on COLUMNS.UNREAD_COUNT,
-            // we move focus to COLUMNS.COLLAPSE_BUTTON so that moving
-            // up or down to `inbox-header` keeps the entire row focused for the
-            // `inbox-header` too.
-            col_focus = COLUMNS.COLLAPSE_BUTTON;
-        } else {
-            // up / down arrow
-            // For `inbox-row`, we focus entire row for COLUMNS.RECIPIENT.
-            $row_to_focus.trigger("focus");
+    const cols_to_focus = [row_to_focus, ...$row_to_focus.find("[tabindex=0]")];
+    // We assumes that the last column has the highest index is the rightmost column.
+    const last_col_index = Number($(cols_to_focus.at(-1)!).attr("data-col-index")!);
+
+    if (col_focus < 0) {
+        col_focus = last_col_index;
+        $(cols_to_focus.at(-1)!).trigger("focus");
+        return;
+    }
+
+    // This assumes that the last column has the highest index.
+    if (col_focus > last_col_index) {
+        col_focus = 0;
+        $(cols_to_focus[0]!).trigger("focus");
+        return;
+    }
+
+    // Find the closest column to focus based on the input key.
+    let equal = (a: number, b: number): boolean => b >= a;
+    if (input_key && LEFT_NAVIGATION_KEYS.includes(input_key)) {
+        equal = (a: number, b: number): boolean => a >= b;
+        cols_to_focus.reverse();
+    }
+
+    for (const col of cols_to_focus) {
+        const col_index = Number($(col).attr("data-col-index"));
+        if (equal(col_focus, col_index)) {
+            col_focus = col_index;
+            $(col).trigger("focus");
             return;
         }
-    } else if (is_header_row && col_focus === COLUMNS.TOPIC_VISIBILITY) {
-        // `inbox-header` doesn't have a topic visibility indicator, so focus on
-        // button around it instead.
-        if (input_key !== undefined && LEFT_NAVIGATION_KEYS.includes(input_key)) {
-            col_focus = COLUMNS.UNREAD_COUNT;
-        } else {
-            col_focus = COLUMNS.ACTION_MENU;
-        }
     }
-
-    // Focus on appropriate button if the is row has no unreads but
-    // `col_focus` is set to `UNREAD_COUNT` column.
-    if (!is_header_row && col_focus === COLUMNS.UNREAD_COUNT) {
-        const row_has_unreads = cols_to_focus.some((col) =>
-            col.classList.contains("unread-count-focus-outline"),
-        );
-        if (!row_has_unreads) {
-            if (input_key !== undefined && RIGHT_NAVIGATION_KEYS.includes(input_key)) {
-                col_focus = COLUMNS.TOPIC_VISIBILITY;
-            } else if (input_key !== undefined && LEFT_NAVIGATION_KEYS.includes(input_key)) {
-                // Focus on entire row.
-                col_focus = COLUMNS.COLLAPSE_BUTTON;
-            } else {
-                // up / down arrow
-                // Focus on the entire row without changing `col_focus` so that
-                // we can focus on unread count button if the next row has one.
-                $row_to_focus.trigger("focus");
-                return;
-            }
-        }
-    }
-
-    const col_to_focus = cols_to_focus[col_focus];
-    assert(col_to_focus !== undefined);
-    $(col_to_focus).trigger("focus");
 }
 
 function focus_filters_dropdown(): void {
@@ -2019,10 +1973,6 @@ function get_focus_class_for_header(): string {
     let focus_class = ".collapsible-button";
 
     switch (col_focus) {
-        case COLUMNS.RECIPIENT: {
-            focus_class = ".inbox-header-name a";
-            break;
-        }
         case COLUMNS.UNREAD_COUNT: {
             focus_class = ".unread_count";
             break;
@@ -2181,7 +2131,7 @@ export function initialize({hide_other_views}: {hide_other_views: () => void}): 
             const $elt = $(this);
             const container_id = $elt.parents(".inbox-header").attr("id");
             assert(container_id !== undefined);
-            col_focus = COLUMNS.COLLAPSE_BUTTON;
+            col_focus = COLUMNS.FULL_ROW;
             focus_clicked_list_element($elt);
             collapse_or_expand(container_id);
             e.stopPropagation();
@@ -2209,12 +2159,11 @@ export function initialize({hide_other_views}: {hide_other_views: () => void}): 
 
         let $elt = $(this);
         const href = $elt.find("a").attr("href");
+        col_focus = COLUMNS.FULL_ROW;
         if (href !== undefined) {
-            col_focus = COLUMNS.RECIPIENT;
             window.location.href = href;
         } else {
             $elt = $elt.closest(".inbox-header");
-            col_focus = COLUMNS.COLLAPSE_BUTTON;
             collapse_or_expand($elt.attr("id")!);
         }
         focus_clicked_list_element($elt);

@@ -1,7 +1,7 @@
 {{#if is_stream}}
     {{> inbox_stream_header_row .}}
 {{else}}
-    <div id="inbox-row-conversation-{{conversation_key}}" class="inbox-row {{#if is_hidden}}hidden_by_filters{{/if}}" tabindex="0" data-col-index="{{ column_indexes.RECIPIENT }}">
+    <div id="inbox-row-conversation-{{conversation_key}}" class="inbox-row {{#if is_hidden}}hidden_by_filters{{/if}}" tabindex="0" data-col-index="{{ column_indexes.FULL_ROW }}">
         <div class="inbox-focus-border">
             <div class="inbox-left-part-wrapper">
                 <div class="inbox-left-part">
@@ -18,7 +18,6 @@
                                 <span class="recipients_name">{{{rendered_dm_with}}}</span>
                             </span>
                         </a>
-                        <div class="hide fake-collapse-button" tabindex="0" data-col-index="{{ column_indexes.COLLAPSE_BUTTON }}"></div>
                         <span class="unread_mention_info tippy-zulip-tooltip
                           {{#unless has_unread_mention}}hidden{{/unless}}"
                           data-tippy-content="{{t 'You have unread mentions' }}">@</span>
@@ -31,7 +30,6 @@
                         <div class="inbox-topic-name">
                             <a tabindex="-1" href="{{topic_url}}" {{#if is_empty_string_topic}}class="empty-topic-display"{{/if}}>{{topic_display_name}}</a>
                         </div>
-                        <div class="hide fake-collapse-button" tabindex="0" data-col-index="{{ column_indexes.COLLAPSE_BUTTON }}"></div>
                         <span class="unread_mention_info tippy-zulip-tooltip
                           {{#unless mention_in_unread}}hidden{{/unless}}"
                           data-tippy-content="{{t 'You have unread mentions'}}">@</span>
@@ -43,8 +41,6 @@
                                 {{unread_count}}
                             </span>
                         </div>
-                        {{else}}
-                        <div class="hide fake-unread-count" tabindex="0" data-col-index="{{ column_indexes.UNREAD_COUNT }}"></div>
                         {{/if}}
                     {{/if}}
                 </div>

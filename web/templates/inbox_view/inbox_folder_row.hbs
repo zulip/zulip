@@ -1,4 +1,5 @@
-<div id="{{ header_id }}" tabindex="0" class="inbox-header inbox-folder {{#unless is_header_visible}}hidden_by_filters{{/unless}} {{#if is_collapsed}}inbox-collapsed-state{{/if}}">
+{{!-- col-index `0` is COLUMNS.FULL_ROW --}}
+<div id="{{ header_id }}" tabindex="0" class="inbox-header inbox-folder {{#unless is_header_visible}}hidden_by_filters{{/unless}} {{#if is_collapsed}}inbox-collapsed-state{{/if}}" data-col-index="0">
     <div class="inbox-focus-border">
         <div class="inbox-left-part-wrapper">
             <div class="inbox-left-part">
