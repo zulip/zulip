@@ -1,4 +1,4 @@
-<div id="inbox-stream-header-{{stream_id}}" class="inbox-header {{#if is_hidden}}hidden_by_filters{{/if}} {{#if is_collapsed}}inbox-collapsed-state{{/if}}" data-col-index="{{ column_indexes.COLLAPSE_BUTTON }}" tabindex="0" data-stream-id="{{stream_id}}" style="background: {{stream_header_color}};">
+<div id="inbox-stream-header-{{stream_id}}" class="inbox-header {{#if is_hidden}}hidden_by_filters{{/if}} {{#if is_collapsed}}inbox-collapsed-state{{/if}}" data-col-index="{{ column_indexes.FULL_ROW }}" tabindex="0" data-stream-id="{{stream_id}}" style="background: {{stream_header_color}};">
     <div class="inbox-focus-border">
         <div class="inbox-left-part-wrapper">
             <div class="inbox-left-part">
@@ -22,7 +22,6 @@
                       data-stream-id="{{stream_id}}" data-tippy-content="{{t 'Mark as read' }}"
                       aria-label="{{t 'Mark as read' }}">{{unread_count}}</span>
                 </div>
-                <div class="topic-visibility-indicator invisible" tabindex="0"></div>
             </div>
         </div>
         <div class="inbox-right-part-wrapper">
