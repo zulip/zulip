@@ -4,7 +4,7 @@ const assert = require("node:assert/strict");
 
 const {
     clear_buddy_list,
-    override_user_matches_narrow,
+    override_user_matches_narrow_using_loaded_data,
     buddy_list_add_user_matching_view,
     buddy_list_add_other_user,
     stub_buddy_list_elements,
@@ -389,7 +389,11 @@ test("handlers", ({override, override_rewire, mock_template}) => {
 });
 
 test("first/prev/next", ({override, override_rewire, mock_template}) => {
-    override_rewire(buddy_data, "user_matches_narrow", override_user_matches_narrow);
+    override_rewire(
+        buddy_data,
+        "user_matches_narrow_using_loaded_data",
+        override_user_matches_narrow_using_loaded_data,
+    );
     mock_template("presence_rows.hbs", false, () => "<presence-rows-stub>");
     override(padded_widget, "update_padding", noop);
     stub_buddy_list_elements();

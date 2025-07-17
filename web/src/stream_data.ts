@@ -407,7 +407,9 @@ export function get_streams_for_user(user_id: number): {
             // subscribers (which would trigger a warning).
             continue;
         }
-        if (is_user_subscribed(sub.stream_id, user_id)) {
+        // TODO: Before calling this, we should get this user's subscriptions
+        // and add them to the peer_data's stream_subscribers. #35341
+        if (is_user_loaded_and_subscribed(sub.stream_id, user_id)) {
             subscribed_subs.push(sub);
         } else if (can_subscribe_user(sub, user_id)) {
             can_subscribe_subs.push(sub);
@@ -1000,7 +1002,7 @@ export function is_default_stream_id(stream_id: number): boolean {
     return default_stream_ids.has(stream_id);
 }
 
-export let is_user_subscribed = (stream_id: number, user_id: number): boolean => {
+export function is_user_loaded_and_subscribed(stream_id: number, user_id: number): boolean {
     const sub = sub_store.get(stream_id);
     if (sub === undefined || !can_view_subscribers(sub)) {
         // If we don't know about the stream, or we ourselves cannot access subscriber list,
@@ -1011,8 +1013,8 @@ export let is_user_subscribed = (stream_id: number, user_id: number): boolean =>
         return false;
     }
 
-    return peer_data.is_user_subscribed(stream_id, user_id);
-};
+    return peer_data.is_user_loaded_and_subscribed(stream_id, user_id);
+}
 
 // This function parallels `is_user_subscribed` but fetches subscriber data for the
 // `stream_id` if we don't have complete data yet.
