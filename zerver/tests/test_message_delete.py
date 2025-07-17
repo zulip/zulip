@@ -564,6 +564,8 @@ class DeleteMessageTest(ZulipTestCase):
 
         # Admins and moderators can delete any message. No one else can delete any
         # message.
+
+        # Test deleting channel messages
         check_delete_message_by_sender(
             "cordelia", "You don't have permission to delete this message"
         )
@@ -571,6 +573,18 @@ class DeleteMessageTest(ZulipTestCase):
         check_delete_message_by_other_user("iago", "shiva")
         check_delete_message_by_other_user(
             "hamlet", "cordelia", "You don't have permission to delete this message"
+        )
+        # Test deleting DMs
+        check_delete_message_by_sender(
+            "cordelia", "You don't have permission to delete this message", is_stream_message=False
+        )
+        check_delete_message_by_sender("shiva", is_stream_message=False)
+        check_delete_message_by_other_user("iago", "shiva", is_stream_message=False)
+        check_delete_message_by_other_user(
+            "hamlet",
+            "cordelia",
+            "You don't have permission to delete this message",
+            is_stream_message=False,
         )
 
         # Check that guest cannot delete any message even when they are member
@@ -586,9 +600,17 @@ class DeleteMessageTest(ZulipTestCase):
             user_group,
             acting_user=None,
         )
+        # Test deleting channel messages
         check_delete_message_by_other_user("cordelia", "hamlet")
         check_delete_message_by_other_user(
             "cordelia", "polonius", "You don't have permission to delete this message"
+        )
+        # Test deleting DMs
+        check_delete_message_by_other_user(
+            "cordelia",
+            "polonius",
+            "You don't have permission to delete this message",
+            is_stream_message=False,
         )
 
         do_change_realm_permission_group_setting(
@@ -606,6 +628,12 @@ class DeleteMessageTest(ZulipTestCase):
 
         check_delete_message_by_other_user(
             "cordelia", "shiva", "You don't have permission to delete this message"
+        )
+        check_delete_message_by_other_user(
+            "cordelia",
+            "shiva",
+            "You don't have permission to delete this message",
+            is_stream_message=False,
         )
 
         do_change_stream_group_based_setting(
@@ -712,8 +740,14 @@ class DeleteMessageTest(ZulipTestCase):
             nobody_system_group,
             acting_user=None,
         )
+        # Test deleting channel messages
         check_delete_message_by_sender("shiva", "You don't have permission to delete this message")
         check_delete_message_by_sender("iago")
+        # Test deleting DMs
+        check_delete_message_by_sender(
+            "shiva", "You don't have permission to delete this message", is_stream_message=False
+        )
+        check_delete_message_by_sender("iago", is_stream_message=False)
 
         do_change_realm_permission_group_setting(
             realm,
@@ -721,10 +755,16 @@ class DeleteMessageTest(ZulipTestCase):
             moderators_system_group,
             acting_user=None,
         )
+        # Test deleting channel messages
         check_delete_message_by_sender(
             "cordelia", "You don't have permission to delete this message"
         )
         check_delete_message_by_sender("shiva")
+        # Test deleting DMs
+        check_delete_message_by_sender(
+            "cordelia", "You don't have permission to delete this message", is_stream_message=False
+        )
+        check_delete_message_by_sender("shiva", is_stream_message=False)
 
         do_change_realm_permission_group_setting(
             realm,
@@ -740,8 +780,12 @@ class DeleteMessageTest(ZulipTestCase):
         do_change_realm_permission_group_setting(
             realm, "can_delete_own_message_group", everyone_system_group, acting_user=None
         )
+        # Test deleting channel messages
         check_delete_message_by_sender("cordelia")
         check_delete_message_by_sender("polonius")
+        # Test deleting DMs
+        check_delete_message_by_sender("cordelia", is_stream_message=False)
+        check_delete_message_by_sender("polonius", is_stream_message=False)
 
         do_change_realm_permission_group_setting(
             realm, "can_delete_own_message_group", nobody_system_group, acting_user=None
