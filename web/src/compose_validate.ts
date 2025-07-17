@@ -29,7 +29,7 @@ import * as people from "./people.ts";
 import * as reactions from "./reactions.ts";
 import * as recent_senders from "./recent_senders.ts";
 import * as settings_data from "./settings_data.ts";
-import {realm} from "./state_data.ts";
+import {current_user, realm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import * as sub_store from "./sub_store.ts";
 import type {StreamSubscription} from "./sub_store.ts";
@@ -513,9 +513,13 @@ export function clear_topic_moved_info(): void {
     $(`#compose_banners .${CSS.escape(compose_banner.CLASSNAMES.topic_is_moved)}`).remove();
 }
 
-export function inform_if_topic_is_moved(orig_topic: string, old_stream_id: number): void {
+export function inform_if_topic_is_moved(
+    orig_topic: string,
+    old_stream_id: number,
+    acting_user_id: number | null,
+): void {
     const stream_id = compose_state.stream_id();
-    if (stream_id === undefined) {
+    if (stream_id === undefined || acting_user_id === current_user.user_id) {
         clear_topic_moved_info();
         return;
     }
