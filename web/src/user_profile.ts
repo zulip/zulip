@@ -1168,7 +1168,14 @@ export function show_edit_user_info_modal(user_id: number, $container: JQuery): 
         const user_id = Number($("#edit-user-form").attr("data-user-id"));
         function handle_confirm(): void {
             const url = "/json/users/" + encodeURIComponent(user_id);
-            dialog_widget.submit_api_request(channel.del, url, {});
+            let data = {};
+            if ($(".send_email").is(":checked")) {
+                data = {
+                    deactivation_notification_comment: $(".email_field_textarea").val(),
+                };
+            }
+
+            dialog_widget.submit_api_request(channel.del, url, data);
         }
         user_deactivation_ui.confirm_deactivation(user_id, handle_confirm, true);
     });
