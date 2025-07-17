@@ -65,10 +65,24 @@ if args.from_git:
     env["ZULIP_OLD_MERGE_BASE_COMMIT"] = resolve_version_string(old_merge_base)
     env["ZULIP_NEW_MERGE_BASE_COMMIT"] = resolve_version_string(NEW_ZULIP_MERGE_BASE)
 
+failures = []
 for script_name in sorted(f for f in os.listdir(path) if f.endswith(".hook")):
-    subprocess.check_call(
+    result = subprocess.run(
         [os.path.join(path, script_name)],
+        check=False,
         cwd=deploy_path,
         preexec_fn=su_to_zulip,
         env=env,
     )
+    if result.returncode != 0:
+        # Pre-deploy hooks abort on the first failure; post-deploy
+        # hooks are best-effort and a failure of one does not abort
+        # the rest of them.
+        if args.kind == "pre-deploy":
+            sys.exit(1)
+        failures.append(script_name)
+
+if failures:
+    print("Failed hooks:")
+    for failed_script in failures:
+        print(f"  {failed_script}")
