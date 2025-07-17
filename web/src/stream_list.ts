@@ -320,6 +320,18 @@ function toggle_section_collapse($container: JQuery): void {
         "rotate-icon-right",
         is_collapsed,
     );
+
+    // We still show a highlighted channel even when the parent folder is collapsed,
+    // and we'll show a highlighted topic, but if there's no highlighted topic then
+    // we should treat this like an empty topic list and remove the left bracket.
+    const $highlighted_topic = $(
+        `#stream-list-${section_id}-container .topic-list-item.active-sub-filter`,
+    );
+    $(`#stream-list-${section_id}-container`).toggleClass(
+        "hide-topic-bracket",
+        is_collapsed && $highlighted_topic.length === 0,
+    );
+
     if (is_collapsed) {
         collapsed_sections.add(section_id);
     } else {
