@@ -44,7 +44,7 @@ These permissions can be granted to any combination of
 
 1. Under **Message deletion**:
     - Configure **Who can delete any message**.
-    - Configure **Who can delete their own messages**.
+    - Configure **Who can delete their own messages everywhere**.
     - Configure **Time limit for deleting messages**. This time limit does not
       apply to users who can delete any message.
 

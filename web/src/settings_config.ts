@@ -741,7 +741,9 @@ export const all_group_setting_labels = {
         }),
         can_resolve_topics_group: $t({defaultMessage: "Who can resolve topics"}),
         can_delete_any_message_group: $t({defaultMessage: "Who can delete any message"}),
-        can_delete_own_message_group: $t({defaultMessage: "Who can delete their own messages"}),
+        can_delete_own_message_group: $t({
+            defaultMessage: "Who can delete their own messages everywhere",
+        }),
         can_access_all_users_group: $t({
             defaultMessage: "Who can view all other users in the organization",
         }),
@@ -755,8 +757,7 @@ export const all_group_setting_labels = {
             defaultMessage: "Who can notify a large number of users with a wildcard mention",
         }),
         can_set_delete_message_policy_group: $t({
-            defaultMessage:
-                "Who can allow users to delete messages in channels they administer",
+            defaultMessage: "Who can allow users to delete messages in channels they administer",
         }),
         can_set_topics_policy_group: new Handlebars.SafeString(
             $t_html({
