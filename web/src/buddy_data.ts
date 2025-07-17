@@ -84,13 +84,17 @@ export function level(user_id: number): number {
     }
 }
 
-export let user_matches_narrow = (
+export let user_matches_narrow_using_loaded_data = (
     user_id: number,
     pm_ids: Set<number>,
     stream_id: number | undefined,
 ): boolean => {
+    // All users we're checking should be subscribed, because we show all users
+    // for small channels but fetch all users for small channels, and we only
+    // show recently active users for large channels and we always fetch
+    // recently active users.
     if (stream_id) {
-        return stream_data.is_user_subscribed(stream_id, user_id);
+        return stream_data.is_user_loaded_and_subscribed(stream_id, user_id);
     }
     if (pm_ids.size > 0) {
         return pm_ids.has(user_id) || people.is_my_user_id(user_id);
@@ -98,8 +102,10 @@ export let user_matches_narrow = (
     return false;
 };
 
-export function rewire_user_matches_narrow(value: typeof user_matches_narrow): void {
-    user_matches_narrow = value;
+export function rewire_user_matches_narrow_using_loaded_data(
+    value: typeof user_matches_narrow_using_loaded_data,
+): void {
+    user_matches_narrow_using_loaded_data = value;
 }
 
 export function compare_function(
@@ -118,8 +124,8 @@ export function compare_function(
         return 1;
     }
 
-    const a_would_receive_message = user_matches_narrow(a, pm_ids, stream_id);
-    const b_would_receive_message = user_matches_narrow(b, pm_ids, stream_id);
+    const a_would_receive_message = user_matches_narrow_using_loaded_data(a, pm_ids, stream_id);
+    const b_would_receive_message = user_matches_narrow_using_loaded_data(b, pm_ids, stream_id);
     if (a_would_receive_message && !b_would_receive_message) {
         return -1;
     }
@@ -366,7 +372,11 @@ function maybe_shrink_list(
     user_ids = user_ids.filter(
         (user_id) =>
             user_is_recently_active(user_id) ||
-            user_matches_narrow(user_id, pm_ids_set, filter_by_stream_id ? stream_id : undefined) ||
+            user_matches_narrow_using_loaded_data(
+                user_id,
+                pm_ids_set,
+                filter_by_stream_id ? stream_id : undefined,
+            ) ||
             conversation_participants.has(user_id),
     );
 
@@ -449,7 +459,7 @@ function get_filtered_user_id_list(
         // enough subscribers in the channel.
         const stream_id = narrow_state.stream_id(narrow_state.filter(), true);
         if (stream_id) {
-            const subscribers = peer_data.get_subscribers(stream_id);
+            const subscribers = peer_data.get_subscriber_ids_assert_loaded(stream_id);
             if (subscribers.length <= max_channel_size_to_show_all_subscribers) {
                 const base_user_id_set = new Set([...base_user_id_list, ...subscribers]);
                 base_user_id_list = [...base_user_id_set];
