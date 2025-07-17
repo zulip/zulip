@@ -932,6 +932,10 @@ export function initialize(): void {
                 $(e.target).closest("a").length > 0 ||
                 $(e.target).closest(".copy_codeblock").length > 0
             ) {
+                if (document.getSelection()?.type === "Range") {
+                    e.preventDefault();
+                    return;
+                }
                 // Refocus compose message text box if one clicks an external
                 // link/url to view something else while composing a message.
                 // See issue #4331 for more details.
