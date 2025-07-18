@@ -389,6 +389,7 @@ export function clear_topic_search(e: JQuery.Event): void {
     search_pill_widget?.clear(true);
 
     const $input = $("#topic_filter_query");
+    $input.trigger("blur");
     // Since the `clear` function of the search_pill_widget
     // takes care of clearing both the text content and the
     // pills, we just need to trigger an input event on the
