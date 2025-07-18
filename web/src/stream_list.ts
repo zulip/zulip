@@ -30,7 +30,7 @@ import * as settings_data from "./settings_data.ts";
 import * as sidebar_ui from "./sidebar_ui.ts";
 import * as stream_data from "./stream_data.ts";
 import * as stream_list_sort from "./stream_list_sort.ts";
-import type {StreamListSection} from "./stream_list_sort.ts";
+import type {StreamListRow, StreamListSection} from "./stream_list_sort.ts";
 import * as stream_topic_history from "./stream_topic_history.ts";
 import * as stream_topic_history_util from "./stream_topic_history_util.ts";
 import * as sub_store from "./sub_store.ts";
@@ -52,7 +52,7 @@ export function set_update_inbox_channel_view_callback(value: (channel_id: numbe
     update_inbox_channel_view_callback = value;
 }
 
-export let stream_cursor: ListCursor<number>;
+export let stream_cursor: ListCursor<StreamListRow>;
 
 export function rewire_stream_cursor(value: typeof stream_cursor): void {
     stream_cursor = value;
@@ -863,19 +863,35 @@ const update_streams_for_search = _.throttle(actually_update_streams_for_search,
 
 // Exported for tests only.
 export function initialize_stream_cursor(): void {
-    stream_cursor = new ListCursor({
+    stream_cursor = new ListCursor<StreamListRow>({
         list: {
             scroll_container_selector: "#left_sidebar_scroll_container",
             find_li(opts) {
-                const stream_id = opts.key;
-                const $li = get_stream_li(stream_id);
-                return $li;
+                if (opts.key.type === "stream") {
+                    const $li = get_stream_li(opts.key.stream_id);
+                    return $li;
+                }
+                return $(
+                    `#stream-list-${opts.key.section_id}-container .stream-list-toggle-inactive-channels`,
+                );
             },
-            first_key: stream_list_sort.first_stream_id,
-            prev_key: stream_list_sort.prev_stream_id,
-            next_key: stream_list_sort.next_stream_id,
+            first_key: stream_list_sort.first_row,
+            prev_key: (row) =>
+                stream_list_sort.prev_row(
+                    row,
+                    sections_showing_inactive,
+                    collapsed_sections,
+                    topic_list.active_stream_id(),
+                ),
+            next_key: (row) =>
+                stream_list_sort.next_row(
+                    row,
+                    sections_showing_inactive,
+                    collapsed_sections,
+                    topic_list.active_stream_id(),
+                ),
         },
-        highlight_class: "highlighted_stream",
+        highlight_class: "highlighted_row",
     });
 }
 
@@ -1116,14 +1132,18 @@ export function set_event_handlers({
     const $search_input = $(".stream-list-filter").expectOne();
 
     function keydown_enter_key(): void {
-        const stream_id = stream_cursor.get_key();
+        const row = stream_cursor.get_key();
 
-        if (stream_id === undefined) {
+        if (row === undefined) {
             // This can happen for empty searches, no need to warn.
             return;
         }
 
-        on_sidebar_channel_click(stream_id, null, show_channel_feed);
+        if (row.type === "stream") {
+            on_sidebar_channel_click(row.stream_id, null, show_channel_feed);
+        } else {
+            toggle_inactive_channels($(`#stream-list-${row.section_id}-container`));
+        }
     }
 
     keydown_util.handle({
@@ -1176,17 +1196,20 @@ export function set_event_handlers({
         ".stream-list-toggle-inactive-channels",
         function (this: HTMLElement, e: JQuery.ClickEvent) {
             e.stopPropagation();
-            const $section_container = $(this).closest(".stream-list-section-container");
-            $section_container.toggleClass("showing-inactive");
-            const showing_inactive = $section_container.hasClass("showing-inactive");
-            const section_id = $section_container.attr("data-section-id")!;
-            if (showing_inactive) {
-                sections_showing_inactive.add(section_id);
-            } else {
-                sections_showing_inactive.delete(section_id);
-            }
+            toggle_inactive_channels($(this).closest(".stream-list-section-container"));
         },
     );
+}
+
+function toggle_inactive_channels($section_container: JQuery): void {
+    $section_container.toggleClass("showing-inactive");
+    const showing_inactive = $section_container.hasClass("showing-inactive");
+    const section_id = $section_container.attr("data-section-id")!;
+    if (showing_inactive) {
+        sections_showing_inactive.add(section_id);
+    } else {
+        sections_showing_inactive.delete(section_id);
+    }
 }
 
 export function searching(): boolean {
