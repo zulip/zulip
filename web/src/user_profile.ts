@@ -815,6 +815,7 @@ export function show_edit_bot_info_modal(user_id: number, $container: JQuery): v
         disable_role_dropdown: !current_user.is_admin || (bot.is_owner && !current_user.is_owner),
         bot_avatar_url: bot.avatar_url,
         is_incoming_webhook_bot: bot.bot_type === INCOMING_WEBHOOK_BOT_TYPE,
+        max_bot_name_length: people.MAX_USER_NAME_LENGTH,
     });
     $container.append($(html_body));
     let avatar_widget: UploadWidget;
@@ -1125,6 +1126,7 @@ export function show_edit_user_info_modal(user_id: number, $container: JQuery): 
         disable_role_dropdown: person.is_owner && !current_user.is_owner,
         is_active,
         hide_deactivate_button,
+        max_user_name_length: people.MAX_USER_NAME_LENGTH,
     });
 
     $container.append($(html_body));

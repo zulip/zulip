@@ -3,7 +3,7 @@
         <div class="alert" id="bot-edit-form-error"></div>
         <div class="input-group name_change_container">
             <label for="edit_bot_full_name" class="modal-field-label">{{t "Name" }}</label>
-            <input type="text" autocomplete="off" name="full_name" id="edit_bot_full_name" class="modal_text_input" value="{{ full_name }}" />
+            <input type="text" autocomplete="off" name="full_name" id="edit_bot_full_name" class="modal_text_input" value="{{ full_name }}" maxlength="{{max_bot_name_length}}" />
         </div>
         <input type="hidden" name="is_full_name" value="true" />
         <div class="input-group email_change_container">
