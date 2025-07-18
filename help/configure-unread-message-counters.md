@@ -27,7 +27,7 @@ opening it.
 ## Configure unread summary counters
 
 You can configure whether Zulip displays unread count summaries on your home
-view and channels section in the left sidebar. You will still be able to see the
+view in the left sidebar. You will still be able to see the
 summary counts by moving your mouse over them in the left sidebar. The counter
 on your home view will also be shown when you're in that view.
 
@@ -46,8 +46,7 @@ on your home view will also be shown when you're in that view.
 
 {settings_tab|preferences}
 
-1. Under **Information**, toggle **Show unread count summaries in the
-   left sidebar**.
+1. Under **Information**, toggle **Show unread count total on home view**.
 
 {end_tabs}
 
