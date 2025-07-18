@@ -151,6 +151,7 @@ export function build_page(): void {
             information_density.get_string_display_value_for_line_height(
                 user_settings.web_line_height_percent,
             ),
+        max_user_name_length: people.MAX_USER_NAME_LENGTH,
     });
 
     $(".settings-box").html(rendered_settings_tab);
