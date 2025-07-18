@@ -280,6 +280,18 @@ ChannelDescription = Annotated[
 ]
 
 
+TopicsPolicy = Annotated[
+    str | None,
+    AfterValidator(
+        lambda val: parse_enum_from_string_value(
+            val,
+            "topics_policy",
+            StreamTopicsPolicyEnum,
+        )
+    ),
+]
+
+
 @typed_endpoint
 def update_stream_backend(
     request: HttpRequest,
@@ -305,16 +317,7 @@ def update_stream_backend(
     message_retention_days: Json[str] | Json[int] | None = None,
     new_name: str | None = None,
     stream_id: PathOnly[int],
-    topics_policy: Annotated[
-        str | None,
-        AfterValidator(
-            lambda val: parse_enum_from_string_value(
-                val,
-                "topics_policy",
-                StreamTopicsPolicyEnum,
-            )
-        ),
-    ] = None,
+    topics_policy: TopicsPolicy = None,
 ) -> HttpResponse:
     # Most settings updates only require metadata access, not content
     # access. We will check for content access further when and where
@@ -734,18 +737,7 @@ def add_subscriptions_backend(
     principals: Json[list[str] | list[int]] | None = None,
     send_new_subscription_messages: Json[bool] = True,
     streams_raw: Annotated[Json[list[AddSubscriptionData]], ApiParamConfig("subscriptions")],
-    topics_policy: Json[
-        Annotated[
-            str | None,
-            AfterValidator(
-                lambda val: parse_enum_from_string_value(
-                    val,
-                    "topics_policy",
-                    StreamTopicsPolicyEnum,
-                )
-            ),
-        ]
-    ] = None,
+    topics_policy: Json[TopicsPolicy] = None,
 ) -> HttpResponse:
     realm = user_profile.realm
     stream_dicts = []
