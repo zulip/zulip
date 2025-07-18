@@ -258,6 +258,8 @@ class RocketChatImporter(ZulipTestCase):
         fixture_dir_name = self.fixture_file_name("", "rocketchat_fixtures")
         rocketchat_data = rocketchat_data_to_dict(fixture_dir_name)
 
+        mock_realm_dict: ZerverFieldsT = dict(zerver_realm=[dict()])
+        zerver_realm = mock_realm_dict["zerver_realm"]
         realm_id = 3
         stream_id_mapper = IdMapper[str]()
 
@@ -280,6 +282,7 @@ class RocketChatImporter(ZulipTestCase):
             )
 
         zerver_stream = convert_channel_data(
+            realm=mock_realm_dict,
             room_id_to_room_map=room_id_to_room_map,
             team_id_to_team_map=team_id_to_team_map,
             stream_id_mapper=stream_id_mapper,
@@ -297,6 +300,11 @@ class RocketChatImporter(ZulipTestCase):
         self.assertEqual(zerver_stream[0]["rendered_description"], "")
         self.assertEqual(zerver_stream[0]["stream_post_policy"], 1)
         self.assertEqual(zerver_stream[0]["realm"], realm_id)
+
+        self.assertEqual(
+            zerver_realm[0]["zulip_update_announcements_stream"], zerver_stream[0]["id"]
+        )
+        self.assertEqual(zerver_realm[0]["new_stream_announcements_stream"], zerver_stream[0]["id"])
 
         # Private stream
         self.assertEqual(zerver_stream[1]["name"], "random")
@@ -328,6 +336,7 @@ class RocketChatImporter(ZulipTestCase):
         fixture_dir_name = self.fixture_file_name("", "rocketchat_fixtures")
         rocketchat_data = rocketchat_data_to_dict(fixture_dir_name)
 
+        mock_realm_dict: ZerverFieldsT = dict(zerver_realm=[dict()])
         realm_id = 3
         domain_name = "zulip.com"
 
@@ -365,6 +374,7 @@ class RocketChatImporter(ZulipTestCase):
             )
 
         zerver_stream = convert_channel_data(
+            realm=mock_realm_dict,
             room_id_to_room_map=room_id_to_room_map,
             team_id_to_team_map=team_id_to_team_map,
             stream_id_mapper=stream_id_mapper,
@@ -413,6 +423,7 @@ class RocketChatImporter(ZulipTestCase):
         room_id_to_room_map[no_user_channel["_id"]] = no_user_channel
 
         zerver_stream = convert_channel_data(
+            realm=mock_realm_dict,
             room_id_to_room_map=room_id_to_room_map,
             team_id_to_team_map=team_id_to_team_map,
             stream_id_mapper=stream_id_mapper,
@@ -537,6 +548,7 @@ class RocketChatImporter(ZulipTestCase):
         fixture_dir_name = self.fixture_file_name("", "rocketchat_fixtures")
         rocketchat_data = rocketchat_data_to_dict(fixture_dir_name)
 
+        mock_realm_dict: ZerverFieldsT = dict(zerver_realm=[dict()])
         realm_id = 3
         domain_name = "zulip.com"
 
@@ -575,6 +587,7 @@ class RocketChatImporter(ZulipTestCase):
             )
 
         zerver_stream = convert_channel_data(
+            realm=mock_realm_dict,
             room_id_to_room_map=room_id_to_room_map,
             team_id_to_team_map=team_id_to_team_map,
             stream_id_mapper=stream_id_mapper,

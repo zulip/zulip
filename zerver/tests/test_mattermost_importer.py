@@ -224,6 +224,9 @@ class MatterMostImporter(ZulipTestCase):
         user_id_mapper = IdMapper[str]()
         team_name = "gryffindor"
 
+        mock_realm_dict: ZerverFieldsT = dict(zerver_realm=[dict()])
+        zerver_realm = mock_realm_dict["zerver_realm"]
+
         convert_user_data(
             user_handler=user_handler,
             user_id_mapper=user_id_mapper,
@@ -232,15 +235,20 @@ class MatterMostImporter(ZulipTestCase):
             team_name=team_name,
         )
 
-        zerver_stream = convert_channel_data(
-            channel_data=mattermost_data["channel"],
-            user_data_map=username_to_user,
-            subscriber_handler=subscriber_handler,
-            stream_id_mapper=stream_id_mapper,
-            user_id_mapper=user_id_mapper,
-            realm_id=3,
-            team_name=team_name,
-        )
+        with patch(
+            "zerver.data_import.mattermost.MATTERMOST_DEFAULT_ANNOUNCEMENTS_CHANNEL_NAME",
+            "Gryffindor common room",
+        ):
+            zerver_stream = convert_channel_data(
+                realm=mock_realm_dict,
+                channel_data=mattermost_data["channel"],
+                user_data_map=username_to_user,
+                subscriber_handler=subscriber_handler,
+                stream_id_mapper=stream_id_mapper,
+                user_id_mapper=user_id_mapper,
+                realm_id=3,
+                team_name=team_name,
+            )
 
         self.assert_length(zerver_stream, 3)
 
@@ -251,6 +259,11 @@ class MatterMostImporter(ZulipTestCase):
         )
         self.assertEqual(zerver_stream[0]["rendered_description"], "")
         self.assertEqual(zerver_stream[0]["realm"], 3)
+
+        self.assertEqual(
+            zerver_realm[0]["zulip_update_announcements_stream"], zerver_stream[0]["id"]
+        )
+        self.assertEqual(zerver_realm[0]["new_stream_announcements_stream"], zerver_stream[0]["id"])
 
         self.assertEqual(zerver_stream[1]["name"], "Gryffindor quidditch team")
         self.assertEqual(zerver_stream[1]["invite_only"], False)
@@ -293,7 +306,9 @@ class MatterMostImporter(ZulipTestCase):
 
         # Converting channel data when a user's `teams` value is `null`.
         username_to_user["ron"].update(teams=None)
+        mock_realm_dict = dict(zerver_realm=[dict()])
         zerver_stream = convert_channel_data(
+            realm=mock_realm_dict,
             channel_data=mattermost_data["channel"],
             user_data_map=username_to_user,
             subscriber_handler=subscriber_handler,
@@ -320,7 +335,9 @@ class MatterMostImporter(ZulipTestCase):
         )
 
         team_name = "slytherin"
+        mock_realm_dict = dict(zerver_realm=[dict()])
         zerver_stream = convert_channel_data(
+            realm=mock_realm_dict,
             channel_data=mattermost_data["channel"],
             user_data_map=username_to_user,
             subscriber_handler=subscriber_handler,

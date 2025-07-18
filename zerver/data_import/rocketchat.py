@@ -157,12 +157,18 @@ def get_stream_name(rc_channel: dict[str, Any]) -> str:
     return stream_name
 
 
+ROCKETCHAT_DEFAULT_ANNOUNCEMENTS_CHANNEL_NAME = "general"
+
+
 def convert_channel_data(
+    realm: ZerverFieldsT,
     room_id_to_room_map: dict[str, dict[str, Any]],
     team_id_to_team_map: dict[str, dict[str, Any]],
     stream_id_mapper: IdMapper[str],
     realm_id: int,
 ) -> list[ZerverFieldsT]:
+    zerver_realm = realm["zerver_realm"]
+
     streams = []
 
     for rc_room_id, channel_dict in room_id_to_room_map.items():
@@ -196,6 +202,11 @@ def convert_channel_data(
             invite_only=invite_only,
             stream_post_policy=stream_post_policy,
         )
+
+        if stream_name == ROCKETCHAT_DEFAULT_ANNOUNCEMENTS_CHANNEL_NAME:
+            zerver_realm[0]["new_stream_announcements_stream"] = stream["id"]
+            zerver_realm[0]["zulip_update_announcements_stream"] = stream["id"]
+
         streams.append(stream)
 
     return streams
@@ -1133,6 +1144,7 @@ def do_convert_data(rocketchat_data_dir: str, output_dir: str) -> None:
     )
 
     zerver_stream = convert_channel_data(
+        realm=realm,
         room_id_to_room_map=room_id_to_room_map,
         team_id_to_team_map=team_id_to_team_map,
         stream_id_mapper=stream_id_mapper,
