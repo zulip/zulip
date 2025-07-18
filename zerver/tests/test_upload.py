@@ -199,11 +199,13 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         url = response_dict["url"]
         result = self.client_get(url)
         self.assertEqual(result.status_code, 200)
-        self.assertEqual(result["Content-Type"], "text/plain")
+        self.assertEqual(result["Content-Type"], 'text/plain; charset="ascii"')
         consume_response(result)
 
-    def test_preserve_provided_content_type(self) -> None:
-        uploaded_file = SimpleUploadedFile("somefile.txt", b"zulip!", content_type="image/png")
+    def test_guess_content_type_charset(self) -> None:
+        uploaded_file = SimpleUploadedFile(
+            "somefile.txt", "नाम में क्या रक्खा हे".encode(), content_type="text/plain"
+        )
         result = self.api_post(
             self.example_user("hamlet"), "/api/v1/user_uploads", {"file": uploaded_file}
         )
@@ -213,7 +215,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         url = response_dict["url"]
         result = self.client_get(url)
         self.assertEqual(result.status_code, 200)
-        self.assertEqual(result["Content-Type"], "image/png")
+        self.assertEqual(result["Content-Type"], 'text/plain; charset="utf-8"')
         consume_response(result)
 
     def test_content_type_charset_specified(self) -> None:

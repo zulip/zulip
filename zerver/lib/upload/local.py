@@ -110,6 +110,7 @@ class LocalUploadBackend(ZulipUploadBackend):
         return StreamingSourceWithSize(
             size=os.path.getsize(file_path),
             vips_source=vips_source,
+            reader=lambda: open(file_path, "rb"),
         )
 
     @override

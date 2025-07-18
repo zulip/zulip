@@ -2,6 +2,7 @@ import base64
 import binascii
 import os
 from datetime import timedelta
+from email.message import EmailMessage
 from urllib.parse import quote, urlsplit
 
 from django.conf import settings
@@ -110,6 +111,12 @@ def serve_s3(
     return response
 
 
+def bare_content_type(content_type: str) -> str:
+    fake_msg = EmailMessage()
+    fake_msg["content-type"] = content_type
+    return fake_msg.get_content_type()
+
+
 def serve_local(
     request: HttpRequest,
     path_id: str,
@@ -125,7 +132,8 @@ def serve_local(
 
     if content_type is None:
         content_type = guess_type(filename)[0]
-    download = force_download or content_type not in INLINE_MIME_TYPES
+    assert content_type is not None
+    download = force_download or bare_content_type(content_type) not in INLINE_MIME_TYPES
 
     if settings.DEVELOPMENT:
         # In development, we do not have the nginx server to offload
