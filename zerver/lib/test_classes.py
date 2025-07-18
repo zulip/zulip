@@ -1616,19 +1616,17 @@ Output:
         self,
         user: UserProfile,
         subscribers: list[str] | list[int] | None = None,
-        channel: dict[str, str] | None = None,
+        name: str | None = None,
         extra_post_data: Mapping[str, Any] = {},
         invite_only: bool = False,
         is_web_public: bool = False,
         **extra: str,
     ) -> "TestHttpResponse":
-        if channel is None:
-            channel = {"name": "new_channel"}
         if subscribers is None:
             subscribers = [user.id]
 
         post_data = {
-            "channel": orjson.dumps(channel).decode(),
+            "name": name,
             "subscribers": orjson.dumps(subscribers).decode(),
             "is_web_public": orjson.dumps(is_web_public).decode(),
             "invite_only": orjson.dumps(invite_only).decode(),

@@ -74,6 +74,7 @@ from zerver.lib.streams import (
     access_stream_for_delete_or_update_requiring_metadata_access,
     access_web_public_stream,
     channel_events_topic_name,
+    check_channel_creation_permissions,
     check_stream_name_available,
     create_stream_if_needed,
     do_get_streams,
@@ -709,6 +710,8 @@ def create_channel(
     *,
     announce: Json[bool] = False,
     can_add_subscribers_group: Json[int | UserGroupMembersData] | None = None,
+    can_delete_any_message_group: Json[int | UserGroupMembersData] | None = None,
+    can_delete_own_message_group: Json[int | UserGroupMembersData] | None = None,
     can_administer_channel_group: Json[int | UserGroupMembersData] | None = None,
     can_move_messages_out_of_channel_group: Json[int | UserGroupMembersData] | None = None,
     can_move_messages_within_channel_group: Json[int | UserGroupMembersData] | None = None,
@@ -716,7 +719,7 @@ def create_channel(
     can_resolve_topics_group: Json[int | UserGroupMembersData] | None = None,
     can_send_message_group: Json[int | UserGroupMembersData] | None = None,
     can_subscribe_group: Json[int | UserGroupMembersData] | None = None,
-    description: Annotated[str, StringConstraints(max_length=Stream.MAX_DESCRIPTION_LENGTH)] | None,
+    description: ChannelDescription = None,
     folder_id: Json[int] | None = None,
     history_public_to_subscribers: Json[bool] | None = None,
     invite_only: Json[bool] = False,
@@ -726,18 +729,7 @@ def create_channel(
     name: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1)],
     send_new_subscription_messages: Json[bool] = True,
     subscribers: Json[list[str] | list[int]],
-    topics_policy: Json[
-        Annotated[
-            str | None,
-            AfterValidator(
-                lambda val: parse_enum_from_string_value(
-                    val,
-                    "topics_policy",
-                    StreamTopicsPolicyEnum,
-                )
-            ),
-        ]
-    ] = None,
+    topics_policy: Json[TopicsPolicy] = None,
 ) -> HttpResponse:
     realm = user_profile.realm
     request_settings_dict = locals()
@@ -748,10 +740,7 @@ def create_channel(
     if folder_id is not None:
         folder = get_channel_folder_by_id(folder_id, realm)
 
-    # We don't allow newline characters in stream descriptions.
-    if description is not None:
-        description = description.replace("\n", " ")
-    else:
+    if description is None:
         description = ""
 
     parsed_message_retention_days = parse_message_retention_days(
@@ -759,13 +748,9 @@ def create_channel(
     )
 
     topics_policy_value = None
-    if topics_policy is not None and isinstance(topics_policy, StreamTopicsPolicyEnum):
-        if (
-            topics_policy != StreamTopicsPolicyEnum.inherit
-            and not user_profile.can_set_topics_policy()
-        ):
-            raise JsonableError(_("Insufficient permission"))
-        topics_policy_value = topics_policy.value
+    validated_topics_policy = validate_topics_policy(topics_policy, user_profile)
+    if validated_topics_policy is not None:
+        topics_policy_value = validated_topics_policy.value
 
     is_subscribing_other_users = False
     if len(subscribers) > 0 and not all(user_id == user_profile.id for user_id in subscribers):

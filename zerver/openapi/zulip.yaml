@@ -23083,7 +23083,7 @@ paths:
           - type: include
             parameters:
               enum:
-                - channel
+                - name
                 - subscribers
       requestBody:
         content:
@@ -23182,6 +23182,10 @@ paths:
                   $ref: "#/components/schemas/MessageRetentionDays"
                 can_add_subscribers_group:
                   $ref: "#/components/schemas/ChannelCanAddSubscribersGroup"
+                can_delete_any_message_group:
+                  $ref: "#/components/schemas/CanDeleteAnyMessageGroup"
+                can_delete_own_message_group:
+                  $ref: "#/components/schemas/CanDeleteOwnMessageGroup"
                 can_remove_subscribers_group:
                   $ref: "#/components/schemas/CanRemoveSubscribersGroup"
                 can_administer_channel_group:
@@ -23197,7 +23201,7 @@ paths:
                 can_resolve_topics_group:
                   $ref: "#/components/schemas/CanResolveTopicsGroup"
               required:
-                - channel
+                - name
                 - subscribers
             encoding:
               announce:
@@ -23217,8 +23221,6 @@ paths:
               can_send_message_group:
                 contentType: application/json
               can_subscribe_group:
-                contentType: application/json
-              channel:
                 contentType: application/json
               subscribers:
                 contentType: application/json
