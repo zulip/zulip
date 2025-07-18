@@ -16968,8 +16968,16 @@ paths:
                         properties:
                           twenty_four_hour_time:
                             type: boolean
+                            nullable: true
                             description: |
                               Whether time should be [displayed in 24-hour notation](/help/change-the-time-format).
+
+                              A `null` value indicates that the client should use the default time
+                              format for the user's locale.
+
+                              **Changes**: Prior to Zulip 11.0 (feature level 408), `null`
+                              was not a valid value for this setting. Note that it was not possible
+                              to actually set the time format to `null` at this feature level.
                           web_mark_read_on_scroll_policy:
                             type: integer
                             description: |
@@ -19817,14 +19825,21 @@ paths:
                         properties:
                           twenty_four_hour_time:
                             type: boolean
+                            nullable: true
                             description: |
                               Whether time should be [displayed in 24-hour notation](/help/change-the-time-format).
 
-                              **Changes**: New in Zulip 5.0 (feature level 99).
-                              This value was previously available as
-                              `realm_default_twenty_four_hour_time` in
-                              the top-level response object (only when `realm` was
-                              present in `fetch_event_types`).
+                              A `null` value indicates that the client should use the default time
+                              format for the user's locale.
+
+                              **Changes**: Prior to Zulip 11.0 (feature level 408), `null`
+                              was not a valid value for this setting. Note that it was not possible
+                              to actually set the time format to `null` at this feature level.
+
+                              New in Zulip 5.0 (feature level 99). This value was previously
+                              available as `realm_default_twenty_four_hour_time` in the top-level
+                              response object (only when `realm` was present in
+                              `fetch_event_types`).
                           web_mark_read_on_scroll_policy:
                             type: integer
                             description: |
