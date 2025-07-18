@@ -244,7 +244,7 @@ AUTH_LDAP_USER_ATTR_MAP = {
     ## A stable unique identifier for a user allows Zulip to
     ## automatically handle email address changes.
     ## See https://zulip.readthedocs.io/en/latest/production/authentication-methods.html#identifying-user-accounts-via-a-unique-ldap-attribute
-    "unique_account_id": "dn",
+    # "unique_account_id": "objectSid",
     ##
     ## Profile pictures can be pulled from the LDAP "thumbnailPhoto"/"jpegPhoto" field.
     # "avatar": "thumbnailPhoto",

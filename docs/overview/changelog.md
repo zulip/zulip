@@ -182,7 +182,6 @@ _Released 2025-07-17_
   enabling the new `unique_account_id` setting for automatically
   handling [email address
   changes](../production/authentication-methods.md#synchronizing-email-addresses).
-  This setting is the default for new installations.
 - Zulip's incoming email integration was simplified to no longer use
   `postfix`. Installations using the integration will automatically
   uninstall `postfix` when upgraded.

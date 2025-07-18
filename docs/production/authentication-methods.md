@@ -274,9 +274,14 @@ groups. To configure this feature:
 Zulip 11.0+ supports automatically handling changes in email address
 for most LDAP installations. All you need to do is set the
 `unique_account_id` field in `AUTH_LDAP_USER_ATTR_MAP` to a **stable
-unique identifier** for the account, such as the LDAP Distinguished
-Name (DN). The `unique_account_id` field defaults to the `dn` for new
-installations.
+unique identifier** for the account. If your LDAP server has a policy
+of never changing the Distinguished Name (`dn`) for a user, you can
+use that. But it's worth checking if your LDAP provider offers a UUID
+that is guaranteed to map to a unique user account.
+
+For Active Directory installations, the immutable Security Identifier
+[`objectSid`](https://ldapwiki.com/wiki/Wiki.jsp?page=Security%20Identifier)
+is recommended.
 
 :::{note}
 
