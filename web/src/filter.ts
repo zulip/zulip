@@ -1204,6 +1204,10 @@ export class Filter {
             return true;
         }
 
+        if (_.isEqual(term_types, ["not-is-dm"])) {
+            return true;
+        }
+
         if (_.isEqual(term_types, ["is-resolved"])) {
             return true;
         }
