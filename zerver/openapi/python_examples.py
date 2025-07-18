@@ -1896,10 +1896,8 @@ def update_user_group_members(client: Client, user_group_id: int) -> None:
 def add_channel(client: Client) -> None:
     # {code_example|start}
     request = {
-        "channel": {
-            "name": "music_group",
-            "description": "Channel for discussing and learning about music.",
-        },
+        "name": "music_group",
+        "description": "Channel for discussing and learning about music.",
         "subscribers": [],
     }
     result = client.call_endpoint(url="channels/create", method="POST", request=request)

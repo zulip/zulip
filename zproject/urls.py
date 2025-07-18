@@ -185,9 +185,9 @@ from zerver.views.scheduled_messages import (
 from zerver.views.sentry import sentry_tunnel
 from zerver.views.storage import get_storage, remove_storage, update_storage
 from zerver.views.streams import (
-    create_channel,
     add_default_stream,
     add_subscriptions_backend,
+    create_channel,
     create_default_stream_group,
     deactivate_stream_backend,
     delete_in_topic,

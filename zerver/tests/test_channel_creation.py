@@ -18,10 +18,7 @@ from zerver.lib.streams import (
     list_to_streams,
 )
 from zerver.lib.test_classes import ZulipTestCase, get_topic_messages
-from zerver.lib.test_helpers import (
-    get_subscription,
-    reset_email_visibility_to_everyone_in_zulip_realm,
-)
+from zerver.lib.test_helpers import reset_email_visibility_to_everyone_in_zulip_realm
 from zerver.lib.types import UserGroupMembersDict
 from zerver.models import (
     Message,
@@ -274,10 +271,7 @@ class TestCreateStreams(ZulipTestCase):
 
     def test_create_stream_using_add_channel(self) -> None:
         user_profile = self.example_user("iago")
-        result = self.create_channel_via_post(
-            user_profile,
-            channel={"name": "basketball"},
-        )
+        result = self.create_channel_via_post(user_profile, name="basketball")
         self.assert_json_success(result)
         stream = get_stream("basketball", user_profile.realm)
         self.assertEqual(stream.name, "basketball")
@@ -292,8 +286,9 @@ class TestCreateStreams(ZulipTestCase):
         )
         result = self.create_channel_via_post(
             user_profile,
-            channel={"name": "testchannel", "color": "#FFF", "description": "test channel"},
+            name="testchannel",
             extra_post_data=dict(
+                description="test channel",
                 can_administer_channel_group=orjson.dumps(
                     {
                         "direct_members": [cordelia.id],
@@ -307,16 +302,14 @@ class TestCreateStreams(ZulipTestCase):
         stream = get_stream("testchannel", user_profile.realm)
         self.assertEqual(stream.name, "testchannel")
         self.assertEqual(stream.description, "test channel")
-        subscription = get_subscription("testchannel", user_profile)
-        self.assertEqual(subscription.color, "#FFF")
 
         # Creating an existing channel should return an error.
-        result = self.create_channel_via_post(user_profile, channel={"name": "basketball"})
+        result = self.create_channel_via_post(user_profile, name="basketball")
         self.assert_json_error(result, "Channel 'basketball' already exists", status_code=409)
 
         # Test creating channel with no subscribers
         post_data = {
-            "channel": orjson.dumps({"name": "no-sub-channel"}).decode(),
+            "name": "no-sub-channel",
             "subscribers": orjson.dumps([]).decode(),
         }
 
@@ -344,6 +337,7 @@ class TestCreateStreams(ZulipTestCase):
         result = self.create_channel_via_post(
             desdemona,
             [iago.id],
+            name="new_channel",
             extra_post_data={"message_retention_days": orjson.dumps(10).decode()},
         )
         self.assert_json_success(result)
@@ -354,7 +348,7 @@ class TestCreateStreams(ZulipTestCase):
         # Default streams can only be created by admins
         result = self.create_channel_via_post(
             iago,
-            channel={"name": "testing_channel1"},
+            name="testing_channel1",
             extra_post_data={"is_default_stream": orjson.dumps(True).decode()},
             invite_only=True,
         )
@@ -362,7 +356,7 @@ class TestCreateStreams(ZulipTestCase):
 
         result = self.create_channel_via_post(
             iago,
-            channel={"name": "testing_channel1"},
+            name="testing_channel1",
             extra_post_data={"is_default_stream": orjson.dumps(True).decode()},
             invite_only=False,
         )
@@ -376,7 +370,7 @@ class TestCreateStreams(ZulipTestCase):
             self.assertFalse(desdemona.realm.has_web_public_streams())
             result = self.create_channel_via_post(
                 desdemona,
-                channel={"name": "testing_web_public_channel"},
+                name="testing_web_public_channel",
                 is_web_public=True,
             )
             self.assert_json_error(result, "Web-public channels are not enabled.")
@@ -385,7 +379,7 @@ class TestCreateStreams(ZulipTestCase):
             self.assertTrue(desdemona.realm.has_web_public_streams())
             result = self.create_channel_via_post(
                 desdemona,
-                channel={"name": "testing_web_public_channel"},
+                name="testing_web_public_channel",
                 is_web_public=True,
             )
             self.assert_json_success(result)
@@ -395,7 +389,7 @@ class TestCreateStreams(ZulipTestCase):
         polonius = self.example_user("polonius")
         result = self.create_channel_via_post(
             polonius,
-            channel={"name": "testing_channel4"},
+            name="testing_channel4",
             invite_only=True,
         )
         self.assert_json_error(result, "Not allowed for guest users")
@@ -411,7 +405,7 @@ class TestCreateStreams(ZulipTestCase):
         self.assertFalse(cordelia.can_set_topics_policy())
         result = self.create_channel_via_post(
             cordelia,
-            channel={"name": "testing_channel4"},
+            name="testing_channel4",
             extra_post_data={
                 "topics_policy": orjson.dumps(
                     StreamTopicsPolicyEnum.disable_empty_topic.name
@@ -422,7 +416,7 @@ class TestCreateStreams(ZulipTestCase):
 
         result = self.create_channel_via_post(
             desdemona,
-            channel={"name": "testing_channel4"},
+            name="testing_channel4",
             extra_post_data={
                 "topics_policy": orjson.dumps(
                     StreamTopicsPolicyEnum.disable_empty_topic.name
@@ -433,6 +427,23 @@ class TestCreateStreams(ZulipTestCase):
         stream = get_stream("testing_channel4", desdemona.realm)
         self.assertEqual(stream.name, "testing_channel4")
         self.assertEqual(stream.topics_policy, StreamTopicsPolicyEnum.disable_empty_topic.value)
+
+        realm = get_realm("zephyr")
+        starnine = self.mit_user("starnine")
+        espuser = self.mit_user("espuser")
+        result = self.create_channel_via_post(
+            starnine, [espuser.id], name="zephyr_channel", subdomain="zephyr"
+        )
+        self.assert_json_error(
+            result, "You can only invite other Zephyr mirroring users to private channels."
+        )
+
+        result = self.create_channel_via_post(
+            starnine, [espuser.id], name="zephyr_channel", invite_only=True, subdomain="zephyr"
+        )
+        self.assert_json_success(result)
+        stream = get_stream("zephyr_channel", realm)
+        self.assertEqual(stream.name, "zephyr_channel")
 
     def _test_group_based_settings_for_creating_channels(
         self,
@@ -446,7 +457,7 @@ class TestCreateStreams(ZulipTestCase):
         ) -> None:
             result = self.create_channel_via_post(
                 user,
-                channel={"name": stream_name},
+                name=stream_name,
                 invite_only=invite_only,
                 is_web_public=is_web_public,
             )
