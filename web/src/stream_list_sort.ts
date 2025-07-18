@@ -11,7 +11,18 @@ import * as util from "./util.ts";
 
 let first_render_completed = false;
 let current_sections: StreamListSection[] = [];
-let all_streams: number[] = [];
+
+export type StreamListRow =
+    | {
+          type: "stream";
+          stream_id: number;
+          inactive: boolean;
+      }
+    | {
+          type: "inactive_toggle";
+          section_id: string;
+      };
+let all_rows: StreamListRow[] = [];
 
 // Because we need to check whether we are filtering inactive streams
 // in a loop over all streams to render the left sidebar, and the
@@ -21,7 +32,21 @@ let all_streams: number[] = [];
 let filter_out_inactives = false;
 
 export function get_stream_ids(): number[] {
-    return [...all_streams];
+    return all_rows.flatMap((row) => (row.type === "stream" ? row.stream_id : []));
+}
+
+function stream_id_to_section_id(): Map<number, StreamListSection> {
+    const map = new Map<number, StreamListSection>();
+    for (const section of current_sections) {
+        for (const stream_id of [
+            ...section.streams,
+            ...section.muted_streams,
+            ...section.inactive_streams,
+        ]) {
+            map.set(stream_id, section);
+        }
+    }
+    return map;
 }
 
 function compare_function(a: number, b: number): number {
@@ -205,11 +230,29 @@ export function sort_groups(stream_ids: number[], search_term: string): StreamLi
     if (!same_as_before) {
         first_render_completed = true;
         current_sections = new_sections;
-        all_streams = current_sections.flatMap((section) => [
-            ...section.streams,
-            ...section.muted_streams,
-            ...section.inactive_streams,
-        ]);
+        all_rows = [];
+        for (const section of current_sections) {
+            for (const stream_id of [...section.streams, ...section.muted_streams]) {
+                all_rows.push({
+                    type: "stream",
+                    stream_id,
+                    inactive: false,
+                });
+            }
+            for (const stream_id of section.inactive_streams) {
+                all_rows.push({
+                    type: "stream",
+                    stream_id,
+                    inactive: true,
+                });
+            }
+            if (section.inactive_streams.length > 0) {
+                all_rows.push({
+                    type: "inactive_toggle",
+                    section_id: section.id,
+                });
+            }
+        }
     }
 
     return {
@@ -218,38 +261,70 @@ export function sort_groups(stream_ids: number[], search_term: string): StreamLi
     };
 }
 
-function maybe_get_stream_id(i: number): number | undefined {
-    if (i < 0 || i >= all_streams.length) {
-        return undefined;
-    }
-
-    return all_streams[i];
+export function first_row(): StreamListRow | undefined {
+    return all_rows.at(0);
 }
 
-export function first_stream_id(): number | undefined {
-    return maybe_get_stream_id(0);
+export function prev_row(
+    row: StreamListRow,
+    sections_showing_inactive: Set<string>,
+    collapsed_sections: Set<string>,
+): StreamListRow | undefined {
+    let i = all_rows.indexOf(row);
+    const section_id_map = stream_id_to_section_id();
+    while (i > 0) {
+        i -= 1;
+        const prev_row = all_rows[i]!;
+        if (prev_row.type === "stream") {
+            const stream_id = prev_row.stream_id;
+            assert(stream_id !== undefined);
+            const section = section_id_map.get(stream_id)!;
+            if (collapsed_sections.has(section.id)) {
+                continue;
+            }
+            if (!sections_showing_inactive.has(section.id) && prev_row.inactive) {
+                continue;
+            }
+        } else if (
+            prev_row.type === "inactive_toggle" &&
+            collapsed_sections.has(prev_row.section_id)
+        ) {
+            continue;
+        }
+        return prev_row;
+    }
+    return undefined;
 }
 
-export function prev_stream_id(stream_id: number): number | undefined {
-    const i = all_streams.indexOf(stream_id);
-
-    if (i === -1) {
-        return undefined;
+export function next_row_id(
+    row: StreamListRow,
+    sections_showing_inactive: Set<string>,
+    collapsed_sections: Set<string>,
+): StreamListRow | undefined {
+    let i = all_rows.indexOf(row);
+    const section_id_map = stream_id_to_section_id();
+    while (i + 1 < all_rows.length) {
+        i += 1;
+        const next_row = all_rows[i]!;
+        if (next_row.type === "stream") {
+            const stream_id = next_row.stream_id;
+            assert(stream_id !== undefined);
+            const section = section_id_map.get(stream_id)!;
+            if (collapsed_sections.has(section.id)) {
+                continue;
+            }
+            if (!sections_showing_inactive.has(section.id) && next_row.inactive) {
+                continue;
+            }
+        } else if (
+            next_row.type === "inactive_toggle" &&
+            collapsed_sections.has(next_row.section_id)
+        ) {
+            continue;
+        }
+        return next_row;
     }
-
-    // TODO(evy) figure out how to handle hidden inactive streams
-    return maybe_get_stream_id(i - 1);
-}
-
-export function next_stream_id(stream_id: number): number | undefined {
-    const i = all_streams.indexOf(stream_id);
-
-    if (i === -1) {
-        return undefined;
-    }
-
-    // TODO(evy) figure out how to handle hidden inactive streams
-    return maybe_get_stream_id(i + 1);
+    return undefined;
 }
 
 export function initialize(): void {
