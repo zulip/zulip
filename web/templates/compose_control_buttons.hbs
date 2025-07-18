@@ -1,10 +1,10 @@
 <div class="compose-scrollable-buttons compose-control-buttons-container order-1" tabindex="-1">
     <input type="file" class="file_input notvisible" multiple />
     <div class="compose_control_button_container compose_button_tooltip" data-tooltip-template-id="preview-tooltip" data-tippy-maxWidth="none">
-        <a role="button" class="markdown_preview compose_control_button zulip-icon zulip-icon-preview" aria-label="{{t 'Preview' }}" tabindex=0></a>
+        <a role="button" class="markdown_preview compose_control_button zulip-icon zulip-icon-preview" aria-label="{{t 'Preview mode' }}" tabindex=0></a>
     </div>
-    <div class="compose_control_button_container compose_button_tooltip" data-tippy-content="{{t 'Write' }}">
-        <a role="button" class="undo_markdown_preview compose_control_button zulip-icon zulip-icon-compose-edit" aria-label="{{t 'Write' }}" tabindex=0 style="display:none;"></a>
+    <div class="compose_control_button_container compose_button_tooltip" data-tooltip-template-id="exit-preview-tooltip" data-tippy-maxWidth="none">
+        <a role="button" class="undo_markdown_preview compose_control_button zulip-icon zulip-icon-compose-edit" aria-label="{{t 'Exit preview mode' }}" tabindex=0 style="display:none;"></a>
     </div>
     {{#if file_upload_enabled }}
     <div class="compose_control_button_container preview_mode_disabled compose_button_tooltip" data-tippy-content="{{t 'Upload files' }}">
