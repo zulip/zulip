@@ -31,6 +31,7 @@ const {Filter} = zrequire("filter");
 const message_lists = zrequire("message_lists");
 const {set_current_user, set_realm} = zrequire("state_data");
 const {initialize_user_settings} = zrequire("user_settings");
+const {user_list_style_values} = zrequire("settings_config");
 
 const realm = {};
 set_realm(realm);
@@ -192,7 +193,10 @@ test("title_data", ({override}) => {
         second_line: "",
         third_line: "",
     };
-    assert.deepEqual(buddy_data.get_title_data(user_ids_string, is_group), expected_group_data);
+    assert.deepEqual(
+        buddy_data.get_title_data(user_ids_string, is_group, true),
+        expected_group_data,
+    );
 
     is_group = "";
 
@@ -204,7 +208,7 @@ test("title_data", ({override}) => {
         is_deactivated: false,
     };
     assert.deepEqual(
-        buddy_data.get_title_data(bot_with_owner.user_id, is_group),
+        buddy_data.get_title_data(bot_with_owner.user_id, is_group, true),
         expected_group_data,
     );
 
@@ -214,7 +218,7 @@ test("title_data", ({override}) => {
         second_line: "",
         third_line: "",
     };
-    assert.deepEqual(buddy_data.get_title_data(bot.user_id, is_group), expected_group_data);
+    assert.deepEqual(buddy_data.get_title_data(bot.user_id, is_group, true), expected_group_data);
 
     // Individual users.
     user_status.set_status_text({
@@ -222,14 +226,24 @@ test("title_data", ({override}) => {
         status_text: "out to lunch",
     });
 
+    override(user_settings, "user_list_style", user_list_style_values.with_status.code);
     let expected_data = {
+        first_line: "Human Myself",
+        second_line: "",
+        third_line: "translated: Active now",
+        show_you: true,
+    };
+    override(current_user, "user_id", me.user_id);
+    assert.deepEqual(buddy_data.get_title_data(me.user_id, is_group, false), expected_data);
+
+    expected_data = {
         first_line: "Human Myself",
         second_line: "out to lunch",
         third_line: "translated: Active now",
         show_you: true,
     };
     override(current_user, "user_id", me.user_id);
-    assert.deepEqual(buddy_data.get_title_data(me.user_id, is_group), expected_data);
+    assert.deepEqual(buddy_data.get_title_data(me.user_id, is_group, true), expected_data);
 
     expected_data = {
         first_line: "Old User",
@@ -237,7 +251,7 @@ test("title_data", ({override}) => {
         third_line: "",
         show_you: false,
     };
-    assert.deepEqual(buddy_data.get_title_data(old_user.user_id, is_group), expected_data);
+    assert.deepEqual(buddy_data.get_title_data(old_user.user_id, is_group, true), expected_data);
 
     // Deactivated users.
     people.deactivate(selma);
@@ -248,7 +262,7 @@ test("title_data", ({override}) => {
         show_you: false,
         is_deactivated: true,
     };
-    assert.deepEqual(buddy_data.get_title_data(selma.user_id, is_group), expected_data);
+    assert.deepEqual(buddy_data.get_title_data(selma.user_id, is_group, true), expected_data);
 
     // Deactivated bots.
     people.deactivate(bot_with_owner);
@@ -259,7 +273,7 @@ test("title_data", ({override}) => {
         is_deactivated: true,
     };
     assert.deepEqual(
-        buddy_data.get_title_data(bot_with_owner.user_id, is_group),
+        buddy_data.get_title_data(bot_with_owner.user_id, is_group, true),
         expected_group_data,
     );
 });
