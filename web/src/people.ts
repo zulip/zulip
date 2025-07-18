@@ -55,6 +55,8 @@ export let INACCESSIBLE_USER_NAME: string;
 export let WELCOME_BOT: User;
 export let EMAIL_GATEWAY_BOT: User;
 
+export const MAX_USER_NAME_LENGTH = 100;
+
 // We have an init() function so that our automated tests
 // can easily clear data.
 export function init(): void {
