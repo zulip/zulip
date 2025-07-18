@@ -8,6 +8,7 @@ from datetime import datetime
 from typing import IO, Any
 from urllib.parse import unquote, urljoin
 
+import chardet
 import pyvips
 from django.conf import settings
 from django.core.files.uploadedfile import UploadedFile
@@ -45,6 +46,27 @@ def check_upload_within_quota(realm: Realm, uploaded_file_size: int) -> None:
         raise RealmUploadQuotaError(_("Upload would exceed your organization's upload quota."))
 
 
+def maybe_add_charset(content_type: str, file_data: bytes | StreamingSourceWithSize) -> str:
+    if content_type != "text/plain":
+        return content_type
+    if isinstance(file_data, bytes):
+        detected = chardet.detect(file_data)
+    else:
+        reader = file_data.reader()
+        detector = chardet.universaldetector.UniversalDetector()
+        while True:
+            data = reader.read(4096)
+            detector.feed(data)
+            if detector.done or len(data) < 4096:
+                break
+        detector.close()
+        reader.close()
+        detected = detector.result
+    if detected["confidence"] > 0.9 and detected["encoding"]:
+        content_type += f"; charset={detected['encoding']}"
+    return content_type
+
+
 def create_attachment(
     file_name: str,
     path_id: str,
@@ -58,10 +80,12 @@ def create_attachment(
     )
     if isinstance(file_data, bytes):
         file_size = len(file_data)
-        file_real_data: bytes | pyvips.Source = file_data
+        file_vips_data: bytes | pyvips.Source = file_data
     else:
         file_size = file_data.size
-        file_real_data = file_data.source
+        file_vips_data = file_data.vips_source
+
+    content_type = maybe_add_charset(content_type, file_data)
     attachment = Attachment.objects.create(
         file_name=file_name,
         path_id=path_id,
@@ -70,7 +94,7 @@ def create_attachment(
         size=file_size,
         content_type=content_type,
     )
-    maybe_thumbnail(file_real_data, content_type, path_id, realm.id)
+    maybe_thumbnail(file_vips_data, content_type, path_id, realm.id)
     from zerver.actions.uploads import notify_attachment_update
 
     notify_attachment_update(user_profile, "add", attachment.to_dict())
