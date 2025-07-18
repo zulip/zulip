@@ -392,20 +392,24 @@ class ZulipUpdateAnnouncementsTest(ZulipTestCase):
             imported_realm = get_realm("gryffindor")
             notification_bot = get_system_bot(settings.NOTIFICATION_BOT, imported_realm.id)
 
+            gryffindor_common_room = get_stream("Gryffindor common room", imported_realm)
+
             # Verify for realm imported from other product:
             # * zulip_update_announcements_level = latest level
-            # * zulip_update_announcements_stream = None
-            # * group DM sent to admins suggesting to set the stream.
+            # * zulip_update_announcements_stream = gryffindor_common_room - channel with the most subscribers,
+            #   with earliest id as tiebreaker.
+            # * announcements sent to the channel.
             self.assertEqual(imported_realm.zulip_update_announcements_level, 2)
-            self.assertIsNone(imported_realm.zulip_update_announcements_stream)
-            group_direct_message = Message.objects.filter(
-                realm=imported_realm, sender=notification_bot
+            self.assertEqual(
+                imported_realm.zulip_update_announcements_stream, gryffindor_common_room
+            )
+            personal_message = Message.objects.filter(
+                realm=imported_realm, sender=notification_bot, recipient__type=Recipient.PERSONAL
             ).first()
-            assert group_direct_message is not None
+            assert personal_message is not None
             self.assertIn(
-                "These notifications are currently turned off in your organization. "
-                "If you configure a channel within one week, your organization will not miss any update messages.",
-                group_direct_message.content,
+                "Starting tomorrow, users in your organization will receive",
+                personal_message.content,
             )
 
             # Two new updates added.
@@ -421,15 +425,15 @@ class ZulipUpdateAnnouncementsTest(ZulipTestCase):
             ]
             self.zulip_update_announcements.extend(new_updates)
 
-            # Wait for one week before starting to skip sending updates.
+            # Wait for 24h before starting to send updates.
             now = timezone_now()
-            with time_machine.travel(now + timedelta(days=6), tick=False):
+            with time_machine.travel(now + timedelta(hours=23), tick=False):
                 send_zulip_update_announcements(skip_delay=False)
             imported_realm.refresh_from_db()
             self.assertEqual(imported_realm.zulip_update_announcements_level, 2)
 
-            # No stream configured. Skip updates.
-            with time_machine.travel(now + timedelta(days=8), tick=False):
+            # After 24h, send updates.
+            with time_machine.travel(now + timedelta(hours=25), tick=False):
                 send_zulip_update_announcements(skip_delay=False)
             imported_realm.refresh_from_db()
             self.assertEqual(imported_realm.zulip_update_announcements_level, 4)
@@ -438,30 +442,6 @@ class ZulipUpdateAnnouncementsTest(ZulipTestCase):
                 sender=notification_bot,
                 recipient__type=Recipient.STREAM,
             )
-            self.assertFalse(zulip_updates_message_query.exists())
-
-            new_updates = [
-                ZulipUpdateAnnouncement(
-                    level=5,
-                    message="Announcement message 5.",
-                ),
-                ZulipUpdateAnnouncement(
-                    level=6,
-                    message="Announcement message 6.",
-                ),
-            ]
-            self.zulip_update_announcements.extend(new_updates)
-
-            # Stream configured, send update messages.
-            imported_realm.zulip_update_announcements_stream = get_stream(
-                "Gryffindor common room", imported_realm
-            )
-            imported_realm.save()
-
-            with time_machine.travel(now + timedelta(days=10), tick=False):
-                send_zulip_update_announcements(skip_delay=False)
-            imported_realm.refresh_from_db()
-            self.assertEqual(imported_realm.zulip_update_announcements_level, 6)
             self.assertTrue(zulip_updates_message_query.exists())
 
     def test_send_zulip_update_announcements_new_realm(self) -> None:
