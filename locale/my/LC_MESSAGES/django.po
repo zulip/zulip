@@ -8,14 +8,16 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-03-20 06:34+0000\n"
-"PO-Revision-Date: 2015-12-06 00:18+0000\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language-Team: Burmese (http://app.transifex.com/zulip/zulip/language/my/)\n"
+"PO-Revision-Date: 2025-07-17 06:39+0000\n"
+"Last-Translator: Anonymous <noreply@weblate.org>\n"
+"Language-Team: Burmese <https://hosted.weblate.org/projects/zulip/django/my/>"
+"\n"
+"Language: my\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Language: my\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
+"X-Generator: Weblate 5.13-dev\n"
 
 #: analytics/views/stats.py:109 zerver/decorator.py:667
 #: zerver/decorator.py:685
@@ -59,7 +61,8 @@ msgstr "စတင်ချိန်သည် ပြီးဆုံးချိ�
 
 #: analytics/views/stats.py:457 analytics/views/stats.py:494
 msgid "No analytics data available. Please contact your server administrator."
-msgstr "ခွဲခြမ်းစိတ်ဖြာမှုဒေတာ မရရှိနိုင်ပါ။ သင့်ဆာဗာစီမံခန့်ခွဲသူကို ဆက်သွယ်ပါ။"
+msgstr ""
+"ခွဲခြမ်းစိတ်ဖြာမှုဒေတာ မရရှိနိုင်ပါ။ သင့်ဆာဗာစီမံခန့်ခွဲသူကို ဆက်သွယ်ပါ။"
 
 #: corporate/lib/registration.py:35
 #, python-brace-format
@@ -68,7 +71,10 @@ msgid ""
 "new users. Please [increase the number of licenses]({billing_page_link}) or "
 "[deactivate inactive users]({deactivate_user_help_page_link}) to allow new "
 "users to join."
-msgstr "သင့်အဖွဲ့အစည်းတွင် Zulip လိုင်စင်များ မကျန်တော့ဘဲ အသုံးပြုသူအသစ်များကို လက်ခံနိုင်တော့မည်မဟုတ်ပါ။ ကျေးဇူးပြု၍ [လိုင်စင်အရေအတွက်ကို တိုးပါ]({billing_page_link}) သို့မဟုတ် [မလှုပ်မရှားသောအသုံးပြုသူများကို ပိတ်ရန်]({deactivate_user_help_page_link}) အသုံးပြုသူအသစ်များကို ပါဝင်ခွင့်ပြုပါ။"
+msgstr ""
+"သင့်အဖွဲ့အစည်းတွင် Zulip လိုင်စင်များ မကျန်တော့ဘဲ အသုံးပြုသူအသစ်များကို လက်ခံနိုင်တော့မည်မဟုတ်ပါ။ ကျေးဇူးပြု၍ "
+"[လိုင်စင်အရေအတွက်ကို တိုးပါ]({billing_page_link}) သို့မဟုတ် [မလှုပ်မရှားသောအသုံးပြုသူများကို ပိတ်ရန်]"
+"({deactivate_user_help_page_link}) အသုံးပြုသူအသစ်များကို ပါဝင်ခွင့်ပြုပါ။"
 
 #: corporate/lib/registration.py:42
 #, python-brace-format
@@ -77,7 +83,10 @@ msgid ""
 "the number of licenses]({billing_page_link}) or [deactivate inactive "
 "users]({deactivate_user_help_page_link}) to allow more than one user to "
 "join."
-msgstr "သင့်အဖွဲ့အစည်းတွင် Zulip လိုင်စင်တစ်ခုသာ ကျန်ရှိတော့သည် အသုံးပြုသူ တစ်ဦးထက်ပို၍ ပါဝင်ခွင့်ပြုရန်အတွက် သင်သည် [လိုင်စင်အရေအတွက်ကို တိုးမြင့်စေနိုင်သည်]({billing_page_link}) သို့မဟုတ် [မလှုပ်မရှားသောအသုံးပြုသူများကို ပိတ်ရန်]({deactivate_user_help_page_link}) ကို ပြုလုပ်နိုင်ပါသည်။"
+msgstr ""
+"သင့်အဖွဲ့အစည်းတွင် Zulip လိုင်စင်တစ်ခုသာ ကျန်ရှိတော့သည် အသုံးပြုသူ တစ်ဦးထက်ပို၍ ပါဝင်ခွင့်ပြုရန်အတွက် သင်သည် "
+"[လိုင်စင်အရေအတွက်ကို တိုးမြင့်စေနိုင်သည်]({billing_page_link}) သို့မဟုတ် "
+"[မလှုပ်မရှားသောအသုံးပြုသူများကို ပိတ်ရန်]({deactivate_user_help_page_link}) ကို ပြုလုပ်နိုင်ပါသည်။"
 
 #: corporate/lib/registration.py:47
 #, python-brace-format
@@ -86,7 +95,10 @@ msgid ""
 "the number of licenses]({billing_page_link}) or [deactivate inactive "
 "users]({deactivate_user_help_page_link}) to allow more than two users to "
 "join."
-msgstr "သင့်အဖွဲ့အစည်းတွင် Zulip လိုင်စင်နှစ်ခုသာ ကျန်ရှိသည်။ အသုံးပြုသူနှစ်ဦးထက်ပို၍ ပူးပေါင်းပါဝင်ခွင့်ပြုရန် သင်သည် [လိုင်စင်အရေအတွက်ကို တိုးမြှင့်နိုင်သည်]({billing_page_link}) သို့မဟုတ် [မလှုပ်မရှားသောအသုံးပြုသူများကို ပိတ်ရန်]({deactivate_user_help_page_link}) ကို ပြုလုပ်နိုင်ပါသည်။"
+msgstr ""
+"သင့်အဖွဲ့အစည်းတွင် Zulip လိုင်စင်နှစ်ခုသာ ကျန်ရှိသည်။ အသုံးပြုသူနှစ်ဦးထက်ပို၍ ပူးပေါင်းပါဝင်ခွင့်ပြုရန် သင်သည် "
+"[လိုင်စင်အရေအတွက်ကို တိုးမြှင့်နိုင်သည်]({billing_page_link}) သို့မဟုတ် "
+"[မလှုပ်မရှားသောအသုံးပြုသူများကို ပိတ်ရန်]({deactivate_user_help_page_link}) ကို ပြုလုပ်နိုင်ပါသည်။"
 
 #: corporate/lib/registration.py:52
 #, python-brace-format
@@ -95,7 +107,10 @@ msgid ""
 " the number of licenses]({billing_page_link}) or [deactivate inactive "
 "users]({deactivate_user_help_page_link}) to allow more than three users to "
 "join."
-msgstr "သင့်အဖွဲ့အစည်းတွင် Zulip လိုင်စင်နှစ်ခုသာ ကျန်ရှိသည်။ အသုံးပြုသူနှစ်ဦးထက်ပို၍ ပူးပေါင်းပါဝင်ခွင့်ပြုရန် သင်သည် [လိုင်စင်အရေအတွက်ကို တိုးမြှင့်နိုင်သည်]({billing_page_link}) သို့မဟုတ် [မလှုပ်မရှားသောအသုံးပြုသူများကို ပိတ်ရန်]({deactivate_user_help_page_link}) ကို ပြုလုပ်နိုင်ပါသည်။"
+msgstr ""
+"သင့်အဖွဲ့အစည်းတွင် Zulip လိုင်စင်နှစ်ခုသာ ကျန်ရှိသည်။ အသုံးပြုသူနှစ်ဦးထက်ပို၍ ပူးပေါင်းပါဝင်ခွင့်ပြုရန် သင်သည် "
+"[လိုင်စင်အရေအတွက်ကို တိုးမြှင့်နိုင်သည်]({billing_page_link}) သို့မဟုတ် "
+"[မလှုပ်မရှားသောအသုံးပြုသူများကို ပိတ်ရန်]({deactivate_user_help_page_link}) ကို ပြုလုပ်နိုင်ပါသည်။"
 
 #: corporate/lib/registration.py:63
 #, python-brace-format

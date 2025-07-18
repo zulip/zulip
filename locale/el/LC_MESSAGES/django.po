@@ -9,14 +9,15 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-03-20 06:34+0000\n"
-"PO-Revision-Date: 2015-12-06 00:18+0000\n"
-"Last-Translator: Panos Damelos, 2024\n"
-"Language-Team: Greek (http://app.transifex.com/zulip/zulip/language/el/)\n"
+"PO-Revision-Date: 2025-07-17 06:39+0000\n"
+"Last-Translator: Anonymous <noreply@weblate.org>\n"
+"Language-Team: Greek <https://hosted.weblate.org/projects/zulip/django/el/>\n"
+"Language: el\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Language: el\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"X-Generator: Weblate 5.13-dev\n"
 
 #: analytics/views/stats.py:109 zerver/decorator.py:667
 #: zerver/decorator.py:685
@@ -167,7 +168,9 @@ msgstr "Κάτι πήγε λάθος. Παρακαλούμε ανανεώστε 
 
 #: corporate/lib/stripe.py:504
 msgid "Something went wrong. Please wait a few seconds and try again."
-msgstr "Κάτι πήγε λάθος. Παρακαλούμε περιμένετε μερικά δευτερόλεπτα και δοκιμάστε ξανά."
+msgstr ""
+"Κάτι πήγε λάθος. Παρακαλούμε περιμένετε μερικά δευτερόλεπτα και δοκιμάστε "
+"ξανά."
 
 #: corporate/lib/stripe.py:1888
 msgid "Please add a credit card before starting your free trial."
@@ -1483,13 +1486,19 @@ msgid ""
 "To complete your registration, check your email account (<span "
 "class=\"user_email semi-bold\">%(email)s</span>) for a confirmation email "
 "from Zulip."
-msgstr "Για να ολοκληρώσετε την εγγραφή σας, δείτε στο email σας (<span class=\"user_email semi-bold\">%(email)s</span>) για ένα email επιβεβαίωσης από το Zulip."
+msgstr ""
+"Για να ολοκληρώσετε την εγγραφή σας, δείτε στο email σας (<span class="
+"\"user_email semi-bold\">%(email)s</span>) για ένα email επιβεβαίωσης από το "
+"Zulip."
 
 #: templates/zerver/accounts_send_confirm.html:25
 msgid ""
 "If you don't see a confirmation email in your Inbox or Spam folder, we can "
 "<a href=\"#\" id=\"resend_email_link\">resend it</a>."
-msgstr "Αν δεν δείτε ένα email επιβεβαίωσης στον φάκελο με τα Εισερχόμενα ή τα Ανεπιθύμητα, μπορούμε να το <a href=\"#\" id=\"resend_email_link\">ξαναστείλουμε</a>."
+msgstr ""
+"Αν δεν δείτε ένα email επιβεβαίωσης στον φάκελο με τα Εισερχόμενα ή τα "
+"Ανεπιθύμητα, μπορούμε να το <a href=\"#\" id=\"resend_email_link\""
+">ξαναστείλουμε</a>."
 
 #: templates/zerver/app/index.html:6
 #, python-brace-format
@@ -1598,7 +1607,10 @@ msgid ""
 "\n"
 "                            No account found for %(email)s.\n"
 "                            "
-msgstr "\n                            Δεν βρέθηκε λογαριασμός για το %(email)s.\n                            "
+msgstr ""
+"\n"
+"                            Δεν βρέθηκε λογαριασμός για το %(email)s.\n"
+"                            "
 
 #: templates/zerver/confirm_continue_registration.html:30
 msgid "Log in with another account"

@@ -13,14 +13,15 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-03-20 06:34+0000\n"
-"PO-Revision-Date: 2015-12-06 00:18+0000\n"
-"Last-Translator: Tim Abbott <tabbott@kandralabs.com>, 2021,2023\n"
-"Language-Team: Dutch (http://app.transifex.com/zulip/zulip/language/nl/)\n"
+"PO-Revision-Date: 2025-07-17 06:37+0000\n"
+"Last-Translator: Anonymous <noreply@weblate.org>\n"
+"Language-Team: Dutch <https://hosted.weblate.org/projects/zulip/django/nl/>\n"
+"Language: nl\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Language: nl\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"X-Generator: Weblate 5.13-dev\n"
 
 #: analytics/views/stats.py:109 zerver/decorator.py:667
 #: zerver/decorator.py:685
@@ -73,7 +74,11 @@ msgid ""
 "new users. Please [increase the number of licenses]({billing_page_link}) or "
 "[deactivate inactive users]({deactivate_user_help_page_link}) to allow new "
 "users to join."
-msgstr "Jouw organisatie heeft geen resterende Zulip-licenties en kan geen nieuwe gebruikers meer accepteren. [Verhoog het aantal licenties]({billing_page_link}) of [deactiveer inactieve gebruikers]({deactivate_user_help_page_link}) om nieuwe gebruikers toe te laten treden."
+msgstr ""
+"Jouw organisatie heeft geen resterende Zulip-licenties en kan geen nieuwe "
+"gebruikers meer accepteren. [Verhoog het aantal licenties]"
+"({billing_page_link}) of [deactiveer inactieve gebruikers]"
+"({deactivate_user_help_page_link}) om nieuwe gebruikers toe te laten treden."
 
 #: corporate/lib/registration.py:42
 #, python-brace-format
@@ -82,7 +87,11 @@ msgid ""
 "the number of licenses]({billing_page_link}) or [deactivate inactive "
 "users]({deactivate_user_help_page_link}) to allow more than one user to "
 "join."
-msgstr "Jouw organisatie heeft nog maar 1 resterende Zulip-licentie over. Je kan [het aantal licenties verhogen]({billing_page_link}) of [inactieve gebruikers deactiveren]({deactivate_user_help_page_link}) om meer dan 1 nieuwe gebruiker toe te laten treden."
+msgstr ""
+"Jouw organisatie heeft nog maar 1 resterende Zulip-licentie over. Je kan "
+"[het aantal licenties verhogen]({billing_page_link}) of "
+"[inactieve gebruikers deactiveren]({deactivate_user_help_page_link}) om meer "
+"dan 1 nieuwe gebruiker toe te laten treden."
 
 #: corporate/lib/registration.py:47
 #, python-brace-format
@@ -91,7 +100,11 @@ msgid ""
 "the number of licenses]({billing_page_link}) or [deactivate inactive "
 "users]({deactivate_user_help_page_link}) to allow more than two users to "
 "join."
-msgstr "Jouw organisatie heeft nog maar 2 resterende Zulip-licenties over. Je kan [het aantal licenties verhogen]({billing_page_link}) of [inactieve gebruikers deactiveren]({deactivate_user_help_page_link}) om meer dan 2 nieuwe gebruiker toe te laten treden."
+msgstr ""
+"Jouw organisatie heeft nog maar 2 resterende Zulip-licenties over. Je kan "
+"[het aantal licenties verhogen]({billing_page_link}) of "
+"[inactieve gebruikers deactiveren]({deactivate_user_help_page_link}) om meer "
+"dan 2 nieuwe gebruiker toe te laten treden."
 
 #: corporate/lib/registration.py:52
 #, python-brace-format
@@ -100,7 +113,11 @@ msgid ""
 " the number of licenses]({billing_page_link}) or [deactivate inactive "
 "users]({deactivate_user_help_page_link}) to allow more than three users to "
 "join."
-msgstr "Jouw organisatie heeft nog maar 3 resterende Zulip-licenties over. Je kan [het aantal licenties verhogen]({billing_page_link}) of [inactieve gebruikers deactiveren]({deactivate_user_help_page_link}) om meer dan 3 nieuwe gebruiker toe te laten treden."
+msgstr ""
+"Jouw organisatie heeft nog maar 3 resterende Zulip-licenties over. Je kan "
+"[het aantal licenties verhogen]({billing_page_link}) of "
+"[inactieve gebruikers deactiveren]({deactivate_user_help_page_link}) om meer "
+"dan 3 nieuwe gebruiker toe te laten treden."
 
 #: corporate/lib/registration.py:63
 #, python-brace-format
@@ -144,7 +161,9 @@ msgstr ""
 msgid ""
 "Invoices with more than {max_licenses} licenses can't be processed from this"
 " page. To complete the upgrade, please contact {email}."
-msgstr "Aankopen met meer dan {max_licenses} kunnen niet verwerkt worden via deze pagina. Contacteer alsjeblieft {email} om de upgrade te voltooien."
+msgstr ""
+"Aankopen met meer dan {max_licenses} kunnen niet verwerkt worden via deze "
+"pagina. Contacteer alsjeblieft {email} om de upgrade te voltooien."
 
 #: corporate/lib/stripe.py:358
 msgid "No payment method on file."
@@ -158,7 +177,8 @@ msgstr "{brand} eindigt over {last4}"
 #: corporate/lib/stripe.py:374
 #, python-brace-format
 msgid "Unknown payment method. Please contact {email}."
-msgstr "Dit is een onbekende betaalmethode. Neem alsjeblieft contact op met {email}."
+msgstr ""
+"Dit is een onbekende betaalmethode. Neem alsjeblieft contact op met {email}."
 
 #: corporate/lib/stripe.py:407
 #, python-brace-format
@@ -171,7 +191,9 @@ msgstr "Er is iets mis gegaan. Herlaad alsjeblieft de pagina."
 
 #: corporate/lib/stripe.py:504
 msgid "Something went wrong. Please wait a few seconds and try again."
-msgstr "Er is iets mis gegaan. Wacht alsjeblieft een paar seconden en probeer het opnieuw."
+msgstr ""
+"Er is iets mis gegaan. Wacht alsjeblieft een paar seconden en probeer het "
+"opnieuw."
 
 #: corporate/lib/stripe.py:1888
 msgid "Please add a credit card before starting your free trial."
@@ -272,7 +294,12 @@ msgid ""
 "Your organization's request for sponsored hosting has been approved! You have been upgraded to {plan_name}, free of charge. {emoji}\n"
 "\n"
 "If you could {begin_link}list Zulip as a sponsor on your website{end_link}, we would really appreciate it!"
-msgstr "Jouw organisatie's aanvraag voor gesponsorde hosting is aanvaard! Je bent geüpgraded naar {plan_name}, zonder meerkost. {emoji}\n\nWe zouden het ten zeerste op prijs stellen als je {begin_link} Zulip zou kunnen weergeven als sponsor op jouw website{end_link}!"
+msgstr ""
+"Jouw organisatie's aanvraag voor gesponsorde hosting is aanvaard! Je bent "
+"geüpgraded naar {plan_name}, zonder meerkost. {emoji}\n"
+"\n"
+"We zouden het ten zeerste op prijs stellen als je {begin_link} Zulip zou "
+"kunnen weergeven als sponsor op jouw website{end_link}!"
 
 #: corporate/views/billing_page.py:351
 msgid "Parameter 'confirmed' is required"
@@ -422,7 +449,9 @@ msgstr ""
 
 #: templates/analytics/stats.html:18
 msgid "Analytics are fully available 24 hours after organization creation."
-msgstr "Analysegegevens zijn volledig toegankelijk na de eerste 24 uur van de creatie van de organisatie."
+msgstr ""
+"Analysegegevens zijn volledig toegankelijk na de eerste 24 uur van de "
+"creatie van de organisatie."
 
 #: templates/analytics/stats.html:23
 #, python-format
@@ -548,7 +577,9 @@ msgstr "Laatste update"
 msgid ""
 "A full update of all the graphs happens once a day. The “messages sent over "
 "time” graph is updated once an hour."
-msgstr "Een volledige update van de grafieken gebeurt eens per dag. De “verstuurde berichten” grafiek wordt elk uur bijgewerkt."
+msgstr ""
+"Een volledige update van de grafieken gebeurt eens per dag. De “verstuurde "
+"berichten” grafiek wordt elk uur bijgewerkt."
 
 #: templates/confirmation/confirm_email_change.html:4
 msgid "Email changed"
@@ -565,7 +596,10 @@ msgid ""
 "            This confirms that the email address for your Zulip account has changed\n"
 "            from %(old_email_html_tag)s to %(new_email_html_tag)s\n"
 "            "
-msgstr "\nDit bevestigt dat het e-mailadres voor jouw Zulip account is veranderd\nvan %(old_email_html_tag)s naar %(new_email_html_tag)s"
+msgstr ""
+"\n"
+"Dit bevestigt dat het e-mailadres voor jouw Zulip account is veranderd\n"
+"van %(old_email_html_tag)s naar %(new_email_html_tag)s"
 
 #: templates/confirmation/confirm_preregistrationuser.html:5
 msgid "Confirming your email address"
@@ -1602,7 +1636,10 @@ msgid ""
 "\n"
 "                            No account found for %(email)s.\n"
 "                            "
-msgstr "\n                            Geen account gevonden voor %(email)s.\n                            "
+msgstr ""
+"\n"
+"                            Geen account gevonden voor %(email)s.\n"
+"                            "
 
 #: templates/zerver/confirm_continue_registration.html:30
 msgid "Log in with another account"
@@ -2484,7 +2521,8 @@ msgstr ""
 msgid ""
 "Organization: %(organization_url)s Time: %(login_time)s Email: "
 "%(user_email)s"
-msgstr "Organisatie: %(organization_url)s Tijd: %(login_time)s E-mail: %(user_email)s"
+msgstr ""
+"Organisatie: %(organization_url)s Tijd: %(login_time)s E-mail: %(user_email)s"
 
 #: templates/zerver/emails/notify_new_login.html:12
 #: templates/zerver/emails/notify_new_login.txt:1
@@ -3804,7 +3842,9 @@ msgstr ""
 msgid ""
 "This is used for mobile applications and other tools that require a "
 "password."
-msgstr "Dit wordt gebruikt voor mobiele apps en andere tools die een wachtwoord nodig hebben."
+msgstr ""
+"Dit wordt gebruikt voor mobiele apps en andere tools die een wachtwoord "
+"nodig hebben."
 
 #: templates/zerver/register.html:163
 msgid "Password strength"
@@ -3908,7 +3948,10 @@ msgid ""
 "\n"
 "        <h1 class=\"get-started\">Select account</h1>\n"
 "        "
-msgstr "\n        <h1 class=\"get-started\">Selecteer account</h1>\n        "
+msgstr ""
+"\n"
+"        <h1 class=\"get-started\">Selecteer account</h1>\n"
+"        "
 
 #: templates/zerver/social_auth_select_email.html:67
 msgid ""
@@ -4084,7 +4127,9 @@ msgstr ""
 
 #: zerver/actions/invites.py:266
 msgid "Some emails did not validate, so we didn't send any invitations."
-msgstr "Sommige e-mails zijn niet gevalideerd, dus we hebben geen uitnodigingen gestuurd."
+msgstr ""
+"Sommige e-mails zijn niet gevalideerd, dus we hebben geen uitnodigingen "
+"gestuurd."
 
 #: zerver/actions/invites.py:274
 msgid "We weren't able to invite anyone."
@@ -4530,7 +4575,8 @@ msgstr "Gebruik je echte e-mailadres."
 #: zerver/forms.py:265
 #, python-brace-format
 msgid "The organization you are trying to join using {email} does not exist."
-msgstr "De organisatie waar je bij wilt aansluiten met {email} bestaat hier niet."
+msgstr ""
+"De organisatie waar je bij wilt aansluiten met {email} bestaat hier niet."
 
 #: zerver/forms.py:273
 #, python-brace-format
@@ -4543,7 +4589,9 @@ msgstr "Vraag een uitnodiging voor {email} aan bij de organisatiebeheerder."
 msgid ""
 "Your email address, {email}, is not in one of the domains that are allowed "
 "to register for accounts in this organization."
-msgstr "Je e-mailadres, {email}, bevindt zich niet in een van de domeinen die zich mogen registreren voor accounts in deze organisatie."
+msgstr ""
+"Je e-mailadres, {email}, bevindt zich niet in een van de domeinen die zich "
+"mogen registreren voor accounts in deze organisatie."
 
 #: zerver/forms.py:290
 msgid "Email addresses containing + are not allowed in this organization."
@@ -6307,11 +6355,14 @@ msgstr "Je moet minimaal één e-mailadres opgeven."
 msgid ""
 "Some of those addresses are already using Zulip, so we didn't send them an "
 "invitation. We did send invitations to everyone else!"
-msgstr "Sommige van die adressen gebruiken al Zulip, dus we hebben ze geen uitnodiging gestuurd. We hebben alle anderen wel uitnodigingen gestuurd!"
+msgstr ""
+"Sommige van die adressen gebruiken al Zulip, dus we hebben ze geen "
+"uitnodiging gestuurd. We hebben alle anderen wel uitnodigingen gestuurd!"
 
 #: zerver/views/message_edit.py:121
 msgid "Message edit history is disabled in this organization"
-msgstr "Bewerkingsgeschiedenis van berichten is uitgeschakeld in deze organisatie"
+msgstr ""
+"Bewerkingsgeschiedenis van berichten is uitgeschakeld in deze organisatie"
 
 #: zerver/views/message_edit.py:181 zerver/views/message_edit.py:184
 msgid "You don't have permission to delete this message"
@@ -6593,7 +6644,8 @@ msgstr ""
 
 #: zerver/views/streams.py:498 zerver/views/user_groups.py:487
 msgid "Nothing to do. Specify at least one of \"add\" or \"delete\"."
-msgstr "Niets te doen. Geef minimaal één op van \"toevoegen\" of \"verwijderen\"."
+msgstr ""
+"Niets te doen. Geef minimaal één op van \"toevoegen\" of \"verwijderen\"."
 
 #: zerver/views/streams.py:575
 #, python-brace-format

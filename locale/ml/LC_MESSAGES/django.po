@@ -10,14 +10,16 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-03-20 06:34+0000\n"
-"PO-Revision-Date: 2015-12-06 00:18+0000\n"
-"Last-Translator: Vishnu Ks <yo@vishnuks.com>, 2017\n"
-"Language-Team: Malayalam (http://app.transifex.com/zulip/zulip/language/ml/)\n"
+"PO-Revision-Date: 2025-07-17 06:37+0000\n"
+"Last-Translator: Anonymous <noreply@weblate.org>\n"
+"Language-Team: Malayalam <https://hosted.weblate.org/projects/zulip/django/"
+"ml/>\n"
+"Language: ml\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Language: ml\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"X-Generator: Weblate 5.13-dev\n"
 
 #: analytics/views/stats.py:109 zerver/decorator.py:667
 #: zerver/decorator.py:685
@@ -61,7 +63,8 @@ msgstr ""
 
 #: analytics/views/stats.py:457 analytics/views/stats.py:494
 msgid "No analytics data available. Please contact your server administrator."
-msgstr "അനലിറ്റിക്സ് ഡാറ്റയൊന്നും ലഭ്യമല്ല. ദയവായി നിങ്ങളുടെ സെർവർ അഡ്മിനിസ്ട്രേറ്ററെ ബന്ധപ്പെടുക."
+msgstr ""
+"അനലിറ്റിക്സ് ഡാറ്റയൊന്നും ലഭ്യമല്ല. ദയവായി നിങ്ങളുടെ സെർവർ അഡ്മിനിസ്ട്രേറ്ററെ ബന്ധപ്പെടുക."
 
 #: corporate/lib/registration.py:35
 #, python-brace-format
