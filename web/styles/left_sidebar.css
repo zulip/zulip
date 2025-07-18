@@ -635,8 +635,14 @@
     }
 }
 
+.stream-list-toggle-inactive-channels.highlighted_row {
+    outline: 2px solid var(--color-outline-focus);
+    outline-offset: -2px;
+    background-color: var(--color-background-sidebar-action-heading-hover);
+}
+
 #stream_filters .narrow-filter:has(a.subscription_block:focus-visible),
-#stream_filters .narrow-filter.highlighted_stream {
+#stream_filters .narrow-filter.highlighted_row {
     &.active-filter > .bottom_left_row {
         background-color: var(--color-background-hover-narrow-filter);
     }

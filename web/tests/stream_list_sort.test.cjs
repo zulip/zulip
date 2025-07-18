@@ -118,7 +118,7 @@ test("no_subscribed_streams", () => {
         ],
         same_as_before: sorted.same_as_before,
     });
-    assert.equal(stream_list_sort.first_stream_id(), undefined);
+    assert.equal(stream_list_sort.first_row(), undefined);
 });
 
 test("basics", () => {
@@ -147,27 +147,14 @@ test("basics", () => {
     ]);
     assert.deepEqual(normal.muted_streams, [muted_active.stream_id]);
 
-    // Test cursor helpers.
-    assert.equal(stream_list_sort.first_stream_id(), scalene.stream_id);
-
-    assert.equal(stream_list_sort.prev_stream_id(scalene.stream_id), undefined);
-    assert.equal(stream_list_sort.prev_stream_id(muted_pinned.stream_id), scalene.stream_id);
-    assert.equal(stream_list_sort.prev_stream_id(clarinet.stream_id), muted_pinned.stream_id);
-
-    assert.equal(
-        stream_list_sort.next_stream_id(fast_tortoise.stream_id),
-        stream_hyphen_underscore_slash_colon.stream_id,
-    );
-    assert.equal(
-        stream_list_sort.next_stream_id(stream_hyphen_underscore_slash_colon.stream_id),
-        muted_active.stream_id,
-    );
-    assert.equal(
-        stream_list_sort.next_stream_id(fast_tortoise.stream_id),
-        stream_hyphen_underscore_slash_colon.stream_id,
-    );
-    assert.equal(stream_list_sort.next_stream_id(muted_active.stream_id), pneumonia.stream_id);
-    assert.equal(stream_list_sort.next_stream_id(pneumonia.stream_id), undefined);
+    // Test keyboard UI / cursor code (currently mostly deleted).
+    // TODO/channel-folders: Re-add keyboard navigation tests,
+    // including some with filtering. This mainly requires either
+    // exporting some parts of the stream_list module, or refactoring
+    // to move some of the stream_list data objects to another module.
+    const row = stream_list_sort.first_row();
+    assert.equal(row.type, "stream");
+    assert.equal(row.stream_id, scalene.stream_id);
 
     // Test filtering
     sorted_sections = sort_groups("s").sections;
@@ -179,10 +166,6 @@ test("basics", () => {
     assert.deepEqual(sorted_sections[1].inactive_streams, []);
     assert.deepEqual(sorted_sections[1].streams, [stream_hyphen_underscore_slash_colon.stream_id]);
 
-    assert.equal(stream_list_sort.prev_stream_id(clarinet.stream_id), undefined);
-
-    assert.equal(stream_list_sort.next_stream_id(clarinet.stream_id), undefined);
-
     // Test searching entire word, case-insensitive
     sorted_sections = sort_groups("PnEuMoNiA").sections;
     assert.deepEqual(sorted_sections.length, 2);
@@ -193,13 +176,7 @@ test("basics", () => {
 
     // Test searching part of word
     sorted_sections = sort_groups("tortoise").sections;
-<<<<<<< HEAD
-    assert.deepEqual(sorted_sections.length, 3);
-||||||| parent of e3f8b5fa9f (left_sidebar: Remove inactive section, put inactive channels in regular section.)
-        assert.deepEqual(sorted_sections.length, 3);
-=======
-        assert.deepEqual(sorted_sections.length, 2);
->>>>>>> e3f8b5fa9f (left_sidebar: Remove inactive section, put inactive channels in regular section.)
+    assert.deepEqual(sorted_sections.length, 2);
     assert.deepEqual(sorted_sections[0].streams, []);
     assert.deepEqual(sorted_sections[0].inactive_streams, []);
     assert.deepEqual(sorted_sections[1].id, "normal-streams");
