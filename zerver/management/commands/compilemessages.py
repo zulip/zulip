@@ -68,7 +68,7 @@ class Command(compilemessages.Command):
     def get_name_from_po_file(self, po_filename: str, locale: str) -> str:
         try:
             team = polib.pofile(po_filename).metadata["Language-Team"]
-            return team[: team.rindex(" (")]
+            return team[: team.rindex(" <")]
         except (KeyError, ValueError):
             raise Exception(f"Unknown language {locale}")
 
