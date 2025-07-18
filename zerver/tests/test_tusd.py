@@ -526,7 +526,7 @@ class TusdPreFinishTest(ZulipTestCase):
 
         attachment = Attachment.objects.get(path_id=path_id)
         self.assertEqual(attachment.size, len("zulip!"))
-        self.assertEqual(attachment.content_type, "text/plain")
+        self.assertEqual(attachment.content_type, 'text/plain; charset="ascii"')
 
         # Assert that the .info file is still there -- tusd needs it
         # to verify that the upload completed successfully

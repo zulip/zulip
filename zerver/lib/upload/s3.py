@@ -284,6 +284,7 @@ class S3UploadBackend(ZulipUploadBackend):
         return StreamingSourceWithSize(
             size=metadata["ContentLength"],
             vips_source=vips_source,
+            reader=lambda: metadata["Body"],
         )
 
     @override

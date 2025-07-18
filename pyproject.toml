@@ -204,6 +204,9 @@ prod = [
 
   # For E2EE of push notifications
   "pynacl",
+
+  # Character set detection for text/plain
+  "chardet>=5.1.0"
 ]
 docs = [
   # Needed to build RTD docs
@@ -274,7 +277,6 @@ dev = [
   "SQLAlchemy[mypy]",
   "types-beautifulsoup4",
   "types-boto",
-  "types-chardet",
   "types-decorator",
   "types-defusedxml",
   "types-jsonschema",

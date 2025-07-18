@@ -2,17 +2,24 @@ import os
 from collections.abc import Callable, Iterator
 from dataclasses import dataclass
 from datetime import datetime
-from typing import IO, Any
+from typing import IO, Any, Protocol
 
 import pyvips
 
 from zerver.models import Realm, UserProfile
 
 
+class ReadableStream(Protocol):
+    def read(self, size: int = -1) -> bytes: ...
+
+    def close(self) -> None: ...
+
+
 @dataclass
 class StreamingSourceWithSize:
     size: int
     vips_source: pyvips.Source
+    reader: Callable[[], ReadableStream]
 
 
 class ZulipUploadBackend:

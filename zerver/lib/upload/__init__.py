@@ -9,6 +9,7 @@ from email.message import EmailMessage
 from typing import IO, Any
 from urllib.parse import unquote, urljoin
 
+import chardet
 import pyvips
 from django.conf import settings
 from django.core.files.uploadedfile import UploadedFile
@@ -46,6 +47,36 @@ def check_upload_within_quota(realm: Realm, uploaded_file_size: int) -> None:
         raise RealmUploadQuotaError(_("Upload would exceed your organization's upload quota."))
 
 
+def maybe_add_charset(content_type: str, file_data: bytes | StreamingSourceWithSize) -> str:
+    # We only add a charset if it doesn't already have one, and is a
+    # text type which we serve inline; currently, this is only text/plain.
+    fake_msg = EmailMessage()
+    fake_msg["content-type"] = content_type
+    if (
+        fake_msg.get_content_maintype() != "text"
+        or fake_msg.get_content_type() not in INLINE_MIME_TYPES
+        or fake_msg.get_content_charset() is not None
+    ):
+        return content_type
+
+    if isinstance(file_data, bytes):
+        detected = chardet.detect(file_data)
+    else:
+        reader = file_data.reader()
+        detector = chardet.universaldetector.UniversalDetector()
+        while True:
+            data = reader.read(4096)
+            detector.feed(data)
+            if detector.done or len(data) < 4096:
+                break
+        detector.close()
+        reader.close()
+        detected = detector.result
+    if detected["confidence"] > 0.9 and detected["encoding"]:
+        fake_msg.set_param("charset", detected["encoding"], replace=True)
+    return fake_msg["content-type"]
+
+
 def create_attachment(
     file_name: str,
     path_id: str,
@@ -63,6 +94,8 @@ def create_attachment(
     else:
         file_size = file_data.size
         file_vips_data = file_data.vips_source
+
+    content_type = maybe_add_charset(content_type, file_data)
     attachment = Attachment.objects.create(
         file_name=file_name,
         path_id=path_id,
