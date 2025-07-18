@@ -5,7 +5,7 @@
   {{#if (or topic_name is_empty_string_topic)}}data-topic-name="{{topic_name}}"{{/if}}>
     <div class="main-view-banner-elements-wrapper">
         {{#if banner_text}}
-        <p class="banner_content">{{banner_text}}</p>
+        <p class="banner_content">{{{banner_text}}}</p>
         {{else}}
         <div class="banner_content">{{> @partial-block .}}</div>
         {{/if}}
