@@ -1,11 +1,13 @@
 :root {
-    /* Each of the following heading font sizes has been decreased
-       by a factor of 1. --sl-text-h1 used to be equal to
-       var(--sl-text-5xl), but now it is equal to var(--sl-text-4xl). */
-    --sl-text-h1: var(--sl-text-4xl);
-    --sl-text-h2: var(--sl-text-3xl);
-    --sl-text-h3: var(--sl-text-2xl);
-    --sl-text-h4: var(--sl-text-xl);
+    /* Starlight base style headings are huge and distract from reading the text.
+       This is OK for some sites, but we are sparing with text and really want to
+       encourage users to read it. */
+    --sl-text-h1: 2rem;
+    --sl-text-h2: 1.4rem;
+    --sl-text-h3: 1.2rem;
+    --sl-text-h4: 1rem;
+    --sl-text-h5: 1rem;
+
     /* Changed from 1.2 to 1 */
     --sl-line-height-headings: 1;
 }
