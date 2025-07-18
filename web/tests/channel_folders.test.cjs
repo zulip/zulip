@@ -60,8 +60,5 @@ run_test("basics", () => {
     assert.ok(channel_folders.is_valid_folder_id(frontend_folder.id));
     assert.ok(!channel_folders.is_valid_folder_id(999));
 
-    assert.equal(
-        channel_folders.get_channel_folder_name_from_id(frontend_folder.id),
-        frontend_folder.name,
-    );
+    assert.equal(channel_folders.get_channel_folder_by_id(frontend_folder.id), frontend_folder);
 });
