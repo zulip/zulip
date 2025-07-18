@@ -140,7 +140,11 @@ def convert_user_data(
     user_handler.validate_user_emails()
 
 
+MATTERMOST_DEFAULT_ANNOUNCEMENTS_CHANNEL_NAME = "Town Square"
+
+
 def convert_channel_data(
+    realm: ZerverFieldsT,
     channel_data: list[ZerverFieldsT],
     user_data_map: dict[str, dict[str, Any]],
     subscriber_handler: SubscriberHandler,
@@ -149,6 +153,8 @@ def convert_channel_data(
     realm_id: int,
     team_name: str,
 ) -> list[ZerverFieldsT]:
+    zerver_realm = realm["zerver_realm"]
+
     channel_data_list = [d for d in channel_data if d["team"] == team_name]
 
     channel_members_map: dict[str, list[str]] = {}
@@ -223,6 +229,11 @@ def convert_channel_data(
             users=channel_users,
             stream_id=stream_id,
         )
+
+        if channel_dict["display_name"] == MATTERMOST_DEFAULT_ANNOUNCEMENTS_CHANNEL_NAME:
+            zerver_realm[0]["new_stream_announcements_stream"] = stream["id"]
+            zerver_realm[0]["zulip_update_announcements_stream"] = stream["id"]
+
         streams.append(stream)
     return streams
 
@@ -923,6 +934,7 @@ def do_convert_data(mattermost_data_dir: str, output_dir: str, masking_content: 
         )
 
         zerver_stream = convert_channel_data(
+            realm=realm,
             channel_data=mattermost_data["channel"],
             user_data_map=username_to_user,
             subscriber_handler=subscriber_handler,

@@ -927,8 +927,15 @@ class SlackImporter(ZulipTestCase):
         }
         zerver_userprofile = [{"id": 1}, {"id": 8}, {"id": 7}, {"id": 5}]
         realm_id = 3
+        realm: ZerverFieldsT = {"zerver_userpresence": [], "zerver_realm": [dict()]}
+        zerver_realm = realm["zerver_realm"]
 
-        with self.assertLogs(level="INFO"):
+        with (
+            self.assertLogs(level="INFO"),
+            mock.patch(
+                "zerver.data_import.slack.SLACK_DEFAULT_ANNOUNCEMENTS_CHANNEL_NAME", "random"
+            ),
+        ):
             (
                 realm,
                 added_channels,
@@ -938,7 +945,7 @@ class SlackImporter(ZulipTestCase):
             ) = channels_to_zerver_stream(
                 self.fixture_file_name("", "slack_fixtures"),
                 realm_id,
-                {"zerver_userpresence": []},
+                realm,
                 slack_user_id_to_zulip_user_id,
                 zerver_userprofile,
             )
@@ -1006,6 +1013,11 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(zerver_stream[0]["history_public_to_subscribers"], True)
         self.assertEqual(zerver_stream[0]["realm"], realm_id)
         self.assertEqual(zerver_stream[2]["id"], test_added_channels[zerver_stream[2]["name"]][1])
+
+        self.assertEqual(
+            zerver_realm[0]["zulip_update_announcements_stream"], zerver_stream[0]["id"]
+        )
+        self.assertEqual(zerver_realm[0]["new_stream_announcements_stream"], zerver_stream[0]["id"])
 
         self.assertEqual(self.get_set(realm["zerver_huddle"], "id"), {0, 1, 2})
         self.assertEqual(realm["zerver_userpresence"], [])

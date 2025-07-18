@@ -537,6 +537,9 @@ def get_user_timezone(user: ZerverFieldsT) -> str:
     return timezone
 
 
+SLACK_DEFAULT_ANNOUNCEMENTS_CHANNEL_NAME = "general"
+
+
 def channels_to_zerver_stream(
     slack_data_dir: str,
     realm_id: int,
@@ -557,6 +560,8 @@ def channels_to_zerver_stream(
        name(channel names, mpim names, usernames etc) to Zulip recipient_id
     """
     logging.info("######### IMPORTING CHANNELS STARTED #########\n")
+
+    zerver_realm = realm["zerver_realm"]
 
     added_channels = {}
     added_mpims = {}
@@ -618,6 +623,13 @@ def channels_to_zerver_stream(
             stream_id_count += 1
             recipient_id_count += 1
             logging.info("%s -> created", channel["name"])
+
+            if channel["name"] == SLACK_DEFAULT_ANNOUNCEMENTS_CHANNEL_NAME:
+                zerver_realm[0]["new_stream_announcements_stream"] = stream["id"]
+                zerver_realm[0]["zulip_update_announcements_stream"] = stream["id"]
+                logging.info(
+                    "Using the channel %s as default announcements channel.", channel["name"]
+                )
 
             # TODO map Slack's pins to Zulip's stars
             # There is the security model that Slack's pins are known to the team owner
