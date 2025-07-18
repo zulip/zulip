@@ -28,6 +28,7 @@ import * as popover_menus from "./popover_menus.ts";
 import * as reactions from "./reactions.ts";
 import * as recent_view_ui from "./recent_view_ui.ts";
 import * as rows from "./rows.ts";
+import * as settings_config from "./settings_config.ts";
 import * as settings_panel_menu from "./settings_panel_menu.ts";
 import * as settings_preferences from "./settings_preferences.ts";
 import * as settings_toggle from "./settings_toggle.ts";
@@ -39,6 +40,7 @@ import * as stream_popover from "./stream_popover.ts";
 import * as topic_list from "./topic_list.ts";
 import * as ui_util from "./ui_util.ts";
 import {parse_html} from "./ui_util.ts";
+import {user_settings} from "./user_settings.ts";
 import * as util from "./util.ts";
 
 export function initialize(): void {
@@ -554,8 +556,15 @@ export function initialize(): void {
             e.stopPropagation();
             const $elem = $(this);
 
+            const is_compact_mode =
+                user_settings.user_list_style ===
+                settings_config.user_list_style_values.compact.code;
+            const status_el = is_compact_mode ? null : util.the($elem.find(".status-text"));
+            const is_truncated = status_el ? status_el.scrollWidth > status_el.clientWidth : false;
+            const should_show_status = is_compact_mode || is_truncated;
+
             const user_id_string = $elem.attr("data-user-id")!;
-            const title_data = buddy_data.get_title_data(user_id_string, false);
+            const title_data = buddy_data.get_title_data(user_id_string, false, should_show_status);
 
             // `target_node` is the `ul` element since it stays in DOM even after updates.
             function get_target_node(): HTMLElement {
@@ -611,7 +620,7 @@ export function initialize(): void {
         // This converts from 'true' in the DOM to true.
         const is_group = z.boolean().parse(JSON.parse($elem.attr("data-is-group")!));
 
-        const title_data = buddy_data.get_title_data(user_ids_string, is_group);
+        const title_data = buddy_data.get_title_data(user_ids_string, is_group, true);
 
         // Since anything inside `#left_sidebar_scroll_container` can be replaced, it is our target node here.
         function get_target_node(): HTMLElement {
