@@ -9,29 +9,33 @@ Zulip integrates with [GIPHY](https://giphy.com), allowing you to
 conveniently search for animated GIFs and include them in your
 messages.
 
-Be thoughtful when using this feature! Animated GIFs can be fun, but
-they can also distract from the content of a conversation.
+Organization administrators can [disable previews of linked
+images](/help/image-video-and-website-previews#configure-whether-image-and-video-previews-are-shown),
+including GIFs. When previews are enabled, everyone can
+[customize](/help/image-video-and-website-previews#configure-how-animated-images-are-played)
+how animated images are played.
+
+## Insert a GIF
 
 {start_tabs}
-1. First, [open the compose box](/help/open-the-compose-box).
 
-1. **Click the GIPHY logo** at the bottom of the compose box. This
-   opens the GIPHY search tool.
+{!start-composing.md!}
 
-1. Use the search tool to find a GIF you'd like to use.
+{tab|desktop-web}
 
-1. **Click on an image** to insert a link to the GIF in the compose box.
+1. Click the **add GIF** (<i class="zulip-icon zulip-icon-gif"></i>) icon at
+   the bottom of the compose box.
 
-1. Send the message.  Zulip will display the GIF like any other linked
-   image.
+1. Find a GIF you'd like to use.
+
+1. Click on an image to insert it in the compose box.
+
+!!! tip ""
+
+    You can [preview your message](/help/preview-your-message-before-sending)
+    before sending.
+
 {end_tabs}
-
-You can [preview the
-message](/help/preview-your-message-before-sending) before sending to
-see what the message will look like.
-
-Note that some organizations disable [previews of linked
-images](/help/image-video-and-website-previews).
 
 ## Restrict maximum rating of GIFs retrieved from GIPHY
 
@@ -68,5 +72,6 @@ recipients of GIFs from GIPHY.
 
 ## Related articles
 
+* [Image, video and website previews](/help/image-video-and-website-previews)
 * [Share and upload files](/help/share-and-upload-files)
 * [Insert a link](/help/insert-a-link)
