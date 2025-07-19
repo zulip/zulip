@@ -285,6 +285,7 @@
     margin-top: 4px;
 }
 
+.read-receipt-container,
 .popover-group-menu-info {
     display: flex;
     flex-direction: column;
@@ -1340,6 +1341,7 @@ ul.popover-group-menu-member-list {
     }
 }
 
+#read-receipts-popover,
 #message-actions-menu-dropdown {
     /* 350px at 15px/1em */
     --popover-menu-max-width: 23.3333em;
@@ -1594,4 +1596,11 @@ ul.popover-menu-list {
 #user-group-to-add {
     flex: 1;
     min-width: 0;
+}
+
+.read-receipts-popover-header {
+    font-weight: 600;
+    color: var(--color-text-popover-menu);
+    line-height: 1.1;
+    margin-top: 4px;
 }
