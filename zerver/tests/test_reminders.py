@@ -18,13 +18,16 @@ class RemindersTest(ZulipTestCase):
         self,
         message_id: int,
         scheduled_delivery_timestamp: int,
+        note_text: str | None = None,
     ) -> "TestHttpResponse":
         self.login("hamlet")
 
-        payload = {
+        payload: dict[str, int | str] = {
             "message_id": message_id,
             "scheduled_delivery_timestamp": scheduled_delivery_timestamp,
         }
+        if note_text is not None:
+            payload["note_text"] = note_text
 
         result = self.client_post("/json/reminders", payload)
         return result
@@ -414,3 +417,28 @@ class RemindersTest(ZulipTestCase):
                 f"@_**King Hamlet|10** [sent](http://zulip.testserver/#narrow/dm/10,12/near/{reminder.reminder_target_message_id}) a todo list.",
             )
             self.assertEqual(delivered_message.date_sent, more_than_scheduled_delivery_datetime)
+
+    def test_notes_in_reminder(self) -> None:
+        content = "Test message with notes"
+        note_text = "This is a note for the reminder."
+        scheduled_delivery_timestamp = int(time.time() + 86400)
+
+        message_id = self.send_channel_message_for_hamlet(content)
+        result = self.do_schedule_reminder(message_id, scheduled_delivery_timestamp, note_text)
+        self.assert_json_success(result)
+        scheduled_message = self.last_scheduled_reminder()
+        self.assertEqual(
+            scheduled_message.content,
+            f"You requested a reminder for #**Verona>test@{message_id}**. Note:\n > {note_text}\n\n"
+            f"@_**King Hamlet|10** [said](http://zulip.testserver/#narrow/channel/3-Verona/topic/test/near/{message_id}):\n```quote\n{content}\n```",
+        )
+
+        message_id = self.send_dm_from_hamlet_to_othello(content)
+        result = self.do_schedule_reminder(message_id, scheduled_delivery_timestamp, note_text)
+        self.assert_json_success(result)
+        scheduled_message = self.last_scheduled_reminder()
+        self.assertEqual(
+            scheduled_message.content,
+            f"You requested a reminder for the following direct message. Note:\n > {note_text}\n\n"
+            f"@_**King Hamlet|10** [said](http://zulip.testserver/#narrow/dm/10,12/near/{message_id}):\n```quote\n{content}\n```",
+        )

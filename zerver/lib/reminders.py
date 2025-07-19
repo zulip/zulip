@@ -1,3 +1,5 @@
+import re
+
 from django.conf import settings
 from django.utils.translation import gettext as _
 
@@ -12,7 +14,10 @@ from zerver.models import Message, Stream, UserProfile
 from zerver.models.scheduled_jobs import ScheduledMessage
 
 
-def get_reminder_formatted_content(message: Message, current_user: UserProfile) -> str:
+def get_reminder_formatted_content(
+    message: Message, current_user: UserProfile, note_text: str = ""
+) -> str:
+    note_text = re.sub(r"\n+", " ", note_text.strip())
     if message.is_stream_message():
         # We don't need to check access here since we already have the message
         # whose access has already been checked by the caller.
@@ -20,16 +25,36 @@ def get_reminder_formatted_content(message: Message, current_user: UserProfile) 
             id=message.recipient.type_id,
             realm=current_user.realm,
         )
-        content = _("You requested a reminder for {message_pretty_link}.").format(
-            message_pretty_link=get_message_link_syntax(
-                stream_id=stream.id,
-                stream_name=stream.name,
-                topic_name=message.topic_name(),
-                message_id=message.id,
+        if note_text:
+            content = _(
+                "You requested a reminder for {message_pretty_link}. Note:\n > {note_text}"
+            ).format(
+                message_pretty_link=get_message_link_syntax(
+                    stream_id=stream.id,
+                    stream_name=stream.name,
+                    topic_name=message.topic_name(),
+                    message_id=message.id,
+                ),
+                note_text=note_text,
             )
-        )
+        else:
+            content = _("You requested a reminder for {message_pretty_link}.").format(
+                message_pretty_link=get_message_link_syntax(
+                    stream_id=stream.id,
+                    stream_name=stream.name,
+                    topic_name=message.topic_name(),
+                    message_id=message.id,
+                )
+            )
     else:
-        content = _("You requested a reminder for the following direct message.")
+        if note_text:
+            content = _(
+                "You requested a reminder for the following direct message. Note:\n > {note_text}"
+            ).format(
+                note_text=note_text,
+            )
+        else:
+            content = _("You requested a reminder for the following direct message.")
 
     # Format the message content as a quote.
     user_silent_mention = silent_mention_syntax_for_user(message.sender)

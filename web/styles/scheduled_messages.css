@@ -19,3 +19,10 @@
 #reminders-overlay-container .message_content {
     cursor: auto;
 }
+
+.schedule-reminder-note {
+    resize: none;
+    width: 100%;
+    min-width: 10rem;
+    height: 4rem;
+}
