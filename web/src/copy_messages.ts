@@ -52,6 +52,45 @@ function construct_recipient_header($message_row: JQuery): JQuery {
         .replace(/\s$/, "");
     return $("<p>").append($("<strong>").text(message_header_content));
 }
+
+function get_first_and_last_selected_elements(): {
+    $first_element: JQuery | null;
+    $last_element: JQuery | null;
+} {
+    let $first_element = null;
+    let $last_element = null;
+    const range_count = document.getSelection()?.rangeCount;
+    if (range_count && range_count > 1) {
+        // This will only happen in case of Firefox, where we expand
+        // selection instead of altering content that is copied due to
+        // the complexity involved with multiple ranges for a multi-message selection.
+        return {$first_element, $last_element};
+    }
+    const fragment_children = document.getSelection()?.getRangeAt(0).cloneContents().children;
+    if (!fragment_children) {
+        return {$first_element, $last_element};
+    }
+    const first_element_html = fragment_children[0]?.querySelector(".message_content p")?.innerHTML;
+
+    if (first_element_html) {
+        $first_element = $("<p>").html(first_element_html);
+    }
+
+    const last_element_html =
+        fragment_children[fragment_children?.length - 1]?.querySelector(
+            ".message_content p",
+        )?.innerHTML;
+
+    if (last_element_html) {
+        $last_element = $("<p>").html(last_element_html);
+    }
+
+    return {
+        $first_element,
+        $last_element,
+    };
+}
+
 /*
 The techniques we use in this code date back to
 2013 and may be obsolete today (and may not have
@@ -71,8 +110,15 @@ function construct_copy_div($div: JQuery, start_id: number, end_id: number): voi
     if (message_lists.current === undefined) {
         return;
     }
-    const copy_rows = rows.visible_range(start_id, end_id);
 
+    // Instead of copying the entire content of the first and last message,
+    // we only use the content that is part of the selection.
+    // This is only done on Chrome for now, because of the behavior of having
+    // a single range for a multi-message selection.
+    const {$first_element, $last_element} = get_first_and_last_selected_elements();
+    const copy_only_what_is_selected = $first_element !== null && $last_element !== null;
+
+    const copy_rows = rows.visible_range(start_id, end_id);
     const $start_row = copy_rows[0];
     assert($start_row !== undefined);
     const $start_recipient_row = rows.get_message_recipient_row($start_row);
@@ -80,7 +126,9 @@ function construct_copy_div($div: JQuery, start_id: number, end_id: number): voi
     let should_include_start_recipient_header = false;
     let last_recipient_row_id = start_recipient_row_id;
 
-    for (const $row of copy_rows) {
+    for (let i = 0; i < copy_rows.length; i += 1) {
+        const $row = copy_rows[i];
+        assert($row !== undefined && $row[0] instanceof HTMLElement);
         const recipient_row_id = rows.id_for_recipient_row(rows.get_message_recipient_row($row));
         // if we found a message from another recipient,
         // it means that we have messages from several recipients,
@@ -93,7 +141,14 @@ function construct_copy_div($div: JQuery, start_id: number, end_id: number): voi
         }
         const message = message_lists.current.get(rows.id($row));
         assert(message !== undefined);
-        const $content = $(message.content);
+        let $content = $(message.content);
+        if (copy_only_what_is_selected && (i === 0 || i === copy_rows.length - 1)) {
+            if (i === 0) {
+                $content = $first_element;
+            } else {
+                $content = $last_element;
+            }
+        }
         $content.first().prepend(
             $("<span>")
                 .text(message.sender_full_name + ": ")
@@ -279,6 +334,22 @@ export function copy_handler(ev: ClipboardEvent): boolean {
     // each selection `Range`.
     const $div = $("<div>");
     construct_copy_div($div, start_id, end_id);
+
+    // Expand selection to select content from all the messages
+    // belonging to the multi-message selection.
+    // We do this only for Firefox where multi-message selections are
+    // broken down into multiple-ranges.
+    // For details, see: https://chat.zulip.org/#narrow/channel/101-design/topic/Improve.20the.20message.20copying.20experience.20.236316/near/2210892
+    const first = $(`[data-message-id='${start_id}']`).find(".messagebox-content")[0];
+    const last = $(`[data-message-id='${end_id}']`).find(".messagebox-content")[0];
+    const range_count = document.getSelection()?.rangeCount;
+    if (range_count && range_count > 1 && first && last) {
+        selection.removeAllRanges();
+        const range = document.createRange();
+        range.setStartBefore(first);
+        range.setEndAfter(last);
+        selection.addRange(range);
+    }
 
     const html_content = $div.html().trim();
     const plain_text = $div.text().trim();
