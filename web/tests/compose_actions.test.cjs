@@ -3,6 +3,8 @@
 const assert = require("node:assert/strict");
 
 const {mock_banners} = require("./lib/compose_banner.cjs");
+const {make_user_group} = require("./lib/example_group.cjs");
+const {make_stream} = require("./lib/example_stream.cjs");
 const {make_user} = require("./lib/example_user.cjs");
 const {mock_esm, set_global, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
@@ -11,20 +13,20 @@ const $ = require("./lib/zjquery.cjs");
 const {set_current_user} = zrequire("state_data");
 const user_groups = zrequire("user_groups");
 
-const nobody = {
+const nobody = make_user_group({
     name: "role:nobody",
     id: 1,
     members: new Set([]),
     is_system_group: true,
     direct_subgroup_ids: new Set([]),
-};
-const everyone = {
+});
+const everyone = make_user_group({
     name: "role:everyone",
     id: 2,
     members: new Set([30]),
     is_system_group: true,
     direct_subgroup_ids: new Set([]),
-};
+});
 user_groups.initialize({realm_user_groups: [nobody, everyone]});
 
 set_global("document", {
@@ -96,6 +98,19 @@ const {set_realm} = zrequire("state_data");
 
 const realm = {
     realm_topics_policy: "disable_empty_topic",
+    server_supported_permission_settings: {
+        stream: {
+            can_send_message_group: {
+                require_system_group: false,
+                allow_internet_group: false,
+                allow_nobody_group: true,
+                allow_everyone_group: false,
+                default_group_name: "group_creator",
+                default_for_system_groups: "role:nobody",
+                allowed_system_groups: [],
+            },
+        },
+    },
 };
 set_realm(realm);
 
@@ -169,7 +184,6 @@ test("start", ({override, override_rewire, mock_template}) => {
     override_rewire(compose_recipient, "on_compose_select_recipient_update", noop);
     override_rewire(compose_recipient, "check_posting_policy_for_compose_box", noop);
     override_rewire(compose_recipient, "update_recipient_row_attention_level", noop);
-    override_rewire(stream_data, "can_post_messages_in_stream", () => true);
     mock_template("inline_decorated_channel_name.hbs", false, noop);
 
     let compose_defaults;
@@ -203,13 +217,24 @@ test("start", ({override, override_rewire, mock_template}) => {
     assert.equal(compose_state.get_message_type(), "stream");
     assert.ok(compose_state.composing());
 
+    const me = make_user();
+    set_current_user(me);
+
+    const user_group = make_user_group({
+        id: 1,
+        members: [me.user_id],
+        creator_id: me.creator_id,
+    });
+
+    user_groups.add(user_group);
+
     // Autofill stream field for single subscription
-    const denmark = {
-        subscribed: true,
+    const denmark = make_stream({
         color: "blue",
         name: "Denmark",
         stream_id: 1,
-    };
+        can_send_message_group: 1,
+    });
     stream_data.add_sub(denmark);
 
     compose_defaults = {
@@ -234,12 +259,11 @@ test("start", ({override, override_rewire, mock_template}) => {
     assert.equal(compose_state.stream_name(), "Denmark");
     assert.equal(compose_state.topic(), "");
 
-    const social = {
-        subscribed: true,
+    const social = make_stream({
         color: "red",
         name: "social",
         stream_id: 2,
-    };
+    });
     stream_data.add_sub(social);
 
     compose_state.set_stream_id("");
@@ -254,8 +278,6 @@ test("start", ({override, override_rewire, mock_template}) => {
 
     const user1 = make_user();
     people._add_user(user1);
-    const me = make_user();
-    set_current_user(me);
 
     // Start direct message
     compose_defaults = {
@@ -331,11 +353,11 @@ test("respond_to_message", ({override, override_rewire, mock_template}) => {
     override(realm, "realm_direct_message_initiator_group", everyone.id);
 
     // Test direct message
-    const person = {
+    const person = make_user({
         user_id: 22,
         email: "alice@example.com",
         full_name: "Alice",
-    };
+    });
     people.add_active_user(person);
 
     let msg = {
@@ -354,12 +376,11 @@ test("respond_to_message", ({override, override_rewire, mock_template}) => {
     assert.equal(compose_state.private_message_recipient_emails(), "alice@example.com");
 
     // Test stream
-    const denmark = {
-        subscribed: true,
+    const denmark = make_stream({
         color: "blue",
         name: "Denmark",
         stream_id: 1,
-    };
+    });
     stream_data.add_sub(denmark);
 
     msg = {
@@ -393,12 +414,11 @@ test("reply_with_mention", ({override, override_rewire, mock_template}) => {
     override_rewire(compose_recipient, "check_posting_policy_for_compose_box", noop);
     mock_template("inline_decorated_channel_name.hbs", false, noop);
 
-    const denmark = {
-        subscribed: true,
+    const denmark = make_stream({
         color: "blue",
         name: "Denmark",
         stream_id: 1,
-    };
+    });
     stream_data.add_sub(denmark);
 
     const msg = {
@@ -478,11 +498,11 @@ test("quote_message", ({disallow, override, override_rewire}) => {
         replaced = true;
     });
 
-    const denmark_stream = {
+    const denmark_stream = make_stream({
         subscribed: false,
         name: "Denmark",
         stream_id: 20,
-    };
+    });
 
     selected_message = {
         type: "stream",
