@@ -67,9 +67,7 @@ export let update_recipient_row_attention_level = (): void => {
     // row is focused, that puts us outside the low-attention
     // recipient-row state--including the `c` hotkey or the
     // Start new conversation button being clicked.
-    const is_compose_textarea_focused = document.activeElement?.id === "compose-textarea";
     if (
-        is_compose_textarea_focused &&
         (composing_to_current_topic_narrow() || composing_to_current_private_message_narrow()) &&
         compose_state.has_full_recipient() &&
         !compose_state.is_recipient_edited_manually()
@@ -210,15 +208,11 @@ export function update_compose_for_message_type(opts: ComposeTriggeredOptions): 
     if (opts.message_type === "stream") {
         $("#compose-direct-recipient").hide();
         $("#compose_recipient_box").show();
-        $("#stream_toggle").addClass("active");
-        $("#private_message_toggle").removeClass("active");
         $("#compose-recipient").removeClass("compose-recipient-direct-selected");
         update_recipient_label(opts.stream_id);
     } else {
         $("#compose-direct-recipient").show();
         $("#compose_recipient_box").hide();
-        $("#stream_toggle").removeClass("active");
-        $("#private_message_toggle").addClass("active");
         $("#compose-recipient").addClass("compose-recipient-direct-selected");
         // TODO: When "Direct message" is selected, we show "DM" on the dropdown
         // button. It would be nice if the dropdown supported a way to attach
@@ -455,7 +449,7 @@ export function update_topic_displayed_text(topic_name = "", has_topic_focus = f
 export let update_compose_area_placeholder_text = (): void => {
     const $textarea: JQuery<HTMLTextAreaElement> = $("textarea#compose-textarea");
     // Change compose placeholder text only if compose box is open.
-    if ($(".message_comp").css("display") === "none") {
+    if ($("#compose-content").hasClass("compose-box-open")) {
         return;
     }
     const message_type = compose_state.get_message_type();
