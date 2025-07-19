@@ -88,6 +88,10 @@ Zulip offers the following filters based on the location of the message.
   channels](/help/change-the-privacy-of-a-channel) in the organization, including
   channels you are not subscribed to; see details
   [below](#searching-shared-history).
+* `channels:web-public`: Search the history of all [web-public
+  channels](/help/change-the-privacy-of-a-channel) in the organization, including channels you are not subscribed to;
+  see details
+  [below](#searching-shared-history)
 
 ### Search by sender
 
