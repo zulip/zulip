@@ -585,7 +585,7 @@ WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
     WebhookIntegration("zapier", ["meta-integration"]),
     WebhookIntegration("zendesk", ["customer-support"]),
     WebhookIntegration("zabbix", ["monitoring"]),
-    WebhookIntegration("redmine", ["project-management"],doc_screenshot_config={"screenshot_name": "001.png"}),
+    WebhookIntegration("redmine", ["project-management"]),
 ]
 
 INTEGRATIONS: dict[str, Integration] = {
@@ -847,6 +847,7 @@ WEBHOOK_SCREENSHOT_CONFIG: dict[str, list[WebhookScreenshotConfig]] = {
             },
         )
     ],
+    "redmine": [WebhookScreenshotConfig("issue_created.json")],
 }
 
 FIXTURELESS_SCREENSHOT_CONFIG: dict[str, list[FixturelessScreenshotConfig]] = {}
