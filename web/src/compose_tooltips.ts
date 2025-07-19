@@ -50,38 +50,62 @@ export function clean_up_compose_singleton_tooltip(context: SingletonContext): v
     }
 }
 
+// Tooltips for the message-edit UI textbox can break due to rerenders.
+// When navigating away and back, elements matching the tooltip selector are destroyed and recreated, but tooltips aren't re-registered.
+// This function ensures tooltips are re-initialized by waiting for the element to appear and invoking the callback.
+function wait_for_element(selector: string, callback: () => void): void {
+    if ($(selector).length > 0) {
+        callback();
+        return;
+    }
+
+    const observer = new MutationObserver((_mutations, obs) => {
+        if ($(selector).length > 0) {
+            obs.disconnect();
+            callback();
+        }
+    });
+
+    observer.observe(document.body, {
+        childList: true,
+        subtree: true,
+    });
+}
+
 export function initialize_compose_tooltips(context: SingletonContext, selector: string): void {
-    // Clean up existing instances first
-    clean_up_compose_singleton_tooltip(context);
+    wait_for_element(selector, () => {
+        // Clean up existing instances first
+        clean_up_compose_singleton_tooltip(context);
 
-    const tooltip_instances = tippy.default(selector, {
-        trigger: "mouseenter",
-        appendTo: () => document.body,
-        placement: "top",
-    });
+        const tooltip_instances = tippy.default(selector, {
+            trigger: "mouseenter",
+            appendTo: () => document.body,
+            placement: "top",
+        });
 
-    const singleton_instance = tippy.createSingleton(tooltip_instances, {
-        delay: LONG_HOVER_DELAY,
-        appendTo: () => document.body,
-        onTrigger(instance, event) {
-            const currentTarget = event.currentTarget;
-            if (currentTarget instanceof HTMLElement) {
-                const content = get_tooltip_content(currentTarget);
-                if (content) {
-                    instance.setContent(content);
+        const singleton_instance = tippy.createSingleton(tooltip_instances, {
+            delay: LONG_HOVER_DELAY,
+            appendTo: () => document.body,
+            onTrigger(instance, event) {
+                const currentTarget = event.currentTarget;
+                if (currentTarget instanceof HTMLElement) {
+                    const content = get_tooltip_content(currentTarget);
+                    if (content) {
+                        instance.setContent(content);
+                    }
+                    if (currentTarget.classList?.contains("disabled-on-hover")) {
+                        instance.setProps({delay: SINGLETON_INSTANT_HOVER_DELAY});
+                    } else {
+                        instance.setProps({delay: SINGLETON_LONG_HOVER_DELAY});
+                    }
                 }
-                if (currentTarget.classList?.contains("disabled-on-hover")) {
-                    instance.setProps({delay: SINGLETON_INSTANT_HOVER_DELAY});
-                } else {
-                    instance.setProps({delay: SINGLETON_LONG_HOVER_DELAY});
-                }
-            }
-        },
-    });
+            },
+        });
 
-    compose_button_singleton_context_map.set(context, {
-        tooltip_instances,
-        singleton_instance,
+        compose_button_singleton_context_map.set(context, {
+            tooltip_instances,
+            singleton_instance,
+        });
     });
 }
 
