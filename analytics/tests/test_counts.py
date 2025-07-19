@@ -56,6 +56,7 @@ from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import activate_push_notification_service
 from zerver.lib.timestamp import TimeZoneNotUTCError, ceiling_to_day, floor_to_day
 from zerver.lib.topic import DB_TOPIC_NAME
+from zerver.lib.types import Invitee
 from zerver.lib.user_counts import realm_user_count_by_role
 from zerver.lib.utils import assert_is_not_none
 from zerver.models import (
@@ -1637,7 +1638,7 @@ class TestLoggingCountStats(AnalyticsTestCase):
         with invite_context():
             do_invite_users(
                 user,
-                ["user1@domain.tld", "user2@domain.tld"],
+                [Invitee(email="user1@domain.tld"), Invitee(email="user2@domain.tld")],
                 [stream],
                 include_realm_default_subscriptions=False,
                 invite_expires_in_minutes=invite_expires_in_minutes,
@@ -1649,7 +1650,7 @@ class TestLoggingCountStats(AnalyticsTestCase):
         with invite_context():
             do_invite_users(
                 user,
-                ["user1@domain.tld", "user2@domain.tld"],
+                [Invitee(email="user1@domain.tld"), Invitee(email="user2@domain.tld")],
                 [stream],
                 include_realm_default_subscriptions=False,
                 invite_expires_in_minutes=invite_expires_in_minutes,
@@ -1660,7 +1661,10 @@ class TestLoggingCountStats(AnalyticsTestCase):
         with invite_context(failure=True):
             do_invite_users(
                 user,
-                ["user3@domain.tld", "malformed"],
+                [
+                    Invitee(email="user3@domain.tld"),
+                    Invitee(email="malformed"),
+                ],
                 [stream],
                 include_realm_default_subscriptions=False,
                 invite_expires_in_minutes=invite_expires_in_minutes,
@@ -1671,7 +1675,7 @@ class TestLoggingCountStats(AnalyticsTestCase):
         with invite_context():
             skipped = do_invite_users(
                 user,
-                ["first@domain.tld", "user4@domain.tld"],
+                [Invitee(email="first@domain.tld"), Invitee(email="user4@domain.tld")],
                 [stream],
                 include_realm_default_subscriptions=False,
                 invite_expires_in_minutes=invite_expires_in_minutes,
