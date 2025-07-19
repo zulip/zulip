@@ -162,6 +162,14 @@ function process_result(data: MessageFetchResponse, opts: MessageFetchOptions): 
             if (opts.validate_filter_topic_post_fetch) {
                 opts.msg_list.data.filter.try_adjusting_for_moved_with_target(messages[0]);
             }
+
+            // After fetching the messages, if we have a channel topic narrow, we try
+            // to add `with` term to it, with the last message of the list as operand.
+            const last_msg_id = messages.at(-1)!.id;
+            if (opts.msg_list.data.filter.has_exactly_channel_topic_operators()) {
+                opts.msg_list.data.filter.adjust_with_operand_to_message(last_msg_id);
+            }
+
             // Since this adds messages to the MessageList and renders MessageListView,
             // we don't need to call it if msg_list was not defined by the caller.
             opts.msg_list.add_messages(messages, {}, is_contiguous_history);
