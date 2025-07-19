@@ -25114,6 +25114,22 @@ components:
 
                       - 1 = Zulip's native outgoing webhook format.
                       - 2 = Emulate the Slack outgoing webhook format.
+                  triggers:
+                    type: array
+                    items:
+                      type: string
+                    description: |
+                      An array of events that can trigger the bots' service. Supported
+                      trigger events are:
+
+                      - "all_mentions" = Any mention of the service bot, regardless of whether
+                        the bot is part of the recipient or not. This does not include topic,
+                        group and @-all mentions that includes the bot.
+                      - "all_received" = Whenever the bot receives any message.
+                      - "dm_received" = Whenever the bot receives a direct message, whether
+                        it be from direct message or group direct message.
+
+                      **Changes**: New in Zulip 11.0 (feature level ZF-9ff0e2)
               - type: object
                 additionalProperties: false
                 description: |
@@ -25125,6 +25141,20 @@ components:
                       The name of the bot.
                   config_data:
                     $ref: "#/components/schemas/BotConfiguration"
+                  triggers:
+                    type: array
+                    items:
+                      type: string
+                    description: |
+                      An array of events that can trigger the bots' service. Supported
+                      trigger events are:
+
+                      - "all_mentions" = Any mention of the service bot, regardless of whether
+                        the bot is part of the recipient or not.
+                      - "dm_received" = Whenever the bot receives a direct message, whether
+                        it be from direct message or group direct message.
+
+                      **Changes**: New in Zulip 11.0 (feature level ZF-9ff0e2)
     Bot:
       allOf:
         - $ref: "#/components/schemas/BasicBotBase"

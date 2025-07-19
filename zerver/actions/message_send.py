@@ -108,6 +108,7 @@ from zerver.models import (
     UserProfile,
     UserTopic,
 )
+from zerver.models.bots import Service, get_default_service_bot_triggers
 from zerver.models.clients import get_client
 from zerver.models.groups import SystemGroups, get_realm_system_groups_name_dict
 from zerver.models.recipients import get_direct_message_group_user_ids
@@ -526,7 +527,40 @@ def get_service_bot_events(
     if sender.is_bot:
         return event_dict
 
-    def maybe_add_event(user_profile_id: int, bot_type: int) -> None:
+    if len(service_bot_tuples) == 0:
+        return event_dict
+
+    relevant_service_bot_data: dict[int, dict[str, int | list[str]]] = {
+        bot_id: {
+            "bot_type": bot_type,
+        }
+        for bot_id, bot_type in service_bot_tuples
+        # Important note: service_bot_tuples may contain service bots
+        # who were not actually mentioned in the message (e.g. if
+        # mention syntax for that bot appeared in a code block).
+        # Thus, it is important to filter any users who aren't part of
+        # either mentioned_user_ids (the actual mentioned users) or
+        # active_user_ids (the actual recipients).
+        #
+        # So even though this is implied by the logic below, we filter
+        # these not-actually-mentioned users here, to help keep this
+        # function future-proof.
+        if bot_id in (mentioned_user_ids | active_user_ids)
+    }
+    service_bot_ids = relevant_service_bot_data.keys()
+
+    for bot_id, triggers in list(
+        Service.objects.filter(user_profile__id__in=service_bot_ids)
+        .exclude(triggers=[])
+        .values_list("user_profile", "triggers")
+    ):
+        # We currently only support one Service per service bot,
+        # update this function when adding support for multiple
+        # Services per bot.
+        if "triggers" not in relevant_service_bot_data[bot_id]:
+            relevant_service_bot_data[bot_id]["triggers"] = triggers
+
+    def maybe_add_event(user_profile_id: int, bot_type: int, bot_triggers: list[str]) -> None:
         if bot_type == UserProfile.OUTGOING_WEBHOOK_BOT:
             queue_name = "outgoing_webhooks"
         elif bot_type == UserProfile.EMBEDDED_BOT:
@@ -539,41 +573,75 @@ def get_service_bot_events(
             )
             return
 
-        is_stream = recipient_type == Recipient.STREAM
-
-        # Important note: service_bot_tuples may contain service bots
-        # who were not actually mentioned in the message (e.g. if
-        # mention syntax for that bot appeared in a code block).
-        # Thus, it is important to filter any users who aren't part of
-        # either mentioned_user_ids (the actual mentioned users) or
-        # active_user_ids (the actual recipients).
-        #
-        # So even though this is implied by the logic below, we filter
-        # these not-actually-mentioned users here, to help keep this
-        # function future-proof.
-        if user_profile_id not in mentioned_user_ids and user_profile_id not in active_user_ids:
-            return
+        # The order of the following conditions matters. We must check for the narrow/
+        # specific triggers first (e.g., mention, DM) before checking for the more
+        # general triggers. For example, if a message mentions a bot configured with both
+        # "all_received" and "all_mentions", the resulting trigger cause should be
+        # "mention" and not "received_message" (even though it's also technically
+        # correct).
 
         # Mention triggers, for stream messages
-        if is_stream and user_profile_id in mentioned_user_ids:
-            trigger = "mention"
-        # Direct message triggers for personal and group direct messages
-        elif not is_stream and user_profile_id in active_user_ids:
-            trigger = NotificationTriggers.DIRECT_MESSAGE
-        else:
+        if (
+            Service.BOT_TRIGGER_ALL_MENTIONS in bot_triggers
+            and recipient_type == Recipient.STREAM
+            and user_profile_id in mentioned_user_ids
+        ):
+            event_dict[queue_name].append(
+                {
+                    "trigger": "mention",
+                    "user_profile_id": user_profile_id,
+                }
+            )
             return
 
-        event_dict[queue_name].append(
-            {
-                "trigger": trigger,
-                "user_profile_id": user_profile_id,
-            }
-        )
+        # Direct message triggers for personal and group direct messages
+        if (
+            Service.BOT_TRIGGER_DM_RECEIVED in bot_triggers
+            and recipient_type in [Recipient.DIRECT_MESSAGE_GROUP, Recipient.PERSONAL]
+            and user_profile_id in active_user_ids
+        ):
+            event_dict[queue_name].append(
+                {
+                    "trigger": NotificationTriggers.DIRECT_MESSAGE,
+                    "user_profile_id": user_profile_id,
+                }
+            )
+            return
 
-    for user_profile_id, bot_type in service_bot_tuples:
+        # Message recipient trigger from any message where the bot is part
+        # of the recipient.
+        if Service.BOT_TRIGGER_ALL_RECEIVED in bot_triggers and user_profile_id in active_user_ids:
+            event_dict[queue_name].append(
+                {
+                    "trigger": "received_message",
+                    "user_profile_id": user_profile_id,
+                }
+            )
+            return
+
+    for bot_id, bot_data in relevant_service_bot_data.items():
+        bot_triggers = bot_data.get("triggers")
+        bot_type = bot_data["bot_type"]
+
+        if not bot_triggers:
+            # Defaults back to ["all_mentions", "dm_received"] for service bots
+            # with missing `triggers` field, they are probably old service bots
+            # before we add the `triggers` field.
+            #
+            # In practice this should be rare because we have a custom migration
+            # that updates old service bots trigger field.
+            bot_triggers = get_default_service_bot_triggers()
+            logging.error(
+                "Missing triggers for Service bot id=%s",
+                bot_id,
+            )
+        assert isinstance(bot_triggers, list)
+        assert isinstance(bot_type, int)
+
         maybe_add_event(
-            user_profile_id=user_profile_id,
+            user_profile_id=bot_id,
             bot_type=bot_type,
+            bot_triggers=bot_triggers,
         )
 
     return event_dict
