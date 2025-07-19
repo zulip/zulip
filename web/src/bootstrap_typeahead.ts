@@ -466,6 +466,16 @@ export class Typeahead<ItemType extends string | object> {
                         void instance.popperInstance?.update();
                     });
                 },
+                onHidden: (instance) => {
+                    this.$container.find(".status-emoji-name").each((_i, elem) => {
+                        const $elem: tippy.ReferenceElement = the($(elem));
+                        const instance = $elem._tippy;
+                        if (instance?.state.isVisible) {
+                            instance.destroy();
+                        }
+                    });
+                    instance.destroy();
+                },
             });
         }
 
@@ -791,6 +801,13 @@ export class Typeahead<ItemType extends string | object> {
                     // the search bar).
                     this.openInputFieldOnKeyUp();
                 }
+                this.$container.find(".status-emoji-name").each((_i, elem) => {
+                    const $elem: tippy.ReferenceElement = the($(elem));
+                    const instance = $elem._tippy;
+                    if (instance?.state.isVisible) {
+                        instance.destroy();
+                    }
+                });
                 if (e.key === "Backspace") {
                     this.lookup(this.hideOnEmptyAfterBackspace);
                     return;
