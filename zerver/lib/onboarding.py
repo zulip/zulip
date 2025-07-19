@@ -1,3 +1,5 @@
+from enum import Enum
+
 from django.conf import settings
 from django.db import transaction
 from django.db.models import Count
@@ -240,8 +242,40 @@ def send_welcome_bot_response(send_request: SendMessageRequest) -> None:
     )
 
 
+class OnboardingMessageTypeEnum(Enum):
+    moving_messages = 1
+    welcome_to_zulip = 2
+    start_conversation = 3
+    experiments = 4
+    greetings = 5
+
+
 @transaction.atomic(savepoint=False)
-def send_initial_realm_messages(realm: Realm) -> None:
+def send_initial_realm_messages(
+    realm: Realm,
+    override_channel_name_map: dict[OnboardingMessageTypeEnum, str | None] | None = None,
+) -> None:
+    """
+    override_channel_name_map allows the caller to customize to which channels to send
+    specific categories of the initial messages. In this override dict, every category
+    from OnboardingMessageTypeEnum must be specified.
+
+    The caller can disable the sending of a specific category by mapping it to None
+    in override_channel_name_map.
+    """
+
+    if override_channel_name_map is not None:
+        channel_name_map = override_channel_name_map
+    else:
+        channel_name_map = {
+            OnboardingMessageTypeEnum.moving_messages: str(Realm.ZULIP_DISCUSSION_CHANNEL_NAME),
+            OnboardingMessageTypeEnum.welcome_to_zulip: str(Realm.ZULIP_DISCUSSION_CHANNEL_NAME),
+            OnboardingMessageTypeEnum.start_conversation: str(Realm.ZULIP_SANDBOX_CHANNEL_NAME),
+            OnboardingMessageTypeEnum.experiments: str(Realm.ZULIP_SANDBOX_CHANNEL_NAME),
+            OnboardingMessageTypeEnum.greetings: str(Realm.DEFAULT_NOTIFICATION_STREAM_NAME),
+        }
+    assert set(channel_name_map.keys()) == set(OnboardingMessageTypeEnum)
+
     # Sends the initial messages for a new organization.
     #
     # Technical note: Each stream created in the realm creation
@@ -278,7 +312,7 @@ For example, this message is in the “{topic_name}” topic in the
 #**{zulip_discussion_channel_name}** channel, as you can see in the left sidebar
 and above.
 """).format(
-        zulip_discussion_channel_name=str(Realm.ZULIP_DISCUSSION_CHANNEL_NAME),
+        zulip_discussion_channel_name=channel_name_map[OnboardingMessageTypeEnum.welcome_to_zulip],
         topic_name=_("welcome to Zulip!"),
     )
 
@@ -330,7 +364,7 @@ Link to a conversation: #**{zulip_discussion_channel_name}>{topic_name}**
 ```
 """)
     ).format(
-        zulip_discussion_channel_name=str(Realm.ZULIP_DISCUSSION_CHANNEL_NAME),
+        zulip_discussion_channel_name=channel_name_map[OnboardingMessageTypeEnum.welcome_to_zulip],
         topic_name=_("welcome to Zulip!"),
     )
 
@@ -352,66 +386,85 @@ This **greetings** topic is a great place to say “hi” :wave: to your teammat
     # Initial messages are configured below.
 
     # Advertising moving messages.
-    welcome_messages += [
-        {
-            "channel_name": str(Realm.ZULIP_DISCUSSION_CHANNEL_NAME),
-            "topic_name": _("moving messages"),
-            "content": content,
-        }
-        for content in [
-            content1_of_moving_messages_topic_name,
-            content2_of_moving_messages_topic_name,
+    if (
+        moving_messages_channel_name := channel_name_map[OnboardingMessageTypeEnum.moving_messages]
+    ) is not None:
+        welcome_messages += [
+            {
+                "channel_name": moving_messages_channel_name,
+                "topic_name": _("moving messages"),
+                "content": content,
+            }
+            for content in [
+                content1_of_moving_messages_topic_name,
+                content2_of_moving_messages_topic_name,
+            ]
         ]
-    ]
 
     # Suggestion to test messaging features.
     # Dependency on knowing how to send messages.
-    welcome_messages += [
-        {
-            "channel_name": str(realm.ZULIP_SANDBOX_CHANNEL_NAME),
-            "topic_name": _("experiments"),
-            "content": content,
-        }
-        for content in [content1_of_experiments_topic_name, content2_of_experiments_topic_name]
-    ]
-
-    # Suggestion to start your first new conversation.
-    welcome_messages += [
-        {
-            "channel_name": str(realm.ZULIP_SANDBOX_CHANNEL_NAME),
-            "topic_name": _("start a conversation"),
-            "content": content,
-        }
-        for content in [
-            content1_of_start_conversation_topic_name,
-            content2_of_start_conversation_topic_name,
-            content3_of_start_conversation_topic_name,
+    if (
+        experiments_channel_name := channel_name_map[OnboardingMessageTypeEnum.experiments]
+    ) is not None:
+        welcome_messages += [
+            {
+                "channel_name": experiments_channel_name,
+                "topic_name": _("experiments"),
+                "content": content,
+            }
+            for content in [content1_of_experiments_topic_name, content2_of_experiments_topic_name]
         ]
-    ]
+
+    if (
+        start_conversation_channel_name := channel_name_map[
+            OnboardingMessageTypeEnum.start_conversation
+        ]
+    ) is not None:
+        # Suggestion to start your first new conversation.
+        welcome_messages += [
+            {
+                "channel_name": start_conversation_channel_name,
+                "topic_name": _("start a conversation"),
+                "content": content,
+            }
+            for content in [
+                content1_of_start_conversation_topic_name,
+                content2_of_start_conversation_topic_name,
+                content3_of_start_conversation_topic_name,
+            ]
+        ]
 
     # Suggestion to send first message as a hi to your team.
-    welcome_messages += [
-        {
-            "channel_name": str(Realm.DEFAULT_NOTIFICATION_STREAM_NAME),
-            "topic_name": _("greetings"),
-            "content": content,
-        }
-        for content in [content1_of_greetings_topic_name, content2_of_greetings_topic_name]
-    ]
-
-    # Main welcome message, this should be last.
-    welcome_messages += [
-        {
-            "channel_name": str(realm.ZULIP_DISCUSSION_CHANNEL_NAME),
-            "topic_name": _("welcome to Zulip!"),
-            "content": content,
-        }
-        for content in [
-            content1_of_welcome_to_zulip_topic_name,
-            content2_of_welcome_to_zulip_topic_name,
-            content3_of_welcome_to_zulip_topic_name,
+    if (
+        greetings_channel_name := channel_name_map[OnboardingMessageTypeEnum.greetings]
+    ) is not None:
+        welcome_messages += [
+            {
+                "channel_name": greetings_channel_name,
+                "topic_name": _("greetings"),
+                "content": content,
+            }
+            for content in [content1_of_greetings_topic_name, content2_of_greetings_topic_name]
         ]
-    ]
+
+    if (
+        welcome_to_zulip_channel_name := channel_name_map[
+            OnboardingMessageTypeEnum.welcome_to_zulip
+        ]
+    ) is not None:
+        # Main welcome message, this should be last.
+        welcome_messages += [
+            {
+                "channel_name": welcome_to_zulip_channel_name,
+                "topic_name": _("welcome to Zulip!"),
+                "content": content,
+            }
+            for content in [
+                content1_of_welcome_to_zulip_topic_name,
+                content2_of_welcome_to_zulip_topic_name,
+                content3_of_welcome_to_zulip_topic_name,
+            ]
+        ]
 
     # End of message declarations; now we actually send them.
 

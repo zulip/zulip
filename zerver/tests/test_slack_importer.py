@@ -1967,7 +1967,7 @@ by Pieter
             },
         )
 
-        self.assertEqual(Message.objects.filter(realm=realm).count(), 87)
+        self.assertEqual(Message.objects.filter(realm=realm).count(), 96)
 
         # All auth backends are enabled initially.
         self.assertTrue(all(realm.authentication_methods_dict().values()))
