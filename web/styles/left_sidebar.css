@@ -483,6 +483,7 @@
     a.stream-name:focus,
     a.sidebar-topic-name:focus,
     a.conversation-partners:focus,
+    a.dm-box:focus,
     a.sidebar-topic-action-heading:focus {
         outline: none;
         text-decoration: none;
@@ -1175,6 +1176,7 @@ li.top_left_scheduled_messages {
 }
 
 .subscription_block {
+    user-select: text;
     grid-template-columns:
         var(--left-sidebar-toggle-width-offset) var(
             --left-sidebar-icon-column-width
@@ -1279,6 +1281,10 @@ li.top_left_scheduled_messages {
         outline: none;
         color: inherit;
     }
+}
+
+.topic-box {
+    user-select: text;
 }
 
 .searching-for-more-topics {
@@ -1620,6 +1626,7 @@ li.topic-list-item {
 }
 
 .dm-box {
+    user-select: text;
     grid-template-columns:
         var(--left-sidebar-toggle-width-offset) [action-heading-start] var(
             --left-sidebar-icon-column-width

@@ -31,12 +31,18 @@
             1px -5px 0 0 var(--color-background);
 
         & .message_label_clickable {
+            user-select: text;
             color: var(--color-text-message-header);
 
             &:hover {
                 color: var(--color-text-message-header);
                 text-decoration: none;
             }
+        }
+
+        & .message_label_clickable:focus {
+            outline: none;
+            text-decoration: none;
         }
 
         .stream_topic_separator {
@@ -119,6 +125,7 @@
     }
 
     .message_label_clickable {
+        user-select: text;
         display: flex;
         padding: 5px 0 5px 10px;
         font-weight: 600;
@@ -128,6 +135,11 @@
 
         &:hover {
             color: var(--color-text-message-header) !important;
+            text-decoration: none;
+        }
+
+        &:focus {
+            outline: none;
             text-decoration: none;
         }
 
