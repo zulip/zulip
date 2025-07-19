@@ -44,6 +44,18 @@ let stream_pill_widget: stream_pill.StreamPillWidget;
 let user_group_pill_widget: user_group_pill.UserGroupPillWidget;
 let guest_invite_stream_ids: number[] = [];
 
+type CommonInvitationData = {
+    csrfmiddlewaretoken: string;
+    invite_as: number;
+    notify_referrer_on_join: boolean;
+    stream_ids: string;
+    group_ids: string;
+    invite_expires_in_minutes: string;
+    invitee_emails: string;
+    include_realm_default_subscriptions: string;
+    welcome_message_custom_text?: string;
+};
+
 function reset_error_messages(): void {
     $("#dialog_error").hide().text("").removeClass(common.status_classes);
 
@@ -52,15 +64,7 @@ function reset_error_messages(): void {
     }
 }
 
-function get_common_invitation_data(): {
-    csrfmiddlewaretoken: string;
-    invite_as: number;
-    notify_referrer_on_join: boolean;
-    stream_ids: string;
-    invite_expires_in_minutes: string;
-    invitee_emails: string;
-    include_realm_default_subscriptions: string;
-} {
+function get_common_invitation_data(): CommonInvitationData {
     const invite_as = Number.parseInt(
         $<HTMLSelectOneElement>("select:not([multiple])#invite_as").val()!,
         10,
@@ -93,7 +97,7 @@ function get_common_invitation_data(): {
     }
 
     assert(csrf_token !== undefined);
-    const data = {
+    const data: CommonInvitationData = {
         csrfmiddlewaretoken: csrf_token,
         invite_as,
         notify_referrer_on_join,
@@ -114,6 +118,32 @@ function get_common_invitation_data(): {
             data.invitee_emails += "," + current_email;
         }
     }
+
+    if (current_user.is_admin) {
+        const realm_welcome_message_configured = realm.realm_welcome_message_custom_text.length > 0;
+        const is_checked = util.the(
+            $<HTMLInputElement>("input#send_default_realm_welcome_message_custom_text"),
+        ).checked;
+        // We send `welcome_message_custom_text` to the server only if:
+        // - the realm's `welcome_message_custom_text` is not configured, or
+        // - the "send custom welcome message" checkbox is not checked.
+        // Otherwise, the invite uses the realm's default welcome message.
+        if (!is_checked || !realm_welcome_message_configured) {
+            let welcome_message_custom_text = $<HTMLTextAreaElement>(
+                "#invite_welcome_custom_message_text",
+            )
+                .val()!
+                .trim();
+            if (!is_checked && !realm_welcome_message_configured) {
+                // If the option is disabled and the realm has no configured custom message,
+                // ignore any text in the textarea and send an empty string instead,
+                // since the user may have typed something earlier.
+                welcome_message_custom_text = "";
+            }
+            data.welcome_message_custom_text = welcome_message_custom_text;
+        }
+    }
+
     return data;
 }
 
@@ -302,6 +332,26 @@ function set_streams_to_join_list_visibility(): void {
     }
 }
 
+function set_welcome_message_custom_text_visibility(): void {
+    if (!current_user.is_admin) {
+        return;
+    }
+
+    const realm_welcome_message_configured = realm.realm_welcome_message_custom_text.length > 0;
+    const is_checked = util.the(
+        $<HTMLInputElement>("input#send_default_realm_welcome_message_custom_text"),
+    ).checked;
+
+    const should_show_welcome_message_container =
+        (is_checked && !realm_welcome_message_configured) ||
+        (!is_checked && realm_welcome_message_configured);
+    if (should_show_welcome_message_container) {
+        $("#invite_welcome_message_custom_text_container").show();
+    } else {
+        $("#invite_welcome_message_custom_text_container").hide();
+    }
+}
+
 async function update_guest_visible_users_count_and_stream_ids(): Promise<void> {
     const invite_as = Number.parseInt(
         $<HTMLSelectOneElement>("select:not([multiple])#invite_as").val()!,
@@ -387,6 +437,7 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
         time_choices: settings_config.custom_time_unit_values,
         show_select_default_streams_option: stream_data.get_default_stream_ids().length > 0,
         user_has_email_set: !settings_data.user_email_not_configured(),
+        default_welcome_message_custom_text: realm.realm_welcome_message_custom_text,
     });
 
     function invite_user_modal_post_render(): void {
@@ -414,6 +465,8 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
             const $user_group_pill_container = $("#invite-user-group-container .pill-container");
             user_group_pill_widget = user_group_picker_pill.create($user_group_pill_container);
         }
+
+        set_welcome_message_custom_text_visibility();
 
         $("#invite_streams_container .input, #invite_select_default_streams").on(
             "change",
@@ -443,6 +496,16 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
                 custom_expiration_time_input,
                 false,
             );
+            let valid_welcome_message_custom_text = true;
+            if (realm.realm_welcome_message_custom_text.length === 0) {
+                if (!$("input#send_default_realm_welcome_message_custom_text").prop("checked")) {
+                    valid_welcome_message_custom_text = true;
+                } else {
+                    valid_welcome_message_custom_text =
+                        $<HTMLTextAreaElement>("#invite_welcome_custom_message_text").val()!.trim()
+                            .length > 0;
+                }
+            }
             const $button = $("#invite-user-modal .dialog_submit_button");
             $button.prop(
                 "disabled",
@@ -450,7 +513,8 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
                     (selected_tab === "invite-email-tab" &&
                         email_pill_widget.items().length === 0 &&
                         email_pill.get_current_email(email_pill_widget) === null) ||
-                    ($expires_in.val() === "custom" && !valid_custom_time),
+                    ($expires_in.val() === "custom" && !valid_custom_time) ||
+                    !valid_welcome_message_custom_text,
             );
             if (selected_tab === "invite-email-tab") {
                 $button.text($t({defaultMessage: "Invite"}));
@@ -510,6 +574,15 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
 
         $("#invite_select_default_streams").on("change", () => {
             set_streams_to_join_list_visibility();
+        });
+
+        $("#send_default_realm_welcome_message_custom_text").on("change", () => {
+            set_welcome_message_custom_text_visibility();
+            toggle_invite_submit_button();
+        });
+
+        $("#invite_welcome_custom_message_text").on("input", () => {
+            toggle_invite_submit_button();
         });
 
         if (!user_has_email_set) {
