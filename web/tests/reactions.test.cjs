@@ -151,9 +151,9 @@ test("basics", () => {
             vote_text: "1",
             user_ids: [7],
             label: "translated: Cali reacted with :frown:",
-            emoji_alt_code: false,
             class: "message_reaction",
             is_realm_emoji: false,
+            emoji_alt_code: false,
         },
         {
             emoji_name: "inactive_realm_emoji",
@@ -164,11 +164,11 @@ test("basics", () => {
             vote_text: "1",
             user_ids: [5],
             label: "translated: You (click to remove) reacted with :inactive_realm_emoji:",
-            emoji_alt_code: false,
+            class: "message_reaction reacted",
             is_realm_emoji: true,
             url: "/url/for/992",
             still_url: "/still/url/for/992",
-            class: "message_reaction reacted",
+            emoji_alt_code: false,
         },
         {
             emoji_name: "smile",
@@ -179,9 +179,9 @@ test("basics", () => {
             vote_text: "2",
             user_ids: [5, 6],
             label: "translated: You (click to remove) and Bob van Roberts reacted with :smile:",
-            emoji_alt_code: false,
             class: "message_reaction reacted",
             is_realm_emoji: false,
+            emoji_alt_code: false,
         },
         {
             emoji_name: "tada",
@@ -192,9 +192,9 @@ test("basics", () => {
             vote_text: "2",
             user_ids: [7, 8],
             label: "translated: Cali and Alexus reacted with :tada:",
-            emoji_alt_code: false,
             class: "message_reaction",
             is_realm_emoji: false,
+            emoji_alt_code: false,
         },
         {
             emoji_name: "rocket",
@@ -205,9 +205,9 @@ test("basics", () => {
             vote_text: "3",
             user_ids: [5, 6, 7],
             label: "translated: You (click to remove), Bob van Roberts and Cali reacted with :rocket:",
-            emoji_alt_code: false,
             class: "message_reaction reacted",
             is_realm_emoji: false,
+            emoji_alt_code: false,
         },
         {
             emoji_name: "wave",
@@ -218,9 +218,9 @@ test("basics", () => {
             vote_text: "3",
             user_ids: [6, 7, 8],
             label: "translated: Bob van Roberts, Cali and Alexus reacted with :wave:",
-            emoji_alt_code: false,
             class: "message_reaction",
             is_realm_emoji: false,
+            emoji_alt_code: false,
         },
     ];
     assert.deepEqual(result, expected_result);
@@ -255,9 +255,9 @@ test("reactions from unknown users", () => {
             vote_text: "1",
             user_ids: [9],
             label: "translated: translated: Unknown user reacted with :frown:",
-            emoji_alt_code: false,
             class: "message_reaction",
             is_realm_emoji: false,
+            emoji_alt_code: false,
         },
         {
             emoji_name: "smile",
@@ -268,9 +268,9 @@ test("reactions from unknown users", () => {
             vote_text: "2",
             user_ids: [5, 9],
             label: "translated: You (click to remove) and translated: Unknown user reacted with :smile:",
-            emoji_alt_code: false,
             class: "message_reaction reacted",
             is_realm_emoji: false,
+            emoji_alt_code: false,
         },
         {
             emoji_name: "tada",
@@ -281,9 +281,9 @@ test("reactions from unknown users", () => {
             vote_text: "2",
             user_ids: [6, 10],
             label: "translated: Bob van Roberts and translated: Unknown user reacted with :tada:",
-            emoji_alt_code: false,
             class: "message_reaction",
             is_realm_emoji: false,
+            emoji_alt_code: false,
         },
     ];
     assert.deepEqual(result, expected_result);
@@ -521,7 +521,6 @@ test("update_vote_text_on_message", ({override, override_rewire}) => {
                 "realm_emoji,992": {
                     class: "message_reaction reacted",
                     count: 1,
-                    emoji_alt_code: false,
                     emoji_code: "992",
                     emoji_name: "inactive_realm_emoji",
                     is_realm_emoji: true,
@@ -532,11 +531,11 @@ test("update_vote_text_on_message", ({override, override_rewire}) => {
                     url: "/url/for/992",
                     user_ids: [5],
                     vote_text: "translated: You",
+                    emoji_alt_code: false,
                 },
                 "unicode_emoji,1f44b": {
                     class: "message_reaction reacted",
                     count: 2,
-                    emoji_alt_code: false,
                     emoji_code: "1f44b",
                     emoji_name: "wave",
                     is_realm_emoji: false,
@@ -545,6 +544,7 @@ test("update_vote_text_on_message", ({override, override_rewire}) => {
                     reaction_type: "unicode_emoji",
                     user_ids: [5, 6],
                     vote_text: "translated: You, Bob van Roberts",
+                    emoji_alt_code: false,
                 },
             }),
         ),
@@ -666,7 +666,6 @@ test("add_reaction/remove_reaction", ({override, override_rewire}) => {
     const clean_reaction_object_alice = {
         class: "message_reaction reacted",
         count: 1,
-        emoji_alt_code: false,
         emoji_code: alice_8ball_event.emoji_code,
         emoji_name: alice_8ball_event.emoji_name,
         is_realm_emoji: false,
@@ -675,6 +674,7 @@ test("add_reaction/remove_reaction", ({override, override_rewire}) => {
         reaction_type: alice_8ball_event.reaction_type,
         user_ids: [alice.user_id],
         vote_text: "translated: You",
+        emoji_alt_code: false,
     };
     test_function_calls({
         run_code() {
@@ -710,7 +710,6 @@ test("add_reaction/remove_reaction", ({override, override_rewire}) => {
     const clean_reaction_object_bob = {
         class: "message_reaction reacted",
         count: 2,
-        emoji_alt_code: false,
         emoji_code: bob_8ball_event.emoji_code,
         emoji_name: bob_8ball_event.emoji_name,
         is_realm_emoji: false,
@@ -719,6 +718,7 @@ test("add_reaction/remove_reaction", ({override, override_rewire}) => {
         reaction_type: bob_8ball_event.reaction_type,
         user_ids: [alice.user_id, bob.user_id],
         vote_text: "translated: You, Bob van Roberts",
+        emoji_alt_code: false,
     };
     test_function_calls({
         run_code() {
@@ -745,7 +745,6 @@ test("add_reaction/remove_reaction", ({override, override_rewire}) => {
     const clean_reaction_object_cali = {
         class: "message_reaction",
         count: 1,
-        emoji_alt_code: false,
         emoji_code: cali_airplane_event.emoji_code,
         emoji_name: cali_airplane_event.emoji_name,
         is_realm_emoji: false,
@@ -754,6 +753,7 @@ test("add_reaction/remove_reaction", ({override, override_rewire}) => {
         reaction_type: cali_airplane_event.reaction_type,
         user_ids: [cali.user_id],
         vote_text: "Cali",
+        emoji_alt_code: false,
     };
     test_function_calls({
         run_code() {
@@ -810,8 +810,8 @@ test("add_reaction/remove_reaction", ({override, override_rewire}) => {
                 name: "remove_reaction_from_view",
                 clean_reaction_object: {
                     count: 0,
-                    class: "message_reaction",
                     emoji_alt_code: false,
+                    class: "message_reaction",
                     emoji_code: alice_8ball_event.emoji_code,
                     emoji_name: alice_8ball_event.emoji_name,
                     is_realm_emoji: false,
