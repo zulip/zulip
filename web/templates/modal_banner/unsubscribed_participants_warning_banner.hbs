@@ -3,14 +3,14 @@
         {{#if (eq selected_propagate_mode "change_one")}}
             {{#tr}}
                 Message sender <z-user-names></z-user-names> is not subscribed to &nbsp;<z-stream></z-stream>.
-                {{#*inline "z-user-names"}}({{{unsubscribed_participant_formatted_names_list}}}){{/inline}}
+                {{#*inline "z-user-names"}}({{{unsubscribed_participant_formatted_names_list_html}}}){{/inline}}
                 {{#*inline "z-stream"}}<strong class="highlighted-element">{{> ../inline_decorated_channel_name stream=stream show_colored_icon=true}}</strong>{{/inline}}
             {{/tr}}
 
         {{else if few_unsubscribed_participants}}
             {{#tr}}
                 Some topic participants <z-user-names></z-user-names> are not subscribed to &nbsp;<z-stream></z-stream>.
-                {{#*inline "z-user-names"}}({{{unsubscribed_participant_formatted_names_list}}}){{/inline}}
+                {{#*inline "z-user-names"}}({{{unsubscribed_participant_formatted_names_list_html}}}){{/inline}}
                 {{#*inline "z-stream"}}<strong class="highlighted-element">{{> ../inline_decorated_channel_name stream=stream show_colored_icon=true}}</strong>{{/inline}}
             {{/tr}}
 
