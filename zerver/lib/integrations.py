@@ -585,7 +585,7 @@ WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
     WebhookIntegration("zapier", ["meta-integration"]),
     WebhookIntegration("zendesk", ["customer-support"]),
     WebhookIntegration("zabbix", ["monitoring"]),
-    WebhookIntegration("redmine", ["project-management"]),
+    WebhookIntegration("redmine", ["project-management"],doc_screenshot_config={"screenshot_name": "001.png"}),
 ]
 
 INTEGRATIONS: dict[str, Integration] = {
