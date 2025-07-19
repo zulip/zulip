@@ -5,10 +5,10 @@
 .banner {
     box-sizing: border-box;
     display: grid;
-    grid-template: var(--banner-grid-template-rows-lg) / var(
-            --banner-grid-template-columns-lg
+    grid-template: var(--banner-grid-template-rows) / var(
+            --banner-grid-template-columns
         );
-    grid-template-areas: var(--banner-grid-template-areas-lg);
+    grid-template-areas: var(--banner-grid-template-areas);
     place-items: start;
     border: 1px solid;
     border-radius: 6px;
@@ -30,8 +30,22 @@
     }
 }
 
+.banner-content {
+    grid-area: banner-content;
+    display: flex;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    width: 100%;
+    gap: 0 0.625em; /* 10px at 16px/1em */
+}
+
 .banner-label {
-    grid-area: banner-label;
+    /* We allow the banner label to grow and shrink, and set
+       the flex basis to 60% of the query container's width.
+       When the width of the banner label goes below this
+       flex basis value, the banner action buttons are wrapped
+       on to the next line.  */
+    flex: 1 1 60cqw;
     /* The padding and line-height values for the banner label
        are identical to those of the action buttons', to match
        the height of both of these elements. This is required to
@@ -44,10 +58,9 @@
 }
 
 .banner-action-buttons {
-    grid-area: banner-action-buttons;
     display: flex;
+    flex-wrap: wrap;
     gap: 0.5em; /* 8px at 16px/1em */
-    margin-left: 0.625em; /* 10px at 16px/1em */
 }
 
 .banner-close-button {
@@ -62,52 +75,69 @@
 }
 
 .navbar-alert-banner {
-    grid-template-columns:
-        var(--banner-horizontal-padding) minmax(0, 1fr)
-        auto 0 auto minmax(0, 1fr) minmax(0, auto) var(
-            --banner-horizontal-padding
-        );
     border: unset;
     border-bottom: 1px solid;
     border-radius: 0;
     place-items: start center;
-}
 
-.navbar-alert-banner .banner-action-buttons {
-    justify-content: center;
-}
+    .banner-content {
+        justify-content: center;
+        flex-wrap: nowrap;
+    }
 
-@container banner (width >= 44em) and (width < 63em) {
-    .navbar-alert-banner[data-process="desktop-notifications"] {
-        grid-template: var(--banner-grid-template-rows-md) / var(
-                --banner-grid-template-columns-md
-            );
-        grid-template-areas: var(--banner-grid-template-areas-md);
-        text-align: center;
+    .banner-label {
+        /* Reset to initial value */
+        flex: 0 1 auto;
+    }
+
+    .banner-action-buttons {
+        flex-wrap: nowrap;
     }
 }
 
-@container banner (width < 44em) {
-    .banner {
-        grid-template: var(--banner-grid-template-rows-md) / var(
-                --banner-grid-template-columns-md
-            );
-        grid-template-areas: var(--banner-grid-template-areas-md);
+/* This utility class defines the structure of the medium-type
+   navbar banners where the banner action buttons are placed
+   below the banner label. This utility class is required since
+   unlike the normal banners, the navbar counterparts have
+   horizontally centered elements, wherein the flex-basis logic
+   won't apply and we need to manually apply these properties
+   based on the container size queries below. */
+.navbar-alert-medium-banner {
+    .banner-content {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .banner-label {
+        text-align: center;
     }
 
     .banner-action-buttons {
         flex-wrap: wrap;
-        margin-left: 0;
+        justify-content: center;
     }
+}
 
+@container banner (width >= 44em) and (width < 63em) {
+    .navbar-alert-banner[data-process="desktop-notifications"] {
+        @extend .navbar-alert-medium-banner;
+    }
+}
+
+@container banner (width < 44em) {
     .navbar-alert-banner {
-        text-align: center;
+        @extend .navbar-alert-medium-banner;
     }
 }
 
 @container banner (width < 25em) {
-    .banner {
-        grid-template-areas: var(--banner-grid-template-areas-sm);
+    .banner-content {
+        flex-direction: column;
+    }
+
+    .banner-label {
+        /* Reset to initial value */
+        flex: 0 1 auto;
     }
 
     .banner-action-buttons {

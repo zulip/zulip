@@ -125,7 +125,7 @@ const alert_banners: Record<string, AlertBanner> = {
         custom_classes: "navbar-alert-banner",
     },
     notifications: {
-        process: "notifications",
+        process: "desktop-notifications",
         intent: "brand",
         label: new Handlebars.SafeString(
             $t_html({
