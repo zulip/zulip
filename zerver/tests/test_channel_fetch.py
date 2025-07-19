@@ -616,7 +616,7 @@ class GetSubscribersTest(ZulipTestCase):
         # verify that the user was sent a message informing them about the subscription
         realm = user.realm
         msg = most_recent_message(user)
-        self.assertEqual(msg.recipient.type, msg.recipient.PERSONAL)
+        self.assertEqual(msg.recipient.type, msg.recipient.DIRECT_MESSAGE_GROUP)
         self.assertEqual(msg.sender_id, self.notification_bot(realm).id)
 
         def non_ws(s: str) -> str:

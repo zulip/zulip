@@ -395,7 +395,7 @@ class MatterMostImporter(ZulipTestCase):
                 team_name=team_name,
             )
 
-        self.assert_length(zerver_huddle, 1)
+        self.assert_length(zerver_huddle, 3)
         direct_message_group_members = frozenset(mattermost_data["direct_channel"][1]["members"])
 
         self.assertTrue(direct_message_group_id_mapper.has(direct_message_group_members))
@@ -751,18 +751,18 @@ class MatterMostImporter(ZulipTestCase):
         self.assert_length(realm["zerver_defaultstream"], 0)
 
         exported_recipient_ids = self.get_set(realm["zerver_recipient"], "id")
-        self.assert_length(exported_recipient_ids, 6)
+        self.assert_length(exported_recipient_ids, 3)
         exported_recipient_types = self.get_set(realm["zerver_recipient"], "type")
-        self.assertEqual(exported_recipient_types, {1, 2})
+        self.assertEqual(exported_recipient_types, {Recipient.STREAM})
         exported_recipient_type_ids = self.get_set(realm["zerver_recipient"], "type_id")
         self.assert_length(exported_recipient_type_ids, 3)
 
         exported_subscription_userprofile = self.get_set(
             realm["zerver_subscription"], "user_profile"
         )
-        self.assert_length(exported_subscription_userprofile, 3)
+        self.assert_length(exported_subscription_userprofile, 2)
         exported_subscription_recipients = self.get_set(realm["zerver_subscription"], "recipient")
-        self.assert_length(exported_subscription_recipients, 6)
+        self.assert_length(exported_subscription_recipients, 3)
 
         messages = self.read_file(harry_team_output_dir, "messages-000001.json")
 
@@ -856,18 +856,20 @@ class MatterMostImporter(ZulipTestCase):
         self.assert_length(realm["zerver_defaultstream"], 0)
 
         exported_recipient_ids = self.get_set(realm["zerver_recipient"], "id")
-        self.assert_length(exported_recipient_ids, 8)
+        self.assert_length(exported_recipient_ids, 6)
         exported_recipient_types = self.get_set(realm["zerver_recipient"], "type")
-        self.assertEqual(exported_recipient_types, {1, 2, 3})
+        self.assertEqual(
+            exported_recipient_types, {Recipient.STREAM, Recipient.DIRECT_MESSAGE_GROUP}
+        )
         exported_recipient_type_ids = self.get_set(realm["zerver_recipient"], "type_id")
-        self.assert_length(exported_recipient_type_ids, 4)
+        self.assert_length(exported_recipient_type_ids, 3)
 
         exported_subscription_userprofile = self.get_set(
             realm["zerver_subscription"], "user_profile"
         )
         self.assert_length(exported_subscription_userprofile, 4)
         exported_subscription_recipients = self.get_set(realm["zerver_subscription"], "recipient")
-        self.assert_length(exported_subscription_recipients, 8)
+        self.assert_length(exported_subscription_recipients, 6)
 
         messages = self.read_file(harry_team_output_dir, "messages-000001.json")
 
@@ -915,27 +917,30 @@ class MatterMostImporter(ZulipTestCase):
         group_direct_messages = messages.filter(
             recipient__type=Recipient.DIRECT_MESSAGE_GROUP
         ).order_by("date_sent")
+        self.assert_length(group_direct_messages, 11)
+
         direct_message_group_recipients = group_direct_messages.values_list("recipient", flat=True)
-        self.assert_length(group_direct_messages, 3)
-        self.assert_length(set(direct_message_group_recipients), 1)
-        self.assertEqual(group_direct_messages[0].sender.email, "ginny@zulip.com")
-        self.assertEqual(
-            group_direct_messages[0].content, "Who is going to Hogsmeade this weekend?\n\n"
+        self.assert_length(set(direct_message_group_recipients), 7)
+
+        self.assertEqual(group_direct_messages[0].sender.email, "ron@zulip.com")
+        self.assertRegex(
+            group_direct_messages[0].content, "hey harry\n\n\\[harry-ron.jpg\\]\\(.*\\)"
         )
+        self.assertTrue(group_direct_messages[0].has_attachment)
+        self.assertTrue(group_direct_messages[0].has_image)
+        self.assertTrue(group_direct_messages[0].has_link)
         self.assertEqual(group_direct_messages[0].topic_name(), Message.DM_TOPIC)
+
+        self.assertEqual(group_direct_messages[1].sender.email, "ginny@zulip.com")
+        self.assertEqual(
+            group_direct_messages[1].content, "Who is going to Hogsmeade this weekend?\n\n"
+        )
+        self.assertEqual(group_direct_messages[1].topic_name(), Message.DM_TOPIC)
 
         personal_messages = messages.filter(recipient__type=Recipient.PERSONAL).order_by(
             "date_sent"
         )
-        personal_recipients = personal_messages.values_list("recipient", flat=True)
-        self.assert_length(personal_messages, 8)
-        self.assert_length(set(personal_recipients), 4)
-        self.assertEqual(personal_messages[0].sender.email, "ron@zulip.com")
-        self.assertRegex(personal_messages[0].content, "hey harry\n\n\\[harry-ron.jpg\\]\\(.*\\)")
-        self.assertTrue(personal_messages[0].has_attachment)
-        self.assertTrue(personal_messages[0].has_image)
-        self.assertTrue(personal_messages[0].has_link)
-        self.assertEqual(personal_messages[0].topic_name(), Message.DM_TOPIC)
+        self.assert_length(personal_messages, 0)
 
     def test_do_convert_data_with_masking(self) -> None:
         mattermost_data_dir = self.fixture_file_name("", "mattermost_fixtures")

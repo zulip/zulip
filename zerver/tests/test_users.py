@@ -3306,7 +3306,7 @@ class DeleteUserTest(ZulipTestCase):
         cordelia = self.example_user("cordelia")
         othello = self.example_user("othello")
         hamlet = self.example_user("hamlet")
-        hamlet_personal_recipient = hamlet.recipient
+        hamlet_and_cordelia_recipient = self.get_dm_recipient(hamlet, cordelia)
         hamlet_user_id = hamlet.id
         hamlet_date_joined = hamlet.date_joined
 
@@ -3314,7 +3314,7 @@ class DeleteUserTest(ZulipTestCase):
         self.send_personal_message(hamlet, cordelia)
 
         personal_message_ids_to_hamlet = Message.objects.filter(
-            realm_id=realm.id, recipient=hamlet_personal_recipient
+            realm_id=realm.id, recipient=hamlet_and_cordelia_recipient
         ).values_list("id", flat=True)
         self.assertGreater(len(personal_message_ids_to_hamlet), 0)
         self.assertTrue(Message.objects.filter(realm_id=realm.id, sender=hamlet).exists())
@@ -3377,7 +3377,7 @@ class DeleteUserTest(ZulipTestCase):
         cordelia = self.example_user("cordelia")
         othello = self.example_user("othello")
         hamlet = self.example_user("hamlet")
-        hamlet_personal_recipient = hamlet.recipient
+        hamlet_and_cordelia_recipient = self.get_dm_recipient(hamlet, cordelia)
         hamlet_user_id = hamlet.id
         hamlet_date_joined = hamlet.date_joined
 
@@ -3385,7 +3385,7 @@ class DeleteUserTest(ZulipTestCase):
         self.send_personal_message(hamlet, cordelia)
 
         personal_message_ids_to_hamlet = Message.objects.filter(
-            realm_id=realm.id, recipient=hamlet_personal_recipient
+            realm_id=realm.id, recipient=hamlet_and_cordelia_recipient
         ).values_list("id", flat=True)
         self.assertGreater(len(personal_message_ids_to_hamlet), 0)
         self.assertTrue(Message.objects.filter(realm_id=realm.id, sender=hamlet).exists())

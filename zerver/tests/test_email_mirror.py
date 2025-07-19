@@ -1282,9 +1282,8 @@ class TestMissedMessageEmailMessages(ZulipTestCase):
         message = most_recent_message(user_profile)
 
         self.assertEqual(message.content, "TestMissedMessageEmailMessages body")
-        self.assertEqual(message.sender, self.example_user("othello"))
-        self.assertEqual(message.recipient.type_id, user_profile.id)
-        self.assertEqual(message.recipient.type, Recipient.PERSONAL)
+        self.assertEqual(message.sender, othello)
+        self.assertEqual(message.recipient, self.get_dm_recipient(user_profile, othello))
 
     def test_receive_missed_group_direct_message_email_messages(self) -> None:
         # Build dummy messages for message notification email reply.

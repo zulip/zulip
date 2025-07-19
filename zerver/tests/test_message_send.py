@@ -697,6 +697,9 @@ class MessagePOSTTest(ZulipTestCase):
         Sending a personal message to a valid user ID is successful
         for both valid strings for `type` parameter.
         """
+        hamlet = self.example_user("hamlet")
+        othello = self.example_user("othello")
+
         self.login("hamlet")
         recipient_type_name = ["direct", "private"]
 
@@ -706,14 +709,14 @@ class MessagePOSTTest(ZulipTestCase):
                 {
                     "type": type,
                     "content": "Test message",
-                    "to": orjson.dumps([self.example_user("othello").id]).decode(),
+                    "to": orjson.dumps([othello.id]).decode(),
                 },
             )
             self.assert_json_success(result)
 
             msg = self.get_last_message()
             self.assertEqual("Test message", msg.content)
-            self.assertEqual(msg.recipient_id, self.example_user("othello").recipient_id)
+            self.assertEqual(msg.recipient_id, self.get_dm_recipient(hamlet, othello).id)
 
     def test_group_personal_message_by_id(self) -> None:
         """
@@ -765,8 +768,8 @@ class MessagePOSTTest(ZulipTestCase):
         )
         self.assert_json_success(result)
         msg = self.get_last_message()
-        # Verify that we're not actually on the "recipient list"
-        self.assertNotIn("Hamlet", str(msg.recipient))
+        # Verify that we're actually on the "recipient list"
+        self.assertEqual(msg.recipient, self.get_dm_recipient(hamlet, othello))
 
     def test_personal_message_to_nonexistent_user(self) -> None:
         """
@@ -2589,8 +2592,10 @@ class PersonalMessageSendTest(ZulipTestCase):
         self.assertEqual(old_messages, new_messages)
 
         user_profile = self.nonreg_user("test1")
-        recipient = Recipient.objects.get(type_id=user_profile.id, type=Recipient.PERSONAL)
-        self.assertEqual(most_recent_message(user_profile).recipient, recipient)
+        direct_message_group = get_or_create_direct_message_group(id_list=[user_profile.id])
+        self.assertEqual(
+            most_recent_message(user_profile).recipient, direct_message_group.recipient
+        )
 
     @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
     def test_personal_to_self_using_direct_message_group(self) -> None:
