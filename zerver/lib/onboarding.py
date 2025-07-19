@@ -368,7 +368,7 @@ This **greetings** topic is a great place to say “hi” :wave: to your teammat
     # Dependency on knowing how to send messages.
     welcome_messages += [
         {
-            "channel_name": str(realm.ZULIP_SANDBOX_CHANNEL_NAME),
+            "channel_name": str(Realm.ZULIP_SANDBOX_CHANNEL_NAME),
             "topic_name": _("experiments"),
             "content": content,
         }
@@ -378,7 +378,7 @@ This **greetings** topic is a great place to say “hi” :wave: to your teammat
     # Suggestion to start your first new conversation.
     welcome_messages += [
         {
-            "channel_name": str(realm.ZULIP_SANDBOX_CHANNEL_NAME),
+            "channel_name": str(Realm.ZULIP_SANDBOX_CHANNEL_NAME),
             "topic_name": _("start a conversation"),
             "content": content,
         }
@@ -402,7 +402,7 @@ This **greetings** topic is a great place to say “hi” :wave: to your teammat
     # Main welcome message, this should be last.
     welcome_messages += [
         {
-            "channel_name": str(realm.ZULIP_DISCUSSION_CHANNEL_NAME),
+            "channel_name": str(Realm.ZULIP_DISCUSSION_CHANNEL_NAME),
             "topic_name": _("welcome to Zulip!"),
             "content": content,
         }
