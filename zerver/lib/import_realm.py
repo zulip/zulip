@@ -1940,6 +1940,8 @@ def send_zulip_initial_messages_after_import(realm: Realm, target_channel: Strea
 
     # We use batching to avoid fetching a large number of UserProfile objects
     # in one go, if the realm is huge.
+    # TODO: Instead, it would be much more efficient to just generate these messages
+    # on the fly for each imported user during their first login.
     while user_profiles_batch := list(
         UserProfile.objects.filter(
             realm=realm, is_active=True, is_bot=False, id__gt=lower_bound_id
