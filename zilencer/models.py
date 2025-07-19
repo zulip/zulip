@@ -4,7 +4,8 @@ from datetime import datetime, timedelta
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
-from django.db.models import Max, Q, QuerySet, UniqueConstraint
+from django.db.models import F, Max, Q, QuerySet, UniqueConstraint
+from django.db.models.functions import Lower
 from django.utils.timezone import now as timezone_now
 from typing_extensions import override
 
@@ -116,13 +117,43 @@ class RemotePushDeviceToken(AbstractPushDeviceToken):
     remote_realm = models.ForeignKey("RemoteRealm", on_delete=models.SET_NULL, null=True)
 
     class Meta:
-        unique_together = [
+        constraints = [
             # These indexes rely on the property that in Postgres,
             # NULL != NULL in the context of unique indexes, so multiple
             # rows with the same values in these columns can exist
             # if one of them is NULL.
-            ("server", "user_id", "kind", "token"),
-            ("server", "user_uuid", "kind", "token"),
+            models.UniqueConstraint(
+                "server_id",
+                "user_id",
+                "kind",
+                Lower(F("token")),
+                name="zilencer_remotepushdevicetoken_apns_server_user_id_kind_token",
+                condition=Q(kind=1),
+            ),
+            models.UniqueConstraint(
+                "server_id",
+                "user_id",
+                "kind",
+                "token",
+                name="zilencer_remotepushdevicetoken_fcm_server_user_id_kind_token",
+                condition=Q(kind=2),
+            ),
+            models.UniqueConstraint(
+                "server_id",
+                "user_uuid",
+                "kind",
+                Lower(F("token")),
+                name="zilencer_remotepushdevicetoken_apns_server_uuid_kind_token",
+                condition=Q(kind=1),
+            ),
+            models.UniqueConstraint(
+                "server_id",
+                "user_uuid",
+                "kind",
+                "token",
+                name="zilencer_remotepushdevicetoken_fcm_server_uuid_kind_token",
+                condition=Q(kind=2),
+            ),
         ]
 
     @override

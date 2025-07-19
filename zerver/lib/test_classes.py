@@ -2757,7 +2757,7 @@ class PushNotificationTestCase(BouncerTestCase):
             apns_context.loop.close()
 
     def setup_apns_tokens(self) -> None:
-        self.tokens = [("aaaa", "org.zulip.Zulip"), ("bbbb", "com.zulip.flutter")]
+        self.tokens = [("aAAa", "org.zulip.Zulip"), ("bBBb", "com.zulip.flutter")]
         for token, appid in self.tokens:
             PushDeviceToken.objects.create(
                 kind=PushDeviceToken.APNS,
@@ -2767,8 +2767,8 @@ class PushNotificationTestCase(BouncerTestCase):
             )
 
         self.remote_tokens = [
-            ("cccc", "dddd", "org.zulip.Zulip"),
-            ("eeee", "ffff", "com.zulip.flutter"),
+            ("cCCc", "dDDd", "org.zulip.Zulip"),
+            ("eEEe", "fFFf", "com.zulip.flutter"),
         ]
         for id_token, uuid_token, appid in self.remote_tokens:
             # We want to set up both types of RemotePushDeviceToken here:
