@@ -39,7 +39,11 @@ from zerver.lib.markdown import version as markdown_version
 from zerver.lib.message import get_last_message_id
 from zerver.lib.migration_status import MigrationStatusJson, parse_migration_status
 from zerver.lib.mime_types import guess_type
-from zerver.lib.onboarding import send_initial_direct_message
+from zerver.lib.onboarding import (
+    OnboardingMessageTypeEnum,
+    send_initial_direct_message,
+    send_initial_realm_messages,
+)
 from zerver.lib.partial import partial
 from zerver.lib.push_notifications import sends_notifications_directly
 from zerver.lib.remote_server import maybe_enqueue_audit_log_upload
@@ -1906,12 +1910,31 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
         send_zulip_update_announcements_to_realm(realm, skip_delay=False)
         # Exports from others tools naturally don't have the initial Welcome Bot
         # messages for users, so we need to create them.
-        send_zulip_initial_messages_after_import(realm)
+        #
+        # Such exports use the default general-type channel such as "general" for
+        # announcements - which happens to be also the channel we want for the initial messages.
+        send_zulip_initial_messages_after_import(
+            realm, target_channel=realm.zulip_update_announcements_stream
+        )
 
     return realm
 
 
-def send_zulip_initial_messages_after_import(realm: Realm) -> None:
+def send_zulip_initial_messages_after_import(realm: Realm, target_channel: Stream | None) -> None:
+    if target_channel is not None:
+        send_initial_realm_messages(
+            realm,
+            override_channel_name_map={
+                OnboardingMessageTypeEnum.moving_messages: target_channel.name,
+                OnboardingMessageTypeEnum.welcome_to_zulip: target_channel.name,
+                OnboardingMessageTypeEnum.experiments: target_channel.name,
+                OnboardingMessageTypeEnum.greetings: target_channel.name,
+                # We shouldn't encourage people to start random threads in their organization's #general-type channel,
+                # so we skip sending these initial messages at all.
+                OnboardingMessageTypeEnum.start_conversation: None,
+            },
+        )
+
     BATCH_SIZE = 1000
     lower_bound_id = 0
 
