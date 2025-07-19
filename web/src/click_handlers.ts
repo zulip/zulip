@@ -129,6 +129,7 @@ export function initialize(): void {
         if (
             $target.is("i.edit_message_button") ||
             $target.is(".message_edit_notice") ||
+            $target.is(".message_edit_notice .zulip-icon") ||
             $target.is(".edit-notifications")
         ) {
             return true;
