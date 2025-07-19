@@ -1,8 +1,10 @@
 import $ from "jquery";
+import assert from "minimalistic-assert";
 import {z} from "zod";
 
 import render_settings_resend_invite_modal from "../templates/confirm_dialog/confirm_resend_invite.hbs";
 import render_settings_revoke_invite_modal from "../templates/confirm_dialog/confirm_revoke_invite.hbs";
+import render_edit_invite_user_modal from "../templates/edit_invite_user_modal.hbs";
 import render_admin_invites_list from "../templates/settings/admin_invites_list.hbs";
 
 import * as blueslip from "./blueslip.ts";
@@ -10,12 +12,16 @@ import * as channel from "./channel.ts";
 import * as confirm_dialog from "./confirm_dialog.ts";
 import * as dialog_widget from "./dialog_widget.ts";
 import {$t, $t_html} from "./i18n.ts";
+import {get_invite_as_options_for_invite, set_streams_to_join_list_visibility} from "./invite.ts";
+import * as invite_stream_picker_pill from "./invite_stream_picker_pill.ts";
 import * as ListWidget from "./list_widget.ts";
 import * as loading from "./loading.ts";
 import * as people from "./people.ts";
 import * as settings_config from "./settings_config.ts";
 import * as settings_data from "./settings_data.ts";
 import {current_user} from "./state_data.ts";
+import * as stream_data from "./stream_data.ts";
+import * as stream_pill from "./stream_pill.ts";
 import * as timerender from "./timerender.ts";
 import * as ui_report from "./ui_report.ts";
 import * as util from "./util.ts";
@@ -27,6 +33,8 @@ export const invite_schema = z.intersection(
         expiry_date: z.number().nullable(),
         id: z.number(),
         invited_as: z.number(),
+        stream_ids: z.array(z.number()),
+        include_realm_default_subscriptions: z.boolean(),
     }),
     z.discriminatedUnion("is_multiuse", [
         z.object({
@@ -37,6 +45,7 @@ export const invite_schema = z.intersection(
         z.object({
             is_multiuse: z.literal(true),
             link_url: z.string(),
+            stream_ids: z.array(z.number()),
         }),
     ]),
 );
@@ -45,18 +54,28 @@ type Invite = z.output<typeof invite_schema> & {
     invited_absolute_time?: string;
     expiry_date_absolute_time?: string;
     is_admin?: boolean;
-    disable_buttons?: boolean;
+    disable_edit_button?: boolean;
+    disable_revoke_and_resend_button?: boolean;
     referrer_name?: string;
     img_src?: string;
     notify_referrer_on_join?: boolean;
 };
 
-const meta = {
-    loaded: false,
+type Meta = {
+    loaded: boolean;
+    invites: Invite[];
 };
+
+const meta: Meta = {
+    loaded: false,
+    invites: [],
+};
+
+let stream_pill_widget: stream_pill.StreamPillWidget;
 
 export function reset(): void {
     meta.loaded = false;
+    meta.invites = [];
 }
 
 function failed_listing_invites(xhr: JQuery.jqXHR): void {
@@ -91,6 +110,7 @@ function populate_invites(invites_data: {invites: Invite[]}): void {
 
     add_invited_as_text(invites_data.invites);
 
+    meta.invites = invites_data.invites;
     const $invites_table = $("#admin_invites_table").expectOne();
     ListWidget.create($invites_table, invites_data.invites, {
         name: "admin_invites_list",
@@ -101,9 +121,24 @@ function populate_invites(invites_data: {invites: Invite[]}): void {
                 item.expiry_date_absolute_time = timerender.absolute_time(item.expiry_date * 1000);
             }
             item.is_admin = current_user.is_admin;
-            item.disable_buttons =
-                item.invited_as === settings_config.user_role_values.owner.code &&
-                !current_user.is_owner;
+
+            // Disable edit if user cannot assign the invite's current role
+            const role = item.invited_as;
+            const role_values = settings_config.user_role_values;
+            let can_edit = false;
+            if (role === role_values.guest.code || role === role_values.member.code) {
+                can_edit = true;
+            } else if (
+                (role === role_values.moderator.code || role === role_values.admin.code) &&
+                (current_user.is_admin || current_user.is_owner)
+            ) {
+                can_edit = true;
+            } else if (role === role_values.owner.code && current_user.is_owner) {
+                can_edit = true;
+            }
+            item.disable_edit_button =
+                !can_edit || !settings_data.user_can_create_multiuse_invite();
+            item.disable_revoke_and_resend_button = item.disable_edit_button;
             item.referrer_name = people.get_by_user_id(item.invited_by_user_id).full_name;
             item.img_src = people.small_avatar_url_for_person(
                 people.get_by_user_id(item.invited_by_user_id),
@@ -238,6 +273,36 @@ function do_resend_invite({$row, invite_id}: {$row: JQuery; invite_id: string}):
     });
 }
 
+type GetInvitationData = {
+    csrfmiddlewaretoken: string | undefined;
+    invite_as: number;
+    stream_ids: string;
+    include_realm_default_subscriptions: boolean;
+};
+
+function get_invitation_data(): GetInvitationData {
+    const invite_as = Number.parseInt(String($("#invite_as").val()), 10);
+
+    let stream_ids: number[] = [];
+    let include_realm_default_subscriptions = false;
+    if (
+        $("#invite_select_default_streams").prop("checked") ||
+        !settings_data.can_subscribe_others_to_all_accessible_streams()
+    ) {
+        include_realm_default_subscriptions = true;
+    } else {
+        stream_ids = stream_pill.get_stream_ids(stream_pill_widget);
+    }
+
+    const data = {
+        csrfmiddlewaretoken: $('input[name="csrfmiddlewaretoken"]').attr("value"),
+        invite_as,
+        stream_ids: JSON.stringify(stream_ids),
+        include_realm_default_subscriptions,
+    };
+    return data;
+}
+
 export function set_up(initialize_event_handlers = true): void {
     meta.loaded = true;
 
@@ -322,6 +387,116 @@ export function on_load_success(
         });
 
         $(".dialog_submit_button").attr("data-invite-id", invite_id);
+    });
+
+    $(".admin_invites_table").on("click", ".edit-invite", function (this: HTMLElement, e) {
+        // This click event must not get propagated to parent container otherwise the modal
+        // will not show up because of a call to `close_active` in `settings.js`.
+        e.preventDefault();
+        e.stopPropagation();
+
+        const invite_id = $(this).closest("tr").attr("data-invite-id")!;
+
+        $(".dialog_submit_button").closest("tr").attr("data-invite-id", invite_id);
+        const invite = meta.invites.find(
+            (invite) => invite.id === Number(invite_id) && invite.is_multiuse,
+        );
+        assert(invite !== undefined);
+        const invite_as_options = get_invite_as_options_for_invite(invite.invited_as);
+        const html_body = render_edit_invite_user_modal({
+            invite_as_options,
+            is_admin: current_user.is_admin,
+            is_owner: current_user.is_owner,
+            show_select_default_streams_option: stream_data.get_default_stream_ids().length > 0,
+            can_subscribe_other_users:
+                settings_data.can_subscribe_others_to_all_accessible_streams(),
+        });
+
+        function edit_invite_user_modal_post_render(): void {
+            const $submit_button = $("#edit-invite-form .dialog_submit_button");
+            $submit_button.prop("disabled", true);
+            $submit_button.attr("data-loading-text", $t({defaultMessage: "Updating link…"}));
+            assert(invite !== undefined);
+            const $stream_pill_container = $("#invite_streams_container .pill-container");
+            if (invite.include_realm_default_subscriptions) {
+                $("#invite_select_default_streams").prop("checked", true);
+                $(".add_streams_container").hide();
+            } else {
+                $("#invite_select_default_streams").prop("checked", false);
+                $(".add_streams_container").show();
+            }
+            stream_pill_widget = invite_stream_picker_pill.create(
+                $stream_pill_container,
+                invite.stream_ids,
+            );
+            $("#invite_as").val(invite.invited_as);
+
+            function toggle_submit_button($elem: JQuery): void {
+                if (!invite) {
+                    $elem.prop("disabled", true);
+                    return;
+                }
+                const initial_streams = [...invite.stream_ids].sort();
+                let selected_streams: number[] = [];
+                if (!$("#invite_select_default_streams").prop("checked")) {
+                    selected_streams = stream_pill.get_stream_ids(stream_pill_widget).sort();
+                }
+                const is_state_unchanged =
+                    selected_streams.length === initial_streams.length &&
+                    selected_streams.every((val, index) => val === initial_streams[index]) &&
+                    Number.parseInt(String($("#invite_as").val()), 10) === invite.invited_as &&
+                    $("#invite_select_default_streams").prop("checked") ===
+                        invite.include_realm_default_subscriptions;
+
+                $elem.prop("disabled", is_state_unchanged);
+            }
+
+            $("#edit-invite-form").on("change", "#invite_as, div.input", () => {
+                e.preventDefault();
+                toggle_submit_button($submit_button);
+            });
+            $("#invite_select_default_streams").on("change", () => {
+                e.preventDefault();
+                set_streams_to_join_list_visibility();
+                toggle_submit_button($submit_button);
+            });
+        }
+
+        function do_edit_invite(): void {
+            const $invite_status = $("#dialog_error");
+            const data = get_invitation_data();
+
+            void channel.patch({
+                url: `/json/invites/multiuse/${invite_id}`,
+                data,
+                success() {
+                    dialog_widget.close();
+                },
+                error(xhr) {
+                    ui_report.error(
+                        $t_html({
+                            defaultMessage: "Failed",
+                        }),
+                        xhr,
+                        $invite_status,
+                    );
+                },
+                complete() {
+                    dialog_widget.hide_dialog_spinner();
+                },
+            });
+        }
+
+        dialog_widget.launch({
+            html_heading: $t_html({defaultMessage: "Edit invite"}),
+            html_body,
+            html_submit_button: $t_html({defaultMessage: "Save changes"}),
+            id: "edit-invite-form",
+            loading_spinner: true,
+            on_click: do_edit_invite,
+            post_render: edit_invite_user_modal_post_render,
+            help_link: "/help/invite-new-users#edit-a-reusable-invitation-link",
+        });
     });
 }
 

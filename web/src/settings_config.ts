@@ -423,22 +423,27 @@ export const user_role_values = {
     guest: {
         code: 600,
         description: $t({defaultMessage: "Guest"}),
+        invite_as_option_name: $t({defaultMessage: "Guests"}),
     },
     member: {
         code: 400,
         description: $t({defaultMessage: "Member"}),
+        invite_as_option_name: $t({defaultMessage: "Members"}),
     },
     moderator: {
         code: 300,
         description: $t({defaultMessage: "Moderator"}),
+        invite_as_option_name: $t({defaultMessage: "Moderators"}),
     },
     admin: {
         code: 200,
         description: $t({defaultMessage: "Administrator"}),
+        invite_as_option_name: $t({defaultMessage: "Administrators"}),
     },
     owner: {
         code: 100,
         description: $t({defaultMessage: "Owner"}),
+        invite_as_option_name: $t({defaultMessage: "Owners"}),
     },
 };
 
