@@ -894,11 +894,11 @@ class MatterMostImporter(ZulipTestCase):
         messages = Message.objects.filter(realm=realm)
         for message in messages:
             self.assertIsNotNone(message.rendered_content)
-        self.assert_length(messages, 15)
+        self.assert_length(messages, 24)
 
         stream_messages = messages.filter(recipient__type=Recipient.STREAM).order_by("date_sent")
         stream_recipients = stream_messages.values_list("recipient", flat=True)
-        self.assert_length(stream_messages, 4)
+        self.assert_length(stream_messages, 13)
         self.assert_length(set(stream_recipients), 2)
         self.assertEqual(stream_messages[0].sender.email, "ron@zulip.com")
         self.assertEqual(stream_messages[0].content, "ron joined the channel.\n\n")
