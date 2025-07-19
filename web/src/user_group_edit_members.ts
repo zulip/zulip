@@ -181,12 +181,12 @@ export function rerender_members_list({
     });
 }
 
-function generate_group_link(group: UserGroup): string {
+function generate_group_link_html(group: UserGroup): string {
     const group_name = user_groups.get_display_group_name(group.name);
     return `<a data-user-group-id="${group.id}" class="view_user_group">${Handlebars.Utils.escapeExpression(group_name)}</a>`;
 }
 
-function generate_user_link(user: User): string {
+function generate_user_link_html(user: User): string {
     return `<a data-user-id="${user.user_id}" class="view_user_profile">${Handlebars.Utils.escapeExpression(user.full_name)}</a>`;
 }
 
@@ -198,41 +198,43 @@ function generate_members_added_success_messages(
     ignored_deactivated_groups: UserGroup[],
     ignored_deactivated_users: User[],
 ): {
-    newly_added_members_message: string;
-    already_added_members_message: string;
-    ignored_deactivated_users_message: string;
-    ignored_deactivated_groups_message: string;
+    newly_added_members_message_html: string;
+    already_added_members_message_html: string;
+    ignored_deactivated_users_message_html: string;
+    ignored_deactivated_groups_message_html: string;
 } {
-    const new_user_links = newly_added_users.map((user) => generate_user_link(user));
-    const new_group_links = newly_added_subgroups.map((group) => generate_group_link(group));
-    const old_user_links = already_added_users.map((user) => generate_user_link(user));
-    const old_group_links = already_added_subgroups.map((group) => generate_group_link(group));
+    const new_user_links = newly_added_users.map((user) => generate_user_link_html(user));
+    const new_group_links = newly_added_subgroups.map((group) => generate_group_link_html(group));
+    const old_user_links = already_added_users.map((user) => generate_user_link_html(user));
+    const old_group_links = already_added_subgroups.map((group) => generate_group_link_html(group));
     const ignored_group_links = ignored_deactivated_groups.map((group) =>
-        generate_group_link(group),
+        generate_group_link_html(group),
     );
-    const ignored_user_links = ignored_deactivated_users.map((user) => generate_user_link(user));
+    const ignored_user_links = ignored_deactivated_users.map((user) =>
+        generate_user_link_html(user),
+    );
 
-    const newly_added_members_message = util.format_array_as_list_with_conjunction(
+    const newly_added_members_message_html = util.format_array_as_list_with_conjunction(
         [...new_user_links, ...new_group_links],
         "long",
     );
-    const already_added_members_message = util.format_array_as_list_with_conjunction(
+    const already_added_members_message_html = util.format_array_as_list_with_conjunction(
         [...old_user_links, ...old_group_links],
         "long",
     );
-    const ignored_deactivated_users_message = util.format_array_as_list_with_conjunction(
+    const ignored_deactivated_users_message_html = util.format_array_as_list_with_conjunction(
         ignored_user_links,
         "long",
     );
-    const ignored_deactivated_groups_message = util.format_array_as_list_with_conjunction(
+    const ignored_deactivated_groups_message_html = util.format_array_as_list_with_conjunction(
         ignored_group_links,
         "long",
     );
     return {
-        newly_added_members_message,
-        already_added_members_message,
-        ignored_deactivated_users_message,
-        ignored_deactivated_groups_message,
+        newly_added_members_message_html,
+        already_added_members_message_html,
+        ignored_deactivated_users_message_html,
+        ignored_deactivated_groups_message_html,
     };
 }
 

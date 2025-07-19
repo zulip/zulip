@@ -75,9 +75,9 @@ function generate_subscribe_success_messages(
     already_subscribed_users: User[],
     ignored_deactivated_users: User[],
 ): {
-    subscribed_users_message: string;
-    already_subscribed_users_message: string;
-    ignored_deactivated_users_message: string;
+    subscribed_users_message_html: string;
+    already_subscribed_users_message_html: string;
+    ignored_deactivated_users_message_html: string;
 } {
     const subscribed_user_links = subscribed_users.map(
         (user) =>
@@ -92,22 +92,22 @@ function generate_subscribe_success_messages(
             `<a data-user-id="${user.user_id}" class="view_user_profile">${Handlebars.Utils.escapeExpression(user.full_name)}</a>`,
     );
 
-    const subscribed_users_message = util.format_array_as_list_with_conjunction(
+    const subscribed_users_message_html = util.format_array_as_list_with_conjunction(
         subscribed_user_links,
         "long",
     );
-    const already_subscribed_users_message = util.format_array_as_list_with_conjunction(
+    const already_subscribed_users_message_html = util.format_array_as_list_with_conjunction(
         already_subscribed_user_links,
         "long",
     );
-    const ignored_deactivated_users_message = util.format_array_as_list_with_conjunction(
+    const ignored_deactivated_users_message_html = util.format_array_as_list_with_conjunction(
         ignored_deactivated_user_links,
         "long",
     );
     return {
-        subscribed_users_message,
-        already_subscribed_users_message,
-        ignored_deactivated_users_message,
+        subscribed_users_message_html,
+        already_subscribed_users_message_html,
+        ignored_deactivated_users_message_html,
     };
 }
 
