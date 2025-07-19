@@ -29,6 +29,10 @@ type ReactionEvent = {
     emoji_code: string;
 };
 
+export const emoji_alt_code = {
+    value: false,
+};
+
 export function get_local_reaction_id(rendering_details: EmojiRenderingDetails): string {
     return [rendering_details.reaction_type, rendering_details.emoji_code].join(",");
 }
@@ -366,6 +370,8 @@ export let insert_new_reaction = (
         clean_reaction_object.user_ids,
     );
 
+    emoji_alt_code.value = user_settings.emojiset === "text";
+
     const is_realm_emoji =
         emoji_details.reaction_type === "realm_emoji" ||
         emoji_details.reaction_type === "zulip_extra_emoji";
@@ -378,7 +384,7 @@ export let insert_new_reaction = (
         count: 1,
         label: new_label,
         local_id: get_local_reaction_id(clean_reaction_object),
-        emoji_alt_code: user_settings.emojiset === "text",
+        emoji_alt_code,
         is_realm_emoji,
         vote_text: "", // Updated below
         class: reaction_class,
@@ -613,7 +619,7 @@ function make_clean_reaction({
         emoji_code,
         reaction_type,
     });
-    const emoji_alt_code = user_settings.emojiset === "text";
+    emoji_alt_code.value = user_settings.emojiset === "text";
     const is_realm_emoji =
         emoji_details.reaction_type === "realm_emoji" ||
         emoji_details.reaction_type === "zulip_extra_emoji";
