@@ -13,6 +13,7 @@ import * as confirm_dialog from "./confirm_dialog.ts";
 import * as dialog_widget from "./dialog_widget.ts";
 import {$t_html} from "./i18n.ts";
 import * as people from "./people.ts";
+import * as settings_config from "./settings_config.ts";
 import {invite_schema} from "./settings_invites.ts";
 import {current_user, realm} from "./state_data.ts";
 
@@ -61,6 +62,7 @@ export function confirm_deactivation(
                 admin_email: people.my_current_email(),
                 realm_url,
                 realm_name,
+                message_delete_actions: settings_config.message_delete_action_values,
             };
             const html_body = render_settings_deactivation_user_modal(opts);
 
@@ -79,6 +81,26 @@ export function confirm_deactivation(
                 });
             }
 
+            function set_spammer_field_visibility(dialog_widget_id: string): void {
+                const $modal = $(`#${CSS.escape(dialog_widget_id)}`);
+                const $spammer_checkbox = $modal.find(".spammer");
+                const $spammer_actions_container = $modal.find(".spammer-actions");
+
+                $spammer_actions_container.hide();
+                $spammer_checkbox.on("change", () => {
+                    if ($spammer_checkbox.is(":checked")) {
+                        $spammer_actions_container.show();
+                    } else {
+                        $spammer_actions_container.hide();
+                    }
+                });
+            }
+
+            function set_field_visibility(dialog_widget_id: string): void {
+                set_email_field_visibility(dialog_widget_id);
+                set_spammer_field_visibility(dialog_widget_id);
+            }
+
             dialog_widget.launch({
                 html_heading: $t_html(
                     {defaultMessage: "Deactivate {name}?"},
@@ -89,7 +111,7 @@ export function confirm_deactivation(
                 html_submit_button: $t_html({defaultMessage: "Deactivate"}),
                 id: "deactivate-user-modal",
                 on_click: handle_confirm,
-                post_render: set_email_field_visibility,
+                post_render: set_field_visibility,
                 loading_spinner,
                 focus_submit_on_open: true,
             });
