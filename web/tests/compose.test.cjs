@@ -179,6 +179,7 @@ function assert_compose_send_button_attr_is_undefined() {
 
 test_ui("send_message_success", ({override, override_rewire}) => {
     mock_banners();
+    disable_document_triggers(override);
 
     const fake_compose_box = new FakeComposeBox();
 
@@ -263,6 +264,7 @@ test_ui("send_message_success", ({override, override_rewire}) => {
 
 test_ui("send_message", ({override, override_rewire, mock_template}) => {
     mock_banners();
+    disable_document_triggers(override);
     MockDate.set(new Date(fake_now * 1000));
     override_rewire(drafts, "sync_count", noop);
 
@@ -360,6 +362,7 @@ test_ui("send_message", ({override, override_rewire, mock_template}) => {
         assert.equal(fake_compose_box.textarea_val(), "");
         assert.ok(fake_compose_box.is_textarea_focused());
         assert.ok(!fake_compose_box.is_submit_button_spinner_visible());
+        fake_compose_box.assert_preview_mode_is_off();
     })();
 
     // This is the additional setup which is common to both the tests below.
@@ -450,6 +453,7 @@ test_ui("handle_enter_key_with_preview_open", ({override, override_rewire}) => {
     let send_message_called = false;
     override_rewire(compose, "send_message", () => {
         send_message_called = true;
+        compose.do_post_send_tasks();
     });
     override(realm, "realm_topics_policy", "allow_empty_topic");
 
@@ -532,6 +536,7 @@ test_ui("finish", ({override, override_rewire}) => {
         let send_message_called = false;
         override_rewire(compose, "send_message", () => {
             send_message_called = true;
+            compose.do_post_send_tasks();
         });
 
         assert.ok(compose.finish());
