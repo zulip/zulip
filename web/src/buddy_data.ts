@@ -91,7 +91,7 @@ export let user_matches_narrow = (
     stream_id: number | undefined,
 ): boolean => {
     if (stream_id) {
-        return stream_data.is_user_subscribed(stream_id, user_id);
+        return stream_data.is_user_loaded_and_subscribed(stream_id, user_id);
     }
     if (pm_ids.size > 0) {
         return pm_ids.has(user_id) || people.is_my_user_id(user_id);
@@ -453,7 +453,7 @@ function get_filtered_user_id_list(
         // enough subscribers in the channel.
         const stream_id = narrow_state.stream_id(narrow_state.filter(), true);
         if (stream_id) {
-            const subscribers = peer_data.get_subscribers(stream_id);
+            const subscribers = peer_data.get_subscriber_ids_assert_loaded(stream_id);
             if (subscribers.length <= max_channel_size_to_show_all_subscribers) {
                 const base_user_id_set = new Set([...base_user_id_list, ...subscribers]);
                 base_user_id_list = [...base_user_id_set];
