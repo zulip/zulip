@@ -1,0 +1,12 @@
+{
+  "action": "opened",
+  "issue": {
+    "subject": "Test issue",
+    "project": {
+      "name": "Test Project"
+    },
+    "author": {
+      "name": "John Doe"
+    }
+  }
+}

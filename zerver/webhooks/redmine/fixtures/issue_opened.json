@@ -1,0 +1,14 @@
+{
+  "action": "opened",
+  "issue": {
+    "id": 123,
+    "subject": "Test issue with ID",
+    "description": "This is a test description",
+    "project": {
+      "name": "Test Project"
+    },
+    "author": {
+      "name": "John Doe"
+    }
+  }
+}

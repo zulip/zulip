@@ -1,0 +1,13 @@
+{
+  "action": "updated",
+  "issue": {
+    "id": 123,
+    "subject": "Updated test issue",
+    "project": {
+      "name": "Test Project"
+    },
+    "author": {
+      "name": "Jane Smith"
+    }
+  }
+}
