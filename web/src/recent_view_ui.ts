@@ -614,7 +614,7 @@ type ConversationContext = {
     | {
           is_private: true;
           user_ids_string: string;
-          rendered_pm_with: string;
+          rendered_pm_with_html: string;
           recipient_id: number;
           pm_url: string;
           is_group: boolean;
@@ -713,7 +713,7 @@ function format_conversation(conversation_data: ConversationData): ConversationC
         // Direct message info
         const user_ids_string = last_msg.to_user_ids;
         assert(typeof last_msg.display_recipient !== "string");
-        const rendered_pm_with = last_msg.display_recipient
+        const rendered_pm_with_html = last_msg.display_recipient
             .filter(
                 (recipient: DisplayRecipientUser) =>
                     !people.is_my_user_id(recipient.id) || last_msg.display_recipient.length === 1,
@@ -759,7 +759,11 @@ function format_conversation(conversation_data: ConversationData): ConversationC
 
         dm_context = {
             user_ids_string,
-            rendered_pm_with: util.format_array_as_list(rendered_pm_with, "long", "conjunction"),
+            rendered_pm_with_html: util.format_array_as_list(
+                rendered_pm_with_html,
+                "long",
+                "conjunction",
+            ),
             recipient_id,
             pm_url,
             is_group,
