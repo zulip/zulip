@@ -91,7 +91,7 @@
     "webpack-bundle-tracker": "^3.0.1",
     "webpack-cli": "^6.0.1",
     "winchan": "^0.2.1",
-    "zod": "^3.21.4"
+    "zod": "^4.0.5"
   },
   "devDependencies": {
     "@babel/plugin-transform-modules-commonjs": "^7.19.6",

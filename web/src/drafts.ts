@@ -2,7 +2,7 @@ import $ from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
 import * as tippy from "tippy.js";
-import {z} from "zod";
+import * as z from "zod/mini";
 
 import render_confirm_delete_all_drafts from "../templates/confirm_dialog/confirm_delete_all_drafts.hbs";
 
@@ -40,17 +40,17 @@ const draft_schema = z.intersection(
     z.object({
         content: z.string(),
         updatedAt: z.number(),
-        is_sending_saving: z.boolean().default(false),
+        is_sending_saving: z._default(z.boolean(), false),
         // `drafts_version` is 0 for drafts that aren't auto-restored
         // and 1 for drafts created since that change, to avoid a flood
         // of old drafts showing up when this feature was introduced.
-        drafts_version: z.number().default(0),
+        drafts_version: z._default(z.number(), 0),
     }),
     z.discriminatedUnion("type", [
         z.object({
             type: z.literal("stream"),
             topic: z.string(),
-            stream_id: z.number().optional(),
+            stream_id: z.optional(z.number()),
         }),
         z.object({
             type: z.literal("private"),
@@ -70,21 +70,21 @@ const possibly_buggy_draft_schema = z.intersection(
     z.object({
         content: z.string(),
         updatedAt: z.number(),
-        is_sending_saving: z.boolean().default(false),
-        drafts_version: z.number().default(0),
+        is_sending_saving: z._default(z.boolean(), false),
+        drafts_version: z._default(z.number(), 0),
     }),
     z.discriminatedUnion("type", [
         z.object({
             type: z.literal("stream"),
-            topic: z.string().optional(),
-            stream_id: z.number().optional(),
-            stream: z.string().optional(),
+            topic: z.optional(z.string()),
+            stream_id: z.optional(z.number()),
+            stream: z.optional(z.string()),
         }),
         z.object({
             type: z.literal("private"),
             reply_to: z.string(),
-            private_message_recipient: z.string().optional(),
-            private_message_recipient_ids: z.array(z.number()).optional(),
+            private_message_recipient: z.optional(z.string()),
+            private_message_recipient_ids: z.optional(z.array(z.number())),
         }),
     ]),
 );

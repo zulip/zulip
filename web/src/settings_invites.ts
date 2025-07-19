@@ -1,5 +1,5 @@
 import $ from "jquery";
-import {z} from "zod";
+import * as z from "zod/mini";
 
 import render_settings_resend_invite_modal from "../templates/confirm_dialog/confirm_resend_invite.hbs";
 import render_settings_revoke_invite_modal from "../templates/confirm_dialog/confirm_revoke_invite.hbs";
@@ -24,7 +24,7 @@ export const invite_schema = z.intersection(
     z.object({
         invited_by_user_id: z.number(),
         invited: z.number(),
-        expiry_date: z.number().nullable(),
+        expiry_date: z.nullable(z.number()),
         id: z.number(),
         invited_as: z.number(),
     }),

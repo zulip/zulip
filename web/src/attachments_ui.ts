@@ -1,5 +1,5 @@
 import $ from "jquery";
-import type {z} from "zod";
+import type * as z from "zod/mini";
 
 import render_confirm_delete_attachment from "../templates/confirm_dialog/confirm_delete_attachment.hbs";
 import render_confirm_delete_detached_attachments_modal from "../templates/confirm_dialog/confirm_delete_detached_attachments.hbs";

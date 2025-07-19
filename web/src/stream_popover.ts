@@ -1,7 +1,7 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
 import type * as tippy from "tippy.js";
-import {z} from "zod";
+import * as z from "zod/mini";
 
 import render_inline_decorated_channel_name from "../templates/inline_decorated_channel_name.hbs";
 import render_inline_stream_or_topic_reference from "../templates/inline_stream_or_topic_reference.hbs";
@@ -473,11 +473,11 @@ export async function build_move_topic_to_stream_popover(
 
     const params_schema = z.object({
         current_stream_id: z.string(),
-        new_topic_name: z.string().optional(),
+        new_topic_name: z.optional(z.string()),
         old_topic_name: z.string(),
-        propagate_mode: z.enum(["change_one", "change_later", "change_all"]).optional(),
-        send_notification_to_new_thread: z.literal("on").optional(),
-        send_notification_to_old_thread: z.literal("on").optional(),
+        propagate_mode: z.optional(z.enum(["change_one", "change_later", "change_all"])),
+        send_notification_to_new_thread: z.optional(z.literal("on")),
+        send_notification_to_old_thread: z.optional(z.literal("on")),
     });
 
     function get_params_from_form(): z.output<typeof params_schema> {

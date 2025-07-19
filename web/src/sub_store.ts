@@ -1,4 +1,4 @@
-import {z} from "zod";
+import * as z from "zod/mini";
 
 import * as blueslip from "./blueslip.ts";
 import type {
@@ -18,17 +18,16 @@ export type StreamProperties = z.infer<typeof stream_properties_schema>;
 export type ApiStreamSubscription = z.infer<typeof api_stream_subscription_schema>;
 
 // This is the actual type of subscription objects we use in the app.
-export const stream_subscription_schema = api_stream_subscription_schema
-    .omit({
+export const stream_subscription_schema = z.object({
+    ...z.omit(api_stream_subscription_schema, {
         subscribers: true,
-    })
-    .extend({
-        // These properties are added in `stream_data` when hydrating the streams and are not present in the data we get from the server.
-        render_subscribers: z.boolean(),
-        newly_subscribed: z.boolean(),
-        subscribed: z.boolean(),
-        previously_subscribed: z.boolean(),
-    });
+    }).shape,
+    // These properties are added in `stream_data` when hydrating the streams and are not present in the data we get from the server.
+    render_subscribers: z.boolean(),
+    newly_subscribed: z.boolean(),
+    subscribed: z.boolean(),
+    previously_subscribed: z.boolean(),
+});
 export type StreamSubscription = z.infer<typeof stream_subscription_schema>;
 
 const subs_by_stream_id = new Map<number, StreamSubscription>();

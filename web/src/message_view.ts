@@ -2,7 +2,7 @@ import * as Sentry from "@sentry/browser";
 import {SPAN_STATUS_OK} from "@sentry/core";
 import $ from "jquery";
 import assert from "minimalistic-assert";
-import {z} from "zod";
+import * as z from "zod/mini";
 
 import * as activity_ui from "./activity_ui.ts";
 import {all_messages_data} from "./all_messages_data.ts";

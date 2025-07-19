@@ -4,7 +4,7 @@ import PlotlyBar from "plotly.js/lib/bar";
 import Plotly from "plotly.js/lib/core";
 import PlotlyPie from "plotly.js/lib/pie";
 import * as tippy from "tippy.js";
-import {z} from "zod";
+import * as z from "zod/mini";
 
 import * as blueslip from "../blueslip.ts";
 import {$t, $t_html} from "../i18n.ts";
@@ -52,12 +52,12 @@ type DataByTime<T> = {
 };
 
 // Define zod schemas for plotly
-const datum_schema: z.ZodType<Plotly.Datum> = z.any();
+const datum_schema: z.ZodMiniType<Plotly.Datum> = z.any();
 
 // Define a schema factory function for the utility generic type
-function instantiate_type_DataByEveryoneUser<T extends z.ZodTypeAny>(
+function instantiate_type_DataByEveryoneUser<T extends z.ZodMiniType>(
     schema: T,
-): z.ZodObject<{everyone: T; user: T}> {
+): z.ZodMiniObject<{everyone: T; user: T}> {
     return z.object({
         everyone: schema,
         user: schema,
@@ -75,27 +75,31 @@ const active_user_data = z.object({
     all_time: z.array(datum_schema),
 });
 
-const read_data_schema = instantiate_type_DataByEveryoneUser(
-    z.object({read: z.array(z.number())}),
-).extend({...common_data_schema.shape});
+const read_data_schema = z.object({
+    ...instantiate_type_DataByEveryoneUser(z.object({read: z.array(z.number())})).shape,
+    ...common_data_schema.shape,
+});
 
-const sent_data_schema = instantiate_type_DataByEveryoneUser(
-    z.object({
-        human: z.array(z.number()),
-        bot: z.array(z.number()),
-    }),
-).extend({...common_data_schema.shape});
+const sent_data_schema = z.object({
+    ...instantiate_type_DataByEveryoneUser(
+        z.object({
+            human: z.array(z.number()),
+            bot: z.array(z.number()),
+        }),
+    ).shape,
+    ...common_data_schema.shape,
+});
 
-const ordered_sent_data_schema = instantiate_type_DataByEveryoneUser(
-    z.record(z.array(z.number())),
-).extend({
+const ordered_sent_data_schema = z.object({
+    ...instantiate_type_DataByEveryoneUser(z.record(z.string(), z.array(z.number()))).shape,
     ...common_data_schema.shape,
     display_order: z.array(z.string()),
 });
 
-const user_count_data_schema = z
-    .object({everyone: active_user_data})
-    .extend({...common_data_schema.shape});
+const user_count_data_schema = z.object({
+    ...z.object({everyone: active_user_data}).shape,
+    ...common_data_schema.shape,
+});
 
 // Inferred types used in nested functions
 type SentData = z.infer<typeof sent_data_schema>;
@@ -120,8 +124,8 @@ const font_12pt = {
 
 let last_full_update = Number.POSITIVE_INFINITY;
 
-function handle_parse_server_stats_result<_, T>(
-    result: z.SafeParseReturnType<_, T>,
+function handle_parse_server_stats_result<T>(
+    result: z.core.util.SafeParseResult<T>,
 ): T | undefined {
     if (!result.success) {
         blueslip.warn(

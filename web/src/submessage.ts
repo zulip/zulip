@@ -1,4 +1,4 @@
-import {z} from "zod";
+import * as z from "zod/mini";
 
 import * as blueslip from "./blueslip.ts";
 import * as channel from "./channel.ts";
@@ -12,8 +12,8 @@ import * as widgetize from "./widgetize.ts";
 
 export type Submessage = z.infer<typeof message_store.submessage_schema>;
 
-export const zform_widget_extra_data_schema = z
-    .object({
+export const zform_widget_extra_data_schema = z.nullable(
+    z.object({
         choices: z.array(
             z.object({
                 type: z.string(),
@@ -24,15 +24,15 @@ export const zform_widget_extra_data_schema = z
         ),
         heading: z.string(),
         type: z.literal("choices"),
-    })
-    .nullable();
+    }),
+);
 
-const poll_widget_extra_data_schema = z
-    .object({
-        question: z.string().optional(),
-        options: z.array(z.string()).optional(),
-    })
-    .nullable();
+const poll_widget_extra_data_schema = z.nullable(
+    z.object({
+        question: z.optional(z.string()),
+        options: z.optional(z.array(z.string())),
+    }),
+);
 
 const widget_data_event_schema = z.object({
     sender_id: z.number(),
@@ -56,9 +56,7 @@ const inbound_data_event_schema = z.object({
     ),
 });
 
-const submessages_event_schema = z
-    .tuple([widget_data_event_schema])
-    .rest(inbound_data_event_schema);
+const submessages_event_schema = z.tuple([widget_data_event_schema], inbound_data_event_schema);
 
 type SubmessageEvents = z.infer<typeof submessages_event_schema>;
 

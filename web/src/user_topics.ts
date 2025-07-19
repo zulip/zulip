@@ -1,4 +1,4 @@
-import type {z} from "zod";
+import type * as z from "zod/mini";
 
 import render_topic_muted from "../templates/topic_muted.hbs";
 

@@ -1,5 +1,5 @@
 import assert from "minimalistic-assert";
-import type {z} from "zod";
+import type * as z from "zod/mini";
 
 import {FoldDict} from "./fold_dict.ts";
 import type {StateData, channel_folder_schema} from "./state_data.ts";

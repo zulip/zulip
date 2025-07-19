@@ -1,6 +1,6 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
-import {z} from "zod";
+import * as z from "zod/mini";
 
 import {page_params} from "../base_page_params.ts";
 import * as util from "../util.ts";

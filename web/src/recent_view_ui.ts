@@ -2,7 +2,7 @@ import $ from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
 import type * as tippy from "tippy.js";
-import {z} from "zod";
+import * as z from "zod/mini";
 
 import * as typeahead from "../shared/src/typeahead.ts";
 import render_introduce_zulip_view_modal from "../templates/introduce_zulip_view_modal.hbs";
@@ -1820,7 +1820,7 @@ export function change_focused_element($elt: JQuery, input_key: string): boolean
     return false;
 }
 
-const filter_schema = z.array(z.string()).default([]);
+const filter_schema = z._default(z.array(z.string()), []);
 
 function load_filters(): void {
     // load filters from local storage.

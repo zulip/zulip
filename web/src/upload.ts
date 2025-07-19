@@ -4,7 +4,7 @@ import Tus, {type TusBody} from "@uppy/tus";
 import {getSafeFileId} from "@uppy/utils/lib/generateFileID";
 import $ from "jquery";
 import assert from "minimalistic-assert";
-import {z} from "zod";
+import * as z from "zod/mini";
 
 import render_upload_banner from "../templates/compose_banner/upload_banner.hbs";
 

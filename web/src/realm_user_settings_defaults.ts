@@ -1,4 +1,4 @@
-import {z} from "zod";
+import * as z from "zod/mini";
 
 import type {StateData} from "./state_data.ts";
 

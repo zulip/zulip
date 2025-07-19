@@ -6,7 +6,7 @@ import "@uppy/drag-drop/dist/style.min.css";
 import $ from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
-import {z} from "zod";
+import * as z from "zod/mini";
 
 import * as common from "../common.ts";
 import {$t} from "../i18n.ts";
@@ -472,7 +472,7 @@ $(() => {
         function checkImportStatus(): void {
             $.get(`/json/realm/import/status/${key}`, {}, (response) => {
                 const {status, redirect} = z
-                    .object({status: z.string(), redirect: z.string().optional()})
+                    .object({status: z.string(), redirect: z.optional(z.string())})
                     .parse(response);
                 $("#slack-import-poll-status").text(status);
                 if (poll_id && redirect !== undefined) {
