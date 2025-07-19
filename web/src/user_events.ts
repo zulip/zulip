@@ -26,8 +26,6 @@ import * as settings_realm_user_settings_defaults from "./settings_realm_user_se
 import * as settings_streams from "./settings_streams.ts";
 import * as settings_users from "./settings_users.ts";
 import {current_user, realm} from "./state_data.ts";
-import * as stream_events from "./stream_events.ts";
-import * as user_group_edit from "./user_group_edit.ts";
 import * as user_profile from "./user_profile.ts";
 
 export const user_update_schema = z.object({user_id: z.number()}).and(
@@ -209,10 +207,9 @@ export const update_person = function update(event: UserUpdate): void {
             people.add_active_user(user);
             settings_users.update_view_on_reactivate(event.user_id, is_bot_user);
         } else {
-            people.deactivate(user);
-            stream_events.remove_deactivated_user_from_all_streams(event.user_id);
-            user_group_edit.remove_deactivated_user_from_all_groups(event.user_id);
-            settings_users.update_view_on_deactivate(event.user_id, is_bot_user);
+            // The server sends `peer_remove` events when a user is deactivated before
+            // sending the deactivation event, so this should never happen.
+            blueslip.error("Unexpected event setting is_active to false");
         }
         buddy_list.insert_or_move([event.user_id]);
         settings_account.maybe_update_deactivate_account_button();

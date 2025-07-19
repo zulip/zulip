@@ -364,17 +364,6 @@ export function mark_unsubscribed(sub: StreamSubscription): void {
     user_profile.update_user_profile_streams_list_for_users([people.my_current_user_id()]);
 }
 
-export function remove_deactivated_user_from_all_streams(user_id: number): void {
-    const all_subs = stream_data.get_unsorted_subs();
-
-    for (const sub of all_subs) {
-        if (stream_data.is_user_subscribed(sub.stream_id, user_id)) {
-            peer_data.remove_subscriber(sub.stream_id, user_id);
-            stream_settings_ui.update_subscribers_ui(sub);
-        }
-    }
-}
-
 export function process_subscriber_update(user_ids: number[], stream_ids: number[]): void {
     for (const stream_id of stream_ids) {
         const sub = sub_store.get(stream_id);
