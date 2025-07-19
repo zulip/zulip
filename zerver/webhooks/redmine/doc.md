@@ -20,8 +20,6 @@ Get Zulip notifications for your Redmine projects!
 
 {!congrats.md!}
 
-![](/static/images/integrations/redmine/001.png)
-
 {!event-filtering-additional-feature.md!}
 
 ### Related documentation
