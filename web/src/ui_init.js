@@ -86,6 +86,7 @@ import * as narrow_title from "./narrow_title.ts";
 import * as navbar_alerts from "./navbar_alerts.ts";
 import * as navbar_help_menu from "./navbar_help_menu.ts";
 import * as navigate from "./navigate.ts";
+import * as navigation_views from "./navigation_views.ts";
 import * as onboarding_steps from "./onboarding_steps.ts";
 import * as overlays from "./overlays.ts";
 import {page_params} from "./page_params.ts";
@@ -455,6 +456,7 @@ export async function initialize_everything(state_data) {
     // This populates data for scheduled messages.
     scheduled_messages.initialize(state_data.scheduled_messages);
     message_reminder.initialize(state_data.reminders);
+    navigation_views.initialize(state_data.navigation_views);
     scheduled_messages_ui.initialize();
     reminders_overlay_ui.initialize();
     popover_menus.initialize();

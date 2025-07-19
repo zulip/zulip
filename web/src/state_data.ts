@@ -161,6 +161,12 @@ export const channel_folder_schema = z.object({
     is_archived: z.boolean(),
 });
 
+export const navigation_view_schema = z.object({
+    fragment: z.string(),
+    name: z.string().nullable(),
+    is_pinned: z.boolean(),
+});
+
 export const user_topic_schema = z.object({
     stream_id: z.number(),
     topic_name: z.string(),
@@ -484,6 +490,11 @@ export const state_data_schema = z
                 cross_realm_bots: z.array(user_schema),
             })
             .transform((people) => ({people})),
+    )
+    .and(
+        z
+            .object({navigation_views: z.array(navigation_view_schema)})
+            .transform((navigation_views) => ({navigation_views})),
     )
     .and(
         z
