@@ -1136,6 +1136,29 @@ class BulkCreateUserTest(ZulipTestCase):
             expected_user_group_names,
         )
 
+    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
+    def test_create_users_without_personal_recipient(self) -> None:
+        realm = get_realm("zulip")
+
+        name_list = [
+            ("Fred Flintstone", "fred@zulip.com"),
+            ("Lisa Simpson", "lisa@zulip.com"),
+        ]
+
+        create_users(realm, name_list)
+
+        fred = get_user_by_delivery_email("fred@zulip.com", realm)
+        self.assertIsNone(fred.recipient)
+
+        lisa = get_user_by_delivery_email("lisa@zulip.com", realm)
+        self.assertIsNone(lisa.recipient)
+
+        self.assertFalse(
+            Subscription.objects.filter(
+                user_profile__in=[fred, lisa], recipient__type=Recipient.PERSONAL
+            ).exists()
+        )
+
 
 class UpdateUserByEmailEndpointTest(ZulipTestCase):
     def test_update_user_by_email(self) -> None:
@@ -2705,6 +2728,25 @@ class RecipientInfoTest(ZulipTestCase):
                 sender_id=hamlet.id,
                 stream_topic=stream_topic,
             )
+
+    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
+    def test_create_user_without_personal_recipient(self) -> None:
+        realm = get_realm("zulip")
+
+        user = do_create_user(
+            email="test-user@zulip.com",
+            password="password",
+            realm=realm,
+            full_name="Without Personal Recipient",
+            acting_user=None,
+        )
+
+        self.assertIsNone(user.recipient)
+        self.assertFalse(
+            Subscription.objects.filter(
+                user_profile=user, recipient__type=Recipient.PERSONAL
+            ).exists()
+        )
 
 
 class BulkUsersTest(ZulipTestCase):
