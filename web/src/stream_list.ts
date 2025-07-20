@@ -1115,6 +1115,15 @@ export function update_stream_sidebar_for_narrow(filter: Filter): JQuery | undef
     // We want to update channel view for inbox for the same reasons
     // we want to the topics list here.
     update_inbox_channel_view_callback(stream_id);
+    // Keep topics list collapsed for `#topics` channel views.
+    if (
+        user_settings.web_channel_default_view ===
+            web_channel_default_view_values.list_of_topics.code &&
+        stream_id !== topic_list.active_stream_id() &&
+        narrow_state.topic() === undefined
+    ) {
+        return $stream_li;
+    }
     topic_list.rebuild_left_sidebar($stream_li, stream_id);
     topic_list.topic_state_typeahead?.lookup(true);
     return $stream_li;
