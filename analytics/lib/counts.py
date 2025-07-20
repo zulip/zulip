@@ -631,9 +631,9 @@ def count_message_type_by_user_query(realm: Realm | None) -> QueryFn:
     (
         SELECT zerver_userprofile.realm_id, zerver_userprofile.id, count(*),
         CASE WHEN
-                  zerver_recipient.type = 1 THEN 'private_message'
+                  zerver_recipient.type = 1 OR (zerver_recipient.type = 3 AND zerver_huddle.group_size <= 2) THEN 'private_message'
              WHEN
-                  zerver_recipient.type = 3 THEN 'huddle_message'
+                  zerver_recipient.type = 3 AND zerver_huddle.group_size > 2 THEN 'huddle_message'
              WHEN
                   zerver_stream.invite_only = TRUE THEN 'private_stream'
              ELSE 'public_stream'
@@ -650,12 +650,15 @@ def count_message_type_by_user_query(realm: Realm | None) -> QueryFn:
         JOIN zerver_recipient
         ON
             zerver_message.recipient_id = zerver_recipient.id
+        LEFT JOIN zerver_huddle
+        ON
+            zerver_recipient.type_id = zerver_huddle.id
         LEFT JOIN zerver_stream
         ON
             zerver_recipient.type_id = zerver_stream.id
         GROUP BY
             zerver_userprofile.realm_id, zerver_userprofile.id,
-            zerver_recipient.type, zerver_stream.invite_only
+            zerver_recipient.type, zerver_stream.invite_only, zerver_huddle.group_size
     ) AS subquery
     GROUP BY realm_id, id, message_type
 """

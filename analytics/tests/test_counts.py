@@ -72,6 +72,7 @@ from zerver.models import (
 from zerver.models.clients import get_client
 from zerver.models.messages import Attachment
 from zerver.models.realm_audit_logs import AuditLogEventType
+from zerver.models.recipients import get_or_create_direct_message_group
 from zerver.models.scheduled_jobs import NotificationTriggers
 from zerver.models.users import get_user_by_delivery_email, is_cross_realm_bot_email
 from zilencer.models import (
@@ -713,6 +714,56 @@ class TestCountStats(AnalyticsTestCase):
                 [5, "public_stream"],
                 [3, "private_message"],
                 [2, "huddle_message"],
+            ],
+        )
+        self.assertTableState(StreamCount, [], [])
+
+    def test_1_to_1_and_self_messages_sent_by_message_type_using_direct_group_message(self) -> None:
+        stat = COUNT_STATS["messages_sent:message_type:day"]
+        self.current_property = stat.property
+
+        user1 = self.create_user(is_bot=True)
+        user2 = self.create_user()
+        user3 = self.create_user()
+
+        user1_and_user2_dm_group = get_or_create_direct_message_group([user1.id, user2.id])
+        user2_and_user3_dm_group = get_or_create_direct_message_group([user2.id, user3.id])
+        user2_dm_group = get_or_create_direct_message_group([user2.id])
+
+        assert user1_and_user2_dm_group.recipient is not None
+        assert user2_and_user3_dm_group.recipient is not None
+        assert user2_dm_group.recipient is not None
+
+        self.create_message(user1, user1_and_user2_dm_group.recipient)
+        self.create_message(user2, user2_and_user3_dm_group.recipient)
+        self.create_message(user2, user2_dm_group.recipient)
+
+        do_fill_count_stat_at_hour(stat, self.TIME_ZERO)
+
+        self.assertTableState(
+            UserCount,
+            ["value", "subgroup", "user"],
+            [
+                [1, "private_message", user1],
+                [2, "private_message", user2],
+                [1, "public_stream", self.hourly_user],
+                [1, "public_stream", self.daily_user],
+            ],
+        )
+        self.assertTableState(
+            RealmCount,
+            ["value", "subgroup", "realm"],
+            [
+                [3, "private_message"],
+                [2, "public_stream", self.second_realm],
+            ],
+        )
+        self.assertTableState(
+            InstallationCount,
+            ["value", "subgroup"],
+            [
+                [3, "private_message"],
+                [2, "public_stream"],
             ],
         )
         self.assertTableState(StreamCount, [], [])
