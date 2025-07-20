@@ -226,8 +226,10 @@
 
     .zulip-loading-logo {
         margin: 0 auto;
-        width: 24px;
-        height: 24px;
+        width: 30px;
+        /* Adjusting height moves the loading spinner vertically.
+           Manually adjusted to align spinner and z-logo. */
+        height: 23px;
     }
 
     .zulip-loading-logo svg circle {
