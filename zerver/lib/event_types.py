@@ -1066,25 +1066,6 @@ class EventTypingEditMessageStop(BaseEvent):
     recipient: RecipientFieldForTypingEditChannelMessage | RecipientFieldForTypingEditDirectMessage
 
 
-class EventUpdateDisplaySettingsCore(BaseEvent):
-    type: Literal["update_display_settings"]
-    setting_name: str
-    setting: bool | int | str
-    user: str
-
-
-class EventUpdateDisplaySettings(EventUpdateDisplaySettingsCore):
-    # TODO: fix types to avoid optional fields
-    language_name: str | None = None
-
-
-class EventUpdateGlobalNotifications(BaseEvent):
-    type: Literal["update_global_notifications"]
-    notification_name: str
-    setting: bool | int | str
-    user: str
-
-
 class EventUpdateMessageCore(BaseEvent):
     type: Literal["update_message"]
     user_id: int | None

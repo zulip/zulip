@@ -801,12 +801,6 @@ class FetchInitialStateDataTest(ZulipTestCase):
         )
         self.assertIn("user_settings", result)
         for prop in UserProfile.property_types:
-            if prop in {
-                **UserProfile.display_settings_legacy,
-                **UserProfile.notification_settings_legacy,
-            }:
-                # Only legacy settings are included in the top level.
-                self.assertIn(prop, result)
             self.assertIn(prop, result["user_settings"])
 
     def test_realm_linkifiers_based_on_client_capabilities(self) -> None:
@@ -1290,8 +1284,6 @@ class FetchQueriesTest(ZulipTestCase):
             # 3 of the 9 queries here are shared with other event types
             # as mentioned above.
             subscription=9,
-            update_display_settings=0,
-            update_global_notifications=0,
             update_message_flags=7,
             user_settings=0,
             user_status=1,
