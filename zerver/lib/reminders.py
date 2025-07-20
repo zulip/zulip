@@ -1,7 +1,9 @@
+import re
+
 from django.conf import settings
 from django.utils.translation import gettext as _
 
-from zerver.lib.exceptions import ResourceNotFoundError
+from zerver.lib.exceptions import JsonableError, ResourceNotFoundError
 from zerver.lib.markdown.fenced_code import get_unused_fence
 from zerver.lib.mention import silent_mention_syntax_for_user
 from zerver.lib.message import truncate_content
@@ -12,7 +14,28 @@ from zerver.models import Message, Stream, UserProfile
 from zerver.models.scheduled_jobs import ScheduledMessage
 
 
-def get_reminder_formatted_content(message: Message, current_user: UserProfile) -> str:
+def normalize_note_text(body: str) -> str:
+    # Similar to zerver.lib.message.normalize_body
+    body = body.rstrip().lstrip("\n")
+
+    if len(body) > settings.MAX_REMINDER_NOTE_LENGTH:
+        raise JsonableError(
+            _("Maximum reminder note length: {max_length} characters").format(
+                max_length=settings.MAX_REMINDER_NOTE_LENGTH
+            )
+        )
+
+    # Convert newlines to space.
+    body = re.sub(r"\n+", " ", body)
+    return body
+
+
+def get_reminder_formatted_content(
+    message: Message, current_user: UserProfile, note_text: str | None = None
+) -> str:
+    if note_text:
+        note_text = normalize_note_text(note_text)
+
     if message.is_stream_message():
         # We don't need to check access here since we already have the message
         # whose access has already been checked by the caller.
@@ -20,16 +43,32 @@ def get_reminder_formatted_content(message: Message, current_user: UserProfile) 
             id=message.recipient.type_id,
             realm=current_user.realm,
         )
-        content = _("You requested a reminder for {message_pretty_link}.").format(
-            message_pretty_link=get_message_link_syntax(
-                stream_id=stream.id,
-                stream_name=stream.name,
-                topic_name=message.topic_name(),
-                message_id=message.id,
-            )
+        message_pretty_link = get_message_link_syntax(
+            stream_id=stream.id,
+            stream_name=stream.name,
+            topic_name=message.topic_name(),
+            message_id=message.id,
         )
+        if note_text:
+            content = _(
+                "You requested a reminder for {message_pretty_link}. Note:\n > {note_text}"
+            ).format(
+                message_pretty_link=message_pretty_link,
+                note_text=note_text,
+            )
+        else:
+            content = _("You requested a reminder for {message_pretty_link}.").format(
+                message_pretty_link=message_pretty_link,
+            )
     else:
-        content = _("You requested a reminder for the following direct message.")
+        if note_text:
+            content = _(
+                "You requested a reminder for the following direct message. Note:\n > {note_text}"
+            ).format(
+                note_text=note_text,
+            )
+        else:
+            content = _("You requested a reminder for the following direct message.")
 
     # Format the message content as a quote.
     user_silent_mention = silent_mention_syntax_for_user(message.sender)
