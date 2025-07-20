@@ -189,7 +189,7 @@ class UserStatusTest(ZulipTestCase):
         if num_events == 1:
             self.assertEqual(events[0]["event"], expected_event)
         else:
-            self.assertEqual(events[2]["event"], expected_event)
+            self.assertEqual(events[1]["event"], expected_event)
 
     def test_endpoints(self) -> None:
         hamlet = self.example_user("hamlet")
@@ -254,7 +254,7 @@ class UserStatusTest(ZulipTestCase):
             expected_event=dict(
                 type="user_status", user_id=hamlet.id, away=True, status_text="on vacation"
             ),
-            num_events=4,
+            num_events=3,
         )
         self.assertEqual(
             user_status_info(hamlet),
@@ -340,7 +340,7 @@ class UserStatusTest(ZulipTestCase):
         self.update_status_and_assert_event(
             payload=dict(away=orjson.dumps(False).decode()),
             expected_event=dict(type="user_status", user_id=hamlet.id, away=False),
-            num_events=4,
+            num_events=3,
         )
         self.assertEqual(
             user_status_info(hamlet),
@@ -392,7 +392,7 @@ class UserStatusTest(ZulipTestCase):
         self.update_status_and_assert_event(
             payload=dict(away=orjson.dumps(True).decode()),
             expected_event=dict(type="user_status", user_id=hamlet.id, away=True),
-            num_events=4,
+            num_events=3,
         )
 
         # Setting away is a deprecated way of accessing a user's presence_enabled

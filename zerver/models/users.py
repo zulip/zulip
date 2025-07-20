@@ -319,49 +319,6 @@ class UserBaseSettings(models.Model):
     # Whether user wants to see AI features in the UI.
     hide_ai_features = models.BooleanField(default=False)
 
-    display_settings_legacy = dict(
-        # Don't add anything new to this legacy dict.
-        # Instead, see `modern_settings` below.
-        color_scheme=int,
-        default_language=str,
-        web_home_view=str,
-        demote_inactive_streams=int,
-        emojiset=str,
-        enable_drafts_synchronization=bool,
-        enter_sends=bool,
-        fluid_layout_width=bool,
-        high_contrast_mode=bool,
-        left_side_userlist=bool,
-        starred_message_counts=bool,
-        translate_emoticons=bool,
-        twenty_four_hour_time=bool,
-    )
-
-    notification_settings_legacy = dict(
-        # Don't add anything new to this legacy dict.
-        # Instead, see `modern_notification_settings` below.
-        desktop_icon_count_display=int,
-        email_notifications_batching_period_seconds=int,
-        enable_desktop_notifications=bool,
-        enable_digest_emails=bool,
-        enable_login_emails=bool,
-        enable_marketing_emails=bool,
-        enable_offline_email_notifications=bool,
-        enable_offline_push_notifications=bool,
-        enable_online_push_notifications=bool,
-        enable_sounds=bool,
-        enable_stream_audible_notifications=bool,
-        enable_stream_desktop_notifications=bool,
-        enable_stream_email_notifications=bool,
-        enable_stream_push_notifications=bool,
-        message_content_in_email_notifications=bool,
-        notification_sound=str,
-        pm_content_in_desktop_notifications=bool,
-        presence_enabled=bool,
-        realm_name_in_email_notifications_policy=int,
-        wildcard_mentions_notify=bool,
-    )
-
     modern_settings = dict(
         # Add new general settings here.
         display_emoji_reaction_users=bool,
@@ -384,6 +341,20 @@ class UserBaseSettings(models.Model):
         hide_ai_features=bool,
         resolved_topic_notice_auto_read_policy=ResolvedTopicNoticeAutoReadPolicyEnum,
         web_left_sidebar_unreads_count_summary=bool,
+        # Legacy settings moved to modern_settings after deprecation removal
+        color_scheme=int,
+        default_language=str,
+        web_home_view=str,
+        demote_inactive_streams=int,
+        emojiset=str,
+        enable_drafts_synchronization=bool,
+        enter_sends=bool,
+        fluid_layout_width=bool,
+        high_contrast_mode=bool,
+        left_side_userlist=bool,
+        starred_message_counts=bool,
+        translate_emoticons=bool,
+        twenty_four_hour_time=bool,
     )
 
     modern_notification_settings = dict(
@@ -396,16 +367,35 @@ class UserBaseSettings(models.Model):
         automatically_follow_topics_policy=int,
         automatically_unmute_topics_in_muted_streams_policy=int,
         automatically_follow_topics_where_mentioned=bool,
+        # Legacy notification settings moved to modern_notification_settings after deprecation removal
+        desktop_icon_count_display=int,
+        email_notifications_batching_period_seconds=int,
+        enable_desktop_notifications=bool,
+        enable_digest_emails=bool,
+        enable_login_emails=bool,
+        enable_marketing_emails=bool,
+        enable_offline_email_notifications=bool,
+        enable_offline_push_notifications=bool,
+        enable_online_push_notifications=bool,
+        enable_sounds=bool,
+        enable_stream_audible_notifications=bool,
+        enable_stream_desktop_notifications=bool,
+        enable_stream_email_notifications=bool,
+        enable_stream_push_notifications=bool,
+        message_content_in_email_notifications=bool,
+        notification_sound=str,
+        pm_content_in_desktop_notifications=bool,
+        presence_enabled=bool,
+        realm_name_in_email_notifications_policy=int,
+        wildcard_mentions_notify=bool,
     )
 
     notification_setting_types = {
-        **notification_settings_legacy,
         **modern_notification_settings,
     }
 
     # Define the types of the various automatically managed properties
     property_types = {
-        **display_settings_legacy,
         **notification_setting_types,
         **modern_settings,
     }
