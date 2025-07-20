@@ -4,6 +4,7 @@ from itertools import zip_longest
 from typing import Any, Literal, TypeAlias, TypedDict, cast
 
 import regex
+from django.core.exceptions import ValidationError
 
 from zerver.lib.types import Validator
 from zerver.lib.validator import (
@@ -409,7 +410,19 @@ def render_attachment(attachment: WildValue) -> str:
     if attachment.get("footer"):
         pieces.append(attachment["footer"].tame(check_string))
     if attachment.get("ts"):
-        time = attachment["ts"].tame(check_int)
+        try:
+            time = attachment["ts"].tame(check_int)
+        except ValidationError as e:  # nocoverage
+            # In some cases Slack has the ts as a string with a float
+            # number. The reason is unknown, but we've observed it
+            # in the wild several times.
+            ts = attachment["ts"].tame(check_string)
+            try:
+                ts_float = float(ts)
+            except ValueError:
+                raise e
+
+            time = int(ts_float)
         pieces.append(f"<time:{time}>")
 
     return "\n\n".join(piece.strip() for piece in pieces if piece.strip() != "")
