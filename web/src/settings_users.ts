@@ -265,7 +265,7 @@ function get_roles_with_counts(user_ids: number[]): dropdown_widget.Option[] {
                     },
                 ),
             }))
-            .reverse(),
+            .toReversed(),
     ];
 }
 

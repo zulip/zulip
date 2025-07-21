@@ -1331,7 +1331,7 @@ export class MessageListView {
     _new_messages_height(rendered_elems: JQuery[]): number {
         let new_messages_height = 0;
 
-        for (const $elem of rendered_elems.reverse()) {
+        for (const $elem of rendered_elems.toReversed()) {
             // Sometimes there are non-DOM elements in rendered_elems; only
             // try to get the heights of actual trs.
             if ($elem.is("div")) {

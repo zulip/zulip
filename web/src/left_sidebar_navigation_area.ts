@@ -233,7 +233,7 @@ export function reorder_left_sidebar_navigation_list(home_view: string): void {
     const $left_sidebar_condensed = $("#left-sidebar-navigation-list-condensed");
 
     // First, re-order the views back to the original default order, to preserve the relative order.
-    for (const key of Object.keys(settings_config.web_home_view_values).reverse()) {
+    for (const key of Object.keys(settings_config.web_home_view_values).toReversed()) {
         if (key !== home_view) {
             const $view = get_view_rows_by_view_name(key);
             $view.eq(1).prependTo($left_sidebar);
