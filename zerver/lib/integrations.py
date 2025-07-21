@@ -862,6 +862,14 @@ for integration, screenshots_contents in FIXTURELESS_SCREENSHOT_CONTENT.items():
         for screenshot_content in screenshots_contents
     ]
 
+FIXTURELESS_SCREENSHOT_CONFIG_OPTIONAL_FIELDS = {}
+
+for integration, fields in FIXTURELESS_SCREENSHOT_CONFIG_OPTIONAL_FIELDS.items():
+    assert integration in FIXTURELESS_SCREENSHOT_CONFIG
+    for field_name, value in fields.items():
+        # Assume a single screenshot config for each integration
+        setattr(FIXTURELESS_SCREENSHOT_CONFIG[integration][0], field_name, value)
+
 DOC_SCREENSHOT_CONFIG: dict[
     str, list[WebhookScreenshotConfig] | list[FixturelessScreenshotConfig]
 ] = {
