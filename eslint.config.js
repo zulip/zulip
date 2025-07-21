@@ -305,4 +305,10 @@ export default tseslint.config(
         },
     },
     ...astroConfigs.recommended,
+    {
+        files: ["help-beta/src/components/ZulipNote.astro"],
+        rules: {
+            "import/unambiguous": "off",
+        },
+    },
 );
