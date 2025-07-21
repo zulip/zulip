@@ -491,6 +491,10 @@ python_rules = RuleList(
                     "zerver/tests/test_subs.py",
                     "with transaction.atomic(savepoint=True), self.assertRaises(JsonableError):",
                 ),
+                (
+                    "zproject/backends.py",
+                    "@transaction.atomic(savepoint=True)  # intentional use of savepoint=True",
+                ),
             },
         },
         *whitespace_rules,
