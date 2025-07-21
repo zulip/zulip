@@ -824,7 +824,11 @@ export function initialize(): void {
 
     // LEFT SIDEBAR
 
-    $("body").on("click", ".filter-topics .input-button", topic_list.clear_topic_search);
+    $("body").on(
+        "click",
+        ".filter-topics .input-close-filter-button",
+        topic_list.clear_topic_search,
+    );
 
     $(".streams_filter_icon").on("click", (e) => {
         e.stopPropagation();
