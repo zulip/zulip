@@ -58,7 +58,7 @@ You can see all your direct messages in one place.
 {tab|desktop-web}
 
 1. Click on the **Direct message feed** (<i class="zulip-icon
-   zulip-icon-all-messages"></i>) icon next to **DIRECT MESSAGES** in the left
+   zulip-icon-all-messages"></i>) icon next to **direct messages** in the left
    sidebar.
 
 1. Read your direct messages, starting from your first unread message. You can
@@ -85,7 +85,7 @@ on.
 {tab|desktop-web}
 
 1. Find the channel you want to read in the left sidebar. If you don't see it
-   right away, you can search for a channel by clicking on **CHANNELS** in the
+   right away, you can search for a channel by clicking on **channels** in the
    left sidebar, or using the <kbd>Q</kbd> [keyboard
    shortcut](/help/keyboard-shortcuts).
 
