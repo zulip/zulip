@@ -14,6 +14,7 @@ from django_stubs_ext import StrPromise
 from zerver.lib.storage import static_path
 from zerver.lib.validator import check_bool, check_string
 from zerver.lib.webhooks.common import WebhookConfigOption, WebhookUrlOption
+from zerver.webhooks.fixtureless_integrations import FIXTURELESS_SCREENSHOT_CONTENT
 
 """This module declares all of the (documented) integrations available
 in the Zulip server.  The Integration class is used as part of
@@ -850,6 +851,11 @@ WEBHOOK_SCREENSHOT_CONFIG: dict[str, list[WebhookScreenshotConfig]] = {
 }
 
 FIXTURELESS_SCREENSHOT_CONFIG: dict[str, list[FixturelessScreenshotConfig]] = {}
+for integration, screenshots_contents in FIXTURELESS_SCREENSHOT_CONTENT.items():
+    FIXTURELESS_SCREENSHOT_CONFIG[integration] = [
+        FixturelessScreenshotConfig(screenshot_content["content"], screenshot_content["topic"])
+        for screenshot_content in screenshots_contents
+    ]
 
 DOC_SCREENSHOT_CONFIG: dict[
     str, list[WebhookScreenshotConfig] | list[FixturelessScreenshotConfig]
