@@ -15,7 +15,6 @@
             --input-button-ending-offset
         )
         [input-element-end];
-    align-items: center;
 
     .input-element {
         grid-area: input-element;
@@ -100,11 +99,19 @@
        want to display it over the input element in the UI. */
     z-index: 1;
     pointer-events: none;
+    /* This margin is required to align the icon with the
+       first line of a multi-line input, where we cannot
+       use `align-items: center`. */
+    margin: 0.375em 0; /* 6px at 16px/1em */
 }
 
 .input-button {
     grid-area: input-button;
     padding: 0.25em; /* 4px at 16px/1em */
+    /* This margin is required to align the icon with the
+       first line of a multi-line input, where we cannot
+       use `align-items: center`. */
+    margin: 0.125em 0; /* 2px at 16px/1em */
 }
 
 .filter-input {
