@@ -52,7 +52,7 @@ topics](/help/restrict-moving-messages).
 
 !!! tip ""
 
-    You can also click on the **checkmark** (<i class="zulip-icon zulip-icon-check"></i>)
+    You can also click on the **mark as resolved** (<i class="zulip-icon zulip-icon-check"></i>)
     icon in the message recipient bar to mark an unresolved topic as resolved.
 
 {tab|mobile}

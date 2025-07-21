@@ -1,5 +1,5 @@
-1. Click the **plus** (<i class="zulip-icon zulip-icon-square-plus"></i>) button next
-   to the name of the channel where you'd like to start a conversation.
+1. Click the **new topic** (<i class="zulip-icon zulip-icon-square-plus"></i>) button
+   next to the name of the channel where you'd like to start a conversation.
 
 1. Enter a topic name. Think about finishing the sentence: “Hey, can we chat about… ?”
 
