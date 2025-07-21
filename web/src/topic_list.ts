@@ -633,5 +633,20 @@ export function initialize({
         const stream_id = active_stream_id();
         assert(stream_id !== undefined);
         active_widgets.get(stream_id)?.build();
+
+        if (get_left_sidebar_topic_search_term() === "") {
+            // When the contenteditable div is empty, the browser
+            // adds a <br> element to it, which interferes with
+            // the ":empty" selector in the CSS. Hence, we detect
+            // this case and clear the content of the div to ensure
+            // that the CSS styles are applied correctly.
+            // TODO: Remove this when we have a better way to handle
+            // empty contenteditable elements. Since while testing this
+            // effect in a sandbox, a `display: inline` applied to the
+            // contenteditable element seems to fix the issue, but that
+            // doesn't work in this particular case.
+            // See: https://stackoverflow.com/questions/14638887/br-is-inserted-into-contenteditable-html-element-if-left-empty
+            $("#topic_filter_query").empty();
+        }
     });
 }
