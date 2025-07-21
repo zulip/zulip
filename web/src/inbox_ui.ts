@@ -208,11 +208,13 @@ const channel_view_navigation_state = {
     channel_id: -1,
     col_focus: DEFAULT_COL_FOCUS,
     row_focus: DEFAULT_ROW_FOCUS,
+    last_scroll_offset: 0,
 };
 
 const inbox_view_navigation_state = {
     col_focus: DEFAULT_COL_FOCUS,
     row_focus: DEFAULT_ROW_FOCUS,
+    last_scroll_offset: 0,
 };
 
 let col_focus = DEFAULT_COL_FOCUS;
@@ -243,6 +245,13 @@ const CONVERSATION_ID_PREFIX = "inbox-row-conversation-";
 const LEFT_NAVIGATION_KEYS = ["left_arrow", "vim_left"];
 const RIGHT_NAVIGATION_KEYS = ["right_arrow", "vim_right"];
 
+// We wait for rows to render and restore focus before processing
+// any new events.
+let is_waiting_for_revive_current_focus = true;
+// Used to store the last scroll position of the inbox before
+// it is hidden to avoid scroll jumping when it is shown again.
+let last_scroll_offset: number | undefined;
+
 function get_row_from_conversation_key(key: string): JQuery {
     return $(`#${CSS.escape(CONVERSATION_ID_PREFIX + key)}`);
 }
@@ -262,6 +271,7 @@ function save_data_to_ls(): void {
 function save_channel_view_state(): void {
     channel_view_navigation_state.col_focus = col_focus;
     channel_view_navigation_state.row_focus = row_focus;
+    channel_view_navigation_state.last_scroll_offset = window.scrollY;
     channel_view_navigation_state.channel_id = inbox_util.get_channel_id();
     per_channel_last_search_keyword.set(channel_view_navigation_state.channel_id, search_keyword);
 }
@@ -269,6 +279,7 @@ function save_channel_view_state(): void {
 function save_inbox_view_state(): void {
     inbox_view_navigation_state.col_focus = col_focus;
     inbox_view_navigation_state.row_focus = row_focus;
+    inbox_view_navigation_state.last_scroll_offset = window.scrollY;
     inbox_last_search_keyword = search_keyword;
 }
 
@@ -279,6 +290,7 @@ function restore_channel_view_state(): void {
     if (channel_view_navigation_state.channel_id === current_channel_id) {
         col_focus = channel_view_navigation_state.col_focus;
         row_focus = channel_view_navigation_state.row_focus;
+        last_scroll_offset = channel_view_navigation_state.last_scroll_offset;
         return;
     }
 
@@ -290,6 +302,7 @@ function restore_channel_view_state(): void {
 function restore_inbox_view_state(): void {
     col_focus = inbox_view_navigation_state.col_focus;
     row_focus = inbox_view_navigation_state.row_focus;
+    last_scroll_offset = inbox_view_navigation_state.last_scroll_offset;
     search_keyword = inbox_last_search_keyword;
 }
 
@@ -386,16 +399,17 @@ export function hide(): void {
     if (!inbox_util.is_visible()) {
         return;
     }
-    views_util.hide({
-        $view: $("#inbox-view"),
-        set_visible: inbox_util.set_visible,
-    });
 
     if (inbox_util.is_channel_view()) {
         save_channel_view_state();
     } else {
         save_inbox_view_state();
     }
+
+    views_util.hide({
+        $view: $("#inbox-view"),
+        set_visible: inbox_util.set_visible,
+    });
 
     inbox_util.set_filter(undefined);
 }
@@ -1196,9 +1210,17 @@ export function complete_rerender(): void {
     // If the focus is not on the inbox rows, the inbox view scrolls
     // down when moving from other views to the inbox view. To avoid
     // this, we scroll to top before restoring focus via revive_current_focus.
-    $("html").scrollTop(0);
+    if (!is_list_focused()) {
+        window.scrollTo(0, 0);
+    } else if (last_scroll_offset !== undefined) {
+        // It is important to restore the scroll position as soon
+        // as the rendering is complete to avoid scroll jumping.
+        window.scrollTo(0, last_scroll_offset);
+    }
+
     setTimeout(() => {
         revive_current_focus();
+        is_waiting_for_revive_current_focus = false;
     }, 0);
 
     filters_dropdown_widget = new dropdown_widget.DropdownWidget({
@@ -2036,6 +2058,10 @@ function center_focus_if_offscreen(): void {
 }
 
 function move_focus_to_visible_area(): void {
+    if (is_waiting_for_revive_current_focus) {
+        return;
+    }
+
     // Focus on the row below inbox filters if the focused
     // row is not visible.
     if (!inbox_util.is_visible() || !is_list_focused()) {
