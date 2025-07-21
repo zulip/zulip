@@ -1478,7 +1478,7 @@ class SlackImporter(ZulipTestCase):
                 "ts": "1440869295.000008",
                 # A reply to thread 4!
                 "parent_user_id": "U061A5N1G",
-                "thread_ts": "1434139200.000002",
+                "thread_ts": "1437139200.000002",
                 "channel_name": "random",
             },
             {
@@ -1598,8 +1598,8 @@ class SlackImporter(ZulipTestCase):
         # Record that truncation should use the full maximum topic length.
         self.assert_length(zerver_message[3][EXPORT_TOPIC_NAME], 60)
 
-        expected_thread_2_reply_1_message = "replying to the second thread :)"
-        self.assertEqual(zerver_message[4]["content"], expected_thread_2_reply_1_message)
+        expected_thread_2_message_2_content = "replying to the second thread :)"
+        self.assertEqual(zerver_message[4]["content"], expected_thread_2_message_2_content)
         self.assertEqual(zerver_message[4][EXPORT_TOPIC_NAME], expected_thread_2_topic_name)
 
         ### THREAD 3 CONVERSATION ###
