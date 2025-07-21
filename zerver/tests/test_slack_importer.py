@@ -1618,23 +1618,23 @@ class SlackImporter(ZulipTestCase):
 
         ### THREAD 5 CONVERSATION ###
         # Test file link in thread topic name
-        expected_thread_4_message_1_content = "Look!\n[Apple](/user_uploads/"
-        expected_thread_4_topic_name = "2018-09-16 Look!\n[Apple](/user_uploads/"
+        expected_thread_5_message_1_content = "Look!\n[Apple](/user_uploads/"
+        expected_thread_5_topic_name = "2018-09-16 Look!\n[Apple](/user_uploads/"
         self.assertTrue(
-            zerver_message[9]["content"].startswith(expected_thread_4_message_1_content)
+            zerver_message[9]["content"].startswith(expected_thread_5_message_1_content)
         )
         self.assertTrue(
-            zerver_message[9][EXPORT_TOPIC_NAME].startswith(expected_thread_4_topic_name)
+            zerver_message[9][EXPORT_TOPIC_NAME].startswith(expected_thread_5_topic_name)
         )
 
         ### THREAD 6 CONVERSATION ###
         # Test various formatting syntaxes in thread topic name
-        expected_thread_4_message_1_content = "**foo** *bar* ~~baz~~ [qux](https://chat.zulip.org)"
-        expected_thread_4_topic_name = (
+        expected_thread_6_message_1_content = "**foo** *bar* ~~baz~~ [qux](https://chat.zulip.org)"
+        expected_thread_6_topic_name = (
             "2019-01-10 **foo** *bar* ~~baz~~ [qux](https://chat.zulip.o…"
         )
-        self.assertEqual(zerver_message[11]["content"], expected_thread_4_message_1_content)
-        self.assertEqual(zerver_message[11][EXPORT_TOPIC_NAME], expected_thread_4_topic_name)
+        self.assertEqual(zerver_message[11]["content"], expected_thread_6_message_1_content)
+        self.assertEqual(zerver_message[11][EXPORT_TOPIC_NAME], expected_thread_6_topic_name)
 
     @mock.patch("zerver.data_import.slack.build_usermessages", return_value=(2, 4))
     def test_channel_message_to_zerver_message_with_integration_bots(
