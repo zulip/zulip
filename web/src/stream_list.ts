@@ -1063,7 +1063,7 @@ export function set_event_handlers({
             e.preventDefault();
             if (
                 e.target.id === "streams_inline_icon" ||
-                $(e.target).parent().hasClass("input-button")
+                $(e.target).parent().hasClass("input-close-filter-button")
             ) {
                 return;
             }
