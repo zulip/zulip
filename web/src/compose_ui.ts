@@ -35,6 +35,7 @@ export const DEFAULT_COMPOSE_PLACEHOLDER = $t({defaultMessage: "Compose your mes
 
 export type ComposeTriggeredOptions = {
     trigger: string;
+    defer_focus?: boolean | undefined;
 } & (
     | {
           message_type: "stream";
