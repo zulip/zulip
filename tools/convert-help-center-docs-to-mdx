@@ -122,9 +122,11 @@ def fix_file_imports(
         return convert_kebab_to_pascal(os.path.basename(match_string).split(".")[0])
 
     def convert_to_astro_tag(match: re.Match[str]) -> str:
-        return "<" + get_pascal_filename_without_extension(match.group(1)) + " />"
+        # The space before < makes sure that the component is interpreted correctly
+        # when it is not occupying it's own line, e.g. it is part of a list item.
+        return " <" + get_pascal_filename_without_extension(match.group(1)) + " />"
 
-    RE = re.compile(r"^ {,3}\{!([^!]+)!\} *$", re.MULTILINE)
+    RE = re.compile(r" {,3}\{!([^!]+)!\} *$", re.MULTILINE)
     result = RE.sub(convert_to_astro_tag, markdown_string)
     matches = RE.findall(markdown_string)
 
