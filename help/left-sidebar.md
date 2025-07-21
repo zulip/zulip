@@ -113,7 +113,7 @@ you’re currently viewing.
 
 {tab|desktop-web}
 
-1. Click the **plus** (<i class="zulip-icon zulip-icon-square-plus"></i>)
+1. Click the **new direct message** (<i class="zulip-icon zulip-icon-square-plus"></i>)
    button next to the **direct messages** heading in the left sidebar.
 
 1. Start typing the name of the person or [group](/help/user-groups) you want to

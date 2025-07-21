@@ -2,7 +2,7 @@
 
 {tab|desktop-web}
 
-1. Click the **plus** (<i class="zulip-icon zulip-icon-square-plus"></i>)
+1. Click the **new direct message** (<i class="zulip-icon zulip-icon-square-plus"></i>)
    button next to the **direct messages** heading in the left sidebar, or
    the **New direct message** button at the bottom of the app.
 
