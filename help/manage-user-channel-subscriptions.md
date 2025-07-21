@@ -19,7 +19,7 @@
 
 {!subscribe-user-to-channel.md!}
 
-## Unsubscribe a user from channel(s)
+## Unsubscribe a user from a channel
 
 {!unsubscribe-user-from-channel.md!}
 

@@ -1,7 +1,4 @@
-{!admin-only.md!}
-
-Anyone can always [unsubscribe themselves from a
-channel](/help/unsubscribe-from-a-channel).
+{!depends-on-permissions.md!}
 
 {start_tabs}
 
@@ -17,6 +14,8 @@ channel](/help/unsubscribe-from-a-channel).
    to unsubscribe from the channel.
 
 1. Click the **Unsubscribe** (<i class="zulip-icon zulip-icon-close"></i>) icon in that row.
+
+{!channel-menu-subscribers-tab-tip.md!}
 
 {tab|via-user-profile}
 
