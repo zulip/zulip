@@ -10,6 +10,9 @@
 
     /* Changed from 1.2 to 1 */
     --sl-line-height-headings: 1;
+
+    /* Changed from 1.75 to make text easier to read. */
+    --sl-line-height: 1.5;
 }
 
 .non-clickable-sidebar-heading {
