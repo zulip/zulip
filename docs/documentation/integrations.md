@@ -54,10 +54,16 @@ Typically, the documentation process involves the following steps:
   generate a screenshot of the message to provide an example message in the
   integration's documentation.
 
-  If your new integration is an incoming webhook integration, you can
-  generate the screenshot using
-  `tools/screenshots/generate-integration-docs-screenshot`, where
-  `integrationname` is the name of the integration:
+  If your new integration is not a webhook and does not have fixtures, add a
+  message template and topic to `zerver/webhooks/fixtureless_integrations.py`.
+  Then, add your integration's name to `FIXTURELESS_INTEGRATIONS_WITH_SCREENSHOTS`
+  in `zerver/lib/integrations.py`.
+
+  Otherwise, you should have already added your integration to
+  `WEBHOOK_SCREENSHOT_CONFIG`.
+
+  Generate the screenshot using `tools/screenshots/generate-integration-docs-screenshot`,
+  where `integrationname` is the name of the integration:
 
   ```bash
   ./tools/screenshots/generate-integration-docs-screenshot --integration integrationname
