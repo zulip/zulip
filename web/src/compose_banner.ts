@@ -177,6 +177,12 @@ export function clear_all(): void {
     scroll_util.get_content_element($(`#compose_banners`)).empty();
 }
 
+function decodeHtmlEntities(str: string): string {
+    const txt = document.createElement("textarea");
+    txt.innerHTML = str;
+    return txt.value;
+}
+
 export function show_error_message(
     message: string,
     classname: string,
@@ -197,7 +203,7 @@ export function show_error_message(
         banner_type: ERROR,
         stream_id: null,
         topic_name: null,
-        banner_text: message,
+        banner_text: decodeHtmlEntities(message),
         button_text: null,
         classname,
     });
