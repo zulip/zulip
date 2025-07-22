@@ -981,6 +981,16 @@ function on_sidebar_channel_click(
         e.stopPropagation();
     }
 
+    const section_for_stream = stream_list_sort.current_section_id_for_stream(stream_id);
+    if (collapsed_sections.has(section_for_stream)) {
+        // In the event that user clicks on the channel in the left
+        // sidebar when its folder is collapsed, which is only there
+        // to click on if the user was already viewing that channel,
+        // we uncollapse the section to make the filtering component
+        // visible.
+        toggle_section_collapse($(`#stream-list-${section_for_stream}-container`));
+    }
+
     const current_narrow_stream_id = narrow_state.stream_id();
     const current_topic = narrow_state.topic();
 
@@ -1261,8 +1271,9 @@ export let scroll_stream_into_view = function ($stream_li: JQuery): void {
         $container,
         stream_filter_height + header_height,
     );
-    // Note: If the stream is in a collapsed folder, we don't uncollapse the
-    // folder.
+    // Note: If the stream is in a collapsed folder, we don't uncollapse
+    // the folder. We do uncollapse when the user clicks on the channel,
+    // but that's handled elsewhere.
 };
 
 export function rewire_scroll_stream_into_view(value: typeof scroll_stream_into_view): void {
