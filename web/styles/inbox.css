@@ -119,18 +119,7 @@
                     outline: 0;
                 }
 
-                &:focus-visible {
-                    .inbox-focus-border {
-                        border-color: var(--color-outline-focus);
-                    }
-
-                    .collapsible-button > .zulip-icon {
-                        opacity: 1;
-                    }
-                }
-
-                &:hover,
-                &:focus-visible {
+                &:hover {
                     .collapsible-button {
                         visibility: visible;
                     }
@@ -200,16 +189,6 @@
                     background: var(--color-background-inbox-row-hover);
                 }
 
-                &:focus-visible {
-                    .inbox-focus-border {
-                        border: 2px solid var(--color-outline-focus);
-                        border-radius: 3px;
-                    }
-
-                    outline: 0;
-                    padding: 0;
-                }
-
                 .inbox-left-part {
                     grid-template:
                         auto / min-content minmax(0, 1fr)
@@ -241,10 +220,6 @@
                     align-items: center;
                     border-radius: 3px;
                     margin-left: 3px;
-
-                    &:focus-visible {
-                        outline: 2px solid var(--color-outline-focus);
-                    }
                 }
             }
 
@@ -265,10 +240,6 @@
                    count from affecting overall row
                    size as test scales up. */
                 align-self: stretch;
-
-                &:focus-visible {
-                    outline: 2px solid var(--color-outline-focus);
-                }
             }
 
             .unread_mention_info {
@@ -364,10 +335,6 @@
 
         .inbox-row,
         .inbox-header {
-            /* Don't show the icons unless user is visibly focused
-               on the element or one of the elements within it. */
-            &:focus-within:not(:focus),
-            &:focus-visible,
             &:hover {
                 .inbox-row-visibility-policy-inherit,
                 .inbox-action-button {
@@ -392,10 +359,6 @@
 
             &.hide {
                 display: none;
-            }
-
-            &:focus-visible {
-                box-shadow: 0 0 0 2px var(--color-outline-focus);
             }
 
             & i {
@@ -448,7 +411,6 @@
             font-size: 1em;
         }
 
-        &:focus-visible,
         &:hover {
             .inbox-header-name-text,
             .collapsible-button .zulip-icon,
@@ -456,13 +418,6 @@
             .unread_count {
                 opacity: 1;
             }
-        }
-
-        &:focus-visible {
-            background: light-dark(
-                transparent,
-                var(--color-background-hover-popover-menu)
-            );
         }
     }
 
@@ -522,10 +477,6 @@
 
     &:focus {
         outline: none;
-    }
-
-    &:focus-visible {
-        outline: 2px solid var(--color-outline-focus);
     }
 }
 
@@ -674,4 +625,98 @@
     .inbox-header-name {
     /* 5px at 16px / 1em */
     padding: 1px 0.3125em 1px 0;
+}
+
+#inbox-view.no-visible-focus-outlines
+    .inbox-container
+    #inbox-pane
+    [tabindex="0"] {
+    /* Remove default focus outline from elements. */
+    &:focus-visible {
+        outline: 0;
+    }
+}
+
+#inbox-view:not(.no-visible-focus-outlines) .inbox-container #inbox-pane {
+    /* Only show focus outlines when user uses keyboard. */
+    #inbox-filter_widget {
+        &:focus-visible {
+            outline: 2px solid var(--color-outline-focus);
+        }
+    }
+
+    .inbox-header {
+        &:focus-visible {
+            .inbox-focus-border {
+                border-color: var(--color-outline-focus);
+            }
+
+            .collapsible-button > .zulip-icon {
+                opacity: 1;
+            }
+
+            .collapsible-button {
+                visibility: visible;
+            }
+        }
+    }
+
+    .inbox-row {
+        &:focus-visible {
+            .inbox-focus-border {
+                border: 2px solid var(--color-outline-focus);
+                border-radius: 3px;
+            }
+
+            outline: 0;
+            padding: 0;
+        }
+    }
+
+    .visibility-policy-indicator {
+        &:focus-visible {
+            outline: 2px solid var(--color-outline-focus);
+        }
+    }
+
+    .inbox-action-button {
+        &:focus-visible {
+            box-shadow: 0 0 0 2px var(--color-outline-focus);
+        }
+    }
+
+    .unread-count-focus-outline {
+        &:focus-visible {
+            outline: 2px solid var(--color-outline-focus);
+        }
+    }
+
+    .inbox-row,
+    .inbox-header {
+        /* Don't show the icons unless user is visibly focused
+            on the element or one of the elements within it. */
+        &:focus-within:not(:focus),
+        &:focus-visible {
+            .inbox-row-visibility-policy-inherit,
+            .inbox-action-button {
+                opacity: 1;
+            }
+        }
+    }
+
+    .inbox-folder {
+        &:focus-visible {
+            .inbox-header-name-text,
+            .collapsible-button .zulip-icon,
+            .unread_mention_info,
+            .unread_count {
+                opacity: 1;
+            }
+
+            background: light-dark(
+                transparent,
+                var(--color-background-hover-popover-menu)
+            );
+        }
+    }
 }
