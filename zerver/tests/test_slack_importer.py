@@ -1531,23 +1531,6 @@ class SlackImporter(ZulipTestCase):
                 "thread_ts": "1434139200.000002",
                 "channel_name": "random",
             },
-            {
-                "text": "<@U061A1R2R> please reply to this message",
-                "user": "U061A5N1G",
-                "ts": "1437139200.000002",
-                # Start of thread 4!
-                "thread_ts": "1437139200.000002",
-                "channel_name": "random",
-            },
-            {
-                "text": "Yes?",
-                "user": "U061A1R2R",
-                "ts": "1440869295.000008",
-                # A reply to thread 4!
-                "parent_user_id": "U061A5N1G",
-                "thread_ts": "1437139200.000002",
-                "channel_name": "random",
-            },
         ]
 
         slack_recipient_name_to_zulip_recipient_id = {
@@ -1583,7 +1566,7 @@ class SlackImporter(ZulipTestCase):
         # functioning already tested in helper function
         self.assertEqual(zerver_usermessage, [])
         # subtype: channel_join is filtered
-        self.assert_length(zerver_message, 9)
+        self.assert_length(zerver_message, 7)
 
         self.assert_length(uploads, 0)
         self.assert_length(attachment, 0)
@@ -1630,12 +1613,22 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(zerver_message[5]["content"], expected_thread_3_message_1_content)
         self.assertEqual(zerver_message[5][EXPORT_TOPIC_NAME], expected_thread_3_topic_name)
 
-        ### THREAD 4 CONVERSATION ###
-        # Test mention syntax in thread topic name
-        expected_thread_4_message_1_content = "@**Jon** please reply to this message"
-        expected_thread_4_topic_name = "2015-07-17 @**Jon** please reply to this message"
-        self.assertEqual(zerver_message[7]["content"], expected_thread_4_message_1_content)
-        self.assertEqual(zerver_message[7][EXPORT_TOPIC_NAME], expected_thread_4_topic_name)
+    def test_convert_thread_topic_name_with_mention_syntax(self) -> None:
+        (
+            zerver_message,
+            _zerver_usermessage,
+            _attachment,
+            _uploads,
+            _reaction,
+        ) = self.run_channel_message_to_zerver_message_with_fixtures(
+            ["thread_with_mention_syntax_in_topic_name"]
+        )
+        self.assert_length(zerver_message, 2)
+        # Test mention syntax in thread topic name.
+        expected_thread_message_1_content = "@**Jon** please reply to this message"
+        expected_thread_topic_name = "2015-07-17 @**Jon** please reply to this message"
+        self.assertEqual(zerver_message[0]["content"], expected_thread_message_1_content)
+        self.assertEqual(zerver_message[0][EXPORT_TOPIC_NAME], expected_thread_topic_name)
 
     def test_convert_thread_topic_name_with_file_link_formatting(self) -> None:
         (
