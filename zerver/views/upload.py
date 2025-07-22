@@ -115,7 +115,7 @@ def serve_local(
     path_id: str,
     filename: str,
     force_download: bool = False,
-    mimetype: str | None = None,
+    content_type: str | None = None,
 ) -> HttpResponseBase:
     assert settings.LOCAL_FILES_DIR is not None
     local_path = os.path.join(settings.LOCAL_FILES_DIR, path_id)
@@ -123,9 +123,9 @@ def serve_local(
     if not os.path.isfile(local_path):
         return HttpResponseNotFound("<p>File not found</p>")
 
-    if mimetype is None:
-        mimetype = guess_type(filename)[0]
-    download = force_download or mimetype not in INLINE_MIME_TYPES
+    if content_type is None:
+        content_type = guess_type(filename)[0]
+    download = force_download or content_type not in INLINE_MIME_TYPES
 
     if settings.DEVELOPMENT:
         # In development, we do not have the nginx server to offload
@@ -135,7 +135,7 @@ def serve_local(
             open(local_path, "rb"),  # noqa: SIM115
             as_attachment=download,
             filename=filename,
-            content_type=mimetype,
+            content_type=content_type,
         )
         patch_cache_control(response, private=True, immutable=True)
         return response
@@ -147,7 +147,7 @@ def serve_local(
     # if that type is safe to have a Content-Disposition of "inline".
     # nginx respects the values we send.
     response = internal_nginx_redirect(
-        quote(f"/internal/local/uploads/{path_id}"), content_type=mimetype
+        quote(f"/internal/local/uploads/{path_id}"), content_type=content_type
     )
     patch_disposition_header(response, filename, download)
     patch_cache_control(response, private=True, immutable=True)
@@ -319,10 +319,10 @@ def serve_file(
         # Update the path that we are fetching to be the thumbnail
         path_id = get_image_thumbnail_path(image_attachment, requested_format)
         served_filename = str(requested_format)
-        mimetype: str | None = None  # Guess from filename
+        content_type: str | None = None  # Guess from filename
     else:
         served_filename = attachment.file_name
-        mimetype = attachment.content_type
+        content_type = attachment.content_type
 
     if settings.LOCAL_UPLOADS_DIR is not None:
         return serve_local(
@@ -330,7 +330,7 @@ def serve_file(
             path_id,
             filename=served_filename,
             force_download=force_download,
-            mimetype=mimetype,
+            content_type=content_type,
         )
     else:
         return serve_s3(request, path_id, served_filename, force_download=force_download)
@@ -378,7 +378,7 @@ def serve_file_unauthed_from_token(
             request,
             path_id,
             filename=attachment.file_name,
-            mimetype=attachment.content_type,
+            content_type=attachment.content_type,
         )
     else:
         return serve_s3(request, path_id, attachment.file_name)
