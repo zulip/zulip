@@ -9,7 +9,7 @@ from django.utils.timezone import now as timezone_now
 from typing_extensions import override
 
 from zerver.actions.create_realm import do_create_realm
-from zerver.actions.streams import do_deactivate_stream
+from zerver.actions.streams import do_deactivate_stream, do_set_stream_property
 from zerver.data_import.mattermost import do_convert_data
 from zerver.lib.import_realm import do_import_realm
 from zerver.lib.message import remove_single_newlines
@@ -21,7 +21,7 @@ from zerver.lib.zulip_update_announcements import (
 from zerver.models.messages import Message
 from zerver.models.realms import get_realm
 from zerver.models.recipients import Recipient, get_direct_message_group_user_ids
-from zerver.models.streams import get_stream
+from zerver.models.streams import StreamTopicsPolicyEnum, get_stream
 from zerver.models.users import get_system_bot
 
 
@@ -129,6 +129,42 @@ class ZulipUpdateAnnouncementsTest(ZulipTestCase):
             self.assertEqual(stream_messages[1].content, "Announcement message 3.")
             self.assertEqual(stream_messages[2].content, "Announcement message 4.")
             self.assertEqual(realm.zulip_update_announcements_level, 4)
+            self.assertEqual(
+                stream_messages[0].topic_name(), realm.ZULIP_UPDATE_ANNOUNCEMENTS_TOPIC_NAME
+            )
+            self.assertEqual(
+                stream_messages[1].topic_name(), realm.ZULIP_UPDATE_ANNOUNCEMENTS_TOPIC_NAME
+            )
+            self.assertEqual(
+                stream_messages[2].topic_name(), realm.ZULIP_UPDATE_ANNOUNCEMENTS_TOPIC_NAME
+            )
+
+            # Test sending updates with announcements stream allowing empty topics only.
+            iago = self.example_user("iago")
+            do_set_stream_property(
+                verona, "topics_policy", StreamTopicsPolicyEnum.empty_topic_only.value, iago
+            )
+
+            new_updates = [
+                ZulipUpdateAnnouncement(
+                    level=5,
+                    message="Announcement message 5.",
+                ),
+            ]
+            self.zulip_update_announcements.extend(new_updates)
+            with time_machine.travel(now + timedelta(days=15), tick=False):
+                send_zulip_update_announcements(skip_delay=False)
+            realm.refresh_from_db()
+            stream_messages = Message.objects.filter(
+                realm=realm,
+                sender=notification_bot,
+                recipient__type_id=verona.id,
+                date_sent__gte=now + timedelta(days=15),
+            ).order_by("id")
+            self.assert_length(stream_messages, 1)
+            self.assertEqual(stream_messages[0].topic_name(), "")
+            self.assertEqual(stream_messages[0].content, "Announcement message 5.")
+            self.assertEqual(realm.zulip_update_announcements_level, 5)
 
     def test_send_zulip_update_announcements_with_stream_configured(self) -> None:
         with mock.patch(

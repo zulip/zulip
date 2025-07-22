@@ -9,6 +9,7 @@ from zerver.lib.message import is_1_to_1_message, truncate_content
 from zerver.lib.topic_link_util import get_message_link_syntax
 from zerver.models import Message, Realm, UserProfile
 from zerver.models.recipients import Recipient
+from zerver.models.streams import StreamTopicsPolicyEnum
 from zerver.models.users import get_system_bot
 
 # We shrink the truncate length for the reported message to ensure
@@ -104,9 +105,13 @@ def send_message_report(
     )
     content += reported_message_preview_block
 
+    topic_name = _("{fullname}'s moderation requests").format(fullname=reported_user.full_name)
+    if moderation_request_channel.topics_policy == StreamTopicsPolicyEnum.empty_topic_only.value:
+        topic_name = ""
+
     internal_send_stream_message(
         sender=get_system_bot(settings.NOTIFICATION_BOT, moderation_request_channel.realm.id),
         stream=moderation_request_channel,
-        topic_name=_("{fullname}'s moderation requests").format(fullname=reported_user.full_name),
+        topic_name=topic_name,
         content=content,
     )

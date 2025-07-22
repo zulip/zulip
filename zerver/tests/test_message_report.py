@@ -2,6 +2,7 @@ from django.conf import settings
 from typing_extensions import Any, override
 
 from zerver.actions.realm_settings import do_set_realm_moderation_request_channel
+from zerver.actions.streams import do_set_stream_property
 from zerver.lib.markdown.fenced_code import get_unused_fence
 from zerver.lib.mention import silent_mention_syntax_for_user
 from zerver.lib.message import truncate_content
@@ -15,6 +16,7 @@ from zerver.lib.topic_link_util import (
 from zerver.models import UserProfile
 from zerver.models.messages import Message
 from zerver.models.recipients import get_or_create_direct_message_group
+from zerver.models.streams import StreamTopicsPolicyEnum
 from zerver.models.users import get_system_bot
 
 
@@ -373,3 +375,23 @@ class ReportMessageTest(ZulipTestCase):
         )
 
         self.assert_json_success(result)
+
+    def test_message_report_to_channel_with_topics_disabled(self) -> None:
+        notification_bot = get_system_bot(settings.NOTIFICATION_BOT, self.realm.id)
+        do_set_stream_property(
+            self.moderation_request_channel,
+            "topics_policy",
+            StreamTopicsPolicyEnum.empty_topic_only.value,
+            self.hamlet,
+        )
+
+        result = self.report_message(
+            self.hamlet,
+            self.reported_message_id,
+            report_type="harassment",
+        )
+        self.assert_json_success(result)
+        report_msg = self.get_last_message()
+        self.assertEqual(report_msg.sender_id, notification_bot.id)
+        self.assertEqual(report_msg.topic_name(), "")
+        self.assertIn("reported", report_msg.content)
