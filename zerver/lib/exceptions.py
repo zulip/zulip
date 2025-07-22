@@ -61,6 +61,7 @@ class ErrorCode(Enum):
     HOSTNAME_ALREADY_IN_USE_BOUNCER_ERROR = auto()
     INVALID_BOUNCER_PUBLIC_KEY = auto()
     REQUEST_EXPIRED = auto()
+    PUSH_SERVICE_NOT_CONFIGURED = auto()
 
 
 class JsonableError(Exception):
@@ -863,3 +864,15 @@ class InvalidEncryptedPushRegistrationError(JsonableError):
     @override
     def msg_format() -> str:
         return _("Invalid encrypted_push_registration")
+
+
+class PushServiceNotConfiguredError(JsonableError):
+    code = ErrorCode.PUSH_SERVICE_NOT_CONFIGURED
+
+    def __init__(self) -> None:
+        pass
+
+    @staticmethod
+    @override
+    def msg_format() -> str:
+        return _("Server is not configured to use push notification service.")

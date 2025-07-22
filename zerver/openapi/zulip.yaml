@@ -12619,7 +12619,7 @@ paths:
                       {
                         "result": "error",
                         "msg": "Server is not configured to use push notification service.",
-                        "code": "BAD_REQUEST",
+                        "code": "PUSH_SERVICE_NOT_CONFIGURED",
                       }
                     description: |
                       Error when the server is not configured to use push notification service:

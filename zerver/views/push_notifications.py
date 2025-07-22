@@ -15,6 +15,7 @@ from zerver.lib.exceptions import (
     JsonableError,
     MissingRemoteRealmError,
     OrganizationOwnerRequiredError,
+    PushServiceNotConfiguredError,
     RemoteRealmServerMismatchError,
     ResourceNotFoundError,
 )
@@ -280,7 +281,7 @@ def register_push_device(
     encrypted_push_registration: str,
 ) -> HttpResponse:
     if not (settings.ZILENCER_ENABLED or uses_notification_bouncer()):
-        raise JsonableError(_("Server is not configured to use push notification service."))
+        raise PushServiceNotConfiguredError
 
     # Idempotency
     already_registered = PushDevice.objects.filter(
