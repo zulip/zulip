@@ -585,6 +585,12 @@ WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
     WebhookIntegration("zapier", ["meta-integration"]),
     WebhookIntegration("zendesk", ["customer-support"]),
     WebhookIntegration("zabbix", ["monitoring"]),
+    WebhookIntegration(
+        "redmine",
+        ["project-management"],
+        display_name="Redmine",
+        logo="images/integrations/logos/redmine.svg",
+    ),
 ]
 
 INTEGRATIONS: dict[str, Integration] = {
@@ -607,7 +613,6 @@ INTEGRATIONS: dict[str, Integration] = {
     "notion": Integration("notion", ["productivity"]),
     "onyx": Integration("onyx", ["productivity"], logo="images/integrations/logos/onyx.png"),
     "puppet": Integration("puppet", ["deployment"]),
-    "redmine": Integration("redmine", ["project-management"]),
     "zoom": Integration("zoom", ["communication"]),
 }
 
@@ -856,6 +861,7 @@ DOC_SCREENSHOT_CONFIG: dict[
 ] = {
     **WEBHOOK_SCREENSHOT_CONFIG,
     **FIXTURELESS_SCREENSHOT_CONFIG,
+    "redmine": [WebhookScreenshotConfig("issue_created.json")],
 }
 
 

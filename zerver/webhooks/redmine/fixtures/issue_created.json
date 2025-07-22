@@ -1,0 +1,21 @@
+{
+  "event": "issue_created",
+  "issue": {
+    "id": 123,
+    "project": { "id": 1, "name": "Sample Project" },
+    "tracker": { "id": 1, "name": "Bug" },
+    "status": { "id": 1, "name": "New" },
+    "priority": { "id": 2, "name": "Normal" },
+    "author": { "id": 2, "name": "John Smith" },
+    "assigned_to": { "id": 3, "name": "Jane Doe" },
+    "subject": "Sample issue subject",
+    "description": "This is a sample issue description.",
+    "start_date": "2024-06-01",
+    "due_date": "2024-06-10",
+    "done_ratio": 0,
+    "created_on": "2024-06-01T12:00:00Z",
+    "updated_on": "2024-06-01T12:00:00Z",
+    "url": "https://redmine.example.com/issues/123"
+  },
+  "user": { "id": 2, "name": "John Smith" }
+} 
