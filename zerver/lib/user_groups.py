@@ -831,7 +831,7 @@ def get_recursive_group_members_union_for_groups(
     return UserProfile.objects.filter(
         is_active=True,
         direct_groups__in=get_recursive_subgroups_union_for_groups(user_group_ids),
-    )
+    ).distinct()
 
 
 def get_recursive_membership_groups(user_profile: UserProfile) -> QuerySet[UserGroup]:
