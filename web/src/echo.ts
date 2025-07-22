@@ -1,6 +1,6 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
-import {z} from "zod";
+import * as z from "zod/mini";
 
 import render_message_controls from "../templates/message_controls.hbs";
 import render_message_controls_failed_msg from "../templates/message_controls_failed_msg.hbs";
@@ -39,7 +39,7 @@ type ServerMessage = RawMessage & {local_id?: string};
 
 const send_message_api_response_schema = z.object({
     id: z.number(),
-    automatic_new_visibility_policy: z.number().optional(),
+    automatic_new_visibility_policy: z.optional(z.number()),
 });
 
 type MessageRequestObject = {

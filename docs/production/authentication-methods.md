@@ -277,7 +277,7 @@ for most LDAP installations. All you need to do is set the
 unique identifier** for the account. If your LDAP server has a policy
 of never changing the Distinguished Name (`dn`) for a user, you can
 use that. But it's worth checking if your LDAP provider offers a UUID
-that is guaranteed to map to a unique user account.
+that is guaranteed to always map to the same user account.
 
 For Active Directory installations, the immutable Security Identifier
 [`objectSid`](https://ldapwiki.com/wiki/Wiki.jsp?page=Security%20Identifier)

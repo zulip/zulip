@@ -122,9 +122,11 @@ def fix_file_imports(
         return convert_kebab_to_pascal(os.path.basename(match_string).split(".")[0])
 
     def convert_to_astro_tag(match: re.Match[str]) -> str:
-        return "<" + get_pascal_filename_without_extension(match.group(1)) + " />"
+        # The space before < makes sure that the component is interpreted correctly
+        # when it is not occupying it's own line, e.g. it is part of a list item.
+        return " <" + get_pascal_filename_without_extension(match.group(1)) + " />"
 
-    RE = re.compile(r"^ {,3}\{!([^!]+)!\} *$", re.MULTILINE)
+    RE = re.compile(r" {,3}\{!([^!]+)!\} *$", re.MULTILINE)
     result = RE.sub(convert_to_astro_tag, markdown_string)
     matches = RE.findall(markdown_string)
 
@@ -444,12 +446,10 @@ def convert_admonitions_to_asides(
                 # implementation.
                 # See https://chat.zulip.org/#narrow/channel/19-documentation/topic/Stage.202.3A.20New.20syntax.20for.20!!!tip.20in.20help-beta/near/2174415
                 # for more details.
-                type = "note"
-                title = ""
-                replacement = (
-                    f'\n<Aside type="{type}" title="{title}">\n{admonition_content}\n</Aside>\n'
+                replacement = f"\n<ZulipNote>\n{admonition_content}\n</ZulipNote>\n"
+                import_statement_set.add(
+                    f"import ZulipNote from '{components_dir_path}/ZulipNote.astro';"
                 )
-                import_statement_set.add("import { Aside } from '@astrojs/starlight/components'")
             elif klass == "tip":
                 type = "tip"
                 title = "Tip"

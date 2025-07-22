@@ -1,5 +1,5 @@
 import assert from "minimalistic-assert";
-import type {z} from "zod";
+import type * as z from "zod/mini";
 
 import * as typeahead from "../shared/src/typeahead.ts";
 

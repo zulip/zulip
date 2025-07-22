@@ -1,5 +1,5 @@
 import $ from "jquery";
-import {z} from "zod";
+import * as z from "zod/mini";
 
 import {localstorage} from "../localstorage.ts";
 import * as portico_modals from "../portico/portico_modals.ts";
@@ -39,9 +39,9 @@ let current_license_count = page_params.seat_count;
 
 const upgrade_response_schema = z.object({
     // Returned if we charged the user and need to verify.
-    stripe_invoice_id: z.string().optional(),
+    stripe_invoice_id: z.optional(z.string()),
     // Returned if we directly upgraded the org (for free trial or invoice payments).
-    organization_upgrade_successful: z.boolean().optional(),
+    organization_upgrade_successful: z.optional(z.boolean()),
 });
 
 function update_due_today(schedule: string): void {

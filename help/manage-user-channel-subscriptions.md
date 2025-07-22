@@ -17,71 +17,11 @@
 
 ## Subscribe a user to a channel
 
-{!depends-on-permissions.md!}
+{!subscribe-user-to-channel.md!}
 
-{start_tabs}
+## Unsubscribe a user from a channel
 
-{tab|via-channel-settings}
-
-{relative|channel|all}
-
-1. Select a channel.
-
-{!select-channel-view-subscribers.md!}
-
-1. Under **Add subscribers**, enter the user's name or email address.
-
-1. Click **Add**.
-
-{tab|via-user-profile}
-
-{!right-sidebar-view-profile.md!}
-
-1. Select the **Channels** tab.
-
-1. Under **Subscribe user to channels**, select a channel from the
-   dropdown list. You can start typing to filter channels.
-
-1. Click the **Subscribe** button.
-
-{end_tabs}
-
-{!automated-dm-channel-subscription.md!}
-
-## Unsubscribe a user from channel(s)
-
-{!admin-only.md!}
-
-Anyone can always [unsubscribe themselves from a
-channel](/help/unsubscribe-from-a-channel).
-
-{start_tabs}
-
-{tab|via-channel-settings}
-
-{relative|channel|all}
-
-1. Select a channel.
-
-{!select-channel-view-subscribers.md!}
-
-1. Under **Subscribers**, find the user you would like
-   to unsubscribe from the channel.
-
-1. Click the **Unsubscribe** (<i class="zulip-icon zulip-icon-close"></i>) icon in that row.
-
-{tab|via-user-profile}
-
-{!right-sidebar-view-profile.md!}
-
-1. Select the **Channels** tab.
-
-1. Under **Subscribed channels**, find the channel you would like
-   to unsubscribe the user from.
-
-1. Click the **Unsubscribe** (<i class="zulip-icon zulip-icon-close"></i>) icon in that row.
-
-{end_tabs}
+{!unsubscribe-user-from-channel.md!}
 
 ## Related articles
 

@@ -299,8 +299,8 @@ importers:
         specifier: ^0.2.1
         version: 0.2.2
       zod:
-        specifier: ^3.21.4
-        version: 3.25.67
+        specifier: ^4.0.5
+        version: 4.0.5
     devDependencies:
       '@babel/plugin-transform-modules-commonjs':
         specifier: ^7.19.6
@@ -560,6 +560,9 @@ importers:
       unplugin-icons:
         specifier: ^22.1.0
         version: 22.1.0
+      zod:
+        specifier: ^3.25.67
+        version: 3.25.67
     devDependencies:
       '@types/mdast':
         specifier: ^4.0.4
@@ -10081,6 +10084,9 @@ packages:
 
   zod@3.25.67:
     resolution: {integrity: sha512-idA2YXwpCdqUSKRCACDE6ItZD9TZzy3OZMtpfLoh6oPR47lipysRrJfjzMqFxQ3uJuUPyUeWe1r9vLH33xO/Qw==}
+
+  zod@4.0.5:
+    resolution: {integrity: sha512-/5UuuRPStvHXu7RS+gmvRf4NXrNxpSllGwDnCBcJZtQsKrviYXm54yDGV2KYNLT5kq0lHGcl7lqWJLgSaG+tgA==}
 
   zulip-js@2.1.0:
     resolution: {integrity: sha512-kLdxzJZ/FvWHBotUJl7LXCHIkShTjy1FUk5HAWfsal1TM+hw0atCZwgasCpvFDBj01y+39ZEZXgjePaie74Xhg==}
@@ -21888,6 +21894,8 @@ snapshots:
       zod: 3.25.67
 
   zod@3.25.67: {}
+
+  zod@4.0.5: {}
 
   zulip-js@2.1.0(encoding@0.1.13):
     dependencies:

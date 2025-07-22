@@ -1,4 +1,5 @@
 import $ from "jquery";
+import * as z from "zod/mini";
 
 import * as about_zulip from "./about_zulip.ts";
 import * as admin from "./admin.ts";
@@ -57,7 +58,7 @@ function show_all_message_view(): void {
     // Don't export this function outside of this module since
     // `change_hash` is false here which means it is should only
     // be called after hash is updated in the URL.
-    const current_state = browser_history.state_data_schema.nullable().parse(window.history.state);
+    const current_state = z.nullable(browser_history.state_data_schema).parse(window.history.state);
     message_view.show([{operator: "in", operand: "home"}], {
         trigger: "hashchange",
         change_hash: false,
@@ -207,8 +208,8 @@ function do_hashchange_normal(from_reload: boolean, restore_selected_id: boolean
                 }
             }
 
-            const data_for_hash = browser_history.state_data_schema
-                .nullable()
+            const data_for_hash = z
+                .nullable(browser_history.state_data_schema)
                 .parse(window.history.state);
             if (restore_selected_id && data_for_hash) {
                 narrow_opts.then_select_id = data_for_hash.narrow_pointer;

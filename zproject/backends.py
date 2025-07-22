@@ -1316,7 +1316,16 @@ class ZulipLDAPUser(_LDAPUser):
         assert isinstance(external_auth_id, str)
         return external_auth_id
 
-    @transaction.atomic(savepoint=False)
+    # We intentionally want to create a transaction savepoint here. This only
+    # runs when syncing a user with LDAP during login or sync_ldap_user_data job
+    # and the performance cost should be negligible.
+    # A savepoint is needed because sync_ldap_user_data runs inside a large transaction
+    # syncing all users. LDAP sync exceptions can propagate through here, to be caught
+    # and logged up the callstack.
+    # When that occurs, we actually want to roll back this subtransaction, while allowing
+    # sync_ldap_user_data to go on to sync other users, without breaking its outermost
+    # transactions - which savepoint=False would do.
+    @transaction.atomic(savepoint=True)  # intentional use of savepoint=True
     def _get_or_create_user(self, force_populate: bool = False) -> UserProfile:
         # This function is responsible for the core logic of syncing
         # a user's data with ldap - run in both populate_user codepath

@@ -2,7 +2,7 @@ import $ from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
 import * as tippy from "tippy.js";
-import {z} from "zod";
+import * as z from "zod/mini";
 
 import render_compose_banner from "../templates/compose_banner/compose_banner.hbs";
 
@@ -13,7 +13,11 @@ import * as compose_banner from "./compose_banner.ts";
 import type {DropdownWidget} from "./dropdown_widget.ts";
 import * as dropdown_widget from "./dropdown_widget.ts";
 import * as group_permission_settings from "./group_permission_settings.ts";
-import type {AssignedGroupPermission, GroupGroupSettingName} from "./group_permission_settings.ts";
+import type {
+    AssignedGroupPermission,
+    GroupGroupSettingName,
+    RealmGroupSettingNameSupportingAnonymousGroups,
+} from "./group_permission_settings.ts";
 import * as group_setting_pill from "./group_setting_pill.ts";
 import {$t} from "./i18n.ts";
 import {page_params} from "./page_params.ts";
@@ -111,14 +115,14 @@ export function get_realm_time_limits_in_minutes(property: MessageTimeLimitSetti
 
 type RealmSetting = typeof realm;
 export const realm_setting_property_schema = z.union([
-    realm_schema.keyof(),
+    z.keyof(realm_schema),
     z.literal("realm_org_join_restrictions"),
 ]);
 type RealmSettingProperty = z.infer<typeof realm_setting_property_schema>;
 
 type RealmUserSettingDefaultType = typeof realm_user_settings_defaults;
 export const realm_user_settings_default_properties_schema = z.union([
-    realm_default_settings_schema.keyof(),
+    z.keyof(realm_default_settings_schema),
     z.literal("email_notification_batching_period_edit_minutes"),
 ]);
 type RealmUserSettingDefaultProperties = z.infer<
@@ -126,7 +130,7 @@ type RealmUserSettingDefaultProperties = z.infer<
 >;
 
 export const stream_settings_property_schema = z.union([
-    stream_subscription_schema.keyof(),
+    z.keyof(stream_subscription_schema),
     z.enum(["stream_privacy", "is_default_stream"]),
 ]);
 type StreamSettingProperty = z.infer<typeof stream_settings_property_schema>;
@@ -241,7 +245,7 @@ export function get_subsection_property_elements($subsection: JQuery): HTMLEleme
     return [...$subsection.find(".prop-element")];
 }
 
-export const simple_dropdown_realm_settings_schema = realm_schema.pick({
+export const simple_dropdown_realm_settings_schema = z.pick(realm_schema, {
     realm_org_type: true,
     realm_message_edit_history_visibility_policy: true,
     realm_topics_policy: true,
@@ -392,7 +396,10 @@ function get_message_retention_setting_value(
     return util.check_time_input(custom_input_val);
 }
 
-export const select_field_data_schema = z.record(z.object({text: z.string(), order: z.string()}));
+export const select_field_data_schema = z.record(
+    z.string(),
+    z.object({text: z.string(), order: z.string()}),
+);
 export type SelectFieldData = z.output<typeof select_field_data_schema>;
 
 function read_select_field_data_from_form(
@@ -1732,15 +1739,6 @@ export function create_group_setting_widget({
     return pill_widget;
 }
 
-export const realm_group_setting_name_supporting_anonymous_groups_schema =
-    group_permission_settings.realm_group_setting_name_schema.exclude([
-        "can_access_all_users_group",
-        "can_create_web_public_channel_group",
-    ]);
-export type RealmGroupSettingNameSupportingAnonymousGroups = z.infer<
-    typeof realm_group_setting_name_supporting_anonymous_groups_schema
->;
-
 export function create_realm_group_setting_widget({
     $pill_container,
     setting_name,
@@ -1765,7 +1763,7 @@ export function create_realm_group_setting_widget({
     set_group_setting_widget_value(
         pill_widget,
         group_setting_value_schema.parse(
-            realm[realm_schema.keyof().parse("realm_" + setting_name)],
+            realm[z.keyof(realm_schema).parse("realm_" + setting_name)],
         ),
     );
 
@@ -1892,7 +1890,7 @@ export function get_group_assigned_realm_permissions(group: UserGroup): {
     } of settings_config.realm_group_permission_settings) {
         const assigned_permission_objects = [];
         for (const setting_name of settings) {
-            const setting_value = realm[realm_schema.keyof().parse("realm_" + setting_name)];
+            const setting_value = realm[z.keyof(realm_schema).parse("realm_" + setting_name)];
             const can_edit = settings_config.owner_editable_realm_group_permission_settings.has(
                 setting_name,
             )
@@ -1933,7 +1931,7 @@ export function get_group_assigned_stream_permissions(group: UserGroup): {
         const can_edit_settings_with_content_access =
             stream_data.can_change_permissions_requiring_content_access(sub);
         for (const setting_name of settings_config.stream_group_permission_settings) {
-            const setting_value = sub[stream_subscription_schema.keyof().parse(setting_name)];
+            const setting_value = sub[z.keyof(stream_subscription_schema).parse(setting_name)];
             let can_edit_settings = can_edit_settings_with_metadata_access;
             if (
                 settings_config.stream_group_permission_settings_requiring_content_access.includes(
@@ -1980,7 +1978,7 @@ export function get_group_assigned_user_group_permissions(group: UserGroup): {
         const assigned_permission_objects = [];
         for (const setting_name of settings_config.group_permission_settings) {
             const setting_value =
-                user_group[user_groups.user_group_schema.keyof().parse(setting_name)];
+                user_group[z.keyof(user_groups.user_group_schema).parse(setting_name)];
             const assigned_permission_object =
                 group_permission_settings.get_assigned_permission_object(
                     group_setting_value_schema.parse(setting_value),

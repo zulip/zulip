@@ -76,7 +76,7 @@ to their right.
 !!! tip ""
 
     If the **views** section in the left sidebar is collapsed, click the
-    triangle to the left of **VIEWS** to uncollapse it.
+    triangle to the left of **views** to uncollapse it.
 
 {end_tabs}
 

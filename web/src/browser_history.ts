@@ -1,5 +1,5 @@
 // TODO: Rewrite this module to use window.history.pushState.
-import {z} from "zod";
+import * as z from "zod/mini";
 
 import * as blueslip from "./blueslip.ts";
 import * as hash_parser from "./hash_parser.ts";
@@ -161,15 +161,15 @@ export function set_hash(hash: string): void {
 }
 
 export const state_data_schema = z.object({
-    narrow_pointer: z.number().optional(),
-    narrow_offset: z.number().optional(),
-    show_more_topics: z.boolean().optional(),
+    narrow_pointer: z.optional(z.number()),
+    narrow_offset: z.optional(z.number()),
+    show_more_topics: z.optional(z.boolean()),
 });
 
 type StateData = z.infer<typeof state_data_schema>;
 
 export function current_scroll_offset(): number | undefined {
-    const current_state = state_data_schema.nullable().parse(window.history.state);
+    const current_state = z.nullable(state_data_schema).parse(window.history.state);
     return current_state?.narrow_offset;
 }
 
@@ -179,7 +179,7 @@ export function update_current_history_state_data(
 ): void {
     // The optional url parameter is for those rare situations where
     // we want to adjust the URL without adding a new history entry.
-    const current_state = state_data_schema.nullable().parse(window.history.state);
+    const current_state = z.nullable(state_data_schema).parse(window.history.state);
     const current_state_data = {
         narrow_pointer: current_state?.narrow_pointer,
         narrow_offset: current_state?.narrow_offset,
@@ -190,7 +190,7 @@ export function update_current_history_state_data(
 }
 
 export function get_current_state_show_more_topics(): boolean | undefined {
-    const current_state = state_data_schema.nullable().parse(window.history.state);
+    const current_state = z.nullable(state_data_schema).parse(window.history.state);
     return current_state?.show_more_topics;
 }
 

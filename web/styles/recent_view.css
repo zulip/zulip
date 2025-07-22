@@ -161,7 +161,7 @@
 
     #recent-view-search-wrapper {
         flex-grow: 1;
-        margin-bottom: 10px;
+        margin-bottom: 0.7142em; /* Legacy 10px at 14px/1em. */
     }
 
     .button-recent-filters {

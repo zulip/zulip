@@ -1,7 +1,7 @@
 .input-active-styles {
     color: var(--color-text-input);
     background-color: var(--color-background-input-focus);
-    border-color: var(--color-border-input-focus);
+    outline-color: var(--color-outline-input-focus);
 }
 
 .input-element-wrapper {
@@ -15,26 +15,26 @@
             --input-button-ending-offset
         )
         [input-element-end];
-    align-items: center;
 
     .input-element {
         grid-area: input-element;
         box-sizing: border-box;
-        padding: 0.1875em 0.5em; /* 3px at 16px/1em and 8px at 16px/1em */
+        padding: 0.25em 0.5em; /* 4px at 16px/1em and 8px at 16px/1em */
         font-size: var(--base-font-size-px);
         font-family: "Source Sans 3 VF", sans-serif;
         line-height: 1.25;
         text-overflow: ellipsis;
         color: var(--color-text-input);
         background: var(--color-background-input);
-        border: 1px solid var(--color-border-input);
+        outline: 1px solid var(--color-outline-input);
+        outline-offset: -1px;
+        border: none;
         border-radius: 4px;
-        outline: none;
         transition: 0.1s linear;
-        transition-property: border-color, box-shadow;
+        transition-property: outline-color, box-shadow;
 
         &:hover {
-            border-color: var(--color-border-input-hover);
+            outline-color: var(--color-outline-input-hover);
         }
 
         &:focus {
@@ -45,18 +45,16 @@
     }
 
     &.has-input-icon .input-element {
-        /* Subtract 1px to compensate for the left border */
         padding-left: calc(
             var(--input-icon-starting-offset) + var(--input-icon-width) +
-                var(--input-icon-content-gap) - 1px
+                var(--input-icon-content-gap)
         );
     }
 
     &.has-input-button .input-element {
-        /* Subtract 1px to compensate for the right border */
         padding-right: calc(
             var(--input-button-content-gap) + var(--input-button-width) +
-                var(--input-button-ending-offset) - 1px
+                var(--input-button-ending-offset)
         );
     }
 
@@ -79,7 +77,7 @@
         }
 
         &:has(.input:hover) {
-            border-color: var(--color-border-input-hover);
+            outline-color: var(--color-outline-input-hover);
         }
 
         &:has(.input:focus) {
@@ -101,11 +99,19 @@
        want to display it over the input element in the UI. */
     z-index: 1;
     pointer-events: none;
+    /* This margin is required to align the icon with the
+       first line of a multi-line input, where we cannot
+       use `align-items: center`. */
+    margin: 0.375em 0; /* 6px at 16px/1em */
 }
 
 .input-button {
     grid-area: input-button;
     padding: 0.25em; /* 4px at 16px/1em */
+    /* This margin is required to align the icon with the
+       first line of a multi-line input, where we cannot
+       use `align-items: center`. */
+    margin: 0.125em 0; /* 2px at 16px/1em */
 }
 
 .filter-input {
@@ -120,7 +126,7 @@
             the right padding to compensate for the same. */
             padding-right: 0.5em;
 
-            ~ .input-button {
+            ~ .input-close-filter-button {
                 visibility: hidden;
             }
         }
@@ -137,7 +143,7 @@
                 padding-right: 0.5em;
             }
 
-            .input-button {
+            .input-close-filter-button {
                 visibility: hidden;
             }
         }

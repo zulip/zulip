@@ -1,9 +1,9 @@
-import {z} from "zod";
+import * as z from "zod/mini";
 
 export const user_status_schema = z.intersection(
     z.object({
-        status_text: z.string().optional(),
-        away: z.boolean().optional(),
+        status_text: z.optional(z.string()),
+        away: z.optional(z.boolean()),
     }),
     z.union([
         z.object({

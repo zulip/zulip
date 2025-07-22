@@ -84,6 +84,10 @@ export default tseslint.config(
             "@typescript-eslint/no-loop-func": "error",
             "@typescript-eslint/no-misused-spread": "off",
             "@typescript-eslint/no-non-null-assertion": "off",
+            "@typescript-eslint/no-restricted-imports": [
+                "error",
+                {paths: [{name: "zod", message: "Use zod/mini."}]},
+            ],
             "@typescript-eslint/no-unnecessary-condition": "off",
             "@typescript-eslint/no-unnecessary-qualifier": "error",
             "@typescript-eslint/no-unused-vars": [
@@ -305,4 +309,10 @@ export default tseslint.config(
         },
     },
     ...astroConfigs.recommended,
+    {
+        files: ["help-beta/src/components/ZulipNote.astro"],
+        rules: {
+            "import/unambiguous": "off",
+        },
+    },
 );

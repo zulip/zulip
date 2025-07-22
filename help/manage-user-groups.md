@@ -158,7 +158,7 @@ so.
 
 {settings_tab|organization-permissions}
 
-1. Under **Other permissions**, configure **Who can create user groups**.
+1. Under **Group permissions**, configure **Who can create user groups**.
 
 {!save-changes.md!}
 
@@ -182,7 +182,7 @@ group.
 
 {settings_tab|organization-permissions}
 
-1. Under **Other permissions**, configure **Who can administer all user groups**.
+1. Under **Group permissions**, configure **Who can administer all user groups**.
 
 {!save-changes.md!}
 

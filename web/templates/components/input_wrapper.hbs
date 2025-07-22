@@ -4,6 +4,10 @@
     {{/if}}
     {{> @partial-block .}}
     {{#if input_button_icon}}
-        {{> icon_button custom_classes="input-button" squared=true icon=input_button_icon intent="neutral" }}
+        {{#if (eq input_type "filter-input") }}
+            {{> icon_button custom_classes="input-button input-close-filter-button" squared=true icon=input_button_icon intent="neutral" }}
+        {{else}}
+            {{> icon_button custom_classes="input-button" squared=true icon=input_button_icon intent="neutral" }}
+        {{/if}}
     {{/if}}
 </div>

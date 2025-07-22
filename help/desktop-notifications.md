@@ -114,32 +114,30 @@ that **Do Not Disturb mode** is not enabled on your computer.
 
 {tab|chrome}
 
-1. Click on **Secure** to the left of the URL bar. It should be green and
-   have a lock icon next to it.
+1. Click on the site information menu to the left of the URL for your Zulip
+   organization.
 
-1. Set **Notifications** and **Sound** to **Allow**.
+1. Toggle **Notifications** and **Sound**. If you don't see those options,
+   click on **Site settings**, and set **Notifications** and **Sound** to
+   **Allow**.
 
 Alternate instructions:
 
-1. Open the Chrome **Edit** menu. Select **Preferences**.
+1. Select the Chrome menu at the top right of the browser, and select
+   **Settings**.
 
-1. On the top left, select the menu icon (<i class="fa
-   fa-bars"></i>). Select **Advanced**, and then **Privacy & Security**.
-   Click on **Content settings** (partway down the page), and select
+1. Select **Privacy and security**, **Site Settings**, and then
    **Notifications**.
 
-1. If the Zulip URL for your organization is listed under **Blocked**,
-   select the menu icon (<i class="fa fa-ellipsis-v"></i>) to its right, and
-   click **Remove**.
+1. Next to **Allowed to send notifications**, select **Add**.
 
-1. Next to **Allow**, click **Add**.
-
-1. Paste the Zulip URL for your organization into the site field, and click
-    **Add**.
+1. Paste the Zulip URL for your organization into the site field, and
+   click **Add**.
 
 {tab|firefox}
 
-1. Open the Firefox **Edit** menu. Select **Preferences**.
+1. Select the Firefox menu at the top right of the browser, and select
+   **Settings**.
 
 1. On the left, select **Privacy & Security**. Scroll to the **Permissions**
    section and select the **Settings** button next to **Notifications**.

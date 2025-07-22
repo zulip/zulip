@@ -2,7 +2,7 @@ import ClipboardJS from "clipboard";
 import $ from "jquery";
 import assert from "minimalistic-assert";
 import type * as tippy from "tippy.js";
-import {z} from "zod";
+import * as z from "zod/mini";
 
 import render_settings_deactivation_stream_modal from "../templates/confirm_dialog/confirm_deactivate_stream.hbs";
 import render_settings_reactivation_stream_modal from "../templates/confirm_dialog/confirm_reactivate_stream.hbs";
@@ -68,7 +68,7 @@ type StreamSetting = {
     is_checked: boolean;
 };
 
-const settings_labels_schema = stream_properties_schema.omit({color: true}).keyof();
+const settings_labels_schema = z.keyof(z.omit(stream_properties_schema, {color: true}));
 
 const realm_labels_schema = z.enum([
     "push_notifications",
@@ -76,7 +76,7 @@ const realm_labels_schema = z.enum([
     "message_content_in_email_notifications",
 ]);
 
-const notification_labels_schema = stream_specific_notification_settings_schema.keyof();
+const notification_labels_schema = z.keyof(stream_specific_notification_settings_schema);
 
 export function setup_subscriptions_tab_hash(tab_key_value: string): void {
     if ($("#subscription_overlay .right").hasClass("show")) {

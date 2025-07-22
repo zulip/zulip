@@ -1,6 +1,6 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
-import {z} from "zod";
+import * as z from "zod/mini";
 
 import render_editing_notifications from "../templates/editing_notifications.hbs";
 import render_typing_notifications from "../templates/typing_notifications.hbs";
@@ -31,27 +31,26 @@ export const typing_user_schema = z.object({
     user_id: z.number(),
 });
 
-export const typing_event_schema = z
-    .object({
+export const typing_event_schema = z.intersection(
+    z.object({
         id: z.number(),
         op: z.enum(["start", "stop"]),
         type: z.literal("typing"),
-    })
-    .and(
-        z.discriminatedUnion("message_type", [
-            z.object({
-                message_type: z.literal("stream"),
-                sender: typing_user_schema,
-                stream_id: z.number(),
-                topic: z.string(),
-            }),
-            z.object({
-                message_type: z.literal("direct"),
-                recipients: z.array(typing_user_schema),
-                sender: typing_user_schema,
-            }),
-        ]),
-    );
+    }),
+    z.discriminatedUnion("message_type", [
+        z.object({
+            message_type: z.literal("stream"),
+            sender: typing_user_schema,
+            stream_id: z.number(),
+            topic: z.string(),
+        }),
+        z.object({
+            message_type: z.literal("direct"),
+            recipients: z.array(typing_user_schema),
+            sender: typing_user_schema,
+        }),
+    ]),
+);
 type TypingEvent = z.output<typeof typing_event_schema>;
 
 export const typing_edit_message_event_schema = z.object({

@@ -83,7 +83,7 @@ Here are some ways to find the URL for your Zulip organization.
     [proxy settings](/help/connect-through-a-proxy) or add a
     [custom certificate](/help/custom-certificates).
 
-1. Click the **plus** (<i class="fa fa-plus"></i>) icon in the
+1. Click the **add organization** (<i class="fa fa-plus"></i>) icon in the
    **organizations sidebar** on the left. You can also select **Add Organization**
    from the **Zulip** menu in the top menu bar.
 

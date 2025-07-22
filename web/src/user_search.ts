@@ -21,7 +21,7 @@ export class UserSearch {
         this._update_list = opts.update_list;
         this._on_focus = opts.on_focus;
 
-        $("#userlist-header-search .input-button").on("click", () => {
+        $("#userlist-header-search .input-close-filter-button").on("click", () => {
             this.clear_search();
         });
 

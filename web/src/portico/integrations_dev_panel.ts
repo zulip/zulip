@@ -1,6 +1,6 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
-import {z} from "zod";
+import * as z from "zod/mini";
 
 import * as channel from "../channel.ts";
 import * as util from "../util.ts";
@@ -14,7 +14,7 @@ const fixture_schema = z.record(
     z.string(),
     z.object({
         body: z.unknown(),
-        headers: z.record(z.string()),
+        headers: z.record(z.string(), z.string()),
     }),
 );
 

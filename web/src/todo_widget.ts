@@ -1,7 +1,7 @@
 import $ from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
-import {z} from "zod";
+import * as z from "zod/mini";
 
 import render_widgets_todo_widget from "../templates/widgets/todo_widget.hbs";
 import render_widgets_todo_widget_tasks from "../templates/widgets/todo_widget_tasks.hbs";
@@ -17,12 +17,12 @@ import type {Event} from "./poll_widget.ts";
 // to a todo list. We arbitrarily pick this value.
 const MAX_IDX = 1000;
 
-export const todo_widget_extra_data_schema = z
-    .object({
-        task_list_title: z.string().optional(),
-        tasks: z.array(z.object({task: z.string(), desc: z.string()})).optional(),
-    })
-    .nullable();
+export const todo_widget_extra_data_schema = z.nullable(
+    z.object({
+        task_list_title: z.optional(z.string()),
+        tasks: z.optional(z.array(z.object({task: z.string(), desc: z.string()}))),
+    }),
+);
 
 const todo_widget_inbound_data = z.intersection(
     z.object({
@@ -36,8 +36,8 @@ const todo_widget_inbound_data = z.intersection(
 // which should be refactored so that the code here is
 // clearer and less confusing.
 const new_task_inbound_data_schema = z.object({
-    type: z.literal("new_task").optional(),
-    key: z.number().int().nonnegative().max(MAX_IDX),
+    type: z.optional(z.literal("new_task")),
+    key: z.int().check(z.nonnegative(), z.lte(MAX_IDX)),
     task: z.string(),
     desc: z.string(),
     completed: z.boolean(),

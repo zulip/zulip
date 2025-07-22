@@ -2641,15 +2641,15 @@
         hsl(0deg 0% 100%),
         hsl(225deg 6% 7%)
     );
-    --color-border-input: light-dark(
+    --color-outline-input: light-dark(
         color-mix(in oklch, hsl(229deg 22% 10%) 30%, transparent),
         color-mix(in oklch, hsl(0deg 0% 100%) 20%, transparent)
     );
-    --color-border-input-hover: light-dark(
+    --color-outline-input-hover: light-dark(
         color-mix(in oklch, hsl(229deg 22% 10%) 60%, transparent),
         color-mix(in oklch, hsl(0deg 0% 100%) 40%, transparent)
     );
-    --color-border-input-focus: light-dark(
+    --color-outline-input-focus: light-dark(
         color-mix(in oklch, hsl(229deg 22% 10%) 80%, transparent),
         color-mix(in oklch, hsl(0deg 0% 100%) 50%, transparent)
     );

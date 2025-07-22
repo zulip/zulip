@@ -1,4 +1,4 @@
-import {z} from "zod";
+import * as z from "zod/mini";
 
 const display_recipient_users_schema = z.object({
     id: z.number(),
@@ -15,7 +15,7 @@ export const message_edit_history_schema = z.array(
         stream: z.optional(z.number()),
         timestamp: z.number(),
         topic: z.optional(z.string()),
-        user_id: z.number().nullable(),
+        user_id: z.nullable(z.number()),
     }),
 );
 
@@ -38,9 +38,9 @@ const submessage_schema = z.array(
     }),
 );
 
-export const server_message_schema = z
-    .object({
-        avatar_url: z.string().nullish(),
+export const server_message_schema = z.intersection(
+    z.object({
+        avatar_url: z.nullish(z.string()),
         client: z.string(),
         content: z.string(),
         content_type: z.enum(["text/html", "text/x-markdown"]),
@@ -48,8 +48,8 @@ export const server_message_schema = z
         edit_history: z.optional(message_edit_history_schema),
         id: z.number(),
         is_me_message: z.boolean(),
-        last_edit_timestamp: z.number().optional(),
-        last_moved_timestamp: z.number().optional(),
+        last_edit_timestamp: z.optional(z.number()),
+        last_moved_timestamp: z.optional(z.number()),
         reactions: message_reaction_schema,
         recipient_id: z.number(),
         sender_email: z.string(),
@@ -58,24 +58,23 @@ export const server_message_schema = z
         sender_realm_str: z.string(),
         submessages: submessage_schema,
         timestamp: z.number(),
-    })
-    .and(
-        z.discriminatedUnion("type", [
-            z.object({
-                type: z.literal("stream"),
-                subject: z.string(),
-                stream_id: z.number(),
-                topic_links: z.array(
-                    z.object({
-                        text: z.string(),
-                        url: z.string(),
-                    }),
-                ),
-            }),
-            z.object({
-                type: z.literal("private"),
-                subject: z.literal(""),
-                topic_links: z.array(z.never()),
-            }),
-        ]),
-    );
+    }),
+    z.discriminatedUnion("type", [
+        z.object({
+            type: z.literal("stream"),
+            subject: z.string(),
+            stream_id: z.number(),
+            topic_links: z.array(
+                z.object({
+                    text: z.string(),
+                    url: z.string(),
+                }),
+            ),
+        }),
+        z.object({
+            type: z.literal("private"),
+            subject: z.literal(""),
+            topic_links: z.array(z.never()),
+        }),
+    ]),
+);
