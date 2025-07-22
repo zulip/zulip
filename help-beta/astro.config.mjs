@@ -12,11 +12,10 @@ export default defineConfig({
             // eslint-disable-next-line new-cap
             Icons({
                 compiler: "astro",
-                // unplugin-icons sets height and width by itself.
-                // It was setting the height to 1024 and 960 for some
-                // icons. It is better to set the height explicitly.
-                defaultStyle:
-                    "display: inline; vertical-align: text-bottom; height: 1em; width: 1em; margin-bottom: 0; margin-top: 0;",
+                // We need to override some default starlight behaviour to make
+                // icons look nice, see the css for this class to see the reasoning
+                // for each individual override of the default css.
+                defaultClass: "zulip-unplugin-icon",
                 customCollections: {
                     // unplugin-icons has a FileSystemIconLoader which is more
                     // versatile. But it only supports one directory path for
