@@ -2902,12 +2902,14 @@ class GetOldMessagesTest(ZulipTestCase):
             for message in result["messages"]:
                 self.assertEqual(message["sender_id"], othello.id)
 
-    def _update_tsvector_index(self) -> None:
+    def _update_tsvector_index(self, clear_log=True) -> None:
         # We use brute force here and update our text search index
         # for the entire zerver_message table (which is small in test
         # mode).  In production there is an async process which keeps
         # the search index up to date.
         with connection.cursor() as cursor:
+            if (not clear_log):
+                return
             cursor.execute(
                 """
             UPDATE zerver_message SET
@@ -2915,6 +2917,7 @@ class GetOldMessagesTest(ZulipTestCase):
             subject || rendered_content)
             """
             )
+            cursor.execute("DELETE FROM fts_update_log")
 
     def test_get_visible_messages_using_narrow_with(self) -> None:
         hamlet = self.example_user("hamlet")
@@ -3192,6 +3195,23 @@ class GetOldMessagesTest(ZulipTestCase):
             message["match_content"],
             '<p><span class="highlight">KEYWORDMATCH</span> and should <span class="highlight">work</span></p>',
         )
+
+        good_id_but_not_search_indexed = send("KEYWORDMATCH and should work")
+        msg_ids = [good_id_but_not_search_indexed]
+        self._update_tsvector_index(False)
+
+        raw_params = dict(msg_ids=msg_ids, narrow=narrow)
+        params = {k: orjson.dumps(v).decode() for k, v in raw_params.items()}
+        result = self.client_get("/json/messages/matches_narrow", params)
+        messages = self.assert_json_success(result)["messages"]
+        self.assert_length(messages, 1)
+        message = messages[str(good_id_but_not_search_indexed)]
+
+        self.assertEqual(
+            message["status"],
+            'pending_search_index',
+        )
+
 
     @override_settings(USING_PGROONGA=False)
     def test_get_messages_with_search(self) -> None:

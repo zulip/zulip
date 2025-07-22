@@ -9,6 +9,11 @@ from django.utils.translation import gettext as _
 from pydantic import Json, NonNegativeInt
 from sqlalchemy.sql import column, func
 from sqlalchemy.types import Integer, Text
+from sqlalchemy.sql import (
+    column,
+    select,
+    table,
+)
 
 from zerver.context_processors import get_valid_realm_from_request
 from zerver.lib.exceptions import (
@@ -369,8 +374,18 @@ def messages_in_narrow_backend(
             column("rendered_content", Text),
         )
 
+    pending_message_ids = []
     search_fields = {}
     with get_sqlalchemy_connection() as sa_conn:
+        if is_search:
+            pending_query = (
+                select(column("message_id", Integer))
+                .select_from(table("fts_update_log"))
+                .where(column("message_id", Integer).in_(msg_ids))
+            )
+            pending_result = sa_conn.execute(pending_query)
+            pending_message_ids = [row[0] for row in pending_result]
+
         for row in sa_conn.execute(query).mappings():
             message_id = row["message_id"]
             escaped_topic_name: str = row["escaped_topic_name"]
@@ -383,5 +398,11 @@ def messages_in_narrow_backend(
                 content_matches,
                 topic_matches,
             )
+
+        for message_id in pending_message_ids:
+            if str(message_id) not in search_fields:
+                search_fields[str(message_id)] = {
+                    "status": "pending_search_index",
+                }
 
     return json_success(request, data={"messages": search_fields})
