@@ -1,5 +1,6 @@
 from zerver.lib.test_classes import WebhookTestCase
 
+
 class RedmineWebhookTests(WebhookTestCase):
     STREAM_NAME = "redmine"
     CHANNEL_NAME = "redmine"
@@ -19,4 +20,3 @@ class RedmineWebhookTests(WebhookTestCase):
             "[View issue](https://redmine.example.com/issues/123)"
         )
         self.check_webhook("issue_created", expected_topic, expected_message)
-         

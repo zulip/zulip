@@ -1,7 +1,7 @@
+import json
 from typing import Any
 
 from django.http import HttpRequest, HttpResponse, JsonResponse
-import json
 
 from zerver.decorator import webhook_view
 from zerver.lib.webhooks.common import check_send_webhook_message
@@ -13,7 +13,7 @@ def api_redmine_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
     *,
-    payload: dict[str, Any] = None,
+    payload: dict[str, Any] | None = None,
     **kwargs: Any,
 ) -> HttpResponse:
     if payload is None:
@@ -48,6 +48,7 @@ def api_redmine_webhook(
         )
         check_send_webhook_message(request, user_profile, topic, content)
         from zerver.lib.response import json_success
+
         return json_success(request)
     else:
         return JsonResponse(

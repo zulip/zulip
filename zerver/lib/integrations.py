@@ -706,6 +706,7 @@ NO_SCREENSHOT_WEBHOOKS = {
     "ifttt",  # Docs don't have a screenshot
     "slack_incoming",  # Docs don't have a screenshot
     "zapier",  # Docs don't have a screenshot
+    "redmine",  # Redmine intentionally has no screenshot
 }
 
 
@@ -852,7 +853,6 @@ WEBHOOK_SCREENSHOT_CONFIG: dict[str, list[WebhookScreenshotConfig]] = {
             },
         )
     ],
-    "redmine": [WebhookScreenshotConfig("issue_created.json")],
 }
 
 FIXTURELESS_SCREENSHOT_CONFIG: dict[str, list[FixturelessScreenshotConfig]] = {}
