@@ -12,7 +12,7 @@ from zerver.models import Realm, UserProfile
 @dataclass
 class StreamingSourceWithSize:
     size: int
-    source: pyvips.Source
+    vips_source: pyvips.Source
 
 
 class ZulipUploadBackend:

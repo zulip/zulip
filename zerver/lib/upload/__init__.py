@@ -58,10 +58,10 @@ def create_attachment(
     )
     if isinstance(file_data, bytes):
         file_size = len(file_data)
-        file_real_data: bytes | pyvips.Source = file_data
+        file_vips_data: bytes | pyvips.Source = file_data
     else:
         file_size = file_data.size
-        file_real_data = file_data.source
+        file_vips_data = file_data.vips_source
     attachment = Attachment.objects.create(
         file_name=file_name,
         path_id=path_id,
@@ -70,7 +70,7 @@ def create_attachment(
         size=file_size,
         content_type=content_type,
     )
-    maybe_thumbnail(file_real_data, content_type, path_id, realm.id)
+    maybe_thumbnail(file_vips_data, content_type, path_id, realm.id)
     from zerver.actions.uploads import notify_attachment_update
 
     notify_attachment_update(user_profile, "add", attachment.to_dict())
