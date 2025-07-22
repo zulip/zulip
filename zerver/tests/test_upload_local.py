@@ -64,7 +64,7 @@ class LocalStorageTest(UploadSerializeMixin, ZulipTestCase):
         source = attachment_vips_source(path_id)
         self.assertIsInstance(source, StreamingSourceWithSize)
         self.assertEqual(source.size, len(read_test_image_file("img.png")))
-        image = pyvips.Image.new_from_source(source.source, "", access="sequential")
+        image = pyvips.Image.new_from_source(source.vips_source, "", access="sequential")
         self.assertEqual(128, image.height)
         self.assertEqual(128, image.width)
 
