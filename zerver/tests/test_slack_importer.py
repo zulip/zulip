@@ -1514,23 +1514,6 @@ class SlackImporter(ZulipTestCase):
                 "thread_ts": "1439868294.000008",
                 "channel_name": "random",
             },
-            {
-                "text": "message body text",
-                "user": "U061A5N1G",
-                "ts": "1434139200.000002",
-                # Start of thread 3!
-                "thread_ts": "1434139200.000002",
-                "channel_name": "random",
-            },
-            {
-                "text": "The first reply to the third thread",
-                "user": "U061A1R2R",
-                "ts": "1439869295.000008",
-                # A reply to thread 3!
-                "parent_user_id": "U061A5N1G",
-                "thread_ts": "1434139200.000002",
-                "channel_name": "random",
-            },
         ]
 
         slack_recipient_name_to_zulip_recipient_id = {
@@ -1566,7 +1549,7 @@ class SlackImporter(ZulipTestCase):
         # functioning already tested in helper function
         self.assertEqual(zerver_usermessage, [])
         # subtype: channel_join is filtered
-        self.assert_length(zerver_message, 7)
+        self.assert_length(zerver_message, 5)
 
         self.assert_length(uploads, 0)
         self.assert_length(attachment, 0)
@@ -1606,12 +1589,29 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(zerver_message[4]["content"], expected_thread_2_message_2_content)
         self.assertEqual(zerver_message[4][EXPORT_TOPIC_NAME], expected_thread_2_topic_name)
 
-        ### THREAD 3 CONVERSATION ###
-        # Test thread topic name collision
-        expected_thread_3_message_1_content = "message body text"
-        expected_thread_3_topic_name = "2015-06-12 message body text (2)"
-        self.assertEqual(zerver_message[5]["content"], expected_thread_3_message_1_content)
-        self.assertEqual(zerver_message[5][EXPORT_TOPIC_NAME], expected_thread_3_topic_name)
+    def test_convert_colliding_thread_topic_names(self) -> None:
+        (
+            zerver_message,
+            _zerver_usermessage,
+            _attachment,
+            _uploads,
+            _reaction,
+        ) = self.run_channel_message_to_zerver_message_with_fixtures(
+            ["threads_with_colliding_topic_names"]
+        )
+        self.assert_length(zerver_message, 4)
+        ### THREAD 1 CONVERSATION ###
+        expected_thread_1_message_1_content = "message body text"
+        expected_thread_1_topic_name = "2015-06-12 message body text"
+        self.assertEqual(zerver_message[0]["content"], expected_thread_1_message_1_content)
+        self.assertEqual(zerver_message[0][EXPORT_TOPIC_NAME], expected_thread_1_topic_name)
+
+        ### THREAD 2 CONVERSATION ###
+        # Test thread topic name collision.
+        expected_thread_2_message_1_content = "message body text"
+        expected_thread_2_topic_name = "2015-06-12 message body text (2)"
+        self.assertEqual(zerver_message[2]["content"], expected_thread_2_message_1_content)
+        self.assertEqual(zerver_message[2][EXPORT_TOPIC_NAME], expected_thread_2_topic_name)
 
     def test_convert_thread_topic_name_with_mention_syntax(self) -> None:
         (
