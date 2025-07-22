@@ -18,11 +18,13 @@ const outgoing_service_schema = z.object({
     base_url: z.string(),
     interface: z.number(),
     token: z.string(),
+    triggers: z.array(z.string()),
 });
 
 const embedded_service_schema = z.object({
     config_data: z.record(z.string(), z.string()),
     service_name: z.string(),
+    triggers: z.array(z.string()),
 });
 
 export const services_schema = z.union([
