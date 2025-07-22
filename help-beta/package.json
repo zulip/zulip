@@ -24,7 +24,8 @@
     "sharp": "^0.34.1",
     "typescript": "^5.4.5",
     "unist-util-visit": "^5.0.0",
-    "unplugin-icons": "^22.1.0"
+    "unplugin-icons": "^22.1.0",
+    "zod": "^3.25.67"
   },
   "devDependencies": {
     "@types/mdast": "^4.0.4",
