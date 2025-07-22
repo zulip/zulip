@@ -28,5 +28,20 @@
         "parent_user_id": "U061A5N1G",
         "thread_ts": "1434139200.000002",
         "channel_name": "random"
+    },
+    {
+        "text": "message body text",
+        "user": "U061A5N1G",
+        "ts": "144139100.000008",
+        "thread_ts": "144139100.000008",
+        "channel_name": "random"
+    },
+    {
+        "text": "This thread shouldn't collide",
+        "user": "U061A1R2R",
+        "ts": "1439869295.000008",
+        "parent_user_id": "U061A5N1G",
+        "thread_ts": "144139100.000008",
+        "channel_name": "random"
     }
 ]
