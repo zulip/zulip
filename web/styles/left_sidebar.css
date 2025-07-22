@@ -1065,6 +1065,22 @@ li.top_left_scheduled_messages {
     .filter-topics {
         grid-area: filter-input;
     }
+
+    /* Keep topic filters to a single line, and show
+       an ellipsis when the input loses focus. */
+    #left-sidebar-filter-topic-input {
+        flex-wrap: nowrap;
+
+        .pill {
+            flex-shrink: 0;
+        }
+
+        .input {
+            white-space: nowrap;
+            overflow-x: hidden;
+            text-overflow: ellipsis;
+        }
+    }
 }
 
 #views-label-container {
