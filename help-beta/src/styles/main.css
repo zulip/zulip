@@ -52,6 +52,9 @@
        issues. */
     margin-bottom: 0;
     margin-top: 0;
+
+    /* We need to specify this for dark mode. */
+    fill: currentcolor;
 }
 
 .sl-markdown-content {
