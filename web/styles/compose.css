@@ -313,9 +313,17 @@
         display: grid;
         /* Vlad's design calls for 122px for the send column
            at its widest; 112px accounts for 6px of gap and
-           4px outside padding. */
+           4px outside padding.
+
+           We use minmax() on the formatting-row height to
+           try and avoid subpixel rendering problems that
+           may cause the bottom border to disappear.
+        */
         grid-template:
-            minmax(0, 1fr) var(--compose-formatting-buttons-row-height)
+            minmax(0, 1fr) minmax(
+                var(--compose-formatting-buttons-row-height),
+                auto
+            )
             / minmax(0, 1fr) var(--compose-send-controls-width);
         grid-template-areas:
             "message-content-container message-send-controls-container"
@@ -336,7 +344,11 @@
         );
     grid-template-areas: "message-content composebox-buttons";
     border-radius: 4px;
-    border: 1px solid var(--color-message-content-container-border);
+    /* The `thin` keyword should map to 1px on most browsers,
+       but this also gives browsers leeway to better calculate
+       the border's width at different pixel densities and
+       zoom levels. */
+    border: thin solid var(--color-message-content-container-border);
     transition: border-color 0.2s ease;
 
     &:has(.new_message_textarea:focus) {
