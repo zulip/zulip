@@ -81,7 +81,6 @@ There are a few ways to set up Zulip, and different ones may be convenient for y
     - Students and staff can use a single Zulip account for all classes.
     - You can create department-wide channels, e.g., for announcing talks or other events.
     - You don’t need to set up a separate server if you’re self-hosting Zulip.
-
 * You can **set up a separate Zulip organization for each class**
   you’re teaching. Advantages:
     - This makes it simple to manage permissions, e.g., if you want to
@@ -90,8 +89,6 @@ There are a few ways to set up Zulip, and different ones may be convenient for y
     - Students can’t see who is in channels for other classes.
     - You can easily switch between multiple Zulip organizations in
       the [Zulip desktop apps](/apps/).
-
-
 * You can **use a single Zulip organization for several classes**
   you’re teaching, perhaps re-purposing a Zulip organization from a
   prior term. Advantages:
@@ -125,11 +122,9 @@ A few settings to highlight:
 * If your class uses a programming language, set the [default
   language for code blocks][default-code-block-language]. Also
   consider setting up [code playgrounds][code-playgrounds].
-
 * If your class uses code repositories, [set up
   linkifiers](/help/add-a-custom-linkifier) to make it easy to link to
   issues (e.g., just by typing #1234 for issue 1234).
-
 * [Add custom emoji](/help/custom-emoji) that your class will enjoy.
 
 [default-code-block-language]: /help/code-blocks#default-code-block-language

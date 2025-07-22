@@ -148,10 +148,8 @@ in mind about the import process:
   visibility](/help/configure-email-visibility),
   [message editing permissions](/help/restrict-message-editing-and-deletion),
   and [how users can join your organization](/help/restrict-account-creation).
-
 - Slack does not export user settings, so users in your organization may want to
   [customize their account settings](/help/getting-started-with-zulip).
-
 - Slack's user roles are mapped to Zulip's [user
   roles](/help/user-roles) in the following way:
 
@@ -167,7 +165,6 @@ in mind about the import process:
 
 - Slack threads are imported as topics with names that include snippets of the
   original message, such as "2023-05-30 Hi, can anyone reply if you're o…".
-
 - Message edit history and `@user joined #channel_name` messages are not imported.
 
 ## Clean up after the Slack export

@@ -17,13 +17,9 @@ attached to messages in your current view.
 1. You can interact with the image.
 
     * Zoom in and out of the image
-
     * Click and drag the image
-
     * **Reset zoom** so that the image is recentered and back to its original size
-
     * **Open** the image in a new browser tab
-
     * **Download** the image
 
 1. Click anywhere outside the image to close the image viewer once you are done.
@@ -46,9 +42,7 @@ attached to messages in your current view.
 1. You can interact with the image.
 
     * Zoom in and out of the image
-
     * Pan the image if you are zoomed in
-
     * Tap the **copy** (<i class="zulip-icon zulip-icon-copy mobile-help"></i>)
       icon in the bottom left corner of the app to copy a link to the image
 
@@ -68,17 +62,11 @@ attached to messages in your current view.
 1. You can interact with the video.
 
     * **Play** the video
-
     * Adjust the **volume**
-
     * Watch in **full screen** mode
-
     * **Open** the video in a new browser tab
-
     * **Download** the video if it was uploaded to Zulip
-
     * Adjust **playback speed**
-
     * Turn on **picture-in-picture**
 
 1. Click anywhere outside the video to close the video player once you are done.

@@ -6,9 +6,7 @@ We generally recommend against deleting topics, but there are a few
 situations in which it can be useful:
 
 * Clearing out test messages after setting up an organization.
-
 * Clearing out messages from an overly enthusiastic bot.
-
 * Managing abuse.
 
 In most other cases, [renaming a topic](/help/rename-a-topic) is often a

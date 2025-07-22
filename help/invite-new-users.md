@@ -7,7 +7,6 @@ Prior to inviting users to your organization, it is recommended that administrat
 
 * Configure [default settings](/help/configure-default-new-user-settings) for
   new users.
-
 * Configure the [organization language for automated messages and invitation
   emails][org-lang] for your organization.
 
@@ -15,11 +14,9 @@ When you invite users, you can:
 
 * Set the [role](/help/user-roles) that they will have when
   they join.
-
 * Configure which [channels](/help/introduction-to-channels) they will be
   subscribed to. The organization's [default
   channels](/help/set-default-channels-for-new-users) will be preselected.
-
 * Configure which [groups](/help/user-groups) they will be added to.
 
 Organization administrators can

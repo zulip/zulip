@@ -9,27 +9,22 @@ You can also manage permissions with [custom user groups](/help/user-groups).
 * **Organization owner**: Can manage users, public channels, organization
   settings, and billing. Organization owners can do anything that an
   organization administrator can do.
-
 * **Organization administrator**: Can manage users, public channels, and
   organization settings. Cannot make someone an owner, or change an existing
   owner's role.
-
 * **Moderator**: Can do anything that members can do, plus additional
   permissions [configured](/help/manage-permissions) by
   your organization.
-
 * **Member**: This is the default role for most users. Members have access to
   all public channels. You can [configure different
   permissions](/help/restrict-permissions-of-new-members) for **new members**
   and **full members**, which is especially useful for [moderating open
   organizations](/help/moderating-open-organizations). New members automatically
   become full members after a configurable waiting period.
-
 * **Guest**: Can view and send messages in channels they have been subscribed to.
   Guests cannot see other channels, unless they have been specifically subscribed
   to the channel. See [guest users documentation](/help/guest-users) for additional
   details and configuration options.
-
 * **Billing administrator**: The user who upgrades the organization to
   a paid plan is, in addition to their normal role, a billing
   administrator.  Billing administrators can manage billing for the organization.

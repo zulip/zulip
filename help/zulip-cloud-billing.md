@@ -80,9 +80,7 @@ discounts on **Zulip Cloud Standard**.
 
 - Education organizations are eligible for [education
   pricing](https://zulip.com/for/education/#feature-pricing).
-
 - Discounts are available for organizations based in the **developing world**.
-
 - Non-profits and other organizations where many users are **not paid staff**
   are generally eligible for a discount.
 

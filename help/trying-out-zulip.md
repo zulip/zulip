@@ -15,7 +15,6 @@ It's also easy to try out Zulip for yourself.
       where hundreds of participants collaborate to improve Zulip. Many parts of
       the community are open for [public access](/help/public-access-option), so
       you can start exploring without creating an account.
-
     - [See how Zulip is being used](https://zulip.com/communities/) in open
       organizations that have opted in to be listed in the [Zulip communities
       directory](/help/communities-directory).
@@ -34,15 +33,12 @@ It's also easy to try out Zulip for yourself.
     - Customize [organization settings](/help/customize-organization-settings)
       and [settings for new users](/help/customize-settings-for-new-users), but
       plan to adjust the details as you go.
-
     - [Create](/help/create-channels) your initial
       [channels](/help/introduction-to-channels), including a dedicated channel for
       questions and feedback about using Zulip.
-
     - Educate others about how to use Zulip's [topics](/help/introduction-to-topics),
       and how to [move](/help/move-content-to-another-topic) any messages that
       belong elsewhere.
-
     - [Set up integrations](/help/set-up-integrations) so that your team can
       experience all their regular workflows inside the Zulip app.
 

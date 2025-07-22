@@ -72,7 +72,6 @@ Users can disable notifications for `@**topic**` mentions by:
 - Disabling notifications for wildcard mentions
 [globally](/help/dm-mention-alert-notifications) or for [individual
 channels](/help/channel-notifications).
-
 - Muting the [topic](/help/mute-a-topic) or [channel](/help/mute-a-channel).
 
 ## Mention everyone on a channel
@@ -89,7 +88,6 @@ Users can disable notifications for `@**all**`, `@**everyone**`, and
 - Disabling notifications for wildcard mentions
 [globally](/help/dm-mention-alert-notifications) or for [individual
 channels](/help/channel-notifications).
-
 - Muting the [topic](/help/mute-a-topic) or [channel](/help/mute-a-channel).
 
 ## Examples

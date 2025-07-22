@@ -16,7 +16,6 @@ available for all Zulip organizations:
    channel](/help/channel-permissions#private-channels) messages and [direct
    messages](/help/direct-messages). This export includes user settings and
    channel subscriptions.
-
 * [**Standard
   export**](#export-for-migrating-to-zulip-cloud-or-a-self-hosted-server):
   Everything in the export of public data, plus all the [private
@@ -32,7 +31,6 @@ Standard][plans] and [Zulip Cloud Plus][plans] customers:
 
 * [**Full export without member consent**](#full-export-without-member-consent):
   All the data in the organization.
-
 * [**Compliance export**](#compliance-export): A targeted, human-readable export
   of messages matching some combination of criteria (e.g., sender, recipient,
   message keyword, or timestamp).

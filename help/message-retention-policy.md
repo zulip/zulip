@@ -60,7 +60,6 @@ Standard hosting.
 
 * Retention policies are processed in a daily job; so changes in the
   policy won't have any effect until the next time the daily job runs.
-
 * Deleted messages are preserved temporarily in a special archive.  So
 if you discover a misconfiguration accidentally deleted content you
 meant to preserve, contact Zulip support promptly for assistance with

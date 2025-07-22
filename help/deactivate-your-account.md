@@ -40,11 +40,9 @@ account.
 
 * Your [user card](/help/user-cards) will have a notice indicating that your
   account has been deactivated.
-
 * Deactivating your account won't delete messages you've sent or files
   you've shared. If permitted in your organization, delete content you'd
   like to remove before deactivating your account.
-
 * Any bots that you maintain will be disabled.
 
 

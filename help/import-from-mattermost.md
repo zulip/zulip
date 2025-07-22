@@ -261,7 +261,6 @@ keep in mind about the import process:
   visibility](/help/configure-email-visibility),
   [message editing permissions](/help/restrict-message-editing-and-deletion),
   and [how users can join your organization](/help/restrict-account-creation).
-
 - Mattermost's user roles are mapped to Zulip's [user
   roles](/help/user-roles) in the following way:
 
@@ -272,11 +271,9 @@ keep in mind about the import process:
 
 - Mattermost's export tool does not support exporting user avatars or message
   edit history.
-
 - Direct messages will only be imported from Mattermost workspaces containing
   a single team. This is because Mattermost's data exports do not associate
   direct messages with a specific Mattermost team.
-
 - Messages in threads are imported, but they are not explicitly marked as
   being in a thread.
 

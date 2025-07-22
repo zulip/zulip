@@ -15,7 +15,6 @@ account and how users access their accounts:
 * You can [require an invitation](#set-whether-invitations-are-required-to-join)
   to sign up (default), or you can [allow anyone to
   join](#set-whether-invitations-are-required-to-join) without an invitation.
-
 * You can [restrict the ability to invite new
   users](#change-who-can-send-invitations) to any combination of
   [roles](/help/user-roles), [groups](/help/user-groups), and individual
@@ -25,12 +24,10 @@ Regardless of whether invitations are required, you can:
 
 * [Configure allowed authentication
   methods](/help/configure-authentication-methods).
-
 * [Restrict sign-ups to a fixed list of allowed
   domains](#restrict-sign-ups-to-a-list-of-domains)
   (including subdomains). For example, you can require users to sign up with
   the email domain for your business or university.
-
 * Disallow signups with known [disposable email
   address](https://en.wikipedia.org/wiki/Disposable_email_address). This
   is recommended for open organizations to help protect against abuse.

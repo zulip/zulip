@@ -41,7 +41,6 @@
      email [support@zulip.com](mailto:support@zulip.com) to request this. Server
      administrators for self-hosted organizations should follow [these
      instructions](/help/import-from-slack#send-password-reset-emails-to-all-users).
-
     - Let users know that they can [request a password
      reset](/help/change-your-password#if-youve-forgotten-or-never-had-a-password)
      on your organization's login page.

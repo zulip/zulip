@@ -48,7 +48,6 @@ link via another method.
 * If you are joining multiple Zulip organizations, we recommend
   using the [Zulip Desktop app](../apps/). The desktop app makes it easy to
   [switch between different organizations](/help/switching-between-organizations).
-
 * If your company uses single sign-on (SSO) authentication for Zulip,
   these instructions may not apply. Try going to your company's Zulip URL
   to see if there are instructions there; otherwise contact your manager

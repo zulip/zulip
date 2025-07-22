@@ -186,15 +186,12 @@ interest (`django/django`) that is in a different organization.
 * Specific linkifier (ordered before the general linkifier)
     * Pattern: `django#(?P<id>[0-9]+)`
     * URL template: `https://github.com/django/django/pull/{id}`
-
 * General linkifier
     * Pattern: `(?P<repo>[a-zA-Z0-9_-]+)#(?P<id>[0-9]+)`
     * URL template: `https://github.com/zulip/{repo}/pull/{id}`
-
 * Example matching both linkifiers; specific linkifier takes precedence:
     * Original text: `django#123`
     * Automatically links to: `https://github.com/django/django/pull/123`
-
 * Example matching only the general linkifier:
     * Original text: `zulip-desktop#123`
     * Automatically links to: `https://github.com/zulip/zulip-desktop/pull/123`
