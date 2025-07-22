@@ -510,9 +510,10 @@
     grid-area: message-formatting-controls-container;
     border-radius: 0 0 3px 3px;
     background-color: var(--color-message-formatting-controls-container);
-    /* margin on either side to let the border of
+    /* Set width on either side to let the border of
        .message-content-container show through. */
-    margin: 0 1px;
+    width: calc(100% - 2px);
+    justify-self: center;
 }
 
 .compose-scrolling-buttons-container {
