@@ -1366,6 +1366,7 @@ function get_row_index($elt: JQuery): number {
 function focus_clicked_list_element($elt: JQuery): void {
     row_focus = get_row_index($elt);
     update_triggered_by_user = true;
+    current_focus_id = $elt.closest(".inbox-row, .inbox-header").attr("id");
 }
 
 export function revive_current_focus(): void {
