@@ -861,7 +861,14 @@ DOC_SCREENSHOT_CONFIG: dict[
 ] = {
     **WEBHOOK_SCREENSHOT_CONFIG,
     **FIXTURELESS_SCREENSHOT_CONFIG,
-    "redmine": [WebhookScreenshotConfig("issue_created.json")],
+    "redmine": [
+        FixturelessScreenshotConfig(
+            message="Sample Redmine webhook message.",
+            topic="Redmine integration screenshot",
+            image_name="001.png",
+            image_dir="redmine",
+        ),
+    ],
 }
 
 
