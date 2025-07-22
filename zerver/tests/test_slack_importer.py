@@ -1548,35 +1548,6 @@ class SlackImporter(ZulipTestCase):
                 "thread_ts": "1437139200.000002",
                 "channel_name": "random",
             },
-            {
-                "text": "Look!",
-                "user": "U061A1R2R",
-                "ts": "1537139200.000002",
-                # Start of thread 5!
-                "thread_ts": "1537139200.000002",
-                "has_image": True,
-                "channel_name": "random",
-                "files": [
-                    {
-                        "url_private": "https://files.slack.com/apple.png",
-                        "title": "Apple",
-                        "name": "apple.png",
-                        "mimetype": "image/png",
-                        "timestamp": 9999,
-                        "created": 8888,
-                        "size": 3000000,
-                    }
-                ],
-            },
-            {
-                "text": "Delicious",
-                "user": "U061A5N1G",
-                "ts": "1637139200.000002",
-                # A reply to thread 5!
-                "parent_user_id": "U061A1R2R",
-                "thread_ts": "1537139200.000002",
-                "channel_name": "random",
-            },
         ]
 
         slack_recipient_name_to_zulip_recipient_id = {
@@ -1612,10 +1583,10 @@ class SlackImporter(ZulipTestCase):
         # functioning already tested in helper function
         self.assertEqual(zerver_usermessage, [])
         # subtype: channel_join is filtered
-        self.assert_length(zerver_message, 11)
+        self.assert_length(zerver_message, 9)
 
-        self.assert_length(uploads, 1)
-        self.assert_length(attachment, 1)
+        self.assert_length(uploads, 0)
+        self.assert_length(attachment, 0)
 
         # Message conversion already tested in tests.test_slack_message_conversion
         self.assertEqual(zerver_message[0]["content"], "@**Jane**: hey!")
@@ -1666,16 +1637,24 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(zerver_message[7]["content"], expected_thread_4_message_1_content)
         self.assertEqual(zerver_message[7][EXPORT_TOPIC_NAME], expected_thread_4_topic_name)
 
-        ### THREAD 5 CONVERSATION ###
-        # Test file link in thread topic name
-        expected_thread_5_message_1_content = "Look!\n[Apple](/user_uploads/"
-        expected_thread_5_topic_name = "2018-09-16 Look!\n[Apple](/user_uploads/"
-        self.assertTrue(
-            zerver_message[9]["content"].startswith(expected_thread_5_message_1_content)
+    def test_convert_thread_topic_name_with_file_link_formatting(self) -> None:
+        (
+            zerver_message,
+            _zerver_usermessage,
+            attachment,
+            uploads,
+            _reaction,
+        ) = self.run_channel_message_to_zerver_message_with_fixtures(
+            ["thread_with_file_link_formatting_in_topic_name"]
         )
-        self.assertTrue(
-            zerver_message[9][EXPORT_TOPIC_NAME].startswith(expected_thread_5_topic_name)
-        )
+        self.assert_length(zerver_message, 2)
+        self.assert_length(uploads, 1)
+        self.assert_length(attachment, 1)
+        # Test file link in thread topic name.
+        expected_thread_message_1_content = "Look!\n[Apple](/user_uploads/"
+        expected_thread_topic_name = "2018-09-16 Look!\n[Apple](/user_uploads/"
+        self.assertTrue(zerver_message[0]["content"].startswith(expected_thread_message_1_content))
+        self.assertTrue(zerver_message[0][EXPORT_TOPIC_NAME].startswith(expected_thread_topic_name))
 
     def test_convert_thread_topic_name_with_text_formattings(self) -> None:
         (

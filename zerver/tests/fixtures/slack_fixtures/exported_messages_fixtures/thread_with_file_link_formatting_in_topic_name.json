@@ -1,0 +1,29 @@
+[
+    {
+        "text": "Look!",
+        "user": "U061A1R2R",
+        "ts": "1537139200.000002",
+        "thread_ts": "1537139200.000002",
+        "has_image": true,
+        "channel_name": "random",
+        "files": [
+            {
+                "url_private": "https://files.slack.com/apple.png",
+                "title": "Apple",
+                "name": "apple.png",
+                "mimetype": "image/png",
+                "timestamp": 9999,
+                "created": 8888,
+                "size": 3000000
+            }
+        ]
+    },
+    {
+        "text": "Delicious",
+        "user": "U061A5N1G",
+        "ts": "1637139200.000002",
+        "parent_user_id": "U061A1R2R",
+        "thread_ts": "1537139200.000002",
+        "channel_name": "random"
+    }
+]
