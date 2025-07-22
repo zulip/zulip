@@ -1268,9 +1268,12 @@ def apply_event(
                             state["never_subscribed"],
                         ]:
                             for sub in sub_dict:
-                                sub["subscribers"] = [
+                                subscriber_key = (
+                                    "subscribers" if "subscribers" in sub else "partial_subscribers"
+                                )
+                                sub[subscriber_key] = [
                                     user_id
-                                    for user_id in sub["subscribers"]
+                                    for user_id in sub[subscriber_key]
                                     if user_id != person_user_id
                                 ]
 
@@ -1313,8 +1316,11 @@ def apply_event(
                     state["never_subscribed"],
                 ]:
                     for sub in sub_dict:
-                        sub["subscribers"] = [
-                            user_id for user_id in sub["subscribers"] if user_id != person_user_id
+                        subscriber_key = (
+                            "subscribers" if "subscribers" in sub else "partial_subscribers"
+                        )
+                        sub[subscriber_key] = [
+                            user_id for user_id in sub[subscriber_key] if user_id != person_user_id
                         ]
         else:
             raise AssertionError("Unexpected event type {type}/{op}".format(**event))
@@ -1618,9 +1624,12 @@ def apply_event(
             # add the new subscriptions
             for sub in event["subscriptions"]:
                 if sub["stream_id"] not in existing_stream_ids:
-                    if "subscribers" in sub and not include_subscribers:
+                    subscriber_key = (
+                        "subscribers" if "subscribers" in sub else "partial_subscribers"
+                    )
+                    if subscriber_key in sub and not include_subscribers:
                         sub = copy.deepcopy(sub)
-                        del sub["subscribers"]
+                        del sub[subscriber_key]
                     state["subscriptions"].append(sub)
 
             # remove them from unsubscribed if they had been there
@@ -1639,7 +1648,10 @@ def apply_event(
             # Remove our user from the subscribers of the removed subscriptions.
             if include_subscribers:
                 for sub in removed_subs:
-                    sub["subscribers"].remove(user_profile.id)
+                    subscriber_key = (
+                        "subscribers" if "subscribers" in sub else "partial_subscribers"
+                    )
+                    sub[subscriber_key].remove(user_profile.id)
 
             state["unsubscribed"] += removed_subs
 
@@ -1666,8 +1678,11 @@ def apply_event(
                 ]:
                     for sub in sub_dict:
                         if sub["stream_id"] in stream_ids:
-                            subscribers = set(sub["subscribers"]) | user_ids
-                            sub["subscribers"] = sorted(subscribers)
+                            subscriber_key = (
+                                "subscribers" if "subscribers" in sub else "partial_subscribers"
+                            )
+                            subscribers = set(sub[subscriber_key]) | user_ids
+                            sub[subscriber_key] = sorted(subscribers)
         elif event["op"] == "peer_remove":
             # Note: We don't update subscriber_count here, as with peer_add.
             if include_subscribers:
@@ -1681,8 +1696,11 @@ def apply_event(
                 ]:
                     for sub in sub_dict:
                         if sub["stream_id"] in stream_ids:
-                            subscribers = set(sub["subscribers"]) - user_ids
-                            sub["subscribers"] = sorted(subscribers)
+                            subscriber_key = (
+                                "subscribers" if "subscribers" in sub else "partial_subscribers"
+                            )
+                            subscribers = set(sub[subscriber_key]) - user_ids
+                            sub[subscriber_key] = sorted(subscribers)
         else:
             raise AssertionError("Unexpected event type {type}/{op}".format(**event))
     elif event["type"] == "presence":
