@@ -416,10 +416,7 @@ export function zoom_in_topics(options: {stream_id: number | undefined}): void {
 
     $("#streams_list").expectOne().removeClass("zoom-out").addClass("zoom-in");
 
-    // Hide stream list titles and pinned stream splitter
-    $(".stream-filters-label").each(function () {
-        $(this).hide();
-    });
+    // Hide pinned stream splitter
     $(".streams_subheader").each(function () {
         $(this).hide();
     });
@@ -441,10 +438,7 @@ export function zoom_in_topics(options: {stream_id: number | undefined}): void {
 }
 
 export function zoom_out_topics(): void {
-    // Show stream list titles and pinned stream splitter
-    $(".stream-filters-label").each(function () {
-        $(this).show();
-    });
+    // Show pinned stream splitter
     $(".streams_subheader").each(function () {
         $(this).show();
     });
