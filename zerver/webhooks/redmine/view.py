@@ -1,6 +1,6 @@
-from django.http import HttpRequest, HttpResponse
+from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from zerver.lib.webhooks.common import check_send_webhook_message, get_json_error_response
+from zerver.lib.webhooks.common import check_send_webhook_message
 import json
 
 @csrf_exempt
@@ -8,7 +8,7 @@ def api_redmine_webhook(request: HttpRequest) -> HttpResponse:
     try:
         payload = json.loads(request.body.decode("utf-8"))
     except Exception:
-        return get_json_error_response("Invalid JSON payload")
+        return JsonResponse({"result": "error", "msg": "Invalid JSON payload"}, status=400)
 
     event = payload.get("event")
     if event == "issue_created":
@@ -37,4 +37,4 @@ def api_redmine_webhook(request: HttpRequest) -> HttpResponse:
         )
         return check_send_webhook_message(request, topic, content)
     else:
-        return get_json_error_response(f"Unsupported event type: {event}") 
+        return JsonResponse({"result": "error", "msg": f"Unsupported event type: {event}"}, status=400) 
