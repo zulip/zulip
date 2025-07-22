@@ -1447,87 +1447,20 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(zerver_message[9]["has_attachment"], True)
         self.assertTrue(zerver_message[9]["content"].startswith("Look!\n[Apple](/user_uploads/"))
 
-    @mock.patch("zerver.data_import.slack.build_usermessages", return_value=(2, 4))
-    def test_channel_message_to_zerver_message_with_threads(
-        self, mock_build_usermessage: mock.Mock
-    ) -> None:
-        user_data = [
-            {"id": "U066MTL5U", "name": "john doe", "deleted": False, "real_name": "John"},
-            {"id": "U061A5N1G", "name": "jane doe", "deleted": False, "real_name": "Jane"},
-            {
-                "id": "U061A1R2R",
-                "name": "jon",
-                "deleted": False,
-                "real_name": "Jon",
-                "profile": {"email": "jon@example.com"},
-            },
-        ]
-
-        slack_user_id_to_zulip_user_id = {"U066MTL5U": 5, "U061A5N1G": 24, "U061A1R2R": 43}
-
-        all_messages: list[dict[str, Any]] = [
-            {
-                "text": "<@U066MTL5U> has joined the channel",
-                "subtype": "channel_join",
-                "user": "U066MTL5U",
-                "ts": "1434139102.000002",
-                "channel_name": "random",
-            },
-            {
-                "text": "<@U061A5N1G>: hey!",
-                "user": "U061A1R2R",
-                "ts": "1437868294.000006",
-                "has_image": True,
-                "channel_name": "random",
-            },
-            {
-                "text": "message body text",
-                "user": "U061A5N1G",
-                "ts": "1434139102.000002",
-                # Start of thread 1!
-                "thread_ts": "1434139102.000002",
-                "channel_name": "random",
-            },
-            {
-                "text": "random",
-                "user": "U061A5N1G",
-                "ts": "1439868294.000007",
-                # A reply to thread 1
-                "parent_user_id": "U061A5N1G",
-                "thread_ts": "1434139102.000002",
-                "channel_name": "random",
-            },
-        ]
-
+    def test_channel_message_to_zerver_message_with_threads(self) -> None:
         slack_recipient_name_to_zulip_recipient_id = {
             "random": 2,
             "general": 1,
         }
-        dm_members: DMMembersT = {}
-
-        zerver_usermessage: list[dict[str, Any]] = []
-        subscriber_map: dict[int, set[int]] = {}
-        added_channels: dict[str, tuple[str, int]] = {"random": ("c5", 1), "general": ("c6", 2)}
-
         (
             zerver_message,
             zerver_usermessage,
             attachment,
             uploads,
             _reaction,
-        ) = channel_message_to_zerver_message(
-            1,
-            user_data,
-            slack_user_id_to_zulip_user_id,
-            slack_recipient_name_to_zulip_recipient_id,
-            all_messages,
-            [],
-            subscriber_map,
-            added_channels,
-            dm_members,
-            "domain",
-            set(),
-            convert_slack_threads=True,
+        ) = self.run_channel_message_to_zerver_message_with_fixtures(
+            ["normal_messages", "normal_thread"],
+            slack_recipient_name_to_zulip_recipient_id=slack_recipient_name_to_zulip_recipient_id,
         )
         # functioning already tested in helper function
         self.assertEqual(zerver_usermessage, [])
@@ -1541,7 +1474,8 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(zerver_message[0]["content"], "@**Jane**: hey!")
         self.assertEqual(zerver_message[0]["has_link"], False)
         self.assertEqual(
-            zerver_message[1]["recipient"], slack_recipient_name_to_zulip_recipient_id["random"]
+            zerver_message[1]["recipient"],
+            slack_recipient_name_to_zulip_recipient_id["random"],
         )
 
         ### THREAD 1 CONVERSATION ###
