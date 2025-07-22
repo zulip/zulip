@@ -397,19 +397,6 @@ function elem($obj) {
 test_ui("zoom_in_and_zoom_out", ({mock_template}) => {
     topic_list.setup_topic_search_typeahead = noop;
 
-    const $label1 = $.create("label1 stub");
-    const $label2 = $.create("label2 stub");
-
-    $label1.show();
-    $label2.show();
-
-    assert.ok($label1.visible());
-    assert.ok($label2.visible());
-
-    $.create(".stream-filters-label", {
-        children: [elem($label1), elem($label2)],
-    });
-
     const $splitter = $.create("<active-subheader-stub>");
 
     $splitter.show();
@@ -452,8 +439,6 @@ test_ui("zoom_in_and_zoom_out", ({mock_template}) => {
     });
     stream_list.zoom_in_topics({stream_id: 42});
 
-    assert.ok(!$label1.visible());
-    assert.ok(!$label2.visible());
     assert.ok(!$splitter.visible());
     assert.ok($stream_li1.visible());
     assert.ok(!$stream_li2.visible());
@@ -471,8 +456,6 @@ test_ui("zoom_in_and_zoom_out", ({mock_template}) => {
     };
     stream_list.zoom_out_topics({$stream_li: $stream_li1});
 
-    assert.ok($label1.visible());
-    assert.ok($label2.visible());
     assert.ok($splitter.visible());
     assert.ok($stream_li1.visible());
     assert.ok($stream_li2.visible());
