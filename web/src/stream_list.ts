@@ -429,13 +429,13 @@ export function zoom_in_topics(options: {stream_id: number | undefined}): void {
         const stream_id = options.stream_id;
 
         if (stream_id_for_elt($elt) === stream_id) {
-            $elt.show();
+            $elt.toggleClass("hide", false);
             // Add search box for topics list.
             $elt.children("div.bottom_left_row").append($(render_filter_topics()));
             $("#topic_filter_query").trigger("focus");
             topic_list.setup_topic_search_typeahead();
         } else {
-            $elt.hide();
+            $elt.toggleClass("hide", true);
         }
     });
 }
@@ -450,7 +450,7 @@ export function zoom_out_topics(): void {
     });
 
     $("#streams_list").expectOne().removeClass("zoom-in").addClass("zoom-out");
-    $("#stream_filters li.narrow-filter").show();
+    $("#stream_filters li.narrow-filter").toggleClass("hide", false);
     // Remove search box for topics list from DOM.
     $(".filter-topics").remove();
 }
