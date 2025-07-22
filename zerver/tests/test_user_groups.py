@@ -407,6 +407,31 @@ class UserGroupTestCase(ZulipTestCase):
             [desdemona, shiva, aaron, prospero],
         )
 
+    def test_get_user_group_member_ids_distinct(self) -> None:
+        """
+        Verify that when fetching recursive member ids of groups
+        we only return distinct ids - without repetitions even if
+        there's an overlap between the subgroups/supergroups.
+        """
+        realm = get_realm("zulip")
+        hamlet = self.example_user("hamlet")
+        desdemona = self.example_user("desdemona")
+        cordelia = self.example_user("cordelia")
+
+        supergroup = check_add_user_group(realm, "S", [hamlet], acting_user=desdemona)
+
+        subgroup1 = check_add_user_group(realm, "A", [cordelia], acting_user=desdemona)
+        GroupGroupMembership.objects.create(supergroup=supergroup, subgroup=subgroup1)
+
+        subgroup2 = check_add_user_group(realm, "B", [hamlet], acting_user=desdemona)
+        GroupGroupMembership.objects.create(supergroup=supergroup, subgroup=subgroup2)
+
+        # hamlet has both a direct membership in the supergroup, as well as a recursive membership
+        # via subgroup2. We make sure that despite that, hamlet.id occurs only once in the result.
+        self.assertEqual(
+            sorted(get_user_group_member_ids(supergroup)), sorted([hamlet.id, cordelia.id])
+        )
+
     def test_subgroups_of_role_based_system_groups(self) -> None:
         realm = get_realm("zulip")
         owners_group = NamedUserGroup.objects.get(
