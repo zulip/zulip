@@ -1497,23 +1497,6 @@ class SlackImporter(ZulipTestCase):
                 "thread_ts": "1434139102.000002",
                 "channel_name": "random",
             },
-            {
-                "text": "random message but it's too long for the thread topic name",
-                "user": "U061A5N1G",
-                "ts": "1439868294.000008",
-                # Start of thread 2!
-                "thread_ts": "1439868294.000008",
-                "channel_name": "random",
-            },
-            {
-                "text": "replying to the second thread :)",
-                "user": "U061A1R2R",
-                "ts": "1439869294.000008",
-                # A reply to thread 2
-                "parent_user_id": "U061A5N1G",
-                "thread_ts": "1439868294.000008",
-                "channel_name": "random",
-            },
         ]
 
         slack_recipient_name_to_zulip_recipient_id = {
@@ -1549,7 +1532,7 @@ class SlackImporter(ZulipTestCase):
         # functioning already tested in helper function
         self.assertEqual(zerver_usermessage, [])
         # subtype: channel_join is filtered
-        self.assert_length(zerver_message, 5)
+        self.assert_length(zerver_message, 3)
 
         self.assert_length(uploads, 0)
         self.assert_length(attachment, 0)
@@ -1572,22 +1555,26 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(zerver_message[2]["content"], "random")
         self.assertEqual(zerver_message[2][EXPORT_TOPIC_NAME], expected_thread_1_topic_name)
 
-        ### THREAD 2 CONVERSATION ###
-        # Test thread topic name cut off
-        expected_thread_2_message_1_content = (
-            "random message but it's too long for the thread topic name"
+    def test_convert_thread_topic_name_cut_off(self) -> None:
+        (
+            zerver_message,
+            _zerver_usermessage,
+            _attachment,
+            _uploads,
+            _reaction,
+        ) = self.run_channel_message_to_zerver_message_with_fixtures(
+            ["thread_with_long_topic_name"]
         )
-        expected_thread_2_topic_name = (
-            "2015-08-18 random message but it's too long for the thread …"
+        self.assert_length(zerver_message, 2)
+        # Test thread topic name cut off.
+        expected_thread_message_1_content = (
+            "random message but it is too long for the thread topic name"
         )
-        self.assertEqual(zerver_message[3]["content"], expected_thread_2_message_1_content)
-        self.assertEqual(zerver_message[3][EXPORT_TOPIC_NAME], expected_thread_2_topic_name)
+        expected_thread_topic_name = "2015-08-18 random message but it is too long for the thread…"
+        self.assertEqual(zerver_message[0]["content"], expected_thread_message_1_content)
+        self.assertEqual(zerver_message[0][EXPORT_TOPIC_NAME], expected_thread_topic_name)
         # Record that truncation should use the full maximum topic length.
-        self.assert_length(zerver_message[3][EXPORT_TOPIC_NAME], 60)
-
-        expected_thread_2_message_2_content = "replying to the second thread :)"
-        self.assertEqual(zerver_message[4]["content"], expected_thread_2_message_2_content)
-        self.assertEqual(zerver_message[4][EXPORT_TOPIC_NAME], expected_thread_2_topic_name)
+        self.assert_length(zerver_message[0][EXPORT_TOPIC_NAME], 60)
 
     def test_convert_colliding_thread_topic_names(self) -> None:
         (
