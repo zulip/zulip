@@ -1621,8 +1621,16 @@ function page_down_navigation(): void {
 }
 
 export function change_focused_element(input_key: string): boolean {
-    // Start showing visible focus outlines.
-    $("#inbox-view").removeClass("no-visible-focus-outlines");
+    const is_first_user_keypress = $("#inbox-view").hasClass("no-visible-focus-outlines");
+    if (is_first_user_keypress) {
+        // Start showing visible focus outlines.
+        $("#inbox-view").removeClass("no-visible-focus-outlines");
+    }
+    const skip_keyboard_navigation = is_first_user_keypress && !is_search_focused();
+    if (skip_keyboard_navigation) {
+        return true;
+    }
+
     if (input_key === "tab" || input_key === "shift_tab") {
         // Tabbing should be handled by browser but to keep the focus element same
         // when we rerender or user uses other hotkeys, we need to track
