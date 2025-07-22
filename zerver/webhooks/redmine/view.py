@@ -1,7 +1,10 @@
+import json
+
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
+
 from zerver.lib.webhooks.common import check_send_webhook_message
-import json
+
 
 @csrf_exempt
 def api_redmine_webhook(request: HttpRequest) -> HttpResponse:
@@ -37,4 +40,6 @@ def api_redmine_webhook(request: HttpRequest) -> HttpResponse:
         )
         return check_send_webhook_message(request, topic, content)
     else:
-        return JsonResponse({"result": "error", "msg": f"Unsupported event type: {event}"}, status=400) 
+        return JsonResponse(
+            {"result": "error", "msg": f"Unsupported event type: {event}"}, status=400
+        )
