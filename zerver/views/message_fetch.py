@@ -353,7 +353,7 @@ def messages_in_narrow_backend(
     query = query.where(column("message_id", Integer).in_(msg_ids))
 
     updated_narrow = update_narrow_terms_containing_empty_topic_fallback_name(narrow)
-    query, is_search = add_narrow_conditions(
+    query, is_search, _is_dm_narrow = add_narrow_conditions(
         user_profile=user_profile,
         inner_msg_id_col=inner_msg_id_col,
         query=query,

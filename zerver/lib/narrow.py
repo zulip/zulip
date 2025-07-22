@@ -1167,11 +1167,11 @@ def add_narrow_conditions(
     narrow: list[NarrowParameter] | None,
     is_web_public_query: bool,
     realm: Realm,
-) -> tuple[Select, bool]:
+) -> tuple[Select, bool, bool]:
     is_search = False  # for now
 
     if narrow is None:
-        return (query, is_search)
+        return (query, is_search, False)
 
     # Build the query for the narrow
     builder = NarrowBuilder(user_profile, inner_msg_id_col, realm, is_web_public_query)
@@ -1215,7 +1215,7 @@ def add_narrow_conditions(
         )
         query = builder.add_term(query, search_term)
 
-    return (query, is_search)
+    return (query, is_search, builder.is_dm_narrow)
 
 
 def find_first_unread_anchor(
@@ -1239,7 +1239,7 @@ def find_first_unread_anchor(
     )
     query = query.add_columns(column("flags", Integer))
 
-    query, is_search = add_narrow_conditions(
+    query, is_search, is_dm_narrow = add_narrow_conditions(
         user_profile=user_profile,
         inner_msg_id_col=inner_msg_id_col,
         query=query,
@@ -1252,9 +1252,14 @@ def find_first_unread_anchor(
 
     # We exclude messages on muted topics when finding the first unread
     # message in this narrow
-    muting_conditions = exclude_muting_conditions(user_profile, narrow)
-    if muting_conditions:
-        condition = and_(condition, *muting_conditions)
+    if not is_dm_narrow:
+        # Since building the channel/topic muting conditions takes
+        # extra queries and makes the query potentially much more
+        # verbose for PostgreSQL to parse, we skip this for searches
+        # which we know they cannot apply do -- DMs.
+        muting_conditions = exclude_muting_conditions(user_profile, narrow)
+        if muting_conditions:
+            condition = and_(condition, *muting_conditions)
 
     first_unread_query = query.where(condition)
     first_unread_query = first_unread_query.order_by(inner_msg_id_col.asc()).limit(1)
@@ -1521,7 +1526,7 @@ def fetch_messages(
     if need_user_message:
         query = query.add_columns(column("flags", Integer))
 
-    query, is_search = add_narrow_conditions(
+    query, is_search, _is_dm_narrow = add_narrow_conditions(
         user_profile=user_profile,
         inner_msg_id_col=inner_msg_id_col,
         query=query,

@@ -4305,17 +4305,30 @@ class GetOldMessagesTest(ZulipTestCase):
 
         # send a few more messages
         extra_message_id = self.send_stream_message(cordelia, "England")
-        self.send_personal_message(cordelia, hamlet)
+        dm_message_id = self.send_personal_message(cordelia, hamlet)
 
         user_profile = hamlet
 
-        with get_sqlalchemy_connection() as sa_conn:
+        with queries_captured() as queries, get_sqlalchemy_connection() as sa_conn:
             anchor = find_first_unread_anchor(
                 sa_conn=sa_conn,
                 user_profile=user_profile,
                 narrow=[],
             )
+        self.assert_length(queries, 4)
         self.assertEqual(anchor, first_message_id)
+
+        # Looking for the first-unread in DMs leaves off the muted
+        # topics queries and limits
+        with queries_captured() as queries, get_sqlalchemy_connection() as sa_conn:
+            anchor = find_first_unread_anchor(
+                sa_conn=sa_conn,
+                user_profile=user_profile,
+                narrow=[NarrowParameter(operator="is", operand="dm")],
+            )
+        self.assert_length(queries, 2)
+        self.assertTrue("muted" not in queries[1].sql)
+        self.assertEqual(anchor, dm_message_id)
 
         # With the same data setup, we now want to test that a reasonable
         # search still gets the first message sent to Hamlet (before he
