@@ -1,18 +1,26 @@
-import json
+from typing import Any
 
 from django.http import HttpRequest, HttpResponse, JsonResponse
-from django.views.decorators.csrf import csrf_exempt
+import json
 
+from zerver.decorator import webhook_view
 from zerver.lib.webhooks.common import check_send_webhook_message
+from zerver.models import UserProfile
 
 
-@csrf_exempt
-def api_redmine_webhook(request: HttpRequest) -> HttpResponse:
-    try:
-        payload = json.loads(request.body.decode("utf-8"))
-    except Exception:
-        return JsonResponse({"result": "error", "msg": "Invalid JSON payload"}, status=400)
-
+@webhook_view("Redmine")
+def api_redmine_webhook(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    *,
+    payload: dict[str, Any] = None,
+    **kwargs: Any,
+) -> HttpResponse:
+    if payload is None:
+        try:
+            payload = json.loads(request.body.decode("utf-8"))
+        except Exception:
+            return JsonResponse({"result": "error", "msg": "Invalid JSON payload"}, status=400)
     event = payload.get("event")
     if event == "issue_created":
         issue = payload["issue"]
@@ -38,7 +46,9 @@ def api_redmine_webhook(request: HttpRequest) -> HttpResponse:
             f"**Description:**\n{description}\n"
             f"[View issue]({url})"
         )
-        return check_send_webhook_message(request, topic, content)
+        check_send_webhook_message(request, user_profile, topic, content)
+        from zerver.lib.response import json_success
+        return json_success(request)
     else:
         return JsonResponse(
             {"result": "error", "msg": f"Unsupported event type: {event}"}, status=400

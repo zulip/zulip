@@ -62,7 +62,10 @@ class IntegrationsTestCase(ZulipTestCase):
                 integration = INTEGRATIONS[integration_name]
                 assert isinstance(integration, WebhookIntegration)
                 # Only proceed if screenshot_config has 'fixture_name'
-                if not hasattr(screenshot_config, "fixture_name") or screenshot_config.fixture_name == "":
+                if (
+                    not hasattr(screenshot_config, "fixture_name")
+                    or screenshot_config.fixture_name == ""
+                ):
                     continue
                 fixture_path = get_fixture_path(integration, screenshot_config)
                 self.assertTrue(

@@ -852,14 +852,7 @@ WEBHOOK_SCREENSHOT_CONFIG: dict[str, list[WebhookScreenshotConfig]] = {
             },
         )
     ],
-    "redmine": [
-        FixturelessScreenshotConfig(
-            message="Sample Redmine webhook message.",
-            topic="Redmine integration screenshot",
-            image_name="001.png",
-            image_dir="redmine",
-        ),
-    ],
+    "redmine": [WebhookScreenshotConfig("issue_created.json")],
 }
 
 FIXTURELESS_SCREENSHOT_CONFIG: dict[str, list[FixturelessScreenshotConfig]] = {}
