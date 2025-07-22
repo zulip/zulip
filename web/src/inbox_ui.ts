@@ -2123,8 +2123,14 @@ export function initialize({hide_other_views}: {hide_other_views: () => void}): 
     $(document).on(
         "scroll",
         _.throttle(() => {
-            move_focus_to_visible_area();
-        }, 50),
+            if (!inbox_util.is_visible()) {
+                // This check is duplicated with move_focus_to_visible_area. It
+                // is worth doing to avoid the performance hit of wrapping
+                // requestAnimationFramearound a likely noop.
+                return;
+            }
+            requestAnimationFrame(move_focus_to_visible_area);
+        }, 100),
     );
 
     $("body").on(
