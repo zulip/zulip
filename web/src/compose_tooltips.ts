@@ -51,37 +51,40 @@ export function clean_up_compose_singleton_tooltip(context: SingletonContext): v
 }
 
 export function initialize_compose_tooltips(context: SingletonContext, selector: string): void {
-    // Clean up existing instances first
-    clean_up_compose_singleton_tooltip(context);
+    // Listen on body for the very first mouseenter on any element matching `selector`
+    $(document.body).one("mouseenter", selector, () => {
+        // Clean up existing instances first
+        clean_up_compose_singleton_tooltip(context);
 
-    const tooltip_instances = tippy.default(selector, {
-        trigger: "mouseenter",
-        appendTo: () => document.body,
-        placement: "top",
-    });
+        const tooltip_instances = tippy.default(selector, {
+            trigger: "mouseenter",
+            appendTo: () => document.body,
+            placement: "top",
+        });
 
-    const singleton_instance = tippy.createSingleton(tooltip_instances, {
-        delay: LONG_HOVER_DELAY,
-        appendTo: () => document.body,
-        onTrigger(instance, event) {
-            const currentTarget = event.currentTarget;
-            if (currentTarget instanceof HTMLElement) {
-                const content = get_tooltip_content(currentTarget);
-                if (content) {
-                    instance.setContent(content);
+        const singleton_instance = tippy.createSingleton(tooltip_instances, {
+            delay: LONG_HOVER_DELAY,
+            appendTo: () => document.body,
+            onTrigger(instance, event) {
+                const currentTarget = event.currentTarget;
+                if (currentTarget instanceof HTMLElement) {
+                    const content = get_tooltip_content(currentTarget);
+                    if (content) {
+                        instance.setContent(content);
+                    }
+                    if (currentTarget.classList?.contains("disabled-on-hover")) {
+                        instance.setProps({delay: SINGLETON_INSTANT_HOVER_DELAY});
+                    } else {
+                        instance.setProps({delay: SINGLETON_LONG_HOVER_DELAY});
+                    }
                 }
-                if (currentTarget.classList?.contains("disabled-on-hover")) {
-                    instance.setProps({delay: SINGLETON_INSTANT_HOVER_DELAY});
-                } else {
-                    instance.setProps({delay: SINGLETON_LONG_HOVER_DELAY});
-                }
-            }
-        },
-    });
+            },
+        });
 
-    compose_button_singleton_context_map.set(context, {
-        tooltip_instances,
-        singleton_instance,
+        compose_button_singleton_context_map.set(context, {
+            tooltip_instances,
+            singleton_instance,
+        });
     });
 }
 
