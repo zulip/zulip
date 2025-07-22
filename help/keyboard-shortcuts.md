@@ -99,6 +99,9 @@ in the Zulip app to add more to your repertoire as needed.
 * **Reply directly to sender**: <kbd>Shift</kbd> + <kbd>R</kbd>
 * **Reply @-mentioning sender**: <kbd>@</kbd>
 
+
+[toggle-enter-to-send]: /help/configure-send-message-keys
+
 ### In the compose box
 
 * **Send message**: <kbd>Tab</kbd> then <kbd>Enter</kbd>, or either
@@ -107,9 +110,6 @@ in the Zulip app to add more to your repertoire as needed.
 * **Insert new line**: <kbd>Shift</kbd> + <kbd>Enter</kbd>, or either
   <kbd>Enter</kbd> or <kbd>Ctrl</kbd> + <kbd>Enter</kbd> based on
   [your settings][toggle-enter-to-send]
-
-[toggle-enter-to-send]: /help/configure-send-message-keys
-
 * **Insert italic text**: `*italic*` or <kbd>Ctrl</kbd> + <kbd>I</kbd>
 * **Insert bold text**: `**bold**` or <kbd>Ctrl</kbd> + <kbd>B</kbd>
 * **Insert link**: `[Zulip website](https://zulip.org)` or <kbd>Ctrl</kbd> +
