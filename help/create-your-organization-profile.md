@@ -11,7 +11,9 @@ directory](/help/communities-directory).
 - The **organization name** also appears in the title of your Zulip browser tab
   or Desktop app, and in email and desktop notifications. It's best to keep it
   short.
-- {!organization-type-intro.md!}
+- The **organization type** is used to customize the experience for users
+  in your organization, including initial organization settings and
+  Welcome Bot messages received by new users.
 - The **organization description** supports [full Markdown
   formatting](/help/format-your-message-using-markdown), including
   **bold**/*italic*, links, lists, and more.
