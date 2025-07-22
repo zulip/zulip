@@ -49,4 +49,4 @@ API_FEATURE_LEVEL = 408
 #   historical commits sharing the same major version, in which case a
 #   minor version bump suffices.
 
-PROVISION_VERSION = (337, 0)  # bumped 2025-07-22 to upgrade JavaScript dependencies
+PROVISION_VERSION = (337, 1)  # bumped 2025-07-21 to upgrade shfmt
