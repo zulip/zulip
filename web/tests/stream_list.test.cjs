@@ -455,14 +455,14 @@ test_ui("zoom_in_and_zoom_out", ({mock_template}) => {
     assert.ok(!$label1.visible());
     assert.ok(!$label2.visible());
     assert.ok(!$splitter.visible());
-    assert.ok($stream_li1.visible());
-    assert.ok(!$stream_li2.visible());
+    assert.ok(!$stream_li1.hasClass("hide"));
+    assert.ok($stream_li2.hasClass("hide"));
     assert.ok($("#streams_list").hasClass("zoom-in"));
     assert.ok(filter_topics_appended);
 
-    $("#stream_filters li.narrow-filter").show = () => {
-        $stream_li1.show();
-        $stream_li2.show();
+    $("#stream_filters li.narrow-filter").toggleClass = (classname, value) => {
+        $stream_li1.toggleClass(classname, value);
+        $stream_li2.toggleClass(classname, value);
     };
 
     $stream_li1.length = 1;
@@ -474,8 +474,8 @@ test_ui("zoom_in_and_zoom_out", ({mock_template}) => {
     assert.ok($label1.visible());
     assert.ok($label2.visible());
     assert.ok($splitter.visible());
-    assert.ok($stream_li1.visible());
-    assert.ok($stream_li2.visible());
+    assert.ok(!$stream_li1.hasClass("hide"));
+    assert.ok(!$stream_li2.hasClass("hide"));
     assert.ok($("#streams_list").hasClass("zoom-out"));
     assert.ok(!filter_topics_appended);
 });

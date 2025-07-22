@@ -1904,6 +1904,10 @@ li.topic-list-item {
 }
 
 .zoom-in {
+    .narrow-filter.hide {
+        display: none;
+    }
+
     .narrow-filter > .bottom_left_row {
         position: sticky;
         /* We subtract a quarter pixel of space to correct
