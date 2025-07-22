@@ -264,10 +264,10 @@ keep in mind about the import process:
 - Mattermost's user roles are mapped to Zulip's [user
   roles](/help/user-roles) in the following way:
 
-| Mattermost role         | Zulip role    |
-|-------------------------|---------------|
-| Team administrator      | Owner         |
-| Member                  | Member        |
+    | Mattermost role         | Zulip role    |
+    |-------------------------|---------------|
+    | Team administrator      | Owner         |
+    | Member                  | Member        |
 
 - Mattermost's export tool does not support exporting user avatars or message
   edit history.

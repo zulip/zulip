@@ -153,15 +153,15 @@ in mind about the import process:
 - Slack's user roles are mapped to Zulip's [user
   roles](/help/user-roles) in the following way:
 
-| Slack role              | Zulip role    |
-|-------------------------|---------------|
-| Workspace Primary Owner | Owner         |
-| Workspace Owner         | Owner         |
-| Workspace Admin         | Administrator |
-| Member                  | Member        |
-| Single Channel Guest    | Guest         |
-| Multi Channel Guest     | Guest         |
-| Channel creator         | none          |
+    | Slack role              | Zulip role    |
+    |-------------------------|---------------|
+    | Workspace Primary Owner | Owner         |
+    | Workspace Owner         | Owner         |
+    | Workspace Admin         | Administrator |
+    | Member                  | Member        |
+    | Single Channel Guest    | Guest         |
+    | Multi Channel Guest     | Guest         |
+    | Channel creator         | none          |
 
 - Slack threads are imported as topics with names that include snippets of the
   original message, such as "2023-05-30 Hi, can anyone reply if you're o…".
