@@ -66,6 +66,7 @@ from zerver.models import (
 )
 from zerver.models.groups import SystemGroups
 from zerver.models.realm_audit_logs import AuditLogEventType
+from zerver.models.streams import StreamTopicsPolicyEnum
 from zerver.models.users import ExternalAuthID, active_user_ids, bot_owner_user_ids, get_system_bot
 from zerver.tornado.django_api import send_event_on_commit
 
@@ -82,6 +83,11 @@ def send_message_to_signup_notification_stream(
 
     with override_language(realm.default_language):
         topic_name = _("signups")
+        if (
+            signup_announcements_stream.topics_policy
+            == StreamTopicsPolicyEnum.empty_topic_only.value
+        ):
+            topic_name = ""
 
     internal_send_stream_message(sender, signup_announcements_stream, topic_name, message)
 

@@ -975,6 +975,11 @@ def send_messages_for_new_subscribers(
                 else:
                     content = _("{user_name} created a new channel {new_channels}.")
                 topic_name = _("new channels")
+                if (
+                    new_stream_announcements_stream.topics_policy
+                    == StreamTopicsPolicyEnum.empty_topic_only.value
+                ):
+                    topic_name = ""
 
             content = content.format(
                 user_name=silent_mention_syntax_for_user(user_profile),

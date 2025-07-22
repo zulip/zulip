@@ -30,6 +30,7 @@ from zerver.actions.streams import (
     deactivated_streams_by_old_name,
     do_change_stream_group_based_setting,
     do_deactivate_stream,
+    do_set_stream_property,
     do_unarchive_stream,
 )
 from zerver.actions.user_groups import bulk_add_members_to_user_groups, check_add_user_group
@@ -3431,6 +3432,7 @@ class SubscriptionAPITest(ZulipTestCase):
         self.assertEqual(msg.recipient.type, Recipient.STREAM)
         self.assertEqual(msg.recipient.type_id, new_stream_announcements_stream.id)
         self.assertEqual(msg.sender_id, self.notification_bot(self.test_realm).id)
+        self.assertEqual(msg.topic_name(), "new channels")
         expected_msg = f"@_**{invitee_full_name}|{invitee.id}** created a new channel #**{invite_streams[0]}**."
         self.assertEqual(msg.content, expected_msg)
 
@@ -3442,6 +3444,41 @@ class SubscriptionAPITest(ZulipTestCase):
             f"**Public** channel created by @_**{invitee_full_name}|{invitee.id}**. **Description:**\n"
             "```` quote\n*No description.*\n````"
         )
+        self.assertEqual(msg.content, expected_msg)
+
+    def test_sucessful_subscription_notifies_in_empty_topic_only_stream(self) -> None:
+        invitee = self.example_user("iago")
+        invitee_full_name = "Iago"
+
+        current_stream = self.get_streams(invitee)[0]
+        invite_streams = self.make_random_stream_names([current_stream])[:1]
+
+        new_stream_announcements_stream = get_stream(current_stream, self.test_realm)
+        self.test_realm.new_stream_announcements_stream_id = new_stream_announcements_stream.id
+        self.test_realm.save()
+
+        do_set_stream_property(
+            new_stream_announcements_stream,
+            "topics_policy",
+            StreamTopicsPolicyEnum.empty_topic_only.value,
+            invitee,
+        )
+
+        self.subscribe_via_post(
+            invitee,
+            invite_streams,
+            extra_post_data=dict(
+                announce="true",
+                principals=orjson.dumps([self.user_profile.id]).decode(),
+            ),
+        )
+
+        msg = self.get_second_to_last_message()
+        self.assertEqual(msg.recipient.type, Recipient.STREAM)
+        self.assertEqual(msg.recipient.type_id, new_stream_announcements_stream.id)
+        self.assertEqual(msg.sender_id, self.notification_bot(self.test_realm).id)
+        self.assertEqual(msg.topic_name(), "")
+        expected_msg = f"@_**{invitee_full_name}|{invitee.id}** created a new channel #**{invite_streams[0]}**."
         self.assertEqual(msg.content, expected_msg)
 
     def test_successful_cross_realm_notification(self) -> None:

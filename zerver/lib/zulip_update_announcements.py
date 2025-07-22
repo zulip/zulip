@@ -19,6 +19,7 @@ from zerver.lib.message import SendMessageRequest, remove_single_newlines
 from zerver.lib.topic import messages_for_topic
 from zerver.models.realm_audit_logs import AuditLogEventType, RealmAuditLog
 from zerver.models.realms import Realm
+from zerver.models.streams import StreamTopicsPolicyEnum
 from zerver.models.users import UserProfile, get_system_bot
 
 
@@ -483,12 +484,25 @@ def get_realms_behind_zulip_update_announcements_level(level: int) -> QuerySet[R
     return realms
 
 
+def get_topic_name_for_zulip_update_announcements(realm: Realm) -> str:
+    assert realm.zulip_update_announcements_stream is not None
+
+    with override_language(realm.default_language):
+        topic_name = str(realm.ZULIP_UPDATE_ANNOUNCEMENTS_TOPIC_NAME)
+
+    if (
+        realm.zulip_update_announcements_stream.topics_policy
+        == StreamTopicsPolicyEnum.empty_topic_only.value
+    ):
+        topic_name = ""
+
+    return topic_name
+
+
 def internal_prep_group_direct_message_for_old_realm(
     realm: Realm, sender: UserProfile
 ) -> SendMessageRequest | None:
     administrators = list(realm.get_human_admin_users())
-    with override_language(realm.default_language):
-        topic_name = str(realm.ZULIP_UPDATE_ANNOUNCEMENTS_TOPIC_NAME)
     if realm.zulip_update_announcements_stream is None:
         content = """
 Zulip now supports [configuring]({organization_settings_url}) a channel where Zulip will
@@ -500,6 +514,7 @@ a channel within one week, your organization will not miss any update messages.
             organization_settings_url="/#organization/organization-settings",
         )
     else:
+        topic_name = get_topic_name_for_zulip_update_announcements(realm)
         content = """
 Starting tomorrow, users in your organization will receive [updates]({zulip_update_announcements_help_url})
 about new Zulip features in #**{zulip_update_announcements_stream}>{topic_name}**.
@@ -560,8 +575,8 @@ def internal_prep_zulip_update_announcements_stream_messages(
     message_requests = []
     stream = realm.zulip_update_announcements_stream
     assert stream is not None
-    with override_language(realm.default_language):
-        topic_name = str(realm.ZULIP_UPDATE_ANNOUNCEMENTS_TOPIC_NAME)
+    topic_name = get_topic_name_for_zulip_update_announcements(realm)
+
     while current_level < latest_level:
         content = get_zulip_update_announcements_message_for_level(level=current_level + 1)
         message_requests.append(
@@ -671,11 +686,9 @@ def send_zulip_update_announcements_to_realm(realm: Realm, skip_delay: bool) -> 
             return
 
         # Send an introductory message just before the first update message.
-        with override_language(realm.default_language):
-            topic_name = str(realm.ZULIP_UPDATE_ANNOUNCEMENTS_TOPIC_NAME)
-
         stream = realm.zulip_update_announcements_stream
         assert stream.recipient_id is not None
+        topic_name = get_topic_name_for_zulip_update_announcements(realm)
         topic_has_messages = messages_for_topic(realm.id, stream.recipient_id, topic_name).exists()
 
         if not topic_has_messages:
