@@ -64,12 +64,12 @@ export let update_recipient_row_attention_level = (): void => {
 
     // We're piggy-backing here, in a roundabout way, on
     // compose_ui.set_focus(). Any time the topic or DM recipient
-    // row is focused, that puts us outside the low-attention
+    // row is focused, that puts users outside the low-attention
     // recipient-row state--including the `c` hotkey or the
-    // Start new conversation button being clicked.
-    const is_compose_textarea_focused = document.activeElement?.id === "compose-textarea";
+    // Start new conversation button being clicked. But that
+    // logic is handled via the event handlers in compose_setup.js
+    // that call set_high_attention_recipient_row().
     if (
-        is_compose_textarea_focused &&
         (composing_to_current_topic_narrow() || composing_to_current_private_message_narrow()) &&
         compose_state.has_full_recipient() &&
         !compose_state.is_recipient_edited_manually()
