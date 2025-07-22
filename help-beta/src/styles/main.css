@@ -33,6 +33,27 @@
     padding: 1rem var(--sl-content-pad-x);
 }
 
+.zulip-unplugin-icon {
+    /* Make sure the icon does not occupy it's own row. */
+    display: inline;
+    vertical-align: text-bottom;
+
+    /* unplugin-icons sets height and width by itself.
+       It was setting the height to 1024 and 960 for some
+       icons. It is better to set the height explicitly. */
+    height: 1em;
+    width: 1em;
+
+    /* Some css rules in starlight insert these margins to tags
+       that fit certain criteria, e.g. if it's a first child of
+       an li item and similar cases, and the icon disturbs the
+       spacing of everything around it just because it was an
+       svg tag. We set this explicitly to zero to avoid those
+       issues. */
+    margin-bottom: 0;
+    margin-top: 0;
+}
+
 .sl-markdown-content {
     img {
         vertical-align: top;
