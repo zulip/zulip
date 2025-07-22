@@ -165,6 +165,73 @@ def request_callback(request: PreparedRequest) -> tuple[int, dict[str, str], byt
 
 
 class SlackImporter(ZulipTestCase):
+    def run_channel_message_to_zerver_message_with_fixtures(
+        self, fixture_names: list[str], **kwargs: dict[str, Any]
+    ) -> tuple[
+        list[ZerverFieldsT],
+        list[ZerverFieldsT],
+        list[ZerverFieldsT],
+        list[ZerverFieldsT],
+        list[ZerverFieldsT],
+    ]:
+        """
+        This is a wrapper for `channel_message_to_zerver_message`, it
+        comes with default values for most of the method's parameters.
+
+        The `fixture_names` parameter specifies which Slack exported
+        messages fixture(s) in the `slack_fixtures/exported_messages_fixtures`
+        directory will be used as input for conversion.
+        """
+        slack_message_fixture_directory = "slack_fixtures/exported_messages_fixtures"
+
+        user_data = kwargs.get(
+            "user_data",
+            orjson.loads(self.fixture_data("users.json", type=slack_message_fixture_directory)),
+        )
+
+        slack_user_id_to_zulip_user_id = kwargs.get(
+            "slack_user_id_to_zulip_user_id", {"U066MTL5U": 5, "U061A5N1G": 24, "U061A1R2R": 43}
+        )
+
+        slack_recipient_name_to_zulip_recipient_id = kwargs.get(
+            "slack_recipient_name_to_zulip_recipient_id",
+            {
+                "random": 2,
+                "general": 1,
+            },
+        )
+
+        all_messages = []
+        for filename in fixture_names:
+            all_messages.extend(
+                orjson.loads(
+                    self.fixture_data(f"{filename}.json", type=slack_message_fixture_directory)
+                )
+            )
+
+        added_channels: dict[str, tuple[str, int]] = kwargs.get(
+            "added_channels", {"random": ("c5", 1), "general": ("c6", 2)}
+        )
+
+        convert_slack_threads = kwargs.get("convert_slack_threads", True)
+        assert isinstance(convert_slack_threads, bool)
+
+        with mock.patch("zerver.data_import.slack.build_usermessages", return_value=(2, 4)):
+            return channel_message_to_zerver_message(
+                realm_id=1,
+                users=user_data,
+                slack_user_id_to_zulip_user_id=slack_user_id_to_zulip_user_id,
+                slack_recipient_name_to_zulip_recipient_id=slack_recipient_name_to_zulip_recipient_id,
+                all_messages=all_messages,
+                zerver_realmemoji=[],
+                subscriber_map={},
+                added_channels=added_channels,
+                dm_members={},
+                domain_name="domain",
+                long_term_idle=set(),
+                convert_slack_threads=convert_slack_threads,
+            )
+
     @responses.activate
     def test_get_slack_api_data_with_pagination(self) -> None:
         token = "xoxb-valid-token"
@@ -1510,23 +1577,6 @@ class SlackImporter(ZulipTestCase):
                 "thread_ts": "1537139200.000002",
                 "channel_name": "random",
             },
-            {
-                "text": "*foo* _bar_ ~baz~ [qux](https://chat.zulip.org)",
-                "user": "U061A1R2R",
-                "ts": "1547139200.000002",
-                # Start of thread 6!
-                "thread_ts": "1547139200.000002",
-                "channel_name": "random",
-            },
-            {
-                "text": "Delicious",
-                "user": "U061A5N1G",
-                "ts": "1637139200.000002",
-                # A reply to thread 6!
-                "parent_user_id": "U061A1R2R",
-                "thread_ts": "1547139200.000002",
-                "channel_name": "random",
-            },
         ]
 
         slack_recipient_name_to_zulip_recipient_id = {
@@ -1562,7 +1612,7 @@ class SlackImporter(ZulipTestCase):
         # functioning already tested in helper function
         self.assertEqual(zerver_usermessage, [])
         # subtype: channel_join is filtered
-        self.assert_length(zerver_message, 13)
+        self.assert_length(zerver_message, 11)
 
         self.assert_length(uploads, 1)
         self.assert_length(attachment, 1)
@@ -1627,14 +1677,22 @@ class SlackImporter(ZulipTestCase):
             zerver_message[9][EXPORT_TOPIC_NAME].startswith(expected_thread_5_topic_name)
         )
 
-        ### THREAD 6 CONVERSATION ###
-        # Test various formatting syntaxes in thread topic name
-        expected_thread_6_message_1_content = "**foo** *bar* ~~baz~~ [qux](https://chat.zulip.org)"
-        expected_thread_6_topic_name = (
-            "2019-01-10 **foo** *bar* ~~baz~~ [qux](https://chat.zulip.o…"
+    def test_convert_thread_topic_name_with_text_formattings(self) -> None:
+        (
+            zerver_message,
+            _zerver_usermessage,
+            _attachment,
+            _uploads,
+            _reaction,
+        ) = self.run_channel_message_to_zerver_message_with_fixtures(
+            ["thread_with_text_formattings_in_topic_name"]
         )
-        self.assertEqual(zerver_message[11]["content"], expected_thread_6_message_1_content)
-        self.assertEqual(zerver_message[11][EXPORT_TOPIC_NAME], expected_thread_6_topic_name)
+        self.assert_length(zerver_message, 2)
+        # Test various formatting syntaxes in thread topic name.
+        expected_thread_message_1_content = "**foo** *bar* ~~baz~~ [qux](https://chat.zulip.org)"
+        expected_thread_topic_name = "2019-01-10 **foo** *bar* ~~baz~~ [qux](https://chat.zulip.o…"
+        self.assertEqual(zerver_message[0]["content"], expected_thread_message_1_content)
+        self.assertEqual(zerver_message[0][EXPORT_TOPIC_NAME], expected_thread_topic_name)
 
     @mock.patch("zerver.data_import.slack.build_usermessages", return_value=(2, 4))
     def test_channel_message_to_zerver_message_with_integration_bots(
