@@ -112,11 +112,11 @@ keep in mind about the import process:
 - Rocket.Chat user roles are mapped to Zulip's [user
   roles](/help/user-roles) in the following way:
 
-| Rocket.Chat role | Zulip role |
-|------------------|------------|
-| Admin            | Owner      |
-| User             | Member     |
-| Guest            | Guest      |
+    | Rocket.Chat role | Zulip role |
+    |------------------|------------|
+    | Admin            | Owner      |
+    | User             | Member     |
+    | Guest            | Guest      |
 
 - User avatars are not imported.
 - Default channels for new users are not imported.
