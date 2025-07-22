@@ -31,6 +31,7 @@ import * as stream_data from "./stream_data.ts";
 import * as stream_list from "./stream_list.ts";
 import * as stream_topic_history from "./stream_topic_history.ts";
 import type {TopicLink} from "./types.ts";
+import * as user_groups from "./user_groups.ts";
 import * as util from "./util.ts";
 
 // Docs: https://zulip.readthedocs.io/en/latest/subsystems/sending-messages.html
@@ -293,6 +294,36 @@ export function is_slash_command(content: string): boolean {
     return !content.startsWith("/me") && content.startsWith("/");
 }
 
+function contains_unauthorized_user_group_mention(content: string): boolean {
+    // Check if the content contains user group mentions that the current user
+    // is not allowed to make. This prevents local echo of messages that will
+    // fail on the server due to user group mention permission restrictions.
+
+    // Regex to match user group mentions: @*group_name* (non-silent)
+    // Silent mentions (@_*group_name*) are allowed for everyone
+    const user_group_mention_regex = /@\*([^*]+)\*/g;
+
+    let match;
+    while ((match = user_group_mention_regex.exec(content)) !== null) {
+        const group_name = match[1];
+        if (typeof group_name !== "string") {
+            continue;
+        }
+        // Find the user group by name
+        const user_group = user_groups.get_user_group_from_name(group_name);
+
+        if (user_group) {
+            // Check if the current user can mention this group
+            const can_mention_group_id = user_group.can_mention_group;
+            if (!user_groups.is_user_in_setting_group(can_mention_group_id, current_user.user_id)) {
+                return true; // Found an unauthorized mention
+            }
+        }
+    }
+
+    return false; // No unauthorized mentions found
+}
+
 export let try_deliver_locally = (
     message_request: MessageRequest,
     insert_new_messages: (
@@ -330,6 +361,10 @@ export let try_deliver_locally = (
     }
 
     if (is_slash_command(message_request.content)) {
+        return undefined;
+    }
+
+    if (contains_unauthorized_user_group_mention(message_request.content)) {
         return undefined;
     }
 
