@@ -34,7 +34,7 @@ if __name__ == "__main__":
     with open("locale/en/translations.json") as f:
         data = json.load(f)
 
-    found = find_handlebars(list(data.keys()))
+    found = find_handlebars(list(data.values()))
     if not found:
         sys.exit(0)
 

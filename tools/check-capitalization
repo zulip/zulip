@@ -38,7 +38,7 @@ if __name__ == "__main__":
 
     with open("locale/en/translations.json") as f:
         data = json.load(f)
-        frontend = check_capitalization(list(data.keys()))
+        frontend = check_capitalization(list(data.values()))
         frontend_errors, frontend_ignored, banned_errors_front = frontend
 
     with open("locale/en/LC_MESSAGES/django.po") as f:

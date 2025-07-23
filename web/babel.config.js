@@ -3,7 +3,7 @@
 /** @type {import("babel-plugin-formatjs/types").Options} */
 const formatJsOptions = {
     additionalFunctionNames: ["$t", "$t_html"],
-    overrideIdFn: (_id, defaultMessage) => defaultMessage ?? "",
+    idInterpolationPattern: "[sha512:contenthash:base64:6]",
 };
 
 /** @type {import("@babel/preset-env").Options} */
