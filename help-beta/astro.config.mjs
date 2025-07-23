@@ -29,12 +29,17 @@ export default defineConfig({
                         throw new Error("Zulip icon not found.");
                     },
                 },
-                iconCustomizer(collection, _icon, props) {
+                iconCustomizer(collection, icon, props) {
                     if (collection === "zulip-icon" || collection === "fa") {
                         // We need to override some default starlight behaviour to make
                         // icons look nice, see the css for this class to see the reasoning
                         // for each individual override of the default css.
                         props.class = "zulip-unplugin-icon";
+
+                        if (collection === "zulip-icon" && icon.startsWith("user-circle-")) {
+                            const iconSuffix = icon.replace("user-circle-", "");
+                            props.class = `zulip-unplugin-icon user-circle user-circle-${iconSuffix}`;
+                        }
                     }
                 },
             }),

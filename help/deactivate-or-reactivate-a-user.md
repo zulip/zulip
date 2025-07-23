@@ -18,7 +18,8 @@ When you deactivate a user:
   their [user card](/help/user-cards)). In sidebars and elsewhere, a user's
   [availability](/help/status-and-availability) will be replaced with a
   deactivated icon
-  (<span class="user-circle user-circle-deactivated zulip-icon zulip-icon-user-circle-deactivated"></span>).
+  (<i class="user-circle user-circle-deactivated zulip-icon zulip-icon-user-circle-deactivated"></i>).
+
 * Even if your organization [allows users to join without an
   invitation](/help/restrict-account-creation#set-whether-invitations-are-required-to-join),
   this user will not be able to rejoin with the same email account.
