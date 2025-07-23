@@ -1336,7 +1336,7 @@ function is_list_focused(): boolean {
     );
 }
 
-function get_all_rows(): JQuery {
+function get_all_rows(no_headers = false): JQuery {
     // Get all rows in the inbox list that are not hidden by filters.
     if (inbox_util.is_channel_view()) {
         return $(".inbox-row").not(".hidden_by_filters");
@@ -1345,16 +1345,20 @@ function get_all_rows(): JQuery {
     // This includes channel folder headers, DM / channel headers and rows.
     const visible_inbox_folder_components =
         "#inbox-list .inbox-folder:not(.inbox-collapsed-state) + .inbox-folder-components";
-    return $(
-        // Inbox folder headers
-        "#inbox-list .inbox-folder, " +
-            // Inbox folder components which display row without any header, i.e. DM row
-            `${visible_inbox_folder_components} > .inbox-row, ` +
+    let selector =
+        // Inbox folder components which display row without any header, i.e. DM row
+        `${visible_inbox_folder_components} > .inbox-row, ` +
+        // Inbox rows whose folder and header is not collapsed.
+        `${visible_inbox_folder_components} .inbox-header:not(.inbox-collapsed-state) + .inbox-topic-container > .inbox-row`;
+
+    if (!no_headers) {
+        selector +=
+            // Inbox folder headers
+            ", #inbox-list .inbox-folder, " +
             // Inbox folder components which display header row, i.e. channel row
-            `${visible_inbox_folder_components} .inbox-header, ` +
-            // Inbox rows whose folder and header is not collapsed.
-            `${visible_inbox_folder_components} .inbox-header:not(.inbox-collapsed-state) + .inbox-topic-container > .inbox-row`,
-    ).not(".hidden_by_filters");
+            `${visible_inbox_folder_components} .inbox-header`;
+    }
+    return $(selector).not(".hidden_by_filters");
 }
 
 function get_row_index($elt: JQuery): number {
@@ -1626,8 +1630,21 @@ export function change_focused_element(input_key: string): boolean {
         // Start showing visible focus outlines.
         $("#inbox-view").removeClass("no-visible-focus-outlines");
     }
-    const skip_keyboard_navigation = is_first_user_keypress && !is_search_focused();
-    if (skip_keyboard_navigation) {
+    if (is_first_user_keypress && !is_search_focused()) {
+        // User has barely scrolled the page.
+        if (window.scrollY < 30) {
+            // Find the first visible row and focus it.
+            const no_headers = true;
+            const $first_row = get_all_rows(no_headers).first();
+            if ($first_row.length === 0) {
+                return true;
+            }
+            row_focus = get_row_index($first_row);
+            current_focus_id = $first_row.attr("id");
+            $first_row.trigger("focus");
+        }
+
+        // Skip keyboard navigation if this is the first user keypress.
         return true;
     }
 
