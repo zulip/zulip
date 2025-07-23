@@ -52,7 +52,7 @@ export function clean_up_compose_singleton_tooltip(context: SingletonContext): v
 
 export function initialize_compose_tooltips(context: SingletonContext, selector: string): void {
     // Listen on body for the very first mouseenter on any element matching `selector`
-    $(document.body).one("mouseenter", selector, () => {
+    $(document.body).one("mousemove", selector, (e) => {
         // Clean up existing instances first
         clean_up_compose_singleton_tooltip(context);
 
@@ -80,6 +80,11 @@ export function initialize_compose_tooltips(context: SingletonContext, selector:
                 }
             },
         });
+
+        // Show the tooltip since user has hovered over the element.
+        if (e.currentTarget instanceof HTMLElement) {
+            e.currentTarget.dispatchEvent(new MouseEvent("mouseenter"));
+        }
 
         compose_button_singleton_context_map.set(context, {
             tooltip_instances,
