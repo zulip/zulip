@@ -178,7 +178,7 @@ format used by the Zulip server that they are interacting with.
 
 * [`POST /register`](/api/register-queue), [`GET
   /events`](/api/get-events), [`GET /streams`](/api/get-streams),
-  [`GET /streams/{stream_id}`](/api/get-stream-by-id):: Added a new
+  [`GET /streams/{stream_id}`](/api/get-stream-by-id): Added a new
   field `subscriber_count` to Stream and Subscription objects with the
   total number of non-deactivated users who are subscribed to the
   channel.
@@ -1196,7 +1196,7 @@ deactivated groups.
 * [`DELETE /saved_snippets/{saved_snippet_id}`](/api/delete-saved-snippet): Added
   a new endpoint for deleting saved snippets.
 
-**Feature level 296**:
+**Feature level 296**
 
 * [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events),
   [`POST /realm/profile_fields`](/api/create-custom-profile-field),
