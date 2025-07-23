@@ -12,10 +12,6 @@ export default defineConfig({
             // eslint-disable-next-line new-cap
             Icons({
                 compiler: "astro",
-                // We need to override some default starlight behaviour to make
-                // icons look nice, see the css for this class to see the reasoning
-                // for each individual override of the default css.
-                defaultClass: "zulip-unplugin-icon",
                 customCollections: {
                     // unplugin-icons has a FileSystemIconLoader which is more
                     // versatile. But it only supports one directory path for
@@ -32,6 +28,14 @@ export default defineConfig({
                         }
                         throw new Error("Zulip icon not found.");
                     },
+                },
+                iconCustomizer(collection, _icon, props) {
+                    if (collection === "zulip-icon") {
+                        // We need to override some default starlight behaviour to make
+                        // icons look nice, see the css for this class to see the reasoning
+                        // for each individual override of the default css.
+                        props.class = "zulip-unplugin-icon";
+                    }
                 },
             }),
         ],
