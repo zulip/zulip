@@ -208,10 +208,6 @@
 
 #left_sidebar_scroll_container {
     outline: none;
-    overflow: hidden auto;
-    position: relative;
-    z-index: 0;
-    width: 100%;
 
     .direct-messages-container {
         margin-left: 0;
