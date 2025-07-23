@@ -1444,18 +1444,13 @@ export function initialize(): void {
 
     $("body").on(
         "click",
-        "#user-profile-modal #name .user-profile-manage-others-edit-button",
+        "#user-profile-modal #name .user-profile-manage-others-edit-button, .user-profile-manage-own-edit-button",
         (e) => {
             show_manage_user_tab("manage-profile-tab");
             e.stopPropagation();
             e.preventDefault();
         },
     );
-
-    $("body").on("click", "#user-profile-modal #name .user-profile-manage-own-edit-button", () => {
-        browser_history.go_to_location("#settings/profile");
-        hide_user_profile();
-    });
 
     /* These click handlers are implemented as just deep links to the
      * relevant part of the Zulip UI, so we don't want preventDefault,
