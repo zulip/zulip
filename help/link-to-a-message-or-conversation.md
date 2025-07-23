@@ -84,12 +84,12 @@ In addition, links to messages, topics, and channels are **permanent**:
   channel](/help/move-content-to-another-channel), or
   [resolved](/help/resolve-a-topic).
 
-!!! tip ""
+    !!! tip ""
 
-    When some messages are [moved out of a
-    topic](/help/move-content-to-another-topic) and others are left in place,
-    links to that topic will follow the location of the message whose ID is
-    encoded in the topic URL (usually the first or last message in the topic).
+        When some messages are [moved out of a
+        topic](/help/move-content-to-another-topic) and others are left in place,
+        links to that topic will follow the location of the message whose ID is
+        encoded in the topic URL (usually the first or last message in the topic).
 
 - [Channel links](#get-a-link-to-a-specific-channel) will still work even when a
   channel is [renamed](/help/rename-a-channel) or
