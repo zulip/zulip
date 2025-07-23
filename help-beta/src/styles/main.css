@@ -13,6 +13,14 @@
 
     /* Changed from 1.75 to make text easier to read. */
     --sl-line-height: 1.5;
+
+    /* User circles */
+    /* stylelint-disable color-no-hex */
+    --color-user-circle-active: light-dark(#43a35e, #4cdc75);
+    --color-user-circle-idle: light-dark(#f5b266, #ae640a);
+    --color-user-circle-offline: light-dark(#c1c6d7, #454854);
+    --color-user-circle-deactivated: hsl(0deg 0% 50%);
+    /* stylelint-enable color-no-hex */
 }
 
 .non-clickable-sidebar-heading {
@@ -78,6 +86,28 @@
     /* Using any of the default vertical-align did not give desired
        results, text-top + this margin looked the best. */
     margin-top: 2px;
+}
+
+.user-circle {
+    font-size: 0.7em;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.user-circle-active {
+    color: var(--color-user-circle-active);
+}
+
+.user-circle-idle {
+    color: var(--color-user-circle-idle);
+}
+
+.user-circle-offline {
+    color: var(--color-user-circle-offline);
+}
+
+.user-circle-deactivated {
+    color: var(--color-user-circle-deactivated);
 }
 
 .sl-markdown-content {
