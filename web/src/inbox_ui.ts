@@ -245,8 +245,8 @@ const CONVERSATION_ID_PREFIX = "inbox-row-conversation-";
 const LEFT_NAVIGATION_KEYS = ["left_arrow", "vim_left"];
 const RIGHT_NAVIGATION_KEYS = ["right_arrow", "vim_right"];
 
-// We wait for rows to render and restore focus before processing
-// any new events.
+// Used to wait for initial render to complete and set focus
+// before we process events like scroll.
 let is_waiting_for_revive_current_focus = true;
 // Used to store the last scroll position of the inbox before
 // it is hidden to avoid scroll jumping when it is shown again.
@@ -400,6 +400,7 @@ export function hide(): void {
         return;
     }
 
+    is_waiting_for_revive_current_focus = true;
     if (inbox_util.is_channel_view()) {
         save_channel_view_state();
     } else {
