@@ -25932,6 +25932,20 @@ components:
           description: |
             A list of user IDs of users who are also subscribed
             to a given channel. Included only if `include_subscribers` is `true`.
+        partial_subscribers:
+          type: array
+          items:
+            type: integer
+          description: |
+            A list of user IDs of a subset of users who are subscribed
+            to a given channel, specifically bots and recently active users.
+            Included only if `include_subscribers` is `partial` and number of subscribers
+            in the channel is greater than `MIN_PARTIAL_SUBSCRIBERS_CHANNEL_SIZE`
+            [server setting][server-settings] which defaults to 1000 .
+
+            [server-settings]: https://zulip.readthedocs.io/en/stable/production/settings.html
+
+            **Changes**: New in Zulip 11.0 (feature level).
         desktop_notifications:
           type: boolean
           nullable: true
@@ -28418,9 +28432,25 @@ components:
         (This may be significantly slower in organizations with
         thousands of users subscribed to many channels.)
 
-        **Changes**: New in Zulip 2.1.0.
+        Clients can also pass `partial` as value to this parameter, which will
+        include `partial_subcribers` field instead of `subscribers` for channels
+        where number of subscribers is greater than `MIN_PARTIAL_SUBSCRIBERS_CHANNEL_SIZE`
+        [server setting][server-settings] which defaults to 1000. The `partial_subscribers`
+        field contains only a subset of the subscribers in the channel, specifically bots
+        and recently active users.
+
+        [server-settings]: https://zulip.readthedocs.io/en/stable/production/settings.html
+
+        **Changes**: In Zulip 11.0 (feature level), support was added for passing `partial`
+        as a value to this parameter.
+
+        New in Zulip 2.1.0.
       schema:
-        type: boolean
+        oneOf:
+          - type: boolean
+          - type: string
+            enum:
+              - partial
         default: false
       example: true
     IncludeCustomProfileFields:
