@@ -406,6 +406,7 @@ def update_user_message_flags(
 ) -> None:
     mentioned_ids = rendering_result.mentions_user_ids
     ids_with_alert_words = rendering_result.user_ids_with_alert_words
+    stream_wildcard_mentioned = rendering_result.mentions_stream_wildcard
     changed_ums: set[UserMessage] = set()
 
     def update_flag(um: UserMessage, should_set: bool, flag: int) -> None:
@@ -425,11 +426,10 @@ def update_user_message_flags(
         mentioned = um.user_profile_id in mentioned_ids
         update_flag(um, mentioned, UserMessage.flags.mentioned)
 
-        if rendering_result.mentions_stream_wildcard:
-            update_flag(um, True, UserMessage.flags.stream_wildcard_mentioned)
-        elif rendering_result.mentions_topic_wildcard:
-            topic_wildcard_mentioned = um.user_profile_id in topic_participant_user_ids
-            update_flag(um, topic_wildcard_mentioned, UserMessage.flags.topic_wildcard_mentioned)
+        update_flag(um, stream_wildcard_mentioned, UserMessage.flags.stream_wildcard_mentioned)
+
+        topic_wildcard_mentioned = um.user_profile_id in topic_participant_user_ids
+        update_flag(um, topic_wildcard_mentioned, UserMessage.flags.topic_wildcard_mentioned)
 
     for um in changed_ums:
         um.save(update_fields=["flags"])
