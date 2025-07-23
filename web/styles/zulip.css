@@ -843,13 +843,13 @@ strong {
     position: relative;
 }
 
-.new_messages {
-    background-color: hsl(194deg 53% 79%);
+.new-mention .unread_count {
+    transform: scale(1.5);
 }
 
-.new_messages,
-.new_messages_fadeout {
-    transition: background-color 3s ease-in-out;
+.new-mention .unread_count,
+.new-mention-fadeout .unread_count {
+    transition: transform 1s ease-in-out;
 }
 
 .messagebox-content .slow-send-spinner {

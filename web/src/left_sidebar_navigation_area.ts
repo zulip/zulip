@@ -172,22 +172,26 @@ function toggle_condensed_navigation_area(): void {
 
 export function animate_mention_changes($li: JQuery, new_mention_count: number): void {
     if (new_mention_count > last_mention_count) {
-        do_new_messages_animation($li);
+        // Do the same animation twice.
+        do_new_mention_animation($li);
+        setTimeout(() => {
+            do_new_mention_animation($li);
+        }, 2000);
     }
     last_mention_count = new_mention_count;
 }
 
-function do_new_messages_animation($li: JQuery): void {
-    $li.addClass("new_messages");
+function do_new_mention_animation($li: JQuery): void {
+    $li.addClass("new-mention");
     function mid_animation(): void {
-        $li.removeClass("new_messages");
-        $li.addClass("new_messages_fadeout");
+        $li.removeClass("new-mention");
+        $li.addClass("new-mention-fadeout");
     }
     function end_animation(): void {
-        $li.removeClass("new_messages_fadeout");
+        $li.removeClass("new-mention-fadeout");
     }
-    setTimeout(mid_animation, 3000);
-    setTimeout(end_animation, 6000);
+    setTimeout(mid_animation, 1000);
+    setTimeout(end_animation, 2000);
 }
 
 export function highlight_inbox_view(): void {
