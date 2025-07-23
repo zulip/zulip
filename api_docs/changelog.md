@@ -67,12 +67,13 @@ format used by the Zulip server that they are interacting with.
 
 * [`GET /users/me/subscriptions`](/api/get-subscriptions),
   [`GET /streams`](/api/get-streams), [`GET /events`](/api/get-events),
-  [`POST /register`](/api/register-queue): Added new `empty_topic_only`
-  option to `topics_policy` field in Stream and Subscription objects.
+  [`POST /register`](/api/register-queue): Added new `"empty_topic_only"`
+  option to the `topics_policy` field on Stream and Subscription
+  objects.
 * [`POST /users/me/subscriptions`](/api/subscribe),
   [`PATCH /streams/{stream_id}`](/api/update-stream): Added new
-  `empty_topic_only` option to `topics_policy` to support channels
-  with topics disabled.
+  `"empty_topic_only"` option to `topics_policy` parameter for
+  ["general chat" channels](/help/general-chat-channels).
 
 **Feature level 403**
 
@@ -198,26 +199,31 @@ format used by the Zulip server that they are interacting with.
 
 * [`GET /users/me/subscriptions`](/api/get-subscriptions),
   [`GET /streams`](/api/get-streams), [`GET /events`](/api/get-events),
-  [`POST /register`](/api/register-queue): Added `topics_policy`
-  field to Stream and Subscription objects.
+  [`POST /register`](/api/register-queue): Added the `topics_policy`
+  field to Stream and Subscription objects to support channel-level
+  configurations for sending messages to the empty ["general chat"
+  topic](/help/general-chat-topic).
 * [`POST /users/me/subscriptions`](/api/subscribe),
   [`PATCH /streams/{stream_id}`](/api/update-stream): Added
-  `topics_policy` parameter to support setting and changing the
-  the configuration for sending messages in the empty topic of the
-  channel.
-* `PATCH /realm`, [`POST /register`](/api/register-queue),
-  [`GET /events`](/api/get-events): Added `can_set_topics_policy_group`
-  realm setting, which is a [group-setting value](/api/group-setting-values)
-  describing the set of users with permission to change per-channel `topics_policy`
+  `topics_policy` parameter to support setting and updating the
+  channel-level configuration for sending messages to the
+  empty ["general chat" topic](/help/general-chat-topic).
+* `PATCH /realm`, [`GET /events`](/api/get-events),
+  [`POST /register`](/api/register-queue): Added
+  `can_set_topics_policy_group` realm setting, which is a
+  [group-setting value](/api/group-setting-values) describing the set
+  of users with permission to change the per-channel `topics_policy`
   setting.
 * `PATCH /realm`, [`GET /events`](/api/get-events),
   [`POST /register`](/api/register-queue):
-  Added a new realm setting, `topics_policy` defining the
-  default configuration for sending messages in empty topics.
+  Added a new realm `topics_policy` setting for the organization's
+  default policy for sending channel messages to the empty ["general
+  chat" topic](/help/general-chat-topic).
 * [`GET /events`](/api/get-events), [`POST /register`](/api/register-queue):
-  Deprecated `mandatory_topics` field in favor of `topics_policy` realm setting.
-* `PATCH /realm`: Removed `mandatory_topics` field as it is now replaced by
-  `topics_policy` field.
+  Deprecated the realm `mandatory_topics` setting in favor of the new
+  realm `topics_policy` setting.
+* `PATCH /realm`: Removed the `mandatory_topics` parameter as it is now
+  replaced by the realm `topics_policy` setting.
 
 **Feature level 391**
 
