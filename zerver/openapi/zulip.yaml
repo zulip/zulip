@@ -5173,27 +5173,30 @@ paths:
                                       description: |
                                         The URL of the organization's wide logo configured in the
                                         [organization profile](/help/create-your-organization-profile).
-                                    mandatory_topics:
-                                      type: boolean
-                                      deprecated: true
-                                      description: |
-                                        Whether [topics are required](/help/require-topics) for messages in this organization.
-
-                                        **Changes**: Deprecated in Zulip 11.0 (feature level 392). This configuration is
-                                        now controlled by `topics_policy` realm setting.
                                     topics_policy:
                                       type: string
                                       enum:
                                         - allow_empty_topic
                                         - disable_empty_topic
                                       description: |
-                                        Configuration defining the default policy for sending messages in empty topics.
+                                        The organization's default policy for sending channel messages to the
+                                        [empty "general chat" topic](/help/general-chat-topic).
 
-                                        - allow_empty_topic - Topics are not required to send messages in the channels.
-                                        - disable_empty_topic - Topics are required to send messages in the channels.
+                                        - `"allow_empty_topic"`: Channel messages can be sent to the empty topic.
+                                        - `"disable_empty_topic"`: Channel messages cannot be sent to the empty topic.
 
-                                        **Changes**: New in Zulip 11.0 (feature level 392). Previously, this configuration was
-                                        controlled by a boolean realm setting, `mandatory_topics`.
+                                        **Changes**: New in Zulip 11.0 (feature level 392). Previously, this was
+                                        controlled by the boolean realm `mandatory_topics` setting, which is now
+                                        deprecated.
+                                    mandatory_topics:
+                                      type: boolean
+                                      deprecated: true
+                                      description: |
+                                        Whether [topics are required](/help/require-topics) for messages in this
+                                        organization.
+
+                                        **Changes**: Deprecated in Zulip 11.0 (feature level 392). This is now
+                                        controlled by the realm `topics_policy` setting.
                                     max_file_upload_size_mib:
                                       type: integer
                                       description: |
@@ -18902,16 +18905,6 @@ paths:
 
                           Whether this organization has been configured to enable
                           [previews of linked websites](/help/image-video-and-website-previews).
-                      realm_mandatory_topics:
-                        type: boolean
-                        deprecated: true
-                        description: |
-                          Present if `realm` is present in `fetch_event_types`.
-
-                          Whether [topics are required](/help/require-topics) for messages in this organization.
-
-                          **Changes**: Deprecated in Zulip 11.0 (feature level 392). This configuration is
-                          now controlled by `topics_policy` realm setting.
                       realm_topics_policy:
                         type: string
                         enum:
@@ -18920,13 +18913,26 @@ paths:
                         description: |
                           Present if `realm` is present in `fetch_event_types`.
 
-                          Configuration defining the default policy for sending messages in empty topics.
+                          The organization's default policy for sending channel messages to the
+                          [empty "general chat" topic](/help/require-topics).
 
-                          - allow_empty_topic - Topics are not required to send messages in the channels.
-                          - disable_empty_topic - Topics are required to send messages in the channels.
+                          - `"allow_empty_topic"`: Channel messages can be sent to the empty topic.
+                          - `"disable_empty_topic"`: Channel messages cannot be sent to the empty topic.
 
-                          **Changes**: New in Zulip 11.0 (feature level 392). Previously, this configuration was
-                          controlled by a boolean realm setting, `mandatory_topics`.
+                          **Changes**: New in Zulip 11.0 (feature level 392). Previously, this was
+                          controlled by the boolean `realm_mandatory_topics` setting, which is now
+                          deprecated.
+                      realm_mandatory_topics:
+                        type: boolean
+                        deprecated: true
+                        description: |
+                          Present if `realm` is present in `fetch_event_types`.
+
+                          Whether [topics are required](/help/require-topics) for messages in this
+                          organization.
+
+                          **Changes**: Deprecated in Zulip 11.0 (feature level 392). This is now
+                          controlled by the realm `topics_policy` setting.
                       realm_message_retention_days:
                         type: integer
                         description: |
@@ -28000,22 +28006,36 @@ components:
         - allow_empty_topic
         - disable_empty_topic
         - empty_topic_only
+      example: inherit
       description: |
-        Setting defining the policy for sending messages to the empty topic in
-        this channel.
+        Whether [named topics](/help/introduction-to-topics) and the empty
+        topic (i.e., ["general chat" topic](/help/general-chat-topic))
+        are enabled in this channel.
 
-        - inherit - Channel will inherit the organization-level setting, `realm_topics_policy`.
-        - allow_empty_topic - Topics are not required to send messages in the channel.
-        - disable_empty_topic - Topics are required to send messages in the channel.
-        - empty_topic_only - Only the empty topic is available in this channel.
+        - `"inherit"`: Messages can be sent to named topics in this channel,
+          and the [organization-level `realm_topics_policy`][realm-topics-policy]
+          is used for whether messages can be sent to the empty topic in this
+          channel.
+        - `"allow_empty_topic"`: Messages can be sent to both named topics and
+          the empty topic in this channel.
+        - `"disable_empty_topic"`: Messages can be sent to named topics in this
+          channel, but the empty topic is disabled.
+        - `"empty_topic_only"`: Messages can be sent to the empty topic in this
+          channel, but named topics are disabled. See ["general chat"
+          channels](/help/general-chat-channels).
 
-        The `empty_topic_only` policy can only be enabled in a channel if all
-        messages in the channel are already in the empty topic.
+        The `"empty_topic_only"` policy can only be set if all existing messages
+        in the channel are already in the empty topic.
 
-        **Changes**: In Zulip 11.0 (feature level 404), `empty_topic_only` option
-        was added.
+        When creating a new channel, if the `topics_policy` is not specified, the
+        `"inherit"` option will be set.
+
+        **Changes**: In Zulip 11.0 (feature level 404), the `"empty_topic_only"`
+        option was added.
 
         New in Zulip 11.0 (feature level 392).
+
+        [realm-topics-policy]: /help/require-topics#set-the-default-general-chat-topic-configuration
     ChannelCanAddSubscribersGroup:
       allOf:
         - $ref: "#/components/schemas/GroupSettingValue"
