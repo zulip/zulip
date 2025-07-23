@@ -1005,6 +1005,11 @@ svg_rules = RuleList(
             "description": "System icons ignore stroke values, so do not include the stroke property.",
             "include_only": {"web/shared/icons/", "web/images/icons/"},
         },
+        {
+            "pattern": "class=",
+            "description": "System icons ignore class values, so do not include the class property.",
+            "include_only": {"web/shared/icons/", "web/images/icons/"},
+        },
     ],
 )
 
