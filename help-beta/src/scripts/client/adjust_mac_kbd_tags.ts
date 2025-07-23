@@ -61,10 +61,9 @@ function adjust_mac_kbd_tags(): void {
         // problems, we don't have that problem in the new help center and
         // thus don't do that transformation here. We do need to make these
         // symbols appear larger than they do by default since they are too
-        // small to see in the default font-size.
+        // small to see in the default font-size of 0.85em for kbd elements.
         if (key_text === "⌘" || key_text === "⌥") {
-            element.style.fontSize = "1.5em";
-            element.style.verticalAlign = "middle";
+            element.style.fontSize = "1em";
         }
     }
 }
