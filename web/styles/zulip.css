@@ -843,13 +843,22 @@ strong {
     position: relative;
 }
 
-.new_messages {
-    background-color: hsl(194deg 53% 79%);
+@keyframes pulse-unread {
+    0% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.5);
+    }
+
+    100% {
+        transform: scale(1);
+    }
 }
 
-.new_messages,
-.new_messages_fadeout {
-    transition: background-color 3s ease-in-out;
+.new-mention .unread_count {
+    animation: 2s ease-in-out 2 pulse-unread;
 }
 
 .messagebox-content .slow-send-spinner {

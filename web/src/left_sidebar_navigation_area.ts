@@ -281,22 +281,32 @@ function toggle_condensed_navigation_area(): void {
 
 export function animate_mention_changes($li: JQuery, new_mention_count: number): void {
     if (new_mention_count > last_mention_count) {
-        do_new_messages_animation($li);
+        do_new_mention_animation($li);
     }
     last_mention_count = new_mention_count;
 }
 
-function do_new_messages_animation($li: JQuery): void {
-    $li.addClass("new_messages");
-    function mid_animation(): void {
-        $li.removeClass("new_messages");
-        $li.addClass("new_messages_fadeout");
-    }
-    function end_animation(): void {
-        $li.removeClass("new_messages_fadeout");
-    }
-    setTimeout(mid_animation, 3000);
-    setTimeout(end_animation, 6000);
+function do_new_mention_animation($li: JQuery): void {
+    // The new-mention-highlight class manages the
+    // transition on the mentions-row background.
+    // The pulse effect on unread counts, by contrast,
+    // is handled via CSS animations.
+    $li.addClass("new-mention new-mention-highlight");
+    // We listen for the end of the animation to remove
+    // the .new-mention class; this allows us to think
+    // only in CSS about the timing and duration here.
+    $li.on("animationend", (): void => {
+        $li.removeClass("new-mention");
+        // We remove the transition-managing highlight
+        // some time after the animation has run; how
+        // long after doesn't really matter, as the
+        // transition will run as soon as .new-mention
+        // is removed above. This just ensures that we
+        // *do* see a transition on the background color.
+        setTimeout(() => {
+            $li.removeClass("new-mention-highlight");
+        }, 2000);
+    });
 }
 
 export function highlight_inbox_view(): void {
