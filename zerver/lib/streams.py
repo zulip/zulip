@@ -997,6 +997,15 @@ def check_stream_name_available(realm: Realm, name: str) -> None:
         pass
 
 
+def check_zephyr_realm_invite_conditions(
+    is_subscribing_other_users: bool, realm: Realm, invite_only: bool
+) -> None:
+    if is_subscribing_other_users and realm.is_zephyr_mirror_realm and not invite_only:
+        raise JsonableError(
+            _("You can only invite other Zephyr mirroring users to private channels.")
+        )
+
+
 def access_stream_by_name(
     user_profile: UserProfile,
     stream_name: str,
