@@ -48,7 +48,6 @@ import * as message_store from "./message_store.ts";
 import type {Message} from "./message_store.ts";
 import * as message_viewport from "./message_viewport.ts";
 import * as onboarding_steps from "./onboarding_steps.ts";
-import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
 import * as resize from "./resize.ts";
 import * as rows from "./rows.ts";
@@ -236,10 +235,6 @@ export function is_message_sent_by_my_bot(message: Message): boolean {
 }
 
 export function get_deletability(message: Message): boolean {
-    if (page_params.is_spectator) {
-        return false;
-    }
-
     if (message.type === "stream" && stream_data.is_stream_archived(message.stream_id)) {
         return false;
     }

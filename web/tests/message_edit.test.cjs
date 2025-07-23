@@ -216,9 +216,6 @@ run_test("get_deletability", ({override}) => {
         sender_id: 1,
     };
 
-    page_params.is_spectator = true;
-    assert.equal(message_edit.get_deletability(message), false);
-
     page_params.is_spectator = false;
 
     // User can delete any message
