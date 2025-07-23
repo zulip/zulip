@@ -75,6 +75,7 @@ from zerver.lib.streams import (
     access_web_public_stream,
     channel_events_topic_name,
     check_stream_name_available,
+    check_zephyr_realm_invite_conditions,
     do_get_streams,
     filter_stream_authorization_for_adding_subscribers,
     get_anonymous_group_membership_dict_for_streams,
@@ -844,14 +845,8 @@ def add_subscriptions_backend(
     # Newly created streams are also authorized for the creator
     streams = authorized_streams + created_streams
 
-    if (
-        is_subscribing_other_users
-        and realm.is_zephyr_mirror_realm
-        and not all(stream.invite_only for stream in streams)
-    ):
-        raise JsonableError(
-            _("You can only invite other Zephyr mirroring users to private channels.")
-        )
+    for stream in streams:
+        check_zephyr_realm_invite_conditions(is_subscribing_other_users, realm, stream.invite_only)
 
     if is_subscribing_other_users:
         subscribers = bulk_principals_to_user_profiles(principals, user_profile)
