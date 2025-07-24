@@ -1039,34 +1039,20 @@ class RecipientFieldForTypingEditDirectMessage(BaseModel):
     user_ids: list[int] | None = None
 
 
-class EventTypingEditMessageStartCore(BaseEvent):
+class EventTypingEditMessageStart(BaseEvent):
     type: Literal["typing_edit_message"]
     op: Literal["start"]
     sender_id: int
     message_id: int
+    recipient: RecipientFieldForTypingEditChannelMessage | RecipientFieldForTypingEditDirectMessage
 
 
-class EventTypingEditChannelMessageStart(EventTypingEditMessageStartCore):
-    recipient: RecipientFieldForTypingEditChannelMessage
-
-
-class EventTypingEditDirectMessageStart(EventTypingEditMessageStartCore):
-    recipient: RecipientFieldForTypingEditDirectMessage
-
-
-class EventTypingEditMessageStopCore(BaseEvent):
+class EventTypingEditMessageStop(BaseEvent):
     type: Literal["typing_edit_message"]
     op: Literal["stop"]
     sender_id: int
     message_id: int
-
-
-class EventTypingEditChannelMessageStop(EventTypingEditMessageStopCore):
-    recipient: RecipientFieldForTypingEditChannelMessage
-
-
-class EventTypingEditDirectMessageStop(EventTypingEditMessageStopCore):
-    recipient: RecipientFieldForTypingEditDirectMessage
+    recipient: RecipientFieldForTypingEditChannelMessage | RecipientFieldForTypingEditDirectMessage
 
 
 class EventUpdateDisplaySettingsCore(BaseEvent):
