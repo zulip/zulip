@@ -258,7 +258,6 @@ class SendPushNotificationTest(E2EEPushNotificationTestCase):
                 zerver_logger.output[1],
             )
 
-    @activate_push_notification_service()
     @responses.activate
     @override_settings(ZILENCER_ENABLED=False)
     def test_success_self_hosted(self, unused_mock: mock.MagicMock) -> None:
@@ -353,7 +352,6 @@ class SendPushNotificationTest(E2EEPushNotificationTestCase):
             self.assertTrue(realm.push_notifications_enabled)
             self.assertIsNone(realm.push_notifications_enabled_end_timestamp)
 
-    @activate_push_notification_service()
     @responses.activate
     @override_settings(ZILENCER_ENABLED=False)
     def test_missing_remote_realm_error(self, unused_mock: mock.MagicMock) -> None:
@@ -408,7 +406,6 @@ class SendPushNotificationTest(E2EEPushNotificationTestCase):
             self.assertFalse(realm.push_notifications_enabled)
             self.assertIsNone(realm.push_notifications_enabled_end_timestamp)
 
-    @activate_push_notification_service()
     @responses.activate
     @override_settings(ZILENCER_ENABLED=False)
     def test_no_plan_error(self, unused_mock: mock.MagicMock) -> None:
