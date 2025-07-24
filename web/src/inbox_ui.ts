@@ -2115,31 +2115,26 @@ function move_focus_to_visible_area(): void {
         return;
     }
 
-    const INBOX_ROW_HEIGHT = 30;
-    const position = util.the($("#inbox-filters")).getBoundingClientRect();
-    const inbox_center_x = (position.left + position.right) / 2;
-    // We are aiming to get the first row if it is completely visible or the second row.
-    const inbox_row_below_filters = position.bottom + INBOX_ROW_HEIGHT;
-    const element_in_row = document.elementFromPoint(inbox_center_x, inbox_row_below_filters);
+    const inbox_filters_props = util.the($("#inbox-filters")).getBoundingClientRect();
+    const compose_top = window.innerHeight - $("#compose").outerHeight(true)!;
+    const inbox_center_x = (inbox_filters_props.left + inbox_filters_props.right) / 2;
+    const inbox_center_y = (compose_top + inbox_filters_props.bottom) / 2;
+    const element_in_row = document.elementFromPoint(inbox_center_x, inbox_center_y);
     if (!element_in_row) {
-        // `element_in_row` can be `null` according to MDN if:
-        // "If the specified point is outside the visible bounds of the document or
-        // either coordinate is negative, the result is null."
-        // https://developer.mozilla.org/en-US/docs/Web/API/Document/elementFromPoint
-        // This means by the time we reached here user has already scrolled past the
-        // row and it is no longer visible. So, we just return and let the next call
-        // to `move_focus_to_visible_area` handle it.
-        return;
+        // The table is too short for there to be an topic row element
+        // at the center of the table region; in that case, we just
+        // select the last element.
+        row_focus = $all_rows.length - 1;
+    } else {
+        const $element_in_row = $(element_in_row);
+
+        let $inbox_row = $element_in_row.closest(".inbox-row");
+        if ($inbox_row.length === 0) {
+            $inbox_row = $element_in_row.closest(".inbox-header");
+        }
+
+        row_focus = $all_rows.index($inbox_row.get(0));
     }
-
-    const $element_in_row = $(element_in_row);
-
-    let $inbox_row = $element_in_row.closest(".inbox-row");
-    if ($inbox_row.length === 0) {
-        $inbox_row = $element_in_row.closest(".inbox-header");
-    }
-
-    row_focus = $all_rows.index($inbox_row.get(0));
     revive_current_focus();
 }
 

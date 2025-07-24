@@ -1253,15 +1253,9 @@ function recenter_focus_if_off_screen(): void {
             topic_element === null ||
             $(topic_element).parents("#recent-view-content-tbody").length === 0
         ) {
-            // There are two theoretical reasons that the center
-            // element might be null. One is that we haven't rendered
-            // the view yet; but in that case, we should have returned
-            // early checking is_waiting_for_revive_current_focus.
-            //
-            // The other possibility is that the table is too short
-            // for there to be an topic row element at the center of
-            // the table region; in that case, we just select the last
-            // element.
+            // The table is too short for there to be an topic row element
+            // at the center of the table region; in that case, we just
+            // select the last element.
             row_focus = $topic_rows.length - 1;
         } else {
             row_focus = $topic_rows.index($(topic_element).closest("tr")[0]);
