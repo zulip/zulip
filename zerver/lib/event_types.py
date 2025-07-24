@@ -757,12 +757,6 @@ class EventRealmUserUpdate(BaseEvent):
     )
 
 
-class EventRealmBilling(BaseEvent):
-    type: Literal["realm_billing"]
-    property: str
-    value: bool
-
-
 class EventRestart(BaseEvent):
     type: Literal["restart"]
     zulip_version: str
