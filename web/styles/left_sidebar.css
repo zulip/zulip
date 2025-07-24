@@ -450,7 +450,7 @@
     }
 }
 
-#stream_filters .narrow-filter:has(a.stream-name:focus-visible),
+#stream_filters .narrow-filter:has(a.subscription_block:focus-visible),
 #stream_filters .narrow-filter.highlighted_stream {
     &.active-filter > .bottom_left_row {
         background-color: var(--color-background-hover-narrow-filter);
