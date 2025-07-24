@@ -1,5 +1,6 @@
 import os
 import re
+import tempfile
 from datetime import timedelta
 from io import StringIO
 from unittest import mock
@@ -213,6 +214,26 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         result = self.client_get(url)
         self.assertEqual(result.status_code, 200)
         self.assertEqual(result["Content-Type"], "image/png")
+        consume_response(result)
+
+    def test_content_type_charset_specified(self) -> None:
+        with tempfile.NamedTemporaryFile() as uploaded_file:
+            uploaded_file.write("नाम में क्या रक्खा हे".encode())
+            uploaded_file.seek(0)
+            uploaded_file.content_type = "text/plain; test-key=test_value; charset=big5"  # type: ignore[attr-defined]
+
+            result = self.api_post(
+                self.example_user("hamlet"), "/api/v1/user_uploads", {"file": uploaded_file}
+            )
+
+        self.login("hamlet")
+        response_dict = self.assert_json_success(result)
+        url = response_dict["url"]
+        result = self.client_get(url)
+        self.assertEqual(result.status_code, 200)
+        self.assertEqual(
+            result["Content-Type"], 'text/plain; test-key="test_value"; charset="big5"'
+        )
         consume_response(result)
 
     # This test will go through the code path for uploading files onto LOCAL storage

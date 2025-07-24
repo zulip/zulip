@@ -5,6 +5,7 @@ import re
 import unicodedata
 from collections.abc import Callable, Iterator
 from datetime import datetime
+from email.message import EmailMessage
 from typing import IO, Any
 from urllib.parse import unquote, urljoin
 
@@ -80,9 +81,9 @@ def get_file_info(user_file: UploadedFile) -> tuple[str, str]:
     uploaded_file_name = user_file.name
     assert uploaded_file_name is not None
 
-    content_type = user_file.content_type
     # It appears Django's UploadedFile.content_type defaults to an empty string,
     # even though the value is documented as `str | None`. So we check for both.
+    content_type = user_file.content_type
     if content_type is None or content_type == "":
         guessed_type = guess_type(uploaded_file_name)[0]
         if guessed_type is not None:
@@ -91,6 +92,13 @@ def get_file_info(user_file: UploadedFile) -> tuple[str, str]:
             # Fallback to application/octet-stream if unable to determine a
             # different content-type from the filename.
             content_type = "application/octet-stream"
+
+    fake_msg = EmailMessage()
+    extras = {}
+    if user_file.content_type_extra:
+        extras = {k: v.decode() if v else None for k, v in user_file.content_type_extra.items()}  # type: ignore[attr-defined]  # https://github.com/typeddjango/django-stubs/pull/2754
+    fake_msg.add_header("content-type", content_type, **extras)
+    content_type = fake_msg["content-type"]
 
     uploaded_file_name = unquote(uploaded_file_name)
 
