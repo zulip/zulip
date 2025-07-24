@@ -779,12 +779,6 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
 ## can disable submitting usage statistics here.
 # ZULIP_SERVICE_SUBMIT_USAGE_STATISTICS = False
 
-## Whether to redact the content of push notifications.  This is less
-## usable, but avoids sending message content over the wire.  In the
-## future, we're likely to replace this with an end-to-end push
-## notification encryption feature.
-# PUSH_NOTIFICATION_REDACT_CONTENT = False
-
 ## Whether to lightly advertise sponsoring Zulip in the gear menu.
 # PROMOTE_SPONSORING_ZULIP = True
 

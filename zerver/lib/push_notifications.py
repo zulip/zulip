@@ -971,9 +971,6 @@ def get_mobile_push_content(rendered_content: str) -> str:
                 else:
                     child.getparent().replace(child, collapse_element)
 
-    if settings.PUSH_NOTIFICATION_REDACT_CONTENT:
-        return _("New message")
-
     elem = lxml.html.fragment_fromstring(rendered_content, create_parent=True)
     change_katex_to_raw_latex(elem)
     potentially_collapse_quotes(elem)
@@ -1323,6 +1320,18 @@ def send_push_notifications_legacy(
             user_profile.id,
         )
         return
+
+    # While sending push notifications for new messages to older clients
+    # (which don't support E2EE), if `require_e2ee_push_notifications`
+    # realm setting is set to `true`, we redact the content.
+    if gcm_payload.get("event") != "remove" and user_profile.realm.require_e2ee_push_notifications:
+        # Make deep copies so redaction doesn't affect the original dicts
+        apns_payload = copy.deepcopy(apns_payload)
+        gcm_payload = copy.deepcopy(gcm_payload)
+
+        placeholder_content = _("New message")
+        apns_payload["alert"]["body"] = placeholder_content
+        gcm_payload["content"] = placeholder_content
 
     if uses_notification_bouncer():
         send_notifications_to_bouncer(

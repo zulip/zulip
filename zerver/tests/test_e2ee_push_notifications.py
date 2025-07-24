@@ -678,3 +678,83 @@ class RemovePushNotificationTest(E2EEPushNotificationTestCase):
                 f"Sent E2EE mobile push notifications for user {hamlet.id}: 1 via FCM, 1 via APNs",
                 zerver_logger.output[2],
             )
+
+
+class RequireE2EEPushNotificationsSettingTest(E2EEPushNotificationTestCase):
+    def test_content_redacted(self) -> None:
+        hamlet = self.example_user("hamlet")
+        aaron = self.example_user("aaron")
+        realm = hamlet.realm
+
+        self.register_old_push_devices_for_notification()
+        self.register_push_devices_for_notification()
+
+        message_id = self.send_personal_message(
+            from_user=aaron,
+            to_user=hamlet,
+            content="not-redacted",
+            skip_capture_on_commit_callbacks=True,
+        )
+        missed_message = {
+            "message_id": message_id,
+            "trigger": NotificationTriggers.DIRECT_MESSAGE,
+        }
+
+        realm.require_e2ee_push_notifications = True
+        realm.save(update_fields=["require_e2ee_push_notifications"])
+
+        # Verify that the content is redacted in payloads supplied to
+        # 'send_notifications_to_bouncer' - payloads supplied to bouncer (legacy codepath).
+        #
+        # Verify that the content is not redacted in payloads supplied to
+        # 'send_push_notifications' - payloads which get encrypted.
+        with (
+            activate_push_notification_service(),
+            mock.patch(
+                "zerver.lib.push_notifications.send_notifications_to_bouncer"
+            ) as mock_legacy,
+            mock.patch("zerver.lib.push_notifications.send_push_notifications") as mock_e2ee,
+        ):
+            handle_push_notification(hamlet.id, missed_message)
+
+            mock_legacy.assert_called_once()
+            self.assertEqual(mock_legacy.call_args.args[1]["alert"]["body"], "New message")
+            self.assertEqual(mock_legacy.call_args.args[2]["content"], "New message")
+
+            mock_e2ee.assert_called_once()
+            self.assertEqual(mock_e2ee.call_args.args[1]["alert"]["body"], "not-redacted")
+            self.assertEqual(mock_e2ee.call_args.args[2]["content"], "not-redacted")
+
+        message_id = self.send_personal_message(
+            from_user=aaron, to_user=hamlet, skip_capture_on_commit_callbacks=True
+        )
+        missed_message = {
+            "message_id": message_id,
+            "trigger": NotificationTriggers.DIRECT_MESSAGE,
+        }
+
+        # Verify that the content is redacted in payloads supplied to
+        # to functions for sending it through APNs and FCM directly.
+        with (
+            mock.patch("zerver.lib.push_notifications.has_apns_credentials", return_value=True),
+            mock.patch("zerver.lib.push_notifications.has_fcm_credentials", return_value=True),
+            mock.patch(
+                "zerver.lib.push_notifications.send_notifications_to_bouncer"
+            ) as send_bouncer,
+            mock.patch(
+                "zerver.lib.push_notifications.send_apple_push_notification", return_value=0
+            ) as send_apple,
+            mock.patch(
+                "zerver.lib.push_notifications.send_android_push_notification", return_value=0
+            ) as send_android,
+            # We have already asserted the payloads passed to E2EE codepath above.
+            mock.patch("zerver.lib.push_notifications.send_push_notifications"),
+        ):
+            handle_push_notification(hamlet.id, missed_message)
+
+            send_bouncer.assert_not_called()
+            send_apple.assert_called_once()
+            send_android.assert_called_once()
+
+            self.assertEqual(send_apple.call_args.args[2]["alert"]["body"], "New message")
+            self.assertEqual(send_android.call_args.args[2]["content"], "New message")
