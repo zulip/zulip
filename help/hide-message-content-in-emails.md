@@ -15,7 +15,7 @@ being sent through the email system.
 
 {settings_tab|organization-settings}
 
-1. Under **Automated messages and emails**, toggle
+1. Under **Notifications security**, toggle
    **Allow message content in message notification emails**.
 
 {end_tabs}
