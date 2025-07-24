@@ -8,11 +8,11 @@ from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass
 from email.headerregistry import Address
 from functools import cache
-from typing import TYPE_CHECKING, Any, Literal, Optional, TypeAlias, Union
+from typing import TYPE_CHECKING, Any, Final, Literal, Optional, TypeAlias, Union
 
 import lxml.html
 import orjson
-from aioapns.common import NotificationResult
+from aioapns.common import NotificationResult, PushType
 from django.conf import settings
 from django.db import transaction
 from django.db.models import F, Q
@@ -1451,18 +1451,33 @@ def send_push_notifications(
         assert push_device.bouncer_device_id is not None  # for mypy
         device_id_to_encrypted_data[str(push_device.bouncer_device_id)] = encrypted_data
 
+    # TODO: These literals will vary when implementing notification removal.
+    #
+    # Note: The "Final" qualifier serves as a shorthand
+    # for declaring that a variable is effectively Literal.
+    fcm_priority: Final = "high"
+    apns_priority: Final = 10
+    apns_push_type = PushType.ALERT
+
     # Send push notification
     try:
         if settings.ZILENCER_ENABLED:
             from zilencer.lib.push_notifications import send_e2ee_push_notifications
 
             response_data: SendNotificationResponseData = send_e2ee_push_notifications(
-                device_id_to_encrypted_data, realm=user_profile.realm
+                device_id_to_encrypted_data,
+                fcm_priority=fcm_priority,
+                apns_priority=apns_priority,
+                apns_push_type=apns_push_type,
+                realm=user_profile.realm,
             )
         else:
             post_data = {
                 "realm_uuid": str(user_profile.realm.uuid),
                 "device_id_to_encrypted_data": device_id_to_encrypted_data,
+                "fcm_priority": fcm_priority,
+                "apns_priority": apns_priority,
+                "apns_push_type": apns_push_type,
             }
             result = send_json_to_push_bouncer("POST", "push/e2ee/notify", post_data)
             assert isinstance(result["android_successfully_sent_count"], int)  # for mypy

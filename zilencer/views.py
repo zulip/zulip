@@ -8,6 +8,7 @@ from uuid import UUID
 
 import orjson
 import requests.exceptions
+from aioapns import PushType
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.validators import URLValidator, validate_email
@@ -92,7 +93,7 @@ from zilencer.auth import (
     generate_registration_transfer_verification_secret,
     validate_registration_transfer_verification_secret,
 )
-from zilencer.lib.push_notifications import send_e2ee_push_notifications
+from zilencer.lib.push_notifications import APNsPriority, FCMPriority, send_e2ee_push_notifications
 from zilencer.lib.remote_counts import MissingDataError
 from zilencer.models import (
     RemoteInstallationCount,
@@ -1807,6 +1808,9 @@ def remote_server_check_analytics(request: HttpRequest, server: RemoteZulipServe
 class SendE2EEPushNotificationPayload(BaseModel):
     realm_uuid: str
     device_id_to_encrypted_data: dict[str, str]
+    fcm_priority: FCMPriority
+    apns_priority: APNsPriority
+    apns_push_type: PushType
 
 
 @typed_endpoint
@@ -1844,7 +1848,11 @@ def remote_server_send_e2ee_push_notification(
     )
 
     response_data = send_e2ee_push_notifications(
-        device_id_to_encrypted_data, remote_realm=remote_realm
+        device_id_to_encrypted_data,
+        fcm_priority=payload.fcm_priority,
+        apns_priority=payload.apns_priority,
+        apns_push_type=payload.apns_push_type,
+        remote_realm=remote_realm,
     )
 
     do_increment_logging_stat(
