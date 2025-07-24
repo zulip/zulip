@@ -5,6 +5,7 @@ import * as navbar_help_menu from "./navbar_help_menu.ts";
 import * as personal_menu_popover from "./personal_menu_popover.ts";
 import * as popover_menus from "./popover_menus.ts";
 import * as popovers from "./popovers.ts";
+import {initializeLogoScroll} from "./logo_scroll_to_top.ts";
 
 export function is_navbar_menus_displayed(): boolean {
     return (
@@ -78,3 +79,5 @@ function get_target_navbar_menu(
     }
     return undefined;
 }
+
+initializeLogoScroll();
