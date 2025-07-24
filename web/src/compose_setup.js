@@ -18,6 +18,7 @@ import * as compose_state from "./compose_state.ts";
 import * as compose_ui from "./compose_ui.ts";
 import * as compose_validate from "./compose_validate.ts";
 import * as dialog_widget from "./dialog_widget.ts";
+import * as drafts from "./drafts.ts";
 import * as flatpickr from "./flatpickr.ts";
 import {$t_html} from "./i18n.ts";
 import * as message_edit from "./message_edit.ts";
@@ -624,6 +625,12 @@ export function initialize() {
         // has done something that requires keeping attention called
         // to the recipient row
         compose_recipient.set_high_attention_recipient_row();
+    });
+
+    $(window).on("blur", () => {
+        // Save drafts when the window loses focus to help
+        // ensure no work is lost
+        drafts.update_draft();
     });
 
     $("body").on("click", ".formatting_button", function (e) {
