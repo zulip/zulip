@@ -977,9 +977,6 @@ def get_mobile_push_content(rendered_content: str) -> str:
                 else:
                     child.getparent().replace(child, collapse_element)
 
-    if settings.PUSH_NOTIFICATION_REDACT_CONTENT:
-        return _("New message")
-
     elem = lxml.html.fragment_fromstring(rendered_content, create_parent=True)
     change_katex_to_raw_latex(elem)
     potentially_collapse_quotes(elem)
@@ -1353,6 +1350,14 @@ def send_push_notifications_legacy(
         PushDeviceToken.objects.filter(user=user_profile, kind=PushDeviceToken.APNS).order_by("id")
     )
 
+    # While sending push notifications for new messages to older clients
+    # (which don't support E2EE), if `require_e2ee_push_notifications`
+    # realm setting is set to `true`, we redact the content.
+    if gcm_payload.get("event") != "remove" and user_profile.realm.require_e2ee_push_notifications:
+        placeholder_content = _("New message")
+        apns_payload["alert"]["body"] = placeholder_content
+        gcm_payload["content"] = placeholder_content
+
     if uses_notification_bouncer():
         send_notifications_to_bouncer(
             user_profile, apns_payload, gcm_payload, gcm_options, android_devices, apple_devices
@@ -1659,9 +1664,6 @@ def handle_push_notification(user_profile_id: int, missed_message: dict[str, Any
     )
     logger.info("Sending push notifications to mobile clients for user %s", user_profile_id)
 
-    # TODO: We plan to offer a personal, realm-level, and server-level setting
-    # to require all notifications to be end-to-end encrypted. When either setting
-    # is enabled, we skip calling 'send_push_notifications_legacy'.
     send_push_notifications_legacy(user_profile, apns_payload, gcm_payload, gcm_options)
     if settings.DEVELOPMENT:
         # TODO: Remove the 'settings.DEVELOPMENT' check when mobile clients start

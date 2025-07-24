@@ -1836,49 +1836,6 @@ class TestGetAPNsPayload(PushNotificationTestCase):
             NotificationTriggers.STREAM_WILDCARD_MENTION
         )
 
-    @override_settings(PUSH_NOTIFICATION_REDACT_CONTENT=True)
-    def test_get_message_payload_apns_redacted_content(self) -> None:
-        user_profile = self.example_user("othello")
-        message_id = self.send_group_direct_message(
-            self.sender, [self.example_user("othello"), self.example_user("cordelia")]
-        )
-        message = Message.objects.get(id=message_id)
-        payload = get_message_payload_apns(
-            user_profile, message, NotificationTriggers.DIRECT_MESSAGE
-        )
-        expected = {
-            "alert": {
-                "title": "Cordelia, Lear's daughter, King Hamlet, Othello, the Moor of Venice",
-                "subtitle": "King Hamlet:",
-                "body": "New message",
-            },
-            "sound": "default",
-            "badge": 0,
-            "custom": {
-                "zulip": {
-                    "message_ids": [message.id],
-                    "recipient_type": "private",
-                    "pm_users": ",".join(
-                        str(user_profile_id)
-                        for user_profile_id in sorted(
-                            s.user_profile_id
-                            for s in Subscription.objects.filter(recipient=message.recipient)
-                        )
-                    ),
-                    "sender_email": self.sender.email,
-                    "sender_id": self.sender.id,
-                    "server": settings.EXTERNAL_HOST,
-                    "realm_id": self.sender.realm.id,
-                    "realm_name": self.sender.realm.name,
-                    "realm_uri": self.sender.realm.url,
-                    "realm_url": self.sender.realm.url,
-                    "user_id": user_profile.id,
-                    "time": datetime_to_timestamp(message.date_sent),
-                },
-            },
-        }
-        self.assertDictEqual(payload, expected)
-
     def test_get_message_payload_apns_stream_message_from_inaccessible_user(self) -> None:
         self.set_up_db_for_testing_user_access()
 
@@ -2039,43 +1996,6 @@ class TestGetGCMPayload(PushNotificationTestCase):
                 "sender_full_name": "King Hamlet",
                 "sender_avatar_url": absolute_avatar_url(message.sender),
                 "recipient_type": "private",
-            },
-        )
-        self.assertDictEqual(
-            gcm_options,
-            {
-                "priority": "high",
-            },
-        )
-
-    @override_settings(PUSH_NOTIFICATION_REDACT_CONTENT=True)
-    def test_get_message_payload_gcm_redacted_content(self) -> None:
-        stream = Stream.objects.get(name="Denmark")
-        message = self.get_message(Recipient.STREAM, stream.id, stream.realm_id)
-        hamlet = self.example_user("hamlet")
-        payload, gcm_options = get_message_payload_gcm(hamlet, message)
-        self.assertDictEqual(
-            payload,
-            {
-                "user_id": hamlet.id,
-                "event": "message",
-                "zulip_message_id": message.id,
-                "time": datetime_to_timestamp(message.date_sent),
-                "content": "New message",
-                "content_truncated": False,
-                "server": settings.EXTERNAL_HOST,
-                "realm_id": hamlet.realm.id,
-                "realm_name": hamlet.realm.name,
-                "realm_uri": hamlet.realm.url,
-                "realm_url": hamlet.realm.url,
-                "sender_id": hamlet.id,
-                "sender_email": hamlet.email,
-                "sender_full_name": "King Hamlet",
-                "sender_avatar_url": absolute_avatar_url(message.sender),
-                "recipient_type": "stream",
-                "topic": "Test topic",
-                "stream": "Denmark",
-                "stream_id": stream.id,
             },
         )
         self.assertDictEqual(
