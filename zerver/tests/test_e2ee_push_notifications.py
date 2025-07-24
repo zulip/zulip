@@ -7,10 +7,10 @@ from firebase_admin.exceptions import InternalError
 from firebase_admin.messaging import UnregisteredError
 
 from analytics.models import RealmCount
-from zerver.lib.push_notifications import handle_push_notification
+from zerver.lib.push_notifications import handle_push_notification, handle_remove_push_notification
 from zerver.lib.test_classes import E2EEPushNotificationTestCase
 from zerver.lib.test_helpers import activate_push_notification_service
-from zerver.models import PushDevice
+from zerver.models import PushDevice, UserMessage
 from zerver.models.scheduled_jobs import NotificationTriggers
 from zilencer.models import RemoteRealm, RemoteRealmCount
 
@@ -455,3 +455,85 @@ class SendPushNotificationTest(E2EEPushNotificationTestCase):
             realm.refresh_from_db()
             self.assertFalse(realm.push_notifications_enabled)
             self.assertIsNone(realm.push_notifications_enabled_end_timestamp)
+
+
+@activate_push_notification_service()
+@mock.patch("zerver.lib.push_notifications.send_push_notifications_legacy")
+class RemovePushNotificationTest(E2EEPushNotificationTestCase):
+    def test_success_cloud(self, unused_mock: mock.MagicMock) -> None:
+        hamlet = self.example_user("hamlet")
+        aaron = self.example_user("aaron")
+
+        self.register_push_devices_for_notification()
+        message_id = self.send_personal_message(
+            from_user=aaron, to_user=hamlet, skip_capture_on_commit_callbacks=True
+        )
+        user_message = UserMessage.objects.get(user_profile=hamlet, message_id=message_id)
+        user_message.flags.active_mobile_push_notification = True
+        user_message.save(update_fields=["flags"])
+
+        with (
+            self.mock_fcm() as mock_fcm_messaging,
+            self.mock_apns() as send_notification,
+            self.assertLogs("zerver.lib.push_notifications", level="INFO") as zerver_logger,
+            self.assertLogs("zilencer.lib.push_notifications", level="INFO"),
+        ):
+            mock_fcm_messaging.send_each.return_value = self.make_fcm_success_response()
+            send_notification.return_value.is_successful = True
+
+            handle_remove_push_notification(hamlet.id, [message_id])
+
+            mock_fcm_messaging.send_each.assert_called_once()
+            send_notification.assert_called_once()
+
+            user_message.refresh_from_db()
+            self.assertFalse(user_message.flags.active_mobile_push_notification)
+
+            self.assertEqual(
+                "INFO:zerver.lib.push_notifications:"
+                f"Sent E2EE mobile push notifications for user {hamlet.id}: 1 via FCM, 1 via APNs",
+                zerver_logger.output[1],
+            )
+
+    @responses.activate
+    @override_settings(ZILENCER_ENABLED=False)
+    def test_success_self_hosted(self, unused_mock: mock.MagicMock) -> None:
+        self.add_mock_response()
+
+        hamlet = self.example_user("hamlet")
+        aaron = self.example_user("aaron")
+
+        self.register_push_devices_for_notification(is_server_self_hosted=True)
+        message_id = self.send_personal_message(
+            from_user=aaron, to_user=hamlet, skip_capture_on_commit_callbacks=True
+        )
+        user_message = UserMessage.objects.get(user_profile=hamlet, message_id=message_id)
+        user_message.flags.active_mobile_push_notification = True
+        user_message.save(update_fields=["flags"])
+
+        with (
+            self.mock_fcm() as mock_fcm_messaging,
+            self.mock_apns() as send_notification,
+            mock.patch(
+                "corporate.lib.stripe.RemoteRealmBillingSession.current_count_for_billed_licenses",
+                return_value=10,
+            ),
+            self.assertLogs("zerver.lib.push_notifications", level="INFO") as zerver_logger,
+            self.assertLogs("zilencer.lib.push_notifications", level="INFO"),
+        ):
+            mock_fcm_messaging.send_each.return_value = self.make_fcm_success_response()
+            send_notification.return_value.is_successful = True
+
+            handle_remove_push_notification(hamlet.id, [message_id])
+
+            mock_fcm_messaging.send_each.assert_called_once()
+            send_notification.assert_called_once()
+
+            user_message.refresh_from_db()
+            self.assertFalse(user_message.flags.active_mobile_push_notification)
+
+            self.assertEqual(
+                "INFO:zerver.lib.push_notifications:"
+                f"Sent E2EE mobile push notifications for user {hamlet.id}: 1 via FCM, 1 via APNs",
+                zerver_logger.output[1],
+            )

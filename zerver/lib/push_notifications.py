@@ -1323,6 +1323,11 @@ def handle_remove_push_notification(user_profile_id: int, message_ids: list[int]
     apns_payload = get_remove_payload_apns(user_profile, truncated_message_ids)
 
     send_push_notifications_legacy(user_profile, apns_payload, gcm_payload, gcm_options)
+    if settings.DEVELOPMENT:
+        # TODO: Remove the 'settings.DEVELOPMENT' check when mobile clients start
+        # to offer a way to register for E2EE push notifications; otherwise it'll
+        # do needless DB query and logging.
+        send_push_notifications(user_profile, apns_payload, gcm_payload, is_removal=True)
 
     # We intentionally use the non-truncated message_ids here.  We are
     # assuming in this very rare case that the user has manually
@@ -1394,6 +1399,7 @@ def send_push_notifications(
     user_profile: UserProfile,
     apns_payload_data_to_encrypt: dict[str, Any],
     fcm_payload_data_to_encrypt: dict[str, Any],
+    is_removal: bool = False,
 ) -> None:
     # Uses 'zerver_pushdevice_user_bouncer_device_id_idx' index.
     push_devices = PushDevice.objects.filter(user=user_profile, bouncer_device_id__isnull=False)
@@ -1425,13 +1431,11 @@ def send_push_notifications(
         assert push_device.bouncer_device_id is not None  # for mypy
         device_id_to_encrypted_data[str(push_device.bouncer_device_id)] = encrypted_data
 
-    # TODO: These literals will vary when implementing notification removal.
-    #
     # Note: The "Final" qualifier serves as a shorthand
     # for declaring that a variable is effectively Literal.
-    fcm_priority: Final = "high"
-    apns_priority: Final = 10
-    apns_push_type = PushType.ALERT
+    fcm_priority: Final = "normal" if is_removal else "high"
+    apns_priority: Final = 5 if is_removal else 10
+    apns_push_type = PushType.BACKGROUND if is_removal else PushType.ALERT
 
     # Send push notification
     try:
