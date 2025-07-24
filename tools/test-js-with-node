@@ -140,6 +140,7 @@ EXEMPT_FILES = make_set(
         "web/src/local_message.ts",
         "web/src/localstorage.ts",
         "web/src/message_actions_popover.ts",
+        "web/src/message_delete.ts",
         "web/src/message_edit.ts",
         "web/src/message_edit_history.ts",
         "web/src/message_events.ts",
