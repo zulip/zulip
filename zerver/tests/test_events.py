@@ -225,10 +225,8 @@ from zerver.lib.event_schema import (
     check_subscription_peer_remove,
     check_subscription_remove,
     check_subscription_update,
-    check_typing_edit_channel_message_start,
-    check_typing_edit_channel_message_stop,
-    check_typing_edit_direct_message_start,
-    check_typing_edit_direct_message_stop,
+    check_typing_edit_message_start,
+    check_typing_edit_message_stop,
     check_typing_start,
     check_typing_stop,
     check_update_display_settings,
@@ -1664,7 +1662,7 @@ class NormalActionsTest(BaseAction):
                 msg_id,
                 "start",
             )
-        check_typing_edit_direct_message_start("events[0]", events[0])
+        check_typing_edit_message_start("events[0]", events[0])
 
         with self.verify_action(state_change_expected=False) as events:
             do_send_direct_message_edit_typing_notification(
@@ -1673,7 +1671,7 @@ class NormalActionsTest(BaseAction):
                 msg_id,
                 "stop",
             )
-        check_typing_edit_direct_message_stop("events[0]", events[0])
+        check_typing_edit_message_stop("events[0]", events[0])
 
     def test_stream_edit_message_typing_events(self) -> None:
         channel = get_stream("Denmark", self.user_profile.realm)
@@ -1685,13 +1683,13 @@ class NormalActionsTest(BaseAction):
             do_send_stream_message_edit_typing_notification(
                 self.user_profile, channel.id, msg_id, "start", topic_name
             )
-        check_typing_edit_channel_message_start("events[0]", events[0])
+        check_typing_edit_message_start("events[0]", events[0])
 
         with self.verify_action(state_change_expected=False) as events:
             do_send_stream_message_edit_typing_notification(
                 self.user_profile, channel.id, msg_id, "stop", topic_name
             )
-        check_typing_edit_channel_message_stop("events[0]", events[0])
+        check_typing_edit_message_stop("events[0]", events[0])
 
     def test_custom_profile_fields_events(self) -> None:
         realm = self.user_profile.realm
