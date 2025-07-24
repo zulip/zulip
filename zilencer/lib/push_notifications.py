@@ -1,8 +1,9 @@
 import asyncio
 import logging
 from collections.abc import Iterable
+from typing import Literal, TypeAlias
 
-from aioapns import NotificationRequest
+from aioapns import NotificationRequest, PushType
 from django.utils.timezone import now as timezone_now
 from firebase_admin import exceptions as firebase_exceptions
 from firebase_admin import messaging as firebase_messaging
@@ -18,6 +19,9 @@ from zerver.models.realms import Realm
 from zilencer.models import RemotePushDevice, RemoteRealm
 
 logger = logging.getLogger(__name__)
+
+FCMPriority: TypeAlias = Literal["high", "normal"]
+APNsPriority: TypeAlias = Literal[10, 5, 1]
 
 
 def send_e2ee_push_notification_apple(
@@ -117,6 +121,9 @@ def send_e2ee_push_notification_android(
 def send_e2ee_push_notifications(
     device_id_to_encrypted_data: dict[str, str],
     *,
+    fcm_priority: FCMPriority,
+    apns_priority: APNsPriority,
+    apns_push_type: PushType,
     realm: Realm | None = None,
     remote_realm: RemoteRealm | None = None,
 ) -> SendNotificationResponseData:
@@ -147,17 +154,11 @@ def send_e2ee_push_notifications(
             "alert": {
                 "title": "New notification",
             },
-            # TODO: Should we remove `sound` and let the clients add it.
-            # Then we can rename it as `apns_required_message_payload`.
-            "sound": "default",
         },
     }
 
     fcm_requests = []
     fcm_remote_push_devices: list[RemotePushDevice] = []
-
-    # TODO: "normal" if remove event.
-    priority = "high"
 
     for remote_push_device in remote_push_devices:
         message_payload = {
@@ -174,8 +175,8 @@ def send_e2ee_push_notifications(
                     apns_topic=remote_push_device.ios_app_id,
                     device_token=remote_push_device.token,
                     message=apns_message_payload,
-                    time_to_live=24 * 3600,
-                    # TODO: priority
+                    priority=apns_priority,
+                    push_type=apns_push_type,
                 )
             )
             apns_remote_push_devices.append(remote_push_device)
@@ -184,7 +185,7 @@ def send_e2ee_push_notifications(
                 firebase_messaging.Message(
                     data=message_payload,
                     token=remote_push_device.token,
-                    android=firebase_messaging.AndroidConfig(priority=priority),
+                    android=firebase_messaging.AndroidConfig(priority=fcm_priority),
                 )
             )
             fcm_remote_push_devices.append(remote_push_device)
