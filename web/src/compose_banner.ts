@@ -5,6 +5,7 @@ import render_compose_banner from "../templates/compose_banner/compose_banner.hb
 import render_stream_does_not_exist_error from "../templates/compose_banner/stream_does_not_exist_error.hbs";
 import render_topics_required_error_banner from "../templates/compose_banner/topics_required_error_banner.hbs";
 import render_unknown_zoom_user_error from "../templates/compose_banner/unknown_zoom_user_error.hbs";
+import render_user_group_mention_not_allowed_error from "../templates/compose_banner/user_group_mention_not_allowed_error.hbs";
 
 import {$t} from "./i18n.ts";
 import * as scroll_util from "./scroll_util.ts";
@@ -67,6 +68,7 @@ export const CLASSNAMES = {
     generic_compose_error: "generic_compose_error",
     user_not_subscribed: "user_not_subscribed",
     unknown_zoom_user: "unknown_zoom_user",
+    user_group_mention_not_allowed: "user_group_mention_not_allowed",
 };
 
 export function get_compose_banner_container($textarea: JQuery): JQuery {
@@ -278,6 +280,18 @@ export function show_stream_not_subscribed_error(
         hide_close_button: true,
     });
     append_compose_banner_to_banner_list($(new_row_html), $banner_container);
+}
+
+export function show_user_group_mention_not_allowed_error(group_name: string): void {
+    // Remove any existing banners with this warning.
+    $(`#compose_banners .${CSS.escape(CLASSNAMES.user_group_mention_not_allowed)}`).remove();
+
+    const new_row_html = render_user_group_mention_not_allowed_error({
+        banner_type: ERROR,
+        user_group_name: group_name,
+        classname: CLASSNAMES.user_group_mention_not_allowed,
+    });
+    append_compose_banner_to_banner_list($(new_row_html), $("#compose_banners"));
 }
 
 export function show_unknown_zoom_user_error(email: string): void {
