@@ -491,6 +491,18 @@
             -webkit-box-orient: vertical;
             overflow: hidden;
         }
+
+        /* We don't want to apply line clamping to 1:1 DMs,
+           as that causes an odd problem with Safari collapsing
+           the grid on .user-status-microlayout so that usernames
+           always have an ellipsis--no matter how short they are,
+           nor how much space is available in the Topic column.
+
+           `display: inherit` here will set the value to what is
+           already established on .recent_view_focusable. */
+        .line_clamp:has(.recent-view-dm) {
+            display: inherit;
+        }
     }
 
     & thead .last_msg_time_header {
