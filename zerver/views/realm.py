@@ -178,6 +178,7 @@ def update_realm(
     name_changes_disabled: Json[bool] | None = None,
     new_stream_announcements_stream_id: Json[int] | None = None,
     org_type: Json[OrgTypeEnum] | None = None,
+    require_e2ee_push_notifications: Json[bool] | None = None,
     require_unique_names: Json[bool] | None = None,
     send_welcome_emails: Json[bool] | None = None,
     signup_announcements_stream_id: Json[int] | None = None,

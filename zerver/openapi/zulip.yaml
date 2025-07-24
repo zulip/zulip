@@ -5402,6 +5402,32 @@ paths:
                                         indicated timestamp is near.
 
                                         **Changes**: New in Zulip 8.0 (feature level 231).
+                                    require_e2ee_push_notifications:
+                                      type: boolean
+                                      description: |
+                                        Whether this realm is configured to disallow sending mobile
+                                        push notifications with message content through the legacy
+                                        mobile push notifications APIs. The new API uses end-to-end
+                                        encryption to protect message content and metadata from
+                                        being accessible to the push bouncer service, APNs, and
+                                        FCM. Clients that support the new E2EE API will use it
+                                        automatically regardless of this setting.
+
+                                        If `true`, mobile push notifications sent to clients that
+                                        lack support for E2EE push notifications will always have
+                                        "New message" as their content. Note that these legacy
+                                        mobile notifications will still contain metadata, which may
+                                        include the message's ID, the sender's name, email address,
+                                        and avatar.
+
+                                        In a future release, once the official mobile apps have
+                                        implemented fully validated their E2EE protocol support,
+                                        this setting will become strict, and disable the legacy
+                                        protocol entirely.
+
+                                        **Changes**: New in Zulip 11.0 (feature level 409). Previously,
+                                        this behavior was available only via the
+                                        `PUSH_NOTIFICATION_REDACT_CONTENT` global server setting.
                                     require_unique_names:
                                       type: boolean
                                       description: |
@@ -18953,6 +18979,34 @@ paths:
                           Present if `realm` is present in `fetch_event_types`.
 
                           The name of the organization, used in login pages etc.
+                      realm_require_e2ee_push_notifications:
+                        type: boolean
+                        description: |
+                          Present if `realm` is present in `fetch_event_types`.
+
+                          Whether this realm is configured to disallow sending mobile
+                          push notifications with message content through the legacy
+                          mobile push notifications APIs. The new API uses end-to-end
+                          encryption to protect message content and metadata from
+                          being accessible to the push bouncer service, APNs, and
+                          FCM. Clients that support the new E2EE API will use it
+                          automatically regardless of this setting.
+
+                          If `true`, mobile push notifications sent to clients that
+                          lack support for E2EE push notifications will always have
+                          "New message" as their content. Note that these legacy
+                          mobile notifications will still contain metadata, which may
+                          include the message's ID, the sender's name, email address,
+                          and avatar.
+
+                          In a future release, once the official mobile apps have
+                          implemented fully validated their E2EE protocol support,
+                          this setting will become strict, and disable the legacy
+                          protocol entirely.
+
+                          **Changes**: New in Zulip 11.0 (feature level 409). Previously,
+                          this behavior was available only via the
+                          `PUSH_NOTIFICATION_REDACT_CONTENT` global server setting.
                       realm_require_unique_names:
                         type: boolean
                         description: |

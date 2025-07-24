@@ -41,6 +41,9 @@ const admin_settings_label = {
     }),
     realm_inline_url_embed_preview: $t({defaultMessage: "Show previews of linked websites"}),
     realm_send_welcome_emails: $t({defaultMessage: "Send emails introducing Zulip to new users"}),
+    realm_require_e2ee_push_notifications: $t({
+        defaultMessage: "Require end-to-end encryption for push notification content",
+    }),
     realm_message_content_allowed_in_email_notifications: $t({
         defaultMessage: "Allow message content in message notification emails",
     }),
@@ -194,6 +197,7 @@ export function build_page(): void {
         realm_topics_policy_values: settings_config.get_realm_topics_policy_values(),
         empty_string_topic_display_name: util.get_final_topic_display_name(""),
         realm_send_welcome_emails: realm.realm_send_welcome_emails,
+        realm_require_e2ee_push_notifications: realm.realm_require_e2ee_push_notifications,
         realm_message_content_allowed_in_email_notifications:
             realm.realm_message_content_allowed_in_email_notifications,
         realm_enable_spectator_access: realm.realm_enable_spectator_access,
