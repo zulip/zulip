@@ -720,10 +720,6 @@ class PersonFullName(BaseModel):
     full_name: str
 
 
-class PersonIsBillingAdmin(BaseModel):
-    user_id: int
-
-
 class PersonRole(BaseModel):
     user_id: int
     role: Literal[100, 200, 300, 400, 600]
@@ -750,7 +746,6 @@ class EventRealmUserUpdate(BaseEvent):
         | PersonDeliveryEmail
         | PersonEmail
         | PersonFullName
-        | PersonIsBillingAdmin
         | PersonRole
         | PersonTimezone
         | PersonIsActive
