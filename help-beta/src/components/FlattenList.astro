@@ -23,8 +23,13 @@ assert.ok(
 const flattened = {
     ...first_element,
     children: tree_with_removed_newlines.children.flatMap((other) => {
+        if (other.type === "comment") {
+            return [];
+        }
         assert.ok(
-            other.type === "element" && other.tagName === first_element.tagName,
+            other.type === "element" &&
+                (other.tagName === first_element.tagName ||
+                    other.tagName === "aside"),
         );
         return other.children;
     }),
