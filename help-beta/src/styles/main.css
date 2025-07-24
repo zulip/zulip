@@ -13,6 +13,28 @@
 
     /* Changed from 1.75 to make text easier to read. */
     --sl-line-height: 1.5;
+
+    /* User circles */
+    /* stylelint-disable color-no-hex */
+    --color-user-circle-active: light-dark(#43a35e, #4cdc75);
+    --color-user-circle-idle: light-dark(#f5b266, #ae640a);
+    --color-user-circle-offline: light-dark(#c1c6d7, #454854);
+    --color-user-circle-deactivated: hsl(0deg 0% 50%);
+    --gradient-user-circle-idle: linear-gradient(
+        to right,
+        var(--color-user-circle-idle) 5%,
+        light-dark(
+                color-mix(
+                    in srgb,
+                    var(--color-user-circle-idle) 78.9%,
+                    transparent
+                ),
+                var(--color-user-circle-idle)
+            )
+            25%,
+        transparent 100%
+    );
+    /* stylelint-enable color-no-hex */
 }
 
 .non-clickable-sidebar-heading {
@@ -55,6 +77,30 @@
 
     /* We need to specify this for dark mode. */
     fill: currentcolor;
+}
+
+.user-circle {
+    font-size: 0.7em;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.user-circle-active {
+    color: var(--color-user-circle-active);
+}
+
+.user-circle-idle {
+    background: var(--gradient-user-circle-idle);
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.user-circle-offline {
+    color: var(--color-user-circle-offline);
+}
+
+.user-circle-deactivated {
+    color: var(--color-user-circle-deactivated);
 }
 
 .sl-markdown-content {
