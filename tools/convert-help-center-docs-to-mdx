@@ -408,12 +408,13 @@ def convert_admonitions_to_asides(
     """
     Lots of code in this function is taken from
     https://github.com/Python-Markdown/markdown/blob/64a3c0fbc00327fbfee1fd6b44da0e5453287fe4/markdown/extensions/admonition.py
+    `(?:^|\n)!!!` has been changed to `(?:^|\n)( *)!!!` to allow for indented admonitions to be converted.
     """
-    RE = re.compile(r'(?:^|\n)!!! ?([\w\-]+(?: +[\w\-]+)*)(?: +"(.*?)")? *(?:\n|$)')
+    RE = re.compile(r'(?:^|\n)( *)!!! ?([\w\-]+(?: +[\w\-]+)*)(?: +"(.*?)")? *(?:\n|$)')
     RE_SPACES = re.compile("  +")
 
     def get_admonition_class_and_title(match: re.Match[str]) -> tuple[str, str | None]:
-        klass, title = match.group(1).lower(), match.group(2)
+        klass, title = match.group(2).lower(), match.group(3)
         klass = RE_SPACES.sub(" ", klass)
         if title is None:
             # no title was provided, use the capitalized class name as title
@@ -446,19 +447,17 @@ def convert_admonitions_to_asides(
                 # implementation.
                 # See https://chat.zulip.org/#narrow/channel/19-documentation/topic/Stage.202.3A.20New.20syntax.20for.20!!!tip.20in.20help-beta/near/2174415
                 # for more details.
-                replacement = f"\n<ZulipNote>\n{admonition_content}\n</ZulipNote>\n"
+                replacement = f"\n{match.group(1)}<ZulipNote>\n{admonition_content}\n{match.group(1)}</ZulipNote>\n"
                 import_statement_set.add(
                     f"import ZulipNote from '{components_dir_path}/ZulipNote.astro';"
                 )
             elif klass == "tip":
                 type = "tip"
                 title = "Tip"
-                replacement = (
-                    f'\n<Aside type="{type}" title="{title}">\n{admonition_content}\n</Aside>\n'
-                )
+                replacement = f'\n{match.group(1)}<Aside type="{type}" title="{title}">\n{admonition_content}\n{match.group(1)}</Aside>\n'
                 import_statement_set.add("import { Aside } from '@astrojs/starlight/components'")
             elif klass == "keyboard_tip":
-                replacement = f"\n<KeyboardTip>\n{admonition_content}\n</KeyboardTip>\n"
+                replacement = f"\n{match.group(1)}<KeyboardTip>\n{admonition_content}\n{match.group(1)}</KeyboardTip>\n"
                 import_statement_set.add(
                     f"import KeyboardTip from '{components_dir_path}/KeyboardTip.astro';"
                 )
