@@ -1532,3 +1532,63 @@ div.settings-radio-input-parent {
     display: block;
     margin: auto;
 }
+
+#stream_members_list,
+#user_group_settings .member-list,
+#stream_creation_form .subscriber-list,
+#user_group_creation_form .member-list {
+    table-layout: fixed;
+    width: 100%;
+
+    th,
+    td {
+        box-sizing: border-box;
+    }
+
+    .panel_user_list {
+        width: 50%;
+
+        .pill-container {
+            max-width: 100%;
+
+            .pill-value {
+                /* This is needed to unset the max-width value of 165px
+                set for user pills in other tables. */
+                max-width: unset;
+            }
+        }
+    }
+}
+
+#stream_members_list,
+#user_group_settings .member-list {
+    .remove-button-column {
+        width: 3em;
+    }
+
+    .settings-email-column {
+        width: calc(50% - 3em);
+    }
+}
+
+#stream_creation_form .subscriber-list,
+#user_group_creation_form .member-list {
+    .action-column {
+        width: 6em;
+    }
+
+    .settings-email-column {
+        width: calc(50% - 6em);
+    }
+}
+
+@media (width < $lg_min) {
+    #stream_members_list,
+    #user_group_settings .member-list,
+    #stream_creation_form .subscriber-list,
+    #user_group_creation_form .member-list {
+        .panel_user_list {
+            width: auto;
+        }
+    }
+}

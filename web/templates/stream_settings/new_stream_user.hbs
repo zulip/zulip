@@ -7,7 +7,7 @@
     {{else}}
         <td class="hidden-subscriber-email {{#if soft_removed}} strikethrough {{/if}}">{{t "(hidden)"}}</td>
     {{/if}}
-    <td>
+    <td class="action-column">
         {{#if soft_removed}}
             {{> ../components/action_button custom_classes="undo_soft_removed_potential_subscriber" label=(t "Add") attention="quiet" intent="neutral" aria-label=(t "Add") }}
         {{else}}

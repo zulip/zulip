@@ -666,6 +666,11 @@ ul.popover-group-menu-member-list {
                     }
                 }
             }
+
+            .remove-button-wrapper {
+                display: flex;
+                justify-content: flex-end;
+            }
         }
     }
 
@@ -697,11 +702,6 @@ ul.popover-group-menu-member-list {
             padding: 3em 1em;
         }
     }
-}
-
-.remove-button-wrapper {
-    display: flex;
-    justify-content: flex-end;
 }
 
 @media (width < $md_min) {
