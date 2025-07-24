@@ -916,7 +916,7 @@ def get_recursive_subgroups_for_groups(
 
 def get_root_id_annotated_recursive_subgroups_for_groups(
     user_group_ids: Iterable[int], realm_id: int
-) -> QuerySet[NamedUserGroup]:
+) -> QuerySet[UserGroup]:
     # Same as get_recursive_subgroups_for_groups but keeps track of
     # each group root_id and annotates it with that group.
 
