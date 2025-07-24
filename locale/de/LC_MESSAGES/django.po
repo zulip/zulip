@@ -46,9 +46,10 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-07-18 03:39+0000\n"
-"PO-Revision-Date: 2025-07-17 06:37+0000\n"
+"PO-Revision-Date: 2025-07-19 05:03+0000\n"
 "Last-Translator: Alex Vandiver <alexmv@zulip.com>\n"
-"Language-Team: German <https://hosted.weblate.org/projects/zulip/django/de/>\n"
+"Language-Team: German <https://hosted.weblate.org/projects/zulip/django/de/>"
+"\n"
 "Language: de\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -5781,10 +5782,9 @@ msgstr ""
 "nutzen."
 
 #: zerver/lib/exceptions.py:739
-#, fuzzy, python-brace-format
-#| msgid "'old' value does not match the expected value."
+#, python-brace-format
 msgid "'{field_name}' value does not match the expected value."
-msgstr "'Alter' Wert entspricht nicht dem erwarteten Wert."
+msgstr "'{field_name}' Wert entspricht nicht dem erwarteten Wert."
 
 #: zerver/lib/exceptions.py:764
 #, python-brace-format
@@ -6745,10 +6745,9 @@ msgid "{var_name} is not a valid hex color code"
 msgstr "{var_name} ist kein gültiger Hex-Farbcode"
 
 #: zerver/lib/typed_endpoint_validators.py:124
-#, fuzzy, python-brace-format
-#| msgid "Invalid {var_name}"
+#, python-brace-format
 msgid "Invalid {setting_name}"
-msgstr "Ungültige {var_name}"
+msgstr "Ungültige {setting_name}"
 
 #: zerver/lib/upload/__init__.py:45
 msgid "Upload would exceed your organization's upload quota."

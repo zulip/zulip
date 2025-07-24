@@ -20,14 +20,16 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-07-18 03:39+0000\n"
-"PO-Revision-Date: 2025-07-17 06:37+0000\n"
-"Last-Translator: Anonymous <noreply@weblate.org>\n"
-"Language-Team: Italian <https://hosted.weblate.org/projects/zulip/django/it/>\n"
+"PO-Revision-Date: 2025-07-19 05:03+0000\n"
+"Last-Translator: Alex Vandiver <alexmv@zulip.com>\n"
+"Language-Team: Italian <https://hosted.weblate.org/projects/zulip/django/it/>"
+"\n"
 "Language: it\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=3; plural=n == 1 ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;\n"
+"Plural-Forms: nplurals=3; plural=n == 1 ? 0 : n != 0 && n % 1000000 == 0 ? 1 "
+": 2;\n"
 "X-Generator: Weblate 5.13-dev\n"
 
 #: analytics/views/stats.py:109 zerver/decorator.py:682 zerver/decorator.py:700
@@ -5717,10 +5719,9 @@ msgstr ""
 "questo argomento."
 
 #: zerver/lib/exceptions.py:739
-#, fuzzy, python-brace-format
-#| msgid "'old' value does not match the expected value."
+#, python-brace-format
 msgid "'{field_name}' value does not match the expected value."
-msgstr "Il valore 'vecchio' non corrisponde al valore previsto."
+msgstr "Il valore '{field_name}' non corrisponde al valore previsto."
 
 #: zerver/lib/exceptions.py:764
 #, python-brace-format
@@ -6677,10 +6678,9 @@ msgid "{var_name} is not a valid hex color code"
 msgstr "{var_name} non è un codice colore esadecimale valido"
 
 #: zerver/lib/typed_endpoint_validators.py:124
-#, fuzzy, python-brace-format
-#| msgid "Invalid {var_name}"
+#, python-brace-format
 msgid "Invalid {setting_name}"
-msgstr "Non valida {var_name}"
+msgstr "Non valida {setting_name}"
 
 #: zerver/lib/upload/__init__.py:45
 msgid "Upload would exceed your organization's upload quota."

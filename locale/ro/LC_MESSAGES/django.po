@@ -16,14 +16,16 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-07-18 03:39+0000\n"
-"PO-Revision-Date: 2025-07-17 06:38+0000\n"
+"PO-Revision-Date: 2025-07-19 05:03+0000\n"
 "Last-Translator: Alex Vandiver <alexmv@zulip.com>\n"
-"Language-Team: Romanian <https://hosted.weblate.org/projects/zulip/django/ro/>\n"
+"Language-Team: Romanian <https://hosted.weblate.org/projects/zulip/django/ro/"
+">\n"
 "Language: ro\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=3; plural=n==1 ? 0 : (n==0 || (n%100 > 0 && n%100 < 20)) ? 1 : 2;\n"
+"Plural-Forms: nplurals=3; plural=n==1 ? 0 : (n==0 || (n%100 > 0 && n%100 < "
+"20)) ? 1 : 2;\n"
 "X-Generator: Weblate 5.13-dev\n"
 
 #: analytics/views/stats.py:109 zerver/decorator.py:682 zerver/decorator.py:700
@@ -6257,10 +6259,9 @@ msgid "{var_name} is not a valid hex color code"
 msgstr "{var_name} nu este un cod hex valid"
 
 #: zerver/lib/typed_endpoint_validators.py:124
-#, fuzzy, python-brace-format
-#| msgid "Invalid {var_name}"
+#, python-brace-format
 msgid "Invalid {setting_name}"
-msgstr "{var_name} nevalid"
+msgstr "{setting_name} nevalid"
 
 #: zerver/lib/upload/__init__.py:45
 msgid "Upload would exceed your organization's upload quota."
