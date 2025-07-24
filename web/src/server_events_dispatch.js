@@ -289,6 +289,7 @@ export function dispatch_normal_event(event) {
                 require_unique_names: noop,
                 send_welcome_emails: noop,
                 topics_policy: noop,
+                require_e2ee_push_notifications: noop,
                 message_content_allowed_in_email_notifications: noop,
                 enable_spectator_access: noop,
                 signup_announcements_stream_id: noop,

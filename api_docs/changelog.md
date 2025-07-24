@@ -20,6 +20,12 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 11.0
 
+**Feature level 409**
+
+* `PATCH /realm`, [`POST /register`](/api/register-queue),
+  [`GET /events`](/api/get-events): Added a new
+  `require_e2ee_push_notifications` realm setting.
+
 **Feature level 407**
 
 * [`GET /users/me/subscriptions`](/api/get-subscriptions),
