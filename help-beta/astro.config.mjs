@@ -30,7 +30,7 @@ export default defineConfig({
                     },
                 },
                 iconCustomizer(collection, _icon, props) {
-                    if (collection === "zulip-icon") {
+                    if (collection === "zulip-icon" || collection === "fa") {
                         // We need to override some default starlight behaviour to make
                         // icons look nice, see the css for this class to see the reasoning
                         // for each individual override of the default css.
