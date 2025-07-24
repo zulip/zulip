@@ -9,6 +9,7 @@ import * as clipboard_handler from "./clipboard_handler.ts";
 import * as confirm_dialog from "./confirm_dialog.ts";
 import * as hash_util from "./hash_util.ts";
 import {$t_html} from "./i18n.ts";
+import * as message_delete from "./message_delete.ts";
 import * as message_edit from "./message_edit.ts";
 import * as message_summary from "./message_summary.ts";
 import * as popover_menus from "./popover_menus.ts";
@@ -166,7 +167,7 @@ export function initialize(): void {
                         help_link: "/help/delete-a-topic",
                         html_body,
                         on_click() {
-                            message_edit.delete_topic(stream_id, topic_name);
+                            message_delete.delete_topic(stream_id, topic_name);
                         },
                     });
 

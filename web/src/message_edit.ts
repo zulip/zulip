@@ -7,7 +7,6 @@ import * as z from "zod/mini";
 
 import * as resolved_topic from "../shared/src/resolved_topic.ts";
 import render_wildcard_mention_not_allowed_error from "../templates/compose_banner/wildcard_mention_not_allowed_error.hbs";
-import render_delete_message_modal from "../templates/confirm_dialog/confirm_delete_message.hbs";
 import render_confirm_edit_messages from "../templates/confirm_dialog/confirm_edit_messages.hbs";
 import render_confirm_merge_topics_with_rename from "../templates/confirm_dialog/confirm_merge_topics_with_rename.hbs";
 import render_confirm_moving_messages_modal from "../templates/confirm_dialog/confirm_moving_messages.hbs";
@@ -48,11 +47,9 @@ import * as message_store from "./message_store.ts";
 import type {Message} from "./message_store.ts";
 import * as message_viewport from "./message_viewport.ts";
 import * as onboarding_steps from "./onboarding_steps.ts";
-import * as people from "./people.ts";
 import * as resize from "./resize.ts";
 import * as rows from "./rows.ts";
 import * as saved_snippets_ui from "./saved_snippets_ui.ts";
-import * as settings_data from "./settings_data.ts";
 import {current_user, realm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import * as stream_topic_history from "./stream_topic_history.ts";
@@ -68,7 +65,6 @@ import * as util from "./util.ts";
 // textarea element which has the modified content.
 // Storing textarea makes it easy to get the current content.
 export const currently_editing_messages = new Map<number, JQuery<HTMLTextAreaElement>>();
-let currently_deleting_messages: number[] = [];
 let currently_topic_editing_message_ids: number[] = [];
 const currently_echoing_messages = new Map<number, EchoedMessageData>();
 
@@ -221,80 +217,6 @@ export function remaining_content_edit_time(message: Message): number {
     }
     const limit_seconds = realm.realm_message_content_edit_limit_seconds ?? Infinity;
     return limit_seconds + (message.timestamp - Date.now() / 1000);
-}
-
-export function is_message_sent_by_my_bot(message: Message): boolean {
-    const user = people.get_by_user_id(message.sender_id);
-    if (!user.is_bot || user.bot_owner_id === null) {
-        // The message was not sent by a bot or the message was sent
-        // by a cross-realm bot which does not have an owner.
-        return false;
-    }
-
-    return people.is_my_user_id(user.bot_owner_id);
-}
-
-export function get_deletability(message: Message): boolean {
-    if (message.type === "stream" && stream_data.is_stream_archived(message.stream_id)) {
-        return false;
-    }
-
-    if (settings_data.user_can_delete_any_message()) {
-        return true;
-    }
-
-    if (message.type === "stream") {
-        const stream = stream_data.get_sub_by_id(message.stream_id);
-        assert(stream !== undefined);
-
-        const can_delete_any_message_in_channel =
-            settings_data.user_has_permission_for_group_setting(
-                stream.can_delete_any_message_group,
-                "can_delete_any_message_group",
-                "stream",
-            );
-        if (can_delete_any_message_in_channel) {
-            return true;
-        }
-    }
-
-    if (!message.sent_by_me && !is_message_sent_by_my_bot(message)) {
-        return false;
-    }
-    if (message.locally_echoed) {
-        return false;
-    }
-    if (!settings_data.user_can_delete_own_message()) {
-        if (message.type !== "stream") {
-            return false;
-        }
-
-        const stream = stream_data.get_sub_by_id(message.stream_id);
-        assert(stream !== undefined);
-
-        const can_delete_own_message_in_channel =
-            settings_data.user_has_permission_for_group_setting(
-                stream.can_delete_own_message_group,
-                "can_delete_own_message_group",
-                "stream",
-            );
-        if (!can_delete_own_message_in_channel) {
-            return false;
-        }
-    }
-
-    if (realm.realm_message_content_delete_limit_seconds === null) {
-        // This means no time limit for message deletion.
-        return true;
-    }
-
-    if (
-        realm.realm_message_content_delete_limit_seconds + (message.timestamp - Date.now() / 1000) >
-        0
-    ) {
-        return true;
-    }
-    return false;
 }
 
 export function is_stream_editable(message: Message, edit_limit_seconds_buffer = 0): boolean {
@@ -1569,73 +1491,6 @@ export function edit_last_sent_message(): void {
     compose_actions.cancel();
     start($msg_row, () => {
         $(".message_edit_content").trigger("focus");
-    });
-}
-
-export function delete_message(msg_id: number): void {
-    const html_body = render_delete_message_modal();
-
-    function do_delete_message(): void {
-        currently_deleting_messages.push(msg_id);
-        void channel.del({
-            url: "/json/messages/" + msg_id,
-            success() {
-                currently_deleting_messages = currently_deleting_messages.filter(
-                    (id) => id !== msg_id,
-                );
-                dialog_widget.hide_dialog_spinner();
-                dialog_widget.close();
-            },
-            error(xhr) {
-                currently_deleting_messages = currently_deleting_messages.filter(
-                    (id) => id !== msg_id,
-                );
-
-                dialog_widget.hide_dialog_spinner();
-                ui_report.error(
-                    $t_html({defaultMessage: "Error deleting message"}),
-                    xhr,
-                    $("#dialog_error"),
-                );
-            },
-        });
-    }
-
-    confirm_dialog.launch({
-        html_heading: $t_html({defaultMessage: "Delete message?"}),
-        html_body,
-        help_link: "/help/delete-a-message#delete-a-message-completely",
-        on_click: do_delete_message,
-        loading_spinner: true,
-    });
-}
-
-export function delete_topic(stream_id: number, topic_name: string, failures = 0): void {
-    void channel.post({
-        url: "/json/streams/" + stream_id + "/delete_topic",
-        data: {
-            topic_name,
-        },
-        success(data) {
-            const {complete} = z.object({complete: z.boolean()}).parse(data);
-            if (!complete) {
-                if (failures >= 9) {
-                    // Don't keep retrying indefinitely to avoid DoSing the server.
-                    return;
-                }
-
-                failures += 1;
-                /* When trying to delete a very large topic, it's
-                   possible for the request to the server to
-                   time out after making some progress. Retry the
-                   request, so that the user can just do nothing and
-                   watch the topic slowly be deleted.
-
-                   TODO: Show a nice loading indicator experience.
-                */
-                delete_topic(stream_id, topic_name, failures);
-            }
-        },
     });
 }
 
