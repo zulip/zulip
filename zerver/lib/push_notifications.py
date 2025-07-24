@@ -1322,33 +1322,7 @@ def handle_remove_push_notification(user_profile_id: int, message_ids: list[int]
     gcm_payload, gcm_options = get_remove_payload_gcm(user_profile, truncated_message_ids)
     apns_payload = get_remove_payload_apns(user_profile, truncated_message_ids)
 
-    android_devices = list(
-        PushDeviceToken.objects.filter(user=user_profile, kind=PushDeviceToken.FCM).order_by("id")
-    )
-    apple_devices = list(
-        PushDeviceToken.objects.filter(user=user_profile, kind=PushDeviceToken.APNS).order_by("id")
-    )
-    if uses_notification_bouncer():
-        send_notifications_to_bouncer(
-            user_profile, apns_payload, gcm_payload, gcm_options, android_devices, apple_devices
-        )
-    else:
-        user_identity = UserPushIdentityCompat(user_id=user_profile_id)
-
-        android_successfully_sent_count = send_android_push_notification(
-            user_identity, android_devices, gcm_payload, gcm_options
-        )
-        apple_successfully_sent_count = send_apple_push_notification(
-            user_identity, apple_devices, apns_payload
-        )
-
-        do_increment_logging_stat(
-            user_profile.realm,
-            COUNT_STATS["mobile_pushes_sent::day"],
-            None,
-            timezone_now(),
-            increment=android_successfully_sent_count + apple_successfully_sent_count,
-        )
+    send_push_notifications_legacy(user_profile, apns_payload, gcm_payload, gcm_options)
 
     # We intentionally use the non-truncated message_ids here.  We are
     # assuming in this very rare case that the user has manually
