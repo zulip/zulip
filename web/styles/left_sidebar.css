@@ -1081,7 +1081,7 @@ li.top_left_scheduled_messages {
 
         .input {
             white-space: nowrap;
-            overflow-x: hidden;
+            overflow: hidden;
             text-overflow: ellipsis;
         }
     }
