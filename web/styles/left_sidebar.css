@@ -473,7 +473,7 @@
 #stream_filters
     .narrow-filter
     .topic-list
-    .bottom_left_row:has(a.sidebar-topic-name:focus-visible),
+    .bottom_left_row:has(a.topic-box:focus-visible),
 #direct-messages-list
     .dm-list
     .bottom_left_row:has(a.conversation-partners:focus-visible) {
