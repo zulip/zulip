@@ -463,6 +463,7 @@ def check_realm_update(
     property_type = Realm.property_types[prop]
     if inspect.isclass(property_type) and issubclass(property_type, Enum):
         assert isinstance(value, str)
+        property_type[value]
     else:
         assert isinstance(value, property_type)
 
@@ -482,6 +483,7 @@ def check_realm_default_update(
     value = event["value"]
     if inspect.isclass(prop_type) and issubclass(prop_type, Enum):
         assert isinstance(value, str)
+        prop_type[value]
     else:
         assert isinstance(value, prop_type)
 
@@ -654,6 +656,7 @@ def check_user_settings_update(
         setting_type = UserProfile.property_types[setting_name]
         if inspect.isclass(setting_type) and issubclass(setting_type, Enum):
             assert isinstance(value, str)
+            setting_type[value]
         else:
             assert isinstance(value, setting_type)
 
