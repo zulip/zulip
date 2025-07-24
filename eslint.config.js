@@ -313,6 +313,7 @@ export default tseslint.config(
         files: [
             "help-beta/src/components/ZulipNote.astro",
             "help-beta/src/components/ZulipTip.astro",
+            "help-beta/src/components/KeyboardTip.astro",
         ],
         rules: {
             "import/unambiguous": "off",
