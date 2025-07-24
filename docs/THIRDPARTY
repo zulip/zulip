@@ -238,6 +238,11 @@ Source: https://lucide.dev/icons/user-x
 Copyright: 2013-2022 Cole Bemis
 License: ISC License
 
+Files: web/shared/icons/lightbulb.svg
+Source: https://lucide.dev/icons/lightbulb
+Copyright: 2013-2022 Cole Bemis
+License: ISC License
+
 Files: web/shared/icons/clock.svg
 Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
 License: Expat
