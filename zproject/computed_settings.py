@@ -469,7 +469,7 @@ else:
     TOR_EXIT_NODE_FILE_PATH = "/var/lib/zulip/tor-exit-nodes.json"
 
 if USING_CAPTCHA:
-    ALTCHA_HMAC_KEY = get_mandatory_secret("altcha_hmac")
+    ALTCHA_HMAC_KEY = get_secret("altcha_hmac")
 else:
     ALTCHA_HMAC_KEY = ""
 

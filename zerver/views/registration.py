@@ -1269,7 +1269,7 @@ def create_realm(request: HttpRequest, creation_key: str | None = None) -> HttpR
     # When settings.OPEN_REALM_CREATION is enabled, anyone can create a new realm,
     # with a few restrictions on their email address.
     if request.method == "POST":
-        if settings.USING_CAPTCHA:
+        if settings.USING_CAPTCHA and settings.ALTCHA_HMAC_KEY:
             form: RealmCreationForm = CaptchaRealmCreationForm(data=request.POST, request=request)
         else:
             form = RealmCreationForm(request.POST)
@@ -1343,7 +1343,7 @@ def create_realm(request: HttpRequest, creation_key: str | None = None) -> HttpR
         initial_data = {
             "realm_default_language": default_language_code,
         }
-        if settings.USING_CAPTCHA:
+        if settings.USING_CAPTCHA and settings.ALTCHA_HMAC_KEY:
             form = CaptchaRealmCreationForm(request=request, initial=initial_data)
         else:
             form = RealmCreationForm(initial=initial_data)
