@@ -18,9 +18,10 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-07-18 03:39+0000\n"
-"PO-Revision-Date: 2025-07-17 16:11+0000\n"
+"PO-Revision-Date: 2025-07-19 05:03+0000\n"
 "Last-Translator: Flammie A Pirinen <flammie@iki.fi>\n"
-"Language-Team: Finnish <https://hosted.weblate.org/projects/zulip/django/fi/>\n"
+"Language-Team: Finnish <https://hosted.weblate.org/projects/zulip/django/fi/>"
+"\n"
 "Language: fi\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -426,6 +427,8 @@ msgid ""
 "Something went wrong. Sorry about that! We're aware of the problem and are "
 "working to fix it. Zulip will load automatically once it is working again."
 msgstr ""
+"Jotain meni pieleen. Ongelma on tiedossa ja sitä korjataan parhaillaan. "
+"Zulip uudelleenlatautuu kun ongelmat on ratkaistu."
 
 #: templates/500.html:27
 #, fuzzy, python-format
@@ -447,7 +450,7 @@ msgstr ""
 msgid ""
 "Something went wrong. Sorry about that! Zulip will load automatically once it"
 " is working again."
-msgstr ""
+msgstr "Jotain meni pieleen. Zulip latautuu uudelleen kun ongelma on ratkaistu."
 
 #: templates/500.html:42
 #, fuzzy, python-format
@@ -1752,6 +1755,9 @@ msgid ""
 " id=\"deactivated-org-auto-redirect\">new URL</a> in <span id=\"deactivated-"
 "org-auto-redirect-countdown\">5</span> seconds."
 msgstr ""
+"Tämä sivu uudelleenohjautuu automaattisesti <a href=\"%(auto_redirect_to)s\" "
+"id=\"deactivated-org-auto-redirect\">uuteen osoitteeseen</a> <span id"
+"=\"deactivated-org-auto-redirect-countdown\">5</span> sekunnissa."
 
 #: templates/zerver/deactivated.html:38
 #, fuzzy
@@ -2268,6 +2274,8 @@ msgid ""
 "%(new_streams_count)s new channels in <a "
 "href=\"%(realm_url)s\">%(realm_name)s</a>."
 msgstr ""
+"Sinulle on %(new_messages_count)s uutta viestiä, ja %(new_streams_count)s "
+"uutta kanavaa kohteessa <a href=\"%(realm_url)s\">%(realm_name)s</a>."
 
 #: templates/zerver/emails/digest.html:37
 #, python-format
@@ -2275,6 +2283,8 @@ msgid ""
 "You have %(new_messages_count)s new messages in <a "
 "href=\"%(realm_url)s\">%(realm_name)s</a>."
 msgstr ""
+"Sinulle on %(new_messages_count)s uutta viestiä kohteessa <a href="
+"\"%(realm_url)s\">%(realm_name)s</a>."
 
 #: templates/zerver/emails/digest.html:39
 #, python-format
@@ -2282,6 +2292,8 @@ msgid ""
 "There are %(new_streams_count)s new channels in <a "
 "href=\"%(realm_url)s\">%(realm_name)s</a>."
 msgstr ""
+"Kohteessa <a href=\"%(realm_url)s\">%(realm_name)s</a> on "
+"%(new_streams_count)s uutta kanavaa."
 
 #: templates/zerver/emails/digest.html:44
 #: templates/zerver/emails/missed_message.html:17
@@ -2336,16 +2348,19 @@ msgid ""
 "You have %(new_messages_count)s new messages, and there are "
 "%(new_streams_count)s new channels in %(realm_name)s."
 msgstr ""
+"Sinulle on %(new_messages_count)s uutta viestiä ja %(new_streams_count)s "
+"uutta kanavaa kohteessa %(realm_name)s."
 
 #: templates/zerver/emails/digest.txt:16
 #, python-format
 msgid "You have %(new_messages_count)s new messages in %(realm_name)s."
 msgstr ""
+"Sinulle on %(new_messages_count)s uutta viestiä kohteessa %(realm_name)s."
 
 #: templates/zerver/emails/digest.txt:18
 #, python-format
 msgid "There are %(new_streams_count)s new channels in %(realm_name)s."
-msgstr ""
+msgstr "Kohteessa %(realm_name)s on %(new_streams_count)s uutta kanavaa."
 
 #: templates/zerver/emails/digest.txt:22
 #: templates/zerver/emails/missed_message.txt:11
@@ -3617,7 +3632,7 @@ msgstr "Yhteisöchatti"
 
 #: templates/zerver/footer.html:46
 msgid "Partners"
-msgstr ""
+msgstr "Partnerit"
 
 #: templates/zerver/footer.html:47
 msgid "Zulip Cloud status"
@@ -4159,6 +4174,9 @@ msgid ""
 "with Zulip (<strong>%(verified_email)s</strong>). Select an account to "
 "associate your email address with."
 msgstr ""
+"Minkään tilin sähköpostiosoite tuodussa datassa ei täsmää Zulipissa "
+"vahvistettuun sähköpostiosoitteeseesi (<strong>%(verified_email)s</strong>). "
+"Valitse tili jonka kanssa sähköpostiosoite yhdistetään."
 
 #: templates/zerver/realm_import_post_process.html:31
 #, fuzzy
@@ -4370,7 +4388,7 @@ msgstr ""
 
 #: templates/zerver/slack_import.html:5 templates/zerver/slack_import.html:13
 msgid "Import from Slack"
-msgstr ""
+msgstr "Tuo Slackistä"
 
 #: templates/zerver/slack_import.html:22
 #, fuzzy
@@ -4380,7 +4398,7 @@ msgstr "Vienti vielä keksen"
 
 #: templates/zerver/slack_import.html:24
 msgid "Checking import status…"
-msgstr ""
+msgstr "Tarkastetaan tuonnin tilaa…"
 
 #: templates/zerver/slack_import.html:35
 #, python-format
@@ -4390,14 +4408,18 @@ msgid ""
 " noreferrer\" target=\"_blank\">these instructions</a> to obtain a "
 "<strong>Bot User OAuth Token</strong>."
 msgstr ""
+"Seuraa <a href=\"https://zulip.com/help//import-from-slack#export-your-slack-"
+"data:~:text=Export%%20user%%20data%%20and%%20custom%%20emoji\" rel="
+"\"noopener noreferrer\" target=\"_blank\">näitä ohjeita</a> jotta saat "
+"<strong>OAuth-tokenin bottikäytäjälle</strong>."
 
 #: templates/zerver/slack_import.html:41
 msgid "Slack bot user OAuth token"
-msgstr ""
+msgstr "Slack-bottikäyttäjän OAuth-token"
 
 #: templates/zerver/slack_import.html:66
 msgid "Upload your Slack export file"
-msgstr ""
+msgstr "Lähetä Slack-vientitiedostosi"
 
 #: templates/zerver/slack_import.html:68
 msgid ""
@@ -4405,20 +4427,26 @@ msgid ""
 "data\" target=\"_blank\" rel=\"noopener noreferrer\">these instructions</a> "
 "to obtain your Slack message history export."
 msgstr ""
+"Seuraa <a href="
+"\"https://zulip.com/help/import-from-slack#export-your-slack-data\" target="
+"\"_blank\" rel=\"noopener noreferrer\">näitä ohjeita</a> jotta voit tuoda "
+"Slack-viestihistoriaviennin."
 
 #: templates/zerver/slack_import.html:82
 msgid "Uploaded export file"
-msgstr ""
+msgstr "Lähetä vientitiedosto"
 
 #: templates/zerver/slack_import.html:87
 msgid "Start import"
-msgstr ""
+msgstr "Aloita tuonti"
 
 #: templates/zerver/slack_import.html:102
 msgid ""
 "Or <a href=\"#\" id=\"cancel-slack-import\">create organization</a> without "
 "importing data."
 msgstr ""
+"tai <a href=\"#\" id=\"cancel-slack-import\">luo organisaatio</a> ilman "
+"datan tuontia."
 
 #: templates/zerver/social_auth_select_email.html:4
 msgid "Select account for authentication"
@@ -4995,22 +5023,22 @@ msgstr ""
 
 #: zerver/actions/streams.py:1755
 msgid "Automatic"
-msgstr ""
+msgstr "Automaattinen"
 
 #: zerver/actions/streams.py:1757
 #, python-brace-format
 msgid "*{empty_topic_display_name}* topic allowed"
-msgstr ""
+msgstr "*{empty_topic_display_name}* aihe sallittu"
 
 #: zerver/actions/streams.py:1760
 #, python-brace-format
 msgid "No *{empty_topic_display_name}* topic"
-msgstr ""
+msgstr "Ei *{empty_topic_display_name}* aihetta"
 
 #: zerver/actions/streams.py:1763
 #, python-brace-format
 msgid "Only *{empty_topic_display_name}* topic allowed"
-msgstr ""
+msgstr "Vain *{empty_topic_display_name}* aihe sallittu"
 
 #: zerver/actions/streams.py:1769
 #, python-brace-format
@@ -5018,6 +5046,8 @@ msgid ""
 "{user_name} changed the \"Allow posting to the *general chat* topic?\" "
 "setting from {old_topics_policy} to {new_topics_policy}."
 msgstr ""
+"{user_name} muutti asetusta ”Sallitaanko *general chat* aihe?” asetuksesta "
+"{old_topics_policy} asetukseen {new_topics_policy}."
 
 #: zerver/actions/submessage.py:37
 msgid "You cannot attach a submessage to this message."
@@ -5124,6 +5154,8 @@ msgstr "Pyydä organisaation järjestelmänvalvojalta kutsu {email} osoitteelle.
 #: zerver/forms.py:291
 msgid "Can't join the organization: password authentication is not enabled."
 msgstr ""
+"Ei voi liittyä organisaatioon. salasana-autentikaatiota ei ole otettu "
+"käyttöön."
 
 #: zerver/forms.py:299
 #, python-brace-format
@@ -5150,16 +5182,16 @@ msgstr ""
 
 #: zerver/forms.py:379
 msgid "Verified that you're a human user!"
-msgstr ""
+msgstr "Vahvistettiin että olet ihmiskäyttäjä."
 
 #: zerver/forms.py:380
 msgid "Verifying that you're not a bot..."
-msgstr ""
+msgstr "Vahvistetaan ettet ole botti..."
 
 #: zerver/forms.py:402 zerver/forms.py:411 zerver/forms.py:416
 #: zerver/forms.py:423
 msgid "Validation failed, please try again."
-msgstr ""
+msgstr "Vahvistus epäonnistui, yritä uudestaan."
 
 #: zerver/forms.py:435
 msgid "New password"
@@ -5554,11 +5586,13 @@ msgid ""
 "Sending messages to the {empty_topic_display_name} is not allowed in this "
 "channel."
 msgstr ""
+"Viestien lähetys aiheeseen {empty_topic_display_name} ei ole sallittu tällä "
+"kanavalla."
 
 #: zerver/lib/exceptions.py:563
 #, python-brace-format
 msgid "Only the {empty_topic_display_name} topic is allowed in this channel."
-msgstr ""
+msgstr "Vain aihe {empty_topic_display_name} on sallittu tällä kanavalla."
 
 #: zerver/lib/exceptions.py:576
 #, python-brace-format
@@ -6516,10 +6550,9 @@ msgid "{var_name} is not a valid hex color code"
 msgstr "{var_name} ei ole oikeanmuotoinen hexa-värikoodi"
 
 #: zerver/lib/typed_endpoint_validators.py:124
-#, fuzzy, python-brace-format
-#| msgid "Invalid {var_name}"
+#, python-brace-format
 msgid "Invalid {setting_name}"
-msgstr "Virheellinen {var_name}"
+msgstr "Virheellinen {setting_name}"
 
 #: zerver/lib/upload/__init__.py:45
 msgid "Upload would exceed your organization's upload quota."

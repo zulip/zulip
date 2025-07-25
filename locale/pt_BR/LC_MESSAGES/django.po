@@ -10,14 +10,16 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-07-18 03:39+0000\n"
-"PO-Revision-Date: 2025-07-17 06:37+0000\n"
-"Last-Translator: Anonymous <noreply@weblate.org>\n"
-"Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/zulip/django/pt_BR/>\n"
+"PO-Revision-Date: 2025-07-19 05:03+0000\n"
+"Last-Translator: Alex Vandiver <alexmv@zulip.com>\n"
+"Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/"
+"zulip/django/pt_BR/>\n"
 "Language: pt_BR\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=3; plural=(n == 0 || n == 1) ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;\n"
+"Plural-Forms: nplurals=3; plural=(n == 0 || n == 1) ? 0 : n != 0 && n % "
+"1000000 == 0 ? 1 : 2;\n"
 "X-Generator: Weblate 5.13-dev\n"
 
 #: analytics/views/stats.py:109 zerver/decorator.py:682 zerver/decorator.py:700
@@ -179,16 +181,13 @@ msgid ""
 msgstr ""
 
 #: corporate/lib/stripe.py:225
-#, fuzzy, python-brace-format
-#| msgid ""
-#| "Invoices with more than {} licenses can't be processed from this page. To "
-#| "complete the upgrade, please contact {}."
+#, python-brace-format
 msgid ""
 "Invoices with more than {max_licenses} licenses can't be processed from this "
 "page. To complete the upgrade, please contact {email}."
 msgstr ""
-"Faturas com mais de {} licenças não podem ser processadas por esta página. "
-"Para completar o upgrade, por favor. contate {}."
+"Faturas com mais de {max_licenses} licenças não podem ser processadas por "
+"esta página. Para completar o upgrade, por favor. contate {email}."
 
 #: corporate/lib/stripe.py:357
 #, fuzzy
@@ -6970,10 +6969,9 @@ msgid ""
 msgstr ""
 
 #: zerver/views/realm_domains.py:38
-#, fuzzy, python-brace-format
-#| msgid "Invalid domain: {}"
+#, python-brace-format
 msgid "Invalid domain: {error}"
-msgstr "Domínio inválido: {}"
+msgstr "Domínio inválido: {error}"
 
 #: zerver/views/realm_domains.py:41
 #, python-brace-format
