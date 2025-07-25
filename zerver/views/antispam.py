@@ -25,6 +25,9 @@ class AltchaPayload(BaseModel):
 def get_challenge(
     request: HttpRequest,
 ) -> HttpResponseBase:
+    if not settings.USING_CAPTCHA or not settings.ALTCHA_HMAC_KEY:  # nocoverage
+        raise JsonableError(_("Challenges are not enabled."))
+
     now = timezone_now()
     expires = now + timedelta(minutes=1)
     try:

@@ -403,6 +403,8 @@ class CaptchaRealmCreationForm(RealmCreationForm):
 
     def clean_captcha(self) -> str:
         payload = self.data.get("captcha", "")
+        if not settings.USING_CAPTCHA or not settings.ALTCHA_HMAC_KEY:  # nocoverage
+            raise forms.ValidationError(_("Challenges are not enabled."))
 
         try:
             ok, err = verify_solution(payload, settings.ALTCHA_HMAC_KEY, check_expires=True)
