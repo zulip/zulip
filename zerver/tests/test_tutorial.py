@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.test import override_settings
 from typing_extensions import override
 
 from zerver.actions.message_send import internal_send_private_message
@@ -146,11 +147,10 @@ class TutorialTests(ZulipTestCase):
             )
             self.assertEqual(most_recent_message(user).content, expected_response)
 
+    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
     def test_response_to_pm_for_help_using_direct_message_group(self) -> None:
         user = self.example_user("hamlet")
         bot = get_system_bot(settings.WELCOME_BOT, user.realm_id)
-
-        direct_group_message = get_or_create_direct_message_group(id_list=[user.id, bot.id])
 
         messages = ["help", "Help", "?"]
         self.login_user(user)
@@ -165,6 +165,7 @@ class TutorialTests(ZulipTestCase):
             )
             message = most_recent_message(user)
             self.assertEqual(message.content, expected_response)
+            direct_group_message = get_or_create_direct_message_group(id_list=[user.id, bot.id])
             self.assertEqual(message.recipient, direct_group_message.recipient)
 
     def test_no_response_to_direct_message_group_with_a_soft_diactivated_user(self) -> None:
@@ -208,11 +209,10 @@ class TutorialTests(ZulipTestCase):
         )
         self.assertEqual(most_recent_message(user).content, expected_response)
 
-    def test_response_to_pm_for_undefined_using_direct_group_message(self) -> None:
+    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
+    def test_response_to_pm_for_undefined_using_direct_message_group(self) -> None:
         user = self.example_user("hamlet")
         bot = get_system_bot(settings.WELCOME_BOT, user.realm_id)
-
-        get_or_create_direct_message_group(id_list=[user.id, bot.id])
 
         messages = ["Hello", "HAHAHA", "OKOK", "LalulaLapas"]
         self.login_user(user)

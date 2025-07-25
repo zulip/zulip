@@ -798,7 +798,7 @@ class GetSubscribersTest(ZulipTestCase):
             polonius.id,
         ]
 
-        with self.assert_database_query_count(55):
+        with self.assert_database_query_count(52):
             self.subscribe_via_post(
                 self.user_profile,
                 stream_names,

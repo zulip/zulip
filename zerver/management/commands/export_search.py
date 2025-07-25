@@ -9,6 +9,7 @@ from operator import or_
 from typing import Any
 
 import orjson
+from django.conf import settings
 from django.core.management.base import CommandError
 from django.db.models import Q
 from typing_extensions import override
@@ -17,7 +18,7 @@ from zerver.lib.management import ZulipBaseCommand
 from zerver.lib.soft_deactivation import reactivate_user_if_soft_deactivated
 from zerver.lib.upload import save_attachment_contents
 from zerver.models import AbstractUserMessage, Attachment, Message, Recipient, Stream, UserProfile
-from zerver.models.recipients import get_direct_message_group, get_or_create_direct_message_group
+from zerver.models.recipients import get_or_create_direct_message_group
 from zerver.models.streams import get_stream
 from zerver.models.users import get_user_by_delivery_email
 
@@ -184,8 +185,10 @@ This is most often used for legal compliance.
                 )
             elif len(user_profiles) == 2:
                 user_a, user_b = user_profiles
-                direct_message_group = get_direct_message_group(id_list=[user_a.id, user_b.id])
-                if direct_message_group:
+                if settings.PREFER_DIRECT_MESSAGE_GROUP:
+                    direct_message_group = get_or_create_direct_message_group(
+                        id_list=[user_a.id, user_b.id]
+                    )
                     limits &= Q(recipient=direct_message_group.recipient)
                 else:
                     limits &= Q(recipient=user_a.recipient, sender=user_b) | Q(
