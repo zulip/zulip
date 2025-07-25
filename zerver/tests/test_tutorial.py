@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.test import override_settings
 from typing_extensions import override
 
 from zerver.actions.message_send import internal_send_private_message
@@ -146,6 +147,7 @@ class TutorialTests(ZulipTestCase):
             )
             self.assertEqual(most_recent_message(user).content, expected_response)
 
+    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
     def test_response_to_pm_for_help_using_direct_message_group(self) -> None:
         user = self.example_user("hamlet")
         bot = get_system_bot(settings.WELCOME_BOT, user.realm_id)
@@ -208,7 +210,8 @@ class TutorialTests(ZulipTestCase):
         )
         self.assertEqual(most_recent_message(user).content, expected_response)
 
-    def test_response_to_pm_for_undefined_using_direct_group_message(self) -> None:
+    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
+    def test_response_to_pm_for_undefined_using_direct_message_group(self) -> None:
         user = self.example_user("hamlet")
         bot = get_system_bot(settings.WELCOME_BOT, user.realm_id)
 
