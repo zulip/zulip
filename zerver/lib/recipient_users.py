@@ -1,5 +1,6 @@
 from collections.abc import Sequence
 
+from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext as _
 
@@ -40,24 +41,25 @@ def get_recipient_from_user_profiles(
     user_ids = list(recipient_profiles_map)
 
     # Important note: We are transitioning 1:1 DMs and self DMs to use
-    # DirectMessageGroup as the Recipient type. If a
-    # DirectMessageGroup exists for the collection of user IDs, it is
-    # guaranteed to contain that entire DM conversation. If none
+    # DirectMessageGroup as the Recipient type. If PREFER_DIRECT_MESSAGE_GROUP
+    # is enabled and a DirectMessageGroup exists for the collection of user IDs,
+    # it is guaranteed to contain that entire DM conversation. If none
     # exists, we use the legacy personal recipient (which may or may
     # not exist). Once the migration completes, this code path should
     # just call get_or_create_direct_message_group.
     if len(recipient_profiles_map) <= 2:
-        direct_message_group = get_direct_message_group(user_ids)
-        if direct_message_group:
-            # Use the existing direct message group as the preferred recipient.
-            return Recipient(
-                id=direct_message_group.recipient_id,
-                type=Recipient.DIRECT_MESSAGE_GROUP,
-                type_id=direct_message_group.id,
-            )
+        if settings.PREFER_DIRECT_MESSAGE_GROUP:
+            direct_message_group = get_direct_message_group(user_ids)
+            if direct_message_group:
+                # Use the existing direct message group as the preferred recipient.
+                return Recipient(
+                    id=direct_message_group.recipient_id,
+                    type=Recipient.DIRECT_MESSAGE_GROUP,
+                    type_id=direct_message_group.id,
+                )
 
-        # if no direct message group recipient exists, we need to
-        # force the direct message to be a personal internally.
+        # If no direct message group recipient exists, or if the setting
+        # is disabled, we fall back to using personal recipients.
         del recipient_profiles_map[sender.id]
         if len(recipient_profiles_map) == 1:
             [recipient_user_profile] = recipient_profiles_map.values()
