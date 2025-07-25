@@ -17,9 +17,9 @@ is allowed to rename topics.
 
 ## Rename a topic
 
-### Via the message recipient bar
-
 {start_tabs}
+
+{tab|via-message-recipient-bar}
 
 1. Click the **edit topic** (<i class="zulip-icon zulip-icon-pencil"></i>) icon in
    the message recipient bar. If you do not see the
@@ -31,11 +31,7 @@ is allowed to rename topics.
 1. Click the **save** (<i class="zulip-icon zulip-icon-check"></i>) icon
    to save your changes.
 
-{end_tabs}
-
-### Via the left sidebar (alternate method)
-
-{start_tabs}
+{tab|via-left-sidebar}
 
 {!topic-actions.md!}
 
@@ -50,6 +46,16 @@ is allowed to rename topics.
 1. Toggle whether automated notices should be sent.
 
 1. Click **Confirm** to rename the topic.
+
+{tab|mobile}
+
+Access this feature by following the web app instructions in your
+mobile device browser.
+
+Implementation of this feature in the mobile app is tracked [on
+GitHub](https://github.com/zulip/zulip-flutter/issues/1439). If
+you're interested in this feature, please react to the issue's
+description with 👍.
 
 {end_tabs}
 
