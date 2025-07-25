@@ -55,9 +55,11 @@
             {{/if}}
 
             {{#if (and user_can_resolve_topic (not is_empty_string_topic))}}
-                {{#unless topic_is_resolved}}
+                {{#if topic_is_resolved}}
+                    {{> components/icon_button icon="placeholder" intent="neutral" custom_classes="recipient-bar-control on-hover-unresolve-loading-indicator hidden-for-spectators hide" }}
+                {{else}}
                     {{> components/icon_button icon="check" intent="neutral" custom_classes="on_hover_topic_resolve recipient-bar-control recipient-bar-control-icon hidden-for-spectators" data-tippy-content=(t "Mark as resolved") aria-label=(t "Mark as resolved") }}
-                {{/unless}}
+                {{/if}}
             {{/if}}
 
             {{! visibility policy menu }}
