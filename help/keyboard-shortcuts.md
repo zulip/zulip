@@ -2,8 +2,8 @@
 
 Everything in Zulip can be done with the mouse, but mastering a few keyboard
 shortcuts will change your experience of the app. Start with the basics below,
-and use the convenient [**keyboard shortcuts reference**](#keyboard-shortcuts-reference)
-in the Zulip app to add more to your repertoire as needed.
+and use the convenient [**keyboard shortcuts**](#keyboard-shortcuts-reference)
+reference in the Zulip app to add more to your repertoire as needed.
 
 * [The basics](#the-basics)
 * [Search](#search)

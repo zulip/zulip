@@ -8,11 +8,10 @@ Muting has the following effects:
 - Messages in muted topics do not generate notifications (including [alert
   word](/help/dm-mention-alert-notifications#alert-words) notifications), unless
   you are [mentioned](/help/mention-a-user-or-group).
-- Messages in muted topics do not appear in the [**Combined feed**
-  view](/help/combined-feed) or the mobile **Inbox** view.
-- Muted topics appear in the [**Recent conversations**
-  view](/help/recent-conversations) only if the **Include muted** filter is
-  enabled.
+- Messages in muted topics do not appear in the [**Combined
+  feed**](/help/combined-feed) view or the mobile **Inbox** view.
+- Muted topics appear in the [**Recent conversations**](/help/recent-conversations)
+  view only if the **Include muted** filter is enabled.
 - Unread messages in muted topics do not contribute to channel unread counts.
 - Muted topics and channels are grayed out in the left sidebar of the desktop/web
   app, and in the mobile app.

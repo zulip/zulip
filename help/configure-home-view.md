@@ -6,8 +6,8 @@ keyboard shortcuts.
 
 The home views available in Zulip are
 [**Inbox**](/help/inbox),
-[Recent conversations](/help/recent-conversations), and
-[Combined feed](/help/combined-feed). See
+[**Recent conversations**](/help/recent-conversations), and
+[**Combined feed**](/help/combined-feed). See
 [Reading strategies](/help/reading-strategies) for recommendations
 on how to use these views.
 
