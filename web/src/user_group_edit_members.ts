@@ -3,10 +3,10 @@ import $ from "jquery";
 import assert from "minimalistic-assert";
 import * as z from "zod/mini";
 
+import render_membership_banner from "../templates/components/membership_banner.hbs";
 import render_leave_user_group_modal from "../templates/confirm_dialog/confirm_unsubscribe_private_stream.hbs";
 import render_user_group_member_list_entry from "../templates/stream_settings/stream_member_list_entry.hbs";
 import render_user_group_members_table from "../templates/user_group_settings/user_group_members_table.hbs";
-import render_user_group_membership_request_result from "../templates/user_group_settings/user_group_membership_request_result.hbs";
 import render_user_group_subgroup_entry from "../templates/user_group_settings/user_group_subgroup_entry.hbs";
 
 import * as add_group_members_pill from "./add_group_members_pill.ts";
@@ -242,10 +242,13 @@ function show_user_group_membership_request_error_result(error_message: string):
     const $user_group_subscription_req_result_elem = $(
         ".user_group_subscription_request_result",
     ).expectOne();
-    const html = render_user_group_membership_request_result({
+    const rendered_error_message = render_membership_banner({
+        intent: "danger",
         error_message,
     });
-    scroll_util.get_content_element($user_group_subscription_req_result_elem).html(html);
+    scroll_util
+        .get_content_element($user_group_subscription_req_result_elem)
+        .html(rendered_error_message);
 }
 
 function show_user_group_membership_request_success_result({
@@ -298,7 +301,8 @@ function show_user_group_membership_request_success_result({
     const $user_group_subscription_req_result_elem = $(
         ".user_group_subscription_request_result",
     ).expectOne();
-    const html = render_user_group_membership_request_result({
+    const rendered_success_banner = render_membership_banner({
+        intent: "success",
         addition_success_messages,
         newly_added_member_count,
         already_added_member_count,
@@ -311,7 +315,9 @@ function show_user_group_membership_request_success_result({
         ignored_deactivated_users_count,
         ignored_deactivated_member_count,
     });
-    scroll_util.get_content_element($user_group_subscription_req_result_elem).html(html);
+    scroll_util
+        .get_content_element($user_group_subscription_req_result_elem)
+        .html(rendered_success_banner);
 }
 
 export function edit_user_group_membership({
