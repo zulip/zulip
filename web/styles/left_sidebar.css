@@ -198,11 +198,10 @@
     }
 }
 
-.left-sidebar-navigation-area {
-    & li a {
-        &:hover {
-            text-decoration: none;
-        }
+.left-sidebar-navigation-icon-container,
+.left-sidebar-navigation-label-container {
+    &:hover {
+        text-decoration: none;
     }
 }
 
@@ -329,7 +328,8 @@
         line-height: var(--line-height-sidebar-row-prominent);
 
         & li.dm-list-item {
-            & a {
+            .dm-box,
+            .dm-name {
                 text-decoration: none;
                 color: inherit;
                 outline: none;
