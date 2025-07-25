@@ -13,12 +13,8 @@ assert.ok(
     lightbulb_icon_first_child.type === "element" &&
         lightbulb_icon_first_child.tagName === "svg",
 );
-lightbulb_icon_first_child.properties.class = "zulip-unplugin-icon";
-// We need to make the fill transparent for the bulb to look hollow
-// and the default vertical-align of text-bottom was not looking
-// good beside the `Tip` text.
-lightbulb_icon_first_child.properties.style =
-    "vertical-align: text-top; fill: transparent; stroke: currentColor;";
+lightbulb_icon_first_child.properties.class =
+    "zulip-unplugin-icon aside-icon-lightbulb";
 
 let prefix_element_list = [
     lightbulb_icon_first_child,

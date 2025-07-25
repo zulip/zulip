@@ -57,6 +57,21 @@
     fill: currentcolor;
 }
 
+.aside-icon-lightbulb {
+    /* We need to make the fill transparent for the bulb to look hollow
+       and the default vertical-align of text-bottom was not looking
+       good beside the `Tip` text. */
+    vertical-align: text-top;
+    fill: transparent;
+    stroke: currentcolor;
+    /* In cases where content spanned across multiple lines, the
+       icon and the content just below it did not look aligned. */
+    margin-left: -3px;
+    /* Using any of the default vertical-align did not give desired
+       results, text-top + this margin looked the best. */
+    margin-top: 2px;
+}
+
 .sl-markdown-content {
     img {
         vertical-align: top;
