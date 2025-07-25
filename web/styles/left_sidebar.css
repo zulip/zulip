@@ -482,7 +482,9 @@
 #direct-messages-list .dm-list .bottom_left_row:has(a.dm-box:focus-visible),
 #show-more-direct-messages:has(a.dm-name:focus-visible),
 #hide-more-direct-messages:focus-visible,
-#topics_header .show-all-streams:focus-visible {
+#topics_header .show-all-streams:focus-visible,
+#subscribe-to-more-streams:has(.subscribe-more-link:focus-visible),
+#login-to-more-streams:has(.subscribe-more-link:focus-visible) {
     outline: 2px solid var(--color-outline-focus);
     outline-offset: -2px;
     background-color: var(--color-background-hover-narrow-filter);
@@ -534,6 +536,7 @@
         line-height: 1;
         color: var(--color-text-sidebar-action-heading);
         text-decoration: none;
+        outline: none;
     }
 
     .subscribe-more-label {
