@@ -59,12 +59,30 @@ export const user_update_schema = z.intersection(
 type UserUpdate = z.output<typeof user_update_schema>;
 
 export const update_person = function update(event: UserUpdate): void {
-    const user = people.maybe_get_user_by_id(event.user_id);
-
-    if (!user) {
+    if (!people.is_valid_user_id(event.user_id)) {
         blueslip.error("Got update_person event for unexpected user", {user_id: event.user_id});
         return;
     }
+
+    const user = people.maybe_get_user_by_id(event.user_id);
+
+    // We don't have complete data for the user.
+    if (!user || user.is_missing_server_data || (!user.is_bot && !user.profile_data)) {
+        // Fetch user data from the server if the user is valid and
+        // we don't have the user data.
+        // NOTE: I don't understand how `profile_data` can be undefined since
+        // event `make_user` sets it to an empty object.
+        void people
+            .fetch_users(new Set([event.user_id]))
+            .then((users) => {
+                people.add_user(users[0]!);
+            })
+            .then(() => {
+                update(event);
+            });
+    }
+
+    assert(user !== undefined);
 
     if ("new_email" in event) {
         const user_id = event.user_id;

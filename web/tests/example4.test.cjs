@@ -117,7 +117,7 @@ run_test("add users with event", ({override}) => {
 
 run_test("update user with event", ({override}) => {
     people.init();
-    people.add_active_user(bob);
+    people.add_active_user(bob, "server_events");
 
     const new_bob = make_bot({
         email: "bob@example.com",
