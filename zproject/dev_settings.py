@@ -220,6 +220,10 @@ RESOLVE_TOPIC_UNDO_GRACE_PERIOD_SECONDS = 5
 # See: https://zulip.readthedocs.io/en/latest/subsystems/realms.html#working-with-subdomains-in-development-environment
 ROOT_DOMAIN_LANDING_PAGE = True
 
+# Enable ALTCHA, so that we test this flow; we can only do this on localhost.
+if external_host_env is None and not IS_DEV_DROPLET:
+    USING_CAPTCHA = True
+
 TOPIC_SUMMARIZATION_MODEL = "groq/llama-3.3-70b-versatile"
 # Defaults based on groq's pricing for Llama 3.3 70B Versatile 128k.
 # https://groq.com/pricing/

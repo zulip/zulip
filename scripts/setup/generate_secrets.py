@@ -128,6 +128,10 @@ def generate_secrets(development: bool = False) -> None:
     if need_secret("camo_key"):
         add_secret("camo_key", random_string(64))
 
+    # We enable Altcha in development
+    if development and need_secret("altcha_hmac"):
+        add_secret("altcha_hmac", random_token())
+
     if not development:
         # The memcached_password and redis_password secrets are only
         # required/relevant in production.
