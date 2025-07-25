@@ -221,6 +221,7 @@
     display: none;
     margin-right: var(--left-sidebar-right-margin);
     line-height: var(--line-height-sidebar-row);
+    border-radius: 4px;
     text-decoration: none;
     color: inherit;
 
@@ -236,7 +237,10 @@
     &:hover {
         background-color: var(--color-background-sidebar-action-heading-hover);
         box-shadow: inset 0 0 0 1px var(--color-shadow-sidebar-row-hover);
-        border-radius: 4px;
+    }
+
+    &:focus {
+        outline: none;
     }
 }
 
@@ -476,7 +480,8 @@
     .topic-list
     .bottom_left_row:has(a.topic-box:focus-visible),
 #direct-messages-list .dm-list .bottom_left_row:has(a.dm-box:focus-visible),
-#show-more-direct-messages:has(a.dm-name:focus-visible) {
+#show-more-direct-messages:has(a.dm-name:focus-visible),
+#hide-more-direct-messages:focus-visible {
     outline: 2px solid var(--color-outline-focus);
     outline-offset: -2px;
     background-color: var(--color-background-hover-narrow-filter);
