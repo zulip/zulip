@@ -5,7 +5,7 @@ import copy
 import logging
 import re
 from collections.abc import Iterable, Mapping, Sequence
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass, field
 from email.headerregistry import Address
 from functools import cache
 from typing import TYPE_CHECKING, Any, Final, Literal, Optional, TypeAlias, Union
@@ -1366,6 +1366,51 @@ class SendNotificationResponseData(TypedDict):
     realm_push_status: NotRequired[RealmPushStatusDict]
 
 
+FCMPriority: TypeAlias = Literal["high", "normal"]
+APNsPriority: TypeAlias = Literal[10, 5, 1]
+
+
+@dataclass
+class PushRequestBasePayload:
+    push_account_id: int
+    encrypted_data: str
+
+
+@dataclass
+class FCMPushRequest:
+    device_id: int
+    fcm_priority: FCMPriority
+    payload: PushRequestBasePayload
+
+
+@dataclass
+class APNsHTTPHeaders:
+    apns_priority: APNsPriority
+    apns_push_type: PushType
+
+
+@dataclass
+class APNsPayload(PushRequestBasePayload):
+    aps: dict[str, int | dict[str, str]] = field(
+        default_factory=lambda: {"mutable-content": 1, "alert": {"title": "New notification"}}
+    )
+
+
+@dataclass
+class APNsPushRequest:
+    device_id: int
+    http_headers: APNsHTTPHeaders
+    payload: APNsPayload
+
+
+def get_encrypted_data(payload_data_to_encrypt: dict[str, Any], public_key_str: str) -> str:
+    public_key = PublicKey(public_key_str.encode("utf-8"), Base64Encoder)
+    sealed_box = SealedBox(public_key)
+    encrypted_data_bytes = sealed_box.encrypt(orjson.dumps(payload_data_to_encrypt), Base64Encoder)
+    encrypted_data = encrypted_data_bytes.decode("utf-8")
+    return encrypted_data
+
+
 def send_push_notifications(
     user_profile: UserProfile,
     apns_payload_data_to_encrypt: dict[str, Any],
@@ -1382,31 +1427,50 @@ def send_push_notifications(
         )
         return
 
-    # Prepare payload with encrypted data to send.
-    device_id_to_encrypted_data: dict[str, str] = {}
-    for push_device in push_devices:
-        public_key_str: str = push_device.push_public_key
-        public_key = PublicKey(public_key_str.encode("utf-8"), Base64Encoder)
-        sealed_box = SealedBox(public_key)
-
-        if push_device.token_kind == PushDevice.TokenKind.APNS:
-            encrypted_data_bytes = sealed_box.encrypt(
-                orjson.dumps(apns_payload_data_to_encrypt), Base64Encoder
-            )
-        else:
-            encrypted_data_bytes = sealed_box.encrypt(
-                orjson.dumps(fcm_payload_data_to_encrypt), Base64Encoder
-            )
-
-        encrypted_data = encrypted_data_bytes.decode("utf-8")
-        assert push_device.bouncer_device_id is not None  # for mypy
-        device_id_to_encrypted_data[str(push_device.bouncer_device_id)] = encrypted_data
-
     # Note: The "Final" qualifier serves as a shorthand
     # for declaring that a variable is effectively Literal.
     fcm_priority: Final = "normal" if is_removal else "high"
     apns_priority: Final = 5 if is_removal else 10
     apns_push_type = PushType.BACKGROUND if is_removal else PushType.ALERT
+
+    # Prepare payload to send.
+    push_requests: list[FCMPushRequest | APNsPushRequest] = []
+    for push_device in push_devices:
+        assert push_device.bouncer_device_id is not None  # for mypy
+        if push_device.token_kind == PushDevice.TokenKind.APNS:
+            apns_http_headers = APNsHTTPHeaders(
+                apns_priority=apns_priority,
+                apns_push_type=apns_push_type,
+            )
+            encrypted_data = get_encrypted_data(
+                apns_payload_data_to_encrypt,
+                push_device.push_public_key,
+            )
+            apns_payload = APNsPayload(
+                push_account_id=push_device.push_account_id,
+                encrypted_data=encrypted_data,
+            )
+            apns_push_request = APNsPushRequest(
+                device_id=push_device.bouncer_device_id,
+                http_headers=apns_http_headers,
+                payload=apns_payload,
+            )
+            push_requests.append(apns_push_request)
+        else:
+            encrypted_data = get_encrypted_data(
+                fcm_payload_data_to_encrypt,
+                push_device.push_public_key,
+            )
+            fcm_payload = PushRequestBasePayload(
+                push_account_id=push_device.push_account_id,
+                encrypted_data=encrypted_data,
+            )
+            fcm_push_request = FCMPushRequest(
+                device_id=push_device.bouncer_device_id,
+                fcm_priority=fcm_priority,
+                payload=fcm_payload,
+            )
+            push_requests.append(fcm_push_request)
 
     # Send push notification
     try:
@@ -1414,19 +1478,13 @@ def send_push_notifications(
             from zilencer.lib.push_notifications import send_e2ee_push_notifications
 
             response_data: SendNotificationResponseData = send_e2ee_push_notifications(
-                device_id_to_encrypted_data,
-                fcm_priority=fcm_priority,
-                apns_priority=apns_priority,
-                apns_push_type=apns_push_type,
+                push_requests,
                 realm=user_profile.realm,
             )
         else:
             post_data = {
                 "realm_uuid": str(user_profile.realm.uuid),
-                "device_id_to_encrypted_data": device_id_to_encrypted_data,
-                "fcm_priority": fcm_priority,
-                "apns_priority": apns_priority,
-                "apns_push_type": apns_push_type,
+                "push_requests": [asdict(push_request) for push_request in push_requests],
             }
             result = send_json_to_push_bouncer("POST", "push/e2ee/notify", post_data)
             assert isinstance(result["android_successfully_sent_count"], int)  # for mypy

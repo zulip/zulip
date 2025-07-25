@@ -8,7 +8,6 @@ from uuid import UUID
 
 import orjson
 import requests.exceptions
-from aioapns import PushType
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.validators import URLValidator, validate_email
@@ -56,6 +55,8 @@ from zerver.lib.exceptions import (
 from zerver.lib.outgoing_http import OutgoingSession
 from zerver.lib.push_notifications import (
     PUSH_REGISTRATION_LIVENESS_TIMEOUT,
+    APNsPushRequest,
+    FCMPushRequest,
     HostnameAlreadyInUseBouncerError,
     InvalidRemotePushDeviceTokenError,
     RealmPushStatusDict,
@@ -93,7 +94,7 @@ from zilencer.auth import (
     generate_registration_transfer_verification_secret,
     validate_registration_transfer_verification_secret,
 )
-from zilencer.lib.push_notifications import APNsPriority, FCMPriority, send_e2ee_push_notifications
+from zilencer.lib.push_notifications import send_e2ee_push_notifications
 from zilencer.lib.remote_counts import MissingDataError
 from zilencer.models import (
     RemoteInstallationCount,
@@ -1807,10 +1808,7 @@ def remote_server_check_analytics(request: HttpRequest, server: RemoteZulipServe
 
 class SendE2EEPushNotificationPayload(BaseModel):
     realm_uuid: str
-    device_id_to_encrypted_data: dict[str, str]
-    fcm_priority: FCMPriority
-    apns_priority: APNsPriority
-    apns_push_type: PushType
+    push_requests: list[APNsPushRequest | FCMPushRequest]
 
 
 @typed_endpoint
@@ -1837,21 +1835,18 @@ def remote_server_send_e2ee_push_notification(
         reason = push_status.message
         raise PushNotificationsDisallowedError(reason=reason)
 
-    device_id_to_encrypted_data = payload.device_id_to_encrypted_data
+    push_requests = payload.push_requests
 
     do_increment_logging_stat(
         remote_realm,
         COUNT_STATS["mobile_pushes_received::day"],
         None,
         timezone_now(),
-        increment=len(device_id_to_encrypted_data),
+        increment=len(push_requests),
     )
 
     response_data = send_e2ee_push_notifications(
-        device_id_to_encrypted_data,
-        fcm_priority=payload.fcm_priority,
-        apns_priority=payload.apns_priority,
-        apns_push_type=payload.apns_push_type,
+        push_requests,
         remote_realm=remote_realm,
     )
 
