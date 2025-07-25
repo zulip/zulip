@@ -530,7 +530,17 @@ html {
             margin-bottom: 10px;
         }
 
-        & label {
+        /* TODO: We need to audit all the portico <label> elements
+           and:
+           1) Add a unifying class so that these side-effect-prone
+              element selectors don't continue to introduce ugly
+              regressions
+           2) Rework the containing layout of `.input-box` so as to
+              not use fiddly positioning
+           3) Clean up other related .altcha-label references in
+              this file.
+        */
+        & label:not(.altcha-label) {
             position: absolute;
             top: 0;
             left: 0;
@@ -540,6 +550,11 @@ html {
             transition: 0.3s ease;
             transition-property:
                 color, font-size, font-weight, transform; /* stylelint-disable-line plugin/no-low-performance-animation-properties */
+        }
+
+        .altcha-label {
+            /* Push back against Bootstrap. */
+            margin-bottom: 0;
         }
 
         &.moving-label {
@@ -954,7 +969,7 @@ button#register_auth_button_gitlab {
             width: calc(100% - 20px);
         }
 
-        & label {
+        & label:not(.altcha-label) {
             position: absolute;
             margin: 0;
             top: 0;
