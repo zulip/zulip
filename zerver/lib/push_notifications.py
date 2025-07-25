@@ -1148,35 +1148,6 @@ def get_apns_badge_count_future(
     )
 
 
-def get_apns_payload_data_to_encrypt(
-    user_profile: UserProfile,
-    message: Message,
-    trigger: str,
-    mentioned_user_group_id: int | None = None,
-    mentioned_user_group_name: str | None = None,
-    can_access_sender: bool = True,
-) -> dict[str, Any]:
-    zulip_data = get_message_payload(
-        user_profile, message, mentioned_user_group_id, mentioned_user_group_name, can_access_sender
-    )
-    zulip_data.update(
-        message_ids=[message.id],
-    )
-
-    assert message.rendered_content is not None
-    with override_language(user_profile.default_language):
-        content, _ = truncate_content(get_mobile_push_content(message.rendered_content))
-
-        zulip_data["alert_title"] = get_apns_alert_title(message, user_profile.default_language)
-        zulip_data["alert_subtitle"] = get_apns_alert_subtitle(
-            message, trigger, user_profile, mentioned_user_group_name, can_access_sender
-        )
-        zulip_data["alert_body"] = content
-        zulip_data["badge"] = get_apns_badge_count(user_profile)
-
-    return zulip_data
-
-
 def get_message_payload_apns(
     user_profile: UserProfile,
     message: Message,
@@ -1649,14 +1620,6 @@ def handle_push_notification(user_profile_id: int, missed_message: dict[str, Any
     gcm_payload, gcm_options = get_message_payload_gcm(
         user_profile, message, mentioned_user_group_id, mentioned_user_group_name, can_access_sender
     )
-    apns_payload_data_to_encrypt = get_apns_payload_data_to_encrypt(
-        user_profile,
-        message,
-        trigger,
-        mentioned_user_group_id,
-        mentioned_user_group_name,
-        can_access_sender,
-    )
     logger.info("Sending push notifications to mobile clients for user %s", user_profile_id)
 
     # TODO: We plan to offer a personal, realm-level, and server-level setting
@@ -1667,7 +1630,7 @@ def handle_push_notification(user_profile_id: int, missed_message: dict[str, Any
         # TODO: Remove the 'settings.DEVELOPMENT' check when mobile clients start
         # to offer a way to register for E2EE push notifications; otherwise it'll
         # do needless DB query and logging.
-        send_push_notifications(user_profile, apns_payload_data_to_encrypt, gcm_payload)
+        send_push_notifications(user_profile, apns_payload, gcm_payload)
 
 
 def send_test_push_notification_directly_to_devices(
