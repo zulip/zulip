@@ -68,7 +68,7 @@ export function has_recent_activity(sub: StreamSubscription): boolean {
     return sub.is_recently_active || sub.newly_subscribed;
 }
 
-type StreamListSection = {
+export type StreamListSection = {
     id: string;
     section_title: string;
     streams: number[];

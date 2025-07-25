@@ -28,6 +28,7 @@ import * as settings_data from "./settings_data.ts";
 import * as sidebar_ui from "./sidebar_ui.ts";
 import * as stream_data from "./stream_data.ts";
 import * as stream_list_sort from "./stream_list_sort.ts";
+import type {StreamListSection} from "./stream_list_sort.ts";
 import * as stream_topic_history from "./stream_topic_history.ts";
 import * as stream_topic_history_util from "./stream_topic_history_util.ts";
 import * as sub_store from "./sub_store.ts";
@@ -261,6 +262,19 @@ export function create_initial_sidebar_rows(force_rerender = false): void {
     }
 }
 
+export let stream_list_section_container_html = function (section: StreamListSection): string {
+    return render_stream_list_section_container({
+        id: section.id,
+        section_title: section.section_title,
+    });
+};
+
+export function rewire_stream_list_section_container_html(
+    value: typeof stream_list_section_container_html,
+): void {
+    stream_list_section_container_html = value;
+}
+
 export function build_stream_list(force_rerender: boolean): void {
     // The stream list in the left sidebar contains 3 sections:
     // pinned, normal, and dormant streams, with headings above them
@@ -288,14 +302,7 @@ export function build_stream_list(force_rerender: boolean): void {
     clear_topics();
     $("#stream_filters").empty();
     for (const section of stream_groups.sections) {
-        $("#stream_filters").append(
-            $(
-                render_stream_list_section_container({
-                    id: section.id,
-                    section_title: section.section_title,
-                }),
-            ),
-        );
+        $("#stream_filters").append($(stream_list_section_container_html(section)));
         const is_empty = section.streams.length === 0 && section.muted_streams.length === 0;
         $(`#stream-list-${section.id}-container`).toggleClass("no-display", is_empty);
 
@@ -1119,7 +1126,7 @@ export function clear_search(): void {
     $filter.trigger("blur");
 }
 
-function scroll_stream_into_view($stream_li: JQuery): void {
+export let scroll_stream_into_view = function ($stream_li: JQuery): void {
     const $container = $("#left_sidebar_scroll_container");
 
     if ($stream_li.length !== 1) {
@@ -1138,6 +1145,10 @@ function scroll_stream_into_view($stream_li: JQuery): void {
     );
     // Note: If the stream is in a collapsed folder, we don't uncollapse the
     // folder.
+};
+
+export function rewire_scroll_stream_into_view(value: typeof scroll_stream_into_view): void {
+    scroll_stream_into_view = value;
 }
 
 export function maybe_scroll_narrow_into_view(first_messages_fetch_done: boolean): void {
