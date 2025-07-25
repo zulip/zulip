@@ -1,4 +1,3 @@
-import re
 from unittest.mock import patch
 
 import pyvips
@@ -154,7 +153,8 @@ class MarkdownThumbnailTest(ZulipTestCase):
                 read_test_image_file("img.png"),
                 self.example_user("othello"),
             )[0]
-            path_id = re.sub(r"/user_uploads/", "", url)
+            assert url.startswith("/user_uploads/")
+            path_id = url.removeprefix("/user_uploads/")
             self.assertTrue(ImageAttachment.objects.filter(path_id=path_id).exists())
         message_id = self.send_message_content(f"[I am 95% ± 5% certain!](/user_uploads/{path_id})")
         expected = (

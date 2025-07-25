@@ -57,9 +57,8 @@ class S3Test(ZulipTestCase):
         user_profile = self.example_user("hamlet")
         url = upload_message_attachment("dummy.txt", "text/plain", b"zulip!", user_profile)[0]
 
-        base = "/user_uploads/"
-        self.assertEqual(base, url[: len(base)])
-        path_id = re.sub(r"/user_uploads/", "", url)
+        assert url.startswith("/user_uploads/")
+        path_id = url.removeprefix("/user_uploads/")
         content = bucket.Object(path_id).get()["Body"].read()
         self.assertEqual(b"zulip!", content)
 
@@ -76,7 +75,8 @@ class S3Test(ZulipTestCase):
         user_profile = self.example_user("hamlet")
         url = upload_message_attachment("dummy.txt", "text/plain", b"zulip!", user_profile)[0]
 
-        path_id = re.sub(r"/user_uploads/", "", url)
+        assert url.startswith("/user_uploads/")
+        path_id = url.removeprefix("/user_uploads/")
         output = BytesIO()
         save_attachment_contents(path_id, output)
         self.assertEqual(output.getvalue(), b"zulip!")
@@ -88,7 +88,8 @@ class S3Test(ZulipTestCase):
         url = upload_message_attachment(
             "img.png", "image/png", read_test_image_file("img.png"), user_profile
         )[0]
-        path_id = re.sub(r"/user_uploads/", "", url)
+        assert url.startswith("/user_uploads/")
+        path_id = url.removeprefix("/user_uploads/")
 
         source = attachment_vips_source(path_id)
         self.assertIsInstance(source, StreamingSourceWithSize)
@@ -123,7 +124,8 @@ class S3Test(ZulipTestCase):
         user_profile = self.example_user("hamlet")
         url = upload_message_attachment("dummy.txt", "text/plain", b"zulip!", user_profile)[0]
 
-        path_id = re.sub(r"/user_uploads/", "", url)
+        assert url.startswith("/user_uploads/")
+        path_id = url.removeprefix("/user_uploads/")
         self.assertIsNotNone(bucket.Object(path_id).get())
         self.assertTrue(delete_message_attachment(path_id))
         with self.assertRaises(botocore.exceptions.ClientError):
@@ -137,7 +139,8 @@ class S3Test(ZulipTestCase):
         path_ids = []
         for n in range(1, 5):
             url = upload_message_attachment("dummy.txt", "text/plain", b"zulip!", user_profile)[0]
-            path_id = re.sub(r"/user_uploads/", "", url)
+            assert url.startswith("/user_uploads/")
+            path_id = url.removeprefix("/user_uploads/")
             self.assertIsNotNone(bucket.Object(path_id).get())
             path_ids.append(path_id)
 
@@ -170,14 +173,16 @@ class S3Test(ZulipTestCase):
         path_ids = []
         for n in range(1, 5):
             url = upload_message_attachment("dummy.txt", "text/plain", b"zulip!", user_profile)[0]
-            path_ids.append(re.sub(r"/user_uploads/", "", url))
+            assert url.startswith("/user_uploads/")
+            path_ids.append(url.removeprefix("/user_uploads/"))
 
         # Put an image in, which gets thumbnailed
         with self.captureOnCommitCallbacks(execute=True):
             url = upload_message_attachment(
                 "img.png", "image/png", read_test_image_file("img.png"), user_profile
             )[0]
-            image_path_id = re.sub(r"/user_uploads/", "", url)
+            assert url.startswith("/user_uploads/")
+            image_path_id = url.removeprefix("/user_uploads/")
             path_ids.append(image_path_id)
 
         found_paths = [r[0] for r in all_message_attachments()]
