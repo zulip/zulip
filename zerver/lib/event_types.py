@@ -1030,13 +1030,13 @@ class EventTypingStop(EventTypingStopCore):
 
 class RecipientFieldForTypingEditChannelMessage(BaseModel):
     type: Literal["channel"]
-    channel_id: int | None = None
-    topic: str | None = None
+    channel_id: int
+    topic: str
 
 
 class RecipientFieldForTypingEditDirectMessage(BaseModel):
     type: Literal["direct"]
-    user_ids: list[int] | None = None
+    user_ids: list[int]
 
 
 class EventTypingEditMessageStart(BaseEvent):
