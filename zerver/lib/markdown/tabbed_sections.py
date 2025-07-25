@@ -79,6 +79,7 @@ TAB_SECTION_LABELS = {
     "via-inbox-view": "Via inbox view",
     "via-left-sidebar": "Via left sidebar",
     "via-right-sidebar": "Via right sidebar",
+    "via-message-recipient-bar": "Via message recipient bar",
     "instructions-for-all-platforms": "Instructions for all platforms",
     "public-channels": "Public channels",
     "private-channels": "Private channels",
