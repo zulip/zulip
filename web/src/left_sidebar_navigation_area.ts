@@ -133,15 +133,16 @@ export function update_dom_with_unread_counts(
             pinned_unread_counts.unmuted += stream_count_info.unmuted_count;
             pinned_unread_counts.muted += stream_count_info.muted_count;
         } else if (sub.folder_id !== null) {
-            const unread_counts = folder_unread_counts.get(sub.folder_id) ?? {
-                unmuted: 0,
-                muted: 0,
-                inactive_unmuted: 0,
-                inactive_muted: 0,
-            };
             if (!folder_unread_counts.has(sub.folder_id)) {
-                folder_unread_counts.set(sub.folder_id, unread_counts);
+                folder_unread_counts.set(sub.folder_id, {
+                    unmuted: 0,
+                    muted: 0,
+                    inactive_unmuted: 0,
+                    inactive_muted: 0,
+                });
             }
+
+            const unread_counts = folder_unread_counts.get(sub.folder_id)!;
             unread_counts.unmuted += stream_count_info.unmuted_count;
             unread_counts.muted += stream_count_info.muted_count;
             if (!stream_list_sort.has_recent_activity(sub)) {
