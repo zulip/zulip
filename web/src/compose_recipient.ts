@@ -31,9 +31,11 @@ type MessageType = "stream" | "private";
 let compose_select_recipient_dropdown_widget: DropdownWidget;
 
 function composing_to_current_topic_narrow(): boolean {
-    // If the narrow state's stream ID is undefined, then
-    // the user cannot be composing to a current topic narrow.
-    if (narrow_state.stream_id() === undefined) {
+    // If the narrow state's stream ID or topic is undefined, then
+    // the user cannot be composing to a current topic narrow. Note
+    // that both lists of channel topics and channel feeds have a
+    // stream_id, but not a topic.
+    if (narrow_state.stream_id() === undefined || narrow_state.topic() === undefined) {
         return false;
     }
     return (
