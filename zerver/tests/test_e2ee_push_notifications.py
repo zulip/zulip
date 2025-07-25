@@ -258,6 +258,45 @@ class SendPushNotificationTest(E2EEPushNotificationTestCase):
                 zerver_logger.output[1],
             )
 
+    def test_early_return_if_expired_time_set(self, unused_mock: mock.MagicMock) -> None:
+        aaron = self.example_user("aaron")
+        hamlet = self.example_user("hamlet")
+
+        registered_device_apple, registered_device_android = (
+            self.register_push_devices_for_notification()
+        )
+        registered_device_apple.expired_time = datetime(2099, 4, 24, tzinfo=timezone.utc)
+        registered_device_android.expired_time = datetime(2099, 4, 24, tzinfo=timezone.utc)
+        registered_device_apple.save(update_fields=["expired_time"])
+        registered_device_android.save(update_fields=["expired_time"])
+
+        self.assertEqual(PushDevice.objects.count(), 2)
+
+        message_id = self.send_personal_message(
+            from_user=aaron, to_user=hamlet, skip_capture_on_commit_callbacks=True
+        )
+        missed_message = {
+            "message_id": message_id,
+            "trigger": NotificationTriggers.DIRECT_MESSAGE,
+        }
+
+        # Since 'expired_time' is set for concerned 'RemotePushDevice' rows,
+        # the bouncer will not attempt to send notification and instead returns
+        # a list of device IDs which server should erase on their own end.
+        with (
+            mock.patch(
+                "zilencer.lib.push_notifications.send_e2ee_push_notification_apple"
+            ) as send_apple,
+            mock.patch(
+                "zilencer.lib.push_notifications.send_e2ee_push_notification_android"
+            ) as send_android,
+        ):
+            handle_push_notification(hamlet.id, missed_message)
+
+            send_apple.assert_not_called()
+            send_android.assert_not_called()
+            self.assertEqual(PushDevice.objects.count(), 0)
+
     @responses.activate
     @override_settings(ZILENCER_ENABLED=False)
     def test_success_self_hosted(self, unused_mock: mock.MagicMock) -> None:

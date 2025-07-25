@@ -1,15 +1,17 @@
 import asyncio
 import logging
 from collections.abc import Iterable
-from typing import Literal, TypeAlias
+from dataclasses import asdict
 
-from aioapns import NotificationRequest, PushType
+from aioapns import NotificationRequest
 from django.utils.timezone import now as timezone_now
 from firebase_admin import exceptions as firebase_exceptions
 from firebase_admin import messaging as firebase_messaging
 from firebase_admin.messaging import UnregisteredError as FCMUnregisteredError
 
 from zerver.lib.push_notifications import (
+    APNsPushRequest,
+    FCMPushRequest,
     SendNotificationResponseData,
     fcm_app,
     get_apns_context,
@@ -19,9 +21,6 @@ from zerver.models.realms import Realm
 from zilencer.models import RemotePushDevice, RemoteRealm
 
 logger = logging.getLogger(__name__)
-
-FCMPriority: TypeAlias = Literal["high", "normal"]
-APNsPriority: TypeAlias = Literal[10, 5, 1]
 
 
 def send_e2ee_push_notification_apple(
@@ -119,11 +118,8 @@ def send_e2ee_push_notification_android(
 
 
 def send_e2ee_push_notifications(
-    device_id_to_encrypted_data: dict[str, str],
+    push_requests: list[APNsPushRequest | FCMPushRequest],
     *,
-    fcm_priority: FCMPriority,
-    apns_priority: APNsPriority,
-    apns_push_type: PushType,
     realm: Realm | None = None,
     remote_realm: RemoteRealm | None = None,
 ) -> SendNotificationResponseData:
@@ -131,13 +127,15 @@ def send_e2ee_push_notifications(
 
     import aioapns
 
-    device_ids = [int(device_id_str) for device_id_str in device_id_to_encrypted_data]
+    device_ids = {push_request.device_id for push_request in push_requests}
     remote_push_devices = RemotePushDevice.objects.filter(
         device_id__in=device_ids, expired_time__isnull=True, realm=realm, remote_realm=remote_realm
     )
-    unexpired_remote_push_device_ids = {
-        remote_push_device.device_id for remote_push_device in remote_push_devices
+    device_id_to_remote_push_device = {
+        remote_push_device.device_id: remote_push_device
+        for remote_push_device in remote_push_devices
     }
+    unexpired_remote_push_device_ids = set(device_id_to_remote_push_device.keys())
 
     # Device IDs which should be deleted on server.
     # Either the device ID is invalid or the token
@@ -148,44 +146,35 @@ def send_e2ee_push_notifications(
 
     apns_requests = []
     apns_remote_push_devices: list[RemotePushDevice] = []
-    apns_base_message_payload = {
-        "aps": {
-            "mutable-content": 1,
-            "alert": {
-                "title": "New notification",
-            },
-        },
-    }
 
     fcm_requests = []
     fcm_remote_push_devices: list[RemotePushDevice] = []
 
-    for remote_push_device in remote_push_devices:
-        message_payload = {
-            "encrypted_data": device_id_to_encrypted_data[str(remote_push_device.device_id)],
-            "push_account_id": remote_push_device.push_account_id,
-        }
+    for push_request in push_requests:
+        device_id = push_request.device_id
+        if device_id not in unexpired_remote_push_device_ids:
+            continue
+
+        remote_push_device = device_id_to_remote_push_device[device_id]
         if remote_push_device.token_kind == RemotePushDevice.TokenKind.APNS:
-            apns_message_payload = {
-                **apns_base_message_payload,
-                **message_payload,
-            }
+            assert isinstance(push_request, APNsPushRequest)
             apns_requests.append(
                 aioapns.NotificationRequest(
                     apns_topic=remote_push_device.ios_app_id,
                     device_token=remote_push_device.token,
-                    message=apns_message_payload,
-                    priority=apns_priority,
-                    push_type=apns_push_type,
+                    message=asdict(push_request.payload),
+                    priority=push_request.http_headers.apns_priority,
+                    push_type=push_request.http_headers.apns_push_type,
                 )
             )
             apns_remote_push_devices.append(remote_push_device)
         else:
+            assert isinstance(push_request, FCMPushRequest)
             fcm_requests.append(
                 firebase_messaging.Message(
-                    data=message_payload,
+                    data=asdict(push_request.payload),
                     token=remote_push_device.token,
-                    android=firebase_messaging.AndroidConfig(priority=fcm_priority),
+                    android=firebase_messaging.AndroidConfig(priority=push_request.fcm_priority),
                 )
             )
             fcm_remote_push_devices.append(remote_push_device)
