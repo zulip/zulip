@@ -14,6 +14,7 @@ class Command(ZulipBaseCommand):
 
     @override
     def add_arguments(self, parser: ArgumentParser) -> None:
+        parser.add_argument("--progress", action="store_true", help="Log every 50 completed realms")
         parser.add_argument(
             "--skip-delay",
             action="store_true",
@@ -35,4 +36,6 @@ class Command(ZulipBaseCommand):
             ).update(zulip_update_announcements_level=options["reset_level"])
             return
 
-        send_zulip_update_announcements(skip_delay=options["skip_delay"])
+        send_zulip_update_announcements(
+            skip_delay=options["skip_delay"], progress=options["progress"]
+        )

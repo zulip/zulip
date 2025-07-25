@@ -166,6 +166,17 @@ class ZulipUpdateAnnouncementsTest(ZulipTestCase):
             self.assertEqual(stream_messages[0].content, "Announcement message 5.")
             self.assertEqual(realm.zulip_update_announcements_level, 5)
 
+            # Calling send_zulip_update_announcements again does nothing
+            with time_machine.travel(now + timedelta(days=20), tick=False):
+                send_zulip_update_announcements(skip_delay=False)
+            realm.refresh_from_db()
+            stream_messages = Message.objects.filter(
+                realm=realm,
+                date_sent__gte=now + timedelta(days=20),
+            ).order_by("id")
+            self.assert_length(stream_messages, 0)
+            self.assertEqual(realm.zulip_update_announcements_level, 5)
+
     def test_send_zulip_update_announcements_with_stream_configured(self) -> None:
         with mock.patch(
             "zerver.lib.zulip_update_announcements.zulip_update_announcements",
