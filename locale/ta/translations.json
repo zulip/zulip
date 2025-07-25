@@ -275,6 +275,7 @@
   "Cancel compose": "இசையமைத்தல் ரத்து",
   "Cancel compose and save draft": "இசையமைத்து வரைவை ரத்து செய்து சேமிக்கவும்",
   "Cannot save invalid Jitsi server URL.": "தவறான சிட்சி சேவையக முகவரி ஐ சேமிக்க முடியாது.",
+  "Cannot save invalid message retention period.": "",
   "Cannot send message while files are being uploaded.": "கோப்புகள் பதிவேற்றப்படும்போது செய்தியை அனுப்ப முடியாது.",
   "Cannot subscribe to <z-stream></z-stream>": "<Z- ச்ட்ரீம்> </z- ச்ட்ரீம்> க்கு குழுசேர முடியாது",
   "Cannot subscribe to private channel <z-stream></z-stream>": "தனியார் சேனல் <z- ச்ட்ரீம்> </z- ச்ட்ரீம்> க்கு குழுசேர முடியாது",

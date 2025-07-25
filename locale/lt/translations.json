@@ -275,6 +275,7 @@
   "Cancel compose": "Atšaukti sudarymą",
   "Cancel compose and save draft": "",
   "Cannot save invalid Jitsi server URL.": "",
+  "Cannot save invalid message retention period.": "",
   "Cannot send message while files are being uploaded.": "",
   "Cannot subscribe to <z-stream></z-stream>": "",
   "Cannot subscribe to private channel <z-stream></z-stream>": "",
