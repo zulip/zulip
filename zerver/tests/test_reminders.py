@@ -3,6 +3,7 @@ import time
 from typing import TYPE_CHECKING
 
 import time_machine
+from django.test.utils import override_settings
 
 from zerver.actions.scheduled_messages import try_deliver_one_scheduled_message
 from zerver.lib.test_classes import ZulipTestCase
@@ -117,6 +118,7 @@ class RemindersTest(ZulipTestCase):
         )
         self.assertEqual(scheduled_message.topic_name(), Message.DM_TOPIC)
 
+    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
     def test_schedule_reminder_using_direct_message_group(self) -> None:
         hamlet = self.example_user("hamlet")
         othello = self.example_user("othello")

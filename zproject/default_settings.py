@@ -748,3 +748,7 @@ SCIM_CONFIG: dict[str, SCIMConfigDict] = {}
 # Minimum number of subscribers in a channel for us to no longer
 # send full subscriber data to the client.
 MIN_PARTIAL_SUBSCRIBERS_CHANNEL_SIZE = 1000
+
+# Whether to prefer direct message group over personal recipient
+# for 1:1 or self messages.
+PREFER_DIRECT_MESSAGE_GROUP = False
