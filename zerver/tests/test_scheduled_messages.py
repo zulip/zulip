@@ -7,6 +7,7 @@ from unittest import mock
 
 import orjson
 import time_machine
+from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 
 from zerver.actions.scheduled_messages import (
@@ -193,6 +194,7 @@ class ScheduledMessageTest(ZulipTestCase):
         )
         self.assert_json_error(updated_response, "Scheduled message was already sent")
 
+    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
     def test_successful_deliver_personal_scheduled_message_using_direct_message_group(self) -> None:
         # No scheduled message
         self.assertFalse(try_deliver_one_scheduled_message())
@@ -257,6 +259,7 @@ class ScheduledMessageTest(ZulipTestCase):
 
         self.assert_scheduled_message_delivered(scheduled_message, recipient=sender.recipient)
 
+    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
     def test_successful_deliver_direct_scheduled_message_to_self_using_direct_message_group(
         self,
     ) -> None:

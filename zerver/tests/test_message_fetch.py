@@ -425,6 +425,7 @@ class NarrowBuilderTest(ZulipTestCase):
             "WHERE NOT ((flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s)",
         )
 
+    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
     def test_add_term_using_dm_operator_the_same_user_as_operand_when_direct_message_group_exists(
         self,
     ) -> None:
@@ -447,6 +448,7 @@ class NarrowBuilderTest(ZulipTestCase):
             "WHERE (flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s)",
         )
 
+    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
     def test_add_term_using_dm_operator_and_self_and_user_as_operand_when_direct_message_group_exists(
         self,
     ) -> None:
@@ -2508,6 +2510,7 @@ class GetOldMessagesTest(ZulipTestCase):
         result = self.get_and_check_messages(dict(narrow=orjson.dumps(narrow).decode()))
         self.assertNotEqual(result["messages"], [])
 
+    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
     def test_get_1_to_1_messages_with_existent_group_dm(self) -> None:
         me = self.example_user("hamlet")
         other_user = self.example_user("iago")
@@ -2532,6 +2535,7 @@ class GetOldMessagesTest(ZulipTestCase):
             self.assertIn(message["id"], message_ids)
             self.assertEqual(message["recipient_id"], direct_message_group.recipient_id)
 
+    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
     def test_get_messages_to_self_with_existent_group_dm(self) -> None:
         me = self.example_user("hamlet")
 
