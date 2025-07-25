@@ -3,11 +3,11 @@ import $ from "jquery";
 import assert from "minimalistic-assert";
 import * as z from "zod/mini";
 
+import render_subscription_banner from "../templates/components/subscription_banner.hbs";
 import render_unsubscribe_private_stream_modal from "../templates/confirm_dialog/confirm_unsubscribe_private_stream.hbs";
 import render_inline_decorated_channel_name from "../templates/inline_decorated_channel_name.hbs";
 import render_stream_member_list_entry from "../templates/stream_settings/stream_member_list_entry.hbs";
 import render_stream_members_table from "../templates/stream_settings/stream_members_table.hbs";
-import render_stream_subscription_request_result from "../templates/stream_settings/stream_subscription_request_result.hbs";
 
 import * as add_subscribers_pill from "./add_subscribers_pill.ts";
 import * as blueslip from "./blueslip.ts";
@@ -115,10 +115,13 @@ function show_stream_subscription_request_error_result(error_message: string): v
     const $stream_subscription_req_result_elem = $(
         ".stream_subscription_request_result",
     ).expectOne();
-    const html = render_stream_subscription_request_result({
+    const rendered_error_banner = render_subscription_banner({
         error_message,
+        intent: "danger",
     });
-    scroll_util.get_content_element($stream_subscription_req_result_elem).html(html);
+    scroll_util
+        .get_content_element($stream_subscription_req_result_elem)
+        .html(rendered_error_banner);
 }
 
 function show_stream_subscription_request_success_result({
@@ -149,7 +152,8 @@ function show_stream_subscription_request_success_result({
             ignored_deactivated_users,
         );
     }
-    const html = render_stream_subscription_request_result({
+    const rendered_success_banner = render_subscription_banner({
+        intent: "success",
         subscribe_success_messages,
         subscribed_users,
         already_subscribed_users,
@@ -159,7 +163,9 @@ function show_stream_subscription_request_success_result({
         ignored_deactivated_users,
         ignored_deactivated_users_count,
     });
-    scroll_util.get_content_element($stream_subscription_req_result_elem).html(html);
+    scroll_util
+        .get_content_element($stream_subscription_req_result_elem)
+        .html(rendered_success_banner);
 }
 
 function update_notification_choice_checkbox(added_user_count: number): void {
