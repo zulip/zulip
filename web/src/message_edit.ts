@@ -764,8 +764,17 @@ export function start($row: JQuery, edit_box_open_callback?: () => void): void {
     });
 }
 
-function show_toggle_resolve_topic_spinner($row: JQuery): void {
-    const $button = $row.find(".on_hover_topic_resolve").expectOne();
+function show_toggle_resolve_topic_spinner($row: JQuery, topic_is_resolved: boolean): void {
+    let $button: JQuery;
+    if (topic_is_resolved) {
+        // Since we don't show a separate unresolve topic button in the recipient bar,
+        // this code path is only reached when the user unresolves a topic using the
+        // "Mark as unresolved" option from the recipient bar topic actions menu.
+        $button = $row.find(".on-hover-unresolve-loading-indicator").expectOne();
+        $button.removeClass("hide");
+    } else {
+        $button = $row.find(".on_hover_topic_resolve").expectOne();
+    }
     $button.addClass("loading-resolve-topic-state");
     // While we call the show_button_loading_indicator method to
     // show the spinner, we don't need to call the corresponding
@@ -924,7 +933,7 @@ function do_toggle_resolve_topic(
     $row?: JQuery,
 ): void {
     if ($row) {
-        show_toggle_resolve_topic_spinner($row);
+        show_toggle_resolve_topic_spinner($row, topic_is_resolved);
     }
 
     const request = {

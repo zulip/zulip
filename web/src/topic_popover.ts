@@ -72,6 +72,7 @@ export function initialize(): void {
                 );
             },
             onMount(instance) {
+                const $reference = $(instance.reference);
                 const $popper = $(instance.popper);
                 const {stream_id, topic_name, url} = get_conversation(instance);
                 const context = popover_menus_data.get_topic_popover_content_context({
@@ -183,7 +184,19 @@ export function initialize(): void {
                 $popper.one("click", ".sidebar-popover-toggle-resolved", () => {
                     message_edit.with_first_message_id(stream_id, topic_name, (message_id) => {
                         assert(message_id !== undefined);
-                        message_edit.toggle_resolve_topic(message_id, topic_name, true);
+                        let $recipient_row;
+                        if ($reference.hasClass("recipient-row-topic-menu")) {
+                            // If the popover was opened from the recipient row, we
+                            // we pass the recipient row to the toggle_resolve_topic
+                            // function to show the loading indicator accordingly.
+                            $recipient_row = $reference.closest(".recipient_row");
+                        }
+                        message_edit.toggle_resolve_topic(
+                            message_id,
+                            topic_name,
+                            true,
+                            $recipient_row,
+                        );
                     });
 
                     popover_menus.hide_current_popover_if_visible(instance);
