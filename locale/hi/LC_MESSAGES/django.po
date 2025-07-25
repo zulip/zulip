@@ -15,14 +15,16 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-03-20 06:34+0000\n"
-"PO-Revision-Date: 2015-12-06 00:18+0000\n"
-"Last-Translator: Aruna Maurya, 2022\n"
-"Language-Team: Hindi (http://app.transifex.com/zulip/zulip/language/hi/)\n"
+"PO-Revision-Date: 2025-07-17 06:18+0000\n"
+"Last-Translator: Anonymous <noreply@weblate.org>\n"
+"Language-Team: Hindi <https://hosted.weblate.org/projects/zulip/django-10-x/"
+"hi/>\n"
+"Language: hi\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Language: hi\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"X-Generator: Weblate 5.13-dev\n"
 
 #: analytics/views/stats.py:109 zerver/decorator.py:667
 #: zerver/decorator.py:685
@@ -66,7 +68,8 @@ msgstr ""
 
 #: analytics/views/stats.py:457 analytics/views/stats.py:494
 msgid "No analytics data available. Please contact your server administrator."
-msgstr "कोई विश्लेषण डेटा उपलब्ध नहीं है। कृपया अपने सर्वर व्यवस्थापक से संपर्क करें।"
+msgstr ""
+"कोई विश्लेषण डेटा उपलब्ध नहीं है। कृपया अपने सर्वर व्यवस्थापक से संपर्क करें।"
 
 #: corporate/lib/registration.py:35
 #, python-brace-format
@@ -4082,7 +4085,9 @@ msgstr ""
 msgid ""
 "Your account is too new to send invites for this organization. Ask an "
 "organization admin, or a more experienced user."
-msgstr "इस संगठन के लिए आमंत्रण भेजने के लिए आपका खाता बहुत नया है। एक संगठन व्यवस्थापक, या एक अधिक अनुभवी उपयोगकर्ता से पूछें।"
+msgstr ""
+"इस संगठन के लिए आमंत्रण भेजने के लिए आपका खाता बहुत नया है। एक संगठन व्यवस्थापक, या एक "
+"अधिक अनुभवी उपयोगकर्ता से पूछें।"
 
 #: zerver/actions/invites.py:266
 msgid "Some emails did not validate, so we didn't send any invitations."
@@ -4532,7 +4537,8 @@ msgstr ""
 #: zerver/forms.py:265
 #, python-brace-format
 msgid "The organization you are trying to join using {email} does not exist."
-msgstr "जिस संगठन को आप {email} के उपयोग से जोड़ने का प्रयास कर रहे हैं वह मौजूद नहीं है।"
+msgstr ""
+"जिस संगठन को आप {email} के उपयोग से जोड़ने का प्रयास कर रहे हैं वह मौजूद नहीं है।"
 
 #: zerver/forms.py:273
 #, python-brace-format
@@ -4545,7 +4551,9 @@ msgstr "कृपया संगठन व्यवस्थापक से {e
 msgid ""
 "Your email address, {email}, is not in one of the domains that are allowed "
 "to register for accounts in this organization."
-msgstr "आपका ईमेल पता, {email}, उन डोमेन में से एक नहीं है, जिन्हें इस संगठन में खातों के लिए पंजीकरण करने की अनुमति है।"
+msgstr ""
+"आपका ईमेल पता, {email}, उन डोमेन में से एक नहीं है, जिन्हें इस संगठन में खातों के लिए पंजी"
+"करण करने की अनुमति है।"
 
 #: zerver/forms.py:290
 msgid "Email addresses containing + are not allowed in this organization."
@@ -6309,7 +6317,9 @@ msgstr ""
 msgid ""
 "Some of those addresses are already using Zulip, so we didn't send them an "
 "invitation. We did send invitations to everyone else!"
-msgstr "उनमें से कुछ पते पहले से ही ज़ूलिप का उपयोग कर रहे हैं, इसलिए हमने उन्हें निमंत्रण नहीं भेजा। हमने सभी को निमंत्रण भेजा!"
+msgstr ""
+"उनमें से कुछ पते पहले से ही ज़ूलिप का उपयोग कर रहे हैं, इसलिए हमने उन्हें निमंत्रण नहीं भेजा। हमने"
+" सभी को निमंत्रण भेजा!"
 
 #: zerver/views/message_edit.py:121
 msgid "Message edit history is disabled in this organization"

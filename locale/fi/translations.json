@@ -526,7 +526,7 @@
   "Direct messages": "Yksityisviestit",
   "Direct messages are disabled in this organization.": "Yksityisviestit on poistettu käytöstä tässä organisaatiossa",
   "Disable": "Poista käytöstä",
-  "Disable announcements that are currently sent to this channel:": "",
+  "Disable announcements that are currently sent to this channel:": "Poista käytöstä julkaisut jotka on lähetetty tälle kanavalle:",
   "Disable notifications?": "Poistetaanko ilmoitukset käytöstä?",
   "Disabled": "Ei käytössä",
   "Discard": "Hylkää",

@@ -9,14 +9,18 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-03-20 06:34+0000\n"
-"PO-Revision-Date: 2015-12-06 00:18+0000\n"
-"Last-Translator: R S <renatke@gmail.com>, 2020\n"
-"Language-Team: Lithuanian (http://app.transifex.com/zulip/zulip/language/lt/)\n"
+"PO-Revision-Date: 2025-07-17 06:18+0000\n"
+"Last-Translator: Alex Vandiver <alexmv@zulip.com>\n"
+"Language-Team: Lithuanian <https://hosted.weblate.org/projects/zulip/"
+"django-10-x/lt/>\n"
+"Language: lt\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Language: lt\n"
-"Plural-Forms: nplurals=4; plural=(n % 10 == 1 && (n % 100 > 19 || n % 100 < 11) ? 0 : (n % 10 >= 2 && n % 10 <=9) && (n % 100 > 19 || n % 100 < 11) ? 1 : n % 1 != 0 ? 2: 3);\n"
+"Plural-Forms: nplurals=4; plural=(n % 10 == 1 && (n % 100 > 19 || n % 100 < "
+"11) ? 0 : (n % 10 >= 2 && n % 10 <=9) && (n % 100 > 19 || n % 100 < 11) ? 1 :"
+" n % 1 != 0 ? 2: 3);\n"
+"X-Generator: Weblate 5.13-dev\n"
 
 #: analytics/views/stats.py:109 zerver/decorator.py:667
 #: zerver/decorator.py:685
@@ -60,7 +64,8 @@ msgstr ""
 
 #: analytics/views/stats.py:457 analytics/views/stats.py:494
 msgid "No analytics data available. Please contact your server administrator."
-msgstr "Analitiniai duomenys negalimi. Susisiekite su serverio administratoriumi."
+msgstr ""
+"Analitiniai duomenys negalimi. Susisiekite su serverio administratoriumi."
 
 #: corporate/lib/registration.py:35
 #, python-brace-format
@@ -3800,7 +3805,9 @@ msgstr ""
 msgid ""
 "This is used for mobile applications and other tools that require a "
 "password."
-msgstr "Tai naudojama mobiliosioms programėlėms ir kitiems įrankiams, kuriems reikia slaptažodžio."
+msgstr ""
+"Tai naudojama mobiliosioms programėlėms ir kitiems įrankiams, kuriems reikia "
+"slaptažodžio."
 
 #: templates/zerver/register.html:163
 msgid "Password strength"
@@ -4080,7 +4087,8 @@ msgstr ""
 
 #: zerver/actions/invites.py:266
 msgid "Some emails did not validate, so we didn't send any invitations."
-msgstr "Kai kurie el. pašto adresai nepatvirtinti, todėl pakvietimų neišsiuntėme."
+msgstr ""
+"Kai kurie el. pašto adresai nepatvirtinti, todėl pakvietimų neišsiuntėme."
 
 #: zerver/actions/invites.py:274
 msgid "We weren't able to invite anyone."
@@ -6303,7 +6311,9 @@ msgstr "Turite nurodyti bent vieną el. pašto adresą."
 msgid ""
 "Some of those addresses are already using Zulip, so we didn't send them an "
 "invitation. We did send invitations to everyone else!"
-msgstr "Kai kuriuos el. pašto adresus turintys žmonės jau naudoja programėlę, todėl pakvietimo jiems neišsiuntėme. Tačiau visi kiti pakvietimą gavo!"
+msgstr ""
+"Kai kuriuos el. pašto adresus turintys žmonės jau naudoja programėlę, todėl "
+"pakvietimo jiems neišsiuntėme. Tačiau visi kiti pakvietimą gavo!"
 
 #: zerver/views/message_edit.py:121
 msgid "Message edit history is disabled in this organization"

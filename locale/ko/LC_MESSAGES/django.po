@@ -23,14 +23,16 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-03-20 06:34+0000\n"
-"PO-Revision-Date: 2015-12-06 00:18+0000\n"
-"Last-Translator: Eugene Lee, 2024\n"
-"Language-Team: Korean (http://app.transifex.com/zulip/zulip/language/ko/)\n"
+"PO-Revision-Date: 2025-07-17 06:18+0000\n"
+"Last-Translator: Alex Vandiver <alexmv@zulip.com>\n"
+"Language-Team: Korean <https://hosted.weblate.org/projects/zulip/django-10-x/"
+"ko/>\n"
+"Language: ko\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Language: ko\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
+"X-Generator: Weblate 5.13-dev\n"
 
 #: analytics/views/stats.py:109 zerver/decorator.py:667
 #: zerver/decorator.py:685
@@ -558,7 +560,9 @@ msgstr "최근 업데이트"
 msgid ""
 "A full update of all the graphs happens once a day. The “messages sent over "
 "time” graph is updated once an hour."
-msgstr "모든 그래프의 전체 업데이트는 하루에 한 번 합니다.  \"메세지가 보내진지 시간 경과된\" 그래프는 한 시간에 한 번 업데이트 됩니다."
+msgstr ""
+"모든 그래프의 전체 업데이트는 하루에 한 번 합니다.  "
+"\"메세지가 보내진지 시간 경과된\" 그래프는 한 시간에 한 번 업데이트 됩니다."
 
 #: templates/confirmation/confirm_email_change.html:4
 msgid "Email changed"
@@ -575,7 +579,11 @@ msgid ""
 "            This confirms that the email address for your Zulip account has changed\n"
 "            from %(old_email_html_tag)s to %(new_email_html_tag)s\n"
 "            "
-msgstr "\n이것은 너의 Zulip 계정에 있는 이메일 주소가 변경되었는지  확인한다.\nfrom 전 이메일%(old_email_html_tag)s to 현재 새로운 이메일%(new_email_html_tag)s "
+msgstr ""
+"\n"
+"이것은 너의 Zulip 계정에 있는 이메일 주소가 변경되었는지  확인한다.\n"
+"from 전 이메일%(old_email_html_tag)s to 현재 새로운 "
+"이메일%(new_email_html_tag)s "
 
 #: templates/confirmation/confirm_preregistrationuser.html:5
 msgid "Confirming your email address"
@@ -622,7 +630,9 @@ msgstr "오류. 이 확인 링크는 형식화되지 않았습니다."
 msgid ""
 "Make sure you copied the link correctly in to your browser. If you're still "
 "encountering this page, it's probably our fault. We're sorry."
-msgstr "너의 브라우저에 올바른 링크를 복사하는 것을 확실히 해주십시오.  이 페이지가 계속 생성될 경우, 아마도 오류가 생겼습니다. 죄송합니다."
+msgstr ""
+"너의 브라우저에 올바른 링크를 복사하는 것을 확실히 해주십시오.  이 페이지가 "
+"계속 생성될 경우, 아마도 오류가 생겼습니다. 죄송합니다."
 
 #: templates/corporate/billing/billing.html:5
 msgid "Billing"
@@ -1612,7 +1622,10 @@ msgid ""
 "\n"
 "                            No account found for %(email)s.\n"
 "                            "
-msgstr "\n                        %(email)s에 대한 계정이 없습니다.\n         "
+msgstr ""
+"\n"
+"                        %(email)s에 대한 계정이 없습니다.\n"
+"         "
 
 #: templates/zerver/confirm_continue_registration.html:30
 msgid "Log in with another account"
@@ -4090,7 +4103,9 @@ msgstr ""
 msgid ""
 "Your account is too new to send invites for this organization. Ask an "
 "organization admin, or a more experienced user."
-msgstr "당신의 계정이 이 조직에 초대를 보내기에는 너무 최근에 만들어졌습니다. 조직 관리자에게 문의하거나, 더 경험있는 사용자에게 물어보세요."
+msgstr ""
+"당신의 계정이 이 조직에 초대를 보내기에는 너무 최근에 만들어졌습니다. 조직 "
+"관리자에게 문의하거나, 더 경험있는 사용자에게 물어보세요."
 
 #: zerver/actions/invites.py:266
 msgid "Some emails did not validate, so we didn't send any invitations."
@@ -4553,7 +4568,8 @@ msgstr "조직 관리자에게 {email} 초대장을 요청하십시오."
 msgid ""
 "Your email address, {email}, is not in one of the domains that are allowed "
 "to register for accounts in this organization."
-msgstr "귀하의 이메일 주소인 {email}은 이 조직의 계정에 등록 할 수있는 도메인에 속해 있지 않습니다."
+msgstr "귀하의 이메일 주소인 {email}은 이 조직의 계정에 등록 할 수있는 도메인에 속해 "
+"있지 않습니다."
 
 #: zerver/forms.py:290
 msgid "Email addresses containing + are not allowed in this organization."
@@ -6317,7 +6333,9 @@ msgstr "이메일 주소를 하나 이상 지정해야합니다."
 msgid ""
 "Some of those addresses are already using Zulip, so we didn't send them an "
 "invitation. We did send invitations to everyone else!"
-msgstr "그 중 일부 주소는 이미 Zulip을 사용하고 있으므로 초대장을 보내지 않았습니다. 우리는 다른 모든 사람들에게 초대장을 보냈습니다!"
+msgstr ""
+"그 중 일부 주소는 이미 Zulip을 사용하고 있으므로 초대장을 보내지 않았습니다. "
+"우리는 다른 모든 사람들에게 초대장을 보냈습니다!"
 
 #: zerver/views/message_edit.py:121
 msgid "Message edit history is disabled in this organization"
@@ -6586,7 +6604,8 @@ msgstr "\"new_description\"또는 \"new_group_name\"을 전달해야 합니다."
 
 #: zerver/views/streams.py:229
 msgid "Invalid value for \"op\". Specify one of \"add\" or \"remove\"."
-msgstr "\"op\"에 대한 값이 유효하지 않습니다. \"추가\"또는 \"제거\"중 하나를 지정하십시오."
+msgstr "\"op\"에 대한 값이 유효하지 않습니다. \"추가\"또는 \"제거\"중 하나를 "
+"지정하십시오."
 
 #: zerver/views/streams.py:317 zerver/views/streams.py:321
 #: zerver/views/streams.py:329

@@ -12,14 +12,16 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-03-20 06:34+0000\n"
-"PO-Revision-Date: 2015-12-06 00:18+0000\n"
-"Last-Translator: Tim Abbott <tabbott@kandralabs.com>, 2018\n"
-"Language-Team: Indonesian (http://app.transifex.com/zulip/zulip/language/id/)\n"
+"PO-Revision-Date: 2025-07-17 06:18+0000\n"
+"Last-Translator: Anonymous <noreply@weblate.org>\n"
+"Language-Team: Indonesian <https://hosted.weblate.org/projects/zulip/"
+"django-10-x/id/>\n"
+"Language: id\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Language: id\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
+"X-Generator: Weblate 5.13-dev\n"
 
 #: analytics/views/stats.py:109 zerver/decorator.py:667
 #: zerver/decorator.py:685
@@ -3803,7 +3805,9 @@ msgstr ""
 msgid ""
 "This is used for mobile applications and other tools that require a "
 "password."
-msgstr "Ini digunakan untuk aplikasi seluler dan perangkat lain yang memerlukan kata sandi."
+msgstr ""
+"Ini digunakan untuk aplikasi seluler dan perangkat lain yang memerlukan kata "
+"sandi."
 
 #: templates/zerver/register.html:163
 msgid "Password strength"
@@ -4083,7 +4087,9 @@ msgstr ""
 
 #: zerver/actions/invites.py:266
 msgid "Some emails did not validate, so we didn't send any invitations."
-msgstr "Beberapa email tidak tervalidasi, jadi kami tidak mengirimkan undangan apapun."
+msgstr ""
+"Beberapa email tidak tervalidasi, jadi kami tidak mengirimkan undangan "
+"apapun."
 
 #: zerver/actions/invites.py:274
 msgid "We weren't able to invite anyone."
@@ -4542,7 +4548,9 @@ msgstr "Silakan meminta sebuah undangan untuk {email} dari pengurus organisasi."
 msgid ""
 "Your email address, {email}, is not in one of the domains that are allowed "
 "to register for accounts in this organization."
-msgstr "Alamat email Anda, {email}, tidak termasuk dalam salah satu domain yang diperbolehkan untuk mendaftar akun pada organisasi ini."
+msgstr ""
+"Alamat email Anda, {email}, tidak termasuk dalam salah satu domain yang "
+"diperbolehkan untuk mendaftar akun pada organisasi ini."
 
 #: zerver/forms.py:290
 msgid "Email addresses containing + are not allowed in this organization."
@@ -4625,7 +4633,9 @@ msgstr "Lampiran invalid"
 #: zerver/lib/attachments.py:48
 msgid ""
 "An error occurred while deleting the attachment. Please try again later."
-msgstr "Sebuah eror telah terjadi saat menghapus lampiran tersebut. Silakan coba lagi nanti."
+msgstr ""
+"Sebuah eror telah terjadi saat menghapus lampiran tersebut. Silakan coba "
+"lagi nanti."
 
 #: zerver/lib/bot_lib.py:107
 msgid "Message must have recipients!"
@@ -6306,7 +6316,10 @@ msgstr "Anda harus menentukan minimal satu alamat email."
 msgid ""
 "Some of those addresses are already using Zulip, so we didn't send them an "
 "invitation. We did send invitations to everyone else!"
-msgstr "Beberapa dari alamat itu telah menggunakan Zulip, jadi kami tidak mengirimkan mereka undangan. Namun kami mengirimkan undangan kepada orang-orang yang lain!"
+msgstr ""
+"Beberapa dari alamat itu telah menggunakan Zulip, jadi kami tidak "
+"mengirimkan mereka undangan. Namun kami mengirimkan undangan kepada orang-"
+"orang yang lain!"
 
 #: zerver/views/message_edit.py:121
 msgid "Message edit history is disabled in this organization"
@@ -6592,7 +6605,9 @@ msgstr ""
 
 #: zerver/views/streams.py:498 zerver/views/user_groups.py:487
 msgid "Nothing to do. Specify at least one of \"add\" or \"delete\"."
-msgstr "Tidak ada yang dapat dilakukan. Spesifikasikan setidaknya satu dari 'tambah' atau 'hapus'."
+msgstr ""
+"Tidak ada yang dapat dilakukan. Spesifikasikan setidaknya satu dari 'tambah' "
+"atau 'hapus'."
 
 #: zerver/views/streams.py:575
 #, python-brace-format

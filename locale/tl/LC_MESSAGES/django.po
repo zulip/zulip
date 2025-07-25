@@ -9,14 +9,16 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-03-20 06:34+0000\n"
-"PO-Revision-Date: 2015-12-06 00:18+0000\n"
-"Last-Translator: Gabriel Ferrer, 2022\n"
-"Language-Team: Tagalog (http://app.transifex.com/zulip/zulip/language/tl/)\n"
+"PO-Revision-Date: 2025-07-17 06:19+0000\n"
+"Last-Translator: Anonymous <noreply@weblate.org>\n"
+"Language-Team: Tagalog <https://hosted.weblate.org/projects/zulip/"
+"django-10-x/tl/>\n"
+"Language: tl\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Language: tl\n"
-"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"Plural-Forms: nplurals=2; plural=n > 1;\n"
+"X-Generator: Weblate 5.13-dev\n"
 
 #: analytics/views/stats.py:109 zerver/decorator.py:667
 #: zerver/decorator.py:685
@@ -167,7 +169,8 @@ msgstr "May nangyaring masama. Maaaring buksan muli ang pahina."
 
 #: corporate/lib/stripe.py:504
 msgid "Something went wrong. Please wait a few seconds and try again."
-msgstr "May nangyaring masama. Maaaring maghintay ng ilang segundo at subukan muli."
+msgstr ""
+"May nangyaring masama. Maaaring maghintay ng ilang segundo at subukan muli."
 
 #: corporate/lib/stripe.py:1888
 msgid "Please add a credit card before starting your free trial."

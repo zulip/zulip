@@ -11,14 +11,16 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-03-20 06:34+0000\n"
-"PO-Revision-Date: 2015-12-06 00:18+0000\n"
-"Last-Translator: Gonçal Garcés, 2020-2021\n"
-"Language-Team: Catalan (http://app.transifex.com/zulip/zulip/language/ca/)\n"
+"PO-Revision-Date: 2025-07-17 06:18+0000\n"
+"Last-Translator: Anonymous <noreply@weblate.org>\n"
+"Language-Team: Catalan <https://hosted.weblate.org/projects/zulip/"
+"django-10-x/ca/>\n"
+"Language: ca\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Language: ca\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"X-Generator: Weblate 5.13-dev\n"
 
 #: analytics/views/stats.py:109 zerver/decorator.py:667
 #: zerver/decorator.py:685
@@ -2482,7 +2484,9 @@ msgstr ""
 msgid ""
 "Organization: %(organization_url)s Time: %(login_time)s Email: "
 "%(user_email)s"
-msgstr "Organització: %(organization_url)s Hora: %(login_time)s E-mail: %(user_email)s"
+msgstr ""
+"Organització: %(organization_url)s Hora: %(login_time)s E-mail: "
+"%(user_email)s"
 
 #: templates/zerver/emails/notify_new_login.html:12
 #: templates/zerver/emails/notify_new_login.txt:1
@@ -4624,7 +4628,8 @@ msgstr "Fitxer adjunt no vàlid"
 #: zerver/lib/attachments.py:48
 msgid ""
 "An error occurred while deleting the attachment. Please try again later."
-msgstr "S'ha produït un error a l'adjuntar el fitxer. Torneu a intentar-ho més tard."
+msgstr ""
+"S'ha produït un error a l'adjuntar el fitxer. Torneu a intentar-ho més tard."
 
 #: zerver/lib/bot_lib.py:107
 msgid "Message must have recipients!"
@@ -6309,7 +6314,8 @@ msgstr ""
 
 #: zerver/views/message_edit.py:121
 msgid "Message edit history is disabled in this organization"
-msgstr "L'historial d'edicions de missatge està desactivat en aquesta organització"
+msgstr ""
+"L'historial d'edicions de missatge està desactivat en aquesta organització"
 
 #: zerver/views/message_edit.py:181 zerver/views/message_edit.py:184
 msgid "You don't have permission to delete this message"
