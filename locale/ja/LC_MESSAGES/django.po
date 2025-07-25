@@ -20,7 +20,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-07-18 03:39+0000\n"
+"POT-Creation-Date: 2025-07-25 20:29+0000\n"
 "PO-Revision-Date: 2025-07-19 05:03+0000\n"
 "Last-Translator: Alex Vandiver <alexmv@zulip.com>\n"
 "Language-Team: Japanese <https://hosted.weblate.org/projects/zulip/django/ja/"
@@ -83,48 +83,54 @@ msgid ""
 "[deactivate inactive users]({deactivate_user_help_page_link}) to allow new "
 "users to join."
 msgstr ""
-"Zulip "
-"ライセンスが残っておらず、新しいユーザーを受け入れることができません。[ライセンス数を増やす]({billing_page_link})か、[最近利用していないユーザーを非アクティブ化]({deactivate_user_help_page_link})すると、複数のユーザーを追加できるようになります。"
+"Zulip ライセンスが残っておらず、新しいユーザーを受け入れることができません。"
+"[ライセンス数を増やす]({billing_page_link})か、[最近利用していないユーザーを"
+"非アクティブ化]({deactivate_user_help_page_link})すると、複数のユーザーを追加"
+"できるようになります。"
 
 #: corporate/lib/registration.py:42
 #, python-brace-format
 msgid ""
-"Your organization has only one Zulip license remaining. You can [increase the"
-" number of licenses]({billing_page_link}) or [deactivate inactive "
-"users]({deactivate_user_help_page_link}) to allow more than one user to join."
+"Your organization has only one Zulip license remaining. You can [increase "
+"the number of licenses]({billing_page_link}) or [deactivate inactive users]"
+"({deactivate_user_help_page_link}) to allow more than one user to join."
 msgstr ""
-"残りの Zulipライセンスが１件になりました。 "
-"[ライセンス数を増やす]({billing_page_link})か、[最近利用していないユーザーを非アクティブ化]({deactivate_user_help_page_link})すると、複数のユーザーを追加できるようになります。"
+"残りの Zulipライセンスが１件になりました。 [ライセンス数を増やす]"
+"({billing_page_link})か、[最近利用していないユーザーを非アクティブ化]"
+"({deactivate_user_help_page_link})すると、複数のユーザーを追加できるようにな"
+"ります。"
 
 #: corporate/lib/registration.py:47
 #, python-brace-format
 msgid ""
 "Your organization has only two Zulip licenses remaining. You can [increase "
-"the number of licenses]({billing_page_link}) or [deactivate inactive "
-"users]({deactivate_user_help_page_link}) to allow more than two users to "
-"join."
+"the number of licenses]({billing_page_link}) or [deactivate inactive users]"
+"({deactivate_user_help_page_link}) to allow more than two users to join."
 msgstr ""
-"残りの Zulipライセンスが２件になりました。 "
-"[ライセンス数を増やす]({billing_page_link})か、[最近利用していないユーザーを非アクティブ化]({deactivate_user_help_page_link})すると、複数のユーザーを追加できるようになります。"
+"残りの Zulipライセンスが２件になりました。 [ライセンス数を増やす]"
+"({billing_page_link})か、[最近利用していないユーザーを非アクティブ化]"
+"({deactivate_user_help_page_link})すると、複数のユーザーを追加できるようにな"
+"ります。"
 
 #: corporate/lib/registration.py:52
 #, python-brace-format
 msgid ""
 "Your organization has only three Zulip licenses remaining. You can [increase "
-"the number of licenses]({billing_page_link}) or [deactivate inactive "
-"users]({deactivate_user_help_page_link}) to allow more than three users to "
-"join."
+"the number of licenses]({billing_page_link}) or [deactivate inactive users]"
+"({deactivate_user_help_page_link}) to allow more than three users to join."
 msgstr ""
-"残りの Zulipライセンスが3件になりました。 "
-"[ライセンス数を増やす]({billing_page_link})か、[最近利用していないユーザーを非アクティブ化]({deactivate_user_help_page_link})すると、複数のユーザーを追加できるようになります。"
+"残りの Zulipライセンスが3件になりました。 [ライセンス数を増やす]"
+"({billing_page_link})か、[最近利用していないユーザーを非アクティブ化]"
+"({deactivate_user_help_page_link})すると、複数のユーザーを追加できるようにな"
+"ります。"
 
 #: corporate/lib/registration.py:63
 #, python-brace-format
 msgid ""
 "A new user ({email}) was unable to join because your organization does not "
 "have enough Zulip licenses. To allow new users to join, make sure that the "
-"[number of licenses for the current and next billing "
-"period]({billing_page_link}) is greater than the current number of users."
+"[number of licenses for the current and next billing period]"
+"({billing_page_link}) is greater than the current number of users."
 msgstr ""
 
 #: corporate/lib/registration.py:119
@@ -151,8 +157,8 @@ msgstr ""
 #: corporate/lib/stripe.py:219
 #, python-brace-format
 msgid ""
-"You must purchase licenses for all active users in your organization (minimum"
-" {min_licenses})."
+"You must purchase licenses for all active users in your organization "
+"(minimum {min_licenses})."
 msgstr ""
 
 #: corporate/lib/stripe.py:225
@@ -201,7 +207,9 @@ msgstr ""
 msgid ""
 "Unable to update the plan. The plan has been expired and replaced with a new "
 "plan."
-msgstr "プランを更新できません。このプランは終了し、新しいプランに置き換えられました。"
+msgstr ""
+"プランを更新できません。このプランは終了し、新しいプランに置き換えられまし"
+"た。"
 
 #: corporate/lib/stripe.py:2983
 msgid "Unable to update the plan. The plan has ended."
@@ -216,7 +224,9 @@ msgstr ""
 msgid ""
 "Unable to update licenses manually. Your plan is on automatic license "
 "management."
-msgstr "ライセンスを手動で更新できません。現在、自動ライセンス管理のプランを使用しています。"
+msgstr ""
+"ライセンスを手動で更新できません。現在、自動ライセンス管理のプランを使用して"
+"います。"
 
 #: corporate/lib/stripe.py:3062
 #, python-brace-format
@@ -265,7 +275,7 @@ msgstr "セッションが見つかりません"
 #: zerver/lib/streams.py:217 zerver/lib/streams.py:219
 #: zerver/lib/streams.py:228 zerver/lib/streams.py:1542
 #: zerver/lib/user_groups.py:166 zerver/lib/user_groups.py:192
-#: zerver/lib/user_groups.py:359 zerver/lib/user_groups.py:455
+#: zerver/lib/user_groups.py:363 zerver/lib/user_groups.py:459
 #: zerver/lib/users.py:204 zerver/lib/users.py:271 zerver/lib/users.py:300
 #: zerver/lib/users.py:304 zerver/views/invite.py:144
 #: zerver/views/invite.py:255 zerver/views/message_summary.py:31
@@ -287,9 +297,11 @@ msgstr ""
 #: corporate/lib/stripe.py:4205
 #, python-brace-format
 msgid ""
-"Your organization's request for sponsored hosting has been approved! You have been upgraded to {plan_name}, free of charge. {emoji}\n"
+"Your organization's request for sponsored hosting has been approved! You "
+"have been upgraded to {plan_name}, free of charge. {emoji}\n"
 "\n"
-"If you could {begin_link}list Zulip as a sponsor on your website{end_link}, we would really appreciate it!"
+"If you could {begin_link}list Zulip as a sponsor on your website{end_link}, "
+"we would really appreciate it!"
 msgstr ""
 
 #: corporate/views/billing_page.py:352
@@ -304,8 +316,8 @@ msgstr ""
 msgid "Invalid billing access token."
 msgstr ""
 
-#: corporate/views/remote_billing_page.py:213 zilencer/views.py:1444
-#: zilencer/views.py:1469
+#: corporate/views/remote_billing_page.py:213 zilencer/views.py:1499
+#: zilencer/views.py:1524
 #, python-brace-format
 msgid ""
 "Couldn't reconcile billing data between server and realm. Please contact "
@@ -346,8 +358,8 @@ msgstr "ページが見つかりません（404）"
 #: templates/404.html:13 templates/4xx.html:37
 #, python-format
 msgid ""
-"If this error is unexpected, you can <a "
-"href=\"mailto:%(support_email)s\">contact support</a>."
+"If this error is unexpected, you can <a href=\"mailto:"
+"%(support_email)s\">contact support</a>."
 msgstr ""
 
 #: templates/4xx.html:11
@@ -389,21 +401,21 @@ msgstr ""
 #, python-format
 msgid ""
 "Please check <a href=\"%(status_url)s\">Zulip Cloud status</a> for more "
-"information, and <a href=\"mailto:%(support_email)s\">contact Zulip "
-"support</a> with any questions."
+"information, and <a href=\"mailto:%(support_email)s\">contact Zulip support</"
+"a> with any questions."
 msgstr ""
 
 #: templates/500.html:36
 msgid ""
-"Something went wrong. Sorry about that! Zulip will load automatically once it"
-" is working again."
+"Something went wrong. Sorry about that! Zulip will load automatically once "
+"it is working again."
 msgstr ""
 
 #: templates/500.html:42
 #, python-format
 msgid ""
-"<a href=\"mailto:%(support_email)s\">Contact this server's administrators</a>"
-" for support."
+"<a href=\"mailto:%(support_email)s\">Contact this server's administrators</"
+"a> for support."
 msgstr ""
 
 #: templates/500.html:47
@@ -546,7 +558,9 @@ msgstr "最終更新"
 msgid ""
 "A full update of all the graphs happens once a day. The “messages sent over "
 "time” graph is updated once an hour."
-msgstr "グラフの完全な更新は１日に１回行われます。「時間ごとの送信メッセージ数」グラフは１時間に１回更新されます。"
+msgstr ""
+"グラフの完全な更新は１日に１回行われます。「時間ごとの送信メッセージ数」グラ"
+"フは１時間に１回更新されます。"
 
 #: templates/confirmation/confirm_email_change.html:4
 msgid "Email changed"
@@ -562,8 +576,8 @@ msgid ""
 "This confirms that the email address for your Zulip account has changed from "
 "%(old_email_html_tag)s to %(new_email_html_tag)s"
 msgstr ""
-"これはあなたのZulipアカウントのメールアドレスが変更されたことを確認するものです。 変更元： %(old_email_html_tag)s 変更先： "
-"%(new_email_html_tag)s"
+"これはあなたのZulipアカウントのメールアドレスが変更されたことを確認するもので"
+"す。 変更元： %(old_email_html_tag)s 変更先： %(new_email_html_tag)s"
 
 #: templates/confirmation/confirm_preregistrationuser.html:5
 #: templates/confirmation/redirect_to_post.html:5
@@ -610,7 +624,9 @@ msgstr "不正な形式の確認リンクです。"
 msgid ""
 "Make sure you copied the link correctly in to your browser. If you're still "
 "encountering this page, it's probably our fault. We're sorry."
-msgstr "リンクを正しくブラウザーにコピーしているか確認してください。リンクが正しい場合、おそらく私たち側の問題です。申し訳ございません。"
+msgstr ""
+"リンクを正しくブラウザーにコピーしているか確認してください。リンクが正しい場"
+"合、おそらく私たち側の問題です。申し訳ございません。"
 
 #: templates/corporate/billing/billing.html:5
 msgid "Billing"
@@ -704,8 +720,8 @@ msgstr ""
 #, python-format
 msgid ""
 "<a href=\"https://zulip.com/help/self-hosted-billing#manage-billing\">Log "
-"in</a> to plan management for your organization instead, or <a "
-"href='mailto:%(support_email)s'>contact support</a> with any questions."
+"in</a> to plan management for your organization instead, or <a href='mailto:"
+"%(support_email)s'>contact support</a> with any questions."
 msgstr ""
 
 #: templates/corporate/billing/remote_server_rate_limit_exceeded.html:4
@@ -1372,9 +1388,11 @@ msgstr "早急にご返信いたしますので、しばらくお待ちくださ
 
 #: templates/corporate/support/support_request_thanks.html:13
 msgid ""
-"You can find answers to frequently asked questions in the <a "
-"href=\"/help/\">Zulip help center</a>."
-msgstr "よくある質問への回答は、 <a href=\"/help/\">Zulip ヘルプセンター</a>でご確認いただけます。"
+"You can find answers to frequently asked questions in the <a href=\"/help/"
+"\">Zulip help center</a>."
+msgstr ""
+"よくある質問への回答は、 <a href=\"/help/\">Zulip ヘルプセンター</a>でご確認"
+"いただけます。"
 
 #: templates/corporate/team.html:139
 msgid "Avatar"
@@ -1487,8 +1505,8 @@ msgstr ""
 
 #: templates/zerver/accounts_send_confirm.html:25
 msgid ""
-"If you don't see a confirmation email in your Inbox or Spam folder, we can <a"
-" href=\"#\" id=\"resend_email_link\">resend it</a>."
+"If you don't see a confirmation email in your Inbox or Spam folder, we can "
+"<a href=\"#\" id=\"resend_email_link\">resend it</a>."
 msgstr ""
 
 #: templates/zerver/app/index.html:6
@@ -1506,11 +1524,16 @@ msgstr ""
 msgid ""
 "If this message does not go away, try <a class=\"reload-lnk\">reloading</a> "
 "the page."
-msgstr "このメッセージが消えない場合、ページを<a class=\"reload-lnk\">再読み込み</a>してみてください。"
+msgstr ""
+"このメッセージが消えない場合、ページを<a class=\"reload-lnk\">再読み込み</a>"
+"してみてください。"
 
 #: templates/zerver/app/index.html:125
-msgid "Error loading Zulip. Try <a class=\"reload-lnk\">reloading</a> the page."
-msgstr "Zulipの読み込みに失敗しました。ページを<a class=\"reload-lnk\">再読み込み</a>してみてください。"
+msgid ""
+"Error loading Zulip. Try <a class=\"reload-lnk\">reloading</a> the page."
+msgstr ""
+"Zulipの読み込みに失敗しました。ページを<a class=\"reload-lnk\">再読み込み</a>"
+"してみてください。"
 
 #: templates/zerver/app/index.html:227
 msgid "No conversations match your filters."
@@ -1547,9 +1570,9 @@ msgstr "メールアドレスの公開範囲"
 #: templates/zerver/change_email_address_visibility_modal.html:22
 #, python-format
 msgid ""
-"You can also change this setting <a "
-"href=\"%(root_domain_url)s/help/configure-email-visibility\" "
-"target=\"_blank\" rel=\"noopener noreferrer\">after you join</a>."
+"You can also change this setting <a href=\"%(root_domain_url)s/help/"
+"configure-email-visibility\" target=\"_blank\" rel=\"noopener "
+"noreferrer\">after you join</a>."
 msgstr ""
 
 #: templates/zerver/close_window.html:5
@@ -1619,9 +1642,9 @@ msgstr "あなたのメールアドレス"
 
 #: templates/zerver/create_realm.html:52
 msgid ""
-"Or import from <a href=\"/help/import-from-slack\">Slack</a>, <a "
-"href=\"/help/import-from-mattermost\">Mattermost</a>, or <a "
-"href=\"/help/import-from-rocketchat\">Rocket.Chat</a>."
+"Or import from <a href=\"/help/import-from-slack\">Slack</a>, <a href=\"/"
+"help/import-from-mattermost\">Mattermost</a>, or <a href=\"/help/import-from-"
+"rocketchat\">Rocket.Chat</a>."
 msgstr ""
 
 #: templates/zerver/deactivated.html:4 templates/zerver/deactivated.html:22
@@ -1642,9 +1665,9 @@ msgstr ""
 #: templates/zerver/deactivated.html:33
 #, python-format
 msgid ""
-"This page will automatically redirect to the <a href=\"%(auto_redirect_to)s\""
-" id=\"deactivated-org-auto-redirect\">new URL</a> in <span id=\"deactivated-"
-"org-auto-redirect-countdown\">5</span> seconds."
+"This page will automatically redirect to the <a "
+"href=\"%(auto_redirect_to)s\" id=\"deactivated-org-auto-redirect\">new URL</"
+"a> in <span id=\"deactivated-org-auto-redirect-countdown\">5</span> seconds."
 msgstr ""
 
 #: templates/zerver/deactivated.html:38
@@ -1678,16 +1701,16 @@ msgstr "組織は無効化されました"
 #: templates/zerver/deactivated.html:51
 #, python-format
 msgid ""
-"If you are an owner of this organization, you can <a "
-"href=\"mailto:%(support_email)s\">contact Zulip support</a> to reactivate it."
+"If you are an owner of this organization, you can <a href=\"mailto:"
+"%(support_email)s\">contact Zulip support</a> to reactivate it."
 msgstr ""
 
 #: templates/zerver/deactivated.html:55
 #, python-format
 msgid ""
-"If you are an owner of this organization, you can <a "
-"href=\"mailto:%(support_email)s\">contact this Zulip server's "
-"administrators</a> to reactivate it."
+"If you are an owner of this organization, you can <a href=\"mailto:"
+"%(support_email)s\">contact this Zulip server's administrators</a> to "
+"reactivate it."
 msgstr ""
 
 #: templates/zerver/desktop_login.html:5
@@ -1702,7 +1725,9 @@ msgstr "デスクトップログインを完了"
 msgid ""
 "Use your web browser to finish logging in, then come back here to paste in "
 "your login token."
-msgstr "ブラウザを開いてログインを完了させて、ここに戻ってログイントークンをペーストしてください。"
+msgstr ""
+"ブラウザを開いてログインを完了させて、ここに戻ってログイントークンをペースト"
+"してください。"
 
 #: templates/zerver/desktop_login.html:18
 msgid "Paste token here"
@@ -1727,7 +1752,9 @@ msgstr "デスクトップアプリにログイン"
 #: templates/zerver/desktop_redirect.html:12
 msgid ""
 "Copy this login token and return to your Zulip app to finish logging in:"
-msgstr "このログイントークンをコピーして、Zulipアプリに戻ってログインを完了させてください："
+msgstr ""
+"このログイントークンをコピーして、Zulipアプリに戻ってログインを完了させてくだ"
+"さい："
 
 #: templates/zerver/desktop_redirect.html:17
 msgid "Copy"
@@ -1869,8 +1896,8 @@ msgstr ""
 #: templates/zerver/emails/account_registered.html:57
 #, python-format
 msgid ""
-"Questions? <a href=\"mailto:%(support_email)s\">Contact us</a> — we'd love to"
-" help!"
+"Questions? <a href=\"mailto:%(support_email)s\">Contact us</a> — we'd love "
+"to help!"
 msgstr ""
 
 #: templates/zerver/emails/account_registered.subject.txt:2
@@ -1905,8 +1932,8 @@ msgstr "Zulip組織 %(realm_name)s に参加しました。"
 #: templates/zerver/emails/account_registered.txt:14
 #, python-format
 msgid ""
-"You will use the following info to log into the Zulip web, mobile and desktop"
-" apps (%(apps_page_link)s):"
+"You will use the following info to log into the Zulip web, mobile and "
+"desktop apps (%(apps_page_link)s):"
 msgstr ""
 
 #: templates/zerver/emails/account_registered.txt:29
@@ -1968,7 +1995,9 @@ msgstr ""
 msgid ""
 "If you did not request this change, please contact us immediately at "
 "%(support_email)s."
-msgstr "この変更をリクエストしていない場合は、すぐに %(support_email)s までご連絡ください。"
+msgstr ""
+"この変更をリクエストしていない場合は、すぐに %(support_email)s までご連絡くだ"
+"さい。"
 
 #: templates/zerver/emails/confirm_demo_organization_email.subject.txt:1
 msgid "Verify your new email address for your demo Zulip organization"
@@ -1980,7 +2009,9 @@ msgstr ""
 msgid ""
 "If you did not request this change, please contact us immediately at "
 "<%(support_email)s>."
-msgstr "もしこの変更を要求していない場合は、すぐに%(support_email)sまでお問い合わせください。"
+msgstr ""
+"もしこの変更を要求していない場合は、すぐに%(support_email)sまでお問い合わせく"
+"ださい。"
 
 #: templates/zerver/emails/confirm_new_email.html:10
 #: templates/zerver/emails/confirm_new_email.txt:4
@@ -2052,8 +2083,8 @@ msgstr "以下のリンクをクリックして登録を完了させてくださ
 #: templates/zerver/emails/realm_reactivation.txt:14
 #, python-format
 msgid ""
-"Do you have questions or feedback to share? Contact us at %(support_email)s —"
-" we'd love to help!"
+"Do you have questions or feedback to share? Contact us at %(support_email)s "
+"— we'd love to help!"
 msgstr ""
 
 #: templates/zerver/emails/custom_email_base.pre.html:19
@@ -2125,14 +2156,16 @@ msgstr ""
 #| msgid ""
 #| "This email does not include message content because your organization has "
 #| "disabled <a class=\"content_disabled_help_link\" "
-#| "href=\"%(help_url)s\">message content appearing in email notifications</a>."
+#| "href=\"%(help_url)s\">message content appearing in email notifications</"
+#| "a>."
 msgid ""
 "This email does not include message content because your organization <a "
 "class=\"content_disabled_help_link\" href=\"%(help_url)s\">hides message "
 "content</a> in email notifications."
 msgstr ""
-"組織で<a class=\"content_disabled_help_link\" "
-"href=\"%(help_url)s\">メール通知にメッセージ内容を表示</a>しないように設定されているため、このメールにメッセージの内容は含まれていません。"
+"組織で<a class=\"content_disabled_help_link\" href=\"%(help_url)s\">メール通"
+"知にメッセージ内容を表示</a>しないように設定されているため、このメールにメッ"
+"セージの内容は含まれていません。"
 
 #: templates/zerver/emails/digest.html:46
 #: templates/zerver/emails/missed_message.html:19
@@ -2146,8 +2179,9 @@ msgid ""
 "class=\"content_disabled_help_link\" href=\"%(help_url)s\">hide message "
 "content</a> in email notifications."
 msgstr ""
-"あなたが<a class=\"content_disabled_help_link\" "
-"href=\"%(alert_notif_url)s\">メール通知にメッセージ内容を表示</a>しないように設定しているため、このメールにメッセージの内容は含まれていません。"
+"あなたが<a class=\"content_disabled_help_link\" href=\"%(alert_notif_url)s\">"
+"メール通知にメッセージ内容を表示</a>しないように設定しているため、このメール"
+"にメッセージの内容は含まれていません。"
 
 #: templates/zerver/emails/digest.html:50
 #, fuzzy, python-format
@@ -2186,7 +2220,8 @@ msgstr ""
 #, fuzzy, python-format
 #| msgid ""
 #| "\n"
-#| "This email does not include message content because your organization has disabled message content appearing in email notifications.\n"
+#| "This email does not include message content because your organization has "
+#| "disabled message content appearing in email notifications.\n"
 #| "See %(hide_content_url)s for more details.\n"
 msgid ""
 "This email does not include message content because your organization hides "
@@ -2194,7 +2229,8 @@ msgid ""
 "details."
 msgstr ""
 "\n"
-"組織でメール通知にメッセージ内容を表示しないように設定されているため、このメールにメッセージの内容は含まれていません。\n"
+"組織でメール通知にメッセージ内容を表示しないように設定されているため、この"
+"メールにメッセージの内容は含まれていません。\n"
 "%(hide_content_url)s で詳細を確認してください。\n"
 
 #: templates/zerver/emails/digest.txt:26
@@ -2202,20 +2238,21 @@ msgstr ""
 #, fuzzy, python-format
 #| msgid ""
 #| "\n"
-#| "This email does not include message content because you have disabled message content appearing in email notifications.\n"
+#| "This email does not include message content because you have disabled "
+#| "message content appearing in email notifications.\n"
 #| "See %(alert_notif_url)s for more details.\n"
 msgid ""
 "This email does not include message content because you have chosen to hide "
 "message content in email notifications. See %(help_url)s for more details."
 msgstr ""
 "\n"
-"あなたがメール通知にメッセージ内容を表示しないように設定されているため、このメールにメッセージの内容は含まれていません。\n"
+"あなたがメール通知にメッセージ内容を表示しないように設定されているため、この"
+"メールにメッセージの内容は含まれていません。\n"
 "%(alert_notif_url)s で詳細を確認してください。\n"
 
 #: templates/zerver/emails/digest.txt:32
 #, fuzzy, python-format
-#| msgid ""
-#| "Click here to log in to Zulip and catch up: %(organization_url)s."
+#| msgid "Click here to log in to Zulip and catch up: %(organization_url)s."
 msgid "Log in to Zulip to catch up: %(organization_url)s."
 msgstr "以下のリンクをクリックしてZulipにログイン: %(organization_url)s."
 
@@ -2253,7 +2290,8 @@ msgid ""
 "Your email address %(email)s has accounts with the following Zulip "
 "organizations hosted by %(external_host)s:"
 msgstr ""
-"あなたのメール アドレス %(email)s には、%(external_host)s がホストする以下のZulip組織アカウントがあります:"
+"あなたのメール アドレス %(email)s には、%(external_host)s がホストする以下の"
+"Zulip組織アカウントがあります:"
 
 #: templates/zerver/emails/find_team.html:24
 #, python-format
@@ -2345,7 +2383,8 @@ msgid ""
 "%(referrer_full_name)s (%(referrer_email)s) wants you to join them on Zulip "
 "-- the team communication tool designed for productivity."
 msgstr ""
-"%(referrer_full_name)s (%(referrer_email)s)があなたがZulipに参加することを望んでいます\n"
+"%(referrer_full_name)s (%(referrer_email)s)があなたがZulipに参加することを望"
+"んでいます\n"
 "Zulip -- 生産性のために設計されたチームコミュニケーションツール"
 
 #: templates/zerver/emails/invitation.txt:5
@@ -2364,7 +2403,8 @@ msgid ""
 "This is a friendly reminder that %(referrer_name)s wants you to join them on "
 "Zulip &mdash; the team communication tool designed for productivity."
 msgstr ""
-"これはリマインダーです。%(referrer_name)sがあなたがZulip に参加することを望んでいます\n"
+"これはリマインダーです。%(referrer_name)sがあなたがZulip に参加することを望ん"
+"でいます\n"
 "Zulip &mdash; 生産性のために設計されたチームコミュニケーションツール"
 
 #: templates/zerver/emails/invitation_reminder.html:18
@@ -2378,7 +2418,9 @@ msgstr "これは最後の招待を受けるリマインダーです。"
 msgid ""
 "This invitation expires in two days. If the invitation expires, you'll need "
 "to ask %(referrer_name)s for another one."
-msgstr "この招待は２日後に有効期限が切れます。有効期限が切れた場合は%(referrer_name)s に新しい招待を要求してください。"
+msgstr ""
+"この招待は２日後に有効期限が切れます。有効期限が切れた場合"
+"は%(referrer_name)s に新しい招待を要求してください。"
 
 #: templates/zerver/emails/invitation_reminder.subject.txt:1
 #, python-format
@@ -2388,11 +2430,12 @@ msgstr "リマインダー：%(referrer_realm_name)sから%(referrer_name)sに�
 #: templates/zerver/emails/invitation_reminder.txt:3
 #, python-format
 msgid ""
-"This is a friendly reminder that %(referrer_name)s (%(referrer_email)s) wants"
-" you to join them on Zulip -- the team communication tool designed for "
+"This is a friendly reminder that %(referrer_name)s (%(referrer_email)s) "
+"wants you to join them on Zulip -- the team communication tool designed for "
 "productivity."
 msgstr ""
-"これはリマインダーです。%(referrer_name)s (%(referrer_email)s)があなたがZulip に参加することを望んでいます\n"
+"これはリマインダーです。%(referrer_name)s (%(referrer_email)s)があなたが"
+"Zulip に参加することを望んでいます\n"
 "Zulip -- 生産性のために設計されたチームコミュニケーションツール"
 
 #: templates/zerver/emails/macros.html:14
@@ -2405,8 +2448,8 @@ msgstr ""
 #: templates/zerver/emails/macros.html:18
 #, python-format
 msgid ""
-"Do you have questions or feedback to share? <a "
-"href=\"mailto:%(email)s\">Contact us</a> — we'd love to help!"
+"Do you have questions or feedback to share? <a href=\"mailto:"
+"%(email)s\">Contact us</a> — we'd love to help!"
 msgstr ""
 
 #: templates/zerver/emails/missed_message.html:29
@@ -2488,8 +2531,8 @@ msgid ""
 "Do not reply to this email. This Zulip server is not configured to accept "
 "incoming emails (<a href=\"%(url)s\">help</a>)."
 msgstr ""
-"このメールに返信しないでください。このZulipサーバーはメール受信をするように設定されていません（<a "
-"href=\"%(url)s\">ヘルプ</a>）"
+"このメールに返信しないでください。このZulipサーバーはメール受信をするように設"
+"定されていません（<a href=\"%(url)s\">ヘルプ</a>）"
 
 #: templates/zerver/emails/missed_message.subject.txt:2
 #, python-format
@@ -2529,7 +2572,9 @@ msgstr ""
 msgid ""
 "Do not reply to this email. This Zulip server is not configured to accept "
 "incoming emails. Help:"
-msgstr "このメールに返信しないでください。このZulipサーバーはメール受信をするように設定されていません。ヘルプ："
+msgstr ""
+"このメールに返信しないでください。このZulipサーバーはメール受信をするように設"
+"定されていません。ヘルプ："
 
 #: templates/zerver/emails/notify_change_in_email.html:10
 #, python-format
@@ -2538,7 +2583,9 @@ msgid ""
 "%(new_email)s. If you did not request this change, please contact us "
 "immediately at %(support_email)s."
 msgstr ""
-"Zulipアカウントに紐付けられているメールアドレスは最近%(new_email)sに変更されました。もしこの変更をリクエストしていない場合は、すぐに%(support_email)sまでお問い合わせください。"
+"Zulipアカウントに紐付けられているメールアドレスは最近%(new_email)sに変更され"
+"ました。もしこの変更をリクエストしていない場合は、すぐに%(support_email)sまで"
+"お問い合わせください。"
 
 #: templates/zerver/emails/notify_change_in_email.html:13
 #: templates/zerver/emails/notify_change_in_email.txt:6
@@ -2562,14 +2609,17 @@ msgid ""
 "%(new_email)s. If you did not request this change, please contact us "
 "immediately at <%(support_email)s>."
 msgstr ""
-"Zulipアカウントに紐付けられているメールアドレスは最近 %(new_email)s "
-"に変更されました。もしこの変更をリクエストしていない場合は、すぐに<%(support_email)s>までお問い合わせください。"
+"Zulipアカウントに紐付けられているメールアドレスは最近 %(new_email)s に変更さ"
+"れました。もしこの変更をリクエストしていない場合は、すぐに<%(support_email)s>"
+"までお問い合わせください。"
 
 #: templates/zerver/emails/notify_new_login.html:4
 #, python-format
 msgid ""
 "Organization: %(organization_url)s Time: %(login_time)s Email: %(user_email)s"
-msgstr "組織：%(organization_url)s　時刻：%(login_time)s　メールアドレス：%(user_email)s　"
+msgstr ""
+"組織：%(organization_url)s　時刻：%(login_time)s　メールアドレス："
+"%(user_email)s　"
 
 #: templates/zerver/emails/notify_new_login.html:12
 #: templates/zerver/emails/notify_new_login.txt:1
@@ -2617,8 +2667,9 @@ msgid ""
 "compromised, please <a href=\"%(reset_link)s\">reset your password</a> or "
 "contact us immediately at %(support_email)s."
 msgstr ""
-"このログインについて身に覚えがない場合、またはアカウントが侵害された可能性がある場合は<a "
-"href=\"%(reset_link)s\">パスワードをリセット</a>するか、すぐに%(support_email)sまでお問い合わせください。"
+"このログインについて身に覚えがない場合、またはアカウントが侵害された可能性が"
+"ある場合は<a href=\"%(reset_link)s\">パスワードをリセット</a>するか、すぐ"
+"に%(support_email)sまでお問い合わせください。"
 
 #: templates/zerver/emails/notify_new_login.html:40
 #: templates/zerver/emails/notify_new_login.txt:20
@@ -2651,8 +2702,9 @@ msgid ""
 "compromised, please reset your password at %(reset_link)s or contact us "
 "immediately at %(support_email)s."
 msgstr ""
-"このログインについて身に覚えがない場合、またはアカウントが侵害された可能性がある場合は %(reset_link)s "
-"からパスワードをリセットするか、すぐに %(support_email)s までお問い合わせください。"
+"このログインについて身に覚えがない場合、またはアカウントが侵害された可能性が"
+"ある場合は %(reset_link)s からパスワードをリセットするか、すぐに "
+"%(support_email)s までお問い合わせください。"
 
 #: templates/zerver/emails/onboarding_team_to_zulip.html:10
 #, python-format
@@ -2671,8 +2723,8 @@ msgstr ""
 #: templates/zerver/emails/onboarding_team_to_zulip.html:15
 #, python-format
 msgid ""
-"<a href=\"%(invite_users)s\"><b>Invite your teammates</b></a> to explore with"
-" you and share their unique perspectives."
+"<a href=\"%(invite_users)s\"><b>Invite your teammates</b></a> to explore "
+"with you and share their unique perspectives."
 msgstr ""
 
 #: templates/zerver/emails/onboarding_team_to_zulip.html:16
@@ -2853,9 +2905,9 @@ msgstr "ショートトピックの例"
 #, python-format
 msgid ""
 "Don't stress about picking the perfect name for your topic. If anything is "
-"out of place, it's easy to <a href=\"%(move_messages_link)s\">move "
-"messages</a>, <a href=\"%(rename_topics_link)s\">rename topics</a>, or even "
-"<a href=\"%(move_channels_link)s\">move a topic to a different channel</a>."
+"out of place, it's easy to <a href=\"%(move_messages_link)s\">move messages</"
+"a>, <a href=\"%(rename_topics_link)s\">rename topics</a>, or even <a "
+"href=\"%(move_channels_link)s\">move a topic to a different channel</a>."
 msgstr ""
 
 #: templates/zerver/emails/onboarding_zulip_topics.html:28
@@ -2906,8 +2958,9 @@ msgid ""
 "deactivated. You can contact an organization administrator to <a "
 "href=\"%(help_link)s\">reactivate your account</a>."
 msgstr ""
-"あなたは以前に%(organization_url)sでアカウントを持っていましたが無効化されています。組織の管理者に連絡して<a "
-"href=\"%(help_link)s\">アカウントを有効化</a>することができます。"
+"あなたは以前に%(organization_url)sでアカウントを持っていましたが無効化されて"
+"います。組織の管理者に連絡して<a href=\"%(help_link)s\">アカウントを有効化</"
+"a>することができます。"
 
 #: templates/zerver/emails/password_reset.html:21
 #: templates/zerver/emails/password_reset.txt:11
@@ -2924,7 +2977,8 @@ msgstr "あなたは以下の組織（たち）で有効なアカウントを持
 msgid ""
 "You can try logging in or resetting your password in the organization(s) "
 "above."
-msgstr "以下の組織（たち）にログインするかパスワードをリセットすることができます。"
+msgstr ""
+"以下の組織（たち）にログインするかパスワードをリセットすることができます。"
 
 #: templates/zerver/emails/password_reset.html:38
 #: templates/zerver/emails/password_reset.txt:25
@@ -2971,7 +3025,9 @@ msgstr ""
 msgid ""
 "If you think this was a mistake or need more details, please reach out to us "
 "at %(support_email)s."
-msgstr "この変更をリクエストしていない場合は、すぐに %(support_email)s までご連絡ください。"
+msgstr ""
+"この変更をリクエストしていない場合は、すぐに %(support_email)s までご連絡くだ"
+"さい。"
 
 #: templates/zerver/emails/realm_deactivated.html:14
 #: templates/zerver/emails/realm_deactivated.txt:6
@@ -3048,9 +3104,11 @@ msgstr "組織を再有効化"
 #: templates/zerver/emails/realm_reactivation.html:17
 #: templates/zerver/emails/realm_reactivation.txt:10
 msgid ""
-"If the request was in error, you can take no action and this link will expire"
-" in 24 hours."
-msgstr "もし手違いでリクエストが送信されてしまった場合、なにもしなければ24時間後にリンクの有効期限が切れます。"
+"If the request was in error, you can take no action and this link will "
+"expire in 24 hours."
+msgstr ""
+"もし手違いでリクエストが送信されてしまった場合、なにもしなければ24時間後にリ"
+"ンクの有効期限が切れます。"
 
 #: templates/zerver/emails/realm_reactivation.subject.txt:1
 msgid "Reactivate your Zulip organization"
@@ -3401,8 +3459,8 @@ msgstr "%(integrations_count_display)s以上のネイティヴインテグレー
 
 #: templates/zerver/integrations/index.html:27
 msgid ""
-"And hundreds more through <a href=\"/integrations/doc/zapier\">Zapier</a> and"
-" <a href=\"/integrations/doc/ifttt\">IFTTT</a>."
+"And hundreds more through <a href=\"/integrations/doc/zapier\">Zapier</a> "
+"and <a href=\"/integrations/doc/ifttt\">IFTTT</a>."
 msgstr ""
 
 #: templates/zerver/integrations/index.html:40
@@ -3485,19 +3543,17 @@ msgstr ""
 #: templates/zerver/invalid_realm.html:21
 #, python-format
 msgid ""
-"Please try a different URL, <a "
-"href=\"%(root_domain_url)s/accounts/find/\">get a list of your Zulip Cloud "
-"accounts</a>, or <a href=\"mailto:%(support_email)s\">contact Zulip "
-"support</a>."
+"Please try a different URL, <a href=\"%(root_domain_url)s/accounts/find/"
+"\">get a list of your Zulip Cloud accounts</a>, or <a href=\"mailto:"
+"%(support_email)s\">contact Zulip support</a>."
 msgstr ""
 
 #: templates/zerver/invalid_realm.html:23
 #, python-format
 msgid ""
-"Please try a different URL, <a "
-"href=\"%(root_domain_url)s/accounts/find/\">get a list of your accounts</a> "
-"on this server, or <a href=\"mailto:%(support_email)s\">contact this Zulip "
-"server's administrators</a>."
+"Please try a different URL, <a href=\"%(root_domain_url)s/accounts/find/"
+"\">get a list of your accounts</a> on this server, or <a href=\"mailto:"
+"%(support_email)s\">contact this Zulip server's administrators</a>."
 msgstr ""
 
 #: templates/zerver/invalid_realm.html:28
@@ -3558,7 +3614,9 @@ msgstr "アカウントはすでにあります"
 #: templates/zerver/login.html:167
 msgid ""
 "Don't have an account yet? You need to be invited to join this organization."
-msgstr "アカウントを持っていませんか？この組織に参加するには招待を受ける必要があります。"
+msgstr ""
+"アカウントを持っていませんか？この組織に参加するには招待を受ける必要がありま"
+"す。"
 
 #: templates/zerver/new_user_email_address_visibility.html:5
 msgid ""
@@ -3598,15 +3656,14 @@ msgstr ""
 #: templates/zerver/no_spare_licenses.html:16
 #, python-format
 msgid ""
-"New members cannot currently join <a "
-"href=\"%(realm_url)s\">%(realm_name)s</a> because all Zulip Cloud licenses "
-"are in use."
+"New members cannot currently join <a href=\"%(realm_url)s\">%(realm_name)s</"
+"a> because all Zulip Cloud licenses are in use."
 msgstr ""
 
 #: templates/zerver/no_spare_licenses.html:19
 msgid ""
-"Please contact the person who invited you and ask them to increase the number"
-" of licenses, then try again."
+"Please contact the person who invited you and ask them to increase the "
+"number of licenses, then try again."
 msgstr ""
 
 #: templates/zerver/portico-header.html:4
@@ -3664,10 +3721,9 @@ msgstr ""
 #: templates/zerver/portico_error_pages/realm_creation_disabled.html:13
 msgid ""
 "Creating a new organization on this server requires a valid organization "
-"creation link. Please see <a "
-"href=\"https://zulip.readthedocs.io/en/stable/production/multiple-"
-"organizations.html\">documentation</a> on creating a new organization for "
-"more information."
+"creation link. Please see <a href=\"https://zulip.readthedocs.io/en/stable/"
+"production/multiple-organizations.html\">documentation</a> on creating a new "
+"organization for more information."
 msgstr ""
 
 #: templates/zerver/portico_error_pages/realm_creation_link_invalid.html:4
@@ -3707,18 +3763,19 @@ msgstr "プレゼンスはBotユーザーでサポートされていません"
 #: templates/zerver/portico_error_pages/unsupported_browser.html:18
 #, python-format
 msgid ""
-"Zulip supports <a href=\"%(supported_browsers_page_link)s\">modern "
-"browsers</a> like Firefox, Chrome, and Edge."
+"Zulip supports <a href=\"%(supported_browsers_page_link)s\">modern browsers</"
+"a> like Firefox, Chrome, and Edge."
 msgstr ""
 
 #: templates/zerver/portico_error_pages/unsupported_browser.html:24
 #, python-format
-msgid "You can also use the <a href=\"%(apps_page_link)s\">Zulip desktop app</a>."
+msgid ""
+"You can also use the <a href=\"%(apps_page_link)s\">Zulip desktop app</a>."
 msgstr ""
 
 #: templates/zerver/portico_error_pages/user_deactivated.html:4
 #: templates/zerver/portico_error_pages/user_deactivated.html:11
-#: zerver/lib/exceptions.py:336
+#: zerver/lib/exceptions.py:337
 msgid "Account is deactivated"
 msgstr "アカウントは無効化されています"
 
@@ -3932,9 +3989,11 @@ msgstr "パスワードをリセット"
 
 #: templates/zerver/reset.html:17
 msgid ""
-"Forgot your password? No problem, we'll send a link to reset your password to"
-" the email you signed up with."
-msgstr "パスワードをお忘れですか？ ご安心ください。登録したメールアドレスにパスワードリセット用のリンクをお送りします。"
+"Forgot your password? No problem, we'll send a link to reset your password "
+"to the email you signed up with."
+msgstr ""
+"パスワードをお忘れですか？ ご安心ください。登録したメールアドレスにパスワード"
+"リセット用のリンクをお送りします。"
 
 #: templates/zerver/reset.html:34
 msgid "Send reset link"
@@ -3967,7 +4026,8 @@ msgstr "パスワードが更新されました！"
 #: templates/zerver/reset_done.html:17
 #, python-format
 msgid "Please <a href=\"%(login_url)s\">log in</a> with your new password."
-msgstr "新しいパスワードで <a href=\"%(login_url)s\">ログイン</a> してください。"
+msgstr ""
+"新しいパスワードで <a href=\"%(login_url)s\">ログイン</a> してください。"
 
 #: templates/zerver/reset_emailed.html:4
 msgid "Password reset email sent"
@@ -3997,9 +4057,9 @@ msgstr ""
 #, python-format
 msgid ""
 "Follow <a href=\"https://zulip.com/help//import-from-slack#export-your-slack-"
-"data:~:text=Export%%20user%%20data%%20and%%20custom%%20emoji\" rel=\"noopener"
-" noreferrer\" target=\"_blank\">these instructions</a> to obtain a "
-"<strong>Bot User OAuth Token</strong>."
+"data:~:text=Export%%20user%%20data%%20and%%20custom%%20emoji\" "
+"rel=\"noopener noreferrer\" target=\"_blank\">these instructions</a> to "
+"obtain a <strong>Bot User OAuth Token</strong>."
 msgstr ""
 
 #: templates/zerver/slack_import.html:41
@@ -4042,15 +4102,16 @@ msgstr "<h1 class=\"get-started\">アカウントを選択</h1>"
 #: templates/zerver/social_auth_select_email.html:67
 msgid ""
 "Your GitHub account also has unverified email addresses associated with it."
-msgstr "GitHubアカウントに紐付けられているメールアドレスが 検証されていません。"
+msgstr ""
+"GitHubアカウントに紐付けられているメールアドレスが 検証されていません。"
 
 #: templates/zerver/social_auth_select_email.html:73
 msgid ""
-"To use one of these to log in to Zulip, you must first <a "
-"href=\"https://github.com/settings/emails\">verify it with GitHub.</a>"
+"To use one of these to log in to Zulip, you must first <a href=\"https://"
+"github.com/settings/emails\">verify it with GitHub.</a>"
 msgstr ""
-"これらのうちどれかをZulipへのログインに使用する場合、 まず<a "
-"href=\"https://github.com/settings/emails\">GitHubで検証</a>する必要があります。"
+"これらのうちどれかをZulipへのログインに使用する場合、 まず<a href=\"https://"
+"github.com/settings/emails\">GitHubで検証</a>する必要があります。"
 
 #: templates/zerver/unsubscribe_link_error.html:4
 msgid "Error unsubscribing email"
@@ -4062,8 +4123,8 @@ msgstr "購読解除リクエストのメールアドレスがみつかりませ
 
 #: templates/zerver/unsubscribe_link_error.html:16
 msgid ""
-"Hi there! It looks like you tried to unsubscribe from something, but we don't"
-" recognize the URL."
+"Hi there! It looks like you tried to unsubscribe from something, but we "
+"don't recognize the URL."
 msgstr ""
 
 #: templates/zerver/unsubscribe_link_error.html:19
@@ -4073,8 +4134,8 @@ msgid ""
 "href=\"mailto:%(support_email)s\">email us</a> and we'll get this squared "
 "away!"
 msgstr ""
-"正しいURLであるか再確認してからやり直すか、<a "
-"href=\"mailto:%(support_email)s\">メールでお問い合わせ</a>ください。"
+"正しいURLであるか再確認してからやり直すか、<a href=\"mailto:"
+"%(support_email)s\">メールでお問い合わせ</a>ください。"
 
 #: templates/zerver/unsubscribe_success.html:4
 #: templates/zerver/unsubscribe_success.html:14
@@ -4107,21 +4168,21 @@ msgstr ""
 msgid "For team-wide conversations"
 msgstr ""
 
-#: zerver/actions/create_user.py:84
+#: zerver/actions/create_user.py:85
 msgid "signups"
 msgstr "登録"
 
-#: zerver/actions/create_user.py:107
+#: zerver/actions/create_user.py:113
 #, python-brace-format
 msgid "{user} joined this organization."
 msgstr "{user}がこの組織に参加しました。"
 
-#: zerver/actions/create_user.py:307
+#: zerver/actions/create_user.py:313
 #, python-brace-format
 msgid "{user} accepted your invitation to join Zulip!"
 msgstr "{user}はZulipへの招待を受け入れました"
 
-#: zerver/actions/create_user.py:705
+#: zerver/actions/create_user.py:711
 msgid ""
 "Cannot activate a placeholder account; ask the user to sign up, instead."
 msgstr ""
@@ -4134,7 +4195,9 @@ msgstr "不正な順序マッピング"
 msgid ""
 "You are not allowed to change this field. Contact an administrator to update "
 "it."
-msgstr "あなたはこのフィールドの変更を許可されていません。管理者に連絡して更新してください。"
+msgstr ""
+"あなたはこのフィールドの変更を許可されていません。管理者に連絡して更新してく"
+"ださい。"
 
 #: zerver/actions/custom_profile_fields.py:240 zerver/lib/users.py:537
 #: zerver/views/custom_profile_fields.py:225
@@ -4198,17 +4261,22 @@ msgstr ""
 msgid ""
 "To protect users, Zulip limits the number of invitations you can send in one "
 "day. Because you have reached the limit, no invitations were sent."
-msgstr "ユーザーの安全のため、1日に送信可能な招待数には制限があります。制限に達したため、招待状を送信できませんでした。"
+msgstr ""
+"ユーザーの安全のため、1日に送信可能な招待数には制限があります。制限に達したた"
+"め、招待状を送信できませんでした。"
 
 #: zerver/actions/invites.py:226
 msgid ""
 "Your account is too new to send invites for this organization. Ask an "
 "organization admin, or a more experienced user."
-msgstr "あなたのアカウントはこの組織への招待を作成するには新しすぎます。組織管理者または経験のあるユーザーにお問い合わせください。"
+msgstr ""
+"あなたのアカウントはこの組織への招待を作成するには新しすぎます。組織管理者ま"
+"たは経験のあるユーザーにお問い合わせください。"
 
 #: zerver/actions/invites.py:266
 msgid "Some emails did not validate, so we didn't send any invitations."
-msgstr "いくつかのメールアドレスが検証されていないため、招待を送信しませんでした。"
+msgstr ""
+"いくつかのメールアドレスが検証されていないため、招待を送信しませんでした。"
 
 #: zerver/actions/invites.py:274
 msgid "We weren't able to invite anyone."
@@ -4272,7 +4340,8 @@ msgstr "{user}がこのトピックを {new_location} に移動しました。"
 #: zerver/actions/message_edit.py:1266
 #, python-brace-format
 msgid "A message was moved from this topic to {new_location} by {user}."
-msgstr "{user}が1件のメッセージをこのトピックから {new_location} に移動しました。"
+msgstr ""
+"{user}が1件のメッセージをこのトピックから {new_location} に移動しました。"
 
 #: zerver/actions/message_edit.py:1270
 #, python-brace-format
@@ -4280,7 +4349,8 @@ msgid ""
 "{changed_messages_count} messages were moved from this topic to "
 "{new_location} by {user}."
 msgstr ""
-"{user}が{changed_messages_count}件のメッセージをこのトピックから {new_location} に移動しました。"
+"{user}が{changed_messages_count}件のメッセージをこのトピックから "
+"{new_location} に移動しました。"
 
 #: zerver/actions/message_edit.py:1309
 #, python-brace-format
@@ -4291,14 +4361,18 @@ msgstr "{user}がこのトピックを {old_location} からここに移動し�
 #, python-brace-format
 msgid ""
 "[A message]({message_link}) was moved here from {old_location} by {user}."
-msgstr "{user}が[1件のメッセージ]({message_link})を {old_location} からここに移動しました。"
+msgstr ""
+"{user}が[1件のメッセージ]({message_link})を {old_location} からここに移動しま"
+"した。"
 
 #: zerver/actions/message_edit.py:1318
 #, python-brace-format
 msgid ""
 "{changed_messages_count} messages were moved here from {old_location} by "
 "{user}."
-msgstr "{user}が{changed_messages_count}件のメッセージを {old_location} からここに移動しました。"
+msgstr ""
+"{user}が{changed_messages_count}件のメッセージを {old_location} からここに移"
+"動しました。"
 
 #: zerver/actions/message_edit.py:1576
 #, fuzzy
@@ -4343,31 +4417,33 @@ msgstr "不正なメッセージ"
 msgid "Unable to render message"
 msgstr "メッセージをレンダリングできません"
 
-#: zerver/actions/message_send.py:1315
+#: zerver/actions/message_send.py:1317
 msgid "Expected exactly one channel"
 msgstr ""
 
-#: zerver/actions/message_send.py:1326
+#: zerver/actions/message_send.py:1328
 msgid "Invalid data type for channel"
 msgstr "チャンネルのデータタイプが不正です"
 
-#: zerver/actions/message_send.py:1342 zerver/actions/message_send.py:1352
+#: zerver/actions/message_send.py:1344 zerver/actions/message_send.py:1354
 #: zerver/lib/recipient_parsing.py:15
 msgid "Invalid data type for recipients"
 msgstr "受信者のデータータイプが不正です"
 
-#: zerver/actions/message_send.py:1360 zerver/actions/message_send.py:1368
+#: zerver/actions/message_send.py:1362 zerver/actions/message_send.py:1370
 msgid "Recipient lists may contain emails or user IDs, but not both."
-msgstr "受信者リストはメールアドレスかユーザーIDのどちらかを含むことができますが、両方を含むことはできません。"
+msgstr ""
+"受信者リストはメールアドレスかユーザーIDのどちらかを含むことができますが、両"
+"方を含むことはできません。"
 
-#: zerver/actions/message_send.py:1524
+#: zerver/actions/message_send.py:1526
 #, python-brace-format
 msgid ""
 "Your bot {bot_identity} tried to send a message to channel ID {channel_id}, "
 "but there is no channel with that ID."
 msgstr ""
 
-#: zerver/actions/message_send.py:1535
+#: zerver/actions/message_send.py:1537
 #, python-brace-format
 msgid ""
 "Your bot {bot_identity} tried to send a message to channel {channel_name}, "
@@ -4375,22 +4451,22 @@ msgid ""
 "it."
 msgstr ""
 
-#: zerver/actions/message_send.py:1547
+#: zerver/actions/message_send.py:1549
 #, python-brace-format
 msgid ""
 "Your bot {bot_identity} tried to send a message to channel {channel_name}. "
 "The channel exists but does not have any subscribers."
 msgstr ""
 
-#: zerver/actions/message_send.py:1652
+#: zerver/actions/message_send.py:1654
 msgid "You do not have permission to access some of the recipients."
 msgstr ""
 
-#: zerver/actions/message_send.py:1862
+#: zerver/actions/message_send.py:1864
 msgid "Widgets: API programmer sent invalid JSON content"
 msgstr "ウィジェット：APIプログラマは不正なJSONを送信しました"
 
-#: zerver/actions/message_send.py:1868
+#: zerver/actions/message_send.py:1870
 #, python-brace-format
 msgid "Widgets: {error_msg}"
 msgstr "ウィジェット：{error_msg}"
@@ -4399,9 +4475,9 @@ msgstr "ウィジェット：{error_msg}"
 msgid "A custom emoji with this name already exists."
 msgstr "この名前のカスタム絵文字はすでに存在します。"
 
-#: zerver/actions/realm_emoji.py:45 zerver/lib/upload/__init__.py:286
-#: zerver/lib/upload/__init__.py:349 zerver/lib/upload/__init__.py:357
-#: zerver/lib/upload/__init__.py:380
+#: zerver/actions/realm_emoji.py:45 zerver/lib/upload/__init__.py:327
+#: zerver/lib/upload/__init__.py:390 zerver/lib/upload/__init__.py:398
+#: zerver/lib/upload/__init__.py:421
 msgid "Invalid image format"
 msgstr ""
 
@@ -4449,8 +4525,8 @@ msgstr ""
 #: zerver/actions/scheduled_messages.py:398
 #, python-brace-format
 msgid ""
-"The message you scheduled for {delivery_datetime} was not sent because of the"
-" following error:"
+"The message you scheduled for {delivery_datetime} was not sent because of "
+"the following error:"
 msgstr ""
 
 #: zerver/actions/scheduled_messages.py:403
@@ -4503,10 +4579,12 @@ msgstr ""
 #: zerver/actions/streams.py:1543
 #, python-brace-format
 msgid "{user_name} renamed channel {old_channel_name} to {new_channel_name}."
-msgstr "{user_name}がチャンネル「{old_channel_name}」を「{new_channel_name}」に名前変更しました。"
+msgstr ""
+"{user_name}がチャンネル「{old_channel_name}」を「{new_channel_name}」に名前変"
+"更しました。"
 
 #: zerver/actions/streams.py:1560 zerver/actions/streams.py:1562
-#: zerver/views/streams.py:1004
+#: zerver/views/streams.py:1009
 msgid "No description."
 msgstr "説明がありません。"
 
@@ -4547,7 +4625,8 @@ msgstr ""
 #: zerver/actions/streams.py:1658
 #, python-brace-format
 msgid ""
-"{user} has changed the [message retention period]({help_link}) for this channel:\n"
+"{user} has changed the [message retention period]({help_link}) for this "
+"channel:\n"
 "* **Old retention period**: {old_retention_period}\n"
 "* **New retention period**: {new_retention_period}\n"
 "\n"
@@ -4635,7 +4714,9 @@ msgstr ""
 msgid ""
 "Your account {username} has been deactivated. Please contact your "
 "organization administrator to reactivate it."
-msgstr "あなたのアカウント{username}は無効化されました。再度アクティブにするには、組織の管理者に連絡してください。"
+msgstr ""
+"あなたのアカウント{username}は無効化されました。再度アクティブにするには、組"
+"織の管理者に連絡してください。"
 
 #: zerver/forms.py:71
 msgid "The password is too weak."
@@ -4662,7 +4743,7 @@ msgid "Subdomain reserved. Please choose a different one."
 msgstr ""
 
 #: zerver/forms.py:134 zerver/forms.py:304 zerver/lib/email_validation.py:111
-#: zilencer/views.py:225
+#: zilencer/views.py:230
 msgid "Please use your real email address."
 msgstr "本物のメールアドレスを使ってください。"
 
@@ -4684,9 +4765,11 @@ msgstr ""
 #: zerver/forms.py:299
 #, python-brace-format
 msgid ""
-"Your email address, {email}, is not in one of the domains that are allowed to"
-" register for accounts in this organization."
-msgstr "あなたのメールアドレス {email} はこの組織のアカウントに登録できるドメインではありません。"
+"Your email address, {email}, is not in one of the domains that are allowed "
+"to register for accounts in this organization."
+msgstr ""
+"あなたのメールアドレス {email} はこの組織のアカウントに登録できるドメインでは"
+"ありません。"
 
 #: zerver/forms.py:307
 msgid "Email addresses containing + are not allowed in this organization."
@@ -4698,7 +4781,8 @@ msgid ""
 "use. Please contact the person who invited you and ask them to increase the "
 "number of licenses, then try again."
 msgstr ""
-"全てのZulipライセンスが使用中のため、この組織には現在、新規の参加ができません。招待者にライセンス数の追加を依頼してから、再度お試しください。"
+"全てのZulipライセンスが使用中のため、この組織には現在、新規の参加ができませ"
+"ん。招待者にライセンス数の追加を依頼してから、再度お試しください。"
 
 #: zerver/forms.py:379
 msgid "Verified that you're a human user!"
@@ -4724,8 +4808,8 @@ msgstr "新しいパスワードの確認"
 #: zerver/forms.py:584
 #, python-brace-format
 msgid ""
-"You're making too many attempts to sign in. Try again in {seconds} seconds or"
-" contact your organization administrator for help."
+"You're making too many attempts to sign in. Try again in {seconds} seconds "
+"or contact your organization administrator for help."
 msgstr ""
 
 #: zerver/forms.py:596
@@ -4755,24 +4839,24 @@ msgstr "Zulip組織が見つかりませんでした。"
 msgid "Invalid email '{email}'"
 msgstr ""
 
-#: zerver/lib/addressee.py:64 zerver/lib/addressee.py:131
+#: zerver/lib/addressee.py:64 zerver/lib/addressee.py:138
 #: zerver/views/typing.py:50
 msgid "Missing topic"
 msgstr "トピックがありません"
 
-#: zerver/lib/addressee.py:116
+#: zerver/lib/addressee.py:123
 msgid "Cannot send to multiple channels"
 msgstr ""
 
-#: zerver/lib/addressee.py:128
+#: zerver/lib/addressee.py:135
 msgid "Missing channel"
 msgstr ""
 
-#: zerver/lib/addressee.py:139
+#: zerver/lib/addressee.py:146
 msgid "Message must have recipients"
 msgstr "メッセージは受信者が必要です"
 
-#: zerver/lib/addressee.py:148 zerver/lib/outgoing_webhook.py:217
+#: zerver/lib/addressee.py:155 zerver/lib/outgoing_webhook.py:217
 msgid "Invalid message type"
 msgstr "不正なメッセージ種別"
 
@@ -4783,7 +4867,8 @@ msgstr "不正な添付ファイル"
 #: zerver/lib/attachments.py:50
 msgid ""
 "An error occurred while deleting the attachment. Please try again later."
-msgstr "添付ファイルを削除するときにエラーが発生しました。後で再度お試しください。"
+msgstr ""
+"添付ファイルを削除するときにエラーが発生しました。後で再度お試しください。"
 
 #: zerver/lib/bot_lib.py:107
 msgid "Message must have recipients!"
@@ -4872,7 +4957,8 @@ msgstr "下書きが存在しません"
 #: zerver/lib/email_mirror.py:217
 #, python-brace-format
 msgid ""
-"Error sending message to channel {channel_name} via message notification email reply:\n"
+"Error sending message to channel {channel_name} via message notification "
+"email reply:\n"
 "{error_message}"
 msgstr ""
 
@@ -4884,7 +4970,7 @@ msgstr ""
 msgid "Open Zulip to see the spoiler content"
 msgstr "Zulipを開いてネタバレを表示する"
 
-#: zerver/lib/email_notifications.py:600
+#: zerver/lib/email_notifications.py:605
 #, python-brace-format
 msgid "{service_name} notifications"
 msgstr ""
@@ -4965,230 +5051,233 @@ msgstr ""
 msgid "Emoji name is missing"
 msgstr "絵文字名が入力されていません"
 
-#: zerver/lib/events.py:2098
+#: zerver/lib/events.py:2116
 msgid "Could not allocate event queue"
 msgstr "イベントキューを割り当てることができませんでした"
 
-#: zerver/lib/exceptions.py:159
+#: zerver/lib/exceptions.py:160
 msgid "Not logged in: API authentication or user session required"
 msgstr "ログインしていません: API 認証かユーザーログインが必要です"
 
-#: zerver/lib/exceptions.py:186
+#: zerver/lib/exceptions.py:187
 #, python-brace-format
 msgid "Channel '{stream}' does not exist"
 msgstr ""
 
-#: zerver/lib/exceptions.py:199
+#: zerver/lib/exceptions.py:200
 #, python-brace-format
 msgid "Channel with ID '{stream_id}' does not exist"
 msgstr ""
 
-#: zerver/lib/exceptions.py:211
+#: zerver/lib/exceptions.py:212
 #, python-brace-format
 msgid "Unsupported parameter combination: {parameters}"
 msgstr ""
 
-#: zerver/lib/exceptions.py:220
+#: zerver/lib/exceptions.py:221
 msgid "organization owner"
 msgstr "組織オーナー"
 
-#: zerver/lib/exceptions.py:220
+#: zerver/lib/exceptions.py:221
 msgid "user"
 msgstr "ユーザー"
 
-#: zerver/lib/exceptions.py:225
+#: zerver/lib/exceptions.py:226
 #, python-brace-format
 msgid "Cannot deactivate the only {entity}."
 msgstr "唯一の{entity}を無効化できません"
 
-#: zerver/lib/exceptions.py:238
+#: zerver/lib/exceptions.py:239
 #, python-brace-format
 msgid "Invalid Markdown include statement: {include_statement}"
 msgstr "不正なMarkdown include文：{include_statement}"
 
-#: zerver/lib/exceptions.py:251
+#: zerver/lib/exceptions.py:252
 msgid "API usage exceeded rate limit"
 msgstr "API使用量が制限を超えました"
 
-#: zerver/lib/exceptions.py:277 zerver/lib/typed_endpoint.py:370
+#: zerver/lib/exceptions.py:278 zerver/lib/typed_endpoint.py:370
 #: zerver/lib/validator.py:718
 msgid "Malformed JSON"
 msgstr "不正なJSON"
 
-#: zerver/lib/exceptions.py:289
+#: zerver/lib/exceptions.py:290
 msgid "Must be an organization member"
 msgstr "組織メンバーである必要があります"
 
-#: zerver/lib/exceptions.py:301 zerver/views/invite.py:46
+#: zerver/lib/exceptions.py:302 zerver/views/invite.py:46
 msgid "Must be an organization administrator"
 msgstr "組織管理者である必要があります"
 
-#: zerver/lib/exceptions.py:313
+#: zerver/lib/exceptions.py:314
 msgid "Must be an organization owner"
 msgstr "組織オーナーである必要があります"
 
-#: zerver/lib/exceptions.py:327
+#: zerver/lib/exceptions.py:328
 msgid "Your username or password is incorrect"
 msgstr "ユーザー名かパスワードが間違っています"
 
-#: zerver/lib/exceptions.py:345
+#: zerver/lib/exceptions.py:346
 msgid "This organization has been deactivated"
 msgstr "組織は無効化されました"
 
-#: zerver/lib/exceptions.py:355
+#: zerver/lib/exceptions.py:356
 msgid ""
 "The mobile push notification service registration for your server has been "
 "deactivated"
 msgstr ""
 
-#: zerver/lib/exceptions.py:365
+#: zerver/lib/exceptions.py:366
 msgid "Password authentication is disabled in this organization"
 msgstr "この組織ではパスワード認証が無効化されています"
 
-#: zerver/lib/exceptions.py:374
+#: zerver/lib/exceptions.py:375
 msgid "Your password has been disabled and needs to be reset"
 msgstr "あなたのパスワードは無効化され、リセットが必要です"
 
-#: zerver/lib/exceptions.py:391
+#: zerver/lib/exceptions.py:392
 msgid "Invalid API key"
 msgstr "不正なAPIキー"
 
-#: zerver/lib/exceptions.py:398
+#: zerver/lib/exceptions.py:399
 msgid "Malformed API key"
 msgstr "不正な形式のAPIキー"
 
-#: zerver/lib/exceptions.py:438
+#: zerver/lib/exceptions.py:439
 #, python-brace-format
 msgid ""
 "The '{event_type}' event isn't currently supported by the {webhook_name} "
 "webhook; ignoring"
 msgstr ""
 
-#: zerver/lib/exceptions.py:458
+#: zerver/lib/exceptions.py:459
 #, python-brace-format
 msgid "Unable to parse request: Did {webhook_name} generate this event?"
 msgstr ""
 
-#: zerver/lib/exceptions.py:485
+#: zerver/lib/exceptions.py:486
 msgid "User not authenticated"
 msgstr ""
 
-#: zerver/lib/exceptions.py:498 zerver/views/auth.py:796
+#: zerver/lib/exceptions.py:499 zerver/views/auth.py:796
 #: zerver/views/auth.py:1155 zerver/views/auth.py:1221
 msgid "Invalid subdomain"
 msgstr "不正なサブドメイン"
 
-#: zerver/lib/exceptions.py:537
+#: zerver/lib/exceptions.py:538
 msgid "You do not have permission to initiate direct message conversations."
 msgstr ""
 
-#: zerver/lib/exceptions.py:550
+#: zerver/lib/exceptions.py:551
 #, python-brace-format
 msgid ""
 "Sending messages to the {empty_topic_display_name} is not allowed in this "
 "channel."
 msgstr ""
 
-#: zerver/lib/exceptions.py:563
+#: zerver/lib/exceptions.py:564
 #, python-brace-format
 msgid "Only the {empty_topic_display_name} topic is allowed in this channel."
 msgstr ""
 
-#: zerver/lib/exceptions.py:576
+#: zerver/lib/exceptions.py:577
 #, python-brace-format
 msgid ""
 "To enable this configuration, all messages in this channel must be in the "
 "{empty_topic_display_name} topic. Consider renaming or deleting other topics."
 msgstr ""
 
-#: zerver/lib/exceptions.py:583
+#: zerver/lib/exceptions.py:584
 msgid "Direct messages are disabled in this organization."
 msgstr "この組織では、ダイレクトメッセージが無効化されています。"
 
-#: zerver/lib/exceptions.py:585
+#: zerver/lib/exceptions.py:586
 msgid "This conversation does not include any users who can authorize it."
 msgstr ""
 
-#: zerver/lib/exceptions.py:598
+#: zerver/lib/exceptions.py:599
 msgid "Access denied"
 msgstr "アクセスが拒否されました"
 
-#: zerver/lib/exceptions.py:638
+#: zerver/lib/exceptions.py:639
 #, python-brace-format
 msgid ""
-"You only have permission to move the "
-"{total_messages_allowed_to_move}/{total_messages_in_topic} most recent "
-"messages in this topic."
+"You only have permission to move the {total_messages_allowed_to_move}/"
+"{total_messages_in_topic} most recent messages in this topic."
 msgstr ""
 
-#: zerver/lib/exceptions.py:651
+#: zerver/lib/exceptions.py:652
 msgid "Reaction already exists."
 msgstr "リアクションはすでに存在します"
 
-#: zerver/lib/exceptions.py:663
+#: zerver/lib/exceptions.py:664
 msgid "Reaction doesn't exist."
 msgstr "リアクションが存在しません"
 
-#: zerver/lib/exceptions.py:688
+#: zerver/lib/exceptions.py:689
 msgid ""
 "Your organization is registered to a different Zulip server. Please contact "
 "Zulip support for assistance in resolving this issue."
 msgstr ""
 
-#: zerver/lib/exceptions.py:702
+#: zerver/lib/exceptions.py:703
 msgid "Organization not registered"
 msgstr ""
 
-#: zerver/lib/exceptions.py:714
+#: zerver/lib/exceptions.py:715
 msgid ""
 "You do not have permission to use channel wildcard mentions in this channel."
 msgstr ""
 
-#: zerver/lib/exceptions.py:726
+#: zerver/lib/exceptions.py:727
 msgid ""
 "You do not have permission to use topic wildcard mentions in this topic."
 msgstr ""
 
-#: zerver/lib/exceptions.py:739
+#: zerver/lib/exceptions.py:740
 #, python-brace-format
 msgid "'{field_name}' value does not match the expected value."
 msgstr ""
 
-#: zerver/lib/exceptions.py:764
+#: zerver/lib/exceptions.py:765
 #, python-brace-format
 msgid "'{setting_name}' must be a system user group."
 msgstr ""
 
-#: zerver/lib/exceptions.py:780
+#: zerver/lib/exceptions.py:781
 msgid "Cannot deactivate user group in use."
 msgstr ""
 
-#: zerver/lib/exceptions.py:790
+#: zerver/lib/exceptions.py:791
 msgid "You do not have permission to administer this channel."
 msgstr ""
 
-#: zerver/lib/exceptions.py:800
+#: zerver/lib/exceptions.py:801
 msgid "You do not have permission to change default channels."
 msgstr ""
 
-#: zerver/lib/exceptions.py:810
+#: zerver/lib/exceptions.py:811
 msgid "Email is already in use."
 msgstr ""
 
-#: zerver/lib/exceptions.py:820
+#: zerver/lib/exceptions.py:821
 msgid "Scheduled delivery time must be in the future."
 msgstr ""
 
-#: zerver/lib/exceptions.py:843
+#: zerver/lib/exceptions.py:844
 msgid "Invalid bouncer_public_key"
 msgstr ""
 
-#: zerver/lib/exceptions.py:855
+#: zerver/lib/exceptions.py:856
 msgid "Request expired"
 msgstr ""
 
-#: zerver/lib/exceptions.py:865
+#: zerver/lib/exceptions.py:866
 msgid "Invalid encrypted_push_registration"
+msgstr ""
+
+#: zerver/lib/exceptions.py:878
+msgid "Server is not configured to use push notification service."
 msgstr ""
 
 #: zerver/lib/external_accounts.py:36
@@ -5276,26 +5365,26 @@ msgstr "メッセージにNULL文字を含んではいけません"
 msgid "You are not allowed to mention user group '{user_group_name}'."
 msgstr ""
 
-#: zerver/lib/message_report.py:40
+#: zerver/lib/message_report.py:41
 #, python-brace-format
 msgid "{reporting_user_mention} reported a DM sent by {reported_user_mention}."
 msgstr ""
 
-#: zerver/lib/message_report.py:53
+#: zerver/lib/message_report.py:54
 #, python-brace-format
 msgid ""
 "{reporting_user_mention} reported a DM sent by {reported_user_mention} to "
 "{recipient_mentions}, and {last_user_mention}."
 msgstr ""
 
-#: zerver/lib/message_report.py:72
+#: zerver/lib/message_report.py:73
 #, python-brace-format
 msgid ""
 "{reporting_user_mention} reported {channel_message_link} sent by "
 "{reported_user_mention}."
 msgstr ""
 
-#: zerver/lib/message_report.py:82
+#: zerver/lib/message_report.py:83
 #, python-brace-format
 msgid ""
 "\n"
@@ -5303,12 +5392,12 @@ msgid ""
 "- Notes:\n"
 msgstr ""
 
-#: zerver/lib/message_report.py:90
+#: zerver/lib/message_report.py:91
 #, python-brace-format
 msgid "**Message sent by {reported_user_mention}**"
 msgstr ""
 
-#: zerver/lib/message_report.py:110
+#: zerver/lib/message_report.py:108
 #, fuzzy, python-brace-format
 #| msgid "{full_name} mentioned you:"
 msgid "{fullname}'s moderation requests"
@@ -5332,11 +5421,11 @@ msgstr ""
 msgid "Invalid 'with' operator"
 msgstr ""
 
-#: zerver/lib/narrow.py:1285
+#: zerver/lib/narrow.py:1290
 msgid "Missing 'anchor' argument."
 msgstr "引数'anchor'がありません"
 
-#: zerver/lib/narrow.py:1305
+#: zerver/lib/narrow.py:1310
 msgid "Invalid anchor"
 msgstr "不正なアンカー"
 
@@ -5356,35 +5445,39 @@ msgstr ""
 msgid "Navigation view does not exist."
 msgstr "承認リンクが存在しません"
 
-#: zerver/lib/onboarding.py:53
+#: zerver/lib/onboarding.py:56
 #, python-brace-format
 msgid ""
 "\n"
-"To learn more, check out our [using Zulip for a class guide]({getting_started_url})!\n"
+"To learn more, check out our [using Zulip for a class guide]"
+"({getting_started_url})!\n"
 msgstr ""
 
-#: zerver/lib/onboarding.py:57
+#: zerver/lib/onboarding.py:60
 #, python-brace-format
 msgid ""
 "\n"
-"To learn more, check out our [getting started guide]({getting_started_url})!\n"
+"To learn more, check out our [getting started guide]"
+"({getting_started_url})!\n"
 msgstr ""
 
-#: zerver/lib/onboarding.py:65
+#: zerver/lib/onboarding.py:68
 #, python-brace-format
 msgid ""
 "\n"
-"We also have a guide for [setting up Zulip for a class]({organization_setup_url}).\n"
+"We also have a guide for [setting up Zulip for a class]"
+"({organization_setup_url}).\n"
 msgstr ""
 
-#: zerver/lib/onboarding.py:69
+#: zerver/lib/onboarding.py:72
 #, python-brace-format
 msgid ""
 "\n"
-"We also have a guide for [moving your organization to Zulip]({organization_setup_url}).\n"
+"We also have a guide for [moving your organization to Zulip]"
+"({organization_setup_url}).\n"
 msgstr ""
 
-#: zerver/lib/onboarding.py:76
+#: zerver/lib/onboarding.py:79
 #, python-brace-format
 msgid ""
 "\n"
@@ -5393,25 +5486,27 @@ msgid ""
 "a permanent organization]({convert_demo_organization_help_url}).\n"
 msgstr ""
 
-#: zerver/lib/onboarding.py:87
+#: zerver/lib/onboarding.py:90
 msgid ""
 "\n"
 "I've kicked off some conversations to help you get started. You can find\n"
 "them in your [Inbox](/#inbox).\n"
 msgstr ""
 
-#: zerver/lib/onboarding.py:92
+#: zerver/lib/onboarding.py:95
 #, python-brace-format
 msgid ""
 "\n"
-"You can always come back to the [Welcome to Zulip video]({navigation_tour_video_url}) for a quick app overview.\n"
+"You can always come back to the [Welcome to Zulip video]"
+"({navigation_tour_video_url}) for a quick app overview.\n"
 msgstr ""
 
-#: zerver/lib/onboarding.py:96
+#: zerver/lib/onboarding.py:99
 #, python-brace-format
 msgid ""
 "\n"
-"Hello, and welcome to Zulip!👋 {inform_about_tracked_onboarding_messages_text}\n"
+"Hello, and welcome to Zulip!👋 "
+"{inform_about_tracked_onboarding_messages_text}\n"
 "\n"
 "{getting_started_text} {organization_setup_text}\n"
 "\n"
@@ -5421,54 +5516,61 @@ msgid ""
 "\n"
 msgstr ""
 
-#: zerver/lib/onboarding.py:144
+#: zerver/lib/onboarding.py:147
 msgid ""
 "\n"
 "You can [download](/apps/) the [mobile and desktop apps](/apps/).\n"
 "Zulip also works great in a browser.\n"
 msgstr ""
 
-#: zerver/lib/onboarding.py:149
+#: zerver/lib/onboarding.py:152
 msgid ""
 "\n"
-"Go to [Profile settings](#settings/profile) to add a [profile picture](/help/change-your-profile-picture)\n"
+"Go to [Profile settings](#settings/profile) to add a [profile picture](/help/"
+"change-your-profile-picture)\n"
 "and edit your [profile information](/help/edit-your-profile).\n"
 msgstr ""
 
-#: zerver/lib/onboarding.py:154
+#: zerver/lib/onboarding.py:157
 msgid ""
 "\n"
 "You can switch between [light and dark theme](/help/dark-theme), [pick your\n"
-"favorite emoji set](/help/emoji-and-emoticons#change-your-emoji-set), [change\n"
-"your language](/help/change-your-language), and otherwise customize your Zulip\n"
+"favorite emoji set](/help/emoji-and-emoticons#change-your-emoji-set), "
+"[change\n"
+"your language](/help/change-your-language), and otherwise customize your "
+"Zulip\n"
 "experience in your [Preferences](#settings/preferences).\n"
 msgstr ""
 
-#: zerver/lib/onboarding.py:161
+#: zerver/lib/onboarding.py:164
 #, python-brace-format
 msgid ""
 "\n"
-"Channels organize conversations based on who needs to see them. For example,\n"
+"Channels organize conversations based on who needs to see them. For "
+"example,\n"
 "it's common to have a channel for each team in an organization.\n"
 "\n"
 "[Browse and subscribe to channels]({settings_link}).\n"
 msgstr ""
 
-#: zerver/lib/onboarding.py:168
+#: zerver/lib/onboarding.py:171
 msgid ""
 "\n"
-"[Topics](/help/introduction-to-topics) summarize what each conversation in Zulip\n"
+"[Topics](/help/introduction-to-topics) summarize what each conversation in "
+"Zulip\n"
 "is about. You can read Zulip one topic at a time, seeing each message in\n"
 "context, no matter how many other conversations are going on.\n"
 "\n"
-"When you start a conversation, label it with a new topic. For a good topic name,\n"
+"When you start a conversation, label it with a new topic. For a good topic "
+"name,\n"
 "think about finishing the sentence: “Hey, can we chat about…?”\n"
 "\n"
-"Check out [Recent conversations](#recent) for a list of topics that are being\n"
+"Check out [Recent conversations](#recent) for a list of topics that are "
+"being\n"
 "discussed.\n"
 msgstr ""
 
-#: zerver/lib/onboarding.py:180
+#: zerver/lib/onboarding.py:183
 msgid ""
 "\n"
 "Zulip's [keyboard shortcuts](#keyboard-shortcuts) let you navigate the app\n"
@@ -5477,17 +5579,19 @@ msgid ""
 "Press `?` any time to see a [cheat sheet](#keyboard-shortcuts).\n"
 msgstr ""
 
-#: zerver/lib/onboarding.py:187
+#: zerver/lib/onboarding.py:190
 msgid ""
 "\n"
-"You can **format** *your* `message` using the handy formatting buttons, or by\n"
+"You can **format** *your* `message` using the handy formatting buttons, or "
+"by\n"
 "typing your formatting with Markdown.\n"
 "\n"
-"Check out the [cheat sheet](#message-formatting) to learn about spoilers, global\n"
+"Check out the [cheat sheet](#message-formatting) to learn about spoilers, "
+"global\n"
 "times, and more.\n"
 msgstr ""
 
-#: zerver/lib/onboarding.py:195
+#: zerver/lib/onboarding.py:198
 #, python-brace-format
 msgid ""
 "\n"
@@ -5497,7 +5601,7 @@ msgid ""
 "or browse the [Help center](/help/) to learn more!\n"
 msgstr ""
 
-#: zerver/lib/onboarding.py:202
+#: zerver/lib/onboarding.py:205
 #, python-brace-format
 msgid ""
 "\n"
@@ -5505,80 +5609,89 @@ msgid ""
 "get help, try one of the following messages: {bot_commands}\n"
 msgstr ""
 
-#: zerver/lib/onboarding.py:258
+#: zerver/lib/onboarding.py:297
 #, python-brace-format
 msgid ""
 "\n"
-"If anything is out of place, it’s easy to [move messages]({move_content_another_topic_help_url}),\n"
-"[rename]({rename_topic_help_url}) and [split]({move_content_another_topic_help_url}) topics,\n"
-"or even move a topic [to a different channel]({move_content_another_channel_help_url}).\n"
+"If anything is out of place, it’s easy to [move messages]"
+"({move_content_another_topic_help_url}),\n"
+"[rename]({rename_topic_help_url}) and [split]"
+"({move_content_another_topic_help_url}) topics,\n"
+"or even move a topic [to a different channel]"
+"({move_content_another_channel_help_url}).\n"
 msgstr ""
 
-#: zerver/lib/onboarding.py:269
+#: zerver/lib/onboarding.py:308
 msgid ""
 "\n"
 ":point_right: Try moving this message to another topic and back.\n"
 msgstr ""
 
-#: zerver/lib/onboarding.py:273
+#: zerver/lib/onboarding.py:312
 #, python-brace-format
 msgid ""
 "\n"
-"Zulip is organized to help you communicate more efficiently. Conversations are\n"
+"Zulip is organized to help you communicate more efficiently. Conversations "
+"are\n"
 "labeled with topics, which summarize what the conversation is about.\n"
 "\n"
 "For example, this message is in the “{topic_name}” topic in the\n"
-"#**{zulip_discussion_channel_name}** channel, as you can see in the left sidebar\n"
+"#**{zulip_discussion_channel_name}** channel, as you can see in the left "
+"sidebar\n"
 "and above.\n"
 msgstr ""
 
-#: zerver/lib/onboarding.py:282 zerver/lib/onboarding.py:334
-#: zerver/lib/onboarding.py:406
+#: zerver/lib/onboarding.py:321 zerver/lib/onboarding.py:373
+#: zerver/lib/onboarding.py:464
 msgid "welcome to Zulip!"
 msgstr ""
 
-#: zerver/lib/onboarding.py:285
+#: zerver/lib/onboarding.py:324
 msgid ""
 "\n"
-"You can read Zulip one conversation at a time, seeing each message in context,\n"
+"You can read Zulip one conversation at a time, seeing each message in "
+"context,\n"
 "no matter how many other conversations are going on.\n"
 msgstr ""
 
-#: zerver/lib/onboarding.py:290
+#: zerver/lib/onboarding.py:329
 msgid ""
 "\n"
 ":point_right: When you're ready, check out your [Inbox](/#inbox) for other\n"
 "conversations with unread messages.\n"
 msgstr ""
 
-#: zerver/lib/onboarding.py:295
+#: zerver/lib/onboarding.py:334
 msgid ""
 "\n"
-"To kick off a new conversation, pick a channel in the left sidebar, and click\n"
+"To kick off a new conversation, pick a channel in the left sidebar, and "
+"click\n"
 "the `+` button next to its name.\n"
 msgstr ""
 
-#: zerver/lib/onboarding.py:300
+#: zerver/lib/onboarding.py:339
 msgid ""
 "\n"
-"Label your conversation with a topic. Think about finishing the sentence: “Hey,\n"
+"Label your conversation with a topic. Think about finishing the sentence: "
+"“Hey,\n"
 "can we chat about…?”\n"
 msgstr ""
 
-#: zerver/lib/onboarding.py:305
+#: zerver/lib/onboarding.py:344
 msgid ""
 "\n"
 ":point_right: Try starting a new conversation in this channel.\n"
 msgstr ""
 
-#: zerver/lib/onboarding.py:310
+#: zerver/lib/onboarding.py:349
 #, python-brace-format
 msgid ""
 "\n"
-":point_right:  Use this topic to try out [Zulip's messaging features]({format_message_help_url}).\n"
+":point_right:  Use this topic to try out [Zulip's messaging features]"
+"({format_message_help_url}).\n"
 msgstr ""
 
-#: zerver/lib/onboarding.py:316
+#: zerver/lib/onboarding.py:355
 #, python-brace-format
 msgid ""
 "\n"
@@ -5598,31 +5711,33 @@ msgid ""
 "```\n"
 msgstr ""
 
-#: zerver/lib/onboarding.py:337
+#: zerver/lib/onboarding.py:376
 msgid ""
 "\n"
-"This **greetings** topic is a great place to say “hi” :wave: to your teammates.\n"
+"This **greetings** topic is a great place to say “hi” :wave: to your "
+"teammates.\n"
 msgstr ""
 
-#: zerver/lib/onboarding.py:341
+#: zerver/lib/onboarding.py:380
 msgid ""
 "\n"
-":point_right: Click on this message to start a new message in the same conversation.\n"
+":point_right: Click on this message to start a new message in the same "
+"conversation.\n"
 msgstr ""
 
-#: zerver/lib/onboarding.py:358
+#: zerver/lib/onboarding.py:400
 msgid "moving messages"
 msgstr ""
 
-#: zerver/lib/onboarding.py:372
+#: zerver/lib/onboarding.py:417
 msgid "experiments"
 msgstr ""
 
-#: zerver/lib/onboarding.py:382
+#: zerver/lib/onboarding.py:432
 msgid "start a conversation"
 msgstr ""
 
-#: zerver/lib/onboarding.py:396
+#: zerver/lib/onboarding.py:449
 msgid "greetings"
 msgstr ""
 
@@ -5634,61 +5749,61 @@ msgstr "レスポンスが不正なJSONです"
 msgid "Invalid response format"
 msgstr "不正なレスポンスのフォーマットです"
 
-#: zerver/lib/push_notifications.py:87
+#: zerver/lib/push_notifications.py:91
 msgid "Empty or invalid length token"
 msgstr "空か、トークンの長さが不正です"
 
-#: zerver/lib/push_notifications.py:92
+#: zerver/lib/push_notifications.py:96
 msgid "Invalid APNS token"
 msgstr "不正なAPNSトークン"
 
-#: zerver/lib/push_notifications.py:446
+#: zerver/lib/push_notifications.py:464
 msgid "Invalid GCM option to bouncer: priority {priority!r}"
 msgstr ""
 
-#: zerver/lib/push_notifications.py:456
+#: zerver/lib/push_notifications.py:474
 #, python-brace-format
 msgid "Invalid GCM options to bouncer: {options}"
 msgstr ""
 
 #. error
-#: zerver/lib/push_notifications.py:735 zilencer/views.py:629
+#: zerver/lib/push_notifications.py:760 zilencer/views.py:658
 msgid "Token does not exist"
 msgstr "トークンがありません"
 
-#: zerver/lib/push_notifications.py:956
+#: zerver/lib/push_notifications.py:981
 msgid "New message"
 msgstr "新しいメッセージ"
 
-#: zerver/lib/push_notifications.py:1075
+#: zerver/lib/push_notifications.py:1100
 #, python-brace-format
 msgid "{full_name} mentioned @{user_group_name}:"
 msgstr ""
 
-#: zerver/lib/push_notifications.py:1079
+#: zerver/lib/push_notifications.py:1104
 #, python-brace-format
 msgid "{full_name} mentioned you:"
 msgstr "{full_name}があなたにメンションしました："
 
-#: zerver/lib/push_notifications.py:1086
+#: zerver/lib/push_notifications.py:1111
 #, python-brace-format
 msgid "{full_name} mentioned everyone:"
 msgstr "{full_name}が全員にメンションしました："
 
-#: zerver/lib/push_notifications.py:1492
+#: zerver/lib/push_notifications.py:1715
 msgid "Test notification"
 msgstr ""
 
-#: zerver/lib/push_notifications.py:1493
+#: zerver/lib/push_notifications.py:1716
 #, python-brace-format
 msgid "This is a test notification from {realm_name} ({realm_url})."
 msgstr ""
 
-#: zerver/lib/push_notifications.py:1545
+#: zerver/lib/push_notifications.py:1768
 msgid "Device not recognized"
 msgstr ""
 
-#: zerver/lib/push_notifications.py:1557
+#: zerver/lib/push_notifications.py:1780
 msgid "Device not recognized by the push bouncer"
 msgstr ""
 
@@ -5991,11 +6106,11 @@ msgstr "{var_name}が正しい16進カラーコードでありません"
 msgid "Invalid {setting_name}"
 msgstr "不正な{setting_name}"
 
-#: zerver/lib/upload/__init__.py:45
+#: zerver/lib/upload/__init__.py:47
 msgid "Upload would exceed your organization's upload quota."
 msgstr "アップロードが組織の上限アップロード容量を超えています。"
 
-#: zerver/lib/upload/__init__.py:394 zerver/lib/upload/__init__.py:396
+#: zerver/lib/upload/__init__.py:435 zerver/lib/upload/__init__.py:437
 msgid "Image size exceeds limit"
 msgstr ""
 
@@ -6011,41 +6126,41 @@ msgstr "不正なユーザーグループ"
 msgid "Invalid system group name."
 msgstr ""
 
-#: zerver/lib/user_groups.py:350 zerver/lib/user_groups.py:446
+#: zerver/lib/user_groups.py:354 zerver/lib/user_groups.py:450
 #, python-brace-format
 msgid "Invalid user group ID: {group_id}"
 msgstr ""
 
-#: zerver/lib/user_groups.py:381
+#: zerver/lib/user_groups.py:385
 #, python-brace-format
 msgid "'{setting_name}' setting cannot be set to 'role:internet' group."
 msgstr ""
 
-#: zerver/lib/user_groups.py:391
+#: zerver/lib/user_groups.py:395
 #, python-brace-format
 msgid "'{setting_name}' setting cannot be set to 'role:nobody' group."
 msgstr ""
 
-#: zerver/lib/user_groups.py:401
+#: zerver/lib/user_groups.py:405
 #, python-brace-format
 msgid "'{setting_name}' setting cannot be set to 'role:everyone' group."
 msgstr ""
 
-#: zerver/lib/user_groups.py:411
+#: zerver/lib/user_groups.py:415
 #, python-brace-format
 msgid "'{setting_name}' setting cannot be set to '{group_name}' group."
 msgstr ""
 
-#: zerver/lib/user_groups.py:520
+#: zerver/lib/user_groups.py:524
 msgid "User group name can't be empty!"
 msgstr ""
 
-#: zerver/lib/user_groups.py:524
+#: zerver/lib/user_groups.py:528
 #, python-brace-format
 msgid "User group name cannot exceed {max_length} characters."
 msgstr ""
 
-#: zerver/lib/user_groups.py:532
+#: zerver/lib/user_groups.py:536
 #, python-brace-format
 msgid "User group name cannot start with '{prefix}'."
 msgstr ""
@@ -6133,7 +6248,8 @@ msgstr "{item}は空白であることはできません"
 #: zerver/lib/validator.py:101
 #, python-brace-format
 msgid "{var_name} has incorrect length {length}; should be {target_length}"
-msgstr "{var_name}は不正な長さ {length}です。{target_length}である必要があります"
+msgstr ""
+"{var_name}は不正な長さ {length}です。{target_length}である必要があります"
 
 #: zerver/lib/validator.py:195
 #, python-brace-format
@@ -6221,8 +6337,8 @@ msgstr ""
 
 #: zerver/lib/webhooks/common.py:311
 msgid ""
-"The webhook secret is missing. Please set the webhook_secret while generating"
-" the URL."
+"The webhook secret is missing. Please set the webhook_secret while "
+"generating the URL."
 msgstr ""
 
 #: zerver/lib/webhooks/common.py:324
@@ -6238,7 +6354,7 @@ msgstr "zcommandには先頭にスラッシュが必要です"
 msgid "No such command: {command}"
 msgstr ""
 
-#: zerver/lib/zulip_update_announcements.py:627
+#: zerver/lib/zulip_update_announcements.py:677
 msgid "`zulip_update_announcements_stream` is unexpectedly deactivated."
 msgstr ""
 
@@ -6582,7 +6698,8 @@ msgstr "不正なフィールド種別。"
 #: zerver/views/custom_profile_fields.py:186
 #: zerver/views/custom_profile_fields.py:255
 msgid "Only 2 custom profile fields can be displayed in the profile summary."
-msgstr "プロファイルの概要に表示できるカスタムプロファイルフィールドは２つまでです。"
+msgstr ""
+"プロファイルの概要に表示できるカスタムプロファイルフィールドは２つまでです。"
 
 #: zerver/views/custom_profile_fields.py:215
 #: zerver/views/custom_profile_fields.py:286
@@ -6660,7 +6777,9 @@ msgstr "メールアドレスを指定してください。"
 msgid ""
 "Some of those addresses are already using Zulip, so we didn't send them an "
 "invitation. We did send invitations to everyone else!"
-msgstr "これらのアドレスの中にはZulipをすでに使用している人がいたため、その人には招待を送信しませんでした。他の人には招待を送信しました。"
+msgstr ""
+"これらのアドレスの中にはZulipをすでに使用している人がいたため、その人には招待"
+"を送信しませんでした。他の人には招待を送信しました。"
 
 #: zerver/views/message_edit.py:126
 msgid "Message edit history is disabled in this organization"
@@ -6767,7 +6886,8 @@ msgstr ""
 #, python-brace-format
 msgid ""
 "\n"
-"You asked to watch the [Welcome to Zulip video]({navigation_tour_video_url}) later. Is this a good time?\n"
+"You asked to watch the [Welcome to Zulip video]({navigation_tour_video_url}) "
+"later. Is this a good time?\n"
 msgstr ""
 
 #: zerver/views/presence.py:48
@@ -6788,26 +6908,22 @@ msgid ""
 "Client must pass emoji_name if they pass either emoji_code or reaction_type."
 msgstr ""
 
-#: zerver/views/presence.py:170
+#: zerver/views/presence.py:195
 #, python-brace-format
 msgid "Invalid status: {status}"
 msgstr ""
 
-#: zerver/views/push_notifications.py:125
+#: zerver/views/push_notifications.py:126
 msgid "Server doesn't use the push notification service"
 msgstr ""
 
-#: zerver/views/push_notifications.py:157
+#: zerver/views/push_notifications.py:158
 #, python-brace-format
 msgid "Error returned by the bouncer: {result}"
 msgstr ""
 
-#: zerver/views/push_notifications.py:241
+#: zerver/views/push_notifications.py:242
 msgid "Verification secret not prepared"
-msgstr ""
-
-#: zerver/views/push_notifications.py:283
-msgid "Server is not configured to use push notification service."
 msgstr ""
 
 #: zerver/views/reactions.py:48
@@ -7026,7 +7142,8 @@ msgstr "なにもしません。\"add\"か\"delete\"のうち一つ以上を指�
 #, fuzzy, python-brace-format
 #| msgid "{user_full_name} subscribed you to the channel {channel_name}."
 msgid "{user_full_name} subscribed you to {channel_name}."
-msgstr "{user_full_name} があなたを {channel_name} のチャンネル登録者に追加しました。"
+msgstr ""
+"{user_full_name} があなたを {channel_name} のチャンネル登録者に追加しました。"
 
 #: zerver/views/streams.py:643
 #, python-brace-format
@@ -7056,44 +7173,44 @@ msgstr "{user_name}が新しいチャンネル {new_channels} を作成しまし
 msgid "new channels"
 msgstr "新しいチャンネル"
 
-#: zerver/views/streams.py:1019
+#: zerver/views/streams.py:1024
 #, fuzzy, python-brace-format
 #| msgid "**{policy}** channel created by {user_name}. **Description:**"
 msgid "**Web-public** channel created by {user_name}. **Description:**"
 msgstr "{user_name}が**{policy}**チャンネルを作成しました。 **説明:**"
 
-#: zerver/views/streams.py:1023
+#: zerver/views/streams.py:1028
 #, fuzzy, python-brace-format
 #| msgid "**{policy}** channel created by {user_name}. **Description:**"
 msgid "**Public** channel created by {user_name}. **Description:**"
 msgstr "{user_name}が**{policy}**チャンネルを作成しました。 **説明:**"
 
-#: zerver/views/streams.py:1027
+#: zerver/views/streams.py:1032
 #, fuzzy, python-brace-format
 #| msgid "**{policy}** channel created by {user_name}. **Description:**"
 msgid ""
 "**Private, shared history** channel created by {user_name}. **Description:**"
 msgstr "{user_name}が**{policy}**チャンネルを作成しました。 **説明:**"
 
-#: zerver/views/streams.py:1031
+#: zerver/views/streams.py:1036
 #, fuzzy, python-brace-format
 #| msgid "**{policy}** channel created by {user_name}. **Description:**"
 msgid ""
-"**Private, protected history** channel created by {user_name}. "
-"**Description:**"
+"**Private, protected history** channel created by {user_name}. **Description:"
+"**"
 msgstr "{user_name}が**{policy}**チャンネルを作成しました。 **説明:**"
 
-#: zerver/views/streams.py:1266
+#: zerver/views/streams.py:1271
 #, python-brace-format
 msgid "{property} is not a boolean"
 msgstr ""
 
-#: zerver/views/streams.py:1269
+#: zerver/views/streams.py:1274
 #, python-brace-format
 msgid "Unknown subscription property: {property}"
 msgstr ""
 
-#: zerver/views/streams.py:1317
+#: zerver/views/streams.py:1322
 #, python-brace-format
 msgid "Not subscribed to channel ID {channel_id}"
 msgstr ""
@@ -7102,14 +7219,14 @@ msgstr ""
 msgid "Invalid json for submessage"
 msgstr "不正なサブメッセージのJSON"
 
-#: zerver/views/tusd.py:108 zerver/views/upload.py:431
+#: zerver/views/tusd.py:108 zerver/views/upload.py:439
 #, python-brace-format
 msgid ""
 "File is larger than the maximum upload size ({max_size} MiB) allowed by your "
 "organization's plan."
 msgstr ""
 
-#: zerver/views/tusd.py:117 zerver/views/upload.py:439
+#: zerver/views/tusd.py:117 zerver/views/upload.py:447
 #, python-brace-format
 msgid ""
 "File is larger than this server's configured maximum upload size ({max_size} "
@@ -7139,27 +7256,27 @@ msgstr "'to'リストが空白です"
 msgid "User has disabled typing notifications for direct messages"
 msgstr "ユーザーがダイレクトメッセージでの「入力中」表示を無効化しています"
 
-#: zerver/views/upload.py:245
+#: zerver/views/upload.py:253
 msgid "<p>This file does not exist or has been deleted.</p>"
 msgstr ""
 
-#: zerver/views/upload.py:255
+#: zerver/views/upload.py:263
 msgid "<p>You are not authorized to view this file.</p>"
 msgstr "<p>このファイルの表示を許可されていません。</p>"
 
-#: zerver/views/upload.py:368 zerver/views/upload.py:374
+#: zerver/views/upload.py:376 zerver/views/upload.py:382
 msgid "Invalid token"
 msgstr "不正なトークン"
 
-#: zerver/views/upload.py:370
+#: zerver/views/upload.py:378
 msgid "Invalid filename"
 msgstr "不正なファイル名"
 
-#: zerver/views/upload.py:418
+#: zerver/views/upload.py:426
 msgid "You must specify a file to upload"
 msgstr "ファイルを指定してアップロードしてください。"
 
-#: zerver/views/upload.py:420 zerver/views/users.py:523
+#: zerver/views/upload.py:428 zerver/views/users.py:523
 #: zerver/views/users.py:631
 msgid "You may only upload one file at a time"
 msgstr "一度に1つのファイルだけアップロードできます"
@@ -7170,8 +7287,8 @@ msgstr "新しいデータがありません。"
 
 #: zerver/views/user_groups.py:242
 msgid ""
-"Nothing to do. Specify at least one of \"add\", \"delete\", \"add_subgroups\""
-" or \"delete_subgroups\"."
+"Nothing to do. Specify at least one of \"add\", \"delete\", "
+"\"add_subgroups\" or \"delete_subgroups\"."
 msgstr ""
 
 #: zerver/views/user_groups.py:304
@@ -7269,7 +7386,9 @@ msgstr ""
 #: zerver/views/users.py:283
 msgid ""
 "The owner permission cannot be removed from the only organization owner."
-msgstr "組織にオーナーが一人しか存在しない場合、オーナー権限を削除することはできません"
+msgstr ""
+"組織にオーナーが一人しか存在しない場合、オーナー権限を削除することはできませ"
+"ん"
 
 #: zerver/views/users.py:325
 msgid "Invalid new email address."
@@ -7430,8 +7549,8 @@ msgstr ""
 #: zerver/worker/deferred_work.py:198
 #, python-brace-format
 msgid ""
-"Your data export is complete. [View and download "
-"exports]({export_settings_link})."
+"Your data export is complete. [View and download exports]"
+"({export_settings_link})."
 msgstr ""
 
 #: zilencer/auth.py:61
@@ -7459,101 +7578,101 @@ msgid "Must validate with valid Zulip server API key"
 msgstr "正しいZulipサーバーでAPIキーを検証する必要があります"
 
 #. error
-#: zilencer/views.py:116 zilencer/views.py:118
+#: zilencer/views.py:121 zilencer/views.py:123
 msgid "Invalid UUID"
 msgstr ""
 
 #. error
-#: zilencer/views.py:123
+#: zilencer/views.py:128
 msgid "Invalid token type"
 msgstr "不正なトークン種別"
 
-#: zilencer/views.py:160
+#: zilencer/views.py:165
 #, python-brace-format
 msgid "{hostname} contains invalid components (e.g., path, query, fragment)."
 msgstr ""
 
-#: zilencer/views.py:167
+#: zilencer/views.py:172
 #, python-brace-format
 msgid "{hostname} is not a valid hostname"
 msgstr ""
 
-#: zilencer/views.py:177
+#: zilencer/views.py:182
 #, python-brace-format
 msgid "{hostname} not yet registered"
 msgstr ""
 
-#: zilencer/views.py:229
+#: zilencer/views.py:234
 msgid "Invalid email address."
-msgstr ""
-
-#: zilencer/views.py:245
-#, python-brace-format
-msgid "{domain} is invalid because it does not have any MX records"
 msgstr ""
 
 #: zilencer/views.py:250
 #, python-brace-format
+msgid "{domain} is invalid because it does not have any MX records"
+msgstr ""
+
+#: zilencer/views.py:255
+#, python-brace-format
 msgid "{domain} does not exist"
 msgstr ""
 
-#: zilencer/views.py:349
+#: zilencer/views.py:354
 #, python-brace-format
 msgid ""
 "The global limits on recent usage of this endpoint have been reached. Please "
 "try again later or reach out to {support_email} for assistance."
 msgstr ""
 
-#: zilencer/views.py:357
+#: zilencer/views.py:362
 msgid "Registration not found for this hostname"
 msgstr ""
 
-#: zilencer/views.py:369
+#: zilencer/views.py:374
 msgid "The host reported it has no verification secret."
 msgstr ""
 
-#: zilencer/views.py:371
+#: zilencer/views.py:376
 #, python-brace-format
 msgid "Error response received from the host: {status_code}"
 msgstr ""
 
-#: zilencer/views.py:441
+#: zilencer/views.py:466
 msgid "Missing ios_app_id"
 msgstr ""
 
-#: zilencer/views.py:444
+#: zilencer/views.py:469
 msgid "Missing user_id or user_uuid"
 msgstr ""
 
-#: zilencer/views.py:819
+#: zilencer/views.py:852
 #, python-brace-format
 msgid ""
 "Your plan doesn't allow sending push notifications. Reason provided by the "
 "server: {reason}"
 msgstr ""
 
-#: zilencer/views.py:867
+#: zilencer/views.py:900
 msgid "Your plan doesn't allow sending push notifications."
 msgstr ""
 
-#: zilencer/views.py:1083
+#: zilencer/views.py:1138
 #, python-brace-format
 msgid "Invalid property {property}"
 msgstr ""
 
-#: zilencer/views.py:1086
+#: zilencer/views.py:1141
 msgid "Invalid event type."
 msgstr ""
 
-#: zilencer/views.py:1093
+#: zilencer/views.py:1148
 msgid "Data is out of order."
 msgstr "データが破損しています"
 
-#: zilencer/views.py:1198
+#: zilencer/views.py:1253
 msgid "Duplicate registration detected."
 msgstr ""
 
-#: zilencer/views.py:1616
+#: zilencer/views.py:1671
 msgid "Malformed audit log data"
 msgstr ""
 
@@ -7561,15 +7680,15 @@ msgstr ""
 msgid "You need to reset your password."
 msgstr "パスワードをリセットする必要があります"
 
-#: zproject/backends.py:2812
+#: zproject/backends.py:2821
 msgid "Missing id_token parameter"
 msgstr "id_token パラメータがありません"
 
-#: zproject/backends.py:3536
+#: zproject/backends.py:3545
 msgid "Invalid OTP"
 msgstr "不正なOTP"
 
-#: zproject/backends.py:3539
+#: zproject/backends.py:3548
 msgid "Can't use both mobile_flow_otp and desktop_flow_otp together."
 msgstr "mobile_flow_otp とdesktop_flow_otp を同時に使用できません。"
 
