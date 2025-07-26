@@ -644,7 +644,7 @@ export function update_dom_with_unread_counts(counts: FullUnreadCountsData): voi
 function toggle_hide_unread_counts(
     $subscription_block: JQuery,
     sub_muted: boolean,
-    unmuted_unread_counts: number,
+    unmuted_unread_counts?: number,
 ): void {
     const hide_count = settings_data.should_mask_unread_count(sub_muted, unmuted_unread_counts);
 
@@ -654,6 +654,8 @@ function toggle_hide_unread_counts(
 export function update_dom_unread_counts_visibility(): void {
     // TODO: It's not obviously why this function exists; can't we
     // just do a full left sidebar rebuild?
+    const $streams_header = $("#streams_header");
+    toggle_hide_unread_counts($streams_header, false);
     for (const stream of stream_sidebar.rows.values()) {
         const $subscription_block = stream.get_li().find(".subscription_block");
 

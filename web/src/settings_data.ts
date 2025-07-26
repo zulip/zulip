@@ -280,7 +280,7 @@ export function user_can_delete_own_message(): boolean {
 
 export function should_mask_unread_count(
     sub_muted: boolean,
-    unmuted_unread_count: number,
+    unmuted_unread_count?: number,
 ): boolean {
     if (
         user_settings.web_stream_unreads_count_display_policy ===
