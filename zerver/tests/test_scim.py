@@ -8,10 +8,13 @@ import orjson
 from django.conf import settings
 from typing_extensions import override
 
+from zerver.actions.user_groups import check_add_user_group, do_deactivate_user_group
 from zerver.actions.user_settings import do_change_full_name
 from zerver.lib.stream_subscription import get_subscribed_stream_ids_for_user
 from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.user_groups import get_user_group_direct_member_ids
 from zerver.models import UserProfile
+from zerver.models.groups import NamedUserGroup
 from zerver.models.realms import get_realm
 
 if TYPE_CHECKING:
@@ -830,15 +833,664 @@ class TestSCIMGroup(SCIMTestCase):
     to actually test desired behavior.
     """
 
+    def generate_group_schema(self, user_group: NamedUserGroup) -> dict[str, Any]:
+        return {
+            "schemas": ["urn:ietf:params:scim:schemas:core:2.0:Group"],
+            "id": str(user_group.id),
+            "displayName": user_group.name,
+            "members": [
+                {
+                    "value": str(user_profile.id),
+                    "$ref": f"http://zulip.testserver/scim/v2/Users/{user_profile.id}",
+                    "display": user_profile.full_name,
+                    "type": "User",
+                }
+                for user_profile in UserProfile.objects.filter(
+                    id__in=get_user_group_direct_member_ids(user_group), is_bot=False
+                ).order_by("id")
+            ],
+            "meta": {
+                "resourceType": "Group",
+                "location": f"http://zulip.testserver/scim/v2/Groups/{user_group.id}",
+            },
+        }
+
+    def test_get_by_id(self) -> None:
+        realm = get_realm("zulip")
+        desdemona = self.example_user("desdemona")
+        hamlet = self.example_user("hamlet")
+        bot = self.create_test_bot("whatever", hamlet)
+
+        # We include a bot in the group memberships to verify that bots are ignored.
+        test_group = check_add_user_group(realm, "Test group", [hamlet, bot], acting_user=desdemona)
+
+        expected_data = self.generate_group_schema(test_group)
+        result = self.client_get(f"/scim/v2/Groups/{test_group.id}", {}, **self.scim_headers())
+
+        self.assertEqual(result.status_code, 200)
+
+        output_data = orjson.loads(result.content)
+        self.assertEqual(output_data, expected_data)
+
+        member_ids = [int(user_dict["value"]) for user_dict in output_data["members"]]
+        self.assertIn(hamlet.id, member_ids)
+        self.assertNotIn(bot.id, member_ids)
+
+    def test_get_basic_filter_by_display_name(self) -> None:
+        realm = get_realm("zulip")
+        hamlet = self.example_user("hamlet")
+        desdemona = self.example_user("desdemona")
+        test_group = check_add_user_group(realm, "Test group", [hamlet], acting_user=desdemona)
+
+        expected_response_schema = {
+            "schemas": ["urn:ietf:params:scim:api:messages:2.0:ListResponse"],
+            "totalResults": 1,
+            "itemsPerPage": 50,
+            "startIndex": 1,
+            "Resources": [self.generate_group_schema(test_group)],
+        }
+
+        result = self.client_get(
+            f'/scim/v2/Groups?filter=displayName eq "{test_group.name}"',
+            {},
+            **self.scim_headers(),
+        )
+        self.assertEqual(result.status_code, 200)
+
+        output_data = orjson.loads(result.content)
+        self.assertEqual(output_data, expected_response_schema)
+
+        # Deactivated groups are invisible to SCIM.
+        do_deactivate_user_group(test_group, acting_user=None)
+
+        expected_response_schema = {
+            "schemas": ["urn:ietf:params:scim:api:messages:2.0:ListResponse"],
+            "totalResults": 0,
+            "itemsPerPage": 50,
+            "startIndex": 1,
+            "Resources": [],
+        }
+        result = self.client_get(
+            f'/scim/v2/Groups?filter=displayName eq "{test_group.name}"',
+            {},
+            **self.scim_headers(),
+        )
+        self.assertEqual(result.status_code, 200)
+
+        output_data = orjson.loads(result.content)
+        self.assertEqual(output_data, expected_response_schema)
+
+    def test_get_all_with_pagination(self) -> None:
+        realm = get_realm("zulip")
+
+        result_all = self.client_get("/scim/v2/Groups", {}, **self.scim_headers())
+        self.assertEqual(result_all.status_code, 200)
+        output_data_all = orjson.loads(result_all.content)
+
+        expected_response_schema = {
+            "schemas": ["urn:ietf:params:scim:api:messages:2.0:ListResponse"],
+            "totalResults": NamedUserGroup.objects.filter(realm=realm).count(),
+            "itemsPerPage": 50,
+            "startIndex": 1,
+            "Resources": [
+                self.generate_group_schema(group)
+                for group in NamedUserGroup.objects.filter(realm=realm).order_by("id")
+            ],
+        }
+
+        self.assertEqual(output_data_all, expected_response_schema)
+
+        # Next we test pagination, just like in TestSCIMUser.test_get_all_with_pagination.
+        result_offset_limited = self.client_get(
+            "/scim/v2/Groups?startIndex=4&count=3", {}, **self.scim_headers()
+        )
+        self.assertEqual(result_offset_limited.status_code, 200)
+        output_data_offset_limited = orjson.loads(result_offset_limited.content)
+        self.assertEqual(output_data_offset_limited["itemsPerPage"], 3)
+        self.assertEqual(output_data_offset_limited["startIndex"], 4)
+        self.assertEqual(
+            output_data_offset_limited["totalResults"], output_data_all["totalResults"]
+        )
+        self.assert_length(output_data_offset_limited["Resources"], 3)
+
+        self.assertEqual(output_data_offset_limited["Resources"], output_data_all["Resources"][3:6])
+
+    def test_post(self) -> None:
+        payload: dict[str, Any] = {
+            "schemas": ["urn:ietf:params:scim:schemas:core:2.0:Group"],
+            "displayName": "New group without members",
+            "members": [],
+        }
+        original_group_count = NamedUserGroup.objects.count()
+        result = self.client_post(
+            "/scim/v2/Groups", payload, content_type="application/json", **self.scim_headers()
+        )
+        self.assertEqual(result.status_code, 201)
+        output_data = orjson.loads(result.content)
+
+        self.assertEqual(NamedUserGroup.objects.count(), original_group_count + 1)
+
+        new_group = NamedUserGroup.objects.latest("id")
+        self.assertEqual(new_group.name, "New group without members")
+        self.assertEqual(set(get_user_group_direct_member_ids(new_group)), set())
+
+        expected_response_schema = self.generate_group_schema(new_group)
+        self.assertEqual(expected_response_schema, output_data)
+
+        hamlet = self.example_user("hamlet")
+        payload = {
+            "schemas": ["urn:ietf:params:scim:schemas:core:2.0:Group"],
+            "displayName": "New group with members",
+            "members": [{"value": str(hamlet.id)}],
+        }
+        result = self.client_post(
+            "/scim/v2/Groups", payload, content_type="application/json", **self.scim_headers()
+        )
+        self.assertEqual(result.status_code, 201)
+        output_data = orjson.loads(result.content)
+
+        self.assertEqual(NamedUserGroup.objects.count(), original_group_count + 2)
+
+        new_group = NamedUserGroup.objects.latest("id")
+        self.assertEqual(new_group.name, "New group with members")
+        self.assertEqual(set(get_user_group_direct_member_ids(new_group)), {hamlet.id})
+
+        expected_response_schema = self.generate_group_schema(new_group)
+        self.assertEqual(expected_response_schema, output_data)
+
+        # Can't create a group with a name that already matches another group.
+        payload = {
+            "schemas": ["urn:ietf:params:scim:schemas:core:2.0:Group"],
+            "displayName": new_group.name,
+            "members": [{"value": str(hamlet.id)}],
+        }
+        result = self.client_post(
+            "/scim/v2/Groups", payload, content_type="application/json", **self.scim_headers()
+        )
+        self.assertEqual(
+            orjson.loads(result.content),
+            {
+                "schemas": ["urn:ietf:params:scim:api:messages:2.0:Error"],
+                "detail": f"Group name already in use: {new_group.name}",
+                "status": 409,
+                "scimType": "uniqueness",
+            },
+        )
+
+    def test_put_change_name_and_members(self) -> None:
+        realm = get_realm("zulip")
+        hamlet = self.example_user("hamlet")
+        desdemona = self.example_user("desdemona")
+        othello = self.example_user("othello")
+
+        test_group = check_add_user_group(
+            realm, "Test group", [hamlet, desdemona], acting_user=desdemona
+        )
+
+        # PUT replaces all specified attributes of the group. Thus,
+        # this payload will replace both the name and set of members of
+        # the group.
+        payload = {
+            "schemas": ["urn:ietf:params:scim:schemas:core:2.0:Group"],
+            "id": test_group.id,
+            "displayName": "New test group name",
+            "members": [{"value": str(hamlet.id)}, {"value": str(othello.id)}],
+        }
+        result = self.json_put(f"/scim/v2/Groups/{test_group.id}", payload, **self.scim_headers())
+        self.assertEqual(result.status_code, 200)
+
+        test_group.refresh_from_db()
+        self.assertEqual(test_group.name, "New test group name")
+        new_member_ids = get_user_group_direct_member_ids(test_group)
+        self.assertEqual(set(new_member_ids), {hamlet.id, othello.id})
+
+        output_data = orjson.loads(result.content)
+        expected_response_schema = self.generate_group_schema(test_group)
+        self.assertEqual(output_data, expected_response_schema)
+
+        conflicting_group = check_add_user_group(
+            realm, "Conflicting group", [hamlet, desdemona], acting_user=desdemona
+        )
+        payload = {
+            "schemas": ["urn:ietf:params:scim:schemas:core:2.0:Group"],
+            "id": test_group.id,
+            "displayName": conflicting_group.name,
+            "members": [{"value": str(hamlet.id)}, {"value": str(othello.id)}],
+        }
+        result = self.json_put(f"/scim/v2/Groups/{test_group.id}", payload, **self.scim_headers())
+        self.assertEqual(
+            orjson.loads(result.content),
+            {
+                "schemas": ["urn:ietf:params:scim:api:messages:2.0:Error"],
+                "detail": f"Group name already in use: {conflicting_group.name}",
+                "status": 409,
+                "scimType": "uniqueness",
+            },
+        )
+
+        # Deactivated groups are invisible to SCIM.
+        do_deactivate_user_group(test_group, acting_user=None)
+
+        payload = {
+            "schemas": ["urn:ietf:params:scim:schemas:core:2.0:Group"],
+            "id": test_group.id,
+            "displayName": "some new name - but group should not get updated",
+            "members": [{"value": str(hamlet.id)}, {"value": str(othello.id)}],
+        }
+        result = self.json_put(f"/scim/v2/Groups/{test_group.id}", payload, **self.scim_headers())
+        self.assertEqual(
+            orjson.loads(result.content),
+            {
+                "schemas": ["urn:ietf:params:scim:api:messages:2.0:Error"],
+                "detail": f"Resource {test_group.id} not found",
+                "status": 404,
+            },
+        )
+        test_group.refresh_from_db()
+        self.assertEqual(test_group.name, "New test group name")
+
+    def test_patch_add_remove_operations(self) -> None:
+        realm = get_realm("zulip")
+        hamlet = self.example_user("hamlet")
+        desdemona = self.example_user("desdemona")
+        othello = self.example_user("othello")
+        cordelia = self.example_user("cordelia")
+        iago = self.example_user("iago")
+
+        test_group = check_add_user_group(
+            realm, "Test group", [hamlet, desdemona], acting_user=desdemona
+        )
+
+        payload = {
+            "schemas": ["urn:ietf:params:scim:api:messages:2.0:PatchOp"],
+            "Operations": [
+                {
+                    "op": "add",
+                    "path": "members",
+                    "value": [
+                        {"value": str(othello.id)},
+                        {"value": str(cordelia.id)},
+                        # Include a user who's already in the group in this list, to verify that trying to add
+                        # a user who's already in the group is gracefully ignored.
+                        {"value": str(desdemona.id)},
+                    ],
+                }
+            ],
+        }
+
+        result = self.json_patch(f"/scim/v2/Groups/{test_group.id}", payload, **self.scim_headers())
+        self.assertEqual(result.status_code, 200)
+
+        self.assertEqual(
+            set(get_user_group_direct_member_ids(test_group)),
+            {hamlet.id, desdemona.id, othello.id, cordelia.id},
+        )
+
+        output_data = orjson.loads(result.content)
+        expected_response_schema = self.generate_group_schema(test_group)
+        self.assertEqual(output_data, expected_response_schema)
+
+        payload = {
+            "schemas": ["urn:ietf:params:scim:api:messages:2.0:PatchOp"],
+            "Operations": [
+                {
+                    "op": "remove",
+                    "path": "members",
+                    # Similarly to the user addition case, here, for user removal,
+                    # we include a user who's not in the group. Trying to remove a user
+                    # who's not in the group should gracefully be ignored.
+                    "value": [
+                        {"value": str(othello.id)},
+                        {"value": str(cordelia.id)},
+                        {"value": str(iago.id)},
+                    ],
+                }
+            ],
+        }
+
+        result = self.json_patch(f"/scim/v2/Groups/{test_group.id}", payload, **self.scim_headers())
+        self.assertEqual(result.status_code, 200)
+
+        self.assertEqual(
+            set(get_user_group_direct_member_ids(test_group)), {hamlet.id, desdemona.id}
+        )
+
+        output_data = orjson.loads(result.content)
+        expected_response_schema = self.generate_group_schema(test_group)
+        self.assertEqual(output_data, expected_response_schema)
+
+        # Now try a sequence of operations and verify the final result
+        # is as expected.
+        payload = {
+            "schemas": ["urn:ietf:params:scim:api:messages:2.0:PatchOp"],
+            "Operations": [
+                {
+                    "op": "add",
+                    "path": "members",
+                    "value": [{"value": str(othello.id)}, {"value": str(cordelia.id)}],
+                },
+                {
+                    "op": "remove",
+                    "path": "members",
+                    "value": [{"value": str(desdemona.id)}, {"value": str(hamlet.id)}],
+                },
+                {
+                    "op": "add",
+                    "path": "members",
+                    "value": [{"value": str(hamlet.id)}],
+                },
+            ],
+        }
+
+        result = self.json_patch(f"/scim/v2/Groups/{test_group.id}", payload, **self.scim_headers())
+        self.assertEqual(result.status_code, 200)
+
+        self.assertEqual(
+            set(get_user_group_direct_member_ids(test_group)), {hamlet.id, othello.id, cordelia.id}
+        )
+
+        output_data = orjson.loads(result.content)
+        expected_response_schema = self.generate_group_schema(test_group)
+        self.assertEqual(output_data, expected_response_schema)
+
+    def test_patch_remove_operation_with_complex_path(self) -> None:
+        # We generally don't support PATCH requests with complex paths.
+        # but have to make an exception for "remove a user from a group"
+        # requests from Okta, which for some reason are sent with
+        # complex paths.
+        #
+        # See ZulipSCIMGroup.handle_remove for details.
+        realm = get_realm("zulip")
+        hamlet = self.example_user("hamlet")
+        desdemona = self.example_user("desdemona")
+
+        test_group = check_add_user_group(
+            realm, "Test group", [hamlet, desdemona], acting_user=desdemona
+        )
+        payload = {
+            "schemas": ["urn:ietf:params:scim:api:messages:2.0:PatchOp"],
+            "Operations": [
+                {
+                    "op": "remove",
+                    "path": f'members[value eq "{hamlet.id!s}"]',
+                }
+            ],
+        }
+
+        result = self.json_patch(f"/scim/v2/Groups/{test_group.id}", payload, **self.scim_headers())
+        self.assertEqual(result.status_code, 200)
+
+        self.assertEqual(set(get_user_group_direct_member_ids(test_group)), {desdemona.id})
+
+        output_data = orjson.loads(result.content)
+        expected_response_schema = self.generate_group_schema(test_group)
+        self.assertEqual(output_data, expected_response_schema)
+
+    def test_patch_replace_operation(self) -> None:
+        realm = get_realm("zulip")
+        hamlet = self.example_user("hamlet")
+        desdemona = self.example_user("desdemona")
+        othello = self.example_user("othello")
+
+        test_group = check_add_user_group(
+            realm, "Test group", [hamlet, desdemona], acting_user=desdemona
+        )
+
+        payload = {
+            "schemas": ["urn:ietf:params:scim:api:messages:2.0:PatchOp"],
+            "Operations": [
+                {"op": "replace", "path": "displayName", "value": "New test group name"}
+            ],
+        }
+
+        result = self.json_patch(f"/scim/v2/Groups/{test_group.id}", payload, **self.scim_headers())
+        self.assertEqual(result.status_code, 200)
+
+        test_group.refresh_from_db()
+        self.assertEqual(test_group.name, "New test group name")
+
+        output_data = orjson.loads(result.content)
+        expected_response_schema = self.generate_group_schema(test_group)
+        self.assertEqual(output_data, expected_response_schema)
+
+        # Next try editing members.
+        payload = {
+            "schemas": ["urn:ietf:params:scim:api:messages:2.0:PatchOp"],
+            "Operations": [
+                {
+                    "op": "replace",
+                    "path": "members",
+                    "value": [
+                        {"value": str(hamlet.id)},
+                        {"value": str(othello.id)},
+                    ],
+                }
+            ],
+        }
+        result = self.json_patch(f"/scim/v2/Groups/{test_group.id}", payload, **self.scim_headers())
+        self.assertEqual(result.status_code, 200)
+
+        self.assertEqual(set(get_user_group_direct_member_ids(test_group)), {hamlet.id, othello.id})
+
+        output_data = orjson.loads(result.content)
+        expected_response_schema = self.generate_group_schema(test_group)
+        self.assertEqual(output_data, expected_response_schema)
+
+        # The operation might also specify the attributes to replace by passing a dict
+        # in the "value" key, instead of providing a "path".
+        payload = {
+            "schemas": ["urn:ietf:params:scim:api:messages:2.0:PatchOp"],
+            "Operations": [
+                {
+                    "op": "replace",
+                    "value": {"id": str(test_group.id), "displayName": "New test group name 2"},
+                }
+            ],
+        }
+
+        result = self.json_patch(f"/scim/v2/Groups/{test_group.id}", payload, **self.scim_headers())
+        self.assertEqual(result.status_code, 200)
+
+        test_group.refresh_from_db()
+        self.assertEqual(test_group.name, "New test group name 2")
+
+        output_data = orjson.loads(result.content)
+        expected_response_schema = self.generate_group_schema(test_group)
+        self.assertEqual(output_data, expected_response_schema)
+
+        # Finally, update both SCIM attributes (displayName and members) in a single operation.
+        payload = {
+            "schemas": ["urn:ietf:params:scim:api:messages:2.0:PatchOp"],
+            "Operations": [
+                {
+                    "op": "replace",
+                    "value": {
+                        "id": str(test_group.id),
+                        "displayName": "New test group name 3",
+                        "members": [
+                            {"value": str(hamlet.id)},
+                            {"value": str(othello.id)},
+                            {"value": str(desdemona.id)},
+                        ],
+                    },
+                }
+            ],
+        }
+        result = self.json_patch(f"/scim/v2/Groups/{test_group.id}", payload, **self.scim_headers())
+        self.assertEqual(result.status_code, 200)
+
+        test_group.refresh_from_db()
+        self.assertEqual(test_group.name, "New test group name 3")
+        self.assertEqual(
+            set(get_user_group_direct_member_ids(test_group)), {hamlet.id, othello.id, desdemona.id}
+        )
+
+    def test_patch_add_user_wrong_realm(self) -> None:
+        realm = get_realm("zulip")
+        hamlet = self.example_user("hamlet")
+        mit_user = self.mit_user("sipbtest")
+        desdemona = self.example_user("desdemona")
+        othello = self.example_user("othello")
+
+        test_group = check_add_user_group(
+            realm, "Test group", [hamlet, desdemona], acting_user=desdemona
+        )
+
+        payload = {
+            "schemas": ["urn:ietf:params:scim:api:messages:2.0:PatchOp"],
+            "Operations": [
+                {
+                    "op": "add",
+                    "path": "members",
+                    "value": [
+                        {"value": str(othello.id)},
+                        # Also include an id of a user from a different realm.
+                        {"value": str(mit_user.id)},
+                    ],
+                }
+            ],
+        }
+
+        result = self.json_patch(f"/scim/v2/Groups/{test_group.id}", payload, **self.scim_headers())
+        self.assertEqual(
+            orjson.loads(result.content),
+            {
+                "schemas": ["urn:ietf:params:scim:api:messages:2.0:Error"],
+                "detail": "Users outside of the realm can't be removed or added to the group",
+                "status": 400,
+            },
+        )
+
+        payload = {
+            "schemas": ["urn:ietf:params:scim:api:messages:2.0:PatchOp"],
+            "Operations": [
+                {
+                    "op": "add",
+                    "path": "members",
+                    "value": [
+                        # Try a request with just the id of a user from a different realm.
+                        {"value": str(mit_user.id)},
+                    ],
+                }
+            ],
+        }
+
+        result = self.json_patch(f"/scim/v2/Groups/{test_group.id}", payload, **self.scim_headers())
+        self.assertEqual(
+            orjson.loads(result.content),
+            {
+                "schemas": ["urn:ietf:params:scim:api:messages:2.0:Error"],
+                "detail": "Users outside of the realm can't be removed or added to the group",
+                "status": 400,
+            },
+        )
+
+        # The requests failed, so there's no change in memberships.
+        self.assertEqual(
+            set(get_user_group_direct_member_ids(test_group)),
+            {hamlet.id, desdemona.id},
+        )
+
+    def test_patch_add_invalid_user_id(self) -> None:
+        realm = get_realm("zulip")
+        hamlet = self.example_user("hamlet")
+        desdemona = self.example_user("desdemona")
+        othello = self.example_user("othello")
+
+        test_group = check_add_user_group(
+            realm, "Test group", [hamlet, desdemona], acting_user=desdemona
+        )
+
+        payload = {
+            "schemas": ["urn:ietf:params:scim:api:messages:2.0:PatchOp"],
+            "Operations": [
+                {
+                    "op": "add",
+                    "path": "members",
+                    "value": [
+                        {"value": str(othello.id)},
+                        # Also include an id that doesn't match any user.
+                        {"value": "987654321"},
+                    ],
+                }
+            ],
+        }
+
+        result = self.json_patch(f"/scim/v2/Groups/{test_group.id}", payload, **self.scim_headers())
+        self.assertEqual(
+            orjson.loads(result.content),
+            {
+                "schemas": ["urn:ietf:params:scim:api:messages:2.0:Error"],
+                "detail": "Invalid user ids found in the request: {987654321}",
+                "status": 400,
+            },
+        )
+
+        # The request failed, so there's no change in memberships.
+        self.assertEqual(
+            set(get_user_group_direct_member_ids(test_group)),
+            {hamlet.id, desdemona.id},
+        )
+
+    def test_cant_edit_system_groups(self) -> None:
+        """
+        Verifies that system groups are not allowed to be managed by SCIM requests.
+        """
+        realm = get_realm("zulip")
+        system_group = NamedUserGroup.objects.get(realm=realm, name="role:owners")
+
+        payload = {
+            "schemas": ["urn:ietf:params:scim:api:messages:2.0:PatchOp"],
+            "Operations": [
+                {"op": "replace", "path": "displayName", "value": "New test group name"}
+            ],
+        }
+
+        result = self.json_patch(
+            f"/scim/v2/Groups/{system_group.id}", payload, **self.scim_headers()
+        )
+        self.assertEqual(
+            orjson.loads(result.content),
+            {
+                "schemas": ["urn:ietf:params:scim:api:messages:2.0:Error"],
+                "detail": "Group role:owners can't be managed by SCIM.",
+                "status": 400,
+            },
+        )
+        system_group.refresh_from_db()
+        self.assertEqual(system_group.name, "role:owners")
+
+        result = self.client_delete(f"/scim/v2/Groups/{system_group.id}", **self.scim_headers())
+        self.assertEqual(
+            orjson.loads(result.content),
+            {
+                "schemas": ["urn:ietf:params:scim:api:messages:2.0:Error"],
+                "detail": "Group role:owners can't be managed by SCIM.",
+                "status": 400,
+            },
+        )
+        self.assertTrue(NamedUserGroup.objects.filter(realm=realm, name="role:owners").exists())
+
+        payload = {
+            "schemas": ["urn:ietf:params:scim:schemas:core:2.0:Group"],
+            "displayName": "role:doesntexistyet",
+            "members": [],
+        }
+        original_group_count = NamedUserGroup.objects.count()
+        result = self.client_post(
+            "/scim/v2/Groups", payload, content_type="application/json", **self.scim_headers()
+        )
+        self.assertEqual(
+            orjson.loads(result.content),
+            {
+                "schemas": ["urn:ietf:params:scim:api:messages:2.0:Error"],
+                "detail": "User group name cannot start with 'role:'.",
+                "status": 400,
+            },
+        )
+        self.assertEqual(original_group_count, NamedUserGroup.objects.count())
+
     def test_endpoints_disabled(self) -> None:
-        with self.assertLogs("django.request", "ERROR") as m:
-            result = self.client_get("/scim/v2/Groups", {}, **self.scim_headers())
-            self.assertEqual(result.status_code, 501)
-            self.assertEqual(m.output, ["ERROR:django.request:Not Implemented: /scim/v2/Groups"])
-        with self.assertLogs("django.request", "ERROR") as m:
-            result = self.client_get("/scim/v2/Groups/1", {}, **self.scim_headers())
-            self.assertEqual(result.status_code, 501)
-            self.assertEqual(m.output, ["ERROR:django.request:Not Implemented: /scim/v2/Groups/1"])
         with self.assertLogs("django.request", "ERROR") as m:
             result = self.client_post(
                 "/scim/v2/Groups/.search",
@@ -849,6 +1501,24 @@ class TestSCIMGroup(SCIMTestCase):
             self.assertEqual(result.status_code, 501)
             self.assertEqual(
                 m.output, ["ERROR:django.request:Not Implemented: /scim/v2/Groups/.search"]
+            )
+
+    def test_delete(self) -> None:
+        # The DELETE endpoint is currently disabled.
+
+        realm = get_realm("zulip")
+        hamlet = self.example_user("hamlet")
+        desdemona = self.example_user("desdemona")
+
+        test_group = check_add_user_group(
+            realm, "Test group", [hamlet, desdemona], acting_user=desdemona
+        )
+
+        with self.assertLogs("django.request", "ERROR") as m:
+            result = self.client_delete(f"/scim/v2/Groups/{test_group.id}", **self.scim_headers())
+            self.assertEqual(result.status_code, 501)
+            self.assertEqual(
+                m.output, [f"ERROR:django.request:Not Implemented: /scim/v2/Groups/{test_group.id}"]
             )
 
 
