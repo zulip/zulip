@@ -31,26 +31,7 @@ workflows:
 
 You can see all your direct messages in one place.
 
-{start_tabs}
-
-{tab|desktop-web}
-
-1. Click on the **Direct message feed** (<i class="zulip-icon
-   zulip-icon-all-messages"></i>) icon next to **direct messages** in the left
-   sidebar.
-
-1. Read your direct messages, starting from your first unread message. You can
-   scroll using your mouse, the arrow keys, <kbd>End</kbd>, or page up/down.
-
-1. You can click on a conversation in the left sidebar or a message recipient
-   bar to view that conversation.
-
-!!! keyboard_tip ""
-
-    Use the <kbd>Shift</kbd> + <kbd>P</kbd> keyboard shortcut to go to
-    **Direct message feed**.
-
-{end_tabs}
+{!dm-feed-instructions.md!}
 
 ### Channel view
 

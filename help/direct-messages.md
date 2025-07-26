@@ -94,19 +94,11 @@ There are a few different ways to view your DM conversations.
 
 {end_tabs}
 
-## View direct message feed
+## Go to direct message feed
 
-{start_tabs}
+You can see all your direct messages in one place.
 
-{tab|desktop-web}
-
-1. In the left sidebar, click the **Direct message feed**
-   (<i class="zulip-icon zulip-icon-all-messages"></i>) icon to the right of the
-   **direct messages** heading, or use the <kbd>Shift</kbd> + <kbd>P</kbd>
-   keyboard shortcut.
-
-{end_tabs}
-
+{!dm-feed-instructions.md!}
 
 ## Related articles
 

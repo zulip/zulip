@@ -2,7 +2,7 @@
 
 The Zulip web app displays typing notifications in [conversation
 views](/help/reading-conversations) and the [direct message
-feed](/help/direct-messages#view-direct-message-feed). Typing notifications are
+feed](/help/direct-messages#go-to-direct-message-feed). Typing notifications are
 not shown in channels with more than 100 subscribers. The mobile app displays
 typing notifications in direct message conversations.
 
