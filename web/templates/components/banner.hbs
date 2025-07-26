@@ -1,7 +1,11 @@
 <div {{#if process}}data-process="{{process}}"{{/if}} class="{{#if custom_classes}}{{custom_classes}} {{/if}}banner banner-{{intent}}">
     <span class="banner-content">
         <span class="banner-label">
-            {{label}}
+            {{#if label}}
+                {{label}}
+            {{else}}
+                {{> @partial-block .}}
+            {{/if}}
         </span>
         <span class="banner-action-buttons">
             {{#each buttons}}

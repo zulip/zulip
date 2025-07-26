@@ -1,71 +1,59 @@
 {{#if error_message}}
-    <div class="banner-wrapper">
-        <div class="banner banner-danger">
-            <span class="banner-label">
-                {{error_message}}
-            </span>
-        </div>
-    </div>
+    {{error_message}}
 {{else}}
-    <div class="banner-wrapper">
-        <div class="banner banner-success">
-            <span class="banner-label">
-                {{#if (and (eq newly_added_member_count 0) (eq ignored_deactivated_member_count 0))}}
-                    {{#if (and already_added_user_count already_added_subgroups_count)}}
-                        {{t "All users and groups were already members."}}
-                    {{else if already_added_user_count}}
-                        {{t "All users were already members."}}
-                    {{else}}
-                        {{t "All groups were already members."}}
-                    {{/if}}
-                {{else}}
-                    {{#if (not total_member_count_exceeds_five)}}
-                        {{#if addition_success_messages.newly_added_members_message_html}}
-                            {{t "Added:" }} {{{addition_success_messages.newly_added_members_message_html}}}.&nbsp;
-                        {{/if}}
-                        {{#if addition_success_messages.already_added_members_message_html}}
-                            {{t "Already a member:"}} {{{addition_success_messages.already_added_members_message_html}}}.
-                        {{/if}}
-                        {{#if addition_success_messages.ignored_deactivated_users_message_html}}
-                            {{t "Ignored deactivated users:"}} {{{addition_success_messages.ignored_deactivated_users_message_html}}}.
-                        {{/if}}
-                        {{#if addition_success_messages.ignored_deactivated_groups_message_html}}
-                            {{t "Ignored deactivated groups:"}} {{{addition_success_messages.ignored_deactivated_groups_message_html}}}.
-                        {{/if}}
-                    {{else}}
-                        {{#if newly_added_member_count}}
-                            {{t "Added:"}}
-                            {{#if (and newly_added_user_count newly_added_subgroups_count)}}
-                                {{t "{newly_added_user_count, plural, one {# user} other {# users}} and {newly_added_subgroups_count, plural, one {# group.} other {# groups.}}"}}
-                            {{else if newly_added_user_count}}
-                                {{t "{newly_added_user_count, plural, one {# user.} other {# users.}}"}}
-                            {{else if newly_added_subgroups_count}}
-                                {{t "{newly_added_subgroups_count, plural, one {# group.} other {# groups.}}"}}
-                            {{/if}}
-                        {{/if}}
-                        {{#if already_added_member_count}}
-                            {{t "Already a member:"}}
-                            {{#if (and already_added_user_count already_added_subgroups_count)}}
-                                {{t "{already_added_user_count, plural, one {# user} other {# users}} and {already_added_subgroups_count, plural, one {# group.} other {# groups.}}"}}
-                            {{else if already_added_user_count}}
-                                {{t "{already_added_user_count, plural, one {# user.} other {# users.}}"}}
-                            {{else if already_added_subgroups_count}}
-                                {{t "{already_added_subgroups_count, plural, one {# group.} other {# groups.}}"}}
-                            {{/if}}
-                        {{/if}}
-                        {{#if ignored_deactivated_member_count}}
-                            {{t "Ignored deactivated:"}}
-                            {{#if (and ignored_deactivated_users_count ignored_deactivated_groups_count)}}
-                                {{t "{ignored_deactivated_users_count, plural, one {# user} other {# users}} and {ignored_deactivated_groups_count, plural, one {# group.} other {# groups.}}"}}
-                            {{else if ignored_deactivated_users_count}}
-                                {{t "{ignored_deactivated_users_count, plural, one {# user.} other {# users.}}"}}
-                            {{else if ignored_deactivated_groups_count}}
-                                {{t "{ignored_deactivated_groups_count, plural, one {# group.} other {# groups.}}"}}
-                            {{/if}}
-                        {{/if}}
-                    {{/if}}
+    {{#if (and (eq newly_added_member_count 0) (eq ignored_deactivated_member_count 0))}}
+        {{#if (and already_added_user_count already_added_subgroups_count)}}
+            {{t "All users and groups were already members."}}
+        {{else if already_added_user_count}}
+            {{t "All users were already members."}}
+        {{else}}
+            {{t "All groups were already members."}}
+        {{/if}}
+    {{else}}
+        {{#if (not total_member_count_exceeds_five)}}
+            {{#if addition_success_messages.newly_added_members_message_html}}
+                {{t "Added:" }} {{{addition_success_messages.newly_added_members_message_html}}}.&nbsp;
+            {{/if}}
+            {{#if addition_success_messages.already_added_members_message_html}}
+                {{t "Already a member:"}} {{{addition_success_messages.already_added_members_message_html}}}.
+            {{/if}}
+            {{#if addition_success_messages.ignored_deactivated_users_message_html}}
+                {{t "Ignored deactivated users:"}} {{{addition_success_messages.ignored_deactivated_users_message_html}}}.
+            {{/if}}
+            {{#if addition_success_messages.ignored_deactivated_groups_message_html}}
+                {{t "Ignored deactivated groups:"}} {{{addition_success_messages.ignored_deactivated_groups_message_html}}}.
+            {{/if}}
+        {{else}}
+            {{#if newly_added_member_count}}
+                {{t "Added:"}}
+                {{#if (and newly_added_user_count newly_added_subgroups_count)}}
+                    {{t "{newly_added_user_count, plural, one {# user} other {# users}} and {newly_added_subgroups_count, plural, one {# group.} other {# groups.}}"}}
+                {{else if newly_added_user_count}}
+                    {{t "{newly_added_user_count, plural, one {# user.} other {# users.}}"}}
+                {{else if newly_added_subgroups_count}}
+                    {{t "{newly_added_subgroups_count, plural, one {# group.} other {# groups.}}"}}
                 {{/if}}
-            </span>
-        </div>
-    </div>
+            {{/if}}
+            {{#if already_added_member_count}}
+                {{t "Already a member:"}}
+                {{#if (and already_added_user_count already_added_subgroups_count)}}
+                    {{t "{already_added_user_count, plural, one {# user} other {# users}} and {already_added_subgroups_count, plural, one {# group.} other {# groups.}}"}}
+                {{else if already_added_user_count}}
+                    {{t "{already_added_user_count, plural, one {# user.} other {# users.}}"}}
+                {{else if already_added_subgroups_count}}
+                    {{t "{already_added_subgroups_count, plural, one {# group.} other {# groups.}}"}}
+                {{/if}}
+            {{/if}}
+            {{#if ignored_deactivated_member_count}}
+                {{t "Ignored deactivated:"}}
+                {{#if (and ignored_deactivated_users_count ignored_deactivated_groups_count)}}
+                    {{t "{ignored_deactivated_users_count, plural, one {# user} other {# users}} and {ignored_deactivated_groups_count, plural, one {# group.} other {# groups.}}"}}
+                {{else if ignored_deactivated_users_count}}
+                    {{t "{ignored_deactivated_users_count, plural, one {# user.} other {# users.}}"}}
+                {{else if ignored_deactivated_groups_count}}
+                    {{t "{ignored_deactivated_groups_count, plural, one {# group.} other {# groups.}}"}}
+                {{/if}}
+            {{/if}}
+        {{/if}}
+    {{/if}}
 {{/if}}

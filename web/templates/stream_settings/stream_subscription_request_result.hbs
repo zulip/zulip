@@ -1,52 +1,40 @@
 {{#if error_message}}
-    <div class="banner-wrapper">
-        <div class="banner banner-danger">
-            <span class="banner-label">
-                {{error_message}}
-            </span>
-        </div>
-    </div>
+    {{error_message}}
 {{else}}
-    <div class="banner-wrapper">
-        <div class="banner banner-success">
-            <span class="banner-label">
-                {{!-- We want to show ignored deactivated users message even when there are
-                no new subscribers --}}
-                {{#if (and (eq subscribed_users_count 0) (eq ignored_deactivated_users_count 0))}}
-                    {{t "All users were already subscribed."}}
-                {{else}}
-                    {{#if (not is_total_subscriber_more_than_five) }}
-                        {{#if subscribed_users}}
-                            {{t "Subscribed:" }} {{{subscribe_success_messages.subscribed_users_message_html}}}.
-                        {{/if}}
-                        {{#if already_subscribed_users}}
-                            {{t "Already a subscriber:" }} {{{subscribe_success_messages.already_subscribed_users_message_html}}}.
-                        {{/if}}
-                        {{#if ignored_deactivated_users}}
-                            {{t "Ignored deactivated users:" }} {{{subscribe_success_messages.ignored_deactivated_users_message_html}}}.
-                        {{/if}}
-                    {{else}}
-                        {{#if subscribed_users}}
-                            {{t "{subscribed_users_count, plural,
-                              one {Subscribed: {subscribed_users_count} user.}
-                            other {Subscribed: {subscribed_users_count} users.}
-                        }"}}
-                        {{/if}}
-                        {{#if already_subscribed_users}}
-                            {{t "{already_subscribed_users_count, plural,
-                              one {Already subscribed: {already_subscribed_users_count} user.}
-                                other {Already subscribed: {already_subscribed_users_count} users.}
-                            }"}}
-                        {{/if}}
-                        {{#if ignored_deactivated_users}}
-                            {{t "{ignored_deactivated_users_count, plural,
-                              one {Ignored deactivated: {ignored_deactivated_users_count} user.}
-                            other {Ignored deactivated: {ignored_deactivated_users_count} users.}
-                        }"}}
-                        {{/if}}
-                    {{/if}}
-                {{/if}}
-            </span>
-        </div>
-    </div>
+    {{!-- We want to show ignored deactivated users message even when there are
+    no new subscribers --}}
+    {{#if (and (eq subscribed_users_count 0) (eq ignored_deactivated_users_count 0))}}
+        {{t "All users were already subscribed."}}
+    {{else}}
+        {{#if (not is_total_subscriber_more_than_five) }}
+            {{#if subscribed_users}}
+                {{t "Subscribed:" }} {{{subscribe_success_messages.subscribed_users_message_html}}}.
+            {{/if}}
+            {{#if already_subscribed_users}}
+                {{t "Already a subscriber:" }} {{{subscribe_success_messages.already_subscribed_users_message_html}}}.
+            {{/if}}
+            {{#if ignored_deactivated_users}}
+                {{t "Ignored deactivated users:" }} {{{subscribe_success_messages.ignored_deactivated_users_message_html}}}.
+            {{/if}}
+        {{else}}
+            {{#if subscribed_users}}
+                {{t "{subscribed_users_count, plural,
+                  one {Subscribed: {subscribed_users_count} user.}
+                other {Subscribed: {subscribed_users_count} users.}
+            }"}}
+            {{/if}}
+            {{#if already_subscribed_users}}
+                {{t "{already_subscribed_users_count, plural,
+                  one {Already subscribed: {already_subscribed_users_count} user.}
+                    other {Already subscribed: {already_subscribed_users_count} users.}
+                }"}}
+            {{/if}}
+            {{#if ignored_deactivated_users}}
+                {{t "{ignored_deactivated_users_count, plural,
+                  one {Ignored deactivated: {ignored_deactivated_users_count} user.}
+                other {Ignored deactivated: {ignored_deactivated_users_count} users.}
+            }"}}
+            {{/if}}
+        {{/if}}
+    {{/if}}
 {{/if}}
