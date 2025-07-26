@@ -53,7 +53,7 @@ the URL of the proxy server (it may look something like
 If either of those apply, you can skip the rest of this guide. If not, we
 document the syntax for **Proxy rules** and **Proxy bypass rules** below.
 
-#### Proxy rules
+### Proxy rules
 
 A semicolon-separated list of `protocolRule`s.
 
@@ -74,7 +74,7 @@ Some examples:
 * `http=http://foo;socks5://bar` -  Use proxy `http://foo` for `http://` URLs,
   and use `socks5://bar` for all other URLs.
 
-#### Proxy bypass rules
+### Proxy bypass rules
 
 A comma-separated list of URIs. The URIs can be hostnames, IP address
 literals, or IP ranges in CIDR notation. Hostnames can use the `*`
