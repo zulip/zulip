@@ -13,6 +13,7 @@ from zerver.lib.default_streams import get_default_stream_ids_for_realm
 from zerver.lib.exceptions import (
     CannotAdministerChannelError,
     CannotSetTopicsPolicyError,
+    ChannelExistsError,
     IncompatibleParametersError,
     JsonableError,
     OrganizationOwnerRequiredError,
@@ -992,9 +993,18 @@ def check_stream_name_available(realm: Realm, name: str) -> None:
     check_stream_name(name)
     try:
         get_stream(name, realm)
-        raise JsonableError(_("Channel name is already in use."))
+        raise ChannelExistsError(name)
     except Stream.DoesNotExist:
         pass
+
+
+def check_zephyr_realm_invite_conditions(
+    is_subscribing_other_users: bool, realm: Realm, invite_only: bool
+) -> None:
+    if is_subscribing_other_users and realm.is_zephyr_mirror_realm and not invite_only:
+        raise JsonableError(
+            _("You can only invite other Zephyr mirroring users to private channels.")
+        )
 
 
 def access_stream_by_name(

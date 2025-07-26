@@ -1618,6 +1618,39 @@ Output:
             self.assert_json_success(result)
         return result
 
+    # Create a stream by making an API request
+    def create_channel_via_post(
+        self,
+        user: UserProfile,
+        subscribers: list[str] | list[int] | None = None,
+        name: str | None = None,
+        extra_post_data: Mapping[str, Any] = {},
+        invite_only: bool = False,
+        is_web_public: bool = False,
+        **extra: str,
+    ) -> "TestHttpResponse":
+        if subscribers is None:
+            subscribers = [user.id]
+
+        post_data = {
+            "name": name,
+            "subscribers": orjson.dumps(subscribers).decode(),
+            "is_web_public": orjson.dumps(is_web_public).decode(),
+            "invite_only": orjson.dumps(invite_only).decode(),
+        }
+
+        post_data.update(extra_post_data)
+        with self.artificial_transaction_savepoint():
+            result = self.api_post(
+                user,
+                "/api/v1/channels/create",
+                post_data,
+                intentionally_undocumented=False,
+                **extra,
+            )
+
+        return result
+
     def subscribed_stream_name_list(self, user: UserProfile) -> str:
         # This is currently only used for producing error messages.
         subscribed_streams = gather_subscriptions(user)[0]
