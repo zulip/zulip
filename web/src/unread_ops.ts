@@ -135,7 +135,7 @@ function handle_skipped_unsubscribed_streams(
                 "conjunction",
             );
             const rendered_html = render_skipped_marking_unread({
-                streams: formatted_stream_list_text,
+                streams_html: formatted_stream_list_text,
             });
             $container.html(rendered_html);
         };

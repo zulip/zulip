@@ -29,7 +29,7 @@
               href="{{topic_url}}"
               data-tippy-content="{{t 'Go to #{display_recipient} > {topic_display_name}' }}">
                 {{#if (and use_match_properties (not is_empty_string_topic))}}
-                    <span class="stream-topic-inner">{{{match_topic}}}</span>
+                    <span class="stream-topic-inner">{{{match_topic_html}}}</span>
                 {{else}}
                     <span class="stream-topic-inner {{#if is_empty_string_topic}}empty-topic-display{{/if}}">{{topic_display_name}}</span>
                 {{/if}}
@@ -88,7 +88,7 @@
                 {{> components/icon_button icon="more-vertical" intent="neutral" custom_classes="recipient-bar-control-icon" data-tippy-content=(t "Topic actions") aria-label=(t "Topic actions") }}
             </span>
         </span>
-        <span class="recipient_row_date {{#if (and (not always_display_date) date_unchanged )}}recipient_row_date_unchanged{{/if}}">{{{date}}}</span>
+        <span class="recipient_row_date {{#if (and (not always_display_date) date_unchanged )}}recipient_row_date_unchanged{{/if}}">{{{date_html}}}</span>
     </div>
 </div>
 {{else}}
@@ -113,7 +113,7 @@
             {{/if}}
         </span>
         </a>
-        <span class="recipient_row_date {{#if (and (not always_display_date) date_unchanged )}}recipient_row_date_unchanged{{/if}}">{{{date}}}</span>
+        <span class="recipient_row_date {{#if (and (not always_display_date) date_unchanged )}}recipient_row_date_unchanged{{/if}}">{{{date_html}}}</span>
     </div>
 </div>
 {{/if}}

@@ -53,7 +53,7 @@ import * as views_util from "./views_util.ts";
 type DirectMessageContext = {
     conversation_key: string;
     is_direct: boolean;
-    rendered_dm_with: string;
+    rendered_dm_with_html: string;
     is_group: boolean;
     user_circle_class: string | false | undefined;
     is_bot: boolean;
@@ -70,7 +70,7 @@ type DirectMessageContext = {
 const direct_message_context_properties: (keyof DirectMessageContext)[] = [
     "conversation_key",
     "is_direct",
-    "rendered_dm_with",
+    "rendered_dm_with_html",
     "is_group",
     "user_circle_class",
     "is_bot",
@@ -469,7 +469,7 @@ function format_dm(
 
     const reply_to = people.user_ids_string_to_emails_string(user_ids_string);
     assert(reply_to !== undefined);
-    const rendered_dm_with = recipient_ids
+    const rendered_dm_with_html = recipient_ids
         .map((recipient_id) => ({
             name: people.get_display_full_name(recipient_id),
             status_emoji_info: user_status.get_status_emoji(recipient_id),
@@ -492,7 +492,10 @@ function format_dm(
     const context = {
         conversation_key: user_ids_string,
         is_direct: true,
-        rendered_dm_with: util.format_array_as_list_with_conjunction(rendered_dm_with, "long"),
+        rendered_dm_with_html: util.format_array_as_list_with_conjunction(
+            rendered_dm_with_html,
+            "long",
+        ),
         is_group: recipient_ids.length > 1,
         user_circle_class,
         is_bot,

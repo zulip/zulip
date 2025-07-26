@@ -32,7 +32,7 @@
         <div class="flex_container">
             <div class="left_part recent_view_focusable line_clamp" data-col-index="{{ column_indexes.topic }}">
                 {{#if is_private}}
-                <a href="{{pm_url}}" class="recent-view-table-link {{#if is_group}}recent-view-dm-group{{else}}recent-view-dm{{/if}}">{{{rendered_pm_with}}}</a>
+                <a href="{{pm_url}}" class="recent-view-table-link {{#if is_group}}recent-view-dm-group{{else}}recent-view-dm{{/if}}">{{{rendered_pm_with_html}}}</a>
                 {{else}}
                 <a class="white-space-preserve-wrap recent-view-table-link {{#if is_empty_string_topic}}empty-topic-display{{/if}}" href="{{topic_url}}">{{topic_display_name}}</a>
                 {{/if}}
