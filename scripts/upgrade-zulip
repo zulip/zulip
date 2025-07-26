@@ -5,9 +5,15 @@
 
 set -e
 
+# Colors
+FAIL='\033[91m'
+GREEN='\x1b[32m'
+WARNING="\033[93m"
+ENDC='\033[0m' # No Color
+
 if [ "$EUID" -ne 0 ]; then
     basename=$(basename "$0")
-    echo "Error: $basename must be run as root." >&2
+    echo -e "${FAIL}Error: $basename must be run as root.${ENDC}" >&2
     exit 1
 fi
 
@@ -15,12 +21,14 @@ fi
 failed=${PIPESTATUS[0]}
 
 if [ "$failed" -ne 0 ]; then
-    echo -e '\033[0;31m'
+    echo -e "${FAIL}"
     echo "Zulip upgrade failed (exit code $failed)!"
     echo
     echo -n "The upgrade process is designed to be idempotent, so you can retry "
     echo -n "after resolving whatever issue caused the failure (there should be a traceback above). "
     echo -n "A log of this installation is available in /var/log/zulip/upgrade.log"
-    echo -e '\033[0m'
+    echo -e "${ENDC}"
     exit "$failed"
+else
+    echo -e "${GREEN}Zulip upgrade completed successfully!${ENDC}"
 fi
