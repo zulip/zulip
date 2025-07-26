@@ -1,7 +1,7 @@
 import time
 from collections import defaultdict
 from collections.abc import Callable
-from typing import Annotated, Any
+from typing import Annotated, Any, Literal
 
 import orjson
 from django.conf import settings
@@ -523,7 +523,7 @@ def list_subscriptions_backend(
     request: HttpRequest,
     user_profile: UserProfile,
     *,
-    include_subscribers: Json[bool] = False,
+    include_subscribers: Json[bool | Literal["partial"]] = False,
 ) -> HttpResponse:
     subscribed, _ = gather_subscriptions(
         user_profile,
