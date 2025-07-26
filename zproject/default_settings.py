@@ -653,7 +653,14 @@ OUTGOING_WEBHOOK_TIMEOUT_SECONDS = 10
 # Maximum length of message content allowed.
 # Any message content exceeding this limit will be truncated.
 # See: `_internal_prep_message` function in zerver/actions/message_send.py.
+# NOTE: `MAX_REMINDER_NOTE_LENGTH` should be around 1/10th of this value
+# for desired user experience.
 MAX_MESSAGE_LENGTH = 10000
+
+# Maximum length of note text for a reminder.
+# NOTE: Keep it significantly smaller than MAX_MESSAGE_LENGTH
+# to avoid message being completely truncated when reminder is sent.
+MAX_REMINDER_NOTE_LENGTH = 1000
 
 # The maximum number of drafts to send in the response to /register.
 # More drafts, should they exist for some crazy reason, could be

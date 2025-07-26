@@ -35,13 +35,6 @@ export function open_schedule_message_menu(
         return;
     }
     let interval;
-    const message_schedule_callback = (time) => {
-        if (remind_message_id !== undefined) {
-            do_schedule_reminder(time, remind_message_id);
-        } else {
-            do_schedule_message(time);
-        }
-    };
 
     popover_menus.toggle_popover_menu(target, {
         theme: "popover-menu",
@@ -78,6 +71,17 @@ export function open_schedule_message_menu(
         },
         onMount(instance) {
             const $popper = $(instance.popper);
+            const message_schedule_callback = (time) => {
+                if (remind_message_id !== undefined) {
+                    do_schedule_reminder(
+                        time,
+                        remind_message_id,
+                        $popper.find(".schedule-reminder-note").val(),
+                    );
+                } else {
+                    do_schedule_message(time);
+                }
+            };
             $popper.on("click", ".send_later_custom", (e) => {
                 const $send_later_options_content = $popper.find(".popover-menu-list");
                 const current_time = new Date();
@@ -149,9 +153,9 @@ export function do_schedule_message(send_at_time) {
     compose.finish(true);
 }
 
-export function do_schedule_reminder(send_at_time, remind_message_id) {
+export function do_schedule_reminder(send_at_time, remind_message_id, note_text) {
     send_at_time = parse_sent_at_time(send_at_time);
-    message_reminder.set_message_reminder(send_at_time, remind_message_id);
+    message_reminder.set_message_reminder(send_at_time, remind_message_id, note_text);
 }
 
 function get_send_later_menu_items() {

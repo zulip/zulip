@@ -523,6 +523,19 @@ function handle_popover_events(event_name) {
     }
 
     if (popover_menu_visible_instance) {
+        if (
+            // Allow all hotkeys except for `down_arrow` and `up_arrow`
+            // to be handled by the browser.
+            // This logic is applicable for any text input type
+            // element, so can be expanded if needed in future.
+            // Added to handle `schedule-reminder-note` textarea.
+            document.activeElement.tagName === "TEXTAREA" &&
+            event_name !== "down_arrow" &&
+            event_name !== "up_arrow"
+        ) {
+            return false;
+        }
+
         popover_menus.sidebar_menu_instance_handle_keyboard(
             popover_menu_visible_instance,
             event_name,
