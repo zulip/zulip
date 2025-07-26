@@ -414,6 +414,7 @@ def update_realm(
                 user_group = access_user_group_for_setting(
                     new_setting_value,
                     user_profile,
+                    user_profile.realm,
                     setting_name=setting_name,
                     permission_configuration=permission_configuration,
                     current_setting_value=current_value,
