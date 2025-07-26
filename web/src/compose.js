@@ -250,8 +250,11 @@ export let send_message = (request = create_message_object()) => {
         drafts.sync_count();
 
         const draft = drafts.draft_model.getDraft(request.draft_id);
-        draft.is_sending_saving = false;
-        drafts.draft_model.editDraft(request.draft_id, draft);
+        // We don't save draft for message with less than 3 characters.
+        if (draft) {
+            draft.is_sending_saving = false;
+            drafts.draft_model.editDraft(request.draft_id, draft);
+        }
     }
 
     transmit.send_message(request, success, error);
