@@ -855,12 +855,6 @@ export let can_post_messages_in_stream = function (
     );
 };
 
-export function rewire_can_post_messages_in_stream(
-    value: typeof can_post_messages_in_stream,
-): void {
-    can_post_messages_in_stream = value;
-}
-
 export function user_can_move_messages_out_of_channel(stream: StreamSubscription): boolean {
     if (page_params.is_spectator) {
         return false;
@@ -994,10 +988,6 @@ export let is_user_subscribed = (stream_id: number, user_id: number): boolean =>
 
     return peer_data.is_user_subscribed(stream_id, user_id);
 };
-
-export function rewire_is_user_subscribed(value: typeof is_user_subscribed): void {
-    is_user_subscribed = value;
-}
 
 // This function parallels `is_user_subscribed` but fetches subscriber data for the
 // `stream_id` if we don't have complete data yet.

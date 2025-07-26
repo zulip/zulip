@@ -5,6 +5,7 @@ const assert = require("node:assert/strict");
 const {get_final_topic_display_name} = require("../src/util.ts");
 
 const {mock_banners} = require("./lib/compose_banner.cjs");
+const {make_user_group} = require("./lib/example_group.cjs");
 const example_settings = require("./lib/example_settings.cjs");
 const {mock_esm, set_global, with_overrides, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
@@ -34,9 +35,6 @@ const message_user_ids = mock_esm("../src/message_user_ids", {
     user_ids: () => [],
 });
 const stream_topic_history_util = mock_esm("../src/stream_topic_history_util");
-mock_esm("../src/channel", {
-    get: () => ({subscribers: []}),
-});
 
 let set_timeout_called;
 set_global("setTimeout", (f, time) => {
@@ -54,6 +52,7 @@ const emoji_picker = zrequire("emoji_picker");
 const typeahead_helper = zrequire("typeahead_helper");
 const muted_users = zrequire("muted_users");
 const people = zrequire("people");
+const peer_data = zrequire("peer_data");
 const user_groups = zrequire("user_groups");
 const user_pill = zrequire("user_pill");
 const stream_data = zrequire("stream_data");
@@ -444,112 +443,124 @@ const notification_bot = {
 
 const notification_bot_item = user_item(notification_bot);
 
-const hamletcharacters = user_group_item({
-    name: "hamletcharacters",
-    id: 1,
-    creator_id: null,
-    date_created: 1596710000,
-    description: "Characters of Hamlet",
-    members: new Set([100, 104]),
-    is_system_group: false,
-    direct_subgroup_ids: new Set([]),
-    can_add_members_group: 2,
-    can_join_group: 2,
-    can_leave_group: 2,
-    can_manage_group: 2,
-    can_mention_group: 2,
-    can_remove_members_group: 2,
-    deactivated: false,
-});
+const hamletcharacters = user_group_item(
+    make_user_group({
+        name: "hamletcharacters",
+        id: 1,
+        creator_id: null,
+        date_created: 1596710000,
+        description: "Characters of Hamlet",
+        members: new Set([100, 104]),
+        is_system_group: false,
+        direct_subgroup_ids: new Set([]),
+        can_add_members_group: 2,
+        can_join_group: 2,
+        can_leave_group: 2,
+        can_manage_group: 2,
+        can_mention_group: 2,
+        can_remove_members_group: 2,
+        deactivated: false,
+    }),
+);
 
-const backend = user_group_item({
-    name: "Backend",
-    id: 2,
-    creator_id: null,
-    date_created: 1596710000,
-    description: "Backend team",
-    members: new Set([101]),
-    is_system_group: false,
-    direct_subgroup_ids: new Set([1]),
-    can_add_members_group: 1,
-    can_join_group: 1,
-    can_leave_group: 2,
-    can_manage_group: 1,
-    can_mention_group: 1,
-    can_remove_members_group: 2,
-    deactivated: false,
-});
+const backend = user_group_item(
+    make_user_group({
+        name: "Backend",
+        id: 2,
+        creator_id: null,
+        date_created: 1596710000,
+        description: "Backend team",
+        members: new Set([101]),
+        is_system_group: false,
+        direct_subgroup_ids: new Set([1]),
+        can_add_members_group: 1,
+        can_join_group: 1,
+        can_leave_group: 2,
+        can_manage_group: 1,
+        can_mention_group: 1,
+        can_remove_members_group: 2,
+        deactivated: false,
+    }),
+);
 
-const call_center = user_group_item({
-    name: "Call Center",
-    id: 3,
-    creator_id: null,
-    date_created: 1596710000,
-    description: "folks working in support",
-    members: new Set([102]),
-    is_system_group: false,
-    direct_subgroup_ids: new Set([]),
-    can_add_members_group: 2,
-    can_join_group: 2,
-    can_leave_group: 2,
-    can_manage_group: 2,
-    can_mention_group: 2,
-    can_remove_members_group: 2,
-    deactivated: false,
-});
+const call_center = user_group_item(
+    make_user_group({
+        name: "Call Center",
+        id: 3,
+        creator_id: null,
+        date_created: 1596710000,
+        description: "folks working in support",
+        members: new Set([102]),
+        is_system_group: false,
+        direct_subgroup_ids: new Set([]),
+        can_add_members_group: 2,
+        can_join_group: 2,
+        can_leave_group: 2,
+        can_manage_group: 2,
+        can_mention_group: 2,
+        can_remove_members_group: 2,
+        deactivated: false,
+    }),
+);
 
-const support = user_group_item({
-    name: "support",
-    id: 4,
-    creator_id: null,
-    date_created: 1596710000,
-    description: "Support team",
-    members: new Set([]),
-    is_system_group: false,
-    direct_subgroup_ids: new Set([]),
-    can_add_members_group: 2,
-    can_join_group: 2,
-    can_leave_group: 2,
-    can_manage_group: 2,
-    can_mention_group: 2,
-    deactivated: false,
-});
+const support = user_group_item(
+    make_user_group({
+        name: "support",
+        id: 4,
+        creator_id: null,
+        date_created: 1596710000,
+        description: "Support team",
+        members: new Set([]),
+        is_system_group: false,
+        direct_subgroup_ids: new Set([]),
+        can_add_members_group: 2,
+        can_join_group: 2,
+        can_leave_group: 2,
+        can_manage_group: 2,
+        can_mention_group: 2,
+        deactivated: false,
+    }),
+);
 
-const admins = user_group_item({
-    name: "Administrators",
-    id: 5,
-    creator_id: null,
-    date_created: 1596710000,
-    description: "Administrators",
-    members: new Set([102, 103]),
-    is_system_group: true,
-    direct_subgroup_ids: new Set([]),
-    can_add_members_group: 2,
-    can_join_group: 2,
-    can_leave_group: 2,
-    can_manage_group: 2,
-    can_mention_group: 2,
-    can_remove_members_group: 2,
-    deactivated: false,
-});
+const admins = user_group_item(
+    make_user_group({
+        name: "Administrators",
+        id: 5,
+        creator_id: null,
+        date_created: 1596710000,
+        description: "Administrators",
+        members: new Set([102, 103]),
+        is_system_group: true,
+        direct_subgroup_ids: new Set([]),
+        can_add_members_group: 2,
+        can_join_group: 2,
+        can_leave_group: 2,
+        can_manage_group: 2,
+        can_mention_group: 2,
+        can_remove_members_group: 2,
+        deactivated: false,
+    }),
+);
 
-const members = user_group_item({
-    name: "role:members",
-    id: 6,
-    creator_id: null,
-    date_created: 1596710000,
-    description: "Members",
-    members: new Set([100, 101, 104]),
-    is_system_group: true,
-    direct_subgroup_ids: new Set([5]),
-    can_add_members_group: 2,
-    can_join_group: 2,
-    can_leave_group: 2,
-    can_manage_group: 2,
-    can_mention_group: 2,
-    can_remove_members_group: 2,
-    deactivated: false,
-});
+const members = user_group_item(
+    make_user_group({
+        name: "role:members",
+        id: 6,
+        creator_id: null,
+        date_created: 1596710000,
+        description: "Members",
+        members: new Set([100, 101, 104]),
+        is_system_group: true,
+        direct_subgroup_ids: new Set([5]),
+        can_add_members_group: 2,
+        can_join_group: 2,
+        can_leave_group: 2,
+        can_manage_group: 2,
+        can_mention_group: 2,
+        can_remove_members_group: 2,
+        deactivated: false,
+    }),
+);
 
 const sweden_stream = stream_item({
     name: "Sweden",
@@ -2640,9 +2651,7 @@ test("muted users excluded from results", () => {
     assert.deepEqual(results, [mention_all, call_center]);
 });
 
-test("direct message recipients sorted according to stream / topic being viewed", ({
-    override_rewire,
-}) => {
+test("direct message recipients sorted according to stream / topic being viewed", () => {
     // This tests that direct message recipient results are sorted with
     // subscribers of the stream / topic being viewed being given priority.
     // If no stream is being viewed, the sort is alphabetical (for testing,
@@ -2650,12 +2659,7 @@ test("direct message recipients sorted according to stream / topic being viewed"
     let results;
 
     // Simulating just cordelia being subscribed to denmark.
-    override_rewire(
-        stream_data,
-        "is_user_subscribed",
-        (stream_id, user_id) =>
-            stream_id === denmark_stream.stream_id && user_id === cordelia.user_id,
-    );
+    peer_data.set_subscribers(denmark_stream.stream_id, [cordelia.user_id]);
     mock_banners();
 
     // When viewing no stream, sorting is alphabetical
@@ -2670,11 +2674,7 @@ test("direct message recipients sorted according to stream / topic being viewed"
     assert.deepEqual(results, [cordelia_item, ali_item, alice_item]);
 
     // Simulating just alice being subscribed to denmark.
-    override_rewire(
-        stream_data,
-        "is_user_subscribed",
-        (stream_id, user_id) => stream_id === denmark_stream.stream_id && user_id === alice.user_id,
-    );
+    peer_data.set_subscribers(denmark_stream.stream_id, [alice.user_id]);
 
     // When viewing denmark stream to which alice is subscribed, ali is not
     // 1st despite having an exact name match with the query.
