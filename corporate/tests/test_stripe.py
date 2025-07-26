@@ -7024,7 +7024,7 @@ class TestSupportBillingHelpers(StripeTestCase):
         sender = get_system_bot(settings.NOTIFICATION_BOT, realm.id)
 
         # Organization owners get the notification bot message
-        desdemona_recipient = self.example_user("desdemona").recipient
+        desdemona_recipient = self.get_dm_recipient(sender, self.example_user("desdemona"))
         message_to_owner = Message.objects.filter(
             realm_id=realm.id, sender=sender.id, recipient=desdemona_recipient
         ).first()
@@ -7033,7 +7033,7 @@ class TestSupportBillingHelpers(StripeTestCase):
         self.assertEqual(message_to_owner.recipient.type, Recipient.PERSONAL)
 
         # Hamlet is in `can_manage_billing_group` so should get the notification bot message
-        hamlet_recipient = self.example_user("hamlet").recipient
+        hamlet_recipient = self.get_dm_recipient(sender, self.example_user("hamlet"))
         message_to_hamlet = Message.objects.filter(
             realm_id=realm.id, sender=sender.id, recipient=hamlet_recipient
         ).first()
