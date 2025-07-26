@@ -237,6 +237,7 @@ function zoom_out(): void {
 
 export function clear_search(): void {
     const $filter = $(".direct-messages-list-filter").expectOne();
+    $filter.val("");
     update_private_messages();
     $filter.trigger("blur");
 }
