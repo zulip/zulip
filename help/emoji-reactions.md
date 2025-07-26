@@ -118,10 +118,10 @@ messages which have received at least one reaction.
 
 {tab|desktop-web}
 
-1. Click on <i class="zulip-icon zulip-icon-smile"></i>**Reactions** in the left
+1. Click on <i class="zulip-icon zulip-icon-smile"></i> **Reactions** in the left
    sidebar. If the **views** section is collapsed, click on
    the **ellipsis** (<i class="zulip-icon zulip-icon-more-vertical"></i>),
-   and select <i class="zulip-icon zulip-icon-smile"></i>**Reactions**.
+   and select <i class="zulip-icon zulip-icon-smile"></i> **Reactions**.
 
 1. Browse your reactions. You can click on a message recipient bar to go
    to the [conversation](/help/reading-conversations) where you sent the message.
