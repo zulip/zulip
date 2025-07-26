@@ -35,12 +35,6 @@
                   custom_classes="decorated-stream-name-dropdown-widget"}}
 
                 {{> settings_checkbox
-                  setting_name="realm_message_content_allowed_in_email_notifications"
-                  prefix="id_"
-                  is_checked=realm_message_content_allowed_in_email_notifications
-                  label=admin_settings_label.realm_message_content_allowed_in_email_notifications}}
-
-                {{> settings_checkbox
                   setting_name="realm_send_welcome_emails"
                   prefix="id_"
                   is_checked=realm_send_welcome_emails
@@ -67,6 +61,27 @@
                         <option value="6">{{t "Sunday" }}</option>
                     </select>
                 </div>
+            </div>
+        </div>
+
+        <div class="settings-subsection-parent">
+            <div class="subsection-header">
+                <h3>{{t "Notifications security" }}</h3>
+                {{> settings_save_discard_widget section_name="notifications-security" }}
+            </div>
+            <div class="inline-block organization-settings-parent">
+                {{> settings_checkbox
+                  setting_name="realm_require_e2ee_push_notifications"
+                  prefix="id_"
+                  is_checked=realm_require_e2ee_push_notifications
+                  label=admin_settings_label.realm_require_e2ee_push_notifications
+                  help_link="/help/mobile-notifications"}}
+
+                {{> settings_checkbox
+                  setting_name="realm_message_content_allowed_in_email_notifications"
+                  prefix="id_"
+                  is_checked=realm_message_content_allowed_in_email_notifications
+                  label=admin_settings_label.realm_message_content_allowed_in_email_notifications}}
             </div>
         </div>
 

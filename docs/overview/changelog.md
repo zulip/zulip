@@ -175,6 +175,16 @@ _Released 2025-07-17_
 
 #### Upgrade notes for 11.0
 
+- The `PUSH_NOTIFICATION_REDACT_CONTENT` server setting has been replaced
+  with a realm-level setting for requiring end-to-end encryption for
+  mobile notifications. The new realm-level setting has identical behavior
+  to the old `PUSH_NOTIFICATION_REDACT_CONTENT` setting for mobile clients
+  that do not yet support end-to-end encryption for mobile notifications:
+  Sending just the information that there is a new message, with no message content.
+  You can remove `PUSH_NOTIFICATION_REDACT_CONTENT` from your `/etc/zulip/settings.py`
+  after completing the upgrade. We expect that a future release will harden
+  the model to never send mobile notifications to clients that don't support
+  end-to-end encrypted notifications.
 - PostgreSQL 13 is no longer supported; if you are currently using it, you will
   need to [upgrade PostgreSQL](../production/upgrade.md#upgrading-postgresql)
   before upgrading Zulip.

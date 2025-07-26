@@ -243,8 +243,6 @@ ZULIP_SERVICE_PUSH_NOTIFICATIONS = False
 ZULIP_SERVICE_SUBMIT_USAGE_STATISTICS: bool | None = None
 ZULIP_SERVICE_SECURITY_ALERTS = False
 
-PUSH_NOTIFICATION_REDACT_CONTENT = False
-
 # Old setting kept around for backwards compatibility. Some old servers
 # may have it in their settings.py.
 PUSH_NOTIFICATION_BOUNCER_URL: str | None = None

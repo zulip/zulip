@@ -5402,6 +5402,16 @@ paths:
                                         indicated timestamp is near.
 
                                         **Changes**: New in Zulip 8.0 (feature level 231).
+                                    require_e2ee_push_notifications:
+                                      type: boolean
+                                      description: |
+                                        Whether to send end-to-end encrypted push notifications.
+
+                                        If `true`, older clients that don't support E2EE push notifications
+                                        will instead receive push notifications with content redacted i.e.
+                                        sending just the information that there is a new message, with no message content.
+
+                                        **Changes**: New in Zulip 11.0 (feature level ZF-9a9144).
                                     require_unique_names:
                                       type: boolean
                                       description: |
@@ -18953,6 +18963,19 @@ paths:
                           Present if `realm` is present in `fetch_event_types`.
 
                           The name of the organization, used in login pages etc.
+                      realm_require_e2ee_push_notifications:
+                        type: boolean
+                        description: |
+                          Present if `realm` is present in `fetch_event_types`.
+
+                          Indicates whether the organization is configured to send
+                          end-to-end encrypted push notifications.
+
+                          If `true`, older clients that don't support E2EE push notifications
+                          will instead receive push notifications with content redacted i.e.
+                          sending just the information that there is a new message, with no message content.
+
+                          **Changes**: New in Zulip 11.0 (feature level ZF-9a9144).
                       realm_require_unique_names:
                         type: boolean
                         description: |
