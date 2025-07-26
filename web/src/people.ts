@@ -1993,6 +1993,15 @@ export async function fetch_users(user_ids: Set<number>): Promise<UsersFetchResp
     });
 }
 
+export function add_user(user: User): void {
+    if (user.is_active) {
+        add_active_user(user);
+    } else {
+        non_active_user_dict.set(user.user_id, user);
+        _add_user(user);
+    }
+}
+
 export async function initialize(
     my_user_id: number,
     people_params: StateData["people"],
@@ -2025,12 +2034,7 @@ export async function initialize(
     // incomplete users dataset in large organizations.
     await fetch_users(user_ids_to_fetch).then((users) => {
         for (const user of users) {
-            if (user.is_active) {
-                add_active_user(user);
-            } else {
-                non_active_user_dict.set(user.user_id, user);
-                _add_user(user);
-            }
+            add_user(user);
         }
     });
 }

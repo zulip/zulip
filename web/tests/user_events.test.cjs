@@ -78,11 +78,12 @@ const me = {
     full_name: "Me Myself",
     is_admin: true,
     role: settings_config.user_role_values.member.code,
+    profile_data: {},
 };
 
 function initialize() {
     people.init();
-    people.add_active_user(me);
+    people.add_active_user(me, "server_events");
     people.initialize_current_user(me.user_id);
 }
 
@@ -96,8 +97,9 @@ run_test("updates", ({override}) => {
         delivery_email: null,
         user_id: 32,
         full_name: "Isaac Newton",
+        profile_data: {},
     };
-    people.add_active_user(isaac);
+    people.add_active_user(isaac, "server_events");
 
     override(navbar_alerts, "maybe_toggle_empty_required_profile_fields_banner", noop);
     user_events.update_person({
@@ -230,7 +232,6 @@ run_test("updates", ({override}) => {
     assert.ok(person.timezone);
 
     blueslip.expect("error", "Got update_person event for unexpected user");
-    blueslip.expect("error", "Unknown user_id in maybe_get_user_by_id");
     assert.ok(!user_events.update_person({user_id: 29, full_name: "Sir Isaac Newton"}));
 
     me.profile_data = {};
@@ -264,7 +265,7 @@ run_test("updates", ({override}) => {
         is_bot: true,
         bot_owner_id: isaac.id,
     };
-    people.add_active_user(test_bot);
+    people.add_active_user(test_bot, "server_events");
 
     user_events.update_person({user_id: test_bot.user_id, bot_owner_id: me.user_id});
     person = people.get_by_email(test_bot.email);
