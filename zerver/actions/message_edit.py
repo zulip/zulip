@@ -488,6 +488,9 @@ def get_visibility_policy_after_merge(
     # rather than hiding them.
     visibility_policies = {orig_topic_visibility_policy, target_topic_visibility_policy}
 
+    if UserTopic.VisibilityPolicy.FOLLOWED in visibility_policies:
+        return UserTopic.VisibilityPolicy.FOLLOWED
+
     if UserTopic.VisibilityPolicy.UNMUTED in visibility_policies:
         return UserTopic.VisibilityPolicy.UNMUTED
 
