@@ -13,6 +13,7 @@ import * as channel from "./channel.ts";
 import * as confirm_dialog from "./confirm_dialog.ts";
 import * as desktop_notifications from "./desktop_notifications.ts";
 import * as dialog_widget from "./dialog_widget.ts";
+import * as drafts from "./drafts.ts";
 import * as feedback_widget from "./feedback_widget.ts";
 import {Filter} from "./filter.ts";
 import {$t, $t_html} from "./i18n.ts";
@@ -954,5 +955,8 @@ export function initialize(): void {
         })
         .on("blur", () => {
             window_focused = false;
+
+            // Save the current message as a draft if it exists.
+            drafts.update_draft();
         });
 }
