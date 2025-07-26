@@ -9382,6 +9382,10 @@ paths:
                                 HTML-escaped topic of a queried message that matches the narrow. If the
                                 narrow is a search narrow, `<span class="highlight">` elements
                                 will be included wrapping the matches for the search keywords.
+                            status:
+                              type: string
+                              description: Status of the match result.
+                              example: success
                           description: |
                             `message_id`: The ID of the message that matches the narrow. No record will be returned
                             for queried messages that do not match the narrow.
