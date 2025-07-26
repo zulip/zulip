@@ -13,11 +13,12 @@ have the following effects:
   generate any desktop, email, or mobile push notifications.
 * Combined feed sent by muted users, including the name, profile
   picture, and message content, are hidden behind a **Click here to
-  reveal** banner. A revealed message can later be [re-hidden](/help/mute-a-user#re-hide-a-message-that-has-been-revealed).
-* Muted users are hidden from [**Direct
-  messages**](/help/direct-messages) in the left sidebar and the list
-  of users in the right sidebar. Direct messages between you and a
-  muted user are excluded from all views, including search, unless you
+  reveal** banner. A revealed message can later be
+  [re-hidden](/help/mute-a-user#re-hide-a-message-that-has-been-revealed).
+* Muted users are hidden from [**direct messages**](/help/direct-messages)
+  in the left sidebar and the list of users in the right sidebar. Direct
+  messages between you and a muted user are excluded from all views,
+  including search, unless you
   [explicitly search](/help/search-for-messages) for `dm-with:<that
   user>`.
 * Muted users have their name displayed as "Muted user" for [emoji

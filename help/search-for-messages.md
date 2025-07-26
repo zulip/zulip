@@ -4,7 +4,7 @@ It's easy to find the right conversation with Zulip's powerful search. When you
 find the message you were looking for, go directly to its topic for full context.
 
 Whenever you need a reminder of the search filters that Zulip offers, check out
-the convenient [**search filters reference**](#search-filters-reference)
+the convenient [**search filters**](#search-filters-reference) reference
 in the Zulip web and desktop apps.
 
 ## Search for messages
