@@ -2283,7 +2283,7 @@ msgid ""
 "longer be able to log in.\n"
 msgstr ""
 "\n"
-"您在 %(realm\\_url)s 的 Zulip 帳號已被停用，您將無法再登入。\n"
+"您在 %(realm_url)s 的 Zulip 帳號已被停用，您將無法再登入。\n"
 
 #: templates/zerver/emails/digest.html:27 templates/zerver/emails/digest.txt:8
 msgid "New channels"
