@@ -22,7 +22,7 @@ HELP_DOCUMENTATION_REDIRECTS: list[URLRedirect] = [
     # Add URL redirects for help center documentation here:
     URLRedirect("/help/pm-mention-alert-notifications", "/help/dm-mention-alert-notifications"),
     URLRedirect("/help/restrict-private-messages", "/help/restrict-direct-messages"),
-    URLRedirect("/help/reading-pms", "/help/reading-dms"),
+    URLRedirect("/help/reading-pms", "/help/direct-messages"),
     URLRedirect("/help/private-messages", "/help/direct-messages"),
     URLRedirect("/help/configure-who-can-edit-topics", "/help/restrict-moving-messages"),
     URLRedirect(
@@ -128,6 +128,7 @@ HELP_DOCUMENTATION_REDIRECTS: list[URLRedirect] = [
     URLRedirect("/help/add-or-remove-users-from-a-channel", "/help/subscribe-users-to-a-channel"),
     URLRedirect("/help/disable-message-edit-history", "/help/restrict-message-edit-history-access"),
     URLRedirect("/help/edit-a-bot", "/help/manage-a-bot"),
+    URLRedirect("/help/reading-dms", "/help/direct-messages"),
 ]
 
 LANDING_PAGE_REDIRECTS = [

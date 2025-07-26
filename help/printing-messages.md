@@ -1,8 +1,8 @@
 # Printing messages
 
 Zulip lets you print the messages in any view, including
-[conversations](/help/reading-conversations), [direct message
-conversations](/help/reading-dms), and [searches](/help/search-for-messages).
+[conversations](/help/reading-conversations) and
+[searches](/help/search-for-messages).
 
 Printouts include just the content you need, without sidebars and buttons.
 Messages will be printed with black text on a white background, regardless of
@@ -30,6 +30,5 @@ whether you're using [light or dark theme](/help/dark-theme).
 ## Related articles
 
 * [Reading conversations](/help/reading-conversations)
-* [Reading direct messages (DMs)](/help/reading-dms)
 * [Dark theme](/help/dark-theme)
 * [Supported browsers](/help/supported-browsers)
