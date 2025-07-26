@@ -486,14 +486,18 @@ def get_visibility_policy_after_merge(
     # Whichever of the two policies is most visible is what we keep.
     # The general motivation is to err on the side of showing messages
     # rather than hiding them.
-    if orig_topic_visibility_policy == target_topic_visibility_policy:
-        return orig_topic_visibility_policy
-    elif UserTopic.VisibilityPolicy.UNMUTED in (
-        orig_topic_visibility_policy,
-        target_topic_visibility_policy,
-    ):
+    visibility_policies = {orig_topic_visibility_policy, target_topic_visibility_policy}
+
+    if UserTopic.VisibilityPolicy.FOLLOWED in visibility_policies:
+        return UserTopic.VisibilityPolicy.FOLLOWED
+
+    if UserTopic.VisibilityPolicy.UNMUTED in visibility_policies:
         return UserTopic.VisibilityPolicy.UNMUTED
-    return UserTopic.VisibilityPolicy.INHERIT
+
+    if UserTopic.VisibilityPolicy.INHERIT in visibility_policies:
+        return UserTopic.VisibilityPolicy.INHERIT
+
+    return UserTopic.VisibilityPolicy.MUTED
 
 
 def update_message_content(

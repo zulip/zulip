@@ -764,6 +764,7 @@ class MessageMoveTopicTest(ZulipTestCase):
         hamlet = self.example_user("hamlet")
         cordelia = self.example_user("cordelia")
         aaron = self.example_user("aaron")
+        shiva = self.example_user("shiva")
 
         self.subscribe(hamlet, stream_name)
         self.login_user(hamlet)
@@ -778,6 +779,7 @@ class MessageMoveTopicTest(ZulipTestCase):
         #   INHERIT       INHERIT       INHERIT
         #   INHERIT        MUTED        INHERIT
         #   INHERIT       UNMUTED       UNMUTED
+        #   INHERIT       FOLLOWED      FOLLOWED
         orig_topic = "Topic1"
         target_topic = "Topic1 edited"
         orig_message_id = self.send_stream_message(
@@ -799,6 +801,9 @@ class MessageMoveTopicTest(ZulipTestCase):
         do_set_user_topic_visibility_policy(
             aaron, stream, target_topic, visibility_policy=UserTopic.VisibilityPolicy.UNMUTED
         )
+        do_set_user_topic_visibility_policy(
+            shiva, stream, target_topic, visibility_policy=UserTopic.VisibilityPolicy.FOLLOWED
+        )
 
         check_update_message(
             user_profile=hamlet,
@@ -821,6 +826,9 @@ class MessageMoveTopicTest(ZulipTestCase):
             aaron, orig_topic, stream, UserTopic.VisibilityPolicy.INHERIT
         )
         self.assert_has_visibility_policy(
+            shiva, orig_topic, stream, UserTopic.VisibilityPolicy.INHERIT
+        )
+        self.assert_has_visibility_policy(
             hamlet, target_topic, stream, UserTopic.VisibilityPolicy.INHERIT
         )
         self.assert_has_visibility_policy(
@@ -829,6 +837,9 @@ class MessageMoveTopicTest(ZulipTestCase):
         self.assert_has_visibility_policy(
             aaron, target_topic, stream, UserTopic.VisibilityPolicy.UNMUTED
         )
+        self.assert_has_visibility_policy(
+            shiva, target_topic, stream, UserTopic.VisibilityPolicy.FOLLOWED
+        )
 
         # Test the following cases:
         #
@@ -836,6 +847,7 @@ class MessageMoveTopicTest(ZulipTestCase):
         #     MUTED       INHERIT        INHERIT
         #     MUTED        MUTED          MUTED
         #     MUTED       UNMUTED        UNMUTED
+        #     MUTED       FOLLOWED       FOLLOWED
         orig_topic = "Topic2"
         target_topic = "Topic2 edited"
         orig_message_id = self.send_stream_message(
@@ -855,10 +867,16 @@ class MessageMoveTopicTest(ZulipTestCase):
             aaron, stream, orig_topic, visibility_policy=UserTopic.VisibilityPolicy.MUTED
         )
         do_set_user_topic_visibility_policy(
+            shiva, stream, orig_topic, visibility_policy=UserTopic.VisibilityPolicy.MUTED
+        )
+        do_set_user_topic_visibility_policy(
             cordelia, stream, target_topic, visibility_policy=UserTopic.VisibilityPolicy.MUTED
         )
         do_set_user_topic_visibility_policy(
             aaron, stream, target_topic, visibility_policy=UserTopic.VisibilityPolicy.UNMUTED
+        )
+        do_set_user_topic_visibility_policy(
+            shiva, stream, target_topic, visibility_policy=UserTopic.VisibilityPolicy.FOLLOWED
         )
 
         check_update_message(
@@ -882,6 +900,9 @@ class MessageMoveTopicTest(ZulipTestCase):
             aaron, orig_topic, stream, UserTopic.VisibilityPolicy.INHERIT
         )
         self.assert_has_visibility_policy(
+            shiva, orig_topic, stream, UserTopic.VisibilityPolicy.INHERIT
+        )
+        self.assert_has_visibility_policy(
             hamlet, target_topic, stream, UserTopic.VisibilityPolicy.INHERIT
         )
         self.assert_has_visibility_policy(
@@ -890,6 +911,9 @@ class MessageMoveTopicTest(ZulipTestCase):
         self.assert_has_visibility_policy(
             aaron, target_topic, stream, UserTopic.VisibilityPolicy.UNMUTED
         )
+        self.assert_has_visibility_policy(
+            shiva, target_topic, stream, UserTopic.VisibilityPolicy.FOLLOWED
+        )
 
         # Test the following cases:
         #
@@ -897,6 +921,7 @@ class MessageMoveTopicTest(ZulipTestCase):
         #    UNMUTED       INHERIT        UNMUTED
         #    UNMUTED        MUTED         UNMUTED
         #    UNMUTED       UNMUTED        UNMUTED
+        #    UNMUTED       FOLLOWED       FOLLOWED
         orig_topic = "Topic3"
         target_topic = "Topic3 edited"
         orig_message_id = self.send_stream_message(
@@ -916,7 +941,83 @@ class MessageMoveTopicTest(ZulipTestCase):
             aaron, stream, orig_topic, visibility_policy=UserTopic.VisibilityPolicy.UNMUTED
         )
         do_set_user_topic_visibility_policy(
+            shiva, stream, orig_topic, visibility_policy=UserTopic.VisibilityPolicy.UNMUTED
+        )
+        do_set_user_topic_visibility_policy(
             cordelia, stream, target_topic, visibility_policy=UserTopic.VisibilityPolicy.MUTED
+        )
+        do_set_user_topic_visibility_policy(
+            aaron, stream, target_topic, visibility_policy=UserTopic.VisibilityPolicy.UNMUTED
+        )
+        do_set_user_topic_visibility_policy(
+            shiva, stream, target_topic, visibility_policy=UserTopic.VisibilityPolicy.FOLLOWED
+        )
+
+        check_update_message(
+            user_profile=hamlet,
+            message_id=orig_message_id,
+            stream_id=None,
+            topic_name=target_topic,
+            propagate_mode="change_all",
+            send_notification_to_old_thread=False,
+            send_notification_to_new_thread=False,
+            content=None,
+        )
+
+        self.assert_has_visibility_policy(
+            hamlet, orig_topic, stream, UserTopic.VisibilityPolicy.INHERIT
+        )
+        self.assert_has_visibility_policy(
+            cordelia, orig_topic, stream, UserTopic.VisibilityPolicy.INHERIT
+        )
+        self.assert_has_visibility_policy(
+            aaron, orig_topic, stream, UserTopic.VisibilityPolicy.INHERIT
+        )
+        self.assert_has_visibility_policy(
+            shiva, orig_topic, stream, UserTopic.VisibilityPolicy.INHERIT
+        )
+        self.assert_has_visibility_policy(
+            hamlet, target_topic, stream, UserTopic.VisibilityPolicy.UNMUTED
+        )
+        self.assert_has_visibility_policy(
+            cordelia, target_topic, stream, UserTopic.VisibilityPolicy.UNMUTED
+        )
+        self.assert_has_visibility_policy(
+            aaron, target_topic, stream, UserTopic.VisibilityPolicy.UNMUTED
+        )
+        self.assert_has_visibility_policy(
+            shiva, target_topic, stream, UserTopic.VisibilityPolicy.FOLLOWED
+        )
+
+        # Test the following cases:
+        #
+        #  orig_topic | target_topic | final behaviour
+        #   FOLLOWED     INHERIT         FOLLOWED
+        #   FOLLOWED     MUTED           FOLLOWED
+        #   FOLLOWED     UNMUTED         FOLLOWED
+        orig_topic = "Topic4"
+        target_topic = "Topic4 edited"
+        orig_message_id = self.send_stream_message(
+            hamlet, stream_name, topic_name=orig_topic, content="Hello World"
+        )
+        self.send_stream_message(
+            hamlet, stream_name, topic_name=target_topic, content="Hello World 2"
+        )
+        do_set_user_topic_visibility_policy(
+            cordelia, stream, target_topic, visibility_policy=UserTopic.VisibilityPolicy.FOLLOWED
+        )
+
+        do_set_user_topic_visibility_policy(
+            hamlet, stream, orig_topic, visibility_policy=UserTopic.VisibilityPolicy.FOLLOWED
+        )
+        do_set_user_topic_visibility_policy(
+            cordelia, stream, orig_topic, visibility_policy=UserTopic.VisibilityPolicy.FOLLOWED
+        )
+        do_set_user_topic_visibility_policy(
+            cordelia, stream, target_topic, visibility_policy=UserTopic.VisibilityPolicy.MUTED
+        )
+        do_set_user_topic_visibility_policy(
+            aaron, stream, orig_topic, visibility_policy=UserTopic.VisibilityPolicy.FOLLOWED
         )
         do_set_user_topic_visibility_policy(
             aaron, stream, target_topic, visibility_policy=UserTopic.VisibilityPolicy.UNMUTED
@@ -943,13 +1044,13 @@ class MessageMoveTopicTest(ZulipTestCase):
             aaron, orig_topic, stream, UserTopic.VisibilityPolicy.INHERIT
         )
         self.assert_has_visibility_policy(
-            hamlet, target_topic, stream, UserTopic.VisibilityPolicy.UNMUTED
+            hamlet, target_topic, stream, UserTopic.VisibilityPolicy.FOLLOWED
         )
         self.assert_has_visibility_policy(
-            cordelia, target_topic, stream, UserTopic.VisibilityPolicy.UNMUTED
+            cordelia, target_topic, stream, UserTopic.VisibilityPolicy.FOLLOWED
         )
         self.assert_has_visibility_policy(
-            aaron, target_topic, stream, UserTopic.VisibilityPolicy.UNMUTED
+            aaron, target_topic, stream, UserTopic.VisibilityPolicy.FOLLOWED
         )
 
     def test_user_topic_states_on_moving_to_topic_with_no_messages(self) -> None:
