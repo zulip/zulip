@@ -1136,6 +1136,7 @@ class ChannelAdministerPermissionTest(ZulipTestCase):
         stream = get_stream("test_stream", self.realm)
 
         default_error_msg = "You do not have permission to administer this channel."
+        can_create_topic_group_error_msg = "Unsupported parameter combination: history_public_to_subscribers, can_create_topic_group"
 
         anonymous_group_dict = UserGroupMembersData(
             direct_members=[prospero.id, self.guest.id], direct_subgroups=[]
@@ -1180,6 +1181,14 @@ class ChannelAdministerPermissionTest(ZulipTestCase):
                 self.check_channel_group_setting_update(user, property_name, default_error_msg)
 
             for user in check_config["users_with_permission"]:
+                if (
+                    property_name == "can_create_topic_group"
+                    and not stream.history_public_to_subscribers
+                ):
+                    self.check_channel_group_setting_update(
+                        user, property_name, can_create_topic_group_error_msg
+                    )
+                    continue
                 self.check_channel_group_setting_update(user, property_name)
 
         # Check guests cannot update property even when they belong
@@ -1198,6 +1207,8 @@ class ChannelAdministerPermissionTest(ZulipTestCase):
         # content access to the channel.
         hamlet = self.example_user("hamlet")
 
+        can_create_topic_group_error_msg = "Unsupported parameter combination: history_public_to_subscribers, can_create_topic_group"
+
         stream = get_stream("test_stream", self.realm)
         self.assertTrue(stream.invite_only)
 
@@ -1208,6 +1219,21 @@ class ChannelAdministerPermissionTest(ZulipTestCase):
         if property_name not in Stream.stream_permission_group_settings_requiring_content_access:
             # Users without content access can modify properties not in
             # stream_permission_group_settings_requiring_content_access.
+            if (
+                property_name == "can_create_topic_group"
+                and not stream.history_public_to_subscribers
+            ):
+                self.check_channel_group_setting_update(
+                    self.admin, property_name, can_create_topic_group_error_msg
+                )
+                self.check_channel_group_setting_update(
+                    self.moderator, property_name, can_create_topic_group_error_msg
+                )
+                self.check_channel_group_setting_update(
+                    hamlet, property_name, can_create_topic_group_error_msg
+                )
+                return
+
             self.check_channel_group_setting_update(self.admin, property_name)
             self.check_channel_group_setting_update(self.moderator, property_name)
             self.check_channel_group_setting_update(hamlet, property_name)

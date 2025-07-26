@@ -493,6 +493,20 @@ function handle_inline_topic_edit_change(elem: HTMLInputElement, stream_id: numb
         $topic_edit_save_button.prop("disabled", true);
         return;
     }
+    if (!stream_data.can_create_new_topics_in_stream(stream_id)) {
+        const topic_val = $inline_topic_edit_input.val()!;
+        const existing_topics_in_stream = stream_topic_history
+            .get_recent_topic_names(stream_id)
+            .map((topic) => topic.toLowerCase());
+        if (existing_topics_in_stream.includes(topic_val.trim().toLowerCase())) {
+            $topic_edit_save_button.removeClass("can_create_topic_group_tooltip");
+        } else {
+            $topic_edit_save_button
+                .prop("disabled", true)
+                .addClass("can_create_topic_group_tooltip");
+            return;
+        }
+    }
     // If we reach here, it means the save button was disabled previously
     // and the user has started typing in the input field, probably to fix
     // the error. So, we re-enable the save button.
