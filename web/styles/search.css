@@ -234,7 +234,7 @@
             /* Maintain only a column gap. */
             gap: 0 0.3125em; /* 5px at 16px em */
             /* Override padding. */
-            padding: 0;
+            padding: 4px;
         }
 
         .pill {
