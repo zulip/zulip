@@ -33,6 +33,11 @@ const url_option_schema = z.object({
 
 const url_options_schema = z.array(url_option_schema);
 
+const PresetUrlOption = {
+    BRANCHES: "branches",
+    MAPPING: "mapping",
+};
+
 export function show_generate_integration_url_modal(api_key: string): void {
     const default_url_message = $t_html({defaultMessage: "Integration URL will appear here."});
     const streams = stream_data.subscribed_subs();
@@ -44,6 +49,10 @@ export function show_generate_integration_url_modal(api_key: string): void {
         name: $t_html({defaultMessage: "Direct message to me"}),
         unique_id: -1,
         is_direct_message: true,
+    };
+    const map_channels_option: Option = {
+        name: $t_html({defaultMessage: "Matching Zulip channel"}),
+        unique_id: -2,
     };
     const html_body = render_generate_integration_url_modal({
         default_url_message,
@@ -114,13 +123,15 @@ export function show_generate_integration_url_modal(api_key: string): void {
             for (const option of validated_config) {
                 let $config_element: JQuery;
 
-                if (option.key === "branches") {
+                if (option.key === PresetUrlOption.BRANCHES) {
                     const filter_branches_html =
                         render_generate_integration_url_filter_branches_modal();
                     $config_element = $(filter_branches_html);
                     $config_element.find("#integration-url-all-branches").on("change", () => {
                         show_branch_filtering_ui();
                     });
+                } else if (option.key === PresetUrlOption.MAPPING) {
+                    continue;
                 } else if (option.validator === "check_bool") {
                     const config_html = render_generate_integration_url_config_checkbox_modal({
                         key: option.key,
@@ -237,10 +248,16 @@ export function show_generate_integration_url_modal(api_key: string): void {
             if (url_options) {
                 for (const option of url_options) {
                     let $input_element;
-                    if (
-                        option.key === "branches" &&
-                        !$("#integration-url-all-branches").prop("checked")
-                    ) {
+                    if (option.key === PresetUrlOption.MAPPING) {
+                        const stream_input = stream_input_dropdown_widget.value();
+                        if (stream_input === map_channels_option?.unique_id) {
+                            params.delete("stream");
+                            params.set(PresetUrlOption.MAPPING, "channels");
+                        }
+                    } else if (option.key === PresetUrlOption.BRANCHES) {
+                        if ($("#integration-url-all-branches").prop("checked")) {
+                            continue;
+                        }
                         const $pill_container = $(
                             "#integration-url-filter-branches .pill-container",
                         );
@@ -315,9 +332,10 @@ export function show_generate_integration_url_modal(api_key: string): void {
             const selected_integration_data = realm.realm_incoming_webhook_bots.find(
                 (bot) => bot.name === selected_integration,
             );
+            const url_options = selected_integration_data?.url_options;
 
-            if (selected_integration_data?.url_options) {
-                render_url_options(selected_integration_data.url_options);
+            if (url_options) {
+                render_url_options(url_options);
             }
 
             dropdown.hide();
@@ -335,9 +353,37 @@ export function show_generate_integration_url_modal(api_key: string): void {
         });
         stream_input_dropdown_widget.setup();
 
+        function get_additional_stream_dropdown_options(): Option[] {
+            const additional_options: Option[] = [];
+
+            const selected_integration = integration_input_dropdown_widget.value();
+            const selected_integration_data = realm.realm_incoming_webhook_bots.find(
+                (bot) => bot.name === selected_integration,
+            );
+            if (!selected_integration) {
+                return additional_options;
+            }
+
+            const url_options = selected_integration_data?.url_options;
+            if (!url_options) {
+                return additional_options;
+            }
+
+            const mapping_option = url_options?.find(
+                (option) => option.key === PresetUrlOption.MAPPING,
+            );
+
+            if (mapping_option) {
+                additional_options.push(map_channels_option);
+            }
+            return additional_options;
+        }
+
         function get_options_for_stream_dropdown_widget(): Option[] {
+            const additional_options = get_additional_stream_dropdown_options();
             const options = [
                 direct_messages_option,
+                ...additional_options,
                 ...streams
                     .filter((stream) => stream_data.can_post_messages_in_stream(stream))
                     .map((stream) => ({
@@ -361,6 +407,11 @@ export function show_generate_integration_url_modal(api_key: string): void {
                 $override_topic.prop("checked", false).prop("disabled", true);
                 $override_topic.closest(".input-group").addClass("control-label-disabled");
                 $topic_input.val("");
+            } else if (user_selected_option === map_channels_option.unique_id) {
+                $override_topic.prop("checked", true).prop("disabled", true);
+                $override_topic.closest(".input-group").addClass("control-label-disabled");
+                $topic_input.val("");
+                $topic_input.parent().removeClass("hide");
             } else {
                 $override_topic.prop("disabled", false);
                 $override_topic.closest(".input-group").removeClass("control-label-disabled");
