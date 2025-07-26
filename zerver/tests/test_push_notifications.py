@@ -1562,19 +1562,20 @@ class TestGetAPNsPayload(PushNotificationTestCase):
         }
         self.assertDictEqual(payload, expected)
 
+    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
     def test_get_message_payload_apns_personal_message_using_direct_message_group(self) -> None:
         user_profile = self.example_user("othello")
-
-        direct_message_group = get_or_create_direct_message_group(
-            id_list=[self.sender.id, user_profile.id],
-        )
 
         message_id = self.send_personal_message(
             self.sender,
             user_profile,
             "Content of personal message",
         )
+
         message = Message.objects.get(id=message_id)
+        direct_message_group = get_or_create_direct_message_group(
+            id_list=[self.sender.id, user_profile.id],
+        )
         self.assertEqual(message.recipient, direct_message_group.recipient)
         payload = get_message_payload_apns(
             user_profile, message, NotificationTriggers.DIRECT_MESSAGE
