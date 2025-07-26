@@ -20,28 +20,6 @@ it, you'll never want to use a different team chat app!
 
 ## Reading your messages
 
-{!conversation-definition.md!}
-
-{!conversation-recommendation.md!}
-
-### Finding a conversation to read
-
-#### From the Inbox view
-
-{!inbox-intro.md!}
-
-{!inbox-instructions.md!}
-
-#### From Recent conversations
-
-{!recent-conversations.md!}
-
-#### From the left sidebar
-
-{!left-sidebar-conversations.md!}
-
-### Reading conversations
-
 {!reading-conversations.md!}
 
 ## Sending messages
