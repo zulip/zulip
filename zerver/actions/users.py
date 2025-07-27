@@ -191,6 +191,21 @@ def do_delete_user_core(
         for table, field_name in fks_to_delete:
             table.objects.filter(**{field_name: user_profile}).delete()
 
+        # These audit logs can carry personal information that we want to purge
+        # in the process of user data deletion - and are not that important
+        # to preserve.
+        audit_log_event_types_for_deletion = [
+            AuditLogEventType.USER_EMAIL_CHANGED,
+            AuditLogEventType.USER_FULL_NAME_CHANGED,
+            AuditLogEventType.USER_SETTING_CHANGED,
+        ]
+        # TODO: We could be a bit more conservative here, and just purge .extra_data instead of .delete() the objects?
+        # That's what contains personal data. Could add a scrubbed: bool field to RealmAuditLog and mark it True
+        # for these.
+        RealmAuditLog.objects.filter(
+            modified_user=user_profile, event_type__in=audit_log_event_types_for_deletion
+        ).delete()
+
         if delete_messages:
             # TODO: should this be moved to deferred_work queue?
             # TODO: do we want to delete personal messages sent *TO* this user?
