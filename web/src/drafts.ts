@@ -317,10 +317,12 @@ export function rename_stream_recipient(
     }
 }
 
-export function snapshot_message(): LocalStorageDraft | undefined {
-    if (!compose_state.composing() || !compose_state.has_savable_message_content()) {
+export function snapshot_message(force_save = false): LocalStorageDraft | undefined {
+    const can_save_message = force_save || compose_state.has_savable_message_content();
+    if (!compose_state.composing() || !can_save_message) {
         // If you aren't in the middle of composing the body of a
-        // message or the message is shorter than 2 characters long, don't try to snapshot.
+        // message, forcing a save or the message is shorter than 2 characters long,
+        // don't try to snapshot.
         return undefined;
     }
 
@@ -423,6 +425,7 @@ type UpdateDraftOptions = {
     no_notify?: boolean;
     update_count?: boolean;
     is_sending_saving?: boolean;
+    force_save?: boolean;
 };
 
 export let update_draft = (opts: UpdateDraftOptions = {}): string | undefined => {
@@ -430,7 +433,8 @@ export let update_draft = (opts: UpdateDraftOptions = {}): string | undefined =>
     const old_draft = draft_id === undefined ? undefined : draft_model.getDraft(draft_id);
 
     const no_notify = opts.no_notify ?? false;
-    const draft = snapshot_message();
+    const force_save = opts.force_save ?? false;
+    const draft = snapshot_message(force_save);
 
     if (draft === undefined) {
         // The user cleared the compose box, which means

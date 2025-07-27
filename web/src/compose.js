@@ -182,6 +182,10 @@ export let send_message = (request = create_message_object()) => {
         no_notify: true,
         update_count: false,
         is_sending_saving: true,
+        // Even 2-character messages that you actually tried to send
+        // should be saved as a draft, since it's confusing if a
+        // message can just disappear into the void.
+        force_save: true,
     });
 
     let local_id;
