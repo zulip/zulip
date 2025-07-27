@@ -388,7 +388,7 @@ function create_stream(): void {
     }
 
     loading.make_indicator($("#stream_creating_indicator"), {
-        text: $t({defaultMessage: "Creating channel..."}),
+        text: $t({defaultMessage: "Creating channel…"}),
     });
 
     const topics_policy = $("#id_new_topics_policy").val();

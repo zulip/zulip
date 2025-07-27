@@ -377,7 +377,7 @@ class AltchaWidget(forms.TextInput):
             orjson.dumps(
                 {
                     "verified": _("Verified that you're a human user!"),
-                    "verifying": _("Verifying that you're not a bot..."),
+                    "verifying": _("Verifying that you're not a bot…"),
                 }
             ).decode(),
         )
