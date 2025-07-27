@@ -173,6 +173,10 @@ export function clear_interleaved_view_messages_fading_banner(): void {
     $(`#compose_banners .${CSS.escape(CLASSNAMES.interleaved_view_messages_fading)}`).remove();
 }
 
+export function clear_convert_pasted_text_to_file_banner(): void {
+    $(`#compose_banners .${CSS.escape(CLASSNAMES.convert_pasted_text_to_file)}`).remove();
+}
+
 export function clear_all(): void {
     scroll_util.get_content_element($(`#compose_banners`)).empty();
 }
