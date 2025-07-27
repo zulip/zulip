@@ -127,6 +127,7 @@ export function fetch_and_render_message_history(message: Message): void {
             move_history_only,
         }),
     );
+    $("#message-edit-history-overlay-container").attr("data-message-id", message.id);
     open_overlay();
     show_loading_indicator();
     void channel.get({
@@ -136,6 +137,13 @@ export function fetch_and_render_message_history(message: Message): void {
             allow_empty_topic_name: true,
         },
         success(raw_data) {
+            if (
+                !overlays.message_edit_history_open() ||
+                $("#message-edit-history-overlay-container").attr("data-message-id") !==
+                    String(message.id)
+            ) {
+                return;
+            }
             const data = server_message_history_schema.parse(raw_data);
 
             const content_edit_history: EditHistoryEntry[] = [];
