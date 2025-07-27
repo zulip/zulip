@@ -2031,5 +2031,5 @@ class TestSupportEndpoint(ZulipTestCase):
                 "/activity/support",
                 {"realm_id": f"{realm.id}", "delete_user_by_id": hamlet.id},
             )
-            m.assert_called_once_with(hamlet)
+            m.assert_called_once_with(hamlet, acting_user=self.example_user("iago"))
             self.assert_in_success_response([f"{hamlet_email} in zulip deleted"], result)
