@@ -1293,12 +1293,11 @@ def handle_remove_push_notification(user_profile_id: int, message_ids: list[int]
     gcm_payload, gcm_options = get_remove_payload_gcm(user_profile, truncated_message_ids)
     apns_payload = get_remove_payload_apns(user_profile, truncated_message_ids)
 
+    # We need to call both the legacy/non-E2EE and E2EE functions
+    # for sending mobile notifications, since we don't at this time
+    # know which mobile app version the user may be using.
     send_push_notifications_legacy(user_profile, apns_payload, gcm_payload, gcm_options)
-    if settings.DEVELOPMENT:
-        # TODO: Remove the 'settings.DEVELOPMENT' check when mobile clients start
-        # to offer a way to register for E2EE push notifications; otherwise it'll
-        # do needless DB query and logging.
-        send_push_notifications(user_profile, apns_payload, gcm_payload, is_removal=True)
+    send_push_notifications(user_profile, apns_payload, gcm_payload, is_removal=True)
 
     # We intentionally use the non-truncated message_ids here.  We are
     # assuming in this very rare case that the user has manually
@@ -1680,15 +1679,11 @@ def handle_push_notification(user_profile_id: int, missed_message: dict[str, Any
     )
     logger.info("Sending push notifications to mobile clients for user %s", user_profile_id)
 
-    # TODO: We plan to offer a personal, realm-level, and server-level setting
-    # to require all notifications to be end-to-end encrypted. When either setting
-    # is enabled, we skip calling 'send_push_notifications_legacy'.
+    # We need to call both the legacy/non-E2EE and E2EE functions
+    # for sending mobile notifications, since we don't at this time
+    # know which mobile app version the user may be using.
     send_push_notifications_legacy(user_profile, apns_payload, gcm_payload, gcm_options)
-    if settings.DEVELOPMENT:
-        # TODO: Remove the 'settings.DEVELOPMENT' check when mobile clients start
-        # to offer a way to register for E2EE push notifications; otherwise it'll
-        # do needless DB query and logging.
-        send_push_notifications(user_profile, apns_payload, gcm_payload)
+    send_push_notifications(user_profile, apns_payload, gcm_payload)
 
 
 def send_test_push_notification_directly_to_devices(
