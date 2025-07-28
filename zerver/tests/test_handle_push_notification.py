@@ -146,10 +146,15 @@ class HandlePushNotificationTest(PushNotificationTestCase):
                 ),
             )
 
+            self.assertIn(
+                "INFO:zerver.lib.push_notifications:"
+                f"Skipping E2EE push notifications for user {self.user_profile.id} because there are no registered devices",
+                pn_logger.output,
+            )
+
     @activate_push_notification_service()
     @responses.activate
-    @mock.patch("zerver.lib.push_notifications.send_push_notifications")
-    def test_end_to_end_failure_due_to_no_plan(self, unused_mock: mock.MagicMock) -> None:
+    def test_end_to_end_failure_due_to_no_plan(self) -> None:
         self.add_mock_response()
 
         self.setup_apns_tokens()
@@ -191,6 +196,7 @@ class HandlePushNotificationTest(PushNotificationTestCase):
                 [
                     f"INFO:zerver.lib.push_notifications:Sending push notifications to mobile clients for user {self.user_profile.id}",
                     "WARNING:zerver.lib.push_notifications:Bouncer refused to send push notification: Your plan doesn't allow sending push notifications. Reason provided by the server: Push notifications access with 10+ users requires signing up for a plan. https://zulip.com/plans/",
+                    f"INFO:zerver.lib.push_notifications:Skipping E2EE push notifications for user {self.user_profile.id} because there are no registered devices",
                 ],
             )
             realm.refresh_from_db()
@@ -215,7 +221,7 @@ class HandlePushNotificationTest(PushNotificationTestCase):
             handle_push_notification(self.user_profile.id, new_missed_message)
             self.assertIn(
                 f"Sent mobile push notifications for user {self.user_profile.id}",
-                pn_logger.output[-1],
+                pn_logger.output[-2],
             )
             realm.refresh_from_db()
             self.assertEqual(realm.push_notifications_enabled, True)
@@ -484,8 +490,7 @@ class HandlePushNotificationTest(PushNotificationTestCase):
                 ],
             )
 
-    @mock.patch("zerver.lib.push_notifications.send_push_notifications")
-    def test_send_notifications_to_bouncer(self, unused_mock: mock.MagicMock) -> None:
+    def test_send_notifications_to_bouncer(self) -> None:
         self.setup_apns_tokens()
         self.setup_fcm_tokens()
 
@@ -554,6 +559,7 @@ class HandlePushNotificationTest(PushNotificationTestCase):
                 [
                     f"INFO:zerver.lib.push_notifications:Sending push notifications to mobile clients for user {user_profile.id}",
                     f"INFO:zerver.lib.push_notifications:Sent mobile push notifications for user {user_profile.id} through bouncer: 3 via FCM devices, 5 via APNs devices",
+                    f"INFO:zerver.lib.push_notifications:Skipping E2EE push notifications for user {self.user_profile.id} because there are no registered devices",
                 ],
             )
 

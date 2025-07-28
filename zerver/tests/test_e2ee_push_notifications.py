@@ -16,9 +16,8 @@ from zilencer.models import RemoteRealm, RemoteRealmCount
 
 
 @activate_push_notification_service()
-@mock.patch("zerver.lib.push_notifications.send_push_notifications_legacy")
 class SendPushNotificationTest(E2EEPushNotificationTestCase):
-    def test_success_cloud(self, unused_mock: mock.MagicMock) -> None:
+    def test_success_cloud(self) -> None:
         hamlet = self.example_user("hamlet")
         aaron = self.example_user("aaron")
 
@@ -56,8 +55,13 @@ class SendPushNotificationTest(E2EEPushNotificationTestCase):
             )
             self.assertEqual(
                 "INFO:zerver.lib.push_notifications:"
-                f"APNs: Success sending to (push_account_id={registered_device_apple.push_account_id}, device={registered_device_apple.token})",
+                f"Skipping legacy push notifications for user {hamlet.id} because there are no registered devices",
                 zerver_logger.output[1],
+            )
+            self.assertEqual(
+                "INFO:zerver.lib.push_notifications:"
+                f"APNs: Success sending to (push_account_id={registered_device_apple.push_account_id}, device={registered_device_apple.token})",
+                zerver_logger.output[2],
             )
             self.assertEqual(
                 "INFO:zilencer.lib.push_notifications:"
@@ -67,7 +71,7 @@ class SendPushNotificationTest(E2EEPushNotificationTestCase):
             self.assertEqual(
                 "INFO:zerver.lib.push_notifications:"
                 f"Sent E2EE mobile push notifications for user {hamlet.id}: 1 via FCM, 1 via APNs",
-                zerver_logger.output[2],
+                zerver_logger.output[3],
             )
 
             realm_count_dict = (
@@ -77,7 +81,7 @@ class SendPushNotificationTest(E2EEPushNotificationTestCase):
             )
             self.assertEqual(realm_count_dict, dict(subgroup=None, value=2))
 
-    def test_no_registered_device(self, unused_mock: mock.MagicMock) -> None:
+    def test_no_registered_device(self) -> None:
         aaron = self.example_user("aaron")
         hamlet = self.example_user("hamlet")
 
@@ -99,11 +103,16 @@ class SendPushNotificationTest(E2EEPushNotificationTestCase):
             )
             self.assertEqual(
                 "INFO:zerver.lib.push_notifications:"
-                f"Skipping E2EE push notifications for user {hamlet.id} because there are no registered devices",
+                f"Skipping legacy push notifications for user {hamlet.id} because there are no registered devices",
                 zerver_logger.output[1],
             )
+            self.assertEqual(
+                "INFO:zerver.lib.push_notifications:"
+                f"Skipping E2EE push notifications for user {hamlet.id} because there are no registered devices",
+                zerver_logger.output[2],
+            )
 
-    def test_invalid_or_expired_token(self, unused_mock: mock.MagicMock) -> None:
+    def test_invalid_or_expired_token(self) -> None:
         aaron = self.example_user("aaron")
         hamlet = self.example_user("hamlet")
 
@@ -147,7 +156,7 @@ class SendPushNotificationTest(E2EEPushNotificationTestCase):
             self.assertEqual(
                 "INFO:zerver.lib.push_notifications:"
                 f"APNs: Removing invalid/expired token {registered_device_apple.token} (BadDeviceToken)",
-                zerver_logger.output[1],
+                zerver_logger.output[2],
             )
             self.assertEqual(
                 "INFO:zilencer.lib.push_notifications:"
@@ -157,12 +166,12 @@ class SendPushNotificationTest(E2EEPushNotificationTestCase):
             self.assertEqual(
                 "INFO:zerver.lib.push_notifications:"
                 f"Deleting PushDevice rows with the following device IDs based on response from bouncer: [{registered_device_apple.device_id}, {registered_device_android.device_id}]",
-                zerver_logger.output[2],
+                zerver_logger.output[3],
             )
             self.assertEqual(
                 "INFO:zerver.lib.push_notifications:"
                 f"Sent E2EE mobile push notifications for user {hamlet.id}: 0 via FCM, 0 via APNs",
-                zerver_logger.output[3],
+                zerver_logger.output[4],
             )
 
             # Verify `expired_time` set for `RemotePushDevice` entries
@@ -173,7 +182,7 @@ class SendPushNotificationTest(E2EEPushNotificationTestCase):
             self.assertIsNotNone(registered_device_android.expired_time)
             self.assertEqual(PushDevice.objects.count(), 0)
 
-    def test_fcm_apns_error(self, unused_mock: mock.MagicMock) -> None:
+    def test_fcm_apns_error(self) -> None:
         hamlet = self.example_user("hamlet")
         aaron = self.example_user("aaron")
 
@@ -220,7 +229,7 @@ class SendPushNotificationTest(E2EEPushNotificationTestCase):
             self.assertEqual(
                 "INFO:zerver.lib.push_notifications:"
                 f"Sent E2EE mobile push notifications for user {hamlet.id}: 0 via FCM, 0 via APNs",
-                zerver_logger.output[1],
+                zerver_logger.output[2],
             )
 
         # `firebase_messaging.send_each` raises Error.
@@ -255,10 +264,10 @@ class SendPushNotificationTest(E2EEPushNotificationTestCase):
             self.assertEqual(
                 "INFO:zerver.lib.push_notifications:"
                 f"Sent E2EE mobile push notifications for user {hamlet.id}: 0 via FCM, 1 via APNs",
-                zerver_logger.output[1],
+                zerver_logger.output[2],
             )
 
-    def test_early_return_if_expired_time_set(self, unused_mock: mock.MagicMock) -> None:
+    def test_early_return_if_expired_time_set(self) -> None:
         aaron = self.example_user("aaron")
         hamlet = self.example_user("hamlet")
 
@@ -299,7 +308,7 @@ class SendPushNotificationTest(E2EEPushNotificationTestCase):
 
     @responses.activate
     @override_settings(ZILENCER_ENABLED=False)
-    def test_success_self_hosted(self, unused_mock: mock.MagicMock) -> None:
+    def test_success_self_hosted(self) -> None:
         self.add_mock_response()
 
         hamlet = self.example_user("hamlet")
@@ -352,8 +361,13 @@ class SendPushNotificationTest(E2EEPushNotificationTestCase):
             )
             self.assertEqual(
                 "INFO:zerver.lib.push_notifications:"
-                f"APNs: Success sending to (push_account_id={registered_device_apple.push_account_id}, device={registered_device_apple.token})",
+                f"Skipping legacy push notifications for user {hamlet.id} because there are no registered devices",
                 zerver_logger.output[1],
+            )
+            self.assertEqual(
+                "INFO:zerver.lib.push_notifications:"
+                f"APNs: Success sending to (push_account_id={registered_device_apple.push_account_id}, device={registered_device_apple.token})",
+                zerver_logger.output[2],
             )
             self.assertEqual(
                 "INFO:zilencer.lib.push_notifications:"
@@ -363,7 +377,7 @@ class SendPushNotificationTest(E2EEPushNotificationTestCase):
             self.assertEqual(
                 "INFO:zerver.lib.push_notifications:"
                 f"Sent E2EE mobile push notifications for user {hamlet.id}: 1 via FCM, 1 via APNs",
-                zerver_logger.output[2],
+                zerver_logger.output[3],
             )
 
             realm_count_dict = (
@@ -393,7 +407,7 @@ class SendPushNotificationTest(E2EEPushNotificationTestCase):
 
     @responses.activate
     @override_settings(ZILENCER_ENABLED=False)
-    def test_missing_remote_realm_error(self, unused_mock: mock.MagicMock) -> None:
+    def test_missing_remote_realm_error(self) -> None:
         self.add_mock_response()
 
         hamlet = self.example_user("hamlet")
@@ -438,7 +452,7 @@ class SendPushNotificationTest(E2EEPushNotificationTestCase):
             self.assertEqual(
                 "WARNING:zerver.lib.push_notifications:"
                 "Bouncer refused to send E2EE push notification: Organization not registered",
-                zerver_logger.output[1],
+                zerver_logger.output[2],
             )
 
             realm.refresh_from_db()
@@ -447,7 +461,7 @@ class SendPushNotificationTest(E2EEPushNotificationTestCase):
 
     @responses.activate
     @override_settings(ZILENCER_ENABLED=False)
-    def test_no_plan_error(self, unused_mock: mock.MagicMock) -> None:
+    def test_no_plan_error(self) -> None:
         self.add_mock_response()
 
         hamlet = self.example_user("hamlet")
@@ -488,18 +502,106 @@ class SendPushNotificationTest(E2EEPushNotificationTestCase):
                 "WARNING:zerver.lib.push_notifications:"
                 "Bouncer refused to send E2EE push notification: Your plan doesn't allow sending push notifications. "
                 "Reason provided by the server: Push notifications access with 10+ users requires signing up for a plan. https://zulip.com/plans/",
-                zerver_logger.output[1],
+                zerver_logger.output[2],
             )
 
             realm.refresh_from_db()
             self.assertFalse(realm.push_notifications_enabled)
             self.assertIsNone(realm.push_notifications_enabled_end_timestamp)
 
+    def test_both_old_and_new_client_coexists(self) -> None:
+        """Test coexistence of old (which don't support E2EE)
+        and new client devices registered for push notifications.
+        """
+        hamlet = self.example_user("hamlet")
+        aaron = self.example_user("aaron")
+
+        registered_device_apple, registered_device_android = (
+            self.register_push_devices_for_notification()
+        )
+        registered_device_apple_old, registered_device_android_old = (
+            self.register_old_push_devices_for_notification()
+        )
+
+        message_id = self.send_personal_message(
+            from_user=aaron, to_user=hamlet, skip_capture_on_commit_callbacks=True
+        )
+        missed_message = {
+            "message_id": message_id,
+            "trigger": NotificationTriggers.DIRECT_MESSAGE,
+        }
+
+        self.assertEqual(RealmCount.objects.count(), 0)
+
+        with (
+            self.mock_fcm(for_legacy=True) as mock_fcm_messaging_legacy,
+            self.mock_apns(for_legacy=True) as send_notification_legacy,
+            self.mock_fcm() as mock_fcm_messaging,
+            self.mock_apns() as send_notification,
+            mock.patch(
+                "zerver.lib.push_notifications.uses_notification_bouncer", return_value=False
+            ),
+            self.assertLogs("zerver.lib.push_notifications", level="INFO") as zerver_logger,
+            self.assertLogs("zilencer.lib.push_notifications", level="INFO") as zilencer_logger,
+        ):
+            mock_fcm_messaging_legacy.send_each.return_value = self.make_fcm_success_response(
+                for_legacy=True
+            )
+            send_notification_legacy.return_value.is_successful = True
+            mock_fcm_messaging.send_each.return_value = self.make_fcm_success_response()
+            send_notification.return_value.is_successful = True
+
+            handle_push_notification(hamlet.id, missed_message)
+
+            mock_fcm_messaging_legacy.send_each.assert_called_once()
+            send_notification_legacy.assert_called_once()
+            mock_fcm_messaging.send_each.assert_called_once()
+            send_notification.assert_called_once()
+
+            self.assertEqual(
+                "INFO:zerver.lib.push_notifications:"
+                f"Sending push notifications to mobile clients for user {hamlet.id}",
+                zerver_logger.output[0],
+            )
+            # Logs in legacy codepath
+            self.assertEqual(
+                zerver_logger.output[1:6],
+                [
+                    f"INFO:zerver.lib.push_notifications:Sending mobile push notifications for local user {hamlet.id}: 1 via FCM devices, 1 via APNs devices",
+                    f"INFO:zerver.lib.push_notifications:APNs: Sending notification for local user <id:{hamlet.id}> to 1 devices (skipped 0 duplicates)",
+                    f"INFO:zerver.lib.push_notifications:APNs: Success sending for user <id:{hamlet.id}> to device {registered_device_apple_old.token}",
+                    f"INFO:zerver.lib.push_notifications:FCM: Sending notification for local user <id:{hamlet.id}> to 1 devices",
+                    f"INFO:zerver.lib.push_notifications:FCM: Sent message with ID: 0 to {registered_device_android_old.token}",
+                ],
+            )
+            # Logs in E2EE codepath
+            self.assertEqual(
+                "INFO:zerver.lib.push_notifications:"
+                f"APNs: Success sending to (push_account_id={registered_device_apple.push_account_id}, device={registered_device_apple.token})",
+                zerver_logger.output[6],
+            )
+            self.assertEqual(
+                "INFO:zilencer.lib.push_notifications:"
+                f"FCM: Sent message with ID: 0 to (push_account_id={registered_device_android.push_account_id}, device={registered_device_android.token})",
+                zilencer_logger.output[0],
+            )
+            self.assertEqual(
+                "INFO:zerver.lib.push_notifications:"
+                f"Sent E2EE mobile push notifications for user {hamlet.id}: 1 via FCM, 1 via APNs",
+                zerver_logger.output[7],
+            )
+
+            realm_count_dict = (
+                RealmCount.objects.filter(property="mobile_pushes_sent::day")
+                .values("subgroup", "value")
+                .last()
+            )
+            self.assertEqual(realm_count_dict, dict(subgroup=None, value=4))
+
 
 @activate_push_notification_service()
-@mock.patch("zerver.lib.push_notifications.send_push_notifications_legacy")
 class RemovePushNotificationTest(E2EEPushNotificationTestCase):
-    def test_success_cloud(self, unused_mock: mock.MagicMock) -> None:
+    def test_success_cloud(self) -> None:
         hamlet = self.example_user("hamlet")
         aaron = self.example_user("aaron")
 
@@ -531,12 +633,12 @@ class RemovePushNotificationTest(E2EEPushNotificationTestCase):
             self.assertEqual(
                 "INFO:zerver.lib.push_notifications:"
                 f"Sent E2EE mobile push notifications for user {hamlet.id}: 1 via FCM, 1 via APNs",
-                zerver_logger.output[1],
+                zerver_logger.output[2],
             )
 
     @responses.activate
     @override_settings(ZILENCER_ENABLED=False)
-    def test_success_self_hosted(self, unused_mock: mock.MagicMock) -> None:
+    def test_success_self_hosted(self) -> None:
         self.add_mock_response()
 
         hamlet = self.example_user("hamlet")
@@ -574,5 +676,5 @@ class RemovePushNotificationTest(E2EEPushNotificationTestCase):
             self.assertEqual(
                 "INFO:zerver.lib.push_notifications:"
                 f"Sent E2EE mobile push notifications for user {hamlet.id}: 1 via FCM, 1 via APNs",
-                zerver_logger.output[1],
+                zerver_logger.output[2],
             )
