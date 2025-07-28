@@ -161,6 +161,18 @@ exports.fixtures = {
         },
     },
 
+    channel_folder__update: {
+        type: "channel_folder",
+        op: "update",
+        channel_folder_id: 1,
+        data: {
+            name: "New frontend",
+            description: "Channels for new frontend discussions",
+            rendered_description: "<p>Channels for new frontend discussions</p>",
+            is_archived: true,
+        },
+    },
+
     channel_typing_edit_message__start: {
         type: "typing_edit_message",
         op: "start",
