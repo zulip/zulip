@@ -95,6 +95,13 @@ export function uncollapse(message: Message): void {
     }
 }
 
+// Add a new function to handle revealing muted messages while preserving collapsed state
+export function reveal_muted_message($row: JQuery): void {
+    $row.removeClass("hidden message_hidden_dialog message_hidden");
+    // Preserve .message_collapsed - don't remove it
+    // This ensures the message stays collapsed with "Show more" button
+}
+
 export function collapse(message: Message): void {
     message.collapsed = true;
 
@@ -290,6 +297,35 @@ export function initialize(): void {
         assert(message_lists.current !== undefined);
         const message = message_lists.current.get(id);
         assert(message !== undefined);
+        const $content = $row.find(".message_content");
+        if (message.collapsed) {
+            // Uncollapse.
+            uncollapse(message);
+        } else if ($content.hasClass("condensed")) {
+            // Uncondense (show the full long message).
+            message.condensed = false;
+            uncondense_row($row);
+        }
+        // Select and scroll to the message so that it is in the view.
+        message_lists.current.select_id(message.id, {then_scroll: true});
+        e.stopPropagation();
+        e.preventDefault();
+    });
+
+    $("#message_feed_container").on("click", ".message_condenser", function (this: HTMLElement, e) {
+        const $row = $(this).closest(".message_row");
+        const id = rows.id($row);
+        assert(message_lists.current !== undefined);
+        const message = message_lists.current.get(id);
+        assert(message !== undefined);
+        message.condensed = true;
+        condense_row($row);
+        // Select and scroll to the message so that it is in the view.
+        message_lists.current.select_id(message.id, {then_scroll: true});
+        e.stopPropagation();
+        e.preventDefault();
+    });
+}
         const $content = $row.find(".message_content");
         if (message.collapsed) {
             // Uncollapse.

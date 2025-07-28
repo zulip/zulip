@@ -50,19 +50,17 @@
 </div>
 
 {{#unless status_message}}
-    {{#unless is_hidden}}
-    <div class="message_content rendered_markdown">
-        {{#if use_match_properties}}
-            {{rendered_markdown msg/match_content}}
+    <div class="message_content rendered_markdown{{#if is_hidden}} hidden{{/if}}{{#if msg.collapsed}} collapsed{{/if}}">
+        {{#if is_hidden}}
+            {{> message_hidden_dialog}}
         {{else}}
-            {{rendered_markdown msg/content}}
+            {{#if use_match_properties}}
+                {{rendered_markdown msg/match_content}}
+            {{else}}
+                {{rendered_markdown msg/content}}
+            {{/if}}
         {{/if}}
     </div>
-    {{else}}
-    <div class="message_content rendered_markdown">
-        {{> message_hidden_dialog}}
-    </div>
-    {{/unless}}
 {{/unless}}
 
 {{#if message_edit_notices_in_left_col}}
@@ -72,5 +70,7 @@
 <div class="message_length_controller"></div>
 
 {{#if (and (not is_hidden) msg.message_reactions)}}
+    {{> message_reactions . }}
+{{/if}}
     {{> message_reactions . }}
 {{/if}}

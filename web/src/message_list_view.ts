@@ -15,7 +15,7 @@ import render_single_message from "../templates/single_message.hbs";
 import * as activity from "./activity.ts";
 import * as blueslip from "./blueslip.ts";
 import * as compose_fade from "./compose_fade.ts";
-import * as condense from "./condense.ts";
+import * as condense from "./condense";
 import * as hash_util from "./hash_util.ts";
 import {$t} from "./i18n.ts";
 import * as message_edit from "./message_edit.ts";
@@ -1693,12 +1693,19 @@ export class MessageListView {
     }
 
     reveal_hidden_message(message_id: number): void {
+        const $row = this.get_row(message_id);
+        if ($row.length === 0) {
+            return;
+        }
+        
+        // Use the new reveal function that preserves collapsed state
+        condense.reveal_muted_message($row);
+        
+        // Update the message container to mark it as revealed
         const message_container = this.message_containers.get(message_id);
-        assert(message_container !== undefined);
-        this._rerender_message(message_container, {
-            message_content_edited: false,
-            is_revealed: true,
-        });
+        if (message_container !== undefined) {
+            message_container.is_hidden = false;
+        }
     }
 
     hide_revealed_message(message_id: number): void {
@@ -2076,6 +2083,8 @@ export class MessageListView {
             const possible_new_date_separator_start = sticky_header_bottom - date_separator_padding;
             /* Get `message_row` under the sticky header. */
             const elements_below_sticky_header = document.elementsFromPoint(
+
+               
                 sticky_header_props.left,
                 possible_new_date_separator_start,
             );
