@@ -825,10 +825,14 @@
         hsl(0deg 0% 100% / 19%)
     );
     --color-outline-focus: hsl(215deg 47% 50%);
-    --color-background-search: light-dark(hsl(0deg 0% 100%), hsl(0deg 0% 20%));
+    --color-background-search: light-dark(hsl(0deg 0% 100%), hsl(0deg 0% 17%));
+    --color-background-search-collapsed: light-dark(
+        hsl(0deg 0% 100%),
+        hsl(0deg 0% 20%)
+    );
     --color-background-search-option-hover: light-dark(
         hsl(0deg 0% 94%),
-        hsl(0deg 0% 30%)
+        hsl(0deg 0% 20%)
     );
     --color-search-box-hover-shadow: light-dark(
         hsl(0deg 0% 0% / 10%),
@@ -1804,6 +1808,11 @@
     --color-background-input-pill: light-dark(
         hsl(237deg 68% 94%),
         hsl(240deg 65% 60% / 22%)
+    );
+    /* Tuned pill for the search bar in dark mode. */
+    --color-background-input-pill-search: light-dark(
+        hsl(237deg 68% 94%),
+        hsl(240deg 65% 60% / 30%)
     );
     --color-background-input-pill-hover: light-dark(
         hsl(240deg 70% 70% / 30%),
