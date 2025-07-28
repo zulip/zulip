@@ -717,7 +717,7 @@ export class Filter {
 
         switch (operator) {
             case "channel":
-                return verb + "messages in a channel";
+                return verb + "messages in a specific channel";
             case "channels":
                 return verb + "channel type";
             case "near":
