@@ -393,7 +393,6 @@
         }
 
         .inbox-header-name-text,
-        .collapsible-button .zulip-icon,
         .unread_mention_info,
         .unread_count {
             color: var(--color-folder-header);
@@ -582,6 +581,10 @@
     .zulip-icon-chevron-down {
         transform: rotate(0deg);
     }
+}
+
+.folder-row-chevron {
+    color: var(--color-folder-header);
 }
 
 .channel-row-chevron {
