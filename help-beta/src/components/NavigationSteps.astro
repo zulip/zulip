@@ -169,7 +169,7 @@ type RelativeLinkInfo = {
 const default_template_for_relative_links = `
 <ol>
   <li>Click on the <strong>gear</strong> (${RawZulipIconGear}) icon in the upper right corner of the web or desktop app.</li>
-  <li>Select {item}.</li>
+  <li class="navigation-step-relative-type">Select {item}.</li>
 </ol>
 `;
 
@@ -184,27 +184,27 @@ const relative_link_mapping: Record<
     gear: {
         data: {
             "channel-settings": {
-                label: `${RawZulipIconHash} Channel settings`,
+                label: `${RawZulipIconHash}Channel settings`,
                 relative_link: "/#channels/subscribed",
             },
             settings: {
-                label: `${RawZulipIconTool} Personal Settings`,
+                label: `${RawZulipIconTool}Personal Settings`,
                 relative_link: "/#settings/profile",
             },
             "organization-settings": {
-                label: `${RawZulipIconBuilding} Organization settings`,
+                label: `${RawZulipIconBuilding}Organization settings`,
                 relative_link: "/#organization/organization-profile",
             },
             "group-settings": {
-                label: `${RawZulipIconUserGroupCog} Group settings`,
+                label: `${RawZulipIconUserGroupCog}Group settings`,
                 relative_link: "/#groups/your",
             },
             stats: {
-                label: `${RawZulipIconBarChart} Usage statistics`,
+                label: `${RawZulipIconBarChart}Usage statistics`,
                 relative_link: "/stats",
             },
             integrations: {
-                label: `${RawZulipIconGitPullRequest} Integrations`,
+                label: `${RawZulipIconGitPullRequest}Integrations`,
                 relative_link: "/integrations/",
             },
             "about-zulip": {
@@ -218,11 +218,11 @@ const relative_link_mapping: Record<
     "gear-billing": {
         data: {
             plans: {
-                label: `${RawZulipIconRocket} Plans and pricing`,
+                label: `${RawZulipIconRocket}Plans and pricing`,
                 relative_link: "/plans/",
             },
             billing: {
-                label: `${RawZulipIconCreditCard} Billing`,
+                label: `${RawZulipIconCreditCard}Billing`,
                 relative_link: "/billing/",
             },
         },
@@ -232,26 +232,26 @@ const relative_link_mapping: Record<
     help: {
         data: {
             "keyboard-shortcuts": {
-                label: `${RawZulipIconKeyboard} Keyboard shortcuts`,
+                label: `${RawZulipIconKeyboard}Keyboard shortcuts`,
                 relative_link: "/#keyboard-shortcuts",
             },
             "message-formatting": {
-                label: `${RawZulipIconEdit} Message formatting`,
+                label: `${RawZulipIconEdit}Message formatting`,
                 relative_link: "/#message-formatting",
             },
             "search-filters": {
-                label: `${RawZulipIconManageSearch} Search filters`,
+                label: `${RawZulipIconManageSearch}Search filters`,
                 relative_link: "/#search-operators",
             },
             "about-zulip": {
-                label: `${RawZulipIconInfo} About Zulip`,
+                label: `${RawZulipIconInfo}About Zulip`,
                 relative_link: "/#about-zulip",
             },
         },
         template: `
 <ol>
   <li>Click on the <strong>Help menu</strong> (${RawZulipIconHelp}) icon in the upper right corner of the app.</li>
-  <li>Select {item}.</li>
+  <li class="navigation-step-relative-type">Select {item}.</li>
 </ol>
 `,
         is_link_relative: () => SHOW_RELATIVE_LINKS,
