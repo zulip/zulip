@@ -584,6 +584,17 @@
     }
 }
 
+.channel-row-chevron {
+    color: var(--color-inbox-row-chevron);
+}
+
+.inbox-collapsed-state {
+    .folder-row-chevron,
+    .channel-row-chevron {
+        opacity: 0.5;
+    }
+}
+
 .inbox-container #inbox-pane .inbox-folder .unread_mention_info {
     display: none;
 }
