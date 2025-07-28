@@ -2,7 +2,6 @@ import $ from "jquery";
 import assert from "minimalistic-assert";
 
 import render_message_length_toggle from "../templates/message_length_toggle.hbs";
-
 import * as message_flags from "./message_flags.ts";
 import type {MessageList} from "./message_list.ts";
 import * as message_lists from "./message_lists.ts";
@@ -188,7 +187,7 @@ export function condense_and_collapse(elems: JQuery): void {
 
     if (message_lists.current !== state.message_list) {
         state.message_list = message_lists.current;
-        state.has_unread_cutoff_by_message_id = new Set();
+        state.has_unread_cutoff_by_message_id = new Set<number>();
     }
 
     // For unread messages, we allow them to expand to most of a
