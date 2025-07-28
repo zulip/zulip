@@ -75,11 +75,11 @@ export function update_property<P extends keyof UpdatableStreamProperties>(
     stream_id: number,
     property: P,
     value: UpdatableStreamProperties[P],
-    other_values?: {
-        rendered_description: string;
-        history_public_to_subscribers: boolean;
-        is_web_public: boolean;
-    },
+    other_values: {
+        rendered_description?: string | undefined;
+        history_public_to_subscribers?: boolean | undefined;
+        is_web_public?: boolean | undefined;
+    } = {},
 ): void {
     const sub = sub_store.get(stream_id);
     if (sub === undefined) {
@@ -172,7 +172,7 @@ export function update_property<P extends keyof UpdatableStreamProperties>(
             compose_recipient.possibly_update_stream_name_in_compose(sub.stream_id);
         },
         description(value) {
-            assert(other_values !== undefined);
+            assert(other_values.rendered_description !== undefined);
             stream_settings_ui.update_stream_description(
                 sub,
                 value,
@@ -184,7 +184,8 @@ export function update_property<P extends keyof UpdatableStreamProperties>(
             stream_list.refresh_pinned_or_unpinned_stream(sub);
         },
         invite_only(value) {
-            assert(other_values !== undefined);
+            assert(other_values.history_public_to_subscribers !== undefined);
+            assert(other_values.is_web_public !== undefined);
             stream_settings_ui.update_stream_privacy(sub, {
                 invite_only: value,
                 history_public_to_subscribers: other_values.history_public_to_subscribers,
