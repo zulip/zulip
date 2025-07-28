@@ -607,6 +607,17 @@ def get_include_files_info(include_input_dir: str) -> dict[str, IncludeFileInfo]
             include_files_info[name] = {
                 "is_only_ordered_list": is_include_only_ordered_list(markdown_string)
             }
+            # We are just checking one level deep and not checking for
+            # any recursions, which would be fine for our use case.
+            if markdown_string.startswith("{!"):
+                nested_file_name = (
+                    markdown_string.splitlines()[0].strip().replace("{!", "").replace("!}", "")
+                )
+                nested_file_path = os.path.join(include_input_dir, nested_file_name)
+                nested_markdown_string = get_markdown_string_from_file(nested_file_path)
+                include_files_info[name] = {
+                    "is_only_ordered_list": is_include_only_ordered_list(nested_markdown_string)
+                }
 
     return include_files_info
 
