@@ -188,6 +188,13 @@ to these terms.
 We've designed this push notification bouncer service with security
 and privacy in mind:
 
+- Zulip Server 11.0+ supports a new end-to-end encrypted (E2EE)
+  protocol for mobile push notifications. Because mobile app support
+  for that protocol is not yet available, this documentation details
+  the legacy protocol. This documentation will be updated to reflect
+  on the new protocol's better privacy guarantees once [official
+  mobile app support][e2ee-flutter-issue] for the new protocol is
+  generally available.
 - A central design goal of the Push Notification Service is to
   avoid any message content being stored or logged by the service,
   even in error cases.
@@ -215,17 +222,16 @@ and privacy in mind:
   - A timestamp.
   - The message's content.
 
-  There's a `PUSH_NOTIFICATION_REDACT_CONTENT` setting available to
-  disable any message content being sent via the push notification
-  bouncer (i.e., message content will be replaced with
-  `New message`). Note that this setting makes push notifications
-  significantly less usable.
+  Zulip 11.0+ has an organization-level setting available to disable
+  message content being sent via the push notification bouncer (i.e.,
+  message content will be replaced with `New message`), for clients
+  that don't support the new end-to-end encrypted notifications
+  protocol. As of July 2025, this setting makes push notifications
+  significantly less usable, since mobile client support for
+  end-to-end encrypted push notifications is not yet available.
 
-  We plan to
-  [replace that setting with end-to-end encryption](https://github.com/zulip/zulip/issues/6954)
-  which would eliminate that usability tradeoff and additionally allow
-  us to not have any access to the other details mentioned in this
-  section.
+  (Prior to Zulip 11.0, this functionality was available via the
+  `PUSH_NOTIFICATION_REDACT_CONTENT` server-level setting).
 
 - All of the network requests (both from Zulip servers to the Push
   Notification Service and from the Push Notification Service to the
@@ -240,6 +246,8 @@ and privacy in mind:
 
 If you have any questions about the security model, [contact Zulip
 support](https://zulip.com/help/contact-support).
+
+[e2ee-flutter-issue]: https://github.com/zulip/zulip-flutter/issues/1764
 
 ### Uploading basic metadata
 

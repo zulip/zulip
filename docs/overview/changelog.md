@@ -182,9 +182,23 @@ _Released 2025-07-17_
   enabling the new `unique_account_id` setting for automatically
   handling [email address
   changes](../production/authentication-methods.md#synchronizing-email-addresses).
+- The `PUSH_NOTIFICATION_REDACT_CONTENT` server setting has been
+  replaced by an organization-level setting in the "Notifications
+  security" subsection of "organization settings". The new
+  organization-level setting's initial value is copied from
+  `PUSH_NOTIFICATION_REDACT_CONTENT`, so you should delete the setting
+  from `/etc/zulip/settings.py` **after** completing the upgrade.
+
+  The replacement setting is designed and labeled with future mobile
+  client support for end-to-end encrypted (E2EE) mobile notifications
+  in mind: it will only redact message content for mobile clients
+  using the legacy non-E2EE protocol.
+
 - Zulip's incoming email integration was simplified to no longer use
   `postfix`. Installations using the integration will automatically
-  uninstall `postfix` when upgraded.
+  uninstall `postfix` when upgraded. If your Zulip server was using
+  `postfix` for another purpose as well, you'll need to manually
+  presenve and update your `postfix` configuration.
 - The `SOCIAL_AUTH_SYNC_CUSTOM_ATTRS_DICT` setting has been removed.
   It was deprecated in favor of `SOCIAL_AUTH_SYNC_ATTRS_DICT` in 10.0.
 
