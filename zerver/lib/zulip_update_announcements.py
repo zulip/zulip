@@ -460,6 +460,20 @@ app released in June.
             filter_by_whether_resolved_url="/help/resolve-a-topic#filter-by-whether-topics-are-resolved",
         ),
     ),
+    ZulipUpdateAnnouncement(
+        level=20,
+        message="""
+- Organizations can now sort channels into [folders]({channel_folders_url}) to
+  group them in the left sidebar and the Inbox view. For example, you can put
+  all the channels associated with a team into a dedicated folder.
+
+**Mobile updates**
+- You can now [set your status]({set_a_status_url}).
+""".format(
+            channel_folders_url="/help/channel-folders",
+            set_a_status_url="/help/status-and-availability#set-a-status",
+        ),
+    ),
 ]
 
 
