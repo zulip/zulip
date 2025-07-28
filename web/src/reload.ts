@@ -35,6 +35,43 @@ function call_reload_hooks(): void {
     }
 }
 
+let idle_control: ReturnType<JQuery["idle"]>;
+let reload_from_idle: () => void;
+let basic_idle_timeout: number;
+let composing_idle_timeout: number;
+
+function compose_started_handler(): void {
+    // If the user stops being idle and starts composing a
+    // message, switch to the compose-open timeouts.
+    idle_control?.cancel();
+    idle_control = $(document).idle({
+        idle: composing_idle_timeout,
+        onIdle: reload_from_idle,
+    });
+}
+
+function compose_done_handler(): void {
+    // If the user sends their message or otherwise closes
+    // compose, we return them to the not-composing timeouts.
+    idle_control?.cancel();
+    idle_control = $(document).idle({
+        idle: basic_idle_timeout,
+        onIdle: reload_from_idle,
+    });
+}
+
+export function maybe_reload_after_compose_start(): void {
+    if (reload_state.is_pending() && typeof reload_from_idle === "function") {
+        compose_started_handler();
+    }
+}
+
+export function maybe_reload_after_compose_end(): void {
+    if (reload_state.is_pending() && typeof reload_from_idle === "function") {
+        compose_done_handler();
+    }
+}
+
 function preserve_state(send_after_reload: boolean, save_compose: boolean): void {
     if (!localstorage.supported()) {
         // If local storage is not supported by the browser, we can't
@@ -265,15 +302,14 @@ export function initiate({
             // makes it simple to reason about: We know that reloads will be
             // spread over at least 5 minutes in all cases.
 
-            let idle_control: ReturnType<JQuery["idle"]>;
             const random_variance = util.random_int(0, 1000 * 60 * 5);
             const unconditional_timeout = 1000 * 60 * 30 + random_variance;
-            const composing_idle_timeout = 1000 * 60 * 7 + random_variance;
-            const basic_idle_timeout = 1000 * 60 * 1 + random_variance;
+            composing_idle_timeout = 1000 * 60 * 7 + random_variance;
+            basic_idle_timeout = 1000 * 60 * 1 + random_variance;
 
-            function reload_from_idle(): void {
+            reload_from_idle = function (): void {
                 do_reload_app(false, save_compose, reason);
-            }
+            };
 
             // Make sure we always do a reload eventually after
             // unconditional_timeout.  Because we save cursor location and
@@ -281,50 +317,10 @@ export function initiate({
             // particularly disruptive.
             setTimeout(reload_from_idle, unconditional_timeout);
 
-            function compose_done_handler(): void {
-                // If the user sends their message or otherwise closes
-                // compose, we return them to the not-composing timeouts.
-                idle_control.cancel();
-                idle_control = $(document).idle({
-                    idle: basic_idle_timeout,
-                    onIdle: reload_from_idle,
-                });
-                $(document).off(
-                    "compose_canceled.zulip compose_finished.zulip",
-                    compose_done_handler,
-                );
-                $(document).on("compose_started.zulip", compose_started_handler);
-            }
-            function compose_started_handler(): void {
-                // If the user stops being idle and starts composing a
-                // message, switch to the compose-open timeouts.
-                idle_control.cancel();
-                idle_control = $(document).idle({
-                    idle: composing_idle_timeout,
-                    onIdle: reload_from_idle,
-                });
-                $(document).off("compose_started.zulip", compose_started_handler);
-                $(document).on(
-                    "compose_canceled.zulip compose_finished.zulip",
-                    compose_done_handler,
-                );
-            }
-
             if (compose_state.composing()) {
-                idle_control = $(document).idle({
-                    idle: composing_idle_timeout,
-                    onIdle: reload_from_idle,
-                });
-                $(document).on(
-                    "compose_canceled.zulip compose_finished.zulip",
-                    compose_done_handler,
-                );
+                compose_started_handler();
             } else {
-                idle_control = $(document).idle({
-                    idle: basic_idle_timeout,
-                    onIdle: reload_from_idle,
-                });
-                $(document).on("compose_started.zulip", compose_started_handler);
+                compose_done_handler();
             }
         },
         error(xhr) {
