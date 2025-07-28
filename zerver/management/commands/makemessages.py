@@ -33,7 +33,6 @@ https://stackoverflow.com/questions/2090717
 """
 
 import glob
-import itertools
 import os
 import re
 import subprocess
@@ -75,8 +74,6 @@ tags = [
 ]
 
 frontend_compiled_regexes = [re.compile(regex) for regex in regexes]
-multiline_js_comment = re.compile(r"/\*.*?\*/", re.DOTALL)
-singleline_js_comment = re.compile(r"//.*?\n")
 
 
 def strip_whitespaces(src: str, env: Environment) -> str:
@@ -209,13 +206,6 @@ class Command(makemessages.Command):
 
         return translation_strings
 
-    def ignore_javascript_comments(self, data: str) -> str:
-        # Removes multi line comments.
-        data = multiline_js_comment.sub("", data)
-        # Removes single line (//) comments.
-        data = singleline_js_comment.sub("", data)
-        return data
-
     def get_translation_strings(self) -> list[str]:
         translation_strings: list[str] = []
         dirname = self.get_template_dir()
@@ -226,16 +216,6 @@ class Command(makemessages.Command):
                     continue
                 with open(os.path.join(dirpath, filename)) as reader:
                     data = reader.read()
-                    translation_strings.extend(self.extract_strings(data))
-        for dirpath, dirnames, filenames in itertools.chain(
-            os.walk("web/src"), os.walk("web/shared/src")
-        ):
-            for filename in [f for f in filenames if f.endswith((".js", ".ts"))]:
-                if filename.startswith("."):
-                    continue
-                with open(os.path.join(dirpath, filename)) as reader:
-                    data = reader.read()
-                    data = self.ignore_javascript_comments(data)
                     translation_strings.extend(self.extract_strings(data))
 
         extracted = subprocess.check_output(
