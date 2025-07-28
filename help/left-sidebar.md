@@ -23,6 +23,14 @@ section by:
 You can also [configure](#configure-where-channel-links-in-the-left-sidebar-go)
 where clicking on channel links in the left sidebar takes you.
 
+## Find a direct message conversation
+
+{!find-dm-conversation.md!}
+
+## Find a channel you're subscribed to
+
+{!filter-channels.md!}
+
 ## Adjust what information is shown
 
 There are many ways you can adjust the left sidebar to help you focus on the
