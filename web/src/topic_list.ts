@@ -10,43 +10,26 @@ import {all_messages_data} from "./all_messages_data.ts";
 import * as blueslip from "./blueslip.ts";
 import {Typeahead} from "./bootstrap_typeahead.ts";
 import type {TypeaheadInputElement} from "./bootstrap_typeahead.ts";
-import {$t} from "./i18n.ts";
 import * as popover_menus from "./popover_menus.ts";
 import * as popovers from "./popovers.ts";
 import * as scroll_util from "./scroll_util.ts";
-import type {SearchPillWidget} from "./search_pill.ts";
-import * as search_pill from "./search_pill.ts";
 import * as sidebar_ui from "./sidebar_ui.ts";
 import * as stream_topic_history from "./stream_topic_history.ts";
 import * as stream_topic_history_util from "./stream_topic_history_util.ts";
 import type {StreamSubscription} from "./sub_store.ts";
 import * as sub_store from "./sub_store.ts";
+import * as topic_filter_pill from "./topic_filter_pill.ts";
+import type {TopicFilterPill, TopicFilterPillWidget} from "./topic_filter_pill.ts";
 import * as topic_list_data from "./topic_list_data.ts";
 import type {TopicInfo} from "./topic_list_data.ts";
 import * as typeahead_helper from "./typeahead_helper.ts";
 import * as vdom from "./vdom.ts";
 
-type TopicFilterPill = {
-    label: string;
-    syntax: string;
-};
-
-const filter_options: TopicFilterPill[] = [
-    {
-        label: $t({defaultMessage: "Unresolved topics"}),
-        syntax: "-is:resolved",
-    },
-    {
-        label: $t({defaultMessage: "Resolved topics"}),
-        syntax: "is:resolved",
-    },
-];
-
 /* Track all active widgets with a Map by stream_id. We have at max
    one for now, but we may eventually allow multiple streams to be
    expanded. */
 const active_widgets = new Map<number, LeftSidebarTopicListWidget>();
-export let search_pill_widget: SearchPillWidget | null = null;
+export let topic_filter_pill_widget: TopicFilterPillWidget | null = null;
 export let topic_state_typeahead: Typeahead<TopicFilterPill> | undefined;
 
 // We know whether we're zoomed or not.
@@ -366,7 +349,7 @@ function filter_topics_left_sidebar(topic_names: string[]): string[] {
     return topic_list_data.filter_topics_by_search_term(
         topic_names,
         search_term,
-        get_typeahead_search_term(),
+        get_typeahead_search_pills_syntax(),
     );
 }
 
@@ -386,10 +369,10 @@ export class LeftSidebarTopicListWidget extends TopicListWidget {
 export function clear_topic_search(e: JQuery.Event): void {
     e.stopPropagation();
 
-    search_pill_widget?.clear(true);
+    topic_filter_pill_widget?.clear(true);
 
     const $input = $("#topic_filter_query");
-    // Since the `clear` function of the search_pill_widget
+    // Since the `clear` function of the topic_filter_pill_widget
     // takes care of clearing both the text content and the
     // pills, we just need to trigger an input event on the
     // contenteditable element to reset the topic list via
@@ -499,10 +482,24 @@ export function get_left_sidebar_topic_search_term(): string {
     return $("#topic_filter_query").text().trim();
 }
 
-export function get_typeahead_search_term(): string {
-    const $pills = $("#left-sidebar-filter-topic-input .pill");
-    const value = $pills.find(".pill-value").text().trim();
-    return value;
+export function get_typeahead_search_pills_syntax(): string {
+    const pills = topic_filter_pill_widget?.items() ?? [];
+
+    if (pills.length === 0) {
+        return "";
+    }
+
+    // For now, there is only one pill in the left sidebar topic search input.
+    // This is because we only allow one topic filter pill at a time.
+    // If we allow multiple pills in the future, we may need to
+    // change this logic to return the syntax of all pills.
+    if (pills.length > 1) {
+        blueslip.warn("Multiple pills found in left sidebar topic search input.");
+    }
+
+    // We can remove this assumption once we allow multiple pills and hence update the
+    // callers of this function to handle multiple pills and implement the search accordingly.
+    return pills[0]!.syntax;
 }
 
 function set_search_bar_text(text: string): void {
@@ -519,7 +516,7 @@ export function setup_topic_search_typeahead(): void {
         return;
     }
 
-    search_pill_widget = search_pill.create_pills($pill_container);
+    topic_filter_pill_widget = topic_filter_pill.create_pills($pill_container);
 
     const typeahead_input: TypeaheadInputElement = {
         $element: $input,
@@ -538,7 +535,7 @@ export function setup_topic_search_typeahead(): void {
             if ($pills.length > 0) {
                 return [];
             }
-            return [...filter_options];
+            return [...topic_filter_pill.filter_options];
         },
         item_html(item: TopicFilterPill) {
             return typeahead_helper.render_topic_state(item.label);
@@ -559,9 +556,9 @@ export function setup_topic_search_typeahead(): void {
             return items;
         },
         updater(item: TopicFilterPill) {
-            assert(search_pill_widget !== null);
-            search_pill_widget.clear(true);
-            search_pill_widget.appendValue(item.syntax);
+            assert(topic_filter_pill_widget !== null);
+            topic_filter_pill_widget.clear(true);
+            topic_filter_pill_widget.appendValue(item.syntax);
             set_search_bar_text("");
             $input.trigger("focus");
             return get_left_sidebar_topic_search_term();
@@ -585,7 +582,7 @@ export function setup_topic_search_typeahead(): void {
         }
     });
 
-    search_pill_widget.onPillRemove(() => {
+    topic_filter_pill_widget.onPillRemove(() => {
         const stream_id = active_stream_id();
         if (stream_id !== undefined) {
             const widget = active_widgets.get(stream_id);
