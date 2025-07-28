@@ -11,7 +11,6 @@ import render_message_group from "../templates/message_group.hbs";
 import render_message_list from "../templates/message_list.hbs";
 import render_recipient_row from "../templates/recipient_row.hbs";
 import render_single_message from "../templates/single_message.hbs";
-
 import * as activity from "./activity.ts";
 import * as blueslip from "./blueslip.ts";
 import * as compose_fade from "./compose_fade.ts";
@@ -1697,10 +1696,10 @@ export class MessageListView {
         if ($row.length === 0) {
             return;
         }
-        
+
         // Use the new reveal function that preserves collapsed state
         condense.reveal_muted_message($row);
-        
+
         // Update the message container to mark it as revealed
         const message_container = this.message_containers.get(message_id);
         if (message_container !== undefined) {
@@ -2083,8 +2082,6 @@ export class MessageListView {
             const possible_new_date_separator_start = sticky_header_bottom - date_separator_padding;
             /* Get `message_row` under the sticky header. */
             const elements_below_sticky_header = document.elementsFromPoint(
-
-               
                 sticky_header_props.left,
                 possible_new_date_separator_start,
             );
@@ -2166,7 +2163,6 @@ export class MessageListView {
             update.$element.html(rendered_date);
         }
     }
-
     update_recipient_bar_background_color(): void {
         const $stream_headers = this.$list.find(".message_header_stream");
         for (const stream_header of $stream_headers) {
@@ -2174,7 +2170,6 @@ export class MessageListView {
             stream_color.update_stream_recipient_color($stream_header);
         }
     }
-
     show_message_as_read(message: Message, options: {from?: "pointer" | "server"}): void {
         const $row = this.get_row(message.id);
         if (options.from === "pointer" || options.from === "server") {
@@ -2184,7 +2179,6 @@ export class MessageListView {
         }
         $row.removeClass("unread");
     }
-
     show_messages_as_unread(message_ids: number[]): void {
         const $rows_to_show_as_unread = this.$list.find(".message_row").filter((_index, $row) => {
             // eslint-disable-next-line unicorn/prefer-dom-node-dataset
