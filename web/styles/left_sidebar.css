@@ -12,6 +12,7 @@
        or controls in the row. */
     overflow: hidden;
     text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 #left-sidebar .input-element-wrapper {
