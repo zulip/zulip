@@ -1972,6 +1972,9 @@ export async function fetch_users(user_ids: Set<number>): Promise<UsersFetchResp
     }
     return new Promise((resolve, reject) => {
         fetch_users_from_server({
+            // POST /register obtains custom profile field data if and only if
+            // the current user is not a spectator. Mimic this behavior.
+            include_custom_profile_fields: !page_params.is_spectator,
             user_ids: JSON.stringify([...user_ids_to_fetch]),
             success(users) {
                 resolve(users);
