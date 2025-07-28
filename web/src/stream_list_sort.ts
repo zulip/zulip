@@ -71,7 +71,7 @@ export function set_filter_out_inactives(): void {
         user_settings.demote_inactive_streams ===
         settings_config.demote_inactive_streams_values.automatic.code
     ) {
-        filter_out_inactives = stream_data.num_subscribed_subs() >= 30;
+        filter_out_inactives = stream_data.num_subscribed_subs() >= 20;
     } else if (
         user_settings.demote_inactive_streams ===
         settings_config.demote_inactive_streams_values.always.code

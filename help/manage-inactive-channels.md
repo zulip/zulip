@@ -1,25 +1,60 @@
-# Manage inactive channels
+# Hide or reveal inactive channels
 
-In normal Zulip usage, channels fall in and out of use. By default, Zulip
-automatically moves channels that haven't been used in a while to the
-**Inactive** section at the bottom of your channels list in the left sidebar.
-This helps prevent low-traffic channels from cluttering the left sidebar.
+To avoid clutter in the [left sidebar](/help/left-sidebar), Zulip automatically
+hides channels with no recent messages if you're subscribed to 20+ channels. You
+can [configure](#configure-hiding-inactive-channels) Zulip to show or hide
+inactive channels regardless of how many you're subscribed to.
 
-You can configure Zulip to move (demote) inactive channels more or less
-aggressively. This is an advanced setting; you can safely ignore it if this
-is your first time using Zulip.
+It's easy to [reveal](#reveal-inactive-channels) or [find]() hidden inactive
+channels if you need to access them.
 
-### Manage inactive channels
+## Reveal inactive channels
 
 {start_tabs}
 
-{settings_tab|preferences}
+{tab|desktop-web}
 
-1. Under **Information**, configure **Demote inactive channels**.
+1. In the left sidebar, scroll to the bottom of the list of channels in the
+   [folder](/help/channel-folders) you're viewing.
+
+1. Click **inactive channels** to reveal inactive channels. If you don't see
+   this button, there are no inactive channels, or they are already revealed.
 
 {end_tabs}
 
-The default is **Automatic**, which demotes inactive channels once you're
-subscribed to a minimum total number of channels. **Always** and **Never**
-either demote or don't demote inactive channels regardless of how many
-channels you have.
+## Hide inactive channels
+
+{start_tabs}
+
+{tab|desktop-web}
+
+1. In the left sidebar, scroll to the bottom of the list of channels in the
+   [folder](/help/channel-folders) you're viewing.
+
+1. Click **hide inactive channels**. If you don't see this button, there are no
+   inactive channels, or they are already hidden.
+
+{end_tabs}
+
+## Find inactive channels
+
+{!filter-channels.md!}
+
+## Configure hiding inactive channels
+
+{start_tabs}
+
+{tab|desktop-web}
+
+{settings_tab|preferences}
+
+1. Under **Information**, configure **Hide inactive channels**.
+
+{end_tabs}
+
+## Related articles
+
+* [Introduction to channels](/help/introduction-to-channels)
+* [Pin a channel](/help/pin-a-channel)
+* [Mute or unmute a channel](/help/mute-a-channel)
+* [Channel folders](/help/channel-folders)

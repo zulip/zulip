@@ -147,7 +147,7 @@
 * [Pin a channel](/help/pin-a-channel)
 * [Change the color of a channel](/help/change-the-color-of-a-channel)
 * [Unsubscribe from a channel](/help/unsubscribe-from-a-channel)
-* [Show or hide inactive channels](/help/manage-inactive-channels)
+* [Hide or reveal inactive channels](/help/manage-inactive-channels)
 * [Move content to another channel](/help/move-content-to-another-channel)
 * [View channel information](/help/view-channel-information)
 * [View channel subscribers](/help/view-channel-subscribers)

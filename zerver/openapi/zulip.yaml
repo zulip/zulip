@@ -13812,7 +13812,7 @@ paths:
                   example: "google"
                 demote_inactive_streams:
                   description: |
-                    Whether to [demote inactive channels](/help/manage-inactive-channels) in the left sidebar.
+                    Whether to [hide inactive channels](/help/manage-inactive-channels) in the left sidebar.
 
                     - 1 - Automatic
                     - 2 - Always
@@ -17336,7 +17336,7 @@ paths:
                           demote_inactive_streams:
                             type: integer
                             description: |
-                              Whether to [demote inactive channels](/help/manage-inactive-channels) in the left sidebar.
+                              Whether to [hide inactive channels](/help/manage-inactive-channels) in the left sidebar.
 
                               - 1 - Automatic
                               - 2 - Always
@@ -18172,7 +18172,7 @@ paths:
                           and only for clients that did not include `user_settings_object` in
                           their [`client_capabilities`][capabilities] when registering the event queue.
 
-                          Whether the user has chosen to demote inactive channels.
+                          Whether the user has chosen to hide inactive channels.
 
                           See [PATCH /settings](/api/update-settings) for details on
                           the meaning of this setting.
@@ -20230,7 +20230,7 @@ paths:
                           demote_inactive_streams:
                             type: integer
                             description: |
-                              Whether to [demote inactive channels](/help/manage-inactive-channels) in the left sidebar.
+                              Whether to [hide inactive channels](/help/manage-inactive-channels) in the left sidebar.
 
                               - 1 - Automatic
                               - 2 - Always
@@ -21479,7 +21479,7 @@ paths:
                   example: "google"
                 demote_inactive_streams:
                   description: |
-                    Whether to [demote inactive channels](/help/manage-inactive-channels) in the left sidebar.
+                    Whether to [hide inactive channels](/help/manage-inactive-channels) in the left sidebar.
 
                     - 1 - Automatic
                     - 2 - Always
@@ -25054,8 +25054,8 @@ components:
           type: boolean
           description: |
             Whether the channel has recent message activity. Clients should use this to implement
-            [sorting inactive channels to the bottom](/help/manage-inactive-channels)
-            if `demote_inactive_streams` is enabled.
+            [hide inactive channels](/help/manage-inactive-channels) if
+            `demote_inactive_streams` is enabled.
 
             **Changes**: New in Zulip 10.0 (feature level 323). Previously, clients implemented the
             demote_inactive_streams from local message history, resulting in a choppy loading
@@ -26192,7 +26192,7 @@ components:
           type: boolean
           description: |
             Whether the channel has recent message activity. Clients should use this to implement
-            [sorting inactive channels to the bottom](/help/manage-inactive-channels).
+            [hiding inactive channels](/help/manage-inactive-channels).
 
             **Changes**: New in Zulip 10.0 (feature level 323). Previously, clients implemented the
             demote_inactive_streams from local message history, resulting in a choppy loading

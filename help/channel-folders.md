@@ -58,5 +58,5 @@ section above channel folders.
 * [Introduction to channels](/help/introduction-to-channels)
 * [Pin a channel](/help/pin-a-channel)
 * [Mute or unmute a channel](/help/mute-a-channel)
-* [Manage inactive channels](/help/manage-inactive-channels)
+* [Hide or reveal inactive channels](/help/manage-inactive-channels)
 * [Manage user groups](/help/manage-user-groups)
