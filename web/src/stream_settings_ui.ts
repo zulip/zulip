@@ -244,10 +244,6 @@ export function update_channel_folder(sub: StreamSubscription, folder_id: number
     stream_data.update_channel_folder(sub, folder_id);
     stream_ui_updates.update_channel_folder_dropdown(sub);
     stream_list.build_stream_list(false);
-    const $stream_li = stream_list.get_stream_li(sub.stream_id);
-    if ($stream_li) {
-        stream_list.scroll_stream_into_view($stream_li);
-    }
     const section_id = stream_list_sort.current_section_id_for_stream(sub.stream_id);
     stream_list.maybe_hide_topic_bracket(section_id);
 }
