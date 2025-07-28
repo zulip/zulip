@@ -176,6 +176,10 @@ IGNORED_PHRASES = [
     r"archived",
     # Used in pills for deactivated users.
     r"deactivated",
+    # Used in pills for resolved topics.
+    r"resolved",
+    # Used in pills for unresolved topics.
+    r"unresolved",
     # This is a reference to a setting/secret and should be lowercase.
     r"zulip_org_id",
     # These are custom time unit options for modal dropdowns

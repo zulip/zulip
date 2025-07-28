@@ -271,6 +271,7 @@ EXEMPT_FILES = make_set(
         "web/src/timerender.ts",
         "web/src/tippyjs.ts",
         "web/src/todo_widget.ts",
+        "web/src/topic_filter_pill.ts",
         "web/src/topic_list.ts",
         "web/src/topic_popover.ts",
         "web/src/typing.ts",
