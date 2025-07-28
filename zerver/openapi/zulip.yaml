@@ -24465,11 +24465,19 @@ paths:
                 name:
                   description: |
                     The new name of the channel folder.
+
+                    Clients should use the `max_channel_folder_name_length` returned
+                    by the [`POST /register`](/api/register-queue) endpoint to determine
+                    the maximum channel folder name length.
                   type: string
                   example: backend
                 description:
                   description: |
                     The new description of the channel folder.
+
+                    Clients should use the `max_channel_folder_description_length`
+                    returned by the [`POST /register`](/api/register-queue) endpoint
+                    to determine the maximum channel folder description length.
                   type: string
                   example: Backend channels.
                 is_archived:
