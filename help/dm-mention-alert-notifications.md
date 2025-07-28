@@ -69,9 +69,20 @@ case-insensitive.
 
 {settings_tab|alert-words}
 
-1. Add a word or phrase.
-
 1. Click **Add alert word**.
+
+1. Type a word or phrase, and click **Add**.
+
+{end_tabs}
+
+### Remove an alert word or phrase
+
+{start_tabs}
+
+{settings_tab|alert-words}
+
+1. Click the **delete** (<i class="zulip-icon zulip-icon-trash"></i>) icon next to the
+   alert word that you would like to remove.
 
 {end_tabs}
 
