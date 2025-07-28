@@ -2893,30 +2893,71 @@ class E2EEPushNotificationTestCase(BouncerTestCase):
 
         return registered_device_apple, registered_device_android
 
-    @contextmanager
-    def mock_fcm(self) -> Iterator[mock.MagicMock]:
-        with mock.patch("zilencer.lib.push_notifications.firebase_messaging") as mock_fcm_messaging:
-            yield mock_fcm_messaging
+    def register_old_push_devices_for_notification(self) -> tuple[PushDeviceToken, PushDeviceToken]:
+        hamlet = self.example_user("hamlet")
+
+        registered_device_android = PushDeviceToken.objects.create(
+            kind=PushDeviceToken.FCM,
+            token="token-fcm",
+            user=hamlet,
+            ios_app_id=None,
+        )
+        registered_device_apple = PushDeviceToken.objects.create(
+            kind=PushDeviceToken.APNS,
+            token="token-apns",
+            user=hamlet,
+            ios_app_id="abc",
+        )
+        return registered_device_apple, registered_device_android
 
     @contextmanager
-    def mock_apns(self) -> Iterator[mock.AsyncMock]:
+    def mock_fcm(self, for_legacy: bool = False) -> Iterator[mock.MagicMock]:
+        if for_legacy:
+            with (
+                mock.patch("zerver.lib.push_notifications.fcm_app"),
+                mock.patch(
+                    "zerver.lib.push_notifications.firebase_messaging"
+                ) as mock_fcm_messaging,
+            ):
+                yield mock_fcm_messaging
+        else:
+            with (
+                mock.patch("zilencer.lib.push_notifications.fcm_app"),
+                mock.patch(
+                    "zilencer.lib.push_notifications.firebase_messaging"
+                ) as mock_fcm_messaging,
+            ):
+                yield mock_fcm_messaging
+
+    @contextmanager
+    def mock_apns(self, for_legacy: bool = False) -> Iterator[mock.AsyncMock]:
         apns = mock.Mock(spec=aioapns.APNs)
         apns.send_notification = mock.AsyncMock()
         apns_context = APNsContext(
             apns=apns,
             loop=asyncio.new_event_loop(),
         )
+        target = (
+            "zerver.lib.push_notifications.get_apns_context"
+            if for_legacy
+            else "zilencer.lib.push_notifications.get_apns_context"
+        )
         try:
-            with mock.patch("zilencer.lib.push_notifications.get_apns_context") as mock_get:
+            with mock.patch(target) as mock_get:
                 mock_get.return_value = apns_context
                 yield apns.send_notification
         finally:
             apns_context.loop.close()
 
-    def make_fcm_success_response(self) -> firebase_messaging.BatchResponse:
-        device_ids_count = RemotePushDevice.objects.filter(
-            token_kind=RemotePushDevice.TokenKind.FCM
-        ).count()
+    def make_fcm_success_response(
+        self, for_legacy: bool = False
+    ) -> firebase_messaging.BatchResponse:
+        if for_legacy:
+            device_ids_count = PushDeviceToken.objects.filter(kind=PushDeviceToken.FCM).count()
+        else:
+            device_ids_count = RemotePushDevice.objects.filter(
+                token_kind=RemotePushDevice.TokenKind.FCM
+            ).count()
         responses = [
             firebase_messaging.SendResponse(exception=None, resp=dict(name=str(idx)))
             for idx in range(device_ids_count)

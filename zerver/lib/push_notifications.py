@@ -1317,11 +1317,7 @@ def send_push_notifications_legacy(
         PushDeviceToken.objects.filter(user=user_profile, kind=PushDeviceToken.APNS).order_by("id")
     )
 
-    # Added this nocoverage check for this commit. We plan to add a commit
-    # which will remove the mocking of 'send_push_notifications_legacy'
-    # in 'test_e2ee_push_notifications' - and this case will be covered
-    # there as a part of that broader effort.
-    if len(android_devices) + len(apple_devices) == 0:  # nocoverage
+    if len(android_devices) + len(apple_devices) == 0:
         logger.info(
             "Skipping legacy push notifications for user %s because there are no registered devices",
             user_profile.id,
