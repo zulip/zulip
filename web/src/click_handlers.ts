@@ -13,6 +13,7 @@ import * as buddy_data from "./buddy_data.ts";
 import * as compose_actions from "./compose_actions.ts";
 import * as compose_reply from "./compose_reply.ts";
 import * as compose_state from "./compose_state.ts";
+import * as condense from "./condense.ts";
 import * as emoji_picker from "./emoji_picker.ts";
 import * as hash_util from "./hash_util.ts";
 import * as hashchange from "./hashchange.ts";
@@ -267,8 +268,11 @@ export function initialize(): void {
 
     $("body").on("click", ".reveal_hidden_message", (e) => {
         assert(message_lists.current !== undefined);
-        const message_id = rows.id($(e.currentTarget).closest(".message_row"));
-        message_lists.current.view.reveal_hidden_message(message_id);
+        const $row = $(e.currentTarget).closest(".message_row");
+        
+        // Use the new reveal function that preserves collapsed state
+        condense.reveal_muted_message($row);
+        
         e.stopPropagation();
         e.preventDefault();
     });
@@ -985,4 +989,5 @@ export function initialize(): void {
     $(".settings-header.mobile .fa-chevron-left").on("click", () => {
         settings_panel_menu.mobile_deactivate_section();
     });
+}
 }
