@@ -40,7 +40,10 @@ first_element.children = [...prefix_element_list, ...first_element.children];
 tree.children[0] = first_element;
 ---
 
-<aside aria-label="Keyboard tip" class=`starlight-aside starlight-aside--tip`>
+<aside
+    aria-label="Keyboard tip"
+    class=`starlight-aside starlight-aside--tip keyboard-tip`
+>
     <div class="starlight-aside__content">
         <Fragment set:html={toHtml(tree)} />
     </div>

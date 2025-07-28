@@ -21,6 +21,50 @@
     --color-user-circle-offline: light-dark(#c1c6d7, #454854);
     --color-user-circle-deactivated: hsl(0deg 0% 50%);
     /* stylelint-enable color-no-hex */
+
+    /* NOTE: These colors are also used in zulip web app for banner
+       colors. Do grep for these variables when changing them and
+       confirm on CZO on whether the colors there need to change as
+       well. */
+    /* Banners - Neutral Variant */
+    --color-text-neutral-banner: light-dark(
+        hsl(229deg 12% 25%),
+        hsl(231deg 11% 76%)
+    );
+    --color-border-neutral-banner: light-dark(
+        color-mix(in oklch, hsl(240deg 2% 30%) 40%, transparent),
+        color-mix(in oklch, hsl(240deg 7% 66%) 40%, transparent)
+    );
+    --color-background-neutral-banner: light-dark(
+        hsl(240deg 7% 93%),
+        hsl(240deg 7% 17%)
+    );
+    /* Banners - Brand Variant */
+    --color-text-brand-banner: light-dark(
+        hsl(264deg 95% 34%),
+        hsl(244deg 96% 82%)
+    );
+    --color-border-brand-banner: light-dark(
+        color-mix(in oklch, hsl(254deg 60% 50%) 40%, transparent),
+        color-mix(in oklch, hsl(253deg 70% 89%) 40%, transparent)
+    );
+    --color-background-brand-banner: light-dark(
+        hsl(254deg 42% 94%),
+        hsl(253deg 49% 16%)
+    );
+    /* Banners - Info Variant */
+    --color-text-info-banner: light-dark(
+        hsl(241deg 95% 25%),
+        hsl(221deg 93% 89%)
+    );
+    --color-border-info-banner: light-dark(
+        color-mix(in oklch, hsl(204deg 49% 29%) 40%, transparent),
+        color-mix(in oklch, hsl(205deg 58% 69%) 40%, transparent)
+    );
+    --color-background-info-banner: light-dark(
+        hsl(204deg 58% 92%),
+        hsl(204deg 100% 12%)
+    );
 }
 
 .non-clickable-sidebar-heading {
@@ -71,6 +115,24 @@
     steps have a relative link. So we add a right margin to the
     icon to add the white space without any text decoration. */
     margin-right: 4px;
+}
+
+.starlight-aside--tip {
+    --sl-color-asides-text-accent: var(--color-text-brand-banner);
+    --sl-color-asides-border: var(--color-border-brand-banner);
+    background-color: var(--color-background-brand-banner);
+}
+
+.starlight-aside--note {
+    --sl-color-asides-text-accent: var(--color-text-neutral-banner);
+    --sl-color-asides-border: var(--color-border-neutral-banner);
+    background-color: var(--color-background-neutral-banner);
+}
+
+.keyboard-tip {
+    --sl-color-asides-text-accent: var(--color-text-info-banner);
+    --sl-color-asides-border: var(--color-border-info-banner);
+    background-color: var(--color-background-info-banner);
 }
 
 .aside-icon-lightbulb {
