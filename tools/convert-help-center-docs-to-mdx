@@ -30,15 +30,10 @@ RELATIVE_LINKS_PATTERN = re.compile(r"\{relative\|(?P<link_type>.*?)\|(?P<key>.*
 
 # TODO list before cutover.
 #
-# 1. We are not inserting FlattenList component for files with !!! tip components,
-#    since we need to do it inside the include file. There are 4 such files at
-#    the time of writing this comment. is_include_only_ordered_list makes sure of
-#    that. We can do the conversion for it manually during cutover or in a
-#    followup PR.
-# 2. Before cutover we should also check for ordered list items that do not start
+# 1. Before cutover we should also check for ordered list items that do not start
 #    with `1. ` since our conversion script assumes that every item list starts
 #    with `1. `. The regex we used to check for this was `\b(?!1\.)\d+\. `.
-# 3. Before cutover, we should check for unindented pieces of text in ordered list
+# 2. Before cutover, we should check for unindented pieces of text in ordered list
 #    items. Our script only works with indented pieces of text. The regex we used
 #    to check for this was `^1\. .*\n(?!\n)(?!1\.)( {0,1}\S.*)`.
 
@@ -298,12 +293,12 @@ def is_include_only_ordered_list(markdown_string: str) -> bool:
     Check if a given markdown string is only an ordered list and does not
     contain other components. After stripping down whitespace, the
     string should start with `1.`. There can be a lot of other
-    components in the markdown string, but since we are running this
-    only on the include files, the only other component that we have there
-    for files starting with `1.` is a tip component.
+    components in the markdown string, but we keep our criteria small
+    since almost all of the cases of include files needing a flatten
+    list around them start with `1.`.
     """
     markdown_string = markdown_string.strip()
-    return markdown_string.startswith("1.") and "!!!" not in markdown_string
+    return markdown_string.startswith("1.")
 
 
 def is_line_part_of_an_ordered_list(line: str) -> bool:
@@ -331,13 +326,6 @@ def insert_flattened_steps_component(
     multiple ordered lists instead of a single list if we did
     not use this component. See the astro component file itself
     to know more how FlattenList works.
-
-    We are not inserting FlattenList components for files
-    with !!! tip components, since we need to do it inside the
-    include file. There are 4 such files at the time of writing
-    this comment. `is_include_only_ordered_list` makes sure of
-    that. We can do the conversion for it manually during cutover
-    or in a followup PR.
     """
     file_include_pattern = re.compile(r"^ {,3}\{!([^!]+)!\} *$", re.MULTILINE)
     lines = markdown_string.splitlines()
@@ -527,10 +515,6 @@ def convert_help_center_file_to_mdx(
     import_statement_set: set[str] = set()
 
     result = fix_relative_path(result)
-    # We are not inserting FlattenList components for files
-    # with !!! tip components, since we need to do it inside the
-    # include file. We can do it during the cutover manually or
-    # in a followup PR.
     # All unordered lists at the time of writing this comment are
     # standalone components and we do not need to do any transformation
     # for them.
@@ -574,10 +558,6 @@ def convert_include_file_to_mdx(
     import_statement_set: set[str] = set()
 
     result = fix_relative_path(result)
-    # We are not inserting FlattenList components for files
-    # with !!! tip components, since we need to do it inside the
-    # include file. We can do it during the cutover manually or
-    # in a followup PR.
     # All unordered lists at the time of writing this comment are
     # standalone components and we do not need to do any transformation
     # for them.
