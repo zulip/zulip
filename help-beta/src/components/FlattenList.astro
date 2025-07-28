@@ -26,12 +26,15 @@ const flattened = {
         if (other.type === "comment") {
             return [];
         }
-        assert.ok(
-            other.type === "element" &&
-                (other.tagName === first_element.tagName ||
-                    other.tagName === "aside"),
-        );
-        return other.children;
+        assert.ok(other.type === "element");
+        // Flatten only in case of matching tagName, for the rest, we
+        // return the elements without flattening since asides, code
+        // blocks and other elements can be part of a single list item
+        // and we do not want to flatten them.
+        if (other.tagName === first_element.tagName) {
+            return other.children;
+        }
+        return [other];
     }),
 };
 ---
