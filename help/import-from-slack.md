@@ -105,7 +105,9 @@ in order to export direct message data.
 
 {tab|self-hosting}
 
-{!import-into-a-self-hosted-zulip-server.md!}
+{!import-into-a-self-hosted-server-description.md!}
+
+{!import-into-a-self-hosted-server-instructions.md!}
 
 1. To import into an organization hosted on the root domain
    (`EXTERNAL_HOST`) of the Zulip installation, run the following
