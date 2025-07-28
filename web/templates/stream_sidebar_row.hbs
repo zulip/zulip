@@ -10,9 +10,9 @@
 
             <span class="stream-name">{{name}}</span>
 
-            <div class="left-sidebar-controls">
+            <div class="left-sidebar-controls {{#unless can_create_topics}}disable-channel-new-topic-button{{/unless}}">
                 {{#if can_post_messages}}
-                <div class="channel-new-topic-button tippy-zulip-tooltip hidden-for-spectators auto-hide-left-sidebar-overlay" data-tippy-content="{{#unless is_empty_topic_only_channel}}{{t 'New topic'}}{{else}}{{t 'New message'}}{{/unless}}" data-stream-id="{{id}}">
+                <div class="channel-new-topic-button {{#if (not can_create_topics)}}can_create_topic_group_tooltip{{else}}create_new_topic_sidebar_tooltip{{/if}} hidden-for-spectators auto-hide-left-sidebar-overlay" data-stream-id="{{id}}">
                     <i class="channel-new-topic-icon zulip-icon zulip-icon-square-plus" aria-hidden="true"></i>
                 </div>
                 {{/if}}
