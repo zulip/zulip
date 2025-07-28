@@ -590,13 +590,7 @@ def send_notifications_to_bouncer(
     android_devices: Sequence[DeviceToken],
     apple_devices: Sequence[DeviceToken],
 ) -> None:
-    if len(android_devices) + len(apple_devices) == 0:
-        logger.info(
-            "Skipping contacting the bouncer for user %s because there are no registered devices",
-            user_profile.id,
-        )
-
-        return
+    assert len(android_devices) + len(apple_devices) != 0
 
     post_data = {
         "user_uuid": str(user_profile.uuid),
@@ -1322,6 +1316,17 @@ def send_push_notifications_legacy(
     apple_devices = list(
         PushDeviceToken.objects.filter(user=user_profile, kind=PushDeviceToken.APNS).order_by("id")
     )
+
+    # Added this nocoverage check for this commit. We plan to add a commit
+    # which will remove the mocking of 'send_push_notifications_legacy'
+    # in 'test_e2ee_push_notifications' - and this case will be covered
+    # there as a part of that broader effort.
+    if len(android_devices) + len(apple_devices) == 0:  # nocoverage
+        logger.info(
+            "Skipping legacy push notifications for user %s because there are no registered devices",
+            user_profile.id,
+        )
+        return
 
     if uses_notification_bouncer():
         send_notifications_to_bouncer(

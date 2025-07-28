@@ -2138,23 +2138,6 @@ class TestGetGCMPayload(PushNotificationTestCase):
 
 
 class TestSendNotificationsToBouncer(PushNotificationTestCase):
-    def test_send_notifications_to_bouncer_when_no_devices(self) -> None:
-        user = self.example_user("hamlet")
-
-        with (
-            mock.patch("zerver.lib.remote_server.send_to_push_bouncer") as mock_send,
-            self.assertLogs("zerver.lib.push_notifications", level="INFO") as mock_logging_info,
-        ):
-            send_notifications_to_bouncer(
-                user, {"apns": True}, {"gcm": True}, {}, android_devices=[], apple_devices=[]
-            )
-
-        self.assertIn(
-            f"INFO:zerver.lib.push_notifications:Skipping contacting the bouncer for user {user.id} because there are no registered devices",
-            mock_logging_info.output,
-        )
-        mock_send.assert_not_called()
-
     @mock.patch("zerver.lib.remote_server.send_to_push_bouncer")
     def test_send_notifications_to_bouncer(self, mock_send: mock.MagicMock) -> None:
         user = self.example_user("hamlet")
