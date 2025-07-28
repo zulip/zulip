@@ -65,6 +65,12 @@
         hsl(204deg 58% 92%),
         hsl(204deg 100% 12%)
     );
+
+    /* Keyboard shortcuts */
+    --color-keyboard-shortcuts: light-dark(
+        hsl(225deg 57.09% 42.9%),
+        hsl(225deg 100% 84%)
+    );
 }
 
 .non-clickable-sidebar-heading {
@@ -222,26 +228,12 @@
     }
 
     & kbd {
-        /* Same as kbd in app_components.css */
-        display: inline-block;
-        border: 1px solid hsl(0deg 0% 80%);
-        border-radius: 4px;
-        font-weight: 600;
+        font-size: 1.2em;
+        padding: 0.15em 0.4em 0.05em;
+        border: 1px solid var(--color-keyboard-shortcuts);
+        border-radius: 3px;
+        color: var(--color-keyboard-shortcuts);
+        text-align: center;
         white-space: nowrap;
-        background-color: hsl(0deg 0% 98%);
-        color: hsl(0deg 0% 20%);
-        text-shadow: 0 1px 0 hsl(0deg 0% 100%);
-        /* Different from app_components.css */
-        /* Removed margin setting */
-        font-size: 0.85em;
-        padding: 0 0.4em;
-
-        &.arrow-key {
-            /* Same as in informational_overlays.css */
-            line-height: 1;
-            padding: 0 0.2em 0.2em;
-            /* Different from informational_overlays.css */
-            font-size: 1.2em;
-        }
     }
 }
