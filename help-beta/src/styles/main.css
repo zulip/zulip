@@ -237,3 +237,7 @@
         white-space: nowrap;
     }
 }
+
+footer {
+    font-size: 0.85em;
+}
