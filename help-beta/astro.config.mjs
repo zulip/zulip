@@ -384,6 +384,7 @@ export default defineConfig({
                         },
                         "public-access-option",
                         "general-chat-channels",
+                        "channel-folders",
                         "channel-permissions",
                         "channel-posting-policy",
                         "configure-who-can-administer-a-channel",
