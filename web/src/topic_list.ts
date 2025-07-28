@@ -349,7 +349,7 @@ function filter_topics_left_sidebar(topic_names: string[]): string[] {
     return topic_list_data.filter_topics_by_search_term(
         topic_names,
         search_term,
-        get_typeahead_search_term(),
+        get_typeahead_search_pills_syntax(),
     );
 }
 
@@ -482,10 +482,22 @@ export function get_left_sidebar_topic_search_term(): string {
     return $("#topic_filter_query").text().trim();
 }
 
-export function get_typeahead_search_term(): string {
+export function get_typeahead_search_pills_syntax(): string {
     const $pills = $("#left-sidebar-filter-topic-input .pill");
-    const value = $pills.find(".pill-value").text().trim();
-    return value;
+    if ($pills.length === 0) {
+        return "";
+    }
+    // For now, there is only one pill in the left sidebar topic search input.
+    // This is because we only allow one topic filter pill at a time.
+    // If we allow multiple pills in the future, we may need to
+    // change this logic to return the syntax of all pills.
+    if ($pills.length > 1) {
+        blueslip.warn("Multiple pills found in left sidebar topic search input.");
+    }
+    // We can remove this assumption once we allow multiple pills and hence update the
+    // callers of this function to handle multiple pills and implement the search accordingly.
+    const syntax = $pills.attr("data-syntax");
+    return syntax ?? "";
 }
 
 function set_search_bar_text(text: string): void {

@@ -1,3 +1,5 @@
+import render_input_pill from "../templates/input_pill.hbs";
+
 import {$t} from "./i18n.ts";
 import type {InputPillConfig, InputPillContainer} from "./input_pill.ts";
 import * as input_pill from "./input_pill.ts";
@@ -54,6 +56,13 @@ export function create_pills(
         create_item_from_text: create_item_from_syntax,
         get_text_from_item: get_syntax_from_item,
         get_display_value_from_item: get_syntax_from_item,
+        generate_pill_html(item: TopicFilterPill, disabled?: boolean) {
+            return render_input_pill({
+                display_value: item.label,
+                disabled,
+                data_syntax: item.syntax,
+            });
+        },
     });
     return pill_container;
 }
