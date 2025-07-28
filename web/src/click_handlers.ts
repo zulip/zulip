@@ -6,7 +6,6 @@ import * as tippy from "tippy.js";
 import * as z from "zod/mini";
 
 import render_buddy_list_tooltip_content from "../templates/buddy_list_tooltip_content.hbs";
-
 import * as activity_ui from "./activity_ui.ts";
 import * as browser_history from "./browser_history.ts";
 import * as buddy_data from "./buddy_data.ts";
@@ -269,10 +268,10 @@ export function initialize(): void {
     $("body").on("click", ".reveal_hidden_message", (e) => {
         assert(message_lists.current !== undefined);
         const $row = $(e.currentTarget).closest(".message_row");
-        
+
         // Use the new reveal function that preserves collapsed state
         condense.reveal_muted_message($row);
-        
+
         e.stopPropagation();
         e.preventDefault();
     });
@@ -985,4 +984,4 @@ export function initialize(): void {
         settings_panel_menu.mobile_deactivate_section();
     });
 }
-}
+
