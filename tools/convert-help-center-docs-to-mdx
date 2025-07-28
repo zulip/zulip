@@ -28,12 +28,6 @@ INDENT_SPACES = "    "
 SETTINGS_LINK_PATTERN = re.compile(r"{settings_tab\|(?P<setting_identifier>.*?)}")
 RELATIVE_LINKS_PATTERN = re.compile(r"\{relative\|(?P<link_type>.*?)\|(?P<key>.*?)\}")
 
-# TODO list before cutover.
-#
-# 1. Before cutover we should also check for ordered list items that do not start
-#    with `1. ` since our conversion script assumes that every item list starts
-#    with `1. `. The regex we used to check for this was `\b(?!1\.)\d+\. `.
-
 
 class IncludeFileInfo(TypedDict):
     is_only_ordered_list: bool
