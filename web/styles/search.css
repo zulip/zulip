@@ -74,6 +74,7 @@
 
     .navbar-search:not(.expanded) {
         right: 0;
+        background-color: var(--color-background-search-collapsed);
 
         .search_close_button {
             display: none;
@@ -240,6 +241,7 @@
         .pill {
             margin: 0;
             min-width: unset;
+            background-color: var(--color-background-input-pill-search);
         }
 
         &:not(.focused) {
