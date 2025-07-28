@@ -57,6 +57,14 @@
     fill: currentcolor;
 }
 
+.navigation-step-relative-type .zulip-unplugin-icon {
+    /* There's no space between the icon and text for navigation
+    step labels because of any text decoration rules when these
+    steps have a relative link. So we add a right margin to the
+    icon to add the white space without any text decoration. */
+    margin-right: 4px;
+}
+
 .aside-icon-lightbulb {
     /* We need to make the fill transparent for the bulb to look hollow
        and the default vertical-align of text-bottom was not looking
