@@ -34,7 +34,7 @@ def get_subdomain_from_hostname(
     m = re.search(rf"\.{settings.EXTERNAL_HOST}(:\d+)?$", host)
     if m:
         subdomain = host[: m.start()]
-        if subdomain in settings.ROOT_SUBDOMAIN_ALIASES:
+        if default_subdomain is not None and subdomain in settings.ROOT_SUBDOMAIN_ALIASES:
             return default_subdomain
         return subdomain
 
