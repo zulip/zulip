@@ -64,3 +64,17 @@ export const message_details_schema = z.record(
     ),
 );
 export type MessageDetails = z.output<typeof message_details_schema>;
+
+export const channel_folder_update_event_schema = z.object({
+    id: z.number(),
+    type: z.literal("channel_folder"),
+    op: z.literal("update"),
+    channel_folder_id: z.number(),
+    data: z.object({
+        name: z.optional(z.string()),
+        description: z.optional(z.string()),
+        rendered_description: z.optional(z.string()),
+        is_archived: z.optional(z.boolean()),
+    }),
+});
+export type ChannelFolderUpdateEvent = z.output<typeof channel_folder_update_event_schema>;

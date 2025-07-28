@@ -123,6 +123,14 @@ export function dispatch_normal_event(event) {
                     inbox_ui.complete_rerender();
                     break;
                 }
+                case "update":
+                    channel_folders.update(event);
+                    if (event.data.name !== undefined) {
+                        inbox_ui.complete_rerender();
+                        stream_list.update_streams_sidebar();
+                        stream_ui_updates.update_channel_folder_name(event.channel_folder_id);
+                    }
+                    break;
                 default:
                     blueslip.error("Unexpected event type channel_folder/" + event.op);
                     break;

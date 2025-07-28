@@ -2,6 +2,7 @@ import assert from "minimalistic-assert";
 import type * as z from "zod/mini";
 
 import {FoldDict} from "./fold_dict.ts";
+import type {ChannelFolderUpdateEvent} from "./server_event_types.ts";
 import type {StateData, channel_folder_schema} from "./state_data.ts";
 
 export type ChannelFolder = z.infer<typeof channel_folder_schema>;
@@ -51,4 +52,26 @@ export function get_channel_folder_by_id(folder_id: number): ChannelFolder {
     const channel_folder = channel_folder_by_id_dict.get(folder_id);
     assert(channel_folder !== undefined);
     return channel_folder;
+}
+
+export function update(event: ChannelFolderUpdateEvent): void {
+    const folder_id = event.channel_folder_id;
+    const channel_folder = get_channel_folder_by_id(folder_id);
+    if (event.data.name !== undefined) {
+        channel_folder_name_dict.delete(channel_folder.name);
+        channel_folder.name = event.data.name;
+        channel_folder_name_dict.set(channel_folder.name, channel_folder);
+    }
+
+    if (event.data.description !== undefined) {
+        channel_folder.description = event.data.description;
+        assert(event.data.rendered_description !== undefined);
+        channel_folder.rendered_description = event.data.rendered_description;
+    }
+
+    if (event.data.is_archived !== undefined) {
+        channel_folder.is_archived = event.data.is_archived;
+        channel_folder_name_dict.delete(channel_folder.name);
+        channel_folder_name_dict.set(channel_folder.name, channel_folder);
+    }
 }

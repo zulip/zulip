@@ -515,10 +515,10 @@ run_test("scheduled_messages", ({override}) => {
     }
 });
 
-run_test("channel_folders", () => {
+run_test("channel_folders", ({override}) => {
     channel_folders.initialize({channel_folders: []});
 
-    const event = event_fixtures.channel_folder__add;
+    let event = event_fixtures.channel_folder__add;
     {
         dispatch(event);
 
@@ -526,6 +526,27 @@ run_test("channel_folders", () => {
         assert.equal(folders.length, 1);
         assert.equal(folders[0].id, event.channel_folder.id);
         assert.equal(folders[0].name, event.channel_folder.name);
+    }
+
+    event = event_fixtures.channel_folder__update;
+    {
+        const stub = make_stub();
+        override(stream_ui_updates, "update_channel_folder_name", stub.f);
+        override(stream_list, "update_streams_sidebar", stub.f);
+
+        dispatch(event);
+
+        assert.equal(stub.num_calls, 2);
+        const folders = channel_folders.get_channel_folders(true);
+        const args = stub.get_args("folder_id");
+        assert_same(args.folder_id, event.channel_folder_id);
+
+        assert.equal(folders.length, 1);
+        assert.equal(folders[0].id, event.channel_folder_id);
+        assert.equal(folders[0].name, event.data.name);
+        assert.equal(folders[0].description, event.data.description);
+        assert.equal(folders[0].rendered_description, event.data.rendered_description);
+        assert.equal(folders[0].is_archived, event.data.is_archived);
     }
 
     blueslip.expect("error", "Unexpected event type channel_folder/other");
