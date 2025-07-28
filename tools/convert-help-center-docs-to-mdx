@@ -33,9 +33,6 @@ RELATIVE_LINKS_PATTERN = re.compile(r"\{relative\|(?P<link_type>.*?)\|(?P<key>.*
 # 1. Before cutover we should also check for ordered list items that do not start
 #    with `1. ` since our conversion script assumes that every item list starts
 #    with `1. `. The regex we used to check for this was `\b(?!1\.)\d+\. `.
-# 2. Before cutover, we should check for unindented pieces of text in ordered list
-#    items. Our script only works with indented pieces of text. The regex we used
-#    to check for this was `^1\. .*\n(?!\n)(?!1\.)( {0,1}\S.*)`.
 
 
 class IncludeFileInfo(TypedDict):
