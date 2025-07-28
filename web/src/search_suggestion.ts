@@ -1045,6 +1045,7 @@ export function get_search_result(
         // searching user probably is looking to make a group DM.
         get_group_suggestions,
         get_channels_filter_suggestions,
+        get_operator_suggestions,
         get_is_filter_suggestions,
         get_sent_by_me_suggestions,
         get_channel_suggestions,
@@ -1053,18 +1054,17 @@ export function get_search_result(
         get_people("dm-including"),
         get_people("from"),
         get_topic_suggestions,
-        get_operator_suggestions,
         get_has_filter_suggestions,
     ];
 
     if (page_params.is_spectator) {
         filterers = [
+            get_operator_suggestions,
             get_is_filter_suggestions,
             get_channel_suggestions,
             get_people("sender"),
             get_people("from"),
             get_topic_suggestions,
-            get_operator_suggestions,
             get_has_filter_suggestions,
         ];
     }

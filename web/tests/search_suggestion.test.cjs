@@ -576,7 +576,7 @@ test("check_is_suggestions", ({override, mock_template}) => {
     // but shows html description used for "channels:public"
     query = "st";
     suggestions = get_suggestions(query);
-    expected = ["st", "streams:public", "is:starred", "channel:"];
+    expected = ["st", "streams:public", "channel:", "is:starred"];
     assert.deepEqual(suggestions.strings, expected);
 
     query = "channel:66 has:link is:sta";
@@ -600,22 +600,22 @@ test("sent_by_me_suggestions", ({override, mock_template}) => {
 
     query = "sender";
     suggestions = get_suggestions(query);
-    let expected = ["sender", "sender:myself@zulip.com", "sender:"];
+    let expected = ["sender", "sender:", "sender:myself@zulip.com"];
     assert.deepEqual(suggestions.strings, expected);
 
     query = "-sender";
     suggestions = get_suggestions(query);
-    expected = ["-sender", "-sender:myself@zulip.com", "-sender:"];
+    expected = ["-sender", "-sender:", "-sender:myself@zulip.com"];
     assert.deepEqual(suggestions.strings, expected);
 
     query = "from";
     suggestions = get_suggestions(query);
-    expected = ["from", "sender:myself@zulip.com", "sender:"];
+    expected = ["from", "sender:", "sender:myself@zulip.com"];
     assert.deepEqual(suggestions.strings, expected);
 
     query = "-from";
     suggestions = get_suggestions(query);
-    expected = ["-from", "-sender:myself@zulip.com", "-sender:"];
+    expected = ["-from", "-sender:", "-sender:myself@zulip.com"];
     assert.deepEqual(suggestions.strings, expected);
 
     query = "sender:bob@zulip.com";
@@ -995,7 +995,7 @@ test("operator_suggestions", ({override, mock_template}) => {
 
     query = "-s";
     suggestions = get_suggestions(query);
-    expected = ["-s", "-sender:myself@zulip.com", "-sender:", "-channel:"];
+    expected = ["-s", "-sender:", "-channel:", "-sender:myself@zulip.com"];
     assert.deepEqual(suggestions.strings, expected);
 
     // 66 is a misc channel id.
@@ -1003,8 +1003,8 @@ test("operator_suggestions", ({override, mock_template}) => {
     suggestions = get_suggestions(query);
     expected = [
         "channel:66 is:alerted -f",
-        "channel:66 is:alerted -sender:myself@zulip.com",
         "channel:66 is:alerted -sender:",
+        "channel:66 is:alerted -sender:myself@zulip.com",
         "channel:66 is:alerted",
         "channel:66",
     ];
