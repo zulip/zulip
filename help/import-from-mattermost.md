@@ -186,29 +186,29 @@ Replace `<username>` and `<server_ip>` with the appropriate values below.
    (`EXTERNAL_HOST`) of the Zulip installation, run the following commands,
    replacing `<team-name>` with the name of the Mattermost team you want to import.
 
-    {!import-self-hosted-server-tips.md!}
+        {!import-self-hosted-server-tips.md!}
 
-    ```
-    cd /tmp
-    tar -xf mattermost_data.tar.gz
-    cd /home/zulip/deployments/current
-    ./scripts/stop-server
-    ./manage.py convert_mattermost_data /tmp/mattermost_data --output /tmp/converted_mattermost_data
-    ./manage.py import '' /tmp/converted_mattermost_data/<team-name>
-    ./scripts/start-server
-    ```
+        ```
+        cd /tmp
+        tar -xf mattermost_data.tar.gz
+        cd /home/zulip/deployments/current
+        ./scripts/stop-server
+        ./manage.py convert_mattermost_data /tmp/mattermost_data --output /tmp/converted_mattermost_data
+        ./manage.py import '' /tmp/converted_mattermost_data/<team-name>
+        ./scripts/start-server
+        ```
 
-    Alternatively, to import into a custom subdomain, run:
+        Alternatively, to import into a custom subdomain, run:
 
-    ```
-    cd /tmp
-    tar -xf mattermost_data.tar.gz
-    cd /home/zulip/deployments/current
-    ./scripts/stop-server
-    ./manage.py convert_mattermost_data /tmp/mattermost_data --output /tmp/converted_mattermost_data
-    ./manage.py import <subdomain> /tmp/converted_mattermost_data/<team-name>
-    ./scripts/start-server
-    ```
+        ```
+        cd /tmp
+        tar -xf mattermost_data.tar.gz
+        cd /home/zulip/deployments/current
+        ./scripts/stop-server
+        ./manage.py convert_mattermost_data /tmp/mattermost_data --output /tmp/converted_mattermost_data
+        ./manage.py import <subdomain> /tmp/converted_mattermost_data/<team-name>
+        ./scripts/start-server
+        ```
 
 1. Follow [step 4](https://zulip.readthedocs.io/en/stable/production/install.html#step-4-configure-and-use)
    of the guide for [installing a new Zulip
@@ -224,29 +224,29 @@ Replace `<username>` and `<server_ip>` with the appropriate values below.
    (`EXTERNAL_HOST`) of the Zulip installation, run the following commands,
    replacing `<team-name>` with the name of the Mattermost team you want to import.
 
-    {!import-self-hosted-server-tips.md!}
+        {!import-self-hosted-server-tips.md!}
 
-    ```
-    unzip latest_export.zip -d /tmp/my_mattermost_export
-    mv /tmp/my_mattermost_export/import.jsonl /tmp/my_mattermost_export/export.json
-    cd /home/zulip/deployments/current
-    ./scripts/stop-server
-    ./manage.py convert_mattermost_data /tmp/my_mattermost_export --output /tmp/converted_mattermost_data
-    ./manage.py import '' /tmp/converted_mattermost_data/<team-name>
-    ./scripts/start-server
-    ```
+        ```
+        unzip latest_export.zip -d /tmp/my_mattermost_export
+        mv /tmp/my_mattermost_export/import.jsonl /tmp/my_mattermost_export/export.json
+        cd /home/zulip/deployments/current
+        ./scripts/stop-server
+        ./manage.py convert_mattermost_data /tmp/my_mattermost_export --output /tmp/converted_mattermost_data
+        ./manage.py import '' /tmp/converted_mattermost_data/<team-name>
+        ./scripts/start-server
+        ```
 
-    Alternatively, to import into a custom subdomain, run:
+        Alternatively, to import into a custom subdomain, run:
 
-    ```
-    unzip latest_export.zip -d /tmp/my_mattermost_export
-    mv /tmp/my_mattermost_export/import.jsonl /tmp/my_mattermost_export/export.json
-    cd /home/zulip/deployments/current
-    ./scripts/stop-server
-    ./manage.py convert_mattermost_data /tmp/my_mattermost_export --output /tmp/converted_mattermost_data
-    ./manage.py import <subdomain> /tmp/converted_mattermost_data/<team-name>
-    ./scripts/start-server
-    ```
+        ```
+        unzip latest_export.zip -d /tmp/my_mattermost_export
+        mv /tmp/my_mattermost_export/import.jsonl /tmp/my_mattermost_export/export.json
+        cd /home/zulip/deployments/current
+        ./scripts/stop-server
+        ./manage.py convert_mattermost_data /tmp/my_mattermost_export --output /tmp/converted_mattermost_data
+        ./manage.py import <subdomain> /tmp/converted_mattermost_data/<team-name>
+        ./scripts/start-server
+        ```
 
 1. Follow [step 4](https://zulip.readthedocs.io/en/stable/production/install.html#step-4-configure-and-use)
    of the guide for [installing a new Zulip
