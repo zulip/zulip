@@ -827,7 +827,7 @@ def show_deactivation_notice(request: HttpRequest, next: str = "/") -> HttpRespo
             split = urlsplit(realm.deactivated_redirect)
             host = f"{split.scheme}://{split.netloc}"
             # If the redirect is in the same domain, do an automatic redirect.
-            if get_subdomain_from_hostname(host) is not None:
+            if get_subdomain_from_hostname(host, None) is not None:
                 redirect_to = get_safe_redirect_to(next, realm.deactivated_redirect)
                 context["auto_redirect_to"] = redirect_to
         return render(request, "zerver/deactivated.html", context=context)

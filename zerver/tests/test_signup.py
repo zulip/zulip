@@ -184,16 +184,16 @@ class DeactivationNoticeTestCase(ZulipTestCase):
         self.assertIn("This organization has been deactivated.", result.content.decode())
         self.assertNotIn("and all organization data has been deleted", result.content.decode())
 
-    def test_deactivation_notice_when_deactivated_and_deactivated_redirect_is_set(self) -> None:
+    def test_deactivation_notice_when_deactivated_and_deactivated_redirect_is_set_to_different_domain(
+        self,
+    ) -> None:
         realm = get_realm("zulip")
         realm.deactivated = True
-        realm.deactivated_redirect = "http://example.zulipchat.com"
+        realm.deactivated_redirect = f"http://example.not_{settings.EXTERNAL_HOST}.com:9991"
         realm.save(update_fields=["deactivated", "deactivated_redirect"])
 
         result = self.client_get("/login/", follow=True)
-        self.assert_in_success_response(
-            ['href="http://example.zulipchat.com/" id="deactivated-org-auto-redirect"'], result
-        )
+        self.assert_in_success_response([f'href="{realm.deactivated_redirect}"'], result)
 
     def test_deactivation_notice_when_realm_subdomain_is_changed(self) -> None:
         realm = get_realm("zulip")
@@ -201,7 +201,9 @@ class DeactivationNoticeTestCase(ZulipTestCase):
 
         result = self.client_get("/login/", follow=True)
         self.assert_in_success_response(
-            ['href="http://new-subdomain-name.testserver/" id="deactivated-org-auto-redirect"'],
+            [
+                f'href="http://new-subdomain-name.{settings.EXTERNAL_HOST}/" id="deactivated-org-auto-redirect"'
+            ],
             result,
         )
 
