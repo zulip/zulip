@@ -2550,6 +2550,10 @@
     );
 
     /* Banners */
+    /* NOTE: These colors are also used in starlight help center for
+       aside colors. Do grep for these variable when changing them
+       and confirm on CZO on whether the colors there need to change
+       as well. */
     --color-text-link-banner: hsl(210deg 94% 42%);
     /* Banners - Neutral Variant */
     --color-text-neutral-banner: light-dark(
