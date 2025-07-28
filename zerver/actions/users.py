@@ -1,4 +1,3 @@
-import secrets
 from collections import defaultdict
 from email.headerregistry import Address
 from typing import Any
@@ -23,7 +22,7 @@ from zerver.actions.user_groups import (
 from zerver.lib.avatar import get_avatar_field
 from zerver.lib.bot_config import ConfigError, get_bot_config, get_bot_configs, set_bot_config
 from zerver.lib.cache import bot_dict_fields, flush_user_profile
-from zerver.lib.create_user import create_user
+from zerver.lib.create_user import create_user_profile
 from zerver.lib.event_types import BotServicesOutgoing
 from zerver.lib.invites import revoke_invites_generated_by_user
 from zerver.lib.remote_server import maybe_enqueue_audit_log_upload
@@ -56,7 +55,6 @@ from zerver.lib.users import (
     get_users_involved_in_dms_with_target_users,
     user_access_restricted_in_realm,
 )
-from zerver.lib.utils import generate_api_key
 from zerver.models import (
     GroupGroupMembership,
     NamedUserGroup,
@@ -77,6 +75,7 @@ from zerver.models.realms import get_fake_email_domain
 from zerver.models.saved_snippets import SavedSnippet
 from zerver.models.users import (
     ExternalAuthID,
+    UserBaseSettings,
     active_non_guest_user_ids,
     active_user_ids,
     bot_owner_user_ids,
@@ -111,8 +110,6 @@ def do_delete_user_core(
       `data-user-id` and display the current name). This is hard to
       change, and not important, since nothing prevents other users from
       just typing the user's name in their own messages.
-    * Consumes a user ID sequence number, resulting in gaps in the
-      space of user IDs that contain actual users.
     """
 
     if user_profile.realm.is_zephyr_mirror_realm:  # nocoverage
@@ -122,7 +119,6 @@ def do_delete_user_core(
 
     user_id = user_profile.id
     realm = user_profile.realm
-    random_token = secrets.token_hex(16)
 
     # We create a temporary dummy UserProfile just to have a valid row with defaults
     # set for all the various user settings. We can then copy them over onto the original
@@ -131,17 +127,23 @@ def do_delete_user_core(
     # theoretically possible to de-anonymize even after deletion, if the original values
     # were preserved.
     with transaction.atomic(durable=True):
-        temp_replacement_user = create_user(
+        temp_replacement_user = create_user_profile(
+            realm=realm,
             email=Address(
-                username=f"temp_deleteduser{random_token}", domain=get_fake_email_domain(realm.host)
+                username=f"deleteduser{user_id}", domain=get_fake_email_domain(realm.host)
             ).addr_spec,
             password=None,
-            realm=realm,
-            full_name=f"Deleted User {user_id} (temp)",
             active=False,
+            bot_type=user_profile.bot_type,
+            full_name=f"Deleted User {user_id}",
+            bot_owner=user_profile.bot_owner,
             is_mirror_dummy=True,
-            force_date_joined=user_profile.date_joined,
-            create_personal_recipient=False,
+            tos_version=user_profile.tos_version,
+            # These required arguments should get default values configured on the UserProfile model,
+            # to overwrite the values of user_profile.
+            timezone=UserProfile._meta.get_field("timezone").get_default(),
+            default_language=UserProfile._meta.get_field("default_language").get_default(),
+            email_address_visibility=UserBaseSettings.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
         )
 
         overwrite_data = model_to_dict(
@@ -159,19 +161,8 @@ def do_delete_user_core(
                 "user_permissions",
             ],
         )
-        # api_key can't be copied over from the temporary dummy, as it has to be unique in the database.
-        overwrite_data["api_key"] = generate_api_key()
-
-        dummy_email = Address(
-            username=f"deleteduser{user_id}", domain=get_fake_email_domain(realm.host)
-        ).addr_spec
-        overwrite_data["email"] = dummy_email
-        overwrite_data["delivery_email"] = dummy_email
-        overwrite_data["full_name"] = f"Deleted User {user_id}"
 
         UserProfile.objects.filter(id=user_profile.id).update(**overwrite_data)
-        temp_replacement_user.delete()
-
         user_profile.refresh_from_db()
 
         update_all_subscriber_counts_for_user(user_profile=user_profile, direction=-1)
