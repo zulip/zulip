@@ -107,6 +107,7 @@ test("basic_get_suggestions_for_spectator", () => {
     const query = "";
     const suggestions = get_suggestions(query);
     assert.deepEqual(suggestions.strings, [
+        "channel:",
         "is:resolved",
         "-is:resolved",
         "has:link",
@@ -390,6 +391,7 @@ test("empty_query_suggestions", () => {
 
     const expected = [
         "channels:public",
+        "channel:",
         "is:dm",
         "is:starred",
         "is:mentioned",

@@ -790,7 +790,7 @@ function get_sent_by_me_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Sugg
 }
 
 function get_operator_suggestions(last: NarrowTerm): Suggestion[] {
-    if (!(last.operator === "search")) {
+    if (!(last.operator === "search" || last.operator === "")) {
         return [];
     }
     let last_operand = last.operand;
@@ -801,17 +801,24 @@ function get_operator_suggestions(last: NarrowTerm): Suggestion[] {
         last_operand = last_operand.slice(1);
     }
 
-    let choices = [
-        "channel",
-        "topic",
-        "dm",
-        "dm-including",
-        "sender",
-        "near",
-        "from",
-        "pm-with",
-        "stream",
-    ];
+    let choices;
+
+    if (last.operator === "") {
+        choices = ["channel", "stream"];
+    } else {
+        choices = [
+            "channel",
+            "topic",
+            "dm",
+            "dm-including",
+            "sender",
+            "near",
+            "from",
+            "pm-with",
+            "stream",
+        ];
+    }
+
     choices = choices.filter((choice) => common.phrase_match(last_operand, choice));
 
     return choices.map((choice) => {
