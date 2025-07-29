@@ -6,21 +6,27 @@ import render_inline_decorated_channel_name from "../templates/inline_decorated_
 import render_selected_stream_title from "../templates/stream_settings/selected_stream_title.hbs";
 
 import * as channel from "./channel.ts";
+import * as channel_folders from "./channel_folders.ts";
 import * as confirm_dialog from "./confirm_dialog.ts";
 import type {DropdownWidget} from "./dropdown_widget.ts";
+import * as dropdown_widget from "./dropdown_widget.ts";
 import * as hash_util from "./hash_util.ts";
 import {$t, $t_html} from "./i18n.ts";
 import * as loading from "./loading.ts";
 import * as overlays from "./overlays.ts";
 import * as peer_data from "./peer_data.ts";
 import * as resize from "./resize.ts";
+import * as settings_components from "./settings_components.ts";
+import * as settings_config from "./settings_config.ts";
 import * as settings_data from "./settings_data.ts";
 import {current_user} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
+import * as stream_settings_containers from "./stream_settings_containers.ts";
 import * as stream_settings_data from "./stream_settings_data.ts";
 import type {StreamSubscription} from "./sub_store.ts";
 import * as ui_report from "./ui_report.ts";
 import * as user_groups from "./user_groups.ts";
+import * as util from "./util.ts";
 
 export let filter_dropdown_widget: DropdownWidget;
 
@@ -311,4 +317,65 @@ export function filter_includes_channel(sub: StreamSubscription): boolean {
         return false;
     }
     return true;
+}
+
+export function set_up_folder_dropdown_widget(sub?: StreamSubscription): DropdownWidget {
+    const folder_options = (): dropdown_widget.Option[] => {
+        const folders = channel_folders
+            .get_channel_folders()
+            .sort((a, b) => util.strcmp(a.name.toLowerCase(), b.name.toLowerCase()));
+        const options: dropdown_widget.Option[] = folders.map((folder) => ({
+            name: folder.name,
+            unique_id: folder.id,
+        }));
+
+        const disabled_option = {
+            is_setting_disabled: true,
+            show_disabled_icon: false,
+            show_disabled_option_name: true,
+            unique_id: settings_config.no_folder_selected,
+            name: $t({defaultMessage: "None"}),
+        };
+
+        options.unshift(disabled_option);
+        return options;
+    };
+
+    const default_id = sub?.folder_id ?? settings_config.no_folder_selected;
+
+    let widget_name = "folder_id";
+    if (sub === undefined) {
+        widget_name = "new_channel_folder_id";
+    }
+
+    let $events_container = $("#stream_settings .subscription_settings");
+    if (sub === undefined) {
+        $events_container = $("#stream_creation_form");
+    }
+
+    const folder_widget = new dropdown_widget.DropdownWidget({
+        widget_name,
+        get_options: folder_options,
+        $events_container,
+        item_click_callback(event, dropdown, this_widget) {
+            dropdown.hide();
+            event.preventDefault();
+            event.stopPropagation();
+            this_widget.render();
+            if (sub !== undefined) {
+                const $edit_container = stream_settings_containers.get_edit_container(sub);
+                settings_components.save_discard_stream_settings_widget_status_handler(
+                    $edit_container.find(".channel-folder-subsection"),
+                    stream_data.get_sub_by_id(sub.stream_id),
+                );
+            }
+        },
+        default_id,
+        unique_id_type: "number",
+    });
+    if (sub !== undefined) {
+        settings_components.set_dropdown_setting_widget("folder_id", folder_widget);
+    }
+    folder_widget.setup();
+    return folder_widget;
 }
