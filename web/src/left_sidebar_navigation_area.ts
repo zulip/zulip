@@ -172,7 +172,7 @@ export function update_dom_with_unread_counts(
         }
         $header.toggleClass("has-only-muted-unreads", show_muted_count);
         $header.toggleClass(
-            "hide-unread-messages-count",
+            "hide_unread_counts",
             should_mask_header_unread_count(show_muted_count, unmuted_count),
         );
     }
