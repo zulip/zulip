@@ -24,10 +24,10 @@ You can also upload a custom profile picture to Zulip.
 {settings_tab|profile}
 
 1. Under **Profile picture**, click on the **(X)** icon in the top
-right corner of the profile picture.
+   right corner of the profile picture.
 
 1. Approve by clicking **Confirm**. This will remove your current
-profile picture, reverting to the Gravatar default.
+   profile picture, reverting to the Gravatar default.
 
 {end_tabs}
 
