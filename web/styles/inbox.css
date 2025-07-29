@@ -178,6 +178,11 @@
             .user_block .zulip-icon {
                 /* 0 5px at 16px/1em */
                 padding: 0 0.3125em;
+
+                &.user-circle {
+                    /* 5px at 16px / ~ 0.5em */
+                    padding: 0 0.586em;
+                }
             }
 
             .inbox-row {
@@ -321,8 +326,6 @@
                     .user_block {
                         display: flex;
                         align-items: center;
-                        /* 3px at 16px / 1em */
-                        margin-left: 0.1875em;
                     }
                 }
             }
