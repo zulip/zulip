@@ -26,6 +26,81 @@ export type UserPillItem = {
 
 type TermPattern = Omit<NarrowTerm, "operand"> & Partial<Pick<NarrowTerm, "operand">>;
 
+const channel_incompatible_patterns = [
+    {operator: "is", operand: "dm"},
+    {operator: "channel"},
+    {operator: "dm-including"},
+    {operator: "dm"},
+    {operator: "in"},
+    {operator: "channels"},
+];
+
+const incompatible_patterns: Record<string, TermPattern[]> = {
+    channel: channel_incompatible_patterns,
+    stream: channel_incompatible_patterns,
+    streams: channel_incompatible_patterns,
+    channels: channel_incompatible_patterns,
+    topic: [
+        {operator: "dm"},
+        {operator: "is", operand: "dm"},
+        {operator: "dm-including"},
+        {operator: "topic"},
+    ],
+    dm: [
+        {operator: "dm"},
+        {operator: "pm-with"},
+        {operator: "channel"},
+        {operator: "is", operand: "resolved"},
+    ],
+    "pm-with": [
+        {operator: "dm"},
+        {operator: "pm-with"},
+        {operator: "channel"},
+        {operator: "is", operand: "resolved"},
+    ],
+    "dm-including": [{operator: "channel"}, {operator: "stream"}],
+    "is:resolved": [
+        {operator: "is", operand: "resolved"},
+        {operator: "is", operand: "dm"},
+        {operator: "dm"},
+        {operator: "dm-including"},
+    ],
+    "-is:resolved": [
+        {operator: "is", operand: "resolved"},
+        {operator: "is", operand: "dm"},
+        {operator: "dm"},
+        {operator: "dm-including"},
+    ],
+    "is:dm": [
+        {operator: "is", operand: "dm"},
+        {operator: "is", operand: "resolved"},
+        {operator: "channel"},
+        {operator: "dm"},
+        {operator: "in"},
+        {operator: "topic"},
+    ],
+    sender: [{operator: "sender"}, {operator: "from"}],
+    from: [{operator: "sender"}, {operator: "from"}],
+    "is:starred": [{operator: "is", operand: "starred"}],
+    "is:mentioned": [{operator: "is", operand: "mentioned"}],
+    "is:followed": [
+        {operator: "is", operand: "followed"},
+        {operator: "is", operand: "dm"},
+        {operator: "dm"},
+        {operator: "dm-including"},
+    ],
+    "is:alerted": [{operator: "is", operand: "alerted"}],
+    "is:unread": [{operator: "is", operand: "unread"}],
+    "is:muted": [
+        {operator: "is", operand: "muted"},
+        {operator: "in", operand: "home"},
+    ],
+    "has:link": [{operator: "has", operand: "link"}],
+    "has:image": [{operator: "has", operand: "image"}],
+    "has:attachment": [{operator: "has", operand: "attachment"}],
+    "has:reaction": [{operator: "has", operand: "reaction"}],
+};
+
 export type Suggestion = {
     // When there's a single pill on a suggestion line, we have space to provide
     // help text (description_html) explaining what the operator does. If a
@@ -116,14 +191,7 @@ function get_channel_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggest
     // For users with "stream" in their muscle memory, still
     // have suggestions with "channel:" operator.
     const valid = ["stream", "channel", "search", ""];
-    const incompatible_patterns = [
-        {operator: "channel"},
-        {operator: "channels"},
-        {operator: "is", operand: "dm"},
-        {operator: "dm"},
-        {operator: "dm-including"},
-    ];
-    if (!check_validity(last, terms, valid, incompatible_patterns)) {
+    if (!check_validity(last, terms, valid, incompatible_patterns.channel!)) {
         return [];
     }
 
@@ -306,28 +374,8 @@ function get_person_suggestions(
     }
 
     const valid = ["search", autocomplete_operator];
-    let incompatible_patterns: TermPattern[] = [];
 
-    switch (autocomplete_operator) {
-        case "dm-including":
-            incompatible_patterns = [{operator: "channel"}, {operator: "is", operand: "resolved"}];
-            break;
-        case "dm":
-        case "pm-with":
-            incompatible_patterns = [
-                {operator: "dm"},
-                {operator: "pm-with"},
-                {operator: "channel"},
-                {operator: "is", operand: "resolved"},
-            ];
-            break;
-        case "sender":
-        case "from":
-            incompatible_patterns = [{operator: "sender"}, {operator: "from"}];
-            break;
-    }
-
-    if (!check_validity(last, terms, valid, incompatible_patterns)) {
+    if (!check_validity(last, terms, valid, incompatible_patterns[autocomplete_operator]!)) {
         return [];
     }
 
@@ -417,13 +465,9 @@ export function get_topic_suggestions_from_candidates({
 }
 
 function get_topic_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggestion[] {
-    const incompatible_patterns = [
-        {operator: "dm"},
-        {operator: "is", operand: "dm"},
-        {operator: "dm-including"},
-        {operator: "topic"},
-    ];
-    if (!check_validity(last, terms, ["channel", "topic", "search"], incompatible_patterns)) {
+    if (
+        !check_validity(last, terms, ["channel", "topic", "search"], incompatible_patterns.topic!)
+    ) {
         return [];
     }
 
@@ -591,14 +635,6 @@ function get_channels_filter_suggestions(last: NarrowTerm, terms: NarrowTerm[]):
     if (last.operator !== "channels") {
         return [];
     }
-    const incompatible_patterns = [
-        {operator: "is", operand: "dm"},
-        {operator: "channel"},
-        {operator: "dm-including"},
-        {operator: "dm"},
-        {operator: "in"},
-        {operator: "channels"},
-    ];
     const public_channels_search_string = "channels:public";
     const web_public_channels_search_string = "channels:web-public";
     const suggestions: SuggestionAndIncompatiblePatterns[] = [];
@@ -607,7 +643,7 @@ function get_channels_filter_suggestions(last: NarrowTerm, terms: NarrowTerm[]):
         suggestions.push({
             search_string: public_channels_search_string,
             description_html: "all public channels",
-            incompatible_patterns,
+            incompatible_patterns.channels!,
         });
     }
 
@@ -615,7 +651,7 @@ function get_channels_filter_suggestions(last: NarrowTerm, terms: NarrowTerm[]):
         suggestions.push({
             search_string: web_public_channels_search_string,
             description_html: "all web-public channels",
-            incompatible_patterns,
+            incompatible_patterns: incompatible_patterns.channels!,
         });
     }
 
@@ -629,22 +665,12 @@ function get_is_filter_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Sugge
             {
                 search_string: "is:resolved",
                 description_html: "resolved topics",
-                incompatible_patterns: [
-                    {operator: "is", operand: "resolved"},
-                    {operator: "is", operand: "dm"},
-                    {operator: "dm"},
-                    {operator: "dm-including"},
-                ],
+                incompatible_patterns: incompatible_patterns["is:resolved"]!,
             },
             {
                 search_string: "-is:resolved",
                 description_html: "unresolved topics",
-                incompatible_patterns: [
-                    {operator: "is", operand: "resolved"},
-                    {operator: "is", operand: "dm"},
-                    {operator: "dm"},
-                    {operator: "dm-including"},
-                ],
+                incompatible_patterns: incompatible_patterns["-is:resolved"]!,
             },
         ];
     } else {
@@ -652,72 +678,47 @@ function get_is_filter_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Sugge
             {
                 search_string: "is:dm",
                 description_html: "direct messages",
-                incompatible_patterns: [
-                    {operator: "is", operand: "dm"},
-                    {operator: "is", operand: "resolved"},
-                    {operator: "channel"},
-                    {operator: "dm"},
-                    {operator: "in"},
-                    {operator: "topic"},
-                ],
+                incompatible_patterns: incompatible_patterns["is:dm"]!,
             },
             {
                 search_string: "is:starred",
                 description_html: "starred messages",
-                incompatible_patterns: [{operator: "is", operand: "starred"}],
+                incompatible_patterns: incompatible_patterns["is:starred"]!,
             },
             {
                 search_string: "is:mentioned",
                 description_html: "messages that mention you",
-                incompatible_patterns: [{operator: "is", operand: "mentioned"}],
+                incompatible_patterns: incompatible_patterns["is:mentioned"]!,
             },
             {
                 search_string: "is:followed",
                 description_html: "followed topics",
-                incompatible_patterns: [
-                    {operator: "is", operand: "followed"},
-                    {operator: "is", operand: "dm"},
-                    {operator: "dm"},
-                    {operator: "dm-including"},
-                ],
+                incompatible_patterns: incompatible_patterns["is:followed"]!,
             },
             {
                 search_string: "is:alerted",
                 description_html: "alerted messages",
-                incompatible_patterns: [{operator: "is", operand: "alerted"}],
+                incompatible_patterns: incompatible_patterns["is:alerted"]!,
             },
             {
                 search_string: "is:unread",
                 description_html: "unread messages",
-                incompatible_patterns: [{operator: "is", operand: "unread"}],
+                incompatible_patterns: incompatible_patterns["is:unread"]!,
             },
             {
                 search_string: "is:muted",
                 description_html: "muted messages",
-                incompatible_patterns: [
-                    {operator: "is", operand: "muted"},
-                    {operator: "in", operand: "home"},
-                ],
+                incompatible_patterns: incompatible_patterns["is:muted"]!,
             },
             {
                 search_string: "is:resolved",
                 description_html: "resolved topics",
-                incompatible_patterns: [
-                    {operator: "is", operand: "resolved"},
-                    {operator: "is", operand: "dm"},
-                    {operator: "dm"},
-                    {operator: "dm-including"},
-                ],
+                incompatible_patterns: incompatible_patterns["is:resolved"]!,
             },
             {
                 search_string: "-is:resolved",
                 description_html: "unresolved topics",
-                incompatible_patterns: [
-                    {operator: "is", operand: "resolved"},
-                    {operator: "is", operand: "dm"},
-                    {operator: "dm"},
-                    {operator: "dm-including"},
-                ],
+                incompatible_patterns: incompatible_patterns["-is:resolved"]!,
             },
         ];
     }
@@ -743,22 +744,22 @@ function get_has_filter_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Sugg
         {
             search_string: "has:link",
             description_html: "messages with links",
-            incompatible_patterns: [{operator: "has", operand: "link"}],
+            incompatible_patterns: incompatible_patterns["has:link"]!,
         },
         {
             search_string: "has:image",
             description_html: "messages with images",
-            incompatible_patterns: [{operator: "has", operand: "image"}],
+            incompatible_patterns: incompatible_patterns["has:image"]!,
         },
         {
             search_string: "has:attachment",
             description_html: "messages with attachments",
-            incompatible_patterns: [{operator: "has", operand: "attachment"}],
+            incompatible_patterns: incompatible_patterns["has:attachment"]!,
         },
         {
             search_string: "has:reaction",
             description_html: "messages with reactions",
-            incompatible_patterns: [{operator: "has", operand: "reaction"}],
+            incompatible_patterns: incompatible_patterns["has:reaction"]!,
         },
     ];
     return get_special_filter_suggestions(last, terms, suggestions);
@@ -777,9 +778,7 @@ function get_sent_by_me_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Sugg
     const sent_string = negated_symbol + "sent";
     const description_html = verb + "sent by me";
 
-    const incompatible_patterns = [{operator: "sender"}, {operator: "from"}];
-
-    if (match_criteria(terms, incompatible_patterns)) {
+    if (match_criteria(terms, incompatible_patterns.sender!)) {
         return [];
     }
 
