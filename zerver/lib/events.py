@@ -89,6 +89,7 @@ from zerver.lib.users import (
 )
 from zerver.lib.utils import optional_bytes_to_mib
 from zerver.models import (
+    ChannelFolder,
     Client,
     CustomProfileField,
     Draft,
@@ -560,6 +561,8 @@ def fetch_initial_state_data(
         state["max_bulk_new_subscription_messages"] = settings.MAX_BULK_NEW_SUBSCRIPTION_MESSAGES
         state["max_topic_length"] = MAX_TOPIC_NAME_LENGTH
         state["max_message_length"] = settings.MAX_MESSAGE_LENGTH
+        state["max_channel_folder_name_length"] = ChannelFolder.MAX_NAME_LENGTH
+        state["max_channel_folder_description_length"] = ChannelFolder.MAX_DESCRIPTION_LENGTH
         if realm.demo_organization_scheduled_deletion_date is not None:
             state["demo_organization_scheduled_deletion_date"] = datetime_to_timestamp(
                 realm.demo_organization_scheduled_deletion_date

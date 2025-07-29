@@ -20,6 +20,12 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 11.0
 
+**Feature level 410**
+
+* [`POST /register`](/api/register-queue): Added
+  `max_channel_folder_name_length` and
+  `max_channel_folder_description_length` fields to the response.
+
 **Feature level 409**
 
 * `PATCH /realm`, [`POST /register`](/api/register-queue),
