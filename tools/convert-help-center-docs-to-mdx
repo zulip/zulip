@@ -584,25 +584,25 @@ def convert_include_file_to_mdx(
 
 
 def get_include_files_info(include_input_dir: str) -> dict[str, IncludeFileInfo]:
+    def is_include_only_ordered_list_recursive(markdown_string: str) -> bool:
+        if markdown_string.startswith("{!"):
+            nested_file_name = (
+                markdown_string.splitlines()[0].strip().replace("{!", "").replace("!}", "")
+            )
+            nested_file_path = os.path.join(include_input_dir, nested_file_name)
+            nested_markdown_string = get_markdown_string_from_file(nested_file_path)
+            return is_include_only_ordered_list_recursive(nested_markdown_string)
+        else:
+            return is_include_only_ordered_list(markdown_string)
+
     include_files_info: dict[str, IncludeFileInfo] = {}
     for name in os.listdir(include_input_dir):
         markdown_file_path = os.path.join(include_input_dir, name)
         if name.endswith(".md") and os.path.isfile(markdown_file_path):
             markdown_string = get_markdown_string_from_file(markdown_file_path)
             include_files_info[name] = {
-                "is_only_ordered_list": is_include_only_ordered_list(markdown_string)
+                "is_only_ordered_list": is_include_only_ordered_list_recursive(markdown_string)
             }
-            # We are just checking one level deep and not checking for
-            # any recursions, which would be fine for our use case.
-            if markdown_string.startswith("{!"):
-                nested_file_name = (
-                    markdown_string.splitlines()[0].strip().replace("{!", "").replace("!}", "")
-                )
-                nested_file_path = os.path.join(include_input_dir, nested_file_name)
-                nested_markdown_string = get_markdown_string_from_file(nested_file_path)
-                include_files_info[name] = {
-                    "is_only_ordered_list": is_include_only_ordered_list(nested_markdown_string)
-                }
 
     return include_files_info
 
