@@ -220,6 +220,21 @@ function should_show_narrow_to_recipient_banner(message: Message): boolean {
     return false;
 }
 
+function show_scroll_to_view_banner(link_msg_id: number): void {
+    const banner_text = $t({defaultMessage: "Sent!"});
+    const link_text = $t({defaultMessage: "Scroll down to view your message."});
+    notify_above_composebox(
+        banner_text,
+        compose_banner.CLASSNAMES.sent_scroll_to_view,
+        // Don't display a URL on hover for the "Scroll to bottom" link.
+        null,
+        link_msg_id,
+        null,
+        link_text,
+    );
+    compose_banner.set_scroll_to_message_banner_message_id(link_msg_id);
+}
+
 export function notify_local_mixes(
     messages: Message[],
     need_user_to_scroll: boolean,
@@ -260,18 +275,7 @@ export function notify_local_mixes(
 
         if (!jump_to_sent_message_conversation && !show_narrow_to_recipient_banner) {
             if (need_user_to_scroll) {
-                const banner_text = $t({defaultMessage: "Sent!"});
-                const link_text = $t({defaultMessage: "Scroll down to view your message."});
-                notify_above_composebox(
-                    banner_text,
-                    compose_banner.CLASSNAMES.sent_scroll_to_view,
-                    // Don't display a URL on hover for the "Scroll to bottom" link.
-                    null,
-                    link_msg_id,
-                    null,
-                    link_text,
-                );
-                compose_banner.set_scroll_to_message_banner_message_id(link_msg_id);
+                show_scroll_to_view_banner(link_msg_id);
             }
 
             // This is the HAPPY PATH--for most messages we do nothing
