@@ -157,7 +157,7 @@
 * [Rename a topic](/help/rename-a-topic)
 * [Resolve a topic](/help/resolve-a-topic)
 * [Move content to another topic](/help/move-content-to-another-topic)
-* [“*General chat*” topic](/help/general-chat-topic)
+* [“General chat” topic](/help/general-chat-topic)
 * [Delete a topic](/help/delete-a-topic)
 
 ## Notifications
@@ -218,7 +218,7 @@
 * [Private channels](/help/channel-permissions#private-channels)
 * [Public channels](/help/channel-permissions#public-channels)
 * [Public access option](/help/public-access-option)
-* [“*General chat*” channels](/help/general-chat-channels)
+* [“General chat” channels](/help/general-chat-channels)
 * [Channel folders](/help/channel-folders)
 * [Channel permissions](/help/channel-permissions)
 * [Channel posting policy](/help/channel-posting-policy)

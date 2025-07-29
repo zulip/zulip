@@ -1,4 +1,4 @@
-# “*General chat*” topic
+# “General chat” topic
 
 Zulip's [topics](/help/introduction-to-topics) help you keep conversations
 organized, but you may sometimes want to send a message without a topic. For

@@ -1,4 +1,4 @@
-# “*General chat*” channels
+# “General chat” channels
 
 Zulip's [topics](/help/introduction-to-topics) help you keep conversations
 organized, but you may not need topics in some channels (e.g., a social channel,
