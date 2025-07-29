@@ -469,6 +469,10 @@ export class Typeahead<ItemType extends string | object> {
                         void instance.popperInstance?.update();
                     });
                 },
+                onHidden: (instance) => {
+                    this.clear_typeahead_tooltip?.();
+                    instance.destroy();
+                },
             });
         }
 
@@ -794,6 +798,7 @@ export class Typeahead<ItemType extends string | object> {
                     // the search bar).
                     this.openInputFieldOnKeyUp();
                 }
+                this.clear_typeahead_tooltip?.();
                 if (e.key === "Backspace") {
                     this.lookup(this.hideOnEmptyAfterBackspace);
                     return;
