@@ -323,7 +323,7 @@ export default defineConfig({
                     ],
                 },
                 {
-                    label: "Zulip Administration",
+                    label: "Zulip administration",
                     link: "#",
                     attrs: {
                         class: "non-clickable-sidebar-heading",
@@ -371,7 +371,7 @@ export default defineConfig({
                     ],
                 },
                 {
-                    label: "Channel Management",
+                    label: "Channel management",
                     items: [
                         "create-a-channel",
                         {
@@ -421,7 +421,7 @@ export default defineConfig({
                     ],
                 },
                 {
-                    label: "Organization Settings",
+                    label: "Organization settings",
                     items: [
                         "configure-organization-language",
                         "custom-emoji",
@@ -442,7 +442,7 @@ export default defineConfig({
                     ],
                 },
                 {
-                    label: "Bots & Integrations",
+                    label: "Bots & integrations",
                     items: [
                         "bots-overview",
                         "integrations-overview",
