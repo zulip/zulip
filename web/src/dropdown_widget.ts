@@ -35,6 +35,8 @@ export type Option = {
     bold_current_selection?: boolean;
     has_delete_icon?: boolean;
     has_edit_icon?: boolean;
+    delete_icon_label?: string;
+    edit_icon_label?: string;
 };
 
 export type DropdownWidgetOptions = {
