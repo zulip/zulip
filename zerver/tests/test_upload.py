@@ -189,6 +189,17 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         self.assertEqual(result["Content-Type"], "application/octet-stream")
         consume_response(result)
 
+        # Old files may be stored without a content-type in the
+        # database, in which case we try to guess at download time.
+        attachment = Attachment.objects.get(file_name="somefile")
+        self.assertEqual(attachment.content_type, "application/octet-stream")
+        attachment.content_type = None
+        attachment.save(update_fields=["content_type"])
+        result = self.client_get(url)
+        self.assertEqual(result.status_code, 200)
+        self.assertEqual(result["Content-Type"], "application/octet-stream")
+        consume_response(result)
+
         uploaded_file = SimpleUploadedFile("somefile.txt", b"zulip!", content_type="")
         result = self.api_post(
             self.example_user("hamlet"), "/api/v1/user_uploads", {"file": uploaded_file}
@@ -197,6 +208,16 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
 
         response_dict = self.assert_json_success(result)
         url = response_dict["url"]
+        result = self.client_get(url)
+        self.assertEqual(result.status_code, 200)
+        self.assertEqual(result["Content-Type"], 'text/plain; charset="ascii"')
+        consume_response(result)
+
+        # As above, test without a stored content_type
+        attachment = Attachment.objects.get(file_name="somefile.txt")
+        self.assertEqual(attachment.content_type, 'text/plain; charset="ascii"')
+        attachment.content_type = None
+        attachment.save(update_fields=["content_type"])
         result = self.client_get(url)
         self.assertEqual(result.status_code, 200)
         self.assertEqual(result["Content-Type"], 'text/plain; charset="ascii"')
