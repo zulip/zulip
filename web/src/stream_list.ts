@@ -688,6 +688,7 @@ function toggle_hide_unread_counts(
 export function update_dom_unread_counts_visibility(): void {
     // TODO: It's not obviously why this function exists; can't we
     // just do a full left sidebar rebuild?
+    left_sidebar_navigation_area.update_dom_with_unread_counts(unread.get_counts(), false);
     for (const stream of stream_sidebar.rows.values()) {
         const $subscription_block = stream.get_li().find(".subscription_block");
 
