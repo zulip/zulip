@@ -43,7 +43,7 @@ class ZulipUploadBackend:
     def save_attachment_contents(self, path_id: str, filehandle: IO[bytes]) -> None:
         raise NotImplementedError
 
-    def attachment_vips_source(self, path_id: str) -> StreamingSourceWithSize:
+    def attachment_source(self, path_id: str) -> StreamingSourceWithSize:
         raise NotImplementedError
 
     def delete_message_attachment(self, path_id: str) -> bool:
