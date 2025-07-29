@@ -34,13 +34,16 @@ You can set a status emoji, status message, or both.
 
 {tab|mobile}
 
-Access this feature by following the web app instructions in your
-mobile device browser.
+{!mobile-menu.md!}
 
-Implementation of this feature in the mobile app is tracked [on
-GitHub](https://github.com/zulip/zulip-flutter/issues/198). If
-you're interested in this feature, please react to the issue's
-description with 👍.
+1. Tap **My profile**.
+
+1. Tap **Set status** or **Status**.
+
+1. Select one of the common statuses, or choose any emoji and/or write
+   a short message.
+
+1. Tap **Save**.
 
 {end_tabs}
 
@@ -59,6 +62,16 @@ description with 👍.
 {!personal-menu.md!}
 
 {!clear-status.md!}
+
+{tab|mobile}
+
+{!mobile-menu.md!}
+
+1. Tap **My profile**.
+
+1. Tap **Status**.
+
+1. Tap **Clear**, and then **Save** in the top right corner of the app.
 
 {end_tabs}
 
