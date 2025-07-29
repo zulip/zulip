@@ -25,7 +25,7 @@ organization's data will be permanently deleted.
 
 A deactivated organization can be restored until its data is deleted.
 If you deactivated your organization by accident, please contact
-[{{ support_email }}](mailto:support@zulip.com) as soon as possible.
+[{{ support_email }}](mailto:{{ support_email }}) as soon as possible.
 
 ## Related articles
 
