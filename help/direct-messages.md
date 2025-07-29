@@ -13,7 +13,7 @@ or unsubscribe people as needed.
 
 {!send-dm.md!}
 
-## View your DMs
+## View your direct message conversations
 
 There are a few different ways to view your DM conversations.
 
@@ -22,6 +22,11 @@ There are a few different ways to view your DM conversations.
 {tab|via-left-sidebar}
 
 {!view-dms-left-sidebar.md!}
+
+!!! tip ""
+
+    To return to the channel list in the left sidebar, click the **back to
+    channels** link above the search box.
 
 {tab|via-right-sidebar}
 
@@ -35,23 +40,6 @@ There are a few different ways to view your DM conversations.
 
     You can find a user by typing their name in the **Filter users** box at the
     top of the right sidebar.
-
-{tab|via-search-box}
-
-1. Click the **search** (<i class="search_icon zulip-icon
-   zulip-icon-search"></i>) icon in the top bar to open the [search
-   box](/help/search-for-messages).
-
-1. Start typing a user's name. You'll be able to select DMs with that user
-   from the list of suggestions.
-
-1. *(optional)* Continue to add users via the search box for a group DM
-   conversation.
-
-!!! tip ""
-
-    You can also type `dm-including` in the search box to find all 1:1 and group
-    DM conversations that include a particular user.
 
 {tab|via-compose-box}
 
@@ -76,7 +64,30 @@ There are a few different ways to view your DM conversations.
 
 ## Find a direct message conversation
 
-{!find-dm-conversation.md!}
+{start_tabs}
+
+{tab|via-left-sidebar}
+
+{!find-dm-conversation-left-sidebar.md!}
+
+{tab|via-search-box}
+
+1. Click the **search** (<i class="search_icon zulip-icon
+   zulip-icon-search"></i>) icon in the top bar to open the [search
+   box](/help/search-for-messages).
+
+1. Start typing a user's name. You'll be able to select DMs with that user
+   from the list of suggestions.
+
+1. *(optional)* Continue to add users via the search box for a group DM
+   conversation.
+
+!!! tip ""
+
+    You can also type `dm-including` in the search box to find all 1:1 and group
+    DM conversations that include a particular user.
+
+{end_tabs}
 
 ## Go to direct message feed
 
