@@ -484,12 +484,8 @@ export function paste_handler_converter(
             // We convert single line code inside a code block to inline markdown code,
             // and the code for this is taken from upstream's `code` rule.
             if (!code.includes("\n")) {
-                // If the cursor is just after a backtick, then we don't add extra backticks.
-                if (
-                    $textarea &&
-                    $textarea.caret() !== 0 &&
-                    $textarea.val()?.at($textarea.caret() - 1) === "`"
-                ) {
+                // If the cursor is inside an inline span, then we don't add extra backticks.
+                if ($textarea && compose_ui.cursor_inside_inline_span($textarea)) {
                     return content;
                 }
                 if (!code) {
