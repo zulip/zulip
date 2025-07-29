@@ -46,8 +46,8 @@ providers.
 
 1. {!send-us-info.md!}
 
-     1. Your organization's URL
-     1. The **Identity Provider metadata** provided by Okta for the application.
+     * Your organization's URL
+     * The **Identity Provider metadata** provided by Okta for the application.
         To get the data, click the **View SAML setup instructions button** in
         the right sidebar in the **Sign on** tab.
         Copy the IdP metadata shown at the bottom of the page.
@@ -84,8 +84,8 @@ providers.
 
 1. {!send-us-info.md!}
 
-     1. Your organization's URL
-     1. The **issuer URL** from the **SSO** section. It contains required **Identity Provider** metadata.
+     * Your organization's URL
+     * The **issuer URL** from the **SSO** section. It contains required **Identity Provider** metadata.
      {!saml-login-button.md!}
 
 {tab|azuread}
@@ -126,11 +126,11 @@ providers.
 
 1. {!send-us-info.md!}
 
-     1. Your organization's URL
-     1. From the **SAML Signing Certificate** section:
+     * Your organization's URL
+     * From the **SAML Signing Certificate** section:
         * **App Federation Metadata Url**
         * Certificate downloaded from **Certificate (Base64)**
-     1. From the **Set up** section
+     * From the **Set up** section
         * **Login URL**
         * **Microsoft Entra Identifier**
      {!saml-login-button.md!}
@@ -170,8 +170,8 @@ providers.
 
 1. {!send-us-info.md!}
 
-     1. Your organization's URL
-     1. The URL of your Keycloak realm.
+     * Your organization's URL
+     * The URL of your Keycloak realm.
      {!saml-login-button.md!}
 
 !!! tip ""
@@ -203,8 +203,8 @@ providers.
 
 1. {!send-us-info.md!}
 
-     1. Your organization's URL
-     1. The **SAML Metadata URL** value mentioned above. It contains required **Identity Provider** metadata.
+     * Your organization's URL
+     * The **SAML Metadata URL** value mentioned above. It contains required **Identity Provider** metadata.
      {!saml-login-button.md!}
 
 {end_tabs}
