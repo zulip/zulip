@@ -389,5 +389,3 @@ function bindScrollToTop(): void {
 if (typeof window !== "undefined" && typeof document !== "undefined") {
     bindScrollToTop();
 }
-
-
