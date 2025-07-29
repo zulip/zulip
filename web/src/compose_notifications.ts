@@ -268,21 +268,8 @@ export function notify_local_mixes(
             continue;
         }
 
-        const jump_to_sent_message_conversation = should_jump_to_sent_message_conversation(message);
-        const show_narrow_to_recipient_banner = should_show_narrow_to_recipient_banner(message);
-
         const link_msg_id = message.id;
-
-        if (!jump_to_sent_message_conversation && !show_narrow_to_recipient_banner) {
-            if (need_user_to_scroll) {
-                show_scroll_to_view_banner(link_msg_id);
-            }
-
-            // This is the HAPPY PATH--for most messages we do nothing
-            // other than maybe sending the above message.
-            continue;
-        }
-
+        const show_narrow_to_recipient_banner = should_show_narrow_to_recipient_banner(message);
         if (show_narrow_to_recipient_banner) {
             const banner_text = $t({
                 defaultMessage: "Sent! Your message is outside your current view.",
@@ -295,6 +282,17 @@ export function notify_local_mixes(
                 get_message_recipient(message),
                 null,
             );
+            continue;
+        }
+
+        const jump_to_sent_message_conversation = should_jump_to_sent_message_conversation(message);
+        if (!jump_to_sent_message_conversation) {
+            if (need_user_to_scroll) {
+                show_scroll_to_view_banner(link_msg_id);
+            }
+
+            // This is the HAPPY PATH--for most messages we do nothing
+            // other than maybe showing the above banner.
             continue;
         }
 
