@@ -956,7 +956,7 @@ export function dispatch_normal_event(event) {
                 }
             }
             if (event.property === "web_stream_unreads_count_display_policy") {
-                stream_list.update_dom_unread_counts_visibility();
+                stream_list.build_stream_list(true);
             }
             if (event.property === "user_list_style") {
                 settings_preferences.report_user_list_style_change(
