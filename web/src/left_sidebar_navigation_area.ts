@@ -16,7 +16,6 @@ import * as stream_list_sort from "./stream_list_sort.ts";
 import * as sub_store from "./sub_store.ts";
 import * as ui_util from "./ui_util.ts";
 import * as unread from "./unread.ts";
-import {user_settings} from "./user_settings.ts";
 
 let last_mention_count = 0;
 const ls_key = "left_sidebar_views_state";
@@ -75,16 +74,6 @@ export function update_reminders_row(): void {
         $reminders_li.removeClass("show-with-reminders");
     }
     ui_util.update_unread_count_in_dom($reminders_li, count);
-}
-
-function should_mask_header_unread_count(
-    show_muted: boolean,
-    unmuted_unread_count: number,
-): boolean {
-    if (!user_settings.web_left_sidebar_unreads_count_summary) {
-        return true;
-    }
-    return settings_data.should_mask_unread_count(show_muted, unmuted_unread_count);
 }
 
 type SectionUnreadCount = {
@@ -173,7 +162,7 @@ export function update_dom_with_unread_counts(
         $header.toggleClass("has-only-muted-unreads", show_muted_count);
         $header.toggleClass(
             "hide_unread_counts",
-            should_mask_header_unread_count(show_muted_count, unmuted_count),
+            settings_data.should_mask_unread_count(show_muted_count, unmuted_count),
         );
     }
 
