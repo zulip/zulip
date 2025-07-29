@@ -25,7 +25,13 @@ where clicking on channel links in the left sidebar takes you.
 
 ## Find a direct message conversation
 
-{!find-dm-conversation.md!}
+{start_tabs}
+
+{tab|desktop-web}
+
+{!find-dm-conversation-left-sidebar.md!}
+
+{end_tabs}
 
 ## Find a channel you're subscribed to
 
@@ -63,6 +69,11 @@ information you need in the moment.
 {tab|desktop-web}
 
 {!view-dms-left-sidebar.md!}
+
+!!! tip ""
+
+    To return to the channel list in the left sidebar, click the **back to
+    channels** link above the search box.
 
 {end_tabs}
 
