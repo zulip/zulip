@@ -1,5 +1,6 @@
 import * as blueslip from "./blueslip.ts";
 import type {Option} from "./dropdown_widget.ts";
+import {$t} from "./i18n.ts";
 import type {StateData} from "./state_data.ts";
 import * as util from "./util.ts";
 
@@ -40,6 +41,8 @@ export function get_options_for_dropdown_widget(): Option[] {
         bold_current_selection: true,
         has_delete_icon: true,
         has_edit_icon: true,
+        delete_icon_label: $t({defaultMessage: "Delete snippet"}),
+        edit_icon_label: $t({defaultMessage: "Edit snippet"}),
     }));
 
     return options;

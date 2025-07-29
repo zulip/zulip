@@ -64,6 +64,8 @@ run_test("options for dropdown widget", () => {
             bold_current_selection: true,
             has_delete_icon: true,
             has_edit_icon: true,
+            delete_icon_label: "translated: Delete snippet",
+            edit_icon_label: "translated: Edit snippet",
         },
         {
             unique_id: 2,
@@ -72,6 +74,8 @@ run_test("options for dropdown widget", () => {
             bold_current_selection: true,
             has_delete_icon: true,
             has_edit_icon: true,
+            delete_icon_label: "translated: Delete snippet",
+            edit_icon_label: "translated: Edit snippet",
         },
         {
             unique_id: 1,
@@ -80,6 +84,8 @@ run_test("options for dropdown widget", () => {
             bold_current_selection: true,
             has_delete_icon: true,
             has_edit_icon: true,
+            delete_icon_label: "translated: Delete snippet",
+            edit_icon_label: "translated: Edit snippet",
         },
     ]);
 });
