@@ -867,12 +867,12 @@
         backdrop-filter: blur(20px);
     }
 
-    p:first-child > audio:first-child {
+    p:first-child > .media-audio-element:first-child {
         /* TODO: This is probably not the best way create space here. */
         padding-top: 0.5em;
     }
 
-    audio {
+    .media-audio-element {
         width: 18em;
         height: 2em;
         max-width: 100%;
