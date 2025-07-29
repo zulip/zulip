@@ -38,7 +38,7 @@ from zerver.lib.thumbnail import (
     get_image_thumbnail_path,
 )
 from zerver.lib.upload import (
-    attachment_vips_source,
+    attachment_source,
     check_upload_within_quota,
     get_public_upload_root_url,
     maybe_add_charset,
@@ -135,7 +135,7 @@ def serve_local(
     if content_type is None:
         content_type = guess_type(filename)[0] or "application/octet-stream"
 
-    content_type = maybe_add_charset(content_type, attachment_vips_source(path_id))
+    content_type = maybe_add_charset(content_type, attachment_source(path_id))
     download = force_download or bare_content_type(content_type) not in INLINE_MIME_TYPES
 
     if settings.DEVELOPMENT:

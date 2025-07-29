@@ -273,7 +273,7 @@ class S3UploadBackend(ZulipUploadBackend):
             filehandle.write(chunk)
 
     @override
-    def attachment_vips_source(self, path_id: str) -> StreamingSourceWithSize:
+    def attachment_source(self, path_id: str) -> StreamingSourceWithSize:
         metadata = self.uploads_bucket.Object(path_id).get()
 
         def s3_read(streamingbody: StreamingBody, size: int) -> bytes:

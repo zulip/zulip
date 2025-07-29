@@ -29,7 +29,7 @@ from zerver.lib.thumbnail import (
 )
 from zerver.lib.upload import (
     all_message_attachments,
-    attachment_vips_source,
+    attachment_source,
     create_attachment,
     save_attachment_contents,
     upload_backend,
@@ -746,7 +746,7 @@ class TestStoreThumbnail(ZulipTestCase):
         upload_backend.upload_message_attachment(
             path_id, "img.png", "image/png", read_test_image_file("img.png"), hamlet
         )
-        source = attachment_vips_source(path_id)
+        source = attachment_source(path_id)
         create_attachment("img.png", path_id, "image/png", source, hamlet, hamlet.realm)
         self.assertTrue(ImageAttachment.objects.filter(path_id=path_id).exists())
 

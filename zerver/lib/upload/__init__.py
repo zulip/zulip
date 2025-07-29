@@ -249,8 +249,8 @@ def upload_message_attachment_from_request(
     )
 
 
-def attachment_vips_source(path_id: str) -> StreamingSourceWithSize:
-    return upload_backend.attachment_vips_source(path_id)
+def attachment_source(path_id: str) -> StreamingSourceWithSize:
+    return upload_backend.attachment_source(path_id)
 
 
 def save_attachment_contents(path_id: str, filehandle: IO[bytes]) -> None:
