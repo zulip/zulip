@@ -858,7 +858,7 @@ function get_folder_name_from_id(folder_id: number): string {
     }
 
     if (folder_id === OTHER_CHANNELS_FOLDER_ID) {
-        return $t({defaultMessage: "OTHER CHANNELS"});
+        return $t({defaultMessage: "CHANNELS"});
     }
 
     return channel_folders.get_channel_folder_by_id(folder_id).name;
