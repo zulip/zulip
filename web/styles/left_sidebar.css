@@ -80,21 +80,14 @@
     width: var(--left-sidebar-single-digit-unread-width);
 }
 
-.selected-home-view {
-    &.hide-unread-messages-count {
-        .masked_unread_count {
-            /* Adding margin-right aligns the .masked_unread_count with the rest of the masked unread counts. */
-            margin-right: var(--left-sidebar-unread-offset);
-        }
-    }
-}
-
-#left-sidebar-navigation-list .selected-home-view,
-.show-inactive-channels {
+#left-sidebar-navigation-list .selected-home-view {
     &.hide-unread-messages-count {
         .masked_unread_count {
             display: flex;
             grid-area: markers-and-unreads;
+            /* Adding margin-right aligns the .masked_unread_count  */
+            /* with the rest of the masked unread counts. */
+            margin-right: var(--left-sidebar-unread-offset);
             justify-self: end;
             visibility: visible;
         }
@@ -110,7 +103,6 @@
 }
 
 #left-sidebar-navigation-list .selected-home-view:hover,
-.stream-list-toggle-inactive-channels:hover .show-inactive-channels,
 .selected-home-view.top-left-active-filter {
     &.hide-unread-messages-count {
         .masked_unread_count {
@@ -148,13 +140,25 @@
         }
     }
 
-    .stream-with-count.hide_unread_counts {
+    .stream-with-count.hide_unread_counts,
+    .stream-list-subsection-header.hide_unread_counts,
+    .show-inactive-channels.hide_unread_counts {
         .masked_unread_count {
             display: flex;
         }
 
         .unread_count {
             display: none;
+        }
+
+        &:hover {
+            .masked_unread_count {
+                display: none;
+            }
+
+            .unread_count {
+                display: inline;
+            }
         }
     }
 
@@ -364,7 +368,8 @@
        below. This extra margin prevents that overlap. */
     margin-bottom: 1px;
 
-    .unread_count {
+    .unread_count,
+    .masked_unread_count {
         margin-right: var(--left-sidebar-unread-offset);
     }
 
@@ -465,6 +470,10 @@
         "content markers-and-unreads three-dot-placeholder" auto
         / minmax(0, 1fr) minmax(0, max-content) var(--left-sidebar-vdots-width);
     align-items: center;
+
+    .markers-and-unreads {
+        margin-right: var(--left-sidebar-unread-offset);
+    }
 }
 
 .stream-list-section {
@@ -1616,8 +1625,7 @@ li.top_left_scheduled_messages {
 
 .dm-markers-and-unreads,
 .stream-markers-and-unreads,
-.topic-markers-and-unreads,
-.show-inactive-channels .markers-and-unreads {
+.topic-markers-and-unreads {
     grid-area: markers-and-unreads;
     display: flex;
     /* Present a uniform space between icons */
