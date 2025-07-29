@@ -32,7 +32,7 @@ def check_channel_folder_name(name: str, realm: Realm) -> None:
             )
         )
 
-    if ChannelFolder.objects.filter(name__iexact=name, realm=realm).exists():
+    if ChannelFolder.objects.filter(name__iexact=name, realm=realm, is_archived=False).exists():
         raise JsonableError(_("Channel folder name already in use"))
 
 
