@@ -79,27 +79,20 @@
     width: var(--left-sidebar-single-digit-unread-width);
 }
 
-.selected-home-view {
-    &.hide-unread-messages-count {
-        .masked_unread_count {
-            /* Adding margin-right aligns the .masked_unread_count with the rest of the masked unread counts. */
-            margin-right: var(--left-sidebar-unread-offset);
-        }
-    }
-}
-
-#left-sidebar-navigation-list .selected-home-view,
-.show-inactive-channels {
+#left-sidebar-navigation-list .selected-home-view {
     &.hide-unread-messages-count {
         .masked_unread_count {
             display: flex;
             grid-area: markers-and-unreads;
+            /* Adding margin-right aligns the .masked_unread_count  */
+            /* with the rest of the masked unread counts. */
+            margin-right: var(--left-sidebar-unread-offset);
             justify-self: end;
             visibility: visible;
         }
 
         .unread_count {
-            visibility: hidden;
+            visibility: hidden !important;
         }
         /* When message summary count is 0, we dont want to show unread_count or masked_unread_count. */
         .unread_count.hide + .masked_unread_count {
@@ -109,7 +102,6 @@
 }
 
 #left-sidebar-navigation-list .selected-home-view:hover,
-.stream-list-toggle-inactive-channels:hover .show-inactive-channels,
 .selected-home-view.top-left-active-filter {
     &.hide-unread-messages-count {
         .masked_unread_count {
@@ -118,7 +110,7 @@
         }
 
         .unread_count {
-            visibility: visible;
+            visibility: visible !important;
         }
     }
 }
