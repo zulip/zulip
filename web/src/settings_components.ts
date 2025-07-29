@@ -8,10 +8,8 @@ import render_compose_banner from "../templates/compose_banner/compose_banner.hb
 
 import * as blueslip from "./blueslip.ts";
 import * as buttons from "./buttons.ts";
-import * as channel_folders from "./channel_folders.ts";
 import * as compose_banner from "./compose_banner.ts";
 import type {DropdownWidget} from "./dropdown_widget.ts";
-import * as dropdown_widget from "./dropdown_widget.ts";
 import * as group_permission_settings from "./group_permission_settings.ts";
 import type {
     AssignedGroupPermission,
@@ -31,7 +29,6 @@ import * as settings_data from "./settings_data.ts";
 import type {CustomProfileField, GroupSettingValue} from "./state_data.ts";
 import {current_user, realm, realm_schema} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
-import * as stream_settings_containers from "./stream_settings_containers.ts";
 import * as stream_topic_history from "./stream_topic_history.ts";
 import {
     type StreamPermissionGroupSetting,
@@ -2002,67 +1999,6 @@ export function get_group_assigned_user_group_permissions(group: UserGroup): {
     }
 
     return group_assigned_user_group_permissions;
-}
-
-export function set_up_folder_dropdown_widget(sub?: StreamSubscription): DropdownWidget {
-    const folder_options = (): dropdown_widget.Option[] => {
-        const folders = channel_folders
-            .get_channel_folders()
-            .sort((a, b) => util.strcmp(a.name.toLowerCase(), b.name.toLowerCase()));
-        const options: dropdown_widget.Option[] = folders.map((folder) => ({
-            name: folder.name,
-            unique_id: folder.id,
-        }));
-
-        const disabled_option = {
-            is_setting_disabled: true,
-            show_disabled_icon: false,
-            show_disabled_option_name: true,
-            unique_id: settings_config.no_folder_selected,
-            name: $t({defaultMessage: "None"}),
-        };
-
-        options.unshift(disabled_option);
-        return options;
-    };
-
-    const default_id = sub?.folder_id ?? settings_config.no_folder_selected;
-
-    let widget_name = "folder_id";
-    if (sub === undefined) {
-        widget_name = "new_channel_folder_id";
-    }
-
-    let $events_container = $("#stream_settings .subscription_settings");
-    if (sub === undefined) {
-        $events_container = $("#stream_creation_form");
-    }
-
-    const folder_widget = new dropdown_widget.DropdownWidget({
-        widget_name,
-        get_options: folder_options,
-        $events_container,
-        item_click_callback(event, dropdown, this_widget) {
-            dropdown.hide();
-            event.preventDefault();
-            event.stopPropagation();
-            this_widget.render();
-            if (sub !== undefined) {
-                const $edit_container = stream_settings_containers.get_edit_container(sub);
-                save_discard_stream_settings_widget_status_handler(
-                    $edit_container.find(".channel-folder-subsection"),
-                    stream_data.get_sub_by_id(sub.stream_id),
-                );
-            }
-        },
-        default_id,
-        unique_id_type: "number",
-    });
-    if (sub !== undefined) {
-        set_dropdown_setting_widget("folder_id", folder_widget);
-    }
-    folder_widget.setup();
-    return folder_widget;
 }
 
 export function set_channel_folder_dropdown_value(sub: StreamSubscription): void {

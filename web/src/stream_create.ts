@@ -659,7 +659,7 @@ export function set_up_handlers(): void {
 
     set_up_group_setting_widgets();
     settings_components.enable_opening_typeahead_on_clicking_label($container);
-    folder_widget = settings_components.set_up_folder_dropdown_widget();
+    folder_widget = stream_settings_components.set_up_folder_dropdown_widget();
 }
 
 export function initialize(): void {
