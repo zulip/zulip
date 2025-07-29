@@ -871,12 +871,6 @@
         /* TODO: This is probably not the best way create space here. */
         padding-top: 0.5em;
     }
-
-    .media-audio-element {
-        width: 18em;
-        height: 2em;
-        max-width: 100%;
-    }
 }
 
 .group_mention,
