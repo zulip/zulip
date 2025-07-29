@@ -16282,6 +16282,28 @@ paths:
                           **Changes**: New in Zulip 4.0 (feature level 53). Previously,
                           this required `stream` in `fetch_event_types`, was called
                           `stream_description_max_length`, and always had a value of 1024.
+                      max_channel_folder_name_length:
+                        type: integer
+                        description: |
+                          Present if `realm` is present in `fetch_event_types`.
+
+                          The maximum allowed length for a channel folder name, in Unicode
+                          code points. Clients should use this property rather than hardcoding
+                          field sizes.
+
+                          **Changes**: New in Zulip 11.0 (feature level 410). Clients should use
+                          60 as a fallback value on previous feature levels.
+                      max_channel_folder_description_length:
+                        type: integer
+                        description: |
+                          Present if `realm` is present in `fetch_event_types`.
+
+                          The maximum allowed length for a channel folder description, in
+                          Unicode code points. Clients should use this property rather than
+                          hardcoding field sizes.
+
+                          **Changes**: New in Zulip 11.0 (feature level 410). Clients should use
+                          1024 as a fallback value on previous feature levels.
                       max_topic_length:
                         type: integer
                         description: |
@@ -24291,11 +24313,19 @@ paths:
                 name:
                   description: |
                     The name of the channel folder.
+
+                    Clients should use the `max_channel_folder_name_length` returned
+                    by the [`POST /register`](/api/register-queue) endpoint to determine
+                    the maximum channel folder name length.
                   type: string
                   example: marketing
                 description:
                   description: |
                     The description of the channel folder.
+
+                    Clients should use the `max_channel_folder_description_length`
+                    returned by the [`POST /register`](/api/register-queue) endpoint
+                    to determine the maximum channel folder description length.
                   type: string
                   example: Channels for marketing.
       responses:

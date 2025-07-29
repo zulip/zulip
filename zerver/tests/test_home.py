@@ -97,6 +97,8 @@ class HomeTest(ZulipTestCase):
         "jitsi_server_url",
         "last_event_id",
         "max_avatar_file_size_mib",
+        "max_channel_folder_description_length",
+        "max_channel_folder_name_length",
         "max_file_upload_size_mib",
         "max_icon_file_size_mib",
         "max_logo_file_size_mib",

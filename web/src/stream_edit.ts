@@ -915,9 +915,8 @@ export function initialize(): void {
 
     $("#channels_overlay_container").on("click", ".create-channel-folder-button", () => {
         const html_body = render_create_channel_folder_modal({
-            max_channel_folder_name_length: channel_folders.MAX_CHANNEL_FOLDER_NAME_LENGTH,
-            max_channel_folder_description_length:
-                channel_folders.MAX_CHANNEL_FOLDER_DESCRIPTION_LENGTH,
+            max_channel_folder_name_length: realm.max_channel_folder_name_length,
+            max_channel_folder_description_length: realm.max_channel_folder_description_length,
         });
 
         function create_channel_folder(): void {
