@@ -1,17 +1,16 @@
 # Desktop notifications
 
-Zulip offers visual and audible desktop notifications. You can
-customize whether [channel messages](/help/channel-notifications),
-[direct messages](/help/dm-mention-alert-notifications) and
-[mentions](/help/dm-mention-alert-notifications#wildcard-mentions)
-trigger desktop notifications.
+Zulip can be configured to send visual and audible desktop notifications for
+[DMs, mentions, and alerts](/help/dm-mention-alert-notifications), as well as
+[channel messages](/help/channel-notifications) and [followed
+topics](/help/follow-a-topic#configure-notifications-for-followed-topics).
 
 {start_tabs}
 
 {settings_tab|notifications}
 
-1. Toggle the checkboxes for **Channels** and **DMs, mentions, and alerts**
-   in the **Desktop** column of the **Notification triggers** table.
+1. Toggle the checkboxes in the **Desktop** column of the **Notification
+   triggers** table.
 
 {end_tabs}
 

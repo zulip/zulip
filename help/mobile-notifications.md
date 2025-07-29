@@ -1,10 +1,10 @@
 # Mobile notifications
 
-You can customize whether [channel messages](/help/channel-notifications),
-[direct messages](/help/dm-mention-alert-notifications) and
-[mentions][notifications-wildcard-mentions] trigger notifications in Zulip's
-[Android](https://zulip.com/apps/ios) and [iOS](https://zulip.com/apps/ios)
-apps.
+Zulip can be configured to send [mobile](/help/mobile-app-install-guide)
+notifications for [DMs, mentions, and
+alerts](/help/dm-mention-alert-notifications), as well as [channel
+messages](/help/channel-notifications) and [followed
+topics](/help/follow-a-topic#configure-notifications-for-followed-topics).
 
 {start_tabs}
 
@@ -12,8 +12,8 @@ apps.
 
 {settings_tab|notifications}
 
-1. Toggle the checkboxes for **Channels** and **DMs, mentions, and alerts**
-   in the **Mobile** column of the **Notification triggers** table.
+1. Toggle the checkboxes in the **Mobile** column of the **Notification
+   triggers** table.
 
 {end_tabs}
 
@@ -141,6 +141,7 @@ To enable push notifications for your organization:
 
 ## Related articles
 
+* [Mobile app installation guides](/help/mobile-app-install-guide)
 * [Channel notifications](/help/channel-notifications)
 * [DMs, mentions, and alerts](/help/dm-mention-alert-notifications)
 * [Email notifications](/help/email-notifications)
