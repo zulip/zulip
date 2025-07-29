@@ -131,8 +131,7 @@ def serve_local(
         return HttpResponseNotFound("<p>File not found</p>")
 
     if content_type is None:
-        content_type = guess_type(filename)[0]
-    assert content_type is not None
+        content_type = guess_type(filename)[0] or "application/octet-stream"
     download = force_download or bare_content_type(content_type) not in INLINE_MIME_TYPES
 
     if settings.DEVELOPMENT:
