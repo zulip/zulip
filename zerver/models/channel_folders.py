@@ -1,4 +1,6 @@
 from django.db import models
+from django.db.models import Q
+from django.db.models.functions import Lower
 from django.utils.timezone import now as timezone_now
 
 from zerver.models.realms import Realm
@@ -19,4 +21,11 @@ class ChannelFolder(models.Model):
     is_archived = models.BooleanField(default=False)
 
     class Meta:
-        unique_together = ("realm", "name")
+        constraints = [
+            models.UniqueConstraint(
+                Lower("name"),
+                "realm",
+                condition=Q(is_archived=False),
+                name="unique_realm_folder_name_when_not_archived",
+            ),
+        ]
