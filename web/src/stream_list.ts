@@ -1544,3 +1544,31 @@ export function collapse_all_stream_sections(): void {
         }
     }
 }
+
+export function get_sorted_channel_ids_for_next_unread_navigation(): {
+    channel_id: number;
+    is_collapsed: boolean;
+}[] {
+    // Get sorted section ids.
+    const sections = stream_list_sort.get_current_sections().map((section) => ({
+        id: section.id,
+        channels: section.streams,
+        is_collapsed: collapsed_sections.has(section.id),
+    }));
+
+    function score(section: {id: string; is_collapsed: boolean}): number {
+        // Prioritize uncollapsed sections over collapsed sections.
+        if (!section.is_collapsed) {
+            return 1;
+        }
+        return 0;
+    }
+
+    sections.sort((a, b) => score(b) - score(a));
+    return sections.flatMap((section) =>
+        section.channels.map((channel_id) => ({
+            channel_id,
+            is_collapsed: section.is_collapsed,
+        })),
+    );
+}
