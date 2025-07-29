@@ -134,7 +134,7 @@ export function sort_groups(stream_ids: number[], search_term: string): StreamLi
     };
     const normal_section: StreamListSection = {
         id: "normal-streams",
-        section_title: $t({defaultMessage: "OTHER CHANNELS"}),
+        section_title: $t({defaultMessage: "CHANNELS"}),
         streams: [],
         muted_streams: [],
         inactive_streams: [],
@@ -191,15 +191,6 @@ export function sort_groups(stream_ids: number[], search_term: string): StreamLi
 
     // This needs to have the same ordering as the order they're displayed in the sidebar.
     const new_sections = [pinned_section, ...folder_sections_sorted, normal_section];
-
-    // Don't call it "other channels" if there's nothing above it.
-    if (
-        folder_sections_sorted.length === 0 &&
-        pinned_section.streams.length === 0 &&
-        pinned_section.muted_streams.length === 0
-    ) {
-        normal_section.section_title = $t({defaultMessage: "CHANNELS"});
-    }
 
     for (const section of new_sections) {
         section.streams.sort(compare_function);
