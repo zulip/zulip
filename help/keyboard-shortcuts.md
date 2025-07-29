@@ -129,6 +129,7 @@ reference in the Zulip app to add more to your repertoire as needed.
 
 ### For a selected message (outlined in blue)
 
+* **Toggle message actions menu**: <kbd>I</kbd>
 * **Edit message or view original message**: <kbd>E</kbd>
 * **Show message sender's user card**: <kbd>U</kbd>
 * **View read receipts**: <kbd>Shift</kbd> + <kbd>V</kbd> — Same shortcut
@@ -139,8 +140,9 @@ reference in the Zulip app to add more to your repertoire as needed.
   <kbd>H</kbd>. Viewing message edit history [must be
   allowed](/help/restrict-message-edit-history-access).
 * **Star message**: <kbd>Ctrl</kbd> + <kbd>S</kbd>
-* **React with 👍**: <kbd>+</kbd>
+* **Add emoji reaction**: <kbd>:</kbd>
 * **Toggle first emoji reaction**: <kbd>=</kbd>
+* **React with 👍**: <kbd>+</kbd>
 * **Mark as unread from selected message**: <kbd>Shift</kbd> + <kbd>U</kbd>
 * **Collapse/show message**: <kbd>-</kbd>
 * **Toggle topic mute**: <kbd>Shift</kbd> + <kbd>M</kbd>. This works in both
@@ -175,11 +177,8 @@ Keyboard navigation (e.g., arrow keys) works as expected.
 * **Toggle gear menu**: <kbd>G</kbd>
 * **Open personal menu**: <kbd>G</kbd> + <kbd class="arrow-key">→</kbd>
 * **Open help menu**: <kbd>G</kbd> + <kbd class="arrow-key">←</kbd>
-
-### For a selected message (outlined in blue)
-
-* **Toggle emoji reactions menu**: <kbd>:</kbd>
-* **Toggle message actions menu**: <kbd>I</kbd>
+* **Toggle message actions menu** for a selected message (outlined in blue):
+  <kbd>I</kbd>
 
 ## Channel settings
 

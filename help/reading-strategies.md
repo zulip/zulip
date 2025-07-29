@@ -76,6 +76,10 @@ You can [star messages](/help/star-a-message) that you plan to follow up on late
 
 {!view-starred-messages.md!}
 
+### Reactions
+
+{!view-emoji-reactions.md!}
+
 ## Related articles
 
 * [Getting started with Zulip](/help/getting-started-with-zulip)
