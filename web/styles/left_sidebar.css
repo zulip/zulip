@@ -797,7 +797,8 @@ ul.filters {
     }
 
     .has-only-muted-unreads {
-        .unread_count {
+        .unread_count,
+        .masked_unread_count {
             opacity: var(--opacity-left-sidebar-muted);
         }
 
