@@ -800,7 +800,7 @@ function get_sent_by_me_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Sugg
     return [];
 }
 
-function get_operator_suggestions(last: NarrowTerm): Suggestion[] {
+function get_operator_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggestion[] {
     if (!(last.operator === "search" || last.operator === "")) {
         return [];
     }
@@ -832,7 +832,14 @@ function get_operator_suggestions(last: NarrowTerm): Suggestion[] {
         ];
     }
 
-    choices = choices.filter((choice) => common.phrase_match(last_operand, choice));
+    // We remove suggestion choice if its incompatible_pattern matches
+    // that of current search terms.
+    choices = choices.filter(
+        (choice) =>
+            common.phrase_match(last_operand, choice) &&
+            (!incompatible_patterns[choice] ||
+                !match_criteria(terms, incompatible_patterns[choice])),
+    );
 
     return choices.map((choice) => {
         // Map results for "dm:" operator for users
