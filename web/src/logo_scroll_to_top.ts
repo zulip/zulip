@@ -1,4 +1,9 @@
 function bindScrollToTopOnLogoClick(): void {
+
+    if (typeof document === "undefined" || typeof window === "undefined") {
+        return;
+    }
+
     const scrollToTop = (): void => {
         window.scrollTo({
             top: 0,

@@ -2,6 +2,7 @@ import $ from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
 
+import * as navbar_menus from "./navbar_menus";
 import generated_emoji_codes from "../../static/generated/emoji/emoji_codes.json";
 import * as fenced_code from "../shared/src/fenced_code.ts";
 import render_compose from "../templates/compose.hbs";
@@ -219,6 +220,12 @@ function initialize_message_feed_errors() {
         }),
     );
 }
+
+export function set_up() {
+    navbar_menus.set_up();
+}
+
+
 
 export function initialize_kitchen_sink_stuff() {
     // TODO:

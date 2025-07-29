@@ -80,4 +80,9 @@ function get_target_navbar_menu(
     return undefined;
 }
 
-initializeLogoScroll();
+
+export function set_up(): void {
+    if (typeof document !== "undefined") {
+        initializeLogoScroll();
+    }
+}
