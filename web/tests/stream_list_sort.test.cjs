@@ -421,6 +421,54 @@ test("current_section_id_for_stream", ({override}) => {
         ),
         String(backend_folder.id),
     );
+
+    override(user_settings, "web_left_sidebar_show_channel_folders", true);
+    sort_groups("");
+    assert.deepEqual(stream_list_sort.get_current_sections(), [
+        {
+            folder_id: null,
+            id: "pinned-streams",
+            inactive_streams: [],
+            muted_streams: [8],
+            section_title: "translated: PINNED CHANNELS",
+            streams: [1],
+        },
+        {
+            folder_id: 2,
+            id: "2",
+            inactive_streams: [],
+            muted_streams: [],
+            order: 2,
+            section_title: "BACKEND",
+            streams: [6],
+        },
+        {
+            folder_id: 1,
+            id: "1",
+            inactive_streams: [3],
+            muted_streams: [7],
+            order: 3,
+            section_title: "FRONTEND",
+            streams: [2],
+        },
+        {
+            folder_id: null,
+            id: "normal-streams",
+            inactive_streams: [],
+            muted_streams: [],
+            section_title: "translated: OTHER",
+            streams: [4],
+        },
+        {
+            folder_id: 3,
+            id: "3",
+            inactive_streams: [11],
+            muted_streams: [10],
+            order: 1,
+            section_title: "EMPTY",
+            streams: [],
+        },
+    ]);
 });
 
 test("left_sidebar_search", ({override}) => {
