@@ -1346,7 +1346,8 @@ div.settings-radio-input-parent {
 
 #change_user_group_description,
 #change_stream_description,
-#new_channel_folder_description {
+#new_channel_folder_description,
+#edit_channel_folder_description {
     width: 100%;
     height: 80px;
     margin-bottom: 4px;
