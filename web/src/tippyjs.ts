@@ -609,7 +609,26 @@ export function initialize(): void {
     });
 
     tippy.delegate("body", {
-        target: ".status-emoji-name",
+        target: ".status-emoji-name:not(.typeahead-item .status-emoji-name)",
+        placement: "top",
+        delay: INSTANT_HOVER_DELAY,
+        appendTo: () => document.body,
+
+        /*
+            Status emoji tooltips for most locations in the app. This
+            basic tooltip logic is overridden by separate logic in
+            click_handlers.ts for the left and right sidebars, to
+            avoid problematic interactions with the main tooltips for
+            those regions.
+        */
+
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
+    tippy.delegate("body", {
+        target: ".typeahead-item .status-emoji-name",
         placement: "top",
         delay: INSTANT_HOVER_DELAY,
         appendTo: () => document.body,
