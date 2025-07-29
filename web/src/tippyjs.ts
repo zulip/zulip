@@ -781,6 +781,26 @@ export function initialize(): void {
     });
 
     tippy.delegate("body", {
+        target: ".folder_id-dropdown-list-container .dropdown-list-delete, .new_channel_folder_id-dropdown-list-container .dropdown-list-delete",
+        content: $t({defaultMessage: "Delete folder"}),
+        delay: LONG_HOVER_DELAY,
+        appendTo: () => document.body,
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
+    tippy.delegate("body", {
+        target: ".folder_id-dropdown-list-container .dropdown-list-edit, .new_channel_folder_id-dropdown-list-container .dropdown-list-edit",
+        content: $t({defaultMessage: "Edit folder"}),
+        delay: LONG_HOVER_DELAY,
+        appendTo: () => document.body,
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
+    tippy.delegate("body", {
         target: ".generate-channel-email-button-container.disabled_setting_tooltip",
         onShow(instance) {
             instance.setContent(
