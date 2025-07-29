@@ -535,13 +535,9 @@ export function paste_handler_converter(
             const language = get_code_block_language(node, className);
             // We convert single line code inside a code block which does not have language metadata
             // to inline markdown code, and the code for this is taken from upstream's `code` rule.
-            if (!code.includes("\n") && language === "") {
-                // If the cursor is just after a backtick, then we don't add extra backticks.
-                if (
-                    $textarea &&
-                    $textarea.caret() !== 0 &&
-                    $textarea.val()?.at($textarea.caret() - 1) === "`"
-                ) {
+            if (!code.includes("\n")) {
+                // If the cursor is inside an inline code span, then we don't add extra backticks.
+                if ($textarea && compose_ui.cursor_inside_inline_code_span($textarea)) {
                     return content;
                 }
                 if (!code) {
