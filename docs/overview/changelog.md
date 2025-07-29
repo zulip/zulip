@@ -14,21 +14,25 @@ log][commit-log] for an up-to-date list of all changes.
 _Unreleased_
 
 This section details some features planned for version 11.0 that are
-not present in 11.0-beta1.
+not present in 11.0-beta2.
 
-- (Unfinished) Added server support for end-to-end encryption of
-  mobile push notifications. Note that the mobile apps do not yet
-  support this protocol.
-- (Unfinished) Added channel folders, which organize the channels
-  within an organization visually. Permission settings for channel
-  folders will be introduced in a future release.
+- (Unfinished) Rebuilt the Zulip Help Center documentation in
+  Starlight, adding a modern design and delightful search.
 
-### Zulip Server 11.0-beta1
+### Zulip Server 11.0-beta2
 
-_Released 2025-07-17_
+_Released 2025-07-29_
 
 #### Highlights
 
+- Added server support for end-to-end encryption (E2EE) of mobile push
+  notifications. Note that as of this release, the mobile apps do not
+  yet support this protocol. Added a new organization setting to
+  prevent sending message content in push notifications to mobile app
+  versions not using the E2EE protocol.
+- Added channel folders, which organize the channels within an
+  organization in the left sidebar and inbox views. Permission
+  settings for channel folders will be introduced in a future release.
 - Added support for scheduling message reminders.
 - Added support for per-channel configuration of whether _general
   chat_ is available. In particular, channels without topics are now
@@ -58,8 +62,7 @@ _Released 2025-07-17_
   locales. Now, keyboard shortcuts are entirely based on the key
   pressed, not what character it is mapped to.
 - The LDAP integration now supports automatically handling changes in
-  user email addresses, when provided with a unique ID for each user
-  (typically, the LDAP Distinguished Name).
+  user email addresses, when provided with a unique ID for each user.
 - Migrated translation platform from Transifex to Weblate.
 
 #### Full feature changelog
@@ -95,6 +98,7 @@ _Released 2025-07-17_
   not currently subscribed to, but has access to post in.
 - Added new webhook integration for OpenProject and
   OpenSearch. Improved the GitHub, GitLab, and Jotform integrations.
+- Added an administrator API endpoint for updating user status.
 - Slack import now gives imported Slack threads better names.
 - Users imported from third-party chat tools now receive Welcome Bot
   messages.
@@ -131,6 +135,7 @@ _Released 2025-07-17_
 - Improved empty feed banner for channels with all topics muted.
 - Improved error banners for very old browser and desktop versions.
 - Improved error pages for deactivated users and realms.
+- Improved feedback when editing group members or channel subscribers.
 - Improved confirmation banner when unsubscribing from a channel the
   user has permission to rejoin later.
 - Improved message feed UI to only use a pointer cursor for UI
@@ -138,8 +143,9 @@ _Released 2025-07-17_
 - Improved handling of various message/topic link corner cases.
 - Improved handling of a slow-to-load avatar in the navbar.
 - Improved borders for avatars in user pills.
+- Improved keyboard navigation in the left sidebar.
 - Improved help center documentation considerably. Added mobile tabs
-  with web app workarounds for some features that are not yet
+  with mobile web workarounds for some features that are not yet
   available in the mobile apps.
 - Rewrote documentation for many non-webhook integrations.
 - Fixed live update of channel views when losing access to a private
@@ -151,15 +157,24 @@ _Released 2025-07-17_
 - Fixed several subtle issues with compose box tooltips.
 - Fixed several issues with URL previews with variant font sizes.
 - Fixed several bugs in handling of Dropbox links.
+- Fixed several subtle bugs in the core message feed experience.
 - Fixed EDITED notices for messages sent by muted users.
+- Fixed editing messages to remove wildcard mentions incorrectly
+  appearing in the "Mentions" view.
+- Fixed several bugs with topic following state not being updated
+  properly when merging topics.
 - Fixed the main search area converting queries to lower-case.
 - Fixed recipient bars not decorating bot names with the bot icon.
 - Fixed the user card popover click area being slightly too small.
 - Fixed a rare race that could cause the web app to be missing
   metadata for a recently created user.
+- Fixed how `text/plain` uploaded files are served to include a
+  `charset` header, detected using `chardet` if a character set was
+  not specified by the uploading client.
 - Fixed slow loading performance for the starred messages view.
 - Fixed slow performance for _general chat_ topics in servers
   containing large numbers of direct messages.
+- Fixed some performance bugs with fetching direct messages.
 - Fixed subtle performance issues involving prefetching permissions.
 - Fixed a subtle bug where "show all topics" would incorrectly not be
   offered.
@@ -171,6 +186,7 @@ _Released 2025-07-17_
 - Fixed some message feed bugs affecting right-to-left languages.
 - Fixed display of imported messages in analytics.
 - Fixed several issues with 500 error pages.
+- Migrated translation platform from Transifex to Weblate.
 - Updated dependencies, including Django 5.2.
 
 #### Upgrade notes for 11.0
