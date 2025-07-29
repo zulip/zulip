@@ -3,9 +3,9 @@
 Zulip assigns each of your channels a color when you subscribe to the
 channel. Changing a channel's color does not change it for anyone else.
 
-## Change the color of a channel
-
 {start_tabs}
+
+{tab|via-left-sidebar}
 
 {!channel-actions.md!}
 
@@ -17,11 +17,7 @@ channel. Changing a channel's color does not change it for anyone else.
 
 1. Click outside the box to close the menu.
 
-{end_tabs}
-
-### From the channels page (alternate method)
-
-{start_tabs}
+{tab|via-channel-settings}
 
 {relative|gear|channel-settings}
 
