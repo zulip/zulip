@@ -29,12 +29,8 @@ export function next_topic(
             }
         }
 
-        for (let i = 0; i < curr_topic_index; i += 1) {
-            const topic = topics[i]!;
-            if (has_unread_messages(stream_id, topic)) {
-                return {stream_id, topic};
-            }
-        }
+        // Find unreads in the next channel if we didn't find any unread
+        // after the current topic.
     }
 
     for (let i = curr_stream_index + 1; i < stream_ids.length; i += 1) {
@@ -46,7 +42,7 @@ export function next_topic(
         }
     }
 
-    for (let i = 0; i < curr_stream_index; i += 1) {
+    for (let i = 0; i <= curr_stream_index; i += 1) {
         const stream_id = stream_ids[i]!;
         for (const topic of get_topics(stream_id)) {
             if (has_unread_messages(stream_id, topic)) {
@@ -62,10 +58,9 @@ export function get_next_topic(
     curr_stream_id: number | undefined,
     curr_topic: string | undefined,
     only_followed_topics: boolean,
+    sorted_channel_ids: number[],
 ): {stream_id: number; topic: string} | undefined {
-    let my_streams = stream_list_sort.get_stream_ids();
-
-    my_streams = my_streams.filter((stream_id) => {
+    sorted_channel_ids = sorted_channel_ids.filter((stream_id) => {
         if (!stream_data.is_muted(stream_id)) {
             return true;
         }
@@ -119,7 +114,7 @@ export function get_next_topic(
 
     if (only_followed_topics) {
         return next_topic(
-            my_streams,
+            sorted_channel_ids,
             get_followed_topics,
             unread.topic_has_any_unread,
             curr_stream_id,
@@ -128,7 +123,7 @@ export function get_next_topic(
     }
 
     return next_topic(
-        my_streams,
+        sorted_channel_ids,
         get_unmuted_topics,
         unread.topic_has_any_unread,
         curr_stream_id,

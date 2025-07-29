@@ -1291,3 +1291,40 @@ export function get_current_stream_li(): JQuery | undefined {
 
     return $stream_li;
 }
+
+export function get_sorted_channel_ids_for_next_unread_navigation(
+    current_channel_id?: number,
+): number[] {
+    // Here is the priority order for the channels:
+    // 1. Channels in the current section if uncollapsed.
+    // 2. Channels in the uncollapsed section.
+    // 3. Channels in the collapsed section.
+
+    let current_section_id: string | undefined;
+    if (current_channel_id !== undefined) {
+        current_section_id = stream_list_sort.current_section_id_for_stream(current_channel_id);
+    }
+    // Get sorted section ids.
+    const sections = stream_list_sort.get_current_sections().map((section) => ({
+        id: section.id,
+        channels: section.streams,
+        is_collapsed: collapsed_sections.has(section.id),
+    }));
+
+    function score(section: {id: string; is_collapsed: boolean}): number {
+        // current section and uncollapsed
+        if (!section.is_collapsed && section.id === current_section_id) {
+            return 2;
+        }
+        // any other uncollapsed section
+        if (!section.is_collapsed) {
+            return 1;
+        }
+        // collapsed section
+        return 0;
+    }
+
+    sections.sort((a, b) => score(b) - score(a));
+
+    return sections.flatMap((section) => section.channels);
+}
