@@ -19,6 +19,36 @@ apps.
 
 [notifications-wildcard-mentions]: /help/dm-mention-alert-notifications#wildcard-mentions
 
+## End-to-end encryption (E2EE) for mobile push notifications
+
+Zulip Server 11.0+ and Zulip Cloud support end-to-end encryption for mobile push
+notifications. Support is [coming soon][e2ee-flutter-issue] to the Zulip mobile
+app. Once implemented, all push notifications sent from an up-to-date version of
+the server to an updated version of the app will be end-to-end encrypted.
+
+[e2ee-flutter-issue]: https://github.com/zulip/zulip-flutter/issues/1764
+
+Organization administrators can require end-to-end encryption for
+message content in mobile push notifications. When this setting is
+enabled, message content will be omitted when sending notifications to
+an app that doesn't support end-to-end encryption. Users will see “New
+message” in place of message text. See [technical
+documentation](https://zulip.readthedocs.io/en/latest/production/mobile-push-notifications.html#security-and-privacy)
+for details.
+
+### Require end-to-end encryption for mobile push notifications
+
+{!admin-only.md!}
+
+{start_tabs}
+
+{settings_tab|organization-settings}
+
+1. Under **Notifications security**, toggle
+   **Require end-to-end encryption for push notification content**.
+
+{end_tabs}
+
 ## Mobile notifications while online
 
 You can customize whether or not Zulip will send mobile push
@@ -109,12 +139,6 @@ To enable push notifications for your organization:
 
 {end_tabs}
 
-### Why am I seeing “New message” in place of message text?
-
-Administrators of self-hosted Zulip servers can
-[configure](https://zulip.readthedocs.io/en/stable/production/mobile-push-notifications.html#security-and-privacy)
-push notifications not to include any message content.
-
 ## Related articles
 
 * [Channel notifications](/help/channel-notifications)
@@ -122,3 +146,4 @@ push notifications not to include any message content.
 * [Email notifications](/help/email-notifications)
 * [Desktop notifications](/help/desktop-notifications)
 * [Do not disturb](/help/do-not-disturb)
+* [Hide message content in emails](/help/hide-message-content-in-emails)
