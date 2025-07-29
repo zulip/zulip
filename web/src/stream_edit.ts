@@ -964,6 +964,7 @@ export function initialize(): void {
             html_submit_button: $t_html({defaultMessage: "Create"}),
             on_click: create_channel_folder,
             loading_spinner: true,
+            on_shown: () => $("#new_channel_folder_name").trigger("focus"),
         });
     });
 }
