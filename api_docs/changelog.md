@@ -20,6 +20,11 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 11.0
 
+**Feature level 413**
+
+* Mobile push notification payloads for APNs no longer contain the
+  `server` and `realm_id` fields, which were unused.
+
 **Feature level 412**
 
 * [`POST /register`](/api/register-queue),
@@ -43,7 +48,7 @@ format used by the Zulip server that they are interacting with.
 * [`POST /register`](/api/register-queue): Added
   `max_channel_folder_name_length` and
   `max_channel_folder_description_length` fields to the response.
-- Mobile push notification payloads for APNs no longer contain the
+* Mobile push notification payloads for APNs no longer contain the
   `time` field, which was unused.
 
 **Feature level 409**

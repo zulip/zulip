@@ -637,8 +637,6 @@ class HandlePushNotificationTest(PushNotificationTestCase):
                     "badge": 0,
                     "custom": {
                         "zulip": {
-                            "server": "testserver",
-                            "realm_id": self.sender.realm.id,
                             "realm_name": self.sender.realm.name,
                             "realm_uri": "http://zulip.testserver",
                             "realm_url": "http://zulip.testserver",
@@ -737,8 +735,6 @@ class HandlePushNotificationTest(PushNotificationTestCase):
                     "badge": 0,
                     "custom": {
                         "zulip": {
-                            "server": "testserver",
-                            "realm_id": self.sender.realm.id,
                             "realm_name": self.sender.realm.name,
                             "realm_uri": "http://zulip.testserver",
                             "realm_url": "http://zulip.testserver",
