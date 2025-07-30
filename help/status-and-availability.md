@@ -134,11 +134,9 @@ There are three availability states:
 * **Active** (<i class="user-circle user-circle-active zulip-icon
   zulip-icon-user-circle-active"></i>): Zulip is open and in focus on web,
   desktop or mobile, or was in the last 140 seconds.
-
 * **Idle** (<i class="user-circle user-circle-idle zulip-icon
   zulip-icon-user-circle-idle"></i>): Zulip is open on your computer (either
   desktop or web), but you are not active.
-
 * **Offline** (<i class="user-circle user-circle-offline zulip-icon
   zulip-icon-user-circle-offline"></i>): Zulip is not open on your computer,
   or you have turned on invisible mode.
