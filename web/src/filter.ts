@@ -23,7 +23,7 @@ import * as util from "./util.ts";
 
 type IconData = {
     title?: string | undefined;
-    html_title?: string | undefined;
+    title_html?: string | undefined;
     is_spectator: boolean;
 } & (
     | {
@@ -1339,7 +1339,7 @@ export class Filter {
 
     add_icon_data(context: {
         title?: string;
-        html_title?: string;
+        title_html?: string;
         description?: string | undefined;
         link?: string | undefined;
         is_spectator: boolean;
