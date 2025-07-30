@@ -291,6 +291,10 @@
                     --message-box-avatar-height
                 )
                 minmax(0, auto) repeat(3, auto);
+            /* We align items to the baseline on me messages,
+               and unset the align-content property. */
+            align-items: baseline;
+            align-content: unset;
 
             .message-avatar {
                 /* Set the line-height to match the height of the avatar image
@@ -314,6 +318,11 @@
                    available grid row height on me-messages, we
                    align to center here. */
                 align-self: center;
+            }
+
+            .message_edit_notice {
+                /* Unset the margin on a typical sender line. */
+                margin-left: 0;
             }
 
             .message_sender {
