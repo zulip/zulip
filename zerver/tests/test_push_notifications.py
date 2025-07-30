@@ -38,7 +38,6 @@ from zerver.lib.push_notifications import (
     get_message_payload_apns,
     get_message_payload_gcm,
     get_mobile_push_content,
-    modernize_apns_payload,
     parse_fcm_options,
     send_android_push_notification_to_user,
     send_apple_push_notification,
@@ -1476,20 +1475,6 @@ class TestAPNs(PushNotificationTestCase):
                 f"ERROR:zerver.lib.push_notifications:APNs: Missing ios_app_id for user <id:{self.user_profile.id}> device {device.token}",
                 logger.output,
             )
-
-    def test_modernize_apns_payload(self) -> None:
-        payload = {
-            "alert": "Message from Hamlet",
-            "badge": 0,
-            "custom": {"zulip": {"message_ids": [3]}},
-        }
-        self.assertEqual(
-            modernize_apns_payload(
-                {"alert": "Message from Hamlet", "message_ids": [3], "badge": 0}
-            ),
-            payload,
-        )
-        self.assertEqual(modernize_apns_payload(payload), payload)
 
     @mock.patch("zerver.lib.push_notifications.push_notifications_configured", return_value=True)
     def test_apns_badge_count(self, mock_push_notifications: mock.MagicMock) -> None:
