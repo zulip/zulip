@@ -568,13 +568,14 @@
        timestamp when the first child of the rendered
        markdown is a horizontal rule, a media element,
        or KaTeX. */
+    /*
     &:has(> hr:first-child),
     &:has(> .message-thumbnail-gallery:first-child),
     &:has(> p:first-child > audio),
     &:has(> p:first-child > .katex-display) {
         align-self: center;
     }
-
+    */
     /* But for browsers that don't support :has(),
        we provide a small layout hack using an
        inline grid. */
