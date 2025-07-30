@@ -5507,6 +5507,15 @@ paths:
                                         Zulip [communities directory](/help/communities-directory).
 
                                         **Changes**: New in Zulip 6.0 (feature level 129).
+                                    welcome_message_custom_text:
+                                      type: string
+                                      description: |
+                                        This organization's configured custom message for Welcome Bot
+                                        to send to new user accounts, in Zulip Markdown format.
+
+                                        Maximum length is 8000 characters.
+
+                                        **Changes**: New in Zulip 11.0 (feature level 416).
                                     zulip_update_announcements_stream_id:
                                       type: integer
                                       description: |
@@ -15405,6 +15414,25 @@ paths:
                   type: boolean
                   example: false
                   default: true
+                welcome_message_custom_text:
+                  description: |
+                    Custom message text, in Zulip Markdown format, to be sent by the
+                    Welcome Bot to new users that join the organization via this
+                    invitation.
+
+                    Maximum length is 8000 characters.
+
+                    Only organization administrators can use this feature; for other
+                    users, the value is always `null`.
+
+                    - `null`: the organization's default `welcome_message_custom_text` is used.
+                    - Empty string: no Welcome Bot custom message is sent.
+                    - Otherwise, the provided string is the custom message.
+
+                    **Changes**: New in Zulip 11.0 (feature level 416).
+                  type: string
+                  nullable: true
+                  example: "Welcome to Zulip! We're excited to have you on board."
               required:
                 - invitee_emails
                 - stream_ids
@@ -15595,6 +15623,25 @@ paths:
                   type: boolean
                   default: false
                   example: false
+                welcome_message_custom_text:
+                  description: |
+                    Custom message text, in Zulip Markdown format, to be sent by the
+                    Welcome Bot to new users that join the organization via this
+                    invitation.
+
+                    Maximum length is 8000 characters.
+
+                    Only organization administrators can use this feature; for other
+                    users, the value is always `null`.
+
+                    - `null`: the organization's default `welcome_message_custom_text` is used.
+                    - Empty string: no Welcome Bot custom message is sent.
+                    - Otherwise, the provided string is the custom message.
+
+                    **Changes**: New in Zulip 11.0 (feature level 416).
+                  type: string
+                  nullable: true
+                  example: "Welcome to Zulip! We're excited to have you on board."
             encoding:
               invite_expires_in_minutes:
                 contentType: application/json
@@ -15794,6 +15841,54 @@ paths:
                           }
                         description: |
                           A typical failed JSON response for an invalid email invitation ID:
+  /realm/test_welcome_bot_custom_message:
+    post:
+      operationId: test-welcome-bot-custom-message
+      summary: Test welcome bot custom message
+      tags: ["server_and_organizations"]
+      x-requires-administrator: true
+      description: |
+        Sends a test Welcome Bot message with custom text to the acting administrator.
+        This allows administrators to preview how the welcome message will appear when
+        received by new users upon joining the organization.
+
+        **Changes**: New in Zulip 11.0 (feature level 416).
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                welcome_message_custom_text:
+                  description: |
+                    Custom message text, in Zulip Markdown format, to be used for
+                    this test message.
+
+                    Maximum length is 8000 characters.
+                  type: string
+                  maxLength: 8000
+                  example: "Welcome to Zulip! We're excited to have you on board."
+              required:
+                - welcome_message_custom_text
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      ignored_parameters_unsupported: {}
+                      message_id:
+                        type: integer
+                        description: |
+                          The message_id of the test welcome bot custom message.
+                    example: {"result": "success", "msg": "", "message_id": 1}
   /register:
     post:
       operationId: register-queue
@@ -18965,6 +19060,15 @@ paths:
                           The [organization language][org-lang] for automated messages and invitation emails.
 
                           [org-lang]: /help/configure-organization-language
+                      realm_welcome_message_custom_text:
+                        type: string
+                        description: |
+                          Present if `realm` is present in `fetch_event_types`.
+
+                          This organization's configured custom message for Welcome Bot
+                          to send to new user accounts, in Zulip Markdown format.
+
+                          **Changes**: New in Zulip 11.0 (feature level 416).
                       realm_description:
                         type: string
                         description: |

@@ -20,6 +20,22 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 11.0
 
+**Feature level 416**
+
+* [`POST /invites`](/api/send-invites), [`POST
+  /invites/multiuse`](/api/create-invite-link): Added a new parameter
+  `welcome_message_custom_text` which allows the users to add a
+  Welcome Bot custom message for new users through invitations.
+
+* [`POST /register`](/api/register-queue), [`POST /events`](/api/get-events),
+  `PATCH /realm`: Added `welcome_message_custom_text` realm setting which is the
+  default custom message for the Welcome Bot when sending invitations to new users.
+
+* [`POST /realm/test_welcome_bot_custom_message`](/api/test-welcome-bot-custom-message):
+  Added new endpoint test messages with the Welcome Bot custom message. The test
+  messages are sent to the acting administrator, allowing them to preview how the
+  custom welcome message will appear to new users upon joining the organization.
+
 **Feature level 415**
 
 * [`POST /reminders`](/api/create-message-reminder): Added parameter

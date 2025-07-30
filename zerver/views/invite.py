@@ -6,7 +6,7 @@ from django.db import transaction
 from django.http import HttpRequest, HttpResponse
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
-from pydantic import Json
+from pydantic import Json, StringConstraints
 
 from confirmation import settings as confirmation_settings
 from zerver.actions.invites import (
@@ -24,7 +24,14 @@ from zerver.lib.streams import access_stream_by_id, get_streams_to_which_user_ca
 from zerver.lib.typed_endpoint import ApiParamConfig, PathOnly, typed_endpoint
 from zerver.lib.typed_endpoint_validators import check_int_in_validator
 from zerver.lib.user_groups import UserGroupMembershipDetails, access_user_group_for_update
-from zerver.models import MultiuseInvite, NamedUserGroup, PreregistrationUser, Stream, UserProfile
+from zerver.models import (
+    MultiuseInvite,
+    NamedUserGroup,
+    PreregistrationUser,
+    Realm,
+    Stream,
+    UserProfile,
+)
 
 # Convert INVITATION_LINK_VALIDITY_DAYS into minutes.
 # Because mypy fails to correctly infer the type of the validator, we want this constant
@@ -137,6 +144,12 @@ def invite_users_backend(
     invitee_emails_raw: Annotated[str, ApiParamConfig("invitee_emails")],
     notify_referrer_on_join: Json[bool] = True,
     stream_ids: Json[list[int]],
+    welcome_message_custom_text: Annotated[
+        str | None,
+        StringConstraints(
+            max_length=Realm.MAX_REALM_WELCOME_MESSAGE_CUSTOM_TEXT_LENGTH,
+        ),
+    ] = None,
 ) -> HttpResponse:
     if not user_profile.can_invite_users_by_email():
         # Guest users case will not be handled here as it will
@@ -160,6 +173,9 @@ def invite_users_backend(
     streams = access_streams_for_invite(stream_ids, user_profile)
     user_groups = access_user_groups_for_invite(group_ids, user_profile)
 
+    if welcome_message_custom_text is not None and not user_profile.is_realm_admin:
+        raise JsonableError(_("Must be an organization administrator"))
+
     skipped = do_invite_users(
         user_profile,
         invitee_emails,
@@ -169,6 +185,7 @@ def invite_users_backend(
         invite_expires_in_minutes=invite_expires_in_minutes,
         include_realm_default_subscriptions=include_realm_default_subscriptions,
         invite_as=invite_as,
+        welcome_message_custom_text=welcome_message_custom_text,
     )
 
     if skipped:
@@ -246,6 +263,12 @@ def generate_multiuse_invite_backend(
     ] = PreregistrationUser.INVITE_AS["MEMBER"],
     invite_expires_in_minutes: Json[int | None] = INVITATION_LINK_VALIDITY_MINUTES,
     stream_ids: Json[list[int]] | None = None,
+    welcome_message_custom_text: Annotated[
+        str | None,
+        StringConstraints(
+            max_length=Realm.MAX_REALM_WELCOME_MESSAGE_CUSTOM_TEXT_LENGTH,
+        ),
+    ] = None,
 ) -> HttpResponse:
     if stream_ids is None:
         stream_ids = []
@@ -266,6 +289,9 @@ def generate_multiuse_invite_backend(
     streams = access_streams_for_invite(stream_ids, user_profile)
     user_groups = access_user_groups_for_invite(group_ids, user_profile)
 
+    if welcome_message_custom_text is not None and not user_profile.is_realm_admin:
+        raise JsonableError(_("Must be an organization administrator"))
+
     invite_link = do_create_multiuse_invite_link(
         user_profile,
         invite_as,
@@ -273,5 +299,6 @@ def generate_multiuse_invite_backend(
         include_realm_default_subscriptions,
         streams,
         user_groups,
+        welcome_message_custom_text,
     )
     return json_success(request, data={"invite_link": invite_link})

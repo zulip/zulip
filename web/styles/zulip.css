@@ -1351,6 +1351,11 @@ div.topic_edit_spinner .loading_indicator_spinner {
     width: 100%;
 }
 
+#invite_welcome_custom_message_text {
+    width: 100%;
+    box-sizing: border-box;
+}
+
 .custom-time-input-value {
     width: 5ch;
     margin-right: 15px;

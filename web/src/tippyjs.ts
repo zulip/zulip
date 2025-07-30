@@ -870,6 +870,24 @@ export function initialize(): void {
     });
 
     tippy.delegate("body", {
+        target: "#welcome_message_custom_text_buttons_container",
+        onShow(instance) {
+            const $elem = $(instance.reference);
+            if ($($elem).find("#send_test_welcome_bot_custom_message").prop("disabled")) {
+                const content = $t({defaultMessage: "Welcome Bot message text is required."});
+                instance.setContent(content);
+                return undefined;
+            }
+            instance.destroy();
+            return false;
+        },
+        appendTo: () => document.body,
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
+    tippy.delegate("body", {
         target: ".topic-edit-save-wrapper",
         onShow(instance) {
             const $elem = $(instance.reference);
