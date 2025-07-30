@@ -15,6 +15,7 @@ import * as dropdown_widget from "./dropdown_widget.ts";
 import {$t, $t_html} from "./i18n.ts";
 import * as message_notifications from "./message_notifications.ts";
 import {page_params} from "./page_params.ts";
+import * as settings_banner from "./settings_banner.ts";
 import * as settings_components from "./settings_components.ts";
 import * as settings_config from "./settings_config.ts";
 import type {SettingsPanel} from "./settings_preferences.ts";
@@ -54,6 +55,22 @@ const DESKTOP_NOTIFICATIONS_BANNER: banners.Banner = {
     ],
     close_button: true,
     custom_classes: "desktop-setting-notifications",
+};
+
+const MOBILE_PUSH_NOTIFICATION_BANNER: banners.Banner = {
+    intent: "warning",
+    label: $t({
+        defaultMessage: "Mobile push notifications are not enabled on this server.",
+    }),
+    buttons: [
+        {
+            label: $t({defaultMessage: "Learn more"}),
+            custom_classes: "banner-external-link",
+            attention: "quiet",
+        },
+    ],
+    custom_classes: "mobile-push-notifications-banner",
+    close_button: false,
 };
 
 function rerender_ui(): void {
@@ -392,6 +409,11 @@ export function set_up(settings_panel: SettingsPanel): void {
     });
 
     set_enable_digest_emails_visibility($container, for_realm_settings);
+    settings_banner.set_up_banner(
+        $(".mobile-push-notifications-banner-container"),
+        MOBILE_PUSH_NOTIFICATION_BANNER,
+        "/help/mobile-notifications#enabling-push-notifications-for-self-hosted-servers",
+    );
 
     if (for_realm_settings) {
         // For the realm-level defaults page, we use the common

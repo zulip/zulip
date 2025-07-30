@@ -186,11 +186,7 @@
             {{> settings_save_discard_widget section_name="mobile-message-settings" show_only_indicator=(not for_realm_settings) }}
         </div>
         {{#unless realm_push_notifications_enabled}}
-        <div class="tip">
-            {{#tr}}
-                Mobile push notifications are not enabled on this server. <z-link>Learn more</z-link>
-                {{#*inline "z-link"}}<a href="/help/mobile-notifications#enabling-push-notifications-for-self-hosted-servers" target="_blank" rel="noopener noreferrer">{{> @partial-block}}</a>{{/inline}}
-            {{/tr}}
+        <div class="mobile-push-notifications-banner-container banner-wrapper">
         </div>
         {{/unless}}
 
