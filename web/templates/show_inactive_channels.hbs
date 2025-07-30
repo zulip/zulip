@@ -1,10 +1,6 @@
 <div class="stream-list-toggle-inactive-channels bottom_left_row zoom-in-hide">
     <div class="show-inactive-channels sidebar-topic-action-heading">
-        <div class="stream-list-toggle-inactive-channels-text">
-            {{#tr}}
-            + {inactive_count, plural, =1 {# inactive channel} other {# inactive channels}}
-            {{/tr}}
-        </div>
+        {{> inactive_channels_count . }}
         <div class="markers-and-unreads">
             <span class="unread_count quiet-count"></span>
             <span class="masked_unread_count">

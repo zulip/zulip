@@ -6,6 +6,7 @@ import * as tippy from "tippy.js";
 import render_filter_topics from "../templates/filter_topics.hbs";
 import render_go_to_channel_feed_tooltip from "../templates/go_to_channel_feed_tooltip.hbs";
 import render_go_to_channel_list_of_topics_tooltip from "../templates/go_to_channel_list_of_topics_tooltip.hbs";
+import render_inactive_channels_count from "../templates/inactive_channels_count.hbs";
 import render_show_inactive_channels from "../templates/show_inactive_channels.hbs";
 import render_stream_list_section_container from "../templates/stream_list_section_container.hbs";
 import render_stream_privacy from "../templates/stream_privacy.hbs";
@@ -352,6 +353,10 @@ export function build_stream_list(force_rerender: boolean): void {
                     }),
                 ),
             );
+        }
+        const current_stream = narrow_state.stream_id();
+        if (current_stream !== undefined && section.inactive_streams.includes(current_stream)) {
+            handle_inactive_counts_given_active_channel(current_stream);
         }
     }
     // Rerendering can moving channels between folders and change heading unread counts.
@@ -773,6 +778,7 @@ export function get_sidebar_stream_topic_info(filter: Filter): {
 
 function deselect_stream_items(): void {
     $("ul#stream_filters li").removeClass("active-filter stream-expanded");
+    // TODO(evy): Can't universally reset here, since another stream/topic might be active
 }
 
 export function update_stream_sidebar_for_narrow(filter: Filter): JQuery | undefined {
@@ -802,6 +808,7 @@ export function update_stream_sidebar_for_narrow(filter: Filter): JQuery | undef
 
     if (!info.topic_selected) {
         $stream_li.addClass("active-filter");
+        handle_inactive_counts_given_active_channel(stream_id);
     }
 
     // Always add 'stream-expanded' class irrespective of whether
@@ -966,6 +973,48 @@ export function initialize_tippy_tooltips(): void {
         },
         appendTo: () => document.body,
     });
+}
+
+/* If a user navigates to an inactive channel without revealing inactive
+   channels in that folder (e.g. via recent conversations) we want to
+   show that folder still in the left sidebar, like we do with active
+   channels in collapsed folders. So we show it below all the active
+   channels (handled with CSS) and update the count on the show/hide
+   inactive channels button. If this is the only inactive channel for
+   this section, we hide the button altogether. */
+// TODO(evy): Figure out how to get this to work for `active-sub-filter` topics.
+function handle_inactive_counts_given_active_channel(stream_id: number | undefined): void {
+    for (const {section_id, inactive_streams} of stream_list_sort.current_inactive_streams()) {
+        if (inactive_streams.length === 0) {
+            continue;
+        }
+        if (stream_id !== undefined && inactive_streams.includes(stream_id)) {
+            // If there's only one channel in this section and we're
+            // currently viewing it, the toggle won't do anything anymore,
+            // so hide it.
+            if (inactive_streams.length === 1) {
+                $(
+                    `#stream-list-${section_id}-container .stream-list-toggle-inactive-channels`,
+                ).toggleClass("no-display", true);
+            } else {
+                $(`#stream-list-${section_id}-container .show-inactive-channels-text`).replaceWith(
+                    $(
+                        render_inactive_channels_count({
+                            inactive_count: inactive_streams.length - 1,
+                        }),
+                    ),
+                );
+            }
+        } else {
+            // Ensure it's in its default state, with the inactive toggle visible and the right count.
+            $(
+                `#stream-list-${section_id}-container .stream-list-toggle-inactive-channels`,
+            ).toggleClass("no-display", false);
+            $(`#stream-list-${section_id}-container .show-inactive-channels-text`).replaceWith(
+                $(render_inactive_channels_count({inactive_count: inactive_streams.length})),
+            );
+        }
+    }
 }
 
 function on_sidebar_channel_click(

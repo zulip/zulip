@@ -35,6 +35,16 @@ export function get_stream_ids(): number[] {
     return all_rows.flatMap((row) => (row.type === "stream" ? row.stream_id : []));
 }
 
+export function current_inactive_streams(): {
+    section_id: string;
+    inactive_streams: number[];
+}[] {
+    return current_sections.map((section) => ({
+        section_id: section.id,
+        inactive_streams: section.inactive_streams,
+    }));
+}
+
 function current_section_ids_for_streams(): Map<number, StreamListSection> {
     const map = new Map<number, StreamListSection>();
     for (const section of current_sections) {
@@ -106,7 +116,7 @@ export type StreamListSection = {
     section_title: string;
     streams: number[];
     muted_streams: number[];
-    inactive_streams: number[]; // Only used for folder sections
+    inactive_streams: number[];
 };
 
 type StreamListSortResult = {
