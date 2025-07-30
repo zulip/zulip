@@ -599,7 +599,10 @@ INTEGRATIONS: dict[str, Integration] = {
     "errbot": Integration("errbot", ["meta-integration", "bots"]),
     "giphy": Integration("giphy", ["misc"], display_name="GIPHY"),
     "github-actions": Integration(
-        "github-actions", ["continuous-integration"], display_name="GitHub Actions"
+        "github-actions",
+        ["continuous-integration"],
+        display_name="GitHub Actions",
+        stream_name="github-actions updates",
     ),
     "hubot": Integration("hubot", ["meta-integration", "bots"]),
     "jenkins": Integration("jenkins", ["continuous-integration"]),
@@ -859,6 +862,7 @@ for integration, screenshots_contents in FIXTURELESS_SCREENSHOT_CONTENT.items():
 
 FIXTURELESS_SCREENSHOT_CONFIG_OPTIONAL_FIELDS = {
     "mercurial": {"image_dir": "hg"},
+    "jenkins": {"image_name": "004.png"},
 }
 
 for integration, fields in FIXTURELESS_SCREENSHOT_CONFIG_OPTIONAL_FIELDS.items():
