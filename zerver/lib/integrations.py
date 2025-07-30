@@ -863,6 +863,7 @@ for integration, screenshots_contents in FIXTURELESS_SCREENSHOT_CONTENT.items():
 FIXTURELESS_SCREENSHOT_CONFIG_OPTIONAL_FIELDS = {
     "mercurial": {"image_dir": "hg"},
     "jenkins": {"image_name": "004.png"},
+    "google-calendar": {"image_name": "003.png", "image_dir": "google/calendar"},
 }
 
 for integration, fields in FIXTURELESS_SCREENSHOT_CONFIG_OPTIONAL_FIELDS.items():
