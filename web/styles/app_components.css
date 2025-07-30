@@ -555,6 +555,7 @@ input.settings_text_input {
 }
 
 .organization-upgrade-banner,
+.mobile-push-notifications-banner,
 .admin-permissions-banner,
 .desktop-setting-notifications {
     margin-bottom: 10px;
