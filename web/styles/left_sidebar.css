@@ -336,7 +336,7 @@
     z-index: 3;
     background: var(--color-background);
     /* Must be padding not margin so that the sticky headers don't show behind it */
-    padding: var(--left-sidebar-sections-vertical-gutter)
+    padding: calc(var(--left-sidebar-sections-vertical-gutter) * 2.5)
         var(--left-sidebar-right-margin) 3px 5px;
 }
 
