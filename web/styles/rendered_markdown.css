@@ -569,7 +569,7 @@
        markdown is a horizontal rule, a media element,
        or KaTeX. */
     &:has(> hr:first-child),
-    &:has(> .message_inline_image:first-child),
+    &:has(> .message-thumbnail-gallery:first-child),
     &:has(> p:first-child > audio),
     &:has(> p:first-child > .katex-display) {
         align-self: center;
