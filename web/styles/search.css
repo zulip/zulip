@@ -137,6 +137,11 @@
             /* Pill container should display the same background
                color as the search typeahead. */
             background-color: var(--color-background-search);
+            padding: 0;
+
+            .search-input-and-pills {
+                padding: 0.25em; /* 4px at 16px em */
+            }
         }
 
         @media (width < $md_min) {
