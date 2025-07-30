@@ -17,11 +17,11 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-07-25 20:29+0000\n"
+"POT-Creation-Date: 2025-07-30 13:46+0000\n"
 "PO-Revision-Date: 2025-07-26 22:07+0000\n"
 "Last-Translator: Alex Vandiver <alexmv@zulip.com>\n"
-"Language-Team: Finnish <https://hosted.weblate.org/projects/zulip/django/fi/>"
-"\n"
+"Language-Team: Finnish <https://hosted.weblate.org/projects/zulip/django/fi/"
+">\n"
 "Language: fi\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -1924,7 +1924,7 @@ msgstr "Päivitä"
 
 #: templates/zerver/development/integrations_dev_panel.html:19
 #: templates/zerver/portico-header.html:8
-#: templates/zerver/portico-header.html:12 zerver/models/realms.py:436
+#: templates/zerver/portico-header.html:12 zerver/models/realms.py:437
 msgid "Zulip"
 msgstr "Zulip"
 
@@ -4683,7 +4683,7 @@ msgstr "Widgettiä ei voi editoida."
 msgid "Your organization has turned off message editing"
 msgstr "Organisaatiosi on ottanut viestien muokkauksen pois päältä"
 
-#: zerver/actions/message_edit.py:174 zerver/actions/message_edit.py:1582
+#: zerver/actions/message_edit.py:174 zerver/actions/message_edit.py:1586
 msgid "You don't have permission to edit this message"
 msgstr "Sinulla ei ole oikeuksia muokata tätä viestiä"
 
@@ -4701,20 +4701,20 @@ msgstr "{user} on merkinnyt tämän aiheen ratkaistuksi."
 msgid "{user} has marked this topic as unresolved."
 msgstr "{user} on merkinnyt tämän aiheen ratkaisemattomaksi."
 
-#: zerver/actions/message_edit.py:1262
+#: zerver/actions/message_edit.py:1266
 #, python-brace-format
 msgid "This topic was moved to {new_location} by {user}."
 msgstr ""
 "Tämä aihe on siirretty paikkaan {new_location} käyttäjän {user} toimesta."
 
-#: zerver/actions/message_edit.py:1266
+#: zerver/actions/message_edit.py:1270
 #, python-brace-format
 msgid "A message was moved from this topic to {new_location} by {user}."
 msgstr ""
 "Viesti tästä aiheesta on siirretty paikkaan {new_location} käyttäjän {user} "
 "toimesta."
 
-#: zerver/actions/message_edit.py:1270
+#: zerver/actions/message_edit.py:1274
 #, python-brace-format
 msgid ""
 "{changed_messages_count} messages were moved from this topic to "
@@ -4723,13 +4723,13 @@ msgstr ""
 "{changed_messages_count} viestiä tästä aiheesta on siirretty paikkaan "
 "{new_location} käyttäjän {user} toimesta."
 
-#: zerver/actions/message_edit.py:1309
+#: zerver/actions/message_edit.py:1313
 #, python-brace-format
 msgid "This topic was moved here from {old_location} by {user}."
 msgstr ""
 "Tämä aihe on siirretty paikasta {old_location} käyttäjän {user} toimesta."
 
-#: zerver/actions/message_edit.py:1314
+#: zerver/actions/message_edit.py:1318
 #, python-brace-format
 msgid ""
 "[A message]({message_link}) was moved here from {old_location} by {user}."
@@ -4737,7 +4737,7 @@ msgstr ""
 "[Viesti]({message_link}) siirrettiin tänne paikasta {old_location} käyttäjän "
 "{user} toimesta."
 
-#: zerver/actions/message_edit.py:1318
+#: zerver/actions/message_edit.py:1322
 #, python-brace-format
 msgid ""
 "{changed_messages_count} messages were moved here from {old_location} by "
@@ -4746,21 +4746,21 @@ msgstr ""
 "{changed_messages_count} viestiä on siirretty tänne paikasta {old_location} "
 "käyttäjän {user} toimesta."
 
-#: zerver/actions/message_edit.py:1576
+#: zerver/actions/message_edit.py:1580
 #, fuzzy
 #| msgid "You do not have permission to post in this channel."
 msgid "You don't have permission to resolve topics in this channel."
 msgstr "Sinulla ei ole oikeuksia lähettää viestiä tälle kanavalle."
 
-#: zerver/actions/message_edit.py:1596
+#: zerver/actions/message_edit.py:1600
 msgid "The time limit for editing this message's topic has passed."
 msgstr "Tämän viestin aiheen muokkaamisen aikaraja on ohitettu."
 
-#: zerver/actions/message_edit.py:1646
+#: zerver/actions/message_edit.py:1650
 msgid "You don't have permission to move this message"
 msgstr "Sinulla ei ole oikeuksia siirtää tätä viestiä"
 
-#: zerver/actions/message_edit.py:1662
+#: zerver/actions/message_edit.py:1666
 msgid "The time limit for editing this message's channel has passed"
 msgstr "Tämän viestin kanavan muokkaamisen aikaraja on ohitettu."
 
@@ -5192,23 +5192,31 @@ msgid "Verified that you're a human user!"
 msgstr "Vahvistettiin että olet ihmiskäyttäjä."
 
 #: zerver/forms.py:380
-msgid "Verifying that you're not a bot..."
+#, fuzzy
+#| msgid "Verifying that you're not a bot..."
+msgid "Verifying that you're not a bot…"
 msgstr "Vahvistetaan ettet ole botti..."
 
-#: zerver/forms.py:402 zerver/forms.py:411 zerver/forms.py:416
-#: zerver/forms.py:423
+#: zerver/forms.py:402 zerver/forms.py:413 zerver/forms.py:418
+#: zerver/forms.py:425
 msgid "Validation failed, please try again."
 msgstr "Vahvistus epäonnistui, yritä uudestaan."
 
-#: zerver/forms.py:435
+#: zerver/forms.py:407 zerver/views/antispam.py:29
+#, fuzzy
+#| msgid "Embedded bots are not enabled."
+msgid "Challenges are not enabled."
+msgstr "Sulautetut botit eivät ole käytössä."
+
+#: zerver/forms.py:437
 msgid "New password"
 msgstr "Uusi salasana"
 
-#: zerver/forms.py:442
+#: zerver/forms.py:444
 msgid "New password confirmation"
 msgstr "Uuden salasanan vahvistaminen"
 
-#: zerver/forms.py:584
+#: zerver/forms.py:586
 #, python-brace-format
 msgid ""
 "You're making too many attempts to sign in. Try again in {seconds} seconds "
@@ -5218,7 +5226,7 @@ msgstr ""
 "sekunnin kuluttua tai ota yhteyttä organisaatiosi järjestelmänvalvojaan "
 "saadaksesi apua. "
 
-#: zerver/forms.py:596
+#: zerver/forms.py:598
 msgid ""
 "Your password has been disabled because it is too weak. Reset your password "
 "to create a new one."
@@ -5226,20 +5234,20 @@ msgstr ""
 "Salasanasi on poistettu käytöstä, koska se on liian heikko. Nollaa "
 "salasanasi luodaksesi uusi. "
 
-#: zerver/forms.py:644
+#: zerver/forms.py:646
 msgid "Token"
 msgstr "Valtuus"
 
-#: zerver/forms.py:667
+#: zerver/forms.py:669
 msgid "Tip: You can enter multiple email addresses with commas between them."
 msgstr ""
 "Vinkki: Voit syöttää useamman sähköpostiosoitteen erottelemalla ne pilkuin."
 
-#: zerver/forms.py:673
+#: zerver/forms.py:675
 msgid "Please enter at most 10 emails."
 msgstr "Lisää korkeintaan 10 sähköpostia."
 
-#: zerver/forms.py:686
+#: zerver/forms.py:688
 msgid "We couldn't find that Zulip organization."
 msgstr "Zulip-organisaatiota ei löytynyt. "
 
@@ -5469,7 +5477,7 @@ msgstr ""
 msgid "Emoji name is missing"
 msgstr "Emojin nimi puuttuu"
 
-#: zerver/lib/events.py:2116
+#: zerver/lib/events.py:2119
 msgid "Could not allocate event queue"
 msgstr "Tapahtumajonoa ei pystytty allokoimaan"
 
@@ -6268,43 +6276,43 @@ msgid "Invalid GCM options to bouncer: {options}"
 msgstr "Virheelliset GCM-asetukset bouncerille: {options}"
 
 #. error
-#: zerver/lib/push_notifications.py:760 zilencer/views.py:658
+#: zerver/lib/push_notifications.py:754 zilencer/views.py:658
 msgid "Token does not exist"
 msgstr "Token ei ole olemassa"
 
-#: zerver/lib/push_notifications.py:981
-msgid "New message"
-msgstr "Uusi viesti"
-
-#: zerver/lib/push_notifications.py:1100
+#: zerver/lib/push_notifications.py:1091
 #, python-brace-format
 msgid "{full_name} mentioned @{user_group_name}:"
 msgstr "{full_name} maintisi @{user_group_name}:"
 
-#: zerver/lib/push_notifications.py:1104
+#: zerver/lib/push_notifications.py:1095
 #, python-brace-format
 msgid "{full_name} mentioned you:"
 msgstr "{full_name} mainitsi sinut:"
 
-#: zerver/lib/push_notifications.py:1111
+#: zerver/lib/push_notifications.py:1102
 #, python-brace-format
 msgid "{full_name} mentioned everyone:"
 msgstr "{full_name} mainitisi kaikki:"
 
-#: zerver/lib/push_notifications.py:1715
+#: zerver/lib/push_notifications.py:1332
+msgid "New message"
+msgstr "Uusi viesti"
+
+#: zerver/lib/push_notifications.py:1720
 msgid "Test notification"
 msgstr "Testi-ilmoitus"
 
-#: zerver/lib/push_notifications.py:1716
+#: zerver/lib/push_notifications.py:1721
 #, python-brace-format
 msgid "This is a test notification from {realm_name} ({realm_url})."
 msgstr ""
 
-#: zerver/lib/push_notifications.py:1768
+#: zerver/lib/push_notifications.py:1773
 msgid "Device not recognized"
 msgstr "Laitetta ei tunnisteta"
 
-#: zerver/lib/push_notifications.py:1780
+#: zerver/lib/push_notifications.py:1785
 msgid "Device not recognized by the push bouncer"
 msgstr "Laitetta ei tunnisteta push bouncerin toimesta"
 
@@ -6856,7 +6864,7 @@ msgstr "Zcommand tulisi aloittaa kauttaviivalla."
 msgid "No such command: {command}"
 msgstr "Komentoa {command} ei ole olemassa"
 
-#: zerver/lib/zulip_update_announcements.py:677
+#: zerver/lib/zulip_update_announcements.py:691
 msgid "`zulip_update_announcements_stream` is unexpectedly deactivated."
 msgstr ""
 
@@ -6980,73 +6988,73 @@ msgstr "Puuttuva code URLin mallineessa tarvitaan"
 msgid "\"code\" should be the only variable present in the URL template"
 msgstr "code pitää olla ainoa muuttuja URL-mallineessa"
 
-#: zerver/models/realms.py:437
+#: zerver/models/realms.py:438
 msgid "sandbox"
 msgstr "hiekkalaatikko"
 
-#: zerver/models/realms.py:438
+#: zerver/models/realms.py:439
 msgid "general"
 msgstr "yleinen"
 
-#: zerver/models/realms.py:439
+#: zerver/models/realms.py:440
 msgid "channel events"
 msgstr "kanavan tapahtumat"
 
-#: zerver/models/realms.py:441
+#: zerver/models/realms.py:442
 msgid "Spam"
 msgstr ""
 
-#: zerver/models/realms.py:442
+#: zerver/models/realms.py:443
 msgid "Harassment"
 msgstr ""
 
-#: zerver/models/realms.py:443
+#: zerver/models/realms.py:444
 msgid "Inappropriate content"
 msgstr ""
 
-#: zerver/models/realms.py:444
+#: zerver/models/realms.py:445
 msgid "Violates community norms"
 msgstr ""
 
-#: zerver/models/realms.py:445
+#: zerver/models/realms.py:446
 msgid "Other reason"
 msgstr ""
 
-#: zerver/models/realms.py:470
+#: zerver/models/realms.py:471
 msgid "Zulip updates"
 msgstr "Zulipin päivitykset"
 
-#: zerver/models/realms.py:596
+#: zerver/models/realms.py:597
 msgid "Available on Zulip Cloud Standard. Upgrade to access."
 msgstr "Saatavilla Zulip Standardilla. Päivitä käyttääksesi."
 
-#: zerver/models/realms.py:597
+#: zerver/models/realms.py:598
 msgid "Available on Zulip Cloud Plus. Upgrade to access."
 msgstr "Saatavilla Zulip Cloud Plussassa. Päivitä käyttääksesi."
 
-#: zerver/models/realms.py:657
+#: zerver/models/realms.py:658
 msgid "GIPHY integration disabled"
 msgstr "GIPHY-integraatio pois käytöstä"
 
-#: zerver/models/realms.py:662
+#: zerver/models/realms.py:663
 msgid "Allow GIFs rated Y (Very young audience)"
 msgstr "Salli GIFfit ikäluokituksella Y (nuorimmat yleisöt)"
 
-#: zerver/models/realms.py:666
+#: zerver/models/realms.py:667
 msgid "Allow GIFs rated G (General audience)"
 msgstr "Salli GIFfit ikäluokituksella G (yleiset yleisöt)"
 
-#: zerver/models/realms.py:670
+#: zerver/models/realms.py:671
 msgid "Allow GIFs rated PG (Parental guidance)"
 msgstr "Salli GIFfit ikäluokituksella PG (vanhempian valvonnan alaisena)"
 
-#: zerver/models/realms.py:674
+#: zerver/models/realms.py:675
 msgid "Allow GIFs rated PG-13 (Parental guidance - under 13)"
 msgstr ""
 "Salli GIFfit ikäluokituksella PG-13 (alle 13-vuotiaat vain vanhempian "
 "valvonnan alaisena)"
 
-#: zerver/models/realms.py:678
+#: zerver/models/realms.py:679
 msgid "Allow GIFs rated R (Restricted)"
 msgstr "Salli GIFfit ikäluokituksella R (rajoitettu)"
 
@@ -7145,7 +7153,7 @@ msgstr "Tapahtuma {event_id} ei ollut tässä jonossa"
 msgid "Bad event queue ID: {queue_id}"
 msgstr "Virheellinen tapahtumajonotunnus: {queue_id}"
 
-#: zerver/views/antispam.py:50
+#: zerver/views/antispam.py:53
 #, fuzzy
 #| msgid "Failed to create Zoom call"
 msgid "Failed to generate challenge"
@@ -7175,7 +7183,7 @@ msgstr "Aliverkkotunnus vaaditaan"
 msgid "Password is incorrect."
 msgstr "Salasana on väärin."
 
-#: zerver/views/channel_folders.py:79
+#: zerver/views/channel_folders.py:81
 msgid "You need to remove all the channels from this folder to archive it."
 msgstr ""
 
@@ -7446,36 +7454,36 @@ msgstr ""
 msgid "Read receipts are disabled in this organization."
 msgstr "Vastaanottoilmoitukset on poistettu käytössä tässä organisaatiossa"
 
-#: zerver/views/realm.py:216
+#: zerver/views/realm.py:217
 #, python-brace-format
 msgid "Invalid language '{language}'"
 msgstr "Virheellinen kieli {language}"
 
-#: zerver/views/realm.py:223
+#: zerver/views/realm.py:224
 msgid "At least one authentication method must be enabled."
 msgstr "Vähintään yksi todennusmenetelmä on oltava käytössä."
 
-#: zerver/views/realm.py:229
+#: zerver/views/realm.py:230
 #, python-brace-format
 msgid "Invalid video_chat_provider {video_chat_provider}"
 msgstr "virheellinen video_chat_provider {video_chat_provider}"
 
-#: zerver/views/realm.py:237
+#: zerver/views/realm.py:238
 #, python-brace-format
 msgid "Invalid giphy_rating {giphy_rating}"
 msgstr "Virheellinen giphy_rating {giphy_rating}"
 
-#: zerver/views/realm.py:517
+#: zerver/views/realm.py:518
 msgid "Must be a demo organization."
 msgstr "On oltava demo-organisaatio."
 
-#: zerver/views/realm.py:545
+#: zerver/views/realm.py:546
 #, python-brace-format
 msgid ""
 "Data deletion time must be at most {max_allowed_days} days in the future."
 msgstr ""
 
-#: zerver/views/realm.py:556
+#: zerver/views/realm.py:557
 #, python-brace-format
 msgid ""
 "Data deletion time must be at least {min_allowed_days} days in the future."
@@ -7730,7 +7738,7 @@ msgstr "Ei tilattu kanavaa {channel_id}"
 msgid "Invalid json for submessage"
 msgstr "Virheellinen json aliviestille"
 
-#: zerver/views/tusd.py:108 zerver/views/upload.py:439
+#: zerver/views/tusd.py:108 zerver/views/upload.py:442
 #, python-brace-format
 msgid ""
 "File is larger than the maximum upload size ({max_size} MiB) allowed by your "
@@ -7739,7 +7747,7 @@ msgstr ""
 "Tiedosto on enimmäiskokoa suurempi ({max_size} MiB), joka sallitaan tälle "
 "organisaatiolle."
 
-#: zerver/views/tusd.py:117 zerver/views/upload.py:447
+#: zerver/views/tusd.py:117 zerver/views/upload.py:450
 #, python-brace-format
 msgid ""
 "File is larger than this server's configured maximum upload size ({max_size} "
@@ -7772,27 +7780,27 @@ msgstr "Tyhjä 'to' lista"
 msgid "User has disabled typing notifications for direct messages"
 msgstr "Käyttäjä on poistanut käytöstä kirjoittamisilmoitukste suoraviesteistä"
 
-#: zerver/views/upload.py:253
+#: zerver/views/upload.py:256
 msgid "<p>This file does not exist or has been deleted.</p>"
 msgstr "<p>Tiedostoa ei ole tai se on poistettu.</p>"
 
-#: zerver/views/upload.py:263
+#: zerver/views/upload.py:266
 msgid "<p>You are not authorized to view this file.</p>"
 msgstr "<p>Et ole valtuutettu katsomaan tätä tiedostoa.</p>"
 
-#: zerver/views/upload.py:376 zerver/views/upload.py:382
+#: zerver/views/upload.py:379 zerver/views/upload.py:385
 msgid "Invalid token"
 msgstr "Virheellinen token"
 
-#: zerver/views/upload.py:378
+#: zerver/views/upload.py:381
 msgid "Invalid filename"
 msgstr "Virheellinen tiedostonimi"
 
-#: zerver/views/upload.py:426
+#: zerver/views/upload.py:429
 msgid "You must specify a file to upload"
 msgstr "Sinun pitää määritellä lähetettävä tiedosto"
 
-#: zerver/views/upload.py:428 zerver/views/users.py:523
+#: zerver/views/upload.py:431 zerver/views/users.py:523
 #: zerver/views/users.py:631
 msgid "You may only upload one file at a time"
 msgstr "Voit lähettää ainoastaan yhden tiedoston kerrallaan"

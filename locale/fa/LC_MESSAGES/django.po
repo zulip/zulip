@@ -16,11 +16,11 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-07-25 20:29+0000\n"
+"POT-Creation-Date: 2025-07-30 13:46+0000\n"
 "PO-Revision-Date: 2025-07-26 22:07+0000\n"
 "Last-Translator: Alex Vandiver <alexmv@zulip.com>\n"
-"Language-Team: Persian <https://hosted.weblate.org/projects/zulip/django/fa/>"
-"\n"
+"Language-Team: Persian <https://hosted.weblate.org/projects/zulip/django/fa/"
+">\n"
 "Language: fa\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -1910,7 +1910,7 @@ msgstr "به روز رسانی"
 
 #: templates/zerver/development/integrations_dev_panel.html:19
 #: templates/zerver/portico-header.html:8
-#: templates/zerver/portico-header.html:12 zerver/models/realms.py:436
+#: templates/zerver/portico-header.html:12 zerver/models/realms.py:437
 msgid "Zulip"
 msgstr "زولیپ"
 
@@ -4660,7 +4660,7 @@ msgstr "ابزارک‌ها قابل اصلاح نیستند."
 msgid "Your organization has turned off message editing"
 msgstr "سازمان شما ویرایش پیام را غیرفعال کرده است"
 
-#: zerver/actions/message_edit.py:174 zerver/actions/message_edit.py:1582
+#: zerver/actions/message_edit.py:174 zerver/actions/message_edit.py:1586
 msgid "You don't have permission to edit this message"
 msgstr "شما دسترسی ویرایش این پیام را ندارید"
 
@@ -4678,17 +4678,17 @@ msgstr "{user} این موضوع را به حل شده تبدیل کرد."
 msgid "{user} has marked this topic as unresolved."
 msgstr "{user} این موضوع را به حل‌نشده تبدیل کرد."
 
-#: zerver/actions/message_edit.py:1262
+#: zerver/actions/message_edit.py:1266
 #, python-brace-format
 msgid "This topic was moved to {new_location} by {user}."
 msgstr "این موضوع توسط {user} به {new_location} جابجا شده‌است."
 
-#: zerver/actions/message_edit.py:1266
+#: zerver/actions/message_edit.py:1270
 #, python-brace-format
 msgid "A message was moved from this topic to {new_location} by {user}."
 msgstr "یک پیام از این موضوع توسط {user} به {new_location} منتقل شد."
 
-#: zerver/actions/message_edit.py:1270
+#: zerver/actions/message_edit.py:1274
 #, python-brace-format
 msgid ""
 "{changed_messages_count} messages were moved from this topic to "
@@ -4697,18 +4697,18 @@ msgstr ""
 "تعداد {changed_messages_count} پیام از این موضوع توسط {user} به "
 "{new_location} منتقل شد."
 
-#: zerver/actions/message_edit.py:1309
+#: zerver/actions/message_edit.py:1313
 #, python-brace-format
 msgid "This topic was moved here from {old_location} by {user}."
 msgstr "این موضوع توسط {user} از {old_location} جابجا شده‌است."
 
-#: zerver/actions/message_edit.py:1314
+#: zerver/actions/message_edit.py:1318
 #, python-brace-format
 msgid ""
 "[A message]({message_link}) was moved here from {old_location} by {user}."
 msgstr "[یک پیام]({message_link}) توسط {user} از  {old_location} جابجا شد."
 
-#: zerver/actions/message_edit.py:1318
+#: zerver/actions/message_edit.py:1322
 #, python-brace-format
 msgid ""
 "{changed_messages_count} messages were moved here from {old_location} by "
@@ -4717,21 +4717,21 @@ msgstr ""
 "تعداد {changed_messages_count} پیام توسط  {user} از  {old_location} به اینجا "
 "منتقل شد."
 
-#: zerver/actions/message_edit.py:1576
+#: zerver/actions/message_edit.py:1580
 #, fuzzy
 #| msgid "You do not have permission to post in this channel."
 msgid "You don't have permission to resolve topics in this channel."
 msgstr "شما اجازه ندارید در این کانال پست ارسال کنید."
 
-#: zerver/actions/message_edit.py:1596
+#: zerver/actions/message_edit.py:1600
 msgid "The time limit for editing this message's topic has passed."
 msgstr "محدوده زمانی برای ویرایش موضوع این پیام گذشته است."
 
-#: zerver/actions/message_edit.py:1646
+#: zerver/actions/message_edit.py:1650
 msgid "You don't have permission to move this message"
 msgstr "شما اجازه ندارید این پیام را جابجا کنید"
 
-#: zerver/actions/message_edit.py:1662
+#: zerver/actions/message_edit.py:1666
 msgid "The time limit for editing this message's channel has passed"
 msgstr "محدوده زمانی برای ویرایش کانال این پیام گذشته است"
 
@@ -5160,23 +5160,29 @@ msgid "Verified that you're a human user!"
 msgstr ""
 
 #: zerver/forms.py:380
-msgid "Verifying that you're not a bot..."
+msgid "Verifying that you're not a bot…"
 msgstr ""
 
-#: zerver/forms.py:402 zerver/forms.py:411 zerver/forms.py:416
-#: zerver/forms.py:423
+#: zerver/forms.py:402 zerver/forms.py:413 zerver/forms.py:418
+#: zerver/forms.py:425
 msgid "Validation failed, please try again."
 msgstr ""
 
-#: zerver/forms.py:435
+#: zerver/forms.py:407 zerver/views/antispam.py:29
+#, fuzzy
+#| msgid "Embedded bots are not enabled."
+msgid "Challenges are not enabled."
+msgstr "ربات های تعبیه شده فعال نیستند."
+
+#: zerver/forms.py:437
 msgid "New password"
 msgstr "کلمه عبور جدید"
 
-#: zerver/forms.py:442
+#: zerver/forms.py:444
 msgid "New password confirmation"
 msgstr "تأیید کلمه عبور جدید"
 
-#: zerver/forms.py:584
+#: zerver/forms.py:586
 #, python-brace-format
 msgid ""
 "You're making too many attempts to sign in. Try again in {seconds} seconds "
@@ -5185,7 +5191,7 @@ msgstr ""
 "شما دفعات زیادی برای ورود به سیستم تلاش کردید. بعد از {seconds} دوباره "
 "امتحان کنید یا برای دریافت راهنمایی با ادمین سازمان خود تماس بگیرید."
 
-#: zerver/forms.py:596
+#: zerver/forms.py:598
 msgid ""
 "Your password has been disabled because it is too weak. Reset your password "
 "to create a new one."
@@ -5193,21 +5199,21 @@ msgstr ""
 "کلمه عبور شما غیرفعال شده است چرا که بیش از حد ساده بود. کلمه عبور خود را "
 "بازنشانی کنید و یک کلمه عبور جدید تعیین کنید."
 
-#: zerver/forms.py:644
+#: zerver/forms.py:646
 msgid "Token"
 msgstr "توکن"
 
-#: zerver/forms.py:667
+#: zerver/forms.py:669
 msgid "Tip: You can enter multiple email addresses with commas between them."
 msgstr ""
 "راهنما: شما می‌توانید چندین آدرس ایمیل را که با ویرگول جدا شده باشند وارد "
 "کنید."
 
-#: zerver/forms.py:673
+#: zerver/forms.py:675
 msgid "Please enter at most 10 emails."
 msgstr "لطفا حداکثر 10 ایمیل وارد کنید. "
 
-#: zerver/forms.py:686
+#: zerver/forms.py:688
 msgid "We couldn't find that Zulip organization."
 msgstr "ما نمی‌توانیم این سازمان زولیپ را پیدا کنیم. "
 
@@ -5435,7 +5441,7 @@ msgstr ""
 msgid "Emoji name is missing"
 msgstr "نام ایموجی گم شده است"
 
-#: zerver/lib/events.py:2116
+#: zerver/lib/events.py:2119
 msgid "Could not allocate event queue"
 msgstr "امکان تخصیص صف برای رویداد وجود ندارد "
 
@@ -6310,43 +6316,43 @@ msgid "Invalid GCM options to bouncer: {options}"
 msgstr "گزینه‌های GCM نامعتبر برای بانسر:  {options}"
 
 #. error
-#: zerver/lib/push_notifications.py:760 zilencer/views.py:658
+#: zerver/lib/push_notifications.py:754 zilencer/views.py:658
 msgid "Token does not exist"
 msgstr "توکن وجود ندارد"
 
-#: zerver/lib/push_notifications.py:981
-msgid "New message"
-msgstr "پیام جدید"
-
-#: zerver/lib/push_notifications.py:1100
+#: zerver/lib/push_notifications.py:1091
 #, python-brace-format
 msgid "{full_name} mentioned @{user_group_name}:"
 msgstr "{full_name} به @{user_group_name} اشاره کرده:"
 
-#: zerver/lib/push_notifications.py:1104
+#: zerver/lib/push_notifications.py:1095
 #, python-brace-format
 msgid "{full_name} mentioned you:"
 msgstr "{full_name} به شما اشاره کرده:"
 
-#: zerver/lib/push_notifications.py:1111
+#: zerver/lib/push_notifications.py:1102
 #, python-brace-format
 msgid "{full_name} mentioned everyone:"
 msgstr "{full_name} به همه اشاره کرده:"
 
-#: zerver/lib/push_notifications.py:1715
+#: zerver/lib/push_notifications.py:1332
+msgid "New message"
+msgstr "پیام جدید"
+
+#: zerver/lib/push_notifications.py:1720
 msgid "Test notification"
 msgstr "اعلان آزمایشی"
 
-#: zerver/lib/push_notifications.py:1716
+#: zerver/lib/push_notifications.py:1721
 #, python-brace-format
 msgid "This is a test notification from {realm_name} ({realm_url})."
 msgstr "این یک اعلان آزمایشی از طرف {realm_name} ({realm_url}) است."
 
-#: zerver/lib/push_notifications.py:1768
+#: zerver/lib/push_notifications.py:1773
 msgid "Device not recognized"
 msgstr "دستگاه شناسایی نشد"
 
-#: zerver/lib/push_notifications.py:1780
+#: zerver/lib/push_notifications.py:1785
 msgid "Device not recognized by the push bouncer"
 msgstr "دستگاه توسط push bouncer شناسایی نشد"
 
@@ -6897,7 +6903,7 @@ msgstr "در ابتدای zcommand باید یک اسلش باشد."
 msgid "No such command: {command}"
 msgstr "چنین دستوری وجود ندارد:‌ {command}"
 
-#: zerver/lib/zulip_update_announcements.py:677
+#: zerver/lib/zulip_update_announcements.py:691
 msgid "`zulip_update_announcements_stream` is unexpectedly deactivated."
 msgstr ""
 "`zulip_update_announcements_stream` به طور غیرمنتظره‌ای غیرفعال شده است."
@@ -7022,72 +7028,72 @@ msgstr "متغیر مورد نیاز \"code\" در قالب URL وجود ندا�
 msgid "\"code\" should be the only variable present in the URL template"
 msgstr "متغیر \"code\" باید تنها متغیر موجود در قالب URL باشد"
 
-#: zerver/models/realms.py:437
+#: zerver/models/realms.py:438
 msgid "sandbox"
 msgstr "سندباکس"
 
-#: zerver/models/realms.py:438
+#: zerver/models/realms.py:439
 msgid "general"
 msgstr "عمومی"
 
-#: zerver/models/realms.py:439
+#: zerver/models/realms.py:440
 msgid "channel events"
 msgstr "رویدادهای کانال"
 
-#: zerver/models/realms.py:441
+#: zerver/models/realms.py:442
 msgid "Spam"
 msgstr ""
 
-#: zerver/models/realms.py:442
+#: zerver/models/realms.py:443
 msgid "Harassment"
 msgstr ""
 
-#: zerver/models/realms.py:443
+#: zerver/models/realms.py:444
 msgid "Inappropriate content"
 msgstr ""
 
-#: zerver/models/realms.py:444
+#: zerver/models/realms.py:445
 msgid "Violates community norms"
 msgstr ""
 
-#: zerver/models/realms.py:445
+#: zerver/models/realms.py:446
 msgid "Other reason"
 msgstr ""
 
-#: zerver/models/realms.py:470
+#: zerver/models/realms.py:471
 msgid "Zulip updates"
 msgstr "به‌روزرسانی‌های زولیپ"
 
-#: zerver/models/realms.py:596
+#: zerver/models/realms.py:597
 msgid "Available on Zulip Cloud Standard. Upgrade to access."
 msgstr ""
 "در زولیپ کلود استاندارد در دسترس است. ارتقا دهید تا دسترسی داشته باشید."
 
-#: zerver/models/realms.py:597
+#: zerver/models/realms.py:598
 msgid "Available on Zulip Cloud Plus. Upgrade to access."
 msgstr "بر روی زولیپ ابری پلاس در دسترس است. ارتقا دهید تا دسترسی داشته باشید."
 
-#: zerver/models/realms.py:657
+#: zerver/models/realms.py:658
 msgid "GIPHY integration disabled"
 msgstr "ادغام GIPHY غیرفعال شد"
 
-#: zerver/models/realms.py:662
+#: zerver/models/realms.py:663
 msgid "Allow GIFs rated Y (Very young audience)"
 msgstr "گیف‌های رده Y (مخاطبان خیلی جوان) مجاز هستند"
 
-#: zerver/models/realms.py:666
+#: zerver/models/realms.py:667
 msgid "Allow GIFs rated G (General audience)"
 msgstr "گیف‌های رده G (مخاطبان عمومی) مجاز هستند"
 
-#: zerver/models/realms.py:670
+#: zerver/models/realms.py:671
 msgid "Allow GIFs rated PG (Parental guidance)"
 msgstr "گیف‌های رده PG (تخت نظر والدین) مجاز هستند"
 
-#: zerver/models/realms.py:674
+#: zerver/models/realms.py:675
 msgid "Allow GIFs rated PG-13 (Parental guidance - under 13)"
 msgstr "گیف‌های رده PG-13 مجاز است (زیر نظر والدین - زیر ۱۳ سال)"
 
-#: zerver/models/realms.py:678
+#: zerver/models/realms.py:679
 msgid "Allow GIFs rated R (Restricted)"
 msgstr "گیف‌های با رده R (محدودشده) مجاز باشد"
 
@@ -7186,7 +7192,7 @@ msgstr "رویداد {event_id} در این صف نبود"
 msgid "Bad event queue ID: {queue_id}"
 msgstr "شناسه ردیف رویداد بد: {queue_id}"
 
-#: zerver/views/antispam.py:50
+#: zerver/views/antispam.py:53
 #, fuzzy
 #| msgid "Failed to create Zoom call"
 msgid "Failed to generate challenge"
@@ -7216,7 +7222,7 @@ msgstr "زیردامنه الزامی است"
 msgid "Password is incorrect."
 msgstr "کلمه عبور غلط است"
 
-#: zerver/views/channel_folders.py:79
+#: zerver/views/channel_folders.py:81
 msgid "You need to remove all the channels from this folder to archive it."
 msgstr ""
 
@@ -7489,36 +7495,36 @@ msgstr "حداقل یکی از آرگومان های زیر باید باشند:
 msgid "Read receipts are disabled in this organization."
 msgstr "رسید خوانده‌شدن، در این سازمان غیرفعال شده است."
 
-#: zerver/views/realm.py:216
+#: zerver/views/realm.py:217
 #, python-brace-format
 msgid "Invalid language '{language}'"
 msgstr "زبان نامعتبر '{language}'"
 
-#: zerver/views/realm.py:223
+#: zerver/views/realm.py:224
 msgid "At least one authentication method must be enabled."
 msgstr "حداقل یک روش احرازهویت باید فعال باشد."
 
-#: zerver/views/realm.py:229
+#: zerver/views/realm.py:230
 #, python-brace-format
 msgid "Invalid video_chat_provider {video_chat_provider}"
 msgstr "تأمین‌کننده تماس تصویری نامعتبر {video_chat_provider}"
 
-#: zerver/views/realm.py:237
+#: zerver/views/realm.py:238
 #, python-brace-format
 msgid "Invalid giphy_rating {giphy_rating}"
 msgstr "giphy_rating نامعتبر {giphy_rating}"
 
-#: zerver/views/realm.py:517
+#: zerver/views/realm.py:518
 msgid "Must be a demo organization."
 msgstr "باید یک سازمان آزمایشی باشد."
 
-#: zerver/views/realm.py:545
+#: zerver/views/realm.py:546
 #, python-brace-format
 msgid ""
 "Data deletion time must be at most {max_allowed_days} days in the future."
 msgstr "زمان حذف داده‌ها باید حداکثر {max_allowed_days} روز دیگر در آینده باشد."
 
-#: zerver/views/realm.py:556
+#: zerver/views/realm.py:557
 #, python-brace-format
 msgid ""
 "Data deletion time must be at least {min_allowed_days} days in the future."
@@ -7779,7 +7785,7 @@ msgstr "عضو کانال با شناسه {channel_id} نیست"
 msgid "Invalid json for submessage"
 msgstr "Json برای پیام زیرمجموعه اشتباه است"
 
-#: zerver/views/tusd.py:108 zerver/views/upload.py:439
+#: zerver/views/tusd.py:108 zerver/views/upload.py:442
 #, python-brace-format
 msgid ""
 "File is larger than the maximum upload size ({max_size} MiB) allowed by your "
@@ -7788,7 +7794,7 @@ msgstr ""
 "طبق طرح سازمان شما، حجم فایل بزرگتر از حداکثر حجم آپلود ({max_size} MiB) "
 "مجاز است."
 
-#: zerver/views/tusd.py:117 zerver/views/upload.py:447
+#: zerver/views/tusd.py:117 zerver/views/upload.py:450
 #, python-brace-format
 msgid ""
 "File is larger than this server's configured maximum upload size ({max_size} "
@@ -7822,27 +7828,27 @@ msgstr "لیست 'گیرندگان' خالی"
 msgid "User has disabled typing notifications for direct messages"
 msgstr "کاربر اطلاع‌رسانی نوشتن را برای پیام‌های مستقیم، غیر فعال کرده است"
 
-#: zerver/views/upload.py:253
+#: zerver/views/upload.py:256
 msgid "<p>This file does not exist or has been deleted.</p>"
 msgstr "<p>این فایل وجود ندارد یا پاک شده است.</p>"
 
-#: zerver/views/upload.py:263
+#: zerver/views/upload.py:266
 msgid "<p>You are not authorized to view this file.</p>"
 msgstr "<p>شما مجاز به دیدن این فایل نیستید.</p>"
 
-#: zerver/views/upload.py:376 zerver/views/upload.py:382
+#: zerver/views/upload.py:379 zerver/views/upload.py:385
 msgid "Invalid token"
 msgstr "توکن نامعتبر"
 
-#: zerver/views/upload.py:378
+#: zerver/views/upload.py:381
 msgid "Invalid filename"
 msgstr "نام فایل نامعتبر"
 
-#: zerver/views/upload.py:426
+#: zerver/views/upload.py:429
 msgid "You must specify a file to upload"
 msgstr "شما باید برای بارگذاری یک فایل مشخص کنید"
 
-#: zerver/views/upload.py:428 zerver/views/users.py:523
+#: zerver/views/upload.py:431 zerver/views/users.py:523
 #: zerver/views/users.py:631
 msgid "You may only upload one file at a time"
 msgstr "شما هر دفعه تنها می توانید یک فایل بارگذاری کنید"

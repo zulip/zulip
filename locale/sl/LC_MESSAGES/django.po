@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-07-25 20:29+0000\n"
+"POT-Creation-Date: 2025-07-30 13:46+0000\n"
 "PO-Revision-Date: 2025-07-26 22:07+0000\n"
 "Last-Translator: Alex Vandiver <alexmv@zulip.com>\n"
 "Language-Team: Slovenian <https://hosted.weblate.org/projects/zulip/django/"
@@ -1914,7 +1914,7 @@ msgstr "Posodobi"
 
 #: templates/zerver/development/integrations_dev_panel.html:19
 #: templates/zerver/portico-header.html:8
-#: templates/zerver/portico-header.html:12 zerver/models/realms.py:436
+#: templates/zerver/portico-header.html:12 zerver/models/realms.py:437
 msgid "Zulip"
 msgstr "Zulip"
 
@@ -4684,7 +4684,7 @@ msgstr "Pripomočkov ni mogoče urejati."
 msgid "Your organization has turned off message editing"
 msgstr "Vaša organizacija je izklopila urejanje sporočil"
 
-#: zerver/actions/message_edit.py:174 zerver/actions/message_edit.py:1582
+#: zerver/actions/message_edit.py:174 zerver/actions/message_edit.py:1586
 msgid "You don't have permission to edit this message"
 msgstr "Nimate dovoljenja za urejanje tega sporočila"
 
@@ -4702,17 +4702,17 @@ msgstr "{user} je to temo označil kot rešeno."
 msgid "{user} has marked this topic as unresolved."
 msgstr "{user} je to temo označil kot nerešeno."
 
-#: zerver/actions/message_edit.py:1262
+#: zerver/actions/message_edit.py:1266
 #, python-brace-format
 msgid "This topic was moved to {new_location} by {user}."
 msgstr "To temo je {user} premaknil v {new_location}."
 
-#: zerver/actions/message_edit.py:1266
+#: zerver/actions/message_edit.py:1270
 #, python-brace-format
 msgid "A message was moved from this topic to {new_location} by {user}."
 msgstr "Sporočilo je {user} premaknil iz te teme v {new_location}."
 
-#: zerver/actions/message_edit.py:1270
+#: zerver/actions/message_edit.py:1274
 #, python-brace-format
 msgid ""
 "{changed_messages_count} messages were moved from this topic to "
@@ -4721,18 +4721,18 @@ msgstr ""
 "{changed_messages_count} sporočil je {user} premaknil iz te teme v "
 "{new_location}."
 
-#: zerver/actions/message_edit.py:1309
+#: zerver/actions/message_edit.py:1313
 #, python-brace-format
 msgid "This topic was moved here from {old_location} by {user}."
 msgstr "To temo je {user} premaknil sem iz {old_location}."
 
-#: zerver/actions/message_edit.py:1314
+#: zerver/actions/message_edit.py:1318
 #, python-brace-format
 msgid ""
 "[A message]({message_link}) was moved here from {old_location} by {user}."
 msgstr "[Sporočilo]({message_link}) je {user} premaknil sem iz {old_location}."
 
-#: zerver/actions/message_edit.py:1318
+#: zerver/actions/message_edit.py:1322
 #, python-brace-format
 msgid ""
 "{changed_messages_count} messages were moved here from {old_location} by "
@@ -4740,21 +4740,21 @@ msgid ""
 msgstr ""
 "{changed_messages_count} sporočil je {user} premaknil sem iz {old_location}."
 
-#: zerver/actions/message_edit.py:1576
+#: zerver/actions/message_edit.py:1580
 #, fuzzy
 #| msgid "You do not have permission to post in this channel."
 msgid "You don't have permission to resolve topics in this channel."
 msgstr "Nimate dovoljenja za objavljanje v tem kanalu."
 
-#: zerver/actions/message_edit.py:1596
+#: zerver/actions/message_edit.py:1600
 msgid "The time limit for editing this message's topic has passed."
 msgstr "Časovna omejitev za urejanje teme tega sporočila je potekla."
 
-#: zerver/actions/message_edit.py:1646
+#: zerver/actions/message_edit.py:1650
 msgid "You don't have permission to move this message"
 msgstr "Nimate dovoljenja za premikanje tega sporočila"
 
-#: zerver/actions/message_edit.py:1662
+#: zerver/actions/message_edit.py:1666
 msgid "The time limit for editing this message's channel has passed"
 msgstr "Časovna omejitev za urejanje kanala tega sporočila je potekla"
 
@@ -5185,23 +5185,29 @@ msgid "Verified that you're a human user!"
 msgstr ""
 
 #: zerver/forms.py:380
-msgid "Verifying that you're not a bot..."
+msgid "Verifying that you're not a bot…"
 msgstr ""
 
-#: zerver/forms.py:402 zerver/forms.py:411 zerver/forms.py:416
-#: zerver/forms.py:423
+#: zerver/forms.py:402 zerver/forms.py:413 zerver/forms.py:418
+#: zerver/forms.py:425
 msgid "Validation failed, please try again."
 msgstr ""
 
-#: zerver/forms.py:435
+#: zerver/forms.py:407 zerver/views/antispam.py:29
+#, fuzzy
+#| msgid "Embedded bots are not enabled."
+msgid "Challenges are not enabled."
+msgstr "Vdelani boti niso omogočeni."
+
+#: zerver/forms.py:437
 msgid "New password"
 msgstr "Novo geslo"
 
-#: zerver/forms.py:442
+#: zerver/forms.py:444
 msgid "New password confirmation"
 msgstr "Potrditev novega gesla"
 
-#: zerver/forms.py:584
+#: zerver/forms.py:586
 #, python-brace-format
 msgid ""
 "You're making too many attempts to sign in. Try again in {seconds} seconds "
@@ -5210,7 +5216,7 @@ msgstr ""
 "Prevečkrat poskušate se prijaviti. Poskusite znova čez {seconds} sekund ali "
 "se za pomoč obrnite na skrbnika organizacije."
 
-#: zerver/forms.py:596
+#: zerver/forms.py:598
 msgid ""
 "Your password has been disabled because it is too weak. Reset your password "
 "to create a new one."
@@ -5218,19 +5224,19 @@ msgstr ""
 "Vaše geslo je bilo onemogočeno, ker je prešibko. Ponastavite geslo, da "
 "ustvarite novega."
 
-#: zerver/forms.py:644
+#: zerver/forms.py:646
 msgid "Token"
 msgstr "Žeton"
 
-#: zerver/forms.py:667
+#: zerver/forms.py:669
 msgid "Tip: You can enter multiple email addresses with commas between them."
 msgstr "Nasvet: Vnesete lahko več e-poštnih naslovov, ločenih z vejicami."
 
-#: zerver/forms.py:673
+#: zerver/forms.py:675
 msgid "Please enter at most 10 emails."
 msgstr "Prosimo, vnesite največ 10 e-poštnih naslovov."
 
-#: zerver/forms.py:686
+#: zerver/forms.py:688
 msgid "We couldn't find that Zulip organization."
 msgstr "Te organizacije Zulip nismo mogli najti."
 
@@ -5458,7 +5464,7 @@ msgstr ""
 msgid "Emoji name is missing"
 msgstr "Manjka ime emojija"
 
-#: zerver/lib/events.py:2116
+#: zerver/lib/events.py:2119
 msgid "Could not allocate event queue"
 msgstr "Ni bilo mogoče dodeliti čakalne vrste dogodkov"
 
@@ -6334,43 +6340,43 @@ msgid "Invalid GCM options to bouncer: {options}"
 msgstr "Neveljavne možnosti GCM za strežnik za potisna obvestila: {options}"
 
 #. error
-#: zerver/lib/push_notifications.py:760 zilencer/views.py:658
+#: zerver/lib/push_notifications.py:754 zilencer/views.py:658
 msgid "Token does not exist"
 msgstr "Žeton ne obstaja"
 
-#: zerver/lib/push_notifications.py:981
-msgid "New message"
-msgstr "Novo sporočilo"
-
-#: zerver/lib/push_notifications.py:1100
+#: zerver/lib/push_notifications.py:1091
 #, python-brace-format
 msgid "{full_name} mentioned @{user_group_name}:"
 msgstr "{full_name} je omenil @{user_group_name}:"
 
-#: zerver/lib/push_notifications.py:1104
+#: zerver/lib/push_notifications.py:1095
 #, python-brace-format
 msgid "{full_name} mentioned you:"
 msgstr "{full_name} vas je omenil:"
 
-#: zerver/lib/push_notifications.py:1111
+#: zerver/lib/push_notifications.py:1102
 #, python-brace-format
 msgid "{full_name} mentioned everyone:"
 msgstr "{full_name} je omenil vse:"
 
-#: zerver/lib/push_notifications.py:1715
+#: zerver/lib/push_notifications.py:1332
+msgid "New message"
+msgstr "Novo sporočilo"
+
+#: zerver/lib/push_notifications.py:1720
 msgid "Test notification"
 msgstr "Testno obvestilo"
 
-#: zerver/lib/push_notifications.py:1716
+#: zerver/lib/push_notifications.py:1721
 #, python-brace-format
 msgid "This is a test notification from {realm_name} ({realm_url})."
 msgstr "To je testno obvestilo iz {realm_name} ({realm_url})."
 
-#: zerver/lib/push_notifications.py:1768
+#: zerver/lib/push_notifications.py:1773
 msgid "Device not recognized"
 msgstr "Naprava ni prepoznana"
 
-#: zerver/lib/push_notifications.py:1780
+#: zerver/lib/push_notifications.py:1785
 msgid "Device not recognized by the push bouncer"
 msgstr "Naprava ni prepoznana s strani strežnika za potisna obvestila"
 
@@ -6926,7 +6932,7 @@ msgstr "V zcommandu bi morala biti vodilna poševnica."
 msgid "No such command: {command}"
 msgstr "Takšnega ukaza ni: {command}"
 
-#: zerver/lib/zulip_update_announcements.py:677
+#: zerver/lib/zulip_update_announcements.py:691
 msgid "`zulip_update_announcements_stream` is unexpectedly deactivated."
 msgstr "`zulip_update_announcements_stream` je nepričakovano deaktiviran."
 
@@ -7050,71 +7056,71 @@ msgstr "Manjkajoča zahtevana spremenljivka \"code\" v predlogi URL"
 msgid "\"code\" should be the only variable present in the URL template"
 msgstr "\"code\" bi morala biti edina spremenljivka v predlogi URL"
 
-#: zerver/models/realms.py:437
+#: zerver/models/realms.py:438
 msgid "sandbox"
 msgstr "peskovnik"
 
-#: zerver/models/realms.py:438
+#: zerver/models/realms.py:439
 msgid "general"
 msgstr "splošno"
 
-#: zerver/models/realms.py:439
+#: zerver/models/realms.py:440
 msgid "channel events"
 msgstr "dogodki kanala"
 
-#: zerver/models/realms.py:441
+#: zerver/models/realms.py:442
 msgid "Spam"
 msgstr ""
 
-#: zerver/models/realms.py:442
+#: zerver/models/realms.py:443
 msgid "Harassment"
 msgstr ""
 
-#: zerver/models/realms.py:443
+#: zerver/models/realms.py:444
 msgid "Inappropriate content"
 msgstr ""
 
-#: zerver/models/realms.py:444
+#: zerver/models/realms.py:445
 msgid "Violates community norms"
 msgstr ""
 
-#: zerver/models/realms.py:445
+#: zerver/models/realms.py:446
 msgid "Other reason"
 msgstr ""
 
-#: zerver/models/realms.py:470
+#: zerver/models/realms.py:471
 msgid "Zulip updates"
 msgstr "Posodobitve Zulip"
 
-#: zerver/models/realms.py:596
+#: zerver/models/realms.py:597
 msgid "Available on Zulip Cloud Standard. Upgrade to access."
 msgstr "Na voljo v Zulip Cloud Standard. Nadgradite za dostop."
 
-#: zerver/models/realms.py:597
+#: zerver/models/realms.py:598
 msgid "Available on Zulip Cloud Plus. Upgrade to access."
 msgstr "Na voljo v Zulip Cloud Plus. Nadgradite za dostop."
 
-#: zerver/models/realms.py:657
+#: zerver/models/realms.py:658
 msgid "GIPHY integration disabled"
 msgstr "Integracija GIPHY onemogočena"
 
-#: zerver/models/realms.py:662
+#: zerver/models/realms.py:663
 msgid "Allow GIFs rated Y (Very young audience)"
 msgstr "Dovoli GIF-e z oceno Y (Zelo mlado občinstvo)"
 
-#: zerver/models/realms.py:666
+#: zerver/models/realms.py:667
 msgid "Allow GIFs rated G (General audience)"
 msgstr "Dovoli GIF-e z oceno G (Splošno občinstvo)"
 
-#: zerver/models/realms.py:670
+#: zerver/models/realms.py:671
 msgid "Allow GIFs rated PG (Parental guidance)"
 msgstr "Dovoli GIF-e z oceno PG (Starševski nadzor)"
 
-#: zerver/models/realms.py:674
+#: zerver/models/realms.py:675
 msgid "Allow GIFs rated PG-13 (Parental guidance - under 13)"
 msgstr "Dovoli GIF-e z oceno PG-13 (Starševski nadzor - mlajši od 13 let)"
 
-#: zerver/models/realms.py:678
+#: zerver/models/realms.py:679
 msgid "Allow GIFs rated R (Restricted)"
 msgstr "Dovoli GIF-e z oceno R (Omejeno)"
 
@@ -7213,7 +7219,7 @@ msgstr "Dogodek {event_id} ni bil v tej čakalni vrsti"
 msgid "Bad event queue ID: {queue_id}"
 msgstr "Slab ID čakalne vrste dogodkov: {queue_id}"
 
-#: zerver/views/antispam.py:50
+#: zerver/views/antispam.py:53
 #, fuzzy
 #| msgid "Failed to create Zoom call"
 msgid "Failed to generate challenge"
@@ -7243,7 +7249,7 @@ msgstr "Zahtevana je poddomena"
 msgid "Password is incorrect."
 msgstr "Geslo je napačno."
 
-#: zerver/views/channel_folders.py:79
+#: zerver/views/channel_folders.py:81
 msgid "You need to remove all the channels from this folder to archive it."
 msgstr ""
 
@@ -7517,37 +7523,37 @@ msgstr ""
 msgid "Read receipts are disabled in this organization."
 msgstr "Potrdila o prebranem so v tej organizaciji onemogočena."
 
-#: zerver/views/realm.py:216
+#: zerver/views/realm.py:217
 #, python-brace-format
 msgid "Invalid language '{language}'"
 msgstr "Neveljaven jezik '{language}'"
 
-#: zerver/views/realm.py:223
+#: zerver/views/realm.py:224
 msgid "At least one authentication method must be enabled."
 msgstr "Omogočena mora biti vsaj ena metoda avtentikacije."
 
-#: zerver/views/realm.py:229
+#: zerver/views/realm.py:230
 #, python-brace-format
 msgid "Invalid video_chat_provider {video_chat_provider}"
 msgstr "Neveljaven video_chat_provider {video_chat_provider}"
 
-#: zerver/views/realm.py:237
+#: zerver/views/realm.py:238
 #, python-brace-format
 msgid "Invalid giphy_rating {giphy_rating}"
 msgstr "Neveljavna giphy_rating {giphy_rating}"
 
-#: zerver/views/realm.py:517
+#: zerver/views/realm.py:518
 msgid "Must be a demo organization."
 msgstr "Mora biti predstavitvena organizacija."
 
-#: zerver/views/realm.py:545
+#: zerver/views/realm.py:546
 #, python-brace-format
 msgid ""
 "Data deletion time must be at most {max_allowed_days} days in the future."
 msgstr ""
 "Čas brisanja podatkov mora biti največ {max_allowed_days} dni v prihodnosti."
 
-#: zerver/views/realm.py:556
+#: zerver/views/realm.py:557
 #, python-brace-format
 msgid ""
 "Data deletion time must be at least {min_allowed_days} days in the future."
@@ -7806,7 +7812,7 @@ msgstr "Ni naročen na ID kanala {channel_id}"
 msgid "Invalid json for submessage"
 msgstr "Neveljaven json za podsporočilo"
 
-#: zerver/views/tusd.py:108 zerver/views/upload.py:439
+#: zerver/views/tusd.py:108 zerver/views/upload.py:442
 #, python-brace-format
 msgid ""
 "File is larger than the maximum upload size ({max_size} MiB) allowed by your "
@@ -7815,7 +7821,7 @@ msgstr ""
 "Datoteka je večja od največje velikosti nalaganja ({max_size} MiB), ki jo "
 "dovoljuje načrt vaše organizacije."
 
-#: zerver/views/tusd.py:117 zerver/views/upload.py:447
+#: zerver/views/tusd.py:117 zerver/views/upload.py:450
 #, python-brace-format
 msgid ""
 "File is larger than this server's configured maximum upload size ({max_size} "
@@ -7849,27 +7855,27 @@ msgstr "Prazen seznam 'to'"
 msgid "User has disabled typing notifications for direct messages"
 msgstr "Uporabnik je onemogočil obvestila o tipkanju za neposredna sporočila"
 
-#: zerver/views/upload.py:253
+#: zerver/views/upload.py:256
 msgid "<p>This file does not exist or has been deleted.</p>"
 msgstr "<p>Ta datoteka ne obstaja ali je bila izbrisana.</p>"
 
-#: zerver/views/upload.py:263
+#: zerver/views/upload.py:266
 msgid "<p>You are not authorized to view this file.</p>"
 msgstr "<p>Niste pooblaščeni za ogled te datoteke.</p>"
 
-#: zerver/views/upload.py:376 zerver/views/upload.py:382
+#: zerver/views/upload.py:379 zerver/views/upload.py:385
 msgid "Invalid token"
 msgstr "Neveljaven žeton"
 
-#: zerver/views/upload.py:378
+#: zerver/views/upload.py:381
 msgid "Invalid filename"
 msgstr "Neveljavno ime datoteke"
 
-#: zerver/views/upload.py:426
+#: zerver/views/upload.py:429
 msgid "You must specify a file to upload"
 msgstr "Navesti morate datoteko za nalaganje"
 
-#: zerver/views/upload.py:428 zerver/views/users.py:523
+#: zerver/views/upload.py:431 zerver/views/users.py:523
 #: zerver/views/users.py:631
 msgid "You may only upload one file at a time"
 msgstr "Naenkrat lahko naložite samo eno datoteko"

@@ -15,7 +15,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-07-25 20:29+0000\n"
+"POT-Creation-Date: 2025-07-30 13:46+0000\n"
 "PO-Revision-Date: 2025-07-26 22:07+0000\n"
 "Last-Translator: Alex Vandiver <alexmv@zulip.com>\n"
 "Language-Team: Romanian <https://hosted.weblate.org/projects/zulip/django/ro/"
@@ -1864,7 +1864,7 @@ msgstr "Actualizează"
 
 #: templates/zerver/development/integrations_dev_panel.html:19
 #: templates/zerver/portico-header.html:8
-#: templates/zerver/portico-header.html:12 zerver/models/realms.py:436
+#: templates/zerver/portico-header.html:12 zerver/models/realms.py:437
 msgid "Zulip"
 msgstr "Zulip"
 
@@ -4476,7 +4476,7 @@ msgstr "Widgeturile nu pot fi editate."
 msgid "Your organization has turned off message editing"
 msgstr "Modificarea mesajelor este oprită în această organizație"
 
-#: zerver/actions/message_edit.py:174 zerver/actions/message_edit.py:1582
+#: zerver/actions/message_edit.py:174 zerver/actions/message_edit.py:1586
 msgid "You don't have permission to edit this message"
 msgstr "Nu aveți permisiunea de a edita acest mesaj"
 
@@ -4494,18 +4494,18 @@ msgstr "{user} a marcat acest subiect ca rezolvat."
 msgid "{user} has marked this topic as unresolved."
 msgstr "{user} a marcat acest subiect ca nerezolvat."
 
-#: zerver/actions/message_edit.py:1262
+#: zerver/actions/message_edit.py:1266
 #, python-brace-format
 msgid "This topic was moved to {new_location} by {user}."
 msgstr "Acest subiect a fost mutat în {new_location} de către {user}."
 
-#: zerver/actions/message_edit.py:1266
+#: zerver/actions/message_edit.py:1270
 #, python-brace-format
 msgid "A message was moved from this topic to {new_location} by {user}."
 msgstr ""
 "Un mesaj a fost mutat din acest subiect în {new_location} de către {user}."
 
-#: zerver/actions/message_edit.py:1270
+#: zerver/actions/message_edit.py:1274
 #, python-brace-format
 msgid ""
 "{changed_messages_count} messages were moved from this topic to "
@@ -4514,12 +4514,12 @@ msgstr ""
 "{changed_messages_count} mesaje au fost mutate din acest subiect în "
 "{new_location} de către {user}."
 
-#: zerver/actions/message_edit.py:1309
+#: zerver/actions/message_edit.py:1313
 #, python-brace-format
 msgid "This topic was moved here from {old_location} by {user}."
 msgstr "Acest subiect a fost mutat aici de la {old_location} de către {user}."
 
-#: zerver/actions/message_edit.py:1314
+#: zerver/actions/message_edit.py:1318
 #, python-brace-format
 msgid ""
 "[A message]({message_link}) was moved here from {old_location} by {user}."
@@ -4527,7 +4527,7 @@ msgstr ""
 "[Un mesaj]({message_link}) a fost mutat aici din {old_location} de către "
 "{user}."
 
-#: zerver/actions/message_edit.py:1318
+#: zerver/actions/message_edit.py:1322
 #, python-brace-format
 msgid ""
 "{changed_messages_count} messages were moved here from {old_location} by "
@@ -4536,21 +4536,21 @@ msgstr ""
 "{changed_messages_count} mesaje au fost mutate aici din {old_location} de "
 "către {user}."
 
-#: zerver/actions/message_edit.py:1576
+#: zerver/actions/message_edit.py:1580
 #, fuzzy
 #| msgid "You don't have permission to delete this message"
 msgid "You don't have permission to resolve topics in this channel."
 msgstr "Nu ai permisiuni să ștegi acest mesaj"
 
-#: zerver/actions/message_edit.py:1596
+#: zerver/actions/message_edit.py:1600
 msgid "The time limit for editing this message's topic has passed."
 msgstr "Termenul limită pentru editarea subiectului acestui mesaj a expirat."
 
-#: zerver/actions/message_edit.py:1646
+#: zerver/actions/message_edit.py:1650
 msgid "You don't have permission to move this message"
 msgstr "Nu aveți permisiunea de a muta acest mesaj"
 
-#: zerver/actions/message_edit.py:1662
+#: zerver/actions/message_edit.py:1666
 msgid "The time limit for editing this message's channel has passed"
 msgstr ""
 
@@ -4953,23 +4953,29 @@ msgid "Verified that you're a human user!"
 msgstr ""
 
 #: zerver/forms.py:380
-msgid "Verifying that you're not a bot..."
+msgid "Verifying that you're not a bot…"
 msgstr ""
 
-#: zerver/forms.py:402 zerver/forms.py:411 zerver/forms.py:416
-#: zerver/forms.py:423
+#: zerver/forms.py:402 zerver/forms.py:413 zerver/forms.py:418
+#: zerver/forms.py:425
 msgid "Validation failed, please try again."
 msgstr ""
 
-#: zerver/forms.py:435
+#: zerver/forms.py:407 zerver/views/antispam.py:29
+#, fuzzy
+#| msgid "Embedded bots are not enabled."
+msgid "Challenges are not enabled."
+msgstr "Boții incorporați nu sunt activi."
+
+#: zerver/forms.py:437
 msgid "New password"
 msgstr "Parola nouă"
 
-#: zerver/forms.py:442
+#: zerver/forms.py:444
 msgid "New password confirmation"
 msgstr "Confirmare parolă nouă"
 
-#: zerver/forms.py:584
+#: zerver/forms.py:586
 #, python-brace-format
 msgid ""
 "You're making too many attempts to sign in. Try again in {seconds} seconds "
@@ -4979,7 +4985,7 @@ msgstr ""
 "{seconds} secunde sau contactați administratorul organizației dumneavoastră "
 "pentru ajutor."
 
-#: zerver/forms.py:596
+#: zerver/forms.py:598
 msgid ""
 "Your password has been disabled because it is too weak. Reset your password "
 "to create a new one."
@@ -4987,20 +4993,20 @@ msgstr ""
 "Parola a fost dezactivată deoarece este prea slabă. Resetați parola pentru a "
 "crea una nouă."
 
-#: zerver/forms.py:644
+#: zerver/forms.py:646
 msgid "Token"
 msgstr "Token"
 
-#: zerver/forms.py:667
+#: zerver/forms.py:669
 msgid "Tip: You can enter multiple email addresses with commas between them."
 msgstr ""
 "Sfat: Puteți introduce mai multe adrese de e-mail cu virgule între ele."
 
-#: zerver/forms.py:673
+#: zerver/forms.py:675
 msgid "Please enter at most 10 emails."
 msgstr "Te rog introdu cel puțin 10 emailuri."
 
-#: zerver/forms.py:686
+#: zerver/forms.py:688
 msgid "We couldn't find that Zulip organization."
 msgstr "Nu am găsit acea organizație Zulip."
 
@@ -5224,7 +5230,7 @@ msgstr ""
 msgid "Emoji name is missing"
 msgstr "Numele emoji-ului lipsește"
 
-#: zerver/lib/events.py:2116
+#: zerver/lib/events.py:2119
 msgid "Could not allocate event queue"
 msgstr "Nu pot aloca lista de evenimente"
 
@@ -5957,43 +5963,43 @@ msgid "Invalid GCM options to bouncer: {options}"
 msgstr "Opțiuni MCG nevalabile pentru bouncer: {options}"
 
 #. error
-#: zerver/lib/push_notifications.py:760 zilencer/views.py:658
+#: zerver/lib/push_notifications.py:754 zilencer/views.py:658
 msgid "Token does not exist"
 msgstr "Tokenul nu există"
 
-#: zerver/lib/push_notifications.py:981
-msgid "New message"
-msgstr "Mesaj nou"
-
-#: zerver/lib/push_notifications.py:1100
+#: zerver/lib/push_notifications.py:1091
 #, python-brace-format
 msgid "{full_name} mentioned @{user_group_name}:"
 msgstr "{full_name} a menționat @{user_group_name}:"
 
-#: zerver/lib/push_notifications.py:1104
+#: zerver/lib/push_notifications.py:1095
 #, python-brace-format
 msgid "{full_name} mentioned you:"
 msgstr "{full_name} te-a menționat:"
 
-#: zerver/lib/push_notifications.py:1111
+#: zerver/lib/push_notifications.py:1102
 #, python-brace-format
 msgid "{full_name} mentioned everyone:"
 msgstr "{full_name} a menționat pe toți:"
 
-#: zerver/lib/push_notifications.py:1715
+#: zerver/lib/push_notifications.py:1332
+msgid "New message"
+msgstr "Mesaj nou"
+
+#: zerver/lib/push_notifications.py:1720
 msgid "Test notification"
 msgstr "Notificare de testare"
 
-#: zerver/lib/push_notifications.py:1716
+#: zerver/lib/push_notifications.py:1721
 #, python-brace-format
 msgid "This is a test notification from {realm_name} ({realm_url})."
 msgstr ""
 
-#: zerver/lib/push_notifications.py:1768
+#: zerver/lib/push_notifications.py:1773
 msgid "Device not recognized"
 msgstr "Dispozitivul nu este recunoscut"
 
-#: zerver/lib/push_notifications.py:1780
+#: zerver/lib/push_notifications.py:1785
 msgid "Device not recognized by the push bouncer"
 msgstr "Dispozitiv nerecunoscut de către push bouncer"
 
@@ -6548,7 +6554,7 @@ msgstr "În zcommand ar trebui să existe un slash la început."
 msgid "No such command: {command}"
 msgstr "Nu există o astfel de comandă: {command}"
 
-#: zerver/lib/zulip_update_announcements.py:677
+#: zerver/lib/zulip_update_announcements.py:691
 msgid "`zulip_update_announcements_stream` is unexpectedly deactivated."
 msgstr ""
 
@@ -6674,72 +6680,72 @@ msgstr "Lipsește variabila necesară \"code\" în șablonul URL"
 msgid "\"code\" should be the only variable present in the URL template"
 msgstr "\"code\" ar trebui să fie singura variabilă prezentă în șablonul URL"
 
-#: zerver/models/realms.py:437
+#: zerver/models/realms.py:438
 msgid "sandbox"
 msgstr ""
 
-#: zerver/models/realms.py:438
+#: zerver/models/realms.py:439
 msgid "general"
 msgstr ""
 
-#: zerver/models/realms.py:439
+#: zerver/models/realms.py:440
 msgid "channel events"
 msgstr ""
 
-#: zerver/models/realms.py:441
+#: zerver/models/realms.py:442
 msgid "Spam"
 msgstr ""
 
-#: zerver/models/realms.py:442
+#: zerver/models/realms.py:443
 msgid "Harassment"
 msgstr ""
 
-#: zerver/models/realms.py:443
+#: zerver/models/realms.py:444
 msgid "Inappropriate content"
 msgstr ""
 
-#: zerver/models/realms.py:444
+#: zerver/models/realms.py:445
 msgid "Violates community norms"
 msgstr ""
 
-#: zerver/models/realms.py:445
+#: zerver/models/realms.py:446
 msgid "Other reason"
 msgstr ""
 
-#: zerver/models/realms.py:470
+#: zerver/models/realms.py:471
 msgid "Zulip updates"
 msgstr ""
 
-#: zerver/models/realms.py:596
+#: zerver/models/realms.py:597
 msgid "Available on Zulip Cloud Standard. Upgrade to access."
 msgstr "Disponibil pe Zulip Cloud Standard. Faceți upgrade pentru acces."
 
-#: zerver/models/realms.py:597
+#: zerver/models/realms.py:598
 msgid "Available on Zulip Cloud Plus. Upgrade to access."
 msgstr "Disponibil pe Zulip Cloud Plus. Faceți upgrade pentru a avea acces."
 
-#: zerver/models/realms.py:657
+#: zerver/models/realms.py:658
 msgid "GIPHY integration disabled"
 msgstr "Integrarea GIPHY dezactivată"
 
-#: zerver/models/realms.py:662
+#: zerver/models/realms.py:663
 msgid "Allow GIFs rated Y (Very young audience)"
 msgstr "Permiteți GIF-uri clasificate Y (public foarte tânăr)"
 
-#: zerver/models/realms.py:666
+#: zerver/models/realms.py:667
 msgid "Allow GIFs rated G (General audience)"
 msgstr "Permiteți GIF-uri clasificate G (Public general)"
 
-#: zerver/models/realms.py:670
+#: zerver/models/realms.py:671
 msgid "Allow GIFs rated PG (Parental guidance)"
 msgstr "Permiteți GIF-uri clasificate PG (Indicații pentru părinți)"
 
-#: zerver/models/realms.py:674
+#: zerver/models/realms.py:675
 msgid "Allow GIFs rated PG-13 (Parental guidance - under 13)"
 msgstr ""
 "Permiteți GIF-uri clasificate PG-13 (Indicații pentru părinți - sub 13 ani)"
 
-#: zerver/models/realms.py:678
+#: zerver/models/realms.py:679
 msgid "Allow GIFs rated R (Restricted)"
 msgstr "Permiteți GIF-uri clasificate R (Restricționat)"
 
@@ -6838,7 +6844,7 @@ msgstr "Evenimentul {event_id} nu a fost în această listă"
 msgid "Bad event queue ID: {queue_id}"
 msgstr "ID greșit listă evenimente: {queue_id}"
 
-#: zerver/views/antispam.py:50
+#: zerver/views/antispam.py:53
 #, fuzzy
 #| msgid "Failed to create Zoom call"
 msgid "Failed to generate challenge"
@@ -6868,7 +6874,7 @@ msgstr "Subdomeniul este necesar"
 msgid "Password is incorrect."
 msgstr "Parola este incorectă."
 
-#: zerver/views/channel_folders.py:79
+#: zerver/views/channel_folders.py:81
 msgid "You need to remove all the channels from this folder to archive it."
 msgstr ""
 
@@ -7143,36 +7149,36 @@ msgstr ""
 msgid "Read receipts are disabled in this organization."
 msgstr "Confirmările de citire sunt dezactivate în această organizație."
 
-#: zerver/views/realm.py:216
+#: zerver/views/realm.py:217
 #, python-brace-format
 msgid "Invalid language '{language}'"
 msgstr "Limba invalidă '{language}'"
 
-#: zerver/views/realm.py:223
+#: zerver/views/realm.py:224
 msgid "At least one authentication method must be enabled."
 msgstr "Cel puțin o metodă de autentificare trebuie activată."
 
-#: zerver/views/realm.py:229
+#: zerver/views/realm.py:230
 #, python-brace-format
 msgid "Invalid video_chat_provider {video_chat_provider}"
 msgstr "Video_chat_provider invalid {video_chat_provider}"
 
-#: zerver/views/realm.py:237
+#: zerver/views/realm.py:238
 #, python-brace-format
 msgid "Invalid giphy_rating {giphy_rating}"
 msgstr "Giphy_rating nevalabil {giphy_rating}"
 
-#: zerver/views/realm.py:517
+#: zerver/views/realm.py:518
 msgid "Must be a demo organization."
 msgstr "Trebuie să fie o organizație demonstrativă."
 
-#: zerver/views/realm.py:545
+#: zerver/views/realm.py:546
 #, python-brace-format
 msgid ""
 "Data deletion time must be at most {max_allowed_days} days in the future."
 msgstr ""
 
-#: zerver/views/realm.py:556
+#: zerver/views/realm.py:557
 #, python-brace-format
 msgid ""
 "Data deletion time must be at least {min_allowed_days} days in the future."
@@ -7424,14 +7430,14 @@ msgstr ""
 msgid "Invalid json for submessage"
 msgstr "Json nevalid pentru submesaj"
 
-#: zerver/views/tusd.py:108 zerver/views/upload.py:439
+#: zerver/views/tusd.py:108 zerver/views/upload.py:442
 #, python-brace-format
 msgid ""
 "File is larger than the maximum upload size ({max_size} MiB) allowed by your "
 "organization's plan."
 msgstr ""
 
-#: zerver/views/tusd.py:117 zerver/views/upload.py:447
+#: zerver/views/tusd.py:117 zerver/views/upload.py:450
 #, python-brace-format
 msgid ""
 "File is larger than this server's configured maximum upload size ({max_size} "
@@ -7462,27 +7468,27 @@ msgid "User has disabled typing notifications for direct messages"
 msgstr ""
 "Utilizatorul a dezactivat notificările de tastare pentru mesajele directe"
 
-#: zerver/views/upload.py:253
+#: zerver/views/upload.py:256
 msgid "<p>This file does not exist or has been deleted.</p>"
 msgstr "<p>Acest fișier nu există sau a fost șters.</p>"
 
-#: zerver/views/upload.py:263
+#: zerver/views/upload.py:266
 msgid "<p>You are not authorized to view this file.</p>"
 msgstr "<p>Nu eești autorizat să vezi acest fișier.</p>"
 
-#: zerver/views/upload.py:376 zerver/views/upload.py:382
+#: zerver/views/upload.py:379 zerver/views/upload.py:385
 msgid "Invalid token"
 msgstr "Token nevalid"
 
-#: zerver/views/upload.py:378
+#: zerver/views/upload.py:381
 msgid "Invalid filename"
 msgstr "Nume de fișier nevalid"
 
-#: zerver/views/upload.py:426
+#: zerver/views/upload.py:429
 msgid "You must specify a file to upload"
 msgstr "Specifică un fișier să îl urcăm"
 
-#: zerver/views/upload.py:428 zerver/views/users.py:523
+#: zerver/views/upload.py:431 zerver/views/users.py:523
 #: zerver/views/users.py:631
 msgid "You may only upload one file at a time"
 msgstr "Poți urca un fișier odată"

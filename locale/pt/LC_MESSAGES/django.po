@@ -20,7 +20,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-07-25 20:29+0000\n"
+"POT-Creation-Date: 2025-07-30 13:46+0000\n"
 "PO-Revision-Date: 2025-07-26 22:07+0000\n"
 "Last-Translator: Alex Vandiver <alexmv@zulip.com>\n"
 "Language-Team: Portuguese <https://hosted.weblate.org/projects/zulip/django/"
@@ -1948,7 +1948,7 @@ msgstr "Atualizar"
 
 #: templates/zerver/development/integrations_dev_panel.html:19
 #: templates/zerver/portico-header.html:8
-#: templates/zerver/portico-header.html:12 zerver/models/realms.py:436
+#: templates/zerver/portico-header.html:12 zerver/models/realms.py:437
 msgid "Zulip"
 msgstr "Zulip"
 
@@ -4740,7 +4740,7 @@ msgstr "Os widgets não podem ser editados."
 msgid "Your organization has turned off message editing"
 msgstr "Sua organização desligou a edição de mensagem"
 
-#: zerver/actions/message_edit.py:174 zerver/actions/message_edit.py:1582
+#: zerver/actions/message_edit.py:174 zerver/actions/message_edit.py:1586
 msgid "You don't have permission to edit this message"
 msgstr "Você não tem permissão para editar esta mensagem"
 
@@ -4758,17 +4758,17 @@ msgstr "{user} marcou esse tópico como solucionado."
 msgid "{user} has marked this topic as unresolved."
 msgstr "{user} marcou esse tópico como não solucionado."
 
-#: zerver/actions/message_edit.py:1262
+#: zerver/actions/message_edit.py:1266
 #, python-brace-format
 msgid "This topic was moved to {new_location} by {user}."
 msgstr "Esse tópico foi movido para {new_location} pelo {user}."
 
-#: zerver/actions/message_edit.py:1266
+#: zerver/actions/message_edit.py:1270
 #, python-brace-format
 msgid "A message was moved from this topic to {new_location} by {user}."
 msgstr "Uma mensagem foi movida desse tópico para {new_location} por {user}."
 
-#: zerver/actions/message_edit.py:1270
+#: zerver/actions/message_edit.py:1274
 #, python-brace-format
 msgid ""
 "{changed_messages_count} messages were moved from this topic to "
@@ -4777,12 +4777,12 @@ msgstr ""
 "{changed_messages_count} mensagens foram movidas desse tópico para "
 "{new_location} por {user}."
 
-#: zerver/actions/message_edit.py:1309
+#: zerver/actions/message_edit.py:1313
 #, python-brace-format
 msgid "This topic was moved here from {old_location} by {user}."
 msgstr "Esse tópico foi movido para cá de {old_location} por {user}."
 
-#: zerver/actions/message_edit.py:1314
+#: zerver/actions/message_edit.py:1318
 #, python-brace-format
 msgid ""
 "[A message]({message_link}) was moved here from {old_location} by {user}."
@@ -4790,7 +4790,7 @@ msgstr ""
 "[Uma mensagem]({message_link}) foi movida de {old_location} para cá por "
 "{user}."
 
-#: zerver/actions/message_edit.py:1318
+#: zerver/actions/message_edit.py:1322
 #, python-brace-format
 msgid ""
 "{changed_messages_count} messages were moved here from {old_location} by "
@@ -4799,21 +4799,21 @@ msgstr ""
 "{changed_messages_count} mensagens foram movidas de {old_location} para cá "
 "por {user}."
 
-#: zerver/actions/message_edit.py:1576
+#: zerver/actions/message_edit.py:1580
 #, fuzzy
 #| msgid "You do not have permission to post in this channel."
 msgid "You don't have permission to resolve topics in this channel."
 msgstr "Você não tem permissão para publicar nesse canal"
 
-#: zerver/actions/message_edit.py:1596
+#: zerver/actions/message_edit.py:1600
 msgid "The time limit for editing this message's topic has passed."
 msgstr "O limite de tempo para editar o tópico desta mensagem expirou."
 
-#: zerver/actions/message_edit.py:1646
+#: zerver/actions/message_edit.py:1650
 msgid "You don't have permission to move this message"
 msgstr "Você não tem permissão para mover esta mensagem"
 
-#: zerver/actions/message_edit.py:1662
+#: zerver/actions/message_edit.py:1666
 msgid "The time limit for editing this message's channel has passed"
 msgstr "O prazo para editar o canal desta mensagem expirou."
 
@@ -5246,23 +5246,29 @@ msgid "Verified that you're a human user!"
 msgstr ""
 
 #: zerver/forms.py:380
-msgid "Verifying that you're not a bot..."
+msgid "Verifying that you're not a bot…"
 msgstr ""
 
-#: zerver/forms.py:402 zerver/forms.py:411 zerver/forms.py:416
-#: zerver/forms.py:423
+#: zerver/forms.py:402 zerver/forms.py:413 zerver/forms.py:418
+#: zerver/forms.py:425
 msgid "Validation failed, please try again."
 msgstr ""
 
-#: zerver/forms.py:435
+#: zerver/forms.py:407 zerver/views/antispam.py:29
+#, fuzzy
+#| msgid "Embedded bots are not enabled."
+msgid "Challenges are not enabled."
+msgstr "Bots incorporados não estão habilitado."
+
+#: zerver/forms.py:437
 msgid "New password"
 msgstr "Nova senha"
 
-#: zerver/forms.py:442
+#: zerver/forms.py:444
 msgid "New password confirmation"
 msgstr "Nova confirmação de senha"
 
-#: zerver/forms.py:584
+#: zerver/forms.py:586
 #, python-brace-format
 msgid ""
 "You're making too many attempts to sign in. Try again in {seconds} seconds "
@@ -5272,7 +5278,7 @@ msgstr ""
 "segundos ou entre em contato com o administrador da sua organização para "
 "obter ajuda."
 
-#: zerver/forms.py:596
+#: zerver/forms.py:598
 msgid ""
 "Your password has been disabled because it is too weak. Reset your password "
 "to create a new one."
@@ -5280,21 +5286,21 @@ msgstr ""
 "Sua senha foi desativada porque está muito fraca. Redefina sua senha para "
 "criar uma nova."
 
-#: zerver/forms.py:644
+#: zerver/forms.py:646
 msgid "Token"
 msgstr "Token"
 
-#: zerver/forms.py:667
+#: zerver/forms.py:669
 msgid "Tip: You can enter multiple email addresses with commas between them."
 msgstr ""
 "Dica: Você pode inserir múltiplos endereços de e-mail com vírgulas entre "
 "eles."
 
-#: zerver/forms.py:673
+#: zerver/forms.py:675
 msgid "Please enter at most 10 emails."
 msgstr "Por favor, insira no máximo 10 e-mails."
 
-#: zerver/forms.py:686
+#: zerver/forms.py:688
 msgid "We couldn't find that Zulip organization."
 msgstr "Não conseguimos encontrar essa organização Zulip."
 
@@ -5523,7 +5529,7 @@ msgstr ""
 msgid "Emoji name is missing"
 msgstr "O nome do emoji está ausente."
 
-#: zerver/lib/events.py:2116
+#: zerver/lib/events.py:2119
 msgid "Could not allocate event queue"
 msgstr "Não foi possível alocar a fila de eventos"
 
@@ -6404,43 +6410,43 @@ msgid "Invalid GCM options to bouncer: {options}"
 msgstr "Opções GCM inválidas para bouncer: {options} "
 
 #. error
-#: zerver/lib/push_notifications.py:760 zilencer/views.py:658
+#: zerver/lib/push_notifications.py:754 zilencer/views.py:658
 msgid "Token does not exist"
 msgstr "Token não existe"
 
-#: zerver/lib/push_notifications.py:981
-msgid "New message"
-msgstr "Nova mensagem"
-
-#: zerver/lib/push_notifications.py:1100
+#: zerver/lib/push_notifications.py:1091
 #, python-brace-format
 msgid "{full_name} mentioned @{user_group_name}:"
 msgstr "{full_name} mencionado/a @{user_group_name}:"
 
-#: zerver/lib/push_notifications.py:1104
+#: zerver/lib/push_notifications.py:1095
 #, python-brace-format
 msgid "{full_name} mentioned you:"
 msgstr "{full_name} mencionou você:"
 
-#: zerver/lib/push_notifications.py:1111
+#: zerver/lib/push_notifications.py:1102
 #, python-brace-format
 msgid "{full_name} mentioned everyone:"
 msgstr "{full_name} mencionou a todos:"
 
-#: zerver/lib/push_notifications.py:1715
+#: zerver/lib/push_notifications.py:1332
+msgid "New message"
+msgstr "Nova mensagem"
+
+#: zerver/lib/push_notifications.py:1720
 msgid "Test notification"
 msgstr "Notificação de teste"
 
-#: zerver/lib/push_notifications.py:1716
+#: zerver/lib/push_notifications.py:1721
 #, python-brace-format
 msgid "This is a test notification from {realm_name} ({realm_url})."
 msgstr "Isso é uma notificação de teste de {realm_name} ({realm_url})."
 
-#: zerver/lib/push_notifications.py:1768
+#: zerver/lib/push_notifications.py:1773
 msgid "Device not recognized"
 msgstr "Dispositivo não reconhecido"
 
-#: zerver/lib/push_notifications.py:1780
+#: zerver/lib/push_notifications.py:1785
 msgid "Device not recognized by the push bouncer"
 msgstr "Dispositivo não reconhecido pelo serviço de notificações"
 
@@ -7001,7 +7007,7 @@ msgstr "Deve haver uma barra no início do comando zcommand."
 msgid "No such command: {command}"
 msgstr "Comando inexistente: {command}"
 
-#: zerver/lib/zulip_update_announcements.py:677
+#: zerver/lib/zulip_update_announcements.py:691
 msgid "`zulip_update_announcements_stream` is unexpectedly deactivated."
 msgstr "`zulip_update_announcements_stream`  é desativado inesperadamente."
 
@@ -7129,73 +7135,73 @@ msgstr "Variável \"code\"  requerido no modelo de URL encontra-se em falta"
 msgid "\"code\" should be the only variable present in the URL template"
 msgstr "\"code\"  deve ser somente a única variável no modelo de URL"
 
-#: zerver/models/realms.py:437
+#: zerver/models/realms.py:438
 msgid "sandbox"
 msgstr "sandbox"
 
-#: zerver/models/realms.py:438
+#: zerver/models/realms.py:439
 msgid "general"
 msgstr "geral"
 
-#: zerver/models/realms.py:439
+#: zerver/models/realms.py:440
 msgid "channel events"
 msgstr "Eventos de canal"
 
-#: zerver/models/realms.py:441
+#: zerver/models/realms.py:442
 msgid "Spam"
 msgstr ""
 
-#: zerver/models/realms.py:442
+#: zerver/models/realms.py:443
 msgid "Harassment"
 msgstr ""
 
-#: zerver/models/realms.py:443
+#: zerver/models/realms.py:444
 msgid "Inappropriate content"
 msgstr ""
 
-#: zerver/models/realms.py:444
+#: zerver/models/realms.py:445
 msgid "Violates community norms"
 msgstr ""
 
-#: zerver/models/realms.py:445
+#: zerver/models/realms.py:446
 msgid "Other reason"
 msgstr ""
 
-#: zerver/models/realms.py:470
+#: zerver/models/realms.py:471
 msgid "Zulip updates"
 msgstr "Atualizações do Zulip"
 
-#: zerver/models/realms.py:596
+#: zerver/models/realms.py:597
 msgid "Available on Zulip Cloud Standard. Upgrade to access."
 msgstr "Disponível no Zulip Cloud Standard. Atualize para acessar."
 
-#: zerver/models/realms.py:597
+#: zerver/models/realms.py:598
 msgid "Available on Zulip Cloud Plus. Upgrade to access."
 msgstr "Disponível no Zulip Cloud Plus. Atualize para acessar."
 
-#: zerver/models/realms.py:657
+#: zerver/models/realms.py:658
 msgid "GIPHY integration disabled"
 msgstr "Integração GIPHY desabilitada"
 
-#: zerver/models/realms.py:662
+#: zerver/models/realms.py:663
 msgid "Allow GIFs rated Y (Very young audience)"
 msgstr "Permitir GIFs classificados como Y (Público muito jovem)"
 
-#: zerver/models/realms.py:666
+#: zerver/models/realms.py:667
 msgid "Allow GIFs rated G (General audience)"
 msgstr "Permitir GIFs classificados como G (Público geral)"
 
-#: zerver/models/realms.py:670
+#: zerver/models/realms.py:671
 msgid "Allow GIFs rated PG (Parental guidance)"
 msgstr "Permitir GIFs classificados como PG (Supervisão dos pais)"
 
-#: zerver/models/realms.py:674
+#: zerver/models/realms.py:675
 msgid "Allow GIFs rated PG-13 (Parental guidance - under 13)"
 msgstr ""
 "Permitir GIFs classificados como PG-13 (Supervisão dos pais - menores de 13 "
 "anos)"
 
-#: zerver/models/realms.py:678
+#: zerver/models/realms.py:679
 msgid "Allow GIFs rated R (Restricted)"
 msgstr "Permitir GIFs classificados como R (Restrito)"
 
@@ -7294,7 +7300,7 @@ msgstr "O evento {event_id} não estava nesta fila"
 msgid "Bad event queue ID: {queue_id}"
 msgstr "ID evento de fila inválido: {queue_id}"
 
-#: zerver/views/antispam.py:50
+#: zerver/views/antispam.py:53
 #, fuzzy
 #| msgid "Failed to create Zoom call"
 msgid "Failed to generate challenge"
@@ -7324,7 +7330,7 @@ msgstr "Subdomínio requerido"
 msgid "Password is incorrect."
 msgstr "A senha está incorreta."
 
-#: zerver/views/channel_folders.py:79
+#: zerver/views/channel_folders.py:81
 msgid "You need to remove all the channels from this folder to archive it."
 msgstr ""
 
@@ -7600,30 +7606,30 @@ msgstr ""
 msgid "Read receipts are disabled in this organization."
 msgstr "Recibo de leitura estão desabilitado nesta organização."
 
-#: zerver/views/realm.py:216
+#: zerver/views/realm.py:217
 #, python-brace-format
 msgid "Invalid language '{language}'"
 msgstr "Idioma inválido '{language}'"
 
-#: zerver/views/realm.py:223
+#: zerver/views/realm.py:224
 msgid "At least one authentication method must be enabled."
 msgstr "Pelo menos um método de autenticação deve estar habilitado."
 
-#: zerver/views/realm.py:229
+#: zerver/views/realm.py:230
 #, python-brace-format
 msgid "Invalid video_chat_provider {video_chat_provider}"
 msgstr "Provedor de chat de vídeo inválido {video_chat_provider}"
 
-#: zerver/views/realm.py:237
+#: zerver/views/realm.py:238
 #, python-brace-format
 msgid "Invalid giphy_rating {giphy_rating}"
 msgstr "giphy_rating inválido {giphy_rating}"
 
-#: zerver/views/realm.py:517
+#: zerver/views/realm.py:518
 msgid "Must be a demo organization."
 msgstr "Deve ser uma organização de demonstração."
 
-#: zerver/views/realm.py:545
+#: zerver/views/realm.py:546
 #, python-brace-format
 msgid ""
 "Data deletion time must be at most {max_allowed_days} days in the future."
@@ -7631,7 +7637,7 @@ msgstr ""
 "O tempo de exclusão de dados deve ser no máximo {max_allowed_days} dias no "
 "futuro."
 
-#: zerver/views/realm.py:556
+#: zerver/views/realm.py:557
 #, python-brace-format
 msgid ""
 "Data deletion time must be at least {min_allowed_days} days in the future."
@@ -7891,7 +7897,7 @@ msgstr "Não inscrito para o canal ID {channel_id}"
 msgid "Invalid json for submessage"
 msgstr "Json inválido para sub-mensagem"
 
-#: zerver/views/tusd.py:108 zerver/views/upload.py:439
+#: zerver/views/tusd.py:108 zerver/views/upload.py:442
 #, python-brace-format
 msgid ""
 "File is larger than the maximum upload size ({max_size} MiB) allowed by your "
@@ -7900,7 +7906,7 @@ msgstr ""
 "O arquivo é maior que o tamanho máximo para enviar ({max_size} MiB) "
 "permitido pelo plano da sua organização."
 
-#: zerver/views/tusd.py:117 zerver/views/upload.py:447
+#: zerver/views/tusd.py:117 zerver/views/upload.py:450
 #, python-brace-format
 msgid ""
 "File is larger than this server's configured maximum upload size ({max_size} "
@@ -7937,27 +7943,27 @@ msgid "User has disabled typing notifications for direct messages"
 msgstr ""
 "O usuário desativou as notificações de digitação para mensagens diretas."
 
-#: zerver/views/upload.py:253
+#: zerver/views/upload.py:256
 msgid "<p>This file does not exist or has been deleted.</p>"
 msgstr "<p>Esse arquivo não existe ou foi apagado.</p>"
 
-#: zerver/views/upload.py:263
+#: zerver/views/upload.py:266
 msgid "<p>You are not authorized to view this file.</p>"
 msgstr "<p>Você não está autorizado a visualizar este arquivo.</p>"
 
-#: zerver/views/upload.py:376 zerver/views/upload.py:382
+#: zerver/views/upload.py:379 zerver/views/upload.py:385
 msgid "Invalid token"
 msgstr "Token inválido"
 
-#: zerver/views/upload.py:378
+#: zerver/views/upload.py:381
 msgid "Invalid filename"
 msgstr "Nome de arquivo inválido"
 
-#: zerver/views/upload.py:426
+#: zerver/views/upload.py:429
 msgid "You must specify a file to upload"
 msgstr "Você deve escolher um arquivo para enviar"
 
-#: zerver/views/upload.py:428 zerver/views/users.py:523
+#: zerver/views/upload.py:431 zerver/views/users.py:523
 #: zerver/views/users.py:631
 msgid "You may only upload one file at a time"
 msgstr "Você pode enviar somente um arquivo por vez"

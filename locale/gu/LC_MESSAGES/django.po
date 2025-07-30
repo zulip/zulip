@@ -10,7 +10,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-07-25 20:29+0000\n"
+"POT-Creation-Date: 2025-07-30 13:46+0000\n"
 "PO-Revision-Date: 2025-07-26 22:07+0000\n"
 "Last-Translator: Alex Vandiver <alexmv@zulip.com>\n"
 "Language-Team: Gujarati <https://hosted.weblate.org/projects/zulip/django/gu/"
@@ -1840,7 +1840,7 @@ msgstr "અપડેટ"
 
 #: templates/zerver/development/integrations_dev_panel.html:19
 #: templates/zerver/portico-header.html:8
-#: templates/zerver/portico-header.html:12 zerver/models/realms.py:436
+#: templates/zerver/portico-header.html:12 zerver/models/realms.py:437
 msgid "Zulip"
 msgstr "Zulip"
 
@@ -4434,7 +4434,7 @@ msgstr "વિજેટ્સ સંપાદિત નથી."
 msgid "Your organization has turned off message editing"
 msgstr "તમારી સંસ્થાને સંદેશ સંપાદન બંધ કરી દીધું છે"
 
-#: zerver/actions/message_edit.py:174 zerver/actions/message_edit.py:1582
+#: zerver/actions/message_edit.py:174 zerver/actions/message_edit.py:1586
 msgid "You don't have permission to edit this message"
 msgstr "તમારી આ સંદેશને સંપાદિત કરવાની પરવાનગી નથી"
 
@@ -4452,17 +4452,17 @@ msgstr "{user} ને આ વિષયને સ્થિર તરીકે ચ
 msgid "{user} has marked this topic as unresolved."
 msgstr "{user} ને આ વિષયને અસ્થિર તરીકે ચિહ્નિત કર્યો છે."
 
-#: zerver/actions/message_edit.py:1262
+#: zerver/actions/message_edit.py:1266
 #, python-brace-format
 msgid "This topic was moved to {new_location} by {user}."
 msgstr "આ વિષય {user} દ્વારા {new_location} માં ખસેડાયો હતો."
 
-#: zerver/actions/message_edit.py:1266
+#: zerver/actions/message_edit.py:1270
 #, python-brace-format
 msgid "A message was moved from this topic to {new_location} by {user}."
 msgstr "આ વિષયમાંથી એક સંદેશ {user} દ્વારા {new_location} માં ખસેડાયો હતો."
 
-#: zerver/actions/message_edit.py:1270
+#: zerver/actions/message_edit.py:1274
 #, python-brace-format
 msgid ""
 "{changed_messages_count} messages were moved from this topic to "
@@ -4471,18 +4471,18 @@ msgstr ""
 "{changed_messages_count} સંદેશો આ વિષયમાંથી {user} દ્વારા {new_location} માં "
 "ખસેડાયા હતા."
 
-#: zerver/actions/message_edit.py:1309
+#: zerver/actions/message_edit.py:1313
 #, python-brace-format
 msgid "This topic was moved here from {old_location} by {user}."
 msgstr "આ વિષય {user} દ્વારા {old_location} માંથી આવ્યો હતો."
 
-#: zerver/actions/message_edit.py:1314
+#: zerver/actions/message_edit.py:1318
 #, python-brace-format
 msgid ""
 "[A message]({message_link}) was moved here from {old_location} by {user}."
 msgstr "[એક સંદેશ]({message_link}) {user} દ્વારા {old_location} માંથી આવ્યો હતો."
 
-#: zerver/actions/message_edit.py:1318
+#: zerver/actions/message_edit.py:1322
 #, python-brace-format
 msgid ""
 "{changed_messages_count} messages were moved here from {old_location} by "
@@ -4491,21 +4491,21 @@ msgstr ""
 "{changed_messages_count} સંદેશો {old_location} થી {user} દ્વારા અહીં ખસેડવામાં "
 "આવ્યા છે."
 
-#: zerver/actions/message_edit.py:1576
+#: zerver/actions/message_edit.py:1580
 #, fuzzy
 #| msgid "You don't have permission to delete this message"
 msgid "You don't have permission to resolve topics in this channel."
 msgstr "તમારી પાસે આ સંદેશ માટે મિટાવવાની મંજૂરી નથી"
 
-#: zerver/actions/message_edit.py:1596
+#: zerver/actions/message_edit.py:1600
 msgid "The time limit for editing this message's topic has passed."
 msgstr "આ સંદેશનું વિષય એડિટ કરવાનો સમય સમાપ્ત થયો છે."
 
-#: zerver/actions/message_edit.py:1646
+#: zerver/actions/message_edit.py:1650
 msgid "You don't have permission to move this message"
 msgstr "આ સંદેશને ખસેડવાની પરવાનગી નથી"
 
-#: zerver/actions/message_edit.py:1662
+#: zerver/actions/message_edit.py:1666
 msgid "The time limit for editing this message's channel has passed"
 msgstr ""
 
@@ -4904,23 +4904,29 @@ msgid "Verified that you're a human user!"
 msgstr ""
 
 #: zerver/forms.py:380
-msgid "Verifying that you're not a bot..."
+msgid "Verifying that you're not a bot…"
 msgstr ""
 
-#: zerver/forms.py:402 zerver/forms.py:411 zerver/forms.py:416
-#: zerver/forms.py:423
+#: zerver/forms.py:402 zerver/forms.py:413 zerver/forms.py:418
+#: zerver/forms.py:425
 msgid "Validation failed, please try again."
 msgstr ""
 
-#: zerver/forms.py:435
+#: zerver/forms.py:407 zerver/views/antispam.py:29
+#, fuzzy
+#| msgid "Embedded bots are not enabled."
+msgid "Challenges are not enabled."
+msgstr "એમ્બેડેડ બોટ્સ સક્રિય નથી."
+
+#: zerver/forms.py:437
 msgid "New password"
 msgstr "નવો પાસવર્ડ"
 
-#: zerver/forms.py:442
+#: zerver/forms.py:444
 msgid "New password confirmation"
 msgstr "નવો પાસવર્ડ પુષ્ટિકરણ"
 
-#: zerver/forms.py:584
+#: zerver/forms.py:586
 #, python-brace-format
 msgid ""
 "You're making too many attempts to sign in. Try again in {seconds} seconds "
@@ -4929,7 +4935,7 @@ msgstr ""
 "તમે પ્રવેશ કરવા માટે ખૂબ વધારે પ્રયાસો કરી રહ્યાં છો. {seconds} સેકન્ડમાં ફરીથી પ્રયાસ "
 "કરો અથવા તમારા સંગઠનના પ્રબંધકનો સંપર્ક કરો."
 
-#: zerver/forms.py:596
+#: zerver/forms.py:598
 msgid ""
 "Your password has been disabled because it is too weak. Reset your password "
 "to create a new one."
@@ -4937,19 +4943,19 @@ msgstr ""
 "તમારો પાસવર્ડ ખૂબ કમજોર છે તેથી તમારો પાસવર્ડ નિષ્ક્રિય કરવામાં આવ્યો છે. તમારો પાસવર્ડ "
 "રીસેટ કરો અને નવો બનાવો."
 
-#: zerver/forms.py:644
+#: zerver/forms.py:646
 msgid "Token"
 msgstr "ટોકન"
 
-#: zerver/forms.py:667
+#: zerver/forms.py:669
 msgid "Tip: You can enter multiple email addresses with commas between them."
 msgstr "સૂચના: તમે તેમના વચ્ચે કોમા સાથે ઘણાં ઇમેઇલ સરનામો દાખલ કરી શકો છો."
 
-#: zerver/forms.py:673
+#: zerver/forms.py:675
 msgid "Please enter at most 10 emails."
 msgstr "કૃપા કરીને સૌથી જૂનું 10 ઇમેઇલ સરનામો દાખલ કરો."
 
-#: zerver/forms.py:686
+#: zerver/forms.py:688
 msgid "We couldn't find that Zulip organization."
 msgstr "અમે ઓળખી નથી કે તે ઝુલિપ સંગઠન."
 
@@ -5171,7 +5177,7 @@ msgstr ""
 msgid "Emoji name is missing"
 msgstr "ઇમોજી નામ ગુમ છે"
 
-#: zerver/lib/events.py:2116
+#: zerver/lib/events.py:2119
 msgid "Could not allocate event queue"
 msgstr "ઈવેન્ટ યૂનિવર્સ આવાજો આવંટા નથી"
 
@@ -5900,43 +5906,43 @@ msgid "Invalid GCM options to bouncer: {options}"
 msgstr "બૌન્સર માટે અમાન્ય GCM વિકલ્પો: {options}"
 
 #. error
-#: zerver/lib/push_notifications.py:760 zilencer/views.py:658
+#: zerver/lib/push_notifications.py:754 zilencer/views.py:658
 msgid "Token does not exist"
 msgstr "ટોકન અસ્તિત્વ નથી"
 
-#: zerver/lib/push_notifications.py:981
-msgid "New message"
-msgstr "નવો સંદેશ"
-
-#: zerver/lib/push_notifications.py:1100
+#: zerver/lib/push_notifications.py:1091
 #, python-brace-format
 msgid "{full_name} mentioned @{user_group_name}:"
 msgstr "{full_name} ને @{user_group_name} ઉલ્લેખ કર્યો:"
 
-#: zerver/lib/push_notifications.py:1104
+#: zerver/lib/push_notifications.py:1095
 #, python-brace-format
 msgid "{full_name} mentioned you:"
 msgstr "{full_name} ને તમને ઉલ્લેખ કર્યો:"
 
-#: zerver/lib/push_notifications.py:1111
+#: zerver/lib/push_notifications.py:1102
 #, python-brace-format
 msgid "{full_name} mentioned everyone:"
 msgstr "{full_name} ને તમામને ઉલ્લેખ કર્યો:"
 
-#: zerver/lib/push_notifications.py:1715
+#: zerver/lib/push_notifications.py:1332
+msgid "New message"
+msgstr "નવો સંદેશ"
+
+#: zerver/lib/push_notifications.py:1720
 msgid "Test notification"
 msgstr "ટેસ્ટ સૂચના"
 
-#: zerver/lib/push_notifications.py:1716
+#: zerver/lib/push_notifications.py:1721
 #, python-brace-format
 msgid "This is a test notification from {realm_name} ({realm_url})."
 msgstr ""
 
-#: zerver/lib/push_notifications.py:1768
+#: zerver/lib/push_notifications.py:1773
 msgid "Device not recognized"
 msgstr "ડિવાઇસ ઓળખવામાં નહીં આવ્યું"
 
-#: zerver/lib/push_notifications.py:1780
+#: zerver/lib/push_notifications.py:1785
 msgid "Device not recognized by the push bouncer"
 msgstr "પુશ બાઉન્સર દ્વારા ડિવાઇસ ઓળખવામાં નહીં આવ્યું"
 
@@ -6487,7 +6493,7 @@ msgstr "zકમાંડમાં અગર સ્લેશ હોવો જો�
 msgid "No such command: {command}"
 msgstr "આવા કમાન્ડ નથી: {command}"
 
-#: zerver/lib/zulip_update_announcements.py:677
+#: zerver/lib/zulip_update_announcements.py:691
 msgid "`zulip_update_announcements_stream` is unexpectedly deactivated."
 msgstr ""
 
@@ -6611,71 +6617,71 @@ msgstr "URL ટેમ્પ્લેટમાં જરૂરી વેરિએ
 msgid "\"code\" should be the only variable present in the URL template"
 msgstr "\"કોડ\" URL ટેમ્પ્લેટમાં એકમાત્ર વેરિએબલ હોવી જોઈએ"
 
-#: zerver/models/realms.py:437
+#: zerver/models/realms.py:438
 msgid "sandbox"
 msgstr ""
 
-#: zerver/models/realms.py:438
+#: zerver/models/realms.py:439
 msgid "general"
 msgstr ""
 
-#: zerver/models/realms.py:439
+#: zerver/models/realms.py:440
 msgid "channel events"
 msgstr ""
 
-#: zerver/models/realms.py:441
+#: zerver/models/realms.py:442
 msgid "Spam"
 msgstr ""
 
-#: zerver/models/realms.py:442
+#: zerver/models/realms.py:443
 msgid "Harassment"
 msgstr ""
 
-#: zerver/models/realms.py:443
+#: zerver/models/realms.py:444
 msgid "Inappropriate content"
 msgstr ""
 
-#: zerver/models/realms.py:444
+#: zerver/models/realms.py:445
 msgid "Violates community norms"
 msgstr ""
 
-#: zerver/models/realms.py:445
+#: zerver/models/realms.py:446
 msgid "Other reason"
 msgstr ""
 
-#: zerver/models/realms.py:470
+#: zerver/models/realms.py:471
 msgid "Zulip updates"
 msgstr ""
 
-#: zerver/models/realms.py:596
+#: zerver/models/realms.py:597
 msgid "Available on Zulip Cloud Standard. Upgrade to access."
 msgstr "Zulip Cloud Standard પર ઉપલબ્ધ છે. પહોંચ માટે અપગ્રેડ કરો."
 
-#: zerver/models/realms.py:597
+#: zerver/models/realms.py:598
 msgid "Available on Zulip Cloud Plus. Upgrade to access."
 msgstr "Zulip Cloud Plus પર ઉપલબ્ધ છે. પહોંચ માટે અપગ્રેડ કરો."
 
-#: zerver/models/realms.py:657
+#: zerver/models/realms.py:658
 msgid "GIPHY integration disabled"
 msgstr "GIPHY એન્ટીગ્રેશન નિષ્ક્રિય કરી દીધી છે"
 
-#: zerver/models/realms.py:662
+#: zerver/models/realms.py:663
 msgid "Allow GIFs rated Y (Very young audience)"
 msgstr "GIFs રેટેડ Y (ખૂબ નવો સાક્ષાત્કાર) મંજૂર છે"
 
-#: zerver/models/realms.py:666
+#: zerver/models/realms.py:667
 msgid "Allow GIFs rated G (General audience)"
 msgstr "GIFs રેટેડ G (સામાન્ય સાક્ષાત્કાર) મંજૂર છે"
 
-#: zerver/models/realms.py:670
+#: zerver/models/realms.py:671
 msgid "Allow GIFs rated PG (Parental guidance)"
 msgstr "GIFs રેટેડ PG (માતા-પિતાઓની માર્ગદર્શન) મંજૂર છે"
 
-#: zerver/models/realms.py:674
+#: zerver/models/realms.py:675
 msgid "Allow GIFs rated PG-13 (Parental guidance - under 13)"
 msgstr "GIFs રેટેડ PG-13 (માતા-પિતાઓની માર્ગદર્શન - 13 થી ઓછા) મંજૂર છે"
 
-#: zerver/models/realms.py:678
+#: zerver/models/realms.py:679
 msgid "Allow GIFs rated R (Restricted)"
 msgstr "GIFs રેટેડ R (પાબંધિત) મંજૂર છે"
 
@@ -6774,7 +6780,7 @@ msgstr "ઇવેન્ટ {event_id} આ ક્યુનમાં નથી"
 msgid "Bad event queue ID: {queue_id}"
 msgstr "ખરાબ ઇવેન્ટ ક્યૂ આઈડી: {queue_id}"
 
-#: zerver/views/antispam.py:50
+#: zerver/views/antispam.py:53
 #, fuzzy
 #| msgid "Failed to create Zoom call"
 msgid "Failed to generate challenge"
@@ -6804,7 +6810,7 @@ msgstr "ઉપ-ડોમેન જરૂરી છે"
 msgid "Password is incorrect."
 msgstr "પાસવર્ડ અમાન્ય છે."
 
-#: zerver/views/channel_folders.py:79
+#: zerver/views/channel_folders.py:81
 msgid "You need to remove all the channels from this folder to archive it."
 msgstr ""
 
@@ -7073,36 +7079,36 @@ msgstr "નીચેના માંથી કમાંડો માંથી �
 msgid "Read receipts are disabled in this organization."
 msgstr "આ સંસ્થામાં રીડ રસીપ્ટ્સ ડિસેબલ કરવામાં આવી છે."
 
-#: zerver/views/realm.py:216
+#: zerver/views/realm.py:217
 #, python-brace-format
 msgid "Invalid language '{language}'"
 msgstr "અમાન્ય ભાષા '{language}'"
 
-#: zerver/views/realm.py:223
+#: zerver/views/realm.py:224
 msgid "At least one authentication method must be enabled."
 msgstr "ઓળખપ્રદ પરિક્રિયાઓ માટે ઓળખપ્રદ પ્રકાર એક અથવા વધુ સક્રિય હોવું જોઈએ."
 
-#: zerver/views/realm.py:229
+#: zerver/views/realm.py:230
 #, python-brace-format
 msgid "Invalid video_chat_provider {video_chat_provider}"
 msgstr "અમાન્ય વીડિયો ચેટ પ્રોવાઇડર {video_chat_provider}"
 
-#: zerver/views/realm.py:237
+#: zerver/views/realm.py:238
 #, python-brace-format
 msgid "Invalid giphy_rating {giphy_rating}"
 msgstr "અમાન્ય giphy_rating {giphy_rating}"
 
-#: zerver/views/realm.py:517
+#: zerver/views/realm.py:518
 msgid "Must be a demo organization."
 msgstr "ડેમો સંસ્થા હોવી જોઈએ."
 
-#: zerver/views/realm.py:545
+#: zerver/views/realm.py:546
 #, python-brace-format
 msgid ""
 "Data deletion time must be at most {max_allowed_days} days in the future."
 msgstr ""
 
-#: zerver/views/realm.py:556
+#: zerver/views/realm.py:557
 #, python-brace-format
 msgid ""
 "Data deletion time must be at least {min_allowed_days} days in the future."
@@ -7353,14 +7359,14 @@ msgstr ""
 msgid "Invalid json for submessage"
 msgstr "સબમેસેજ માટે અમાન્ય json"
 
-#: zerver/views/tusd.py:108 zerver/views/upload.py:439
+#: zerver/views/tusd.py:108 zerver/views/upload.py:442
 #, python-brace-format
 msgid ""
 "File is larger than the maximum upload size ({max_size} MiB) allowed by your "
 "organization's plan."
 msgstr ""
 
-#: zerver/views/tusd.py:117 zerver/views/upload.py:447
+#: zerver/views/tusd.py:117 zerver/views/upload.py:450
 #, python-brace-format
 msgid ""
 "File is larger than this server's configured maximum upload size ({max_size} "
@@ -7390,27 +7396,27 @@ msgstr "'તો' ની ખાલી યાદી"
 msgid "User has disabled typing notifications for direct messages"
 msgstr "વપરાશકર્તા સિધ્ધા સંદેશો માટે ટાઈપિંગ સૂચનાઓ અક્રિય કર્યા છે"
 
-#: zerver/views/upload.py:253
+#: zerver/views/upload.py:256
 msgid "<p>This file does not exist or has been deleted.</p>"
 msgstr "<p>આ ફાઇલ અસ્તિત્વમાં નથી અથવા તે ડિલીટ કરવામાં આવી છે.</p>"
 
-#: zerver/views/upload.py:263
+#: zerver/views/upload.py:266
 msgid "<p>You are not authorized to view this file.</p>"
 msgstr "<p>આ ફાઇલ જોવા માટે તમારી પરવાહકર્તાની પુનરુત્સર્ગ નથી.</p>"
 
-#: zerver/views/upload.py:376 zerver/views/upload.py:382
+#: zerver/views/upload.py:379 zerver/views/upload.py:385
 msgid "Invalid token"
 msgstr "અમાન્ય ટોકન"
 
-#: zerver/views/upload.py:378
+#: zerver/views/upload.py:381
 msgid "Invalid filename"
 msgstr "અમાન્ય ફાઈલ નામ"
 
-#: zerver/views/upload.py:426
+#: zerver/views/upload.py:429
 msgid "You must specify a file to upload"
 msgstr "અપલોડ કરવા માટે તમે ફાઈલ નિર્દિષ્ટ કરવી જોઈએ"
 
-#: zerver/views/upload.py:428 zerver/views/users.py:523
+#: zerver/views/upload.py:431 zerver/views/users.py:523
 #: zerver/views/users.py:631
 msgid "You may only upload one file at a time"
 msgstr "તમે ફક્ત એક ફાઈલ અપલોડ કરી શકો છો"

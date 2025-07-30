@@ -18,7 +18,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-07-25 20:29+0000\n"
+"POT-Creation-Date: 2025-07-30 13:46+0000\n"
 "PO-Revision-Date: 2025-07-30 04:18+0000\n"
 "Last-Translator: Eddie Su <eddiesu.sheico@gmail.com>\n"
 "Language-Team: Chinese (Traditional Han script) <https://hosted.weblate.org/"
@@ -710,11 +710,10 @@ msgid ""
 "management\">log in instructions</a> to administer the plan for your Zulip "
 "server."
 msgstr ""
-"無法為此組織管理方案，因為您的 Zulip 伺服器已採用 %(server_plan_name)s "
-"方案，該方案涵蓋此伺服器上的所有組織。請參閱 <b>伺服器層級帳單</b> 分頁中的 "
-"<a href="
-"\"https://zulip.com/help/self-hosted-billing#log-in-to-billing-management\""
-">登入說明</a>，以管理您 Zulip 伺服器的方案。"
+"無法為此組織管理方案，因為您的 Zulip 伺服器已採用 %(server_plan_name)s 方案，"
+"該方案涵蓋此伺服器上的所有組織。請參閱 <b>伺服器層級帳單</b> 分頁中的 <a "
+"href=\"https://zulip.com/help/self-hosted-billing#log-in-to-billing-"
+"management\">登入說明</a>，以管理您 Zulip 伺服器的方案。"
 
 #: templates/corporate/billing/remote_realm_login_error_for_server_on_active_plan.html:23
 msgid ""
@@ -1839,7 +1838,7 @@ msgstr "更新"
 
 #: templates/zerver/development/integrations_dev_panel.html:19
 #: templates/zerver/portico-header.html:8
-#: templates/zerver/portico-header.html:12 zerver/models/realms.py:436
+#: templates/zerver/portico-header.html:12 zerver/models/realms.py:437
 msgid "Zulip"
 msgstr "Zulip"
 
@@ -2551,8 +2550,8 @@ msgid ""
 "%(realm_name)s Zulip</a>, or <a href=\"%(notif_url)s\">manage email "
 "preferences</a>."
 msgstr ""
-"直接回覆此郵件，<a href=\"%(narrow_url)s\">在 %(realm_name)s Zulip "
-"中查看</a>，或<a href=\"%(notif_url)s\">管理電子郵件 偏好</a>。"
+"直接回覆此郵件，<a href=\"%(narrow_url)s\">在 %(realm_name)s Zulip 中查看</"
+"a>，或<a href=\"%(notif_url)s\">管理電子郵件 偏好</a>。"
 
 #: templates/zerver/emails/missed_message.html:48
 #, python-format
@@ -4277,8 +4276,8 @@ msgid ""
 "You can undo this change or review your preferences in your <a "
 "href=\"%(realm_url)s/#settings/notifications\">notification settings</a>."
 msgstr ""
-"您可以在<a href=\"%(realm_url)s/#settings/notifications\">通知設定</a>中 "
-"撤銷此變更或檢查您的偏好設定。"
+"您可以在<a href=\"%(realm_url)s/#settings/notifications\">通知設定</a>中 撤銷"
+"此變更或檢查您的偏好設定。"
 
 #: zerver/actions/create_realm.py:307
 msgid "Questions and discussion about using Zulip."
@@ -4435,7 +4434,7 @@ msgstr "小工具無法編輯。"
 msgid "Your organization has turned off message editing"
 msgstr "您的組織關閉了訊息編輯"
 
-#: zerver/actions/message_edit.py:174 zerver/actions/message_edit.py:1582
+#: zerver/actions/message_edit.py:174 zerver/actions/message_edit.py:1586
 msgid "You don't have permission to edit this message"
 msgstr "您沒有權限編輯此訊息"
 
@@ -4453,17 +4452,17 @@ msgstr "{user} 已將此議題標記為 解決。"
 msgid "{user} has marked this topic as unresolved."
 msgstr "{user} 已將此議題標記為 未解決。"
 
-#: zerver/actions/message_edit.py:1262
+#: zerver/actions/message_edit.py:1266
 #, python-brace-format
 msgid "This topic was moved to {new_location} by {user}."
 msgstr "此議題已被 {user} 移動到 {new_location}。"
 
-#: zerver/actions/message_edit.py:1266
+#: zerver/actions/message_edit.py:1270
 #, python-brace-format
 msgid "A message was moved from this topic to {new_location} by {user}."
 msgstr "一則訊息已被 {user} 從此議題移動到 {new_location}。"
 
-#: zerver/actions/message_edit.py:1270
+#: zerver/actions/message_edit.py:1274
 #, python-brace-format
 msgid ""
 "{changed_messages_count} messages were moved from this topic to "
@@ -4471,18 +4470,18 @@ msgid ""
 msgstr ""
 "{changed_messages_count} 則訊息已被 {user} 從此議題移動到 {new_location}。"
 
-#: zerver/actions/message_edit.py:1309
+#: zerver/actions/message_edit.py:1313
 #, python-brace-format
 msgid "This topic was moved here from {old_location} by {user}."
 msgstr "此議題已被 {user} 從 {old_location} 移動到這裡。"
 
-#: zerver/actions/message_edit.py:1314
+#: zerver/actions/message_edit.py:1318
 #, python-brace-format
 msgid ""
 "[A message]({message_link}) was moved here from {old_location} by {user}."
 msgstr "[一則訊息]({message_link}) 已被 {user} 從 {old_location} 移動到這裡。"
 
-#: zerver/actions/message_edit.py:1318
+#: zerver/actions/message_edit.py:1322
 #, python-brace-format
 msgid ""
 "{changed_messages_count} messages were moved here from {old_location} by "
@@ -4490,19 +4489,19 @@ msgid ""
 msgstr ""
 "{changed_messages_count} 則訊息已被 {user} 從 {old_location} 移動到這裡。"
 
-#: zerver/actions/message_edit.py:1576
+#: zerver/actions/message_edit.py:1580
 msgid "You don't have permission to resolve topics in this channel."
 msgstr "您沒有權限在此頻道中解決議題。"
 
-#: zerver/actions/message_edit.py:1596
+#: zerver/actions/message_edit.py:1600
 msgid "The time limit for editing this message's topic has passed."
 msgstr "編輯此訊息議題的時間限制已過。"
 
-#: zerver/actions/message_edit.py:1646
+#: zerver/actions/message_edit.py:1650
 msgid "You don't have permission to move this message"
 msgstr "您沒有權限移動此訊息"
 
-#: zerver/actions/message_edit.py:1662
+#: zerver/actions/message_edit.py:1666
 msgid "The time limit for editing this message's channel has passed"
 msgstr "編輯此訊息頻道的時間限制已過"
 
@@ -4914,23 +4913,31 @@ msgid "Verified that you're a human user!"
 msgstr "已驗證您是真實使用者！"
 
 #: zerver/forms.py:380
-msgid "Verifying that you're not a bot..."
+#, fuzzy
+#| msgid "Verifying that you're not a bot..."
+msgid "Verifying that you're not a bot…"
 msgstr "正在驗證您不是機器人…"
 
-#: zerver/forms.py:402 zerver/forms.py:411 zerver/forms.py:416
-#: zerver/forms.py:423
+#: zerver/forms.py:402 zerver/forms.py:413 zerver/forms.py:418
+#: zerver/forms.py:425
 msgid "Validation failed, please try again."
 msgstr "驗證失敗，請再試一次。"
 
-#: zerver/forms.py:435
+#: zerver/forms.py:407 zerver/views/antispam.py:29
+#, fuzzy
+#| msgid "Embedded bots are not enabled."
+msgid "Challenges are not enabled."
+msgstr "嵌入式機器人未啟用。"
+
+#: zerver/forms.py:437
 msgid "New password"
 msgstr "新密碼"
 
-#: zerver/forms.py:442
+#: zerver/forms.py:444
 msgid "New password confirmation"
 msgstr "確認新密碼"
 
-#: zerver/forms.py:584
+#: zerver/forms.py:586
 #, python-brace-format
 msgid ""
 "You're making too many attempts to sign in. Try again in {seconds} seconds "
@@ -4939,25 +4946,25 @@ msgstr ""
 "您嘗試登入的次數過多。請在 {seconds} 秒後再試一次，或聯絡您的組織管理員尋求協"
 "助。"
 
-#: zerver/forms.py:596
+#: zerver/forms.py:598
 msgid ""
 "Your password has been disabled because it is too weak. Reset your password "
 "to create a new one."
 msgstr "您的密碼因為太弱而被停用。請重置密碼以建立新密碼。"
 
-#: zerver/forms.py:644
+#: zerver/forms.py:646
 msgid "Token"
 msgstr "Token"
 
-#: zerver/forms.py:667
+#: zerver/forms.py:669
 msgid "Tip: You can enter multiple email addresses with commas between them."
 msgstr "提示：您可以輸入多個電子郵件地址，以逗號分隔。"
 
-#: zerver/forms.py:673
+#: zerver/forms.py:675
 msgid "Please enter at most 10 emails."
 msgstr "請輸入至多 10 個 emails。"
 
-#: zerver/forms.py:686
+#: zerver/forms.py:688
 msgid "We couldn't find that Zulip organization."
 msgstr "我們找不到該 Zulip 組織。"
 
@@ -5173,7 +5180,7 @@ msgstr "表情符號名稱只能包含小寫英文字母、數字、空格、連
 msgid "Emoji name is missing"
 msgstr "缺少表情符號名稱"
 
-#: zerver/lib/events.py:2116
+#: zerver/lib/events.py:2119
 msgid "Could not allocate event queue"
 msgstr "無法分配事件佇列"
 
@@ -6024,43 +6031,43 @@ msgid "Invalid GCM options to bouncer: {options}"
 msgstr "傳送到 bouncer 的 GCM 選項無效：{options}"
 
 #. error
-#: zerver/lib/push_notifications.py:760 zilencer/views.py:658
+#: zerver/lib/push_notifications.py:754 zilencer/views.py:658
 msgid "Token does not exist"
 msgstr "Token 不存在"
 
-#: zerver/lib/push_notifications.py:981
-msgid "New message"
-msgstr "新的訊息"
-
-#: zerver/lib/push_notifications.py:1100
+#: zerver/lib/push_notifications.py:1091
 #, python-brace-format
 msgid "{full_name} mentioned @{user_group_name}:"
 msgstr "{full_name} 「@-提及」 @{user_group_name}："
 
-#: zerver/lib/push_notifications.py:1104
+#: zerver/lib/push_notifications.py:1095
 #, python-brace-format
 msgid "{full_name} mentioned you:"
 msgstr "{full_name} 「@-提及」你："
 
-#: zerver/lib/push_notifications.py:1111
+#: zerver/lib/push_notifications.py:1102
 #, python-brace-format
 msgid "{full_name} mentioned everyone:"
 msgstr "{full_name} 「@-提及」所有人："
 
-#: zerver/lib/push_notifications.py:1715
+#: zerver/lib/push_notifications.py:1332
+msgid "New message"
+msgstr "新的訊息"
+
+#: zerver/lib/push_notifications.py:1720
 msgid "Test notification"
 msgstr "通知測試"
 
-#: zerver/lib/push_notifications.py:1716
+#: zerver/lib/push_notifications.py:1721
 #, python-brace-format
 msgid "This is a test notification from {realm_name} ({realm_url})."
 msgstr "這是來自 {realm_name} ({realm_url}) 的通知測試。"
 
-#: zerver/lib/push_notifications.py:1768
+#: zerver/lib/push_notifications.py:1773
 msgid "Device not recognized"
 msgstr "裝置無法識別"
 
-#: zerver/lib/push_notifications.py:1780
+#: zerver/lib/push_notifications.py:1785
 msgid "Device not recognized by the push bouncer"
 msgstr "推送轉發器無法識別裝置"
 
@@ -6388,7 +6395,8 @@ msgstr "無效的使用者群組 ID：{group_id}"
 #: zerver/lib/user_groups.py:385
 #, python-brace-format
 msgid "'{setting_name}' setting cannot be set to 'role:internet' group."
-msgstr "「{setting_name}」設定無法指定為「所有網際網路使用者（role:internet）」群組。"
+msgstr ""
+"「{setting_name}」設定無法指定為「所有網際網路使用者（role:internet）」群組。"
 
 #: zerver/lib/user_groups.py:395
 #, python-brace-format
@@ -6607,7 +6615,7 @@ msgstr "在 zcommand 中應該有前置斜線。"
 msgid "No such command: {command}"
 msgstr "無此指令：{command}"
 
-#: zerver/lib/zulip_update_announcements.py:677
+#: zerver/lib/zulip_update_announcements.py:691
 msgid "`zulip_update_announcements_stream` is unexpectedly deactivated."
 msgstr "`zulip_update_announcements_stream` 意外地被停用。"
 
@@ -6731,71 +6739,71 @@ msgstr "URL 範本中缺少必要的變數 \"code\""
 msgid "\"code\" should be the only variable present in the URL template"
 msgstr "\"code\" 應是 URL 範本中唯一的變數"
 
-#: zerver/models/realms.py:437
+#: zerver/models/realms.py:438
 msgid "sandbox"
 msgstr "沙盒"
 
-#: zerver/models/realms.py:438
+#: zerver/models/realms.py:439
 msgid "general"
 msgstr "一般"
 
-#: zerver/models/realms.py:439
+#: zerver/models/realms.py:440
 msgid "channel events"
 msgstr "頻道事件"
 
-#: zerver/models/realms.py:441
+#: zerver/models/realms.py:442
 msgid "Spam"
 msgstr "垃圾訊息"
 
-#: zerver/models/realms.py:442
+#: zerver/models/realms.py:443
 msgid "Harassment"
 msgstr "騷擾"
 
-#: zerver/models/realms.py:443
+#: zerver/models/realms.py:444
 msgid "Inappropriate content"
 msgstr "不當內容"
 
-#: zerver/models/realms.py:444
+#: zerver/models/realms.py:445
 msgid "Violates community norms"
 msgstr "違反社群規範"
 
-#: zerver/models/realms.py:445
+#: zerver/models/realms.py:446
 msgid "Other reason"
 msgstr "其他原因"
 
-#: zerver/models/realms.py:470
+#: zerver/models/realms.py:471
 msgid "Zulip updates"
 msgstr "Zulip 更新"
 
-#: zerver/models/realms.py:596
+#: zerver/models/realms.py:597
 msgid "Available on Zulip Cloud Standard. Upgrade to access."
 msgstr "Zulip Cloud Standard 可用。升級以取得使用權限。"
 
-#: zerver/models/realms.py:597
+#: zerver/models/realms.py:598
 msgid "Available on Zulip Cloud Plus. Upgrade to access."
 msgstr "Zulip Cloud Plus 可用。升級以取得使用權限。"
 
-#: zerver/models/realms.py:657
+#: zerver/models/realms.py:658
 msgid "GIPHY integration disabled"
 msgstr "GIPHY 整合已停用"
 
-#: zerver/models/realms.py:662
+#: zerver/models/realms.py:663
 msgid "Allow GIFs rated Y (Very young audience)"
 msgstr "允許 Y 級 GIF（非常年幼的觀眾）"
 
-#: zerver/models/realms.py:666
+#: zerver/models/realms.py:667
 msgid "Allow GIFs rated G (General audience)"
 msgstr "允許 G 級 GIF（一般觀眾）"
 
-#: zerver/models/realms.py:670
+#: zerver/models/realms.py:671
 msgid "Allow GIFs rated PG (Parental guidance)"
 msgstr "允許 PG 級 GIF（家長指導）"
 
-#: zerver/models/realms.py:674
+#: zerver/models/realms.py:675
 msgid "Allow GIFs rated PG-13 (Parental guidance - under 13)"
 msgstr "允許 PG-13 級 GIF（家長指導 - 13 歲以下）"
 
-#: zerver/models/realms.py:678
+#: zerver/models/realms.py:679
 msgid "Allow GIFs rated R (Restricted)"
 msgstr "允許 R 級 GIF（限制級）"
 
@@ -6894,7 +6902,7 @@ msgstr "事件 {event_id} 不在此佇列中"
 msgid "Bad event queue ID: {queue_id}"
 msgstr "無效的事件佇列 ID：{queue_id}"
 
-#: zerver/views/antispam.py:50
+#: zerver/views/antispam.py:53
 msgid "Failed to generate challenge"
 msgstr "生成驗證挑戰失敗"
 
@@ -6922,7 +6930,7 @@ msgstr "需要子域名"
 msgid "Password is incorrect."
 msgstr "密碼不正確。"
 
-#: zerver/views/channel_folders.py:79
+#: zerver/views/channel_folders.py:81
 msgid "You need to remove all the channels from this folder to archive it."
 msgstr "您需要從此資料夾中移除所有頻道才能封存它。"
 
@@ -7135,8 +7143,8 @@ msgid ""
 "later. Is this a good time?\n"
 msgstr ""
 "\n"
-"你先前選擇稍後觀看 [歡迎使用 Zulip 影片]"
-"({navigation_tour_video_url})。現在方便觀看嗎？\n"
+"你先前選擇稍後觀看 [歡迎使用 Zulip 影片]({navigation_tour_video_url})。現在方"
+"便觀看嗎？\n"
 
 #: zerver/views/presence.py:48
 msgid "Presence is not supported for bot users."
@@ -7184,36 +7192,36 @@ msgstr "以下參數至少必須存在一個：emoji_name, emoji_code"
 msgid "Read receipts are disabled in this organization."
 msgstr "此組織已停用已讀回條。"
 
-#: zerver/views/realm.py:216
+#: zerver/views/realm.py:217
 #, python-brace-format
 msgid "Invalid language '{language}'"
 msgstr "無效的語言 '{language}'"
 
-#: zerver/views/realm.py:223
+#: zerver/views/realm.py:224
 msgid "At least one authentication method must be enabled."
 msgstr "至少必須啟用一種身份驗證方法。"
 
-#: zerver/views/realm.py:229
+#: zerver/views/realm.py:230
 #, python-brace-format
 msgid "Invalid video_chat_provider {video_chat_provider}"
 msgstr "無效的 video_chat_provider：{video_chat_provider}"
 
-#: zerver/views/realm.py:237
+#: zerver/views/realm.py:238
 #, python-brace-format
 msgid "Invalid giphy_rating {giphy_rating}"
 msgstr "無效的 giphy_rating： {giphy_rating}"
 
-#: zerver/views/realm.py:517
+#: zerver/views/realm.py:518
 msgid "Must be a demo organization."
 msgstr "必須是試用組織。"
 
-#: zerver/views/realm.py:545
+#: zerver/views/realm.py:546
 #, python-brace-format
 msgid ""
 "Data deletion time must be at most {max_allowed_days} days in the future."
 msgstr "資料刪除時間必須設定在未來 {max_allowed_days} 天以內。"
 
-#: zerver/views/realm.py:556
+#: zerver/views/realm.py:557
 #, python-brace-format
 msgid ""
 "Data deletion time must be at least {min_allowed_days} days in the future."
@@ -7461,14 +7469,14 @@ msgstr "未訂閱頻道 ID {channel_id}"
 msgid "Invalid json for submessage"
 msgstr "無效的子訊息 json"
 
-#: zerver/views/tusd.py:108 zerver/views/upload.py:439
+#: zerver/views/tusd.py:108 zerver/views/upload.py:442
 #, python-brace-format
 msgid ""
 "File is larger than the maximum upload size ({max_size} MiB) allowed by your "
 "organization's plan."
 msgstr "檔案超過您組織方案允許的最大上傳大小上限（{max_size} MiB）。"
 
-#: zerver/views/tusd.py:117 zerver/views/upload.py:447
+#: zerver/views/tusd.py:117 zerver/views/upload.py:450
 #, python-brace-format
 msgid ""
 "File is larger than this server's configured maximum upload size ({max_size} "
@@ -7498,27 +7506,27 @@ msgstr "'to' 清單為空"
 msgid "User has disabled typing notifications for direct messages"
 msgstr "使用者已停用直接訊息的輸入通知"
 
-#: zerver/views/upload.py:253
+#: zerver/views/upload.py:256
 msgid "<p>This file does not exist or has been deleted.</p>"
 msgstr "<p>此檔案不存在或已被刪除。</p>"
 
-#: zerver/views/upload.py:263
+#: zerver/views/upload.py:266
 msgid "<p>You are not authorized to view this file.</p>"
 msgstr "<p>您無權查看此檔案。</p>"
 
-#: zerver/views/upload.py:376 zerver/views/upload.py:382
+#: zerver/views/upload.py:379 zerver/views/upload.py:385
 msgid "Invalid token"
 msgstr "無效的憑證"
 
-#: zerver/views/upload.py:378
+#: zerver/views/upload.py:381
 msgid "Invalid filename"
 msgstr "無效的檔案名稱"
 
-#: zerver/views/upload.py:426
+#: zerver/views/upload.py:429
 msgid "You must specify a file to upload"
 msgstr "您必須指定要上傳的檔案"
 
-#: zerver/views/upload.py:428 zerver/views/users.py:523
+#: zerver/views/upload.py:431 zerver/views/users.py:523
 #: zerver/views/users.py:631
 msgid "You may only upload one file at a time"
 msgstr "您一次只能上傳一個檔案"
@@ -7863,8 +7871,9 @@ msgstr "{domain} 不存在"
 msgid ""
 "The global limits on recent usage of this endpoint have been reached. Please "
 "try again later or reach out to {support_email} for assistance."
-msgstr "此端點的近期使用已達到全域限制。請稍後再試，或聯絡 {support_email} "
-"以獲得協助。"
+msgstr ""
+"此端點的近期使用已達到全域限制。請稍後再試，或聯絡 {support_email} 以獲得協"
+"助。"
 
 #: zilencer/views.py:362
 msgid "Registration not found for this hostname"
