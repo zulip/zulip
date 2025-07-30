@@ -10,13 +10,6 @@ mock_esm("../src/resize", {
     resize_stream_filters_container() {},
 });
 
-const scheduled_messages = mock_esm("../src/scheduled_messages");
-
-scheduled_messages.get_count = () => 555;
-
-const message_reminder = mock_esm("../src/message_reminder");
-message_reminder.get_count = () => 888;
-
 const {Filter} = zrequire("../src/filter");
 const left_sidebar_navigation_area = zrequire("left_sidebar_navigation_area");
 
@@ -149,8 +142,6 @@ run_test("update_count_in_dom", () => {
     assert.equal($("<inactive-count>").text(), "");
 
     counts.mentioned_message_count = 0;
-    scheduled_messages.get_count = () => 0;
-    message_reminder.get_count = () => 0;
 
     left_sidebar_navigation_area.update_dom_with_unread_counts(counts, false);
     left_sidebar_navigation_area.update_starred_count(444, true);

@@ -39,11 +39,6 @@ mock_esm("../src/unread", {
     stream_has_any_unread_mentions: () => stream_has_any_unread_mentions,
     stream_has_any_unmuted_mentions: () => noop,
 });
-mock_esm("../src/group_permission_settings", {
-    get_group_permission_setting_config: () => ({
-        allow_everyone_group: true,
-    }),
-});
 // TODO/channel-folders: Don't mock this.
 mock_esm("../src/left_sidebar_navigation_area", {
     update_dom_with_unread_counts: () => noop,
@@ -63,9 +58,6 @@ mock_esm("../src/settings_data", {
     user_can_create_web_public_streams: () => true,
     user_has_permission_for_group_setting: () => true,
     should_mask_unread_count: () => false,
-});
-mock_esm("../src/unread_ui", {
-    update_unread_counts: noop,
 });
 
 // Start with always filtering out inactive streams.
