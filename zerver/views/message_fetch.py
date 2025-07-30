@@ -329,29 +329,36 @@ def messages_in_narrow_backend(
     query = query.filter(id__in=msg_ids)
 
     cleaned_narrow = clean_narrow_for_message_fetch(narrow, user_profile.realm, user_profile)
-    query, is_search, _is_dm_narrow = add_narrow_conditions(
-        user_profile=user_profile,
-        query=query,
-        narrow=cleaned_narrow,
-        is_web_public_query=False,
-        realm=user_profile.realm,
-    )
+    # A search checks fts_update_log for messages that haven't been
+    # indexed yet, so all of its queries should see the same snapshot.
+    with read_only_repeatable_read_transaction():
+        query, is_search, _is_dm_narrow = add_narrow_conditions(
+            user_profile=user_profile,
+            query=query,
+            narrow=cleaned_narrow,
+            is_web_public_query=False,
+            realm=user_profile.realm,
+        )
 
-    if not is_search:
-        # `add_narrow_conditions` adds the following columns only if narrow has search operands.
-        query = query.annotate(
-            escaped_topic_name=Func(
-                F(DB_TOPIC_NAME), function="escape_html", output_field=TextField()
-            ),
+        if not is_search:
+            # `add_narrow_conditions` adds the following columns only if narrow has search operands.
+            query = query.annotate(
+                escaped_topic_name=Func(
+                    F(DB_TOPIC_NAME), function="escape_html", output_field=TextField()
+                ),
+            )
+
+        rows = list(
+            query.values(
+                "id",
+                "escaped_topic_name",
+                "rendered_content",
+                *["content_matches", "topic_matches"] if is_search else [],
+            )
         )
 
     search_fields = {}
-    for row in query.values(
-        "id",
-        "escaped_topic_name",
-        "rendered_content",
-        *["content_matches", "topic_matches"] if is_search else [],
-    ):
+    for row in rows:
         message_id = row["id"]
         escaped_topic_name: str = row["escaped_topic_name"]
         rendered_content: str = row["rendered_content"]

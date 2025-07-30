@@ -704,14 +704,34 @@ class NarrowBuilder:
                 [operand],
             ),
         ).alias(
+            _fts_unindexed=RawSQL(  # noqa: S611
+                SQL("EXISTS (SELECT 1 FROM fts_update_log WHERE {log_message_id} = {message_id})")
+                .format(
+                    log_message_id=Identifier("fts_update_log", "message_id"),
+                    message_id=Identifier("zerver_message", "id"),
+                )
+                .as_string(connection.connection),
+                [],
+            ),
             _pgroonga_match=RawSQL(  # noqa: S611
                 SQL("{col} &@~ escape_html(%s)")
                 .format(col=Identifier("zerver_message", "search_pgroonga"))
                 .as_string(connection.connection),
                 [operand],
-            )
+            ),
+            _unindexed_pgroonga_match=RawSQL(  # noqa: S611
+                SQL("(escape_html({topic}) || ' ' || {content}) &@~ escape_html(%s)")
+                .format(
+                    topic=Identifier("zerver_message", DB_TOPIC_NAME),
+                    content=Identifier("zerver_message", "rendered_content"),
+                )
+                .as_string(connection.connection),
+                [operand],
+            ),
         )
-        condition = Q(_pgroonga_match=True)
+        condition = Q(_fts_unindexed=False, _pgroonga_match=True) | Q(
+            _fts_unindexed=True, _unindexed_pgroonga_match=True
+        )
         return query.filter(maybe_negate(condition))
 
     def _by_search_tsearch(
@@ -742,14 +762,34 @@ class NarrowBuilder:
                 query = query.filter(maybe_negate(cond))
 
         query = query.alias(
+            _fts_unindexed=RawSQL(  # noqa: S611
+                SQL("EXISTS (SELECT 1 FROM fts_update_log WHERE {log_message_id} = {message_id})")
+                .format(
+                    log_message_id=Identifier("fts_update_log", "message_id"),
+                    message_id=Identifier("zerver_message", "id"),
+                )
+                .as_string(connection.connection),
+                [],
+            ),
             _tsvector_match=RawSQL(  # noqa: S611
                 SQL("{tsvector} @@ plainto_tsquery(%s, %s)")
                 .format(tsvector=Identifier("zerver_message", "search_tsvector"))
                 .as_string(connection.connection),
                 ["zulip.english_us_search", operand],
-            )
+            ),
+            _unindexed_tsvector_match=RawSQL(  # noqa: S611
+                SQL("to_tsvector(%s, {topic} || {content}) @@ plainto_tsquery(%s, %s)")
+                .format(
+                    topic=Identifier("zerver_message", DB_TOPIC_NAME),
+                    content=Identifier("zerver_message", "rendered_content"),
+                )
+                .as_string(connection.connection),
+                ["zulip.english_us_search", "zulip.english_us_search", operand],
+            ),
         )
-        cond = Q(_tsvector_match=True)
+        cond = Q(_fts_unindexed=False, _tsvector_match=True) | Q(
+            _fts_unindexed=True, _unindexed_tsvector_match=True
+        )
         return query.filter(maybe_negate(cond))
 
 
