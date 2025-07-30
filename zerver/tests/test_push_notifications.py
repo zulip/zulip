@@ -1474,7 +1474,6 @@ class TestGetAPNsPayload(PushNotificationTestCase):
                     "realm_uri": self.sender.realm.url,
                     "realm_url": self.sender.realm.url,
                     "user_id": user_profile.id,
-                    "time": datetime_to_timestamp(message.date_sent),
                 },
             },
         }
@@ -1517,7 +1516,6 @@ class TestGetAPNsPayload(PushNotificationTestCase):
                     "realm_uri": self.sender.realm.url,
                     "realm_url": self.sender.realm.url,
                     "user_id": user_profile.id,
-                    "time": datetime_to_timestamp(message.date_sent),
                 },
             },
         }
@@ -1562,7 +1560,6 @@ class TestGetAPNsPayload(PushNotificationTestCase):
                     "realm_uri": self.sender.realm.url,
                     "realm_url": self.sender.realm.url,
                     "user_id": user_profile.id,
-                    "time": datetime_to_timestamp(message.date_sent),
                 },
             },
         }
@@ -1604,7 +1601,6 @@ class TestGetAPNsPayload(PushNotificationTestCase):
                     "realm_uri": self.sender.realm.url,
                     "realm_url": self.sender.realm.url,
                     "user_id": self.sender.id,
-                    "time": datetime_to_timestamp(message.date_sent),
                 },
             },
         }
@@ -1649,7 +1645,6 @@ class TestGetAPNsPayload(PushNotificationTestCase):
                     "realm_uri": self.sender.realm.url,
                     "realm_url": self.sender.realm.url,
                     "user_id": user_profile.id,
-                    "time": datetime_to_timestamp(message.date_sent),
                 },
             },
         }
@@ -1690,7 +1685,6 @@ class TestGetAPNsPayload(PushNotificationTestCase):
                     "user_id": user_profile.id,
                     "mentioned_user_group_id": user_group.id,
                     "mentioned_user_group_name": user_group.name,
-                    "time": datetime_to_timestamp(message.date_sent),
                 }
             },
         }
@@ -1728,7 +1722,6 @@ class TestGetAPNsPayload(PushNotificationTestCase):
                     "realm_uri": self.sender.realm.url,
                     "realm_url": self.sender.realm.url,
                     "user_id": user_profile.id,
-                    "time": datetime_to_timestamp(message.date_sent),
                 },
             },
         }
@@ -1799,7 +1792,6 @@ class TestGetAPNsPayload(PushNotificationTestCase):
                     "realm_uri": hamlet.realm.url,
                     "realm_url": hamlet.realm.url,
                     "user_id": polonius.id,
-                    "time": datetime_to_timestamp(message.date_sent),
                 }
             },
         }
