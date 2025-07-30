@@ -212,32 +212,6 @@ def get_apns_context() -> APNsContext | None:
     return APNsContext(apns=apns, loop=loop)
 
 
-def modernize_apns_payload(data: Mapping[str, Any]) -> Mapping[str, Any]:
-    """Take a payload in an unknown Zulip version's format, and return in current format."""
-    # TODO this isn't super robust as is -- if a buggy remote server
-    # sends a malformed payload, we are likely to raise an exception.
-    if "message_ids" in data:
-        # The format sent by 1.6.0, from the earliest pre-1.6.0
-        # version with bouncer support up until 613d093d7 pre-1.7.0:
-        #   'alert': str,              # just sender, and text about direct message/mention
-        #   'message_ids': List[int],  # always just one
-        return {
-            "alert": data["alert"],
-            "badge": 0,
-            "custom": {
-                "zulip": {
-                    "message_ids": data["message_ids"],
-                },
-            },
-        }
-    else:
-        # Something already compatible with the current format.
-        # `alert` may be a string, or a dict with `title` and `body`.
-        # In 1.7.0 and 1.7.1, before 0912b5ba8 pre-1.8.0, the only
-        # item in `custom.zulip` is `message_ids`.
-        return data
-
-
 APNS_MAX_RETRIES = 3
 
 
@@ -339,7 +313,7 @@ def send_apple_push_notification(
             len(devices),
             num_duplicate_tokens,
         )
-    payload_data = dict(modernize_apns_payload(payload_data))
+    payload_data = dict(payload_data)
     message = {**payload_data.pop("custom", {}), "aps": payload_data}
 
     have_missing_app_id = False
