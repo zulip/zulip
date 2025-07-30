@@ -361,7 +361,7 @@ class DocPageTest(ZulipTestCase):
         # The integration doc and the screenshot images are in different repos,
         # so we cannot avoid going out of sync when adding/deleting screenshots.
         # Use this set to temporarily add exclusions to this test.
-        exception_images: set[str] = {}
+        exception_images: set[str] = {"jira-plugin/001.png"}
         images_in_dir.update(exception_images)
         images_in_docs.update(exception_images)
 
