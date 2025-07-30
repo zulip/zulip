@@ -11,6 +11,8 @@ Channel links are automatically formatted as [#channel name](#link-to-a-channel-
 
 {start_tabs}
 
+{tab|desktop-web}
+
 {!start-composing.md!}
 
 1. Type `#` followed by a few letters from the channel name.
@@ -27,17 +29,20 @@ Channel links are automatically formatted as [#channel name](#link-to-a-channel-
 
 {end_tabs}
 
-When you paste a channel link into Zulip, it's automatically formatted as
-`#**channel name**`. You can paste as plain text if you prefer with <kbd
-data-mac-following-key="⌥">Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>V</kbd>.
+In the web and desktop apps, when you paste a channel link into Zulip,
+it's automatically formatted as `#**channel name**`. You can use
+<kbd data-mac-following-key="⌥">Ctrl</kbd> + <kbd>Shift</kbd> +
+<kbd>V</kbd> to paste as plain text if you prefer.
 
-You can create a channel link manually by typing `#**channel name**`
+You can create a channel link manually by typing `#**channel name**`.
 
 ## Link to a topic within Zulip
 
 Topic links are automatically formatted as [#channel > topic](#link-to-a-topic-within-zulip).
 
 {start_tabs}
+
+{tab|desktop-web}
 
 {!start-composing.md!}
 
@@ -57,9 +62,10 @@ Topic links are automatically formatted as [#channel > topic](#link-to-a-topic-w
 
 {end_tabs}
 
-When you paste a topic link into Zulip, it's automatically formatted as
-`#**channel name>topic name**`. You can paste as plain text if you prefer with
-<kbd data-mac-following-key="⌥">Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>V</kbd>.
+In the web and desktop apps, when you paste a topic link into Zulip, it's
+automatically formatted as `#**channel name>topic name**`. You can use
+<kbd data-mac-following-key="⌥">Ctrl</kbd> + <kbd>Shift</kbd> +
+<kbd>V</kbd> to paste as plain text if you prefer.
 
 You can create a topic link manually by typing `#**channel name>topic name**`.
 
@@ -95,10 +101,10 @@ In addition, links to messages, topics, and channels are **permanent**:
   channel is [renamed](/help/rename-a-channel) or
   [archived](/help/archive-a-channel).
 
-When you copy a Zulip link and paste it anywhere that accepts HTML
-formatting (e.g., your email, GitHub, docs, etc.), the link will be
-formatted as it would be in Zulip (e.g., [#channel > topic](/)). To paste the
-plain URL, you can paste without formatting (likely <kbd>Ctrl</kbd> +
+When you copy a Zulip link in the web and desktop apps, and paste it anywhere that
+accepts HTML formatting (e.g., your email, GitHub, docs, etc.), the link will be
+formatted as it would be in Zulip (e.g., [#channel > topic](#link-to-a-topic-within-zulip)).
+To paste the plain URL, you can paste without formatting (likely <kbd>Ctrl</kbd> +
 <kbd>Shift</kbd> + <kbd>V</kbd> in your browser).
 
 ### Get a link to a specific message
@@ -107,14 +113,15 @@ This copies to your clipboard a permanent link to the message, displayed in the
 context of its conversation. To preserve your reading status, messages won't be
 automatically marked as read when you view a conversation via a message link.
 
-When you paste a message link into the compose box, it gets automatically
-formatted to be easy to read:
+In the web and desktop apps, when you paste a message link into the compose box,
+it gets automatically formatted to be easy to read:
 
 ```
 #**channel name>topic name@message ID**
 ```
 
-When you send your message, the link will appear as [#channel > topic @ 💬](/).
+When you send your message, the link will appear as
+[#channel > topic @ 💬](#get-a-link-to-a-specific-message).
 
 {start_tabs}
 
@@ -129,11 +136,18 @@ When you send your message, the link will appear as [#channel > topic @ 💬](/)
     If using Zulip in a browser, you can also click on the timestamp
     of a message, and copy the URL from your browser's address bar.
 
+{tab|mobile}
+
+{!message-long-press-menu.md!}
+
+1. Tap **Copy link to message**.
+
 {end_tabs}
 
-When you paste a message link into Zulip, it is automatically
-formatted for you. You can paste as plain text if you prefer with
-<kbd data-mac-following-key="⌥">Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>V</kbd>.
+In the web and desktop apps, when you paste a message link into Zulip,
+it is automatically formatted for you. You can use
+<kbd data-mac-following-key="⌥">Ctrl</kbd> + <kbd>Shift</kbd> +
+<kbd>V</kbd> to paste as plain text if you prefer.
 
 ### Get a link to a specific topic
 
@@ -152,13 +166,9 @@ formatted for you. You can paste as plain text if you prefer with
 
 {tab|mobile}
 
-Access this feature by following the web app instructions in your
-mobile device browser.
+{!topic-long-press-menu.md!}
 
-Implementation of this feature in the mobile app is tracked [on
-GitHub](https://github.com/zulip/zulip-flutter/issues/792). If
-you're interested in this feature, please react to the issue's
-description with 👍.
+1. Tap **Copy link to topic**.
 
 {end_tabs}
 
@@ -174,13 +184,9 @@ description with 👍.
 
 {tab|mobile}
 
-Access this feature by following the web app instructions in your
-mobile device browser.
+{!channel-long-press-menu.md!}
 
-Implementation of this feature in the mobile app is tracked [on
-GitHub](https://github.com/zulip/zulip-flutter/issues/1227). If
-you're interested in this feature, please react to the issue's
-description with 👍.
+1. Tap **Copy link to channel**.
 
 {end_tabs}
 
