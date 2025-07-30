@@ -977,6 +977,14 @@ def get_base_payload(user_profile: UserProfile) -> dict[str, Any]:
     return data
 
 
+def remove_obsolete_fields_apns(payload: dict[str, Any]) -> None:
+    # These fields are not used by iOS clients. The legacy
+    # app requires these in FCM messages, even though we don't
+    # end up doing anything with them.
+    payload.pop("server")
+    payload.pop("realm_id")
+
+
 def get_message_payload(
     user_profile: UserProfile,
     message: Message,
@@ -1127,6 +1135,7 @@ def get_message_payload_apns(
     zulip_data.update(
         message_ids=[message.id],
     )
+    remove_obsolete_fields_apns(zulip_data)
 
     assert message.rendered_content is not None
     with override_language(user_profile.default_language):
@@ -1208,6 +1217,7 @@ def get_remove_payload_apns(user_profile: UserProfile, message_ids: list[int]) -
         event="remove",
         zulip_message_ids=",".join(str(id) for id in message_ids),
     )
+    remove_obsolete_fields_apns(zulip_data)
     apns_data = {
         "badge": get_apns_badge_count(user_profile, message_ids),
         "custom": {"zulip": zulip_data},
