@@ -1,7 +1,7 @@
 import time
 from collections import defaultdict
 from collections.abc import Callable
-from typing import Annotated, Any
+from typing import Annotated, Any, Literal
 
 import orjson
 from django.conf import settings
@@ -518,16 +518,26 @@ def update_stream_backend(
     return json_success(request)
 
 
+def parse_include_subscribers(
+    include_subscribers: Literal["true", "false", "partial"],
+) -> bool | Literal["partial"]:
+    if include_subscribers == "true":
+        return True
+    if include_subscribers == "false":
+        return False
+    return include_subscribers
+
+
 @typed_endpoint
 def list_subscriptions_backend(
     request: HttpRequest,
     user_profile: UserProfile,
     *,
-    include_subscribers: Json[bool] = False,
+    include_subscribers: Literal["true", "false", "partial"] = "false",
 ) -> HttpResponse:
     subscribed, _ = gather_subscriptions(
         user_profile,
-        include_subscribers=include_subscribers,
+        include_subscribers=parse_include_subscribers(include_subscribers),
     )
     return json_success(request, data={"subscriptions": subscribed})
 
