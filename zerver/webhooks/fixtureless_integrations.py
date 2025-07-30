@@ -130,6 +130,15 @@ MERCURIAL = ScreenshotContent(
 """,
 )
 
+NAGIOS = ScreenshotContent(
+    topic="service Remote Load on myserver.example.com",
+    content="""**PROBLEM**: service is CRITICAL
+~~~~
+CRITICAL - load average: 7.49, 8.20, 4.72
+~~~~
+""",
+)
+
 NOTION = ScreenshotContent(
     topic=f"{PROJECT_NAME} Release {VERSION_NUMBER}",
     content=f"""**{BO_NAME}** [commented]() on:

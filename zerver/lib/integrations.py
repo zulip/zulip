@@ -75,6 +75,7 @@ FIXTURELESS_INTEGRATIONS_WITH_SCREENSHOTS: list[str] = [
     "jenkins",
     "mastodon",
     "mercurial",
+    "nagios",
     "notion",
     "openshift",
     "perforce",
