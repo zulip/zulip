@@ -1000,7 +1000,6 @@ def get_message_payload(
     else:
         data["sender_email"] = message.sender.email
 
-    data["time"] = datetime_to_timestamp(message.date_sent)
     if mentioned_user_group_id is not None:
         assert mentioned_user_group_name is not None
         data["mentioned_user_group_id"] = mentioned_user_group_id
@@ -1176,6 +1175,7 @@ def get_message_payload_gcm(
         data.update(
             event="message",
             zulip_message_id=message.id,  # message_id is reserved for CCS
+            time=datetime_to_timestamp(message.date_sent),
             content=content,
             content_truncated=truncated,
             sender_full_name=sender_name,
