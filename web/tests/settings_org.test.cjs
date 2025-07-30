@@ -16,6 +16,7 @@ mock_esm("../src/loading", {
     make_indicator: noop,
     destroy_indicator: noop,
 });
+mock_esm("../src/settings_banner", {set_up_upgrade_banners: noop});
 mock_esm("../src/buttons", {
     show_button_loading_indicator: noop,
     hide_button_loading_indicator: noop,

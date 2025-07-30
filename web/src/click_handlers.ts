@@ -980,4 +980,14 @@ export function initialize(): void {
     $(".settings-header.mobile .fa-chevron-left").on("click", () => {
         settings_panel_menu.mobile_deactivate_section();
     });
+
+    $(document).on("click", ".request-upgrade", (e) => {
+        e.preventDefault();
+        window.open("/upgrade/", "_blank", "noopener,noreferrer");
+    });
+
+    $(document).on("click", ".request-sponsorship", (e) => {
+        e.preventDefault();
+        window.open("/sponsorship/", "_blank", "noopener,noreferrer");
+    });
 }

@@ -10,6 +10,7 @@ import render_stream_settings_tip from "../templates/stream_settings/stream_sett
 import * as hash_parser from "./hash_parser.ts";
 import {$t} from "./i18n.ts";
 import * as overlays from "./overlays.ts";
+import * as settings_banner from "./settings_banner.ts";
 import * as settings_components from "./settings_components.ts";
 import * as settings_config from "./settings_config.ts";
 import * as settings_data from "./settings_data.ts";
@@ -401,6 +402,7 @@ export function enable_or_disable_permission_settings_in_edit_panel(
             settings_components.disable_opening_typeahead_on_clicking_label($setting_element);
         }
     }
+    settings_banner.set_up_upgrade_banners();
 
     if (!stream_data.user_can_set_topics_policy(sub)) {
         $stream_settings.find("#id_topics_policy").prop("disabled", true);
