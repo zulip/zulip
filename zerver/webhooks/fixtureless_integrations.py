@@ -23,7 +23,9 @@ KEVIN_EMAIL = "Kevin-Lin@example.com"
 # Example project content
 PROJECT_NAME = "FizzBuzz"
 PROJECT_PATH = "//depot/fizz/buzz/*"
+PROJECT_STAGE = "production"
 
+VERSION_NUMBER = "v9.2.3"
 REVISION_NUMBER = THREE_DIGIT_NUMBER
 
 # Example branch content
@@ -42,12 +44,20 @@ DEPLOYMENT_HASH = "e494a5be3393"
 # Example datetime content
 _DT = datetime(2025, 5, 30, 2, 0, 0, tzinfo=timezone.utc)
 DATETIME_STAMP = _DT.strftime("%Y-%m-%d %H:%M:%S")
+DATETIME_ASCTIME = _DT.strftime("%a %b %d %H:%M:%S %Y")
+DATETIME_FUSED = _DT.strftime("%Y%m%d%H%M%S")
+DATE_ISO_8601 = _DT.strftime("%Y-%m-%d")
 
 
 class ScreenshotContent(TypedDict):
     topic: str
     content: str
 
+
+CAPISTRANO = ScreenshotContent(
+    topic=PROJECT_NAME,
+    content=f"The [deployment]() to **{PROJECT_STAGE}** (version {VERSION_NUMBER}) has been completed successfully! :rocket:",
+)
 
 CODEBASE = ScreenshotContent(
     topic=f"Push to {BRANCH} on {PROJECT_NAME}",
@@ -85,6 +95,11 @@ MERCURIAL = ScreenshotContent(
 """,
 )
 
+OPENSHIFT = ScreenshotContent(
+    topic=PROJECT_NAME,
+    content=f"""Deployment [{REVISION_NUMBER}]() triggered by a push to **{BRANCH}** by commit [{COMMIT_HASH_A[:7]}]() at {DATETIME_STAMP} has **failed**.""",
+)
+
 PERFORCE = ScreenshotContent(
     topic=PROJECT_PATH,
     content=f"""
@@ -96,6 +111,14 @@ PERFORCE = ScreenshotContent(
 """,
 )
 
+PUPPET = ScreenshotContent(
+    topic="Reports",
+    content=f"""Puppet production run for web-server-01 completed at {DATETIME_ASCTIME}.
+ Created a Gist showing the output at {DEPLOYMENT_HASH}
+ Summary at report.example.com:{DATE_ISO_8601}/production/web-server-01/completed
+ Report URL: http://example.com/puppet-reports/production/web-server-01/?status=completed&time={DATETIME_FUSED}""",
+)
+
 SVN = ScreenshotContent(
     topic=PROJECT_NAME,
     content=f"""**{BO_GIT_NAME}** committed revision r{REVISION_NUMBER} to `{BRANCH_SVN}`.
@@ -104,12 +127,15 @@ SVN = ScreenshotContent(
 )
 
 FIXTURELESS_INTEGRATIONS: list[str] = [
+    "capistrano",
     "codebase",
     "git",
     "github-actions",
     "jenkins",
     "mercurial",
+    "openshift",
     "perforce",
+    "puppet",
     "svn",
 ]
 FIXTURELESS_SCREENSHOT_CONTENT: dict[str, list[ScreenshotContent]] = {
