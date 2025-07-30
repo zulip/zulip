@@ -676,6 +676,10 @@
         display: grid;
     }
 
+    .media-audio-element {
+        vertical-align: middle;
+    }
+
     .message_embed {
         display: grid;
         grid-template-columns:
@@ -865,11 +869,6 @@
         font-size: 1.1363em;
         border: 1px solid var(--color-copy-button-square-bg-active);
         backdrop-filter: blur(20px);
-    }
-
-    p:first-child > .media-audio-element:first-child {
-        /* TODO: This is probably not the best way create space here. */
-        padding-top: 0.5em;
     }
 }
 
