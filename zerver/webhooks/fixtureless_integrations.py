@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 from typing import TypedDict
 
 # For integrations that don't have example webhook fixtures/payloads,
@@ -38,6 +39,10 @@ COMMIT_HASH_A = "a2e84e86ddf7e7f8a9b0c1d2e3f4a5b6c7d8e9f0"
 COMMIT_HASH_B = "9fceb02c0c4b8e4c1e7b43hd4e5f6a7b8c9d0e1f"
 DEPLOYMENT_HASH = "e494a5be3393"
 
+# Example datetime content
+_DT = datetime(2025, 5, 30, 2, 0, 0, tzinfo=timezone.utc)
+DATETIME_STAMP = _DT.strftime("%Y-%m-%d %H:%M:%S")
+
 
 class ScreenshotContent(TypedDict):
     topic: str
@@ -59,6 +64,17 @@ GIT = ScreenshotContent(
 * {KEVIN_EMAIL} - {COMMIT_HASH_A[:7]}: {COMMIT_MESSAGE_A}
 * {BO_EMAIL} - {COMMIT_HASH_B[:7]}: {COMMIT_MESSAGE_B}
 """,
+)
+
+GITHUB_ACTIONS = ScreenshotContent(
+    topic="scheduled backups",
+    content=f"""Backup [failed]() at {DATETIME_STAMP}.
+> Unable to connect.""",
+)
+
+JENKINS = ScreenshotContent(
+    topic=PROJECT_NAME,
+    content=f"**Build:** [#{REVISION_NUMBER}](): FAILURE :cross_mark:",
 )
 
 MERCURIAL = ScreenshotContent(
