@@ -7,7 +7,6 @@ import * as z from "zod/mini";
 import render_confirm_delete_user from "../templates/confirm_dialog/confirm_delete_user.hbs";
 import render_confirm_join_group_direct_member from "../templates/confirm_dialog/confirm_join_group_direct_member.hbs";
 import render_modal_banner from "../templates/modal_banner/modal_banner.hbs";
-import render_group_info_banner from "../templates/modal_banner/user_group_info_banner.hbs";
 import render_settings_checkbox from "../templates/settings/settings_checkbox.hbs";
 import render_browse_user_groups_list_item from "../templates/user_group_settings/browse_user_groups_list_item.hbs";
 import render_cannot_deactivate_group_banner from "../templates/user_group_settings/cannot_deactivate_group_banner.hbs";
@@ -19,6 +18,7 @@ import render_user_group_settings from "../templates/user_group_settings/user_gr
 import render_user_group_settings_empty_notice from "../templates/user_group_settings/user_group_settings_empty_notice.hbs";
 import render_user_group_settings_overlay from "../templates/user_group_settings/user_group_settings_overlay.hbs";
 
+import type {Banner} from "./banners.ts";
 import * as blueslip from "./blueslip.ts";
 import * as browser_history from "./browser_history.ts";
 import * as buttons from "./buttons.ts";
@@ -84,6 +84,22 @@ const initial_group_filter = FILTERS.ACTIVE_GROUPS;
 
 let group_list_widget: ListWidget.ListWidget<UserGroup, UserGroup>;
 let group_list_toggler: Toggle;
+
+const GROUP_INFO_BANNER: Banner = {
+    intent: "info",
+    label: $t({
+        defaultMessage:
+            "User groups offer a flexible way to manage permissions in your organization.",
+    }),
+    buttons: [
+        {
+            label: $t({defaultMessage: "Learn more"}),
+            custom_classes: "banner-external-link",
+            attention: "quiet",
+        },
+    ],
+    close_button: false,
+};
 
 function get_user_group_id(target: HTMLElement): number {
     const $row = $(target).closest(
@@ -1861,16 +1877,10 @@ export function setup_page(callback: () => void): void {
         );
         $groups_overlay_container.html(groups_overlay_html);
         update_displayed_groups(initial_group_filter);
-        const context = {
-            banner_type: compose_banner.INFO,
-            classname: "group_info",
-            hide_close_button: true,
-            button_text: $t({defaultMessage: "Learn more"}),
-            button_link: "/help/user-groups",
-        };
-
-        $("#groups_overlay_container .nothing-selected .group-info-banner").html(
-            render_group_info_banner(context),
+        settings_banner.set_up_banner(
+            $(".group-info-banner"),
+            GROUP_INFO_BANNER,
+            "/help/user-groups",
         );
 
         settings_banner.set_up_upgrade_banners();
