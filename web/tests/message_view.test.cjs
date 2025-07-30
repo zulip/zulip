@@ -54,10 +54,10 @@ mock_esm("../src/spectators", {
     login_to_access() {},
 });
 
-function empty_narrow_html(title, html, search_data) {
+function empty_narrow_html(title, notice_html, search_data) {
     const opts = {
         title,
-        html,
+        notice_html,
         search_data,
     };
     return require("../templates/empty_feed_notice.hbs")(opts);
