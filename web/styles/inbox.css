@@ -217,6 +217,10 @@
                         display: flex;
                         justify-content: space-between;
                         flex-grow: 1;
+
+                        > .inbox-action-button:first-child {
+                            margin-left: auto;
+                        }
                     }
                 }
 
