@@ -1,12 +1,9 @@
-from datetime import timedelta
 from unittest import mock
 
 import responses
-import time_machine
 from django.conf import settings
 from django.http.response import ResponseHeaders
 from django.test import override_settings
-from django.utils.timezone import now
 from requests.exceptions import ConnectionError
 from requests.models import PreparedRequest
 from typing_extensions import override
@@ -59,25 +56,21 @@ class HandlePushNotificationTest(PushNotificationTestCase):
         self.setup_apns_tokens()
         self.setup_fcm_tokens()
 
-        time_sent = now().replace(microsecond=0)
-        with time_machine.travel(time_sent, tick=False):
-            message = self.get_message(
-                Recipient.PERSONAL,
-                type_id=self.personal_recipient_user.id,
-                realm_id=self.personal_recipient_user.realm_id,
-            )
-            UserMessage.objects.create(
-                user_profile=self.user_profile,
-                message=message,
-            )
+        message = self.get_message(
+            Recipient.PERSONAL,
+            type_id=self.personal_recipient_user.id,
+            realm_id=self.personal_recipient_user.realm_id,
+        )
+        UserMessage.objects.create(
+            user_profile=self.user_profile,
+            message=message,
+        )
 
-        time_received = time_sent + timedelta(seconds=1, milliseconds=234)
         missed_message = {
             "message_id": message.id,
             "trigger": NotificationTriggers.DIRECT_MESSAGE,
         }
         with (
-            time_machine.travel(time_received, tick=False),
             self.mock_fcm() as (
                 mock_fcm_app,
                 mock_fcm_messaging,
@@ -116,9 +109,6 @@ class HandlePushNotificationTest(PushNotificationTestCase):
             self.assertEqual(
                 views_logger.output,
                 [
-                    "INFO:zilencer.views:"
-                    f"Remote queuing latency for 6cde5f7a-1f7e-4978-9716-49f69ebfc9fe:<id:{self.user_profile.id}><uuid:{self.user_profile.uuid}> "
-                    "is 1 seconds",
                     "INFO:zilencer.views:"
                     f"Sending mobile push notifications for remote user 6cde5f7a-1f7e-4978-9716-49f69ebfc9fe:<id:{self.user_profile.id}><uuid:{self.user_profile.uuid}>: "
                     f"{len(fcm_devices)} via FCM devices, {len(apns_devices)} via APNs devices",
@@ -234,25 +224,21 @@ class HandlePushNotificationTest(PushNotificationTestCase):
         self.setup_apns_tokens()
         self.setup_fcm_tokens()
 
-        time_sent = now().replace(microsecond=0)
-        with time_machine.travel(time_sent, tick=False):
-            message = self.get_message(
-                Recipient.PERSONAL,
-                type_id=self.personal_recipient_user.id,
-                realm_id=self.personal_recipient_user.realm_id,
-            )
-            UserMessage.objects.create(
-                user_profile=self.user_profile,
-                message=message,
-            )
+        message = self.get_message(
+            Recipient.PERSONAL,
+            type_id=self.personal_recipient_user.id,
+            realm_id=self.personal_recipient_user.realm_id,
+        )
+        UserMessage.objects.create(
+            user_profile=self.user_profile,
+            message=message,
+        )
 
-        time_received = time_sent + timedelta(seconds=1, milliseconds=234)
         missed_message = {
             "message_id": message.id,
             "trigger": NotificationTriggers.DIRECT_MESSAGE,
         }
         with (
-            time_machine.travel(time_received, tick=False),
             self.mock_fcm() as (
                 mock_fcm_app,
                 mock_fcm_messaging,
@@ -313,9 +299,6 @@ class HandlePushNotificationTest(PushNotificationTestCase):
             self.assertEqual(
                 views_logger.output,
                 [
-                    "INFO:zilencer.views:"
-                    f"Remote queuing latency for 6cde5f7a-1f7e-4978-9716-49f69ebfc9fe:<id:{self.user_profile.id}><uuid:{self.user_profile.uuid}> "
-                    "is 1 seconds",
                     "INFO:zilencer.views:"
                     f"Sending mobile push notifications for remote user 6cde5f7a-1f7e-4978-9716-49f69ebfc9fe:<id:{self.user_profile.id}><uuid:{self.user_profile.uuid}>: "
                     f"{len(fcm_devices)} via FCM devices, {len(apns_devices)} via APNs devices",
