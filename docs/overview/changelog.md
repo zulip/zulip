@@ -214,7 +214,7 @@ _Released 2025-07-29_
   `postfix`. Installations using the integration will automatically
   uninstall `postfix` when upgraded. If your Zulip server was using
   `postfix` for another purpose as well, you'll need to manually
-  presenve and update your `postfix` configuration.
+  preserve and update your `postfix` configuration.
 - The `SOCIAL_AUTH_SYNC_CUSTOM_ATTRS_DICT` setting has been removed.
   It was deprecated in favor of `SOCIAL_AUTH_SYNC_ATTRS_DICT` in 10.0.
 
