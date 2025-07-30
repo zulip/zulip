@@ -138,6 +138,7 @@ IGNORED_PHRASES = [
     r"your-organization",
     # Used in invite modal
     r"or",
+    r"Welcome Bot",
     # Units
     r"MB",
     r"GB",

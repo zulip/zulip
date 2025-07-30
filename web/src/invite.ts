@@ -53,6 +53,7 @@ type CommonInvitationData = {
     invite_expires_in_minutes: string;
     invitee_emails: string;
     include_realm_default_subscriptions: string;
+    welcome_message_custom_text?: string;
 };
 
 function reset_error_messages(): void {
@@ -117,6 +118,29 @@ function get_common_invitation_data(): CommonInvitationData {
             data.invitee_emails += "," + current_email;
         }
     }
+
+    if (current_user.is_admin) {
+        const realm_welcome_message_configured = realm.realm_welcome_message_custom_text.length > 0;
+        const send_realm_default_custom_message = $(
+            "#send_default_realm_welcome_message_custom_text",
+        ).is(":checked");
+        const send_custom_message = $("#send_custom_welcome_message_custom_text").is(":checked");
+        const welcome_message_custom_text = $<HTMLTextAreaElement>(
+            "#invite_welcome_custom_message_text",
+        )
+            .val()!
+            .trim();
+
+        if (
+            (realm_welcome_message_configured && !send_realm_default_custom_message) ||
+            (!realm_welcome_message_configured &&
+                send_custom_message &&
+                welcome_message_custom_text.length > 0)
+        ) {
+            data.welcome_message_custom_text = welcome_message_custom_text;
+        }
+    }
+
     return data;
 }
 
@@ -305,6 +329,28 @@ function set_streams_to_join_list_visibility(): void {
     }
 }
 
+function set_welcome_message_custom_text_visibility(): void {
+    if (!current_user.is_admin) {
+        return;
+    }
+
+    const realm_welcome_message_configured = realm.realm_welcome_message_custom_text.length > 0;
+    const send_realm_default_custom_message = $(
+        "#send_default_realm_welcome_message_custom_text",
+    ).is(":checked");
+    const send_custom_message = $("#send_custom_welcome_message_custom_text").is(":checked");
+
+    const should_show_welcome_message_container =
+        (send_custom_message && !realm_welcome_message_configured) ||
+        (!send_realm_default_custom_message && realm_welcome_message_configured);
+
+    if (should_show_welcome_message_container) {
+        $("#invite_welcome_message_custom_text_container").show();
+    } else {
+        $("#invite_welcome_message_custom_text_container").hide();
+    }
+}
+
 async function update_guest_visible_users_count_and_stream_ids(): Promise<void> {
     const invite_as = Number.parseInt(
         $<HTMLSelectOneElement>("select:not([multiple])#invite_as").val()!,
@@ -390,6 +436,7 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
         time_choices: settings_config.custom_time_unit_values,
         show_select_default_streams_option: stream_data.get_default_stream_ids().length > 0,
         user_has_email_set: !settings_data.user_email_not_configured(),
+        default_welcome_message_custom_text: realm.realm_welcome_message_custom_text,
     });
 
     function invite_user_modal_post_render(): void {
@@ -417,6 +464,8 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
             const $user_group_pill_container = $("#invite-user-group-container .pill-container");
             user_group_pill_widget = user_group_picker_pill.create($user_group_pill_container);
         }
+
+        set_welcome_message_custom_text_visibility();
 
         $("#invite_streams_container .input, #invite_select_default_streams").on(
             "change",
@@ -513,6 +562,12 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
 
         $("#invite_select_default_streams").on("change", () => {
             set_streams_to_join_list_visibility();
+        });
+
+        $(
+            "#send_default_realm_welcome_message_custom_text, #send_custom_welcome_message_custom_text",
+        ).on("change", () => {
+            set_welcome_message_custom_text_visibility();
         });
 
         if (!user_has_email_set) {
