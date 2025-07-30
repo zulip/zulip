@@ -58,14 +58,13 @@ A few more details:
   cannot log in via a browser.  Note that if you truly want to
   impersonate yourself (e.g., write messages that come from your Zulip
   account), you'll need to use your **personal API key**.
-* **Outgoing webhook**: The bot can read direct messages where the bot is a
-  participant, and channel messages where the bot is [mentioned](/help/mention-a-user-or-group). When the
-  bot is DM'd or mentioned, it POSTs the message content to a URL of your
-  choice. The POST request format can be in a Zulip format or a
-  Slack-compatible format.
-
-    This is the preferred bot type for interactive bots built on top of Zulip
-    Botserver.
+* **Outgoing webhook**: The bot can read direct messages where the bot
+  is a participant, and channel messages where the bot is
+  [mentioned](/help/mention-a-user-or-group). When the bot is DM'd or
+  mentioned, it POSTs the message content to a URL of your choice. The
+  POST request format can be in a Zulip format or a Slack-compatible
+  format. This is the preferred bot type for interactive bots built on
+  top of Zulip Botserver.
 
 ## Adding bots
 
