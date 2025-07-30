@@ -429,10 +429,6 @@ export default defineConfig({
                         "configure-call-provider",
                         "add-a-custom-linkifier",
                         "require-topics",
-                        "restrict-direct-messages",
-                        "restrict-wildcard-mentions",
-                        "restrict-moving-messages",
-                        "restrict-message-editing-and-deletion",
                         "image-video-and-website-previews",
                         "hide-message-content-in-emails",
                         "message-retention-policy",
@@ -440,6 +436,7 @@ export default defineConfig({
                         "disable-welcome-emails",
                         "configure-automated-notices",
                         "configure-multi-language-search",
+                        "analytics",
                     ],
                 },
                 {
