@@ -264,6 +264,10 @@
         margin-left: 5px;
         display: flex;
         flex-flow: row nowrap;
+        /* Preserve space for the actions even on archived
+           channels, especially those with unreads. The
+           width is 16px at 16px/1em. */
+        min-width: 1em;
     }
 
     .mention_in_unread {
