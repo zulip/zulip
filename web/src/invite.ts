@@ -44,6 +44,17 @@ let stream_pill_widget: stream_pill.StreamPillWidget;
 let user_group_pill_widget: user_group_pill.UserGroupPillWidget;
 let guest_invite_stream_ids: number[] = [];
 
+type CommonInvitationData = {
+    csrfmiddlewaretoken: string;
+    invite_as: number;
+    notify_referrer_on_join: boolean;
+    stream_ids: string;
+    group_ids: string;
+    invite_expires_in_minutes: string;
+    invitee_emails: string;
+    include_realm_default_subscriptions: string;
+};
+
 function reset_error_messages(): void {
     $("#dialog_error").hide().text("").removeClass(common.status_classes);
 
@@ -52,15 +63,7 @@ function reset_error_messages(): void {
     }
 }
 
-function get_common_invitation_data(): {
-    csrfmiddlewaretoken: string;
-    invite_as: number;
-    notify_referrer_on_join: boolean;
-    stream_ids: string;
-    invite_expires_in_minutes: string;
-    invitee_emails: string;
-    include_realm_default_subscriptions: string;
-} {
+function get_common_invitation_data(): CommonInvitationData {
     const invite_as = Number.parseInt(
         $<HTMLSelectOneElement>("select:not([multiple])#invite_as").val()!,
         10,
@@ -93,7 +96,7 @@ function get_common_invitation_data(): {
     }
 
     assert(csrf_token !== undefined);
-    const data = {
+    const data: CommonInvitationData = {
         csrfmiddlewaretoken: csrf_token,
         invite_as,
         notify_referrer_on_join,
