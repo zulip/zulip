@@ -36,10 +36,16 @@ BRANCH_SVN = "trunk"
 # Example commit content
 COMMIT_MESSAGE_A = "Optimize image loading in paints catalog."
 COMMIT_MESSAGE_B = 'Suppress "comment edited" events when body is same.'
+COMMIT_BODY_A = "Implement lazy loading for images on the paints catalog to improve load times."
 
 COMMIT_HASH_A = "a2e84e86ddf7e7f8a9b0c1d2e3f4a5b6c7d8e9f0"
 COMMIT_HASH_B = "9fceb02c0c4b8e4c1e7b43hd4e5f6a7b8c9d0e1f2"
 DEPLOYMENT_HASH = "e494a5be3393"
+
+# Example task/issue/ticket content
+TASK_TITLE = COMMIT_MESSAGE_A[:-1]
+TASK_DESCRIPTION = COMMIT_BODY_A
+TICKET_NUMBER = THREE_DIGIT_NUMBER
 
 # Example datetime content
 _DT = datetime(2025, 5, 30, 2, 0, 0, tzinfo=timezone.utc)
@@ -53,6 +59,11 @@ class ScreenshotContent(TypedDict):
     topic: str
     content: str
 
+
+ASANA = ScreenshotContent(
+    topic=PROJECT_NAME,
+    content=f"{BO_NAME} created a new task **[{TASK_TITLE}]()**.\n> {TASK_DESCRIPTION}",
+)
 
 CAPISTRANO = ScreenshotContent(
     topic=PROJECT_NAME,
@@ -119,6 +130,22 @@ PUPPET = ScreenshotContent(
  Report URL: http://example.com/puppet-reports/production/web-server-01/?status=completed&time={DATETIME_FUSED}""",
 )
 
+REDMINE = ScreenshotContent(
+    topic=TASK_TITLE,
+    content=f"""{BO_NAME} **created** issue [{TICKET_NUMBER} {TASK_TITLE}]():
+
+~~~quote
+
+{TASK_DESCRIPTION}...
+
+~~~
+
+* **Assignee**: {KEVIN_NAME}
+* **Status**: New
+* **Target version**: {VERSION_NUMBER[1:]}
+* **Estimated hours**: 40""",
+)
+
 SVN = ScreenshotContent(
     topic=PROJECT_NAME,
     content=f"""**{BO_GIT_NAME}** committed revision r{REVISION_NUMBER} to `{BRANCH_SVN}`.
@@ -126,7 +153,16 @@ SVN = ScreenshotContent(
 """,
 )
 
+TRAC = ScreenshotContent(
+    topic=f"#{TICKET_NUMBER} {TASK_TITLE}",
+    content=f"""**{BO_GIT_NAME}** updated [ticket #{TICKET_NUMBER}]() with comment:
+> Fixed in  {COMMIT_HASH_A}
+
+status: **new** => **closed**, resolution: => **fixed**""",
+)
+
 FIXTURELESS_INTEGRATIONS: list[str] = [
+    "asana",
     "capistrano",
     "codebase",
     "git",
@@ -136,7 +172,9 @@ FIXTURELESS_INTEGRATIONS: list[str] = [
     "openshift",
     "perforce",
     "puppet",
+    "redmine",
     "svn",
+    "trac",
 ]
 FIXTURELESS_SCREENSHOT_CONTENT: dict[str, list[ScreenshotContent]] = {
     key: [globals()[key.upper().replace("-", "_")]] for key in FIXTURELESS_INTEGRATIONS
