@@ -1069,7 +1069,7 @@ class LoginTest(ZulipTestCase):
         # to sending messages, such as getting the welcome bot, looking up
         # the alert words for a realm, etc.
         with (
-            self.assert_database_query_count(97),
+            self.assert_database_query_count(96),
             self.assert_memcached_count(18),
             self.captureOnCommitCallbacks(execute=True),
         ):
@@ -1773,7 +1773,7 @@ class RealmCreationTest(ZulipTestCase):
         welcome_msg = Message.objects.filter(
             realm_id=realm.id,
             sender__email="welcome-bot@zulip.com",
-            recipient__type=Recipient.PERSONAL,
+            recipient__type=Recipient.DIRECT_MESSAGE_GROUP,
         ).latest("id")
         self.assertTrue(welcome_msg.content.startswith("Hello, and welcome to Zulip!"))
 
@@ -1794,7 +1794,7 @@ class RealmCreationTest(ZulipTestCase):
         welcome_msg = Message.objects.filter(
             realm_id=realm.id,
             sender__email="welcome-bot@zulip.com",
-            recipient__type=Recipient.PERSONAL,
+            recipient__type=Recipient.DIRECT_MESSAGE_GROUP,
         ).latest("id")
         self.assertTrue(welcome_msg.content.startswith("Hello, and welcome to Zulip!"))
         self.assertNotIn("I've kicked off some conversations", welcome_msg.content)
@@ -1842,7 +1842,7 @@ class RealmCreationTest(ZulipTestCase):
         welcome_msg = Message.objects.filter(
             realm_id=get_realm(string_id).id,
             sender__email="welcome-bot@zulip.com",
-            recipient__type=Recipient.PERSONAL,
+            recipient__type=Recipient.DIRECT_MESSAGE_GROUP,
         ).latest("id")
         self.assertTrue(welcome_msg.content.startswith("Hello, and welcome to Zulip!"))
 

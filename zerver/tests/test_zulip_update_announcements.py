@@ -439,13 +439,15 @@ class ZulipUpdateAnnouncementsTest(ZulipTestCase):
             self.assertEqual(
                 imported_realm.zulip_update_announcements_stream, gryffindor_common_room
             )
-            personal_message = Message.objects.filter(
-                realm=imported_realm, sender=notification_bot, recipient__type=Recipient.PERSONAL
+            bot_message = Message.objects.filter(
+                realm=imported_realm,
+                sender=notification_bot,
+                recipient__type=Recipient.PERSONAL,
             ).first()
-            assert personal_message is not None
+            assert bot_message is not None
             self.assertIn(
                 "Starting tomorrow, users in your organization will receive",
-                personal_message.content,
+                bot_message.content,
             )
 
             # Two new updates added.
