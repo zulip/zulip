@@ -64,7 +64,13 @@ CATEGORIES: dict[str, StrPromise] = {
 # Can also be computed from INTEGRATIONS by removing entries from
 # WEBHOOK_INTEGRATIONS and NO_SCREENSHOT_CONFIG, but defined explicitly to
 # avoid circular dependency
-FIXTURELESS_INTEGRATIONS_WITH_SCREENSHOTS: list[str] = []
+FIXTURELESS_INTEGRATIONS_WITH_SCREENSHOTS: list[str] = [
+    "codebase",
+    "git",
+    "mercurial",
+    "perforce",
+    "svn",
+]
 FIXTURELESS_SCREENSHOT_CONTENT: dict[str, list[fixtureless_integrations.ScreenshotContent]] = {
     key: [getattr(fixtureless_integrations, key.upper().replace("-", "_"))]
     for key in FIXTURELESS_INTEGRATIONS_WITH_SCREENSHOTS
@@ -862,7 +868,9 @@ for integration, screenshots_contents in FIXTURELESS_SCREENSHOT_CONTENT.items():
         for screenshot_content in screenshots_contents
     ]
 
-FIXTURELESS_SCREENSHOT_CONFIG_OPTIONAL_FIELDS = {}
+FIXTURELESS_SCREENSHOT_CONFIG_OPTIONAL_FIELDS = {
+    "mercurial": {"image_dir": "hg"},
+}
 
 for integration, fields in FIXTURELESS_SCREENSHOT_CONFIG_OPTIONAL_FIELDS.items():
     assert integration in FIXTURELESS_SCREENSHOT_CONFIG
