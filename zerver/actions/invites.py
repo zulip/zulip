@@ -198,6 +198,7 @@ def do_invite_users(
     invite_expires_in_minutes: int | None,
     include_realm_default_subscriptions: bool,
     invite_as: int = PreregistrationUser.INVITE_AS["MEMBER"],
+    welcome_message_custom_text: str | None = None,
 ) -> list[tuple[str, str, bool]]:
     num_invites = len(invitee_emails)
 
@@ -285,6 +286,7 @@ def do_invite_users(
             realm=realm,
             include_realm_default_subscriptions=include_realm_default_subscriptions,
             notify_referrer_on_join=notify_referrer_on_join,
+            welcome_message_custom_text=welcome_message_custom_text,
         )
         prereg_user.save()
         stream_ids = [stream.id for stream in streams]
@@ -387,12 +389,14 @@ def do_create_multiuse_invite_link(
     include_realm_default_subscriptions: bool,
     streams: Sequence[Stream] = [],
     user_groups: Sequence[NamedUserGroup] = [],
+    welcome_message_custom_text: str | None = None,
 ) -> str:
     realm = referred_by.realm
     invite = MultiuseInvite.objects.create(
         realm=realm,
         referred_by=referred_by,
         include_realm_default_subscriptions=include_realm_default_subscriptions,
+        welcome_message_custom_text=welcome_message_custom_text,
     )
     if streams:
         invite.streams.set(streams)

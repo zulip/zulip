@@ -214,6 +214,7 @@ class InviteUserBase(ZulipTestCase):
         invite_as: int = PreregistrationUser.INVITE_AS["MEMBER"],
         include_realm_default_subscriptions: bool = False,
         realm: Realm | None = None,
+        welcome_message_custom_text: str | None = None,
     ) -> "TestHttpResponse":
         """
         Invites the specified users to Zulip with the specified streams.
@@ -224,6 +225,8 @@ class InviteUserBase(ZulipTestCase):
         streams should be a list of strings.
 
         group_ids should be a list of int.
+
+        welcome_message_custom_text should be a string.
         """
         stream_ids = [self.get_stream_id(stream_name, realm=realm) for stream_name in stream_names]
 
@@ -231,20 +234,25 @@ class InviteUserBase(ZulipTestCase):
         if invite_expires_in is None:
             invite_expires_in = orjson.dumps(None).decode()
 
+        payload = {
+            "invitee_emails": invitee_emails,
+            "invite_expires_in_minutes": invite_expires_in,
+            "stream_ids": orjson.dumps(stream_ids).decode(),
+            "group_ids": orjson.dumps(group_ids).decode() if group_ids else [],
+            "invite_as": invite_as,
+            "include_realm_default_subscriptions": orjson.dumps(
+                include_realm_default_subscriptions
+            ).decode(),
+            "notify_referrer_on_join": orjson.dumps(notify_referrer_on_join).decode(),
+        }
+
+        if welcome_message_custom_text is not None:
+            payload["welcome_message_custom_text"] = welcome_message_custom_text
+
         with self.captureOnCommitCallbacks(execute=True):
             return self.client_post(
                 "/json/invites",
-                {
-                    "invitee_emails": invitee_emails,
-                    "invite_expires_in_minutes": invite_expires_in,
-                    "stream_ids": orjson.dumps(stream_ids).decode(),
-                    "group_ids": orjson.dumps(group_ids).decode() if group_ids else [],
-                    "invite_as": invite_as,
-                    "include_realm_default_subscriptions": orjson.dumps(
-                        include_realm_default_subscriptions
-                    ).decode(),
-                    "notify_referrer_on_join": orjson.dumps(notify_referrer_on_join).decode(),
-                },
+                payload,
                 subdomain=realm.string_id if realm else "zulip",
             )
 
@@ -2164,6 +2172,165 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response["Location"], "http://zulip.testserver/")
 
+    def test_invite_welcome_bot_custom_message_from_admin(self) -> None:
+        self.login("iago")
+        realm = get_realm("zulip")
+        welcome_message_custom_text = "Welcome Bot custom message."
+        realm_welcome_message_custom_text = "Realm's Welcome Bot message."
+        do_set_realm_property(
+            realm,
+            "welcome_message_custom_text",
+            realm_welcome_message_custom_text,
+            acting_user=None,
+        )
+
+        # Invites when `welcome_message_custom_text` is provided.
+        invitee = self.nonreg_email("alice")
+        result = self.invite(invitee, [], welcome_message_custom_text=welcome_message_custom_text)
+        self.assert_json_success(result)
+        self.assertTrue(find_key_by_email(invitee))
+
+        self.submit_reg_form_for_user(invitee, "password")
+
+        received_initial_direct_message = self.get_second_to_last_message()
+        received_welcome_bot_custom_message = self.get_last_message()
+        self.assertEqual(received_initial_direct_message.sender.email, "welcome-bot@zulip.com")
+        self.assertTrue(
+            received_initial_direct_message.content.startswith("Hello, and welcome to Zulip!")
+        )
+        self.assertEqual(received_welcome_bot_custom_message.sender.email, "welcome-bot@zulip.com")
+        self.assertIn(welcome_message_custom_text, received_welcome_bot_custom_message.content)
+
+        # Invites when `welcome_message_custom_text` is not provided.
+        invitee = self.nonreg_email("bob")
+        result = self.invite(invitee, [])
+        self.assert_json_success(result)
+        self.assertTrue(find_key_by_email(invitee))
+
+        self.submit_reg_form_for_user(invitee, "password")
+
+        received_initial_direct_message = self.get_second_to_last_message()
+        received_welcome_bot_custom_message = self.get_last_message()
+        self.assertEqual(received_initial_direct_message.sender.email, "welcome-bot@zulip.com")
+        self.assertTrue(
+            received_initial_direct_message.content.startswith("Hello, and welcome to Zulip!")
+        )
+        self.assertEqual(received_welcome_bot_custom_message.sender.email, "welcome-bot@zulip.com")
+        self.assertIn(
+            realm_welcome_message_custom_text, received_welcome_bot_custom_message.content
+        )
+
+        # Invites when `welcome_message_custom_text` is an empty string.
+        self.login("iago")
+        invitee = self.nonreg_email("newguy")
+        result = self.invite(invitee, [], welcome_message_custom_text="")
+        self.assert_json_success(result)
+        self.assertTrue(find_key_by_email(invitee))
+
+        self.submit_reg_form_for_user(invitee, "password")
+
+        second_to_last_message = self.get_second_to_last_message()
+        received_initial_direct_message = self.get_last_message()
+        self.assertNotEqual(second_to_last_message.sender.email, "welcome-bot@zulip.com")
+        self.assertEqual(received_initial_direct_message.sender.email, "welcome-bot@zulip.com")
+        self.assertTrue(
+            received_initial_direct_message.content.startswith("Hello, and welcome to Zulip!")
+        )
+
+    def test_invite_welcome_bot_custom_message_from_member(self) -> None:
+        # If a non-admin member is creating an invitaion the Welcome Bot
+        # custom message is sent if it is configured in the realm.
+
+        # If the `welcome_message_custom_text` is configured for the realm.
+        self.login("hamlet")
+        realm = get_realm("zulip")
+        welcome_message_custom_text = "Welcome Bot custom message."
+        realm_welcome_message_custom_text = "Realm's Welcome Bot message."
+        invitee = self.nonreg_email("alice")
+        do_set_realm_property(
+            realm,
+            "welcome_message_custom_text",
+            realm_welcome_message_custom_text,
+            acting_user=None,
+        )
+
+        result = self.invite(invitee, [])
+        self.assert_json_success(result)
+        self.assertTrue(find_key_by_email(invitee))
+
+        self.submit_reg_form_for_user(invitee, "password")
+
+        received_initial_direct_message = self.get_second_to_last_message()
+        received_welcome_bot_custom_message = self.get_last_message()
+        self.assertEqual(received_initial_direct_message.sender.email, "welcome-bot@zulip.com")
+        self.assertTrue(
+            received_initial_direct_message.content.startswith("Hello, and welcome to Zulip!")
+        )
+        self.assertEqual(received_welcome_bot_custom_message.sender.email, "welcome-bot@zulip.com")
+        self.assertIn(
+            realm_welcome_message_custom_text, received_welcome_bot_custom_message.content
+        )
+
+        # Non-admin users are not allowed to send customized welcome messages.
+        invitee = self.nonreg_email("bob")
+        result = self.invite(invitee, [], welcome_message_custom_text=welcome_message_custom_text)
+        self.assert_json_error(result, "Must be an organization administrator")
+
+        # If the `welcome_message_custom_text` is not configured for the realm.
+        invitee = self.nonreg_email("newguy")
+        do_set_realm_property(
+            realm,
+            "welcome_message_custom_text",
+            "",
+            acting_user=None,
+        )
+        result = self.invite(invitee, [])
+        self.assert_json_success(result)
+        self.assertTrue(find_key_by_email(invitee))
+
+        self.submit_reg_form_for_user(invitee, "password")
+
+        second_to_last_message = self.get_second_to_last_message()
+        received_initial_direct_message = self.get_last_message()
+        self.assertNotEqual(second_to_last_message.sender.email, "welcome-bot@zulip.com")
+        self.assertEqual(received_initial_direct_message.sender.email, "welcome-bot@zulip.com")
+        self.assertTrue(
+            received_initial_direct_message.content.startswith("Hello, and welcome to Zulip!")
+        )
+
+    def test_invite_welcome_bot_custom_message_changed_after_invite(self) -> None:
+        self.login("iago")
+        realm = get_realm("zulip")
+        realm_welcome_message_custom_text = "Realm's Welcome Bot message."
+
+        # If `welcome_message_custom_text` is `None`, we use the realm's
+        # configured message at the time the user accepts the invite. So if the realm's
+        # configured message is updated later, the user will receive the updated version.
+        self.assertNotEqual(realm.welcome_message_custom_text, realm_welcome_message_custom_text)
+        invitee = self.nonreg_email("alice")
+        result = self.invite(invitee, [])
+        self.assert_json_success(result)
+        self.assertTrue(find_key_by_email(invitee))
+        do_set_realm_property(
+            realm,
+            "welcome_message_custom_text",
+            realm_welcome_message_custom_text,
+            acting_user=None,
+        )
+
+        self.submit_reg_form_for_user(invitee, "password")
+
+        received_initial_direct_message = self.get_second_to_last_message()
+        received_welcome_bot_custom_message = self.get_last_message()
+        self.assertEqual(received_initial_direct_message.sender.email, "welcome-bot@zulip.com")
+        self.assertTrue(
+            received_initial_direct_message.content.startswith("Hello, and welcome to Zulip!")
+        )
+        self.assertEqual(received_welcome_bot_custom_message.sender.email, "welcome-bot@zulip.com")
+        self.assertIn(
+            realm_welcome_message_custom_text, received_welcome_bot_custom_message.content
+        )
+
 
 class InvitationsTestCase(InviteUserBase):
     def test_do_get_invites_controlled_by_user(self) -> None:
@@ -2828,6 +2995,165 @@ class MultiuseInviteTest(ZulipTestCase):
         self.assertEqual(prereg_user.multiuse_invite, multiuse_invite)
 
         mail.outbox.pop()
+
+    def test_multiuse_invite_welcome_bot_custom_message_from_admin(self) -> None:
+        self.login("iago")
+        realm = get_realm("zulip")
+        welcome_message_custom_text = "Welcome Bot custom message."
+        realm_welcome_message_custom_text = "Realm's Welcome Bot message."
+        do_set_realm_property(
+            realm,
+            "welcome_message_custom_text",
+            realm_welcome_message_custom_text,
+            acting_user=None,
+        )
+
+        # Multiuse invites when `welcome_message_custom_text` is provided.
+        result = self.client_post(
+            "/json/invites/multiuse",
+            {
+                "welcome_message_custom_text": welcome_message_custom_text,
+            },
+        )
+        invite_link = self.assert_json_success(result)["invite_link"]
+        self.check_user_able_to_register(self.nonreg_email("alice"), invite_link)
+
+        received_initial_direct_message = self.get_second_to_last_message()
+        received_welcome_bot_custom_message = self.get_last_message()
+        self.assertEqual(received_initial_direct_message.sender.email, "welcome-bot@zulip.com")
+        self.assertTrue(
+            received_initial_direct_message.content.startswith("Hello, and welcome to Zulip!")
+        )
+        self.assertEqual(received_welcome_bot_custom_message.sender.email, "welcome-bot@zulip.com")
+        self.assertIn(welcome_message_custom_text, received_welcome_bot_custom_message.content)
+
+        # Multiuse invites when `welcome_message_custom_text` is not provided.
+        self.login("iago")
+        result = self.client_post("/json/invites/multiuse")
+        invite_link = self.assert_json_success(result)["invite_link"]
+        self.check_user_able_to_register(self.nonreg_email("bob"), invite_link)
+
+        received_initial_direct_message = self.get_second_to_last_message()
+        received_welcome_bot_custom_message = self.get_last_message()
+        self.assertEqual(received_initial_direct_message.sender.email, "welcome-bot@zulip.com")
+        self.assertTrue(
+            received_initial_direct_message.content.startswith("Hello, and welcome to Zulip!")
+        )
+        self.assertEqual(received_welcome_bot_custom_message.sender.email, "welcome-bot@zulip.com")
+        self.assertIn(
+            realm_welcome_message_custom_text, received_welcome_bot_custom_message.content
+        )
+
+        # Multiuse invites when `welcome_message_custom_text` is an empty string.
+        self.login("iago")
+        result = self.client_post(
+            "/json/invites/multiuse",
+            {
+                "welcome_message_custom_text": "",
+            },
+        )
+        invite_link = self.assert_json_success(result)["invite_link"]
+        self.check_user_able_to_register(self.nonreg_email("newguy"), invite_link)
+
+        second_to_last_message = self.get_second_to_last_message()
+        received_initial_direct_message = self.get_last_message()
+        self.assertFalse(second_to_last_message.content.startswith("Hello, and welcome to Zulip!"))
+        self.assertEqual(received_initial_direct_message.sender.email, "welcome-bot@zulip.com")
+        self.assertTrue(
+            received_initial_direct_message.content.startswith("Hello, and welcome to Zulip!")
+        )
+
+    def test_multiuse_invite_welcome_bot_custom_message_from_member(self) -> None:
+        # If a non-admin member is creating an invitaion the Welcome Bot
+        # custom message is sent if it is configured in the realm.
+
+        # If the `welcome_message_custom_text` is configured for the realm.
+        self.login("hamlet")
+        realm = get_realm("zulip")
+        members_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MEMBERS, realm=realm, is_system_group=True
+        )
+        welcome_message_custom_text = "Welcome Bot custom message."
+        realm_welcome_message_custom_text = "Realm's Welcome Bot message."
+        do_change_realm_permission_group_setting(
+            realm, "create_multiuse_invite_group", members_group, acting_user=None
+        )
+        do_set_realm_property(
+            realm,
+            "welcome_message_custom_text",
+            realm_welcome_message_custom_text,
+            acting_user=None,
+        )
+
+        result = self.client_post("/json/invites/multiuse")
+        invite_link = self.assert_json_success(result)["invite_link"]
+        self.check_user_able_to_register(self.nonreg_email("alice"), invite_link)
+
+        received_initial_direct_message = self.get_second_to_last_message()
+        received_welcome_bot_custom_message = self.get_last_message()
+        self.assertEqual(received_initial_direct_message.sender.email, "welcome-bot@zulip.com")
+        self.assertTrue(
+            received_initial_direct_message.content.startswith("Hello, and welcome to Zulip!")
+        )
+        self.assertEqual(received_welcome_bot_custom_message.sender.email, "welcome-bot@zulip.com")
+        self.assertIn(
+            realm_welcome_message_custom_text, received_welcome_bot_custom_message.content
+        )
+
+        # Non-admin users are not allowed to send customized welcome messages.
+        result = self.client_post(
+            "/json/invites/multiuse", {"welcome_message_custom_text": welcome_message_custom_text}
+        )
+        self.assert_json_error(result, "Must be an organization administrator")
+
+        # If the `welcome_message_custom_text` is not configured for the realm.
+        do_set_realm_property(
+            realm,
+            "welcome_message_custom_text",
+            "",
+            acting_user=None,
+        )
+        result = self.client_post("/json/invites/multiuse")
+        invite_link = self.assert_json_success(result)["invite_link"]
+        self.check_user_able_to_register(self.nonreg_email("newguy"), invite_link)
+
+        second_to_last_message = self.get_second_to_last_message()
+        received_initial_direct_message = self.get_last_message()
+        self.assertFalse(second_to_last_message.content.startswith("Hello, and welcome to Zulip!"))
+        self.assertEqual(received_initial_direct_message.sender.email, "welcome-bot@zulip.com")
+        self.assertTrue(
+            received_initial_direct_message.content.startswith("Hello, and welcome to Zulip!")
+        )
+
+    def test_multiuse_invite_welcome_bot_custom_message_changed_after_invite(self) -> None:
+        self.login("iago")
+        realm = get_realm("zulip")
+        realm_welcome_message_custom_text = "Realm's Welcome Bot message."
+
+        # If `welcome_message_custom_text` is `None`, we use the realm's
+        # configured message at the time the user accepts the invite. So if the realm's
+        # configured message is updated later, the user will receive the updated version.
+        self.assertNotEqual(realm.welcome_message_custom_text, realm_welcome_message_custom_text)
+        result = self.client_post("/json/invites/multiuse")
+        invite_link = self.assert_json_success(result)["invite_link"]
+        do_set_realm_property(
+            realm,
+            "welcome_message_custom_text",
+            realm_welcome_message_custom_text,
+            acting_user=None,
+        )
+        self.check_user_able_to_register(self.nonreg_email("alice"), invite_link)
+
+        received_initial_direct_message = self.get_second_to_last_message()
+        received_welcome_bot_custom_message = self.get_last_message()
+        self.assertEqual(received_initial_direct_message.sender.email, "welcome-bot@zulip.com")
+        self.assertTrue(
+            received_initial_direct_message.content.startswith("Hello, and welcome to Zulip!")
+        )
+        self.assertEqual(received_welcome_bot_custom_message.sender.email, "welcome-bot@zulip.com")
+        self.assertIn(
+            realm_welcome_message_custom_text, received_welcome_bot_custom_message.content
+        )
 
     def test_valid_multiuse_link(self) -> None:
         email1 = self.nonreg_email("test")

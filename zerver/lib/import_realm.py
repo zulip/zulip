@@ -41,7 +41,7 @@ from zerver.lib.migration_status import MigrationStatusJson, parse_migration_sta
 from zerver.lib.mime_types import guess_type
 from zerver.lib.onboarding import (
     OnboardingMessageTypeEnum,
-    send_initial_direct_message,
+    send_initial_direct_messages_to_user,
     send_initial_realm_messages,
 )
 from zerver.lib.partial import partial
@@ -1948,7 +1948,7 @@ def send_zulip_initial_messages_after_import(realm: Realm, target_channel: Strea
         ).order_by("id")[:BATCH_SIZE]
     ):
         for user_profile in user_profiles_batch:
-            send_initial_direct_message(user_profile)
+            send_initial_direct_messages_to_user(user_profile)
         lower_bound_id = user_profiles_batch[-1].id
 
 

@@ -446,6 +446,7 @@ export const realm_schema = z.object({
     realm_video_chat_provider: z.number(),
     realm_waiting_period_threshold: z.number(),
     realm_want_advertise_in_communities_directory: z.boolean(),
+    realm_welcome_message_custom_text: z.string(),
     realm_zulip_update_announcements_stream_id: z.number(),
     server_avatar_changes_disabled: z.boolean(),
     server_can_summarize_topics: z.boolean(),

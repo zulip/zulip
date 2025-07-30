@@ -951,6 +951,7 @@ def prepare_activation_url(
     realm: Realm | None,
     streams: Iterable[Stream] | None = None,
     user_groups: Iterable[NamedUserGroup] | None = None,
+    welcome_message_custom_text: str | None = None,
 ) -> str:
     """
     Send an email with a confirmation link to the provided e-mail so the user
@@ -969,6 +970,9 @@ def prepare_activation_url(
 
     if include_realm_default_subscriptions is not None:
         prereg_user.include_realm_default_subscriptions = include_realm_default_subscriptions
+
+    if welcome_message_custom_text is not None:
+        prereg_user.welcome_message_custom_text = welcome_message_custom_text
 
     if invited_as is not None or include_realm_default_subscriptions is not None:
         prereg_user.save()
@@ -1451,6 +1455,7 @@ def accounts_home(
     user_groups_to_subscribe = None
     invited_as = None
     include_realm_default_subscriptions = None
+    welcome_message_custom_text = None
 
     if multiuse_object:
         # multiuse_object's realm should have been validated by the caller,
@@ -1463,6 +1468,7 @@ def accounts_home(
         from_multiuse_invite = True
         invited_as = multiuse_object.invited_as
         include_realm_default_subscriptions = multiuse_object.include_realm_default_subscriptions
+        welcome_message_custom_text = multiuse_object.welcome_message_custom_text
 
     if request.method == "POST":
         form = HomepageForm(
@@ -1502,6 +1508,7 @@ def accounts_home(
                 invited_as=invited_as,
                 include_realm_default_subscriptions=include_realm_default_subscriptions,
                 multiuse_invite=multiuse_object,
+                welcome_message_custom_text=welcome_message_custom_text,
             )
             try:
                 send_confirm_registration_email(email, activation_url, request=request, realm=realm)

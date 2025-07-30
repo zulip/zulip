@@ -61,6 +61,25 @@
                         <option value="6">{{t "Sunday" }}</option>
                     </select>
                 </div>
+
+                {{> settings_checkbox
+                  setting_name="realm_enable_welcome_message_custom_text"
+                  prefix="id_"
+                  is_checked=realm_enable_welcome_message_custom_text
+                  label=admin_settings_label.realm_enable_welcome_message_custom_text
+                  skip_prop_element=true}}
+                <div class="input-group" id="welcome_message_custom_text_container">
+                    <label for="id_realm_welcome_message_custom_text" class="settings-field-label">
+                        {{t "Message text" }}
+                    </label>
+                    <textarea id="id_realm_welcome_message_custom_text" name="welcome_message_custom_text"
+                      class="admin-realm-welcome-message-custom-text setting-widget prop-element settings_textarea display-block" maxlength="8000"
+                      data-setting-widget-type="string" rows="3">{{ realm_welcome_message_custom_text }}</textarea>
+                    <div id="welcome_message_custom_text_buttons_container">
+                        {{> ../components/action_button attention="quiet" intent="neutral" label=(t "Send me a test message") id="send_test_welcome_bot_custom_message"}}
+                    </div>
+                </div>
+
             </div>
         </div>
 

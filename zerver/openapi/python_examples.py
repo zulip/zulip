@@ -477,6 +477,18 @@ def resend_email_invitation(client: Client) -> None:
     validate_against_openapi_schema(result, "/invites/{invite_id}/resend", "post", "200")
 
 
+@openapi_test_function("/realm/test_welcome_bot_custom_message:post")
+def test_welcome_bot_custom_message(client: Client) -> None:
+    # {code_example|start}
+    # Send a test welcome bot custom message with the provided text.
+    request = {"welcome_message_custom_text": "Custom Welcome Message Text"}
+    result = client.call_endpoint(
+        "/realm/test_welcome_bot_custom_message", method="POST", request=request
+    )
+    # {code_example|end}
+    validate_against_openapi_schema(result, "/realm/test_welcome_bot_custom_message", "post", "200")
+
+
 @openapi_test_function("/users/{user_id}:get")
 def get_single_user(client: Client) -> None:
     user_id = 8
@@ -2086,6 +2098,7 @@ def test_the_api(client: Client, nonadmin_client: Client, owner_client: Client) 
     test_server_organizations(client)
     test_errors(client)
     test_invitations(client)
+    test_welcome_bot_custom_message(client)
 
     sys.stdout.flush()
     if REGISTERED_TEST_FUNCTIONS != CALLED_TEST_FUNCTIONS:

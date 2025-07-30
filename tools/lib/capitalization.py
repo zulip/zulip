@@ -160,6 +160,8 @@ IGNORED_PHRASES = [
     r"to add a new line",
     # Used in showing Notification Bot read receipts message
     "Notification Bot",
+    # Used in strings around welcome bot custom messages
+    r"Welcome Bot",
     # Used in presence_enabled setting label
     r"invisible mode off",
     # Typeahead suggestions for "Pronouns" custom field type.
