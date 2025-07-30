@@ -49,10 +49,13 @@ TICKET_NUMBER = THREE_DIGIT_NUMBER
 
 # Example datetime content
 _DT = datetime(2025, 5, 30, 2, 0, 0, tzinfo=timezone.utc)
+
 DATETIME_STAMP = _DT.strftime("%Y-%m-%d %H:%M:%S")
 DATETIME_ASCTIME = _DT.strftime("%a %b %d %H:%M:%S %Y")
 DATETIME_FUSED = _DT.strftime("%Y%m%d%H%M%S")
+
 DATE_ISO_8601 = _DT.strftime("%Y-%m-%d")
+DATE_LONG = _DT.strftime("%A, %B %d, %Y")
 
 
 class ScreenshotContent(TypedDict):
@@ -99,6 +102,14 @@ GITHUB_ACTIONS = ScreenshotContent(
 > Unable to connect.""",
 )
 
+GOOGLE_CALENDAR = ScreenshotContent(
+    topic="Team reminders",
+    content=f"""The [Development Sync]() event is scheduled from 2 PM - 3 PM on {DATE_LONG} at Conference Room B.
+> Let's align on our current sprint progress, address any blockers, and share updates. Your input is crucial!
+
+[Join call]().""",
+)
+
 JENKINS = ScreenshotContent(
     topic=PROJECT_NAME,
     content=f"**Build:** [#{REVISION_NUMBER}](): FAILURE :cross_mark:",
@@ -117,6 +128,14 @@ MERCURIAL = ScreenshotContent(
 * [{COMMIT_MESSAGE_A}]()
 * [{COMMIT_MESSAGE_B}]()
 """,
+)
+
+NOTION = ScreenshotContent(
+    topic=f"{PROJECT_NAME} Release {VERSION_NUMBER}",
+    content=f"""**{BO_NAME}** [commented]() on:
+> project demo scheduled
+
+Can we reschedule this to next week?""",
 )
 
 OPENSHIFT = ScreenshotContent(
