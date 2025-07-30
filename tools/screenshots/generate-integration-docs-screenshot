@@ -97,11 +97,11 @@ def create_integration_bot(integration: Integration, bot_name: str | None = None
     return bot
 
 
-def create_integration_stream(integration: Integration, bot: UserProfile) -> None:
+def create_integration_channel(channel_name: str, bot: UserProfile) -> None:
     assert isinstance(bot.bot_owner, UserProfile)
     realm = bot.bot_owner.realm
-    stream, _created = create_stream_if_needed(realm, integration.stream_name)
-    bulk_add_subscriptions(realm, [stream], [bot, bot.bot_owner], acting_user=bot)
+    channel, _created = create_stream_if_needed(realm, channel_name)
+    bulk_add_subscriptions(realm, [channel], [bot, bot.bot_owner], acting_user=bot)
 
 
 def get_fixture_info(fixture_path: str) -> tuple[Any, bool, bool, str]:
@@ -168,9 +168,9 @@ def send_bot_payload_message(
         headers.update(dict(Authorization=auth))
 
     assert isinstance(bot.bot_owner, UserProfile)
-    stream = integration.stream_name or "devel"
+    channel_name = config.channel or integration.name
     url = f"{bot.bot_owner.realm.url}/{integration.url}"
-    params = {"api_key": bot.api_key, "stream": stream}
+    params = {"api_key": bot.api_key, "stream": channel_name}
     params.update(config.extra_params)
 
     extra_args = {}
@@ -243,7 +243,8 @@ def generate_screenshot_from_config(
 ) -> None:
     integration = INTEGRATIONS[integration_name]
     bot = create_integration_bot(integration, screenshot_config.bot_name)
-    create_integration_stream(integration, bot)
+    channel_name = screenshot_config.channel or integration.name
+    create_integration_channel(channel_name, bot)
     image_path = get_image_path(integration, screenshot_config)
 
     if isinstance(integration, WebhookIntegration):
@@ -252,10 +253,9 @@ def generate_screenshot_from_config(
         message_sent = send_bot_payload_message(bot, integration, fixture_path, screenshot_config)
     else:
         assert isinstance(screenshot_config, FixturelessScreenshotConfig)
-        create_integration_stream(integration, bot)
         send_bot_mock_message(
             bot,
-            channel=screenshot_config.channel or integration.stream_name,
+            channel=channel_name,
             topic=screenshot_config.topic,
             message=screenshot_config.message,
         )
@@ -311,7 +311,7 @@ fixtureless_group.add_argument("-M", "--message", help="Message to use for the m
 fixtureless_group.add_argument(
     "-C",
     "--channel",
-    help="Channel name to use for the mock message. Defaults to stream name. Ignored if --topic and --message are not specified.",
+    help="Channel name to use for the mock message. Ignored if --topic and --message are not specified.",
 )
 
 options = parser.parse_args()
