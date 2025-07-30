@@ -2006,7 +2006,9 @@ export function get_group_assigned_user_group_permissions(group: UserGroup): {
 
 export function set_up_folder_dropdown_widget(sub?: StreamSubscription): DropdownWidget {
     const folder_options = (): dropdown_widget.Option[] => {
-        const folders = channel_folders.get_channel_folders();
+        const folders = channel_folders
+            .get_channel_folders()
+            .sort((a, b) => util.strcmp(a.name.toLowerCase(), b.name.toLowerCase()));
         const options: dropdown_widget.Option[] = folders.map((folder) => ({
             name: folder.name,
             unique_id: folder.id,
