@@ -65,13 +65,19 @@ CATEGORIES: dict[str, StrPromise] = {
 # WEBHOOK_INTEGRATIONS and NO_SCREENSHOT_CONFIG, but defined explicitly to
 # avoid circular dependency
 FIXTURELESS_INTEGRATIONS_WITH_SCREENSHOTS: list[str] = [
+    "asana",
+    "capistrano",
     "codebase",
     "git",
     "github-actions",
     "jenkins",
     "mercurial",
+    "openshift",
     "perforce",
+    "puppet",
+    "redmine",
     "svn",
+    "trac",
 ]
 FIXTURELESS_SCREENSHOT_CONTENT: dict[str, list[fixtureless_integrations.ScreenshotContent]] = {
     key: [getattr(fixtureless_integrations, key.upper().replace("-", "_"))]
