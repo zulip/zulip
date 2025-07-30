@@ -6,7 +6,11 @@ import * as channel from "./channel.ts";
 import type {Message} from "./message_store.ts";
 import * as starred_messages from "./starred_messages.ts";
 
-export function send_flag_update_for_messages(msg_ids: number[], flag: string, op: string): void {
+export function send_flag_update_for_messages(
+    msg_ids: number[],
+    flag: string,
+    op: "add" | "remove",
+): void {
     void channel.post({
         url: "/json/messages/flags",
         data: {
