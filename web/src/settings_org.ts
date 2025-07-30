@@ -25,6 +25,7 @@ import * as pygments_data from "./pygments_data.ts";
 import * as realm_icon from "./realm_icon.ts";
 import * as realm_logo from "./realm_logo.ts";
 import {realm_user_settings_defaults} from "./realm_user_settings_defaults.ts";
+import * as settings_banner from "./settings_banner.ts";
 import {
     type MessageMoveTimeLimitSetting,
     type SettingOptionValueWithKey,
@@ -1320,6 +1321,7 @@ export function build_page(): void {
     meta.loaded = true;
 
     loading.make_indicator($("#admin_page_auth_methods_loading_indicator"));
+    settings_banner.set_up_upgrade_banners();
 
     // Initialize all the dropdown list widgets.
     init_dropdown_widgets();

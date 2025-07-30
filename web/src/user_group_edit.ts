@@ -44,6 +44,7 @@ import * as people from "./people.ts";
 import * as resize from "./resize.ts";
 import * as scroll_util from "./scroll_util.ts";
 import type {UserGroupUpdateEvent} from "./server_event_types.ts";
+import * as settings_banner from "./settings_banner.ts";
 import * as settings_components from "./settings_components.ts";
 import * as settings_config from "./settings_config.ts";
 import * as settings_data from "./settings_data.ts";
@@ -1872,6 +1873,7 @@ export function setup_page(callback: () => void): void {
             render_group_info_banner(context),
         );
 
+        settings_banner.set_up_upgrade_banners();
         // Initially as the overlay is build with empty right panel,
         // active_group_id is undefined.
         user_group_components.reset_active_group_id();

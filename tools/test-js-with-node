@@ -216,6 +216,7 @@ EXEMPT_FILES = make_set(
         "web/src/server_events_state.ts",
         "web/src/settings.ts",
         "web/src/settings_account.ts",
+        "web/src/settings_banner.ts",
         "web/src/settings_bots.ts",
         "web/src/settings_components.ts",
         "web/src/settings_emoji.ts",
