@@ -73,6 +73,7 @@ FIXTURELESS_INTEGRATIONS_WITH_SCREENSHOTS: list[str] = [
     "github-actions",
     "google-calendar",
     "jenkins",
+    "jira-plugin",
     "mastodon",
     "mercurial",
     "nagios",
