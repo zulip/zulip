@@ -14,7 +14,7 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-07-25 20:29+0000\n"
-"PO-Revision-Date: 2025-07-19 05:03+0000\n"
+"PO-Revision-Date: 2025-07-26 22:07+0000\n"
 "Last-Translator: Alex Vandiver <alexmv@zulip.com>\n"
 "Language-Team: Portuguese (Portugal) <https://hosted.weblate.org/projects/"
 "zulip/django/pt_PT/>\n"
@@ -2727,10 +2727,9 @@ msgstr ""
 "receber emails (<a href=\"%(url)s\">ajuda</a>)."
 
 #: templates/zerver/emails/missed_message.subject.txt:2
-#, fuzzy, python-format
-#| msgid "Group DMs with %(huddle_display_name)s"
+#, python-format
 msgid "Group DMs with %(direct_message_group_display_name)s"
-msgstr "Mensagens privadas de grupo com%(huddle_display_name)s"
+msgstr "Mensagens privadas de grupo com%(direct_message_group_display_name)s"
 
 #: templates/zerver/emails/missed_message.subject.txt:3
 #, python-format

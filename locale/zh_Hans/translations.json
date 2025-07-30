@@ -487,7 +487,7 @@
   "Deactivate user": "停用用户",
   "Deactivate your account": "关闭您的账号",
   "Deactivate {group_name}?": "停用{group_name}？",
-  "Deactivate {name}?": "停用  {name} ？",
+  "Deactivate {name}?": "停用 {name} ？",
   "Deactivated": "已停用",
   "Deactivated groups": "已停用的群组",
   "Deactivated users": "停用成员列表",
@@ -1732,7 +1732,7 @@
   "View direct messages": "查看私信",
   "View drafts": "查看草稿",
   "View edit and move history": "查看编辑和移动历史",
-  "View edit history": "显示编辑历史 ",
+  "View edit history": "显示编辑历史",
   "View file": "显示文件",
   "View in channel settings": "在频道设置中查看",
   "View in playground": "在代码游乐场查看",
@@ -2066,5 +2066,5 @@
   "{unsubscribed_participants_count} topic participants are not subscribed to &nbsp;<z-stream></z-stream>.": "",
   "{user_time} local time": "{user_time} 当地时间",
   "{username} [said]({link_to_message}):": "{username} [发言道]({link_to_message})：",
-  "{username} reacted with {emoji_name}": "{username} 已添加 {emoji_name} "
+  "{username} reacted with {emoji_name}": "{username} 已添加 {emoji_name}"
 }

@@ -25,16 +25,17 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-07-25 20:29+0000\n"
-"PO-Revision-Date: 2025-07-25 17:10+0000\n"
-"Last-Translator: Arusekk <arek_koz@o2.pl>\n"
-"Language-Team: Polish <https://hosted.weblate.org/projects/zulip/django/pl/"
-">\n"
+"PO-Revision-Date: 2025-07-28 22:31+0000\n"
+"Last-Translator: Sylwester Cyba <pl-en-"
+"silver@users.noreply.hosted.weblate.org>\n"
+"Language-Team: Polish <https://hosted.weblate.org/projects/zulip/django/pl/>"
+"\n"
 "Language: pl\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=4; plural=(n==1 ? 0 : (n%10>=2 && n%10<=4) && "
-"(n%100<12 || n%100>14) ? 1 : n!=1 && (n%10>=0 && n%10<=1) || (n%10>=5 && "
+"Plural-Forms: nplurals=4; plural=(n==1 ? 0 : (n%10>=2 && n%10<=4) && ("
+"n%100<12 || n%100>14) ? 1 : n!=1 && (n%10>=0 && n%10<=1) || (n%10>=5 && "
 "n%10<=9) || (n%100>=12 && n%100<=14) ? 2 : 3);\n"
 "X-Generator: Weblate 5.13-dev\n"
 
@@ -1546,7 +1547,7 @@ msgstr "Zarejestruj się w Zulipie"
 
 #: templates/zerver/accounts_home.html:37
 msgid "You need an invitation to join this organization."
-msgstr "Potrzebujesz zaproszenia aby dołączyć do tej organizacji"
+msgstr "Potrzebujesz zaproszenia aby dołączyć do tej organizacji."
 
 #: templates/zerver/accounts_home.html:76 templates/zerver/login.html:50
 #: templates/zerver/login.html:139 templates/zerver/realm_creation_form.html:68
@@ -1708,7 +1709,7 @@ msgstr "Nie odnaleziono konta"
 
 #: templates/zerver/confirm_continue_registration.html:14
 msgid "Zulip account not found."
-msgstr "Nie znaleziona konta Zuliip"
+msgstr "Nie odnaleziono konta Zulip."
 
 #: templates/zerver/confirm_continue_registration.html:18
 #, python-format
@@ -5126,8 +5127,7 @@ msgstr "Poproś administratora organizacji o zaproszenie na email {email}."
 
 #: zerver/forms.py:291
 msgid "Can't join the organization: password authentication is not enabled."
-msgstr ""
-"Nie można dołączyć do organizacji: uwierzytelnienie hasłem nie jest włączone."
+msgstr "Nie można dołączyć do organizacji: uwierzytelnie hasłem wyłączone."
 
 #: zerver/forms.py:299
 #, python-brace-format
@@ -5397,7 +5397,7 @@ msgstr "Nieprawidłowy kod emoji."
 
 #: zerver/lib/emoji.py:110 zerver/lib/emoji.py:115
 msgid "Invalid emoji name."
-msgstr "Nie poprawna nazwa emoji"
+msgstr "Wadliwa nazwa emoji."
 
 #: zerver/lib/emoji.py:118
 msgid "Invalid emoji type."
@@ -6351,7 +6351,7 @@ msgstr "Zła data lub ID kanału"
 #: zerver/views/events_register.py:72 zerver/views/message_send.py:196
 #: zerver/views/message_send.py:217
 msgid "User not authorized for this query"
-msgstr "Użytkownik nie jest uprawniony do tego zapytania."
+msgstr "Użytkownik nie jest uprawniony do tego zapytania"
 
 #: zerver/lib/recipient_users.py:106
 #, python-brace-format
@@ -7230,7 +7230,7 @@ msgstr "Typ pola nie może zostać wyświetlony w podsumowaniu profilu."
 
 #: zerver/views/custom_profile_fields.py:105
 msgid "Invalid field type."
-msgstr "Nieprawidłowy typ pola"
+msgstr "Nieprawidłowy typ pola."
 
 #: zerver/views/custom_profile_fields.py:186
 #: zerver/views/custom_profile_fields.py:255
@@ -7558,8 +7558,8 @@ msgid ""
 "Make sure at least one Organization Owner is consenting to the export or "
 "contact {email} for help."
 msgstr ""
-"Upewnij się, że co najmniej jeden właściciel organizacji zgadza się na "
-"eksport lub daj znać na {email} aby uzyskać pomoc."
+"Upewnij się, że co najmniej jeden z właścicieli organizacji zgadza się na "
+"eksport lub odezwij się na {email} aby uzyskać pomoc."
 
 #: zerver/views/realm_export.py:102
 #, python-brace-format

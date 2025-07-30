@@ -24,7 +24,7 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-07-25 20:29+0000\n"
-"PO-Revision-Date: 2025-07-19 05:03+0000\n"
+"PO-Revision-Date: 2025-07-26 22:07+0000\n"
 "Last-Translator: Alex Vandiver <alexmv@zulip.com>\n"
 "Language-Team: Chinese (Simplified Han script) <https://hosted.weblate.org/"
 "projects/zulip/django/zh_Hans/>\n"
@@ -2607,10 +2607,9 @@ msgid ""
 msgstr "请勿回复此电子邮件。 (<a href=\"%(url)s\">help</a>)."
 
 #: templates/zerver/emails/missed_message.subject.txt:2
-#, fuzzy, python-format
-#| msgid "Group DMs with %(huddle_display_name)s"
+#, python-format
 msgid "Group DMs with %(direct_message_group_display_name)s"
-msgstr "与%(huddle_display_name)s的群组私信"
+msgstr "与%(direct_message_group_display_name)s的群组私信"
 
 #: templates/zerver/emails/missed_message.subject.txt:3
 #, python-format

@@ -149,7 +149,7 @@
   "After how much time should all data for this organization be permanently deleted (users, channels, messages, etc.)?": "",
   "Alert word": "Waarschuwingswoord",
   "Alert word <b>{alert_word}</b> removed successfully!": "",
-  "Alert word already exists!": "Waarschuwingswoord  bestaat al!",
+  "Alert word already exists!": "Waarschuwingswoord bestaat al!",
   "Alert words": "Waarschuwingswoord",
   "Alert words allow you to be notified as if you were @-mentioned when certain words or phrases are used in Zulip. Alert words are not case sensitive.": "Met waarschuwingswoorden kun je worden gewaarschuwd alsof je @ -vermeld bent wanneer bepaalde woorden of woordgroepen in Zulip worden gebruikt. Waarschuwingswoorden zijn niet hoofdlettergevoelig.",
   "Alerted messages": "Berichten met waarschuwing",

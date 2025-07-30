@@ -11,10 +11,10 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-07-25 20:29+0000\n"
-"PO-Revision-Date: 2025-07-17 06:37+0000\n"
-"Last-Translator: Anonymous <noreply@weblate.org>\n"
-"Language-Team: Danish <https://hosted.weblate.org/projects/zulip/django/da/"
-">\n"
+"PO-Revision-Date: 2025-07-26 22:07+0000\n"
+"Last-Translator: Alex Vandiver <alexmv@zulip.com>\n"
+"Language-Team: Danish <https://hosted.weblate.org/projects/zulip/django/da/>"
+"\n"
 "Language: da\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -3156,7 +3156,7 @@ msgstr ""
 
 #: templates/zerver/footer.html:14
 msgid "Integrations"
-msgstr " Integrationer"
+msgstr "Integrationer"
 
 #: templates/zerver/footer.html:15
 msgid "Desktop & mobile apps"

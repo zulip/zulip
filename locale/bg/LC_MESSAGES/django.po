@@ -12,7 +12,7 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-07-25 20:29+0000\n"
-"PO-Revision-Date: 2025-07-19 05:03+0000\n"
+"PO-Revision-Date: 2025-07-26 22:07+0000\n"
 "Last-Translator: Alex Vandiver <alexmv@zulip.com>\n"
 "Language-Team: Bulgarian <https://hosted.weblate.org/projects/zulip/django/"
 "bg/>\n"
@@ -2617,10 +2617,9 @@ msgstr ""
 "входящи имейли (<a href=\"%(url)s\">помощ</a>)."
 
 #: templates/zerver/emails/missed_message.subject.txt:2
-#, fuzzy, python-format
-#| msgid "Group DMs with %(huddle_display_name)s"
+#, python-format
 msgid "Group DMs with %(direct_message_group_display_name)s"
-msgstr "Групови съобщения с %(huddle_display_name)s"
+msgstr "Групови съобщения с %(direct_message_group_display_name)s"
 
 #: templates/zerver/emails/missed_message.subject.txt:3
 #, python-format
@@ -6607,7 +6606,7 @@ msgstr ""
 
 #: zerver/models/custom_profile_fields.py:119
 msgid "Link"
-msgstr "Свържи "
+msgstr "Свържи"
 
 #: zerver/models/custom_profile_fields.py:122
 msgid "External account"

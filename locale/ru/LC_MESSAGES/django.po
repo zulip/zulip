@@ -27,17 +27,17 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-07-25 20:29+0000\n"
-"PO-Revision-Date: 2025-07-22 21:18+0000\n"
-"Last-Translator: Yurt Page <yurtpage@gmail.com>\n"
-"Language-Team: Russian <https://hosted.weblate.org/projects/zulip/django/ru/"
-">\n"
+"PO-Revision-Date: 2025-07-29 17:46+0000\n"
+"Last-Translator: Lev Shereshevsky <Lev.Shereshevsky@gmail.com>\n"
+"Language-Team: Russian <https://hosted.weblate.org/projects/zulip/django/ru/>"
+"\n"
 "Language: ru\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=4; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
-"n%10<=4 && (n%100<12 || n%100>14) ? 1 : n%10==0 || (n%10>=5 && n%10<=9) || "
-"(n%100>=11 && n%100<=14)? 2 : 3);\n"
+"n%10<=4 && (n%100<12 || n%100>14) ? 1 : n%10==0 || (n%10>=5 && n%10<=9) || ("
+"n%100>=11 && n%100<=14)? 2 : 3);\n"
 "X-Generator: Weblate 5.13-dev\n"
 
 #: analytics/views/stats.py:109 zerver/decorator.py:682 zerver/decorator.py:700
@@ -7238,7 +7238,7 @@ msgstr "Недопустимый идентификатор очереди со�
 
 #: zerver/views/antispam.py:50
 msgid "Failed to generate challenge"
-msgstr "Не удалось сгеренировать вызов"
+msgstr "Не удалось создать задачу"
 
 #: zerver/views/auth.py:596
 msgid "JWT authentication is not enabled for this organization"

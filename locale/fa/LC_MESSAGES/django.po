@@ -17,10 +17,10 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-07-25 20:29+0000\n"
-"PO-Revision-Date: 2025-07-19 05:03+0000\n"
+"PO-Revision-Date: 2025-07-26 22:07+0000\n"
 "Last-Translator: Alex Vandiver <alexmv@zulip.com>\n"
-"Language-Team: Persian <https://hosted.weblate.org/projects/zulip/django/fa/"
-">\n"
+"Language-Team: Persian <https://hosted.weblate.org/projects/zulip/django/fa/>"
+"\n"
 "Language: fa\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -819,7 +819,7 @@ msgstr "بازکردن پوشه انجمن‌ها"
 #: templates/corporate/communities.html:39
 #: templates/zerver/integrations/index.html:47
 msgid "Filter by category"
-msgstr "فیلتر. با دسته‌بندی "
+msgstr "فیلتر. با دسته‌بندی"
 
 #: templates/corporate/communities.html:58
 #: templates/zerver/integrations/index.html:76
@@ -1450,7 +1450,7 @@ msgstr ""
 
 #: templates/corporate/team.html:139
 msgid "Avatar"
-msgstr "آواتار "
+msgstr "آواتار"
 
 #: templates/corporate/zulipchat_migration_tos.html:3
 msgid ""
@@ -2708,10 +2708,9 @@ msgstr ""
 "نشده است (<a href=\"%(url)s\">راهنما</a>)."
 
 #: templates/zerver/emails/missed_message.subject.txt:2
-#, fuzzy, python-format
-#| msgid "Group DMs with %(huddle_display_name)s"
+#, python-format
 msgid "Group DMs with %(direct_message_group_display_name)s"
-msgstr "پیام مستقیم گروهی با %(huddle_display_name)s"
+msgstr "پیام مستقیم گروهی با %(direct_message_group_display_name)s"
 
 #: templates/zerver/emails/missed_message.subject.txt:3
 #, python-format
@@ -6782,7 +6781,7 @@ msgstr "چنین کاربری وجود ندارد"
 
 #: zerver/lib/users.py:295
 msgid "User is deactivated"
-msgstr "کاربر غیرفعال شده است "
+msgstr "کاربر غیرفعال شده است"
 
 #: zerver/lib/validator.py:63
 #, python-brace-format
