@@ -5,7 +5,72 @@ from typing import TypedDict
 # order to generate an example screenshot to include in the documentation
 # page for those integrations.
 
+# To keep these screenshots consistent and easy to review, there are
+# shared string constants to use for common content in these integration
+# notification messages/templates.
+
+THREE_DIGIT_NUMBER = "492"
+
+# Example user content
+BO_NAME = "Bo Williams"
+BO_GIT_NAME = "bo-williams"
+
+# Example project content
+PROJECT_NAME = "Example Project"
+PROJECT_PATH_PERFORCE = "//depot/zerver/example-project/*"
+
+REVISION_NUMBER = THREE_DIGIT_NUMBER
+
+# Example branch content
+BRANCH_GIT = "main"
+BRANCH_MERCURIAL = "default"
+BRANCH_SVN = "trunk"
+
+# Example commit content
+COMMIT_MESSAGE_A = "Optimize image loading in catalog."
+COMMIT_MESSAGE_B = 'Suppress "comment edited" events when body is unchanged.'
+
+COMMIT_HASH_A = "a2e84e86ddf7e7f8a9b0c1d2e3f4a5b6c7d8e9f0"
+COMMIT_HASH_B = "9fceb02c0c4b8e4c1e7b43hd4e5f6a7b8c9d0e1f"
+DEPLOYMENT_HASH = "e494a5be3393"
+
 
 class ScreenshotContent(TypedDict):
     topic: str
     content: str
+
+
+CODEBASE = ScreenshotContent(
+    topic=f"Push to {BRANCH_GIT} on {PROJECT_NAME}",
+    content=f"""{BO_NAME} pushed 2 commit(s) to `{BRANCH_GIT}` in project {PROJECT_NAME}:
+
+* [{COMMIT_HASH_A[:10]}](): {COMMIT_MESSAGE_A}
+* [{COMMIT_HASH_B[:10]}](): {COMMIT_MESSAGE_B}
+""",
+)
+
+MERCURIAL = ScreenshotContent(
+    topic=BRANCH_MERCURIAL,
+    content=f"""**{BO_NAME}** pushed [2 commits]() to **{BRANCH_MERCURIAL}** (`{REVISION_NUMBER}:{DEPLOYMENT_HASH[:12]}`):
+* [{COMMIT_MESSAGE_A}]()
+* [{COMMIT_MESSAGE_B}]()
+""",
+)
+
+PERFORCE = ScreenshotContent(
+    topic=PROJECT_PATH_PERFORCE,
+    content=f"""
+**{BO_NAME}** committed revision @[{REVISION_NUMBER}]() to `{PROJECT_PATH_PERFORCE}`.
+
+```quote
+{COMMIT_MESSAGE_A}
+```
+""",
+)
+
+SVN = ScreenshotContent(
+    topic=PROJECT_NAME,
+    content=f"""**{BO_GIT_NAME}** committed revision r{REVISION_NUMBER} to `{BRANCH_SVN}`.
+> {COMMIT_MESSAGE_A}
+""",
+)
