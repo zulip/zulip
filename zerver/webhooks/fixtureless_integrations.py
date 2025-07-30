@@ -79,6 +79,12 @@ CODEBASE = ScreenshotContent(
 """,
 )
 
+DISCOURSE = ScreenshotContent(
+    topic="announce",
+    content=f"""**@{BO_NAME}** posted in [Zulip's new mobile app is out!]()
+> Zulip’s next-gen mobile app is now in public beta. If offers a sleek new design and a faster, smoother experience. Check out the announcement post for details and instructions on how to try the beta!""",
+)
+
 GIT = ScreenshotContent(
     topic=BRANCH,
     content=f"""`{DEPLOYMENT_HASH[:12]}` was deployed to `{BRANCH}` with:
@@ -96,6 +102,13 @@ GITHUB_ACTIONS = ScreenshotContent(
 JENKINS = ScreenshotContent(
     topic=PROJECT_NAME,
     content=f"**Build:** [#{REVISION_NUMBER}](): FAILURE :cross_mark:",
+)
+
+MASTODON = ScreenshotContent(
+    topic="MIT Technology Review",
+    content=f"""**[Don’t let hype about AI agents get ahead of reality](https://www.technologyreview.com/2025/07/03/1119545/dont-let-hype-about-ai-agents-get-ahead-of-reality/)**
+Google’s recent unveiling of what it calls a “new class of agentic experiences” feels like a turning point. At its I/O event last month, for example, the company showed off a digital assistant that didn’t just answer questions; it helped work on a bicycle repair by finding a matching user manual, locating a YouTube…
+https://www.technologyreview.com/{DATE_ISO_8601.replace("-", "/")}/1119545/dont-let-hype-about-ai-agents-get-ahead-of-reality/""",
 )
 
 MERCURIAL = ScreenshotContent(
@@ -145,6 +158,8 @@ REDMINE = ScreenshotContent(
 * **Target version**: {VERSION_NUMBER[1:]}
 * **Estimated hours**: 40""",
 )
+
+RSS = MASTODON
 
 SVN = ScreenshotContent(
     topic=PROJECT_NAME,
