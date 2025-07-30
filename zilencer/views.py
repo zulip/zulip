@@ -924,29 +924,6 @@ def remote_server_notify_push(
     if apple_devices and user_id is not None and user_uuid is not None:
         apple_devices = delete_duplicate_registrations(apple_devices, server.id, user_id, user_uuid)
 
-    remote_queue_latency: str | None = None
-    sent_time: float | int | None = gcm_payload.get(
-        # TODO/compatibility: This could be a lot simpler if not for pre-5.0 Zulip servers
-        # that had an older format. Future implementation:
-        #     "time", apns_payload["custom"]["zulip"].get("time")
-        "time",
-        apns_payload.get("custom", {}).get("zulip", {}).get("time"),
-    )
-    if sent_time is not None:
-        if isinstance(sent_time, int):
-            # The 'time' field only used to have whole-integer
-            # granularity, so if so we only report with
-            # whole-second granularity
-            remote_queue_latency = str(int(timezone_now().timestamp()) - sent_time)
-        else:
-            remote_queue_latency = f"{timezone_now().timestamp() - sent_time:.3f}"
-        logger.info(
-            "Remote queuing latency for %s:%s is %s seconds",
-            server.uuid,
-            user_identity,
-            remote_queue_latency,
-        )
-
     logger.info(
         "Sending mobile push notifications for remote user %s:%s: %s via FCM devices, %s via APNs devices",
         server.uuid,
