@@ -152,6 +152,10 @@ accident.
 
 {!filter-resolved-left-sidebar.md!}
 
+## Configure whether resolved topic notices are marked as read
+
+{!configure-resolved-notices-marked-as-read.md!}
+
 ## Details
 
 * Resolving a topic works by moving the messages to a new topic.

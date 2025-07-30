@@ -48,21 +48,7 @@ web/desktop app.
 
 ## Configure whether resolved topic notices are marked as read
 
-Zulip lets you automatically mark as read [notification
-bot](/help/configure-automated-notices) notices indicating that someone
-[resolved or unresolved](/help/resolve-a-topic) a topic, or do so just for
-topics you don't follow.
-
-{start_tabs}
-
-{tab|desktop-web}
-
-{settings_tab|notifications}
-
-1. Under **Topic notifications**, configure **Automatically mark resolved topic
-   notices as read**.
-
-{end_tabs}
+{!configure-resolved-notices-marked-as-read.md!}
 
 ## Mark a message as read
 
