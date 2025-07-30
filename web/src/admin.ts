@@ -95,6 +95,8 @@ function insert_tip_box(): void {
         .not("#admin-bot-list")
         .not("#admin-invites-list")
         .not("#admin-user-list")
+        .not("#admin-active-users-list")
+        .not("#admin-deactivated-users-list")
         .prepend($(tip_box_html));
 }
 
