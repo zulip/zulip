@@ -194,16 +194,16 @@ export function launch(conf: DialogWidgetConfig): string {
 
     widget_id_counter += 1;
     const modal_unique_id = current_dialog_widget_id();
-    const html_submit_button = conf.html_submit_button ?? $t_html({defaultMessage: "Save changes"});
-    const html_exit_button = conf.html_exit_button ?? $t_html({defaultMessage: "Cancel"});
+    const submit_button_html = conf.html_submit_button ?? $t_html({defaultMessage: "Save changes"});
+    const exit_button_html = conf.html_exit_button ?? $t_html({defaultMessage: "Cancel"});
     const html = render_dialog_widget({
         modal_unique_id,
-        html_heading: conf.html_heading,
+        heading_html: conf.html_heading,
         text_heading: conf.text_heading,
         link: conf.help_link,
-        html_submit_button,
-        html_exit_button,
-        html_body: conf.html_body,
+        submit_button_html,
+        exit_button_html,
+        body_html: conf.html_body,
         id: conf.id,
         single_footer_button: conf.single_footer_button,
         always_visible_scrollbar: conf.always_visible_scrollbar,
