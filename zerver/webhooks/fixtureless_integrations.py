@@ -23,7 +23,9 @@ KEVIN_EMAIL = "klin@example.com"
 # Example project content
 PROJECT_NAME = "Example Project"
 PROJECT_PATH_PERFORCE = "//depot/zerver/example-project/*"
+PROJECT_STAGE = "production"
 
+VERSION_NUMBER = "v9.2.3"
 REVISION_NUMBER = THREE_DIGIT_NUMBER
 
 # Example branch content
@@ -42,12 +44,20 @@ DEPLOYMENT_HASH = "e494a5be3393"
 # Example datetime content
 _DT = datetime(2025, 5, 30, 2, 0, 0, tzinfo=timezone.utc)
 DATETIME_STAMP = _DT.strftime("%Y-%m-%d %H:%M:%S")
+DATETIME_ASCTIME = _DT.strftime("%a %b %d %H:%M:%S %Y")
+DATETIME_FUSED = _DT.strftime("%Y%m%d%H%M%S")
+DATE_ISO_8601 = _DT.strftime("%Y-%m-%d")
 
 
 class ScreenshotContent(TypedDict):
     topic: str
     content: str
 
+
+CAPISTRANO = ScreenshotContent(
+    topic=PROJECT_NAME,
+    content=f"The [deployment]() to **{PROJECT_STAGE}** (version {VERSION_NUMBER}) has been completed successfully! :rocket:",
+)
 
 CODEBASE = ScreenshotContent(
     topic=f"Push to {BRANCH_GIT} on {PROJECT_NAME}",
@@ -85,6 +95,11 @@ MERCURIAL = ScreenshotContent(
 """,
 )
 
+OPENSHIFT = ScreenshotContent(
+    topic=PROJECT_NAME,
+    content=f"""Deployment [{REVISION_NUMBER}]() triggered by a push to **{BRANCH_GIT}** by commit [{COMMIT_HASH_A[:7]}]() at {DATETIME_STAMP} has **failed**.""",
+)
+
 PERFORCE = ScreenshotContent(
     topic=PROJECT_PATH_PERFORCE,
     content=f"""
@@ -94,6 +109,14 @@ PERFORCE = ScreenshotContent(
 {COMMIT_MESSAGE_A}
 ```
 """,
+)
+
+PUPPET = ScreenshotContent(
+    topic="Reports",
+    content=f"""Puppet production run for web-server-01 completed at {DATETIME_ASCTIME}.
+ Created a Gist showing the output at {DEPLOYMENT_HASH}
+ Summary at report.example.com:{DATE_ISO_8601}/production/web-server-01/completed
+ Report URL: http://example.com/puppet-reports/production/web-server-01/?status=completed&time={DATETIME_FUSED}""",
 )
 
 SVN = ScreenshotContent(
