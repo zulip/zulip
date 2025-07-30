@@ -16,6 +16,8 @@ THREE_DIGIT_NUMBER = "492"
 BO_NAME = "Bo Williams"
 BO_GIT_NAME = "bo-williams"
 
+KEVIN_NAME = "Kevin Lin"
+
 # Example project content
 PROJECT_NAME = "Example Project"
 PROJECT_PATH_PERFORCE = "//depot/zerver/example-project/*"
@@ -32,10 +34,16 @@ BRANCH_SVN = "trunk"
 # Example commit content
 COMMIT_MESSAGE_A = "Optimize image loading in catalog."
 COMMIT_MESSAGE_B = 'Suppress "comment edited" events when body is unchanged.'
+COMMIT_BODY_A = "Implement lazy loading for images in the catalog to improve load times."
 
 COMMIT_HASH_A = "a2e84e86ddf7e7f8a9b0c1d2e3f4a5b6c7d8e9f0"
 COMMIT_HASH_B = "9fceb02c0c4b8e4c1e7b43hd4e5f6a7b8c9d0e1f"
 DEPLOYMENT_HASH = "e494a5be3393"
+
+# Example task/issue/ticket content
+TASK_TITLE = COMMIT_MESSAGE_A[:-1]
+TASK_DESCRIPTION = COMMIT_BODY_A
+TICKET_NUMBER = THREE_DIGIT_NUMBER
 
 # Example datetime content
 _DT = datetime(2025, 5, 30, 2, 0, 0, tzinfo=timezone.utc)
@@ -48,6 +56,11 @@ class ScreenshotContent(TypedDict):
     topic: str
     content: str
 
+
+ASANA = ScreenshotContent(
+    topic=PROJECT_NAME,
+    content=f"{BO_NAME} created a new task **[{TASK_TITLE}]()**.\n> {TASK_DESCRIPTION}",
+)
 
 CAPISTRANO = ScreenshotContent(
     topic=PROJECT_NAME,
@@ -103,9 +116,33 @@ PUPPET = ScreenshotContent(
     content=f"""Puppet production run for web-server-01 completed at {DATETIME_GLOBAL}. [GitHub Gist]() | [Report URL]()""",
 )
 
+REDMINE = ScreenshotContent(
+    topic=TASK_TITLE,
+    content=f"""{BO_NAME} **created** issue [{TICKET_NUMBER} {TASK_TITLE}]():
+
+~~~quote
+
+{TASK_DESCRIPTION}...
+
+~~~
+
+* **Assignee**: {KEVIN_NAME}
+* **Status**: New
+* **Target version**: {VERSION_NUMBER[1:]}
+* **Estimated hours**: 40""",
+)
+
 SVN = ScreenshotContent(
     topic=PROJECT_NAME,
     content=f"""**{BO_GIT_NAME}** committed revision r{REVISION_NUMBER} to `{BRANCH_SVN}`.
 > {COMMIT_MESSAGE_A}
 """,
+)
+
+TRAC = ScreenshotContent(
+    topic=f"#{TICKET_NUMBER} {TASK_TITLE}",
+    content=f"""**{BO_GIT_NAME}** updated [ticket #{TICKET_NUMBER}]() with comment:
+> Fixed in  {COMMIT_HASH_A}
+
+status: **new** => **closed**, resolution: => **fixed**""",
 )
