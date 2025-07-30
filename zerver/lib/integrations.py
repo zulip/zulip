@@ -857,7 +857,9 @@ for integration, screenshots_contents in FIXTURELESS_SCREENSHOT_CONTENT.items():
         for screenshot_content in screenshots_contents
     ]
 
-FIXTURELESS_SCREENSHOT_CONFIG_OPTIONAL_FIELDS = {}
+FIXTURELESS_SCREENSHOT_CONFIG_OPTIONAL_FIELDS = {
+    "mercurial": {"image_dir": "hg"},
+}
 
 for integration, fields in FIXTURELESS_SCREENSHOT_CONFIG_OPTIONAL_FIELDS.items():
     assert integration in FIXTURELESS_SCREENSHOT_CONFIG
