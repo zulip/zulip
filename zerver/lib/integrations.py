@@ -73,6 +73,7 @@ FIXTURELESS_INTEGRATIONS_WITH_SCREENSHOTS: list[str] = [
     "github-actions",
     "google-calendar",
     "jenkins",
+    "jira-plugin",
     "mastodon",
     "mercurial",
     "nagios",
@@ -749,10 +750,7 @@ NO_SCREENSHOT_CONFIG = (
         "twitter",
     }
     # Python API Integrations that do not currently have screenshots in docs
-    | {
-        "git",
-        "jira-plugin",
-    }
+    | {"git"}
     | NO_SCREENSHOT_WEBHOOKS
     | hubot_integration_names
 )
