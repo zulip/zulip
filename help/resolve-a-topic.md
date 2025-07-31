@@ -36,9 +36,8 @@ approaches for deciding when to mark a topic as resolved:
 * **Answering questions**: When the question has been fully answered,
   and follow-ups would be best discussed in a new topic.
 
-Users can resolve and unresolve a topic if they have permission to edit
-topics. Organization administrators can [configure who can edit
-topics](/help/restrict-moving-messages).
+Users can resolve or unresolve a topic if they have
+[permission](/help/restrict-resolving-topics) to do so.
 
 ## Mark a topic as resolved
 
@@ -156,19 +155,19 @@ accident.
 
 {!configure-resolved-notices-marked-as-read.md!}
 
-## Details
+## Sending messages to resolved topics
 
-* Resolving a topic works by moving the messages to a new topic.
-* Like with all topic editing, Zulip clients update instantly, so
-  human users will likely only send messages to the resolved topic.
-* [Integrations](/integrations/) will usually send new messages to the
-  original topic (`example topic`) after a topic is resolved. This is
-  useful for alerting integrations, where a repeating alert might have a
-  different cause. You can mark the topic resolved (as normal) once
-  you've investigated the situation.
-* Users can still send messages to a resolved topic; this
-  is important for _"thank you"_ messages and to discuss whether
-  the topic was incorrectly marked as resolved.
+You can send messages to a resolved topic, which is handy for _"thank you"_
+messages, or to discuss whether a topic was incorrectly marked as resolved.
+
+When a topic is resolved or unresolved, users' compose boxes and message views
+automatically update to show the topic's current state. This helps make sure
+everyone sends messages to the correct place.
+
+[Integrations](/help/integrations-overview) will still send messages to the
+original topic after a topic is resolved. This is useful for alerting
+integrations, where a repeating alert might have a different cause. As usual,
+you can mark the topic resolved once you've investigated the situation.
 
 ## Related articles
 
