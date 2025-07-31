@@ -51,8 +51,13 @@ export type DisplayObject = {
     is_deactivated: boolean;
 };
 
-export function get_conversations(search_string = ""): DisplayObject[] {
-    const conversations = pm_conversations.recent.get();
+export function get_conversations(
+    search_string = "",
+    options: {include_deactivated?: boolean} = {},
+): DisplayObject[] {
+    const conversations = pm_conversations.recent.get({
+        include_deactivated: options.include_deactivated ?? false,
+    });
     const display_objects = [];
 
     // The user_ids_string for the current view, if any.
@@ -88,9 +93,8 @@ export function get_conversations(search_string = ""): DisplayObject[] {
             unread.num_unread_mentions_for_user_ids_strings(user_ids_string) > 0;
         const is_group = user_ids_string.includes(",");
         const is_active = user_ids_string === active_user_ids_string;
-        const is_deactivated = !people.is_active_user_for_popover(
-            Number.parseInt(user_ids_string, 10) || 0,
-        );
+        const user_ids = people.user_ids_string_to_ids_array(user_ids_string);
+        const is_deactivated = user_ids.some((id) => !people.is_active_user_for_popover(id));
 
         let user_circle_class;
         let status_emoji_info;
@@ -139,19 +143,24 @@ export function get_list_info(
 ): {
     conversations_to_be_shown: DisplayObject[];
     more_conversations_unread_count: number;
+    has_deactivated_user?: boolean;
 } {
-    const conversations = get_conversations(search_term);
+    const conversations = get_conversations(search_term, {include_deactivated: true});
+    const has_deactivated_user = conversations.some((c) => c.is_deactivated);
 
-    if (zoomed || conversations.length <= max_conversations_to_show) {
+    if (zoomed) {
         return {
             conversations_to_be_shown: conversations,
             more_conversations_unread_count: 0,
+            has_deactivated_user: false,
         };
     }
 
     const conversations_to_be_shown = [];
     let more_conversations_unread_count = 0;
-    function should_show_conversation(idx: number, conversation: DisplayObject): boolean {
+    let visible_conversations_count = 0;
+
+    function should_show_conversation(conversation: DisplayObject): boolean {
         // We always show the active conversation; see the similar
         // comment in topic_list_data.ts.
         if (conversation.is_active) {
@@ -161,10 +170,16 @@ export function get_list_info(
         // We don't need to filter muted users here, because
         // pm_conversations.js takes care of this for us.
 
+        // We avoid showing deactivated conversations in the list,
+        // but still allow users to see them in the "more conversations" section.
+        if (conversation.is_deactivated) {
+            return false;
+        }
+
         // We include the most recent max_conversations_to_show
         // conversations, regardless of whether they have unread
         // messages.
-        if (idx < max_conversations_to_show) {
+        if (visible_conversations_count < max_conversations_to_show) {
             return true;
         }
 
@@ -182,16 +197,22 @@ export function get_list_info(
         // the unzoomed view.
         return false;
     }
-    for (const [idx, conversation] of conversations.entries()) {
-        if (should_show_conversation(idx, conversation)) {
+
+    for (const conversation of conversations) {
+        if (should_show_conversation(conversation)) {
             conversations_to_be_shown.push(conversation);
         } else {
             more_conversations_unread_count += conversation.unread;
+        }
+
+        if (!conversation.is_deactivated) {
+            visible_conversations_count += 1;
         }
     }
 
     return {
         conversations_to_be_shown,
         more_conversations_unread_count,
+        has_deactivated_user,
     };
 }
