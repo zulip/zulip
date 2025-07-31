@@ -457,12 +457,25 @@
 .hide-inactive-or-muted-channels {
     display: grid;
     grid-template:
-        "content markers-and-unreads three-dot-placeholder" auto
-        / minmax(0, 1fr) minmax(0, max-content) var(--left-sidebar-vdots-width);
+        "icon content markers-and-unreads three-dot-placeholder" auto
+        / 1.5em minmax(0, 1fr) minmax(0, max-content) var(
+            --left-sidebar-vdots-width
+        );
     align-items: center;
 
     .markers-and-unreads {
         margin-right: var(--left-sidebar-unread-offset);
+    }
+
+    .zulip-icon-collapse,
+    .zulip-icon-expand {
+        grid-area: icon;
+        /* 2px at 16px/1em to properly vertically center it */
+        margin-top: 0.125em;
+    }
+
+    .stream-list-toggle-inactive-or-muted-channels-text {
+        grid-area: content;
     }
 }
 
