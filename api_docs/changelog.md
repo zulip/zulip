@@ -25,6 +25,8 @@ format used by the Zulip server that they are interacting with.
 * [`POST /register`](/api/register-queue): Added
   `max_channel_folder_name_length` and
   `max_channel_folder_description_length` fields to the response.
+- Mobile push notification payloads for APNs no longer contain the
+  `time` field, which was unused.
 
 **Feature level 409**
 
