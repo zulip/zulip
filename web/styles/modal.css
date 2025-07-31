@@ -144,6 +144,11 @@
     }
 }
 
+#api_key_value {
+    font-family: "Source Code Pro", monospace;
+    font-size: 1em;
+}
+
 .modal__button {
     /* We need the backup value for billing related html files where
        this variable is not defined. */
