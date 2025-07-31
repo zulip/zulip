@@ -20,7 +20,7 @@ preview to [view the full-size image or video](/help/view-images-and-videos).
    [Markdown formatting](/help/format-your-message-using-markdown#links):
    `[Link text](URL)`.
 
-1. _(optional)_ Modify the link text as desired.
+{!modify-link-text.md!}
 
 !!! tip ""
 
@@ -36,7 +36,7 @@ preview to [view the full-size image or video](/help/view-images-and-videos).
    [Markdown formatting](/help/format-your-message-using-markdown#links):
    `[Link text](URL)`.
 
-1. _(optional)_ Modify the link text as desired.
+{!modify-link-text.md!}
 
 !!! tip ""
 
@@ -53,7 +53,7 @@ preview to [view the full-size image or video](/help/view-images-and-videos).
    [Markdown formatting](/help/format-your-message-using-markdown#links):
    `[Link text](URL)`.
 
-1. _(optional)_ Modify the link text as desired.
+{!modify-link-text.md!}
 
 !!! tip ""
 
@@ -73,7 +73,7 @@ preview to [view the full-size image or video](/help/view-images-and-videos).
    [Markdown formatting](/help/format-your-message-using-markdown#links):
    `[Link text](URL)`.
 
-1. _(optional)_ Modify the link text as desired.
+{!modify-link-text.md!}
 
 !!! warn ""
 
@@ -84,10 +84,6 @@ preview to [view the full-size image or video](/help/view-images-and-videos).
     description with 👍.
 
 {end_tabs}
-
-!!! tip ""
-
-    The link text will default to the name of the uploaded file.
 
 ## Convert pasted to text to a file
 
