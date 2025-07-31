@@ -2,13 +2,12 @@
 
 const assert = require("node:assert/strict");
 
-const {zrequire} = require("./lib/namespace.cjs");
+const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 const $ = require("./lib/zjquery.cjs");
 
-const pm_list = zrequire("pm_list");
-
 run_test("update_dom_with_unread_counts", () => {
+    const pm_list = zrequire("pm_list");
     let counts;
 
     const $total_count = $.create("total-count-stub");
@@ -30,4 +29,107 @@ run_test("update_dom_with_unread_counts", () => {
     pm_list.set_count(counts.direct_message_count);
     assert.equal($total_count.text(), "");
     assert.equal($total_count.hasClass("hide"), true);
+});
+
+run_test("build_direct_messages_list", ({override}) => {
+    const pm_list_data = mock_esm("../src/pm_list_data");
+    const pm_list_dom = mock_esm("../src/pm_list_dom");
+    const pm_list = zrequire("pm_list");
+
+    // Set up a sample conversation with a single DM to user Alice.
+    // This represents what would be displayed in the PM list.
+    const conversations_to_be_shown = [
+        {
+            recipients: "Alice",
+            user_ids_string: "101",
+            unread: 0,
+            is_zero: true,
+            is_active: false,
+            includes_deactivated_user: false,
+            is_current_user: false,
+            url: "#narrow/dm/101-Alice",
+            status_emoji_info: {emoji_code: "20"},
+            user_circle_class: "user-circle-offline",
+            is_group: false,
+            is_bot: false,
+            has_unread_mention: false,
+        },
+    ];
+
+    const pm_list_info = {
+        conversations_to_be_shown,
+        more_conversations_unread_count: 0,
+    };
+
+    // Mock pm_list_data to return our test data.
+    override(pm_list_data, "get_list_info", () => pm_list_info);
+
+    // Mock DOM elements that represent a PM list item and the "More conversations" item.
+    const expected_pm_li = {
+        type: "li",
+        key: "101",
+    };
+    const more_li = {
+        type: "li",
+        key: "more_private_conversations",
+    };
+
+    // Mock pm_list_dom functions to return simple test objects instead of actual DOM elements.
+    override(pm_list_dom, "keyed_pm_li", () => expected_pm_li);
+    override(pm_list_dom, "more_private_conversations_li", () => more_li);
+    override(pm_list_dom, "pm_ul", (children) => ({
+        type: "ul",
+        children,
+    }));
+
+    // Test case when all conversations fit in the visible area, we should only
+    // show the conversation items without the "More conversations" link.
+    let dom_ast = pm_list._build_direct_messages_list({
+        all_conversations_shown: true,
+        conversations_to_be_shown,
+        search_term: "",
+    });
+
+    assert.deepEqual(dom_ast.children.length, 1);
+    assert.deepEqual(dom_ast.children[0], expected_pm_li);
+
+    // Test case when there are more conversations than can be shown, we should show
+    // both the visible conversation items AND the "More conversations" item at the end.
+    dom_ast = pm_list._build_direct_messages_list({
+        all_conversations_shown: false,
+        conversations_to_be_shown,
+        search_term: "",
+    });
+    assert.deepEqual(dom_ast.children.length, 2);
+    assert.deepEqual(dom_ast.children[0], expected_pm_li);
+    assert.deepEqual(dom_ast.children[1], more_li);
+
+    // Test case when the number of conversations to be shown is less than the max
+    // but there is a deactivated user present, we should still show the "More conversations" item
+    // because there are hidden deactivated conversations.
+    const conversations_with_deactivated = [
+        {
+            recipients: "Alice",
+            user_ids_string: "101",
+            unread: 0,
+            is_zero: true,
+            is_active: false,
+            includes_deactivated_user: true,
+            is_current_user: false,
+            url: "#narrow/dm/101-Alice",
+            status_emoji_info: {emoji_code: "20"},
+            user_circle_class: "user-circle-offline",
+            is_group: false,
+            is_bot: false,
+            has_unread_mention: false,
+        },
+    ];
+    dom_ast = pm_list._build_direct_messages_list({
+        all_conversations_shown: false,
+        conversations_to_be_shown: conversations_with_deactivated,
+        search_term: "",
+    });
+    assert.deepEqual(dom_ast.children.length, 2);
+    assert.deepEqual(dom_ast.children[0], expected_pm_li);
+    assert.deepEqual(dom_ast.children[1], more_li);
 });
