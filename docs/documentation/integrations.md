@@ -29,9 +29,8 @@ Typically, the documentation process involves the following steps:
   See [Markdown macros](#markdown-macros) for further details.
 
 - Make sure you've added your integration to
-  `zerver/lib/integrations.py` in both the `WEBHOOK_INTEGRATIONS`
-  section (or `INTEGRATIONS` if not a webhook), and the
-  `DOC_SCREENSHOT_CONFIG` sections. These registries configure your
+  `zerver/lib/integrations.py` in the `WEBHOOK_INTEGRATIONS`
+  section (or `INTEGRATIONS` if not a webhook). This registry configure your
   integration to appear on the `/integrations` page and make it
   possible to automatically generate the screenshot of a sample
   message (which is important for the screenshots to be updated as
