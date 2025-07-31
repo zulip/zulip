@@ -382,7 +382,7 @@ elif options.topic or options.message:
     if not options.topic or not options.message:
         parser.error("Both --topic and --message must be specified together")
     validate_integration_count(options, parser, "topic")
-    fixtureless_options = [action.dest for action in webhook_group._group_actions]
+    fixtureless_options = [action.dest for action in fixtureless_group._group_actions]
     common_options = [action.dest for action in common_group._group_actions]
     config = build_config(options, fixtureless_options + common_options)
     fixtureless_screenshot_config = FixturelessScreenshotConfig(**config)
