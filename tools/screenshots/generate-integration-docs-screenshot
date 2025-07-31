@@ -40,10 +40,9 @@ from zerver.actions.create_user import do_create_user, notify_created_bot
 from zerver.actions.streams import bulk_add_subscriptions
 from zerver.actions.user_settings import do_change_avatar_fields
 from zerver.lib.integrations import (
-    DOC_SCREENSHOT_CONFIG,
-    FIXTURELESS_SCREENSHOT_CONFIG,
+    FIXTURELESS_INTEGRATIONS_WITH_SCREENSHOTS,
     INTEGRATIONS,
-    WEBHOOK_SCREENSHOT_CONFIG,
+    WEBHOOK_INTEGRATIONS,
     FixturelessScreenshotConfig,
     Integration,
     WebhookIntegration,
@@ -238,6 +237,12 @@ def capture_last_message_screenshot(bot: UserProfile, image_path: str) -> None:
     subprocess.check_call(["node", screenshot_script, message_id, image_path, realm.url])
 
 
+def generate_screenshots_for_integration(integration: Integration) -> None:
+    if integration.screenshot_configs is not None:
+        for screenshot_config in integration.screenshot_configs:
+            generate_screenshot_from_config(integration.name, screenshot_config)
+
+
 def generate_screenshot_from_config(
     integration_name: str, screenshot_config: WebhookScreenshotConfig | FixturelessScreenshotConfig
 ) -> None:
@@ -336,29 +341,27 @@ def build_config(options: argparse.Namespace, config_keys: list[str]) -> dict[st
 
 def generate_full_batch_screenshots(
     option_key: str,
-    config_dict: dict[str, list[WebhookScreenshotConfig]]
-    | dict[str, list[FixturelessScreenshotConfig]]
-    | dict[str, list[WebhookScreenshotConfig] | list[FixturelessScreenshotConfig]],
+    integration_list: list[Integration] | list[WebhookIntegration],
     batch_type: str,
 ) -> None:
     for key, value in vars(options).items():
         if key != option_key and value:
             print(f"Generating screenshots for {batch_type}. Ignoring all command-line options")
             break
-    for integration_name, screenshot_configs in config_dict.items():
-        for screenshot_config in screenshot_configs:
-            generate_screenshot_from_config(integration_name, screenshot_config)
+    for integration in integration_list:
+        generate_screenshots_for_integration(integration)
 
 
 if options.all:
-    generate_full_batch_screenshots("all", DOC_SCREENSHOT_CONFIG, "all integrations")
+    generate_full_batch_screenshots("all", list(INTEGRATIONS.values()), "all integrations")
 elif options.all_webhook:
-    generate_full_batch_screenshots(
-        "all_webhook", WEBHOOK_SCREENSHOT_CONFIG, "all webhook integrations"
-    )
+    generate_full_batch_screenshots("all_webhook", WEBHOOK_INTEGRATIONS, "all webhook integrations")
 elif options.all_fixtureless:
+    fixtureless_integrations_list = [
+        INTEGRATIONS[name] for name in FIXTURELESS_INTEGRATIONS_WITH_SCREENSHOTS
+    ]
     generate_full_batch_screenshots(
-        "all_fixtureless", FIXTURELESS_SCREENSHOT_CONFIG, "all fixtureless integrations"
+        "all_fixtureless", fixtureless_integrations_list, "all fixtureless integrations"
     )
 elif options.skip_until:
     for key, value in vars(options).items():
@@ -368,21 +371,20 @@ elif options.skip_until:
             )
             break
     skip = True
-    for integration_name, screenshot_configs in DOC_SCREENSHOT_CONFIG.items():
+    for integration_name in sorted(INTEGRATIONS):
         if integration_name == options.skip_until:
             skip = False
         if skip:
             continue
-        for screenshot_config in screenshot_configs:
-            generate_screenshot_from_config(integration_name, screenshot_config)
+        generate_screenshots_for_integration(INTEGRATIONS[integration_name])
 
 elif options.fixture_name:
     validate_integration_count(options, parser, "fixture-name")
     webhook_options = [action.dest for action in webhook_group._group_actions]
     common_options = [action.dest for action in common_group._group_actions]
     config = build_config(options, webhook_options + common_options)
-    screenshot_config = WebhookScreenshotConfig(**config)
-    generate_screenshot_from_config(options.integration[0], screenshot_config)
+    webhook_screenshot_config = WebhookScreenshotConfig(**config)
+    generate_screenshot_from_config(options.integration[0], webhook_screenshot_config)
 
 elif options.topic or options.message:
     if not options.topic or not options.message:
@@ -396,8 +398,10 @@ elif options.topic or options.message:
 
 elif options.integration:
     for integration in options.integration:
-        assert integration in DOC_SCREENSHOT_CONFIG
-        configs = DOC_SCREENSHOT_CONFIG[integration]
+        assert integration in INTEGRATIONS
+        configs = INTEGRATIONS[integration].screenshot_configs
+        if configs is None:
+            parser.error(f"Could not find screenshot configuration for integration {integration}. ")
         for screenshot_config in configs:
             generate_screenshot_from_config(integration, screenshot_config)
 
@@ -405,5 +409,5 @@ else:
     parser.error(
         "Could not find configuration for integration. "
         "You can specify a fixture file to use, using the --fixture flag. "
-        "Or add a configuration to zerver.lib.integrations.DOC_SCREENSHOT_CONFIG",
+        "Or add a configuration to the corresponding integration in zerver.lib.integrations.INTEGRATIONS.",
     )
