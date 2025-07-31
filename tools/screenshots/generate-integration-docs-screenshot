@@ -4,6 +4,7 @@
 import argparse
 import base64
 import os
+import re
 import subprocess
 import sys
 from typing import Any
@@ -63,7 +64,12 @@ from zerver.models.users import get_user_by_delivery_email
 def create_integration_bot(integration: Integration, bot_name: str | None = None) -> UserProfile:
     realm = get_realm("zulip")
     owner = get_user_by_delivery_email("iago@zulip.com", realm)
-    bot_email = f"{integration.name}-bot@example.com"
+    email_prefix = (
+        re.sub(r"[^a-zA-Z0-9_-]", "", bot_name.strip()).lower()[:64]
+        if bot_name
+        else integration.name
+    )
+    bot_email = f"{email_prefix}-bot@example.com"
     if bot_name is None:
         bot_name = f"{integration.display_name} Bot"
     try:
