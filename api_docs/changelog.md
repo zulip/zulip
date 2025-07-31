@@ -24,6 +24,10 @@ format used by the Zulip server that they are interacting with.
 
 * Mobile push notification payloads for APNs no longer contain the
   `server` and `realm_id` fields, which were unused.
+* Mobile push notification payloads for FCM to remove push
+  notifications no longer contain the legacy pre-2019
+  `zulip_message_id` field; all functional clients support the newer
+  `zulip_message_ids`.
 
 **Feature level 412**
 
