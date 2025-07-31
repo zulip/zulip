@@ -36,6 +36,7 @@ import * as message_view from "./message_view.ts";
 import * as muted_users_ui from "./muted_users_ui.ts";
 import * as narrow_title from "./narrow_title.ts";
 import * as navbar_alerts from "./navbar_alerts.ts";
+import * as navigation_views from "./navigation_views.ts";
 import * as onboarding_steps from "./onboarding_steps.ts";
 import * as overlays from "./overlays.ts";
 import * as peer_data from "./peer_data.ts";
@@ -195,6 +196,20 @@ export function dispatch_normal_event(event) {
 
         case "muted_users":
             muted_users_ui.handle_user_updates(event.muted_users);
+            break;
+
+        case "navigation_view":
+            switch (event.op) {
+                case "add":
+                    navigation_views.add_navigation_view(event.navigation_view);
+                    break;
+                case "update":
+                    navigation_views.update_navigation_view(event.fragment, event.data);
+                    break;
+                case "remove":
+                    navigation_views.remove_navigation_view(event.fragment);
+                    break;
+            }
             break;
 
         case "presence":

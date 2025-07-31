@@ -283,6 +283,29 @@ exports.fixtures = {
         ],
     },
 
+    navigation_view__add: {
+        type: "navigation_view",
+        op: "add",
+        navigation_view: {
+            fragment: "narrow/is/alerted",
+            is_pinned: true,
+            name: "Watched phrases",
+        },
+    },
+
+    navigation_view__remove: {
+        type: "navigation_view",
+        op: "remove",
+        fragment: "narrow/is/alerted",
+    },
+
+    navigation_view__update: {
+        type: "navigation_view",
+        op: "update",
+        fragment: "narrow/is/alerted",
+        data: {is_pinned: false},
+    },
+
     onboarding_steps: {
         type: "onboarding_steps",
         onboarding_steps: [
