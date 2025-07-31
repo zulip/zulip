@@ -527,6 +527,9 @@ class StreamSidebarRow {
         this.update_unread_count();
     }
 
+    // The `inactive_stream` class is useful for identifying these
+    // channels node tests, even if the design doesn't currently
+    // style these channels differently.
     update_whether_active(): void {
         if (stream_list_sort.has_recent_activity(this.sub)) {
             this.$list_item.removeClass("inactive_stream");

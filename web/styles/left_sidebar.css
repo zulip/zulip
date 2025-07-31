@@ -839,8 +839,7 @@ ul.filters {
         }
     }
 
-    & li.out_of_home_view,
-    .inactive_stream:not(.active-filter) {
+    & li.out_of_home_view {
         .stream-privacy,
         .stream-name,
         .channel-new-topic-button,
