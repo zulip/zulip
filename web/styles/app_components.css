@@ -559,6 +559,19 @@ input.settings_text_input {
 .admin-permissions-banner,
 .desktop-setting-notifications {
     margin-bottom: 10px;
+    width: fit-content;
+}
+
+.mobile-push-notifications-banner,
+.desktop-setting-notifications,
+.organization-upgrade-banner {
+    .banner-content {
+        flex-wrap: nowrap;
+
+        .banner-action-buttons {
+            flex-wrap: nowrap;
+        }
+    }
 }
 
 .invite-stream-notice {
