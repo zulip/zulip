@@ -30,6 +30,8 @@ format used by the Zulip server that they are interacting with.
   `zulip_message_ids`.
 * Mobile push notification payloads for FCM to for new messages no
   longer contain the (unused) `content_truncated` boolean field.
+- E2EE mobile push notification payloads now have a [modernized and
+  documented format](/api/mobile-notifications).
 
 **Feature level 412**
 

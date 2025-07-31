@@ -2,15 +2,21 @@ from datetime import datetime, timezone
 from unittest import mock
 
 import responses
+import time_machine
 from django.test import override_settings
+from django.utils.timezone import now
 from firebase_admin.exceptions import InternalError
 from firebase_admin.messaging import UnregisteredError
 
 from analytics.models import RealmCount
+from zerver.actions.user_groups import check_add_user_group
+from zerver.lib.avatar import absolute_avatar_url
 from zerver.lib.push_notifications import handle_push_notification, handle_remove_push_notification
 from zerver.lib.test_classes import E2EEPushNotificationTestCase
 from zerver.lib.test_helpers import activate_push_notification_service
+from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.models import PushDevice, UserMessage
+from zerver.models.realms import get_realm
 from zerver.models.scheduled_jobs import NotificationTriggers
 from zilencer.models import RemoteRealm, RemoteRealmCount
 
@@ -598,6 +604,83 @@ class SendPushNotificationTest(E2EEPushNotificationTestCase):
             )
             self.assertEqual(realm_count_dict, dict(subgroup=None, value=4))
 
+    def test_payload_data_to_encrypt_channel_message(self) -> None:
+        hamlet = self.example_user("hamlet")
+        aaron = self.example_user("aaron")
+        realm = get_realm("zulip")
+        user_group = check_add_user_group(realm, "test_user_group", [hamlet], acting_user=hamlet)
+
+        time_now = now()
+        self.subscribe(aaron, "Denmark")
+        with time_machine.travel(time_now, tick=False):
+            message_id = self.send_stream_message(
+                sender=aaron,
+                stream_name="Denmark",
+                content=f"@*{user_group.name}*",
+                skip_capture_on_commit_callbacks=True,
+            )
+        missed_message = {
+            "message_id": message_id,
+            "trigger": NotificationTriggers.MENTION,
+            "mentioned_user_group_id": user_group.id,
+        }
+
+        expected_payload_data_to_encrypt = {
+            "realm_url": realm.url,
+            "realm_name": realm.name,
+            "user_id": hamlet.id,
+            "sender_id": aaron.id,
+            "mentioned_user_group_id": user_group.id,
+            "mentioned_user_group_name": user_group.name,
+            "recipient_type": "channel",
+            "channel_name": "Denmark",
+            "channel_id": self.get_stream_id("Denmark"),
+            "topic": "test",
+            "type": "message",
+            "message_id": message_id,
+            "time": datetime_to_timestamp(time_now),
+            "content": f"@{user_group.name}",
+            "sender_full_name": aaron.full_name,
+            "sender_avatar_url": absolute_avatar_url(aaron),
+        }
+        with mock.patch("zerver.lib.push_notifications.send_push_notifications") as m:
+            handle_push_notification(hamlet.id, missed_message)
+
+            self.assertEqual(m.call_args.args[1], expected_payload_data_to_encrypt)
+
+    def test_payload_data_to_encrypt_direct_message(self) -> None:
+        hamlet = self.example_user("hamlet")
+        aaron = self.example_user("aaron")
+        realm = get_realm("zulip")
+
+        time_now = now()
+        with time_machine.travel(time_now, tick=False):
+            message_id = self.send_personal_message(
+                from_user=aaron, to_user=hamlet, skip_capture_on_commit_callbacks=True
+            )
+        missed_message = {
+            "message_id": message_id,
+            "trigger": NotificationTriggers.DIRECT_MESSAGE,
+        }
+
+        expected_payload_data_to_encrypt = {
+            "realm_url": realm.url,
+            "realm_name": realm.name,
+            "user_id": hamlet.id,
+            "sender_id": aaron.id,
+            "recipient_type": "direct",
+            "type": "message",
+            "message_id": message_id,
+            "time": datetime_to_timestamp(time_now),
+            "content": "test content",
+            "sender_full_name": aaron.full_name,
+            "sender_avatar_url": absolute_avatar_url(aaron),
+        }
+        with mock.patch("zerver.lib.push_notifications.send_push_notifications") as m:
+            handle_push_notification(hamlet.id, missed_message)
+
+            self.assertEqual(m.call_args.args[1], expected_payload_data_to_encrypt)
+
 
 @activate_push_notification_service()
 class RemovePushNotificationTest(E2EEPushNotificationTestCase):
@@ -679,6 +762,30 @@ class RemovePushNotificationTest(E2EEPushNotificationTestCase):
                 zerver_logger.output[2],
             )
 
+    def test_remove_payload_data_to_encrypt(self) -> None:
+        hamlet = self.example_user("hamlet")
+        aaron = self.example_user("aaron")
+        realm = get_realm("zulip")
+
+        message_id_one = self.send_personal_message(
+            from_user=aaron, to_user=hamlet, skip_capture_on_commit_callbacks=True
+        )
+        message_id_two = self.send_personal_message(
+            from_user=aaron, to_user=hamlet, skip_capture_on_commit_callbacks=True
+        )
+
+        expected_payload_data_to_encrypt = {
+            "realm_url": realm.url,
+            "realm_name": realm.name,
+            "user_id": hamlet.id,
+            "type": "remove",
+            "message_ids": [message_id_one, message_id_two],
+        }
+        with mock.patch("zerver.lib.push_notifications.send_push_notifications") as m:
+            handle_remove_push_notification(hamlet.id, [message_id_one, message_id_two])
+
+            self.assertEqual(m.call_args.args[1], expected_payload_data_to_encrypt)
+
 
 class RequireE2EEPushNotificationsSettingTest(E2EEPushNotificationTestCase):
     def test_content_redacted(self) -> None:
@@ -722,8 +829,7 @@ class RequireE2EEPushNotificationsSettingTest(E2EEPushNotificationTestCase):
             self.assertEqual(mock_legacy.call_args.args[2]["content"], "New message")
 
             mock_e2ee.assert_called_once()
-            self.assertEqual(mock_e2ee.call_args.args[1]["alert"]["body"], "not-redacted")
-            self.assertEqual(mock_e2ee.call_args.args[2]["content"], "not-redacted")
+            self.assertEqual(mock_e2ee.call_args.args[1]["content"], "not-redacted")
 
         message_id = self.send_personal_message(
             from_user=aaron, to_user=hamlet, skip_capture_on_commit_callbacks=True
