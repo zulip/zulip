@@ -528,6 +528,8 @@ class StreamSidebarRow {
         this.update_unread_count();
     }
 
+    // TODO: This probably isn't needed anymore, but some test logic
+    // depends on it.
     update_whether_active(): void {
         if (stream_list_sort.has_recent_activity(this.sub)) {
             this.$list_item.removeClass("inactive_stream");
@@ -714,7 +716,11 @@ export function refresh_pinned_or_unpinned_stream(sub: StreamSubscription): void
 
 export function refresh_muted_or_unmuted_stream(sub: StreamSubscription): void {
     build_stream_sidebar_row(sub);
-    update_streams_sidebar();
+    // If a stream is inactive, it'll stay in the same inactive list in its
+    // StreamListSection (so `same_as_before` will be false), so we need to
+    // force the rerender to change its faded/unfaded appearance.
+    const force_rerender = !stream_list_sort.has_recent_activity(sub);
+    update_streams_sidebar(force_rerender);
 }
 
 export function get_sidebar_stream_topic_info(filter: Filter): {
