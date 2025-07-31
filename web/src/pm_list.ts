@@ -64,13 +64,14 @@ export function _build_direct_messages_list(): vdom.Tag<PMNode> {
     const pm_list_info = pm_list_data.get_list_info(zoomed, search_term);
     const conversations_to_be_shown = pm_list_info.conversations_to_be_shown;
     const more_conversations_unread_count = pm_list_info.more_conversations_unread_count;
+    const has_deactivated_user = pm_list_info.has_deactivated_user;
 
     const pm_list_nodes = conversations_to_be_shown.map((conversation) =>
         pm_list_dom.keyed_pm_li(conversation),
     );
 
     const all_conversations_shown = conversations_to_be_shown.length === conversations.length;
-    if (!all_conversations_shown) {
+    if (!zoomed && (!all_conversations_shown || has_deactivated_user)) {
         pm_list_nodes.push(
             pm_list_dom.more_private_conversations_li(more_conversations_unread_count),
         );
