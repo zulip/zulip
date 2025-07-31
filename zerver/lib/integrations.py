@@ -519,6 +519,9 @@ WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
         url_options=[WebhookUrlOption.build_preset_config(PresetUrlOption.BRANCHES)],
     ),
     WebhookIntegration(
+        "basecamp", ["project-management"], [WebhookScreenshotConfig("doc_active.json")]
+    ),
+    WebhookIntegration(
         "beanstalk",
         ["version-control"],
         [
@@ -531,9 +534,6 @@ WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
         ],
     ),
     WebhookIntegration(
-        "basecamp", ["project-management"], [WebhookScreenshotConfig("doc_active.json")]
-    ),
-    WebhookIntegration(
         "beeminder",
         ["misc"],
         # The fixture's goal.losedate needs to be modified dynamically
@@ -542,20 +542,20 @@ WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
         display_name="Beeminder",
     ),
     WebhookIntegration(
-        "bitbucket3",
+        "bitbucket",
         ["version-control"],
         [
             WebhookScreenshotConfig(
-                "repo_push_update_single_branch.json",
-                "004.png",
-                "bitbucket",
-                bot_name="Bitbucket Server Bot",
+                "push.json",
+                "002.png",
                 channel="commits",
+                use_basic_auth=True,
+                payload_as_query_param=True,
             )
         ],
-        logo="images/integrations/logos/bitbucket.svg",
-        display_name="Bitbucket Server",
-        url_options=[WebhookUrlOption.build_preset_config(PresetUrlOption.BRANCHES)],
+        display_name="Bitbucket",
+        secondary_line_text="(Enterprise)",
+        legacy=True,
     ),
     WebhookIntegration(
         "bitbucket2",
@@ -574,20 +574,20 @@ WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
         url_options=[WebhookUrlOption.build_preset_config(PresetUrlOption.BRANCHES)],
     ),
     WebhookIntegration(
-        "bitbucket",
+        "bitbucket3",
         ["version-control"],
         [
             WebhookScreenshotConfig(
-                "push.json",
-                "002.png",
+                "repo_push_update_single_branch.json",
+                "004.png",
+                "bitbucket",
+                bot_name="Bitbucket Server Bot",
                 channel="commits",
-                use_basic_auth=True,
-                payload_as_query_param=True,
             )
         ],
-        display_name="Bitbucket",
-        secondary_line_text="(Enterprise)",
-        legacy=True,
+        logo="images/integrations/logos/bitbucket.svg",
+        display_name="Bitbucket Server",
+        url_options=[WebhookUrlOption.build_preset_config(PresetUrlOption.BRANCHES)],
     ),
     WebhookIntegration(
         "buildbot", ["continuous-integration"], [WebhookScreenshotConfig("started.json")]
@@ -616,14 +616,14 @@ WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
         "crashlytics", ["monitoring"], [WebhookScreenshotConfig("issue_message.json")]
     ),
     WebhookIntegration(
-        "dialogflow",
-        ["customer-support"],
-        [WebhookScreenshotConfig("weather_app.json", extra_params={"email": "iago@zulip.com"})],
-    ),
-    WebhookIntegration(
         "delighted",
         ["customer-support", "marketing"],
         [WebhookScreenshotConfig("survey_response_updated_promoter.json")],
+    ),
+    WebhookIntegration(
+        "dialogflow",
+        ["customer-support"],
+        [WebhookScreenshotConfig("weather_app.json", extra_params={"email": "iago@zulip.com"})],
     ),
     WebhookIntegration("dropbox", ["productivity"], [WebhookScreenshotConfig("file_updated.json")]),
     WebhookIntegration("errbit", ["monitoring"], [WebhookScreenshotConfig("error_message.json")]),
@@ -861,13 +861,13 @@ WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
     WebhookIntegration(
         "sentry", ["monitoring"], [WebhookScreenshotConfig("event_for_exception_python.json")]
     ),
+    WebhookIntegration("slack", ["communication"]),
     WebhookIntegration(
         "slack_incoming",
         ["communication", "meta-integration"],
         display_name="Slack-compatible webhook",
         logo="images/integrations/logos/slack.svg",
     ),
-    WebhookIntegration("slack", ["communication"]),
     WebhookIntegration(
         "sonarqube",
         ["continuous-integration"],
@@ -936,6 +936,7 @@ WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
         [WebhookScreenshotConfig("publish_post.txt", "wordpress_post_created.png")],
         display_name="WordPress",
     ),
+    WebhookIntegration("zabbix", ["monitoring"], [WebhookScreenshotConfig("zabbix_alert.json")]),
     WebhookIntegration("zapier", ["meta-integration"]),
     WebhookIntegration(
         "zendesk",
@@ -952,7 +953,6 @@ WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
             )
         ],
     ),
-    WebhookIntegration("zabbix", ["monitoring"], [WebhookScreenshotConfig("zabbix_alert.json")]),
 ]
 
 INTEGRATIONS: dict[str, Integration] = {
@@ -1050,6 +1050,7 @@ HUBOT_INTEGRATIONS: list[HubotIntegration] = [
     HubotIntegration("bonusly", ["hr"]),
     HubotIntegration("chartbeat", ["marketing"]),
     HubotIntegration("darksky", ["misc"], display_name="Dark Sky"),
+    HubotIntegration("google-translate", ["misc"], display_name="Google Translate"),
     HubotIntegration(
         "instagram",
         ["misc"],
@@ -1057,7 +1058,6 @@ HUBOT_INTEGRATIONS: list[HubotIntegration] = [
         logo="images/integrations/logos/instagra_m.svg",
     ),
     HubotIntegration("mailchimp", ["communication", "marketing"]),
-    HubotIntegration("google-translate", ["misc"], display_name="Google Translate"),
     HubotIntegration(
         "youtube",
         ["misc"],
