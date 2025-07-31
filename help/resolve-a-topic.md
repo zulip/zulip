@@ -10,16 +10,15 @@ Marking a topic as resolved:
 
 * Puts a ✔ at the beginning of the topic name, e.g., `example topic`
   becomes `✔ example topic`.
-* Triggers an automated notice from the [notification
-  bot](/help/configure-automated-notices) indicating that you resolved the
-  topic. Users can
+* Triggers an automated notice from Notification Bot indicating that
+  you resolved the topic. Users can
   [configure](/help/marking-messages-as-read#configure-whether-resolved-topic-notices-are-marked-as-read)
   whether these notices are automatically marked as read.
 * Changes whether the topic appears when using the `is:resolved` and
   `-is:resolved` [search filters](/help/search-for-messages#search-filters).
 
 Marking a topic as unresolved removes the ✔ and also triggers an
-automated notice from the notification bot.
+automated notice from Notification Bot.
 
 It's often helpful to define a policy for when to resolve topics that
 fits how topics are used in a given channel. Here are some common
@@ -66,8 +65,8 @@ Users can resolve or unresolve a topic if they have
 
 ## Mark a topic as unresolved
 
-Marking a topic as unresolved normally triggers an automated notice from the
-notification bot. However, unresolving a topic right after you resolved it
+Marking a topic as unresolved normally triggers an automated notice from
+Notification Bot. However, unresolving a topic right after you resolved it
 removes the original notice instead. This is helpful if you resolved a topic by
 accident.
 
