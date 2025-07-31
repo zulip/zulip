@@ -16,10 +16,10 @@ export type StreamListRow =
     | {
           type: "stream";
           stream_id: number;
-          inactive: boolean;
+          inactive_or_muted: boolean;
       }
     | {
-          type: "inactive_toggle";
+          type: "inactive_or_muted_toggle";
           section_id: string;
       };
 let all_rows: StreamListRow[] = [];
@@ -106,7 +106,7 @@ export type StreamListSection = {
     section_title: string;
     streams: number[];
     muted_streams: number[];
-    inactive_streams: number[]; // Only used for folder sections
+    inactive_streams: number[];
     order?: number; // Only used for folder sections
 };
 
@@ -153,6 +153,8 @@ export function sort_groups(stream_ids: number[], search_term: string): StreamLi
             if (sub.is_muted) {
                 pinned_section.muted_streams.push(stream_id);
             } else {
+                // Inactive channels aren't treated differently when pinned,
+                // since the user wants chose to put them in the pinned section.
                 pinned_section.streams.push(stream_id);
             }
         } else if (user_settings.web_left_sidebar_show_channel_folders && sub.folder_id) {
@@ -219,23 +221,23 @@ export function sort_groups(stream_ids: number[], search_term: string): StreamLi
         current_sections = new_sections;
         all_rows = [];
         for (const section of current_sections) {
-            for (const stream_id of [...section.streams, ...section.muted_streams]) {
+            for (const stream_id of section.streams) {
                 all_rows.push({
                     type: "stream",
                     stream_id,
-                    inactive: false,
+                    inactive_or_muted: false,
                 });
             }
-            for (const stream_id of section.inactive_streams) {
+            for (const stream_id of [...section.muted_streams, ...section.inactive_streams]) {
                 all_rows.push({
                     type: "stream",
                     stream_id,
-                    inactive: true,
+                    inactive_or_muted: true,
                 });
             }
-            if (section.inactive_streams.length > 0) {
+            if (section.inactive_streams.length > 0 || section.muted_streams.length > 0) {
                 all_rows.push({
-                    type: "inactive_toggle",
+                    type: "inactive_or_muted_toggle",
                     section_id: section.id,
                 });
             }
@@ -255,7 +257,7 @@ export function first_row(): StreamListRow | undefined {
 function is_visible_row(
     row: StreamListRow,
     section_id_map: Map<number, StreamListSection>,
-    sections_showing_inactive: Set<string>,
+    sections_showing_inactive_or_muted: Set<string>,
     collapsed_sections: Set<string>,
     active_stream_id: number | undefined,
 ): boolean {
@@ -266,10 +268,10 @@ function is_visible_row(
         if (collapsed_sections.has(section.id) && active_stream_id !== stream_id) {
             return false;
         }
-        if (!sections_showing_inactive.has(section.id) && row.inactive) {
+        if (!sections_showing_inactive_or_muted.has(section.id) && row.inactive_or_muted) {
             return false;
         }
-    } else if (row.type === "inactive_toggle" && collapsed_sections.has(row.section_id)) {
+    } else if (row.type === "inactive_or_muted_toggle" && collapsed_sections.has(row.section_id)) {
         return false;
     }
     return true;
@@ -277,7 +279,7 @@ function is_visible_row(
 
 export function prev_row(
     row: StreamListRow,
-    sections_showing_inactive: Set<string>,
+    sections_showing_inactive_or_muted: Set<string>,
     collapsed_sections: Set<string>,
     active_stream_id: number | undefined,
 ): StreamListRow | undefined {
@@ -290,7 +292,7 @@ export function prev_row(
             is_visible_row(
                 prev_row,
                 section_id_map,
-                sections_showing_inactive,
+                sections_showing_inactive_or_muted,
                 collapsed_sections,
                 active_stream_id,
             )
@@ -303,7 +305,7 @@ export function prev_row(
 
 export function next_row(
     row: StreamListRow,
-    sections_showing_inactive: Set<string>,
+    sections_showing_inactive_or_muted: Set<string>,
     collapsed_sections: Set<string>,
     active_stream_id: number | undefined,
 ): StreamListRow | undefined {
@@ -316,7 +318,7 @@ export function next_row(
             is_visible_row(
                 next_row,
                 section_id_map,
-                sections_showing_inactive,
+                sections_showing_inactive_or_muted,
                 collapsed_sections,
                 active_stream_id,
             )

@@ -128,7 +128,7 @@
 
     .stream-with-count.hide_unread_counts,
     .stream-list-subsection-header.hide_unread_counts,
-    .show-inactive-channels.hide_unread_counts {
+    .show-inactive-or-muted-channels.hide_unread_counts {
         .masked_unread_count {
             display: flex;
         }
@@ -401,11 +401,11 @@
     }
 }
 
-.stream-list-toggle-inactive-channels {
+.stream-list-toggle-inactive-or-muted-channels {
     padding-left: var(--left-sidebar-toggle-width-offset);
 
-    .show-inactive-channels,
-    .hide-inactive-channels {
+    .show-inactive-or-muted-channels,
+    .hide-inactive-or-muted-channels {
         /* Override the action heading font size, so that em measurements
         on child elements are sized properly */
         font-size: var(--base-font-size-px);
@@ -413,7 +413,7 @@
         font-variant: inherit;
         padding: 0;
 
-        .stream-list-toggle-inactive-channels-text {
+        .stream-list-toggle-inactive-or-muted-channels-text {
             font-size: var(--font-size-sidebar-action-heading);
             font-variant: var(--font-variant-sidebar-action-heading);
             overflow-x: hidden;
@@ -422,39 +422,39 @@
     }
 }
 
-.stream-list-section-container:not(.showing-inactive) {
-    .inactive-in-channel-folder {
+.stream-list-section-container:not(.showing-inactive-or-muted) {
+    .inactive-or-muted-in-channel-folder {
         display: none;
     }
 
-    .stream-list-toggle-inactive-channels {
-        .hide-inactive-channels {
+    .stream-list-toggle-inactive-or-muted-channels {
+        .hide-inactive-or-muted-channels {
             display: none;
         }
     }
 }
 
 #streams_list.is_searching {
-    .show-inactive-channels,
-    .hide-inactive-channels {
+    .show-inactive-or-muted-channels,
+    .hide-inactive-or-muted-channels {
         display: none;
     }
 
-    .inactive-in-channel-folder {
+    .inactive-or-muted-in-channel-folder {
         display: block;
     }
 }
 
-.stream-list-section-container.showing-inactive {
-    .stream-list-toggle-inactive-channels {
-        .show-inactive-channels {
+.stream-list-section-container.showing-inactive-or-muted {
+    .stream-list-toggle-inactive-or-muted-channels {
+        .show-inactive-or-muted-channels {
             display: none;
         }
     }
 }
 
-.show-inactive-channels,
-.hide-inactive-channels {
+.show-inactive-or-muted-channels,
+.hide-inactive-or-muted-channels {
     display: grid;
     grid-template:
         "content markers-and-unreads three-dot-placeholder" auto
@@ -476,7 +476,7 @@
 
 .stream-list-section-container.collapsed {
     .narrow-filter:not(.stream-expanded),
-    .stream-list-toggle-inactive-channels,
+    .stream-list-toggle-inactive-or-muted-channels,
     .topic-list-item:not(.active-sub-filter),
     &.hide-topic-bracket ul.topic-list.topic-list-has-topics::before,
     &.hide-topic-bracket ul.topic-list.topic-list-has-topics::after {
@@ -635,7 +635,7 @@
     }
 }
 
-.stream-list-toggle-inactive-channels.highlighted_row {
+.stream-list-toggle-inactive-or-muted-channels.highlighted_row {
     outline: 2px solid var(--color-outline-focus);
     outline-offset: -2px;
     background-color: var(--color-background-sidebar-action-heading-hover);

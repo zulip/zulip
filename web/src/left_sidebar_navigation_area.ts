@@ -182,9 +182,9 @@ export function update_dom_with_unread_counts(
         normal_section_unread_counts.muted,
     );
     update_section_unread_count(
-        $("#stream-list-normal-streams-container .show-inactive-channels"),
+        $("#stream-list-normal-streams-container .show-inactive-or-muted-channels"),
         normal_section_unread_counts.inactive_unmuted,
-        normal_section_unread_counts.inactive_muted,
+        normal_section_unread_counts.inactive_muted + normal_section_unread_counts.muted,
     );
 
     for (const folder_id of channel_folders.get_all_folder_ids()) {
@@ -200,9 +200,9 @@ export function update_dom_with_unread_counts(
             unread_counts.muted,
         );
         update_section_unread_count(
-            $(`#stream-list-${folder_id}-container .show-inactive-channels`),
+            $(`#stream-list-${folder_id}-container .show-inactive-or-muted-channels`),
             unread_counts.inactive_unmuted,
-            unread_counts.inactive_muted,
+            unread_counts.inactive_muted + unread_counts.muted,
         );
     }
 
