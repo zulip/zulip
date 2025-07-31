@@ -1,7 +1,8 @@
 <div class="stream-list-toggle-inactive-or-muted-channels bottom_left_row zoom-in-hide">
     <div class="show-inactive-or-muted-channels sidebar-topic-action-heading">
+        <i class="zulip-icon zulip-icon-expand" aria-hidden="true"></i>
         <div class="stream-list-toggle-inactive-or-muted-channels-text">
-            {{#tr}}+ {inactive_or_muted_count} inactive or muted{{/tr}}
+            {{#tr}}{inactive_or_muted_count} inactive or muted{{/tr}}
         </div>
         <div class="markers-and-unreads">
             <span class="unread_count quiet-count"></span>
@@ -11,8 +12,9 @@
         </div>
     </div>
     <div class="hide-inactive-or-muted-channels sidebar-topic-action-heading">
+        <i class="zulip-icon zulip-icon-collapse" aria-hidden="true"></i>
         <div class="stream-list-toggle-inactive-or-muted-channels-text">
-            {{#tr}}- {inactive_or_muted_count} inactive or muted{{/tr}}
+            {{#tr}}{inactive_or_muted_count} inactive or muted{{/tr}}
         </div>
     </div>
 </div>
