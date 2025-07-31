@@ -218,12 +218,15 @@ export let complete_starting_tasks = (opts: ComposeActionsOpts): void => {
     compose_recipient.update_compose_area_placeholder_text();
     compose_recipient.update_narrow_to_recipient_visibility();
     compose_recipient.update_recipient_row_attention_level();
+
     // This logic catches the corner case of starting a new topic
     // from within an existing *general chat* topic via buttons
     // in the left sidebar and collapsed compose box as well as
     // the compose hotkey, ensuring that we have a high-attention
     // recipient row.
-    const is_new_topic_triggered = opts.trigger === "clear topic button" || "compose_hotkey";
+    const new_topic_triggers = ["clear topic button", "compose_hotkey"];
+    const is_new_topic_triggered = new_topic_triggers.includes(opts.trigger);
+
     if (is_new_topic_triggered) {
         compose_recipient.set_high_attention_recipient_row();
     }
