@@ -131,7 +131,9 @@
             {{> settings_save_discard_widget section_name="desktop-message-settings" show_only_indicator=(not for_realm_settings) }}
         </div>
 
+        {{#if (eq prefix "user_")}}
         <div class="desktop-notification-settings-banners banner-wrapper"></div>
+        {{/if}}
 
         {{#unless for_realm_settings}}
         {{> ../components/action_button
