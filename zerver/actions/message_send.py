@@ -10,8 +10,8 @@ from typing import Any, TypedDict
 import orjson
 from django.conf import settings
 from django.core.exceptions import ValidationError
-from django.db import IntegrityError, transaction
-from django.db.models import F, Q, QuerySet
+from django.db import IntegrityError
+from django.db.models import AutoField, F, Q, QuerySet
 from django.utils.html import escape
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
@@ -39,12 +39,15 @@ from zerver.lib.exceptions import (
     TopicWildcardMentionNotAllowedError,
     ZephyrMessageAlreadySentError,
 )
+from zerver.lib.idempotent_request import do_idempotent_insert, idempotent_request_transaction
 from zerver.lib.markdown import MessageRenderingResult, render_message_markdown
 from zerver.lib.markdown import version as markdown_version
 from zerver.lib.mention import MentionBackend, MentionData
 from zerver.lib.message import (
     SendMessageRequest,
     check_user_group_mention_allowed,
+    message_response_deserializer,
+    message_response_serializer,
     normalize_body,
     set_visibility_policy_possible,
     stream_wildcard_mention_allowed,
@@ -858,11 +861,58 @@ def get_active_presence_idle_user_ids(
     return filter_presence_idle_user_ids(user_ids)
 
 
-@transaction.atomic(savepoint=False)
+def raw_insert_message_with_idempotency_key(
+    send_request: SendMessageRequest,
+    idempotency_key: str,
+) -> None:
+    """
+    Insert a single Message in db, using Idempotency-Key header.
+    """
+
+    # Get Message db column names.
+    # These fields are filtered in the same way django bulk_create does it.
+    field_names: list[str] = [
+        field.column
+        for field in Message._meta.concrete_fields
+        if not field.generated and not isinstance(field, AutoField)
+    ]
+
+    message = send_request.message
+
+    # Maps db column name to the value that will be inserted.
+    column_to_value: dict[str, Any] = {
+        col_name: getattr(message, col_name) for col_name in field_names
+    }
+
+    result = do_idempotent_insert(
+        idempotency_key=idempotency_key,
+        realm=send_request.realm,
+        user=message.sender,
+        destination_model=Message,
+        field_names=field_names,
+        column_to_value=column_to_value,
+    )
+
+    # The DB-generated id of the inserted Message.
+    new_msg_id = result["new_id"]
+    # Set new_msg_id on the Message object manually,
+    # since we're using raw SQL instead of bulk_create() which would have done this for us.
+    setattr(message, Message._meta.pk.name, new_msg_id)
+
+
+@idempotent_request_transaction(
+    savepoint=False,
+    cached_response_serializer=message_response_serializer,
+    cached_response_deserializer=message_response_deserializer,
+)
 def do_send_messages(
     send_message_requests_maybe_none: Sequence[SendMessageRequest | None],
     *,
     mark_as_read: Sequence[int] = [],
+    # user is not named sender because it's only accessed inside
+    # idempotent_request_transaction which is generic.
+    user: UserProfile | None = None,
+    idempotency_key: str | None = None,
 ) -> list[SentMessageResult]:
     """See
     https://zulip.readthedocs.io/en/latest/subsystems/sending-messages.html
@@ -879,7 +929,15 @@ def do_send_messages(
     # Save the message receipts in the database
     user_message_flags: dict[int, dict[int, list[str]]] = defaultdict(dict)
 
-    Message.objects.bulk_create(send_request.message for send_request in send_message_requests)
+    if idempotency_key is None:
+        Message.objects.bulk_create(send_request.message for send_request in send_message_requests)
+
+    else:
+        # Idempotency-Key is only allowed via API requests that POST a single message.
+        assert len(send_message_requests) == 1
+        raw_insert_message_with_idempotency_key(
+            send_request=send_message_requests[0], idempotency_key=idempotency_key
+        )
 
     # Claim attachments in message
     for send_request in send_message_requests:
@@ -1438,6 +1496,7 @@ def check_send_message(
     *,
     skip_stream_access_check: bool = False,
     read_by_sender: bool = False,
+    idempotency_key: str | None = None,
 ) -> SentMessageResult:
     addressee = Addressee.legacy_build(sender, recipient_type_name, message_to, topic_name)
     try:
@@ -1457,9 +1516,12 @@ def check_send_message(
         )
     except ZephyrMessageAlreadySentError as e:
         return SentMessageResult(message_id=e.message_id)
-    return do_send_messages([message_request], mark_as_read=[sender.id] if read_by_sender else [])[
-        0
-    ]
+    return do_send_messages(
+        [message_request],
+        mark_as_read=[sender.id] if read_by_sender else [],
+        user=sender,
+        idempotency_key=idempotency_key,
+    )[0]
 
 
 def send_rate_limited_pm_notification_to_bot_owner(
