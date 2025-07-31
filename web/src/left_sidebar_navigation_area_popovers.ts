@@ -3,17 +3,17 @@ import assert from "minimalistic-assert";
 import type * as tippy from "tippy.js";
 
 import render_left_sidebar_all_messages_popover from "../templates/popovers/left_sidebar/left_sidebar_all_messages_popover.hbs";
-import render_left_sidebar_condensed_views_popover from "../templates/popovers/left_sidebar/left_sidebar_condensed_views_popover.hbs";
 import render_left_sidebar_drafts_popover from "../templates/popovers/left_sidebar/left_sidebar_drafts_popover.hbs";
 import render_left_sidebar_inbox_popover from "../templates/popovers/left_sidebar/left_sidebar_inbox_popover.hbs";
 import render_left_sidebar_recent_view_popover from "../templates/popovers/left_sidebar/left_sidebar_recent_view_popover.hbs";
 import render_left_sidebar_starred_messages_popover from "../templates/popovers/left_sidebar/left_sidebar_starred_messages_popover.hbs";
+import render_left_sidebar_views_popover from "../templates/popovers/left_sidebar/left_sidebar_views_popover.hbs";
 
 import * as channel from "./channel.ts";
 import * as drafts from "./drafts.ts";
+import * as left_sidebar_navigation_area from "./left_sidebar_navigation_area.ts";
 import * as popover_menus from "./popover_menus.ts";
 import * as popovers from "./popovers.ts";
-import * as scheduled_messages from "./scheduled_messages.ts";
 import * as settings_config from "./settings_config.ts";
 import * as starred_messages from "./starred_messages.ts";
 import * as starred_messages_ui from "./starred_messages_ui.ts";
@@ -286,28 +286,16 @@ export function initialize(): void {
     popover_menus.register_popover_menu(".left-sidebar-navigation-menu-icon", {
         ...popover_menus.left_sidebar_tippy_options,
         onShow(instance) {
-            // Determine at show time whether there are scheduled messages,
-            // so that Tippy properly calculates the height of the popover
-            const scheduled_message_count = scheduled_messages.get_count();
-            let has_scheduled_messages = false;
-            if (scheduled_message_count > 0) {
-                has_scheduled_messages = true;
-            }
+            const built_in_popover_condensed_views =
+                left_sidebar_navigation_area.get_built_in_popover_condensed_views();
+
             popovers.hide_all();
             instance.setContent(
                 ui_util.parse_html(
-                    render_left_sidebar_condensed_views_popover({has_scheduled_messages}),
+                    render_left_sidebar_views_popover({
+                        views: built_in_popover_condensed_views,
+                    }),
                 ),
-            );
-        },
-        onMount() {
-            ui_util.update_unread_count_in_dom(
-                $(".condensed-views-popover-menu-drafts"),
-                drafts.draft_model.getDraftCount(),
-            );
-            ui_util.update_unread_count_in_dom(
-                $(".condensed-views-popover-menu-scheduled-messages"),
-                scheduled_messages.get_count(),
             );
         },
         onHidden(instance) {
