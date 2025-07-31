@@ -949,39 +949,60 @@ li.active-sub-filter {
         /* Set a positioning context for the unread dot. */
         position: relative;
 
-        .unread_count {
-            position: absolute;
-        }
-
-        /* Show the same styles when each item is
-           hovered or, via the keyboard, the `<a>`
-           element within receives focus. */
-        &:hover,
-        &:focus-within {
-            background: var(--color-background-navigation-item-hover);
-
+        &:not(.top_left_condensed_unread_marker) {
             .unread_count {
-                /* 6px at 12px/1em */
-                top: -0.5em;
-                right: -0.5em;
-                background: var(--color-background-unread-counter-no-alpha);
+                position: absolute;
             }
-        }
 
-        &:not(:hover) .unread_count {
-            /* .unread_count has its based font-size set to 12px at 14px/em. */
-            /* 2px, 6px at 12px/1em */
-            top: 0.1667em;
-            right: 0.1667em;
-            width: 0.5em;
-            height: 0.5em;
-            padding: 0;
-            color: transparent;
-            background-color: var(--color-background-unread-counter-dot);
+            /* Show the same styles when each item is
+               hovered or, via the keyboard, the `<a>`
+               element within receives focus. */
+            &:hover,
+            &:focus-within {
+                background: var(--color-background-navigation-item-hover);
+
+                .unread_count {
+                    /* 6px at 12px/1em */
+                    top: -0.5em;
+                    right: -0.5em;
+                    background: var(--color-background-unread-counter-no-alpha);
+                }
+            }
+
+            &:not(:hover) .unread_count {
+                /* .unread_count has its based font-size set to 12px at 14px/em. */
+                /* 2px, 6px at 12px/1em */
+                top: 0.1667em;
+                right: 0.1667em;
+                width: 0.5em;
+                height: 0.5em;
+                padding: 0;
+                color: transparent;
+                background-color: var(--color-background-unread-counter-dot);
+            }
         }
 
         &.top_left_starred_messages .unread_count {
             display: none;
+        }
+    }
+
+    &.hide-unread-messages-count {
+        /* We suppress the entire unread area
+           for users who prefer masked unreads. */
+        .top_left_condensed_unread_marker {
+            display: none;
+        }
+    }
+
+    .top_left_condensed_unread_marker {
+        display: flex;
+        align-content: center;
+
+        .unread_count {
+            flex: 0 0 auto;
+            margin: 0 var(--left-sidebar-unread-offset);
+            align-self: center;
         }
     }
 
