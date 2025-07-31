@@ -664,12 +664,12 @@ test("marked", ({override}) => {
         {
             input: "#**& &amp; &amp;amp;**",
             expected:
-                '<p><a class="stream" data-stream-id="5" href="/#narrow/channel/5-.26-.26-.26amp.3B">#&amp; &amp; &amp;amp;</a></p>',
+                '<p><a class="stream" data-stream-id="5" href="/#narrow/channel/5">#&amp; &amp; &amp;amp;</a></p>',
         },
         {
             input: "#**& &amp; &amp;amp;>& &amp; &amp;amp;**",
             expected:
-                '<p><a class="stream-topic" data-stream-id="5" href="#narrow/channel/5-.26-.26-.26amp.3B/topic/.26.20.26.20.26amp.3B">#&amp; &amp; &amp;amp; &gt; &amp; &amp; &amp;amp;</a></p>',
+                '<p><a class="stream-topic" data-stream-id="5" href="#narrow/channel/5/topic/.26.20.26.20.26amp.3B">#&amp; &amp; &amp;amp; &gt; &amp; &amp; &amp;amp;</a></p>',
         },
     ];
 
