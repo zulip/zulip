@@ -655,7 +655,6 @@ class HandlePushNotificationTest(PushNotificationTestCase):
                     "user_id": self.user_profile.id,
                     "event": "remove",
                     "zulip_message_ids": str(message.id),
-                    "zulip_message_id": message.id,
                 },
                 {"priority": "normal"},
                 list(
@@ -724,7 +723,6 @@ class HandlePushNotificationTest(PushNotificationTestCase):
                     "user_id": self.user_profile.id,
                     "event": "remove",
                     "zulip_message_ids": str(message.id),
-                    "zulip_message_id": message.id,
                 },
                 {"priority": "normal"},
             )

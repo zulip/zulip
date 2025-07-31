@@ -1203,9 +1203,6 @@ def get_remove_payload_gcm(
     gcm_payload.update(
         event="remove",
         zulip_message_ids=",".join(str(id) for id in message_ids),
-        # Older clients (all clients older than 2019-02-13) look only at
-        # `zulip_message_id` and ignore `zulip_message_ids`.  Do our best.
-        zulip_message_id=message_ids[0],
     )
     gcm_options = {"priority": "normal"}
     return gcm_payload, gcm_options
