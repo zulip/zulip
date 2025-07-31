@@ -8,6 +8,9 @@
                 {{#each primary_condensed_views}}
                     {{> left_sidebar_primary_condensed_view_item . }}
                 {{/each}}
+                <li class="top_left_condensed_unread_marker left-sidebar-navigation-condensed-item">
+                    <span class="unread_count normal-count"></span>
+                </li>
             </ul>
             <div class="left-sidebar-navigation-menu-icon">
                 <i class="zulip-icon zulip-icon-more-vertical" aria-label="{{t 'Other views'}}"></i>
