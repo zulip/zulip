@@ -933,51 +933,85 @@ li.active-sub-filter {
     justify-content: center;
 
     .left-sidebar-navigation-condensed-item {
-        /* 24px minimum width from Vlad's design.
-           however, we want to permit growing and
-           shrinking to keep icons reasonably spaced
-           across different information-density
-           settings. */
-        flex: 1 1 24px;
+        /* 26px minimum width gives a bit more
+           breathing room for unread markers when
+           unreads are displayed.
+           However, we want to permit growing but
+           not shrinking to keep icons reasonably
+           spaced across different information-density
+           settings. So we convert this value to ems:
+           26px at 16px/1em. */
+        flex: 1 0 1.625em;
         /* Unset padding from individual top_left items */
         padding: 0;
         border-radius: 4px;
         /* Set a positioning context for the unread dot. */
         position: relative;
 
-        .unread_count {
-            position: absolute;
-        }
-
-        /* Show the same styles when each item is
-           hovered or, via the keyboard, the `<a>`
-           element within receives focus. */
-        &:hover,
-        &:focus-within {
-            background: var(--color-background-navigation-item-hover);
-
+        &:not(.top_left_condensed_unread_marker) {
             .unread_count {
-                /* 6px at 12px/1em */
-                top: -0.5em;
-                right: -0.5em;
-                background: var(--color-background-unread-counter-no-alpha);
+                position: absolute;
             }
-        }
 
-        &:not(:hover) .unread_count {
-            /* .unread_count has its based font-size set to 12px at 14px/em. */
-            /* 2px, 6px at 12px/1em */
-            top: 0.1667em;
-            right: 0.1667em;
-            width: 0.5em;
-            height: 0.5em;
-            padding: 0;
-            color: transparent;
-            background-color: var(--color-background-unread-counter-dot);
+            /* Show the same styles when each item is
+               hovered or, via the keyboard, the `<a>`
+               element within receives focus. */
+            &:hover,
+            &:focus-within {
+                background: var(--color-background-navigation-item-hover);
+
+                .unread_count {
+                    /* 6px at 12px/1em */
+                    top: -0.5em;
+                    right: -0.5em;
+                    background: var(--color-background-unread-counter-no-alpha);
+                }
+            }
+
+            &:not(:hover) .unread_count {
+                /* .unread_count has its based font-size set to 12px at 14px/em. */
+                /* 2px, 6px at 12px/1em */
+                top: 0.1667em;
+                /* With positioning, we center the dot over the icon
+                   by subtracting half its width from the 50% mark. */
+                right: calc(50% - 0.25em);
+                /* But then we shift it left the em equivalent of half
+                   the icon width (15px/2) plus 2px. This keeps the
+                   unread dot in correct proximity to the view icon,
+                   no matter how the row flexes or what information-
+                   density values a user has set. 9.5px at 12px/1em. */
+                transform: translateX(0.7917em);
+                width: 0.5em;
+                height: 0.5em;
+                padding: 0;
+                color: transparent;
+                background-color: var(--color-background-unread-counter-dot);
+            }
         }
 
         &.top_left_starred_messages .unread_count {
             display: none;
+        }
+
+        &.top_left_condensed_unread_marker {
+            /* Flex to just the unread's width, to keep the
+               unreads aligned on the righthand side with others
+               up and down the left sidebar. */
+            flex: 0 0 auto;
+            display: flex;
+            align-content: center;
+
+            &:has(.unread_count:empty) {
+                /* When the unread count is empty (no unreads),
+                   we flex shut to 0 across the board so the
+                   unread count takes up no space. */
+                flex: 0 0 0;
+            }
+
+            .unread_count:not(:empty) {
+                margin: 0 var(--left-sidebar-unread-offset);
+                align-self: center;
+            }
         }
     }
 
@@ -1355,6 +1389,12 @@ li.top_left_scheduled_messages {
                 /* In the absence of auto rows in the condensed state,
                    we set an explicit height on the active filter. */
                 height: var(--line-height-sidebar-row);
+
+                /* With unread counts displaying in the condensed-view
+                   row, we suppress it on the home view. */
+                &.selected-home-view .unread_count {
+                    display: none;
+                }
             }
         }
     }
