@@ -20,7 +20,7 @@ import type {StreamSubscription} from "./sub_store.ts";
 
 type MessageViewHeaderContext = {
     title?: string | undefined;
-    html_title?: string | undefined;
+    title_html?: string | undefined;
     description?: string;
     link?: string;
     is_spectator?: boolean;
@@ -122,7 +122,7 @@ function get_message_view_header_context(filter: Filter | undefined): MessageVie
             context = {
                 ...context,
                 title: undefined,
-                html_title: stream_name_with_privacy_symbol_html,
+                title_html: stream_name_with_privacy_symbol_html,
                 // We don't want to show an initial icon here.
                 icon: undefined,
                 zulip_icon: undefined,
