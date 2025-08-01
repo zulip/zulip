@@ -1,7 +1,6 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
 
-import render_inline_decorated_channel_name from "../templates/inline_decorated_channel_name.hbs";
 import render_first_stream_created_modal from "../templates/stream_settings/first_stream_created_modal.hbs";
 
 import * as activity_ui from "./activity_ui.ts";
@@ -12,7 +11,7 @@ import * as compose_recipient from "./compose_recipient.ts";
 import * as compose_state from "./compose_state.ts";
 import * as dialog_widget from "./dialog_widget.ts";
 import * as hash_util from "./hash_util.ts";
-import {$t, $t_html} from "./i18n.ts";
+import {$t} from "./i18n.ts";
 import * as message_lists from "./message_lists.ts";
 import * as message_live_update from "./message_live_update.ts";
 import * as message_view from "./message_view.ts";
@@ -243,12 +242,7 @@ export function update_property<P extends keyof UpdatableStreamProperties>(
 
 function show_first_stream_created_modal(stream: StreamSubscription): void {
     dialog_widget.launch({
-        html_heading: $t_html(
-            {defaultMessage: "Channel <b><z-stream></z-stream></b> created!"},
-            {
-                "z-stream": () => render_inline_decorated_channel_name({stream}),
-            },
-        ),
+        html_heading: $t({defaultMessage: "Channel created!"}),
         html_body: render_first_stream_created_modal({stream}),
         id: "first_stream_created_modal",
         on_click(): void {

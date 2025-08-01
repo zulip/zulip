@@ -1443,7 +1443,7 @@ export function show(): void {
                 user_settings.web_escape_navigates_to_home_view,
         });
         dialog_widget.launch({
-            html_heading: $t_html({defaultMessage: "Welcome to <b>recent conversations</b>!"}),
+            html_heading: $t_html({defaultMessage: "Welcome to recent conversations!"}),
             html_body,
             html_submit_button: $t_html({defaultMessage: "Got it"}),
             on_click() {
