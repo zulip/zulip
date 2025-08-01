@@ -414,6 +414,10 @@
 .stream-list-toggle-inactive-channels {
     padding-left: var(--left-sidebar-toggle-width-offset);
 
+    &.no-display {
+        display: none;
+    }
+
     .show-inactive-channels,
     .hide-inactive-channels {
         /* Override the action heading font size, so that em measurements
@@ -433,7 +437,7 @@
 }
 
 .stream-list-section-container:not(.showing-inactive) {
-    .inactive-in-channel-folder {
+    .inactive-in-channel-folder:not(.active-filter, :has(.active-sub-filter)) {
         display: none;
     }
 
