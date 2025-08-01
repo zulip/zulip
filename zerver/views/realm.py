@@ -201,6 +201,12 @@ def update_realm(
     zulip_update_announcements_stream_id: Json[int] | None = None,
     # Note: push_notifications_enabled and push_notifications_enabled_end_timestamp
     # are not offered here as it is maintained by the server, not via the API.
+    welcome_message_custom_text: Annotated[
+        str | None,
+        StringConstraints(
+            max_length=Realm.MAX_REALM_WELCOME_MESSAGE_CUSTOM_TEXT_LENGTH,
+        ),
+    ] = None,
 ) -> HttpResponse:
     # Realm object is being refetched here to make sure that we
     # do not use stale object from cache which can happen when a

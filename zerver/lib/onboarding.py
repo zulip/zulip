@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from enum import Enum
 
 from django.conf import settings
@@ -9,15 +10,23 @@ from django.utils.translation import override as override_language
 from zerver.actions.create_realm import setup_realm_internal_bots
 from zerver.actions.message_send import (
     do_send_messages,
+    internal_prep_private_message,
     internal_prep_stream_message_by_name,
     internal_send_private_message,
 )
 from zerver.actions.reactions import do_add_reaction
 from zerver.lib.emoji import get_emoji_data
+from zerver.lib.markdown.fenced_code import get_unused_fence
 from zerver.lib.message import SendMessageRequest, remove_single_newlines
 from zerver.models import Message, OnboardingUserMessage, Realm, UserProfile
 from zerver.models.recipients import Recipient
 from zerver.models.users import get_system_bot
+
+
+@dataclass
+class InitialDirectMessageIDs:
+    welcome_bot_intro_message_id: int
+    welcome_bot_custom_message_id: int | None
 
 
 def missing_any_realm_internal_bots() -> bool:
@@ -41,12 +50,17 @@ def create_if_missing_realm_internal_bots() -> None:
             setup_realm_internal_bots(realm)
 
 
-def send_initial_direct_message(user: UserProfile) -> int:
+def send_initial_direct_messages_to_user(
+    user: UserProfile,
+    *,
+    welcome_message_custom_text: str = "",
+) -> InitialDirectMessageIDs:
     # We adjust the initial Welcome Bot direct message for education organizations.
     education_organization = user.realm.org_type in (
         Realm.ORG_TYPES["education_nonprofit"]["id"],
         Realm.ORG_TYPES["education"]["id"],
     )
+    welcome_bot_messages = []
 
     # We need to override the language in this code path, because it's
     # called from account registration, which is a pre-account API
@@ -96,6 +110,20 @@ them in your [Inbox](/#inbox).
 You can always come back to the [Welcome to Zulip video]({navigation_tour_video_url}) for a quick app overview.
 """).format(navigation_tour_video_url=settings.NAVIGATION_TOUR_VIDEO_URL)
 
+        welcome_bot_custom_message_string = ""
+        # Add welcome bot custom message.
+        if welcome_message_custom_text:
+            fence = get_unused_fence(welcome_message_custom_text)
+            welcome_bot_custom_message_intro_string = _("""
+The administrators for this organization would also like to share the following information:""")
+
+            welcome_bot_custom_message_string = f"""
+{welcome_bot_custom_message_intro_string}
+{fence}quote
+{welcome_message_custom_text}
+{fence}
+"""
+
         content = _("""
 Hello, and welcome to Zulip!👋 {inform_about_tracked_onboarding_messages_text}
 
@@ -113,16 +141,38 @@ Hello, and welcome to Zulip!👋 {inform_about_tracked_onboarding_messages_text}
             demo_organization_text=demo_organization_warning_string,
         )
 
-    message_id = internal_send_private_message(
-        get_system_bot(settings.WELCOME_BOT, user.realm_id),
-        user,
-        remove_single_newlines(content),
-        # Note: Welcome bot doesn't trigger email/push notifications,
-        # as this is intended to be seen contextually in the application.
-        disable_external_notifications=True,
+    welcome_bot_messages.append(
+        internal_prep_private_message(
+            get_system_bot(settings.WELCOME_BOT, user.realm_id),
+            user,
+            remove_single_newlines(content),
+            # Note: Welcome bot doesn't trigger email/push notifications,
+            # as this is intended to be seen contextually in the application.
+            disable_external_notifications=True,
+        )
     )
-    assert message_id is not None
-    return message_id
+
+    if welcome_bot_custom_message_string:
+        welcome_bot_messages.append(
+            internal_prep_private_message(
+                get_system_bot(settings.WELCOME_BOT, user.realm_id),
+                user,
+                welcome_bot_custom_message_string,
+                disable_external_notifications=True,
+            )
+        )
+
+    sent_messages = do_send_messages(welcome_bot_messages)
+
+    welcome_bot_custom_message_id = None
+    welcome_bot_intro_message_id = sent_messages[0].message_id
+    if welcome_bot_custom_message_string:
+        welcome_bot_custom_message_id = sent_messages[1].message_id
+
+    return InitialDirectMessageIDs(
+        welcome_bot_intro_message_id=welcome_bot_intro_message_id,
+        welcome_bot_custom_message_id=welcome_bot_custom_message_id,
+    )
 
 
 def bot_commands(no_help_command: bool = False) -> str:

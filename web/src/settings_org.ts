@@ -3,6 +3,7 @@ import $ from "jquery";
 import assert from "minimalistic-assert";
 import * as z from "zod/mini";
 
+import render_action_button from "../templates/components/action_button.hbs";
 import render_settings_deactivate_realm_modal from "../templates/confirm_dialog/confirm_deactivate_realm.hbs";
 import render_settings_admin_auth_methods_list from "../templates/settings/admin_auth_methods_list.hbs";
 
@@ -17,10 +18,12 @@ import {
     type RealmGroupSettingNameSupportingAnonymousGroups,
     realm_group_setting_name_supporting_anonymous_groups_schema,
 } from "./group_permission_settings.ts";
+import * as hash_util from "./hash_util.ts";
 import {$t, $t_html, get_language_name} from "./i18n.ts";
 import * as information_density from "./information_density.ts";
 import * as keydown_util from "./keydown_util.ts";
 import * as loading from "./loading.ts";
+import * as message_store from "./message_store.ts";
 import * as pygments_data from "./pygments_data.ts";
 import * as realm_icon from "./realm_icon.ts";
 import * as realm_logo from "./realm_logo.ts";
@@ -359,6 +362,73 @@ function disable_create_user_groups_if_on_limited_plan(): void {
     }
 }
 
+function set_welcome_message_custom_text_visibility(): void {
+    const welcome_message_custom_text_is_configured =
+        realm.realm_welcome_message_custom_text.length > 0;
+    $("input#id_realm_enable_welcome_message_custom_text").prop(
+        "checked",
+        welcome_message_custom_text_is_configured,
+    );
+    settings_components.change_element_block_display_property(
+        "id_realm_welcome_message_custom_text",
+        welcome_message_custom_text_is_configured,
+    );
+    if (welcome_message_custom_text_is_configured) {
+        const setting_value = realm.realm_welcome_message_custom_text;
+        $("#id_realm_welcome_message_custom_text").val(setting_value);
+    } else {
+        $("#id_realm_welcome_message_custom_text").val("");
+    }
+    update_test_welcome_bot_custom_message_button_status();
+}
+
+function update_view_welcome_bot_custom_message_button_status(
+    message_id: number | undefined,
+    is_error: boolean,
+): void {
+    $("#view_welcome_bot_custom_message").remove();
+    const args = {
+        attention: is_error ? "borderless" : "quiet",
+        intent: is_error ? "danger" : "success",
+        label: is_error
+            ? $t({defaultMessage: "Error sending message"})
+            : $t({defaultMessage: "View message"}),
+        id: "view_welcome_bot_custom_message",
+    };
+
+    const view_message_button_html = render_action_button(args);
+    $("#welcome_message_custom_text_buttons_container").append($(view_message_button_html));
+    const $view_message_button = $("#view_welcome_bot_custom_message");
+
+    if (is_error) {
+        $view_message_button.prop("disabled", true).css("opacity", 1);
+        return;
+    }
+
+    assert(message_id !== undefined);
+    $view_message_button.attr("data-message-id", message_id);
+    $view_message_button.on("click", (e) => {
+        e.preventDefault();
+        const message_id = Number($view_message_button.attr("data-message-id"));
+        const message = message_store.get(message_id);
+        assert(message !== undefined);
+        window.location.href = hash_util.by_conversation_and_time_url(message);
+    });
+}
+
+function update_test_welcome_bot_custom_message_button_status(): void {
+    const $test_message_button = $("#send_test_welcome_bot_custom_message");
+
+    const message_text = $<HTMLTextAreaElement>("#id_realm_welcome_message_custom_text")
+        .val()!
+        .trim();
+    if (message_text !== "") {
+        $test_message_button.prop("disabled", false);
+        return;
+    }
+    $test_message_button.prop("disabled", true);
+}
+
 export function check_disable_direct_message_initiator_group_widget(): void {
     const direct_message_permission_group_widget = settings_components.get_group_setting_widget(
         "realm_direct_message_permission_group",
@@ -579,6 +649,9 @@ export function discard_realm_property_element_changes(elem: HTMLElement): void 
             break;
         case "realm_waiting_period_threshold":
             set_realm_waiting_period_setting();
+            break;
+        case "realm_welcome_message_custom_text":
+            set_welcome_message_custom_text_visibility();
             break;
         default:
             if (property_value !== undefined) {
@@ -1223,6 +1296,19 @@ export function register_save_discard_widget_handlers(
             );
         }
 
+        if ($(this).hasClass("realm_enable_welcome_message_custom_text")) {
+            const is_checked = $(this).is(":checked");
+            settings_components.change_element_block_display_property(
+                "id_realm_welcome_message_custom_text",
+                is_checked,
+            );
+            if (!is_checked) {
+                $("#id_realm_welcome_message_custom_text").val("");
+            } else {
+                $("#id_realm_welcome_message_custom_text").trigger("focus");
+            }
+        }
+
         const $subsection = $(this).closest(".settings-subsection-parent");
         if (for_realm_default_settings) {
             settings_components.save_discard_default_realm_settings_widget_status_handler(
@@ -1351,6 +1437,7 @@ export function build_page(): void {
     set_digest_emails_weekday_visibility();
     set_create_web_public_stream_dropdown_visibility();
     disable_create_user_groups_if_on_limited_plan();
+    set_welcome_message_custom_text_visibility();
 
     register_save_discard_widget_handlers($(".admin-realm-form"), "/json/realm", false);
 
@@ -1467,6 +1554,34 @@ export function build_page(): void {
     $("#show_realm_domains_modal").on("click", (e) => {
         e.stopPropagation();
         settings_realm_domains.show_realm_domains_modal();
+    });
+
+    $<HTMLTextAreaElement>("#id_realm_welcome_message_custom_text").on("input", () => {
+        update_test_welcome_bot_custom_message_button_status();
+    });
+
+    $("#send_test_welcome_bot_custom_message").on("click", (e) => {
+        e.preventDefault();
+        const welcome_message_custom_text = $<HTMLTextAreaElement>(
+            "#id_realm_welcome_message_custom_text",
+        )
+            .val()!
+            .trim();
+        assert(welcome_message_custom_text !== "");
+
+        channel.post({
+            url: "/json/realm/test_welcome_bot_custom_message",
+            data: {
+                welcome_message_custom_text,
+            },
+            success(data) {
+                const {message_id} = z.object({message_id: z.number()}).parse(data);
+                update_view_welcome_bot_custom_message_button_status(message_id, false);
+            },
+            error() {
+                update_view_welcome_bot_custom_message_button_status(undefined, true);
+            },
+        });
     });
 
     function realm_icon_logo_upload_complete(
