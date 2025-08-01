@@ -335,6 +335,29 @@
             }
         }
 
+        #inbox-collapsed-note {
+            display: none;
+            overflow: hidden;
+            max-width: calc(
+                var(--width-inbox-search) +
+                    var(--width-inbox-filters-dropdown) + 0.25em
+            );
+
+            .inbox-collapsed-note-and-button-wrapper {
+                margin-top: 3px;
+                padding-left: 8px;
+
+                .inbox-collpased-note-span {
+                    font-size: 1em;
+                }
+
+                #inbox-expand-all-button {
+                    display: block;
+                    margin-top: 5px;
+                }
+            }
+        }
+
         .inbox-right-part-wrapper {
             display: flex;
             align-items: center;

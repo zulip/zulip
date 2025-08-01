@@ -1246,6 +1246,7 @@ export function complete_rerender(): void {
             get_options: inbox_view_dropdown_options,
         });
         filters_dropdown_widget.setup();
+        update_collapsed_note_visibility();
     });
 }
 
@@ -1333,6 +1334,68 @@ export function collapse_or_expand(container_id: string): void {
     }
 
     save_data_to_ls();
+    update_collapsed_note_visibility();
+}
+
+// We show the note "All of your unread conversations are hidden.
+// Click on a section, folder, or channel to see what's inside" for
+// the following situations:
+//   - All folders collapsed.
+//   - If all folders are not collapsed, all visible channels are collapsed.
+// For all other cases, the note is hidden.
+function should_show_all_folders_collapsed_note(): boolean {
+    // TODO: Ideally this would read from internal structures, not the DOM.
+    const has_visible_dm_folder = !$("#inbox-dm-header").hasClass("hidden_by_filters");
+    if (has_visible_dm_folder && !collapsed_containers.has("inbox-dm-header")) {
+        // Some DM content is visible.
+        return false;
+    }
+
+    const visible_folders = [...channel_folders_dict.values()].filter(
+        (folder) => folder.is_header_visible,
+    );
+    if (visible_folders.length === 0) {
+        // Nothing at all is visible; the empty inbox message takes
+        // precedence.
+        return false;
+    }
+
+    // At least one uncollapsed row is visible in some folder.
+    const has_expanded_content = visible_folders.some((folder) => {
+        if (!collapsed_containers.has(folder.header_id)) {
+            const folder_streams = [...streams_dict.values()].filter(
+                (stream) => stream.folder_id === folder.id && !stream.is_hidden,
+            );
+            return folder_streams.some(
+                (stream) => !collapsed_containers.has(STREAM_HEADER_PREFIX + stream.stream_id),
+            );
+        }
+        return false;
+    });
+    return !has_expanded_content;
+}
+
+function update_collapsed_note_visibility(): void {
+    if (should_show_all_folders_collapsed_note()) {
+        $("#inbox-collapsed-note").show();
+    } else {
+        $("#inbox-collapsed-note").hide();
+    }
+}
+
+function expand_all_folders_and_channels(): void {
+    $(
+        "#inbox-list .inbox-folder.inbox-collapsed-state:not(.hidden_by_filters), .inbox-streams-container .inbox-header.inbox-collapsed-state:not(.hidden_by_filters)",
+    ).each(function () {
+        const container_id = $(this).attr("id");
+        if (container_id) {
+            $(this).removeClass("inbox-collapsed-state");
+            collapsed_containers.delete(container_id);
+        }
+    });
+
+    save_data_to_ls();
+    update_collapsed_note_visibility();
 }
 
 function focus_current_id(): void {
@@ -2034,6 +2097,7 @@ export function update(): void {
             revive_current_focus();
         }
     }
+    update_collapsed_note_visibility();
 }
 
 function get_focus_class_for_header(): string {
@@ -2222,6 +2286,12 @@ export function initialize({hide_other_views}: {hide_other_views: () => void}): 
             const $elt = $(e.currentTarget);
             $elt.find(get_focus_class_for_row()).trigger("click");
         }
+    });
+
+    $("body").on("click", "#inbox-collapsed-note #inbox-expand-all-button", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        expand_all_folders_and_channels();
     });
 
     $("body").on("click", "#inbox-list .inbox-left-part-wrapper", function (this: HTMLElement, e) {
