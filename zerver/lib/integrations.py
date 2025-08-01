@@ -598,7 +598,10 @@ INTEGRATIONS: dict[str, Integration] = {
     "errbot": Integration("errbot", ["meta-integration", "bots"]),
     "giphy": Integration("giphy", ["misc"], display_name="GIPHY"),
     "github-actions": Integration(
-        "github-actions", ["continuous-integration"], display_name="GitHub Actions"
+        "github-actions",
+        ["continuous-integration"],
+        display_name="GitHub Actions",
+        stream_name="github-actions updates",
     ),
     "hubot": Integration("hubot", ["meta-integration", "bots"]),
     "jenkins": Integration("jenkins", ["continuous-integration"]),
@@ -849,7 +852,176 @@ WEBHOOK_SCREENSHOT_CONFIG: dict[str, list[WebhookScreenshotConfig]] = {
     ],
 }
 
-FIXTURELESS_SCREENSHOT_CONFIG: dict[str, list[FixturelessScreenshotConfig]] = {}
+FIXTURELESS_SCREENSHOT_CONFIG: dict[str, list[FixturelessScreenshotConfig]] = {
+    "asana": [
+        FixturelessScreenshotConfig(
+            "Ariella Drake created a new task **[Optimize image loading in paints catalog]()**.\n> Implement lazy loading for images on the paints catalog to improve load times.",
+            "Data Solutions > Project Shades",
+        )
+    ],
+    "capistrano": [
+        FixturelessScreenshotConfig(
+            "The [deployment]() to **fizzbuzz-prod** (version v9.2.3) has been completed successfully! :rocket:",
+            "project-fizzbuzz",
+        )
+    ],
+    "codebase": [
+        FixturelessScreenshotConfig(
+            """Maxy Stert pushed 2 commit(s) to `main` in project FizzBuzz:
+
+* [a2e84e86dd](): Make client_name a kwarg.
+* [d68b14fa6d](): Suppress "comment edited" events when body is same.
+""",
+            "Push to main on FizzBuzz",
+        )
+    ],
+    "discourse": [
+        FixturelessScreenshotConfig(
+            """**@Niloth** posted in [Zulip's new mobile app is out!]()
+> Zulip’s next-gen mobile app is now in public beta. If offers a sleek new design and a faster, smoother experience. Check out the announcement post for details and instructions on how to try the beta!""",
+            "announce",
+        )
+    ],
+    "git": [
+        FixturelessScreenshotConfig(
+            """`a2e84e86ddf7` was deployed to `main` with:
+* Kevin-Lin@example.com - b7763f7: Make client_name a kwarg.
+* Bo-Williams@example.com - ff96efb: Add support for "comment edited" events.
+""",
+            "main",
+        )
+    ],
+    "github-actions": [
+        FixturelessScreenshotConfig(
+            """Backup [failed]() at 2025-05-30T02:00:00Z.
+> Unable to connect.""",
+            "scheduled backups",
+        )
+    ],
+    "google-calendar": [
+        FixturelessScreenshotConfig(
+            """The [Development Sync]() event is scheduled from 2 PM - 3 PM on Friday, May 30, 2025 at Conference Room B.
+> Let's align on our current sprint progress, address any blockers, and share updates. Your input is crucial!
+
+[Join call]().""",
+            "Team reminders",
+            image_dir="google/calendar",
+            image_name="003.png",
+        )
+    ],
+    "jenkins": [
+        FixturelessScreenshotConfig(
+            "**Build:** [#578](): FAILURE :cross_mark:", "Project FizzBuzz", image_name="004.png"
+        )
+    ],
+    "mastodon": [
+        FixturelessScreenshotConfig(
+            """**[Don’t let hype about AI agents get ahead of reality](https://www.technologyreview.com/2025/07/03/1119545/dont-let-hype-about-ai-agents-get-ahead-of-reality/)**
+Google’s recent unveiling of what it calls a “new class of agentic experiences” feels like a turning point. At its I/O 2025 event in May, for example, the company showed off a digital assistant that didn’t just answer questions; it helped work on a bicycle repair by finding a matching user manual, locating a YouTube…
+https://www.technologyreview.com/2025/07/03/1119545/dont-let-hype-about-ai-agents-get-ahead-of-reality/""",
+            "MIT Technology Review",
+        )
+    ],
+    "mercurial": [
+        FixturelessScreenshotConfig(
+            """**Dal Kim** pushed [2 commits]() to **default** (`170:e494a5be3393`):
+* [Make client_name a kwarg.]()
+* [Suppress "comment edited" events when body is same.]()""",
+            "default",
+            image_dir="hg",
+        )
+    ],
+    "nagios": [
+        FixturelessScreenshotConfig(
+            """**PROBLEM**: service is CRITICAL
+
+~~~~
+CRITICAL - load average: 7.49, 8.20, 4.72
+~~~~
+""",
+            "service Remote Load on myserver.example.com",
+        )
+    ],
+    "notion": [
+        FixturelessScreenshotConfig(
+            """**John Lin** [commented]() on:
+
+> project demo scheduled
+
+Can we reschedule this to next week?""",
+            "Shades Release v11.0",
+        )
+    ],
+    "openshift": [
+        FixturelessScreenshotConfig(
+            "Deployment [78641]() triggered by a push to **main** by commit [ff96efb]() at 2023-02-20 14:35 has **failed**.",
+            "fizzbuzz-dev",
+        )
+    ],
+    "perforce": [
+        FixturelessScreenshotConfig(
+            """
+**James Williams** committed revision @[492]() to `//depot/fizz/buzz/*`.
+
+```quote
+Make client_name a kwarg.
+```
+""",
+            "//depot/fizz/buzz/*",
+        )
+    ],
+    "puppet": [
+        FixturelessScreenshotConfig(
+            """Puppet production run for web-server-01 completed at Fri May 30 12:34:56 2025.
+ Created a Gist showing the output at abc123xyz
+ Summary at report.example.com:2025-05-30/production/web-server-01/completed
+ Report URL: http://example.com/puppet-reports/production/web-server-01/?status=completed&time=20250530123456""",
+            "Reports",
+        )
+    ],
+    "redmine": [
+        FixturelessScreenshotConfig(
+            """Elena Gracia **created** issue [643 Add support for "comment edited" events]():
+
+~~~quote
+
+Support for the following sub-events is needed:\n...
+
+~~~
+
+* **Assignee**: Max Power
+* **Status**: New
+* **Target version**: 9.2
+* **Estimated hours**: 40
+""",
+            'Add support for "comment edited" events',
+        )
+    ],
+    "rss": [
+        FixturelessScreenshotConfig(
+            """**[Don’t let hype about AI agents get ahead of reality](https://www.technologyreview.com/2025/07/03/1119545/dont-let-hype-about-ai-agents-get-ahead-of-reality/)**
+Google’s recent unveiling of what it calls a “new class of agentic experiences” feels like a turning point. At its I/O 2025 event in May, for example, the company showed off a digital assistant that didn’t just answer questions; it helped work on a bicycle repair by finding a matching user manual, locating a YouTube…
+https://www.technologyreview.com/2025/07/03/1119545/dont-let-hype-about-ai-agents-get-ahead-of-reality/""",
+            "MIT Technology Review",
+        )
+    ],
+    "svn": [
+        FixturelessScreenshotConfig(
+            """**nolan_turner** committed revision r2126 to `fizzbuzz-dev`.
+> Style the error message on the video failing to load.""",
+            "fizzbuzz-dev",
+        )
+    ],
+    "trac": [
+        FixturelessScreenshotConfig(
+            """anna-smith updated [ticket #798]() with comment:
+> Fixed in 26595799c7c2d0a8f8bc7c15de5dcc813fff93c9
+
+status: **new** => **closed**, resolution: => **fixed**""",
+            "#798 Fix broken links in documentation",
+        ),
+    ],
+}
 
 DOC_SCREENSHOT_CONFIG: dict[
     str, list[WebhookScreenshotConfig] | list[FixturelessScreenshotConfig]
