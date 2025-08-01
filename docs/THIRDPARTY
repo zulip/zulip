@@ -323,6 +323,10 @@ Source: https://lucide.dev/icons/undo-2
 Copyright: 2013-2022 Cole Bemis
 License: ISC License
 
+Files: web/shared/icons/folder.svg
+Copyright: 2013-2023 Cole Bemis (https://lucide.dev/icons/folder)
+License: ISC License
+
 Files: web/third/bootstrap/css/bootstrap.app.css
 Copyright: 2012 Twitter, Inc.
 License: Apache-2.0

@@ -63,6 +63,7 @@ import * as settings_components from "./settings_components.ts";
 import * as settings_config from "./settings_config.ts";
 import * as settings_emoji from "./settings_emoji.ts";
 import * as settings_exports from "./settings_exports.ts";
+import * as settings_folders from "./settings_folders.ts";
 import * as settings_invites from "./settings_invites.ts";
 import * as settings_linkifiers from "./settings_linkifiers.ts";
 import * as settings_notifications from "./settings_notifications.ts";
@@ -122,6 +123,7 @@ export function dispatch_normal_event(event) {
                 case "add": {
                     channel_folders.add(event.channel_folder);
                     inbox_ui.complete_rerender();
+                    settings_folders.populate_channel_folders();
                     break;
                 }
                 case "update":
