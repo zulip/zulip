@@ -937,12 +937,15 @@ li.active-sub-filter {
     justify-content: center;
 
     .left-sidebar-navigation-condensed-item {
-        /* 24px minimum width from Vlad's design.
-           however, we want to permit growing and
-           shrinking to keep icons reasonably spaced
-           across different information-density
-           settings. */
-        flex: 1 1 24px;
+        /* 26px minimum width gives a bit more
+           breathing room for unread markers when
+           unreads are displayed.
+           However, we want to permit growing but
+           not shrinking to keep icons reasonably
+           spaced across different information-density
+           settings. So we convert this value to ems:
+           26px at 16px/1em. */
+        flex: 1 0 1.625em;
         /* Unset padding from individual top_left items */
         padding: 0;
         border-radius: 4px;
@@ -991,6 +994,27 @@ li.active-sub-filter {
         &.top_left_starred_messages .unread_count {
             display: none;
         }
+
+        &.top_left_condensed_unread_marker {
+            /* Flex to just the unread's width, to keep the
+               unreads aligned on the righthand side with others
+               up and down the left sidebar. */
+            flex: 0 0 auto;
+            display: flex;
+            align-content: center;
+
+            &:has(.unread_count:empty) {
+                /* When the unread count is empty (no unreads),
+                   we flex shut to 0 across the board so the
+                   unread count takes up no space. */
+                flex: 0 0 0;
+            }
+
+            .unread_count:not(:empty) {
+                margin: 0 var(--left-sidebar-unread-offset);
+                align-self: center;
+            }
+        }
     }
 
     &.hide-unread-messages-count {
@@ -1003,17 +1027,6 @@ li.active-sub-filter {
            for users who prefer masked unreads. */
         .top_left_condensed_unread_marker {
             display: none;
-        }
-    }
-
-    .top_left_condensed_unread_marker {
-        display: flex;
-        align-content: center;
-
-        .unread_count {
-            flex: 0 0 auto;
-            margin: 0 var(--left-sidebar-unread-offset);
-            align-self: center;
         }
     }
 
