@@ -7,7 +7,7 @@ import render_right_sidebar from "../templates/right_sidebar.hbs";
 import {buddy_list} from "./buddy_list.ts";
 import * as channel from "./channel.ts";
 import * as compose_ui from "./compose_ui.ts";
-import {reorder_left_sidebar_navigation_list} from "./left_sidebar_navigation_area.ts";
+import * as left_sidebar_navigation_area from "./left_sidebar_navigation_area.ts";
 import {localstorage} from "./localstorage.ts";
 import * as message_lists from "./message_lists.ts";
 import * as message_viewport from "./message_viewport.ts";
@@ -288,6 +288,10 @@ export function initialize(): void {
 }
 
 export function initialize_left_sidebar(): void {
+    const primary_condensed_views =
+        left_sidebar_navigation_area.get_built_in_primary_condensed_views();
+    const expanded_views = left_sidebar_navigation_area.get_built_in_views();
+
     const rendered_sidebar = render_left_sidebar({
         is_guest: current_user.is_guest,
         development_environment: page_params.development_environment,
@@ -298,11 +302,13 @@ export function initialize_left_sidebar(): void {
         is_recent_view_home_view:
             user_settings.web_home_view === settings_config.web_home_view_values.recent_topics.code,
         is_spectator: page_params.is_spectator,
+        primary_condensed_views,
+        expanded_views,
     });
 
     $("#left-sidebar-container").html(rendered_sidebar);
     // make sure home-view and left_sidebar order persists
-    reorder_left_sidebar_navigation_list(user_settings.web_home_view);
+    left_sidebar_navigation_area.reorder_left_sidebar_navigation_list(user_settings.web_home_view);
     update_unread_counts_visibility();
 }
 

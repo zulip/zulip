@@ -3,9 +3,11 @@ import _ from "lodash";
 import assert from "minimalistic-assert";
 
 import * as channel_folders from "./channel_folders.ts";
+import * as drafts from "./drafts.ts";
 import type {Filter} from "./filter.ts";
 import {localstorage} from "./localstorage.ts";
 import * as message_reminder from "./message_reminder.ts";
+import * as navigation_views from "./navigation_views.ts";
 import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
 import * as resize from "./resize.ts";
@@ -369,6 +371,55 @@ export function handle_home_view_changed(new_home_view: string): void {
 
     reorder_left_sidebar_navigation_list(new_home_view);
     update_dom_with_unread_counts(res, true);
+}
+
+export function get_built_in_primary_condensed_views(): navigation_views.BuiltInViewMetadata[] {
+    function score(view: navigation_views.BuiltInViewMetadata): number {
+        if (view.prioritize_in_condensed_view) {
+            return 1;
+        }
+        return 0;
+    }
+    // Get the top 5 prioritized views.
+    return navigation_views
+        .get_built_in_views()
+        .sort((view1, view2) => score(view2) - score(view1))
+        .slice(0, 5);
+    // TODO: Think about filtering out scheduled message and reminders views with UI to support less than 5 views.
+}
+
+export function get_built_in_popover_condensed_views(): navigation_views.BuiltInViewMetadata[] {
+    const visible_condensed_views = get_built_in_primary_condensed_views();
+    const all_views = navigation_views.get_built_in_views();
+    return all_views.filter((view) => {
+        if (view.fragment === "scheduled") {
+            const scheduled_message_count = scheduled_messages.get_count();
+            if (scheduled_message_count === 0) {
+                return false;
+            }
+            view.unread_count = scheduled_message_count;
+            return true;
+        }
+        if (view.fragment === "reminders") {
+            const reminders_count = message_reminder.get_count();
+            if (reminders_count === 0) {
+                return false;
+            }
+            view.unread_count = reminders_count;
+            return true;
+        }
+        if (view.fragment === "drafts") {
+            view.unread_count = drafts.draft_model.getDraftCount();
+        }
+        // Remove views that are already visible.
+        return !visible_condensed_views.some(
+            (visible_view) => visible_view.fragment === view.fragment,
+        );
+    });
+}
+
+export function get_built_in_views(): navigation_views.BuiltInViewMetadata[] {
+    return navigation_views.get_built_in_views();
 }
 
 export function initialize(): void {

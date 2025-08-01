@@ -160,6 +160,12 @@ export const channel_folder_schema = z.object({
     is_archived: z.boolean(),
 });
 
+export const navigation_view_schema = z.object({
+    fragment: z.string(),
+    name: z.string(),
+    is_pinned: z.boolean(),
+});
+
 export const user_topic_schema = z.object({
     stream_id: z.number(),
     topic_name: z.string(),
@@ -537,6 +543,7 @@ export const split_state_data_schema = z.object({
     }),
     current_user: current_user_schema,
     realm: realm_schema,
+    navigation_views: z.object({navigation_views: z.array(navigation_view_schema)}),
 });
 type SplitStateDataInput = z.input<typeof split_state_data_schema>;
 

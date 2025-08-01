@@ -95,12 +95,12 @@ async function navigation_tests(page: Page): Promise<void> {
 
     await navigate_using_left_sidebar(page, "Verona");
 
-    await page.click("#left-sidebar-navigation-list .home-link");
+    await page.click("#left-sidebar-navigation-list .top_left_all_messages");
     await page.waitForSelector("#message_view_header .zulip-icon-all-messages", {visible: true});
 
     await navigate_to_subscriptions(page);
 
-    await page.click("#left-sidebar-navigation-list .home-link");
+    await page.click("#left-sidebar-navigation-list .top_left_all_messages");
     await page.waitForSelector("#message_view_header .zulip-icon-all-messages", {visible: true});
 
     await navigate_to_settings(page);
