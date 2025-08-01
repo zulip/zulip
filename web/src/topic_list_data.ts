@@ -174,9 +174,9 @@ export function filter_topics_by_search_term(
         word_separator_regex,
     );
 
-    if (topics_state === "is: resolved") {
+    if (topics_state === "is:resolved") {
         topic_names = topic_names.filter((name) => resolved_topic.is_resolved(name));
-    } else if (topics_state === "-is: resolved") {
+    } else if (topics_state === "-is:resolved") {
         topic_names = topic_names.filter((name) => !resolved_topic.is_resolved(name));
     }
 

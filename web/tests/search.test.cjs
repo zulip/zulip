@@ -120,7 +120,7 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
 
             const search_string = "channel: Verona";
             description_html = "Stream Verona";
-            expected_value = `<div class="search_list_item">\n            <span class="pill-container"><div class='pill ' tabindex=0>\n    <span class="pill-label">\n        <span class="pill-value">\n            ${search_string}\n        </span></span>\n    <div class="exit">\n        <a role="button" class="zulip-icon zulip-icon-close pill-close-button"></a>\n    </div>\n</div>\n</span>\n            <div class="description">${description_html}</div>\n</div>\n`;
+            expected_value = `<div class="search_list_item">\n            <span class="pill-container"><div class='pill '\n  \n  \n  \n   tabindex=0>\n    <span class="pill-label">\n        <span class="pill-value">\n            ${search_string}\n        </span></span>\n    <div class="exit">\n        <a role="button" class="zulip-icon zulip-icon-close pill-close-button"></a>\n    </div>\n</div>\n</span>\n            <div class="description">${description_html}</div>\n</div>\n`;
             assert.equal(opts.item_html(source[1]), expected_value);
 
             /* Test sorter */

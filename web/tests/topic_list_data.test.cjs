@@ -62,7 +62,7 @@ test("filter_topics_by_search_term with resolved topics_state", () => {
     const search_term = "";
 
     // Filter for resolved topics.
-    let topics_state = "is: resolved";
+    let topics_state = "is:resolved";
 
     let result = topic_list_data.filter_topics_by_search_term(
         topic_names,
@@ -73,7 +73,7 @@ test("filter_topics_by_search_term with resolved topics_state", () => {
     assert.deepEqual(result, ["✔ resolved topic"]);
 
     // Filter for unresolved topics.
-    topics_state = "-is: resolved";
+    topics_state = "-is:resolved";
     result = topic_list_data.filter_topics_by_search_term(topic_names, search_term, topics_state);
 
     assert.deepEqual(result, ["topic 1", "topic 2"]);
