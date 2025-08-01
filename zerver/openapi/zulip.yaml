@@ -15905,17 +15905,39 @@ paths:
                     (This may be significantly slower in organizations with
                     thousands of users subscribed to many channels.)
 
+                    If a client passes `partial` for this parameter, the server may,
+                    for some channels, return a subset of the channel's subscribers
+                    in the `partial_subscribers` field instead of the `subscribers` field,
+                    which always contains the complete set of subscribers. This behavior
+                    is strongly recommended for clients that need subscriber data,
+                    especially in large organizations with tens of thousands of users.
+
+                    The server guarantees that it will always return a `subscribers`
+                    field for channels with fewer than 250 total subscribers. When
+                    returning a `partial_subscribers` field, the server guarantees
+                    that all bot users and users active within the last 30 days will
+                    be included. For other cases, the server may use its discretion
+                    to determine which channels and users to include, balancing between
+                    payload size and usefulness of the data provided to the client.
+
                     Passing `true` in an [unauthenticated
                     request](/help/public-access-option) is an error.
 
-                    **Changes**: Before Zulip 6.0 (feature level 149), this
+                    **Changes**: Before Zulip 11.0 (feature level ZF-55c1f4), `partial` was not a valid
+                    argument to this parameter.
+
+                    Before Zulip 6.0 (feature level 149), this
                     parameter was silently ignored and processed as though it
                     were `false` in unauthenticated requests.
 
                     New in Zulip 2.1.0.
-                  type: boolean
-                  default: false
-                  example: true
+                  type: string
+                  enum:
+                    - "true"
+                    - "false"
+                    - "partial"
+                  default: "false"
+                  example: "true"
                 slim_presence:
                   description: |
                     If `true`, the `presences` object returned in the response will be keyed
@@ -16068,8 +16090,6 @@ paths:
               apply_markdown:
                 contentType: application/json
               client_gravatar:
-                contentType: application/json
-              include_subscribers:
                 contentType: application/json
               slim_presence:
                 contentType: application/json
@@ -16897,6 +16917,27 @@ paths:
                                     a channel, we will send an empty array. API authors
                                     should use other data to determine whether users like
                                     guest users are forbidden to know the subscribers.
+                                partial_subscribers:
+                                  type: array
+                                  items:
+                                    type: integer
+                                  description: |
+                                    If [`include_subscribers="partial"`](/api/get-subscriptions#parameter-include_subscribers)
+                                    was requested, the server may, at its discretion, send a
+                                    `partial_subscribers` list rather than a `subscribers` list
+                                    for channels with a large number of subscribers. The
+                                    `partial_subscribers` list contains an arbitrary subset
+                                    of the channel's subscribers that is guaranteed to include
+                                    all bot user subscribers as well as all users who have been
+                                    active in the last month, but otherwise can be chosen arbitrarily
+                                    by the server.
+
+                                    If a user is not allowed to know the subscribers for
+                                    a channel, we will send an empty array. API authors
+                                    should use other data to determine whether users like
+                                    guest users are forbidden to know the subscribers.
+
+                                    **Changes**: New in Zulip 11.0 (feature level ZF-55c1f4).
 
                         description: |
                           Present if `subscription` is present in `fetch_event_types`.
@@ -26064,6 +26105,22 @@ components:
           description: |
             A list of user IDs of users who are also subscribed
             to a given channel. Included only if `include_subscribers` is `true`.
+        partial_subscribers:
+          type: array
+          items:
+            type: integer
+          description: |
+            If [`include_subscribers="partial"`](/api/get-subscriptions#parameter-include_subscribers)
+            was requested, the server may, at its discretion, send a
+            `partial_subscribers` list rather than a `subscribers` list
+            for channels with a large number of subscribers. The
+            `partial_subscribers` list contains an arbitrary subset
+            of the channel's subscribers that is guaranteed to include
+            all bot user subscribers as well as all users who have been
+            active in the last month, but otherwise can be chosen arbitrarily
+            by the server.
+
+            **Changes**: New in Zulip 11.0 (feature level ZF-55c1f4).
         desktop_notifications:
           type: boolean
           nullable: true
@@ -28564,11 +28621,33 @@ components:
         (This may be significantly slower in organizations with
         thousands of users subscribed to many channels.)
 
-        **Changes**: New in Zulip 2.1.0.
+        If a client passes `partial` for this parameter, the server may,
+        for some channels, return a subset of the channel's subscribers
+        in the `partial_subscribers` field instead of the `subscribers` field,
+        which always contains the complete set of subscribers. This behavior
+        is strongly recommended for clients that need subscriber data,
+        especially in large organizations with tens of thousands of users.
+
+        The server guarantees that it will always return a `subscribers`
+        field for channels with fewer than 250 total subscribers. When
+        returning a `partial_subscribers` field, the server guarantees
+        that all bot users and users active within the last 30 days will
+        be included. For other cases, the server may use its discretion
+        to determine which channels and users to include, balancing between
+        payload size and usefulness of the data provided to the client.
+
+        **Changes**: Before Zulip 11.0 (feature level ZF-55c1f4), `partial` was not a valid
+        argument to this parameter.
+
+        New in Zulip 2.1.0.
       schema:
-        type: boolean
-        default: false
-      example: true
+        type: string
+        enum:
+          - "true"
+          - "false"
+          - "partial"
+        default: "false"
+      example: "true"
     IncludeCustomProfileFields:
       name: include_custom_profile_fields
       in: query
