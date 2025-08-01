@@ -458,7 +458,12 @@ class TestFollowupEmails(ZulipTestCase):
         scheduled_emails = ScheduledEmail.objects.filter(users=cordelia)
         self.assert_length(scheduled_emails, 0)
 
-    def test_followup_emails_for_regular_realms(self) -> None:
+    def test_emails_for_new_organization_with_existing_account(self) -> None:
+        # The initial account registered email is sent, and its content is for
+        # creating a new organization. Neither of the additional onboarding
+        # emails are scheduled because the user has a user account with the same
+        # email in another realm and that other realm has the same organization
+        # type as the new realm.
         cordelia = self.example_user("cordelia")
         with self.captureOnCommitCallbacks(execute=True) as callbacks:
             send_account_registered_email(self.example_user("cordelia"), realm_creation=True)
@@ -489,7 +494,12 @@ class TestFollowupEmails(ZulipTestCase):
         self.assertIn("you have created a new Zulip organization", message.body)
         self.assertNotIn("demo org", message.body)
 
-    def test_followup_emails_for_demo_realms(self) -> None:
+    def test_emails_for_new_demo_organization_with_existing_account(self) -> None:
+        # The initial account registered email is sent, and its content is for
+        # creating a new demo organization. Neither of the additional onboarding
+        # emails are scheduled because the user has a user account with the same
+        # email in another realm and that other realm has the same organization
+        # type as the new realm.
         cordelia = self.example_user("cordelia")
         cordelia.realm.demo_organization_scheduled_deletion_date = timezone_now() + timedelta(
             days=30
