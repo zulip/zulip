@@ -10,6 +10,7 @@ import {MAX_ITEMS, Typeahead} from "./bootstrap_typeahead.ts";
 import type {TypeaheadInputElement} from "./bootstrap_typeahead.ts";
 import * as bulleted_numbered_list_util from "./bulleted_numbered_list_util.ts";
 import * as compose_pm_pill from "./compose_pm_pill.ts";
+import * as compose_recipient from "./compose_recipient.ts";
 import * as compose_state from "./compose_state.ts";
 import * as compose_ui from "./compose_ui.ts";
 import * as compose_validate from "./compose_validate.ts";
@@ -589,7 +590,7 @@ export function filter_and_sort_mentions(
         topic: string | undefined;
     },
 ): (UserGroupPillData | UserOrMentionPillData)[] {
-    return get_person_suggestions(query, {
+    return get_person_suggestions(query, max_num_items, {
         want_broadcast: !is_silent,
         filter_pills: false,
         filter_groups_for_mention: !is_silent,
@@ -600,7 +601,10 @@ export function filter_and_sort_mentions(
     }));
 }
 
-export function get_pm_people(query: string): (UserGroupPillData | UserPillData)[] {
+export function get_pm_people(
+    query: string,
+    max_num_items: number,
+): (UserGroupPillData | UserPillData)[] {
     const opts = {
         want_broadcast: false,
         filter_pills: true,
@@ -608,7 +612,7 @@ export function get_pm_people(query: string): (UserGroupPillData | UserPillData)
         topic: compose_state.topic(),
         filter_groups_for_dm: true,
     };
-    const suggestions = get_person_suggestions(query, opts, true);
+    const suggestions = get_person_suggestions(query, max_num_items, opts, true);
     const current_user_ids = compose_pm_pill.get_user_ids();
     const my_user_id = people.my_current_user_id();
     // We know these aren't mentions because `want_broadcast` was `false`.
@@ -642,6 +646,7 @@ type PersonSuggestionOpts = {
 
 export function get_person_suggestions(
     query: string,
+    max_num_items: number,
     opts: PersonSuggestionOpts,
     exclude_non_welcome_bots = false,
 ): (UserOrMentionPillData | UserGroupPillData)[] {
@@ -1452,6 +1457,34 @@ function get_footer_html(): string | false {
     return `<em>${_.escape(tip_text)}</em>`;
 }
 
+function set_recipient_from_typeahead(item: UserGroupPillData | UserPillData): void {
+    if (item.type === "user_group") {
+        const user_group = user_groups.get_user_group_from_id(item.id);
+        const group_members = user_groups.get_recursive_group_members(user_group);
+        for (const user_id of group_members) {
+            const user = people.get_by_user_id(user_id);
+            // filter out inactive users, inserted users and current user
+            // from pill insertion
+            const inserted_users = user_pill.get_user_ids(compose_pm_pill.widget);
+            const current_user = people.is_my_user_id(user.user_id);
+            if (
+                people.is_person_active(user_id) &&
+                !inserted_users.includes(user.user_id) &&
+                !current_user
+            ) {
+                compose_pm_pill.set_from_typeahead(user);
+            }
+        }
+        // clear input pill in the event no pills were added
+        const pill_widget = compose_pm_pill.widget;
+        if (pill_widget.clear_text !== undefined) {
+            pill_widget.clear_text();
+        }
+    } else {
+        compose_pm_pill.set_from_typeahead(item.user);
+    }
+}
+
 export function initialize_compose_typeahead($element: JQuery<HTMLTextAreaElement>): void {
     const bootstrap_typeahead_input: TypeaheadInputElement = {
         $element,
@@ -1535,37 +1568,88 @@ export function initialize({
         type: "input",
     };
     new Typeahead(stream_message_typeahead_input, {
-        source(): string[] {
-            return topics_seen_for(compose_state.stream_id());
+        source(query: string): (UserGroupPillData | UserPillData | string)[] {
+            let people_candidates: (UserGroupPillData | UserPillData)[] = [];
+            if (query && query.length > 3) {
+                people_candidates = get_pm_people(query, 1);
+            }
+            const topics = topics_seen_for(compose_state.stream_id());
+            return [...people_candidates, ...topics];
         },
         items: max_num_items,
-        item_html(item: string): string {
-            const is_empty_string_topic = item === "";
-            const topic_display_name = util.get_final_topic_display_name(item);
-            return typeahead_helper.render_typeahead_item({
-                primary: topic_display_name,
-                is_empty_string_topic,
-            });
+        dropup: true,
+        item_html(item: string | UserGroupPillData | UserPillData): string {
+            if (typeof item === "string") {
+                const is_empty_string_topic = item === "";
+                const topic_display_name = util.get_final_topic_display_name(item);
+                return typeahead_helper.render_typeahead_item({
+                    primary: topic_display_name,
+                    is_empty_string_topic,
+                });
+            }
+            return typeahead_helper.render_person_or_user_group(item);
         },
-        matcher(item: string, query: string): boolean {
-            const matcher = get_topic_matcher(query);
-            return matcher(item);
+        matcher(item: UserGroupPillData | UserPillData | string, query: string): boolean {
+            if (typeof item === "string") {
+                const matcher = get_topic_matcher(query);
+                return matcher(item);
+            }
+            return true;
         },
-        sorter(items: string[], query: string): string[] {
-            const sorted = typeahead_helper.sorter(query, items, (x) =>
+        sorter(
+            items: (UserGroupPillData | UserPillData | string)[],
+            query: string,
+        ): (UserGroupPillData | UserPillData | string)[] {
+            const topic_items: string[] = [];
+            const people_items: (UserGroupPillData | UserPillData)[] = [];
+            for (const item of items) {
+                if (typeof item === "string") {
+                    topic_items.push(item);
+                } else {
+                    people_items.push(item);
+                }
+            }
+            const sorted = typeahead_helper.sorter(query, topic_items, (x) =>
                 util.get_final_topic_display_name(x),
             );
             if (sorted.length > 0 && !sorted.includes(query)) {
                 sorted.unshift(query);
             }
-            return sorted;
+
+            return [
+                ...sorted.slice(0, topic_items.length === sorted.length ? 1 : 2),
+                ...people_items,
+                ...sorted.slice(topic_items.length === sorted.length ? 1 : 2),
+            ];
         },
-        updater(item: string, _query: string): string {
-            $("textarea#compose-textarea").trigger("focus");
-            $nextFocus = undefined;
-            return item;
+        updater(
+            item: UserGroupPillData | UserPillData | string,
+            _query: string,
+        ): string | undefined {
+            if (typeof item === "string") {
+                $("textarea#compose-textarea").trigger("focus");
+                $nextFocus = undefined;
+                return item;
+            }
+            compose_state.set_message_type("private");
+            compose_recipient.update_compose_for_message_type({
+                message_type: "private",
+                trigger: "typeahead",
+                private_message_recipient_ids: [],
+            });
+            $("#compose_recipient_box").hide();
+            $("#compose-direct-recipient").show();
+            $("#stream_toggle").removeClass("active");
+            $("#private_message_toggle").addClass("active");
+            $("#compose-recipient").addClass("compose-recipient-direct-selected");
+
+            set_recipient_from_typeahead(item);
+            return undefined;
         },
-        option_label(matching_items: string[], item: string): string | false {
+        option_label(
+            matching_items: (UserGroupPillData | UserPillData | string)[],
+            item: UserGroupPillData | UserPillData | string,
+        ): string | false {
             if (!matching_items.includes(item)) {
                 return `<em>${$t({defaultMessage: "New"})}</em>`;
             }
@@ -1579,7 +1663,9 @@ export function initialize({
         type: "contenteditable",
     };
     new Typeahead(private_message_typeahead_input, {
-        source: get_pm_people,
+        source(query: string) {
+            return get_pm_people(query, max_num_items);
+        },
         items: max_num_items,
         dropup: true,
         item_html(item: UserGroupPillData | UserPillData) {
@@ -1592,31 +1678,7 @@ export function initialize({
             return items;
         },
         updater(item: UserGroupPillData | UserPillData): undefined {
-            if (item.type === "user_group") {
-                const user_group = user_groups.get_user_group_from_id(item.id);
-                const group_members = user_groups.get_recursive_group_members(user_group);
-                for (const user_id of group_members) {
-                    const user = people.get_by_user_id(user_id);
-                    // filter out inactive users, inserted users and current user
-                    // from pill insertion
-                    const inserted_users = user_pill.get_user_ids(compose_pm_pill.widget);
-                    const current_user = people.is_my_user_id(user.user_id);
-                    if (
-                        people.is_person_active(user_id) &&
-                        !inserted_users.includes(user.user_id) &&
-                        !current_user
-                    ) {
-                        compose_pm_pill.set_from_typeahead(user);
-                    }
-                }
-                // clear input pill in the event no pills were added
-                const pill_widget = compose_pm_pill.widget;
-                if (pill_widget.clear_text !== undefined) {
-                    pill_widget.clear_text();
-                }
-            } else {
-                compose_pm_pill.set_from_typeahead(item.user);
-            }
+            set_recipient_from_typeahead(item);
         },
         stopAdvance: true, // Do not advance to the next field on a Tab or Enter
     });
