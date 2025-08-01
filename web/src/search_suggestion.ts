@@ -422,8 +422,16 @@ function get_topic_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggestio
         {operator: "is", operand: "dm"},
         {operator: "dm-including"},
         {operator: "topic"},
+        {operator: "exact-topic"},
     ];
-    if (!check_validity(last, terms, ["channel", "topic", "search"], incompatible_patterns)) {
+    if (
+        !check_validity(
+            last,
+            terms,
+            ["channel", "topic", "exact-topic", "search"],
+            incompatible_patterns,
+        )
+    ) {
         return [];
     }
 
@@ -457,6 +465,7 @@ function get_topic_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggestio
             suggest_terms.push(last);
             break;
         case "topic":
+        case "exact-topic":
         case "search":
             guess = operand;
             if (filter.has_operator("channel")) {
@@ -507,7 +516,7 @@ function get_topic_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggestio
     topics.sort();
 
     return topics.map((topic) => {
-        const topic_term = {operator: "topic", operand: topic, negated};
+        const topic_term = {operator, operand: topic, negated};
         const terms = [...suggest_terms, topic_term];
         return format_as_suggestion(terms);
     });
@@ -649,6 +658,7 @@ function get_is_filter_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Sugge
                     {operator: "dm"},
                     {operator: "in"},
                     {operator: "topic"},
+                    {operator: "exact-topic"},
                 ],
             },
             {
@@ -805,6 +815,7 @@ function get_operator_suggestions(last: NarrowTerm): Suggestion[] {
     let choices = [
         "channel",
         "topic",
+        "exact-topic",
         "dm",
         "dm-including",
         "sender",
