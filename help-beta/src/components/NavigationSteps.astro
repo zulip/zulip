@@ -35,7 +35,7 @@ const setting_link_mapping: Record<
         setting_link: string;
     }
 > = {
-    // a mapping from the setting identifier that is the same as the final URL
+    // a mapping from the setting target that is the same as the final URL
     // breadcrumb to that setting to the name of its setting type, the setting
     // name as it appears in the user interface, and a relative link that can
     // be used to get to that setting
@@ -355,8 +355,8 @@ for (const type of Object.keys(relative_link_mapping)) {
     };
 }
 
-const {identifier} = Astro.props;
-const navigation_link_type = identifier.split("/")[0];
+const {target} = Astro.props;
+const navigation_link_type = target.split("/")[0];
 
 if (
     navigation_link_type !== "settings" &&
@@ -369,10 +369,10 @@ if (
 
 let resultHTML: string | undefined;
 if (navigation_link_type === "settings") {
-    resultHTML = getSettingsHTML(identifier.split("/")[1], SHOW_RELATIVE_LINKS);
+    resultHTML = getSettingsHTML(target.split("/")[1], SHOW_RELATIVE_LINKS);
 } else {
-    const link_type = identifier.split("/")[1];
-    const key = identifier.split("/")[2];
+    const link_type = target.split("/")[1];
+    const key = target.split("/")[2];
     resultHTML = RELATIVE_NAVIGATION_HANDLERS_BY_TYPE[link_type]!(key);
 }
 assert.ok(resultHTML !== undefined);
