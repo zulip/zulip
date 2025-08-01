@@ -902,7 +902,8 @@ input[type="checkbox"] {
 .admin_profile_fields_table,
 .edit_profile_field_choices_container,
 .profile_field_choices_table,
-.admin_linkifiers_table {
+.admin_linkifiers_table,
+.admin_channel_folders_table {
     .movable-row {
         .move-handle {
             cursor: move;

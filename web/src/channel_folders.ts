@@ -26,7 +26,7 @@ export function initialize(params: StateData["channel_folders"]): void {
 }
 
 export function get_channel_folders(include_archived = false): ChannelFolder[] {
-    const channel_folders = [...channel_folder_by_id_dict.values()].sort((a, b) => a.id - b.id);
+    const channel_folders = [...channel_folder_by_id_dict.values()];
     return channel_folders.filter((channel_folder) => {
         if (!include_archived && channel_folder.is_archived) {
             return false;
