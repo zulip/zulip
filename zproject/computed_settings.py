@@ -1290,6 +1290,9 @@ SENTRY_DSN = os.environ.get("SENTRY_DSN", SENTRY_DSN)
 SCIM_SERVICE_PROVIDER = {
     "USER_ADAPTER": "zerver.lib.scim.ZulipSCIMUser",
     "USER_FILTER_PARSER": "zerver.lib.scim_filter.ZulipUserFilterQuery",
+    "GROUP_ADAPTER": "zerver.lib.scim.ZulipSCIMGroup",
+    "GROUP_MODEL": "zerver.models.groups.NamedUserGroup",
+    "GROUP_FILTER_PARSER": "zerver.lib.scim_filter.ZulipGroupFilterQuery",
     # NETLOC is actually overridden by the behavior of base_scim_location_getter,
     # but django-scim2 requires it to be set, even though it ends up not being used.
     # So we need to give it some value here, and EXTERNAL_HOST is the most generic.
