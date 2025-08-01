@@ -47,6 +47,7 @@ type ActionPopoverContext = {
     should_display_delete_option: boolean;
     should_display_read_receipts_option: boolean;
     should_display_add_reaction_option: boolean;
+    should_display_message_report_option: boolean;
 };
 
 type TopicPopoverContext = {
@@ -217,6 +218,7 @@ export function get_actions_popover_content_context(message_id: number): ActionP
     const should_display_delete_option = message_delete.get_deletability(message);
     const should_display_read_receipts_option = realm.realm_enable_read_receipts && not_spectator;
     const should_display_remind_me_option = not_spectator;
+    const should_display_message_report_option = realm.realm_moderation_request_channel_id !== -1;
 
     function is_add_reaction_icon_visible(): boolean {
         assert(message_lists.current !== undefined);
@@ -250,6 +252,7 @@ export function get_actions_popover_content_context(message_id: number): ActionP
         should_display_delete_option,
         should_display_read_receipts_option,
         should_display_quote_message,
+        should_display_message_report_option,
     };
 }
 
