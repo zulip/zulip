@@ -150,9 +150,7 @@ test("get_is_suggestions_for_spectator", () => {
     page_params.is_spectator = false;
 });
 
-test("dm_suggestions", ({override, mock_template}) => {
-    mock_template("search_description.hbs", true, (_data, html) => html);
-
+test("dm_suggestions", ({override}) => {
     let query = "is:dm";
     let suggestions = get_suggestions(query);
     let expected = [
