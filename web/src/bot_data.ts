@@ -20,7 +20,7 @@ export function all_user_ids(): number[] {
 
 export function add(bot_data: ServerAddBotData): void {
     // TODO/typescript: Move validation to the caller when
-    // server_events_dispatch.js is converted to TypeScript.
+    // server_events_dispatch.ts is converted to TypeScript.
     const {services: bot_services, ...clean_bot} = server_add_bot_schema.parse(bot_data);
     bots.set(clean_bot.user_id, clean_bot);
 
@@ -35,7 +35,7 @@ export function del(bot_id: number): void {
 export function update(bot_id: number, bot_update: ServerUpdateBotData): void {
     const bot = bots.get(bot_id)!;
     // TODO/typescript: Move validation to the caller when
-    // server_events_dispatch.js is converted to TypeScript.
+    // server_events_dispatch.ts is converted to TypeScript.
     const {services: services_update, ...bot_update_rest} =
         server_update_bot_schema.parse(bot_update);
 
