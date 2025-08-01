@@ -14,6 +14,7 @@ import type {
     TopicSuggestion,
 } from "./composebox_typeahead.ts";
 import type {InputPillContainer} from "./input_pill.ts";
+import {pm_ids_set} from "./narrow_state.ts";
 import * as peer_data from "./peer_data.ts";
 import * as people from "./people.ts";
 import type {PseudoMentionUser, User} from "./people.ts";
@@ -206,99 +207,204 @@ export function sorter<T>(query: string, objs: T[], get_item: (x: T) => string):
     return [...results.matches, ...results.rest];
 }
 
-export function compare_by_pms(user_a: User, user_b: User): number {
-    const count_a = people.get_recipient_count(user_a);
-    const count_b = people.get_recipient_count(user_b);
+export function compare_users_for_streams(
+    user_a: User,
+    user_b: User,
+    current_stream_id: number,
+    current_topic: string,
+): number {
+    // Typeahead sorting priority order for users in stream conversations:
 
-    if (count_a > count_b) {
+    // 1. Subscribers over non-subscribers.
+
+    // If the client does not yet have complete subscriber data,
+    // "unknown" and "not subscribed" are both represented as false here.
+    const a_is_sub = stream_data.is_user_subscribed(current_stream_id, user_a.user_id);
+    const b_is_sub = stream_data.is_user_subscribed(current_stream_id, user_b.user_id);
+    if (a_is_sub && !b_is_sub) {
         return -1;
-    } else if (count_a < count_b) {
+    } else if (!a_is_sub && b_is_sub) {
         return 1;
     }
 
+    // 2. Users who have sent messages to the current topic over those who haven't sent to the current topic.
+    // 3. Users who have sent messages to the stream over those who haven't sent to the stream.
+    const result = recent_senders.compare_by_recency(
+        user_a,
+        user_b,
+        current_stream_id,
+        current_topic,
+    );
+    if (result > 0) {
+        return 1;
+    } else if (result < 0) {
+        return -1;
+    }
+
+    // 4. Users have PMed with, over users haven't PMed with.
     const a_is_partner = pm_conversations.is_partner(user_a.user_id);
     const b_is_partner = pm_conversations.is_partner(user_b.user_id);
+    if (a_is_partner && !b_is_partner) {
+        return -1;
+    } else if (!a_is_partner && b_is_partner) {
+        return 1;
+    }
+    return 0;
+}
 
-    // This code will never run except in the rare case that one has no
-    // recent DM message history with a user, but does have some older
-    // message history that's outside the "recent messages only"
-    // data set powering people.get_recipient_count.
+export function compare_users_for_pms(user_a: User, user_b: User): number {
+    // Typeahead sorting priority order for PM conversations:
+
+    // 1. Users who have PMed with each other over those who haven't.
+    const a_is_partner = pm_conversations.is_partner(user_a.user_id);
+    const b_is_partner = pm_conversations.is_partner(user_b.user_id);
     if (a_is_partner && !b_is_partner) {
         return -1;
     } else if (!a_is_partner && b_is_partner) {
         return 1;
     }
 
-    // We use alpha sort as a tiebreaker, which might be helpful for
-    // new users.
-    if (user_a.full_name < user_b.full_name) {
+    // 2. Recipients with higher counts.
+    const count_a = people.get_recipient_count(user_a);
+    const count_b = people.get_recipient_count(user_b);
+    if (count_a > count_b) {
         return -1;
-    } else if (user_a === user_b) {
-        return 0;
+    } else if (count_a < count_b) {
+        return 1;
     }
+
+    // 3. Normal users over bots: Already covered in sort_recipients,
+    // since users are always put over bots, there exists no scenario
+    // when users and bots are compared.
+
+    // 4. Users with shorter names over those with longer names
+    if (user_a.full_name.length < user_b.full_name.length) {
+        return -1;
+    } else if (user_a.full_name.length > user_b.full_name.length) {
+        return 1;
+    }
+
+    return 0;
+}
+
+// The properties from which at least one should be satisfied by the user to be kept above wildcards.
+export function get_properties_to_satisy(
+    user: User,
+    stream_id?: number,
+    topic?: string,
+): boolean[] {
+    let properties_to_satisfy;
+    const user_pmed = pm_conversations.is_partner(user.user_id);
+
+    if (stream_id === undefined || topic === undefined) {
+        // PM conversations
+
+        // Wildcard gets higher priority over:
+        // Users who have not PMed with the current user.
+        properties_to_satisfy = [user_pmed];
+    } else {
+        // Stream conversations
+
+        // Wildcard gets higher priority over:
+        // The non-subscribers who have neither participated in the topic nor stream
+        // and also with whom the current user hasn't PMed.
+
+        const user_is_sub = stream_data.is_user_subscribed(stream_id, user.user_id);
+
+        // The max_id_for_stream_topic_sender() will be > 0 if the user have sent at least one message to the topic
+        const user_is_sender_to_current_topic =
+            recent_senders.max_id_for_stream_topic_sender({
+                stream_id,
+                topic,
+                sender_id: user.user_id,
+            }) > 0;
+
+        const user_is_sender_to_current_stream =
+            recent_senders.max_id_for_stream_sender({
+                stream_id,
+                sender_id: user.user_id,
+            }) > 0;
+
+        properties_to_satisfy = [
+            user_is_sub,
+            user_is_sender_to_current_topic,
+            user_is_sender_to_current_stream,
+            user_pmed,
+        ];
+    }
+    return properties_to_satisfy;
+}
+
+export function compare_user_wildcard(
+    properties_to_satisfy: boolean[],
+    view_is_stream: boolean,
+): number {
+    // Assumption for convenience: Assuming that the user is user_a and wildcard is b.
+    // If the other way around is true, just change the sign (multiplying with -1)
+
+    // If message type is private or not viewing a stream conversation, with being it a 1:1 DM, wildcards are put at the bottom
+    const message_type = compose_state.get_message_type();
+    const pm_members_count = pm_ids_set().size;
+    if ((message_type === "private" || !view_is_stream) && pm_members_count <= 1) {
+        return -1;
+    }
+
+    // Streams or Group DMs
+    const atleast_one_satisifies = properties_to_satisfy.some(Boolean);
+    if (atleast_one_satisifies) {
+        return -1;
+    }
+
+    // If any rule didn't get satisfy for a user, put wildcard at the top.
     return 1;
 }
 
 export function compare_people_for_relevance(
     person_a: UserOrMentionPillData | UserPillData,
     person_b: UserOrMentionPillData | UserPillData,
-    compare_by_current_conversation?: (user_a: User, user_b: User) => number,
     current_stream_id?: number,
+    current_topic?: string,
 ): number {
     // give preference to "all", "everyone" or "stream"
-    if (compose_state.get_message_type() !== "private") {
-        if (person_a.type === "broadcast") {
-            if (person_b.type === "broadcast") {
-                return person_a.user.idx - person_b.user.idx;
+    const view_is_stream = current_stream_id !== undefined && current_topic !== undefined;
+    // Fetch subscriber data if we don't have it yet, but don't wait for it.
+    // It's fine to use partial data for now, and hopefully on subsequent
+    // keystrokes, we'll have the full data to show more subscribers at the
+    // top of the list.
+    //
+    // (We will usually have it, since entering a channel triggers a fetch.)
+    if (view_is_stream && !peer_data.has_full_subscriber_data(current_stream_id)) {
+        void peer_data.maybe_fetch_stream_subscribers(current_stream_id);
+    }
+    if (person_a.type === "user") {
+        if (person_b.type === "user") {
+            // Both a and b are users
+            if (view_is_stream) {
+                return compare_users_for_streams(
+                    person_a.user,
+                    person_b.user,
+                    current_stream_id,
+                    current_topic,
+                );
             }
-            return -1;
-        } else if (person_b.type === "broadcast") {
-            return 1;
+            return compare_users_for_pms(person_a.user, person_b.user);
         }
-    } else {
-        if (person_a.type === "broadcast") {
-            if (person_b.type === "broadcast") {
-                return person_a.user.idx - person_b.user.idx;
-            }
-            return 1;
-        } else if (person_b.type === "broadcast") {
-            return -1;
-        }
+        // a: user, b: wildcard
+        return compare_user_wildcard(
+            get_properties_to_satisy(person_a.user, current_stream_id, current_topic),
+            view_is_stream,
+        );
+    }
+    if (person_b.type === "user") {
+        // a: wildcard, b: user
+        return -compare_user_wildcard(
+            get_properties_to_satisy(person_b.user, current_stream_id, current_topic),
+            view_is_stream,
+        );
     }
 
-    // Now handle actual people users.
-    // give preference to subscribed users first
-    if (current_stream_id !== undefined) {
-        // Fetch subscriber data if we don't have it yet, but don't wait for it.
-        // It's fine to use partial data for now, and hopefully on subsequent
-        // keystrokes, we'll have the full data to show more subscribers at the
-        // top of the list.
-        //
-        // (We will usually have it, since entering a channel triggers a fetch.)
-        if (!peer_data.has_full_subscriber_data(current_stream_id)) {
-            void peer_data.maybe_fetch_stream_subscribers(current_stream_id);
-        }
-
-        // If the client does not yet have complete subscriber data,
-        // "unknown" and "not subscribed" are both represented as false here.
-        const a_is_sub = stream_data.is_user_subscribed(current_stream_id, person_a.user.user_id);
-        const b_is_sub = stream_data.is_user_subscribed(current_stream_id, person_b.user.user_id);
-
-        if (a_is_sub && !b_is_sub) {
-            return -1;
-        } else if (!a_is_sub && b_is_sub) {
-            return 1;
-        }
-    }
-
-    if (compare_by_current_conversation !== undefined) {
-        const preference = compare_by_current_conversation(person_a.user, person_b.user);
-        if (preference !== 0) {
-            return preference;
-        }
-    }
-
-    return compare_by_pms(person_a.user, person_b.user);
+    // Both a and b are wildcards
+    return person_a.user.idx - person_b.user.idx;
 }
 
 export function sort_people_for_relevance<UserType extends UserOrMentionPillData | UserPillData>(
@@ -310,23 +416,15 @@ export function sort_people_for_relevance<UserType extends UserOrMentionPillData
     const current_stream =
         current_stream_id !== undefined ? stream_data.get_sub_by_id(current_stream_id) : undefined;
     if (current_stream === undefined) {
+        // Viewing PM conversations
         objs.sort((person_a, person_b) => compare_people_for_relevance(person_a, person_b));
     } else {
         assert(current_stream_id !== undefined);
         assert(current_topic !== undefined);
+
+        // Viewing Stream messages
         objs.sort((person_a, person_b) =>
-            compare_people_for_relevance(
-                person_a,
-                person_b,
-                (user_a, user_b) =>
-                    recent_senders.compare_by_recency(
-                        user_a,
-                        user_b,
-                        current_stream_id,
-                        current_topic,
-                    ),
-                current_stream_id,
-            ),
+            compare_people_for_relevance(person_a, person_b, current_stream_id, current_topic),
         );
     }
 
