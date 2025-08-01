@@ -18,14 +18,6 @@ import * as stream_topic_history_util from "./stream_topic_history_util.ts";
 import * as typeahead_helper from "./typeahead_helper.ts";
 import * as util from "./util.ts";
 
-export type UserPillItem = {
-    id: number;
-    display_value: string;
-    has_image: boolean;
-    img_src: string;
-    should_add_guest_user_indicator: boolean;
-};
-
 type ChannelTopicEntry = {
     channel_id: string;
     topic: string;
