@@ -84,10 +84,21 @@ Zulip offers the following filters based on the location of the message.
   between you, Bo, and Elena.
 * `dm-including:Bo Lin`: Search all direct message conversations
   (1-on-1 and group) that include you and Bo, as well as any other users.
-* `channels:public`: Search the history of all [public
-  channels](/help/change-the-privacy-of-a-channel) in the organization, including
-  channels you are not subscribed to; see details
-  [below](#searching-shared-history).
+
+### Search shared history
+
+To avoid cluttering your search results, by default, Zulip searches just the
+messages you received. You can use `channels:` or `channel:` filters to search
+additional messages.
+
+* `channels:public`: Search messages in all
+  [public](/help/channel-permissions#public-channels) and
+  [web-public](/help/channel-permissions#web-public-channels) channels.
+* `channels:web-public`: Search messages in all
+  [web-public](/help/change-the-privacy-of-a-channel) channels in the organization,
+  including channels you are not subscribed to.
+* `channel:design`: Search all messages in **#design**, including messages sent
+  before you were a subscriber.
 
 ### Search by sender
 
@@ -151,29 +162,6 @@ the specified rule. For example:
 - `channel:design -is:resolved -has:image`: Search messages in [unresolved
   topics](/help/resolve-a-topic) in the **#design** channel that don't contain
   images.
-
-## Searching shared history
-
-Zulip's [channel permissions](/help/channel-permissions) model allows access to
-the full history of public channels and private channels with shared history,
-including messages sent before you joined the channel (or organization), or those
-sent to public channels you are not subscribed to.
-
-By default, Zulip searches messages in your history, i.e., the
-messages you actually received.  This avoids cluttering search results
-with irrelevant messages from public channels you're not interested in.
-
-If you'd like to instead search the organization's shared history, any query
-using the `channel:` or `channels:` filters will search all messages that you have
-access to in the selected channel(s).  For example:
-
-* `channels:public logo`: Search for `logo` in all public channels in the
-  organization.
-* `channels:public sender:Elena García`: Search for all messages sent by
-  Elena to any public channel.
-* `channel:design logo`: Search for the word `logo` in all messages sent to
-  **#design**, regardless of whether you were subscribed at the time the message
-  was sent.
 
 ## Linking to search results
 
