@@ -62,7 +62,7 @@
 * [Get all channels](/api/get-streams)
 * [Get a channel by ID](/api/get-stream-by-id)
 * [Get channel ID](/api/get-stream-id)
-* [Create a channel](/api/create-stream)
+* [Create a channel](/api/create-channel)
 * [Update a channel](/api/update-stream)
 * [Archive a channel](/api/archive-stream)
 * [Get channel's email address](/api/get-stream-email-address)
