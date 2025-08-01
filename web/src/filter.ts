@@ -12,10 +12,8 @@ import * as message_store from "./message_store.ts";
 import type {Message} from "./message_store.ts";
 import * as muted_users from "./muted_users.ts";
 import {page_params} from "./page_params.ts";
-import type {User} from "./people.ts";
 import * as people from "./people.ts";
 import * as resolved_topic from "./resolved_topic.ts";
-import type {UserPillItem} from "./search_suggestion.ts";
 import {current_user, narrow_canonical_term_schema, narrow_operator_schema} from "./state_data.ts";
 import type {NarrowCanonicalTerm, NarrowTerm, NarrowTermSuggestion} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
@@ -66,16 +64,7 @@ type Part =
           prefix_for_operator: string;
           operand: string;
           is_empty_string_topic?: boolean;
-      }
-    | {
-          type: "user_pill";
-          operator: string;
-          users: ValidOrInvalidUser[];
       };
-
-type ValidOrInvalidUser =
-    | {valid_user: true; user_pill_context: UserPillItem}
-    | {valid_user: false; operand: string};
 
 const channels_operands = new Set(["public", "web-public"]);
 
@@ -221,19 +210,6 @@ function message_matches_search_term(message: Message, term: NarrowTerm): boolea
     // We will never get here since operator type validation would fail.
     // istanbul ignore next
     return true; // unknown operators return true (effectively ignored)
-}
-
-// For when we don't need to do highlighting
-export function create_user_pill_context(user: User): UserPillItem {
-    const avatar_url = people.small_avatar_url_for_person(user);
-
-    return {
-        id: user.user_id,
-        display_value: user.full_name,
-        has_image: true,
-        img_src: avatar_url,
-        should_add_guest_user_indicator: people.should_add_guest_user_indicator(user.user_id),
-    };
 }
 
 const USER_OPERATORS = new Set([
@@ -790,31 +766,6 @@ export class Filter {
                 };
             }
             const prefix_for_operator = Filter.operator_to_prefix(term.operator, term.negated);
-            if (
-                term.operator === "sender" ||
-                term.operator === "dm" ||
-                term.operator === "dm-including"
-            ) {
-                const user_emails = term.operand.split(",");
-                const users: ValidOrInvalidUser[] = user_emails.map((email) => {
-                    const person = people.get_by_email(email);
-                    if (person === undefined) {
-                        return {
-                            valid_user: false,
-                            operand: email,
-                        };
-                    }
-                    return {
-                        valid_user: true,
-                        user_pill_context: create_user_pill_context(person),
-                    };
-                });
-                return {
-                    type: "user_pill",
-                    operator: prefix_for_operator,
-                    users,
-                };
-            }
             if (prefix_for_operator !== "") {
                 if (term.operator === "channel") {
                     const stream = stream_data.get_sub_by_id_string(term.operand);
