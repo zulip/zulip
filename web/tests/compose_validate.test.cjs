@@ -4,6 +4,7 @@ const assert = require("node:assert/strict");
 
 const {mock_banners} = require("./lib/compose_banner.cjs");
 const {FakeComposeBox} = require("./lib/compose_helpers.cjs");
+const {make_user_group} = require("./lib/example_group.cjs");
 const {$t} = require("./lib/i18n.cjs");
 const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
@@ -104,41 +105,41 @@ const welcome_bot = {
 
 people.add_cross_realm_user(welcome_bot);
 
-const nobody = {
+const nobody = make_user_group({
     name: "role:nobody",
     id: 1,
     members: new Set([]),
     is_system_group: true,
     direct_subgroup_ids: new Set([]),
-};
-const everyone = {
+});
+const everyone = make_user_group({
     name: "role:everyone",
     id: 2,
     members: new Set([30, 33]),
     is_system_group: true,
     direct_subgroup_ids: new Set([5]),
-};
-const admin = {
+});
+const admin = make_user_group({
     name: "role:administrators",
     id: 3,
     members: new Set([32]),
     is_system_group: true,
     direct_subgroup_ids: new Set([]),
-};
-const moderators = {
+});
+const moderators = make_user_group({
     name: "role:moderators",
     id: 4,
     members: new Set([34]),
     is_system_group: true,
     direct_subgroup_ids: new Set([3]),
-};
-const members = {
+});
+const members = make_user_group({
     name: "role:members",
     id: 5,
     members: new Set([31]),
     is_system_group: true,
     direct_subgroup_ids: new Set([4]),
-};
+});
 
 user_groups.initialize({realm_user_groups: [nobody, everyone, admin, moderators, members]});
 function test_ui(label, f) {

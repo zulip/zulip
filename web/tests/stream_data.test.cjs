@@ -2,6 +2,7 @@
 
 const assert = require("node:assert/strict");
 
+const {make_user_group} = require("./lib/example_group.cjs");
 const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 const blueslip = require("./lib/zblueslip.cjs");
@@ -55,53 +56,53 @@ const admin_user_id = 1;
 const moderator_user_id = 2;
 
 // set up user data
-const admins_group = {
+const admins_group = make_user_group({
     name: "Admins",
     id: 1,
     members: new Set([admin_user_id]),
     is_system_group: true,
     direct_subgroup_ids: new Set([]),
-};
+});
 
-const moderators_group = {
+const moderators_group = make_user_group({
     name: "Moderators",
     id: 2,
     members: new Set([moderator_user_id]),
     is_system_group: true,
     direct_subgroup_ids: new Set([admins_group.id]),
-};
+});
 
-const everyone_group = {
+const everyone_group = make_user_group({
     name: "Everyone",
     id: 3,
     members: new Set([me.user_id, test_user.user_id]),
     is_system_group: true,
     direct_subgroup_ids: new Set([moderators_group.id]),
-};
+});
 
-const nobody_group = {
+const nobody_group = make_user_group({
     name: "Nobody",
     id: 4,
     members: new Set([]),
     is_system_group: true,
     direct_subgroup_ids: new Set([]),
-};
+});
 
-const students = {
+const students = make_user_group({
     name: "Students",
     id: 5,
     members: new Set([test_user.user_id]),
     is_system_group: false,
     direct_subgroup_ids: new Set([]),
-};
+});
 
-const me_group = {
+const me_group = make_user_group({
     name: "Me Group",
     id: 6,
     members: new Set([me.user_id]),
     is_system_group: false,
     direct_subgroup_ids: new Set([]),
-};
+});
 
 function initialize_and_override_current_user(user_id, override) {
     people.initialize_current_user(user_id);

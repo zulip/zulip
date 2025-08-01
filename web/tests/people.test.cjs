@@ -6,6 +6,7 @@ const {parseISO} = require("date-fns");
 const _ = require("lodash");
 const MockDate = require("mockdate");
 
+const {make_user_group} = require("./lib/example_group.cjs");
 const {$t} = require("./lib/i18n.cjs");
 const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
@@ -78,20 +79,20 @@ function initialize() {
     people._add_user(unknown_user);
 }
 
-const nobody = {
+const nobody = make_user_group({
     name: "role:nobody",
     id: 1,
     members: new Set([]),
     is_system_group: true,
     direct_subgroup_ids: new Set([]),
-};
-const everyone = {
+});
+const everyone = make_user_group({
     name: "role:everyone",
     id: 2,
     members: new Set([30]),
     is_system_group: true,
     direct_subgroup_ids: new Set([]),
-};
+});
 
 user_groups.initialize({realm_user_groups: [nobody, everyone]});
 
@@ -1362,10 +1363,10 @@ test_people("initialize", () => {
     params.cross_realm_bots = [test_bot];
     const user_group_params = {
         realm_user_groups: [
-            {
+            make_user_group({
                 is_system_group: true,
                 members: [42, 17, 16, 15],
-            },
+            }),
         ],
     };
 
@@ -1696,10 +1697,10 @@ test_people("fetch_users", async ({override}) => {
     ];
     const user_group_params = {
         realm_user_groups: [
-            {
+            make_user_group({
                 is_system_group: true,
                 members: [42, 17, 16, 15],
-            },
+            }),
         ],
     };
     const my_user_id = 42;
