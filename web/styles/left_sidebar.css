@@ -976,7 +976,15 @@ li.active-sub-filter {
                 /* .unread_count has its based font-size set to 12px at 14px/em. */
                 /* 2px, 6px at 12px/1em */
                 top: 0.1667em;
-                right: 0.1667em;
+                /* With positioning, we center the dot over the icon
+                   by subtracting half its width from the 50% mark. */
+                right: calc(50% - 0.25em);
+                /* But then we shift it left the em equivalent of half
+                   the icon width (15px/2) plus 2px. This keeps the
+                   unread dot in correct proximity to the view icon,
+                   no matter how the row flexes or what information-
+                   density values a user has set. 9.5px at 12px/1em. */
+                transform: translateX(0.7917em);
                 width: 0.5em;
                 height: 0.5em;
                 padding: 0;
