@@ -2,6 +2,7 @@ import $ from "jquery";
 
 import render_cannot_send_direct_message_error from "../templates/compose_banner/cannot_send_direct_message_error.hbs";
 import render_compose_banner from "../templates/compose_banner/compose_banner.hbs";
+import render_long_paste_options from "../templates/compose_banner/long_paste_options.hbs";
 import render_stream_does_not_exist_error from "../templates/compose_banner/stream_does_not_exist_error.hbs";
 import render_topics_required_error_banner from "../templates/compose_banner/topics_required_error_banner.hbs";
 import render_unknown_zoom_user_error from "../templates/compose_banner/unknown_zoom_user_error.hbs";
@@ -296,19 +297,25 @@ export function has_error(): boolean {
     return $("#compose_banners .error").length > 0;
 }
 
-export function show_convert_pasted_text_to_file_banner(cb: () => void): JQuery {
+export function show_convert_pasted_text_to_file_banner({
+    show_paste_button,
+    convert_to_file_cb,
+    paste_to_compose_cb,
+}: {
+    show_paste_button: boolean;
+    convert_to_file_cb: () => void;
+    paste_to_compose_cb: () => void;
+}): JQuery {
     $(`#compose_banners .${CSS.escape(CLASSNAMES.convert_pasted_text_to_file)}`).remove();
     const $new_row = $(
-        render_compose_banner({
+        render_long_paste_options({
             banner_type: INFO,
-            banner_text: $t({
-                defaultMessage: "Do you want to convert the pasted text into a file?",
-            }),
-            button_text: $t({defaultMessage: "Yes, convert"}),
             classname: CLASSNAMES.convert_pasted_text_to_file,
+            show_paste_button,
         }),
     );
-    $new_row.on("click", ".main-view-banner-action-button", cb);
+    $new_row.on("click", ".main-view-banner-action-button.convert-to-file", convert_to_file_cb);
+    $new_row.on("click", ".main-view-banner-action-button.paste-to-compose", paste_to_compose_cb);
     append_compose_banner_to_banner_list($new_row, $("#compose_banners"));
     return $new_row;
 }
