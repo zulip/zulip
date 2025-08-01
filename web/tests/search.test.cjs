@@ -47,6 +47,7 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
     stub_pills();
 
     mock_template("search_list_item.hbs", true, (_data, html) => html);
+    mock_template("search_description.hbs", true, (_data, html) => html);
 
     let expected_pill_display_value = "";
     let input_pill_displayed = false;
@@ -90,9 +91,47 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
             const search_suggestions = {
                 lookup_table: new Map([
                     [
+                        "dm:",
+                        {
+                            description_html: "direct messages with",
+                            search_string: "dm:",
+                        },
+                    ],
+                    [
+                        "dm",
+                        {
+                            description_html: "Search for dm",
+                            search_string: "dm",
+                        },
+                    ],
+                ]),
+                strings: ["dm", "dm:"],
+            };
+
+            /* Test source */
+            override_rewire(search_suggestion, "get_suggestions", () => search_suggestions);
+            const expected_source_value = search_suggestions.strings;
+            const source = opts.source("dm");
+            assert.deepStrictEqual(source, expected_source_value);
+
+            /* Test highlighter */
+            let expected_value = `<div class="search_list_item">\n            <div class="description">Search for dm</div>\n    \n</div>\n`;
+            assert.equal(opts.item_html(source[0]), expected_value);
+
+            expected_value = `<div class="search_list_item">\n            <span class="pill-container"><div class='pill ' tabindex=0>\n    <span class="pill-label">\n        <span class="pill-value">\n            dm: \n        </span></span>\n    <div class="exit">\n        <a role="button" class="zulip-icon zulip-icon-close pill-close-button"></a>\n    </div>\n</div>\n</span>\n            <div class="description">Direct messages with</div>\n</div>\n`;
+            assert.equal(opts.item_html(source[1]), expected_value);
+
+            /* Test sorter */
+            assert.equal(opts.sorter(search_suggestions.strings), search_suggestions.strings);
+        }
+
+        {
+            const search_suggestions = {
+                lookup_table: new Map([
+                    [
                         "stream:Verona",
                         {
-                            description_html: "Stream Verona",
+                            description_html: "Messages in #Verona",
                             search_string: "stream:Verona",
                         },
                     ],
@@ -119,7 +158,7 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
             assert.equal(opts.item_html(source[0]), expected_value);
 
             const search_string = "channel: Verona";
-            description_html = "Stream Verona";
+            description_html = "Messages in #Verona";
             expected_value = `<div class="search_list_item">\n            <span class="pill-container"><div class='pill ' tabindex=0>\n    <span class="pill-label">\n        <span class="pill-value">\n            ${search_string}\n        </span></span>\n    <div class="exit">\n        <a role="button" class="zulip-icon zulip-icon-close pill-close-button"></a>\n    </div>\n</div>\n</span>\n            <div class="description">${description_html}</div>\n</div>\n`;
             assert.equal(opts.item_html(source[1]), expected_value);
 
