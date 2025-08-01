@@ -17,6 +17,7 @@ import * as compose_send_menu_popover from "./compose_send_menu_popover.js";
 import * as compose_state from "./compose_state.ts";
 import * as compose_ui from "./compose_ui.ts";
 import * as compose_validate from "./compose_validate.ts";
+import * as composebox_typeahead from "./composebox_typeahead.ts";
 import * as dialog_widget from "./dialog_widget.ts";
 import * as flatpickr from "./flatpickr.ts";
 import {$t_html} from "./i18n.ts";
@@ -596,6 +597,15 @@ export function initialize() {
         $input.val("");
         $input.trigger("focus");
         compose_validate.validate_and_update_send_button_status();
+    });
+
+    $("#compose-direct-recipient").on("click", "#add_dm_recipient_button", () => {
+        const $input = $("#private_message_recipient");
+        $input.trigger("focus");
+        // We don't show typeahead for empty query so we want to bypass this.
+        composebox_typeahead.private_message_recipient_typeahead.helpOnEmptyStrings = true;
+        composebox_typeahead.private_message_recipient_typeahead.lookup(false);
+        composebox_typeahead.private_message_recipient_typeahead.helpOnEmptyStrings = false;
     });
 
     $("input#stream_message_recipient_topic").on("focus", () => {
