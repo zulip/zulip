@@ -1368,6 +1368,12 @@ li.top_left_scheduled_messages {
                 /* In the absence of auto rows in the condensed state,
                    we set an explicit height on the active filter. */
                 height: var(--line-height-sidebar-row);
+
+                /* With unread counts displaying in the condensed-view
+                   row, we suppress it on the home view. */
+                &.selected-home-view .unread_count {
+                    display: none;
+                }
             }
         }
     }
