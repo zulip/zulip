@@ -101,15 +101,7 @@ function delete_saved_snippet(saved_snippet_id: string): void {
     });
 }
 
-function item_click_callback(
-    event: JQuery.ClickEvent,
-    dropdown: tippy.Instance,
-    widget: dropdown_widget.DropdownWidget,
-    is_sticky_bottom_option_clicked: boolean,
-): void {
-    event.preventDefault();
-    event.stopPropagation();
-
+function item_button_click_callback(event: JQuery.ClickEvent): void {
     if (
         $(event.target).closest(".saved_snippets-dropdown-list-container .dropdown-list-delete")
             .length > 0
@@ -118,7 +110,9 @@ function item_click_callback(
             html_heading: $t_html({defaultMessage: "Delete saved snippet?"}),
             html_body: render_confirm_delete_saved_snippet(),
             on_click() {
-                const saved_snippet_id = $(event.currentTarget).attr("data-unique-id");
+                const saved_snippet_id = $(event.target)
+                    .closest(".list-item")
+                    .attr("data-unique-id");
                 assert(saved_snippet_id !== undefined);
                 delete_saved_snippet(saved_snippet_id);
             },
@@ -130,7 +124,7 @@ function item_click_callback(
         $(event.target).closest(".saved_snippets-dropdown-list-container .dropdown-list-edit")
             .length > 0
     ) {
-        const saved_snippet_id = $(event.currentTarget).attr("data-unique-id");
+        const saved_snippet_id = $(event.target).closest(".list-item").attr("data-unique-id");
         assert(saved_snippet_id !== undefined);
 
         const saved_snippet = saved_snippets.get_saved_snippet_by_id(
@@ -157,6 +151,16 @@ function item_click_callback(
         });
         return;
     }
+}
+
+function item_click_callback(
+    event: JQuery.ClickEvent,
+    dropdown: tippy.Instance,
+    widget: dropdown_widget.DropdownWidget,
+    is_sticky_bottom_option_clicked: boolean,
+): void {
+    event.preventDefault();
+    event.stopPropagation();
 
     dropdown.hide();
     // Get target textarea where the "Add saved snippet" button is clicked.
@@ -199,6 +203,7 @@ export function setup_saved_snippets_dropdown_widget(widget_selector: string): v
         widget_selector,
         get_options: saved_snippets.get_options_for_dropdown_widget,
         item_click_callback,
+        item_button_click_callback,
         $events_container: $("body"),
         unique_id_type: "number",
         sticky_bottom_option: $t({

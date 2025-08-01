@@ -51,6 +51,7 @@ export type DropdownWidgetOptions = {
         widget: DropdownWidget,
         is_sticky_bottom_option_clicked: boolean,
     ) => void;
+    item_button_click_callback?: (event: JQuery.ClickEvent) => void;
     // Provide an parent element to widget which will be re-rendered if the widget is setup again.
     // It is important to not pass `$("body")` here for widgets that would be `setup()`
     // multiple times, so that we don't have duplicate event handlers.
@@ -96,6 +97,7 @@ export class DropdownWidget {
         widget: DropdownWidget,
         is_sticky_bottom_option_clicked: boolean,
     ) => void;
+    item_button_click_callback: (event: JQuery.ClickEvent) => void;
     focus_target_on_hidden: boolean;
     on_show_callback: (instance: tippy.Instance, widget: DropdownWidget) => void;
     on_mount_callback: (instance: tippy.Instance) => void;
@@ -132,6 +134,7 @@ export class DropdownWidget {
         this.widget_value_selector = `${this.widget_selector} .dropdown_widget_value`;
         this.get_options = options.get_options;
         this.item_click_callback = options.item_click_callback;
+        this.item_button_click_callback = options.item_button_click_callback ?? noop;
         this.focus_target_on_hidden = options.focus_target_on_hidden ?? true;
         this.on_show_callback = options.on_show_callback ?? noop;
         this.on_mount_callback = options.on_mount_callback ?? noop;
@@ -613,6 +616,13 @@ export class DropdownWidget {
                         this.current_value = Number.parseInt(this.current_value, 10);
                     }
                     this.item_click_callback(event, instance, this, false);
+                    this.current_hover_index = 0;
+                });
+
+                $popper.on("click", ".dropdown-list-control-button", (event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    this.item_button_click_callback(event);
                     this.current_hover_index = 0;
                 });
 
