@@ -1426,7 +1426,9 @@
         hsl(212deg 100% 30%),
         hsl(200deg 100% 50%)
     );
-    /* These colors are from Bootstrap. */
+    /* These colors are from Bootstrap.
+       Both these colors are also used in main.css of the new help center,
+       any changes here will require changes there. */
     --color-text-generic-link: #08c;
     --color-text-generic-link-interactive: light-dark(
         #005580,
@@ -1548,11 +1550,16 @@
         transparent,
         var(--color-markdown-pre-border)
     );
+
+    /* This color is also used in main.css of the new help center,
+       any changes here will require changes there. */
     --color-markdown-link: light-dark(
         hsl(200deg 100% 40%),
         var(--color-text-generic-link)
     );
     --color-markdown-code-link: var(--color-markdown-link);
+    /* This color is also used in main.css of the new help center,
+       any changes here will require changes there. */
     --color-markdown-link-hover: light-dark(
         hsl(200deg 100% 25%),
         var(--color-text-generic-link-interactive)
