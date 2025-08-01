@@ -35,6 +35,13 @@ function filter_muted_pms(conversation: PMConversation): boolean {
     return true;
 }
 
+function filter_deactivated_user_pms(conversation: PMConversation): boolean {
+    const recipients = people.split_to_ints(conversation.user_ids_string);
+
+    // If ANY user is deactivated, filter out the DM.
+    return !recipients.some((id) => !people.is_active_user_for_popover(id));
+}
+
 class RecentDirectMessages {
     // This data structure keeps track of the sets of users you've had
     // recent conversations with, sorted by time (implemented via
@@ -80,18 +87,28 @@ class RecentDirectMessages {
         this.recent_private_messages.sort((a, b) => b.max_message_id - a.max_message_id);
     }
 
-    get(): PMConversation[] {
+    get(options?: {include_deactivated: boolean}): PMConversation[] {
         // returns array of structs with user_ids_string and
         // message_id
-        return this.recent_private_messages.filter((pm) => filter_muted_pms(pm));
+        let conversations = this.recent_private_messages.filter((pm) => filter_muted_pms(pm));
+
+        if (!options?.include_deactivated) {
+            conversations = conversations.filter((pm) => filter_deactivated_user_pms(pm));
+        }
+
+        return conversations;
     }
 
-    get_strings(): string[] {
+    get_strings(options?: {include_deactivated: boolean}): string[] {
         // returns array of structs with user_ids_string and
         // message_id
-        return this.recent_private_messages
-            .filter((pm) => filter_muted_pms(pm))
-            .map((conversation) => conversation.user_ids_string);
+        let conversations = this.recent_private_messages.filter((pm) => filter_muted_pms(pm));
+
+        if (!options?.include_deactivated) {
+            conversations = conversations.filter((pm) => filter_deactivated_user_pms(pm));
+        }
+
+        return conversations.map((conversation) => conversation.user_ids_string);
     }
 
     has_conversation(user_ids_string: string): boolean {
