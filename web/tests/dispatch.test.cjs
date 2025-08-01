@@ -1249,6 +1249,12 @@ run_test("user_settings", ({override}) => {
     dispatch(event);
     assert_same(user_settings.starred_message_counts, true);
 
+    event = event_fixtures.user_settings__web_left_sidebar_show_channel_folders;
+    override(stream_list, "build_stream_list", noop);
+    override(user_settings, "web_left_sidebar_show_channel_folders", true);
+    dispatch(event);
+    assert_same(user_settings.web_left_sidebar_show_channel_folders, false);
+
     event = event_fixtures.user_settings__web_left_sidebar_unreads_count_summary;
     override(sidebar_ui, "update_unread_counts_visibility", noop);
     override(user_settings, "web_left_sidebar_unreads_count_summary", true);

@@ -905,6 +905,7 @@ export function dispatch_normal_event(event) {
                 "web_stream_unreads_count_display_policy",
                 "web_suggest_update_timezone",
                 "web_left_sidebar_unreads_count_summary",
+                "web_left_sidebar_show_channel_folders",
             ];
 
             const original_home_view = user_settings.web_home_view;
@@ -991,6 +992,9 @@ export function dispatch_normal_event(event) {
             }
             if (event.property === "web_left_sidebar_unreads_count_summary") {
                 sidebar_ui.update_unread_counts_visibility();
+            }
+            if (event.property === "web_left_sidebar_show_channel_folders") {
+                stream_list.build_stream_list(true);
             }
             if (
                 event.property === "receives_typing_notifications" &&

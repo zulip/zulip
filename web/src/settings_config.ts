@@ -635,6 +635,9 @@ export const preferences_settings_labels = {
     ),
     receives_typing_notifications: $t({defaultMessage: "Show when other users are typing"}),
     starred_message_counts: $t({defaultMessage: "Show counts for starred messages"}),
+    web_left_sidebar_show_channel_folders: $t({
+        defaultMessage: "Group channels by folder in the left sidebar",
+    }),
     web_left_sidebar_unreads_count_summary: $t({
         defaultMessage: "Show unread count total on home view",
     }),

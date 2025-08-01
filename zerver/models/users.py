@@ -112,6 +112,10 @@ class UserBaseSettings(models.Model):
     ]
     demote_inactive_streams = models.PositiveSmallIntegerField(default=DEMOTE_STREAMS_AUTOMATIC)
 
+    # UI setting to control showing channel folders in the left sidebar
+    # of the Zulip web app.
+    web_left_sidebar_show_channel_folders = models.BooleanField(default=True, db_default=True)
+
     # UI setting controlling whether or not the Zulip web app will
     # mark messages as read as it scrolls through the feed.
 
@@ -384,6 +388,7 @@ class UserBaseSettings(models.Model):
         hide_ai_features=bool,
         resolved_topic_notice_auto_read_policy=ResolvedTopicNoticeAutoReadPolicyEnum,
         web_left_sidebar_unreads_count_summary=bool,
+        web_left_sidebar_show_channel_folders=bool,
     )
 
     modern_notification_settings = dict(

@@ -98,6 +98,14 @@
       render_only=settings_render_only.fluid_layout_width
       prefix=prefix}}
 
+    {{> settings_checkbox
+      setting_name="web_left_sidebar_show_channel_folders"
+      is_checked=settings_object.web_left_sidebar_show_channel_folders
+      label=settings_label.web_left_sidebar_show_channel_folders
+      render_only=settings_render_only.web_left_sidebar_show_channel_folders
+      help_link="/help/channel-folders"
+      prefix=prefix}}
+
     <div class="input-group">
         <label for="{{prefix}}demote_inactive_streams" class="settings-field-label">{{t "Hide inactive channels" }}
             {{> ../help_link_widget link="/help/manage-inactive-channels" }}

@@ -13879,6 +13879,14 @@ paths:
                     be hidden in all Zulip clients.
 
                     **Changes**: New in Zulip 10.0 (feature level 350).
+                web_left_sidebar_show_channel_folders:
+                  type: boolean
+                  description: |
+                    Determines whether the web/desktop application's left sidebar displays
+                    any channel folders configured by the organization.
+
+                    **Changes**: New in Zulip 11.0 (feature level 411).
+                  example: true
                 web_left_sidebar_unreads_count_summary:
                   description: |
                     Determines whether the web/desktop application's left sidebar displays
@@ -14212,6 +14220,8 @@ paths:
               web_stream_unreads_count_display_policy:
                 contentType: application/json
               hide_ai_features:
+                contentType: application/json
+              web_left_sidebar_show_channel_folders:
                 contentType: application/json
               web_left_sidebar_unreads_count_summary:
                 contentType: application/json
@@ -17380,6 +17390,13 @@ paths:
                               be hidden in all Zulip clients.
 
                               **Changes**: New in Zulip 10.0 (feature level 350).
+                          web_left_sidebar_show_channel_folders:
+                            type: boolean
+                            description: |
+                              Determines whether the web/desktop application's left sidebar displays
+                              any channel folders configured by the organization.
+
+                              **Changes**: New in Zulip 11.0 (feature level 411).
                           web_left_sidebar_unreads_count_summary:
                             type: boolean
                             description: |
@@ -20274,6 +20291,13 @@ paths:
                               be hidden in all Zulip clients.
 
                               **Changes**: New in Zulip 10.0 (feature level 350).
+                          web_left_sidebar_show_channel_folders:
+                            type: boolean
+                            description: |
+                              Determines whether the web/desktop application's left sidebar displays
+                              any channel folders configured by the organization.
+
+                              **Changes**: New in Zulip 11.0 (feature level 411).
                           web_left_sidebar_unreads_count_summary:
                             type: boolean
                             description: |
@@ -21547,6 +21571,14 @@ paths:
                     be hidden in all Zulip clients.
 
                     **Changes**: New in Zulip 10.0 (feature level 350).
+                web_left_sidebar_show_channel_folders:
+                  type: boolean
+                  description: |
+                    Determines whether the web/desktop application's left sidebar displays
+                    any channel folders configured by the organization.
+
+                    **Changes**: New in Zulip 11.0 (feature level 411).
+                  example: true
                 web_left_sidebar_unreads_count_summary:
                   description: |
                     Determines whether the web/desktop application's left sidebar displays
@@ -21967,6 +21999,8 @@ paths:
               web_stream_unreads_count_display_policy:
                 contentType: application/json
               hide_ai_features:
+                contentType: application/json
+              web_left_sidebar_show_channel_folders:
                 contentType: application/json
               web_left_sidebar_unreads_count_summary:
                 contentType: application/json

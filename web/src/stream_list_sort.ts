@@ -154,7 +154,7 @@ export function sort_groups(stream_ids: number[], search_term: string): StreamLi
             } else {
                 pinned_section.streams.push(stream_id);
             }
-        } else if (sub.folder_id) {
+        } else if (user_settings.web_left_sidebar_show_channel_folders && sub.folder_id) {
             const folder = channel_folders.get_channel_folder_by_id(sub.folder_id);
             let section = folder_sections.get(sub.folder_id);
             if (!section) {
