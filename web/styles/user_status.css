@@ -12,6 +12,7 @@
         border-color: hsl(0deg 0% 0% / 60%);
         border-radius: 5px;
         background-color: var(--color-background-input);
+        overflow: hidden;
 
         & input.user-status {
             grid-area: search-input;
@@ -36,11 +37,18 @@
             padding-left: 5px;
         }
 
+        .modal_text_input {
+            padding-left: 4px;
+        }
+
         .status-emoji-wrapper {
-            padding: 4px 8px;
-            border-right: 1px solid;
+            padding: 4px;
             border-color: hsl(0deg 0% 0% / 60%);
             cursor: pointer;
+            background-color: var(
+                --color-compose-embedded-button-background-hover
+            );
+            color: var(--color-compose-embedded-button-text-color-hover);
 
             .selected-emoji {
                 width: 1.25em; /* 20px at 16px/em */
@@ -51,6 +59,7 @@
             /* For custom emojis and smiley icon to take full width. */
             & img.selected-emoji,
             .smiley-icon {
+                color: var(--color-icon-purple);
                 text-align: center;
                 min-width: 1.25em; /* 20px at 16px/em */
             }
@@ -67,27 +76,18 @@
         padding-top: 15px;
         padding-left: 2px;
 
-        & button.user-status-value:hover,
-        & button.user-status-value:focus {
-            /* Important is required for generic night them styling to not
-               have precedence over this. */
-            color: var(--color-text-url) !important;
+        cursor: pointer;
+
+        .popover-menu-link {
+            padding-left: 0;
         }
 
-        .user-status-value {
-            display: flex;
-            align-items: center;
-            width: 100%;
-            padding: 3.5px 0;
-            line-height: 1em;
+        .user-status-text {
+            margin-left: 4px;
+        }
 
-            .status-emoji {
-                /* Size and align status emoji to match
-                   the top line of the modal. */
-                height: 1.25em; /* 20px at 16px/em */
-                width: 1.25em; /* 20px at 16px/em */
-                margin: 0 7px;
-            }
+        .emoji_alt_code {
+            margin-top: 2px;
         }
     }
 }
