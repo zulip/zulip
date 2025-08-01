@@ -632,15 +632,26 @@ def send_messages_and_update_level(
     realm.save(update_fields=["zulip_update_announcements_level"])
 
 
-def send_zulip_update_announcements(skip_delay: bool) -> None:
+def send_zulip_update_announcements(skip_delay: bool, progress: bool = False) -> None:
     latest_zulip_update_announcements_level = get_latest_zulip_update_announcements_level()
-    for realm in get_realms_behind_zulip_update_announcements_level(
+    realms = get_realms_behind_zulip_update_announcements_level(
         level=latest_zulip_update_announcements_level
-    ):
+    )
+    if len(realms) == 0:
+        return
+
+    if progress:  # nocoverage
+        print(f"Sending update announcements to {len(realms)} realms")
+    for i, realm in enumerate(realms, start=1):
         try:
             send_zulip_update_announcements_to_realm(realm, skip_delay)
         except Exception as e:  # nocoverage
             logging.exception(e)
+        finally:
+            if progress and i % 50 == 0:  # nocoverage
+                print(f"Processed {i}/{len(realms)} realms...")
+    if progress:  # nocoverage
+        print("Done!")
 
 
 def send_zulip_update_announcements_to_realm(realm: Realm, skip_delay: bool) -> None:
