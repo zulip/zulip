@@ -130,6 +130,12 @@ export function dispatch_normal_event(event) {
                         stream_list.update_streams_sidebar();
                         stream_ui_updates.update_channel_folder_name(event.channel_folder_id);
                     }
+
+                    if (event.data.is_archived !== undefined) {
+                        stream_settings_ui.reset_dropdown_set_to_archived_folder(
+                            event.channel_folder_id,
+                        );
+                    }
                     break;
                 default:
                     blueslip.error("Unexpected event type channel_folder/" + event.op);

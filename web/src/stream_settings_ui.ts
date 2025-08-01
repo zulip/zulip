@@ -264,6 +264,26 @@ export function update_channel_folder(sub: StreamSubscription, folder_id: number
     stream_list.maybe_hide_topic_bracket(section_id);
 }
 
+export function reset_dropdown_set_to_archived_folder(folder_id: number): void {
+    // This function handles the case where user is in process of changing
+    // folder for a channel or setting a folder for a new channel and the
+    // selected folder is archived by some other user.
+    if (!overlays.streams_open()) {
+        return;
+    }
+
+    if ($("#subscription_overlay .nothing-selected").css("display") !== "none") {
+        return;
+    }
+
+    const active_stream_id = stream_settings_components.get_active_data().id;
+    if (active_stream_id) {
+        stream_ui_updates.maybe_reset_channel_folder_dropdown(folder_id);
+    } else {
+        stream_create.maybe_reset_channel_folder_dropdown(folder_id);
+    }
+}
+
 export function update_subscribers_ui(sub: StreamSubscription): void {
     update_left_panel_row(sub);
     stream_edit_subscribers.update_subscribers_list(sub);

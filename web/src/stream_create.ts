@@ -714,3 +714,10 @@ export function initialize(): void {
         dialog_widget.submit_api_request(channel.patch, url, data);
     }
 }
+
+export function maybe_reset_channel_folder_dropdown(archived_folder_id: number): void {
+    assert(folder_widget !== undefined);
+    if (folder_widget.value() === archived_folder_id) {
+        folder_widget.render(settings_config.no_folder_selected);
+    }
+}
