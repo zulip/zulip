@@ -670,6 +670,7 @@ def access_requested_group_permissions(
             group_settings_map[setting_name] = access_user_group_for_setting(
                 setting_value,
                 user_profile,
+                user_profile.realm,
                 setting_name=setting_name,
                 permission_configuration=permission_configuration,
             )
