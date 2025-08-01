@@ -14,6 +14,7 @@ import * as topic_link_util from "./topic_link_util.ts";
 import * as util from "./util.ts";
 
 const MINIMUM_PASTE_SIZE_FOR_FILE_TREATMENT = 2000;
+const MINIMUM_PASTE_SIZE_TO_AVOID_DIRECT_PASTE = 5000;
 
 declare global {
     // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
@@ -640,17 +641,21 @@ function do_paste_text(
     paste_text: string,
     $textarea: JQuery<HTMLTextAreaElement>,
 ): void {
-    paste_html = maybe_transform_html(paste_html, paste_text);
-    const text = paste_handler_converter(paste_html, $textarea);
-    const trimmed_paste_text = paste_text.trim();
-    if (trimmed_paste_text !== text) {
-        // Pasting formatted text is a two-step process: First
-        // we paste unformatted text, then overwrite it with
-        // formatted text, so that undo restores the
-        // pre-formatting syntax.
-        add_text_and_select(trimmed_paste_text, $textarea);
+    if (paste_html) {
+        paste_html = maybe_transform_html(paste_html, paste_text);
+        const text = paste_handler_converter(paste_html, $textarea);
+        const trimmed_paste_text = paste_text.trim();
+        if (trimmed_paste_text !== text) {
+            // Pasting formatted text is a two-step process: First
+            // we paste unformatted text, then overwrite it with
+            // formatted text, so that undo restores the
+            // pre-formatting syntax.
+            add_text_and_select(trimmed_paste_text, $textarea);
+        }
+        compose_ui.insert_and_scroll_into_view(text, $textarea);
+    } else {
+        compose_ui.insert_and_scroll_into_view(paste_text, $textarea);
     }
-    compose_ui.insert_and_scroll_into_view(text, $textarea);
 }
 
 export function paste_handler(
@@ -669,11 +674,12 @@ export function paste_handler(
         return;
     }
 
+    let avoid_direct_paste = false;
     if (clipboardData.getData) {
         const $textarea = $(this);
         const existing_text = $textarea.val() ?? "";
         const paste_text = clipboardData.getData("text");
-        let paste_html = clipboardData.getData("text/html");
+        const paste_html = clipboardData.getData("text/html");
         // Trim the paste_text to accommodate sloppy copying
         const trimmed_paste_text = paste_text.trim();
         const pasted_text_length = paste_text.length;
@@ -683,18 +689,24 @@ export function paste_handler(
         // putting the content into the compose box.
         const is_paste_large_enough_for_file =
             pasted_text_length >= MINIMUM_PASTE_SIZE_FOR_FILE_TREATMENT;
-
+        avoid_direct_paste = pasted_text_length >= MINIMUM_PASTE_SIZE_TO_AVOID_DIRECT_PASTE;
         // If the pasted or combined text is too large, present a
         // banner offering to upload as a file.
         if (is_paste_large_enough_for_file) {
             const filename = `${$t({defaultMessage: "PastedText"})}.txt`;
             const pasted_file = create_text_file(paste_text, filename);
-            const $banner = compose_banner.show_convert_pasted_text_to_file_banner(() => {
-                // Important: This undo mechanism is only correct if
-                // the compose area hasn't changed since the banner
-                // was created.
-                $textarea.val(existing_text);
-                upload_pasted_file(this, pasted_file);
+            const $banner = compose_banner.show_convert_pasted_text_to_file_banner({
+                show_paste_button: avoid_direct_paste,
+                convert_to_file_cb: () => {
+                    // Important: This undo mechanism is only correct if
+                    // the compose area hasn't changed since the banner
+                    // was created.
+                    $textarea.val(existing_text);
+                    upload_pasted_file(this, pasted_file);
+                },
+                paste_to_compose_cb() {
+                    do_paste_text(paste_html, paste_text, $textarea);
+                },
             });
             setTimeout(() => {
                 $("textarea#compose-textarea").one("input", () => {
@@ -754,7 +766,13 @@ export function paste_handler(
             }
             event.preventDefault();
             event.stopPropagation();
-            do_paste_text(paste_html, paste_text, $textarea);
+            if (!avoid_direct_paste) {
+                do_paste_text(paste_html, paste_text, $textarea);
+            }
+        }
+        if (avoid_direct_paste) {
+            event.preventDefault();
+            event.stopPropagation();
         }
     }
 }
