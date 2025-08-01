@@ -722,8 +722,7 @@ class RequireE2EEPushNotificationsSettingTest(E2EEPushNotificationTestCase):
             self.assertEqual(mock_legacy.call_args.args[2]["content"], "New message")
 
             mock_e2ee.assert_called_once()
-            self.assertEqual(mock_e2ee.call_args.args[1]["alert"]["body"], "not-redacted")
-            self.assertEqual(mock_e2ee.call_args.args[2]["content"], "not-redacted")
+            self.assertEqual(mock_e2ee.call_args.args[1]["content"], "not-redacted")
 
         message_id = self.send_personal_message(
             from_user=aaron, to_user=hamlet, skip_capture_on_commit_callbacks=True

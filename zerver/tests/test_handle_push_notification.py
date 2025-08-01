@@ -637,8 +637,6 @@ class HandlePushNotificationTest(PushNotificationTestCase):
                     "badge": 0,
                     "custom": {
                         "zulip": {
-                            "server": "testserver",
-                            "realm_id": self.sender.realm.id,
                             "realm_name": self.sender.realm.name,
                             "realm_uri": "http://zulip.testserver",
                             "realm_url": "http://zulip.testserver",
@@ -657,7 +655,6 @@ class HandlePushNotificationTest(PushNotificationTestCase):
                     "user_id": self.user_profile.id,
                     "event": "remove",
                     "zulip_message_ids": str(message.id),
-                    "zulip_message_id": message.id,
                 },
                 {"priority": "normal"},
                 list(
@@ -726,7 +723,6 @@ class HandlePushNotificationTest(PushNotificationTestCase):
                     "user_id": self.user_profile.id,
                     "event": "remove",
                     "zulip_message_ids": str(message.id),
-                    "zulip_message_id": message.id,
                 },
                 {"priority": "normal"},
             )
@@ -737,8 +733,6 @@ class HandlePushNotificationTest(PushNotificationTestCase):
                     "badge": 0,
                     "custom": {
                         "zulip": {
-                            "server": "testserver",
-                            "realm_id": self.sender.realm.id,
                             "realm_name": self.sender.realm.name,
                             "realm_uri": "http://zulip.testserver",
                             "realm_url": "http://zulip.testserver",

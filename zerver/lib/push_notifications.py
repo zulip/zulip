@@ -962,19 +962,28 @@ def truncate_content(content: str) -> tuple[str, bool]:
     return content[:200] + "…", True
 
 
-def get_base_payload(user_profile: UserProfile) -> dict[str, Any]:
+def get_base_payload(user_profile: UserProfile, for_legacy_clients: bool = True) -> dict[str, Any]:
     """Common fields for all notification payloads."""
     data: dict[str, Any] = {}
 
     # These will let the app support logging into multiple realms and servers.
-    data["server"] = settings.EXTERNAL_HOST
-    data["realm_id"] = user_profile.realm.id
-    data["realm_uri"] = user_profile.realm.url
+    if for_legacy_clients:
+        data["server"] = settings.EXTERNAL_HOST
+        data["realm_id"] = user_profile.realm.id
+        data["realm_uri"] = user_profile.realm.url
     data["realm_url"] = user_profile.realm.url
     data["realm_name"] = user_profile.realm.name
     data["user_id"] = user_profile.id
 
     return data
+
+
+def remove_obsolete_fields_apns(payload: dict[str, Any]) -> None:
+    # These fields are not used by iOS clients. The legacy
+    # app requires these in FCM messages, even though we don't
+    # end up doing anything with them.
+    payload.pop("server")
+    payload.pop("realm_id")
 
 
 def get_message_payload(
@@ -983,22 +992,25 @@ def get_message_payload(
     mentioned_user_group_id: int | None = None,
     mentioned_user_group_name: str | None = None,
     can_access_sender: bool = True,
+    for_legacy_clients: bool = True,
 ) -> dict[str, Any]:
     """Common fields for `message` payloads, for all platforms."""
-    data = get_base_payload(user_profile)
+    data = get_base_payload(user_profile, for_legacy_clients)
 
     # `sender_id` is preferred, but some existing versions use `sender_email`.
     data["sender_id"] = message.sender.id
-    if not can_access_sender:
-        # A guest user can only receive a stream message from an
-        # inaccessible user as we allow unsubscribed users to send
-        # messages to streams. For direct messages, the guest gains
-        # access to the user if they where previously inaccessible.
-        data["sender_email"] = Address(
-            username=f"user{message.sender.id}", domain=get_fake_email_domain(message.realm.host)
-        ).addr_spec
-    else:
-        data["sender_email"] = message.sender.email
+    if for_legacy_clients:
+        if not can_access_sender:
+            # A guest user can only receive a stream message from an
+            # inaccessible user as we allow unsubscribed users to send
+            # messages to streams. For direct messages, the guest gains
+            # access to the user if they where previously inaccessible.
+            data["sender_email"] = Address(
+                username=f"user{message.sender.id}",
+                domain=get_fake_email_domain(message.realm.host),
+            ).addr_spec
+        else:
+            data["sender_email"] = message.sender.email
 
     if mentioned_user_group_id is not None:
         assert mentioned_user_group_name is not None
@@ -1127,6 +1139,7 @@ def get_message_payload_apns(
     zulip_data.update(
         message_ids=[message.id],
     )
+    remove_obsolete_fields_apns(zulip_data)
 
     assert message.rendered_content is not None
     with override_language(user_profile.default_language):
@@ -1152,10 +1165,16 @@ def get_message_payload_gcm(
     mentioned_user_group_id: int | None = None,
     mentioned_user_group_name: str | None = None,
     can_access_sender: bool = True,
+    for_legacy_clients: bool = True,
 ) -> tuple[dict[str, Any], dict[str, Any]]:
     """A `message` payload + options, for Android via FCM."""
     data = get_message_payload(
-        user_profile, message, mentioned_user_group_id, mentioned_user_group_name, can_access_sender
+        user_profile,
+        message,
+        mentioned_user_group_id,
+        mentioned_user_group_name,
+        can_access_sender,
+        for_legacy_clients,
     )
 
     if not can_access_sender:
@@ -1185,18 +1204,34 @@ def get_message_payload_gcm(
     return data, gcm_options
 
 
+def get_payload_data_to_encrypt(
+    user_profile: UserProfile,
+    message: Message,
+    mentioned_user_group_id: int | None = None,
+    mentioned_user_group_name: str | None = None,
+    can_access_sender: bool = True,
+) -> dict[str, Any]:
+    payload_data_to_encrypt, unused = get_message_payload_gcm(
+        user_profile,
+        message,
+        mentioned_user_group_id,
+        mentioned_user_group_name,
+        can_access_sender,
+        for_legacy_clients=False,
+    )
+    return payload_data_to_encrypt
+
+
 def get_remove_payload_gcm(
     user_profile: UserProfile,
     message_ids: list[int],
+    for_legacy_clients: bool = True,
 ) -> tuple[dict[str, Any], dict[str, Any]]:
     """A `remove` payload + options, for Android via FCM."""
-    gcm_payload = get_base_payload(user_profile)
+    gcm_payload = get_base_payload(user_profile, for_legacy_clients)
     gcm_payload.update(
         event="remove",
         zulip_message_ids=",".join(str(id) for id in message_ids),
-        # Older clients (all clients older than 2019-02-13) look only at
-        # `zulip_message_id` and ignore `zulip_message_ids`.  Do our best.
-        zulip_message_id=message_ids[0],
     )
     gcm_options = {"priority": "normal"}
     return gcm_payload, gcm_options
@@ -1208,11 +1243,22 @@ def get_remove_payload_apns(user_profile: UserProfile, message_ids: list[int]) -
         event="remove",
         zulip_message_ids=",".join(str(id) for id in message_ids),
     )
+    remove_obsolete_fields_apns(zulip_data)
     apns_data = {
         "badge": get_apns_badge_count(user_profile, message_ids),
         "custom": {"zulip": zulip_data},
     }
     return apns_data
+
+
+def get_remove_payload_data_to_encrypt(
+    user_profile: UserProfile,
+    message_ids: list[int],
+) -> dict[str, Any]:
+    payload_data_to_encrypt, unused = get_remove_payload_gcm(
+        user_profile, message_ids, for_legacy_clients=False
+    )
+    return payload_data_to_encrypt
 
 
 def handle_remove_push_notification(user_profile_id: int, message_ids: list[int]) -> None:
@@ -1257,12 +1303,15 @@ def handle_remove_push_notification(user_profile_id: int, message_ids: list[int]
     truncated_message_ids = sorted(message_ids)[-MAX_APNS_MESSAGE_IDS:]
     gcm_payload, gcm_options = get_remove_payload_gcm(user_profile, truncated_message_ids)
     apns_payload = get_remove_payload_apns(user_profile, truncated_message_ids)
+    payload_data_to_encrypt = get_remove_payload_data_to_encrypt(
+        user_profile, truncated_message_ids
+    )
 
     # We need to call both the legacy/non-E2EE and E2EE functions
     # for sending mobile notifications, since we don't at this time
     # know which mobile app version the user may be using.
     send_push_notifications_legacy(user_profile, apns_payload, gcm_payload, gcm_options)
-    send_push_notifications(user_profile, apns_payload, gcm_payload, is_removal=True)
+    send_push_notifications(user_profile, payload_data_to_encrypt, is_removal=True)
 
     # We intentionally use the non-truncated message_ids here.  We are
     # assuming in this very rare case that the user has manually
@@ -1396,8 +1445,7 @@ def get_encrypted_data(payload_data_to_encrypt: dict[str, Any], public_key_str: 
 
 def send_push_notifications(
     user_profile: UserProfile,
-    apns_payload_data_to_encrypt: dict[str, Any],
-    fcm_payload_data_to_encrypt: dict[str, Any],
+    payload_data_to_encrypt: dict[str, Any],
     is_removal: bool = False,
 ) -> None:
     # Uses 'zerver_pushdevice_user_bouncer_device_id_idx' index.
@@ -1420,14 +1468,11 @@ def send_push_notifications(
     push_requests: list[FCMPushRequest | APNsPushRequest] = []
     for push_device in push_devices:
         assert push_device.bouncer_device_id is not None  # for mypy
+        encrypted_data = get_encrypted_data(payload_data_to_encrypt, push_device.push_public_key)
         if push_device.token_kind == PushDevice.TokenKind.APNS:
             apns_http_headers = APNsHTTPHeaders(
                 apns_priority=apns_priority,
                 apns_push_type=apns_push_type,
-            )
-            encrypted_data = get_encrypted_data(
-                apns_payload_data_to_encrypt,
-                push_device.push_public_key,
             )
             apns_payload = APNsPayload(
                 push_account_id=push_device.push_account_id,
@@ -1440,10 +1485,6 @@ def send_push_notifications(
             )
             push_requests.append(apns_push_request)
         else:
-            encrypted_data = get_encrypted_data(
-                fcm_payload_data_to_encrypt,
-                push_device.push_public_key,
-            )
             fcm_payload = PushRequestBasePayload(
                 push_account_id=push_device.push_account_id,
                 encrypted_data=encrypted_data,
@@ -1661,13 +1702,16 @@ def handle_push_notification(user_profile_id: int, missed_message: dict[str, Any
     gcm_payload, gcm_options = get_message_payload_gcm(
         user_profile, message, mentioned_user_group_id, mentioned_user_group_name, can_access_sender
     )
+    payload_data_to_encrypt = get_payload_data_to_encrypt(
+        user_profile, message, mentioned_user_group_id, mentioned_user_group_name, can_access_sender
+    )
     logger.info("Sending push notifications to mobile clients for user %s", user_profile_id)
 
     # We need to call both the legacy/non-E2EE and E2EE functions
     # for sending mobile notifications, since we don't at this time
     # know which mobile app version the user may be using.
     send_push_notifications_legacy(user_profile, apns_payload, gcm_payload, gcm_options)
-    send_push_notifications(user_profile, apns_payload, gcm_payload)
+    send_push_notifications(user_profile, payload_data_to_encrypt)
 
 
 def send_test_push_notification_directly_to_devices(
