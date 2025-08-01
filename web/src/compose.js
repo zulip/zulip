@@ -215,7 +215,7 @@ export let send_message = (request = create_message_object()) => {
         send_message_success(request, data);
     }
 
-    function error(response, server_error_code) {
+    function error(response, server_error_code, server_data) {
         // Error callback for failed message send attempts.
         if (!locally_echoed) {
             if (server_error_code === "TOPIC_WILDCARD_MENTION_NOT_ALLOWED") {
@@ -227,6 +227,12 @@ export let send_message = (request = create_message_object()) => {
                 });
                 compose_banner.append_compose_banner_to_banner_list(
                     $(new_row_html),
+                    $("#compose_banners"),
+                );
+            } else if (server_error_code === "USER_GROUP_MENTION_NOT_ALLOWED") {
+                const group_name = server_data.user_group_name;
+                compose_banner.show_user_group_mention_not_allowed_error(
+                    group_name,
                     $("#compose_banners"),
                 );
             } else {
