@@ -2,6 +2,7 @@ import cProfile
 import logging
 import tempfile
 import time
+import uuid
 from collections.abc import Callable, MutableMapping
 from typing import Annotated, Any, Concatenate
 from urllib.parse import urlencode, urljoin
@@ -29,13 +30,20 @@ from zerver.actions.message_summary import get_ai_requests, get_ai_time
 from zerver.lib.cache import get_remote_cache_requests, get_remote_cache_time
 from zerver.lib.db_connections import reset_queries
 from zerver.lib.debug import maybe_tracemalloc_listen
-from zerver.lib.exceptions import ErrorCode, JsonableError, MissingAuthenticationError, WebhookError
+from zerver.lib.exceptions import (
+    ErrorCode,
+    InvalidIdempotencyKeyError,
+    JsonableError,
+    MissingAuthenticationError,
+    WebhookError,
+)
 from zerver.lib.markdown import get_markdown_requests, get_markdown_time
 from zerver.lib.per_request_cache import flush_per_request_caches
 from zerver.lib.rate_limiter import RateLimitResult
 from zerver.lib.request import RequestNotes
 from zerver.lib.response import (
     AsynchronousResponse,
+    MutableJsonResponse,
     json_response,
     json_response_from_error,
     json_unauthorized,
@@ -748,5 +756,20 @@ class ZulipSCIMAuthCheckMiddleware(SCIMAuthCheckMiddleware):
             response = HttpResponse(status=401)
             response["WWW-Authenticate"] = scim_settings.WWW_AUTHENTICATE_HEADER
             return response
+
+        return None
+
+
+# We can also convert this middleware
+# into a generic one to validate other headers as well.
+class ValidateIdempotencyKeyHeader(MiddlewareMixin):
+    def process_request(self, request: HttpRequest) -> MutableJsonResponse | None:
+        client_idempotency_key = request.headers.get("Idempotency-Key")
+        if client_idempotency_key is not None:
+            try:
+                uuid.UUID(client_idempotency_key)
+                # TODO: We can also enforce version 4, if we want.
+            except ValueError:
+                return json_response_from_error(InvalidIdempotencyKeyError(client_idempotency_key))
 
         return None

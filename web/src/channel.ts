@@ -22,6 +22,14 @@ type AjaxRequestHandlerOptions = Omit<JQuery.AjaxSettings, "success"> & {
           ) => void)
         | undefined;
     error?: JQuery.Ajax.ErrorCallback<unknown>;
+    idempotencyKeyManager?: IdempotencyKeyManager;
+};
+
+// A generic idempotency manager for any future request we want to make it idempotent.
+// Passed as HTTP header (if defined) to $.ajax().
+// In future, we can add success() and error(), so we can handle each case separately.
+type IdempotencyKeyManager = {
+    getKey: () => string | undefined;
 };
 
 export type AjaxRequestHandler = typeof call;
@@ -166,6 +174,14 @@ function call_in_span(
 
         orig_success(data, textStatus, jqXHR);
     };
+
+    const idempotency_key = args.idempotencyKeyManager?.getKey();
+    if (idempotency_key !== undefined) {
+        args.headers = {
+            ...args.headers, // Preserve any existing headers.
+            "Idempotency-Key": idempotency_key,
+        };
+    }
 
     return $.ajax(args);
 }
