@@ -88,7 +88,7 @@
 
 .messagebox-content {
     display: grid;
-    align-items: baseline;
+    align-content: baseline;
     padding-left: 10px;
     /* Prevent the message column from overflowing the 1fr
        space allotted by specifying `minmax(0,1fr)`, which
@@ -125,10 +125,12 @@
 
     .message_edit_notice {
         grid-area: edited;
+        align-self: center;
     }
 
     .edit-notifications {
         grid-area: edited;
+        align-self: center;
     }
 
     .slow-send-spinner {
@@ -289,6 +291,10 @@
                     --message-box-avatar-height
                 )
                 minmax(0, auto) repeat(3, auto);
+            /* We align items to the baseline on me messages,
+               and unset the align-content property. */
+            align-items: baseline;
+            align-content: unset;
 
             .message-avatar {
                 /* Set the line-height to match the height of the avatar image
@@ -312,6 +318,11 @@
                    available grid row height on me-messages, we
                    align to center here. */
                 align-self: center;
+            }
+
+            .message_edit_notice {
+                /* Unset the margin on a typical sender line. */
+                margin-left: 0;
             }
 
             .message_sender {
@@ -400,8 +411,9 @@
             vertical-align: baseline;
             /* A bit of margin here helps these not look associated with the name. */
             margin-left: 4px;
-            /* Unset the padding used on edited notices under the avatar. */
+            /* Unset the padding, align-self used on edited notices under the avatar. */
             padding-right: 0;
+            align-self: unset;
 
             &.hide {
                 display: none;
