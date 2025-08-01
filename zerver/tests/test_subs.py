@@ -5147,3 +5147,104 @@ class NoRecipientIDsTest(ZulipTestCase):
         #
         # This covers a rare corner case.
         self.assert_length(subs, 0)
+
+    def test_private_channel_join_leave_notifications(self) -> None:
+        """Test that join/leave notifications are sent for private channels only."""
+        realm = get_realm("zulip")
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+        othello = self.example_user("othello")
+
+        # Create a private stream
+        private_stream = ensure_stream(realm, "private_test", invite_only=True, acting_user=hamlet)
+
+        # Create a public stream for comparison
+        public_stream = ensure_stream(realm, "public_test", invite_only=False, acting_user=hamlet)
+
+        # Subscribe hamlet to both streams first
+        bulk_add_subscriptions(realm, [private_stream, public_stream], [hamlet], acting_user=None)
+
+        # Test 1: Adding user to private stream should send notification
+        with self.capture_send_event_calls() as events:
+            bulk_add_subscriptions(realm, [private_stream], [cordelia], acting_user=hamlet)
+
+        # Check that a message was sent to the private stream
+        messages = Message.objects.filter(
+            recipient__type=Recipient.STREAM,
+            recipient__type_id=private_stream.id,
+            topic_name="channel events"
+        ).order_by('-id')
+
+        self.assertTrue(messages.exists())
+        latest_message = messages.first()
+        self.assertIn("added", latest_message.content)
+        self.assertIn("cordelia", latest_message.content)
+        self.assertIn("hamlet", latest_message.content)
+
+        # Test 2: Adding user to public stream should NOT send notification
+        message_count_before = Message.objects.filter(
+            recipient__type=Recipient.STREAM,
+            recipient__type_id=public_stream.id,
+            topic_name="channel events"
+        ).count()
+
+        bulk_add_subscriptions(realm, [public_stream], [cordelia], acting_user=hamlet)
+
+        message_count_after = Message.objects.filter(
+            recipient__type=Recipient.STREAM,
+            recipient__type_id=public_stream.id,
+            topic_name="channel events"
+        ).count()
+
+        # No new messages should be added for public stream
+        self.assertEqual(message_count_before, message_count_after)
+
+        # Test 3: User leaving private stream should send notification
+        bulk_remove_subscriptions(realm, [cordelia], [private_stream], acting_user=None)
+
+        # Check that a leave message was sent
+        messages = Message.objects.filter(
+            recipient__type=Recipient.STREAM,
+            recipient__type_id=private_stream.id,
+            topic_name="channel events"
+        ).order_by('-id')
+
+        latest_message = messages.first()
+        self.assertIn("left this channel", latest_message.content)
+        self.assertIn("cordelia", latest_message.content)
+
+        # Test 4: User leaving public stream should NOT send notification
+        message_count_before = Message.objects.filter(
+            recipient__type=Recipient.STREAM,
+            recipient__type_id=public_stream.id,
+            topic_name="channel events"
+        ).count()
+
+        bulk_remove_subscriptions(realm, [cordelia], [public_stream], acting_user=None)
+
+        message_count_after = Message.objects.filter(
+            recipient__type=Recipient.STREAM,
+            recipient__type_id=public_stream.id,
+            topic_name="channel events"
+        ).count()
+
+        # No new messages should be added for public stream
+        self.assertEqual(message_count_before, message_count_after)
+
+        # Test 5: User adding themselves should not send notification
+        message_count_before = Message.objects.filter(
+            recipient__type=Recipient.STREAM,
+            recipient__type_id=private_stream.id,
+            topic_name="channel events"
+        ).count()
+
+        bulk_add_subscriptions(realm, [private_stream], [othello], acting_user=othello)
+
+        message_count_after = Message.objects.filter(
+            recipient__type=Recipient.STREAM,
+            recipient__type_id=private_stream.id,
+            topic_name="channel events"
+        ).count()
+
+        # No new messages should be added when user adds themselves
+        self.assertEqual(message_count_before, message_count_after)

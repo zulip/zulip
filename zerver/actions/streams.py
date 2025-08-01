@@ -921,6 +921,23 @@ def bulk_add_subscriptions(
         subscriber_peer_info=subscriber_peer_info,
     )
 
+    # Send join notifications for private channels
+    if not from_user_creation:
+        for stream in streams:
+            if stream.invite_only:  # Only for private channels
+                # Get users who were actually added to this stream
+                added_users = []
+                for sub_info in subs_to_add + subs_to_activate:
+                    if sub_info.stream.id == stream.id:
+                        added_users.append(sub_info.user)
+
+                send_private_channel_join_notifications(
+                    realm=realm,
+                    stream=stream,
+                    added_users=added_users,
+                    acting_user=acting_user,
+                )
+
     return (
         subs_to_add + subs_to_activate,
         already_subscribed,
@@ -1064,6 +1081,90 @@ def send_user_remove_events_on_removing_subscriptions(
                 send_event_on_commit(realm, event_remove_user, [user.id])
 
 
+def send_private_channel_join_notifications(
+    realm: Realm,
+    stream: Stream,
+    added_users: list[UserProfile],
+    *,
+    acting_user: UserProfile | None,
+) -> None:
+    """Send join notifications for private channels only."""
+    if not stream.invite_only:
+        # Only send notifications for private channels
+        return
+
+    if not added_users:
+        return
+
+    # Don't send notifications if this is from user creation
+    # (handled by checking if acting_user exists)
+    if acting_user is None:
+        return
+
+    from zerver.models import get_system_bot
+
+    sender = get_system_bot(settings.NOTIFICATION_BOT, realm.id)
+
+    with override_language(realm.default_language):
+        for added_user in added_users:
+            # Don't send notification if user added themselves
+            if added_user.id == acting_user.id:
+                continue
+
+            # Don't send notification to bots
+            if added_user.is_bot:
+                continue
+
+            content = _("{acting_user} added {added_user} to this channel.").format(
+                acting_user=silent_mention_syntax_for_user(acting_user),
+                added_user=silent_mention_syntax_for_user(added_user),
+            )
+
+            internal_send_stream_message(
+                sender,
+                stream,
+                channel_events_topic_name(stream),
+                content,
+                archived_channel_notice=stream.deactivated,
+            )
+
+
+def send_private_channel_leave_notifications(
+    realm: Realm,
+    stream: Stream,
+    removed_users: list[UserProfile],
+) -> None:
+    """Send leave notifications for private channels only."""
+    if not stream.invite_only:
+        # Only send notifications for private channels
+        return
+
+    if not removed_users:
+        return
+
+    from zerver.models import get_system_bot
+
+    sender = get_system_bot(settings.NOTIFICATION_BOT, realm.id)
+
+    with override_language(realm.default_language):
+        for removed_user in removed_users:
+            # Don't send notification to bots
+            if removed_user.is_bot:
+                continue
+
+            content = _("{user} left this channel.").format(
+                user=silent_mention_syntax_for_user(removed_user),
+            )
+
+            internal_send_stream_message(
+                sender,
+                stream,
+                channel_events_topic_name(stream),
+                content,
+                archived_channel_notice=stream.deactivated,
+            )
+
+
 def bulk_remove_subscriptions(
     realm: Realm,
     users: Iterable[UserProfile],
@@ -1156,6 +1257,21 @@ def bulk_remove_subscriptions(
         for user, stream in removed_sub_tuples:
             altered_user_dict[user].add(stream.id)
         send_user_remove_events_on_removing_subscriptions(realm, altered_user_dict)
+
+    # Send leave notifications for private channels
+    for stream in streams:
+        if stream.invite_only:  # Only for private channels
+            # Get users who were actually removed from this stream
+            removed_users = []
+            for user, removed_stream in removed_sub_tuples:
+                if removed_stream.id == stream.id:
+                    removed_users.append(user)
+
+            send_private_channel_leave_notifications(
+                realm=realm,
+                stream=stream,
+                removed_users=removed_users,
+            )
 
     return (
         removed_sub_tuples,
