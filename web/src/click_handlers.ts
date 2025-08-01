@@ -439,6 +439,9 @@ export function initialize(): void {
             return;
         }
         e.preventDefault();
+        if (document.getSelection()?.type === "Range") {
+            return;
+        }
         const row_id = get_row_id_for_narrowing(this);
         message_view.narrow_by_topic(row_id, {trigger: "message header"});
     });
@@ -460,6 +463,10 @@ export function initialize(): void {
             return;
         }
         if ($(e.target).parents(".user-profile-picture").length === 1) {
+            return;
+        }
+        if (document.getSelection()?.type === "Range") {
+            e.preventDefault();
             return;
         }
 
@@ -931,6 +938,10 @@ export function initialize(): void {
                 $(e.target).closest("a").length > 0 ||
                 $(e.target).closest(".copy_codeblock").length > 0
             ) {
+                if (document.getSelection()?.type === "Range") {
+                    e.preventDefault();
+                    return;
+                }
                 // Refocus compose message text box if one clicks an external
                 // link/url to view something else while composing a message.
                 // See issue #4331 for more details.
