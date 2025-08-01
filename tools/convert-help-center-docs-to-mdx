@@ -67,7 +67,7 @@ def replace_setting_links(
             f'import NavigationSteps from "{import_relative_base_path}/NavigationSteps.astro"'
         )
         setting_identifier = match.group("setting_identifier")
-        return f'<NavigationSteps identifier="settings/{setting_identifier}" />'
+        return f'<NavigationSteps target="settings/{setting_identifier}" />'
 
     return setting_links_pattern.sub(replace_setting_links_match, markdown_string)
 
@@ -81,7 +81,7 @@ def replace_relative_links(
         )
         link_type = match.group("link_type")
         key = match.group("key")
-        return f'<NavigationSteps identifier="relative/{link_type}/{key}" />'
+        return f'<NavigationSteps target="relative/{link_type}/{key}" />'
 
     return RELATIVE_LINKS_PATTERN.sub(replace_relative_links_match, markdown_string)
 
