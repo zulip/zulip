@@ -106,6 +106,7 @@ from zerver.tornado.django_api import send_event_on_commit
 class UpdateMessageResult:
     changed_message_count: int
     detached_uploads: list[dict[str, Any]]
+    notification_message_ids: list[int]
 
 
 def subscriber_info(user_id: int) -> dict[str, Any]:
@@ -320,7 +321,7 @@ def send_message_moved_breadcrumbs(
     old_thread_notification_string: StrPromise | None,
     new_thread_notification_string: StrPromise | None,
     changed_messages_count: int,
-) -> None:
+) -> list[int]:
     # Since moving content between streams is highly disruptive,
     # it's worth adding a couple tombstone messages showing what
     # happened.
@@ -340,10 +341,11 @@ def send_message_moved_breadcrumbs(
         "topic": new_topic_name,
     }
     moved_message_link = stream_message_url(target_message.realm, message)
+    notification_message_ids = []
 
     if new_thread_notification_string is not None:
         with override_language(new_stream.realm.default_language):
-            internal_send_stream_message(
+            message_id = internal_send_stream_message(
                 sender,
                 new_stream,
                 new_topic_name,
@@ -355,11 +357,13 @@ def send_message_moved_breadcrumbs(
                 ),
                 acting_user=user_profile,
             )
+            if message_id is not None:
+                notification_message_ids.append(message_id)
 
     if old_thread_notification_string is not None:
         with override_language(old_stream.realm.default_language):
             # Send a notification to the old stream that the topic was moved.
-            internal_send_stream_message(
+            message_id = internal_send_stream_message(
                 sender,
                 old_stream,
                 old_topic_name,
@@ -370,6 +374,10 @@ def send_message_moved_breadcrumbs(
                 ),
                 acting_user=user_profile,
             )
+            if message_id is not None:
+                notification_message_ids.append(message_id)
+
+    return notification_message_ids
 
 
 def get_mentions_for_message_updates(message: Message) -> set[int]:
@@ -729,7 +737,7 @@ def do_update_message(
 
             changed_messages_count = 1
             return UpdateMessageResult(
-                changed_messages_count, attachment_reference_change.detached_attachments
+                changed_messages_count, attachment_reference_change.detached_attachments, []
             )
 
     assert isinstance(message_edit_request, StreamMessageEditRequest)
@@ -1257,6 +1265,8 @@ def do_update_message(
             )
         )
 
+    notification_message_ids = []
+
     if message_edit_request.is_message_moved:
         # Notify users that the topic was moved.
         old_thread_notification_string = None
@@ -1322,7 +1332,7 @@ def do_update_message(
                         "{changed_messages_count} messages were moved here from {old_location} by {user}."
                     )
 
-        send_message_moved_breadcrumbs(
+        notification_message_ids = send_message_moved_breadcrumbs(
             target_message,
             user_profile,
             message_edit_request,
@@ -1332,7 +1342,9 @@ def do_update_message(
         )
 
     return UpdateMessageResult(
-        changed_messages_count, attachment_reference_change.detached_attachments
+        changed_messages_count,
+        attachment_reference_change.detached_attachments,
+        notification_message_ids,
     )
 
 

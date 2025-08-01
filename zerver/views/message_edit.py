@@ -11,6 +11,7 @@ from pydantic import Json, NonNegativeInt
 
 from zerver.actions.message_delete import do_delete_messages
 from zerver.actions.message_edit import check_update_message
+from zerver.actions.message_flags import do_update_message_flags
 from zerver.context_processors import get_valid_realm_from_request
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.html_diff import highlight_html_differences
@@ -171,6 +172,10 @@ def update_message_backend(
         content,
         prev_content_sha256,
     )
+
+    notification_message_ids = updated_message_result.notification_message_ids
+    if notification_message_ids:
+        do_update_message_flags(user_profile, "add", "read", notification_message_ids)
 
     # Include the number of messages changed in the logs
     log_data = RequestNotes.get_notes(request).log_data
