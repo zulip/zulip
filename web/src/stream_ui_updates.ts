@@ -648,3 +648,13 @@ export function update_channel_folder_name(folder_id: number): void {
 
     settings_components.set_channel_folder_dropdown_value(sub);
 }
+
+export function maybe_reset_channel_folder_dropdown(archived_folder_id: number): void {
+    const $elem = $("#id_folder_id");
+    const selected_value = settings_components.get_channel_folder_value_from_dropdown_widget($elem);
+    if (selected_value === archived_folder_id) {
+        const active_stream_id = stream_settings_components.get_active_data().id;
+        const sub = sub_store.get(active_stream_id)!;
+        update_setting_element(sub, "folder_id");
+    }
+}
