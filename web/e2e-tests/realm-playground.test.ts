@@ -45,7 +45,7 @@ async function _add_playground_and_return_status(page: Page, payload: Playground
 
 async function test_successful_playground_creation(page: Page): Promise<void> {
     const payload = {
-        pygments_language: "Python",
+        pygments_language: "python",
         playground_name: "Python3 playground",
         url_template: "https://python.example.com?code={code}",
     };
@@ -57,7 +57,7 @@ async function test_successful_playground_creation(page: Page): Promise<void> {
             page,
             ".playground_row span.playground_pygments_language",
         ),
-        "Python",
+        "python",
     );
     assert.strictEqual(
         await common.get_text_from_selector(page, ".playground_row span.playground_name"),
@@ -71,7 +71,7 @@ async function test_successful_playground_creation(page: Page): Promise<void> {
 
 async function test_invalid_playground_parameters(page: Page): Promise<void> {
     const payload = {
-        pygments_language: "Python",
+        pygments_language: "python",
         playground_name: "Python3 playground",
         url_template: "not_a_url_template{",
     };
