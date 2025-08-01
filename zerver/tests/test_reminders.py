@@ -3,6 +3,7 @@ import time
 from typing import TYPE_CHECKING
 
 import time_machine
+from django.conf import settings
 
 from zerver.actions.scheduled_messages import try_deliver_one_scheduled_message
 from zerver.lib.test_classes import ZulipTestCase
@@ -18,13 +19,16 @@ class RemindersTest(ZulipTestCase):
         self,
         message_id: int,
         scheduled_delivery_timestamp: int,
+        note_text: str | None = None,
     ) -> "TestHttpResponse":
         self.login("hamlet")
 
-        payload = {
+        payload: dict[str, int | str] = {
             "message_id": message_id,
             "scheduled_delivery_timestamp": scheduled_delivery_timestamp,
         }
+        if note_text is not None:
+            payload["note_text"] = note_text
 
         result = self.client_post("/json/reminders", payload)
         return result
@@ -128,6 +132,20 @@ class RemindersTest(ZulipTestCase):
 
         result = self.do_schedule_reminder(123456789, scheduled_delivery_timestamp)
         self.assert_json_error(result, "Invalid message(s)")
+
+    def test_schedule_reminder_note_exceeds_max_length(self) -> None:
+        self.login("hamlet")
+        scheduled_delivery_timestamp = int(time.time() + 86400)
+        note_text = "x" * (settings.MAX_REMINDER_NOTE_LENGTH + 1)
+        message_id = self.send_channel_message_for_hamlet("Test message")
+        result = self.do_schedule_reminder(
+            message_id, scheduled_delivery_timestamp, note_text=note_text
+        )
+        self.assert_json_error(
+            result,
+            f"Maximum reminder note length: {settings.MAX_REMINDER_NOTE_LENGTH} characters",
+            status_code=400,
+        )
 
     def test_successful_deliver_direct_message_reminder(self) -> None:
         # No scheduled message
@@ -414,3 +432,28 @@ class RemindersTest(ZulipTestCase):
                 f"@_**King Hamlet|10** [sent](http://zulip.testserver/#narrow/dm/10,12/near/{reminder.reminder_target_message_id}) a todo list.",
             )
             self.assertEqual(delivered_message.date_sent, more_than_scheduled_delivery_datetime)
+
+    def test_notes_in_reminder(self) -> None:
+        content = "Test message with notes"
+        note_text = "This is a note for the reminder."
+        scheduled_delivery_timestamp = int(time.time() + 86400)
+
+        message_id = self.send_channel_message_for_hamlet(content)
+        result = self.do_schedule_reminder(message_id, scheduled_delivery_timestamp, note_text)
+        self.assert_json_success(result)
+        scheduled_message = self.last_scheduled_reminder()
+        self.assertEqual(
+            scheduled_message.content,
+            f"You requested a reminder for #**Verona>test@{message_id}**. Note:\n > {note_text}\n\n"
+            f"@_**King Hamlet|10** [said](http://zulip.testserver/#narrow/channel/3-Verona/topic/test/near/{message_id}):\n```quote\n{content}\n```",
+        )
+
+        message_id = self.send_dm_from_hamlet_to_othello(content)
+        result = self.do_schedule_reminder(message_id, scheduled_delivery_timestamp, note_text)
+        self.assert_json_success(result)
+        scheduled_message = self.last_scheduled_reminder()
+        self.assertEqual(
+            scheduled_message.content,
+            f"You requested a reminder for the following direct message. Note:\n > {note_text}\n\n"
+            f"@_**King Hamlet|10** [said](http://zulip.testserver/#narrow/dm/10,12/near/{message_id}):\n```quote\n{content}\n```",
+        )
