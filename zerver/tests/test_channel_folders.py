@@ -2,7 +2,7 @@ from typing import Any
 
 import orjson
 
-from zerver.actions.channel_folders import check_add_channel_folder
+from zerver.actions.channel_folders import check_add_channel_folder, do_archive_channel_folder
 from zerver.actions.streams import do_change_stream_folder, do_deactivate_stream
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import ChannelFolder
@@ -40,6 +40,14 @@ class ChannelFolderCreationTest(ZulipTestCase):
 
         result = self.client_post("/json/channel_folders/create", params)
         self.assert_json_error(result, "Channel folder name already in use")
+
+        # Archived folder names can be reused.
+        folder = ChannelFolder.objects.get(name="Frontend", realm=realm)
+        do_archive_channel_folder(folder, acting_user=self.example_user("iago"))
+
+        result = self.client_post("/json/channel_folders/create", params)
+        self.assert_json_success(result)
+        self.assertTrue(ChannelFolder.objects.filter(realm=realm, name="Frontend").exists())
 
         # Folder names should be unique case-insensitively.
         params["name"] = "frontEND"

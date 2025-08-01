@@ -1,26 +1,35 @@
 import $ from "jquery";
 import * as z from "zod/mini";
 
+import render_confirm_archive_channel_folder from "../templates/confirm_dialog/confirm_archive_channel_folder.hbs";
 import render_unsubscribe_private_stream_modal from "../templates/confirm_dialog/confirm_unsubscribe_private_stream.hbs";
 import render_inline_decorated_channel_name from "../templates/inline_decorated_channel_name.hbs";
+import render_edit_channel_folder_modal from "../templates/stream_settings/edit_channel_folder_modal.hbs";
 import render_selected_stream_title from "../templates/stream_settings/selected_stream_title.hbs";
 
 import * as channel from "./channel.ts";
+import * as channel_folders from "./channel_folders.ts";
 import * as confirm_dialog from "./confirm_dialog.ts";
+import * as dialog_widget from "./dialog_widget.ts";
 import type {DropdownWidget} from "./dropdown_widget.ts";
+import * as dropdown_widget from "./dropdown_widget.ts";
 import * as hash_util from "./hash_util.ts";
 import {$t, $t_html} from "./i18n.ts";
 import * as loading from "./loading.ts";
 import * as overlays from "./overlays.ts";
 import * as peer_data from "./peer_data.ts";
 import * as resize from "./resize.ts";
+import * as settings_components from "./settings_components.ts";
+import * as settings_config from "./settings_config.ts";
 import * as settings_data from "./settings_data.ts";
-import {current_user} from "./state_data.ts";
+import {current_user, realm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
+import * as stream_settings_containers from "./stream_settings_containers.ts";
 import * as stream_settings_data from "./stream_settings_data.ts";
 import type {StreamSubscription} from "./sub_store.ts";
 import * as ui_report from "./ui_report.ts";
 import * as user_groups from "./user_groups.ts";
+import * as util from "./util.ts";
 
 export let filter_dropdown_widget: DropdownWidget;
 
@@ -311,4 +320,194 @@ export function filter_includes_channel(sub: StreamSubscription): boolean {
         return false;
     }
     return true;
+}
+
+function archive_folder(folder_id: number): void {
+    const stream_ids = channel_folders.get_stream_ids_in_folder(folder_id);
+    let successful_requests = 0;
+
+    function make_archive_folder_request(): void {
+        const url = "/json/channel_folders/" + folder_id.toString();
+        const data = {
+            is_archived: JSON.stringify(true),
+        };
+        dialog_widget.submit_api_request(channel.patch, url, data);
+    }
+
+    if (stream_ids.length === 0) {
+        make_archive_folder_request();
+        return;
+    }
+
+    function remove_channel_from_folder(stream_id: number): void {
+        const url = "/json/streams/" + stream_id.toString();
+        const data = {
+            folder_id: JSON.stringify(null),
+        };
+        void channel.patch({
+            url,
+            data,
+            success() {
+                successful_requests = successful_requests + 1;
+
+                if (successful_requests === stream_ids.length) {
+                    // Make request to archive folder only after all channels
+                    // are removed from the folder.
+                    make_archive_folder_request();
+                }
+            },
+            error(xhr) {
+                ui_report.error(
+                    $t_html({
+                        defaultMessage: "Failed removing one or more channels from the folder",
+                    }),
+                    xhr,
+                    $("#dialog_error"),
+                );
+                dialog_widget.hide_dialog_spinner();
+            },
+        });
+    }
+
+    for (const stream_id of stream_ids) {
+        remove_channel_from_folder(stream_id);
+    }
+}
+
+function handle_archiving_channel_folder(folder_id: number): void {
+    confirm_dialog.launch({
+        html_heading: $t_html({defaultMessage: "Delete channel folder?"}),
+        html_body: render_confirm_archive_channel_folder(),
+        on_click() {
+            archive_folder(folder_id);
+        },
+        close_on_submit: false,
+        loading_spinner: true,
+    });
+}
+
+function handle_editing_channel_folder(folder_id: number): void {
+    const folder = channel_folders.get_channel_folder_by_id(folder_id);
+
+    const html_body = render_edit_channel_folder_modal({
+        name: folder.name,
+        description: folder.description,
+        max_channel_folder_name_length: realm.max_channel_folder_name_length,
+        max_channel_folder_description_length: realm.max_channel_folder_description_length,
+    });
+
+    dialog_widget.launch({
+        html_heading: $t_html({defaultMessage: "Edit channel folder"}),
+        html_body,
+        id: "edit_channel_folder",
+        on_click() {
+            const url = "/json/channel_folders/" + folder_id.toString();
+            const data = {
+                name: $<HTMLInputElement>("input#edit_channel_folder_name").val()!.trim(),
+                description: $<HTMLTextAreaElement>("textarea#edit_channel_folder_description")
+                    .val()!
+                    .trim(),
+            };
+            dialog_widget.submit_api_request(channel.patch, url, data);
+        },
+        loading_spinner: true,
+        on_shown: () => $("#edit_channel_folder_name").trigger("focus"),
+        update_submit_disabled_state_on_change: true,
+    });
+}
+
+export function set_up_folder_dropdown_widget(sub?: StreamSubscription): DropdownWidget {
+    const folder_options = (): dropdown_widget.Option[] => {
+        const folders = channel_folders
+            .get_channel_folders()
+            .sort((a, b) => util.strcmp(a.name.toLowerCase(), b.name.toLowerCase()));
+        const options: dropdown_widget.Option[] = folders.map((folder) => ({
+            name: folder.name,
+            unique_id: folder.id,
+            has_delete_icon: true,
+            has_edit_icon: true,
+            delete_icon_label: $t({defaultMessage: "Delete folder"}),
+            edit_icon_label: $t({defaultMessage: "Edit folder"}),
+        }));
+
+        const disabled_option = {
+            is_setting_disabled: true,
+            show_disabled_icon: false,
+            show_disabled_option_name: true,
+            unique_id: settings_config.no_folder_selected,
+            name: $t({defaultMessage: "None"}),
+        };
+
+        options.unshift(disabled_option);
+        return options;
+    };
+
+    const default_id = sub?.folder_id ?? settings_config.no_folder_selected;
+
+    let widget_name = "folder_id";
+    if (sub === undefined) {
+        widget_name = "new_channel_folder_id";
+    }
+
+    let $events_container = $("#stream_settings .subscription_settings");
+    if (sub === undefined) {
+        $events_container = $("#stream_creation_form");
+    }
+
+    const folder_widget = new dropdown_widget.DropdownWidget({
+        widget_name,
+        get_options: folder_options,
+        $events_container,
+        item_click_callback(event, dropdown, this_widget) {
+            dropdown.hide();
+            event.preventDefault();
+            event.stopPropagation();
+            this_widget.render();
+            if (sub !== undefined) {
+                const $edit_container = stream_settings_containers.get_edit_container(sub);
+                settings_components.save_discard_stream_settings_widget_status_handler(
+                    $edit_container.find(".channel-folder-subsection"),
+                    stream_data.get_sub_by_id(sub.stream_id),
+                );
+            }
+        },
+        item_button_click_callback(event) {
+            event.preventDefault();
+            event.stopPropagation();
+
+            if (
+                $(event.target).closest(
+                    `.${CSS.escape(widget_name)}-dropdown-list-container .dropdown-list-delete`,
+                ).length > 0
+            ) {
+                const folder_id = Number.parseInt(
+                    $(event.target).closest(".list-item").attr("data-unique-id")!,
+                    10,
+                );
+                handle_archiving_channel_folder(folder_id);
+                return;
+            }
+
+            if (
+                $(event.target).closest(
+                    `.${CSS.escape(widget_name)}-dropdown-list-container .dropdown-list-edit`,
+                ).length > 0
+            ) {
+                const folder_id = Number.parseInt(
+                    $(event.target).closest(".list-item").attr("data-unique-id")!,
+                    10,
+                );
+                handle_editing_channel_folder(folder_id);
+
+                return;
+            }
+        },
+        default_id,
+        unique_id_type: "number",
+    });
+    if (sub !== undefined) {
+        settings_components.set_dropdown_setting_widget("folder_id", folder_widget);
+    }
+    folder_widget.setup();
+    return folder_widget;
 }

@@ -4,6 +4,7 @@ import type * as z from "zod/mini";
 import {FoldDict} from "./fold_dict.ts";
 import type {ChannelFolderUpdateEvent} from "./server_event_types.ts";
 import type {StateData, channel_folder_schema} from "./state_data.ts";
+import * as stream_data from "./stream_data.ts";
 
 export type ChannelFolder = z.infer<typeof channel_folder_schema>;
 
@@ -71,4 +72,9 @@ export function update(event: ChannelFolderUpdateEvent): void {
         channel_folder_name_dict.delete(channel_folder.name);
         channel_folder_name_dict.set(channel_folder.name, channel_folder);
     }
+}
+
+export function get_stream_ids_in_folder(folder_id: number): number[] {
+    const streams = stream_data.get_unsorted_subs().filter((sub) => sub.folder_id === folder_id);
+    return streams.map((sub) => sub.stream_id);
 }
