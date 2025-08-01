@@ -635,6 +635,24 @@ function create_text_file(text: string, filename: string): File {
     return new File([blob], filename, {type: "text/plain"});
 }
 
+function do_paste_text(
+    paste_html: string,
+    paste_text: string,
+    $textarea: JQuery<HTMLTextAreaElement>,
+): void {
+    paste_html = maybe_transform_html(paste_html, paste_text);
+    const text = paste_handler_converter(paste_html, $textarea);
+    const trimmed_paste_text = paste_text.trim();
+    if (trimmed_paste_text !== text) {
+        // Pasting formatted text is a two-step process: First
+        // we paste unformatted text, then overwrite it with
+        // formatted text, so that undo restores the
+        // pre-formatting syntax.
+        add_text_and_select(trimmed_paste_text, $textarea);
+    }
+    compose_ui.insert_and_scroll_into_view(text, $textarea);
+}
+
 export function paste_handler(
     this: HTMLTextAreaElement,
     event: JQuery.TriggeredEvent,
@@ -736,16 +754,7 @@ export function paste_handler(
             }
             event.preventDefault();
             event.stopPropagation();
-            paste_html = maybe_transform_html(paste_html, paste_text);
-            const text = paste_handler_converter(paste_html, $textarea);
-            if (trimmed_paste_text !== text) {
-                // Pasting formatted text is a two-step process: First
-                // we paste unformatted text, then overwrite it with
-                // formatted text, so that undo restores the
-                // pre-formatting syntax.
-                add_text_and_select(trimmed_paste_text, $textarea);
-            }
-            compose_ui.insert_and_scroll_into_view(text, $textarea);
+            do_paste_text(paste_html, paste_text, $textarea);
         }
     }
 }
