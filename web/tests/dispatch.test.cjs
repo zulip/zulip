@@ -23,6 +23,7 @@ const attachments_ui = mock_esm("../src/attachments_ui");
 const audible_notifications = mock_esm("../src/audible_notifications");
 const bot_data = mock_esm("../src/bot_data");
 const compose_pm_pill = mock_esm("../src/compose_pm_pill");
+const channel = mock_esm("../src/channel");
 const {electron_bridge} = mock_esm("../src/electron_bridge", {
     electron_bridge: {},
 });
@@ -433,6 +434,10 @@ run_test("presence", ({override}) => {
 });
 
 run_test("reaction", ({override}) => {
+    override(channel, "get", (opts) => {
+        assert.equal(opts.url, "/json/messages/128");
+    });
+
     let event = event_fixtures.reaction__add;
     {
         const stub = make_stub();
