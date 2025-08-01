@@ -76,7 +76,6 @@ class Integration:
         secondary_line_text: str | None = None,
         display_name: str | None = None,
         doc: str | None = None,
-        stream_name: str | None = None,
         legacy: bool = False,
         config_options: Sequence[WebhookConfigOption] = [],
         url_options: Sequence[WebhookUrlOption] = [],
@@ -115,10 +114,6 @@ class Integration:
         if doc is None:
             doc = self.DEFAULT_DOC_PATH.format(name=self.name)
         self.doc = doc
-
-        if stream_name is None:
-            stream_name = self.name
-        self.stream_name = stream_name
 
     def is_enabled(self) -> bool:
         return True
@@ -204,7 +199,6 @@ class PythonAPIIntegration(Integration):
         display_name: str | None = None,
         directory_name: str | None = None,
         doc: str | None = None,
-        stream_name: str | None = None,
         legacy: bool = False,
     ) -> None:
         if directory_name is None:
@@ -224,7 +218,6 @@ class PythonAPIIntegration(Integration):
             secondary_line_text=secondary_line_text,
             display_name=display_name,
             doc=doc,
-            stream_name=stream_name,
             legacy=legacy,
         )
 
@@ -246,7 +239,6 @@ class WebhookIntegration(Integration):
         url: str | None = None,
         display_name: str | None = None,
         doc: str | None = None,
-        stream_name: str | None = None,
         legacy: bool = False,
         config_options: Sequence[WebhookConfigOption] = [],
         url_options: Sequence[WebhookUrlOption] = [],
@@ -261,7 +253,6 @@ class WebhookIntegration(Integration):
             logo=logo,
             secondary_line_text=secondary_line_text,
             display_name=display_name,
-            stream_name=stream_name,
             legacy=legacy,
             config_options=config_options,
             url_options=url_options,
@@ -311,6 +302,7 @@ class WebhookScreenshotConfig:
     image_name: str = "001.png"
     image_dir: str | None = None
     bot_name: str | None = None
+    channel: str | None = None
     payload_as_query_param: bool = False
     payload_param_name: str = "payload"
     extra_params: dict[str, str] = field(default_factory=dict)
@@ -416,7 +408,7 @@ WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
         display_name="AzureDevOps",
         url_options=[WebhookUrlOption(name="branches", label="", validator=check_string)],
     ),
-    WebhookIntegration("beanstalk", ["version-control"], stream_name="commits"),
+    WebhookIntegration("beanstalk", ["version-control"]),
     WebhookIntegration("basecamp", ["project-management"]),
     WebhookIntegration("beeminder", ["misc"], display_name="Beeminder"),
     WebhookIntegration(
@@ -424,7 +416,6 @@ WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
         ["version-control"],
         logo="images/integrations/logos/bitbucket.svg",
         display_name="Bitbucket Server",
-        stream_name="bitbucket",
         url_options=[WebhookUrlOption(name="branches", label="", validator=check_string)],
     ),
     WebhookIntegration(
@@ -432,7 +423,6 @@ WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
         ["version-control"],
         logo="images/integrations/logos/bitbucket.svg",
         display_name="Bitbucket",
-        stream_name="bitbucket",
         url_options=[WebhookUrlOption(name="branches", label="", validator=check_string)],
     ),
     WebhookIntegration(
@@ -440,7 +430,6 @@ WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
         ["version-control"],
         display_name="Bitbucket",
         secondary_line_text="(Enterprise)",
-        stream_name="commits",
         legacy=True,
     ),
     WebhookIntegration("buildbot", ["continuous-integration"]),
@@ -461,7 +450,6 @@ WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
     WebhookIntegration(
         "gitea",
         ["version-control"],
-        stream_name="commits",
         url_options=[WebhookUrlOption(name="branches", label="", validator=check_string)],
     ),
     WebhookIntegration(
@@ -469,7 +457,6 @@ WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
         ["version-control"],
         display_name="GitHub",
         function="zerver.webhooks.github.view.api_github_webhook",
-        stream_name="github",
         url_options=[
             WebhookUrlOption(name="branches", label="", validator=check_string),
             WebhookUrlOption(
@@ -487,7 +474,6 @@ WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
         dir_name="github",
         function="zerver.webhooks.github.view.api_github_webhook",
         doc="github/githubsponsors.md",
-        stream_name="github",
     ),
     WebhookIntegration(
         "gitlab",
@@ -499,7 +485,6 @@ WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
     WebhookIntegration(
         "gogs",
         ["version-control"],
-        stream_name="commits",
         url_options=[WebhookUrlOption(name="branches", label="", validator=check_string)],
     ),
     WebhookIntegration("gosquared", ["marketing"], display_name="GoSquared"),
@@ -613,7 +598,7 @@ INTEGRATIONS: dict[str, Integration] = {
 
 PYTHON_API_INTEGRATIONS: list[PythonAPIIntegration] = [
     PythonAPIIntegration("codebase", ["version-control"]),
-    PythonAPIIntegration("git", ["version-control"], stream_name="commits"),
+    PythonAPIIntegration("git", ["version-control"]),
     PythonAPIIntegration(
         "google-calendar", ["productivity"], display_name="Google Calendar", directory_name="google"
     ),
@@ -627,21 +612,14 @@ PYTHON_API_INTEGRATIONS: list[PythonAPIIntegration] = [
         secondary_line_text="(locally installed)",
         display_name="Jira",
         directory_name="jira",
-        stream_name="jira",
         legacy=True,
     ),
     PythonAPIIntegration("matrix", ["communication"], directory_name="bridge_with_matrix"),
     PythonAPIIntegration(
-        "mercurial",
-        ["version-control"],
-        display_name="Mercurial (hg)",
-        stream_name="commits",
-        directory_name="hg",
+        "mercurial", ["version-control"], display_name="Mercurial (hg)", directory_name="hg"
     ),
     PythonAPIIntegration("nagios", ["monitoring"]),
-    PythonAPIIntegration(
-        "openshift", ["deployment"], display_name="OpenShift", stream_name="deployments"
-    ),
+    PythonAPIIntegration("openshift", ["deployment"], display_name="OpenShift"),
     PythonAPIIntegration("perforce", ["version-control"]),
     PythonAPIIntegration("rss", ["communication"], display_name="RSS"),
     PythonAPIIntegration("svn", ["version-control"], display_name="Subversion"),
@@ -695,13 +673,39 @@ for webhook_integration in WEBHOOK_INTEGRATIONS:
 for bot_integration in BOT_INTEGRATIONS:
     INTEGRATIONS[bot_integration.name] = bot_integration
 
-# Add integrations that don't have automated screenshots here
+# Add webhook integrations that don't have automated screenshots here
 NO_SCREENSHOT_WEBHOOKS = {
     "beeminder",  # FIXME: fixture's goal.losedate needs to be modified dynamically
-    "ifttt",  # Docs don't have a screenshot
-    "slack_incoming",  # Docs don't have a screenshot
-    "zapier",  # Docs don't have a screenshot
+    "ifttt",  # Doc doesn't have a screenshot because it's a platform for integrations
+    "slack_incoming",  # Doc doesn't have a screenshot because it's a type of integration
+    "zapier",  # Doc doesn't have a screenshot because it's a platform for integrations
 }
+
+hubot_integration_names = {integration.name for integration in HUBOT_INTEGRATIONS}
+
+# Add fixtureless integrations that don't have automated screenshots here
+NO_SCREENSHOT_CONFIG = (
+    {
+        "giphy",  # Doc doesn't have a screenshot
+        "twitter",  # the integration is planned to be removed
+        # Outgoing integrations - Docs won't have a screenshot
+        "email",
+        "onyx",
+        # Video call integrations - Docs won't have a screenshot
+        "zoom",
+        "jitsi",
+        "big-blue-button",
+        # Integrations that require screenshots of message threads - support is yet to be added
+        "errbot",
+        "hubot",
+        "github_detail",
+        "irc",
+        "matrix",  # Also requires a screenshot on the Matrix side of the bridge
+        "xkcd",
+    }
+    | NO_SCREENSHOT_WEBHOOKS
+    | hubot_integration_names
+)
 
 
 WEBHOOK_SCREENSHOT_CONFIG: dict[str, list[WebhookScreenshotConfig]] = {
@@ -717,18 +721,26 @@ WEBHOOK_SCREENSHOT_CONFIG: dict[str, list[WebhookScreenshotConfig]] = {
     "basecamp": [WebhookScreenshotConfig("doc_active.json")],
     "beanstalk": [
         WebhookScreenshotConfig(
-            "git_multiple.json", use_basic_auth=True, payload_as_query_param=True
+            "git_multiple.json", channel="commits", use_basic_auth=True, payload_as_query_param=True
         )
     ],
     # 'beeminder': [WebhookScreenshotConfig('derail_worried.json')],
     "bitbucket": [
         WebhookScreenshotConfig(
-            "push.json", "002.png", use_basic_auth=True, payload_as_query_param=True
+            "push.json",
+            "002.png",
+            channel="commits",
+            use_basic_auth=True,
+            payload_as_query_param=True,
         )
     ],
     "bitbucket2": [
         WebhookScreenshotConfig(
-            "issue_created.json", "003.png", "bitbucket", bot_name="Bitbucket Bot"
+            "issue_created.json",
+            "003.png",
+            "bitbucket",
+            bot_name="Bitbucket Bot",
+            channel="bitbucket",
         )
     ],
     "bitbucket3": [
@@ -737,6 +749,7 @@ WEBHOOK_SCREENSHOT_CONFIG: dict[str, list[WebhookScreenshotConfig]] = {
             "004.png",
             "bitbucket",
             bot_name="Bitbucket Server Bot",
+            channel="bitbucket",
         )
     ],
     "buildbot": [WebhookScreenshotConfig("started.json")],
@@ -758,12 +771,12 @@ WEBHOOK_SCREENSHOT_CONFIG: dict[str, list[WebhookScreenshotConfig]] = {
     "freshping": [WebhookScreenshotConfig("freshping_check_unreachable.json")],
     "freshstatus": [WebhookScreenshotConfig("freshstatus_incident_open.json")],
     "front": [WebhookScreenshotConfig("inbound_message.json")],
-    "gitea": [WebhookScreenshotConfig("pull_request__merged.json")],
+    "gitea": [WebhookScreenshotConfig("pull_request__merged.json", channel="commits")],
     "github": [WebhookScreenshotConfig("push__1_commit.json")],
-    "githubsponsors": [WebhookScreenshotConfig("created.json")],
+    "githubsponsors": [WebhookScreenshotConfig("created.json", channel="github")],
     "gitlab": [WebhookScreenshotConfig("push_hook__push_local_branch_without_commits.json")],
     "gocd": [WebhookScreenshotConfig("pipeline_with_mixed_job_result.json")],
-    "gogs": [WebhookScreenshotConfig("pull_request__opened.json")],
+    "gogs": [WebhookScreenshotConfig("pull_request__opened.json", channel="commits")],
     "gosquared": [WebhookScreenshotConfig("traffic_spike.json")],
     "grafana": [WebhookScreenshotConfig("alert_values_v11.json")],
     "greenhouse": [WebhookScreenshotConfig("candidate_stage_change.json")],
@@ -849,7 +862,189 @@ WEBHOOK_SCREENSHOT_CONFIG: dict[str, list[WebhookScreenshotConfig]] = {
     ],
 }
 
-FIXTURELESS_SCREENSHOT_CONFIG: dict[str, list[FixturelessScreenshotConfig]] = {}
+FIXTURELESS_SCREENSHOT_CONFIG: dict[str, list[FixturelessScreenshotConfig]] = {
+    "asana": [
+        FixturelessScreenshotConfig(
+            "Ariella Drake created a new task **[Optimize image loading in paints catalog]()**.\n> Implement lazy loading for images on the paints catalog to improve load times.",
+            "Data Solutions > Project Shades",
+        )
+    ],
+    "capistrano": [
+        FixturelessScreenshotConfig(
+            "The [deployment]() to **fizzbuzz-prod** (version v9.2.3) has been completed successfully! :rocket:",
+            "project-fizzbuzz",
+        )
+    ],
+    "codebase": [
+        FixturelessScreenshotConfig(
+            """Maxy Stert pushed 2 commit(s) to `main` in project FizzBuzz:
+
+* [a2e84e86dd](): Make client_name a kwarg.
+* [d68b14fa6d](): Suppress "comment edited" events when body is same.
+""",
+            "Push to main on FizzBuzz",
+        )
+    ],
+    "discourse": [
+        FixturelessScreenshotConfig(
+            """**@Niloth** posted in [Zulip's new mobile app is out!]()
+> Zulip’s next-gen mobile app is now in public beta. If offers a sleek new design and a faster, smoother experience. Check out the announcement post for details and instructions on how to try the beta!""",
+            "announce",
+        )
+    ],
+    "git": [
+        FixturelessScreenshotConfig(
+            """`a2e84e86ddf7` was deployed to `main` with:
+* Kevin-Lin@example.com - b7763f7: Make client_name a kwarg.
+* Bo-Williams@example.com - ff96efb: Add support for "comment edited" events.
+""",
+            "main",
+            "commits",
+        )
+    ],
+    "github-actions": [
+        FixturelessScreenshotConfig(
+            """Backup [failed]() at 2025-05-30T02:00:00Z.
+> Unable to connect.""",
+            "scheduled backups",
+            "github-actions updates",
+        )
+    ],
+    "google-calendar": [
+        FixturelessScreenshotConfig(
+            """The [Development Sync]() event is scheduled from 2 PM - 3 PM on Friday, May 30, 2025 at Conference Room B.
+> Let's align on our current sprint progress, address any blockers, and share updates. Your input is crucial!
+
+[Join call]().""",
+            "Team reminders",
+            image_dir="google/calendar",
+            image_name="003.png",
+        )
+    ],
+    "jenkins": [
+        FixturelessScreenshotConfig(
+            "**Build:** [#578](): FAILURE :cross_mark:", "Project FizzBuzz", image_name="004.png"
+        )
+    ],
+    "jira-plugin": [
+        FixturelessScreenshotConfig(
+            """Manvir Singh **created** [678]() - priority Medium, assigned to @**Zoe Davis**:
+
+> Implement lazy loading for images on the Paints catalog to improve load times.""",
+            "678: Optimize image loading in paints catalog",
+            "jira",
+        )
+    ],
+    "mastodon": [
+        FixturelessScreenshotConfig(
+            """**[Don’t let hype about AI agents get ahead of reality](https://www.technologyreview.com/2025/07/03/1119545/dont-let-hype-about-ai-agents-get-ahead-of-reality/)**
+Google’s recent unveiling of what it calls a “new class of agentic experiences” feels like a turning point. At its I/O 2025 event in May, for example, the company showed off a digital assistant that didn’t just answer questions; it helped work on a bicycle repair by finding a matching user manual, locating a YouTube…
+https://www.technologyreview.com/2025/07/03/1119545/dont-let-hype-about-ai-agents-get-ahead-of-reality/""",
+            "MIT Technology Review",
+        )
+    ],
+    "mercurial": [
+        FixturelessScreenshotConfig(
+            """**Dal Kim** pushed [2 commits]() to **default** (`170:e494a5be3393`):
+* [Make client_name a kwarg.]()
+* [Suppress "comment edited" events when body is same.]()""",
+            "default",
+            "commits",
+            image_dir="hg",
+        )
+    ],
+    "nagios": [
+        FixturelessScreenshotConfig(
+            """**PROBLEM**: service is CRITICAL
+
+~~~~
+CRITICAL - load average: 7.49, 8.20, 4.72
+~~~~
+""",
+            "service Remote Load on myserver.example.com",
+        )
+    ],
+    "notion": [
+        FixturelessScreenshotConfig(
+            """**John Lin** [commented]() on:
+
+> project demo scheduled
+
+Can we reschedule this to next week?""",
+            "Shades Release v11.0",
+        )
+    ],
+    "openshift": [
+        FixturelessScreenshotConfig(
+            "Deployment [78641]() triggered by a push to **main** by commit [ff96efb]() at 2023-02-20 14:35 has **failed**.",
+            "fizzbuzz-dev",
+            "deployments",
+        )
+    ],
+    "perforce": [
+        FixturelessScreenshotConfig(
+            """
+**James Williams** committed revision @[492]() to `//depot/fizz/buzz/*`.
+
+```quote
+Make client_name a kwarg.
+```
+""",
+            "//depot/fizz/buzz/*",
+        )
+    ],
+    "puppet": [
+        FixturelessScreenshotConfig(
+            """Puppet production run for web-server-01 completed at Fri May 30 12:34:56 2025.
+ Created a Gist showing the output at abc123xyz
+ Summary at report.example.com:2025-05-30/production/web-server-01/completed
+ Report URL: http://example.com/puppet-reports/production/web-server-01/?status=completed&time=20250530123456""",
+            "Reports",
+        )
+    ],
+    "redmine": [
+        FixturelessScreenshotConfig(
+            """Elena Gracia **created** issue [643 Add support for "comment edited" events]():
+
+~~~quote
+
+Support for the following sub-events is needed:\n...
+
+~~~
+
+* **Assignee**: Max Power
+* **Status**: New
+* **Target version**: 9.2
+* **Estimated hours**: 40
+""",
+            'Add support for "comment edited" events',
+        )
+    ],
+    "rss": [
+        FixturelessScreenshotConfig(
+            """**[Don’t let hype about AI agents get ahead of reality](https://www.technologyreview.com/2025/07/03/1119545/dont-let-hype-about-ai-agents-get-ahead-of-reality/)**
+Google’s recent unveiling of what it calls a “new class of agentic experiences” feels like a turning point. At its I/O 2025 event in May, for example, the company showed off a digital assistant that didn’t just answer questions; it helped work on a bicycle repair by finding a matching user manual, locating a YouTube…
+https://www.technologyreview.com/2025/07/03/1119545/dont-let-hype-about-ai-agents-get-ahead-of-reality/""",
+            "MIT Technology Review",
+        )
+    ],
+    "svn": [
+        FixturelessScreenshotConfig(
+            """**nolan_turner** committed revision r2126 to `fizzbuzz-dev`.
+> Style the error message on the video failing to load.""",
+            "fizzbuzz-dev",
+        )
+    ],
+    "trac": [
+        FixturelessScreenshotConfig(
+            """anna-smith updated [ticket #798]() with comment:
+> Fixed in 26595799c7c2d0a8f8bc7c15de5dcc813fff93c9
+
+status: **new** => **closed**, resolution: => **fixed**""",
+            "#798 Fix broken links in documentation",
+        ),
+    ],
+}
 
 DOC_SCREENSHOT_CONFIG: dict[
     str, list[WebhookScreenshotConfig] | list[FixturelessScreenshotConfig]
