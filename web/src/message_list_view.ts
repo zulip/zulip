@@ -1084,12 +1084,15 @@ export class MessageListView {
     _render_group(opts: {message_groups: MessageGroup[]; use_match_properties: boolean}): JQuery {
         const message_groups = opts.message_groups;
         const use_match_properties = opts.use_match_properties;
+        const current_filter = narrow_state.filter();
+        const show_channel_name = !current_filter?.can_show_next_unread_topic_conversation_button();
 
         return $(
             render_message_group({
                 message_groups,
                 use_match_properties,
                 message_list_id: this.list.id,
+                show_channel_name,
             }),
         );
     }
@@ -1655,7 +1658,9 @@ export class MessageListView {
             preserved_properties,
         );
 
-        const $rendered_recipient_row = $(render_recipient_row(group));
+        const current_filter = narrow_state.filter();
+        const show_channel_name = !current_filter?.can_show_next_unread_topic_conversation_button();
+        const $rendered_recipient_row = $(render_recipient_row({...group, show_channel_name}));
 
         $header.replaceWith($rendered_recipient_row);
     }
