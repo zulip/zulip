@@ -156,11 +156,16 @@ function initialize_handlers({override}) {
     override(realm, "realm_available_video_chat_providers", {disabled: {id: 0}});
     override(realm, "realm_video_chat_provider", 0);
     override(resize, "watch_manual_resize", noop);
+    disable_window_triggers(override);
     compose_setup.initialize();
 }
 
 function disable_document_triggers(override) {
     override(document, "to_$", () => $("document-stub"));
+}
+
+function disable_window_triggers(override) {
+    override(window, "to_$", () => $("window-stub"));
 }
 
 function on_compose_finished_trigger_do(f) {
@@ -543,6 +548,8 @@ test_ui("finish", ({override, override_rewire}) => {
 });
 
 test_ui("initialize", ({override}) => {
+    disable_window_triggers(override);
+
     let compose_actions_expected_opts;
     let compose_actions_start_checked;
 
