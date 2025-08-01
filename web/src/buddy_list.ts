@@ -629,7 +629,11 @@ export class BuddyList extends BuddyListConf {
                 participants.push(item);
                 this.participant_user_ids.push(item.user_id);
             } else if (
-                buddy_data.user_matches_narrow(item.user_id, pm_ids_set, current_sub?.stream_id)
+                buddy_data.user_matches_narrow_using_loaded_data(
+                    item.user_id,
+                    pm_ids_set,
+                    current_sub?.stream_id,
+                )
             ) {
                 subscribed_users.push(item);
                 this.users_matching_view_ids.push(item.user_id);
@@ -1044,7 +1048,7 @@ export class BuddyList extends BuddyListConf {
 
             const stream_id = narrow_state.stream_id(narrow_state.filter(), true);
             const pm_ids_set = narrow_state.pm_ids_set();
-            const is_subscribed_user = buddy_data.user_matches_narrow(
+            const is_subscribed_user = buddy_data.user_matches_narrow_using_loaded_data(
                 user_id,
                 pm_ids_set,
                 stream_id,
