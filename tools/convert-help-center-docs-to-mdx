@@ -154,11 +154,10 @@ def insert_string_at_line(text: str, destination_str: str, n: int) -> str:
 def replace_icon_with_unplugin_component(
     match: re.Match[str],
     icon_package_name: str,
-    icon_component_prefix: str,
     import_statement_set: set[str],
 ) -> str:
     icon_name = match.group(1)
-    component_name = icon_component_prefix + to_pascal(icon_name).replace("-", "")
+    component_name = to_pascal(icon_name).replace("-", "") + "Icon"
     import_statement = f'import {component_name} from "~icons/{icon_package_name}/{icon_name}"'
     import_statement_set.add(import_statement)
     return f"<{component_name} />"
@@ -174,7 +173,7 @@ def replace_icons(markdown_string: str, import_statement_set: set[str]) -> str:
     )
 
     def replace_font_awesome_icon_with_unplugin_component(match: re.Match[str]) -> str:
-        return replace_icon_with_unplugin_component(match, "fa", "Fa", import_statement_set)
+        return replace_icon_with_unplugin_component(match, "fa", import_statement_set)
 
     result = re.sub(
         font_awesome_pattern, replace_font_awesome_icon_with_unplugin_component, markdown_string
@@ -185,9 +184,7 @@ def replace_icons(markdown_string: str, import_statement_set: set[str]) -> str:
     )
 
     def replace_zulip_icon_with_unplugin_component(match: re.Match[str]) -> str:
-        return replace_icon_with_unplugin_component(
-            match, "zulip-icon", "ZulipIcons", import_statement_set
-        )
+        return replace_icon_with_unplugin_component(match, "zulip-icon", import_statement_set)
 
     result = re.sub(zulip_icon_pattern, replace_zulip_icon_with_unplugin_component, result)
 
