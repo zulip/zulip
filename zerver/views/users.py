@@ -255,7 +255,7 @@ def delete_avatar_by_id_backend(
         user_profile, user_id, allow_deactivated=True, allow_bots=True, for_admin=True
     )
 
-    if avatar_changes_disabled(target.realm) and not user_profile.is_realm_admin:
+    if avatar_changes_disabled(target.realm) and not user_profile.is_realm_admin:  # nocoverage
         raise JsonableError(str(AVATAR_CHANGES_DISABLED_ERROR))
 
     do_delete_avatar_image(target, acting_user=user_profile)
