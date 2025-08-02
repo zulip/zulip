@@ -1198,6 +1198,10 @@ input[type="checkbox"] {
     margin: 0 0 10px;
 }
 
+#api_key_value {
+  font-family: monospace;
+}
+
 #download_zuliprc {
     color: hsl(0deg 0% 100%);
     text-decoration: none;
