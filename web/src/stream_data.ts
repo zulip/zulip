@@ -706,7 +706,16 @@ export function get_current_user_and_their_bots_with_post_messages_permission(
 }
 
 export function can_access_stream_email(sub: StreamSubscription): boolean {
-    return get_current_user_and_their_bots_with_post_messages_permission(sub).length > 0;
+    // This should mirror logic in access_stream_for_send_message in zerver/lib/streams.py
+    if (get_current_user_and_their_bots_with_post_messages_permission(sub).length > 0) {
+        // For private streams with protected history, unsubscribed users cannot send messages
+        // even if they have content access via group permissions
+        if (sub.invite_only && !sub.history_public_to_subscribers && !sub.subscribed) {
+            return false;
+        }
+        return true;
+    }
+    return false;
 }
 
 export function can_access_topic_history(sub: StreamSubscription): boolean {
