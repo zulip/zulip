@@ -1742,7 +1742,7 @@ function get_empty_user_group_list_message(
     }
 
     if (is_your_groups_tab_active) {
-        return $t({defaultMessage: "You are not a member of any user groups."});
+        return $t({defaultMessage: "There are no user groups you can view in this organization."});
     }
     return $t({
         defaultMessage: "There are no user groups you can view in this organization.",
