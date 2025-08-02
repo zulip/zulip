@@ -15,7 +15,6 @@ from zerver.actions.streams import (
 )
 from zerver.actions.user_groups import add_subgroups_to_user_group, check_add_user_group
 from zerver.actions.users import do_change_user_role
-from zerver.lib.streams import subscribed_to_stream
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import get_subscription
 from zerver.lib.types import UserGroupMembersData
@@ -23,7 +22,7 @@ from zerver.lib.user_groups import get_group_setting_value_for_api
 from zerver.models import NamedUserGroup, Recipient, Stream, Subscription, UserProfile
 from zerver.models.groups import SystemGroups
 from zerver.models.realms import get_realm
-from zerver.models.streams import get_stream
+from zerver.models.streams import StreamTopicsPolicyEnum, get_stream
 
 
 class ChannelSubscriptionPermissionTest(ZulipTestCase):
@@ -802,16 +801,16 @@ class ChannelAdministerPermissionTest(ZulipTestCase):
             api_parameter_name = api_parameter_name_dict[property_name]
 
         data = {}
-        if not isinstance(new_value, str):
+        if property_name == "topics_policy":
+            data[api_parameter_name] = StreamTopicsPolicyEnum(new_value).name
+        elif not isinstance(new_value, str):
             data[api_parameter_name] = orjson.dumps(new_value).decode()
         else:
             data[api_parameter_name] = new_value
 
         default_error_msg = "You do not have permission to administer this channel."
 
-        def check_channel_property_update(
-            user: UserProfile, allow_fail: bool = False, error_msg: str = default_error_msg
-        ) -> None:
+        def check_channel_property_update(user: UserProfile, error_msg: str | None = None) -> None:
             old_value = getattr(stream, property_name)
 
             if property_name == "deactivated" and new_value is True:
@@ -820,7 +819,7 @@ class ChannelAdministerPermissionTest(ZulipTestCase):
             else:
                 result = self.api_patch(user, f"/api/v1/streams/{stream.id}", info=data)
 
-            if allow_fail:
+            if error_msg is not None:
                 self.assert_json_error(result, error_msg)
                 return
 
@@ -873,21 +872,35 @@ class ChannelAdministerPermissionTest(ZulipTestCase):
 
             for user in check_config["users_without_permission"]:
                 error_msg = default_error_msg
-                if stream.invite_only and not subscribed_to_stream(user, stream.id):
-                    # In private streams, users that are not subscribed cannot access
-                    # the stream.
-                    error_msg = "Invalid channel ID"
-                check_channel_property_update(user, allow_fail=True, error_msg=error_msg)
+                check_channel_property_update(user, error_msg=error_msg)
 
             for user in check_config["users_with_permission"]:
                 check_channel_property_update(user)
 
         # Check guests cannot update property even when they belong
         # to "can_administer_channel_group".
-        check_channel_property_update(self.guest, allow_fail=True, error_msg="Invalid channel ID")
+        check_channel_property_update(self.guest, error_msg="Invalid channel ID")
         self.subscribe(self.guest, stream.name)
-        check_channel_property_update(self.guest, allow_fail=True)
+        check_channel_property_update(self.guest, error_msg=default_error_msg)
         self.unsubscribe(self.guest, stream.name)
+
+        # Check for permission in unsubscribed private streams.
+        if stream.invite_only:
+            self.unsubscribe(self.admin, stream.name)
+            self.unsubscribe(prospero, stream.name)
+            self.unsubscribe(hamlet, stream.name)
+
+            # Hamlet does not have metadata access.
+            check_channel_property_update(hamlet, error_msg="Invalid channel ID")
+            # Admins always have metadata access and administering permission.
+            check_channel_property_update(self.admin)
+            # Prospero has metadata access by being in can_administer_channel_group.
+            check_channel_property_update(prospero)
+
+            # Re-subscribe users for next tests.
+            self.subscribe(self.admin, stream.name)
+            self.subscribe(prospero, stream.name)
+            self.subscribe(hamlet, stream.name)
 
     def test_administering_permission_for_updating_channel(self) -> None:
         """
@@ -904,22 +917,17 @@ class ChannelAdministerPermissionTest(ZulipTestCase):
         self.subscribe(self.example_user("hamlet"), private_stream.name)
         self.subscribe(self.example_user("prospero"), private_stream.name)
 
-        unsubscribed_private_stream = self.make_stream(
-            "unsubscribed_private_stream", invite_only=True
-        )
-        # Subscribing a user that is not used in this test, as we do not allow
-        # unarchiving vacant private streams.
-        self.subscribe(self.example_user("desdemona"), unsubscribed_private_stream.name)
-
         channel_folder = check_add_channel_folder(
             self.realm, "Frontend", "", acting_user=self.admin
         )
 
-        for stream in [public_stream, private_stream, unsubscribed_private_stream]:
+        for stream in [public_stream, private_stream]:
             self.do_test_updating_channel(stream, "name", "Renamed stream")
             self.do_test_updating_channel(stream, "description", "Edited stream description")
             self.do_test_updating_channel(stream, "folder_id", channel_folder.id)
-
+            self.do_test_updating_channel(
+                stream, "topics_policy", StreamTopicsPolicyEnum.allow_empty_topic.value
+            )
             self.do_test_updating_channel(stream, "deactivated", True)
 
             do_deactivate_stream(stream, acting_user=None)
@@ -930,12 +938,18 @@ class ChannelAdministerPermissionTest(ZulipTestCase):
     ) -> None:
         stream = get_stream("test_stream", user.realm)
         data = {}
+
+        old_values = {
+            "invite_only": stream.invite_only,
+            "is_web_public": stream.is_web_public,
+            "history_public_to_subscribers": stream.history_public_to_subscribers,
+        }
+
         if property_name == "invite_only":
             data["is_private"] = orjson.dumps(new_value).decode()
         else:
             data[property_name] = orjson.dumps(new_value).decode()
 
-        old_value = getattr(stream, property_name)
         result = self.api_patch(user, f"/api/v1/streams/{stream.id}", info=data)
 
         if error_msg is not None:
@@ -947,14 +961,11 @@ class ChannelAdministerPermissionTest(ZulipTestCase):
         self.assertEqual(getattr(stream, property_name), new_value)
 
         # Reset to original value.
-        setattr(stream, property_name, old_value)
-        stream.save(update_fields=[property_name])
-
-        # Reset history_public_to_subscribers field when stream
-        # is changed from private to public.
-        if not stream.invite_only and not stream.history_public_to_subscribers:
-            stream.history_public_to_subscribers = True
-            stream.save(update_fields=["history_public_to_subscribers"])
+        do_change_stream_permission(
+            stream,
+            **old_values,
+            acting_user=self.admin,
+        )
 
     def do_test_updating_channel_privacy(self, property_name: str, new_value: bool) -> None:
         hamlet = self.example_user("hamlet")
@@ -1239,6 +1250,13 @@ class ChannelAdministerPermissionTest(ZulipTestCase):
         hamlet = self.example_user("hamlet")
         prospero = self.example_user("prospero")
 
+        do_change_realm_permission_group_setting(
+            hamlet.realm,
+            "can_set_delete_message_policy_group",
+            self.members_group,
+            acting_user=None,
+        )
+
         for setting_name in Stream.stream_permission_group_settings:
             self.do_test_updating_channel_group_settings(setting_name)
 
@@ -1264,3 +1282,194 @@ class ChannelAdministerPermissionTest(ZulipTestCase):
 
         for setting_name in Stream.stream_permission_group_settings:
             self.do_test_updating_group_settings_for_unsubscribed_private_channels(setting_name)
+
+    def test_realm_permission_to_update_topics_policy(self) -> None:
+        hamlet = self.example_user("hamlet")
+        stream = self.make_stream("test_stream")
+
+        def check_channel_topics_policy_update(user: UserProfile, allow_fail: bool = False) -> None:
+            data = {}
+            data["topics_policy"] = StreamTopicsPolicyEnum.allow_empty_topic.name
+
+            result = self.api_patch(user, f"/api/v1/streams/{stream.id}", info=data)
+
+            if allow_fail:
+                self.assert_json_error(result, "Insufficient permission")
+                return
+
+            self.assert_json_success(result)
+            stream.refresh_from_db()
+            self.assertEqual(stream.topics_policy, StreamTopicsPolicyEnum.allow_empty_topic.value)
+
+            # Reset to original value
+            stream.topics_policy = StreamTopicsPolicyEnum.inherit.value
+            stream.save()
+
+        do_change_stream_group_based_setting(
+            stream, "can_administer_channel_group", self.nobody_group, acting_user=self.admin
+        )
+        do_change_realm_permission_group_setting(
+            self.realm, "can_set_topics_policy_group", self.nobody_group, acting_user=None
+        )
+
+        # Admins can always update topics_policy.
+        check_channel_topics_policy_update(self.admin)
+
+        do_change_stream_group_based_setting(
+            stream, "can_administer_channel_group", self.members_group, acting_user=self.admin
+        )
+
+        check_channel_topics_policy_update(self.moderator, allow_fail=True)
+        check_channel_topics_policy_update(hamlet, allow_fail=True)
+
+        # Test when can_set_topics_policy_group is set to a user-defined group.
+        do_change_realm_permission_group_setting(
+            self.realm, "can_set_topics_policy_group", self.hamletcharacters_group, acting_user=None
+        )
+        check_channel_topics_policy_update(self.admin)
+        check_channel_topics_policy_update(self.moderator, allow_fail=True)
+        check_channel_topics_policy_update(hamlet)
+
+        # Test when can_set_topics_policy_group is set to an anonymous group.
+        anonymous_group = self.create_or_update_anonymous_group_for_setting(
+            direct_members=[hamlet], direct_subgroups=[self.moderators_group]
+        )
+        do_change_realm_permission_group_setting(
+            self.realm, "can_set_topics_policy_group", anonymous_group, acting_user=None
+        )
+        check_channel_topics_policy_update(self.admin)
+        check_channel_topics_policy_update(self.moderator)
+        check_channel_topics_policy_update(hamlet)
+
+    def test_can_set_delete_message_policy_group(self) -> None:
+        user = self.example_user("hamlet")
+        iago = self.example_user("iago")
+        realm = user.realm
+        stream = get_stream("Verona", realm)
+        owners_system_group = NamedUserGroup.objects.get(
+            realm=realm, name=SystemGroups.OWNERS, is_system_group=True
+        )
+        moderators_system_group = NamedUserGroup.objects.get(
+            realm=realm, name=SystemGroups.MODERATORS, is_system_group=True
+        )
+        members_system_group = NamedUserGroup.objects.get(
+            realm=realm, name=SystemGroups.MEMBERS, is_system_group=True
+        )
+        do_change_realm_permission_group_setting(
+            realm,
+            "can_set_delete_message_policy_group",
+            moderators_system_group,
+            acting_user=None,
+        )
+        do_change_stream_group_based_setting(
+            stream, "can_administer_channel_group", members_system_group, acting_user=iago
+        )
+        # Only moderators can change channel-level delete permissions.
+        # Hamlet is not a moderator.
+        subscriptions = [{"name": "new_test_stream"}]
+        result = self.subscribe_via_post(
+            user,
+            subscriptions,
+            subdomain="zulip",
+            extra_post_data={
+                "can_delete_any_message_group": orjson.dumps(owners_system_group.id).decode()
+            },
+            allow_fail=True,
+        )
+        self.assert_json_error(result, "Insufficient permission")
+
+        result = self.subscribe_via_post(
+            user,
+            subscriptions,
+            subdomain="zulip",
+            extra_post_data={
+                "can_delete_own_message_group": orjson.dumps(owners_system_group.id).decode()
+            },
+            allow_fail=True,
+        )
+        self.assert_json_error(result, "Insufficient permission")
+
+        self.login("hamlet")
+        result = self.client_patch(
+            f"/json/streams/{stream.id}",
+            {
+                "can_delete_any_message_group": orjson.dumps(
+                    {
+                        "new": {
+                            "direct_members": [user.id],
+                            "direct_subgroups": [
+                                owners_system_group.id,
+                                moderators_system_group.id,
+                            ],
+                        }
+                    }
+                ).decode(),
+                "can_delete_own_message_group": orjson.dumps(
+                    {
+                        "new": {
+                            "direct_members": [user.id],
+                            "direct_subgroups": [
+                                owners_system_group.id,
+                                moderators_system_group.id,
+                            ],
+                        }
+                    }
+                ).decode(),
+            },
+        )
+        self.assert_json_error(result, "Insufficient permission")
+
+        moderator = self.example_user("shiva")
+
+        # Shiva is a moderator.
+        result = self.subscribe_via_post(
+            moderator,
+            subscriptions,
+            subdomain="zulip",
+            extra_post_data={
+                "can_delete_any_message_group": orjson.dumps(owners_system_group.id).decode()
+            },
+            allow_fail=True,
+        )
+        self.assert_json_success(result)
+
+        result = self.subscribe_via_post(
+            moderator,
+            subscriptions,
+            subdomain="zulip",
+            extra_post_data={
+                "can_delete_own_message_group": orjson.dumps(owners_system_group.id).decode()
+            },
+            allow_fail=True,
+        )
+        self.assert_json_success(result)
+
+        self.login("shiva")
+        result = self.client_patch(
+            f"/json/streams/{stream.id}",
+            {
+                "can_delete_any_message_group": orjson.dumps(
+                    {
+                        "new": {
+                            "direct_members": [user.id],
+                            "direct_subgroups": [
+                                owners_system_group.id,
+                                moderators_system_group.id,
+                            ],
+                        }
+                    }
+                ).decode(),
+                "can_delete_own_message_group": orjson.dumps(
+                    {
+                        "new": {
+                            "direct_members": [user.id],
+                            "direct_subgroups": [
+                                owners_system_group.id,
+                                moderators_system_group.id,
+                            ],
+                        }
+                    }
+                ).decode(),
+            },
+        )
+        self.assert_json_success(result)

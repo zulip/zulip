@@ -27,21 +27,17 @@ options:
 
 - **Free**: Includes free access to Zulip's [Mobile Push Notification
   Service][push-notifications] for up to 10 users.
-
 - **Basic**: Includes unlimited access to Zulip's [Mobile Push Notification
   Service][push-notifications] for organizations with more than 10 users.
-
 - **Business**: Includes commercial support, in addition to push notifications
   access. Zulip's support team can answer questions about installation and
   upgrades, provide guidance in tricky situations, and help avoid painful
   complications before they happen. You can also get guidance on how best to use
   dozens of Zulip features and configuration options.
-
 - **Enterprise**: If your organization requires hands-on support, such as
   real-time assistance during installation and upgrades, help with advanced
   deployment options, development of custom features or integrations, etc.,
   please contact [sales@zulip.com](mailto:sales@zulip.com) to discuss pricing.
-
 - **Community**: This free plan includes unlimited push notifications access,
   and is available for many non-commercial organizations with more than 10 users
   (details [below](#free-community-plan)).
@@ -152,7 +148,6 @@ An organization is considered to be a new customer if:
 
 - It was not registered for Zulip's [Mobile Push Notification
   Service][push-notifications] prior to December 12, 2023, and
-
 - It has never previously signed up for a self-hosted Zulip plan (Basic,
   Business, Community or Enterprise).
 
@@ -233,6 +228,8 @@ An organization is considered to be a new customer if:
 ## Manage billing
 
 {!manage-billing-intro.md!}
+
+### Manage billing
 
 {start_tabs}
 
@@ -316,9 +313,7 @@ large organization.
 
 - [Education organizations](#education-pricing) and [non-profit
   organizations](#non-profit-pricing).
-
 - Discounts are available for organizations based in the **developing world**.
-
 - Any organization where many users are **not paid staff** is likely eligible
   for a discount.
 
@@ -340,7 +335,6 @@ university IT) may qualify for [non-profit pricing](#non-profit-pricing).
     - **Basic plan**: $0.50 per user per month
     - **Business plan**: $1 per user per month with annual billing
     ($1.20/month billed monthly) with a minimum purchase of 100 licenses.
-
 - **Non-profit education pricing**: The non-profit discount applies to
   online purchases only (no additional legal agreements) for use at registered
   non-profit institutions (e.g., colleges and universities).

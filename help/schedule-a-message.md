@@ -1,8 +1,9 @@
 # Schedule a message
 
 Zulip lets you schedule a message to be sent at a later time. For example, if
-you are working outside of regular business hours for your organization, you
-can schedule a message for next morning to avoid disturbing others.
+you are working outside of regular business hours for your organization, you can
+schedule a message for next morning to avoid disturbing others. You can also
+[schedule a message reminder](/help/schedule-a-reminder) for yourself.
 
 ## Schedule a message
 
@@ -37,8 +38,7 @@ can schedule a message for next morning to avoid disturbing others.
 
 {!go-to-scheduled-messages.md!}
 
-1. Click the **pencil** (<i class="fa fa-pencil"></i>) icon on the message you
-   want to edit or reschedule.
+1. Click on the message you want to edit or reschedule.
 
 1. *(optional)* Edit the message.
 
@@ -64,8 +64,7 @@ can schedule a message for next morning to avoid disturbing others.
 
 {!go-to-scheduled-messages.md!}
 
-1. Click the **pencil** (<i class="fa fa-pencil"></i>) icon on the message you
-   want to send now.
+1. Click on the message you want to send now.
 
 1. *(optional)* Edit the message.
 
@@ -115,6 +114,7 @@ can schedule a message for next morning to avoid disturbing others.
 
 ## Related articles
 
+* [Schedule a reminder](/help/schedule-a-reminder)
 * [Message drafts](/help/view-and-edit-your-message-drafts)
 * [Preview messages before sending](/help/preview-your-message-before-sending)
 * [Verify a message was sent](/help/verify-your-message-was-successfully-sent)

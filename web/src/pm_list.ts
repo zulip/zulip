@@ -1,6 +1,6 @@
 import $ from "jquery";
 import _ from "lodash";
-import {z} from "zod";
+import * as z from "zod/mini";
 
 import type {Filter} from "./filter.ts";
 import {localstorage} from "./localstorage.ts";
@@ -21,7 +21,7 @@ let prior_dom: vdom.Tag<PMNode> | undefined;
 // left corner of the app.  This was split out from stream_list.ts.
 
 const ls_key = "left_sidebar_direct_messages_collapsed_state";
-const ls_schema = z.boolean().default(false);
+const ls_schema = z._default(z.boolean(), false);
 const ls = localstorage();
 let private_messages_collapsed = false;
 
@@ -237,6 +237,7 @@ function zoom_out(): void {
 
 export function clear_search(): void {
     const $filter = $(".direct-messages-list-filter").expectOne();
+    $filter.val("");
     update_private_messages();
     $filter.trigger("blur");
 }

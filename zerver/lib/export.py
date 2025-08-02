@@ -91,7 +91,7 @@ from zerver.models.presence import PresenceSequence
 from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.realms import get_fake_email_domain, get_realm
 from zerver.models.saved_snippets import SavedSnippet
-from zerver.models.users import get_system_bot, get_user_profile_by_id
+from zerver.models.users import ExternalAuthID, get_system_bot, get_user_profile_by_id
 
 if TYPE_CHECKING:
     from mypy_boto3_s3.service_resource import Object
@@ -158,6 +158,7 @@ ALL_ZULIP_TABLES = {
     "zerver_defaultstreamgroup_streams",
     "zerver_draft",
     "zerver_emailchangestatus",
+    "zerver_externalauthid",
     "zerver_groupgroupmembership",
     "zerver_huddle",
     "zerver_imageattachment",
@@ -175,6 +176,7 @@ ALL_ZULIP_TABLES = {
     "zerver_preregistrationuser_streams",
     "zerver_preregistrationuser_groups",
     "zerver_presencesequence",
+    "zerver_pushdevice",
     "zerver_pushdevicetoken",
     "zerver_reaction",
     "zerver_realm",
@@ -236,6 +238,7 @@ NON_EXPORTED_TABLES = {
     "zerver_scheduledmessagenotificationemail",
     # When switching servers, clients will need to re-log in and
     # reregister for push notifications anyway.
+    "zerver_pushdevice",
     "zerver_pushdevicetoken",
     # We don't use these generated Django tables
     "zerver_userprofile_groups",
@@ -332,6 +335,7 @@ DATE_FIELDS: dict[TableName, list[Field]] = {
     "analytics_usercount": ["end_time"],
     "zerver_attachment": ["create_time"],
     "zerver_channelfolder": ["date_created"],
+    "zerver_externalauthid": ["date_created"],
     "zerver_message": ["last_edit_time", "date_sent"],
     "zerver_muteduser": ["date_muted"],
     "zerver_realmauditlog": ["event_time"],
@@ -431,8 +435,9 @@ def write_table_data(output_file: str, data: dict[str, Any]) -> None:
     # We sort by ids mostly so that humans can quickly do diffs
     # on two export jobs to see what changed (either due to new
     # data arriving or new code being deployed).
-    for table in data.values():
-        table.sort(key=lambda row: row["id"])
+    for value in data.values():
+        if isinstance(value, list):
+            value.sort(key=lambda row: row["id"])
 
     assert output_file.endswith(".json")
 
@@ -1246,6 +1251,14 @@ def add_user_profile_child_configs(user_profile_config: Config) -> None:
         model=UserTopic,
         normal_parent=user_profile_config,
         include_rows="user_profile_id__in",
+        limit_to_consenting_users=True,
+    )
+
+    Config(
+        table="zerver_externalauthid",
+        model=ExternalAuthID,
+        normal_parent=user_profile_config,
+        include_rows="user_id__in",
         limit_to_consenting_users=True,
     )
 
@@ -2450,6 +2463,8 @@ def do_export_realm(
     # Override the "deactivated" flag on the realm
     if export_as_active is not None:
         response["zerver_realm"][0]["deactivated"] = not export_as_active
+
+    response["import_source"] = "zulip"  # type: ignore[assignment]  # this is an extra info field, not TableData
 
     # Write realm data
     export_file = os.path.join(output_dir, "realm.json")

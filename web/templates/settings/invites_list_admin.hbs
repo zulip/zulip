@@ -1,7 +1,19 @@
 <div id="admin-invites-list" class="user-settings-section" data-user-settings-section="invitations">
-    <div class="tip invite-user-settings-tip"></div>
+    <div class="invite-user-settings-banner banner-wrapper">
+        {{> ../components/banner
+          label=(t "You do not have permission to send invite emails in this organization.")
+          intent="info"
+          custom_classes="admin-permissions-banner"
+          }}
+    </div>
     {{#unless is_admin }}
-    <div class="tip">{{t "You can only view or manage invitations that you sent." }}</div>
+    <div class="banner-wrapper">
+        {{> ../components/banner
+          label=(t "You can only view or manage invitations that you sent.")
+          intent="info"
+          custom_classes="admin-permissions-banner"
+          }}
+    </div>
     {{/unless}}
     {{> ../components/action_button
       label=(t 'Invite users to organization')

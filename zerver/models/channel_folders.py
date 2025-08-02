@@ -6,7 +6,7 @@ from zerver.models.users import UserProfile
 
 
 class ChannelFolder(models.Model):
-    MAX_NAME_LENGTH = 100
+    MAX_NAME_LENGTH = 60
     MAX_DESCRIPTION_LENGTH = 1024
 
     realm = models.ForeignKey(Realm, on_delete=models.CASCADE)

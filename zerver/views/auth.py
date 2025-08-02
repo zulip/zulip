@@ -3,7 +3,7 @@ import secrets
 from collections.abc import Callable, Mapping
 from functools import wraps
 from typing import TYPE_CHECKING, Any, Concatenate, TypeAlias, cast
-from urllib.parse import urlencode, urljoin
+from urllib.parse import urlencode, urljoin, urlsplit
 
 import jwt
 import orjson
@@ -63,7 +63,11 @@ from zerver.lib.realm_icon import realm_icon_url
 from zerver.lib.request import RequestNotes
 from zerver.lib.response import json_success
 from zerver.lib.sessions import set_expirable_session_var
-from zerver.lib.subdomains import get_subdomain, is_subdomain_root_or_alias
+from zerver.lib.subdomains import (
+    get_subdomain,
+    get_subdomain_from_hostname,
+    is_subdomain_root_or_alias,
+)
 from zerver.lib.typed_endpoint import typed_endpoint
 from zerver.lib.url_encoding import append_url_query_string
 from zerver.lib.user_agent import parse_user_agent
@@ -99,6 +103,7 @@ from zproject.backends import (
     ldap_auth_enabled,
     password_auth_enabled,
     saml_auth_enabled,
+    sync_groups_for_prereg_user,
     validate_otp_params,
 )
 
@@ -165,6 +170,7 @@ def maybe_send_to_registration(
     desktop_flow_otp: str | None = None,
     full_name: str = "",
     full_name_validated: bool = False,
+    group_memberships_sync_map: dict[str, bool] | None = None,
     is_signup: bool = False,
     mobile_flow_otp: str | None = None,
     multiuse_object_key: str = "",
@@ -310,8 +316,10 @@ def maybe_send_to_registration(
 
         if streams_to_subscribe:
             prereg_user.streams.set(streams_to_subscribe)
-        if user_groups:
-            prereg_user.groups.set(user_groups)
+        if user_groups or group_memberships_sync_map:
+            prereg_user.groups.set(user_groups or [])
+            if group_memberships_sync_map:
+                sync_groups_for_prereg_user(prereg_user, group_memberships_sync_map)
         if include_realm_default_subscriptions is not None:
             prereg_user.include_realm_default_subscriptions = include_realm_default_subscriptions
 
@@ -360,6 +368,7 @@ def register_remote_user(request: HttpRequest, result: ExternalAuthResult) -> Ht
         "email",
         "full_name",
         "role",
+        "group_memberships_sync_map",
         "mobile_flow_otp",
         "desktop_flow_otp",
         "is_signup",
@@ -806,16 +815,21 @@ def redirect_to_misconfigured_ldap_notice(request: HttpRequest, error_type: int)
 def show_deactivation_notice(request: HttpRequest, next: str = "/") -> HttpResponse:
     realm = get_realm_from_request(request)
     if realm and realm.deactivated:
-        if realm.deactivated_redirect is not None:
-            # URL hash is automatically preserved by the browser.
-            # See https://stackoverflow.com/a/5283739
-            redirect_to = get_safe_redirect_to(next, realm.deactivated_redirect)
-            return HttpResponseRedirect(redirect_to)
-
         realm_data_scrubbed = RealmAuditLog.objects.filter(
             realm=realm, event_type=AuditLogEventType.REALM_SCRUBBED
         ).exists()
-        context = {"realm_data_deleted": realm_data_scrubbed}
+        context = {
+            "realm_data_deleted": realm_data_scrubbed,
+            "deactivated_redirect": realm.deactivated_redirect,
+        }
+
+        if realm.deactivated_redirect is not None:
+            split = urlsplit(realm.deactivated_redirect)
+            host = f"{split.scheme}://{split.netloc}"
+            # If the redirect is in the same domain, do an automatic redirect.
+            if get_subdomain_from_hostname(host, None) is not None:
+                redirect_to = get_safe_redirect_to(next, realm.deactivated_redirect)
+                context["auto_redirect_to"] = redirect_to
         return render(request, "zerver/deactivated.html", context=context)
 
     return HttpResponseRedirect(reverse("login_page"))

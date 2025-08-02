@@ -6,7 +6,6 @@ space for the message feed. There are a number of ways to open the compose box.
 ## Using the mouse
 
 * Click on any message.
-
 * Click on **Start new conversation**, or **New direct message** at the
   bottom of the app.
 
@@ -15,9 +14,7 @@ space for the message feed. There are a number of ways to open the compose box.
 All replies are to the message in the **blue box**.
 
 * **Reply**: <kbd>R</kbd> or <kbd>Enter</kbd>
-
 * **New topic**: <kbd>C</kbd>
-
 * **New direct message**: <kbd>X</kbd>
 
 You can move the blue box around using the **arrow keys**, <kbd>J</kbd>, or

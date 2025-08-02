@@ -1,11 +1,10 @@
 {{#if is_stream}}
     {{> inbox_stream_header_row .}}
 {{else}}
-    <div id="inbox-row-conversation-{{conversation_key}}" class="inbox-row {{#if is_hidden}}hidden_by_filters{{/if}} {{#if is_collapsed}}collapsed_container{{/if}}" tabindex="0" data-col-index="{{ column_indexes.RECIPIENT }}">
+    <div id="inbox-row-conversation-{{conversation_key}}" class="inbox-row {{#if is_hidden}}hidden_by_filters{{/if}}" tabindex="0" data-col-index="{{ column_indexes.FULL_ROW }}">
         <div class="inbox-focus-border">
             <div class="inbox-left-part-wrapper">
                 <div class="inbox-left-part">
-                    <div class="hide fake-collapse-button" tabindex="0" data-col-index="{{ column_indexes.COLLAPSE_BUTTON }}"></div>
                     {{#if is_direct}}
                         <a class="recipients_info {{#unless user_circle_class}}inbox-group-or-bot-dm{{/unless}}" href="{{dm_url}}" tabindex="-1">
                             <span class="user_block">
@@ -16,7 +15,7 @@
                                 {{else}}
                                 <span class="zulip-icon zulip-icon-{{user_circle_class}} {{user_circle_class}} user-circle" data-presence-indicator-user-id="{{user_ids_string}}"></span>
                                 {{/if}}
-                                <span class="recipients_name">{{{rendered_dm_with}}}</span>
+                                <span class="recipients_name">{{{rendered_dm_with_html}}}</span>
                             </span>
                         </a>
                         <span class="unread_mention_info tippy-zulip-tooltip
@@ -28,8 +27,6 @@
                               aria-label="{{t 'Mark as read' }}">{{unread_count}}</span>
                         </div>
                     {{else if is_topic}}
-                        {{!-- Invisible user circle element for alignment of topic text with DM user name --}}
-                        <span class="user-circle-active user-circle invisible"></span>
                         <div class="inbox-topic-name">
                             <a tabindex="-1" href="{{topic_url}}" {{#if is_empty_string_topic}}class="empty-topic-display"{{/if}}>{{topic_display_name}}</a>
                         </div>
@@ -44,8 +41,6 @@
                                 {{unread_count}}
                             </span>
                         </div>
-                        {{else}}
-                        <div class="hide fake-unread-count" tabindex="0" data-col-index="{{ column_indexes.UNREAD_COUNT }}"></div>
                         {{/if}}
                     {{/if}}
                 </div>

@@ -59,6 +59,9 @@ class ErrorCode(Enum):
     CANNOT_ADMINISTER_CHANNEL = auto()
     REMOTE_SERVER_VERIFICATION_SECRET_NOT_PREPARED = auto()
     HOSTNAME_ALREADY_IN_USE_BOUNCER_ERROR = auto()
+    INVALID_BOUNCER_PUBLIC_KEY = auto()
+    REQUEST_EXPIRED = auto()
+    PUSH_SERVICE_NOT_CONFIGURED = auto()
 
 
 class JsonableError(Exception):
@@ -549,6 +552,32 @@ class MessagesNotAllowedInEmptyTopicError(JsonableError):
         )
 
 
+class TopicsNotAllowedError(JsonableError):
+    data_fields = ["empty_topic_display_name"]
+
+    def __init__(self, empty_topic_display_name: str) -> None:
+        self.empty_topic_display_name = empty_topic_display_name
+
+    @staticmethod
+    @override
+    def msg_format() -> str:
+        return _("Only the {empty_topic_display_name} topic is allowed in this channel.")
+
+
+class CannotSetTopicsPolicyError(JsonableError):
+    data_fields = ["empty_topic_display_name"]
+
+    def __init__(self, empty_topic_display_name: str) -> None:
+        self.empty_topic_display_name = empty_topic_display_name
+
+    @staticmethod
+    @override
+    def msg_format() -> str:
+        return _(
+            "To enable this configuration, all messages in this channel must be in the {empty_topic_display_name} topic. Consider renaming or deleting other topics."
+        )
+
+
 class DirectMessagePermissionError(JsonableError):
     def __init__(self, is_nobody_group: bool) -> None:
         if is_nobody_group:
@@ -801,3 +830,49 @@ class SlackImportInvalidFileError(Exception):
     def __init__(self, message: str) -> None:
         super().__init__(message)
         self.message = message
+
+
+class InvalidBouncerPublicKeyError(JsonableError):
+    code = ErrorCode.INVALID_BOUNCER_PUBLIC_KEY
+
+    def __init__(self) -> None:
+        pass
+
+    @staticmethod
+    @override
+    def msg_format() -> str:
+        return _("Invalid bouncer_public_key")
+
+
+class RequestExpiredError(JsonableError):
+    code = ErrorCode.REQUEST_EXPIRED
+
+    def __init__(self) -> None:
+        pass
+
+    @staticmethod
+    @override
+    def msg_format() -> str:
+        return _("Request expired")
+
+
+class InvalidEncryptedPushRegistrationError(JsonableError):
+    def __init__(self) -> None:
+        pass
+
+    @staticmethod
+    @override
+    def msg_format() -> str:
+        return _("Invalid encrypted_push_registration")
+
+
+class PushServiceNotConfiguredError(JsonableError):
+    code = ErrorCode.PUSH_SERVICE_NOT_CONFIGURED
+
+    def __init__(self) -> None:
+        pass
+
+    @staticmethod
+    @override
+    def msg_format() -> str:
+        return _("Server is not configured to use push notification service.")

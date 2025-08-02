@@ -64,31 +64,33 @@ be your **exported data** file in the instructions below.
 
 {tab|self-hosting}
 
-{!import-into-a-self-hosted-zulip-server.md!}
+{!import-into-a-self-hosted-server-description.md!}
+
+{!import-into-a-self-hosted-server-instructions.md!}
 
 1. To import into an organization hosted on the root domain
    (`EXTERNAL_HOST`) of the Zulip installation, run the following
    commands.
 
-    {!import-self-hosted-server-tips.md!}
+      {!import-self-hosted-server-tips.md!}
 
-    ```
-    cd /home/zulip/deployments/current
-    ./scripts/stop-server
-    ./manage.py convert_rocketchat_data /tmp/rocketchat_data --output /tmp/converted_rocketchat_data
-    ./manage.py import '' /tmp/converted_rocketchat_data
-    ./scripts/start-server
-    ```
+      ```
+      cd /home/zulip/deployments/current
+      ./scripts/stop-server
+      ./manage.py convert_rocketchat_data /tmp/rocketchat_data --output /tmp/converted_rocketchat_data
+      ./manage.py import '' /tmp/converted_rocketchat_data
+      ./scripts/start-server
+      ```
 
-    Alternatively, to import into a custom subdomain, run:
+      Alternatively, to import into a custom subdomain, run:
 
-    ```
-    cd /home/zulip/deployments/current
-    ./scripts/stop-server
-    ./manage.py convert_rocketchat_data /tmp/rocketchat_data --output /tmp/converted_rocketchat_data
-    ./manage.py import <subdomain> /tmp/converted_rocketchat_data
-    ./scripts/start-server
-    ```
+      ```
+      cd /home/zulip/deployments/current
+      ./scripts/stop-server
+      ./manage.py convert_rocketchat_data /tmp/rocketchat_data --output /tmp/converted_rocketchat_data
+      ./manage.py import <subdomain> /tmp/converted_rocketchat_data
+      ./scripts/start-server
+      ```
 
 1. Follow [step 4](https://zulip.readthedocs.io/en/stable/production/install.html#step-4-configure-and-use)
    of the guide for [installing a new Zulip
@@ -107,38 +109,29 @@ keep in mind about the import process:
   visibility](/help/configure-email-visibility),
   [message editing permissions](/help/restrict-message-editing-and-deletion),
   and [how users can join your organization](/help/restrict-account-creation).
-
 - Rocket.Chat does not export user settings, so users in your organization may
   want to [customize their account settings](/help/getting-started-with-zulip).
-
 - Rocket.Chat user roles are mapped to Zulip's [user
   roles](/help/user-roles) in the following way:
 
-| Rocket.Chat role | Zulip role |
-|------------------|------------|
-| Admin            | Owner      |
-| User             | Member     |
-| Guest            | Guest      |
+    | Rocket.Chat role | Zulip role |
+    |------------------|------------|
+    | Admin            | Owner      |
+    | User             | Member     |
+    | Guest            | Guest      |
 
 - User avatars are not imported.
-
 - Default channels for new users are not imported.
-
 - Starred messages are not imported.
-
 - Messages longer than Zulip's limit of 10,000 characters are not
   imported.
-
 - Livechat channels/messages are not imported.
-
 - Messages from Rocket.Chat Discussions are imported as topics
   inside the Zulip channel corresponding to the parent channel of the
   Rocket.Chat Discussion.
-
 - Messages from Rocket.Chat Discussions having direct channels
   (i.e. direct messages) as their parent are imported as normal
   direct messages in Zulip.
-
 - While Rocket.Chat Threads are in general imported as separate
   topics, Rocket.Chat Threads within Rocket.Chat Discussions are
   imported as normal messages within the topic containing that

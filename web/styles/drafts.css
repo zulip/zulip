@@ -1,6 +1,10 @@
 .drafts-container {
     .banner-container {
         margin: 0 25px 5px;
+
+        .banner-label {
+            text-align: left;
+        }
     }
 
     .header-body {

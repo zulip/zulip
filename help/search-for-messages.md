@@ -1,10 +1,11 @@
 # Searching for messages
 
-It's easy to find the right conversation with Zulip's powerful full-text search.
-You can search for messages using keywords and filters via the search bar at the
-top of the app. There is a convenient [**search filters reference**](#search-filters-reference)
-in the Zulip app that you can use whenever you need a reminder of the search
-filters below.
+It's easy to find the right conversation with Zulip's powerful search. When you
+find the message you were looking for, go directly to its topic for full context.
+
+Whenever you need a reminder of the search filters that Zulip offers, check out
+the convenient [**search filters**](#search-filters-reference) reference
+in the Zulip web and desktop apps.
 
 ## Search for messages
 
@@ -21,6 +22,16 @@ filters below.
 
     You can also use the <kbd>/</kbd> or <kbd>Ctrl</kbd> + <kbd>K</kbd>
     keyboard shortcut to start searching messages.
+
+{tab|mobile}
+
+{!mobile-menu.md!}
+
+1. Tap <i class="zulip-icon zulip-icon-search mobile-help"></i> **Search**.
+
+1. Type your query, and tap **search** or
+   <i class="zulip-icon zulip-icon-search mobile-help"></i> on your device's
+   keyboard.
 
 {end_tabs}
 

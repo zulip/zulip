@@ -20,6 +20,106 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 11.0
 
+**Feature level 411**
+
+* [`POST /register`](/api/register-queue), [`PATCH /settings`](/api/update-settings),
+  [`PATCH /realm/user_settings_defaults`](/api/update-realm-user-settings-defaults):
+  Added new `web_left_sidebar_show_channel_folders` display setting,
+  controlling whether any [channel folders](/help/channel-folders)
+  configured by the organization are displayed in the left sidebar.
+
+**Feature level 410**
+
+* [`POST /register`](/api/register-queue): Added
+  `max_channel_folder_name_length` and
+  `max_channel_folder_description_length` fields to the response.
+- Mobile push notification payloads for APNs no longer contain the
+  `time` field, which was unused.
+
+**Feature level 409**
+
+* `PATCH /realm`, [`POST /register`](/api/register-queue),
+  [`GET /events`](/api/get-events): Added a new
+  `require_e2ee_push_notifications` realm setting.
+
+**Feature level 407**
+
+* [`GET /users/me/subscriptions`](/api/get-subscriptions),
+  [`GET /streams`](/api/get-streams), [`GET /events`](/api/get-events),
+  [`POST /register`](/api/register-queue): Added `can_delete_any_message_group`
+  field which is a [group-setting value](/api/group-setting-values) describing the
+  set of users with permissions to delete any message in the channel.
+* [`POST /users/me/subscriptions`](/api/subscribe),
+  [`PATCH /streams/{stream_id}`](/api/update-stream): Added
+  `can_delete_any_message_group` parameter to support setting and
+  changing the user group whose members can delete any message in the specified
+  channel.
+* `PATCH /realm`, [`POST /register`](/api/register-queue),
+  [`GET /events`](/api/get-events): Added `can_set_delete_message_policy_group`
+  realm setting, which is a [group-setting value](/api/group-setting-values)
+  describing the set of users with permission to change per-channel
+  `can_delete_any_message_group` and `can_delete_own_message_group` settings.
+* [`GET /users/me/subscriptions`](/api/get-subscriptions),
+  [`GET /streams`](/api/get-streams), [`GET /events`](/api/get-events),
+  [`POST /register`](/api/register-queue): Added `can_delete_own_message_group`
+  field which is a [group-setting value](/api/group-setting-values) describing the
+  set of users with permissions to delete the messages they have sent in the channel.
+* [`POST /users/me/subscriptions`](/api/subscribe),
+  [`PATCH /streams/{stream_id}`](/api/update-stream): Added
+  `can_delete_own_message_group` parameter to support setting and
+  changing the user group whose members can delete the messages they have sent
+  in the channel.
+
+**Feature level 406**
+
+* [`POST /register`](/api/register-queue): Added `push_devices`
+  field to response.
+* [`GET /events`](/api/get-events): A `push_device` event is sent
+  to clients when registration to bouncer either succeeds or fails.
+* [`POST /mobile_push/register`](/api/register-push-device): Added
+  an endpoint to register a device to receive end-to-end encrypted
+  mobile push notifications.
+
+**Feature level 405**
+
+* [Message formatting](/api/message-formatting): Added new HTML
+  formatting for uploaded audio files generating a player experience.
+
+**Feature level 404**
+
+* [`GET /users/me/subscriptions`](/api/get-subscriptions),
+  [`GET /streams`](/api/get-streams), [`GET /events`](/api/get-events),
+  [`POST /register`](/api/register-queue): Added new `"empty_topic_only"`
+  option to the `topics_policy` field on Stream and Subscription
+  objects.
+* [`POST /users/me/subscriptions`](/api/subscribe),
+  [`PATCH /streams/{stream_id}`](/api/update-stream): Added new
+  `"empty_topic_only"` option to `topics_policy` parameter for
+  ["general chat" channels](/help/general-chat-channels).
+
+**Feature level 403**
+
+* [`POST /register`](/api/register-queue): Added a `url_options` object
+  to the `realm_incoming_webhook_bots` object for incoming webhook
+  integration URL parameter options. Previously, these optional URL
+  parameters were included in the `config_options` field (see feature
+  level 318 entry). The `config_options` object is now reserved for
+  configuration data that can be set when creating an bot user for a
+  specific incoming webhook integration.
+
+**Feature level 402**
+
+
+* [`GET /users/me/subscriptions`](/api/get-subscriptions),
+  [`GET /streams`](/api/get-streams), [`GET /events`](/api/get-events),
+  [`POST /register`](/api/register-queue): Added `can_resolve_topics_group`
+  which is a [group-setting value](/api/group-setting-values) describing the
+  set of users with permissions to resolve topics in the channel.
+* [`POST /users/me/subscriptions`](/api/subscribe),
+  [`PATCH /streams/{stream_id}`](/api/update-stream): Added `can_resolve_topics_group`
+  which is a [group-setting value](/api/group-setting-values) describing the
+  set of users with permissions to resolve topics in the channel.
+
 **Feature level 401**
 
 * [`POST /register`](/api/register-queue), [`PATCH
@@ -101,7 +201,7 @@ format used by the Zulip server that they are interacting with.
 
 * [`POST /register`](/api/register-queue), [`GET
   /events`](/api/get-events), [`GET /streams`](/api/get-streams),
-  [`GET /streams/{stream_id}`](/api/get-stream-by-id):: Added a new
+  [`GET /streams/{stream_id}`](/api/get-stream-by-id): Added a new
   field `subscriber_count` to Stream and Subscription objects with the
   total number of non-deactivated users who are subscribed to the
   channel.
@@ -121,26 +221,31 @@ format used by the Zulip server that they are interacting with.
 
 * [`GET /users/me/subscriptions`](/api/get-subscriptions),
   [`GET /streams`](/api/get-streams), [`GET /events`](/api/get-events),
-  [`POST /register`](/api/register-queue): Added `topics_policy`
-  field to Stream and Subscription objects.
+  [`POST /register`](/api/register-queue): Added the `topics_policy`
+  field to Stream and Subscription objects to support channel-level
+  configurations for sending messages to the empty ["general chat"
+  topic](/help/general-chat-topic).
 * [`POST /users/me/subscriptions`](/api/subscribe),
   [`PATCH /streams/{stream_id}`](/api/update-stream): Added
-  `topics_policy` parameter to support setting and changing the
-  the configuration for sending messages in the empty topic of the
-  channel.
-* `PATCH /realm`, [`POST /register`](/api/register-queue),
-  [`GET /events`](/api/get-events): Added `can_set_topics_policy_group`
-  realm setting, which is a [group-setting value](/api/group-setting-values)
-  describing the set of users with permission to change per-channel `topics_policy`
+  `topics_policy` parameter to support setting and updating the
+  channel-level configuration for sending messages to the
+  empty ["general chat" topic](/help/general-chat-topic).
+* `PATCH /realm`, [`GET /events`](/api/get-events),
+  [`POST /register`](/api/register-queue): Added
+  `can_set_topics_policy_group` realm setting, which is a
+  [group-setting value](/api/group-setting-values) describing the set
+  of users with permission to change the per-channel `topics_policy`
   setting.
 * `PATCH /realm`, [`GET /events`](/api/get-events),
   [`POST /register`](/api/register-queue):
-  Added a new realm setting, `topics_policy` defining the
-  default configuration for sending messages in empty topics.
+  Added a new realm `topics_policy` setting for the organization's
+  default policy for sending channel messages to the empty ["general
+  chat" topic](/help/general-chat-topic).
 * [`GET /events`](/api/get-events), [`POST /register`](/api/register-queue):
-  Deprecated `mandatory_topics` field in favor of `topics_policy` realm setting.
-* `PATCH /realm`: Removed `mandatory_topics` field as it is now replaced by
-  `topics_policy` field.
+  Deprecated the realm `mandatory_topics` setting in favor of the new
+  realm `topics_policy` setting.
+* `PATCH /realm`: Removed the `mandatory_topics` parameter as it is now
+  replaced by the realm `topics_policy` setting.
 
 **Feature level 391**
 
@@ -860,10 +965,14 @@ deactivated groups.
 
 **Feature level 318**
 
-* [`POST /register`](/api/register-queue): Updated
-  `realm_incoming_webhook_bots` with a new `config_options` key,
-  defining which options should be offered when creating URLs for this
-  integration.
+* [`POST /register`](/api/register-queue): Renamed the `config` object in the
+  `realm_incoming_webhook_bots` object to `config_options`. This object now
+  includes details about optional URL parameters that can be configured when
+  [generating a URL](/help/generate-integration-url) for an incoming webhook
+  integration. Previously, this object was reserved for key-value pairs that
+  indicated that a bot user could be created with additional configuration
+  data (such as an API key) for that incoming webhook integration, but this
+  functionality has not been implemented for any existing integrations.
 
 **Feature level 317**
 
@@ -1115,7 +1224,7 @@ deactivated groups.
 * [`DELETE /saved_snippets/{saved_snippet_id}`](/api/delete-saved-snippet): Added
   a new endpoint for deleting saved snippets.
 
-**Feature level 296**:
+**Feature level 296**
 
 * [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events),
   [`POST /realm/profile_fields`](/api/create-custom-profile-field),

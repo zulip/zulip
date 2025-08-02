@@ -1107,6 +1107,11 @@ textarea.new_message_textarea {
     #recipient_box_clear_topic_button {
         background: none;
         border: none;
+
+        &:disabled {
+            cursor: default;
+            opacity: 1;
+        }
     }
 
     /* Styles for input in the recipient_box */
@@ -1180,9 +1185,20 @@ textarea.new_message_textarea {
         ~ #recipient_box_clear_topic_button {
         visibility: hidden;
     }
+
+    #stream_message_recipient_topic:disabled
+        ~ #recipient_box_clear_topic_button {
+        visibility: hidden;
+    }
     /* This will reset the bootstrap margin-bottom: 10px value for the inputs */
     & input {
         margin-bottom: 0;
+    }
+
+    &.disabled {
+        background-color: transparent;
+        border-color: transparent;
+        max-width: fit-content;
     }
 }
 
@@ -1293,7 +1309,7 @@ textarea.new_message_textarea {
             outline: 1px solid var(--color-outline-low-attention-input-pill);
         }
 
-        &:hover {
+        &:hover:not(.disabled) {
             background-color: var(
                 --color-compose-recipient-box-background-color
             );
@@ -1543,22 +1559,21 @@ textarea.new_message_textarea {
 .compose-control-buttons-container {
     display: flex;
     align-items: center;
+    /* 30px at 15px/1em */
+    height: var(--compose-formatting-buttons-row-height);
 
     .compose_control_button {
-        /* 22px at 14px/1em */
-        font-size: 1.5714em;
+        /* 22px at 15px/1em */
+        font-size: 1.4667em;
         /* Constrain icon fonts to a perfect
-           box (22px at 14px/1em) */
+           box (22px at 15px/1em) to sit centered
+           in the 30px by 30px button area. */
         line-height: 1;
         /* Coordinate with the value of
            --compose-formatting-buttons-row-height */
-        /* 28px at 22px/1em */
-        height: 1.2727em;
         /* 30px at 22px/1em */
+        height: 1.3636em;
         width: 1.3636em;
-        /* Adhere to the width of formatting buttons,
-           despite flexbox context. */
-        flex: 0 0 auto;
         display: flex;
         align-items: center;
         justify-content: center;

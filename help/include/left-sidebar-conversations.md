@@ -5,14 +5,14 @@ and the channels you are subscribed to.
 
 {tab|desktop-web}
 
-1. Click on **DIRECT MESSAGES** or the name of a channel in the left sidebar. You
+1. Click on **direct messages** or the name of a channel in the left sidebar. You
    will see a list of the most recent unread conversations that you have not [muted](/help/mute-a-topic).
 
 1. Click on the conversation you are interested in.
 
 !!! tip ""
 
-    To see all conversations, click on **MORE CONVERSATIONS** (in direct messages) or **SHOW ALL TOPICS**
+    To see all conversations, click on **more conversations** (in direct messages) or **show all topics**
     (in a channel).
 
 {end_tabs}

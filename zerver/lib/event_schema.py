@@ -39,14 +39,14 @@ from zerver.lib.event_types import (
     EventMessage,
     EventMutedTopics,
     EventMutedUsers,
-    EventNavigationViewsAdd,
-    EventNavigationViewsRemove,
-    EventNavigationViewsUpdate,
+    EventNavigationViewAdd,
+    EventNavigationViewRemove,
+    EventNavigationViewUpdate,
     EventOnboardingSteps,
     EventPresence,
+    EventPushDevice,
     EventReactionAdd,
     EventReactionRemove,
-    EventRealmBilling,
     EventRealmBotAdd,
     EventRealmBotDelete,
     EventRealmBotUpdate,
@@ -83,10 +83,8 @@ from zerver.lib.event_types import (
     EventSubscriptionPeerRemove,
     EventSubscriptionRemove,
     EventSubscriptionUpdate,
-    EventTypingEditChannelMessageStart,
-    EventTypingEditChannelMessageStop,
-    EventTypingEditDirectMessageStart,
-    EventTypingEditDirectMessageStop,
+    EventTypingEditMessageStart,
+    EventTypingEditMessageStop,
     EventTypingStart,
     EventTypingStop,
     EventUpdateDisplaySettings,
@@ -182,13 +180,13 @@ check_heartbeat = make_checker(EventHeartbeat)
 check_invites_changed = make_checker(EventInvitesChanged)
 check_message = make_checker(EventMessage)
 check_muted_users = make_checker(EventMutedUsers)
-check_navigation_view_add = make_checker(EventNavigationViewsAdd)
-check_navigation_view_remove = make_checker(EventNavigationViewsRemove)
-check_navigation_view_update = make_checker(EventNavigationViewsUpdate)
+check_navigation_view_add = make_checker(EventNavigationViewAdd)
+check_navigation_view_remove = make_checker(EventNavigationViewRemove)
+check_navigation_view_update = make_checker(EventNavigationViewUpdate)
 check_onboarding_steps = make_checker(EventOnboardingSteps)
+check_push_device = make_checker(EventPushDevice)
 check_reaction_add = make_checker(EventReactionAdd)
 check_reaction_remove = make_checker(EventReactionRemove)
-check_realm_billing = make_checker(EventRealmBilling)
 check_realm_bot_delete = make_checker(EventRealmBotDelete)
 check_realm_deactivated = make_checker(EventRealmDeactivated)
 check_realm_domains_add = make_checker(EventRealmDomainsAdd)
@@ -217,10 +215,8 @@ check_subscription_peer_remove = make_checker(EventSubscriptionPeerRemove)
 check_subscription_remove = make_checker(EventSubscriptionRemove)
 check_typing_start = make_checker(EventTypingStart)
 check_typing_stop = make_checker(EventTypingStop)
-check_typing_edit_channel_message_start = make_checker(EventTypingEditChannelMessageStart)
-check_typing_edit_direct_message_start = make_checker(EventTypingEditDirectMessageStart)
-check_typing_edit_channel_message_stop = make_checker(EventTypingEditChannelMessageStop)
-check_typing_edit_direct_message_stop = make_checker(EventTypingEditDirectMessageStop)
+check_typing_edit_message_start = make_checker(EventTypingEditMessageStart)
+check_typing_edit_message_stop = make_checker(EventTypingEditMessageStop)
 check_update_message_flags_add = make_checker(EventUpdateMessageFlagsAdd)
 check_update_message_flags_remove = make_checker(EventUpdateMessageFlagsRemove)
 check_user_group_add = make_checker(EventUserGroupAdd)
@@ -467,6 +463,7 @@ def check_realm_update(
     property_type = Realm.property_types[prop]
     if inspect.isclass(property_type) and issubclass(property_type, Enum):
         assert isinstance(value, str)
+        property_type[value]
     else:
         assert isinstance(value, property_type)
 
@@ -486,6 +483,7 @@ def check_realm_default_update(
     value = event["value"]
     if inspect.isclass(prop_type) and issubclass(prop_type, Enum):
         assert isinstance(value, str)
+        prop_type[value]
     else:
         assert isinstance(value, prop_type)
 
@@ -658,6 +656,7 @@ def check_user_settings_update(
         setting_type = UserProfile.property_types[setting_name]
         if inspect.isclass(setting_type) and issubclass(setting_type, Enum):
             assert isinstance(value, str)
+            setting_type[value]
         else:
             assert isinstance(value, setting_type)
 

@@ -32,7 +32,7 @@ description with 👍.
 
 {relative|gear|channel-settings}
 
-1. Click the **checkmark**
+1. Click the **unsubscribe from channel**
    (<img src="/static/images/help/desktop-web-check-icon.svg" alt="checkmark" class="help-center-icon"/>)
    icon to the left of a channel to unsubscribe from it.
 

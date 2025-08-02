@@ -347,6 +347,21 @@ test("basics", () => {
     assert.ok(filter.can_show_next_unread_dm_conversation_button());
     assert.ok(!filter.has_exactly_channel_topic_operators());
 
+    terms = [{operator: "is", operand: "dm", negated: true}];
+    filter = new Filter(terms);
+    assert.ok(!filter.contains_only_private_messages());
+    assert.ok(filter.can_mark_messages_read());
+    assert.ok(filter.contains_no_partial_conversations());
+    assert.ok(!filter.has_operator("search"));
+    assert.ok(filter.can_apply_locally());
+    assert.ok(!filter.is_personal_filter());
+    assert.ok(!filter.is_conversation_view());
+    assert.ok(!filter.is_channel_view());
+    assert.ok(filter.may_contain_multiple_conversations());
+    assert.ok(!filter.can_show_next_unread_topic_conversation_button());
+    assert.ok(!filter.can_show_next_unread_dm_conversation_button());
+    assert.ok(!filter.has_exactly_channel_topic_operators());
+
     // "is:private" was renamed to "is:dm"
     terms = [{operator: "is", operand: "private"}];
     filter = new Filter(terms);
@@ -1682,7 +1697,7 @@ test("describe", ({mock_template, override}) => {
         {operator: "channel", operand: devel_id.toString()},
         {operator: "is", operand: "starred"},
     ];
-    string = "channel devel, starred messages";
+    string = "messages in #devel, starred messages";
     assert.equal(Filter.search_description_as_html(narrow, false), string);
 
     const river_id = new_stream_id();
@@ -1691,14 +1706,14 @@ test("describe", ({mock_template, override}) => {
         {operator: "channel", operand: river_id.toString()},
         {operator: "is", operand: "unread"},
     ];
-    string = "channel river, unread messages";
+    string = "messages in #river, unread messages";
     assert.equal(Filter.search_description_as_html(narrow, false), string);
 
     narrow = [
         {operator: "channel", operand: devel_id.toString()},
         {operator: "topic", operand: "JS"},
     ];
-    string = "channel devel > JS";
+    string = "messages in #devel > JS";
     assert.equal(Filter.search_description_as_html(narrow, false), string);
 
     narrow = [
@@ -1717,7 +1732,7 @@ test("describe", ({mock_template, override}) => {
     assert.equal(Filter.search_description_as_html(narrow, false), string);
 
     narrow = [{operator: "is", operand: "mentioned"}];
-    string = "@-mentions";
+    string = "messages that mention you";
     assert.equal(Filter.search_description_as_html(narrow, false), string);
 
     narrow = [{operator: "is", operand: "alerted"}];
@@ -1754,7 +1769,7 @@ test("describe", ({mock_template, override}) => {
         {operator: "channel", operand: devel_id.toString()},
         {operator: "topic", operand: "JS", negated: true},
     ];
-    string = "channel devel, exclude topic JS";
+    string = "messages in #devel, exclude topic JS";
     assert.equal(Filter.search_description_as_html(narrow, false), string);
 
     narrow = [
@@ -1768,28 +1783,28 @@ test("describe", ({mock_template, override}) => {
         {operator: "channel", operand: devel_id.toString()},
         {operator: "is", operand: "starred", negated: true},
     ];
-    string = "channel devel, exclude starred messages";
+    string = "messages in #devel, exclude starred messages";
     assert.equal(Filter.search_description_as_html(narrow, false), string);
 
     narrow = [
         {operator: "channel", operand: devel_id.toString()},
         {operator: "has", operand: "image", negated: true},
     ];
-    string = "channel devel, exclude messages with images";
+    string = "messages in #devel, exclude messages with images";
     assert.equal(Filter.search_description_as_html(narrow, false), string);
 
     narrow = [
         {operator: "has", operand: "abc", negated: true},
         {operator: "channel", operand: devel_id.toString()},
     ];
-    string = "invalid abc operand for has operator, channel devel";
+    string = "invalid abc operand for has operator, messages in #devel";
     assert.equal(Filter.search_description_as_html(narrow, false), string);
 
     narrow = [
         {operator: "has", operand: "image", negated: true},
         {operator: "channel", operand: devel_id.toString()},
     ];
-    string = "exclude messages with images, channel devel";
+    string = "exclude messages with images, messages in #devel";
     assert.equal(Filter.search_description_as_html(narrow, false), string);
 
     narrow = [];
@@ -1801,7 +1816,7 @@ test("describe", ({mock_template, override}) => {
         {operator: "stream", operand: devel_id.toString()},
         {operator: "subject", operand: "JS", negated: true},
     ];
-    string = "channel devel, exclude topic JS";
+    string = "messages in #devel, exclude topic JS";
     assert.equal(Filter.search_description_as_html(narrow, false), string);
 
     // Empty string topic involved.
@@ -1810,7 +1825,8 @@ test("describe", ({mock_template, override}) => {
         {operator: "channel", operand: devel_id.toString()},
         {operator: "topic", operand: ""},
     ];
-    string = 'channel devel > <span class="empty-topic-display">translated: general chat</span>';
+    string =
+        'messages in #devel > <span class="empty-topic-display">translated: general chat</span>';
     assert.equal(Filter.search_description_as_html(narrow, false), string);
 
     narrow = [
@@ -2695,6 +2711,14 @@ test("navbar_helpers", ({override}) => {
     };
 
     test_get_title(channel_topic_search_term_test_case);
+
+    page_params.is_spectator = true;
+    const channels_public_search_test_case_for_spectator = {
+        terms: channels_public,
+        title: "translated: Messages in all public channels that you can view",
+    };
+    test_get_title(channels_public_search_test_case_for_spectator);
+    page_params.is_spectator = false;
 
     override(realm, "realm_enable_guest_user_indicator", false);
     const guest_user_test_cases_without_indicator = [

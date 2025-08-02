@@ -187,10 +187,10 @@ All of these data synchronization options have the same model:
   your configuration changes take effect.
 - Logs are available in `/var/log/zulip/ldap.log`.
 
-When using this feature, you may also want to
-[prevent users from changing their display name in the Zulip UI][restrict-name-changes],
-since any such changes would be automatically overwritten on the sync
-run of `manage.py sync_ldap_user_data`.
+When using this feature, you may also want to [prevent users from
+changing their display name or email address in the Zulip
+UI][restrict-name-changes], since any such changes would be
+automatically overwritten.
 
 [restrict-name-changes]: https://zulip.com/help/restrict-name-and-email-changes
 
@@ -269,40 +269,49 @@ groups. To configure this feature:
 
 [zulip-groups]: https://zulip.com/help/user-groups
 
-#### Synchronizing email addresses
+### Synchronizing email addresses
 
-User accounts in Zulip are uniquely identified by their email address,
-and that's [currently](https://github.com/zulip/zulip/pull/16208) the
-only way through which a Zulip account is associated with their LDAP
-user account.
+Zulip 11.0+ supports automatically handling changes in email address
+for most LDAP installations. All you need to do is set the
+`unique_account_id` field in `AUTH_LDAP_USER_ATTR_MAP` to a **stable
+unique identifier** for the account. If your LDAP server has a policy
+of never changing the Distinguished Name (`dn`) for a user, you can
+use that. But it's worth checking if your LDAP provider offers a UUID
+that is guaranteed to always map to the same user account.
 
-In particular, whenever a user attempts to log in to Zulip using LDAP,
-Zulip will use the LDAP information to authenticate the access, and
-determine the user's email address. It will then log in the user to
-the Zulip account with that email address (or if none exists,
-potentially prompt the user to create one). This model is convenient,
-because it works well with any LDAP provider (and handles migrations
-between LDAP providers transparently).
+For Active Directory installations, the immutable Security Identifier
+[`objectSid`](https://ldapwiki.com/wiki/Wiki.jsp?page=Security%20Identifier)
+is recommended.
 
-However, when a user's email address is changed in your LDAP
-directory, manual action needs to be taken to tell Zulip that the
-email address Zulip account with the new email address.
+:::{note}
 
-There are two ways to execute email address changes:
+While most LDAP data is synced in `sync_ldap_user_data`, email address
+synchronization is only checked on login. The first time a user logs
+in with `unique_account_id` enabled, the unique ID will be linked with
+their Zulip account. After a change in their LDAP email address, Zulip
+will update the linked Zulip account's Zulip email address the next
+time the user logs in.
 
-- Users changing their email address in LDAP can [change their email
-  address in Zulip](https://zulip.com/help/change-your-email-address)
-  before logging out of Zulip. The user will need to be able to
-  receive email at the new email address in order to complete this
-  flow.
+:::
+
+#### Manually handling LDAP email changes
+
+If you don't have `unique_account_id` enabled, when a user's email
+address is changed in your LDAP directory, it must be manually updated
+in Zulip:
 
 - A server administrator can use the `manage.py change_user_email`
-  [management command][management-commands] to adjust a Zulip
+  [management command][management-commands] to update a Zulip
   account's email address directly.
 
-If a user accidentally creates a duplicate account, the duplicate
-account can be deactivated (and its email address changed) or deleted,
-and then the real account adjusted using the management command above.
+- Users can [change their email address in
+  Zulip](https://zulip.com/help/change-your-email-address). The user
+  must be already logged into Zulip and able to receive email at the
+  new email address.
+
+Not doing so will often lead to a duplicate account when the user next
+logs in. If that happens, you can delete the duplicate account and
+then correct the user's email address using the management command.
 
 [management-commands]: ../production/management-commands.md
 
@@ -610,6 +619,7 @@ other IdPs (identity providers). You can configure it as follows:
 
 [saml-help-center]: https://zulip.com/help/saml-authentication
 [user-role-help-center]: https://zulip.com/help/user-roles
+[user-groups-help-center]: https://zulip.com/help/user-groups
 
 ### IdP-initiated SSO
 
@@ -656,7 +666,7 @@ to the root and `engineering` subdomains:
 </saml2:Attribute>
 ```
 
-### Synchronizing user role or custom profile fields during login
+### Synchronizing data during login
 
 In contrast with SCIM or LDAP, the SAML protocol only allows Zulip to
 access data about a user when that user authenticates to Zulip using
@@ -670,15 +680,17 @@ offer SCIM or the fields one is interested in syncing change rarely
 enough that asking users to logout and then login again to resync
 their metadata might feel reasonable.
 
-Specifically, Zulip supports synchronizing the [user
+Specifically, Zulip supports synchronizing
+[group memberships][user-groups-help-center], the [user
 role][user-role-help-center] and [custom profile
 fields][custom-profile-fields] from the SAML provider.
 
-In order to use this functionality, configure
-`SOCIAL_AUTH_SYNC_ATTRS_DICT` in `/etc/zulip/settings.py` according to
-the instructions in the inline documentation in the file. Servers
-installed before Zulip 10.0 may want to [update inline comment
-documentation][update-inline-comments] first in order to access it.
+In order to use this functionality, configure `SOCIAL_AUTH_SYNC_ATTRS_DICT` in
+`/etc/zulip/settings.py` according to the instructions in the inline
+documentation in the file. Servers installed before Zulip 10.0 may want to
+[update inline comment documentation][update-inline-comments] first in order to
+access it. For configuring syncing of groups see
+[below][configure-saml-group-sync].
 
 Custom profile fields are only synchronized during login, not during
 account creation; we consider this [a
@@ -690,6 +702,46 @@ When user role is provided by the SAML IdP during signup of a
 user who's coming from an invitation link, the IdP-provided role will
 take precedence over the role set in the invitation.
 :::
+
+[configure-saml-group-sync]: #synchronizing-group-membership-with-saml
+
+#### Synchronizing group membership with SAML
+
+Zulip 11.0+ includes support for syncing group memberships upon user
+login. To activate this feature, uncomment the `groups` field in the
+config in `SOCIAL_AUTH_SYNC_ATTRS_DICT` and configure the list as
+explained below. An example configuration might look like this:
+
+```python
+SOCIAL_AUTH_SYNC_ATTRS_DICT = {
+    "your_subdomain": {
+        "saml": {
+            "groups": ["group1", ("samlgroup2", "zulipgroup2"), "group3"],
+        }
+    }
+}
+```
+
+The tuple syntax (`("samlgroup2", "zulipgroup2")`) should be used when
+the Zulip group that you'd like to sync does not have exactly the same
+name as the SAML group.
+
+Your SAML IdP will need to provide the list of SAML group names in the
+`zulip_groups` attribute of the `SAMLResponse`. When a user logs in
+using SAML, groups are synced as follows:
+
+1. If a Zulip group name does not occur in the
+   `SOCIAL_AUTH_SYNC_ATTRS_DICT` groups list, that group's membership
+   is managed entirely in Zulip.
+1. Otherwise, if the group appears in `zulip_groups` in the
+   `SAMLResponse`, the user is added to that group (if not already a
+   member).
+1. Otherwise, the user is removed from that group (if currently a
+   member).
+
+Only direct membership of groups is synced through this protocol;
+subgroups of Zulip groups are managed entirely [inside
+Zulip](https://zulip.com/help/manage-user-groups#add-user-groups-to-a-group).
 
 ### SCIM
 

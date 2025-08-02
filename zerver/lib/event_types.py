@@ -283,19 +283,26 @@ class EventOnboardingSteps(BaseEvent):
     onboarding_steps: list[OnboardingSteps]
 
 
+class EventPushDevice(BaseEvent):
+    type: Literal["push_device"]
+    push_account_id: str
+    status: Literal["active", "failed", "pending"]
+    error_code: str | None = None
+
+
 class NavigationViewFields(BaseModel):
     fragment: str
     is_pinned: bool
     name: str | None
 
 
-class EventNavigationViewsAdd(BaseEvent):
+class EventNavigationViewAdd(BaseEvent):
     type: Literal["navigation_view"]
     op: Literal["add"]
     navigation_view: NavigationViewFields
 
 
-class EventNavigationViewsRemove(BaseEvent):
+class EventNavigationViewRemove(BaseEvent):
     type: Literal["navigation_view"]
     op: Literal["remove"]
     fragment: str
@@ -306,7 +313,7 @@ class NavigationViewFieldsForUpdate(BaseModel):
     name: str | None = None
 
 
-class EventNavigationViewsUpdate(BaseEvent):
+class EventNavigationViewUpdate(BaseEvent):
     type: Literal["navigation_view"]
     op: Literal["update"]
     fragment: str
@@ -592,6 +599,7 @@ class GroupSettingUpdateData(GroupSettingUpdateDataCore):
     can_move_messages_between_channels_group: int | UserGroupMembersDict | None = None
     can_move_messages_between_topics_group: int | UserGroupMembersDict | None = None
     can_resolve_topics_group: int | UserGroupMembersDict | None = None
+    can_set_delete_message_policy_group: int | UserGroupMembersDict | None = None
     can_set_topics_policy_group: int | UserGroupMembersDict | None = None
     can_summarize_topics_group: int | UserGroupMembersDict | None = None
     direct_message_initiator_group: int | UserGroupMembersDict | None = None
@@ -712,10 +720,6 @@ class PersonFullName(BaseModel):
     full_name: str
 
 
-class PersonIsBillingAdmin(BaseModel):
-    user_id: int
-
-
 class PersonRole(BaseModel):
     user_id: int
     role: Literal[100, 200, 300, 400, 600]
@@ -742,17 +746,10 @@ class EventRealmUserUpdate(BaseEvent):
         | PersonDeliveryEmail
         | PersonEmail
         | PersonFullName
-        | PersonIsBillingAdmin
         | PersonRole
         | PersonTimezone
         | PersonIsActive
     )
-
-
-class EventRealmBilling(BaseEvent):
-    type: Literal["realm_billing"]
-    property: str
-    value: bool
 
 
 class EventRestart(BaseEvent):
@@ -847,6 +844,8 @@ class EventRemindersRemove(BaseEvent):
 class BasicStreamFields(BaseModel):
     is_archived: bool
     can_administer_channel_group: int | UserGroupMembersDict
+    can_delete_any_message_group: int | UserGroupMembersDict
+    can_delete_own_message_group: int | UserGroupMembersDict
     can_move_messages_out_of_channel_group: int | UserGroupMembersDict
     can_move_messages_within_channel_group: int | UserGroupMembersDict
     can_remove_subscribers_group: int | UserGroupMembersDict
@@ -912,6 +911,8 @@ class EventSubmessage(BaseEvent):
 class SingleSubscription(BaseModel):
     is_archived: bool
     can_administer_channel_group: int | UserGroupMembersDict
+    can_delete_any_message_group: int | UserGroupMembersDict
+    can_delete_own_message_group: int | UserGroupMembersDict
     can_move_messages_out_of_channel_group: int | UserGroupMembersDict
     can_move_messages_within_channel_group: int | UserGroupMembersDict
     can_remove_subscribers_group: int | UserGroupMembersDict
@@ -1018,43 +1019,29 @@ class EventTypingStop(EventTypingStopCore):
 
 class RecipientFieldForTypingEditChannelMessage(BaseModel):
     type: Literal["channel"]
-    channel_id: int | None = None
-    topic: str | None = None
+    channel_id: int
+    topic: str
 
 
 class RecipientFieldForTypingEditDirectMessage(BaseModel):
     type: Literal["direct"]
-    user_ids: list[int] | None = None
+    user_ids: list[int]
 
 
-class EventTypingEditMessageStartCore(BaseEvent):
+class EventTypingEditMessageStart(BaseEvent):
     type: Literal["typing_edit_message"]
     op: Literal["start"]
     sender_id: int
     message_id: int
+    recipient: RecipientFieldForTypingEditChannelMessage | RecipientFieldForTypingEditDirectMessage
 
 
-class EventTypingEditChannelMessageStart(EventTypingEditMessageStartCore):
-    recipient: RecipientFieldForTypingEditChannelMessage
-
-
-class EventTypingEditDirectMessageStart(EventTypingEditMessageStartCore):
-    recipient: RecipientFieldForTypingEditDirectMessage
-
-
-class EventTypingEditMessageStopCore(BaseEvent):
+class EventTypingEditMessageStop(BaseEvent):
     type: Literal["typing_edit_message"]
     op: Literal["stop"]
     sender_id: int
     message_id: int
-
-
-class EventTypingEditChannelMessageStop(EventTypingEditMessageStopCore):
-    recipient: RecipientFieldForTypingEditChannelMessage
-
-
-class EventTypingEditDirectMessageStop(EventTypingEditMessageStopCore):
-    recipient: RecipientFieldForTypingEditDirectMessage
+    recipient: RecipientFieldForTypingEditChannelMessage | RecipientFieldForTypingEditDirectMessage
 
 
 class EventUpdateDisplaySettingsCore(BaseEvent):

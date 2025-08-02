@@ -242,7 +242,7 @@
     );
     /* This represents the space in the sidebar reserved for symbols like
        the #; labels like the stream name go to the right of this. */
-    --left-sidebar-icon-column-width: 16px;
+    --left-sidebar-icon-column-width: 1em;
     /* Offset on unreads to make New topic button appear centered. */
     --left-sidebar-unread-offset: 6.5px;
     /* space direct message / stream / topic names from unread counters
@@ -659,23 +659,12 @@
     /* Banner grid layout variables */
     --banner-horizontal-padding: 0.8125em; /* 13px at 16px/1em */
     --banner-vertical-padding: 0.3125em; /* 5px at 16px/1em */
-    --banner-grid-template-areas-lg: ". . . . . . banner-close-button banner-close-button"
-        ". . banner-label . banner-action-buttons . banner-close-button banner-close-button"
-        ". . . . . . banner-close-button banner-close-button";
-    --banner-grid-template-columns-lg: var(--banner-horizontal-padding) 0 auto
-        minmax(0, 1fr) auto 0 minmax(0, auto) var(--banner-horizontal-padding);
-    --banner-grid-template-rows-lg: 0.3125em auto 0.3125em; /* 5px at 16px/1em */
-    --banner-grid-template-areas-md: ". . . . banner-close-button banner-close-button"
-        ". . banner-label banner-label banner-close-button banner-close-button"
-        ". banner-action-buttons banner-action-buttons banner-action-buttons banner-close-button banner-close-button"
-        ". . . . banner-close-button banner-close-button";
-    --banner-grid-template-columns-md: var(--banner-horizontal-padding) 0
-        minmax(auto, 1fr) 0 minmax(0, auto) var(--banner-horizontal-padding);
-    --banner-grid-template-rows-md: 0.3125em auto auto 0.3125em; /* 5px at 16px/1em */
-    --banner-grid-template-areas-sm: ". . . . banner-close-button banner-close-button"
-        ". . banner-label banner-label banner-close-button banner-close-button"
-        ". banner-action-buttons banner-action-buttons banner-action-buttons banner-close-button banner-close-button"
-        ". . . . banner-close-button banner-close-button";
+    --banner-grid-template-areas: " . . banner-close-button banner-close-button"
+        ". banner-content banner-close-button banner-close-button"
+        ". . banner-close-button banner-close-button";
+    --banner-grid-template-columns: var(--banner-horizontal-padding)
+        minmax(0, 1fr) minmax(0, auto) var(--banner-horizontal-padding);
+    --banner-grid-template-rows: 0.3125em auto 0.3125em; /* 5px at 16px/1em */
 
     /* Popup banner related variables */
     --popup-banner-translate-y-distance: 100px;
@@ -836,10 +825,14 @@
         hsl(0deg 0% 100% / 19%)
     );
     --color-outline-focus: hsl(215deg 47% 50%);
-    --color-background-search: light-dark(hsl(0deg 0% 100%), hsl(0deg 0% 20%));
+    --color-background-search: light-dark(hsl(0deg 0% 100%), hsl(0deg 0% 17%));
+    --color-background-search-collapsed: light-dark(
+        hsl(0deg 0% 100%),
+        hsl(0deg 0% 20%)
+    );
     --color-background-search-option-hover: light-dark(
         hsl(0deg 0% 94%),
-        hsl(0deg 0% 30%)
+        hsl(0deg 0% 20%)
     );
     --color-search-box-hover-shadow: light-dark(
         hsl(0deg 0% 0% / 10%),
@@ -1816,6 +1809,11 @@
         hsl(237deg 68% 94%),
         hsl(240deg 65% 60% / 22%)
     );
+    /* Tuned pill for the search bar in dark mode. */
+    --color-background-input-pill-search: light-dark(
+        hsl(237deg 68% 94%),
+        hsl(240deg 65% 60% / 30%)
+    );
     --color-background-input-pill-hover: light-dark(
         hsl(240deg 70% 70% / 30%),
         hsl(240deg 52% 60% / 45%)
@@ -1860,13 +1858,17 @@
         hsl(0deg 0% 100% / 85%),
         hsl(0deg 0% 0% / 40%)
     );
-    --color-background-compose-direct-recipient-pill-container: light-dark(
+    --color-background-pill-container: light-dark(
         hsl(0deg 0% 100%),
         hsl(0deg 0% 0% / 20%)
     );
     --color-background-pill-container-input-disabled: light-dark(
         hsl(0deg 0% 93%),
         hsl(0deg 0% 0% / 20%)
+    );
+    --color-border-pill-container: light-dark(
+        hsl(0deg 0% 0% / 15%),
+        hsl(0deg 0% 0% / 60%)
     );
 
     /* Inbox view constants - Values from Figma design */
@@ -1924,6 +1926,10 @@
         hsl(0deg 0% 20%)
     );
     --color-icons-inbox: light-dark(hsl(0deg 0% 0%), hsl(0deg 0% 100%));
+    --color-folder-header: light-dark(hsl(216deg 43% 20%), hsl(216deg 50% 75%));
+    /* Light mode uses the --grey-600 equivalent;
+       dark mode uses the --grey-300 equivalent. */
+    --color-inbox-row-chevron: light-dark(#535663, #aaadba);
 
     /* Navbar dropdown menu constants - Values from Figma design */
     --box-shadow-popover-menu:
@@ -2544,6 +2550,10 @@
     );
 
     /* Banners */
+    /* NOTE: These colors are also used in starlight help center for
+       aside colors. Do grep for these variable when changing them
+       and confirm on CZO on whether the colors there need to change
+       as well. */
     --color-text-link-banner: hsl(210deg 94% 42%);
     /* Banners - Neutral Variant */
     --color-text-neutral-banner: light-dark(
@@ -2625,30 +2635,26 @@
     );
 
     /* Inputs */
-    --color-text-input: light-dark(
-        color-mix(in oklch, hsl(0deg 0% 15%) 50%, transparent),
-        color-mix(in oklch, hsl(0deg 0% 83%) 50%, transparent)
-    );
-    --color-text-input-focus: light-dark(hsl(0deg 0% 15%), hsl(0deg 0% 83%));
+    --color-text-input: light-dark(hsl(0deg 0% 14%), hsl(0deg 0% 95%));
     /* TODO: Light mode uses browser-default white
        backgrounds; we should extend the use of this
        color variable to 1) explicitly set the
        background color of inputs, and 2) clean up a
        lingering stack of selectors in dark_theme.css. */
-    --color-background-input: light-dark(hsl(0deg 0% 100%), hsl(220deg 6% 10%));
+    --color-background-input: light-dark(hsl(0deg 0% 100%), hsl(225deg 6% 10%));
     --color-background-input-focus: light-dark(
         hsl(0deg 0% 100%),
-        hsl(240deg 6% 7%)
+        hsl(225deg 6% 7%)
     );
-    --color-border-input: light-dark(
+    --color-outline-input: light-dark(
         color-mix(in oklch, hsl(229deg 22% 10%) 30%, transparent),
         color-mix(in oklch, hsl(0deg 0% 100%) 20%, transparent)
     );
-    --color-border-input-hover: light-dark(
-        color-mix(in oklch, hsl(229deg 22% 10%) 30%, transparent),
-        color-mix(in oklch, hsl(0deg 0% 100%) 20%, transparent)
+    --color-outline-input-hover: light-dark(
+        color-mix(in oklch, hsl(229deg 22% 10%) 60%, transparent),
+        color-mix(in oklch, hsl(0deg 0% 100%) 40%, transparent)
     );
-    --color-border-input-focus: light-dark(
+    --color-outline-input-focus: light-dark(
         color-mix(in oklch, hsl(229deg 22% 10%) 80%, transparent),
         color-mix(in oklch, hsl(0deg 0% 100%) 50%, transparent)
     );

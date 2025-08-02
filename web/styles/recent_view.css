@@ -161,7 +161,7 @@
 
     #recent-view-search-wrapper {
         flex-grow: 1;
-        margin-bottom: 10px;
+        margin-bottom: 0.7142em; /* Legacy 10px at 14px/1em. */
     }
 
     .button-recent-filters {
@@ -264,6 +264,10 @@
         margin-left: 5px;
         display: flex;
         flex-flow: row nowrap;
+        /* Preserve space for the actions even on archived
+           channels, especially those with unreads. The
+           width is 16px at 16px/1em. */
+        min-width: 1em;
     }
 
     .mention_in_unread {
@@ -490,6 +494,18 @@
             -webkit-line-clamp: 2;
             -webkit-box-orient: vertical;
             overflow: hidden;
+        }
+
+        /* We don't want to apply line clamping to 1:1 DMs,
+           as that causes an odd problem with Safari collapsing
+           the grid on .user-status-microlayout so that usernames
+           always have an ellipsis--no matter how short they are,
+           nor how much space is available in the Topic column.
+
+           `display: inherit` here will set the value to what is
+           already established on .recent_view_focusable. */
+        .line_clamp:has(.recent-view-dm) {
+            display: inherit;
         }
     }
 

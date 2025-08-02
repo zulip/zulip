@@ -18,6 +18,7 @@ from zerver.actions.bots import do_change_bot_owner
 from zerver.actions.channel_folders import check_add_channel_folder
 from zerver.actions.create_realm import do_create_realm
 from zerver.actions.default_streams import do_add_default_stream, do_create_default_stream_group
+from zerver.actions.message_delete import do_delete_messages
 from zerver.actions.realm_settings import (
     do_change_realm_permission_group_setting,
     do_change_realm_plan_type,
@@ -29,6 +30,7 @@ from zerver.actions.streams import (
     deactivated_streams_by_old_name,
     do_change_stream_group_based_setting,
     do_deactivate_stream,
+    do_set_stream_property,
     do_unarchive_stream,
 )
 from zerver.actions.user_groups import bulk_add_members_to_user_groups, check_add_user_group
@@ -68,11 +70,12 @@ from zerver.lib.subscription_info import (
 from zerver.lib.test_classes import ZulipTestCase, get_topic_messages
 from zerver.lib.test_helpers import HostRequestMock, cache_tries_captured
 from zerver.lib.types import UserGroupMembersData
-from zerver.lib.user_groups import UserGroupMembershipDetails, is_user_in_group
+from zerver.lib.user_groups import UserGroupMembershipDetails
 from zerver.models import (
     Attachment,
     DefaultStream,
     DefaultStreamGroup,
+    Message,
     NamedUserGroup,
     Realm,
     RealmAuditLog,
@@ -2253,48 +2256,43 @@ class StreamAdminTest(ZulipTestCase):
         )
         self.assert_json_error(result, "Invalid topics_policy")
 
-        # Users can't change the setting if they are not in `can_administer_channel_group`.
-        hamlet = self.example_user("hamlet")
-        self.login_user(hamlet)
+        desdemona = self.example_user("desdemona")
+        self.login("desdemona")
 
-        self.subscribe(hamlet, "stream_name1")
+        new_stream_name = "TestStream"
+        new_stream = self.make_stream(new_stream_name, desdemona.realm)
+        self.subscribe(desdemona, new_stream_name)
+        self.send_stream_message(desdemona, new_stream_name, "test content", "")
 
-        stream = get_stream("stream_name1", realm)
-        self.assertFalse(is_user_in_group(stream.can_administer_channel_group_id, hamlet))
         result = self.client_patch(
-            f"/json/streams/{stream.id}",
+            f"/json/streams/{new_stream.id}",
             {"topics_policy": StreamTopicsPolicyEnum.allow_empty_topic.name},
-        )
-        self.assert_json_error(result, "You do not have permission to administer this channel.")
-
-        # Hamlet can change the setting now as he is in `can_administer_channel_group`.
-        hamletcharacters_group = NamedUserGroup.objects.get(name="hamletcharacters", realm=realm)
-        do_change_stream_group_based_setting(
-            stream, "can_administer_channel_group", hamletcharacters_group, acting_user=user_profile
-        )
-
-        self.assertTrue(is_user_in_group(stream.can_administer_channel_group_id, hamlet))
-        result = self.client_patch(
-            f"/json/streams/{stream.id}", {"topics_policy": StreamTopicsPolicyEnum.inherit.name}
         )
         self.assert_json_success(result)
 
-        # Users cannot change channel's `topics_policy` if they are not in `can_set_topics_policy_group`.
-        owners_system_group = NamedUserGroup.objects.get(
-            realm=realm, name=SystemGroups.OWNERS, is_system_group=True
+        # Cannot set `topics_policy` to `empty_topic_only` when there are messages
+        # in non-empty topics in the current channel.
+        result = self.client_patch(
+            f"/json/streams/{new_stream.id}",
+            {"topics_policy": StreamTopicsPolicyEnum.empty_topic_only.name},
         )
-        do_change_realm_permission_group_setting(
-            realm,
-            "can_set_topics_policy_group",
-            owners_system_group,
-            acting_user=None,
+        self.assert_json_error(
+            result,
+            "To enable this configuration, all messages in this channel must be in the general chat topic. Consider renaming or deleting other topics.",
         )
 
-        result = self.client_patch(
-            f"/json/streams/{stream.id}",
-            {"topics_policy": StreamTopicsPolicyEnum.allow_empty_topic.name},
+        topic_messages = Message.objects.filter(
+            realm=desdemona.realm,
+            recipient=new_stream.recipient,
         )
-        self.assert_json_error(result, "Insufficient permission")
+        do_delete_messages(desdemona.realm, list(topic_messages), acting_user=desdemona)
+        self.send_stream_message(desdemona, new_stream_name, "test content", "")
+
+        result = self.client_patch(
+            f"/json/streams/{new_stream.id}",
+            {"topics_policy": StreamTopicsPolicyEnum.empty_topic_only.name},
+        )
+        self.assert_json_success(result)
 
     def test_can_set_topics_policy_group(self) -> None:
         user = self.example_user("hamlet")
@@ -3434,6 +3432,7 @@ class SubscriptionAPITest(ZulipTestCase):
         self.assertEqual(msg.recipient.type, Recipient.STREAM)
         self.assertEqual(msg.recipient.type_id, new_stream_announcements_stream.id)
         self.assertEqual(msg.sender_id, self.notification_bot(self.test_realm).id)
+        self.assertEqual(msg.topic_name(), "new channels")
         expected_msg = f"@_**{invitee_full_name}|{invitee.id}** created a new channel #**{invite_streams[0]}**."
         self.assertEqual(msg.content, expected_msg)
 
@@ -3445,6 +3444,41 @@ class SubscriptionAPITest(ZulipTestCase):
             f"**Public** channel created by @_**{invitee_full_name}|{invitee.id}**. **Description:**\n"
             "```` quote\n*No description.*\n````"
         )
+        self.assertEqual(msg.content, expected_msg)
+
+    def test_sucessful_subscription_notifies_in_empty_topic_only_stream(self) -> None:
+        invitee = self.example_user("iago")
+        invitee_full_name = "Iago"
+
+        current_stream = self.get_streams(invitee)[0]
+        invite_streams = self.make_random_stream_names([current_stream])[:1]
+
+        new_stream_announcements_stream = get_stream(current_stream, self.test_realm)
+        self.test_realm.new_stream_announcements_stream_id = new_stream_announcements_stream.id
+        self.test_realm.save()
+
+        do_set_stream_property(
+            new_stream_announcements_stream,
+            "topics_policy",
+            StreamTopicsPolicyEnum.empty_topic_only.value,
+            invitee,
+        )
+
+        self.subscribe_via_post(
+            invitee,
+            invite_streams,
+            extra_post_data=dict(
+                announce="true",
+                principals=orjson.dumps([self.user_profile.id]).decode(),
+            ),
+        )
+
+        msg = self.get_second_to_last_message()
+        self.assertEqual(msg.recipient.type, Recipient.STREAM)
+        self.assertEqual(msg.recipient.type_id, new_stream_announcements_stream.id)
+        self.assertEqual(msg.sender_id, self.notification_bot(self.test_realm).id)
+        self.assertEqual(msg.topic_name(), "")
+        expected_msg = f"@_**{invitee_full_name}|{invitee.id}** created a new channel #**{invite_streams[0]}**."
         self.assertEqual(msg.content, expected_msg)
 
     def test_successful_cross_realm_notification(self) -> None:

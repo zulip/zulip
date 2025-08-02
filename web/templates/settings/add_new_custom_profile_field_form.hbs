@@ -31,7 +31,12 @@
             <table class="profile_field_choices_table">
                 <tbody id="profile_field_choices" class="profile-field-choices"></tbody>
             </table>
-            <button type="button" class="button white rounded alphabetize-choices-button">{{t "Alphabetize choices" }}</button>
+            {{> ../components/action_button
+              label=(t "Alphabetize choices")
+              custom_classes="alphabetize-choices-button"
+              intent="neutral"
+              attention="quiet"
+              }}
         </div>
         <div class="input-group" id="custom_external_account_url_pattern">
             <label for="custom_field_url_pattern" class="modal-field-label">{{t "URL pattern" }}</label>

@@ -56,7 +56,6 @@ import * as sidebar_ui from "./sidebar_ui.ts";
 import * as spectators from "./spectators.ts";
 import * as starred_messages_ui from "./starred_messages_ui.ts";
 import {realm} from "./state_data.ts";
-import * as stream_data from "./stream_data.ts";
 import * as stream_list from "./stream_list.ts";
 import * as stream_popover from "./stream_popover.ts";
 import * as stream_settings_ui from "./stream_settings_ui.ts";
@@ -433,7 +432,7 @@ export function process_escape_key(e) {
         }
 
         if (stream_list.searching()) {
-            stream_list.clear_and_hide_search();
+            stream_list.clear_search();
             return true;
         }
 
@@ -453,8 +452,9 @@ export function process_escape_key(e) {
 
         // When the input is focused, we blur and clear the input. A second "Esc"
         // will zoom out, handled below.
-        if (stream_list.is_zoomed_in() && $("#left-sidebar-filter-topic-input").is(":focus")) {
+        if (stream_list.is_zoomed_in() && $("#topic_filter_query").is(":focus")) {
             topic_list.clear_topic_search(e);
+            $("#topic_filter_query").trigger("blur");
             return true;
         }
 
@@ -560,6 +560,14 @@ function handle_popover_events(event_name) {
 
 // Returns true if we handled it, false if the browser should.
 export function process_enter_key(e) {
+    if ($(e.currentTarget).hasClass("trigger-click-on-enter")) {
+        // If the target has the class "trigger-click-on-enter", explicitly
+        // trigger a click event on it to call the associated click handler.
+        e.preventDefault();
+        $(e.currentTarget).trigger("click");
+        return true;
+    }
+
     if (popovers.any_active() && $(e.target).hasClass("navigate-link-on-enter")) {
         // If a popover is open and we pressed Enter on a menu item,
         // call click directly on the item to navigate to the `href`.
@@ -589,14 +597,6 @@ export function process_enter_key(e) {
     }
 
     if (processing_text()) {
-        if (stream_list.searching()) {
-            // This is sort of funny behavior, but I think
-            // the intention is that we want it super easy
-            // to close stream search.
-            stream_list.clear_and_hide_search();
-            return true;
-        }
-
         // Don't send the message if topic box is focused.
         if (compose.is_topic_input_focused()) {
             return true;
@@ -1101,6 +1101,7 @@ export function process_hotkey(e, hotkey) {
     }
 
     // Shortcuts that don't require a message
+    let list_of_channel_topics_channel_id;
     switch (event_name) {
         case "narrow_private":
             message_view.show(
@@ -1184,25 +1185,39 @@ export function process_hotkey(e, hotkey) {
             }
             return false;
         case "list_of_channel_topics":
+            if (recent_view_ui.is_in_focus()) {
+                const msg = recent_view_ui.get_focused_row_message();
+                if (msg !== undefined && msg.type === "stream") {
+                    list_of_channel_topics_channel_id = msg.stream_id;
+                }
+            }
+            if (inbox_ui.is_in_focus()) {
+                const msg = inbox_ui.get_focused_row_message();
+                if (msg !== undefined && msg.msg_type === "stream") {
+                    list_of_channel_topics_channel_id = msg.stream_id;
+                }
+            }
             if (message_lists.current !== undefined) {
-                let channel_id;
                 const selected_message = message_lists.current.selected_message();
                 if (selected_message === undefined) {
                     const only_valid_id = true;
-                    channel_id = narrow_state.stream_id(narrow_state.filter(), only_valid_id);
+                    list_of_channel_topics_channel_id = narrow_state.stream_id(
+                        narrow_state.filter(),
+                        only_valid_id,
+                    );
                 } else if (selected_message.type === "stream") {
-                    channel_id = stream_data.get_stream_id(selected_message.stream);
+                    list_of_channel_topics_channel_id = selected_message.stream_id;
                 }
-
-                if (channel_id === undefined) {
-                    return false;
-                }
-
-                const channel_topic_list_url = hash_util.by_channel_topic_list_url(channel_id);
-                browser_history.go_to_location(channel_topic_list_url);
-                return true;
             }
-            return false;
+
+            if (list_of_channel_topics_channel_id === undefined) {
+                return false;
+            }
+
+            browser_history.go_to_location(
+                hash_util.by_channel_topic_list_url(list_of_channel_topics_channel_id),
+            );
+            return true;
     }
 
     // Shortcuts that are useful with an empty message feed, like opening compose.

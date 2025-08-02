@@ -8,7 +8,7 @@ status might be "📅 In a meeting" or "🏠 Working remotely". To make it easy 
 notice, the status emoji is shown next to your name in the sidebars, message
 feed, and compose box.
 
-Your **availability** is a colored dot (like <span class="user-circle user-circle-active zulip-icon zulip-icon-user-circle-active"></span>) that indicates if you're currently active on Zulip, idle,
+Your **availability** is a colored dot (like <i class="user-circle user-circle-active zulip-icon zulip-icon-user-circle-active"></i>) that indicates if you're currently active on Zulip, idle,
 or offline. You can also [go invisible](#invisible-mode) to appear offline
 to other users.
 
@@ -34,13 +34,16 @@ You can set a status emoji, status message, or both.
 
 {tab|mobile}
 
-Access this feature by following the web app instructions in your
-mobile device browser.
+{!mobile-menu.md!}
 
-Implementation of this feature in the mobile app is tracked [on
-GitHub](https://github.com/zulip/zulip-flutter/issues/198). If
-you're interested in this feature, please react to the issue's
-description with 👍.
+1. Tap **My profile**.
+
+1. Tap **Set status** or **Status**.
+
+1. Select one of the common statuses, or choose any emoji and/or write
+   a short message.
+
+1. Tap **Save**.
 
 {end_tabs}
 
@@ -60,13 +63,26 @@ description with 👍.
 
 {!clear-status.md!}
 
+{tab|mobile}
+
+{!mobile-menu.md!}
+
+1. Tap **My profile**.
+
+1. Tap **Status**.
+
+1. Tap **Clear**, and then **Save** in the top right corner of the app.
+
 {end_tabs}
 
 ### View a status
 
 Status emoji are shown next to a user's name in the sidebars, message feed,
-and compose box. Status emoji and status messages are also shown on
-[user cards](/help/user-cards).
+and compose box in the web and desktop apps, and next to the user's profile
+picture and name in the mobile app.
+
+Status emoji and status messages are also shown on [user cards](/help/user-cards)
+in the web and desktop apps.
 
 {start_tabs}
 
@@ -84,13 +100,9 @@ and compose box. Status emoji and status messages are also shown on
 
 {tab|mobile}
 
-Access this feature by following the web app instructions in your
-mobile device browser.
+1. Tap on a user's profile picture or name to view their status message.
 
-Implementation of this feature in the mobile app is tracked [on
-GitHub](https://github.com/zulip/zulip-flutter/issues/197). If
-you're interested in this feature, please react to the issue's
-description with 👍.
+1. If they have one set, it will appear under their name on their profile.
 
 {end_tabs}
 
@@ -119,16 +131,14 @@ With the compact option, only status emoji are shown.
 
 There are three availability states:
 
-* **Active** (<span class="user-circle user-circle-active zulip-icon
-  zulip-icon-user-circle-active"></span>): Zulip is open and in focus on web,
+* **Active** (<i class="user-circle user-circle-active zulip-icon
+  zulip-icon-user-circle-active"></i>): Zulip is open and in focus on web,
   desktop or mobile, or was in the last 140 seconds.
-
-* **Idle** (<span class="user-circle user-circle-idle zulip-icon
-  zulip-icon-user-circle-idle"></span>): Zulip is open on your computer (either
+* **Idle** (<i class="user-circle user-circle-idle zulip-icon
+  zulip-icon-user-circle-idle"></i>): Zulip is open on your computer (either
   desktop or web), but you are not active.
-
-* **Offline** (<span class="user-circle user-circle-offline zulip-icon
-  zulip-icon-user-circle-offline"></span>): Zulip is not open on your computer,
+* **Offline** (<i class="user-circle user-circle-offline zulip-icon
+  zulip-icon-user-circle-offline"></i>): Zulip is not open on your computer,
   or you have turned on invisible mode.
 
 ### View availability
@@ -190,13 +200,11 @@ Your activity will still be included in your organization's [statistics](/help/a
 
 {tab|mobile}
 
-Access this feature by following the web app instructions in your
-mobile device browser.
+{!mobile-menu.md!}
 
-Implementation of this feature in the mobile app is tracked [on
-GitHub](https://github.com/zulip/zulip-flutter/issues/1578). If
-you're interested in this feature, please react to the issue's
-description with 👍.
+1. Tap **My profile**.
+
+1. Toggle **Invisible mode**.
 
 {end_tabs}
 

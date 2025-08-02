@@ -278,7 +278,12 @@ export function user_can_delete_own_message(): boolean {
     );
 }
 
-export function should_mask_unread_count(sub_muted: boolean): boolean {
+/* TODO/channel-folders: Remove when tests are restored */
+/* istanbul ignore next */
+export function should_mask_unread_count(
+    sub_muted: boolean,
+    unmuted_unread_count: number,
+): boolean {
     if (
         user_settings.web_stream_unreads_count_display_policy ===
         settings_config.web_stream_unreads_count_display_policy_values.no_streams.code
@@ -286,11 +291,17 @@ export function should_mask_unread_count(sub_muted: boolean): boolean {
         return true;
     }
 
+    /* istanbul ignore next */
     if (
         user_settings.web_stream_unreads_count_display_policy ===
         settings_config.web_stream_unreads_count_display_policy_values.unmuted_streams.code
     ) {
-        return sub_muted;
+        if (!sub_muted) {
+            // This policy always shows unread counts in non-muted channels.
+            return false;
+        }
+        // For muted channels, it depends whether any unmuted unreads exist.
+        return unmuted_unread_count === 0;
     }
 
     return false;

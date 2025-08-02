@@ -102,7 +102,7 @@ class ZulipSCIMUser(SCIMUser):
 
         return {
             "schemas": [scim_constants.SchemaURI.USER],
-            "id": self.obj.id,
+            "id": str(self.obj.id),
             "userName": self.obj.delivery_email,
             "name": name,
             "displayName": self.display_name,
@@ -282,7 +282,9 @@ class ZulipSCIMUser(SCIMUser):
                 raise scim_exceptions.BadRequestError("Email address can't contain + characters.")
 
             try:
-                validate_email_not_already_in_realm(realm, email_new_value)
+                validate_email_not_already_in_realm(
+                    realm, email_new_value, allow_inactive_mirror_dummies=False
+                )
             except ValidationError as e:
                 raise ConflictError("Email address already in use: " + str(e))
 

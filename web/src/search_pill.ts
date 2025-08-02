@@ -2,14 +2,18 @@ import $ from "jquery";
 import assert from "minimalistic-assert";
 
 import render_input_pill from "../templates/input_pill.hbs";
+import render_search_list_item from "../templates/search_list_item.hbs";
 import render_search_user_pill from "../templates/search_user_pill.hbs";
 
 import {Filter} from "./filter.ts";
+import {$t} from "./i18n.ts";
 import * as input_pill from "./input_pill.ts";
 import type {InputPill, InputPillContainer} from "./input_pill.ts";
 import * as people from "./people.ts";
 import type {User} from "./people.ts";
+import {type Suggestion, search_term_description_html} from "./search_suggestion.ts";
 import type {NarrowTerm} from "./state_data.ts";
+import * as state_data from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import * as user_status from "./user_status.ts";
 import type {UserStatusEmojiInfo} from "./user_status.ts";
@@ -32,7 +36,7 @@ export type SearchUserPill = {
 
 type SearchPill =
     | {
-          type: "search";
+          type: "generic_operator";
           operator: string;
           operand: string;
           negated: boolean | undefined;
@@ -51,7 +55,7 @@ export function create_item_from_search_string(search_string: string): SearchPil
         return undefined;
     }
     return {
-        type: "search",
+        type: "generic_operator",
         operator: search_term.operator,
         operand: search_term.operand,
         negated: search_term.negated,
@@ -112,6 +116,102 @@ function on_pill_exit(
     $user_pill.remove();
 }
 
+// TODO: We're calculating `description_html` every time, even though
+// we only show it (in `generate_pills_html`) for lines with only one
+// pill. We can probably simplify things by separating out a function
+// that generates `description_html` from the information in a single
+// search pill, and remove `description_html` from the `Suggestion` type.
+export function generate_pills_html(suggestion: Suggestion, query: string): string {
+    const search_terms = Filter.parse(suggestion.search_string);
+
+    const pill_render_data = search_terms.map((term, index) => {
+        if (user_pill_operators.has(term.operator) && term.operand !== "") {
+            return search_user_pill_data_from_term(term);
+        }
+        const search_pill: SearchPill = {
+            type: "generic_operator",
+            operator: term.operator,
+            operand: term.operand,
+            negated: term.negated,
+        };
+
+        if (search_pill.operator === "topic" && search_pill.operand === "") {
+            // There are two variants of this suggestion state: One is the user
+            // has selected a topic operator and operator, and and thus has
+            // exactly `topic:` or `-topic:` written out, and it's be
+            // appropriate to suggest the "general chat" value.
+            //
+            // The other variant is where we're suggesting `topic` as a
+            // potential operator to add, say if the user has typed `-to` so
+            // far. For that case, we want to suggest adding a topic operator,
+            // but the user hasn't done anything that would suggest we should
+            // further complete "general chat" as value for that topic operator.
+            //
+            // We can simply differentiate these cases by checking if `:` is
+            // present in the query. See `set_search_bar_contents` for more
+            // context.
+            if (query.includes(":")) {
+                return {
+                    ...search_pill,
+                    is_empty_string_topic: true,
+                    sign: search_pill.negated ? "-" : "",
+                    topic_display_name: util.get_final_topic_display_name(""),
+                };
+            }
+            return {
+                ...search_pill,
+                is_empty_string_topic: true,
+                sign: search_pill.negated ? "-" : "",
+            };
+        }
+        if (search_pill.operator === "search") {
+            let description_html = search_term_description_html(search_pill);
+            // We capitalize the beginning of the suggestion line if it's text (not
+            // pills), which is only relevant for suggestions with search operators.
+            if (index === 0) {
+                const capitalized_first_letter = description_html.charAt(0).toUpperCase();
+                description_html = capitalized_first_letter + description_html.slice(1);
+            }
+            return {
+                ...search_pill,
+                description_html,
+            };
+        }
+        return {
+            ...search_pill,
+            display_value: get_search_string_from_item(search_pill),
+        };
+    });
+
+    // When there's a single pill on a suggestion line, we have space
+    // to provide help text (description_html) explaining what the
+    // operator does. When there's more than one pill we don't show it.
+    if (pill_render_data.length === 1) {
+        const render_data = util.the(pill_render_data);
+        // Don't add description html for search terms, since those "pills"
+        // are already set up to only display text and no pill. We also
+        // don't show it for most user pills.
+        if (render_data.type === "generic_operator" && render_data.operator !== "search") {
+            return render_search_list_item({
+                pills: pill_render_data,
+                description_html: suggestion.description_html,
+            });
+        } else if (render_data.type === "search_user" && is_sent_by_me_pill(render_data)) {
+            const description_html = render_data.negated
+                ? $t({defaultMessage: "Exclude messages you sent"})
+                : $t({defaultMessage: "Messages you sent"});
+            return render_search_list_item({
+                pills: pill_render_data,
+                description_html,
+            });
+        }
+    }
+
+    return render_search_list_item({
+        pills: pill_render_data,
+    });
+}
+
 export function create_pills($pill_container: JQuery): SearchPillWidget {
     const pills = input_pill.create({
         $container: $pill_container,
@@ -144,13 +244,26 @@ export function create_pills($pill_container: JQuery): SearchPillWidget {
     return pills;
 }
 
-function append_user_pill(
-    users: User[],
-    pill_widget: SearchPillWidget,
-    operator: string,
-    negated: boolean,
-): void {
-    const pill_data: SearchUserPill = {
+function search_user_pill_data_from_term(term: NarrowTerm): SearchUserPill {
+    const emails = term.operand.split(",");
+    const users = emails.map((email) => {
+        const person = people.get_by_email(email);
+        assert(person !== undefined);
+        return person;
+    });
+    return search_user_pill_data(users, term.operator, term.negated ?? false);
+}
+
+function is_sent_by_me_pill(pill: SearchUserPill): boolean {
+    return (
+        pill.operator === "sender" &&
+        pill.users.length === 1 &&
+        util.the(pill.users).email === state_data.current_user.email
+    );
+}
+
+function search_user_pill_data(users: User[], operator: string, negated: boolean): SearchUserPill {
+    return {
         type: "search_user",
         operator,
         negated,
@@ -164,7 +277,15 @@ function append_user_pill(
             deactivated: !people.is_person_active(user.user_id) && !user.is_inaccessible_user,
         })),
     };
+}
 
+function append_user_pill(
+    users: User[],
+    pill_widget: SearchPillWidget,
+    operator: string,
+    negated: boolean,
+): void {
+    const pill_data = search_user_pill_data(users, operator, negated);
     pill_widget.appendValidatedData(pill_data);
     pill_widget.clear_text();
 }
@@ -245,11 +366,17 @@ function get_search_operand(item: SearchPill, for_display: boolean): string {
     if (item.type === "search_user") {
         return item.users.map((user) => user.email).join(",");
     }
-    if (for_display && item.operator === "channel") {
-        return stream_data.get_valid_sub_by_id_string(item.operand).name;
-    }
-    if (for_display && item.operator === "topic") {
-        return util.get_final_topic_display_name(item.operand);
+    // When we're displaying the operand in a pill, we sometimes want to make
+    // it more human readable. We do this for channel pills (with channels
+    // specified) and topic pills only.
+    if (for_display) {
+        if (item.operator === "channel" && item.operand !== "") {
+            return stream_data.get_valid_sub_by_id_string(item.operand).name;
+        }
+        if (item.operator === "topic") {
+            return util.get_final_topic_display_name(item.operand);
+        }
+        // For all other `for_display=true` cases, we just show the default operand.
     }
     return item.operand;
 }

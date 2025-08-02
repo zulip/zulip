@@ -188,6 +188,13 @@ to these terms.
 We've designed this push notification bouncer service with security
 and privacy in mind:
 
+- Zulip Server 11.0+ supports a new end-to-end encrypted (E2EE)
+  protocol for mobile push notifications. Because mobile app support
+  for that protocol is not yet available, this documentation details
+  the legacy protocol. This documentation will be updated to reflect
+  on the new protocol's better privacy guarantees once [official
+  mobile app support][e2ee-flutter-issue] for the new protocol is
+  generally available.
 - A central design goal of the Push Notification Service is to
   avoid any message content being stored or logged by the service,
   even in error cases.
@@ -215,17 +222,16 @@ and privacy in mind:
   - A timestamp.
   - The message's content.
 
-  There's a `PUSH_NOTIFICATION_REDACT_CONTENT` setting available to
-  disable any message content being sent via the push notification
-  bouncer (i.e., message content will be replaced with
-  `New message`). Note that this setting makes push notifications
-  significantly less usable.
+  Zulip 11.0+ has an organization-level setting available to disable
+  message content being sent via the push notification bouncer (i.e.,
+  message content will be replaced with `New message`), for clients
+  that don't support the new end-to-end encrypted notifications
+  protocol. As of July 2025, this setting makes push notifications
+  significantly less usable, since mobile client support for
+  end-to-end encrypted push notifications is not yet available.
 
-  We plan to
-  [replace that setting with end-to-end encryption](https://github.com/zulip/zulip/issues/6954)
-  which would eliminate that usability tradeoff and additionally allow
-  us to not have any access to the other details mentioned in this
-  section.
+  (Prior to Zulip 11.0, this functionality was available via the
+  `PUSH_NOTIFICATION_REDACT_CONTENT` server-level setting).
 
 - All of the network requests (both from Zulip servers to the Push
   Notification Service and from the Push Notification Service to the
@@ -240,6 +246,8 @@ and privacy in mind:
 
 If you have any questions about the security model, [contact Zulip
 support](https://zulip.com/help/contact-support).
+
+[e2ee-flutter-issue]: https://github.com/zulip/zulip-flutter/issues/1764
 
 ### Uploading basic metadata
 
@@ -441,66 +449,3 @@ the `PUSH_NOTIFICATION_BOUNCER_URL = 'https://push.zulipchat.com'` line in your
 `/etc/zulip/settings.py` file (i.e., add `# ` at the start of the line), and
 [restart your Zulip server](settings.md#changing-server-settings). This approach makes it
 easy to start using the service again by uncommenting the same line.
-
-## Sending push notifications directly from your server
-
-This section documents an alternative way to send push notifications
-that does not involve using the Mobile Push Notification Service at
-the cost of needing to compile and distribute modified versions of the
-Zulip mobile apps.
-
-We don't recommend this path -- patching and shipping a production
-mobile app can take dozens of hours to set up even for an experienced
-developer, and even more time to maintain. And it doesn't provide
-material privacy benefits -- your organization's push notification
-data would still go through Apple/Google's servers, just not Kandra
-Labs'. But in the interest of transparency, we document in this
-section roughly what's involved in doing so.
-
-As [discussed above](#why-a-push-notification-service-is-necessary),
-it is impossible for a single app in the Google or Apple
-store to receive push notifications from multiple, mutually
-untrusted, servers. The Mobile Push Notification Service is one of
-the possible solutions to this problem.
-
-The other possible solution is for an individual Zulip server's administrators
-to build and distribute their own copy of the Zulip mobile apps, hardcoding a
-key that they possess. This solution is possible with Zulip, but it requires the
-server administrators to publish their own copies of the Zulip mobile apps.
-There's nothing the Zulip team can do to eliminate this onerous requirement.
-
-The main work is thus distributing your own copies of the Zulip mobile apps
-configured to use APNS/FCM keys that you generate. This is not for
-the faint of heart! If you haven't done this before, be warned that
-one can easily spend hundreds of dollars (on things like a DUNS number
-registration) and a week struggling through the hoops Apple requires
-to build and distribute an app through the Apple app store, even if
-you're making no code modifications to an app already present in the
-store (as would be the case here). The Zulip mobile app also gets
-frequent updates that you will have to either forgo or republish to
-the app stores yourself.
-
-If you've done that work, the Zulip server configuration for sending
-push notifications through the new app is quite straightforward:
-
-- Create an
-  [FCM push notifications](https://firebase.google.com/docs/cloud-messaging)
-  key in the Google Developer console and set `android_gcm_api_key` in
-  `/etc/zulip/zulip-secrets.conf` to that key.
-
-- In Apple's developer console, register a [token][apple-doc-token] or
-  [certificate][apple-doc-cert] for sending push notifications.
-  Then in `/etc/zulip/settings.py`, set `APNS_SANDBOX=False`, and:
-
-  - If using APNs [certificate-based authentication][apple-doc-cert],
-    set `APNS_CERT_FILE` to the path of your APNs certificate file.
-
-  - If using APNs [token-based authentication][apple-doc-token],
-    set `APNS_TOKEN_KEY_FILE` to the path of your APNs token key file,
-    `APNS_TOKEN_KEY_ID` to the corresponding 10-character key ID, and
-    `APNS_TEAM_ID` to your 10-character Apple team ID.
-
-- Restart the Zulip server.
-
-[apple-doc-cert]: https://developer.apple.com/documentation/usernotifications/setting_up_a_remote_notification_server/establishing_a_certificate-based_connection_to_apns
-[apple-doc-token]: https://developer.apple.com/documentation/usernotifications/setting_up_a_remote_notification_server/establishing_a_token-based_connection_to_apns

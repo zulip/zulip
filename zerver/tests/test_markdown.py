@@ -69,6 +69,7 @@ from zerver.lib.streams import user_has_content_access, user_has_metadata_access
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.tex import render_tex
 from zerver.lib.types import UserGroupMembersData
+from zerver.lib.upload import upload_message_attachment
 from zerver.lib.user_groups import UserGroupMembershipDetails
 from zerver.models import Message, NamedUserGroup, RealmEmoji, RealmFilter, UserMessage, UserProfile
 from zerver.models.clients import get_client
@@ -766,6 +767,23 @@ class MarkdownLinkTest(ZulipTestCase):
 
 
 class MarkdownEmbedsTest(ZulipTestCase):
+    def assert_message_content_is(
+        self, message_id: int, rendered_content: str, user_name: str = "othello"
+    ) -> None:
+        sender_user_profile = self.example_user(user_name)
+        result = self.assert_json_success(
+            self.api_get(sender_user_profile, f"/api/v1/messages/{message_id}")
+        )
+        self.assertEqual(result["message"]["content"], rendered_content)
+
+    def send_message_content(self, content: str, user_name: str = "othello") -> int:
+        sender_user_profile = self.example_user(user_name)
+        return self.send_stream_message(
+            sender=sender_user_profile,
+            stream_name="Verona",
+            content=content,
+        )
+
     def test_inline_youtube(self) -> None:
         msg = "Check out the debate: http://www.youtube.com/watch?v=hx1mjT73xYE"
         converted = markdown_convert_wrapper(msg)
@@ -1004,6 +1022,46 @@ class MarkdownEmbedsTest(ZulipTestCase):
         expected = f'<div class="message_inline_image"><a href="https://en.wikipedia.org/static/images/icons/wikipedia.png"><img src="{camo_url}"></a></div>'
         converted = render_message_markdown(msg, content)
         self.assertEqual(converted.rendered_content, expected)
+
+    def test_inline_audio_preview(self) -> None:
+        # Test audio previews with a valid audio file upload.
+        url = upload_message_attachment(
+            "filename",
+            "audio/mpeg",
+            b"",
+            self.example_user("othello"),
+        )[0]
+        path_id = re.sub(r"/user_uploads/", "", url)
+        message_id = self.send_message_content(f"![Audio link](/user_uploads/{path_id})")
+        expected = (
+            f'<p><audio controls preload="metadata" src="{url}" title="Audio link"></audio></p>'
+        )
+        self.assert_message_content_is(message_id, expected)
+
+        # Test audio files are not previewed if the file doesn't
+        # exist.
+        url = "/user_uploads/path/to/file.mp3"
+        path_id = re.sub(r"/user_uploads/", "", url)
+
+        with self.assertLogs(level="WARNING"):
+            message_id = self.send_message_content(f"![Audio link](/user_uploads/{path_id})")
+
+        expected = f"<p>![Audio link]({url})</p>"
+        self.assert_message_content_is(message_id, expected)
+
+        # Test audio files are not previewed when the content type
+        # is not supported one, but filename contains a supported
+        # audio file extension.
+        url = upload_message_attachment(
+            "filename.mp3",
+            "",
+            b"",
+            self.example_user("othello"),
+        )[0]
+        path_id = re.sub(r"/user_uploads/", "", url)
+        message_id = self.send_message_content(f"![Audio link](/user_uploads/{path_id})")
+        expected = f"<p>![Audio link]({url})</p>"
+        self.assert_message_content_is(message_id, expected)
 
     @override_settings(INLINE_IMAGE_PREVIEW=False)
     def test_image_preview_enabled(self) -> None:

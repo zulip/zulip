@@ -2,15 +2,21 @@ from django.conf import settings
 from typing_extensions import Any, override
 
 from zerver.actions.realm_settings import do_set_realm_moderation_request_channel
+from zerver.actions.streams import do_set_stream_property
 from zerver.lib.markdown.fenced_code import get_unused_fence
 from zerver.lib.mention import silent_mention_syntax_for_user
 from zerver.lib.message import truncate_content
 from zerver.lib.message_report import MAX_REPORT_MESSAGE_SNIPPET_LENGTH
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.topic import DB_TOPIC_NAME
+from zerver.lib.topic_link_util import (
+    get_message_link_syntax,
+    will_produce_broken_stream_topic_link,
+)
 from zerver.models import UserProfile
 from zerver.models.messages import Message
 from zerver.models.recipients import get_or_create_direct_message_group
+from zerver.models.streams import StreamTopicsPolicyEnum
 from zerver.models.users import get_system_bot
 
 
@@ -58,11 +64,15 @@ class ReportMessageTest(ZulipTestCase):
     def get_submitted_moderation_requests(self) -> list[dict[str, Any]]:
         notification_bot = get_system_bot(settings.NOTIFICATION_BOT, self.realm.id)
 
-        return Message.objects.filter(
-            realm_id=self.realm.id,
-            sender_id=notification_bot.id,
-            recipient=self.moderation_request_channel.recipient,
-        ).values(*["id", "content", DB_TOPIC_NAME])
+        return (
+            Message.objects.filter(
+                realm_id=self.realm.id,
+                sender_id=notification_bot.id,
+                recipient=self.moderation_request_channel.recipient,
+            )
+            .order_by("-id")
+            .values(*["id", "content", DB_TOPIC_NAME])
+        )
 
     def test_disabled_moderation_request_feature(self) -> None:
         # Disable moderation request feature
@@ -111,6 +121,7 @@ class ReportMessageTest(ZulipTestCase):
         )
         self.assert_json_success(result)
         reports = self.get_submitted_moderation_requests()
+        assert len(reports) == 1
         self.assertEqual(reports[0]["content"], expected_message.strip())
         expected_report_topic = f"{self.reported_user.full_name}'s moderation requests"
         self.assertEqual(reports[0][DB_TOPIC_NAME], expected_report_topic)
@@ -123,6 +134,7 @@ class ReportMessageTest(ZulipTestCase):
         )
         self.assert_json_success(result)
         reports = self.get_submitted_moderation_requests()
+        assert len(reports) == 2
         self.assertEqual(reports[0]["content"], expected_message.strip())
         expected_report_topic = f"{self.reported_user.full_name}'s moderation requests"
         self.assertEqual(reports[0][DB_TOPIC_NAME], expected_report_topic)
@@ -139,6 +151,41 @@ class ReportMessageTest(ZulipTestCase):
         private_message = self.get_last_message()
         result = self.report_message(reporting_user, private_message.id, report_type, description)
         self.assert_json_error(result, msg="Invalid message(s)")
+
+    def test_reported_channel_message_narrow_link(self) -> None:
+        reporting_user = self.example_user("hamlet")
+        report_type = "harassment"
+        description = "this is crime against food"
+
+        # Check object IDs in message link syntax is accurate.
+        # This channel name will generate a narrow URL for its link syntax.
+        obscure_channel_name = "Sw*den"
+        self.assertTrue(will_produce_broken_stream_topic_link(obscure_channel_name))
+        obscure_channel = self.make_stream(obscure_channel_name, self.realm)
+        self.subscribe(self.reported_user, obscure_channel.name, True)
+        message_id = self.send_stream_message(
+            self.reported_user,
+            obscure_channel.name,
+            topic_name="",
+            content="foo baz",
+        )
+
+        result = self.report_message(
+            reporting_user,
+            message_id,
+            report_type,
+            description,
+        )
+        self.assert_json_success(result)
+        expected_message_link_syntax = get_message_link_syntax(
+            obscure_channel.id,
+            obscure_channel.name,
+            "",
+            message_id,
+        )
+        reports = self.get_submitted_moderation_requests()
+        assert len(reports) == 1
+        self.assertIn(expected_message_link_syntax, reports[0]["content"])
 
     def test_dm_report(self) -> None:
         # Send a DM to be reported
@@ -179,6 +226,7 @@ class ReportMessageTest(ZulipTestCase):
         result = self.report_message(reporting_user, reported_dm_id, report_type, description)
         self.assert_json_success(result)
         reports = self.get_submitted_moderation_requests()
+        assert len(reports) == 1
         self.assertEqual(reports[0]["content"], expected_message.strip())
 
         # User can't report DM they're not a part of.
@@ -230,6 +278,7 @@ class ReportMessageTest(ZulipTestCase):
         result = self.report_message(reporting_user, reported_dm_id, report_type, description)
         self.assert_json_success(result)
         reports = self.get_submitted_moderation_requests()
+        assert len(reports) == 1
         self.assertEqual(reports[0]["content"], expected_message.strip())
 
         # User can't report DM they're not a part of.
@@ -280,6 +329,7 @@ class ReportMessageTest(ZulipTestCase):
         result = self.report_message(reporting_user, reported_gdm_id, report_type, description)
         self.assert_json_success(result)
         reports = self.get_submitted_moderation_requests()
+        assert len(reports) == 1
         self.assertEqual(reports[0]["content"], expected_message.strip())
 
         # User can't report group direct messages they're not a part of.
@@ -304,6 +354,7 @@ class ReportMessageTest(ZulipTestCase):
         self.assert_json_success(result)
 
         reports = self.get_submitted_moderation_requests()
+        assert len(reports) == 1
         self.assertNotIn(large_message, reports[0]["content"])
 
         expected_truncated_message = truncate_content(
@@ -324,3 +375,23 @@ class ReportMessageTest(ZulipTestCase):
         )
 
         self.assert_json_success(result)
+
+    def test_message_report_to_channel_with_topics_disabled(self) -> None:
+        notification_bot = get_system_bot(settings.NOTIFICATION_BOT, self.realm.id)
+        do_set_stream_property(
+            self.moderation_request_channel,
+            "topics_policy",
+            StreamTopicsPolicyEnum.empty_topic_only.value,
+            self.hamlet,
+        )
+
+        result = self.report_message(
+            self.hamlet,
+            self.reported_message_id,
+            report_type="harassment",
+        )
+        self.assert_json_success(result)
+        report_msg = self.get_last_message()
+        self.assertEqual(report_msg.sender_id, notification_bot.id)
+        self.assertEqual(report_msg.topic_name(), "")
+        self.assertIn("reported", report_msg.content)

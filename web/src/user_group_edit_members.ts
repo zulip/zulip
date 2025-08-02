@@ -1,15 +1,17 @@
+import Handlebars from "handlebars/runtime.js";
 import $ from "jquery";
 import assert from "minimalistic-assert";
-import {z} from "zod";
+import * as z from "zod/mini";
 
+import render_membership_banner from "../templates/components/membership_banner.hbs";
 import render_leave_user_group_modal from "../templates/confirm_dialog/confirm_unsubscribe_private_stream.hbs";
 import render_user_group_member_list_entry from "../templates/stream_settings/stream_member_list_entry.hbs";
 import render_user_group_members_table from "../templates/user_group_settings/user_group_members_table.hbs";
-import render_user_group_membership_request_result from "../templates/user_group_settings/user_group_membership_request_result.hbs";
 import render_user_group_subgroup_entry from "../templates/user_group_settings/user_group_subgroup_entry.hbs";
 
 import * as add_group_members_pill from "./add_group_members_pill.ts";
 import * as blueslip from "./blueslip.ts";
+import * as buttons from "./buttons.ts";
 import * as channel from "./channel.ts";
 import * as confirm_dialog from "./confirm_dialog.ts";
 import {$t, $t_html} from "./i18n.ts";
@@ -24,6 +26,7 @@ import type {CombinedPillContainer} from "./typeahead_helper.ts";
 import * as user_group_components from "./user_group_components.ts";
 import * as user_groups from "./user_groups.ts";
 import type {UserGroup} from "./user_groups.ts";
+import * as util from "./util.ts";
 
 export let pill_widget: CombinedPillContainer;
 let current_group_id: number;
@@ -178,36 +181,143 @@ export function rerender_members_list({
     });
 }
 
-function show_user_group_membership_request_result({
-    message,
-    add_class,
-    remove_class,
+function generate_group_link_html(group: UserGroup): string {
+    const group_name = user_groups.get_display_group_name(group.name);
+    return `<a data-user-group-id="${group.id}" class="view_user_group">${Handlebars.Utils.escapeExpression(group_name)}</a>`;
+}
+
+function generate_user_link_html(user: User): string {
+    return `<a data-user-id="${user.user_id}" class="view_user_profile">${Handlebars.Utils.escapeExpression(user.full_name)}</a>`;
+}
+
+function generate_members_added_success_messages(
+    newly_added_users: User[],
+    newly_added_subgroups: UserGroup[],
+    already_added_users: User[],
+    already_added_subgroups: UserGroup[],
+    ignored_deactivated_groups: UserGroup[],
+    ignored_deactivated_users: User[],
+): {
+    newly_added_members_message_html: string;
+    already_added_members_message_html: string;
+    ignored_deactivated_users_message_html: string;
+    ignored_deactivated_groups_message_html: string;
+} {
+    const new_user_links = newly_added_users.map((user) => generate_user_link_html(user));
+    const new_group_links = newly_added_subgroups.map((group) => generate_group_link_html(group));
+    const old_user_links = already_added_users.map((user) => generate_user_link_html(user));
+    const old_group_links = already_added_subgroups.map((group) => generate_group_link_html(group));
+    const ignored_group_links = ignored_deactivated_groups.map((group) =>
+        generate_group_link_html(group),
+    );
+    const ignored_user_links = ignored_deactivated_users.map((user) =>
+        generate_user_link_html(user),
+    );
+
+    const newly_added_members_message_html = util.format_array_as_list_with_conjunction(
+        [...new_user_links, ...new_group_links],
+        "long",
+    );
+    const already_added_members_message_html = util.format_array_as_list_with_conjunction(
+        [...old_user_links, ...old_group_links],
+        "long",
+    );
+    const ignored_deactivated_users_message_html = util.format_array_as_list_with_conjunction(
+        ignored_user_links,
+        "long",
+    );
+    const ignored_deactivated_groups_message_html = util.format_array_as_list_with_conjunction(
+        ignored_group_links,
+        "long",
+    );
+    return {
+        newly_added_members_message_html,
+        already_added_members_message_html,
+        ignored_deactivated_users_message_html,
+        ignored_deactivated_groups_message_html,
+    };
+}
+
+function show_user_group_membership_request_error_result(error_message: string): void {
+    const $user_group_subscription_req_result_elem = $(
+        ".user_group_subscription_request_result",
+    ).expectOne();
+    const rendered_error_message = render_membership_banner({
+        intent: "danger",
+        error_message,
+    });
+    scroll_util
+        .get_content_element($user_group_subscription_req_result_elem)
+        .html(rendered_error_message);
+}
+
+function show_user_group_membership_request_success_result({
     already_added_users,
+    newly_added_users,
+    newly_added_subgroups,
     ignored_deactivated_users,
     already_added_subgroups,
     ignored_deactivated_groups,
 }: {
-    message: string;
-    add_class: string;
-    remove_class: string;
-    already_added_users?: User[];
-    ignored_deactivated_users?: User[];
-    already_added_subgroups?: UserGroup[];
-    ignored_deactivated_groups?: UserGroup[];
+    newly_added_users: User[];
+    newly_added_subgroups: UserGroup[];
+    already_added_users: User[];
+    ignored_deactivated_users: User[];
+    already_added_subgroups: UserGroup[];
+    ignored_deactivated_groups: UserGroup[];
 }): void {
+    const newly_added_user_count = newly_added_users.length;
+    const newly_added_subgroups_count = newly_added_subgroups.length;
+    const already_added_user_count = already_added_users.length;
+    const already_added_subgroups_count = already_added_subgroups.length;
+    const ignored_deactivated_groups_count = ignored_deactivated_groups.length;
+    const ignored_deactivated_users_count = ignored_deactivated_users.length;
+
+    const total_member_count_exceeds_five =
+        newly_added_user_count +
+            newly_added_subgroups_count +
+            already_added_user_count +
+            already_added_subgroups_count +
+            ignored_deactivated_groups_count +
+            ignored_deactivated_users_count >
+        5;
+
+    const newly_added_member_count = newly_added_user_count + newly_added_subgroups_count;
+    const already_added_member_count = already_added_user_count + already_added_subgroups_count;
+    const ignored_deactivated_member_count =
+        ignored_deactivated_users_count + ignored_deactivated_groups_count;
+    let addition_success_messages;
+    if (!total_member_count_exceeds_five) {
+        addition_success_messages = generate_members_added_success_messages(
+            newly_added_users,
+            newly_added_subgroups,
+            already_added_users,
+            already_added_subgroups,
+            ignored_deactivated_groups,
+            ignored_deactivated_users,
+        );
+    }
+
     const $user_group_subscription_req_result_elem = $(
         ".user_group_subscription_request_result",
     ).expectOne();
-    const html = render_user_group_membership_request_result({
-        message,
-        already_added_users,
-        ignored_deactivated_users,
-        already_added_subgroups,
-        ignored_deactivated_groups,
+    const rendered_success_banner = render_membership_banner({
+        intent: "success",
+        addition_success_messages,
+        newly_added_member_count,
+        already_added_member_count,
+        newly_added_user_count,
+        newly_added_subgroups_count,
+        already_added_user_count,
+        already_added_subgroups_count,
+        total_member_count_exceeds_five,
+        ignored_deactivated_groups_count,
+        ignored_deactivated_users_count,
+        ignored_deactivated_member_count,
     });
-    scroll_util.get_content_element($user_group_subscription_req_result_elem).html(html);
-    $user_group_subscription_req_result_elem.addClass(add_class);
-    $user_group_subscription_req_result_elem.removeClass(remove_class);
+    scroll_util
+        .get_content_element($user_group_subscription_req_result_elem)
+        .html(rendered_success_banner);
 }
 
 export function edit_user_group_membership({
@@ -334,11 +444,20 @@ function add_new_members({
 
     const subgroup_id_set = new Set(subgroup_ids_to_add);
 
-    if (user_id_set.size === 0 && subgroup_id_set.size === 0) {
-        show_user_group_membership_request_result({
-            message: $t({defaultMessage: "No users or subgroups to add."}),
-            add_class: "text-error",
-            remove_class: "text-success",
+    const user_ids = [...user_id_set];
+    const subgroup_ids = [...subgroup_id_set];
+    const newly_added_users: User[] = user_ids.map((user_id) => people.get_by_user_id(user_id));
+    const newly_added_subgroups: UserGroup[] = subgroup_ids.map((group_id) =>
+        user_groups.get_user_group_from_id(group_id),
+    );
+    if (user_ids.length === 0 && subgroup_ids.length === 0) {
+        // No need to make a network call and get the "Nothing to do..." response.
+        // This will show a variation of "All users and groups were already members."
+        // depending on whether the user attempted to added users or groups or a mix of both.
+        pill_widget.clear();
+        show_user_group_membership_request_success_result({
+            newly_added_users,
+            newly_added_subgroups,
             already_added_users: ignored_already_added_users,
             ignored_deactivated_users,
             already_added_subgroups: ignored_already_added_subgroups,
@@ -346,15 +465,31 @@ function add_new_members({
         });
         return;
     }
-    const user_ids = [...user_id_set];
-    const subgroup_ids = [...subgroup_id_set];
 
+    const $pill_widget_button_wrapper = $(".add_member_button_wrapper");
+    const $add_member_button = $pill_widget_button_wrapper.find(".add-member-button");
+    $add_member_button.prop("disabled", true);
+    $(".add_members_container").addClass("add_members_disabled");
+    buttons.show_button_loading_indicator($add_member_button);
     function invite_success(): void {
+        $(".add_members_container").removeClass("add_members_disabled");
+        const $check_icon = $pill_widget_button_wrapper.find(".check");
+
+        $check_icon.removeClass("hidden-below");
+        $add_member_button.addClass("hidden-below");
+        setTimeout(() => {
+            $check_icon.addClass("hidden-below");
+            $add_member_button.removeClass("hidden-below");
+            buttons.hide_button_loading_indicator($add_member_button);
+            // To undo the effect of hide_button_loading_indicator enabling the button.
+            // This will keep the `Add` button disabled when input is empty.
+            $add_member_button.prop("disabled", true);
+        }, 1000);
+
         pill_widget.clear();
-        show_user_group_membership_request_result({
-            message: $t({defaultMessage: "Added successfully."}),
-            add_class: "text-success",
-            remove_class: "text-error",
+        show_user_group_membership_request_success_result({
+            newly_added_users,
+            newly_added_subgroups,
             already_added_users: ignored_already_added_users,
             ignored_deactivated_users,
             already_added_subgroups: ignored_already_added_subgroups,
@@ -363,7 +498,10 @@ function add_new_members({
     }
 
     function invite_failure(xhr?: JQuery.jqXHR): void {
-        let message = "Failed to add user!";
+        $(".add_members_container").removeClass("add_members_disabled");
+        buttons.hide_button_loading_indicator($add_member_button);
+
+        let error_message = "Failed to add user!";
 
         const parsed = z
             .object({
@@ -373,13 +511,9 @@ function add_new_members({
             .safeParse(xhr?.responseJSON);
 
         if (parsed.success) {
-            message = parsed.data.msg;
+            error_message = parsed.data.msg;
         }
-        show_user_group_membership_request_result({
-            message,
-            add_class: "text-error",
-            remove_class: "text-success",
-        });
+        show_user_group_membership_request_error_result(error_message);
     }
 
     edit_user_group_membership({
@@ -395,10 +529,12 @@ function remove_member({
     group_id,
     target_user_id,
     $list_entry,
+    $remove_button,
 }: {
     group_id: number;
     target_user_id: number;
     $list_entry: JQuery;
+    $remove_button: JQuery;
 }): void {
     const group = user_groups.get_user_group_from_id(current_group_id);
     if (!group) {
@@ -412,20 +548,12 @@ function remove_member({
         }
 
         $list_entry.remove();
-        const message = $t({defaultMessage: "Removed successfully."});
-        show_user_group_membership_request_result({
-            message,
-            add_class: "text-success",
-            remove_class: "text-remove",
-        });
     }
 
     function removal_failure(): void {
-        show_user_group_membership_request_result({
-            message: $t({defaultMessage: "Error removing user from this group."}),
-            add_class: "text-error",
-            remove_class: "text-success",
-        });
+        buttons.hide_button_loading_indicator($remove_button);
+        const error_message = $t({defaultMessage: "Error removing user from this group."});
+        show_user_group_membership_request_error_result(error_message);
     }
 
     function do_remove_user_from_group(): void {
@@ -462,10 +590,12 @@ function remove_subgroup({
     group_id,
     target_subgroup_id,
     $list_entry,
+    $remove_button,
 }: {
     group_id: number;
     target_subgroup_id: number;
     $list_entry: JQuery;
+    $remove_button: JQuery;
 }): void {
     const group = user_groups.get_user_group_from_id(current_group_id);
 
@@ -476,20 +606,12 @@ function remove_subgroup({
         }
 
         $list_entry.remove();
-        const message = $t({defaultMessage: "Removed successfully."});
-        show_user_group_membership_request_result({
-            message,
-            add_class: "text-success",
-            remove_class: "text-remove",
-        });
     }
 
     function removal_failure(): void {
-        show_user_group_membership_request_result({
-            message: $t({defaultMessage: "Error removing subgroup from this group."}),
-            add_class: "text-error",
-            remove_class: "text-success",
-        });
+        buttons.hide_button_loading_indicator($remove_button);
+        const error_message = $t({defaultMessage: "Error removing subgroup from this group."});
+        show_user_group_membership_request_error_result(error_message);
     }
 
     edit_user_group_membership({
@@ -518,8 +640,9 @@ export function initialize(): void {
             const $list_entry = $(this).closest("tr");
             const target_user_id = Number.parseInt($list_entry.attr("data-subscriber-id")!, 10);
             const group_id = current_group_id;
-
-            remove_member({group_id, target_user_id, $list_entry});
+            const $remove_button = $(this).closest(".remove-subscriber-button");
+            buttons.show_button_loading_indicator($remove_button);
+            remove_member({group_id, target_user_id, $list_entry, $remove_button});
         },
     );
 
@@ -532,8 +655,9 @@ export function initialize(): void {
             const $list_entry = $(this).closest("tr");
             const target_subgroup_id = Number.parseInt($list_entry.attr("data-subgroup-id")!, 10);
             const group_id = current_group_id;
-
-            remove_subgroup({group_id, target_subgroup_id, $list_entry});
+            const $remove_button = $(this).closest(".remove-subgroup-button");
+            buttons.show_button_loading_indicator($remove_button);
+            remove_subgroup({group_id, target_subgroup_id, $list_entry, $remove_button});
         },
     );
 }

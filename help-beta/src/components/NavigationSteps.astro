@@ -1,7 +1,7 @@
 ---
 import assert from "node:assert";
 
-import {SHOW_BILLING_HELP_LINKS, SHOW_RELATIVE_LINKS} from "astro:env/client";
+import {CORPORATE_ENABLED, SHOW_RELATIVE_LINKS} from "astro:env/client";
 
 /* eslint-disable import/extensions */
 import RawZulipIconBarChart from "~icons/zulip-icon/bar-chart?raw";
@@ -22,6 +22,7 @@ import RawZulipIconUserGroupCog from "~icons/zulip-icon/user-group-cog?raw";
 
 const PERSONAL_SETTINGS_TYPE = "Personal settings";
 const ORGANIZATION_SETTINGS_TYPE = "Organization settings";
+const SHOW_BILLING_HELP_LINKS = CORPORATE_ENABLED;
 
 // This list has been transformed one-off from `help_settings_links.py`, we
 // have added a comment in that file to update this list in case of any
@@ -34,7 +35,7 @@ const setting_link_mapping: Record<
         setting_link: string;
     }
 > = {
-    // a mapping from the setting identifier that is the same as the final URL
+    // a mapping from the setting target that is the same as the final URL
     // breadcrumb to that setting to the name of its setting type, the setting
     // name as it appears in the user interface, and a relative link that can
     // be used to get to that setting
@@ -168,7 +169,7 @@ type RelativeLinkInfo = {
 const default_template_for_relative_links = `
 <ol>
   <li>Click on the <strong>gear</strong> (${RawZulipIconGear}) icon in the upper right corner of the web or desktop app.</li>
-  <li>Select {item}.</li>
+  <li class="navigation-step-relative-type">Select {item}.</li>
 </ol>
 `;
 
@@ -183,27 +184,27 @@ const relative_link_mapping: Record<
     gear: {
         data: {
             "channel-settings": {
-                label: `${RawZulipIconHash} Channel settings`,
+                label: `${RawZulipIconHash}Channel settings`,
                 relative_link: "/#channels/subscribed",
             },
             settings: {
-                label: `${RawZulipIconTool} Personal Settings`,
+                label: `${RawZulipIconTool}Personal Settings`,
                 relative_link: "/#settings/profile",
             },
             "organization-settings": {
-                label: `${RawZulipIconBuilding} Organization settings`,
+                label: `${RawZulipIconBuilding}Organization settings`,
                 relative_link: "/#organization/organization-profile",
             },
             "group-settings": {
-                label: `${RawZulipIconUserGroupCog} Group settings`,
+                label: `${RawZulipIconUserGroupCog}Group settings`,
                 relative_link: "/#groups/your",
             },
             stats: {
-                label: `${RawZulipIconBarChart} Usage statistics`,
+                label: `${RawZulipIconBarChart}Usage statistics`,
                 relative_link: "/stats",
             },
             integrations: {
-                label: `${RawZulipIconGitPullRequest} Integrations`,
+                label: `${RawZulipIconGitPullRequest}Integrations`,
                 relative_link: "/integrations/",
             },
             "about-zulip": {
@@ -217,11 +218,11 @@ const relative_link_mapping: Record<
     "gear-billing": {
         data: {
             plans: {
-                label: `${RawZulipIconRocket} Plans and pricing`,
+                label: `${RawZulipIconRocket}Plans and pricing`,
                 relative_link: "/plans/",
             },
             billing: {
-                label: `${RawZulipIconCreditCard} Billing`,
+                label: `${RawZulipIconCreditCard}Billing`,
                 relative_link: "/billing/",
             },
         },
@@ -231,26 +232,26 @@ const relative_link_mapping: Record<
     help: {
         data: {
             "keyboard-shortcuts": {
-                label: `${RawZulipIconKeyboard} Keyboard shortcuts`,
+                label: `${RawZulipIconKeyboard}Keyboard shortcuts`,
                 relative_link: "/#keyboard-shortcuts",
             },
             "message-formatting": {
-                label: `${RawZulipIconEdit} Message formatting`,
+                label: `${RawZulipIconEdit}Message formatting`,
                 relative_link: "/#message-formatting",
             },
             "search-filters": {
-                label: `${RawZulipIconManageSearch} Search filters`,
+                label: `${RawZulipIconManageSearch}Search filters`,
                 relative_link: "/#search-operators",
             },
             "about-zulip": {
-                label: `${RawZulipIconInfo} About Zulip`,
+                label: `${RawZulipIconInfo}About Zulip`,
                 relative_link: "/#about-zulip",
             },
         },
         template: `
 <ol>
   <li>Click on the <strong>Help menu</strong> (${RawZulipIconHelp}) icon in the upper right corner of the app.</li>
-  <li>Select {item}.</li>
+  <li class="navigation-step-relative-type">Select {item}.</li>
 </ol>
 `,
         is_link_relative: () => SHOW_RELATIVE_LINKS,
@@ -354,8 +355,8 @@ for (const type of Object.keys(relative_link_mapping)) {
     };
 }
 
-const {identifier} = Astro.props;
-const navigation_link_type = identifier.split("/")[0];
+const {target} = Astro.props;
+const navigation_link_type = target.split("/")[0];
 
 if (
     navigation_link_type !== "settings" &&
@@ -368,10 +369,10 @@ if (
 
 let resultHTML: string | undefined;
 if (navigation_link_type === "settings") {
-    resultHTML = getSettingsHTML(identifier.split("/")[1], SHOW_RELATIVE_LINKS);
+    resultHTML = getSettingsHTML(target.split("/")[1], SHOW_RELATIVE_LINKS);
 } else {
-    const link_type = identifier.split("/")[1];
-    const key = identifier.split("/")[2];
+    const link_type = target.split("/")[1];
+    const key = target.split("/")[2];
     resultHTML = RELATIVE_NAVIGATION_HANDLERS_BY_TYPE[link_type]!(key);
 }
 assert.ok(resultHTML !== undefined);

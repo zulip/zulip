@@ -18,7 +18,6 @@ preference settings, including the following:
       messages](/help/read-receipts)
     * Allowing others to see when the user is [typing a
       message](/help/typing-notifications)
-
 * Preferences:
     * [Language](/help/change-your-language)
     * [Time format](/help/change-the-time-format)
@@ -27,10 +26,9 @@ preference settings, including the following:
     * [Line spacing](/help/line-spacing)
     * [Emoji theme](/help/emoji-and-emoticons#change-your-emoji-set)
     * [Home view](/help/configure-home-view)
-      ([Inbox](/help/inbox) vs.
-      [Recent conversations](/help/recent-conversations) vs.
-      [Combined feed](/help/reading-strategies#combined-feed))
-
+      ([**Inbox**](/help/inbox) vs.
+      [**Recent conversations**](/help/recent-conversations) vs.
+      [**Combined feed**](/help/reading-strategies#combined-feed))
 * Notification settings:
     * What types of messages [trigger notifications][default-notifications]
     * Which topics users will [automatically follow](/help/follow-a-topic). This

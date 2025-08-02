@@ -1,3 +1,4 @@
+import json
 import logging
 import os
 import sys
@@ -64,7 +65,6 @@ from .configured_settings import (
     SOCIAL_AUTH_SAML_SECURITY_CONFIG,
     SOCIAL_AUTH_SUBDOMAIN,
     SOCIAL_AUTH_SYNC_ATTRS_DICT,
-    SOCIAL_AUTH_SYNC_CUSTOM_ATTRS_DICT,
     STATIC_URL,
     SUBMIT_USAGE_STATISTICS,
     TORNADO_PORTS,
@@ -100,6 +100,11 @@ SERVER_GENERATION = int(time.time())
 # Key to authenticate this server to zulip.org for push notifications, etc.
 ZULIP_ORG_KEY = get_secret("zulip_org_key")
 ZULIP_ORG_ID = get_secret("zulip_org_id")
+
+raw_keys: str | None = get_secret("push_registration_encryption_keys")
+PUSH_REGISTRATION_ENCRYPTION_KEYS: dict[str, str] | None = None
+if raw_keys is not None:
+    PUSH_REGISTRATION_ENCRYPTION_KEYS = json.loads(raw_keys)
 
 
 service_name_to_required_upload_level = {
@@ -464,7 +469,7 @@ else:
     TOR_EXIT_NODE_FILE_PATH = "/var/lib/zulip/tor-exit-nodes.json"
 
 if USING_CAPTCHA:
-    ALTCHA_HMAC_KEY = get_mandatory_secret("altcha_hmac")
+    ALTCHA_HMAC_KEY = get_secret("altcha_hmac")
 else:
     ALTCHA_HMAC_KEY = ""
 
@@ -1210,15 +1215,11 @@ def ensure_dict_path(d: dict[str, Any], keys: list[str]) -> None:
         d = d[key]
 
 
-# Merge SOCIAL_AUTH_SYNC_CUSTOM_ATTRS_DICT into SOCIAL_AUTH_SYNC_ATTRS_DICT.
-# This is compat code for the original SOCIAL_AUTH_CUSTOM_ATTRS_DICT setting.
-# TODO/compatibility: Remove this for release Zulip 10.0.
-for subdomain, dict_for_subdomain in SOCIAL_AUTH_SYNC_CUSTOM_ATTRS_DICT.items():
-    for backend_name, custom_attrs_map in dict_for_subdomain.items():
-        ensure_dict_path(SOCIAL_AUTH_SYNC_ATTRS_DICT, [subdomain, backend_name])
-        for custom_attr_name, source_attr_name in custom_attrs_map.items():
-            SOCIAL_AUTH_SYNC_ATTRS_DICT[subdomain][backend_name][f"custom__{custom_attr_name}"] = (
-                source_attr_name
+for dict_for_subdomain in SOCIAL_AUTH_SYNC_ATTRS_DICT.values():
+    for attrs_map in dict_for_subdomain.values():
+        if "zulip_groups" in attrs_map.values():
+            raise AssertionError(
+                "zulip_groups can't be listed as a SAML attribute in SOCIAL_AUTH_SYNC_ATTRS_DICT"
             )
 
 SOCIAL_AUTH_PIPELINE = [

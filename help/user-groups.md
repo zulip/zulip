@@ -20,7 +20,7 @@ organization's structure in Zulip's permissions system.
 1. Scroll through the list of user groups. You can use the **search box** near
    the top of the menu to filter the list by group name or description.
 
-1. Click the **plus** (<img src="/static/images/help/desktop-web-plus-icon.svg"
+1. Click the **join group** (<img src="/static/images/help/desktop-web-plus-icon.svg"
    alt="plus" class="help-center-icon"/>) icon to the left of a user group to
    join the group, if you have
    [permission](/help/manage-user-groups#configure-group-permissions) to do so.
@@ -35,7 +35,7 @@ organization's structure in Zulip's permissions system.
 
 {relative|gear|group-settings}
 
-1. Click the **checkmark** (<img
+1. Click the **leave group** (<img
    src="/static/images/help/desktop-web-check-icon.svg" alt="checkmark"
    class="help-center-icon"/>) icon to the left of a user group to leave the
    group, if you have

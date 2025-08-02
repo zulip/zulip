@@ -57,6 +57,6 @@ incoming emails. Help:
 https://zulip.readthedocs.io/en/latest/production/email-gateway.html
 {% endif %}
 
-{% trans %}Manage email preferences: {% endtrans %}
+{% trans %}Manage email preferences:{% endtrans %}
 
 {{ realm_url }}/#settings/notifications

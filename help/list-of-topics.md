@@ -30,7 +30,8 @@ overview if you like reading your messages one channel at a time.
 
 1. Select a channel.
 
-1. Tap **topics** in the upper right corner of the app.
+1. Tap **topics** (<i class="zulip-icon zulip-icon-topic-list mobile-help"></i>)
+   in the upper right corner of the app.
 
 1. Tap on a conversation you're interested in to view it. You can return to
    the list of topics when done (e.g., by using the **back** button) to select

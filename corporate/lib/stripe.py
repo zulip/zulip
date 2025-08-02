@@ -2301,6 +2301,24 @@ class BillingSession(ABC):
                         # This will create invoice for any additional licenses that user has at the time of
                         # switching from free trial to paid plan since they already paid for the plan's this billing cycle.
                         is_renewal = False
+
+                        # Since we need to move the `billing_cycle_anchor` forward below, we also
+                        # need to update the `event_time` of the last renewal ledger entry to avoid
+                        # our logic from thinking that licenses for the current billing cycle hasn't
+                        # been paid for.
+                        last_renewal_ledger_entry = (
+                            LicenseLedger.objects.filter(
+                                plan=plan,
+                                is_renewal=True,
+                            )
+                            .order_by("-id")
+                            .first()
+                        )
+                        assert last_renewal_ledger_entry is not None
+                        last_renewal_ledger_entry.event_time = next_billing_cycle.replace(
+                            microsecond=0
+                        )
+                        last_renewal_ledger_entry.save(update_fields=["event_time"])
                     else:
                         # We end the free trial since customer hasn't paid.
                         plan.status = CustomerPlan.DOWNGRADE_AT_END_OF_FREE_TRIAL
@@ -3028,7 +3046,7 @@ class BillingSession(ABC):
 
         licenses = update_plan_request.licenses
         if licenses is not None:
-            if plan.is_free_trial():  # nocoverage
+            if plan.is_free_trial():
                 raise JsonableError(
                     _("Cannot update licenses in the current billing period for free trial plan.")
                 )

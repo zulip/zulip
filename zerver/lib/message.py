@@ -15,7 +15,7 @@ from psycopg2.sql import SQL
 from analytics.lib.counts import COUNT_STATS
 from analytics.models import RealmCount
 from zerver.lib.cache import generic_bulk_cached_fetch, to_dict_cache_key_id
-from zerver.lib.display_recipient import get_display_recipient_by_id
+from zerver.lib.display_recipient import get_display_recipient, get_display_recipient_by_id
 from zerver.lib.exceptions import JsonableError, MissingAuthenticationError
 from zerver.lib.markdown import MessageRenderingResult
 from zerver.lib.mention import MentionData, sender_can_mention_group
@@ -1733,7 +1733,7 @@ def set_visibility_policy_possible(user_profile: UserProfile, message: Message) 
 
 def remove_single_newlines(content: str) -> str:
     content = content.strip("\n")
-    return re.sub(r"(?<!\n)\n(?!\n|[-*] |[0-9]+\. )", " ", content)
+    return re.sub(r"(?<!\n)\n(?!\n|[-*] |[0-9]+\. ) *", " ", content)
 
 
 def is_1_to_1_message(message: Message) -> bool:
@@ -1743,5 +1743,16 @@ def is_1_to_1_message(message: Message) -> bool:
 
     if message.recipient.type == Recipient.PERSONAL:
         return True
+
+    return False
+
+
+def is_message_to_self(message: Message) -> bool:
+    if message.recipient.type == Recipient.DIRECT_MESSAGE_GROUP:
+        group_members = get_display_recipient(message.recipient)
+        return len(group_members) == 1 and group_members[0]["id"] == message.sender.id
+
+    if message.recipient.type == Recipient.PERSONAL:
+        return message.recipient == message.sender.recipient
 
     return False

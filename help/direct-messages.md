@@ -13,7 +13,7 @@ or unsubscribe people as needed.
 
 {!send-dm.md!}
 
-## View your DMs
+## View your direct message conversations
 
 There are a few different ways to view your DM conversations.
 
@@ -22,6 +22,11 @@ There are a few different ways to view your DM conversations.
 {tab|via-left-sidebar}
 
 {!view-dms-left-sidebar.md!}
+
+!!! tip ""
+
+    To return to the channel list in the left sidebar, click the **back to
+    channels** link above the search box.
 
 {tab|via-right-sidebar}
 
@@ -35,23 +40,6 @@ There are a few different ways to view your DM conversations.
 
     You can find a user by typing their name in the **Filter users** box at the
     top of the right sidebar.
-
-{tab|via-search-box}
-
-1. Click the **search** (<i class="search_icon zulip-icon
-   zulip-icon-search"></i>) icon in the top bar to open the [search
-   box](/help/search-for-messages).
-
-1. Start typing a user's name. You'll be able to select DMs with that user
-   from the list of suggestions.
-
-1. *(optional)* Continue to add users via the search box for a group DM
-   conversation.
-
-!!! tip ""
-
-    You can also type `dm-including` in the search box to find all 1:1 and group
-    DM conversations that include a particular user.
 
 {tab|via-compose-box}
 
@@ -78,35 +66,34 @@ There are a few different ways to view your DM conversations.
 
 {start_tabs}
 
-{tab|desktop-web}
+{tab|via-left-sidebar}
 
-1. If the **direct messages** section in the left sidebar is collapsed, click on
-   the **direct messages** heading to expand it.
-1. At the bottom of the list of your recent direct messages, click **more
-   conversations**. If you don't see this link, you are already viewing all of
-   your direct message conversations.
-1. Type the name of a participant in the conversation you're looking for.
+{!find-dm-conversation-left-sidebar.md!}
+
+{tab|via-search-box}
+
+1. Click the **search** (<i class="search_icon zulip-icon
+   zulip-icon-search"></i>) icon in the top bar to open the [search
+   box](/help/search-for-messages).
+
+1. Start typing a user's name. You'll be able to select DMs with that user
+   from the list of suggestions.
+
+1. *(optional)* Continue to add users via the search box for a group DM
+   conversation.
 
 !!! tip ""
 
-    To return to the channel list in the left sidebar, click the **back to
-    channels** link above the search box.
+    You can also type `dm-including` in the search box to find all 1:1 and group
+    DM conversations that include a particular user.
 
 {end_tabs}
 
-## View direct message feed
+## Go to direct message feed
 
-{start_tabs}
+You can see all your direct messages in one place.
 
-{tab|desktop-web}
-
-1. In the left sidebar, click the **Direct message feed**
-   (<i class="zulip-icon zulip-icon-all-messages"></i>) icon to the right of the
-   **direct messages** heading, or use the <kbd>Shift</kbd> + <kbd>P</kbd>
-   keyboard shortcut.
-
-{end_tabs}
-
+{!dm-feed-instructions.md!}
 
 ## Related articles
 

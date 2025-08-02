@@ -207,6 +207,7 @@ export function update_buttons_for_stream_views(): void {
 export function update_buttons_for_non_specific_views(): void {
     $("#new_conversation_button").attr("data-conversation-type", "non-specific");
     update_buttons(should_disable_compose_reply_button_for_stream());
+    set_standard_text_for_reply_button();
 }
 
 function set_reply_button_label(label: string): void {
@@ -236,6 +237,18 @@ export function update_recipient_text_for_reply_button(
     }
 }
 
+function can_user_reply_to_message(message_id: number): boolean {
+    const selected_message = message_store.get(message_id);
+    if (selected_message === undefined) {
+        return false;
+    }
+    if (selected_message.is_stream) {
+        return !should_disable_compose_reply_button_for_stream();
+    }
+    assert(selected_message.is_private);
+    return message_util.user_can_send_direct_message(selected_message.to_user_ids);
+}
+
 export function initialize(): void {
     // When the message selection changes, change the label on the Reply button.
     $(document).on("message_selected.zulip", () => {
@@ -244,14 +257,9 @@ export function initialize(): void {
             // open due to the combined feed view loading in the background,
             // so we only update if message feed is visible.
             update_recipient_text_for_reply_button();
-
-            // Disable compose reply button if the selected message is a stream
-            // message and the user is not allowed to post in the stream the message
-            // belongs to.
-            if (maybe_get_selected_message_stream_id() !== undefined) {
-                update_buttons_for_stream_views();
-                update_buttons_for_non_specific_views();
-            }
+            update_reply_button_state(
+                !can_user_reply_to_message(message_lists.current!.selected_id()),
+            );
         }
     });
 

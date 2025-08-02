@@ -569,7 +569,8 @@
        markdown is a horizontal rule, a media element,
        or KaTeX. */
     &:has(> hr:first-child),
-    &:has(> .message_inline_image:first-child),
+    &:has(> .message-thumbnail-gallery:first-child),
+    &:has(> p:first-child > audio),
     &:has(> p:first-child > .katex-display) {
         align-self: center;
     }
@@ -584,6 +585,8 @@
             width: 100%;
         }
 
+        > audio:first-child,
+        p:first-child > audio,
         p:first-child > .katex-display,
         .message_inline_image {
             /* We'll display this bit of media as
@@ -606,6 +609,7 @@
             grid-template: "media" minmax(0, auto) / minmax(0, auto);
         }
 
+        p:first-child > audio,
         p:first-child > .katex-display > .katex,
         .message_inline_image .media-anchor-element,
         .message_inline_image .media-video-element {
@@ -614,6 +618,7 @@
             grid-area: media;
         }
 
+        p:first-child > audio::before,
         p:first-child > .katex-display::before,
         .message_inline_image::before {
             /* We generate a single . here to create
@@ -925,6 +930,79 @@
         font-size: 1.1363em;
         border: 1px solid var(--color-copy-button-square-bg-active);
         backdrop-filter: blur(20px);
+    }
+
+    p:first-child > audio:first-child {
+        /* TODO: This is probably not the best way create space here. */
+        padding-top: 0.5em;
+    }
+
+    audio {
+        width: 18em;
+        height: 2em;
+        max-width: 100%;
+
+        &::-webkit-media-controls-panel {
+            display: flex !important;
+            justify-content: space-between !important;
+            flex-wrap: nowrap !important;
+            box-sizing: border-box !important;
+            width: 100% !important;
+            min-width: 0 !important;
+            padding: 0 0.5em !important;
+            opacity: 1 !important;
+        }
+
+        &::-webkit-media-controls-play-button {
+            flex: 0 0 auto !important;
+            width: 1.75em !important;
+            min-width: 1.75em !important;
+        }
+
+        &::-webkit-media-controls-timeline-container,
+        &::-webkit-media-controls-timeline {
+            flex: 1 1 auto !important;
+            min-width: 4em !important;
+            max-width: 6em !important;
+            opacity: 1 !important;
+            margin: 0 0.5em !important;
+        }
+
+        &::-webkit-media-controls-current-time-display,
+        &::-webkit-media-controls-time-remaining-display {
+            flex: 0 0 auto !important;
+            min-width: 0 !important;
+            font-size: 1rem !important;
+        }
+
+        &::-webkit-media-controls-volume-control-container {
+            flex: 0 0 auto !important;
+            width: auto !important;
+            min-width: 0 !important;
+            max-width: 5em !important;
+            margin: 0 0.5em 0 0.25em !important;
+            display: flex !important;
+            flex-direction: row-reverse !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+        }
+
+        &::-webkit-media-controls-volume-slider-container,
+        &::-webkit-media-controls-volume-slider {
+            display: block !important;
+            width: auto !important;
+            min-width: 1.5em !important;
+            max-width: 3em !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+        }
+
+        &::-webkit-media-controls-mute-button {
+            flex: 0 0 auto !important;
+            width: 1.125em !important;
+            min-width: 1.125em !important;
+            margin-right: 0.25em !important;
+        }
     }
 }
 

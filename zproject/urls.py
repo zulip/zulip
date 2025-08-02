@@ -104,11 +104,13 @@ from zerver.views.presence import (
     get_status_backend,
     get_statuses_for_realm,
     update_active_status_backend,
+    update_user_status_admin,
     update_user_status_backend,
 )
 from zerver.views.push_notifications import (
     add_android_reg_id,
     add_apns_device_token,
+    register_push_device,
     remove_android_reg_id,
     remove_apns_device_token,
     self_hosting_auth_json_endpoint,
@@ -123,6 +125,7 @@ from zerver.views.realm import (
     check_subdomain_available,
     deactivate_realm,
     realm_reactivation,
+    realm_reactivation_get,
     update_realm,
     update_realm_user_settings_defaults,
 )
@@ -230,6 +233,7 @@ from zerver.views.user_groups import (
 )
 from zerver.views.user_settings import (
     confirm_email_change,
+    confirm_email_change_get,
     delete_avatar_backend,
     json_change_settings,
     regenerate_api_key,
@@ -455,6 +459,7 @@ v1_api_and_json_patterns = [
     ),
     rest_path("users/me/android_gcm_reg_id", POST=add_android_reg_id, DELETE=remove_android_reg_id),
     rest_path("mobile_push/test_notification", POST=send_test_push_notification_api),
+    rest_path("mobile_push/register", POST=register_push_device),
     # users/*/presence => zerver.views.presence.
     rest_path(
         "users/me/presence", POST=(update_active_status_backend, {"narrow_user_session_cache"})
@@ -465,7 +470,7 @@ v1_api_and_json_patterns = [
     rest_path("users/<user_id_or_email>/presence", GET=get_presence_backend),
     rest_path("realm/presence", GET=get_statuses_for_realm),
     rest_path("users/me/status", POST=update_user_status_backend),
-    rest_path("users/<int:user_id>/status", GET=get_status_backend),
+    rest_path("users/<int:user_id>/status", POST=update_user_status_admin, GET=get_status_backend),
     # user_groups -> zerver.views.user_groups
     rest_path("user_groups", GET=get_user_groups),
     rest_path("user_groups/create", POST=add_user_group),
@@ -670,9 +675,14 @@ i18n_urls = [
         name="get_prereg_key_and_redirect",
     ),
     path(
-        "accounts/confirm_new_email/<confirmation_key>",
+        "accounts/confirm_new_email/",
         confirm_email_change,
         name="confirm_email_change",
+    ),
+    path(
+        "accounts/confirm_new_email/<confirmation_key>",
+        confirm_email_change_get,
+        name="confirm_email_change_get",
     ),
     # Email unsubscription endpoint. Allows for unsubscribing from various types of emails,
     # including welcome emails, missed direct messages, etc.
@@ -692,7 +702,8 @@ i18n_urls = [
     path("new/", create_realm),
     path("new/<creation_key>", create_realm, name="create_realm"),
     # Realm reactivation
-    path("reactivate/<confirmation_key>", realm_reactivation, name="realm_reactivation"),
+    path("reactivate/", realm_reactivation, name="realm_reactivation"),
+    path("reactivate/<confirmation_key>", realm_reactivation_get, name="realm_reactivation_get"),
     # Login/registration
     path("register/", accounts_home, name="register"),
     path("login/", login_page, {"template_name": "zerver/login.html"}, name="login_page"),

@@ -27,6 +27,7 @@ class StreamTopicsPolicyEnum(Enum):
     inherit = 1
     allow_empty_topic = 2
     disable_empty_topic = 3
+    empty_topic_only = 4
 
 
 class Stream(models.Model):
@@ -146,6 +147,12 @@ class Stream(models.Model):
     can_administer_channel_group = models.ForeignKey(
         UserGroup, on_delete=models.RESTRICT, related_name="+"
     )
+    can_delete_any_message_group = models.ForeignKey(
+        UserGroup, on_delete=models.RESTRICT, related_name="+"
+    )
+    can_delete_own_message_group = models.ForeignKey(
+        UserGroup, on_delete=models.RESTRICT, related_name="+"
+    )
     can_move_messages_out_of_channel_group = models.ForeignKey(
         UserGroup, on_delete=models.RESTRICT, related_name="+"
     )
@@ -157,6 +164,9 @@ class Stream(models.Model):
         UserGroup, on_delete=models.RESTRICT, related_name="+"
     )
     can_subscribe_group = models.ForeignKey(UserGroup, on_delete=models.RESTRICT, related_name="+")
+    can_resolve_topics_group = models.ForeignKey(
+        UserGroup, on_delete=models.RESTRICT, related_name="+"
+    )
 
     # The very first message ID in the stream.  Used to help clients
     # determine whether they might need to display "show all topics" for a
@@ -181,6 +191,16 @@ class Stream(models.Model):
             allow_everyone_group=False,
             default_group_name="stream_creator_or_nobody",
         ),
+        "can_delete_any_message_group": GroupPermissionSetting(
+            allow_nobody_group=True,
+            allow_everyone_group=True,
+            default_group_name=SystemGroups.NOBODY,
+        ),
+        "can_delete_own_message_group": GroupPermissionSetting(
+            allow_nobody_group=True,
+            allow_everyone_group=True,
+            default_group_name=SystemGroups.NOBODY,
+        ),
         "can_move_messages_out_of_channel_group": GroupPermissionSetting(
             allow_nobody_group=True,
             allow_everyone_group=True,
@@ -204,6 +224,11 @@ class Stream(models.Model):
         "can_subscribe_group": GroupPermissionSetting(
             allow_nobody_group=True,
             allow_everyone_group=False,
+            default_group_name=SystemGroups.NOBODY,
+        ),
+        "can_resolve_topics_group": GroupPermissionSetting(
+            allow_nobody_group=True,
+            allow_everyone_group=True,
             default_group_name=SystemGroups.NOBODY,
         ),
     }
@@ -267,11 +292,14 @@ class Stream(models.Model):
         "subscriber_count",
         "can_add_subscribers_group_id",
         "can_administer_channel_group_id",
+        "can_delete_any_message_group_id",
+        "can_delete_own_message_group_id",
         "can_move_messages_out_of_channel_group_id",
         "can_move_messages_within_channel_group_id",
         "can_send_message_group_id",
         "can_remove_subscribers_group_id",
         "can_subscribe_group_id",
+        "can_resolve_topics_group_id",
         "is_recently_active",
         "topics_policy",
     ]

@@ -13,7 +13,7 @@ from django_stubs_ext import StrPromise
 
 from zerver.lib.storage import static_path
 from zerver.lib.validator import check_bool, check_string
-from zerver.lib.webhooks.common import WebhookConfigOption
+from zerver.lib.webhooks.common import WebhookConfigOption, WebhookUrlOption
 
 """This module declares all of the (documented) integrations available
 in the Zulip server.  The Integration class is used as part of
@@ -79,12 +79,14 @@ class Integration:
         stream_name: str | None = None,
         legacy: bool = False,
         config_options: Sequence[WebhookConfigOption] = [],
+        url_options: Sequence[WebhookUrlOption] = [],
     ) -> None:
         self.name = name
         self.client_name = client_name if client_name is not None else name
         self.secondary_line_text = secondary_line_text
         self.legacy = legacy
         self.doc = doc
+        self.url_options = url_options
 
         # Note: Currently only incoming webhook type bots use this list for
         # defining how the bot's BotConfigData should be. Embedded bots follow
@@ -247,6 +249,7 @@ class WebhookIntegration(Integration):
         stream_name: str | None = None,
         legacy: bool = False,
         config_options: Sequence[WebhookConfigOption] = [],
+        url_options: Sequence[WebhookUrlOption] = [],
         dir_name: str | None = None,
     ) -> None:
         if client_name is None:
@@ -261,6 +264,7 @@ class WebhookIntegration(Integration):
             stream_name=stream_name,
             legacy=legacy,
             config_options=config_options,
+            url_options=url_options,
         )
 
         if function is None:
@@ -410,9 +414,7 @@ WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
         "azuredevops",
         ["version-control"],
         display_name="AzureDevOps",
-        config_options=[
-            WebhookConfigOption(name="branches", description="", validator=check_string)
-        ],
+        url_options=[WebhookUrlOption(name="branches", label="", validator=check_string)],
     ),
     WebhookIntegration("beanstalk", ["version-control"], stream_name="commits"),
     WebhookIntegration("basecamp", ["project-management"]),
@@ -423,9 +425,7 @@ WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
         logo="images/integrations/logos/bitbucket.svg",
         display_name="Bitbucket Server",
         stream_name="bitbucket",
-        config_options=[
-            WebhookConfigOption(name="branches", description="", validator=check_string)
-        ],
+        url_options=[WebhookUrlOption(name="branches", label="", validator=check_string)],
     ),
     WebhookIntegration(
         "bitbucket2",
@@ -433,9 +433,7 @@ WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
         logo="images/integrations/logos/bitbucket.svg",
         display_name="Bitbucket",
         stream_name="bitbucket",
-        config_options=[
-            WebhookConfigOption(name="branches", description="", validator=check_string)
-        ],
+        url_options=[WebhookUrlOption(name="branches", label="", validator=check_string)],
     ),
     WebhookIntegration(
         "bitbucket",
@@ -464,9 +462,7 @@ WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
         "gitea",
         ["version-control"],
         stream_name="commits",
-        config_options=[
-            WebhookConfigOption(name="branches", description="", validator=check_string)
-        ],
+        url_options=[WebhookUrlOption(name="branches", label="", validator=check_string)],
     ),
     WebhookIntegration(
         "github",
@@ -474,11 +470,11 @@ WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
         display_name="GitHub",
         function="zerver.webhooks.github.view.api_github_webhook",
         stream_name="github",
-        config_options=[
-            WebhookConfigOption(name="branches", description="", validator=check_string),
-            WebhookConfigOption(
+        url_options=[
+            WebhookUrlOption(name="branches", label="", validator=check_string),
+            WebhookUrlOption(
                 name="ignore_private_repositories",
-                description="Exclude notifications from private repositories",
+                label="Exclude notifications from private repositories",
                 validator=check_bool,
             ),
         ],
@@ -497,18 +493,14 @@ WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
         "gitlab",
         ["version-control"],
         display_name="GitLab",
-        config_options=[
-            WebhookConfigOption(name="branches", description="", validator=check_string)
-        ],
+        url_options=[WebhookUrlOption(name="branches", label="", validator=check_string)],
     ),
     WebhookIntegration("gocd", ["continuous-integration"], display_name="GoCD"),
     WebhookIntegration(
         "gogs",
         ["version-control"],
         stream_name="commits",
-        config_options=[
-            WebhookConfigOption(name="branches", description="", validator=check_string)
-        ],
+        url_options=[WebhookUrlOption(name="branches", label="", validator=check_string)],
     ),
     WebhookIntegration("gosquared", ["marketing"], display_name="GoSquared"),
     WebhookIntegration("grafana", ["monitoring"]),
@@ -543,10 +535,10 @@ WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
     WebhookIntegration(
         "opsgenie",
         ["meta-integration", "monitoring"],
-        config_options=[
-            WebhookConfigOption(
+        url_options=[
+            WebhookUrlOption(
                 name="eu_region",
-                description="Use Opsgenie's European service region",
+                label="Use Opsgenie's European service region",
                 validator=check_bool,
             )
         ],
@@ -563,9 +555,7 @@ WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
         "rhodecode",
         ["version-control"],
         display_name="RhodeCode",
-        config_options=[
-            WebhookConfigOption(name="branches", description="", validator=check_string)
-        ],
+        url_options=[WebhookUrlOption(name="branches", label="", validator=check_string)],
     ),
     WebhookIntegration("rundeck", ["deployment"]),
     WebhookIntegration("semaphore", ["continuous-integration", "deployment"]),
@@ -616,7 +606,6 @@ INTEGRATIONS: dict[str, Integration] = {
     "mastodon": Integration("mastodon", ["communication"]),
     "notion": Integration("notion", ["productivity"]),
     "onyx": Integration("onyx", ["productivity"], logo="images/integrations/logos/onyx.png"),
-    "phabricator": Integration("phabricator", ["version-control"]),
     "puppet": Integration("puppet", ["deployment"]),
     "redmine": Integration("redmine", ["project-management"]),
     "zoom": Integration("zoom", ["communication"]),

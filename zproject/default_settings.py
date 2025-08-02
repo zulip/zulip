@@ -53,6 +53,7 @@ LDAP_APPEND_DOMAIN: str | None = None
 LDAP_EMAIL_ATTR: str | None = None
 AUTH_LDAP_REVERSE_EMAIL_SEARCH: Optional["LDAPSearch"] = None
 AUTH_LDAP_USERNAME_ATTR: str | None = None
+
 # AUTH_LDAP_USER_ATTR_MAP is uncommented in prod_settings_template.py,
 # so the value here mainly serves to help document the default.
 AUTH_LDAP_USER_ATTR_MAP: dict[str, str] = {
@@ -93,6 +94,7 @@ SOCIAL_AUTH_SAML_TECHNICAL_CONTACT: dict[str, str] | None = None
 SOCIAL_AUTH_SAML_SUPPORT_CONTACT: dict[str, str] | None = None
 SOCIAL_AUTH_SAML_ENABLED_IDPS: dict[str, SAMLIdPConfigDict] = {}
 SOCIAL_AUTH_SAML_SECURITY_CONFIG: dict[str, Any] = {}
+
 # Set this to True to enforce that any configured IdP needs to specify
 # the limit_to_subdomains setting to be considered valid:
 SAML_REQUIRE_LIMIT_TO_SUBDOMAINS = False
@@ -112,8 +114,7 @@ SOCIAL_AUTH_APPLE_EMAIL_AS_USERNAME = True
 SOCIAL_AUTH_OIDC_ENABLED_IDPS: dict[str, OIDCIdPConfigDict] = {}
 SOCIAL_AUTH_OIDC_FULL_NAME_VALIDATED = False
 
-SOCIAL_AUTH_SYNC_CUSTOM_ATTRS_DICT: dict[str, dict[str, dict[str, str]]] = {}
-SOCIAL_AUTH_SYNC_ATTRS_DICT: dict[str, dict[str, dict[str, str]]] = {}
+SOCIAL_AUTH_SYNC_ATTRS_DICT: dict[str, dict[str, dict[str, str | list[str | tuple[str, str]]]]] = {}
 
 # Other auth
 SSO_APPEND_DOMAIN: str | None = None
@@ -241,8 +242,6 @@ ZULIP_SERVICE_PUSH_NOTIFICATIONS = False
 # is enabled.
 ZULIP_SERVICE_SUBMIT_USAGE_STATISTICS: bool | None = None
 ZULIP_SERVICE_SECURITY_ALERTS = False
-
-PUSH_NOTIFICATION_REDACT_CONTENT = False
 
 # Old setting kept around for backwards compatibility. Some old servers
 # may have it in their settings.py.
@@ -740,4 +739,4 @@ SCIM_CONFIG: dict[str, SCIMConfigDict] = {}
 
 # Minimum number of subscribers in a channel for us to no longer
 # send full subscriber data to the client.
-MIN_PARTIAL_SUBSCRIBERS_CHANNEL_SIZE = 250
+MIN_PARTIAL_SUBSCRIBERS_CHANNEL_SIZE = 1000

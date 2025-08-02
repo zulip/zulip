@@ -14,13 +14,10 @@ message.
 
 {!message-actions.md!}
 
-1. Click the **smiley face** (<i class="zulip-icon zulip-icon-smile"></i>) icon.
-
-    !!! warn ""
-
-        For messages that you've sent, click on the **ellipsis**
-        (<i class="zulip-icon zulip-icon-more-vertical-spread"></i>) and then
-        **Add emoji reaction**.
+1. Click the **Add emoji reaction** (<i class="zulip-icon
+   zulip-icon-smile"></i>) icon. On messages that you sent, click on the
+   **ellipsis** (<i class="zulip-icon zulip-icon-more-vertical-spread"></i>),
+   then **Add emoji reaction**.
 
 1. Select an emoji. Type to search, use the arrow keys, or click on an emoji
    with your mouse.
@@ -32,7 +29,8 @@ message.
 
 !!! keyboard_tip ""
 
-    You can react to the selected message with 👍 by using the <kbd>+</kbd> shortcut.
+    Use <kbd>:</kbd> to add any reaction, <kbd>=</kbd> to add the first
+    emoji reaction added by others, or <kbd>+</kbd> to react with 👍.
 
 {tab|mobile}
 
@@ -92,13 +90,9 @@ so](#toggle-whether-names-of-reacting-users-are-displayed) is enabled.
 
 {tab|mobile}
 
-Access this feature by following the web app instructions in your
-mobile device browser.
+{!message-long-press-menu.md!}
 
-Implementation of this feature in the mobile app is tracked [on
-GitHub](https://github.com/zulip/zulip-flutter/issues/740). If
-you're interested in this feature, please react to the issue's
-description with 👍.
+1. Tap **See who reacted**.
 
 {end_tabs}
 
@@ -115,28 +109,7 @@ description with 👍.
 
 ## View your messages with reactions
 
-To see how others have responded to your messages, you can view all your
-messages which have received at least one reaction.
-
-{start_tabs}
-
-{tab|desktop-web}
-
-1. Click on <i class="zulip-icon zulip-icon-smile"></i>**Reactions** in the left
-   sidebar. If the **views** section is collapsed, click on
-   the **ellipsis** (<i class="zulip-icon zulip-icon-more-vertical"></i>),
-   and select <i class="zulip-icon zulip-icon-smile"></i>**Reactions**.
-
-1. Browse your reactions. You can click on a message recipient bar to go
-   to the [conversation](/help/reading-conversations) where you sent the message.
-
-!!! tip ""
-
-    You can also [search all messages with reactions](/help/search-for-messages) using the
-    `has:reaction` filter.
-
-{end_tabs}
-
+{!view-emoji-reactions.md!}
 
 ## Related articles
 

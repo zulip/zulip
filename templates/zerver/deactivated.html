@@ -16,12 +16,25 @@
         <div class="inline-block">
 
             <div class="get-started">
-                <h1>{{ _("Deactivated organization") }}</h1>
+                {% if deactivated_redirect %}
+                    <h1>{{ _("Organization moved") }}</h1>
+                {% else %}
+                    <h1>{{ _("Deactivated organization") }}</h1>
+                {% endif %}
             </div>
 
             <div class="white-box deactivated-realm-container">
                 <p>
-                    {% if realm_data_deleted %}
+                    {% if deactivated_redirect %}
+                        {% trans %}
+                        This organization has moved to <a href="{{ deactivated_redirect }}">{{ deactivated_redirect }}</a>.
+                        {% endtrans %}
+                        {% if auto_redirect_to %}
+                        {% trans %}
+                            This page will automatically redirect to the <a href="{{ auto_redirect_to }}" id="deactivated-org-auto-redirect">new URL</a> in <span id="deactivated-org-auto-redirect-countdown">5</span> seconds.
+                        {% endtrans %}
+                        {% endif %}
+                    {% elif realm_data_deleted %}
                         {{ _("This organization has been deactivated, and all organization data has been deleted.") }}
                         {% if corporate_enabled %}
                             {% trans %}

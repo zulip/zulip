@@ -36,7 +36,10 @@ mock_esm("../src/group_permission_settings", {
 });
 
 const REALM_EMPTY_TOPIC_DISPLAY_NAME = "general chat";
-const realm = {realm_empty_topic_display_name: REALM_EMPTY_TOPIC_DISPLAY_NAME};
+const realm = {
+    realm_empty_topic_display_name: REALM_EMPTY_TOPIC_DISPLAY_NAME,
+    realm_topics_policy: "allow_empty_topic",
+};
 set_realm(realm);
 const current_user = {};
 set_current_user(current_user);
@@ -639,8 +642,8 @@ test_ui("warn_if_private_stream_is_linked", async ({mock_template}) => {
         name: "Denmark",
         stream_id: 22,
     };
-    peer_data.set_subscribers(secret_stream.stream_id, []);
     stream_data.add_sub(secret_stream);
+    peer_data.set_subscribers(secret_stream.stream_id, []);
     banner_rendered = false;
     const $banner_container = $("#compose_banners");
     $banner_container.set_find_results(".private_stream_warning", []);

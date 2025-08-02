@@ -6,12 +6,10 @@ const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 
 const message_edit = zrequire("message_edit");
-const people = zrequire("people");
 const {set_current_user, set_realm} = zrequire("state_data");
 
 const is_content_editable = message_edit.is_content_editable;
 
-const settings_data = mock_esm("../src/settings_data");
 const stream_data = mock_esm("../src/stream_data");
 
 const realm = {};
@@ -98,6 +96,7 @@ run_test("is_topic_editable", ({override}) => {
     override(stream_data, "is_stream_archived", () => false);
     override(stream_data, "user_can_move_messages_within_channel", () => true);
     override(stream_data, "get_sub_by_id", () => ({}));
+    override(stream_data, "is_empty_topic_only_channel", () => false);
     override(current_user, "is_moderator", true);
 
     assert.equal(message_edit.is_topic_editable(message), false);
@@ -185,83 +184,6 @@ run_test("is_stream_editable", ({override}) => {
 
     override(current_user, "is_moderator", true);
     assert.equal(message_edit.is_stream_editable(message), true);
-});
-
-run_test("get_deletability", ({override}) => {
-    override(current_user, "is_admin", true);
-    override(settings_data, "user_can_delete_any_message", () => true);
-    override(settings_data, "user_can_delete_own_message", () => false);
-    override(realm, "realm_message_content_delete_limit_seconds", null);
-    const test_user = {
-        user_id: 1,
-        full_name: "Test user",
-        email: "test@zulip.com",
-    };
-    people.add_active_user(test_user);
-
-    const bot_user = {
-        user_id: 2,
-        is_bot: true,
-        full_name: "Test bot user",
-        email: "test-bot@zulip.com",
-        bot_owner_id: 1,
-    };
-    people.add_active_user(bot_user);
-
-    const message = {
-        sent_by_me: false,
-        locally_echoed: true,
-        sender_id: 1,
-    };
-
-    // User can delete any message
-    assert.equal(message_edit.get_deletability(message), true);
-
-    override(settings_data, "user_can_delete_any_message", () => false);
-    // User can't delete message sent by others
-    assert.equal(message_edit.get_deletability(message), false);
-
-    // Locally echoed messages are not deletable
-    message.sent_by_me = true;
-    assert.equal(message_edit.get_deletability(message), false);
-
-    message.locally_echoed = false;
-    assert.equal(message_edit.get_deletability(message), false);
-
-    override(settings_data, "user_can_delete_own_message", () => true);
-    assert.equal(message_edit.get_deletability(message), true);
-
-    message.sent_by_me = false;
-    assert.equal(message_edit.get_deletability(message), false);
-    message.sent_by_me = true;
-
-    let now = new Date();
-    let current_timestamp = now / 1000;
-    message.timestamp = current_timestamp - 5;
-
-    override(realm, "realm_message_content_delete_limit_seconds", 10);
-    assert.equal(message_edit.get_deletability(message), true);
-
-    message.timestamp = current_timestamp - 60;
-    assert.equal(message_edit.get_deletability(message), false);
-
-    message.sender_id = 2;
-    message.sent_by_me = false;
-    people.initialize_current_user(test_user.user_id);
-    override(realm, "realm_message_content_delete_limit_seconds", null);
-
-    override(settings_data, "user_can_delete_own_message", () => true);
-    assert.equal(message_edit.get_deletability(message), true);
-
-    override(settings_data, "user_can_delete_own_message", () => false);
-    assert.equal(message_edit.get_deletability(message), false);
-
-    now = new Date();
-    current_timestamp = now / 1000;
-    override(realm, "realm_message_content_delete_limit_seconds", 10);
-    message.timestamp = current_timestamp - 60;
-    override(settings_data, "user_can_delete_own_message", () => true);
-    assert.equal(message_edit.get_deletability(message), false);
 });
 
 run_test("stream_and_topic_exist_in_edit_history", () => {

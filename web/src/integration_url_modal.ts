@@ -1,7 +1,7 @@
 import ClipboardJS from "clipboard";
 import $ from "jquery";
 import type * as tippy from "tippy.js";
-import {z} from "zod";
+import * as z from "zod/mini";
 
 import render_generate_integration_url_config_checkbox_modal from "../templates/settings/generate_integration_url_config_checkbox_modal.hbs";
 import render_generate_integration_url_config_text_modal from "../templates/settings/generate_integration_url_config_text_modal.hbs";
@@ -19,19 +19,19 @@ import {realm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import * as util from "./util.ts";
 
-type ConfigOption = {
+type UrlOption = {
     key: string;
     label: string;
     validator: string;
 };
 
-const config_option_schema = z.object({
+const url_option_schema = z.object({
     key: z.string(),
     label: z.string(),
     validator: z.string(),
 });
 
-const config_options_schema = z.array(config_option_schema);
+const url_options_schema = z.array(url_option_schema);
 
 export function show_generate_integration_url_modal(api_key: string): void {
     const default_url_message = $t_html({defaultMessage: "Integration URL will appear here."});
@@ -107,8 +107,8 @@ export function show_generate_integration_url_modal(api_key: string): void {
             update_url();
         }
 
-        function render_config(config: ConfigOption[]): void {
-            const validated_config = config_options_schema.parse(config);
+        function render_url_options(config: UrlOption[]): void {
+            const validated_config = url_options_schema.parse(config);
             $config_container.empty();
 
             for (const option of validated_config) {
@@ -203,7 +203,7 @@ export function show_generate_integration_url_modal(api_key: string): void {
                 (bot) => bot.name === selected_integration,
             );
             const all_event_types = selected_integration_data?.all_event_types;
-            const config = selected_integration_data?.config_options;
+            const url_options = selected_integration_data?.url_options;
 
             if (all_event_types !== null) {
                 $("#integration-events-parameter").removeClass("hide");
@@ -234,8 +234,8 @@ export function show_generate_integration_url_modal(api_key: string): void {
 
             const selected_events = set_events_param(params);
 
-            if (config) {
-                for (const option of config) {
+            if (url_options) {
+                for (const option of url_options) {
                     let $input_element;
                     if (
                         option.key === "branches" &&
@@ -316,8 +316,8 @@ export function show_generate_integration_url_modal(api_key: string): void {
                 (bot) => bot.name === selected_integration,
             );
 
-            if (selected_integration_data?.config_options) {
-                render_config(selected_integration_data.config_options);
+            if (selected_integration_data?.url_options) {
+                render_url_options(selected_integration_data.url_options);
             }
 
             dropdown.hide();

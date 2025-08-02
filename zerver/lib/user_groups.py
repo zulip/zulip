@@ -192,17 +192,7 @@ def access_user_group_for_update(
     raise JsonableError(_("Insufficient permission"))
 
 
-def access_user_group_for_deactivation(
-    user_group_id: int, user_profile: UserProfile
-) -> NamedUserGroup:
-    """
-    Main security check / access function for whether the acting
-    user has permission to deactivate a given user group.
-    """
-    user_group = access_user_group_for_update(
-        user_group_id, user_profile, permission_setting="can_manage_group"
-    )
-
+def check_user_group_can_be_deactivated(user_group: NamedUserGroup) -> list[dict[str, Any]]:
     objections: list[dict[str, Any]] = []
     supergroup_ids = (
         user_group.direct_supergroups.exclude(named_user_group=None)
@@ -275,6 +265,20 @@ def access_user_group_for_deactivation(
     if objection_settings:
         objections.append(dict(type="realm", settings=objection_settings))
 
+    return objections
+
+
+def access_user_group_for_deactivation(
+    user_group_id: int, user_profile: UserProfile
+) -> NamedUserGroup:
+    """
+    Main security check / access function for whether the acting
+    user has permission to deactivate a given user group.
+    """
+    user_group = access_user_group_for_update(
+        user_group_id, user_profile, permission_setting="can_manage_group"
+    )
+    objections = check_user_group_can_be_deactivated(user_group)
     if len(objections) > 0:
         raise CannotDeactivateGroupInUseError(objections)
     return user_group
@@ -461,14 +465,14 @@ def update_or_create_user_group_for_setting(
 
 def access_user_group_api_value_for_setting(
     setting_user_group: int | UserGroupMembersData,
-    user_profile: UserProfile,
+    realm: Realm,
     *,
     setting_name: str,
     permission_configuration: GroupPermissionSetting,
 ) -> NamedUserGroup | UserGroupMembersData:
     if isinstance(setting_user_group, int):
         named_user_group = get_user_group_by_id_in_realm(
-            setting_user_group, user_profile.realm, for_read=False, for_setting=True
+            setting_user_group, realm, for_read=False, for_setting=True
         )
         check_setting_configuration_for_system_groups(
             named_user_group, setting_name, permission_configuration
@@ -498,7 +502,7 @@ def access_user_group_for_setting(
     """
     user_group_api_value_for_setting = access_user_group_api_value_for_setting(
         setting_user_group,
-        user_profile,
+        user_profile.realm,
         setting_name=setting_name,
         permission_configuration=permission_configuration,
     )
@@ -827,7 +831,7 @@ def get_recursive_group_members_union_for_groups(
     return UserProfile.objects.filter(
         is_active=True,
         direct_groups__in=get_recursive_subgroups_union_for_groups(user_group_ids),
-    )
+    ).distinct()
 
 
 def get_recursive_membership_groups(user_profile: UserProfile) -> QuerySet[UserGroup]:

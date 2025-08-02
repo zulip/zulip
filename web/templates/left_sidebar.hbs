@@ -165,7 +165,7 @@
         </ul>
     </div>
 
-    <a id="hide-more-direct-messages">
+    <a id="hide-more-direct-messages" class="trigger-click-on-enter" tabindex="0">
         <span class="hide-more-direct-messages-text"> {{t 'back to channels' }}</span>
     </a>
     <div id="direct-messages-section-header" class="direct-messages-container hidden-for-spectators zoom-out zoom-in-sticky">
@@ -195,28 +195,16 @@
         </div>
 
         <div id="streams_list" class="zoom-out">
-            <div id="streams_header" class="zoom-in-hide">
-                <h4 class="left-sidebar-title"><span class="streams-tooltip-target" data-tooltip-template-id="filter-streams-tooltip-template">{{t 'CHANNELS' }}</span></h4>
-                <div class="left-sidebar-controls">
-                    <i id="filter_streams_tooltip" class="streams_filter_icon zulip-icon zulip-icon-search" aria-hidden="true" data-tooltip-template-id="filter-streams-tooltip-template"></i>
-                    <span id="add_streams_tooltip" class="hidden-for-spectators">
-                        <i id="streams_inline_icon" class="zulip-icon zulip-icon-square-plus" aria-hidden="true" ></i>
-                    </span>
-                </div>
-                <div class="heading-markers-and-unreads">
-                    <span class="unread_count quiet-count"></span>
-                    <span class="masked_unread_count">
-                        <i class="zulip-icon zulip-icon-masked-unread"></i>
-                    </span>
-                </div>
-                <div class="left-sidebar-filter-input-container">
-                    {{#> input_wrapper input_type="filter-input" custom_classes="notdisplayed stream_search_section" icon="search" input_button_icon="close"}}
-                        <input type="text" class="input-element stream-list-filter home-page-input" autocomplete="off" placeholder="{{t 'Filter channels' }}" />
-                    {{/input_wrapper}}
-                </div>
+            <div id="stream-search-and-add" class="zoom-in-hide">
+                {{#> input_wrapper input_type="filter-input" custom_classes="stream_search_section" icon="search" input_button_icon="close"}}
+                    <input type="text" class="input-element stream-list-filter home-page-input" autocomplete="off" placeholder="{{t 'Filter channels' }}" />
+                {{/input_wrapper}}
+                <span id="add_streams_tooltip" class="add-stream-icon-container hidden-for-spectators">
+                    <i id="streams_inline_icon" class="add_stream_icon zulip-icon zulip-icon-square-plus" aria-hidden="true" ></i>
+                </span>
             </div>
             <div id="topics_header">
-                <a class="show-all-streams" tabindex="0">{{t 'Back to channels' }}</a> <span class="unread_count quiet-count"></span>
+                <a class="show-all-streams trigger-click-on-enter" tabindex="0">{{t 'Back to channels' }}</a> <span class="unread_count quiet-count"></span>
             </div>
             <div id="stream-filters-container">
                 <ul id="stream_filters" class="filters"></ul>
@@ -224,7 +212,7 @@
                     <div id="subscribe-to-more-streams"></div>
                 {{/unless}}
                 <div id="login-to-more-streams" class="only-visible-for-spectators login_button">
-                    <a class="subscribe-more-link">
+                    <a class="subscribe-more-link" tabindex="0">
                         <i class="subscribe-more-icon zulip-icon zulip-icon-log-in" aria-hidden="true" ></i>
                         <span class="subscribe-more-label">{{~t "LOG IN TO BROWSE MORE" ~}}</span>
                     </a>

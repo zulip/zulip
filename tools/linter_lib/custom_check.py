@@ -250,6 +250,7 @@ python_rules = RuleList(
             "exclude": FILES_WITH_LEGACY_SUBJECT,
             "exclude_line": {
                 ("zerver/lib/message.py", "message__subject__iexact=message.topic_name(),"),
+                ("zerver/lib/streams.py", '.exclude(subject="")'),
                 ("zerver/views/streams.py", "message__subject__iexact=topic_name,"),
                 ("zerver/lib/message_cache.py", 'and obj["subject"] == ""'),
                 (
@@ -489,6 +490,10 @@ python_rules = RuleList(
                 (
                     "zerver/tests/test_subs.py",
                     "with transaction.atomic(savepoint=True), self.assertRaises(JsonableError):",
+                ),
+                (
+                    "zproject/backends.py",
+                    "@transaction.atomic(savepoint=True)  # intentional use of savepoint=True",
                 ),
             },
         },
@@ -976,13 +981,33 @@ svg_rules = RuleList(
             "include_only": {"web/shared/icons/", "web/images/icons/"},
         },
         {
+            "pattern": "fill:",
+            "description": "System icons ignore fill values, so do not include the fill property.",
+            "include_only": {"web/shared/icons/", "web/images/icons/"},
+        },
+        {
             "pattern": r"fill-rule=(['\"])(.*?)\1",
+            "description": "System icons ignore fill-rule values, so do not include the fill-rule property.",
+            "include_only": {"web/shared/icons/", "web/images/icons/"},
+        },
+        {
+            "pattern": "fill-rule:",
             "description": "System icons ignore fill-rule values, so do not include the fill-rule property.",
             "include_only": {"web/shared/icons/", "web/images/icons/"},
         },
         {
             "pattern": r"stroke=(['\"])(.*?)\1",
             "description": "System icons ignore stroke values, so do not include the stroke property.",
+            "include_only": {"web/shared/icons/", "web/images/icons/"},
+        },
+        {
+            "pattern": "stroke:",
+            "description": "System icons ignore stroke values, so do not include the stroke property.",
+            "include_only": {"web/shared/icons/", "web/images/icons/"},
+        },
+        {
+            "pattern": "class=",
+            "description": "System icons ignore class values, so do not include the class property.",
             "include_only": {"web/shared/icons/", "web/images/icons/"},
         },
     ],

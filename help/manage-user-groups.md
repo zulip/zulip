@@ -27,8 +27,8 @@
 
 1. Select the **General** tab on the right.
 
-1. Click the **pencil** (<i class="fa fa-pencil"></i>) icon
-   to the right of the user group, and enter a new name or description.
+1. Click the **change group info** (<i class="zulip-icon zulip-icon-user-group-edit"></i>)
+   icon to the right of the user group, and enter a new name or description.
 
 {!save-changes.md!}
 
@@ -158,7 +158,7 @@ so.
 
 {settings_tab|organization-permissions}
 
-1. Under **Other permissions**, configure **Who can create user groups**.
+1. Under **Group permissions**, configure **Who can create user groups**.
 
 {!save-changes.md!}
 
@@ -182,7 +182,7 @@ group.
 
 {settings_tab|organization-permissions}
 
-1. Under **Other permissions**, configure **Who can administer all user groups**.
+1. Under **Group permissions**, configure **Who can administer all user groups**.
 
 {!save-changes.md!}
 

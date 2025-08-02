@@ -1,3 +1,5 @@
+<!-- Changes to this file should be propagated to help-beta/astro.config.mjs. -->
+
 ## Guides
 * [Getting started with Zulip](/help/getting-started-with-zulip)
 * [Choosing a team chat app](https://blog.zulip.com/2024/11/04/choosing-a-team-chat-app/)
@@ -119,7 +121,7 @@
 * [Link to a message or conversation](/help/link-to-a-message-or-conversation)
 * [Searching for messages](/help/search-for-messages)
 * [Printing messages](/help/printing-messages)
-* [View message Markdown source](/help/view-the-markdown-source-of-a-message)
+* [View message content as Markdown](/help/view-the-markdown-source-of-a-message)
 * [View when message was sent](/help/view-the-exact-time-a-message-was-sent)
 * [View a message's edit history](/help/view-a-messages-edit-history)
 * [Collapse a message](/help/collapse-a-message)
@@ -145,7 +147,7 @@
 * [Pin a channel](/help/pin-a-channel)
 * [Change the color of a channel](/help/change-the-color-of-a-channel)
 * [Unsubscribe from a channel](/help/unsubscribe-from-a-channel)
-* [Manage inactive channels](/help/manage-inactive-channels)
+* [Hide or reveal inactive channels](/help/manage-inactive-channels)
 * [Move content to another channel](/help/move-content-to-another-channel)
 * [View channel information](/help/view-channel-information)
 * [View channel subscribers](/help/view-channel-subscribers)
@@ -155,7 +157,7 @@
 * [Rename a topic](/help/rename-a-topic)
 * [Resolve a topic](/help/resolve-a-topic)
 * [Move content to another topic](/help/move-content-to-another-topic)
-* [“*General chat*” topic](/help/general-chat-topic)
+* [“General chat” topic](/help/general-chat-topic)
 * [Delete a topic](/help/delete-a-topic)
 
 ## Notifications
@@ -216,6 +218,8 @@
 * [Private channels](/help/channel-permissions#private-channels)
 * [Public channels](/help/channel-permissions#public-channels)
 * [Public access option](/help/public-access-option)
+* [“General chat” channels](/help/general-chat-channels)
+* [Channel folders](/help/channel-folders)
 * [Channel permissions](/help/channel-permissions)
 * [Channel posting policy](/help/channel-posting-policy)
 * [Configure who can administer a channel](/help/configure-who-can-administer-a-channel)

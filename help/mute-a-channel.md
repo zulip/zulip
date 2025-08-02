@@ -77,5 +77,4 @@ channels](/help/search-for-messages#search-by-location).
 ## Related articles
 
 * [Mute or unmute a topic](/help/mute-a-topic)
-
 * [Mute a user](/help/mute-a-user)

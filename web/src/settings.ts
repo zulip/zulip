@@ -10,7 +10,6 @@ import * as common from "./common.ts";
 import * as flatpickr from "./flatpickr.ts";
 import {$t} from "./i18n.ts";
 import * as information_density from "./information_density.ts";
-import * as modals from "./modals.ts";
 import * as overlays from "./overlays.ts";
 import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
@@ -152,6 +151,7 @@ export function build_page(): void {
             information_density.get_string_display_value_for_line_height(
                 user_settings.web_line_height_percent,
             ),
+        max_user_name_length: people.MAX_USER_NAME_LENGTH,
     });
 
     $(".settings-box").html(rendered_settings_tab);
@@ -195,21 +195,4 @@ export function initialize(): void {
             settings_data.user_can_invite_users_by_email(),
     });
     $("#settings_overlay_container").append($(rendered_settings_overlay));
-
-    $("#settings_overlay_container").on("click", (e) => {
-        if (!modals.any_active()) {
-            return;
-        }
-        if ($(e.target).closest(".micromodal").length > 0) {
-            return;
-        }
-        e.preventDefault();
-        e.stopPropagation();
-        // Whenever opening a modal(over settings overlay) in an event handler
-        // attached to a click event, make sure to stop the propagation of the
-        // event to the parent container otherwise the modal will not open. This
-        // is so because this event handler will get fired on any click in settings
-        // overlay and subsequently close any open modal.
-        modals.close_active();
-    });
 }

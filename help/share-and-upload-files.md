@@ -20,7 +20,7 @@ preview to [view the full-size image or video](/help/view-images-and-videos).
    [Markdown formatting](/help/format-your-message-using-markdown#links):
    `[Link text](URL)`.
 
-1. _(optional)_ Modify the link text as desired.
+{!modify-link-text.md!}
 
 !!! tip ""
 
@@ -36,7 +36,7 @@ preview to [view the full-size image or video](/help/view-images-and-videos).
    [Markdown formatting](/help/format-your-message-using-markdown#links):
    `[Link text](URL)`.
 
-1. _(optional)_ Modify the link text as desired.
+{!modify-link-text.md!}
 
 !!! tip ""
 
@@ -53,7 +53,7 @@ preview to [view the full-size image or video](/help/view-images-and-videos).
    [Markdown formatting](/help/format-your-message-using-markdown#links):
    `[Link text](URL)`.
 
-1. _(optional)_ Modify the link text as desired.
+{!modify-link-text.md!}
 
 !!! tip ""
 
@@ -73,7 +73,7 @@ preview to [view the full-size image or video](/help/view-images-and-videos).
    [Markdown formatting](/help/format-your-message-using-markdown#links):
    `[Link text](URL)`.
 
-1. _(optional)_ Modify the link text as desired.
+{!modify-link-text.md!}
 
 !!! warn ""
 
@@ -85,9 +85,20 @@ preview to [view the full-size image or video](/help/view-images-and-videos).
 
 {end_tabs}
 
-!!! tip ""
+## Convert pasted to text to a file
 
-    The link text will default to the name of the uploaded file.
+When pasting a large amount of text, you can convert it to a text file upload.
+
+{start_tabs}
+
+{tab|desktop-web}
+
+1. Paste a large amount of text into the compose box (2,000+ characters).
+
+1. In the banner above the compose box, click **Yes, convert** to convert the
+   pasted text to a file.
+
+{end_tabs}
 
 ## Named file example
 

@@ -5,14 +5,13 @@
     This feature is not available on self-hosted Zulip servers where
     the [incoming email gateway][email-gateway] has not been
     configured by a system administrator.
-    [email-gateway]: https://zulip.readthedocs.io/en/stable/production/email-gateway.html
+
+[email-gateway]: https://zulip.readthedocs.io/en/stable/production/email-gateway.html
 
 You can send emails to Zulip channels. This can be useful:
 
 * If you have an email that you want to discuss on Zulip
-
 * For mirroring mailing list traffic
-
 * For integrating a third-party app that can send emails, but which does not
   easily lend itself to a more direct integration
 
@@ -30,7 +29,7 @@ API](/api/send-message).
 
 {!select-channel-view-general.md!}
 
-1. Click **Generate email address** under **Email address**.
+1. Under **Channel details**, click **Generate email address**.
 
 1. Select **Who should be the sender of the Zulip messages for this email
    address**.
@@ -64,15 +63,12 @@ Zulip message.
 
 * **The sender's email address**: Adds `From: <Sender email address>` to
   the top of the Zulip message.
-
 * **Email footers**: By default, Zulip tries to automatically remove some footer
   text (like signatures). With this option enabled, Zulip will include all footers.
-
 * **Quoted original email**: In many email clients, when you reply to a message
   (e.g., a message notification email), a copy of the original message is
   automatically added to the bottom of your reply. By default, Zulip tries
   to remove that copied message. With this option enabled, Zulip will include it.
-
 * **Use html encoding**: The body of an email is typically encoded using
   one or both of two common formats: plain text (`text/plain`) and
   HTML (`text/html`).  Zulip supports constructing the Zulip message

@@ -1,5 +1,5 @@
 import $ from "jquery";
-import {z} from "zod";
+import * as z from "zod/mini";
 
 import render_settings_resend_invite_modal from "../templates/confirm_dialog/confirm_resend_invite.hbs";
 import render_settings_revoke_invite_modal from "../templates/confirm_dialog/confirm_revoke_invite.hbs";
@@ -9,7 +9,7 @@ import * as blueslip from "./blueslip.ts";
 import * as channel from "./channel.ts";
 import * as confirm_dialog from "./confirm_dialog.ts";
 import * as dialog_widget from "./dialog_widget.ts";
-import {$t, $t_html} from "./i18n.ts";
+import {$t_html} from "./i18n.ts";
 import * as ListWidget from "./list_widget.ts";
 import * as loading from "./loading.ts";
 import * as people from "./people.ts";
@@ -24,7 +24,7 @@ export const invite_schema = z.intersection(
     z.object({
         invited_by_user_id: z.number(),
         invited: z.number(),
-        expiry_date: z.number().nullable(),
+        expiry_date: z.nullable(z.number()),
         id: z.number(),
         invited_as: z.number(),
     }),
@@ -327,17 +327,11 @@ export function on_load_success(
 
 export function update_invite_users_setting_tip(): void {
     if (settings_data.user_can_invite_users_by_email()) {
-        $(".invite-user-settings-tip").hide();
+        $(".invite-user-settings-banner").hide();
         return;
     }
 
-    $(".invite-user-settings-tip").show();
-    $(".invite-user-settings-tip").text(
-        $t({
-            defaultMessage:
-                "You do not have permission to send invite emails in this organization.",
-        }),
-    );
+    $(".invite-user-settings-banner").show();
 }
 
 export function update_invite_user_panel(): void {

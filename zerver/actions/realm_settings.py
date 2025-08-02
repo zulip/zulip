@@ -822,7 +822,7 @@ def do_change_realm_max_invites(realm: Realm, max_invites: int, acting_user: Use
         new_max = get_default_max_invites_for_realm_plan_type(realm.plan_type)
     else:
         new_max = max_invites
-    realm.max_invites = new_max  # type: ignore[assignment] # https://github.com/python/mypy/issues/3004
+    realm.max_invites = new_max
     realm.save(update_fields=["_max_invites"])
 
     RealmAuditLog.objects.create(
@@ -890,7 +890,7 @@ def do_change_realm_plan_type(
         extra_data={"old_value": old_value, "new_value": plan_type},
     )
 
-    realm.max_invites = get_default_max_invites_for_realm_plan_type(plan_type)  # type: ignore[assignment] # https://github.com/python/mypy/issues/3004
+    realm.max_invites = get_default_max_invites_for_realm_plan_type(plan_type)
     if plan_type == Realm.PLAN_TYPE_LIMITED:
         realm.message_visibility_limit = Realm.MESSAGE_VISIBILITY_LIMITED
     else:

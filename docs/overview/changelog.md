@@ -13,23 +13,47 @@ log][commit-log] for an up-to-date list of all changes.
 
 _Unreleased_
 
+This section details some features planned for version 11.0 that are
+not present in 11.0-beta2.
+
+- (Unfinished) Rebuilt the Zulip Help Center documentation in
+  Starlight, adding a modern design and delightful search.
+
+### Zulip Server 11.0-beta2
+
+_Released 2025-07-29_
+
 #### Highlights
 
-- (Unfinished) Added support for per-channel configuration of whether
-  _general chat_ is available. In particular, channels without topics
-  are now possible in Zulip.
-- (Unfinished) Added channel folders, which organize the channels
-  within an organization visually. Permission settings for channel
-  folders will be introduced in a future release.
-- Redesigned the compose recipient area to be more compact and not
-  draw as much attention when not being actively edited.
-- Added a new list-of-topics view, which is an option for the default
-  behavior when clicking a channel in the left sidebar.
+- Added server support for end-to-end encryption (E2EE) of mobile push
+  notifications. Note that as of this release, the mobile apps do not
+  yet support this protocol. Added a new organization setting to
+  prevent sending message content in push notifications to mobile app
+  versions not using the E2EE protocol.
+- Added channel folders, which organize the channels within an
+  organization in the left sidebar and inbox views. Permission
+  settings for channel folders will be introduced in a future release.
+- Added support for scheduling message reminders.
+- Added support for per-channel configuration of whether _general
+  chat_ is available. In particular, channels without topics are now
+  supported.
+- Redesigned the compose recipient area with modernized icons, to be
+  more compact and not draw as much attention when not being actively
+  edited.
+- Added a new "list of topics" view, which is an option for the
+  default behavior when clicking a channel in the left sidebar.
+- Added new "top unread conversation" variant of the "top
+  conversation" policy for the default channel click action.
+- The left sidebar topics filtering widget now supports filtering
+  resolved/unresolved topics. Type `is:` and the typeahead will
+  appear.
+- Redesigned main search UI suggestions to use pills.
 - Added new personal setting for when resolved-topic notifications are
   automatically marked as read. This replaces previous logic that
   marked them unread exactly for users who had participated in the
   topic via sending a message or reacting.
-- Added several new channel-level permissions settings.
+- Added several new channel-level permissions settings, controlling
+  moving messages, resolving topics, and deleting messages.
 - Improved display of images and videos in the web application. Images
   both use space better, and are bigger, while still not dominating
   text in a message feed.
@@ -37,12 +61,22 @@ _Unreleased_
 - Reworked Keyboard shortcuts to better support non-Latin keyboard
   locales. Now, keyboard shortcuts are entirely based on the key
   pressed, not what character it is mapped to.
-- (Unfinished) Added support for scheduling message reminders.
-- (Unfinished) Migrated translation platform from Transifex to Weblate.
+- The LDAP integration now supports automatically handling changes in
+  user email addresses, when provided with a unique ID for each user.
+- Migrated translation platform from Transifex to Weblate.
 
 #### Full feature changelog
 
+- The compose box now offers to convert large amounts of pasted text
+  into an uploaded file. Fixed several minor copy/paste bugs.
+- Policies for automatically following topics they initiate are now
+  applied when someone moves a message they sent to be the first
+  message of a new topic.
 - Email notifications and Notification Bot now use topic permalinks.
+  Topic permalinks now consistently prefer the latest message in a
+  topic for anchoring; previously, the oldest message was sometimes
+  used.
+- Added new options for marking all muted messages as read.
 - Added new web app setting for controlling whether grand total unread
   counts are displayed in the left sidebar.
 - Added support for unarchiving previously archived channels.
@@ -55,7 +89,7 @@ _Unreleased_
 - Added button to alphabetize options for a custom profile field.
 - Added UTC offsets in setting UI for selecting your time zone.
 - Added a new compose banner notifying the user when the compose box
-  recipient is changed as a result of a topic move.
+  recipient is changed as a result of a topic moving.
 - Added a new warning banner when moving a topic to a channel where
   some participants are not subscribers.
 - Added a warning banner to desktop notification settings when the
@@ -64,7 +98,13 @@ _Unreleased_
   not currently subscribed to, but has access to post in.
 - Added new webhook integration for OpenProject and
   OpenSearch. Improved the GitHub, GitLab, and Jotform integrations.
+- Added an administrator API endpoint for updating user status.
+- Slack import now gives imported Slack threads better names.
+- Users imported from third-party chat tools now receive Welcome Bot
+  messages.
 - Redesigned most filter/search inputs across the UI.
+- Redesigned dozens of buttons with legacy styling to consistently use
+  Zulip's current generation button designs.
 - Reworked channel settings UI for adding groups. It's now convenient
   to copy membership of a group (previously, it was only easy to add
   subgroups). Direct message notices about new channel subscriptions
@@ -79,6 +119,7 @@ _Unreleased_
 - Improved settings table sorting UI design.
 - Improved drafts and scheduled messages overlays, including a new
   undo banner in case of accidental draft deletion.
+- Improved UI for scheduling messages to require less mouse travel.
 - Improved web application initial loading performance for
   organizations with several thousand users. Bigger improvements in
   this area are expected in the next release.
@@ -94,16 +135,18 @@ _Unreleased_
 - Improved empty feed banner for channels with all topics muted.
 - Improved error banners for very old browser and desktop versions.
 - Improved error pages for deactivated users and realms.
+- Improved feedback when editing group members or channel subscribers.
 - Improved confirmation banner when unsubscribing from a channel the
   user has permission to rejoin later.
 - Improved message feed UI to only use a pointer cursor for UI
   elements.
-- Improved handling of various message/toic link corner cases.
+- Improved handling of various message/topic link corner cases.
 - Improved handling of a slow-to-load avatar in the navbar.
 - Improved borders for avatars in user pills.
+- Improved keyboard navigation in the left sidebar.
 - Improved help center documentation considerably. Added mobile tabs
-  with web app workarounds for some features that are not available in
-  the mobile apps.
+  with mobile web workarounds for some features that are not yet
+  available in the mobile apps.
 - Rewrote documentation for many non-webhook integrations.
 - Fixed live update of channel views when losing access to a private
   channel.
@@ -111,20 +154,31 @@ _Unreleased_
   labeled `:slight_smile:`.
 - Fixed several issues with markup translation in both Slack import
   and handling Slack-compatible webhook events.
+- Fixed several subtle issues with compose box tooltips.
 - Fixed several issues with URL previews with variant font sizes.
 - Fixed several bugs in handling of Dropbox links.
+- Fixed several subtle bugs in the core message feed experience.
 - Fixed EDITED notices for messages sent by muted users.
+- Fixed editing messages to remove wildcard mentions incorrectly
+  appearing in the "Mentions" view.
+- Fixed several bugs with topic following state not being updated
+  properly when merging topics.
 - Fixed the main search area converting queries to lower-case.
 - Fixed recipient bars not decorating bot names with the bot icon.
 - Fixed the user card popover click area being slightly too small.
 - Fixed a rare race that could cause the web app to be missing
   metadata for a recently created user.
+- Fixed how `text/plain` uploaded files are served to include a
+  `charset` header, detected using `chardet` if a character set was
+  not specified by the uploading client.
 - Fixed slow loading performance for the starred messages view.
 - Fixed slow performance for _general chat_ topics in servers
   containing large numbers of direct messages.
+- Fixed some performance bugs with fetching direct messages.
 - Fixed subtle performance issues involving prefetching permissions.
 - Fixed a subtle bug where "show all topics" would incorrectly not be
   offered.
+- Fixed buggy highlighting when searching for a keyword including `'`.
 - Fixed RealmAuditLog not storing email addresses properly.
 - Fixed message content visibility not applying to digest emails.
 - Fixed buggy new-channel notification internationalization.
@@ -132,6 +186,7 @@ _Unreleased_
 - Fixed some message feed bugs affecting right-to-left languages.
 - Fixed display of imported messages in analytics.
 - Fixed several issues with 500 error pages.
+- Migrated translation platform from Transifex to Weblate.
 - Updated dependencies, including Django 5.2.
 
 #### Upgrade notes for 11.0
@@ -139,9 +194,29 @@ _Unreleased_
 - PostgreSQL 13 is no longer supported; if you are currently using it, you will
   need to [upgrade PostgreSQL](../production/upgrade.md#upgrading-postgresql)
   before upgrading Zulip.
+- Installations using LDAP authentication will want to consider
+  enabling the new `unique_account_id` setting for automatically
+  handling [email address
+  changes](../production/authentication-methods.md#synchronizing-email-addresses).
+- The `PUSH_NOTIFICATION_REDACT_CONTENT` server setting has been
+  replaced by an organization-level setting in the "Notifications
+  security" subsection of "organization settings". The new
+  organization-level setting's initial value is copied from
+  `PUSH_NOTIFICATION_REDACT_CONTENT`, so you should delete the setting
+  from `/etc/zulip/settings.py` **after** completing the upgrade.
+
+  The replacement setting is designed and labeled with future mobile
+  client support for end-to-end encrypted (E2EE) mobile notifications
+  in mind: it will only redact message content for mobile clients
+  using the legacy non-E2EE protocol.
+
 - Zulip's incoming email integration was simplified to no longer use
   `postfix`. Installations using the integration will automatically
-  uninstall `postfix` when upgraded.
+  uninstall `postfix` when upgraded. If your Zulip server was using
+  `postfix` for another purpose as well, you'll need to manually
+  preserve and update your `postfix` configuration.
+- The `SOCIAL_AUTH_SYNC_CUSTOM_ATTRS_DICT` setting has been removed.
+  It was deprecated in favor of `SOCIAL_AUTH_SYNC_ATTRS_DICT` in 10.0.
 
 ## Zulip Server 10.x series
 

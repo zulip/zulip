@@ -50,11 +50,7 @@ from zerver.actions.user_activity import update_user_activity_interval
 from zerver.actions.users import do_deactivate_user
 from zerver.lib.create_user import create_user
 from zerver.lib.exceptions import InvitationError
-from zerver.lib.push_notifications import (
-    get_message_payload_apns,
-    get_message_payload_gcm,
-    hex_to_b64,
-)
+from zerver.lib.push_notifications import get_message_payload_apns, get_message_payload_gcm
 from zerver.lib.streams import get_default_values_for_stream_permission_group_settings
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import activate_push_notification_service
@@ -76,8 +72,9 @@ from zerver.models import (
 from zerver.models.clients import get_client
 from zerver.models.messages import Attachment
 from zerver.models.realm_audit_logs import AuditLogEventType
+from zerver.models.recipients import get_or_create_direct_message_group
 from zerver.models.scheduled_jobs import NotificationTriggers
-from zerver.models.users import get_user, is_cross_realm_bot_email
+from zerver.models.users import get_user_by_delivery_email, is_cross_realm_bot_email
 from zilencer.models import (
     RemoteInstallationCount,
     RemotePushDeviceToken,
@@ -507,8 +504,8 @@ class TestCountStats(AnalyticsTestCase):
                 name=f"stream {minutes_ago}", realm=self.second_realm, date_created=creation_time
             )[1]
             self.create_message(user, recipient, date_sent=creation_time)
-        self.hourly_user = get_user("user-1@second.analytics", self.second_realm)
-        self.daily_user = get_user("user-61@second.analytics", self.second_realm)
+        self.hourly_user = get_user_by_delivery_email("user-1@second.analytics", self.second_realm)
+        self.daily_user = get_user_by_delivery_email("user-61@second.analytics", self.second_realm)
 
         # This realm should not show up in the *Count tables for any of the
         # messages_* CountStats
@@ -717,6 +714,56 @@ class TestCountStats(AnalyticsTestCase):
                 [5, "public_stream"],
                 [3, "private_message"],
                 [2, "huddle_message"],
+            ],
+        )
+        self.assertTableState(StreamCount, [], [])
+
+    def test_1_to_1_and_self_messages_sent_by_message_type_using_direct_group_message(self) -> None:
+        stat = COUNT_STATS["messages_sent:message_type:day"]
+        self.current_property = stat.property
+
+        user1 = self.create_user(is_bot=True)
+        user2 = self.create_user()
+        user3 = self.create_user()
+
+        user1_and_user2_dm_group = get_or_create_direct_message_group([user1.id, user2.id])
+        user2_and_user3_dm_group = get_or_create_direct_message_group([user2.id, user3.id])
+        user2_dm_group = get_or_create_direct_message_group([user2.id])
+
+        assert user1_and_user2_dm_group.recipient is not None
+        assert user2_and_user3_dm_group.recipient is not None
+        assert user2_dm_group.recipient is not None
+
+        self.create_message(user1, user1_and_user2_dm_group.recipient)
+        self.create_message(user2, user2_and_user3_dm_group.recipient)
+        self.create_message(user2, user2_dm_group.recipient)
+
+        do_fill_count_stat_at_hour(stat, self.TIME_ZERO)
+
+        self.assertTableState(
+            UserCount,
+            ["value", "subgroup", "user"],
+            [
+                [1, "private_message", user1],
+                [2, "private_message", user2],
+                [1, "public_stream", self.hourly_user],
+                [1, "public_stream", self.daily_user],
+            ],
+        )
+        self.assertTableState(
+            RealmCount,
+            ["value", "subgroup", "realm"],
+            [
+                [3, "private_message"],
+                [2, "public_stream", self.second_realm],
+            ],
+        )
+        self.assertTableState(
+            InstallationCount,
+            ["value", "subgroup"],
+            [
+                [3, "private_message"],
+                [2, "public_stream"],
             ],
         )
         self.assertTableState(StreamCount, [], [])
@@ -1369,19 +1416,19 @@ class TestLoggingCountStats(AnalyticsTestCase):
 
         RemotePushDeviceToken.objects.create(
             kind=RemotePushDeviceToken.FCM,
-            token=hex_to_b64(token),
+            token=token,
             user_uuid=(hamlet.uuid),
             server=self.server,
         )
         RemotePushDeviceToken.objects.create(
             kind=RemotePushDeviceToken.FCM,
-            token=hex_to_b64(token + "aa"),
+            token=token + "aa",
             user_uuid=(hamlet.uuid),
             server=self.server,
         )
         RemotePushDeviceToken.objects.create(
             kind=RemotePushDeviceToken.APNS,
-            token=hex_to_b64(token),
+            token=token,
             user_uuid=str(hamlet.uuid),
             server=self.server,
         )

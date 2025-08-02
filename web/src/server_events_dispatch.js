@@ -120,8 +120,17 @@ export function dispatch_normal_event(event) {
             switch (event.op) {
                 case "add": {
                     channel_folders.add(event.channel_folder);
+                    inbox_ui.complete_rerender();
                     break;
                 }
+                case "update":
+                    channel_folders.update(event);
+                    if (event.data.name !== undefined) {
+                        inbox_ui.complete_rerender();
+                        stream_list.update_streams_sidebar();
+                        stream_ui_updates.update_channel_folder_name(event.channel_folder_id);
+                    }
+                    break;
                 default:
                     blueslip.error("Unexpected event type channel_folder/" + event.op);
                     break;
@@ -250,6 +259,7 @@ export function dispatch_normal_event(event) {
                 can_move_messages_between_channels_group: noop,
                 can_move_messages_between_topics_group: noop,
                 can_resolve_topics_group: noop,
+                can_set_delete_message_policy_group: noop,
                 can_set_topics_policy_group: noop,
                 can_summarize_topics_group: noop,
                 create_multiuse_invite_group: noop,
@@ -279,6 +289,7 @@ export function dispatch_normal_event(event) {
                 require_unique_names: noop,
                 send_welcome_emails: noop,
                 topics_policy: noop,
+                require_e2ee_push_notifications: noop,
                 message_content_allowed_in_email_notifications: noop,
                 enable_spectator_access: noop,
                 signup_announcements_stream_id: noop,
@@ -894,6 +905,7 @@ export function dispatch_normal_event(event) {
                 "web_stream_unreads_count_display_policy",
                 "web_suggest_update_timezone",
                 "web_left_sidebar_unreads_count_summary",
+                "web_left_sidebar_show_channel_folders",
             ];
 
             const original_home_view = user_settings.web_home_view;
@@ -946,7 +958,7 @@ export function dispatch_normal_event(event) {
                 }
             }
             if (event.property === "web_stream_unreads_count_display_policy") {
-                stream_list.update_dom_unread_counts_visibility();
+                stream_list.build_stream_list(true);
             }
             if (event.property === "user_list_style") {
                 settings_preferences.report_user_list_style_change(
@@ -980,6 +992,9 @@ export function dispatch_normal_event(event) {
             }
             if (event.property === "web_left_sidebar_unreads_count_summary") {
                 sidebar_ui.update_unread_counts_visibility();
+            }
+            if (event.property === "web_left_sidebar_show_channel_folders") {
+                stream_list.build_stream_list(true);
             }
             if (
                 event.property === "receives_typing_notifications" &&

@@ -515,10 +515,10 @@ run_test("scheduled_messages", ({override}) => {
     }
 });
 
-run_test("channel_folders", () => {
+run_test("channel_folders", ({override}) => {
     channel_folders.initialize({channel_folders: []});
 
-    const event = event_fixtures.channel_folder__add;
+    let event = event_fixtures.channel_folder__add;
     {
         dispatch(event);
 
@@ -526,6 +526,27 @@ run_test("channel_folders", () => {
         assert.equal(folders.length, 1);
         assert.equal(folders[0].id, event.channel_folder.id);
         assert.equal(folders[0].name, event.channel_folder.name);
+    }
+
+    event = event_fixtures.channel_folder__update;
+    {
+        const stub = make_stub();
+        override(stream_ui_updates, "update_channel_folder_name", stub.f);
+        override(stream_list, "update_streams_sidebar", stub.f);
+
+        dispatch(event);
+
+        assert.equal(stub.num_calls, 2);
+        const folders = channel_folders.get_channel_folders(true);
+        const args = stub.get_args("folder_id");
+        assert_same(args.folder_id, event.channel_folder_id);
+
+        assert.equal(folders.length, 1);
+        assert.equal(folders[0].id, event.channel_folder_id);
+        assert.equal(folders[0].name, event.data.name);
+        assert.equal(folders[0].description, event.data.description);
+        assert.equal(folders[0].rendered_description, event.data.rendered_description);
+        assert.equal(folders[0].is_archived, event.data.is_archived);
     }
 
     blueslip.expect("error", "Unexpected event type channel_folder/other");
@@ -1228,6 +1249,12 @@ run_test("user_settings", ({override}) => {
     dispatch(event);
     assert_same(user_settings.starred_message_counts, true);
 
+    event = event_fixtures.user_settings__web_left_sidebar_show_channel_folders;
+    override(stream_list, "build_stream_list", noop);
+    override(user_settings, "web_left_sidebar_show_channel_folders", true);
+    dispatch(event);
+    assert_same(user_settings.web_left_sidebar_show_channel_folders, false);
+
     event = event_fixtures.user_settings__web_left_sidebar_unreads_count_summary;
     override(sidebar_ui, "update_unread_counts_visibility", noop);
     override(user_settings, "web_left_sidebar_unreads_count_summary", true);
@@ -1265,7 +1292,7 @@ run_test("user_settings", ({override}) => {
     {
         const stub = make_stub();
         event = event_fixtures.user_settings__web_stream_unreads_count_display_policy;
-        override(stream_list, "update_dom_unread_counts_visibility", stub.f);
+        override(stream_list, "build_stream_list", stub.f);
         override(user_settings, "web_stream_unreads_count_display_policy", 1);
         dispatch(event);
         assert.equal(stub.num_calls, 1);

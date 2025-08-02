@@ -23,10 +23,18 @@ assert.ok(
 const flattened = {
     ...first_element,
     children: tree_with_removed_newlines.children.flatMap((other) => {
-        assert.ok(
-            other.type === "element" && other.tagName === first_element.tagName,
-        );
-        return other.children;
+        if (other.type === "comment") {
+            return [];
+        }
+        assert.ok(other.type === "element");
+        // Flatten only in case of matching tagName, for the rest, we
+        // return the elements without flattening since asides, code
+        // blocks and other elements can be part of a single list item
+        // and we do not want to flatten them.
+        if (other.tagName === first_element.tagName) {
+            return other.children;
+        }
+        return [other];
     }),
 };
 ---

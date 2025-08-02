@@ -24,12 +24,9 @@ Each bot has a **name**, **profile picture**, **email**, **bot type** and **API 
 
 * The **name** and **profile picture** play the same role they do for human users. They
 are the most visible attributes of a bot.
-
 * The **email** is not used for anything, and will likely be removed in a
 future version of Zulip.
-
 * The **bot type** determines what the bot can and can't do (see below).
-
 * The **API key** is how the bot identifies itself to Zulip. Anyone with the
   bot's API key can impersonate the bot.
 
@@ -51,28 +48,23 @@ A few more details:
 
 * Bots can send messages to any channel that their owner can,
   inheriting their owner's [sending permissions](/help/channel-posting-policy).
-
 * Bots can be subscribed to channels, and their role can be modified if
   they need to have permission to do administrative actions.
-
 * [Channel permissions](/help/channel-permissions) are the same for bots
   as for other users. Therefore, for private channels with protected
   history, a bot can only access messages sent after it was subscribed
   to the channel.
-
 * **Generic**: A generic bot is like a normal Zulip user account that
   cannot log in via a browser.  Note that if you truly want to
   impersonate yourself (e.g., write messages that come from your Zulip
   account), you'll need to use your **personal API key**.
-
-* **Outgoing webhook**: The bot can read direct messages where the bot is a
-  participant, and channel messages where the bot is [mentioned](/help/mention-a-user-or-group). When the
-  bot is DM'd or mentioned, it POSTs the message content to a URL of your
-  choice. The POST request format can be in a Zulip format or a
-  Slack-compatible format.
-
-    This is the preferred bot type for interactive bots built on top of Zulip
-    Botserver.
+* **Outgoing webhook**: The bot can read direct messages where the bot
+  is a participant, and channel messages where the bot is
+  [mentioned](/help/mention-a-user-or-group). When the bot is DM'd or
+  mentioned, it POSTs the message content to a URL of your choice. The
+  POST request format can be in a Zulip format or a Slack-compatible
+  format. This is the preferred bot type for interactive bots built on
+  top of Zulip Botserver.
 
 ## Adding bots
 

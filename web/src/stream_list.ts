@@ -5,17 +5,20 @@ import * as tippy from "tippy.js";
 
 import render_filter_topics from "../templates/filter_topics.hbs";
 import render_go_to_channel_feed_tooltip from "../templates/go_to_channel_feed_tooltip.hbs";
+import render_go_to_channel_list_of_topics_tooltip from "../templates/go_to_channel_list_of_topics_tooltip.hbs";
+import render_show_inactive_channels from "../templates/show_inactive_channels.hbs";
+import render_stream_list_section_container from "../templates/stream_list_section_container.hbs";
 import render_stream_privacy from "../templates/stream_privacy.hbs";
 import render_stream_sidebar_row from "../templates/stream_sidebar_row.hbs";
-import render_stream_subheader from "../templates/streams_subheader.hbs";
 import render_subscribe_to_more_streams from "../templates/subscribe_to_more_streams.hbs";
 
 import * as blueslip from "./blueslip.ts";
 import * as browser_history from "./browser_history.ts";
+import * as compose_actions from "./compose_actions.ts";
 import type {Filter} from "./filter.ts";
 import * as hash_util from "./hash_util.ts";
-import {$t} from "./i18n.ts";
 import * as keydown_util from "./keydown_util.ts";
+import * as left_sidebar_navigation_area from "./left_sidebar_navigation_area.ts";
 import {ListCursor} from "./list_cursor.ts";
 import * as narrow_state from "./narrow_state.ts";
 import * as pm_list from "./pm_list.ts";
@@ -27,6 +30,7 @@ import * as settings_data from "./settings_data.ts";
 import * as sidebar_ui from "./sidebar_ui.ts";
 import * as stream_data from "./stream_data.ts";
 import * as stream_list_sort from "./stream_list_sort.ts";
+import type {StreamListRow, StreamListSection} from "./stream_list_sort.ts";
 import * as stream_topic_history from "./stream_topic_history.ts";
 import * as stream_topic_history_util from "./stream_topic_history_util.ts";
 import * as sub_store from "./sub_store.ts";
@@ -48,13 +52,16 @@ export function set_update_inbox_channel_view_callback(value: (channel_id: numbe
     update_inbox_channel_view_callback = value;
 }
 
-export let stream_cursor: ListCursor<number>;
+export let stream_cursor: ListCursor<StreamListRow>;
 
 export function rewire_stream_cursor(value: typeof stream_cursor): void {
     stream_cursor = value;
 }
 
 let has_scrolled = false;
+
+const collapsed_sections = new Set<string>();
+const sections_showing_inactive = new Set<string>();
 
 export function is_zoomed_in(): boolean {
     return zoomed_in;
@@ -189,6 +196,12 @@ export let update_count_in_dom = (
         $subscription_block.removeClass("has-only-muted-unreads");
         $subscription_block.removeClass("stream-with-count");
     }
+
+    toggle_hide_unread_counts(
+        $subscription_block,
+        stream_counts.stream_is_muted,
+        stream_counts.unmuted_count,
+    );
 };
 
 export function rewire_update_count_in_dom(value: typeof update_count_in_dom): void {
@@ -252,6 +265,32 @@ export function create_initial_sidebar_rows(force_rerender = false): void {
     }
 }
 
+export let stream_list_section_container_html = function (
+    section: StreamListSection,
+    can_create_streams: boolean,
+): string {
+    return render_stream_list_section_container({
+        id: section.id,
+        section_title: section.section_title,
+        plus_icon_url: can_create_streams ? get_section_channel_plus_icon_url(section) : undefined,
+    });
+};
+
+export function rewire_stream_list_section_container_html(
+    value: typeof stream_list_section_container_html,
+): void {
+    stream_list_section_container_html = value;
+}
+
+function get_section_channel_plus_icon_url(section: StreamListSection): string | undefined {
+    if (section.id === "normal-streams") {
+        return "#channels/new";
+    } else if (section.id !== "pinned-streams") {
+        return `#channels/folders/${section.id}/new`;
+    }
+    return undefined;
+}
+
 export function build_stream_list(force_rerender: boolean): void {
     // The stream list in the left sidebar contains 3 sections:
     // pinned, normal, and dormant streams, with headings above them
@@ -260,8 +299,7 @@ export function build_stream_list(force_rerender: boolean): void {
     // Within the first two sections, muted streams are sorted to the
     // bottom; we skip that for dormant streams to simplify discovery.
     //
-    // The main logic to build the list is in stream_list_sort.ts, and
-    // we get five lists of streams (pinned/normal/muted_pinned/muted_normal/dormant).
+    // The main logic to build the list is in stream_list_sort.ts
     const streams = stream_data.subscribed_stream_ids();
     const stream_groups = stream_list_sort.sort_groups(streams, get_search_term());
 
@@ -269,88 +307,102 @@ export function build_stream_list(force_rerender: boolean): void {
         return;
     }
 
-    const $parent = $("#stream_filters");
-    const elems = [];
-
-    function add_sidebar_li(stream_id: number): void {
+    function add_sidebar_li(
+        stream_id: number,
+        $list: JQuery,
+        inactive_in_channel_folder = false,
+    ): void {
         const sidebar_row = stream_sidebar.get_row(stream_id);
         assert(sidebar_row !== undefined);
         sidebar_row.update_whether_active();
-        elems.push(sidebar_row.get_li());
+        const $li = sidebar_row.get_li();
+        if (inactive_in_channel_folder) {
+            $li.addClass("inactive-in-channel-folder");
+        }
+        $list.append($li);
     }
 
     clear_topics();
-    $parent.empty();
-
-    const any_pinned_streams =
-        stream_groups.pinned_streams.length > 0 || stream_groups.muted_pinned_streams.length > 0;
-    const any_normal_streams =
-        stream_groups.normal_streams.length > 0 || stream_groups.muted_active_streams.length > 0;
-    const any_dormant_streams = stream_groups.dormant_streams.length > 0;
-
-    const need_section_subheaders =
-        (any_pinned_streams ? 1 : 0) +
-            (any_normal_streams ? 1 : 0) +
-            (any_dormant_streams ? 1 : 0) >=
-        2;
-
-    if (any_pinned_streams && need_section_subheaders) {
-        elems.push(
-            $(
-                render_stream_subheader({
-                    subheader_name: $t({
-                        defaultMessage: "Pinned",
-                    }),
-                }),
-            ),
+    $("#stream_filters").empty();
+    const can_create_streams =
+        settings_data.user_can_create_private_streams() ||
+        settings_data.user_can_create_public_streams() ||
+        settings_data.user_can_create_web_public_streams();
+    for (const section of stream_groups.sections) {
+        $("#stream_filters").append(
+            $(stream_list_section_container_html(section, can_create_streams)),
         );
-    }
+        const is_empty =
+            section.streams.length === 0 &&
+            section.muted_streams.length === 0 &&
+            section.inactive_streams.length === 0;
+        $(`#stream-list-${section.id}-container`).toggleClass("no-display", is_empty);
 
-    for (const stream_id of stream_groups.pinned_streams) {
-        add_sidebar_li(stream_id);
-    }
-
-    for (const stream_id of stream_groups.muted_pinned_streams) {
-        add_sidebar_li(stream_id);
-    }
-
-    if (any_normal_streams && need_section_subheaders) {
-        elems.push(
-            $(
-                render_stream_subheader({
-                    subheader_name: $t({
-                        defaultMessage: "Active",
+        for (const stream_id of [...section.streams, ...section.muted_streams]) {
+            add_sidebar_li(stream_id, $(`#stream-list-${section.id}`));
+        }
+        for (const stream_id of section.inactive_streams) {
+            add_sidebar_li(stream_id, $(`#stream-list-${section.id}`), true);
+        }
+        if (section.inactive_streams.length > 0) {
+            $(`#stream-list-${section.id}`).append(
+                $(
+                    render_show_inactive_channels({
+                        inactive_count: section.inactive_streams.length,
                     }),
-                }),
-            ),
-        );
+                ),
+            );
+        }
     }
+    // Rerendering can moving channels between folders and change heading unread counts.
+    left_sidebar_navigation_area.update_dom_with_unread_counts(unread.get_counts(), false);
+    sidebar_ui.update_unread_counts_visibility();
+    set_sections_states();
+    $("#streams_list").toggleClass("is_searching", get_search_term() !== "");
+}
 
-    for (const stream_id of stream_groups.normal_streams) {
-        add_sidebar_li(stream_id);
+/* When viewing a channel in a collapsed folder, we show that active
+   highlighted channel in the left sidebar even though the folder is
+   collapsed. If there's an active highlighted topic within the
+   channel, we show it too. If there's no highlighted topic within the
+   channel, then we should treat this like an empty topic list and remove
+   the left bracket. */
+export function maybe_hide_topic_bracket(section_id: string): void {
+    const $container = $(`#stream-list-${section_id}-container`);
+    const is_collapsed = collapsed_sections.has(section_id);
+    const $highlighted_topic = $container.find(".topic-list-item.active-sub-filter");
+    $container.toggleClass("hide-topic-bracket", is_collapsed && $highlighted_topic.length === 0);
+}
+
+function toggle_section_collapse($container: JQuery): void {
+    $container.toggleClass("collapsed");
+    const is_collapsed = $container.hasClass("collapsed");
+    $container
+        .find(".stream-list-section-toggle")
+        .toggleClass("rotate-icon-down", !is_collapsed)
+        .toggleClass("rotate-icon-right", is_collapsed);
+
+    const section_id = $container.attr("data-section-id")!;
+    if (is_collapsed) {
+        collapsed_sections.add(section_id);
+    } else {
+        collapsed_sections.delete(section_id);
     }
+    maybe_hide_topic_bracket(section_id);
+}
 
-    for (const stream_id of stream_groups.muted_active_streams) {
-        add_sidebar_li(stream_id);
+function set_sections_states(): void {
+    for (const section_id of collapsed_sections) {
+        const $container = $(`#stream-list-${section_id}-container`);
+        $container.toggleClass("collapsed", true);
+        $container
+            .find(".stream-list-section-toggle")
+            .toggleClass("rotate-icon-down", false)
+            .toggleClass("rotate-icon-right", true);
     }
-
-    if (any_dormant_streams && need_section_subheaders) {
-        elems.push(
-            $(
-                render_stream_subheader({
-                    subheader_name: $t({
-                        defaultMessage: "Inactive",
-                    }),
-                }),
-            ),
-        );
+    for (const section_id of sections_showing_inactive) {
+        $(`#stream-list-${section_id}-container`).toggleClass("showing-inactive", true);
     }
-
-    for (const stream_id of stream_groups.dormant_streams) {
-        add_sidebar_li(stream_id);
-    }
-
-    $parent.append(elems); // eslint-disable-line no-jquery/no-append-html
 }
 
 export function get_stream_li(stream_id: number): JQuery | undefined {
@@ -408,41 +460,25 @@ export function zoom_in_topics(options: {stream_id: number | undefined}): void {
 
     $("#streams_list").expectOne().removeClass("zoom-out").addClass("zoom-in");
 
-    // Hide stream list titles and pinned stream splitter
-    $(".stream-filters-label").each(function () {
-        $(this).hide();
-    });
-    $(".streams_subheader").each(function () {
-        $(this).hide();
-    });
-
     $("#stream_filters li.narrow-filter").each(function () {
         const $elt = $(this);
         const stream_id = options.stream_id;
 
         if (stream_id_for_elt($elt) === stream_id) {
-            $elt.show();
+            $elt.toggleClass("hide", false);
             // Add search box for topics list.
             $elt.children("div.bottom_left_row").append($(render_filter_topics()));
-            $("#left-sidebar-filter-topic-input").trigger("focus");
+            $("#topic_filter_query").trigger("focus");
             topic_list.setup_topic_search_typeahead();
         } else {
-            $elt.hide();
+            $elt.toggleClass("hide", true);
         }
     });
 }
 
 export function zoom_out_topics(): void {
-    // Show stream list titles and pinned stream splitter
-    $(".stream-filters-label").each(function () {
-        $(this).show();
-    });
-    $(".streams_subheader").each(function () {
-        $(this).show();
-    });
-
     $("#streams_list").expectOne().removeClass("zoom-in").addClass("zoom-out");
-    $("#stream_filters li.narrow-filter").show();
+    $("#stream_filters li.narrow-filter").toggleClass("hide", false);
     // Remove search box for topics list from DOM.
     $(".filter-topics").remove();
 }
@@ -465,13 +501,7 @@ function build_stream_sidebar_li(sub: StreamSubscription): JQuery {
     const name = sub.name;
     const is_muted = stream_data.is_muted(sub.stream_id);
     const can_post_messages = stream_data.can_post_messages_in_stream(sub);
-    let url = hash_util.channel_url_by_user_setting(sub.stream_id);
-    if (
-        web_channel_default_view_values.list_of_topics.code ===
-        user_settings.web_channel_default_view
-    ) {
-        url = hash_util.by_channel_topic_list_url(sub.stream_id);
-    }
+    const url = hash_util.channel_url_by_user_setting(sub.stream_id);
     const args = {
         name,
         id: sub.stream_id,
@@ -481,8 +511,8 @@ function build_stream_sidebar_li(sub: StreamSubscription): JQuery {
         is_web_public: sub.is_web_public,
         color: sub.color,
         pin_to_top: sub.pin_to_top,
-        hide_unread_count: settings_data.should_mask_unread_count(is_muted),
         can_post_messages,
+        is_empty_topic_only_channel: stream_data.is_empty_topic_only_channel(sub.stream_id),
     };
     const $list_item = $(render_stream_sidebar_row(args));
     return $list_item;
@@ -645,19 +675,14 @@ export function update_dom_with_unread_counts(counts: FullUnreadCountsData): voi
     }
 }
 
-export function update_dom_unread_counts_visibility(): void {
-    for (const stream of stream_sidebar.rows.values()) {
-        const $subscription_block = stream.get_li().find(".subscription_block");
+function toggle_hide_unread_counts(
+    $subscription_block: JQuery,
+    sub_muted: boolean,
+    unmuted_unread_counts: number,
+): void {
+    const hide_count = settings_data.should_mask_unread_count(sub_muted, unmuted_unread_counts);
 
-        const is_muted = stream_data.is_muted(stream.sub.stream_id);
-        const hide_count = settings_data.should_mask_unread_count(is_muted);
-
-        if (hide_count) {
-            $subscription_block.addClass("hide_unread_counts");
-        } else {
-            $subscription_block.removeClass("hide_unread_counts");
-        }
-    }
+    $subscription_block.toggleClass("hide_unread_counts", hide_count);
 }
 
 export function rename_stream(sub: StreamSubscription): void {
@@ -671,6 +696,8 @@ export function refresh_pinned_or_unpinned_stream(sub: StreamSubscription): void
     // We use kind of brute force now, which is probably fine.
     build_stream_sidebar_row(sub);
     update_streams_sidebar();
+    const section_id = stream_list_sort.current_section_id_for_stream(sub.stream_id);
+    maybe_hide_topic_bracket(section_id);
 
     // Only scroll pinned topics into view.  If we're unpinning
     // a topic, we may be literally trying to get it out of
@@ -817,27 +844,43 @@ const update_streams_for_search = _.throttle(actually_update_streams_for_search,
 
 // Exported for tests only.
 export function initialize_stream_cursor(): void {
-    stream_cursor = new ListCursor({
+    stream_cursor = new ListCursor<StreamListRow>({
         list: {
             scroll_container_selector: "#left_sidebar_scroll_container",
             find_li(opts) {
-                const stream_id = opts.key;
-                const $li = get_stream_li(stream_id);
-                return $li;
+                if (opts.key.type === "stream") {
+                    const $li = get_stream_li(opts.key.stream_id);
+                    return $li;
+                }
+                return $(
+                    `#stream-list-${opts.key.section_id}-container .stream-list-toggle-inactive-channels`,
+                );
             },
-            first_key: stream_list_sort.first_stream_id,
-            prev_key: stream_list_sort.prev_stream_id,
-            next_key: stream_list_sort.next_stream_id,
+            first_key: stream_list_sort.first_row,
+            prev_key: (row) =>
+                stream_list_sort.prev_row(
+                    row,
+                    sections_showing_inactive,
+                    collapsed_sections,
+                    topic_list.active_stream_id(),
+                ),
+            next_key: (row) =>
+                stream_list_sort.next_row(
+                    row,
+                    sections_showing_inactive,
+                    collapsed_sections,
+                    topic_list.active_stream_id(),
+                ),
         },
-        highlight_class: "highlighted_stream",
+        highlight_class: "highlighted_row",
     });
 }
 
 export function initialize({
-    on_stream_click,
+    show_channel_feed,
     update_inbox_channel_view,
 }: {
-    on_stream_click: (stream_id: number, trigger: string) => void;
+    show_channel_feed: (stream_id: number, trigger: string) => void;
     update_inbox_channel_view: (channel_id: number) => void;
 }): void {
     update_inbox_channel_view_callback = update_inbox_channel_view;
@@ -849,7 +892,7 @@ export function initialize({
     update_subscribe_to_more_streams_link();
     initialize_stream_cursor();
     initialize_tippy_tooltips();
-    set_event_handlers({on_stream_click});
+    set_event_handlers({show_channel_feed});
 
     $("#stream_filters").on("click", ".show-more-topics", (e) => {
         zoom_in();
@@ -878,7 +921,16 @@ export function initialize_tippy_tooltips(): void {
             const current_narrow_stream_id = narrow_state.stream_id();
             const current_topic = narrow_state.topic();
             if (current_narrow_stream_id === stream_id && current_topic !== undefined) {
-                instance.setContent(ui_util.parse_html(render_go_to_channel_feed_tooltip()));
+                if (
+                    user_settings.web_channel_default_view ===
+                    web_channel_default_view_values.list_of_topics.code
+                ) {
+                    instance.setContent(
+                        ui_util.parse_html(render_go_to_channel_list_of_topics_tooltip()),
+                    );
+                } else {
+                    instance.setContent(ui_util.parse_html(render_go_to_channel_feed_tooltip()));
+                }
                 return undefined;
             }
             // Then check for truncation
@@ -897,115 +949,150 @@ export function initialize_tippy_tooltips(): void {
     });
 }
 
+function on_sidebar_channel_click(
+    stream_id: number,
+    // Null is used when this is called via `Enter`, because the
+    // keyboard abstraction we're using doesn't need to pass on the event.
+    e: JQuery.ClickEvent | null,
+    show_channel_feed: (stream_id: number, trigger: string) => void,
+): void {
+    clear_search();
+    if (e !== null) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+
+    const section_for_stream = stream_list_sort.current_section_id_for_stream(stream_id);
+    if (collapsed_sections.has(section_for_stream)) {
+        // In the event that user clicks on the channel in the left
+        // sidebar when its folder is collapsed, which is only there
+        // to click on if the user was already viewing that channel,
+        // we uncollapse the section to make the filtering component
+        // visible.
+        toggle_section_collapse($(`#stream-list-${section_for_stream}-container`));
+    }
+
+    const current_narrow_stream_id = narrow_state.stream_id();
+    const current_topic = narrow_state.topic();
+
+    if (stream_data.is_empty_topic_only_channel(stream_id)) {
+        // If the channel doesn't support topics, take you
+        // directly to general chat regardless of settings.
+        const empty_topic_url = hash_util.by_channel_topic_permalink(stream_id, "");
+        browser_history.go_to_location(empty_topic_url);
+        return;
+    }
+
+    if (
+        user_settings.web_channel_default_view ===
+        web_channel_default_view_values.list_of_topics.code
+    ) {
+        browser_history.go_to_location(hash_util.by_channel_topic_list_url(stream_id));
+        return;
+    }
+
+    if (current_narrow_stream_id === stream_id && current_topic !== undefined) {
+        const channel_feed_url = hash_util.channel_url_by_user_setting(stream_id);
+        browser_history.go_to_location(channel_feed_url);
+        return;
+    }
+
+    if (
+        user_settings.web_channel_default_view === web_channel_default_view_values.channel_feed.code
+    ) {
+        show_channel_feed(stream_id, "sidebar");
+        return;
+    }
+
+    let topics = stream_topic_history.get_recent_topic_names(stream_id);
+
+    const navigate_to_stream = (): void => {
+        const topic_list_info = topic_list_data.get_list_info(
+            stream_id,
+            false,
+            (topic_names: string[]) => topic_names,
+        );
+        // This initial value handles both the
+        // top_topic_in_channel mode as well as the
+        // top_unread_topic_in_channel fallback when there are no
+        // (unmuted) unreads in the channel.
+        let topic_item = topic_list_info.items[0];
+
+        if (
+            user_settings.web_channel_default_view ===
+            web_channel_default_view_values.top_unread_topic_in_channel.code
+        ) {
+            for (const topic_list_item of topic_list_info.items) {
+                if (
+                    unread.topic_has_any_unread(stream_id, topic_list_item.topic_name) &&
+                    !user_topics.is_topic_muted(stream_id, topic_list_item.topic_name)
+                ) {
+                    topic_item = topic_list_item;
+                    break;
+                }
+            }
+        }
+
+        if (topic_item !== undefined) {
+            const destination_url = hash_util.by_channel_topic_permalink(
+                stream_id,
+                topic_item.topic_name,
+            );
+            browser_history.go_to_location(destination_url);
+        } else {
+            show_channel_feed(stream_id, "sidebar");
+            return;
+        }
+    };
+
+    if (topics.length === 0) {
+        stream_topic_history_util.get_server_history(stream_id, () => {
+            topics = stream_topic_history.get_recent_topic_names(stream_id);
+            if (topics.length === 0) {
+                show_channel_feed(stream_id, "sidebar");
+                return;
+            }
+            navigate_to_stream();
+            return;
+        });
+    } else {
+        navigate_to_stream();
+        return;
+    }
+}
+
 export function set_event_handlers({
-    on_stream_click,
+    show_channel_feed,
 }: {
-    on_stream_click: (stream_id: number, trigger: string) => void;
+    show_channel_feed: (stream_id: number, trigger: string) => void;
 }): void {
-    $("#stream_filters").on("click", "li .subscription_block .stream-name", (e) => {
+    $("#stream_filters").on("click", "li .subscription_block", (e) => {
+        // Left sidebar channel links have an `href` so that the
+        // browser will preview the URL and you can middle-click it.
+        //
+        // But we want to control what the click does to follow the
+        // user's default left sidebar click action, rather than
+        // taking you to the channel feed.
         if (e.metaKey || e.ctrlKey || e.shiftKey) {
             return;
         }
 
-        clear_and_hide_search();
-        e.preventDefault();
-        e.stopPropagation();
-
         const stream_id = stream_id_for_elt($(e.target).parents("li.narrow-filter"));
-        const current_narrow_stream_id = narrow_state.stream_id();
-        const current_topic = narrow_state.topic();
-
-        if (
-            user_settings.web_channel_default_view ===
-            web_channel_default_view_values.list_of_topics.code
-        ) {
-            browser_history.go_to_location(hash_util.by_channel_topic_list_url(stream_id));
-            return;
-        }
-
-        if (current_narrow_stream_id === stream_id && current_topic !== undefined) {
-            const channel_feed_url = hash_util.channel_url_by_user_setting(stream_id);
-            browser_history.go_to_location(channel_feed_url);
-            return;
-        }
-
-        if (
-            user_settings.web_channel_default_view ===
-            web_channel_default_view_values.channel_feed.code
-        ) {
-            on_stream_click(stream_id, "sidebar");
-            return;
-        }
-
-        let topics = stream_topic_history.get_recent_topic_names(stream_id);
-
-        const navigate_to_stream = (): void => {
-            const topic_list_info = topic_list_data.get_list_info(
-                stream_id,
-                false,
-                (topic_names: string[]) => topic_names,
-            );
-            // This initial value handles both the
-            // top_topic_in_channel mode as well as the
-            // top_unread_topic_in_channel fallback when there are no
-            // (unmuted) unreads in the channel.
-            let topic_item = topic_list_info.items[0];
-
-            if (
-                user_settings.web_channel_default_view ===
-                web_channel_default_view_values.top_unread_topic_in_channel.code
-            ) {
-                for (const topic_list_item of topic_list_info.items) {
-                    if (
-                        unread.topic_has_any_unread(stream_id, topic_list_item.topic_name) &&
-                        !user_topics.is_topic_muted(stream_id, topic_list_item.topic_name)
-                    ) {
-                        topic_item = topic_list_item;
-                        break;
-                    }
-                }
-            }
-
-            if (topic_item !== undefined) {
-                const destination_url = hash_util.by_channel_topic_permalink(
-                    stream_id,
-                    topic_item.topic_name,
-                );
-                browser_history.go_to_location(destination_url);
-            } else {
-                on_stream_click(stream_id, "sidebar");
-                return;
-            }
-        };
-
-        if (topics.length === 0) {
-            stream_topic_history_util.get_server_history(stream_id, () => {
-                topics = stream_topic_history.get_recent_topic_names(stream_id);
-                if (topics.length === 0) {
-                    on_stream_click(stream_id, "sidebar");
-                    return;
-                }
-                navigate_to_stream();
-                return;
-            });
-        } else {
-            navigate_to_stream();
-            return;
-        }
+        on_sidebar_channel_click(stream_id, e, show_channel_feed);
     });
 
-    $("#streams_header")
-        .expectOne()
-        .on("click", (e) => {
-            e.preventDefault();
-            if (
-                e.target.id === "streams_inline_icon" ||
-                $(e.target).parent().hasClass("input-button")
-            ) {
-                return;
-            }
-            toggle_filter_displayed(e);
+    $("#stream_filters").on("click", ".channel-new-topic-button", function (this: HTMLElement, e) {
+        e.stopPropagation();
+        e.preventDefault();
+        const stream_id = Number.parseInt(this.dataset.streamId!, 10);
+        compose_actions.start({
+            message_type: "stream",
+            stream_id,
+            topic: "",
+            trigger: "clear topic button",
+            keep_composebox_empty: true,
         });
+    });
 
     function toggle_pm_header_icon(): void {
         if (pm_list.is_private_messages_collapsed()) {
@@ -1036,15 +1123,18 @@ export function set_event_handlers({
     const $search_input = $(".stream-list-filter").expectOne();
 
     function keydown_enter_key(): void {
-        const stream_id = stream_cursor.get_key();
+        const row = stream_cursor.get_key();
 
-        if (stream_id === undefined) {
+        if (row === undefined) {
             // This can happen for empty searches, no need to warn.
             return;
         }
 
-        clear_and_hide_search();
-        on_stream_click(stream_id, "sidebar enter key");
+        if (row.type === "stream") {
+            on_sidebar_channel_click(row.stream_id, null, show_channel_feed);
+        } else {
+            toggle_inactive_channels($(`#stream-list-${row.section_id}-container`));
+        }
     }
 
     keydown_util.handle({
@@ -1070,6 +1160,47 @@ export function set_event_handlers({
         stream_cursor.clear();
     });
     $search_input.on("input", update_streams_for_search);
+
+    $("#streams_list").on(
+        "click",
+        ".stream-list-section-container .stream-list-subsection-header",
+        function (this: HTMLElement, e: JQuery.ClickEvent) {
+            e.stopPropagation();
+            toggle_section_collapse($(this).closest(".stream-list-section-container"));
+        },
+    );
+
+    $("#streams_list").on(
+        "click",
+        ".stream-list-section-container .add-stream-icon-container",
+        (e) => {
+            // The browser default behavior of following the href on
+            // this link is correct. But we need to avoid triggering
+            // the click handler for the containing row, though (which
+            // would toggle the section).
+            e.stopPropagation();
+        },
+    );
+
+    $("#streams_list").on(
+        "click",
+        ".stream-list-toggle-inactive-channels",
+        function (this: HTMLElement, e: JQuery.ClickEvent) {
+            e.stopPropagation();
+            toggle_inactive_channels($(this).closest(".stream-list-section-container"));
+        },
+    );
+}
+
+function toggle_inactive_channels($section_container: JQuery): void {
+    $section_container.toggleClass("showing-inactive");
+    const showing_inactive = $section_container.hasClass("showing-inactive");
+    const section_id = $section_container.attr("data-section-id")!;
+    if (showing_inactive) {
+        sections_showing_inactive.add(section_id);
+    } else {
+        sections_showing_inactive.delete(section_id);
+    }
 }
 
 export function searching(): boolean {
@@ -1083,21 +1214,8 @@ export function test_clear_search(): void {
     update_streams_for_search();
 }
 
-export function show_search_section(): void {
-    $("#streams_header").addClass("showing-stream-search-section");
-    $(".stream_search_section").expectOne().removeClass("notdisplayed");
-    resize.resize_stream_filters_container();
-}
-
-export function hide_search_section(): void {
-    $("#streams_header").removeClass("showing-stream-search-section");
-    $(".stream_search_section").expectOne().addClass("notdisplayed");
-    resize.resize_stream_filters_container();
-}
-
 export function initiate_search(): void {
     popovers.hide_all();
-    show_search_section();
 
     const $filter = $(".stream-list-filter").expectOne();
 
@@ -1107,7 +1225,7 @@ export function initiate_search(): void {
     stream_cursor.reset();
 }
 
-export function clear_and_hide_search(): void {
+export function clear_search(): void {
     const $filter = $(".stream-list-filter").expectOne();
     if ($filter.val() !== "") {
         $filter.val("");
@@ -1115,28 +1233,32 @@ export function clear_and_hide_search(): void {
     }
     stream_cursor.clear();
     $filter.trigger("blur");
-
-    hide_search_section();
 }
 
-export function toggle_filter_displayed(e: JQuery.ClickEvent): void {
-    if ($(".stream_search_section.notdisplayed").length === 0) {
-        clear_and_hide_search();
-    } else {
-        initiate_search();
-    }
-    e.preventDefault();
-}
-
-function scroll_stream_into_view($stream_li: JQuery): void {
+export let scroll_stream_into_view = function ($stream_li: JQuery): void {
     const $container = $("#left_sidebar_scroll_container");
 
     if ($stream_li.length !== 1) {
         blueslip.error("Invalid stream_li was passed in");
         return;
     }
-    const stream_header_height = $("#streams_header").outerHeight();
-    scroll_util.scroll_element_into_container($stream_li, $container, stream_header_height);
+    const stream_filter_height = $("#stream-search-and-add").outerHeight()!;
+    const header_height = $stream_li
+        .closest(".stream-list-section-container")
+        .children(".stream-list-subsection-header")
+        .outerHeight()!;
+    scroll_util.scroll_element_into_container(
+        $stream_li,
+        $container,
+        stream_filter_height + header_height,
+    );
+    // Note: If the stream is in a collapsed folder, we don't uncollapse
+    // the folder. We do uncollapse when the user clicks on the channel,
+    // but that's handled elsewhere.
+};
+
+export function rewire_scroll_stream_into_view(value: typeof scroll_stream_into_view): void {
+    scroll_stream_into_view = value;
 }
 
 export function maybe_scroll_narrow_into_view(first_messages_fetch_done: boolean): void {

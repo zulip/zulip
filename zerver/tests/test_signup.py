@@ -184,21 +184,28 @@ class DeactivationNoticeTestCase(ZulipTestCase):
         self.assertIn("This organization has been deactivated.", result.content.decode())
         self.assertNotIn("and all organization data has been deleted", result.content.decode())
 
-    def test_deactivation_notice_when_deactivated_and_deactivated_redirect_is_set(self) -> None:
+    def test_deactivation_notice_when_deactivated_and_deactivated_redirect_is_set_to_different_domain(
+        self,
+    ) -> None:
         realm = get_realm("zulip")
         realm.deactivated = True
-        realm.deactivated_redirect = "http://example.zulipchat.com"
+        realm.deactivated_redirect = f"http://example.not_{settings.EXTERNAL_HOST}.com:9991"
         realm.save(update_fields=["deactivated", "deactivated_redirect"])
 
         result = self.client_get("/login/", follow=True)
-        self.assertIn(result.request.get("SERVER_NAME"), ["example.zulipchat.com"])
+        self.assert_in_success_response([f'href="{realm.deactivated_redirect}"'], result)
 
     def test_deactivation_notice_when_realm_subdomain_is_changed(self) -> None:
         realm = get_realm("zulip")
         do_change_realm_subdomain(realm, "new-subdomain-name", acting_user=None)
 
         result = self.client_get("/login/", follow=True)
-        self.assertIn(result.request.get("SERVER_NAME"), ["new-subdomain-name.testserver"])
+        self.assert_in_success_response(
+            [
+                f'href="http://new-subdomain-name.{settings.EXTERNAL_HOST}/" id="deactivated-org-auto-redirect"'
+            ],
+            result,
+        )
 
     def test_no_deactivation_notice_with_no_redirect(self) -> None:
         realm = get_realm("zulip")
@@ -220,12 +227,16 @@ class DeactivationNoticeTestCase(ZulipTestCase):
         do_change_realm_subdomain(realm, "new-name-1", acting_user=None)
 
         result = self.client_get("/login/", follow=True)
-        self.assertIn(result.request.get("SERVER_NAME"), ["new-name-1.testserver"])
+        self.assert_in_success_response(
+            ['href="http://new-name-1.testserver/" id="deactivated-org-auto-redirect"'], result
+        )
 
         realm = get_realm("new-name-1")
         do_change_realm_subdomain(realm, "new-name-2", acting_user=None)
         result = self.client_get("/login/", follow=True)
-        self.assertIn(result.request.get("SERVER_NAME"), ["new-name-2.testserver"])
+        self.assert_in_success_response(
+            ['href="http://new-name-2.testserver/" id="deactivated-org-auto-redirect"'], result
+        )
 
     def test_deactivation_notice_when_deactivated_and_scrubbed(self) -> None:
         # We expect system bot messages when scrubbing a realm.
@@ -1643,7 +1654,7 @@ class RealmCreationTest(ZulipTestCase):
         result = self.client_get(confirmation_url)
         self.assertEqual(result.status_code, 200)
 
-        # Simulate the initial POST that is made by confirm-preregistration.js
+        # Simulate the initial POST that is made by redirect-to-post.ts
         # by triggering submit on confirm_preregistration.html.
         payload = {
             "full_name": "",

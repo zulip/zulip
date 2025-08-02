@@ -169,6 +169,12 @@ const keyboard_handling_context: messages_overlay_ui.Context = {
         // This handles when pressing Enter while looking at drafts.
         // It restores draft that is focused.
         const draft_id_arrow = this.get_items_ids();
+
+        if (draft_id_arrow.length === 0) {
+            // Do nothing if there are no drafts.
+            return;
+        }
+
         const focused_draft_id = messages_overlay_ui.get_focused_element_id(this);
         if (focused_draft_id !== undefined) {
             restore_draft(focused_draft_id);
@@ -310,6 +316,10 @@ function setup_event_handlers(): void {
         "click",
         ".user-group-mention",
         function (this: HTMLElement, e) {
+            if (document.getSelection()?.type === "Range") {
+                return;
+            }
+
             user_group_popover.toggle_user_group_info_popover(this, undefined);
             e.stopPropagation();
         },

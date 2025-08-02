@@ -163,20 +163,16 @@ languages:
 
 * You can configure multiple playgrounds for a given language; if you do that,
 the user will get to choose which playground to open the code in.
-
 * The **Language** field is the human-readable Pygments language name for that
 programming language. The language tag for a code block is internally mapped
 to these human-readable Pygments names; e.g., `py3` and `py` are mapped to
 `Python`. One can use the typeahead (which appears when you type something
 or just click on the language field) to look up the Pygments name.
-
 * The links for opening code playgrounds are always constructed by substituting
 the URL-encoded contents of the code block into `code` variable in the URL template.
 The URL template is required to contain exactly one variable named `code`.
-
 * Code playground sites do not always clearly document their URL format; often
 you can just get the prefix from your browser's URL bar.
-
 * You can also use a custom language name to implement simple integrations.
 For example, a code block tagged with the "language" `send_tweet` could be
 used with a "playground" that sends the content of the code block as a Tweet.

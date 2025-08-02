@@ -56,6 +56,8 @@ exports.test_streams = {
         stream_post_policy: 1,
         topics_policy: "inherit",
         can_administer_channel_group: 2,
+        can_delete_any_message_group: 2,
+        can_delete_own_message_group: 2,
         can_move_messages_out_of_channel_group: 2,
         can_move_messages_within_channel_group: 2,
         can_send_message_group: 2,
@@ -79,6 +81,8 @@ exports.test_streams = {
         stream_post_policy: 1,
         topics_policy: "inherit",
         can_administer_channel_group: 2,
+        can_delete_any_message_group: 2,
+        can_delete_own_message_group: 2,
         can_move_messages_out_of_channel_group: 2,
         can_move_messages_within_channel_group: 2,
         can_send_message_group: 2,
@@ -154,6 +158,18 @@ exports.fixtures = {
             date_created: 1681662420,
             creator_id: 10,
             is_archived: false,
+        },
+    },
+
+    channel_folder__update: {
+        type: "channel_folder",
+        op: "update",
+        channel_folder_id: 1,
+        data: {
+            name: "New frontend",
+            description: "Channels for new frontend discussions",
+            rendered_description: "<p>Channels for new frontend discussions</p>",
+            is_archived: true,
         },
     },
 
@@ -1199,6 +1215,13 @@ exports.fixtures = {
         op: "update",
         property: "web_home_view",
         value: "recent_topics",
+    },
+
+    user_settings__web_left_sidebar_show_channel_folders: {
+        type: "user_settings",
+        op: "update",
+        property: "web_left_sidebar_show_channel_folders",
+        value: false,
     },
 
     user_settings__web_left_sidebar_unreads_count_summary: {

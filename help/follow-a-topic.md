@@ -11,14 +11,11 @@ It's easy to prioritize catching up on followed topics. You can:
 
 - [Configure](/help/follow-a-topic#configure-notifications-for-followed-topics)
   how you get notified about new messages for topics you follow.
-
 - Use the <kbd>Shift</kbd> + <kbd>N</kbd> [keyboard
   shortcut](/help/keyboard-shortcuts) to go to the next unread followed topic.
-
-- Filter the [**inbox**](/help/inbox) and [**recent
+- Filter the [**Inbox**](/help/inbox) and [**Recent
   conversations**](/help/recent-conversations) views to only show followed
   topics.
-
 - See which topics you are following in the **left sidebar**.
 
 You can use followed topics for a variety of workflows:

@@ -133,13 +133,9 @@ export function update_invite_user_option(): void {
 
 export function update_unread_counts_visibility(): void {
     const hidden = !user_settings.web_left_sidebar_unreads_count_summary;
-
-    const $streams_header: JQuery = $("#streams_header");
-    const $home_view_li: JQuery = $(".top_left_row");
-
-    for (const $el of [$home_view_li, $streams_header]) {
-        $el.toggleClass("hide-unread-messages-count", hidden);
-    }
+    $(".top_left_row").toggleClass("hide-unread-messages-count", hidden);
+    // Note: Channel folder count visibilities are handled in
+    // `update_section_unread_count`, since they depend on unread counts.
 }
 
 export function hide_all(): void {

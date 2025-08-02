@@ -26,6 +26,7 @@ BUILT_IN_VIEW_FRAGMENTS = [
     "narrow/is/mentioned",
     # Starred messages view
     "narrow/is/starred",
+    "scheduled",
 ]
 
 

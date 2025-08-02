@@ -8,7 +8,7 @@ from django.db.models import F
 from django.utils.timezone import now as timezone_now
 
 from confirmation.models import Confirmation, create_confirmation_link
-from confirmation.settings import STATUS_REVOKED
+from confirmation.settings import STATUS_REVOKED, STATUS_USED
 from zerver.actions.presence import do_update_user_presence
 from zerver.lib.avatar import avatar_url
 from zerver.lib.cache import (
@@ -165,7 +165,7 @@ def do_start_email_change_process(user_profile: UserProfile, new_email: str) -> 
     # Deactivate existing email change requests
     EmailChangeStatus.objects.filter(realm=user_profile.realm, user_profile=user_profile).exclude(
         id=obj.id,
-    ).update(status=STATUS_REVOKED)
+    ).exclude(status=STATUS_USED).update(status=STATUS_REVOKED)
 
     activation_url = create_confirmation_link(obj, Confirmation.EMAIL_CHANGE)
     from zerver.context_processors import common_context
@@ -480,7 +480,7 @@ def do_change_user_setting(
 
     # Disabling digest emails should clear a user's email queue
     if setting_name == "enable_digest_emails" and not db_setting_value:
-        clear_scheduled_emails(user_profile.id, ScheduledEmail.DIGEST)
+        clear_scheduled_emails([user_profile.id], ScheduledEmail.DIGEST)
 
     if setting_name == "email_notifications_batching_period_seconds":
         assert isinstance(old_value, int)

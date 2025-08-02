@@ -2,17 +2,24 @@ import os
 from collections.abc import Callable, Iterator
 from dataclasses import dataclass
 from datetime import datetime
-from typing import IO, Any
+from typing import IO, Any, Protocol
 
 import pyvips
 
 from zerver.models import Realm, UserProfile
 
 
+class ReadableStream(Protocol):
+    def read(self, size: int = -1) -> bytes: ...
+
+    def close(self) -> None: ...
+
+
 @dataclass
 class StreamingSourceWithSize:
     size: int
-    source: pyvips.Source
+    vips_source: pyvips.Source
+    reader: Callable[[], ReadableStream]
 
 
 class ZulipUploadBackend:
@@ -36,7 +43,7 @@ class ZulipUploadBackend:
     def save_attachment_contents(self, path_id: str, filehandle: IO[bytes]) -> None:
         raise NotImplementedError
 
-    def attachment_vips_source(self, path_id: str) -> StreamingSourceWithSize:
+    def attachment_source(self, path_id: str) -> StreamingSourceWithSize:
         raise NotImplementedError
 
     def delete_message_attachment(self, path_id: str) -> bool:

@@ -23,16 +23,13 @@ feedback.
   support](mailto:support@zulip.com).
      * Response time: Usually within 1-3 business days, or within one business
        day for paid customers.
-
 * For support requests regarding your **self-hosted server**:
 
     * **Business** and **Enterprise** plan customers can request interactive
       chat support in the [Zulip development community](#zulip-community),
       or [email Zulip support](mailto:support@zulip.com). Phone support is
       available for Enterprise customers upon request.
-
         * Response time: Usually within one business day.
-
     * **Free** and **Community** plan customers can ask for help in the
       [Zulip development community](#zulip-community). You will usually get a
       friendly reply within 1-3 business days.
@@ -55,7 +52,6 @@ for your organization.
     * Response time: Usually within 1-3 business days in the [Zulip development
       community](#zulip-community) or by email, or within one week [on
       GitHub](https://github.com/zulip).
-
 * You can [**request
   features**](https://zulip.readthedocs.io/en/latest/contributing/suggesting-features.html)
   or [**share
@@ -64,7 +60,6 @@ for your organization.
     * Response time: Usually within 1-3 business days in the [Zulip development
       community](#zulip-community) or by email, or within one week [on
       GitHub](https://github.com/zulip).
-
 * To **report issues or share feedback privately**, contact
   [feedback@zulip.com](mailto:feedback@zulip.com). This works well if you'd like
   to include details about your organization that shouldn't be posted in public.

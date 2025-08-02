@@ -22,14 +22,13 @@ other glue code: [Python API
 bindings](https://github.com/zulip/python-zulip-api); [JavaScript API
 bindings](https://github.com/zulip/zulip-js); a [Hubot
 adapter](https://github.com/zulip/hubot-zulip); integrations with
-[Phabricator](https://github.com/zulip/phabricator-to-zulip),
 [Jenkins](https://github.com/zulip/zulip-jenkins-plugin),
 [Puppet](https://github.com/matthewbarr/puppet-zulip),
 [Redmine](https://github.com/zulip/zulip-redmine-plugin), and
 [Trello](https://github.com/zulip/trello-to-zulip);
 and [many more](https://github.com/zulip/).
 
-We use [Transifex](https://explore.transifex.com/zulip/zulip/) to do
+We use [Weblate](https://hosted.weblate.org/projects/zulip/) to do
 translations.
 
 In this overview, we'll mainly discuss the core Zulip server and web

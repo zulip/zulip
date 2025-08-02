@@ -8,15 +8,15 @@
           "account_country": "US",
           "account_name": "NORMALIZED",
           "account_tax_ids": null,
-          "amount_due": 152000,
+          "amount_due": 984000,
           "amount_overpaid": 0,
-          "amount_paid": 0,
-          "amount_remaining": 152000,
+          "amount_paid": 984000,
+          "amount_remaining": 0,
           "amount_shipping": 0,
           "application": null,
           "attempt_count": 0,
           "attempted": false,
-          "auto_advance": true,
+          "auto_advance": false,
           "automatic_tax": {
             "disabled_reason": null,
             "enabled": false,
@@ -26,7 +26,7 @@
           },
           "automatically_finalizes_at": null,
           "billing_reason": "manual",
-          "collection_method": "charge_automatically",
+          "collection_method": "send_invoice",
           "created": 1000000000,
           "currency": "usd",
           "custom_fields": null,
@@ -43,7 +43,7 @@
           "default_tax_rates": [],
           "description": null,
           "discounts": [],
-          "due_date": null,
+          "due_date": 1000000000,
           "effective_at": 1000000000,
           "ending_balance": 0,
           "footer": null,
@@ -59,9 +59,9 @@
           "lines": {
             "data": [
               {
-                "amount": 152000,
+                "amount": 984000,
                 "currency": "usd",
-                "description": "Zulip Cloud Standard - renewal",
+                "description": "Zulip Cloud Standard",
                 "discount_amounts": [],
                 "discountable": false,
                 "discounts": [],
@@ -83,8 +83,8 @@
                   "type": "invoice_item_details"
                 },
                 "period": {
-                  "end": 1393729445,
-                  "start": 1362193445
+                  "end": 1362193445,
+                  "start": 1330657445
                 },
                 "pretax_credit_amounts": [],
                 "pricing": {
@@ -95,7 +95,7 @@
                   "type": "price_details",
                   "unit_amount_decimal": "8000"
                 },
-                "quantity": 19,
+                "quantity": 123,
                 "taxes": []
               }
             ],
@@ -105,8 +105,16 @@
             "url": "/v1/invoices/free_trial_upgrade_by_invoice--Event.list.1.json/lines"
           },
           "livemode": false,
-          "metadata": {},
-          "next_payment_attempt": 1000000000,
+          "metadata": {
+            "billing_schedule": "1",
+            "current_plan_id": "1",
+            "license_management": "manual",
+            "licenses": "123",
+            "on_free_trial": "True",
+            "plan_tier": "1",
+            "user_id": "10"
+          },
+          "next_payment_attempt": null,
           "number": "NORMALIZED",
           "object": "invoice",
           "on_behalf_of": null,
@@ -133,19 +141,19 @@
           "shipping_details": null,
           "starting_balance": 0,
           "statement_descriptor": "Zulip Cloud Standard",
-          "status": "open",
+          "status": "paid",
           "status_transitions": {
             "finalized_at": 1000000000,
             "marked_uncollectible_at": null,
-            "paid_at": null,
+            "paid_at": 1000000000,
             "voided_at": null
           },
-          "subtotal": 152000,
-          "subtotal_excluding_tax": 152000,
+          "subtotal": 984000,
+          "subtotal_excluding_tax": 984000,
           "test_clock": null,
-          "total": 152000,
+          "total": 984000,
           "total_discount_amounts": [],
-          "total_excluding_tax": 152000,
+          "total_excluding_tax": 984000,
           "total_pretax_credit_amounts": [],
           "total_taxes": [],
           "webhooks_delivered_at": 1000000000
@@ -159,7 +167,7 @@
         "id": "free_trial_upgrade_by_invoice--Event.list.1.json",
         "idempotency_key": "00000000-0000-0000-0000-000000000000"
       },
-      "type": "invoice.finalized"
+      "type": "invoice.paid"
     }
   ],
   "has_more": true,

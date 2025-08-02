@@ -10,7 +10,7 @@ import type {Browser, ConsoleMessage, ConsoleMessageLocation, ElementHandle, Pag
 import puppeteer from "puppeteer";
 import StackFrame from "stackframe";
 import StackTraceGPS from "stacktrace-gps";
-import {z} from "zod";
+import * as z from "zod/mini";
 
 const root_dir = url.fileURLToPath(new URL("../../..", import.meta.url));
 const puppeteer_dir = path.join(root_dir, "var/puppeteer");

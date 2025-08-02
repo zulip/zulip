@@ -5,9 +5,9 @@ channel. Organization administrators can
 [configure](/help/restrict-moving-messages) who can move messages between
 channels.
 
-To help others find moved content, you can have [Notification
-Bot][notification-bot] send automated notices to the source topic, the
-destination topic, or both. These notices include:
+To help others find moved content, you can have Notification Bot send
+automated notices to the source topic, the destination topic, or both.
+These notices include:
 
 * A link to the source or destination topic.
 * How many messages were moved, or whether the whole topic was moved.
@@ -82,8 +82,8 @@ users who both:
 In [private channels with protected
 history](/help/channel-permissions#private-channels), Zulip determines whether
 to treat the entire topic as moved using the access permissions of the user
-requesting the topic move. This means that the automated notices sent by the
-notification bot will report that the entire topic was moved if the requesting
+requesting the topic move. This means that the automated notices sent by
+Notification Bot will report that the entire topic was moved if the requesting
 user moved every message in the topic that they can access, regardless of
 whether older messages exist that they cannot access.
 
@@ -100,5 +100,3 @@ that one does not have permission to access.
 * [Rename a topic](/help/rename-a-topic)
 * [Move content to another topic](/help/move-content-to-another-topic)
 * [Restrict moving messages](/help/restrict-moving-messages)
-
-[notification-bot]: /help/configure-automated-notices

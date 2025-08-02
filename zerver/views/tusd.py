@@ -19,7 +19,7 @@ from zerver.lib.rate_limiter import is_local_addr
 from zerver.lib.typed_endpoint import JsonBodyPayload, typed_endpoint
 from zerver.lib.upload import (
     RealmUploadQuotaError,
-    attachment_vips_source,
+    attachment_source,
     check_upload_within_quota,
     create_attachment,
     delete_message_attachment,
@@ -200,7 +200,7 @@ def handle_upload_pre_finish_hook(
             filename,
             path_id,
             content_type,
-            attachment_vips_source(path_id),
+            attachment_source(path_id),
             user_profile,
             user_profile.realm,
         )

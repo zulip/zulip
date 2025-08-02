@@ -38,8 +38,6 @@ from zerver.lib.push_notifications import (
     get_message_payload_apns,
     get_message_payload_gcm,
     get_mobile_push_content,
-    hex_to_b64,
-    modernize_apns_payload,
     parse_fcm_options,
     send_android_push_notification_to_user,
     send_apple_push_notification,
@@ -83,7 +81,7 @@ from zilencer.auth import (
     generate_registration_transfer_verification_secret,
 )
 from zilencer.models import RemoteZulipServerAuditLog
-from zilencer.views import DevicesToCleanUpDict
+from zilencer.views import DevicesToCleanUpDict, get_deleted_devices
 
 if settings.ZILENCER_ENABLED:
     from zilencer.models import (
@@ -573,13 +571,13 @@ class PushBouncerNotificationTest(BouncerTestCase):
 
         android_token = RemotePushDeviceToken.objects.create(
             kind=RemotePushDeviceToken.FCM,
-            token=hex_to_b64("aaaa"),
+            token="aaaa",
             user_uuid=hamlet.uuid,
             server=server,
         )
         apple_token = RemotePushDeviceToken.objects.create(
             kind=RemotePushDeviceToken.APNS,
-            token=hex_to_b64("bbbb"),
+            token="bbbb",
             user_uuid=hamlet.uuid,
             server=server,
         )
@@ -626,7 +624,7 @@ class PushBouncerNotificationTest(BouncerTestCase):
             android_tokens.append(
                 RemotePushDeviceToken.objects.create(
                     kind=RemotePushDeviceToken.FCM,
-                    token=hex_to_b64(token + i),
+                    token=token + i,
                     user_id=hamlet.id,
                     server=server,
                 )
@@ -638,7 +636,7 @@ class PushBouncerNotificationTest(BouncerTestCase):
             uuid_android_tokens.append(
                 RemotePushDeviceToken.objects.create(
                     kind=RemotePushDeviceToken.FCM,
-                    token=hex_to_b64(token + i),
+                    token=token + i,
                     user_uuid=str(hamlet.uuid),
                     server=server,
                 )
@@ -646,7 +644,7 @@ class PushBouncerNotificationTest(BouncerTestCase):
 
         apple_token = RemotePushDeviceToken.objects.create(
             kind=RemotePushDeviceToken.APNS,
-            token=hex_to_b64(token),
+            token=token,
             user_id=hamlet.id,
             server=server,
         )
@@ -738,7 +736,7 @@ class PushBouncerNotificationTest(BouncerTestCase):
         remote_server = self.server
         RemotePushDeviceToken.objects.create(
             kind=RemotePushDeviceToken.FCM,
-            token=hex_to_b64("aaaaaa"),
+            token="aaaaaa",
             user_id=hamlet.id,
             server=remote_server,
         )
@@ -945,73 +943,6 @@ class PushBouncerNotificationTest(BouncerTestCase):
             logger.output,
         )
 
-    def test_subsecond_timestamp_format(self) -> None:
-        hamlet = self.example_user("hamlet")
-        RemotePushDeviceToken.objects.create(
-            kind=RemotePushDeviceToken.FCM,
-            token=hex_to_b64("aaaaaa"),
-            user_id=hamlet.id,
-            server=self.server,
-        )
-
-        time_sent = now().replace(microsecond=234000)
-        with time_machine.travel(time_sent, tick=False):
-            message = Message(
-                sender=hamlet,
-                recipient=self.example_user("othello").recipient,
-                realm_id=hamlet.realm_id,
-                content="This is test content",
-                rendered_content="This is test content",
-                date_sent=now(),
-                sending_client=get_client("test"),
-            )
-            message.set_topic_name("Test topic")
-            message.save()
-            gcm_payload, gcm_options = get_message_payload_gcm(hamlet, message)
-            apns_payload = get_message_payload_apns(
-                hamlet, message, NotificationTriggers.DIRECT_MESSAGE
-            )
-
-        # Reconfigure like recent versions, which had subsecond-granularity
-        # timestamps.
-        self.assertIsNotNone(gcm_payload.get("time"))
-        gcm_payload["time"] = float(gcm_payload["time"] + 0.234)
-        self.assertEqual(gcm_payload["time"], time_sent.timestamp())
-        self.assertIsNotNone(apns_payload["custom"]["zulip"].get("time"))
-        apns_payload["custom"]["zulip"]["time"] = gcm_payload["time"]
-
-        payload = {
-            "user_id": hamlet.id,
-            "user_uuid": str(hamlet.uuid),
-            "gcm_payload": gcm_payload,
-            "apns_payload": apns_payload,
-            "gcm_options": gcm_options,
-        }
-        time_received = time_sent + timedelta(seconds=1, milliseconds=234)
-        with (
-            time_machine.travel(time_received, tick=False),
-            mock.patch("zilencer.views.send_android_push_notification", return_value=1),
-            mock.patch("zilencer.views.send_apple_push_notification", return_value=1),
-            mock.patch(
-                "corporate.lib.stripe.RemoteServerBillingSession.current_count_for_billed_licenses",
-                return_value=10,
-            ),
-            self.assertLogs("zilencer.views", level="INFO") as logger,
-        ):
-            result = self.uuid_post(
-                self.server_uuid,
-                "/api/v1/remotes/push/notify",
-                payload,
-                content_type="application/json",
-            )
-        self.assert_json_success(result)
-        self.assertEqual(
-            logger.output[0],
-            "INFO:zilencer.views:"
-            f"Remote queuing latency for 6cde5f7a-1f7e-4978-9716-49f69ebfc9fe:<id:{hamlet.id}><uuid:{hamlet.uuid}> "
-            "is 1.234 seconds",
-        )
-
     def test_remote_push_unregister_all(self) -> None:
         payload = self.get_generic_payload("register")
 
@@ -1030,18 +961,13 @@ class PushBouncerNotificationTest(BouncerTestCase):
         self.assert_length(remote_tokens, 0)
 
     def test_invalid_apns_token(self) -> None:
-        endpoints = [
-            ("/api/v1/remotes/push/register", "apple-token"),
-        ]
-
-        for endpoint, method in endpoints:
-            payload = {
-                "user_id": 10,
-                "token": "xyz uses non-hex characters",
-                "token_kind": PushDeviceToken.APNS,
-            }
-            result = self.uuid_post(self.server_uuid, endpoint, payload)
-            self.assert_json_error(result, "Invalid APNS token")
+        payload = {
+            "user_id": 10,
+            "token": "xyz uses non-hex characters",
+            "token_kind": PushDeviceToken.APNS,
+        }
+        result = self.uuid_post(self.server_uuid, "/api/v1/remotes/push/register", payload)
+        self.assert_json_error(result, "Invalid APNS token")
 
     def test_initialize_push_notifications(self) -> None:
         realm = get_realm("zulip")
@@ -1130,7 +1056,7 @@ class PushBouncerNotificationTest(BouncerTestCase):
         remote_realm.save()
 
         endpoint = "/json/users/me/apns_device_token"
-        token = "apple-tokenaz"
+        token = "c0ffee"
         with self.assertLogs("zilencer.views", level="WARN") as warn_log:
             result = self.client_post(
                 endpoint, {"token": token, "appid": "org.zulip.Zulip"}, subdomain="zulip"
@@ -1163,7 +1089,7 @@ class PushBouncerNotificationTest(BouncerTestCase):
         endpoints: list[tuple[str, str, int, Mapping[str, str]]] = [
             (
                 "/json/users/me/apns_device_token",
-                "apple-tokenaz",
+                "c0fFeE",
                 RemotePushDeviceToken.APNS,
                 {"appid": "org.zulip.Zulip"},
             ),
@@ -1232,8 +1158,7 @@ class PushBouncerNotificationTest(BouncerTestCase):
             self.assert_json_success(result)
             self.assertIn(
                 "INFO:zilencer.views:/api/v1/remotes/push/register: Received request for "
-                f"unknown realm {user.realm.uuid!s}, server {server.id}, "
-                f"user {user.uuid!s}",
+                f"unknown realm {user.realm.uuid!s}, server {server.id}",
                 info_log.output,
             )
 
@@ -1484,20 +1409,6 @@ class TestAPNs(PushNotificationTestCase):
                 logger.output,
             )
 
-    def test_modernize_apns_payload(self) -> None:
-        payload = {
-            "alert": "Message from Hamlet",
-            "badge": 0,
-            "custom": {"zulip": {"message_ids": [3]}},
-        }
-        self.assertEqual(
-            modernize_apns_payload(
-                {"alert": "Message from Hamlet", "message_ids": [3], "badge": 0}
-            ),
-            payload,
-        )
-        self.assertEqual(modernize_apns_payload(payload), payload)
-
     @mock.patch("zerver.lib.push_notifications.push_notifications_configured", return_value=True)
     def test_apns_badge_count(self, mock_push_notifications: mock.MagicMock) -> None:
         user_profile = self.example_user("othello")
@@ -1563,7 +1474,6 @@ class TestGetAPNsPayload(PushNotificationTestCase):
                     "realm_uri": self.sender.realm.url,
                     "realm_url": self.sender.realm.url,
                     "user_id": user_profile.id,
-                    "time": datetime_to_timestamp(message.date_sent),
                 },
             },
         }
@@ -1606,7 +1516,6 @@ class TestGetAPNsPayload(PushNotificationTestCase):
                     "realm_uri": self.sender.realm.url,
                     "realm_url": self.sender.realm.url,
                     "user_id": user_profile.id,
-                    "time": datetime_to_timestamp(message.date_sent),
                 },
             },
         }
@@ -1651,7 +1560,6 @@ class TestGetAPNsPayload(PushNotificationTestCase):
                     "realm_uri": self.sender.realm.url,
                     "realm_url": self.sender.realm.url,
                     "user_id": user_profile.id,
-                    "time": datetime_to_timestamp(message.date_sent),
                 },
             },
         }
@@ -1693,7 +1601,6 @@ class TestGetAPNsPayload(PushNotificationTestCase):
                     "realm_uri": self.sender.realm.url,
                     "realm_url": self.sender.realm.url,
                     "user_id": self.sender.id,
-                    "time": datetime_to_timestamp(message.date_sent),
                 },
             },
         }
@@ -1738,7 +1645,6 @@ class TestGetAPNsPayload(PushNotificationTestCase):
                     "realm_uri": self.sender.realm.url,
                     "realm_url": self.sender.realm.url,
                     "user_id": user_profile.id,
-                    "time": datetime_to_timestamp(message.date_sent),
                 },
             },
         }
@@ -1779,7 +1685,6 @@ class TestGetAPNsPayload(PushNotificationTestCase):
                     "user_id": user_profile.id,
                     "mentioned_user_group_id": user_group.id,
                     "mentioned_user_group_name": user_group.name,
-                    "time": datetime_to_timestamp(message.date_sent),
                 }
             },
         }
@@ -1817,7 +1722,6 @@ class TestGetAPNsPayload(PushNotificationTestCase):
                     "realm_uri": self.sender.realm.url,
                     "realm_url": self.sender.realm.url,
                     "user_id": user_profile.id,
-                    "time": datetime_to_timestamp(message.date_sent),
                 },
             },
         }
@@ -1842,49 +1746,6 @@ class TestGetAPNsPayload(PushNotificationTestCase):
         self._test_get_message_payload_apns_wildcard_mention(
             NotificationTriggers.STREAM_WILDCARD_MENTION
         )
-
-    @override_settings(PUSH_NOTIFICATION_REDACT_CONTENT=True)
-    def test_get_message_payload_apns_redacted_content(self) -> None:
-        user_profile = self.example_user("othello")
-        message_id = self.send_group_direct_message(
-            self.sender, [self.example_user("othello"), self.example_user("cordelia")]
-        )
-        message = Message.objects.get(id=message_id)
-        payload = get_message_payload_apns(
-            user_profile, message, NotificationTriggers.DIRECT_MESSAGE
-        )
-        expected = {
-            "alert": {
-                "title": "Cordelia, Lear's daughter, King Hamlet, Othello, the Moor of Venice",
-                "subtitle": "King Hamlet:",
-                "body": "New message",
-            },
-            "sound": "default",
-            "badge": 0,
-            "custom": {
-                "zulip": {
-                    "message_ids": [message.id],
-                    "recipient_type": "private",
-                    "pm_users": ",".join(
-                        str(user_profile_id)
-                        for user_profile_id in sorted(
-                            s.user_profile_id
-                            for s in Subscription.objects.filter(recipient=message.recipient)
-                        )
-                    ),
-                    "sender_email": self.sender.email,
-                    "sender_id": self.sender.id,
-                    "server": settings.EXTERNAL_HOST,
-                    "realm_id": self.sender.realm.id,
-                    "realm_name": self.sender.realm.name,
-                    "realm_uri": self.sender.realm.url,
-                    "realm_url": self.sender.realm.url,
-                    "user_id": user_profile.id,
-                    "time": datetime_to_timestamp(message.date_sent),
-                },
-            },
-        }
-        self.assertDictEqual(payload, expected)
 
     def test_get_message_payload_apns_stream_message_from_inaccessible_user(self) -> None:
         self.set_up_db_for_testing_user_access()
@@ -1931,7 +1792,6 @@ class TestGetAPNsPayload(PushNotificationTestCase):
                     "realm_uri": hamlet.realm.url,
                     "realm_url": hamlet.realm.url,
                     "user_id": polonius.id,
-                    "time": datetime_to_timestamp(message.date_sent),
                 }
             },
         }
@@ -2055,43 +1915,6 @@ class TestGetGCMPayload(PushNotificationTestCase):
             },
         )
 
-    @override_settings(PUSH_NOTIFICATION_REDACT_CONTENT=True)
-    def test_get_message_payload_gcm_redacted_content(self) -> None:
-        stream = Stream.objects.get(name="Denmark")
-        message = self.get_message(Recipient.STREAM, stream.id, stream.realm_id)
-        hamlet = self.example_user("hamlet")
-        payload, gcm_options = get_message_payload_gcm(hamlet, message)
-        self.assertDictEqual(
-            payload,
-            {
-                "user_id": hamlet.id,
-                "event": "message",
-                "zulip_message_id": message.id,
-                "time": datetime_to_timestamp(message.date_sent),
-                "content": "New message",
-                "content_truncated": False,
-                "server": settings.EXTERNAL_HOST,
-                "realm_id": hamlet.realm.id,
-                "realm_name": hamlet.realm.name,
-                "realm_uri": hamlet.realm.url,
-                "realm_url": hamlet.realm.url,
-                "sender_id": hamlet.id,
-                "sender_email": hamlet.email,
-                "sender_full_name": "King Hamlet",
-                "sender_avatar_url": absolute_avatar_url(message.sender),
-                "recipient_type": "stream",
-                "topic": "Test topic",
-                "stream": "Denmark",
-                "stream_id": stream.id,
-            },
-        )
-        self.assertDictEqual(
-            gcm_options,
-            {
-                "priority": "high",
-            },
-        )
-
     def test_get_message_payload_gcm_stream_message_from_inaccessible_user(self) -> None:
         self.set_up_db_for_testing_user_access()
 
@@ -2145,23 +1968,6 @@ class TestGetGCMPayload(PushNotificationTestCase):
 
 
 class TestSendNotificationsToBouncer(PushNotificationTestCase):
-    def test_send_notifications_to_bouncer_when_no_devices(self) -> None:
-        user = self.example_user("hamlet")
-
-        with (
-            mock.patch("zerver.lib.remote_server.send_to_push_bouncer") as mock_send,
-            self.assertLogs("zerver.lib.push_notifications", level="INFO") as mock_logging_info,
-        ):
-            send_notifications_to_bouncer(
-                user, {"apns": True}, {"gcm": True}, {}, android_devices=[], apple_devices=[]
-            )
-
-        self.assertIn(
-            f"INFO:zerver.lib.push_notifications:Skipping contacting the bouncer for user {user.id} because there are no registered devices",
-            mock_logging_info.output,
-        )
-        mock_send.assert_not_called()
-
     @mock.patch("zerver.lib.remote_server.send_to_push_bouncer")
     def test_send_notifications_to_bouncer(self, mock_send: mock.MagicMock) -> None:
         user = self.example_user("hamlet")
@@ -2307,7 +2113,7 @@ class TestAddRemoveDeviceTokenAPI(BouncerTestCase):
         self.login_user(user)
 
         endpoints: list[tuple[str, str, Mapping[str, str]]] = [
-            ("/json/users/me/apns_device_token", "apple-tokenaz", {"appid": "org.zulip.Zulip"}),
+            ("/json/users/me/apns_device_token", "c0ffee", {"appid": "org.zulip.Zulip"}),
             ("/json/users/me/android_gcm_reg_id", "android-token", {}),
         ]
 
@@ -2318,7 +2124,7 @@ class TestAddRemoveDeviceTokenAPI(BouncerTestCase):
             result = self.client_post(endpoint, {"token": broken_token, **appid})
             self.assert_json_error(result, "Empty or invalid length token")
 
-            if label == "apple-tokenaz":
+            if "apns" in endpoint:
                 result = self.client_post(
                     endpoint, {"token": "xyz has non-hex characters", **appid}
                 )
@@ -2357,12 +2163,12 @@ class TestAddRemoveDeviceTokenAPI(BouncerTestCase):
         self.login_user(user)
 
         no_bouncer_requests: list[tuple[str, str, Mapping[str, str]]] = [
-            ("/json/users/me/apns_device_token", "apple-tokenaa", {"appid": "org.zulip.Zulip"}),
+            ("/json/users/me/apns_device_token", "c0ffee01", {"appid": "org.zulip.Zulip"}),
             ("/json/users/me/android_gcm_reg_id", "android-token-1", {}),
         ]
 
         bouncer_requests: list[tuple[str, str, Mapping[str, str]]] = [
-            ("/json/users/me/apns_device_token", "apple-tokenbb", {"appid": "org.zulip.Zulip"}),
+            ("/json/users/me/apns_device_token", "c0ffee02", {"appid": "org.zulip.Zulip"}),
             ("/json/users/me/android_gcm_reg_id", "android-token-2", {}),
         ]
 
@@ -2403,13 +2209,13 @@ class TestAddRemoveDeviceTokenAPI(BouncerTestCase):
         # PushDeviceToken will include all the device tokens.
         token_values = list(PushDeviceToken.objects.values_list("token", flat=True))
         self.assertEqual(
-            token_values, ["apple-tokenaa", "android-token-1", "apple-tokenbb", "android-token-2"]
+            token_values, ["c0ffee01", "android-token-1", "c0ffee02", "android-token-2"]
         )
 
         # RemotePushDeviceToken will only include tokens of
         # the devices using push notification bouncer.
         remote_token_values = list(RemotePushDeviceToken.objects.values_list("token", flat=True))
-        self.assertEqual(sorted(remote_token_values), ["android-token-2", "apple-tokenbb"])
+        self.assertEqual(sorted(remote_token_values), ["android-token-2", "c0ffee02"])
 
         # Test removing tokens without using push notification bouncer.
         for endpoint, token, appid in no_bouncer_requests:
@@ -2512,8 +2318,8 @@ class FCMSendTest(PushNotificationTestCase):
             send_android_push_notification_to_user(self.user_profile, data, {})
         self.assert_length(logger.output, 3)
         log_msg1 = f"INFO:zerver.lib.push_notifications:FCM: Sending notification for local user <id:{self.user_profile.id}> to 2 devices"
-        log_msg2 = f"INFO:zerver.lib.push_notifications:FCM: Sent message with ID: {response.responses[0].message_id} to {hex_to_b64(self.fcm_tokens[0])}"
-        log_msg3 = f"INFO:zerver.lib.push_notifications:FCM: Sent message with ID: {response.responses[1].message_id} to {hex_to_b64(self.fcm_tokens[1])}"
+        log_msg2 = f"INFO:zerver.lib.push_notifications:FCM: Sent message with ID: {response.responses[0].message_id} to {self.fcm_tokens[0]}"
+        log_msg3 = f"INFO:zerver.lib.push_notifications:FCM: Sent message with ID: {response.responses[1].message_id} to {self.fcm_tokens[1]}"
 
         self.assertEqual([log_msg1, log_msg2, log_msg3], logger.output)
         mock_warning.assert_not_called()
@@ -2521,14 +2327,13 @@ class FCMSendTest(PushNotificationTestCase):
     def test_not_registered(
         self, mock_fcm_messaging: mock.MagicMock, fcm_app: mock.MagicMock
     ) -> None:
-        token = hex_to_b64("1111")
+        token = "1111"
         response = self.make_fcm_error_response(
             token, firebase_messaging.UnregisteredError("Requested entity was not found.")
         )
         mock_fcm_messaging.send_each.return_value = response
 
-        def get_count(hex_token: str) -> int:
-            token = hex_to_b64(hex_token)
+        def get_count(token: str) -> int:
             return PushDeviceToken.objects.filter(token=token, kind=PushDeviceToken.FCM).count()
 
         self.assertEqual(get_count("1111"), 1)
@@ -2547,7 +2352,7 @@ class FCMSendTest(PushNotificationTestCase):
         self.assertEqual(get_count("1111"), 0)
 
     def test_failure(self, mock_fcm_messaging: mock.MagicMock, fcm_app: mock.MagicMock) -> None:
-        token = hex_to_b64("1111")
+        token = "1111"
         response = self.make_fcm_error_response(token, firebase_exceptions.UnknownError("Failed"))
         mock_fcm_messaging.send_each.return_value = response
 
@@ -3232,3 +3037,159 @@ class TestUserPushIdentityCompat(ZulipTestCase):
 
         # An integer can't be equal to an instance of the class.
         self.assertNotEqual(user_identity_a, 1)
+
+
+class TestDeletedDevices(BouncerTestCase):
+    def test_delete_android(self) -> None:
+        hamlet = self.example_user("hamlet")
+        server = self.server
+
+        # Android tokens are case-sensitive, so this is just 4 different tokens.
+        for token in ["aaaa", "aaAA", "bbbb", "BBBB"]:
+            RemotePushDeviceToken.objects.create(
+                kind=RemotePushDeviceToken.FCM,
+                server=server,
+                user_id=hamlet.id,
+                token=token,
+            )
+
+        self.assertEqual(
+            DevicesToCleanUpDict(android_devices=[], apple_devices=[]),
+            get_deleted_devices(
+                UserPushIdentityCompat(user_id=hamlet.id),
+                server,
+                android_devices=["aaaa", "aaAA", "bbbb", "BBBB"],
+                apple_devices=[],
+            ),
+        )
+
+        self.assertEqual(
+            DevicesToCleanUpDict(android_devices=[], apple_devices=[]),
+            get_deleted_devices(
+                UserPushIdentityCompat(user_id=hamlet.id),
+                server,
+                android_devices=["aaAA", "bbbb"],
+                apple_devices=[],
+            ),
+        )
+
+        self.assertEqual(
+            DevicesToCleanUpDict(android_devices=["more", "other"], apple_devices=[]),
+            get_deleted_devices(
+                UserPushIdentityCompat(user_id=hamlet.id),
+                server,
+                android_devices=["aaAA", "bbbb", "other", "more"],
+                apple_devices=[],
+            ),
+        )
+
+        # Add some tokens which have both user-id and user-UUIDs.
+        for token in ["cccc", "dddd"]:
+            RemotePushDeviceToken.objects.create(
+                kind=RemotePushDeviceToken.FCM,
+                server=server,
+                user_id=hamlet.id,
+                user_uuid=hamlet.uuid,
+                token=token,
+            )
+        self.assertEqual(
+            DevicesToCleanUpDict(android_devices=["more", "other"], apple_devices=[]),
+            get_deleted_devices(
+                UserPushIdentityCompat(user_id=hamlet.id, user_uuid=str(hamlet.uuid)),
+                server,
+                android_devices=["aaAA", "bbbb", "cccc", "other", "more"],
+                apple_devices=[],
+            ),
+        )
+
+    def test_delete_apple(self) -> None:
+        hamlet = self.example_user("hamlet")
+        server = self.server
+
+        # APNs tokens are case-preserving but case-insensitive -- but
+        # old versions of the server did not know that.  We therefore
+        # must be able to correctly handle getting multiple cases of
+        # the same token, and always responding with the case that the
+        # caller provided.
+        for token in ["aaaa", "bBBb", "CCCC"]:
+            RemotePushDeviceToken.objects.create(
+                kind=RemotePushDeviceToken.APNS,
+                server=server,
+                user_id=hamlet.id,
+                token=token,
+            )
+
+        # Simple case -- remote server and bouncer agree on tokens and
+        # their case.
+        self.assertEqual(
+            DevicesToCleanUpDict(android_devices=[], apple_devices=[]),
+            get_deleted_devices(
+                UserPushIdentityCompat(user_id=hamlet.id),
+                server,
+                android_devices=[],
+                apple_devices=["aaaa", "bBBb", "CCCC"],
+            ),
+        )
+
+        # Same, but with extra tokens present
+        self.assertEqual(
+            DevicesToCleanUpDict(android_devices=[], apple_devices=["cafe", "ffff"]),
+            get_deleted_devices(
+                UserPushIdentityCompat(user_id=hamlet.id),
+                server,
+                android_devices=[],
+                apple_devices=["aaaa", "bBBb", "CCCC", "ffff", "cafe"],
+            ),
+        )
+
+        # The remote server has a token in multiple cases, none of
+        # which potentially agree with our case.  It will tell the
+        # remote server to remove all but the first case it
+        # encountered.
+        self.assertEqual(
+            DevicesToCleanUpDict(android_devices=[], apple_devices=["AAaa"]),
+            get_deleted_devices(
+                UserPushIdentityCompat(user_id=hamlet.id),
+                server,
+                android_devices=[],
+                apple_devices=["AAAA", "AAaa", "BBBB"],
+            ),
+        )
+
+        # Add some tokens which have both user-id and user-UUIDs.
+        for token in ["dddd", "EeeE"]:
+            RemotePushDeviceToken.objects.create(
+                kind=RemotePushDeviceToken.APNS,
+                server=server,
+                user_id=hamlet.id,
+                user_uuid=hamlet.uuid,
+                token=token,
+            )
+        self.assertEqual(
+            DevicesToCleanUpDict(
+                android_devices=[],
+                apple_devices=["AAaa", "EEEE", "more", "other"],
+            ),
+            get_deleted_devices(
+                UserPushIdentityCompat(user_id=hamlet.id, user_uuid=str(hamlet.uuid)),
+                server,
+                android_devices=[],
+                apple_devices=["AAAA", "AAaa", "BBBB", "DDDD", "eeEE", "EEEE", "other", "more"],
+            ),
+        )
+
+        # It should not be possible to have a token be passed in more
+        # than once with the same case, but in such cases we should
+        # not return it in the to-clean-up list.
+        self.assertEqual(
+            DevicesToCleanUpDict(
+                android_devices=[],
+                apple_devices=["MORE"],
+            ),
+            get_deleted_devices(
+                UserPushIdentityCompat(user_id=hamlet.id, user_uuid=str(hamlet.uuid)),
+                server,
+                android_devices=[],
+                apple_devices=["AAAA", "AAAA", "MORE", "MORE"],
+            ),
+        )

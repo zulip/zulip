@@ -71,7 +71,9 @@ content](#hide-content-in-an-archived-channel).
 1. Under **Channel permissions**, [make the channel
    private](/help/change-the-privacy-of-a-channel).
 
-1. Under **Advanced configurations**, remove everyone from **Who can subscribe
+1. Click **Advanced configuration** to view advanced configuration options.
+
+1. Under **Subscription permissions**, remove everyone from **Who can subscribe
    to this channel**, and **Who can subscribe anyone to this channel**. These
    permissions give users content access to the channel.
 

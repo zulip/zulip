@@ -66,7 +66,8 @@ from zerver.models import (
 )
 from zerver.models.groups import SystemGroups
 from zerver.models.realm_audit_logs import AuditLogEventType
-from zerver.models.users import active_user_ids, bot_owner_user_ids, get_system_bot
+from zerver.models.streams import StreamTopicsPolicyEnum
+from zerver.models.users import ExternalAuthID, active_user_ids, bot_owner_user_ids, get_system_bot
 from zerver.tornado.django_api import send_event_on_commit
 
 MAX_NUM_RECENT_MESSAGES = 1000
@@ -82,6 +83,11 @@ def send_message_to_signup_notification_stream(
 
     with override_language(realm.default_language):
         topic_name = _("signups")
+        if (
+            signup_announcements_stream.topics_policy
+            == StreamTopicsPolicyEnum.empty_topic_only.value
+        ):
+            topic_name = ""
 
     internal_send_stream_message(sender, signup_announcements_stream, topic_name, message)
 
@@ -521,6 +527,7 @@ def do_create_user(
     enable_marketing_emails: bool = True,
     email_address_visibility: int | None = None,
     add_initial_stream_subscriptions: bool = True,
+    external_auth_id_dict: dict[str, str] | None = None,
 ) -> UserProfile:
     if settings.BILLING_ENABLED:
         from corporate.lib.stripe import RealmBillingSession
@@ -614,6 +621,15 @@ def do_create_user(
         do_send_user_group_members_update_event(
             "add_members", full_members_system_group, [user_profile.id]
         )
+
+    if external_auth_id_dict:
+        for external_auth_method_name, external_auth_id in external_auth_id_dict.items():
+            ExternalAuthID.objects.create(
+                user=user_profile,
+                realm=user_profile.realm,
+                external_auth_method_name=external_auth_method_name,
+                external_auth_id=external_auth_id,
+            )
 
     if prereg_realm is not None:
         prereg_realm.created_user = user_profile

@@ -1,7 +1,7 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
 import type * as tippy from "tippy.js";
-import {z} from "zod";
+import * as z from "zod/mini";
 
 import render_confirm_disable_all_notifications from "../templates/confirm_dialog/confirm_disable_all_notifications.hbs";
 import render_confirm_reset_stream_notifications from "../templates/confirm_dialog/confirm_reset_stream_notifications.hbs";
@@ -15,6 +15,7 @@ import * as dropdown_widget from "./dropdown_widget.ts";
 import {$t, $t_html} from "./i18n.ts";
 import * as message_notifications from "./message_notifications.ts";
 import {page_params} from "./page_params.ts";
+import * as settings_banner from "./settings_banner.ts";
 import * as settings_components from "./settings_components.ts";
 import * as settings_config from "./settings_config.ts";
 import type {SettingsPanel} from "./settings_preferences.ts";
@@ -54,6 +55,22 @@ const DESKTOP_NOTIFICATIONS_BANNER: banners.Banner = {
     ],
     close_button: true,
     custom_classes: "desktop-setting-notifications",
+};
+
+const MOBILE_PUSH_NOTIFICATION_BANNER: banners.Banner = {
+    intent: "warning",
+    label: $t({
+        defaultMessage: "Mobile push notifications are not enabled on this server.",
+    }),
+    buttons: [
+        {
+            label: $t({defaultMessage: "Learn more"}),
+            custom_classes: "banner-external-link",
+            attention: "quiet",
+        },
+    ],
+    custom_classes: "mobile-push-notifications-banner",
+    close_button: false,
 };
 
 function rerender_ui(): void {
@@ -214,7 +231,7 @@ function stream_notification_setting_changed(target: HTMLInputElement, stream_id
     }
 
     const $status_element = $(target).closest(".subsection-parent").find(".alert-notification");
-    const setting = stream_specific_notification_settings_schema.keyof().parse(target.name);
+    const setting = z.keyof(stream_specific_notification_settings_schema).parse(target.name);
     sub[setting] ??= user_settings[settings_config.generalize_stream_notification_setting[setting]];
     stream_settings_api.set_stream_property(
         sub,
@@ -277,8 +294,8 @@ export function do_reset_stream_notifications(elem: HTMLElement, sub: StreamSubs
     )) {
         data.push({
             stream_id: sub.stream_id,
-            property: stream_specific_notification_settings_schema
-                .keyof()
+            property: z
+                .keyof(stream_specific_notification_settings_schema)
                 .parse(per_stream_setting_name),
             value: user_settings[global_setting_name],
         });
@@ -392,6 +409,11 @@ export function set_up(settings_panel: SettingsPanel): void {
     });
 
     set_enable_digest_emails_visibility($container, for_realm_settings);
+    settings_banner.set_up_banner(
+        $(".mobile-push-notifications-banner-container"),
+        MOBILE_PUSH_NOTIFICATION_BANNER,
+        "/help/mobile-notifications#enabling-push-notifications-for-self-hosted-servers",
+    );
 
     if (for_realm_settings) {
         // For the realm-level defaults page, we use the common
@@ -453,14 +475,14 @@ export function set_up(settings_panel: SettingsPanel): void {
             return;
         }
 
-        const setting_name = user_settings_schema.keyof().parse($input_elem.attr("name"));
+        const setting_name = z.keyof(user_settings_schema).parse($input_elem.attr("name"));
         // This filters out the GroupSettingValue
         const setting_value = z
             .union([z.string(), z.number(), z.boolean()])
             .parse(settings_components.get_input_element_value(this));
 
         if (
-            pm_notification_settings_schema.keyof().safeParse(setting_name).success &&
+            z.keyof(pm_notification_settings_schema).safeParse(setting_name).success &&
             !setting_value
         ) {
             let enabled_pm_mention_notifications_count = 0;
@@ -526,7 +548,7 @@ export function update_page(settings_panel: SettingsPanel): void {
     const $container = $(settings_panel.container);
     const settings_object = settings_panel.settings_object;
     for (const untyped_setting of settings_config.all_notification_settings) {
-        const setting = user_settings_schema.keyof().parse(untyped_setting);
+        const setting = z.keyof(user_settings_schema).parse(untyped_setting);
         switch (setting) {
             case "enable_offline_push_notifications": {
                 if (!realm.realm_push_notifications_enabled) {

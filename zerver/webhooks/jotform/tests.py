@@ -45,6 +45,25 @@ class JotformHookTests(WebhookTestCase):
             content_type="multipart/form-data",
         )
 
+    def test_response_with_colon_comma_characters(self) -> None:
+        expected_title = "Sample testing"
+        expected_message = """
+* **Key1 with colon: and comma, end**: Value1 with colon: and comma, end
+* **Same Key**: Value 1
+* **Same Key**: Value 2
+* **Same Key-Value**: Same Key-Value
+* **Value 2**: Value 3
+* **Multiple Choice Question, options:**: Option; 1 Option2
+
+* **File Upload with colon : and comma , end**: [error; frontend, UI.png](https://www.jotform.com/uploads/kolanuvarun739/243490908500051/6197916587414311452/error%3B%20frontend%2C%20UI.png), [Screenshot_20250331_201054.png](https://www.jotform.com/uploads/kolanuvarun739/243490908500051/6197916587414311452/Screenshot_20250331_201054.png)""".strip()
+
+        self.check_webhook(
+            "response_with_colon_comma_characters",
+            expected_title,
+            expected_message,
+            content_type="multipart/form-data",
+        )
+
     def test_bad_payload(self) -> None:
         with self.assertRaisesRegex(AssertionError, "Unable to handle Jotform payload"):
             self.check_webhook("response")

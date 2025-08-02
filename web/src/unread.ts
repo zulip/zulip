@@ -1,4 +1,4 @@
-import type {z} from "zod";
+import type * as z from "zod/mini";
 
 import * as blueslip from "./blueslip.ts";
 import {FoldDict} from "./fold_dict.ts";
@@ -39,6 +39,10 @@ export let first_unread_unmuted_message_id = Number.POSITIVE_INFINITY;
 
 export function clear_old_unreads_missing(): void {
     old_unreads_missing = false;
+}
+
+export function set_old_unreads_missing_for_tests(value: boolean): void {
+    old_unreads_missing = value;
 }
 
 export const unread_mentions_counter = new Set<number>();
@@ -912,6 +916,7 @@ export type FullUnreadCountsData = {
     stream_unread_messages: number;
     followed_topic_unread_messages_count: number;
     followed_topic_unread_messages_with_mention_count: number;
+    unfollowed_topic_unread_messages_count: number;
     muted_topic_unread_messages_count: number;
     stream_count: Map<number, StreamCountInfo>;
     streams_with_mentions: number[];
@@ -939,6 +944,8 @@ export function get_counts(): FullUnreadCountsData {
         followed_topic_unread_messages_count: topic_res.followed_topic_unread_messages,
         followed_topic_unread_messages_with_mention_count:
             unread_topic_counter.get_followed_topic_unread_mentions(),
+        unfollowed_topic_unread_messages_count:
+            unread_messages.size - topic_res.followed_topic_unread_messages - pm_res.total_count,
         muted_topic_unread_messages_count:
             unread_messages.size - topic_res.stream_unread_messages - pm_res.total_count,
         stream_count: topic_res.stream_count,

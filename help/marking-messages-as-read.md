@@ -20,10 +20,10 @@ web/desktop app.
   [topic in a channel](/help/introduction-to-topics). This option makes it
   convenient to preview new messages in a channel, or skim [Combined
   feed](/help/combined-feed), and later read each topic in detail.
-- **Never**: Messages are marked as read only
-  [manually](#mark-all-messages-as-read). For example, if you often need to
-  follow up on messages at your computer after reading them in the mobile app,
-  you can choose this option for the mobile app.
+- **Never**: Messages are marked as read only manually. For example,
+  if you often need to follow up on messages at your computer after
+  reading them in the mobile app, you can choose this option for the
+  mobile app.
 
 {start_tabs}
 
@@ -48,21 +48,7 @@ web/desktop app.
 
 ## Configure whether resolved topic notices are marked as read
 
-Zulip lets you automatically mark as read [notification
-bot](/help/configure-automated-notices) notices indicating that someone
-[resolved or unresolved](/help/resolve-a-topic) a topic, or do so just for
-topics you don't follow.
-
-{start_tabs}
-
-{tab|desktop-web}
-
-{settings_tab|notifications}
-
-1. Under **Topic notifications**, configure **Automatically mark resolved topic
-   notices as read**.
-
-{end_tabs}
+{!configure-resolved-notices-marked-as-read.md!}
 
 ## Mark a message as read
 
@@ -76,17 +62,13 @@ topics you don't follow.
 
 {end_tabs}
 
-## Mark all messages as read
-
-You can manually **mark all messages as read**, or **mark all messages in a
-channel or topic as read**.
+## Mark all messages in a channel or topic as read
 
 {start_tabs}
 
 {tab|via-left-sidebar}
 
-1. Hover over a channel, topic, or your [home view](/help/configure-home-view)
-   in the left sidebar.
+1. Hover over a channel or topic in the left sidebar.
 
 1. Click on the **ellipsis** (<i class="zulip-icon zulip-icon-more-vertical"></i>).
 
@@ -114,16 +96,45 @@ channel or topic as read**.
 
 {tab|mobile}
 
-1. Tap a channel, topic, or the **Combined feed**
+1. Press and hold a channel or topic until the long-press menu appears.
+
+1. Tap **Mark channel as read** or **Mark topic as read**.
+
+!!! tip ""
+
+    You can also scroll down to the bottom of a message view, and tap **Mark
+    all messages as read**.
+
+{end_tabs}
+
+## Mark messages in multiple topics and channels as read
+
+In the web and desktop apps, you can mark all messages as read, or just messages
+in muted topics or topics you don't follow.
+
+{start_tabs}
+
+{tab|desktop-web}
+
+1. Hover over your [home view](/help/configure-home-view) in the left sidebar.
+
+1. Click on the **ellipsis** (<i class="zulip-icon zulip-icon-more-vertical"></i>).
+
+1. Select the desired option from the dropdown, and click **Confirm**.
+
+!!! tip ""
+
+    You can also mark all messages in your current view as read by
+    jumping to the bottom with the **Scroll to bottom**
+    (<i class="fa fa-chevron-down"></i>) button or the <kbd>End</kbd> shortcut.
+
+{tab|mobile}
+
+1. Tap the **Combined feed**
    (<i class="zulip-icon zulip-icon-all-messages mobile-help"></i>) tab.
 
 1. Scroll down to the bottom of the message view, and tap **Mark all messages
    as read**.
-
-!!! tip ""
-
-    You can also press and hold a channel or topic until the long-press menu
-    appears, and select the option to mark as read.
 
 {end_tabs}
 

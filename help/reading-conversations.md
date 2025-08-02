@@ -1,9 +1,5 @@
 # Reading conversations
 
-{!conversation-definition.md!}
-
-{!conversation-recommendation.md!}
-
 {!reading-conversations.md!}
 
 ## Related articles

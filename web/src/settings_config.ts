@@ -309,6 +309,7 @@ type RealmTopicsPolicyValues = {
 
 type StreamTopicsPolicyValues = {
     inherit: PolicyValue;
+    empty_topic_only: PolicyValue;
 } & RealmTopicsPolicyValues;
 
 export const get_realm_topics_policy_values = (): RealmTopicsPolicyValues => {
@@ -317,27 +318,38 @@ export const get_realm_topics_policy_values = (): RealmTopicsPolicyValues => {
     return {
         allow_empty_topic: {
             code: "allow_empty_topic",
-            description: $t(
-                {defaultMessage: '"{empty_topic_name}" topic allowed'},
-                {empty_topic_name},
-            ),
+            description: $t({defaultMessage: "Allow “{empty_topic_name}”"}, {empty_topic_name}),
         },
         disable_empty_topic: {
             code: "disable_empty_topic",
-            description: $t({defaultMessage: 'No "{empty_topic_name}" topic'}, {empty_topic_name}),
+            description: $t({defaultMessage: "No “{empty_topic_name}” topic"}, {empty_topic_name}),
         },
     };
 };
 
 export const get_stream_topics_policy_values = (): StreamTopicsPolicyValues => {
     const realm_topics_policy_values = get_realm_topics_policy_values();
+    const empty_topic_name = util.get_final_topic_display_name("");
 
     return {
         inherit: {
             code: "inherit",
-            description: $t({defaultMessage: "Automatic"}),
+            description: $t(
+                {defaultMessage: "Organization default ({org_level_topics_policy})"},
+                {
+                    org_level_topics_policy:
+                        realm_topics_policy_values[realm.realm_topics_policy].description,
+                },
+            ),
         },
         ...realm_topics_policy_values,
+        empty_topic_only: {
+            code: "empty_topic_only",
+            description: $t(
+                {defaultMessage: "Only “{empty_topic_name}” topic allowed"},
+                {empty_topic_name},
+            ),
+        },
     };
 };
 
@@ -623,8 +635,11 @@ export const preferences_settings_labels = {
     ),
     receives_typing_notifications: $t({defaultMessage: "Show when other users are typing"}),
     starred_message_counts: $t({defaultMessage: "Show counts for starred messages"}),
+    web_left_sidebar_show_channel_folders: $t({
+        defaultMessage: "Group channels by folder in the left sidebar",
+    }),
     web_left_sidebar_unreads_count_summary: $t({
-        defaultMessage: "Show unread count summaries in the left sidebar",
+        defaultMessage: "Show unread count total on home view",
     }),
     twenty_four_hour_time: $t({defaultMessage: "Time format"}),
     translate_emoticons: new Handlebars.SafeString(
@@ -729,7 +744,9 @@ export const all_group_setting_labels = {
         }),
         can_resolve_topics_group: $t({defaultMessage: "Who can resolve topics"}),
         can_delete_any_message_group: $t({defaultMessage: "Who can delete any message"}),
-        can_delete_own_message_group: $t({defaultMessage: "Who can delete their own messages"}),
+        can_delete_own_message_group: $t({
+            defaultMessage: "Who can delete their own messages everywhere",
+        }),
         can_access_all_users_group: $t({
             defaultMessage: "Who can view all other users in the organization",
         }),
@@ -742,6 +759,9 @@ export const all_group_setting_labels = {
         can_mention_many_users_group: $t({
             defaultMessage: "Who can notify a large number of users with a wildcard mention",
         }),
+        can_set_delete_message_policy_group: $t({
+            defaultMessage: "Who can allow users to delete messages in channels they administer",
+        }),
         can_set_topics_policy_group: new Handlebars.SafeString(
             $t_html({
                 defaultMessage:
@@ -751,6 +771,12 @@ export const all_group_setting_labels = {
     },
     stream: {
         can_add_subscribers_group: $t({defaultMessage: "Who can subscribe anyone to this channel"}),
+        can_delete_any_message_group: $t({
+            defaultMessage: "Who can delete any message in this channel",
+        }),
+        can_delete_own_message_group: $t({
+            defaultMessage: "Who can delete their own messages in this channel",
+        }),
         can_move_messages_out_of_channel_group: $t({
             defaultMessage: "Who can move messages out of this channel",
         }),
@@ -762,6 +788,9 @@ export const all_group_setting_labels = {
         can_subscribe_group: $t({defaultMessage: "Who can subscribe to this channel"}),
         can_remove_subscribers_group: $t({
             defaultMessage: "Who can unsubscribe anyone from this channel",
+        }),
+        can_resolve_topics_group: $t({
+            defaultMessage: "Who can resolve topics in this channel",
         }),
     },
     group: {
@@ -796,6 +825,7 @@ export const realm_group_permission_settings: {
             "can_create_private_channel_group",
             "can_add_subscribers_group",
             "can_mention_many_users_group",
+            "can_set_delete_message_policy_group",
             "can_set_topics_policy_group",
         ],
     },
@@ -853,11 +883,14 @@ export const owner_editable_realm_group_permission_settings = new Set([
 export const stream_group_permission_settings: StreamGroupSettingName[] = [
     "can_send_message_group",
     "can_administer_channel_group",
+    "can_delete_any_message_group",
+    "can_delete_own_message_group",
     "can_move_messages_out_of_channel_group",
     "can_move_messages_within_channel_group",
     "can_subscribe_group",
     "can_add_subscribers_group",
     "can_remove_subscribers_group",
+    "can_resolve_topics_group",
 ];
 
 export const stream_group_permission_settings_requiring_content_access: StreamGroupSettingName[] = [

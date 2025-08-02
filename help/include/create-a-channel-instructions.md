@@ -4,12 +4,13 @@
 
 {relative|gear|channel-settings}
 
-1. Click **Create channel** on the right, or click the **plus**
-   (<i class="fa fa-plus"></i>) icon in the upper right.
+1. Click **Create channel** on the right, or click the
+   **create new channel** (<i class="zulip-icon zulip-icon-square-plus"></i>)
+   icon in the upper right.
 
 1. Fill out the requested information.
 
-1. _(optional)_ Click on **Advanced configurations** to review and update
+1. _(optional)_ Click on **Advanced configuration** to review and update
    additional channel settings.
 
 1. Click **Continue to add subscribers**.

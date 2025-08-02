@@ -1,4 +1,4 @@
-import {z} from "zod";
+import * as z from "zod/mini";
 
 import * as channel from "./channel.ts";
 import * as emoji from "./emoji.ts";

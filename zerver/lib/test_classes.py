@@ -57,7 +57,7 @@ from zerver.lib.mdiff import diff_strings
 from zerver.lib.message import access_message
 from zerver.lib.notification_data import UserMessageNotificationsData
 from zerver.lib.per_request_cache import flush_per_request_caches
-from zerver.lib.push_notifications import APNsContext, hex_to_b64
+from zerver.lib.push_notifications import APNsContext
 from zerver.lib.redis_utils import bounce_redis_key_prefix_for_testing
 from zerver.lib.response import MutableJsonResponse
 from zerver.lib.sessions import get_session_dict_user
@@ -95,6 +95,7 @@ from zerver.models import (
     Client,
     Message,
     NamedUserGroup,
+    PushDevice,
     PushDeviceToken,
     Reaction,
     Realm,
@@ -116,7 +117,13 @@ from zerver.openapi.openapi import validate_test_request, validate_test_response
 from zerver.tornado.event_queue import clear_client_event_queues_for_testing
 
 if settings.ZILENCER_ENABLED:
-    from zilencer.models import RemotePushDeviceToken, RemoteZulipServer, get_remote_server_by_uuid
+    from zilencer.models import (
+        RemotePushDevice,
+        RemotePushDeviceToken,
+        RemoteRealm,
+        RemoteZulipServer,
+        get_remote_server_by_uuid,
+    )
 
 if TYPE_CHECKING:
     from django.test.client import _MonkeyPatchedWSGIResponse as TestHttpResponse
@@ -2284,7 +2291,7 @@ class ZulipTestCase(ZulipTestCaseMixin, TestCase):
         )
 
 
-def get_row_ids_in_all_tables() -> Iterator[tuple[str, set[int]]]:
+def get_row_pks_in_all_tables() -> Iterator[tuple[str, set[int]]]:
     all_models = apps.get_models(include_auto_created=True)
     ignored_tables = {"django_session"}
 
@@ -2292,8 +2299,8 @@ def get_row_ids_in_all_tables() -> Iterator[tuple[str, set[int]]]:
         table_name = model._meta.db_table
         if table_name in ignored_tables:
             continue
-        ids = model._default_manager.all().values_list("id", flat=True)
-        yield table_name, set(ids)
+        pks = model._default_manager.all().values_list("pk", flat=True)
+        yield table_name, set(pks)
 
 
 class ZulipTransactionTestCase(ZulipTestCaseMixin, TransactionTestCase):
@@ -2321,7 +2328,7 @@ class ZulipTransactionTestCase(ZulipTestCaseMixin, TransactionTestCase):
     @override
     def setUp(self) -> None:
         super().setUp()
-        self.models_ids_set = dict(get_row_ids_in_all_tables())
+        self.models_pks_set = dict(get_row_pks_in_all_tables())
 
     @override
     def tearDown(self) -> None:
@@ -2331,11 +2338,11 @@ class ZulipTransactionTestCase(ZulipTestCaseMixin, TransactionTestCase):
         test database.
         """
         super().tearDown()
-        for table_name, ids in get_row_ids_in_all_tables():
+        for table_name, pks in get_row_pks_in_all_tables():
             self.assertSetEqual(
-                self.models_ids_set[table_name],
-                ids,
-                f"{table_name} got a different set of ids after this test",
+                self.models_pks_set[table_name],
+                pks,
+                f"{table_name} got a different set of primary key values after this test",
             )
 
     def _fixture_teardown(self) -> None:
@@ -2757,18 +2764,18 @@ class PushNotificationTestCase(BouncerTestCase):
             apns_context.loop.close()
 
     def setup_apns_tokens(self) -> None:
-        self.tokens = [("aaaa", "org.zulip.Zulip"), ("bbbb", "com.zulip.flutter")]
+        self.tokens = [("aAAa", "org.zulip.Zulip"), ("bBBb", "com.zulip.flutter")]
         for token, appid in self.tokens:
             PushDeviceToken.objects.create(
                 kind=PushDeviceToken.APNS,
-                token=hex_to_b64(token),
+                token=token,
                 user=self.user_profile,
                 ios_app_id=appid,
             )
 
         self.remote_tokens = [
-            ("cccc", "dddd", "org.zulip.Zulip"),
-            ("eeee", "ffff", "com.zulip.flutter"),
+            ("cCCc", "dDDd", "org.zulip.Zulip"),
+            ("eEEe", "fFFf", "com.zulip.flutter"),
         ]
         for id_token, uuid_token, appid in self.remote_tokens:
             # We want to set up both types of RemotePushDeviceToken here:
@@ -2777,14 +2784,14 @@ class PushNotificationTestCase(BouncerTestCase):
             # do their own setup.
             RemotePushDeviceToken.objects.create(
                 kind=RemotePushDeviceToken.APNS,
-                token=hex_to_b64(id_token),
+                token=id_token,
                 ios_app_id=appid,
                 user_id=self.user_profile.id,
                 server=self.server,
             )
             RemotePushDeviceToken.objects.create(
                 kind=RemotePushDeviceToken.APNS,
-                token=hex_to_b64(uuid_token),
+                token=uuid_token,
                 ios_app_id=appid,
                 user_uuid=self.user_profile.uuid,
                 server=self.server,
@@ -2803,7 +2810,7 @@ class PushNotificationTestCase(BouncerTestCase):
         for token in self.fcm_tokens:
             PushDeviceToken.objects.create(
                 kind=PushDeviceToken.FCM,
-                token=hex_to_b64(token),
+                token=token,
                 user=self.user_profile,
                 ios_app_id=None,
             )
@@ -2812,13 +2819,13 @@ class PushNotificationTestCase(BouncerTestCase):
         for id_token, uuid_token in self.remote_fcm_tokens:
             RemotePushDeviceToken.objects.create(
                 kind=RemotePushDeviceToken.FCM,
-                token=hex_to_b64(id_token),
+                token=id_token,
                 user_id=self.user_profile.id,
                 server=self.server,
             )
             RemotePushDeviceToken.objects.create(
                 kind=RemotePushDeviceToken.FCM,
-                token=hex_to_b64(uuid_token),
+                token=uuid_token,
                 user_uuid=self.user_profile.uuid,
                 server=self.server,
             )
@@ -2832,6 +2839,133 @@ class PushNotificationTestCase(BouncerTestCase):
 
     def make_fcm_error_response(
         self, token: str, exception: firebase_exceptions.FirebaseError
+    ) -> firebase_messaging.BatchResponse:
+        error_response = firebase_messaging.SendResponse(exception=exception, resp=None)
+        return firebase_messaging.BatchResponse([error_response])
+
+
+class E2EEPushNotificationTestCase(BouncerTestCase):
+    def register_push_devices_for_notification(
+        self, is_server_self_hosted: bool = False
+    ) -> tuple[RemotePushDevice, RemotePushDevice]:
+        hamlet = self.example_user("hamlet")
+        realm = hamlet.realm
+
+        # Hamlet registers both an Android and an Apple device for push notification.
+        PushDevice.objects.create(
+            user=hamlet,
+            push_account_id=10,
+            bouncer_device_id=1,
+            token_kind=PushDevice.TokenKind.APNS,
+            push_public_key="9VvW7k59AET0v3+VFCkKTrNm5DJQ7JTKdvUjZInZZ0Y=",
+        )
+        PushDevice.objects.create(
+            user=hamlet,
+            push_account_id=20,
+            bouncer_device_id=2,
+            token_kind=PushDevice.TokenKind.FCM,
+            push_public_key="n4WTVqj8KH6u0vScRycR4TqRaHhFeJ0POvMb8LCu8iI=",
+        )
+
+        realm_and_remote_realm_fields: dict[str, Realm | RemoteRealm | None] = {
+            "realm": realm,
+            "remote_realm": None,
+        }
+        if is_server_self_hosted:
+            remote_realm = RemoteRealm.objects.get(uuid=realm.uuid)
+            realm_and_remote_realm_fields = {"realm": None, "remote_realm": remote_realm}
+
+        registered_device_apple = RemotePushDevice.objects.create(
+            push_account_id=10,
+            device_id=1,
+            token_kind=RemotePushDevice.TokenKind.APNS,
+            token="push-device-token-1",
+            ios_app_id="abc",
+            **realm_and_remote_realm_fields,
+        )
+        registered_device_android = RemotePushDevice.objects.create(
+            push_account_id=20,
+            device_id=2,
+            token_kind=RemotePushDevice.TokenKind.FCM,
+            token="push-device-token-3",
+            **realm_and_remote_realm_fields,
+        )
+
+        return registered_device_apple, registered_device_android
+
+    def register_old_push_devices_for_notification(self) -> tuple[PushDeviceToken, PushDeviceToken]:
+        hamlet = self.example_user("hamlet")
+
+        registered_device_android = PushDeviceToken.objects.create(
+            kind=PushDeviceToken.FCM,
+            token="token-fcm",
+            user=hamlet,
+            ios_app_id=None,
+        )
+        registered_device_apple = PushDeviceToken.objects.create(
+            kind=PushDeviceToken.APNS,
+            token="token-apns",
+            user=hamlet,
+            ios_app_id="abc",
+        )
+        return registered_device_apple, registered_device_android
+
+    @contextmanager
+    def mock_fcm(self, for_legacy: bool = False) -> Iterator[mock.MagicMock]:
+        if for_legacy:
+            with (
+                mock.patch("zerver.lib.push_notifications.fcm_app"),
+                mock.patch(
+                    "zerver.lib.push_notifications.firebase_messaging"
+                ) as mock_fcm_messaging,
+            ):
+                yield mock_fcm_messaging
+        else:
+            with (
+                mock.patch("zilencer.lib.push_notifications.fcm_app"),
+                mock.patch(
+                    "zilencer.lib.push_notifications.firebase_messaging"
+                ) as mock_fcm_messaging,
+            ):
+                yield mock_fcm_messaging
+
+    @contextmanager
+    def mock_apns(self, for_legacy: bool = False) -> Iterator[mock.AsyncMock]:
+        apns = mock.Mock(spec=aioapns.APNs)
+        apns.send_notification = mock.AsyncMock()
+        apns_context = APNsContext(
+            apns=apns,
+            loop=asyncio.new_event_loop(),
+        )
+        target = (
+            "zerver.lib.push_notifications.get_apns_context"
+            if for_legacy
+            else "zilencer.lib.push_notifications.get_apns_context"
+        )
+        try:
+            with mock.patch(target) as mock_get:
+                mock_get.return_value = apns_context
+                yield apns.send_notification
+        finally:
+            apns_context.loop.close()
+
+    def make_fcm_success_response(
+        self, for_legacy: bool = False
+    ) -> firebase_messaging.BatchResponse:
+        if for_legacy:
+            device_ids_count = PushDeviceToken.objects.filter(kind=PushDeviceToken.FCM).count()
+        else:
+            device_ids_count = RemotePushDevice.objects.filter(
+                token_kind=RemotePushDevice.TokenKind.FCM
+            ).count()
+        responses = [
+            firebase_messaging.SendResponse(exception=None, resp=dict(name=str(idx)))
+            for idx in range(device_ids_count)
+        ]
+        return firebase_messaging.BatchResponse(responses)
+
+    def make_fcm_error_response(
+        self, exception: firebase_exceptions.FirebaseError
     ) -> firebase_messaging.BatchResponse:
         error_response = firebase_messaging.SendResponse(exception=exception, resp=None)
         return firebase_messaging.BatchResponse([error_response])

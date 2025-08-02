@@ -317,7 +317,7 @@ export const left_sidebar_tippy_options: Partial<tippy.Props> = {
             {
                 name: "flip",
                 options: {
-                    fallbackPlacements: "bottom",
+                    fallbackPlacements: ["bottom", "top", "left"],
                 },
             },
         ],

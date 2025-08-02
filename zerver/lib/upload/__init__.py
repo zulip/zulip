@@ -5,9 +5,11 @@ import re
 import unicodedata
 from collections.abc import Callable, Iterator
 from datetime import datetime
+from email.message import EmailMessage
 from typing import IO, Any
 from urllib.parse import unquote, urljoin
 
+import chardet
 import pyvips
 from django.conf import settings
 from django.core.files.uploadedfile import UploadedFile
@@ -45,6 +47,36 @@ def check_upload_within_quota(realm: Realm, uploaded_file_size: int) -> None:
         raise RealmUploadQuotaError(_("Upload would exceed your organization's upload quota."))
 
 
+def maybe_add_charset(content_type: str, file_data: bytes | StreamingSourceWithSize) -> str:
+    # We only add a charset if it doesn't already have one, and is a
+    # text type which we serve inline; currently, this is only text/plain.
+    fake_msg = EmailMessage()
+    fake_msg["content-type"] = content_type
+    if (
+        fake_msg.get_content_maintype() != "text"
+        or fake_msg.get_content_type() not in INLINE_MIME_TYPES
+        or fake_msg.get_content_charset() is not None
+    ):
+        return content_type
+
+    if isinstance(file_data, bytes):
+        detected = chardet.detect(file_data)
+    else:
+        reader = file_data.reader()
+        detector = chardet.universaldetector.UniversalDetector()
+        while True:
+            data = reader.read(4096)
+            detector.feed(data)
+            if detector.done or len(data) < 4096:
+                break
+        detector.close()
+        reader.close()
+        detected = detector.result
+    if detected["confidence"] > 0.9 and detected["encoding"]:
+        fake_msg.set_param("charset", detected["encoding"], replace=True)
+    return fake_msg["content-type"]
+
+
 def create_attachment(
     file_name: str,
     path_id: str,
@@ -58,10 +90,12 @@ def create_attachment(
     )
     if isinstance(file_data, bytes):
         file_size = len(file_data)
-        file_real_data: bytes | pyvips.Source = file_data
+        file_vips_data: bytes | pyvips.Source = file_data
     else:
         file_size = file_data.size
-        file_real_data = file_data.source
+        file_vips_data = file_data.vips_source
+
+    content_type = maybe_add_charset(content_type, file_data)
     attachment = Attachment.objects.create(
         file_name=file_name,
         path_id=path_id,
@@ -70,7 +104,7 @@ def create_attachment(
         size=file_size,
         content_type=content_type,
     )
-    maybe_thumbnail(file_real_data, content_type, path_id, realm.id)
+    maybe_thumbnail(file_vips_data, content_type, path_id, realm.id)
     from zerver.actions.uploads import notify_attachment_update
 
     notify_attachment_update(user_profile, "add", attachment.to_dict())
@@ -80,9 +114,9 @@ def get_file_info(user_file: UploadedFile) -> tuple[str, str]:
     uploaded_file_name = user_file.name
     assert uploaded_file_name is not None
 
-    content_type = user_file.content_type
     # It appears Django's UploadedFile.content_type defaults to an empty string,
     # even though the value is documented as `str | None`. So we check for both.
+    content_type = user_file.content_type
     if content_type is None or content_type == "":
         guessed_type = guess_type(uploaded_file_name)[0]
         if guessed_type is not None:
@@ -91,6 +125,13 @@ def get_file_info(user_file: UploadedFile) -> tuple[str, str]:
             # Fallback to application/octet-stream if unable to determine a
             # different content-type from the filename.
             content_type = "application/octet-stream"
+
+    fake_msg = EmailMessage()
+    extras = {}
+    if user_file.content_type_extra:
+        extras = {k: v.decode() if v else None for k, v in user_file.content_type_extra.items()}  # type: ignore[attr-defined]  # https://github.com/typeddjango/django-stubs/pull/2754
+    fake_msg.add_header("content-type", content_type, **extras)
+    content_type = fake_msg["content-type"]
 
     uploaded_file_name = unquote(uploaded_file_name)
 
@@ -208,8 +249,8 @@ def upload_message_attachment_from_request(
     )
 
 
-def attachment_vips_source(path_id: str) -> StreamingSourceWithSize:
-    return upload_backend.attachment_vips_source(path_id)
+def attachment_source(path_id: str) -> StreamingSourceWithSize:
+    return upload_backend.attachment_source(path_id)
 
 
 def save_attachment_contents(path_id: str, filehandle: IO[bytes]) -> None:

@@ -11,7 +11,7 @@ import {
     setFieldText,
     wrapFieldSelection,
 } from "text-field-edit";
-import {z} from "zod";
+import * as z from "zod/mini";
 
 import type {Typeahead} from "./bootstrap_typeahead.ts";
 import * as bulleted_numbered_list_util from "./bulleted_numbered_list_util.ts";
@@ -35,6 +35,7 @@ export const DEFAULT_COMPOSE_PLACEHOLDER = $t({defaultMessage: "Compose your mes
 
 export type ComposeTriggeredOptions = {
     trigger: string;
+    defer_focus?: boolean | undefined;
 } & (
     | {
           message_type: "stream";

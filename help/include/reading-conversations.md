@@ -1,3 +1,23 @@
+{!conversation-definition.md!}
+
+{!conversation-recommendation.md!}
+
+### Finding a conversation to read from the Inbox view
+
+{!inbox-intro.md!}
+
+{!inbox-instructions.md!}
+
+### Finding a conversation to read from Recent conversations
+
+{!recent-conversations.md!}
+
+### Finding a conversation to read from the left sidebar
+
+{!left-sidebar-conversations.md!}
+
+### Reading conversations
+
 {start_tabs}
 
 {tab|desktop-web}

@@ -1,5 +1,6 @@
 import os
 import re
+import tempfile
 from datetime import timedelta
 from io import StringIO
 from unittest import mock
@@ -188,6 +189,17 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         self.assertEqual(result["Content-Type"], "application/octet-stream")
         consume_response(result)
 
+        # Old files may be stored without a content-type in the
+        # database, in which case we try to guess at download time.
+        attachment = Attachment.objects.get(file_name="somefile")
+        self.assertEqual(attachment.content_type, "application/octet-stream")
+        attachment.content_type = None
+        attachment.save(update_fields=["content_type"])
+        result = self.client_get(url)
+        self.assertEqual(result.status_code, 200)
+        self.assertEqual(result["Content-Type"], "application/octet-stream")
+        consume_response(result)
+
         uploaded_file = SimpleUploadedFile("somefile.txt", b"zulip!", content_type="")
         result = self.api_post(
             self.example_user("hamlet"), "/api/v1/user_uploads", {"file": uploaded_file}
@@ -198,11 +210,23 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         url = response_dict["url"]
         result = self.client_get(url)
         self.assertEqual(result.status_code, 200)
-        self.assertEqual(result["Content-Type"], "text/plain")
+        self.assertEqual(result["Content-Type"], 'text/plain; charset="ascii"')
         consume_response(result)
 
-    def test_preserve_provided_content_type(self) -> None:
-        uploaded_file = SimpleUploadedFile("somefile.txt", b"zulip!", content_type="image/png")
+        # As above, test without a stored content_type
+        attachment = Attachment.objects.get(file_name="somefile.txt")
+        self.assertEqual(attachment.content_type, 'text/plain; charset="ascii"')
+        attachment.content_type = None
+        attachment.save(update_fields=["content_type"])
+        result = self.client_get(url)
+        self.assertEqual(result.status_code, 200)
+        self.assertEqual(result["Content-Type"], 'text/plain; charset="ascii"')
+        consume_response(result)
+
+    def test_guess_content_type_charset(self) -> None:
+        uploaded_file = SimpleUploadedFile(
+            "somefile.txt", "नाम में क्या रक्खा हे".encode(), content_type="text/plain"
+        )
         result = self.api_post(
             self.example_user("hamlet"), "/api/v1/user_uploads", {"file": uploaded_file}
         )
@@ -212,7 +236,27 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         url = response_dict["url"]
         result = self.client_get(url)
         self.assertEqual(result.status_code, 200)
-        self.assertEqual(result["Content-Type"], "image/png")
+        self.assertEqual(result["Content-Type"], 'text/plain; charset="utf-8"')
+        consume_response(result)
+
+    def test_content_type_charset_specified(self) -> None:
+        with tempfile.NamedTemporaryFile() as uploaded_file:
+            uploaded_file.write("नाम में क्या रक्खा हे".encode())
+            uploaded_file.seek(0)
+            uploaded_file.content_type = "text/plain; test-key=test_value; charset=big5"  # type: ignore[attr-defined]
+
+            result = self.api_post(
+                self.example_user("hamlet"), "/api/v1/user_uploads", {"file": uploaded_file}
+            )
+
+        self.login("hamlet")
+        response_dict = self.assert_json_success(result)
+        url = response_dict["url"]
+        result = self.client_get(url)
+        self.assertEqual(result.status_code, 200)
+        self.assertEqual(
+            result["Content-Type"], 'text/plain; test-key="test_value"; charset="big5"'
+        )
         consume_response(result)
 
     # This test will go through the code path for uploading files onto LOCAL storage

@@ -7,6 +7,7 @@ import render_change_visibility_policy_button_tooltip from "../templates/change_
 import render_information_density_update_button_tooltip from "../templates/information_density_update_button_tooltip.hbs";
 import render_org_logo_tooltip from "../templates/org_logo_tooltip.hbs";
 import render_tooltip_templates from "../templates/tooltip_templates.hbs";
+import render_topics_not_allowed_error from "../templates/topics_not_allowed_error.hbs";
 
 import * as compose_validate from "./compose_validate.ts";
 import {$t} from "./i18n.ts";
@@ -53,6 +54,14 @@ export const LONG_HOVER_DELAY: [number, number] = [750, 20];
 // keyboard shortcut. For these tooltips, it's very important to avoid
 // distracting users unnecessarily.
 export const EXTRA_LONG_HOVER_DELAY: [number, number] = [1500, 20];
+// These delays are specifically for singleton tooltips. Unlike default tooltips,
+// singleton tooltips can feel disconnected or abrupt when using the default hide delays
+// from INSTANT_HOVER_DELAY or LONG_HOVER_DELAY, due to the very low hide timings we use.
+
+// To address this, we increase the hide delay to 250ms. This ensures smoother transitions
+// and prevents tooltips from disappearing too quickly, improving the overall UX.
+export const SINGLETON_INSTANT_HOVER_DELAY: [number, number] = [100, 250];
+export const SINGLETON_LONG_HOVER_DELAY: [number, number] = [750, 250];
 
 // We override the defaults set by tippy library here,
 // so make sure to check this too after checking tippyjs
@@ -87,21 +96,27 @@ export const topic_visibility_policy_tooltip_props = {
     delay: LONG_HOVER_DELAY,
     appendTo: () => document.body,
     onShow(instance: tippy.Instance) {
-        const $elem = $(instance.reference);
         let should_render_privacy_icon;
-        let current_visibility_policy_str;
-        if ($elem.hasClass("zulip-icon-inherit")) {
-            should_render_privacy_icon = true;
-        } else {
-            should_render_privacy_icon = false;
-            current_visibility_policy_str = $elem.attr("data-tippy-content");
-        }
         let current_stream_obj;
-        if (should_render_privacy_icon) {
+        const $elem = $(instance.reference);
+        if ($elem.hasClass("recipient-bar-control-icon")) {
+            // The topic visibility policy button located in the recipient bar
+            // uses the icon button component, and extracts the stream id from
+            // the message header instead of the button itself. This results in
+            // the need for a different logic to extract the required data.
+            should_render_privacy_icon = $elem
+                .children(".zulip-icon")
+                .hasClass("zulip-icon-inherit");
+            current_stream_obj = stream_data.get_sub_by_id(
+                Number($elem.closest(".message_header").attr("data-stream-id")),
+            );
+        } else {
+            should_render_privacy_icon = $elem.hasClass("zulip-icon-inherit");
             current_stream_obj = stream_data.get_sub_by_id(
                 Number($elem.parent().attr("data-stream-id")),
             );
         }
+        const current_visibility_policy_str = $elem.attr("data-tippy-content");
         const tooltip_context = {
             ...current_stream_obj,
             current_visibility_policy_str,
@@ -534,14 +549,19 @@ export function initialize(): void {
         target: ".add-users-button-wrapper",
         onShow(instance) {
             const $wrapper = $(instance.reference);
-            const $button = $wrapper.find("button");
+            const $button = $wrapper.find(".add-users-button");
             const $container = $wrapper.closest(".add-button-container").find(".pill-container");
 
             const button_is_disabled = Boolean($button.prop("disabled"));
             const container_is_enabled =
                 $container.find(".input").prop("contenteditable") === "true";
-
-            if (button_is_disabled && container_is_enabled) {
+            const has_loading_button = $button.find(".button-loading-indicator").length > 0;
+            if (
+                button_is_disabled &&
+                container_is_enabled &&
+                !$button.hasClass("hidden-below") &&
+                !has_loading_button
+            ) {
                 instance.setContent(
                     $t({
                         defaultMessage: "Enter who should be added.",
@@ -834,11 +854,9 @@ export function initialize(): void {
         onShow(instance) {
             const $elem = $(instance.reference);
             if ($($elem).find(".topic_edit_save").prop("disabled")) {
-                const error_message = compose_validate.get_topics_required_error_message_html();
+                const error_message =
+                    compose_validate.get_topics_required_error_tooltip_message_html();
                 instance.setContent(ui_util.parse_html(error_message));
-                // `display: flex` doesn't show the tooltip content inline when <i>general chat</i>
-                // is in the error message.
-                $(instance.popper).find(".tippy-content").css("display", "block");
                 return undefined;
             }
             instance.destroy();
@@ -870,5 +888,94 @@ export function initialize(): void {
         onHidden(instance) {
             instance.destroy();
         },
+    });
+
+    tippy.delegate("body", {
+        target: "#compose_recipient_box, #move-topic-new-topic-input-wrapper",
+        delay: LONG_HOVER_DELAY,
+        onShow(instance) {
+            const $elem = $(instance.reference);
+            if ($($elem).find(".empty-topic-only").prop("disabled")) {
+                const error_message = render_topics_not_allowed_error({
+                    empty_string_topic_display_name: util.get_final_topic_display_name(""),
+                });
+                instance.setContent(ui_util.parse_html(error_message));
+                // `display: flex` doesn't show the tooltip content inline when <i>general chat</i>
+                // is in the error message.
+                $(instance.popper).find(".tippy-content").css("display", "block");
+                return undefined;
+            }
+            instance.destroy();
+            return false;
+        },
+        appendTo: () => document.body,
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
+    // Show expand / collapse tooltip in inbox view on hover over inbox header.
+    let collapse_or_expand_tooltip: tippy.Instance | undefined;
+    let collapse_or_expand_timeout: ReturnType<typeof setTimeout> | undefined;
+    $("body").on(
+        "mouseenter",
+        ".inbox-header-name, .inbox-left-part .collapsible-button",
+        function (this: HTMLElement) {
+            function show_inbox_collapse_expand_tooltip(elt: HTMLElement): void {
+                const $collapse_button = $(elt)
+                    .closest(".inbox-header")
+                    .find(".collapsible-button .zulip-icon");
+                collapse_or_expand_tooltip = tippy.default($collapse_button[0]!, {
+                    showOnCreate: true,
+                    trigger: "manual",
+                    delay: 0,
+                    appendTo: () => document.body,
+                    content(reference) {
+                        const $header = $(reference).closest(".inbox-header");
+                        const is_folder = $header.hasClass("inbox-folder");
+                        const is_collapsed = $header.hasClass("inbox-collapsed-state");
+                        if (is_folder) {
+                            if (is_collapsed) {
+                                return $t({
+                                    defaultMessage: "Expand channel folder",
+                                });
+                            }
+                            return $t({
+                                defaultMessage: "Collapse channel folder",
+                            });
+                        }
+
+                        if (is_collapsed) {
+                            return $t({
+                                defaultMessage: "Expand channel",
+                            });
+                        }
+                        return $t({
+                            defaultMessage: "Collapse channel",
+                        });
+                    },
+                    onHidden(instance) {
+                        instance.destroy();
+                    },
+                });
+            }
+
+            // Show tooltip after a delay.
+            collapse_or_expand_timeout = setTimeout(() => {
+                show_inbox_collapse_expand_tooltip(this);
+            }, LONG_HOVER_DELAY[0]);
+        },
+    );
+
+    $("body").on("mouseleave", ".inbox-header-name, .inbox-left-part .collapsible-button", () => {
+        // Destroy the tooltip and clear the timeout.
+        if (collapse_or_expand_tooltip) {
+            collapse_or_expand_tooltip.destroy();
+            collapse_or_expand_tooltip = undefined;
+        }
+        if (collapse_or_expand_timeout !== undefined) {
+            clearTimeout(collapse_or_expand_timeout);
+            collapse_or_expand_timeout = undefined;
+        }
     });
 }

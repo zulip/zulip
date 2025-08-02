@@ -15,5 +15,5 @@ Topics are one of the most wonderful aspects of using Zulip:
   own time. Don't worry about replying long after a message is sent —
   everyone will see your reply in context.
 
-Check out [Why Zulip](/why-zulip/) to learn more about how Zulip's topic model
-helps transform how your organization communicates.
+[Learn more](https://zulip.com/why-zulip) about how Zulip's topic model helps
+transform how your organization communicates.

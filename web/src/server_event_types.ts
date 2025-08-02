@@ -1,4 +1,4 @@
-import {z} from "zod";
+import * as z from "zod/mini";
 
 import {group_setting_value_schema, topic_link_schema} from "./types.ts";
 
@@ -49,8 +49,9 @@ export const update_message_event_schema = z.object({
 export type UpdateMessageEvent = z.output<typeof update_message_event_schema>;
 
 export const message_details_schema = z.record(
-    z.coerce.number(),
-    z.object({mentioned: z.optional(z.boolean())}).and(
+    z.coerce.number<string>(),
+    z.intersection(
+        z.object({mentioned: z.optional(z.boolean())}),
         z.discriminatedUnion("type", [
             z.object({type: z.literal("private"), user_ids: z.array(z.number())}),
             z.object({
@@ -63,3 +64,17 @@ export const message_details_schema = z.record(
     ),
 );
 export type MessageDetails = z.output<typeof message_details_schema>;
+
+export const channel_folder_update_event_schema = z.object({
+    id: z.number(),
+    type: z.literal("channel_folder"),
+    op: z.literal("update"),
+    channel_folder_id: z.number(),
+    data: z.object({
+        name: z.optional(z.string()),
+        description: z.optional(z.string()),
+        rendered_description: z.optional(z.string()),
+        is_archived: z.optional(z.boolean()),
+    }),
+});
+export type ChannelFolderUpdateEvent = z.output<typeof channel_folder_update_event_schema>;

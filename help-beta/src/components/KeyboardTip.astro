@@ -1,29 +1,50 @@
 ---
-/* eslint-disable-next-line import/extensions */
-import ZulipIconsKeyboard from "~icons/zulip-icon/keyboard";
+import assert from "node:assert/strict";
 
-let {title} = Astro.props;
-if (!title) {
-    title = "Keyboard Shortcut";
-}
+import type {Element} from "hast";
+import {fromHtml} from "hast-util-from-html";
+import {toHtml} from "hast-util-to-html";
+
+import keyboard_svg from "../../../web/shared/icons/keyboard.svg?raw";
+
+const keyboard_icon_fragment = fromHtml(keyboard_svg, {fragment: true});
+const keyboard_icon_first_child = keyboard_icon_fragment.children[0]!;
+assert.ok(
+    keyboard_icon_first_child.type === "element" &&
+        keyboard_icon_first_child.tagName === "svg",
+);
+keyboard_icon_first_child.properties.class = "zulip-unplugin-icon";
+
+const prefix_element_list = [
+    keyboard_icon_first_child,
+    {
+        type: "element",
+        tagName: "strong",
+        properties: {},
+        children: [
+            {
+                type: "text",
+                // Whitespace before the text to ensure space between
+                // this text and the preceding icon.
+                value: " Keyboard tip: ",
+            },
+        ],
+    } as Element,
+];
+
+const tree = fromHtml(await Astro.slots.render("default"), {fragment: true});
+const first_element = tree.children[0];
+assert.ok(first_element?.type === "element");
+
+first_element.children = [...prefix_element_list, ...first_element.children];
+tree.children[0] = first_element;
 ---
 
-<!--
-We have an open PR to the upstream starlight repository to add support
-for custom icons in the Aside starlight component. The PR is stalled
-due to dependency on some of the custom icons work being done on 
-starlight. We should replace the code below with the Aside starlight
-component along with a custom icon (keyboard in out case).
-Link: https://github.com/withastro/starlight/pull/2261
--->
-<aside aria-label={title} class={`starlight-aside starlight-aside--tip`}>
-    <p class="starlight-aside__title" aria-hidden="true">
-        <ZulipIconsKeyboard
-            fill="currentColor"
-            class="starlight-aside__icon"
-        />{title}
-    </p>
+<aside
+    aria-label="Keyboard tip"
+    class=`starlight-aside starlight-aside--tip keyboard-tip`
+>
     <div class="starlight-aside__content">
-        <slot />
+        <Fragment set:html={toHtml(tree)} />
     </div>
 </aside>

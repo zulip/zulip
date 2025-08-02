@@ -1,6 +1,6 @@
 import os
 
-ZULIP_VERSION = "11.0-dev+git"
+ZULIP_VERSION = "11.0-beta2"
 
 # Add information on number of commits and commit hash to version, if available
 zulip_git_version_file = os.path.join(
@@ -34,7 +34,7 @@ DESKTOP_WARNING_VERSION = "5.9.3"
 # new level means in api_docs/changelog.md, as well as "**Changes**"
 # entries in the endpoint's documentation in `zulip.yaml`.
 
-API_FEATURE_LEVEL = 401
+API_FEATURE_LEVEL = 411
 
 # Bump the minor PROVISION_VERSION to indicate that folks should provision
 # only when going from an old version of the code to a newer version. Bump
@@ -49,4 +49,4 @@ API_FEATURE_LEVEL = 401
 #   historical commits sharing the same major version, in which case a
 #   minor version bump suffices.
 
-PROVISION_VERSION = (333, 5)  # bumped 2025-06-30 to add eslint-plugin-astro
+PROVISION_VERSION = (338, 0)  # bumped 2025-07-18 to add chardet and remove types-chardet

@@ -1,7 +1,7 @@
 import $ from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
-import {z} from "zod";
+import * as z from "zod/mini";
 
 import * as resolved_topic from "../shared/src/resolved_topic.ts";
 
@@ -17,6 +17,7 @@ import * as direct_message_group_data from "./direct_message_group_data.ts";
 import * as drafts from "./drafts.ts";
 import * as echo from "./echo.ts";
 import type {Filter} from "./filter.ts";
+import * as lightbox from "./lightbox.ts";
 import * as message_edit from "./message_edit.ts";
 import * as message_edit_history from "./message_edit_history.ts";
 import * as message_events_util from "./message_events_util.ts";
@@ -458,6 +459,10 @@ export function update_messages(events: UpdateMessageEvent[]): void {
 
                 // Update raw_content, so that editing a few times in a row is fast.
                 anchor_message.raw_content = event.content;
+
+                // Editing a message may change the titles for linked
+                // media, so we must invalidate the asset map.
+                lightbox.invalidate_asset_map_of_message(event.message_id);
             }
 
             if (unread.update_message_for_mention(anchor_message, any_message_content_edited)) {
@@ -546,7 +551,7 @@ export function update_messages(events: UpdateMessageEvent[]): void {
                 }
 
                 compose_validate.warn_if_topic_resolved(true);
-                compose_validate.inform_if_topic_is_moved(orig_topic, old_stream_id);
+                compose_validate.inform_if_topic_is_moved(orig_topic, old_stream_id, event.user_id);
                 compose_fade.set_focused_recipient("stream");
             }
 

@@ -7,7 +7,7 @@ requires-python = ">=3.10"
 prod = [
   # Django itself
   "django[argon2]==5.2.*",
-  "asgiref", # https://github.com/django/asgiref/pull/494
+  "asgiref",
 
   # needed for NotRequired, ParamSpec
   "typing-extensions",
@@ -178,7 +178,7 @@ prod = [
   "circuitbreaker",
 
   # Runtime monkeypatching of django-stubs generics
-  "django-stubs-ext==5.2.0", # https://github.com/typeddjango/django-stubs/issues/2715
+  "django-stubs-ext",
 
   # Structured data representation with parsing.
   "pydantic",
@@ -201,6 +201,12 @@ prod = [
 
   # For using Missing sentinel
   "pydantic-partials",
+
+  # For E2EE of push notifications
+  "pynacl",
+
+  # Character set detection for text/plain
+  "chardet>=5.1.0"
 ]
 docs = [
   # Needed to build RTD docs
@@ -262,15 +268,15 @@ dev = [
   "zulint",
 
   # For type checking
-  "mypy[faster-cache]~=1.15.0",  # https://github.com/typeddjango/django-stubs/issues/2696
+  "mypy[faster-cache]",
 
   "boto3-stubs[s3,ses,sns,sqs]",
   "django-stubs",
+  "google-re2-stubs",
   "lxml-stubs",
   "SQLAlchemy[mypy]",
   "types-beautifulsoup4",
   "types-boto",
-  "types-chardet",
   "types-decorator",
   "types-defusedxml",
   "types-jsonschema",
@@ -310,8 +316,9 @@ dev = [
 no-binary-package = ["lxml", "xmlsec"]
 
 [tool.uv.sources]
-# https://github.com/django/asgiref/pull/494
-asgiref = { url = "https://github.com/andersk/asgiref/archive/8a2717c14bce1b8dd37371c675ee3728e66c3fe3.zip" }
+# https://github.com/typeddjango/django-stubs/pull/2738
+django-stubs = { url = "https://github.com/typeddjango/django-stubs/archive/9b2a9e83ee31dfd3de34a361e6098926014b599b.zip" }
+django-stubs-ext = { url = "https://github.com/typeddjango/django-stubs/archive/9b2a9e83ee31dfd3de34a361e6098926014b599b.zip", subdirectory = "ext" }
 
 # Forked to avoid pulling in scipy: https://github.com/mailgun/talon/pull/200
 # and chardet, cchardet: https://github.com/mailgun/talon/pull/239
@@ -405,7 +412,6 @@ module = [
     "pyoembed.*",
     "pyuca.*",
     "pyvips.*",
-    "re2.*",
     "scim2_filter_parser.attr_paths",
     "social_django.*",
     "talon_core.*",

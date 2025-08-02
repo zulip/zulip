@@ -1,12 +1,9 @@
-from datetime import timedelta
 from unittest import mock
 
 import responses
-import time_machine
 from django.conf import settings
 from django.http.response import ResponseHeaders
 from django.test import override_settings
-from django.utils.timezone import now
 from requests.exceptions import ConnectionError
 from requests.models import PreparedRequest
 from typing_extensions import override
@@ -18,7 +15,6 @@ from zerver.actions.user_settings import do_change_user_setting
 from zerver.actions.user_topics import do_set_user_topic_visibility_policy
 from zerver.lib.push_notifications import (
     UserPushIdentityCompat,
-    b64_to_hex,
     handle_push_notification,
     handle_remove_push_notification,
 )
@@ -60,25 +56,21 @@ class HandlePushNotificationTest(PushNotificationTestCase):
         self.setup_apns_tokens()
         self.setup_fcm_tokens()
 
-        time_sent = now().replace(microsecond=0)
-        with time_machine.travel(time_sent, tick=False):
-            message = self.get_message(
-                Recipient.PERSONAL,
-                type_id=self.personal_recipient_user.id,
-                realm_id=self.personal_recipient_user.realm_id,
-            )
-            UserMessage.objects.create(
-                user_profile=self.user_profile,
-                message=message,
-            )
+        message = self.get_message(
+            Recipient.PERSONAL,
+            type_id=self.personal_recipient_user.id,
+            realm_id=self.personal_recipient_user.realm_id,
+        )
+        UserMessage.objects.create(
+            user_profile=self.user_profile,
+            message=message,
+        )
 
-        time_received = time_sent + timedelta(seconds=1, milliseconds=234)
         missed_message = {
             "message_id": message.id,
             "trigger": NotificationTriggers.DIRECT_MESSAGE,
         }
         with (
-            time_machine.travel(time_received, tick=False),
             self.mock_fcm() as (
                 mock_fcm_app,
                 mock_fcm_messaging,
@@ -91,17 +83,17 @@ class HandlePushNotificationTest(PushNotificationTestCase):
             self.assertLogs("zerver.lib.push_notifications", level="INFO") as pn_logger,
             self.assertLogs("zilencer.views", level="INFO") as views_logger,
         ):
-            apns_devices = [
-                (b64_to_hex(device.token), device.ios_app_id, device.token)
-                for device in RemotePushDeviceToken.objects.filter(kind=PushDeviceToken.APNS)
-            ]
-            gcm_devices = [
-                (b64_to_hex(device.token), device.ios_app_id, device.token)
-                for device in RemotePushDeviceToken.objects.filter(kind=PushDeviceToken.FCM)
-            ]
-            mock_fcm_messaging.send_each.return_value = self.make_fcm_success_response(
-                [device[2] for device in gcm_devices]
+            apns_devices = list(
+                RemotePushDeviceToken.objects.filter(kind=PushDeviceToken.APNS)
+                .order_by("id")
+                .values_list("token", flat=True)
             )
+            fcm_devices = list(
+                RemotePushDeviceToken.objects.filter(kind=PushDeviceToken.FCM)
+                .order_by("id")
+                .values_list("token", flat=True)
+            )
+            mock_fcm_messaging.send_each.return_value = self.make_fcm_success_response(fcm_devices)
             send_notification.return_value.is_successful = True
             handle_push_notification(self.user_profile.id, missed_message)
             self.assertEqual(
@@ -118,20 +110,17 @@ class HandlePushNotificationTest(PushNotificationTestCase):
                 views_logger.output,
                 [
                     "INFO:zilencer.views:"
-                    f"Remote queuing latency for 6cde5f7a-1f7e-4978-9716-49f69ebfc9fe:<id:{self.user_profile.id}><uuid:{self.user_profile.uuid}> "
-                    "is 1 seconds",
-                    "INFO:zilencer.views:"
                     f"Sending mobile push notifications for remote user 6cde5f7a-1f7e-4978-9716-49f69ebfc9fe:<id:{self.user_profile.id}><uuid:{self.user_profile.uuid}>: "
-                    f"{len(gcm_devices)} via FCM devices, {len(apns_devices)} via APNs devices",
+                    f"{len(fcm_devices)} via FCM devices, {len(apns_devices)} via APNs devices",
                 ],
             )
-            for _, _, token in apns_devices:
+            for token in apns_devices:
                 self.assertIn(
                     "INFO:zerver.lib.push_notifications:"
                     f"APNs: Success sending for user <id:{self.user_profile.id}><uuid:{self.user_profile.uuid}> to device {token}",
                     pn_logger.output,
                 )
-            for idx, (_, _, token) in enumerate(gcm_devices):
+            for idx, token in enumerate(fcm_devices):
                 self.assertIn(
                     f"INFO:zerver.lib.push_notifications:FCM: Sent message with ID: {idx} to {token}",
                     pn_logger.output,
@@ -143,8 +132,14 @@ class HandlePushNotificationTest(PushNotificationTestCase):
                 dict(
                     property="mobile_pushes_sent::day",
                     subgroup=None,
-                    value=len(gcm_devices) + len(apns_devices),
+                    value=len(fcm_devices) + len(apns_devices),
                 ),
+            )
+
+            self.assertIn(
+                "INFO:zerver.lib.push_notifications:"
+                f"Skipping E2EE push notifications for user {self.user_profile.id} because there are no registered devices",
+                pn_logger.output,
             )
 
     @activate_push_notification_service()
@@ -191,6 +186,7 @@ class HandlePushNotificationTest(PushNotificationTestCase):
                 [
                     f"INFO:zerver.lib.push_notifications:Sending push notifications to mobile clients for user {self.user_profile.id}",
                     "WARNING:zerver.lib.push_notifications:Bouncer refused to send push notification: Your plan doesn't allow sending push notifications. Reason provided by the server: Push notifications access with 10+ users requires signing up for a plan. https://zulip.com/plans/",
+                    f"INFO:zerver.lib.push_notifications:Skipping E2EE push notifications for user {self.user_profile.id} because there are no registered devices",
                 ],
             )
             realm.refresh_from_db()
@@ -215,7 +211,7 @@ class HandlePushNotificationTest(PushNotificationTestCase):
             handle_push_notification(self.user_profile.id, new_missed_message)
             self.assertIn(
                 f"Sent mobile push notifications for user {self.user_profile.id}",
-                pn_logger.output[-1],
+                pn_logger.output[-2],
             )
             realm.refresh_from_db()
             self.assertEqual(realm.push_notifications_enabled, True)
@@ -228,25 +224,21 @@ class HandlePushNotificationTest(PushNotificationTestCase):
         self.setup_apns_tokens()
         self.setup_fcm_tokens()
 
-        time_sent = now().replace(microsecond=0)
-        with time_machine.travel(time_sent, tick=False):
-            message = self.get_message(
-                Recipient.PERSONAL,
-                type_id=self.personal_recipient_user.id,
-                realm_id=self.personal_recipient_user.realm_id,
-            )
-            UserMessage.objects.create(
-                user_profile=self.user_profile,
-                message=message,
-            )
+        message = self.get_message(
+            Recipient.PERSONAL,
+            type_id=self.personal_recipient_user.id,
+            realm_id=self.personal_recipient_user.realm_id,
+        )
+        UserMessage.objects.create(
+            user_profile=self.user_profile,
+            message=message,
+        )
 
-        time_received = time_sent + timedelta(seconds=1, milliseconds=234)
         missed_message = {
             "message_id": message.id,
             "trigger": NotificationTriggers.DIRECT_MESSAGE,
         }
         with (
-            time_machine.travel(time_received, tick=False),
             self.mock_fcm() as (
                 mock_fcm_app,
                 mock_fcm_messaging,
@@ -259,14 +251,16 @@ class HandlePushNotificationTest(PushNotificationTestCase):
             self.assertLogs("zerver.lib.push_notifications", level="INFO") as pn_logger,
             self.assertLogs("zilencer.views", level="INFO") as views_logger,
         ):
-            apns_devices = [
-                (b64_to_hex(device.token), device.ios_app_id, device.token)
-                for device in RemotePushDeviceToken.objects.filter(kind=PushDeviceToken.APNS)
-            ]
-            gcm_devices = [
-                (b64_to_hex(device.token), device.ios_app_id, device.token)
-                for device in RemotePushDeviceToken.objects.filter(kind=PushDeviceToken.FCM)
-            ]
+            apns_devices = list(
+                RemotePushDeviceToken.objects.filter(kind=PushDeviceToken.APNS)
+                .order_by("id")
+                .values_list("token", flat=True)
+            )
+            fcm_devices = list(
+                RemotePushDeviceToken.objects.filter(kind=PushDeviceToken.FCM)
+                .order_by("id")
+                .values_list("token", flat=True)
+            )
 
             # Reset the local registrations for the user to make them compatible
             # with the RemotePushDeviceToken entries.
@@ -292,7 +286,7 @@ class HandlePushNotificationTest(PushNotificationTestCase):
             ]
 
             mock_fcm_messaging.send_each.return_value = self.make_fcm_success_response(
-                [gcm_devices[0][2]]
+                [fcm_devices[0]]
             )
             send_notification.return_value.is_successful = False
             send_notification.return_value.description = "Unregistered"
@@ -306,14 +300,11 @@ class HandlePushNotificationTest(PushNotificationTestCase):
                 views_logger.output,
                 [
                     "INFO:zilencer.views:"
-                    f"Remote queuing latency for 6cde5f7a-1f7e-4978-9716-49f69ebfc9fe:<id:{self.user_profile.id}><uuid:{self.user_profile.uuid}> "
-                    "is 1 seconds",
-                    "INFO:zilencer.views:"
                     f"Sending mobile push notifications for remote user 6cde5f7a-1f7e-4978-9716-49f69ebfc9fe:<id:{self.user_profile.id}><uuid:{self.user_profile.uuid}>: "
-                    f"{len(gcm_devices)} via FCM devices, {len(apns_devices)} via APNs devices",
+                    f"{len(fcm_devices)} via FCM devices, {len(apns_devices)} via APNs devices",
                 ],
             )
-            for _, _, token in apns_devices:
+            for token in apns_devices:
                 self.assertIn(
                     "INFO:zerver.lib.push_notifications:"
                     f"APNs: Removing invalid/expired token {token} (Unregistered)",
@@ -321,7 +312,7 @@ class HandlePushNotificationTest(PushNotificationTestCase):
                 )
             self.assertIn(
                 "INFO:zerver.lib.push_notifications:Deleting push tokens based on response from bouncer: "
-                f"Android: [], Apple: {sorted([token for _, _, token in apns_devices])}",
+                f"Android: [], Apple: {sorted(apns_devices)}",
                 pn_logger.output,
             )
             self.assertEqual(
@@ -360,6 +351,9 @@ class HandlePushNotificationTest(PushNotificationTestCase):
     @mock.patch("zerver.lib.push_notifications.push_notifications_configured", return_value=True)
     @override_settings(ZULIP_SERVICE_PUSH_NOTIFICATIONS=False, ZULIP_SERVICES=set())
     def test_read_message(self, mock_push_notifications: mock.MagicMock) -> None:
+        self.setup_apns_tokens()
+        self.setup_fcm_tokens()
+
         user_profile = self.example_user("hamlet")
         message = self.get_message(
             Recipient.PERSONAL,
@@ -548,6 +542,7 @@ class HandlePushNotificationTest(PushNotificationTestCase):
                 [
                     f"INFO:zerver.lib.push_notifications:Sending push notifications to mobile clients for user {user_profile.id}",
                     f"INFO:zerver.lib.push_notifications:Sent mobile push notifications for user {user_profile.id} through bouncer: 3 via FCM devices, 5 via APNs devices",
+                    f"INFO:zerver.lib.push_notifications:Skipping E2EE push notifications for user {self.user_profile.id} because there are no registered devices",
                 ],
             )
 

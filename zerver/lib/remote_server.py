@@ -21,9 +21,11 @@ from zerver.actions.realm_settings import (
 )
 from zerver.lib import redis_utils
 from zerver.lib.exceptions import (
+    InvalidBouncerPublicKeyError,
     JsonableError,
     MissingRemoteRealmError,
     RemoteRealmServerMismatchError,
+    RequestExpiredError,
 )
 from zerver.lib.outgoing_http import OutgoingSession
 from zerver.lib.queue import queue_event_on_commit
@@ -190,42 +192,41 @@ def send_to_push_bouncer(
         # If JSON parsing errors, just let that exception happen
         result_dict = orjson.loads(res.content)
         msg = result_dict["msg"]
-        if "code" in result_dict and result_dict["code"] == "INVALID_ZULIP_SERVER":
+        code = result_dict["code"] if "code" in result_dict else None
+        if code == "INVALID_ZULIP_SERVER":
             # Invalid Zulip server credentials should email this server's admins
             raise PushNotificationBouncerError(
                 _("Push notifications bouncer error: {error}").format(error=msg)
             )
-        elif "code" in result_dict and result_dict["code"] == "PUSH_NOTIFICATIONS_DISALLOWED":
+        elif code == "PUSH_NOTIFICATIONS_DISALLOWED":
             from zerver.lib.push_notifications import PushNotificationsDisallowedByBouncerError
 
             raise PushNotificationsDisallowedByBouncerError(reason=msg)
-        elif (
-            endpoint == "push/test_notification"
-            and "code" in result_dict
-            and result_dict["code"] == "INVALID_REMOTE_PUSH_DEVICE_TOKEN"
-        ):
+        elif endpoint == "push/test_notification" and code == "INVALID_REMOTE_PUSH_DEVICE_TOKEN":
             # This error from the notification debugging endpoint should just be directly
             # communicated to the device.
             # TODO: Extend this to use a more general mechanism when we add more such error responses.
             from zerver.lib.push_notifications import InvalidRemotePushDeviceTokenError
 
             raise InvalidRemotePushDeviceTokenError
-        elif (
-            endpoint == "server/billing"
-            and "code" in result_dict
-            and result_dict["code"] == "MISSING_REMOTE_REALM"
-        ):  # nocoverage
+        elif endpoint == "server/billing" and code == "MISSING_REMOTE_REALM":  # nocoverage
             # The callers requesting this endpoint want the exception to propagate
             # so they can catch it.
             raise MissingRemoteRealmError
         elif (
-            endpoint == "server/billing"
-            and "code" in result_dict
-            and result_dict["code"] == "REMOTE_REALM_SERVER_MISMATCH_ERROR"
+            endpoint == "server/billing" and code == "REMOTE_REALM_SERVER_MISMATCH_ERROR"
         ):  # nocoverage
             # The callers requesting this endpoint want the exception to propagate
             # so they can catch it.
             raise RemoteRealmServerMismatchError
+        elif endpoint == "push/e2ee/register" and code == "INVALID_BOUNCER_PUBLIC_KEY":
+            raise InvalidBouncerPublicKeyError
+        elif endpoint == "push/e2ee/register" and code == "REQUEST_EXPIRED":
+            raise RequestExpiredError
+        elif endpoint == "push/e2ee/register" and code == "MISSING_REMOTE_REALM":
+            raise MissingRemoteRealmError
+        elif endpoint == "push/e2ee/notify" and code == "MISSING_REMOTE_REALM":
+            raise MissingRemoteRealmError
         else:
             # But most other errors coming from the push bouncer
             # server are client errors (e.g. never-registered token)

@@ -189,6 +189,7 @@ from zerver.lib.event_schema import (
     check_navigation_view_update,
     check_onboarding_steps,
     check_presence,
+    check_push_device,
     check_reaction_add,
     check_reaction_remove,
     check_realm_bot_add,
@@ -224,10 +225,8 @@ from zerver.lib.event_schema import (
     check_subscription_peer_remove,
     check_subscription_remove,
     check_subscription_update,
-    check_typing_edit_channel_message_start,
-    check_typing_edit_channel_message_stop,
-    check_typing_edit_direct_message_start,
-    check_typing_edit_direct_message_stop,
+    check_typing_edit_message_start,
+    check_typing_edit_message_stop,
     check_typing_start,
     check_typing_stop,
     check_update_display_settings,
@@ -247,9 +246,14 @@ from zerver.lib.event_schema import (
     check_user_topic,
 )
 from zerver.lib.events import apply_events, fetch_initial_state_data, post_process_state
+from zerver.lib.exceptions import InvalidBouncerPublicKeyError
 from zerver.lib.markdown import render_message_markdown
 from zerver.lib.mention import MentionBackend, MentionData
 from zerver.lib.muted_users import get_mute_object
+from zerver.lib.push_registration import (
+    RegisterPushDeviceToBouncerQueueItem,
+    handle_register_push_device_to_bouncer,
+)
 from zerver.lib.streams import check_update_all_streams_active_status, user_has_metadata_access
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import (
@@ -281,6 +285,7 @@ from zerver.models import (
     MultiuseInvite,
     NamedUserGroup,
     PreregistrationUser,
+    PushDevice,
     Realm,
     RealmAuditLog,
     RealmDomain,
@@ -1657,7 +1662,7 @@ class NormalActionsTest(BaseAction):
                 msg_id,
                 "start",
             )
-        check_typing_edit_direct_message_start("events[0]", events[0])
+        check_typing_edit_message_start("events[0]", events[0])
 
         with self.verify_action(state_change_expected=False) as events:
             do_send_direct_message_edit_typing_notification(
@@ -1666,7 +1671,7 @@ class NormalActionsTest(BaseAction):
                 msg_id,
                 "stop",
             )
-        check_typing_edit_direct_message_stop("events[0]", events[0])
+        check_typing_edit_message_stop("events[0]", events[0])
 
     def test_stream_edit_message_typing_events(self) -> None:
         channel = get_stream("Denmark", self.user_profile.realm)
@@ -1678,13 +1683,13 @@ class NormalActionsTest(BaseAction):
             do_send_stream_message_edit_typing_notification(
                 self.user_profile, channel.id, msg_id, "start", topic_name
             )
-        check_typing_edit_channel_message_start("events[0]", events[0])
+        check_typing_edit_message_start("events[0]", events[0])
 
         with self.verify_action(state_change_expected=False) as events:
             do_send_stream_message_edit_typing_notification(
                 self.user_profile, channel.id, msg_id, "stop", topic_name
             )
-        check_typing_edit_channel_message_stop("events[0]", events[0])
+        check_typing_edit_message_stop("events[0]", events[0])
 
     def test_custom_profile_fields_events(self) -> None:
         realm = self.user_profile.realm
@@ -4211,6 +4216,35 @@ class NormalActionsTest(BaseAction):
         self.assertEqual(audit_log.event_type, AuditLogEventType.REALM_EXPORT_DELETED)
         self.assertEqual(audit_log.acting_user, self.user_profile)
         self.assertEqual(audit_log.extra_data["realm_export_id"], export_row_id)
+
+    def test_push_device_registration_failure(self) -> None:
+        hamlet = self.example_user("hamlet")
+        self.login_user(hamlet)
+
+        push_device = PushDevice.objects.create(
+            user=hamlet,
+            token_kind=PushDevice.TokenKind.FCM,
+            push_account_id=2408,
+            push_public_key="dummy-push-public-key",
+        )
+
+        queue_item: RegisterPushDeviceToBouncerQueueItem = {
+            "user_profile_id": push_device.user.id,
+            "push_account_id": push_device.push_account_id,
+            "bouncer_public_key": "bouncer-public-key",
+            "encrypted_push_registration": "encrypted-push-registration",
+        }
+        with (
+            mock.patch(
+                "zerver.lib.push_registration.do_register_remote_push_device",
+                side_effect=InvalidBouncerPublicKeyError,
+            ),
+            self.verify_action(state_change_expected=True, num_events=1) as events,
+        ):
+            handle_register_push_device_to_bouncer(queue_item)
+        check_push_device("events[0]", events[0])
+        self.assertEqual(events[0]["status"], "failed")
+        self.assertEqual(events[0]["error_code"], "INVALID_BOUNCER_PUBLIC_KEY")
 
     def test_notify_realm_export_on_failure(self) -> None:
         do_change_user_role(

@@ -178,35 +178,37 @@ Replace `<username>` and `<server_ip>` with the appropriate values below.
 
 {tab|self-hosting}
 
-{!import-into-a-self-hosted-zulip-server.md!}
+{!import-into-a-self-hosted-server-description.md!}
+
+{!import-into-a-self-hosted-server-instructions.md!}
 
 1. To import into an organization hosted on the root domain
    (`EXTERNAL_HOST`) of the Zulip installation, run the following commands,
    replacing `<team-name>` with the name of the Mattermost team you want to import.
 
-    {!import-self-hosted-server-tips.md!}
+        {!import-self-hosted-server-tips.md!}
 
-    ```
-    cd /tmp
-    tar -xf mattermost_data.tar.gz
-    cd /home/zulip/deployments/current
-    ./scripts/stop-server
-    ./manage.py convert_mattermost_data /tmp/mattermost_data --output /tmp/converted_mattermost_data
-    ./manage.py import '' /tmp/converted_mattermost_data/<team-name>
-    ./scripts/start-server
-    ```
+        ```
+        cd /tmp
+        tar -xf mattermost_data.tar.gz
+        cd /home/zulip/deployments/current
+        ./scripts/stop-server
+        ./manage.py convert_mattermost_data /tmp/mattermost_data --output /tmp/converted_mattermost_data
+        ./manage.py import '' /tmp/converted_mattermost_data/<team-name>
+        ./scripts/start-server
+        ```
 
-    Alternatively, to import into a custom subdomain, run:
+        Alternatively, to import into a custom subdomain, run:
 
-    ```
-    cd /tmp
-    tar -xf mattermost_data.tar.gz
-    cd /home/zulip/deployments/current
-    ./scripts/stop-server
-    ./manage.py convert_mattermost_data /tmp/mattermost_data --output /tmp/converted_mattermost_data
-    ./manage.py import <subdomain> /tmp/converted_mattermost_data/<team-name>
-    ./scripts/start-server
-    ```
+        ```
+        cd /tmp
+        tar -xf mattermost_data.tar.gz
+        cd /home/zulip/deployments/current
+        ./scripts/stop-server
+        ./manage.py convert_mattermost_data /tmp/mattermost_data --output /tmp/converted_mattermost_data
+        ./manage.py import <subdomain> /tmp/converted_mattermost_data/<team-name>
+        ./scripts/start-server
+        ```
 
 1. Follow [step 4](https://zulip.readthedocs.io/en/stable/production/install.html#step-4-configure-and-use)
    of the guide for [installing a new Zulip
@@ -214,35 +216,37 @@ Replace `<username>` and `<server_ip>` with the appropriate values below.
 
 {tab|mm-self-hosting-cloud-export}
 
-{!import-into-a-self-hosted-zulip-server.md!}
+{!import-into-a-self-hosted-server-description.md!}
+
+{!import-into-a-self-hosted-server-instructions.md!}
 
 1. To import into an organization hosted on the root domain
    (`EXTERNAL_HOST`) of the Zulip installation, run the following commands,
    replacing `<team-name>` with the name of the Mattermost team you want to import.
 
-    {!import-self-hosted-server-tips.md!}
+        {!import-self-hosted-server-tips.md!}
 
-    ```
-    unzip latest_export.zip -d /tmp/my_mattermost_export
-    mv /tmp/my_mattermost_export/import.jsonl /tmp/my_mattermost_export/export.json
-    cd /home/zulip/deployments/current
-    ./scripts/stop-server
-    ./manage.py convert_mattermost_data /tmp/my_mattermost_export --output /tmp/converted_mattermost_data
-    ./manage.py import '' /tmp/converted_mattermost_data/<team-name>
-    ./scripts/start-server
-    ```
+        ```
+        unzip latest_export.zip -d /tmp/my_mattermost_export
+        mv /tmp/my_mattermost_export/import.jsonl /tmp/my_mattermost_export/export.json
+        cd /home/zulip/deployments/current
+        ./scripts/stop-server
+        ./manage.py convert_mattermost_data /tmp/my_mattermost_export --output /tmp/converted_mattermost_data
+        ./manage.py import '' /tmp/converted_mattermost_data/<team-name>
+        ./scripts/start-server
+        ```
 
-    Alternatively, to import into a custom subdomain, run:
+        Alternatively, to import into a custom subdomain, run:
 
-    ```
-    unzip latest_export.zip -d /tmp/my_mattermost_export
-    mv /tmp/my_mattermost_export/import.jsonl /tmp/my_mattermost_export/export.json
-    cd /home/zulip/deployments/current
-    ./scripts/stop-server
-    ./manage.py convert_mattermost_data /tmp/my_mattermost_export --output /tmp/converted_mattermost_data
-    ./manage.py import <subdomain> /tmp/converted_mattermost_data/<team-name>
-    ./scripts/start-server
-    ```
+        ```
+        unzip latest_export.zip -d /tmp/my_mattermost_export
+        mv /tmp/my_mattermost_export/import.jsonl /tmp/my_mattermost_export/export.json
+        cd /home/zulip/deployments/current
+        ./scripts/stop-server
+        ./manage.py convert_mattermost_data /tmp/my_mattermost_export --output /tmp/converted_mattermost_data
+        ./manage.py import <subdomain> /tmp/converted_mattermost_data/<team-name>
+        ./scripts/start-server
+        ```
 
 1. Follow [step 4](https://zulip.readthedocs.io/en/stable/production/install.html#step-4-configure-and-use)
    of the guide for [installing a new Zulip
@@ -261,22 +265,19 @@ keep in mind about the import process:
   visibility](/help/configure-email-visibility),
   [message editing permissions](/help/restrict-message-editing-and-deletion),
   and [how users can join your organization](/help/restrict-account-creation).
-
 - Mattermost's user roles are mapped to Zulip's [user
   roles](/help/user-roles) in the following way:
 
-| Mattermost role         | Zulip role    |
-|-------------------------|---------------|
-| Team administrator      | Owner         |
-| Member                  | Member        |
+    | Mattermost role         | Zulip role    |
+    |-------------------------|---------------|
+    | Team administrator      | Owner         |
+    | Member                  | Member        |
 
 - Mattermost's export tool does not support exporting user avatars or message
   edit history.
-
 - Direct messages will only be imported from Mattermost workspaces containing
   a single team. This is because Mattermost's data exports do not associate
   direct messages with a specific Mattermost team.
-
 - Messages in threads are imported, but they are not explicitly marked as
   being in a thread.
 

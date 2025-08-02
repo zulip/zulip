@@ -2,7 +2,7 @@ import * as Sentry from "@sentry/browser";
 import {SPAN_STATUS_OK} from "@sentry/core";
 import $ from "jquery";
 import assert from "minimalistic-assert";
-import {z} from "zod";
+import * as z from "zod/mini";
 
 import * as activity_ui from "./activity_ui.ts";
 import {all_messages_data} from "./all_messages_data.ts";
@@ -820,13 +820,18 @@ export let show = (raw_terms: NarrowTerm[], show_opts: ShowMessageViewOpts): voi
                     ) {
                         // We convert the current narrow into a `near` narrow so that
                         // user doesn't accidentally mark msgs read which they haven't seen.
-                        const terms = [
+                        let terms = [
                             ...msg_list.data.filter.terms(),
                             {
                                 operator: "near",
                                 operand: current_selected_id.toString(),
                             },
                         ];
+                        assert(msg_list.data.filter.is_conversation_view());
+                        // Using both /with/ and /near/ operators in a single view doesn't
+                        // make sense, and checks like is_conversation_view_with_near do not
+                        // handle that combination correctly.
+                        terms = terms.filter((term) => term.operator !== "with");
                         const opts = {
                             trigger: "old_unreads_missing",
                         };

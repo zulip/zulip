@@ -1,6 +1,8 @@
 import $ from "jquery";
 import _ from "lodash";
+import assert from "minimalistic-assert";
 
+import * as channel_folders from "./channel_folders.ts";
 import type {Filter} from "./filter.ts";
 import {localstorage} from "./localstorage.ts";
 import * as message_reminder from "./message_reminder.ts";
@@ -9,6 +11,9 @@ import * as people from "./people.ts";
 import * as resize from "./resize.ts";
 import * as scheduled_messages from "./scheduled_messages.ts";
 import * as settings_config from "./settings_config.ts";
+import * as settings_data from "./settings_data.ts";
+import * as stream_list_sort from "./stream_list_sort.ts";
+import * as sub_store from "./sub_store.ts";
 import * as ui_util from "./ui_util.ts";
 import * as unread from "./unread.ts";
 
@@ -71,6 +76,15 @@ export function update_reminders_row(): void {
     ui_util.update_unread_count_in_dom($reminders_li, count);
 }
 
+type SectionUnreadCount = {
+    // These both include inactive unreads as well.
+    unmuted: number;
+    muted: number;
+    // These are used for the "+ n inactive channels" button.
+    inactive_unmuted: number;
+    inactive_muted: number;
+};
+
 export function update_dom_with_unread_counts(
     counts: unread.FullUnreadCountsData,
     skip_animations: boolean,
@@ -80,13 +94,108 @@ export function update_dom_with_unread_counts(
     // mentioned/home views have simple integer counts
     const $mentioned_li = $(".top_left_mentions");
     const $home_view_li = $(".selected-home-view");
-    const $streams_header = $("#streams_header");
     const $back_to_streams = $("#topics_header");
 
     ui_util.update_unread_count_in_dom($mentioned_li, counts.mentioned_message_count);
     ui_util.update_unread_count_in_dom($home_view_li, counts.home_unread_messages);
-    ui_util.update_unread_count_in_dom($streams_header, counts.stream_unread_messages);
     ui_util.update_unread_count_in_dom($back_to_streams, counts.stream_unread_messages);
+
+    const pinned_unread_counts: SectionUnreadCount = {
+        unmuted: 0,
+        muted: 0,
+        // Not used for the pinned section, but included here to make typing easier
+        inactive_unmuted: 0,
+        inactive_muted: 0,
+    };
+    const folder_unread_counts = new Map<number, SectionUnreadCount>();
+    const normal_section_unread_counts: SectionUnreadCount = {
+        unmuted: 0,
+        muted: 0,
+        inactive_unmuted: 0,
+        inactive_muted: 0,
+    };
+
+    for (const [stream_id, stream_count_info] of counts.stream_count.entries()) {
+        const sub = sub_store.get(stream_id);
+        assert(sub);
+        if (sub.pin_to_top) {
+            pinned_unread_counts.unmuted += stream_count_info.unmuted_count;
+            pinned_unread_counts.muted += stream_count_info.muted_count;
+        } else if (sub.folder_id !== null) {
+            if (!folder_unread_counts.has(sub.folder_id)) {
+                folder_unread_counts.set(sub.folder_id, {
+                    unmuted: 0,
+                    muted: 0,
+                    inactive_unmuted: 0,
+                    inactive_muted: 0,
+                });
+            }
+
+            const unread_counts = folder_unread_counts.get(sub.folder_id)!;
+            unread_counts.unmuted += stream_count_info.unmuted_count;
+            unread_counts.muted += stream_count_info.muted_count;
+            if (!stream_list_sort.has_recent_activity(sub)) {
+                unread_counts.inactive_unmuted += stream_count_info.unmuted_count;
+                unread_counts.inactive_muted += stream_count_info.muted_count;
+            }
+        } else {
+            normal_section_unread_counts.unmuted += stream_count_info.unmuted_count;
+            normal_section_unread_counts.muted += stream_count_info.muted_count;
+            if (!stream_list_sort.has_recent_activity(sub)) {
+                normal_section_unread_counts.inactive_unmuted += stream_count_info.unmuted_count;
+                normal_section_unread_counts.inactive_muted += stream_count_info.muted_count;
+            }
+        }
+    }
+
+    function update_section_unread_count(
+        $header: JQuery,
+        unmuted_count: number,
+        muted_count: number,
+    ): void {
+        const show_muted_count = unmuted_count === 0 && muted_count > 0;
+        if (show_muted_count) {
+            ui_util.update_unread_count_in_dom($header, muted_count);
+        } else {
+            ui_util.update_unread_count_in_dom($header, unmuted_count);
+        }
+        $header.toggleClass("has-only-muted-unreads", show_muted_count);
+        $header.toggleClass(
+            "hide_unread_counts",
+            settings_data.should_mask_unread_count(show_muted_count, unmuted_count),
+        );
+    }
+
+    update_section_unread_count(
+        $("#stream-list-pinned-streams-container .stream-list-subsection-header"),
+        pinned_unread_counts.unmuted,
+        pinned_unread_counts.muted,
+    );
+
+    update_section_unread_count(
+        $("#stream-list-normal-streams-container .stream-list-subsection-header"),
+        normal_section_unread_counts.unmuted,
+        normal_section_unread_counts.muted,
+    );
+    update_section_unread_count(
+        $("#stream-list-normal-streams-container .show-inactive-channels"),
+        normal_section_unread_counts.inactive_unmuted,
+        normal_section_unread_counts.inactive_muted,
+    );
+
+    for (const folder_id of channel_folders.get_all_folder_ids()) {
+        const unread_counts = folder_unread_counts.get(folder_id);
+        update_section_unread_count(
+            $(`#stream-list-${folder_id}-container .stream-list-subsection-header`),
+            unread_counts?.unmuted ?? 0,
+            unread_counts?.muted ?? 0,
+        );
+        update_section_unread_count(
+            $(`#stream-list-${folder_id}-container .show-inactive-channels`),
+            unread_counts?.inactive_unmuted ?? 0,
+            unread_counts?.inactive_muted ?? 0,
+        );
+    }
 
     if (!skip_animations) {
         animate_mention_changes($mentioned_li, counts.mentioned_message_count);
@@ -233,7 +342,7 @@ export function reorder_left_sidebar_navigation_list(home_view: string): void {
     const $left_sidebar_condensed = $("#left-sidebar-navigation-list-condensed");
 
     // First, re-order the views back to the original default order, to preserve the relative order.
-    for (const key of Object.keys(settings_config.web_home_view_values).reverse()) {
+    for (const key of Object.keys(settings_config.web_home_view_values).toReversed()) {
         if (key !== home_view) {
             const $view = get_view_rows_by_view_name(key);
             $view.eq(1).prependTo($left_sidebar);

@@ -1,4 +1,5 @@
 {
+    "extends": "astro/tsconfigs/strict",
     "compilerOptions": {
         /* Type Checking */
         "exactOptionalPropertyTypes": true,
@@ -29,4 +30,6 @@
 
         "types": ["unplugin-icons/types/astro"],
     },
+    "include": [".astro/types.d.ts", "**/*", "src/.remarkrc.js"],
+    "exclude": ["dist"],
 }

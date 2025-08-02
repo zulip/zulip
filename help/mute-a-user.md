@@ -11,32 +11,26 @@ have the following effects:
 * Combined feed sent by a muted user will automatically be [marked as
   read](/help/marking-messages-as-read) for you, and will never
   generate any desktop, email, or mobile push notifications.
-
 * Combined feed sent by muted users, including the name, profile
   picture, and message content, are hidden behind a **Click here to
-  reveal** banner. A revealed message can later be [re-hidden](/help/mute-a-user#re-hide-a-message-that-has-been-revealed).
-
-* Muted users are hidden from [**Direct
-  messages**](/help/direct-messages) in the left sidebar and the list
-  of users in the right sidebar. Direct messages between you and a
-  muted user are excluded from all views, including search, unless you
+  reveal** banner. A revealed message can later be
+  [re-hidden](/help/mute-a-user#re-hide-a-message-that-has-been-revealed).
+* Muted users are hidden from [**direct messages**](/help/direct-messages)
+  in the left sidebar and the list of users in the right sidebar. Direct
+  messages between you and a muted user are excluded from all views,
+  including search, unless you
   [explicitly search](/help/search-for-messages) for `dm-with:<that
   user>`.
-
 * Muted users have their name displayed as "Muted user" for [emoji
   reactions][view-emoji-reactions], [polls](/help/create-a-poll), and
   when displaying the recipients of group direct messages.
-
 * Muted users are excluded from the autocomplete for composing a
   direct message or [mentioning a user](/help/mention-a-user-or-group).
-
 * Muted users are excluded from [read receipts](/help/read-receipts)
   for all messages. Zulip never shares whether or not you have read
   a message with a user you've muted.
-
 * **Recent conversations** and other features that display avatars will
   show a generic user symbol in place of a muted user's profile picture.
-
 * To avoid interfering with administration tasks, channel and
   organization settings display muted users' names and other details.
 

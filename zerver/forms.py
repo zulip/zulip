@@ -2,7 +2,7 @@ import base64
 import logging
 import re
 from email.headerregistry import Address
-from typing import TYPE_CHECKING, Any, TypeAlias
+from typing import Any
 
 import dns.resolver
 import orjson
@@ -377,7 +377,7 @@ class AltchaWidget(forms.TextInput):
             orjson.dumps(
                 {
                     "verified": _("Verified that you're a human user!"),
-                    "verifying": _("Verifying that you're not a bot..."),
+                    "verifying": _("Verifying that you're not a bot…"),
                 }
             ).decode(),
         )
@@ -403,6 +403,8 @@ class CaptchaRealmCreationForm(RealmCreationForm):
 
     def clean_captcha(self) -> str:
         payload = self.data.get("captcha", "")
+        if not settings.USING_CAPTCHA or not settings.ALTCHA_HMAC_KEY:  # nocoverage
+            raise forms.ValidationError(_("Challenges are not enabled."))
 
         try:
             ok, err = verify_solution(payload, settings.ALTCHA_HMAC_KEY, check_expires=True)
@@ -430,16 +432,7 @@ class CaptchaRealmCreationForm(RealmCreationForm):
         return payload
 
 
-# https://github.com/typeddjango/django-stubs/pull/2384#pullrequestreview-2813849209
-if TYPE_CHECKING:
-    BaseSetPasswordForm: TypeAlias = SetPasswordForm[UserProfile]  # type: ignore[type-var]  # we don't subclass AbstractUser
-else:
-    BaseSetPasswordForm = SetPasswordForm
-
-
-class LoggingSetPasswordForm(
-    BaseSetPasswordForm  # type: ignore[type-var]  # we don't subclass AbstractUser
-):
+class LoggingSetPasswordForm(SetPasswordForm[UserProfile]):
     new_password1 = forms.CharField(
         label=_("New password"),
         widget=forms.PasswordInput(attrs={"autocomplete": "new-password"}),

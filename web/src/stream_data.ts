@@ -635,6 +635,24 @@ export function can_administer_channel(sub: StreamSubscription): boolean {
     );
 }
 
+export function user_can_set_delete_message_policy(sub?: StreamSubscription): boolean {
+    if (current_user.is_admin) {
+        return true;
+    }
+
+    const user_can_set_delete_message_policy = settings_data.user_has_permission_for_group_setting(
+        realm.realm_can_set_delete_message_policy_group,
+        "can_set_delete_message_policy_group",
+        "realm",
+    );
+
+    // This handles the case when the stream is being created.
+    if (sub === undefined) {
+        return user_can_set_delete_message_policy;
+    }
+    return user_can_set_delete_message_policy && can_administer_channel(sub);
+}
+
 export function user_can_set_topics_policy(sub?: StreamSubscription): boolean {
     if (current_user.is_admin) {
         return true;
@@ -749,6 +767,24 @@ export function can_subscribe_others(sub: StreamSubscription): boolean {
     return settings_data.user_has_permission_for_group_setting(
         sub.can_add_subscribers_group,
         "can_add_subscribers_group",
+        "stream",
+    );
+}
+
+export function can_resolve_topics(sub: StreamSubscription | undefined): boolean {
+    if (settings_data.user_can_resolve_topic()) {
+        return true;
+    }
+
+    if (sub === undefined) {
+        // If we're in a context without a channel, only the global
+        // permission is relevant.
+        return false;
+    }
+
+    return settings_data.user_has_permission_for_group_setting(
+        sub.can_resolve_topics_group,
+        "can_resolve_topics_group",
         "stream",
     );
 }
@@ -1047,17 +1083,17 @@ export function create_sub_from_server_data(
         ...attrs,
     };
 
-    if (attrs.partial_subscribers !== undefined) {
-        peer_data.set_subscribers(sub.stream_id, attrs.partial_subscribers, false);
-    } else {
-        peer_data.set_subscribers(sub.stream_id, subscriber_user_ids ?? []);
-    }
-
     clean_up_description(sub);
 
     stream_info.set(sub.stream_id, sub);
     stream_ids_by_name.set(sub.name, sub.stream_id);
     sub_store.add_hydrated_sub(sub.stream_id, sub);
+
+    if (attrs.partial_subscribers !== undefined) {
+        peer_data.set_subscribers(sub.stream_id, attrs.partial_subscribers, false);
+    } else {
+        peer_data.set_subscribers(sub.stream_id, subscriber_user_ids ?? []);
+    }
 
     return sub;
 }
@@ -1093,7 +1129,25 @@ export function can_use_empty_topic(stream_id: number | undefined): boolean {
         topics_policy = realm.realm_topics_policy;
     }
     return (
-        topics_policy === settings_config.get_realm_topics_policy_values().allow_empty_topic.code
+        topics_policy ===
+            settings_config.get_stream_topics_policy_values().allow_empty_topic.code ||
+        topics_policy === settings_config.get_stream_topics_policy_values().empty_topic_only.code
+    );
+}
+
+export function is_empty_topic_only_channel(stream_id: number | undefined): boolean {
+    if (stream_id === undefined) {
+        return false;
+    }
+    const sub = sub_store.get(stream_id);
+    assert(sub !== undefined);
+
+    let topics_policy = sub.topics_policy;
+    if (sub.topics_policy === settings_config.get_stream_topics_policy_values().inherit.code) {
+        topics_policy = realm.realm_topics_policy;
+    }
+    return (
+        topics_policy === settings_config.get_stream_topics_policy_values().empty_topic_only.code
     );
 }
 

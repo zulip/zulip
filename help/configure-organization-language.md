@@ -13,10 +13,8 @@ automated messages and invitation emails. This setting:
   notices](/help/configure-automated-notices) that are sent to channels, including
   both the topic name and message content. (Automated messages sent to a single
   user will use that user's preferred language).
-
 * Determines the language used for outgoing
   [invitation emails](/help/invite-new-users).
-
 * Is used as the default language for new user accounts when Zulip
   cannot detect their language preferences from their browser,
   including all users [created via the Zulip API][api-create-user].

@@ -6,7 +6,7 @@ from unittest.mock import patch
 import orjson
 import pyvips
 from django.conf import settings
-from django.http.request import MediaType
+from django.http import HttpRequest
 from django.test import override_settings
 
 from zerver.lib.test_classes import ZulipTestCase
@@ -29,7 +29,7 @@ from zerver.lib.thumbnail import (
 )
 from zerver.lib.upload import (
     all_message_attachments,
-    attachment_vips_source,
+    attachment_source,
     create_attachment,
     save_attachment_contents,
     upload_backend,
@@ -746,7 +746,7 @@ class TestStoreThumbnail(ZulipTestCase):
         upload_backend.upload_message_attachment(
             path_id, "img.png", "image/png", read_test_image_file("img.png"), hamlet
         )
-        source = attachment_vips_source(path_id)
+        source = attachment_source(path_id)
         create_attachment("img.png", path_id, "image/png", source, hamlet, hamlet.realm)
         self.assertTrue(ImageAttachment.objects.filter(path_id=path_id).exists())
 
@@ -920,13 +920,14 @@ class TestThumbnailRetrieval(ZulipTestCase):
         rendered_formats = [
             StoredThumbnailFormat(**data) for data in image_attachment.thumbnail_metadata
         ]
-        accepts = [MediaType("image/webp"), MediaType("image/*"), MediaType("*/*;q=0.8")]
+        request = HttpRequest()
+        request.META["HTTP_ACCEPT"] = "image/webp, image/*, */*;q=0.8"
 
         # Prefer to match -animated, even though we have a .gif
         self.assertEqual(
             str(
                 closest_thumbnail_format(
-                    ThumbnailFormat("gif", 100, 75, animated=True), accepts, rendered_formats
+                    ThumbnailFormat("gif", 100, 75, animated=True), request, rendered_formats
                 )
             ),
             "100x75-anim.webp",
@@ -936,7 +937,7 @@ class TestThumbnailRetrieval(ZulipTestCase):
         self.assertEqual(
             str(
                 closest_thumbnail_format(
-                    ThumbnailFormat("gif", 10, 10, animated=False), accepts, rendered_formats
+                    ThumbnailFormat("gif", 10, 10, animated=False), request, rendered_formats
                 )
             ),
             "100x75.gif",
@@ -946,37 +947,39 @@ class TestThumbnailRetrieval(ZulipTestCase):
         self.assertEqual(
             str(
                 closest_thumbnail_format(
-                    ThumbnailFormat("tif", 10, 10, animated=False), accepts, rendered_formats
+                    ThumbnailFormat("tif", 10, 10, animated=False), request, rendered_formats
                 )
             ),
             "10x10.webp",
         )
+        request = HttpRequest()
+        request.META["HTTP_ACCEPT"] = "image/webp;q=0.9, image/gif"
         self.assertEqual(
             str(
                 closest_thumbnail_format(
-                    ThumbnailFormat("tif", 10, 10, animated=False),
-                    [MediaType("image/webp;q=0.9"), MediaType("image/gif")],
-                    rendered_formats,
+                    ThumbnailFormat("tif", 10, 10, animated=False), request, rendered_formats
                 )
             ),
             "100x75.gif",
         )
+        request = HttpRequest()
+        request.META["HTTP_ACCEPT"] = "image/gif"
         self.assertEqual(
             str(
                 closest_thumbnail_format(
-                    ThumbnailFormat("tif", 10, 10, animated=False),
-                    [MediaType("image/gif")],
-                    rendered_formats,
+                    ThumbnailFormat("tif", 10, 10, animated=False), request, rendered_formats
                 )
             ),
             "100x75.gif",
         )
 
         # Closest width
+        request = HttpRequest()
+        request.META["HTTP_ACCEPT"] = "image/webp, image/*, */*;q=0.8"
         self.assertEqual(
             str(
                 closest_thumbnail_format(
-                    ThumbnailFormat("webp", 20, 100, animated=False), accepts, rendered_formats
+                    ThumbnailFormat("webp", 20, 100, animated=False), request, rendered_formats
                 )
             ),
             "10x10.webp",
@@ -984,19 +987,19 @@ class TestThumbnailRetrieval(ZulipTestCase):
         self.assertEqual(
             str(
                 closest_thumbnail_format(
-                    ThumbnailFormat("webp", 80, 10, animated=False), accepts, rendered_formats
+                    ThumbnailFormat("webp", 80, 10, animated=False), request, rendered_formats
                 )
             ),
             "100x75.webp",
         )
 
         # Smallest filesize if they have no media preference
+        request = HttpRequest()
+        request.META["HTTP_ACCEPT"] = "image/gif, image/webp"
         self.assertEqual(
             str(
                 closest_thumbnail_format(
-                    ThumbnailFormat("tif", 100, 75, animated=False),
-                    [MediaType("image/gif"), MediaType("image/webp")],
-                    rendered_formats,
+                    ThumbnailFormat("tif", 100, 75, animated=False), request, rendered_formats
                 )
             ),
             "100x75.webp",

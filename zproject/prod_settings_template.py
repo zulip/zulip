@@ -240,6 +240,11 @@ AUTH_LDAP_USER_ATTR_MAP = {
     "full_name": "cn",
     # "first_name": "fn",
     # "last_name": "ln",
+    #
+    ## A stable unique identifier for a user allows Zulip to
+    ## automatically handle email address changes.
+    ## See https://zulip.readthedocs.io/en/latest/production/authentication-methods.html#identifying-user-accounts-via-a-unique-ldap-attribute
+    # "unique_account_id": "objectSid",
     ##
     ## Profile pictures can be pulled from the LDAP "thumbnailPhoto"/"jpegPhoto" field.
     # "avatar": "thumbnailPhoto",
@@ -441,8 +446,8 @@ SOCIAL_AUTH_SAML_ENABLED_IDPS: dict[str, Any] = {
         "attr_username": "email",
         "attr_email": "email",
         ## List of additional attributes to fetch from the SAMLResponse.
-        ## These attributes will be available for synchronizing custom profile fields.
-        ## in SOCIAL_AUTH_SYNC_CUSTOM_ATTRS_DICT.
+        ## These attributes will be available for synchronizing user profile fields.
+        ## in SOCIAL_AUTH_SYNC_ATTRS_DICT.
         # "extra_attrs": ["title", "mobilePhone", "zulip_role"],
         ##
         ## The "x509cert" attribute is automatically read from
@@ -519,6 +524,10 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
 #             # Specify custom profile fields with a custom__ prefix for the
 #             # Zulip field name.
 #             "custom__title": "title",
+#             # Sync the membership of the listed Zulip groups with
+#             # the list of group names sent in the "zulip_groups"
+#             # attribute in the SAMLResponse.
+#             "groups": ["group1", "group2", ("samlgroup3", "zulipgroup3"), "group4"],
 #         }
 #     }
 # }
@@ -769,12 +778,6 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
 ## free plan eligibility), as well as aggregate usage statistics. You
 ## can disable submitting usage statistics here.
 # ZULIP_SERVICE_SUBMIT_USAGE_STATISTICS = False
-
-## Whether to redact the content of push notifications.  This is less
-## usable, but avoids sending message content over the wire.  In the
-## future, we're likely to replace this with an end-to-end push
-## notification encryption feature.
-# PUSH_NOTIFICATION_REDACT_CONTENT = False
 
 ## Whether to lightly advertise sponsoring Zulip in the gear menu.
 # PROMOTE_SPONSORING_ZULIP = True

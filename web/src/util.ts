@@ -1,6 +1,6 @@
 import Handlebars from "handlebars/runtime.js";
 import _ from "lodash";
-import {z} from "zod";
+import * as z from "zod/mini";
 
 import * as blueslip from "./blueslip.ts";
 import {$t} from "./i18n.ts";
@@ -456,7 +456,12 @@ export function format_array_as_list_with_highlighted_elements(
 ): string {
     // If Intl.ListFormat is not supported
     if (Intl.ListFormat === undefined) {
-        return array.map((item) => `<b>${Handlebars.Utils.escapeExpression(item)}</b>`).join(", ");
+        return array
+            .map(
+                (item) =>
+                    `<b class="highlighted-element">${Handlebars.Utils.escapeExpression(item)}</b>`,
+            )
+            .join(", ");
     }
 
     // Use Intl.ListFormat to format the array as a Internationalized list.
@@ -469,7 +474,7 @@ export function format_array_as_list_with_highlighted_elements(
             // items), and literals (commas, etc.). We need to
             // HTML-escape the elements, but not the literals.
             if (part.type === "element") {
-                return `<b>${Handlebars.Utils.escapeExpression(part.value)}</b>`;
+                return `<b class="highlighted-element">${Handlebars.Utils.escapeExpression(part.value)}</b>`;
             }
             return part.value;
         })

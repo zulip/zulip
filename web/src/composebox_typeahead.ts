@@ -181,7 +181,7 @@ export function update_emoji_data(initial_emojis: EmojiDict[]): void {
 }
 
 export function topics_seen_for(stream_id?: number): string[] {
-    if (!stream_id) {
+    if (!stream_id || stream_data.is_empty_topic_only_channel(stream_id)) {
         return [];
     }
 
@@ -1244,16 +1244,25 @@ export function content_typeahead_selected(
                 highlight.end = highlight.start + item.placeholder.length;
             }
             break;
-        case "stream":
+        case "stream": {
             beginning = beginning.slice(0, -token.length - 1);
             if (beginning.endsWith("#*")) {
                 beginning = beginning.slice(0, -2);
             }
 
-            // for stream links, we use markdown link syntax if the #**stream** syntax
-            // will generate a broken url.
-            if (topic_link_util.will_produce_broken_stream_topic_link(item.name)) {
-                // use markdown link syntax
+            const sub = stream_data.get_sub_by_name(item.name);
+            const is_empty_topic_only_channel =
+                sub && stream_data.is_empty_topic_only_channel(sub.stream_id);
+            const is_greater_than_key_pressed =
+                event && event.type === "keydown" && event.key === ">";
+
+            // For empty topic only channel, skip showing topic typeahead and
+            // insert direct channel link.
+            if (is_empty_topic_only_channel && !is_greater_than_key_pressed) {
+                beginning += topic_link_util.get_stream_link_syntax(item.name);
+            } else if (topic_link_util.will_produce_broken_stream_topic_link(item.name)) {
+                // for stream links, we use markdown link syntax if the #**stream** syntax
+                // will generate a broken url.
                 beginning += topic_link_util.get_fallback_markdown_link(item.name) + ">";
             } else {
                 beginning += "#**" + item.name + ">";
@@ -1261,6 +1270,7 @@ export function content_typeahead_selected(
 
             void compose_validate.warn_if_private_stream_is_linked(item, $textbox);
             break;
+        }
         case "syntax": {
             // Isolate the end index of the triple backticks/tildes, including
             // possibly a space afterward

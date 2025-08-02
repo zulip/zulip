@@ -2,7 +2,7 @@ import $ from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
 import type * as tippy from "tippy.js";
-import {z} from "zod";
+import * as z from "zod/mini";
 
 import * as typeahead from "../shared/src/typeahead.ts";
 import render_introduce_zulip_view_modal from "../templates/introduce_zulip_view_modal.hbs";
@@ -573,7 +573,9 @@ function get_avatars_context(all_senders: number[]): AvatarsContext {
     const displayed_other_senders = extra_sender_ids.slice(-MAX_EXTRA_SENDERS);
     const other_senders_count = Math.max(0, all_senders.length - max_avatars);
     // Collect extra sender fullname for tooltip
-    const displayed_other_names = people.get_display_full_names(displayed_other_senders.reverse());
+    const displayed_other_names = people.get_display_full_names(
+        displayed_other_senders.toReversed(),
+    );
     if (extra_sender_ids.length > MAX_EXTRA_SENDERS) {
         // We display only 10 extra senders in tooltips,
         // and just display remaining number of senders.
@@ -612,7 +614,7 @@ type ConversationContext = {
     | {
           is_private: true;
           user_ids_string: string;
-          rendered_pm_with: string;
+          rendered_pm_with_html: string;
           recipient_id: number;
           pm_url: string;
           is_group: boolean;
@@ -689,7 +691,7 @@ function format_conversation(conversation_data: ConversationData): ConversationC
         // Since the css for displaying senders in reverse order is much simpler,
         // we provide our handlebars with senders in opposite order.
         // Display in most recent sender first order.
-        all_senders = recent_senders.get_topic_recent_senders(stream_id, topic).reverse();
+        all_senders = recent_senders.get_topic_recent_senders(stream_id, topic).toReversed();
 
         stream_context = {
             stream_id,
@@ -711,7 +713,7 @@ function format_conversation(conversation_data: ConversationData): ConversationC
         // Direct message info
         const user_ids_string = last_msg.to_user_ids;
         assert(typeof last_msg.display_recipient !== "string");
-        const rendered_pm_with = last_msg.display_recipient
+        const rendered_pm_with_html = last_msg.display_recipient
             .filter(
                 (recipient: DisplayRecipientUser) =>
                     !people.is_my_user_id(recipient.id) || last_msg.display_recipient.length === 1,
@@ -751,11 +753,17 @@ function format_conversation(conversation_data: ConversationData): ConversationC
         // display the other recipients on the direct message conversation with different
         // styling, but it's important to not destroy the information of "who's actually
         // talked".
-        all_senders = recent_senders.get_pm_recent_senders(user_ids_string).participants.reverse();
+        all_senders = recent_senders
+            .get_pm_recent_senders(user_ids_string)
+            .participants.toReversed();
 
         dm_context = {
             user_ids_string,
-            rendered_pm_with: util.format_array_as_list(rendered_pm_with, "long", "conjunction"),
+            rendered_pm_with_html: util.format_array_as_list(
+                rendered_pm_with_html,
+                "long",
+                "conjunction",
+            ),
             recipient_id,
             pm_url,
             is_group,
@@ -1249,15 +1257,9 @@ function recenter_focus_if_off_screen(): void {
             topic_element === null ||
             $(topic_element).parents("#recent-view-content-tbody").length === 0
         ) {
-            // There are two theoretical reasons that the center
-            // element might be null. One is that we haven't rendered
-            // the view yet; but in that case, we should have returned
-            // early checking is_waiting_for_revive_current_focus.
-            //
-            // The other possibility is that the table is too short
-            // for there to be an topic row element at the center of
-            // the table region; in that case, we just select the last
-            // element.
+            // The table is too short for there to be an topic row element
+            // at the center of the table region; in that case, we just
+            // select the last element.
             row_focus = $topic_rows.length - 1;
         } else {
             row_focus = $topic_rows.index($(topic_element).closest("tr")[0]);
@@ -1820,7 +1822,7 @@ export function change_focused_element($elt: JQuery, input_key: string): boolean
     return false;
 }
 
-const filter_schema = z.array(z.string()).default([]);
+const filter_schema = z._default(z.array(z.string()), []);
 
 function load_filters(): void {
     // load filters from local storage.

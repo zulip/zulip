@@ -1,17 +1,31 @@
-# Private, public, and web-public channels
+# Channel permissions
 
 {!channels-intro.md!}
 
 {!channel-privacy-types.md!}
 
-In addition, you can configure the following permissions for each channel,
-regardless of its type:
+## Configure channel permissions
 
-* [Who can send messages](/help/channel-posting-policy)
+You can configure the following permissions for each channel,
+regardless of its type.
+
+Subscription permissions:
+
 * [Who can administer the channel](/help/configure-who-can-administer-a-channel)
 * [Who can subscribe themselves](/help/configure-who-can-subscribe)
 * [Who can subscribe anyone](/help/configure-who-can-invite-to-channels#configure-who-can-subscribe-anyone-to-a-specific-channel)
 * [Who can unsubscribe anyone](/help/configure-who-can-unsubscribe-others)
+
+Messaging permissions:
+
+* [Who can send messages](/help/channel-posting-policy)
+* [Whether topics are required](/help/require-topics)
+
+Moderation permissions:
+
+* [Who can move messages](/help/restrict-moving-messages)
+* [Who can resolve topics](/help/restrict-resolving-topics)
+* [Who can delete messages](/help/restrict-message-editing-and-deletion)
 
 For the organization as a whole, you can:
 
@@ -87,9 +101,5 @@ zulip-icon-globe"></i>) icon.
 * [Guest users](/help/guest-users)
 * [User groups](/help/user-groups)
 * [Public access option](/help/public-access-option)
-* [Channel posting policy](/help/channel-posting-policy)
 * [Restrict channel creation](/help/configure-who-can-create-channels)
 * [Configure who can administer a channel](/help/configure-who-can-administer-a-channel)
-* [Configure who can subscribe to a channel](/help/configure-who-can-subscribe)
-* [Configure who can subscribe other users to channels](/help/configure-who-can-invite-to-channels)
-* [Configure who can unsubscribe anyone](/help/configure-who-can-unsubscribe-others)

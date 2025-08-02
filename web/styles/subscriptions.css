@@ -109,7 +109,8 @@
 }
 
 .user_group_creation_error,
-.stream_creation_error {
+.stream_creation_error,
+#settings-topics-already-exist-error {
     display: none;
     margin-left: 2px;
     color: hsl(0deg 100% 50%);
@@ -154,6 +155,10 @@ h4.user_group_setting_subsection_title {
 .subscriber_list_settings_container {
     display: flex;
     flex-direction: column;
+
+    .input-group {
+        margin-bottom: 10px;
+    }
 }
 
 .add-group-member-loading-spinner,
@@ -241,13 +246,14 @@ h4.user_group_setting_subsection_title {
 .member_list_add {
     width: 100%;
     margin: 0 0 10px;
+}
 
-    .user_group_subscription_request_result,
-    .stream_subscription_request_result {
-        & a {
-            color: inherit;
-        }
+.user_group_subscription_request_result,
+.stream_subscription_request_result {
+    & a {
+        color: inherit;
     }
+    margin-bottom: 10px;
 }
 
 .member-search,
@@ -283,6 +289,31 @@ h4.user_group_setting_subsection_title {
        container. */
     .input {
         flex-grow: 1;
+    }
+}
+
+.add_subscriber_button_wrapper,
+.add_member_button_wrapper {
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr;
+    place-items: center;
+
+    .check,
+    .add-subscriber-button,
+    .add-member-button {
+        grid-column: 1 / 2;
+        grid-row: 1 / 2;
+        z-index: 1;
+        visibility: visible;
+        max-height: 1.75em;
+        width: 100%;
+        position: relative;
+
+        &.hidden-below {
+            visibility: hidden;
+            z-index: -1;
+        }
     }
 }
 
@@ -702,19 +733,20 @@ h4.user_group_setting_subsection_title {
 
 .stream-row,
 .group-row {
-    padding: 15px 10px 11px;
+    padding: 0.9375em 0.625em 0.6875em; /* 15px 10px 11px at 16px font size */
     border-bottom: 1px solid var(--color-border-modal-bar);
     cursor: pointer;
     display: flex;
+    align-items: center;
 
     .check {
-        width: 25px;
-        height: 25px;
-        margin-right: 12px;
-        margin-top: 9px;
+        width: 1.5625em; /* 25px at 16px font size */
+        height: 1.5625em; /* 25px at 16px font size */
+        margin-right: 0.75em; /* 12px at 16px font size */
         background-size: 60% auto;
         background-repeat: no-repeat;
         background-position: center center;
+        display: flex;
 
         & svg {
             fill: hsl(0deg 0% 72%);
@@ -765,10 +797,9 @@ h4.user_group_setting_subsection_title {
     }
 
     .icon {
-        width: 35px;
-        height: 35px;
-        margin-right: 12px;
-        margin-top: 4px;
+        width: 2.1875em; /* 35px at 16px font size */
+        height: 2.1875em; /* 35px at 16px font size */
+        margin-right: 0.75em; /* 12px at 16px font size */
         background-color: hsl(300deg 100% 25%);
         border-radius: 4px;
         color: hsl(0deg 0% 100%);
@@ -785,18 +816,21 @@ h4.user_group_setting_subsection_title {
     }
 
     .sub-info-box {
-        width: calc(100% - 90px);
+        /* 5.5em = width of checkmark (1.5625em) + right margin for checkmark (0.75em)
+        + width of privacy icon (2.1875em) + right margin for privacy icon (0.75em) +
+        right margin for this element (0.25em) */
+        width: calc(100% - 5.5em);
     }
 
     .group-info-box {
-        /* 41px = width of checkmark (25px) + right margin for checkmark (12px)
-        + right margin for this element (4px) */
-        width: calc(100% - 41px);
+        /* 2.5625em = width of checkmark (1.5625em) + right margin for checkmark (0.75em)
+        + right margin for this element (0.25em) */
+        width: calc(100% - 2.5625em);
     }
 
     .sub-info-box,
     .group-info-box {
-        margin-right: 4px;
+        margin-right: 0.25em; /* 4px at 16px font size */
 
         .top-bar,
         .bottom-bar {
@@ -819,7 +853,7 @@ h4.user_group_setting_subsection_title {
 
         .top-bar .stream-name,
         .bottom-bar .description {
-            margin-right: 12px;
+            margin-right: 0.75em; /* 12px at 16px font size */
         }
 
         .top-bar .subscriber-count,
@@ -831,7 +865,7 @@ h4.user_group_setting_subsection_title {
         .top-bar .subscriber-count-text,
         .top-bar .subscriber-count-lock,
         .bottom-bar .stream-message-count-text {
-            margin-right: 5px;
+            margin-right: 0.3125em; /* 5px at 16px font size */
         }
 
         .top-bar .stream-name {
@@ -839,7 +873,6 @@ h4.user_group_setting_subsection_title {
         }
 
         .bottom-bar {
-            margin-top: 2px;
             line-height: 1.5;
         }
     }
@@ -872,6 +905,7 @@ h4.user_group_setting_subsection_title {
 
     .pill-container {
         cursor: not-allowed;
+        pointer-events: none;
     }
 }
 
@@ -899,7 +933,6 @@ h4.user_group_setting_subsection_title {
         }
 
         .pill-container {
-            background-color: hsl(0deg 0% 93%);
             opacity: 0.7;
 
             .pill {
@@ -1290,7 +1323,6 @@ div.settings-radio-input-parent {
 .advanced-configurations-container .pill-container {
     /* Subtract 2 * (2px padding) + 2 * (1px border) */
     min-width: calc(var(--modal-input-width) - 6px);
-    background-color: hsl(0deg 0% 100%);
 
     .input {
         flex-grow: 1;
@@ -1336,17 +1368,23 @@ div.settings-radio-input-parent {
 }
 
 .stream-settings-color-selector {
+    border: 1px solid var(--color-border-zulip-button);
     display: flex;
     align-items: center;
     gap: 10px;
     overflow: hidden;
+
+    &.action-button-quiet-neutral {
+        box-shadow: none;
+    }
 }
 
 .stream-settings-color-preview {
-    /* 33px at 12.8 font size (from .button.small) at 14px em */
-    width: 2.5781em;
-    height: 2.5781em;
-    margin: -6px 0 -6px -10px;
+    /* 28px at 16px font size */
+    width: 1.75em;
+    height: 1.75em;
+    /* -6px 0 -6px 10px at 16px font size. */
+    margin: -0.375em 0 -0.375em -0.625em;
 }
 
 #subscription_overlay .channel-folder-widget-container {
@@ -1493,4 +1531,64 @@ div.settings-radio-input-parent {
 .selected-stream-title {
     display: block;
     margin: auto;
+}
+
+#stream_members_list,
+#user_group_settings .member-list,
+#stream_creation_form .subscriber-list,
+#user_group_creation_form .member-list {
+    table-layout: fixed;
+    width: 100%;
+
+    th,
+    td {
+        box-sizing: border-box;
+    }
+
+    .panel_user_list {
+        width: 50%;
+
+        .pill-container {
+            max-width: 100%;
+
+            .pill-value {
+                /* This is needed to unset the max-width value of 165px
+                set for user pills in other tables. */
+                max-width: unset;
+            }
+        }
+    }
+}
+
+#stream_members_list,
+#user_group_settings .member-list {
+    .remove-button-column {
+        width: 3em;
+    }
+
+    .settings-email-column {
+        width: calc(50% - 3em);
+    }
+}
+
+#stream_creation_form .subscriber-list,
+#user_group_creation_form .member-list {
+    .action-column {
+        width: 6em;
+    }
+
+    .settings-email-column {
+        width: calc(50% - 6em);
+    }
+}
+
+@media (width < $lg_min) {
+    #stream_members_list,
+    #user_group_settings .member-list,
+    #stream_creation_form .subscriber-list,
+    #user_group_creation_form .member-list {
+        .panel_user_list {
+            width: auto;
+        }
+    }
 }

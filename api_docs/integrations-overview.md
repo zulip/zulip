@@ -17,10 +17,8 @@ If you don't find an integration you need, you can:
 pull
 request](https://zulip.readthedocs.io/en/latest/contributing/reviewable-prs.html)
 to get your integration merged into the main Zulip repository.
-
 - [File an issue](https://github.com/zulip/zulip/issues/new/choose) to request
   an integration (if it's a nice-to-have).
-
 - [Contact Zulip Sales](mailto:sales@zulip.com) to inquire about a custom
   development contract.
 
@@ -106,13 +104,10 @@ Sales](mailto:sales@zulip.com).
 
 * If the third-party service supports outgoing webhooks, you likely want to
   build an [incoming webhook integration](/api/incoming-webhooks-overview).
-
 * If it doesn't, you may want to write a
   [script or plugin integration](/api/non-webhook-integrations).
-
 * The [`zulip-send` tool](/api/send-message) makes it easy to send Zulip
   messages from shell scripts.
-
 * Finally, you can
   [send messages using Zulip's API](/api/send-message), with bindings for
   Python, JavaScript and [other languages](/api/client-libraries).
@@ -122,7 +117,6 @@ Sales](mailto:sales@zulip.com).
 * To react to activity inside Zulip, look at Zulip's
   [Python framework for interactive bots](/api/running-bots) or
   [Zulip's real-time events API](/api/get-events).
-
 * If what you want isn't covered by the above, check out the full
   [REST API](/api/rest). The web, mobile, desktop, and terminal apps are
   built on top of this API, so it can do anything a human user can do. Most

@@ -1,0 +1,11 @@
+<!-- 
+We wanted to have our note without a header that is the ⓘ followed by a title.
+We can make the title disappear by making the title a single space: " ".
+The default aside component provided by starlight will always have an icon however.
+That is why we needed this custom components.
+-->
+<aside aria-label="Note" class={`starlight-aside starlight-aside--note`}>
+    <div class="starlight-aside__content">
+        <slot />
+    </div>
+</aside>

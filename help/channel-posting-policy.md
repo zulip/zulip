@@ -10,9 +10,9 @@ you can set up an announcement channel where only a specific
 
 1. Select a channel.
 
-{!select-channel-view-general.md!}
+{!select-channel-view-general-advanced.md!}
 
-1. Under **Channel permissions**, configure **Who can post to the channel**.
+1. Under **Messaging permissions**, configure **Who can post to this channel**.
 
 {!save-changes.md!}
 

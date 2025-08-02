@@ -28,5 +28,5 @@ export function get_direct_message_groups(): string[] {
     direct_message_groups = _.sortBy(direct_message_groups, (direct_message_group) =>
         direct_message_group_timestamps.get(direct_message_group),
     );
-    return direct_message_groups.reverse();
+    return direct_message_groups.toReversed();
 }

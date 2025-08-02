@@ -186,11 +186,9 @@ you will need to upgrade your plan.
       [inbox](/help/inbox) together with all the features of a modern chat app,
       like instant delivery of messages, emoji reactions, typing notifications,
       @-mentions, and more.
-
     - Using Zulip, you can discuss complex topics and make decisions with input
       from all stakeholders, without the overhead of scheduling meeting. Are
       there standing meetings you might not need?
-
     - With conversations organized by topic, you can review prior discussions to
       understand past work, explanations, and decisions — your chat history
       becomes a knowledge base. Should it be standard practice to link to Zulip

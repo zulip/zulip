@@ -847,7 +847,7 @@ test("sort broadcast mentions for stream message type", () => {
     // actually had a bug where the sort would
     // randomly rearrange them)
     compose_state.set_message_type("stream");
-    const mentions = ct.broadcast_mentions().reverse();
+    const mentions = ct.broadcast_mentions().toReversed();
     const broadcast_items = mentions.map((broadcast) => broadcast_item(broadcast));
     const results = th.sort_people_for_relevance(broadcast_items, "", "");
 
@@ -864,7 +864,7 @@ test("sort broadcast mentions for stream message type", () => {
         ...ct
             .broadcast_mentions()
             .map((broadcast) => broadcast_item(broadcast))
-            .reverse(),
+            .toReversed(),
         a_user_item,
     ];
     const results2 = th.sort_people_for_relevance(user_or_mention_items, "", "");
@@ -877,7 +877,7 @@ test("sort broadcast mentions for stream message type", () => {
 
 test("sort broadcast mentions for direct message type", () => {
     compose_state.set_message_type("private");
-    const mentions = ct.broadcast_mentions().reverse();
+    const mentions = ct.broadcast_mentions().toReversed();
     const broadcast_items = mentions.map((broadcast) => broadcast_item(broadcast));
     const results = th.sort_people_for_relevance(broadcast_items, "", "");
 
@@ -891,7 +891,7 @@ test("sort broadcast mentions for direct message type", () => {
         ...ct
             .broadcast_mentions()
             .map((broadcast) => broadcast_item(broadcast))
-            .reverse(),
+            .toReversed(),
         a_user_item,
     ];
     const results2 = th.sort_people_for_relevance(user_or_mention_items, "", "");

@@ -59,6 +59,10 @@ kbd {
     font-weight: 300;
 }
 
+.highlighted-element {
+    font-weight: 600;
+}
+
 .inline-block {
     display: inline-block;
 }
@@ -543,8 +547,31 @@ input.settings_text_input {
     }
 }
 
+.create-group-button-container {
+    .upgrade-organization-banner-container {
+        display: flex;
+        justify-content: center;
+    }
+}
+
+.organization-upgrade-banner,
+.mobile-push-notifications-banner,
+.admin-permissions-banner,
 .desktop-setting-notifications {
     margin-bottom: 10px;
+    width: fit-content;
+}
+
+.mobile-push-notifications-banner,
+.desktop-setting-notifications,
+.organization-upgrade-banner {
+    .banner-content {
+        flex-wrap: nowrap;
+
+        .banner-action-buttons {
+            flex-wrap: nowrap;
+        }
+    }
 }
 
 .invite-stream-notice {

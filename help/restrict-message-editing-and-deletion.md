@@ -44,9 +44,11 @@ These permissions can be granted to any combination of
 
 1. Under **Message deletion**:
     - Configure **Who can delete any message**.
-    - Configure **Who can delete their own messages**.
+    - Configure **Who can delete their own messages everywhere**.
     - Configure **Time limit for deleting messages**. This time limit does not
       apply to users who can delete any message.
+    - Configure **Who can allow users to delete messages in channels they
+      administer**.
 
 {!save-changes.md!}
 
@@ -56,6 +58,25 @@ These permissions can be granted to any combination of
 
     A user can delete messages sent by [bots that they
     own](/help/view-your-bots) just like messages they sent themself.
+
+## Configure who can delete messages in a specific channel
+
+{start_tabs}
+
+{tab|desktop-web}
+
+{relative|channel|all}
+
+1. Select a channel.
+
+{!select-channel-view-general-advanced.md!}
+
+1. Under **Moderation permissions**, configure **Who can delete any message in
+   this channel** and **Who can delete their own messages in this channel**.
+
+{!save-changes.md!}
+
+{end_tabs}
 
 ## Related articles
 

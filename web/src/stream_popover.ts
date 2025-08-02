@@ -1,7 +1,7 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
 import type * as tippy from "tippy.js";
-import {z} from "zod";
+import * as z from "zod/mini";
 
 import render_inline_decorated_channel_name from "../templates/inline_decorated_channel_name.hbs";
 import render_inline_stream_or_topic_reference from "../templates/inline_stream_or_topic_reference.hbs";
@@ -106,13 +106,18 @@ function build_stream_popover(opts: {elt: HTMLElement; stream_id: number}): void
         return;
     }
 
+    const is_triggered_from_inbox = elt.classList.contains("inbox-stream-menu");
     const stream_hash = hash_util.channel_url_by_user_setting(stream_id);
     const show_go_to_channel_feed =
-        user_settings.web_channel_default_view !==
-        web_channel_default_view_values.channel_feed.code;
+        (is_triggered_from_inbox ||
+            user_settings.web_channel_default_view !==
+                web_channel_default_view_values.channel_feed.code) &&
+        !stream_data.is_empty_topic_only_channel(stream_id);
     const show_go_to_list_of_topics =
-        user_settings.web_channel_default_view !==
-        web_channel_default_view_values.list_of_topics.code;
+        (is_triggered_from_inbox ||
+            user_settings.web_channel_default_view !==
+                web_channel_default_view_values.list_of_topics.code) &&
+        !stream_data.is_empty_topic_only_channel(stream_id);
     const stream_unread = unread.unread_count_info_for_stream(stream_id);
     const stream_unread_count = stream_unread.unmuted_count + stream_unread.muted_count;
     const has_unread_messages = stream_unread_count > 0;
@@ -468,11 +473,11 @@ export async function build_move_topic_to_stream_popover(
 
     const params_schema = z.object({
         current_stream_id: z.string(),
-        new_topic_name: z.string().optional(),
+        new_topic_name: z.optional(z.string()),
         old_topic_name: z.string(),
-        propagate_mode: z.enum(["change_one", "change_later", "change_all"]).optional(),
-        send_notification_to_new_thread: z.literal("on").optional(),
-        send_notification_to_old_thread: z.literal("on").optional(),
+        propagate_mode: z.optional(z.enum(["change_one", "change_later", "change_all"])),
+        send_notification_to_new_thread: z.optional(z.literal("on")),
+        send_notification_to_old_thread: z.optional(z.literal("on")),
     });
 
     function get_params_from_form(): z.output<typeof params_schema> {
@@ -598,7 +603,7 @@ export async function build_move_topic_to_stream_popover(
         const participant_names = unsubscribed_participant_ids.map(
             (user_id) => people.get_user_by_id_assert_valid(user_id).full_name,
         );
-        const unsubscribed_participant_formatted_names_list =
+        const unsubscribed_participant_formatted_names_list_html =
             util.format_array_as_list_with_highlighted_elements(
                 participant_names,
                 "long",
@@ -620,7 +625,7 @@ export async function build_move_topic_to_stream_popover(
             hide_close_button: true,
             stream: destination_stream,
             selected_propagate_mode,
-            unsubscribed_participant_formatted_names_list,
+            unsubscribed_participant_formatted_names_list_html,
             unsubscribed_participants_count,
             few_unsubscribed_participants,
         };
@@ -671,6 +676,11 @@ export async function build_move_topic_to_stream_popover(
         const send_notification_to_new_thread = params.send_notification_to_new_thread === "on";
         const send_notification_to_old_thread = params.send_notification_to_old_thread === "on";
         const current_stream_id = Number.parseInt(params.current_stream_id, 10);
+
+        // Can only move to empty topic if topics are disabled in the destination channel.
+        if (stream_data.is_empty_topic_only_channel(select_stream_id ?? current_stream_id)) {
+            new_topic_name = "";
+        }
 
         if (new_topic_name !== undefined) {
             // new_topic_name can be undefined when the new topic input is disabled when
@@ -794,6 +804,11 @@ export async function build_move_topic_to_stream_popover(
             // user does not have permission to edit topic.
             new_topic_name = args.topic_name;
         }
+
+        if (stream_data.is_empty_topic_only_channel(selected_stream.stream_id)) {
+            new_topic_name = "";
+        }
+
         assert(new_topic_name !== undefined);
         // Don't show warning for empty topic as the user is probably
         // about to type a new topic name. Note that if topics are
@@ -849,6 +864,19 @@ export async function build_move_topic_to_stream_popover(
         }
     }
 
+    function disable_topic_input_if_topics_are_disabled_in_channel(stream_id: number): void {
+        const $topic_input = $<HTMLInputElement>("#move_topic_form input.move_messages_edit_topic");
+        if (stream_data.is_empty_topic_only_channel(stream_id)) {
+            $topic_input.val("");
+            $topic_input.prop("disabled", true);
+            $topic_input.addClass("empty-topic-only");
+            update_topic_input_placeholder();
+        } else {
+            // Removes tooltip if topics are allowed.
+            $topic_input.removeClass("empty-topic-only");
+        }
+    }
+
     function move_topic_on_update(event: JQuery.ClickEvent, dropdown: {hide: () => void}): void {
         stream_widget_value = Number.parseInt($(event.currentTarget).attr("data-unique-id")!, 10);
         const $topic_input = $<HTMLInputElement>("#move_topic_form input.move_messages_edit_topic");
@@ -877,14 +905,13 @@ export async function build_move_topic_to_stream_popover(
             $topic_input.prop("disabled", true);
         }
 
-        const topic_input_value = $topic_input.val();
-        assert(topic_input_value !== undefined);
+        disable_topic_input_if_topics_are_disabled_in_channel(selected_stream.stream_id);
 
         update_submit_button_disabled_state(stream_widget_value);
         set_stream_topic_typeahead();
         render_selected_stream();
         maybe_show_topic_already_exists_warning();
-        update_topic_input_placeholder_visibility(topic_input_value);
+        update_topic_input_placeholder();
         const selected_propagate_mode = String($("#message_move_select_options").val());
         void warn_unsubscribed_participants(selected_propagate_mode);
 
@@ -892,8 +919,11 @@ export async function build_move_topic_to_stream_popover(
         event.preventDefault();
         event.stopPropagation();
 
-        // Move focus to the topic input after a new stream is selected.
-        $topic_input.trigger("focus");
+        // Move focus to the topic input after a new stream is selected
+        // if it is not disabled.
+        if (!$topic_input.prop("disabled")) {
+            $topic_input.trigger("focus");
+        }
     }
 
     // The following logic is correct only when
@@ -964,12 +994,30 @@ export async function build_move_topic_to_stream_popover(
         $("#move_messages_count").text(message_text);
     }
 
-    function update_topic_input_placeholder_visibility(topic_input_value: string): void {
+    function update_topic_input_placeholder(): void {
         const $topic_not_mandatory_placeholder = $(".move-topic-new-topic-placeholder");
-        $topic_not_mandatory_placeholder.toggleClass(
-            "move-topic-new-topic-placeholder-visible",
-            topic_input_value === "" && stream_data.can_use_empty_topic(stream_widget_value),
-        );
+        const $topic_input = $<HTMLInputElement>("#move_topic_form input.move_messages_edit_topic");
+        const topic_input_value = $topic_input.val();
+        const has_input_focus = $topic_input.is(":focus");
+
+        // reset
+        $topic_input.attr("placeholder", "");
+        $topic_input.removeClass("empty-topic-display");
+        $topic_not_mandatory_placeholder.removeClass("move-topic-new-topic-placeholder-visible");
+        update_clear_move_topic_button_state();
+
+        if (topic_input_value !== "" || !stream_data.can_use_empty_topic(stream_widget_value)) {
+            // Don't add any placeholder if either topic input is not empty or empty topic
+            // is disabled in the channel.
+            return;
+        }
+
+        if (has_input_focus) {
+            $topic_not_mandatory_placeholder.addClass("move-topic-new-topic-placeholder-visible");
+        } else {
+            $topic_input.attr("placeholder", empty_string_topic_display_name);
+            $topic_input.addClass("empty-topic-display");
+        }
     }
 
     function setup_resize_observer($topic_input: JQuery<HTMLInputElement>): void {
@@ -989,7 +1037,7 @@ export async function build_move_topic_to_stream_popover(
     function update_clear_move_topic_button_state(): void {
         const $clear_topic_name_button = $("#clear_move_topic_new_topic_name");
         const topic_input_value = $("input#move-topic-new-topic-name").val();
-        if (topic_input_value === "") {
+        if (topic_input_value === "" || $("input#move-topic-new-topic-name").prop("disabled")) {
             $clear_topic_name_button.css("visibility", "hidden");
         } else {
             $clear_topic_name_button.css("visibility", "visible");
@@ -1014,27 +1062,10 @@ export async function build_move_topic_to_stream_popover(
         }
 
         $topic_input.on("focus", () => {
-            $topic_input.attr("placeholder", "");
-            $topic_input.removeClass("empty-topic-display");
-            if ($topic_input.val() === "" && stream_data.can_use_empty_topic(stream_widget_value)) {
-                $topic_not_mandatory_placeholder.addClass(
-                    "move-topic-new-topic-placeholder-visible",
-                );
-                $("#clear_move_topic_new_topic_name").css("visibility", "hidden");
-            }
+            update_topic_input_placeholder();
 
             $topic_input.one("blur", () => {
-                $topic_not_mandatory_placeholder.removeClass(
-                    "move-topic-new-topic-placeholder-visible",
-                );
-                if (
-                    $topic_input.val() === "" &&
-                    stream_data.can_use_empty_topic(stream_widget_value)
-                ) {
-                    $topic_input.attr("placeholder", empty_string_topic_display_name);
-                    $topic_input.addClass("empty-topic-display");
-                    $("#clear_move_topic_new_topic_name").css("visibility", "visible");
-                }
+                update_topic_input_placeholder();
             });
         });
 
@@ -1057,10 +1088,7 @@ export async function build_move_topic_to_stream_popover(
             $topic_input.on("input", () => {
                 update_submit_button_disabled_state(select_stream_id);
                 maybe_show_topic_already_exists_warning();
-                const topic_input_value = $topic_input.val();
-                assert(topic_input_value !== undefined);
-                update_topic_input_placeholder_visibility(topic_input_value);
-                update_clear_move_topic_button_state();
+                update_topic_input_placeholder();
             });
             return;
         }
@@ -1069,6 +1097,27 @@ export async function build_move_topic_to_stream_popover(
             stream_data.get_streams_for_move_messages_widget().filter(({stream}) => {
                 if (stream.stream_id === current_stream_id) {
                     return true;
+                }
+                const current_stream = stream_data.get_sub_by_id(current_stream_id);
+                assert(current_stream !== undefined);
+                // If the user can't edit the topic, it is not possible for them to make
+                // following kind of moves:
+                //  1) messages from empty topics to channels where empty topics are disabled.
+                //  2) messages from named topics to channels where topics are disabled.
+                // So we filter them out here.
+                if (
+                    !stream_data.user_can_move_messages_within_channel(current_stream) &&
+                    !stream_data.user_can_move_messages_within_channel(stream)
+                ) {
+                    if (
+                        topic_name !== "" &&
+                        stream_data.is_empty_topic_only_channel(stream.stream_id)
+                    ) {
+                        return false;
+                    }
+                    if (topic_name === "" && !stream_data.can_use_empty_topic(stream.stream_id)) {
+                        return false;
+                    }
                 }
                 return stream_data.can_post_messages_in_stream(stream);
             });
@@ -1090,15 +1139,10 @@ export async function build_move_topic_to_stream_popover(
             assert(stream_widget_value !== undefined);
             update_submit_button_disabled_state(stream_widget_value);
             maybe_show_topic_already_exists_warning();
-            const topic_input_value = $topic_input.val();
-            assert(topic_input_value !== undefined);
-            update_topic_input_placeholder_visibility(topic_input_value);
-            update_clear_move_topic_button_state();
+            update_topic_input_placeholder();
         });
 
-        const topic_input_value = $topic_input.val();
-        assert(topic_input_value !== undefined);
-        update_topic_input_placeholder_visibility(topic_input_value);
+        update_topic_input_placeholder();
 
         if (!args.from_message_actions_popover) {
             update_move_messages_count_text("change_all");
@@ -1128,6 +1172,7 @@ export async function build_move_topic_to_stream_popover(
                 update_move_messages_count_text(selected_option, message?.id);
             });
         }
+        disable_topic_input_if_topics_are_disabled_in_channel(current_stream_id);
     }
 
     function focus_on_move_modal_render(): void {

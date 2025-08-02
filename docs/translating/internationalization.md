@@ -329,20 +329,13 @@ The end-to-end tooling process for translations in Zulip is as follows.
    - It will not override the value of a singular key if that value
      contains a translated text.
 
-3. Those resource files are uploaded to Transifex by a maintainer using the
-   `./tools/i18n/push-translations` command (which invokes a Transifex
-   API tool, `tx push`, internally).
+3. Those resource files, when committed, are automatically scanned by
+   Weblate.
 
-4. Translators translate the strings in the Transifex UI. (In theory,
-   it's possible to translate locally and then do `tx push`, but
-   because our workflow is to sync translation data from Transifex to
-   Zulip, making changes to translations in Zulip risks having the
-   changes blown away by a data sync, so that's only a viable model
-   for a language that has no translations yet).
+4. Translators translate the strings in the Weblate UI.
 
-5. The translations are downloaded back into the codebase by a
-   maintainer, using `tools/i18n/sync-translations` (which invokes the
-   Transifex API tool, `tx pull`, internally).
+5. Weblate makes the translations into a Git commit, which then can be
+   merged into the codebase by a maintainer.
 
 If you're interested, you may also want to check out the [translators'
 workflow](translating.md#translators-workflow), just so you have a
@@ -353,36 +346,7 @@ sense of how everything fits together.
 All the translation magic happens through resource files, which hold
 the translated text. Server resource files are located at
 `locale/<lang_code>/LC_MESSAGES/django.po`, while web app resource
-files are located at `locale/<lang_code>/translations.json` (and
-mobile at `mobile.json`).
-
-These files are uploaded to [Transifex][], where they can be translated.
-
-## Working with Transifex
-
-### Transifex config
-
-The config file that maps the resources from Zulip to Transifex is
-located at `.tx/config`.
-
-### Transifex CLI setup
-
-In order to be able to run `tx pull` (and `tx push` as well, if you're a
-maintainer), you have to specify your Transifex API Token, [generated in
-Transifex's web interface][transifex-api-token], in a config file located at
-`~/.transifexrc`.
-
-You can find details on how to set it up [here][transifexrc], but it should
-look similar to this (with your credentials):
-
-```ini
-[https://www.transifex.com]
-rest_hostname = https://rest.api.transifex.com
-token = 1/abcdefg...
-```
-
-This basically identifies you as a Transifex user, so you can access your
-organizations from the command line.
+files are located at `locale/<lang_code>/translations.json`.
 
 ## Additional resources
 
@@ -397,7 +361,4 @@ their style guidelines.
 [formatjs]: https://formatjs.github.io/
 [icu messageformat]: https://formatjs.github.io/docs/core-concepts/icu-syntax#plural-format
 [helpers]: https://handlebarsjs.com/guide/block-helpers.html
-[transifex]: https://www.transifex.com
-[transifex-api-token]: https://app.transifex.com/user/settings/api/
-[transifexrc]: https://docs.transifex.com/client/client-configuration#transifexrc
 [html-templates]: ../subsystems/html-css.md#html-templates

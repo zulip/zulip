@@ -69,7 +69,7 @@ class ChannelFolderCreationTest(ZulipTestCase):
             "<p>Channels for <strong>backend</strong> discussions</p>",
         )
 
-    def test_invalid_names_for_channel_folder(self) -> None:
+    def test_invalid_params_for_channel_folder(self) -> None:
         self.login("iago")
 
         params = {"name": "", "description": "Channels for frontend discussions"}
@@ -80,6 +80,21 @@ class ChannelFolderCreationTest(ZulipTestCase):
         params = {"name": invalid_name, "description": "Channels for frontend discussions"}
         result = self.client_post("/json/channel_folders/create", params)
         self.assert_json_error(result, "Invalid character in channel folder name, at position 4.")
+
+        long_name = "a" * (ChannelFolder.MAX_NAME_LENGTH + 1)
+        params = {"name": long_name, "description": "Channels for frontend discussions"}
+        result = self.client_post("/json/channel_folders/create", params)
+        self.assert_json_error(
+            result, f"name is too long (limit: {ChannelFolder.MAX_NAME_LENGTH} characters)"
+        )
+
+        long_description = "a" * (ChannelFolder.MAX_DESCRIPTION_LENGTH + 1)
+        params = {"name": "Frontend", "description": long_description}
+        result = self.client_post("/json/channel_folders/create", params)
+        self.assert_json_error(
+            result,
+            f"description is too long (limit: {ChannelFolder.MAX_DESCRIPTION_LENGTH} characters)",
+        )
 
 
 class GetChannelFoldersTest(ZulipTestCase):
@@ -223,6 +238,13 @@ class UpdateChannelFoldersTest(ZulipTestCase):
         result = self.client_patch(f"/json/channel_folders/{channel_folder_id}", params)
         self.assert_json_error(result, "Invalid character in channel folder name, at position 4.")
 
+        long_name = "a" * (ChannelFolder.MAX_NAME_LENGTH + 1)
+        params = {"name": long_name}
+        result = self.client_patch(f"/json/channel_folders/{channel_folder_id}", params)
+        self.assert_json_error(
+            result, f"name is too long (limit: {ChannelFolder.MAX_NAME_LENGTH} characters)"
+        )
+
     def test_updating_channel_folder_description(self) -> None:
         channel_folder = check_add_channel_folder(
             get_realm("zulip"),
@@ -260,6 +282,13 @@ class UpdateChannelFoldersTest(ZulipTestCase):
         channel_folder = ChannelFolder.objects.get(id=channel_folder_id)
         self.assertEqual(channel_folder.description, "")
         self.assertEqual(channel_folder.rendered_description, "")
+
+        params = {"description": "a" * (ChannelFolder.MAX_DESCRIPTION_LENGTH + 1)}
+        result = self.client_patch(f"/json/channel_folders/{channel_folder_id}", params)
+        self.assert_json_error(
+            result,
+            f"description is too long (limit: {ChannelFolder.MAX_DESCRIPTION_LENGTH} characters)",
+        )
 
     def test_archiving_and_unarchiving_channel_folder(self) -> None:
         desdemona = self.example_user("desdemona")

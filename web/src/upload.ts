@@ -4,7 +4,7 @@ import Tus, {type TusBody} from "@uppy/tus";
 import {getSafeFileId} from "@uppy/utils/lib/generateFileID";
 import $ from "jquery";
 import assert from "minimalistic-assert";
-import {z} from "zod";
+import * as z from "zod/mini";
 
 import render_upload_banner from "../templates/compose_banner/upload_banner.hbs";
 
@@ -277,6 +277,17 @@ export let upload_files = (
 
 export function rewire_upload_files(value: typeof upload_files): void {
     upload_files = value;
+}
+
+export function upload_pasted_file(textarea: HTMLTextAreaElement, pasted_file: File): void {
+    if (textarea.id === "compose-textarea") {
+        upload_files(compose_upload_object, compose_config, [pasted_file]);
+        return;
+    }
+    const row = rows.get_message_id(textarea);
+    const edit_uploader = upload_objects_by_message_edit_row.get(row);
+    assert(edit_uploader !== undefined);
+    upload_files(edit_uploader, edit_config(row), [pasted_file]);
 }
 
 // Borrowed from tus-js-client code at

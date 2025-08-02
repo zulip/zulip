@@ -8,12 +8,10 @@ There are many ways to use this feature, including:
 
 - When you don't have time to read a conversation carefully, or to follow up on
   action items, mark messages as unread to return to them later.
-
 - You can mark messages as unread when you [subscribe to a
   channel](/help/introduction-to-channels#browse-and-subscribe-to-channels). This makes it
   [convenient](/help/reading-strategies) to review all the recent
   conversations in that channel.
-
 - Mark the results of your [search](/help/search-for-messages) as unread to
   review them at leisure.
 

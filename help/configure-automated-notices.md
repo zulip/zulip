@@ -1,6 +1,6 @@
 # Configure automated notices
 
-The Zulip sends automated notices via **Notification Bot** to notify users about
+The Zulip sends automated notices via Notification Bot to notify users about
 changes in their organization or account. Some types of notices can be
 configured, or disabled altogether.
 
@@ -64,7 +64,7 @@ channel](/help/subscribe-users-to-a-channel), or changes your
 
 {!admin-only.md!}
 
-You can configure where **Notification Bot** will post an announcement when new
+You can configure where Notification Bot will post an announcement when new
 users join your organization, or disable new user announcement messages
 entirely. The topic for these messages is “signups”.
 

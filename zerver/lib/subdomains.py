@@ -22,22 +22,27 @@ def get_subdomain(request: HttpRequest) -> str:
     # compatibility with older versions of Zulip, so that's a start.
 
     host = request.get_host().lower()
-    return get_subdomain_from_hostname(host)
+    subdomain = get_subdomain_from_hostname(host)
+    assert subdomain is not None
+    return subdomain
 
 
-def get_subdomain_from_hostname(host: str) -> str:
+def get_subdomain_from_hostname(
+    host: str, default_subdomain: str | None = Realm.SUBDOMAIN_FOR_ROOT_DOMAIN
+) -> str | None:
+    # Set `default_subdomain` as None to check if a valid subdomain was found.
     m = re.search(rf"\.{settings.EXTERNAL_HOST}(:\d+)?$", host)
     if m:
         subdomain = host[: m.start()]
-        if subdomain in settings.ROOT_SUBDOMAIN_ALIASES:
-            return Realm.SUBDOMAIN_FOR_ROOT_DOMAIN
+        if default_subdomain is not None and subdomain in settings.ROOT_SUBDOMAIN_ALIASES:
+            return default_subdomain
         return subdomain
 
     for subdomain, realm_host in settings.REALM_HOSTS.items():
         if re.search(rf"^{realm_host}(:\d+)?$", host):
             return subdomain
 
-    return Realm.SUBDOMAIN_FOR_ROOT_DOMAIN
+    return default_subdomain
 
 
 def is_subdomain_root_or_alias(request: HttpRequest) -> bool:

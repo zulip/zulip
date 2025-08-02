@@ -46,6 +46,11 @@ type Part =
           is_empty_string_topic: boolean;
       }
     | {
+          type: "channel";
+          prefix_for_operator: string;
+          operand: string;
+      }
+    | {
           type: "is_operator";
           verb: string;
           operand: string;
@@ -694,7 +699,7 @@ export class Filter {
 
         switch (operator) {
             case "channel":
-                return verb + "channel";
+                return verb + "messages in a channel";
             case "channels":
                 return verb + "channels";
             case "near":
@@ -837,10 +842,11 @@ export class Filter {
             if (prefix_for_operator !== "") {
                 if (canonicalized_operator === "channel") {
                     const stream = stream_data.get_sub_by_id_string(operand);
+                    const verb = term.negated ? "exclude " : "";
                     if (stream) {
                         return {
-                            type: "prefix_for_operator",
-                            prefix_for_operator,
+                            type: "channel",
+                            prefix_for_operator: verb + "messages in #",
                             operand: stream.name,
                         };
                     }
@@ -1198,6 +1204,10 @@ export class Filter {
             return true;
         }
 
+        if (_.isEqual(term_types, ["not-is-dm"])) {
+            return true;
+        }
+
         if (_.isEqual(term_types, ["is-resolved"])) {
             return true;
         }
@@ -1478,6 +1488,11 @@ export class Filter {
                 case "in-all":
                     return $t({defaultMessage: "All messages including muted channels"});
                 case "channels-public":
+                    if (page_params.is_spectator || current_user.is_guest) {
+                        return $t({
+                            defaultMessage: "Messages in all public channels that you can view",
+                        });
+                    }
                     return $t({defaultMessage: "Messages in all public channels"});
                 case "is-starred":
                     return $t({defaultMessage: "Starred messages"});

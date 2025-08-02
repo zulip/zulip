@@ -2,25 +2,40 @@
 
 The left sidebar in the Zulip web and desktop apps helps you navigate your
 conversations, and [start new
-ones](#start-a-new-conversation-from-the-left-sidebar). It has three main
+ones](#start-a-new-conversation-from-the-left-sidebar). It's divided into
 sections:
 
 - **Views** provide various ways to get an overview of your messages.
 - The **direct messages** section shows your [direct
   message](/help/direct-messages) conversations.
-- The **channels** section shows the [channels](/help/introduction-to-channels)
-  you are subscribed to.
+- [Channels](/help/introduction-to-channels) you are subscribed to are shown
+  organized into sections by [folder](/help/channel-folders).
 
 You can customize how channels are organized within the **channels**
 section by:
 
-- [Pinning channels](/help/pin-a-channel) so that they appear in the top section.
+- [Pinning channels](/help/pin-a-channel) so that they appear in a dedicated
+  section at the top of the list of channels.
 - [Changing channel colors](/help/change-the-color-of-a-channel).
 - [Configuring](/help/manage-inactive-channels) whether inactive channels are
-  sorted at the bottom.
+  hidden.
 
 You can also [configure](#configure-where-channel-links-in-the-left-sidebar-go)
 where clicking on channel links in the left sidebar takes you.
+
+## Find a direct message conversation
+
+{start_tabs}
+
+{tab|desktop-web}
+
+{!find-dm-conversation-left-sidebar.md!}
+
+{end_tabs}
+
+## Find a channel you're subscribed to
+
+{!filter-channels.md!}
 
 ## Adjust what information is shown
 
@@ -55,6 +70,11 @@ information you need in the moment.
 
 {!view-dms-left-sidebar.md!}
 
+!!! tip ""
+
+    To return to the channel list in the left sidebar, click the **back to
+    channels** link above the search box.
+
 {end_tabs}
 
 ### Show all topics in a channel
@@ -74,6 +94,10 @@ information you need in the moment.
      channels** link above the search box.
 
 {end_tabs}
+
+### Filter by whether topics are resolved
+
+{!filter-resolved-left-sidebar.md!}
 
 ### Show the left sidebar
 
@@ -109,7 +133,7 @@ you’re currently viewing.
 
 {tab|desktop-web}
 
-1. Click the **plus** (<i class="zulip-icon zulip-icon-square-plus"></i>)
+1. Click the **new direct message** (<i class="zulip-icon zulip-icon-square-plus"></i>)
    button next to the **direct messages** heading in the left sidebar.
 
 1. Start typing the name of the person or [group](/help/user-groups) you want to

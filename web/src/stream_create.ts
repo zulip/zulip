@@ -1,6 +1,6 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
-import {z} from "zod";
+import * as z from "zod/mini";
 
 import render_subscription_invites_warning_modal from "../templates/confirm_dialog/confirm_subscription_invites_warning.hbs";
 import render_change_stream_info_modal from "../templates/stream_settings/change_stream_info_modal.hbs";
@@ -13,7 +13,6 @@ import {$t, $t_html} from "./i18n.ts";
 import * as keydown_util from "./keydown_util.ts";
 import * as loading from "./loading.ts";
 import * as onboarding_steps from "./onboarding_steps.ts";
-import {page_params} from "./page_params.ts";
 import * as settings_components from "./settings_components.ts";
 import * as settings_config from "./settings_config.ts";
 import * as settings_data from "./settings_data.ts";
@@ -76,9 +75,12 @@ export function maybe_update_error_message(): void {
 const group_setting_widget_map = new Map<string, GroupSettingPillContainer | null>([
     ["can_add_subscribers_group", null],
     ["can_administer_channel_group", null],
+    ["can_delete_any_message_group", null],
+    ["can_delete_own_message_group", null],
     ["can_move_messages_out_of_channel_group", null],
     ["can_move_messages_within_channel_group", null],
     ["can_remove_subscribers_group", null],
+    ["can_resolve_topics_group", null],
     ["can_send_message_group", null],
 ]);
 
@@ -386,7 +388,7 @@ function create_stream(): void {
     }
 
     loading.make_indicator($("#stream_creating_indicator"), {
-        text: $t({defaultMessage: "Creating channel..."}),
+        text: $t({defaultMessage: "Creating channel…"}),
     });
 
     const topics_policy = $("#id_new_topics_policy").val();
@@ -404,14 +406,12 @@ function create_stream(): void {
         ...group_setting_values,
     };
 
-    if (page_params.development_environment) {
-        assert(folder_widget !== undefined);
-        const folder_id = folder_widget.value();
-        if (folder_id !== settings_config.no_folder_selected) {
-            // We do not include "folder_id" in request data if
-            // new stream will not be added to any folder.
-            data.folder_id = JSON.stringify(folder_id);
-        }
+    assert(folder_widget !== undefined);
+    const folder_id = folder_widget.value();
+    if (folder_id !== settings_config.no_folder_selected) {
+        // We do not include "folder_id" in request data if
+        // new stream will not be added to any folder.
+        data.folder_id = JSON.stringify(folder_id);
     }
 
     // Subscribe yourself and possible other people to a new stream.
@@ -425,7 +425,7 @@ function create_stream(): void {
             // The rest of the work is done via the subscribe event we will get
         },
         error(xhr): void {
-            const error_message = z.object({msg: z.string().optional()}).parse(xhr.responseJSON);
+            const error_message = z.object({msg: z.optional(z.string())}).parse(xhr.responseJSON);
             if (error_message?.msg?.includes("access")) {
                 // If we can't access the stream, we can safely
                 // assume it's a duplicate stream that we are not invited to.
@@ -465,10 +465,11 @@ export function new_stream_clicked(stream_name: string, folder_id: number | unde
         $("#create_stream_name").val(stream_name);
     }
     show_new_stream_modal();
+    assert(folder_widget !== undefined);
     if (folder_id) {
-        folder_widget!.render(folder_id);
+        folder_widget.render(folder_id);
     } else {
-        folder_widget!.render(-1);
+        folder_widget.render(-1);
     }
     $("#create_stream_name").trigger("focus");
 }
@@ -541,6 +542,15 @@ export function show_new_stream_modal(): void {
     $("#id_new_topics_policy").val(settings_config.get_stream_topics_policy_values().inherit.code);
     if (!stream_data.user_can_set_topics_policy()) {
         $("#id_new_topics_policy").prop("disabled", true);
+    }
+
+    if (!stream_data.user_can_set_delete_message_policy()) {
+        settings_components.disable_group_permission_setting(
+            $("#id_new_can_delete_any_message_group"),
+        );
+        settings_components.disable_group_permission_setting(
+            $("#id_new_can_delete_own_message_group"),
+        );
     }
 
     // set default state for "announce stream" and "default stream" option.

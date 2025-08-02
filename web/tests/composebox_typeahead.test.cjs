@@ -66,7 +66,10 @@ const {set_current_user, set_realm} = zrequire("state_data");
 const {initialize_user_settings} = zrequire("user_settings");
 const current_user = {};
 set_current_user(current_user);
-const realm = {realm_empty_topic_display_name: REALM_EMPTY_TOPIC_DISPLAY_NAME};
+const realm = {
+    realm_empty_topic_display_name: REALM_EMPTY_TOPIC_DISPLAY_NAME,
+    realm_topics_policy: "allow_empty_topic",
+};
 set_realm(realm);
 const user_settings = {
     web_channel_default_view: settings_config.web_channel_default_view_values.channel_feed.code,

@@ -191,6 +191,7 @@ class Realm(models.Model):
     # cease to be the case.
     push_notifications_enabled = models.BooleanField(default=False, db_index=True)
     push_notifications_enabled_end_timestamp = models.DateTimeField(default=None, null=True)
+    require_e2ee_push_notifications = models.BooleanField(default=False, db_default=False)
 
     date_created = models.DateTimeField(default=timezone_now)
     scheduled_deletion_date = models.DateTimeField(default=None, db_index=True, null=True)
@@ -387,6 +388,11 @@ class Realm(models.Model):
 
     # UserGroup which is allowed to use wildcard mentions in large channels.
     can_mention_many_users_group = models.ForeignKey(
+        "UserGroup", on_delete=models.RESTRICT, related_name="+"
+    )
+
+    # UserGroup which is allowed to set per-channel delete permissions setting.
+    can_set_delete_message_policy_group = models.ForeignKey(
         "UserGroup", on_delete=models.RESTRICT, related_name="+"
     )
 
@@ -721,6 +727,7 @@ class Realm(models.Model):
         name=str,
         name_changes_disabled=bool,
         push_notifications_enabled=bool,
+        require_e2ee_push_notifications=bool,
         require_unique_names=bool,
         send_welcome_emails=bool,
         topics_policy=RealmTopicsPolicyEnum,
@@ -835,6 +842,11 @@ class Realm(models.Model):
             allow_nobody_group=True,
             allow_everyone_group=True,
             default_group_name=SystemGroups.EVERYONE,
+        ),
+        can_set_delete_message_policy_group=GroupPermissionSetting(
+            allow_nobody_group=True,
+            allow_everyone_group=False,
+            default_group_name=SystemGroups.MODERATORS,
         ),
         can_set_topics_policy_group=GroupPermissionSetting(
             allow_nobody_group=True,

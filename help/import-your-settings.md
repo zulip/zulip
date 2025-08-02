@@ -12,11 +12,18 @@ It's a convenient way to preserve the user settings that you've already customiz
 
 The import will include your:
 
-- [Name and avatar](/#settings/profile)
-- [Privacy settings](/#settings/account-and-privacy)
-- [Preferences](/#settings/preferences)
-- [Notification settings](/#settings/notifications)
-- Tutorial completion status.
+- [Name](/help/change-your-name) and [profile picture](/help/change-your-profile-picture).
+- [Preferences](/help/review-your-settings#review-your-preferences), such as the
+  [theme](/help/dark-theme), [font size](/help/font-size),
+  [emoji set](/help/emoji-and-emoticons#change-your-emoji-set), and
+  [language](/help/change-your-language) you have configured.
+- [Privacy settings](/help/review-your-settings#review-your-privacy-settings),
+  which include whether you let others see [when you are typing][send-typing-notifications]
+  or [if you have read a message][share-read-receipts].
+- [Notification settings](/help/review-your-settings#review-your-notification-settings),
+  which include [default notifications for channels](/help/channel-notifications),
+  [notifications for topics you follow](/help/topic-notifications), and
+  [the sound used for audible desktop notifications](/help/desktop-notifications#notification-sound).
 
 ### Import your settings
 
@@ -37,3 +44,6 @@ The import will include your:
 
 * [Joining a Zulip organization](/help/join-a-zulip-organization)
 * [Review your settings](/help/review-your-settings)
+
+[send-typing-notifications]: /help/typing-notifications#disable-sending-typing-notifications
+[share-read-receipts]: /help/read-receipts#configure-whether-zulip-lets-others-see-when-youve-read-messages

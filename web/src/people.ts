@@ -1,6 +1,6 @@
 import md5 from "blueimp-md5";
 import assert from "minimalistic-assert";
-import {z} from "zod";
+import * as z from "zod/mini";
 
 import * as typeahead from "../shared/src/typeahead.ts";
 
@@ -54,6 +54,8 @@ let valid_user_ids: Set<number>;
 export let INACCESSIBLE_USER_NAME: string;
 export let WELCOME_BOT: User;
 export let EMAIL_GATEWAY_BOT: User;
+
+export const MAX_USER_NAME_LENGTH = 100;
 
 // We have an init() function so that our automated tests
 // can easily clear data.
@@ -1971,6 +1973,9 @@ export async function fetch_users(user_ids: Set<number>): Promise<UsersFetchResp
     }
     return new Promise((resolve, reject) => {
         fetch_users_from_server({
+            // POST /register obtains custom profile field data if and only if
+            // the current user is not a spectator. Mimic this behavior.
+            include_custom_profile_fields: !page_params.is_spectator,
             user_ids: JSON.stringify([...user_ids_to_fetch]),
             success(users) {
                 resolve(users);
@@ -1979,7 +1984,7 @@ export async function fetch_users(user_ids: Set<number>): Promise<UsersFetchResp
                 let error_message = "Failed to fetch users.";
                 if (xhr) {
                     const error = z
-                        .object({msg: z.string().optional()})
+                        .object({msg: z.optional(z.string())})
                         .safeParse(xhr.responseJSON);
                     if (error.success && error.data.msg) {
                         error_message = error.data.msg;

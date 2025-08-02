@@ -2,7 +2,7 @@
 
 <li class="narrow-filter{{#if is_muted}} out_of_home_view{{/if}}" data-stream-id="{{id}}">
     <div class="bottom_left_row">
-        <a href="{{url}}" class="subscription_block selectable_sidebar_block {{#if hide_unread_count}}hide_unread_counts{{/if}}">
+        <a href="{{url}}" class="subscription_block selectable_sidebar_block">
 
             <span class="stream-privacy-original-color-{{id}} stream-privacy filter-icon" style="color: {{color}}">
                 {{> stream_privacy . }}
@@ -12,7 +12,7 @@
 
             <div class="left-sidebar-controls">
                 {{#if can_post_messages}}
-                <div class="channel-new-topic-button tippy-zulip-tooltip hidden-for-spectators auto-hide-left-sidebar-overlay" data-tippy-content="{{t 'New topic'}}" data-stream-id="{{id}}">
+                <div class="channel-new-topic-button tippy-zulip-tooltip hidden-for-spectators auto-hide-left-sidebar-overlay" data-tippy-content="{{#unless is_empty_topic_only_channel}}{{t 'New topic'}}{{else}}{{t 'New message'}}{{/unless}}" data-stream-id="{{id}}">
                     <i class="channel-new-topic-icon zulip-icon zulip-icon-square-plus" aria-hidden="true"></i>
                 </div>
                 {{/if}}

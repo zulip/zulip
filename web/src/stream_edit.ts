@@ -2,7 +2,7 @@ import ClipboardJS from "clipboard";
 import $ from "jquery";
 import assert from "minimalistic-assert";
 import type * as tippy from "tippy.js";
-import {z} from "zod";
+import * as z from "zod/mini";
 
 import render_settings_deactivation_stream_modal from "../templates/confirm_dialog/confirm_deactivate_stream.hbs";
 import render_settings_reactivation_stream_modal from "../templates/confirm_dialog/confirm_reactivate_stream.hbs";
@@ -26,7 +26,6 @@ import * as dropdown_widget from "./dropdown_widget.ts";
 import {$t, $t_html} from "./i18n.ts";
 import * as keydown_util from "./keydown_util.ts";
 import * as narrow_state from "./narrow_state.ts";
-import {page_params} from "./page_params.ts";
 import type {User} from "./people.ts";
 import * as people from "./people.ts";
 import * as popovers from "./popovers.ts";
@@ -68,7 +67,7 @@ type StreamSetting = {
     is_checked: boolean;
 };
 
-const settings_labels_schema = stream_properties_schema.omit({color: true}).keyof();
+const settings_labels_schema = z.keyof(z.omit(stream_properties_schema, {color: true}));
 
 const realm_labels_schema = z.enum([
     "push_notifications",
@@ -76,7 +75,7 @@ const realm_labels_schema = z.enum([
     "message_content_in_email_notifications",
 ]);
 
-const notification_labels_schema = stream_specific_notification_settings_schema.keyof();
+const notification_labels_schema = z.keyof(stream_specific_notification_settings_schema);
 
 export function setup_subscriptions_tab_hash(tab_key_value: string): void {
     if ($("#subscription_overlay .right").hasClass("show")) {
@@ -276,7 +275,6 @@ export function show_settings_for(node: HTMLElement): void {
         can_access_stream_email: stream_data.can_access_stream_email(sub),
         group_setting_labels: settings_config.all_group_setting_labels.stream,
         has_billing_access: settings_data.user_has_billing_access(),
-        is_development_environment: page_params.development_environment,
         empty_string_topic_display_name: util.get_final_topic_display_name(""),
     });
     scroll_util.get_content_element($("#stream_settings")).html(html);
@@ -917,9 +915,8 @@ export function initialize(): void {
 
     $("#channels_overlay_container").on("click", ".create-channel-folder-button", () => {
         const html_body = render_create_channel_folder_modal({
-            max_channel_folder_name_length: channel_folders.MAX_CHANNEL_FOLDER_NAME_LENGTH,
-            max_channel_folder_description_length:
-                channel_folders.MAX_CHANNEL_FOLDER_DESCRIPTION_LENGTH,
+            max_channel_folder_name_length: realm.max_channel_folder_name_length,
+            max_channel_folder_description_length: realm.max_channel_folder_description_length,
         });
 
         function create_channel_folder(): void {
@@ -966,6 +963,7 @@ export function initialize(): void {
             html_submit_button: $t_html({defaultMessage: "Create"}),
             on_click: create_channel_folder,
             loading_spinner: true,
+            on_shown: () => $("#new_channel_folder_name").trigger("focus"),
         });
     });
 }

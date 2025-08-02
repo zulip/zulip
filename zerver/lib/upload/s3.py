@@ -273,15 +273,19 @@ class S3UploadBackend(ZulipUploadBackend):
             filehandle.write(chunk)
 
     @override
-    def attachment_vips_source(self, path_id: str) -> StreamingSourceWithSize:
+    def attachment_source(self, path_id: str) -> StreamingSourceWithSize:
         metadata = self.uploads_bucket.Object(path_id).get()
 
         def s3_read(streamingbody: StreamingBody, size: int) -> bytes:
             return streamingbody.read(amt=size)
 
-        source: pyvips.Source = pyvips.SourceCustom()
-        source.on_read(partial(s3_read, metadata["Body"]))
-        return StreamingSourceWithSize(size=metadata["ContentLength"], source=source)
+        vips_source: pyvips.Source = pyvips.SourceCustom()
+        vips_source.on_read(partial(s3_read, metadata["Body"]))
+        return StreamingSourceWithSize(
+            size=metadata["ContentLength"],
+            vips_source=vips_source,
+            reader=lambda: metadata["Body"],
+        )
 
     @override
     def delete_message_attachment(self, path_id: str) -> bool:

@@ -367,6 +367,10 @@ select.settings_select {
     & label.checkbox + label {
         cursor: pointer;
     }
+
+    .message_count {
+        margin: 10px 0 0;
+    }
 }
 
 /* Class for displaying an input with an
@@ -468,6 +472,10 @@ input[type="checkbox"] {
     }
 }
 
+.send_test_notification {
+    margin-bottom: 15px;
+}
+
 .preferences-settings-form {
     .tab-picker {
         width: 325px;
@@ -530,6 +538,10 @@ input[type="checkbox"] {
         align-items: center;
         /* This gap matches a single space character. */
         gap: 0.4ch;
+
+        .stream-privacy {
+            display: flex;
+        }
 
         &:hover {
             .reset_stream_notifications {
@@ -926,7 +938,6 @@ input[type="checkbox"] {
 .org-permissions-form .pill-container {
     /* Subtract 2 * (2px padding) + 2 * (1px border) */
     min-width: calc(var(--modal-input-width) - 6px);
-    background-color: hsl(0deg 0% 100%);
 
     .input {
         flex-grow: 1;
@@ -952,6 +963,7 @@ input[type="checkbox"] {
 #bot-settings {
     .add-a-new-bot {
         margin-bottom: 2px;
+        margin-top: 10px;
     }
 
     hr {
@@ -1813,7 +1825,6 @@ label.preferences-radio-choice-label {
     .pill-container {
         min-height: 24px;
         max-width: 206px;
-        background-color: hsl(0deg 0% 100%);
 
         &:focus-within {
             border-color: hsl(206deg 80% 62% / 80%);
@@ -2303,7 +2314,6 @@ label.preferences-radio-choice-label {
     .settings_text_input,
     .settings_textarea,
     .pill-container {
-        border-color: hsl(0deg 0% 100%);
         margin-bottom: 0;
 
         &:focus {

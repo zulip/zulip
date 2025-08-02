@@ -84,6 +84,10 @@ export default tseslint.config(
             "@typescript-eslint/no-loop-func": "error",
             "@typescript-eslint/no-misused-spread": "off",
             "@typescript-eslint/no-non-null-assertion": "off",
+            "@typescript-eslint/no-restricted-imports": [
+                "error",
+                {paths: [{name: "zod", message: "Use zod/mini."}]},
+            ],
             "@typescript-eslint/no-unnecessary-condition": "off",
             "@typescript-eslint/no-unnecessary-qualifier": "error",
             "@typescript-eslint/no-unused-vars": [
@@ -272,6 +276,18 @@ export default tseslint.config(
         },
     },
     {
+        files: ["help-beta/src/scripts/client/**"],
+        rules: {
+            "unicorn/prefer-module": "off",
+        },
+        languageOptions: {
+            globals: {
+                ...globals.browser,
+            },
+            sourceType: "script",
+        },
+    },
+    {
         files: ["web/shared/**"],
         languageOptions: {
             globals: globals["shared-node-browser"],
@@ -293,4 +309,15 @@ export default tseslint.config(
         },
     },
     ...astroConfigs.recommended,
+    {
+        files: [
+            "help-beta/src/components/ZulipNote.astro",
+            "help-beta/src/components/ZulipTip.astro",
+            "help-beta/src/components/KeyboardTip.astro",
+        ],
+        rules: {
+            "import/unambiguous": "off",
+            "@typescript-eslint/consistent-type-assertions": "off",
+        },
+    },
 );

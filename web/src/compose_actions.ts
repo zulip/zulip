@@ -11,6 +11,7 @@ import * as compose_notifications from "./compose_notifications.ts";
 import * as compose_pm_pill from "./compose_pm_pill.ts";
 import * as compose_recipient from "./compose_recipient.ts";
 import * as compose_state from "./compose_state.ts";
+import * as compose_tooltips from "./compose_tooltips.ts";
 import * as compose_ui from "./compose_ui.ts";
 import type {ComposeTriggeredOptions} from "./compose_ui.ts";
 import * as compose_validate from "./compose_validate.ts";
@@ -44,6 +45,7 @@ type ComposeActionsStartOpts = {
     skip_scrolling_selected_message?: boolean;
     is_reply?: boolean;
     keep_composebox_empty?: boolean | undefined;
+    defer_focus?: boolean | undefined;
 };
 
 // An iteration on `ComposeActionsStartOpts` that enforces that
@@ -116,7 +118,16 @@ function show_compose_box(opts: ComposeActionsOpts): void {
     compose_recipient.update_compose_for_message_type(opts_by_message_type);
     // When changing this, edit the 42px in _maybe_autoscroll
     $(".new_message_textarea").css("min-height", "3em");
-    compose_ui.set_focus(opts_by_message_type);
+    // Under certain circumstances, such as focusing in the
+    // automatically-opened compose box in DMs, we want to
+    // defer running the focus logic.
+    if (opts.defer_focus) {
+        setTimeout(() => {
+            compose_ui.set_focus(opts_by_message_type);
+        }, 0);
+    } else {
+        compose_ui.set_focus(opts_by_message_type);
+    }
     // Transitions in the recipient row of the compose box are attached
     // to this class we add a slight delay to avoid transitions firing
     // immediately.
@@ -207,6 +218,18 @@ export let complete_starting_tasks = (opts: ComposeActionsOpts): void => {
     compose_recipient.update_compose_area_placeholder_text();
     compose_recipient.update_narrow_to_recipient_visibility();
     compose_recipient.update_recipient_row_attention_level();
+
+    // This logic catches the corner case of starting a new topic
+    // from within an existing *general chat* topic via buttons
+    // in the left sidebar and collapsed compose box as well as
+    // the compose hotkey, ensuring that we have a high-attention
+    // recipient row.
+    const new_topic_triggers = ["clear topic button", "compose_hotkey"];
+    const is_new_topic_triggered = new_topic_triggers.includes(opts.trigger);
+
+    if (is_new_topic_triggered) {
+        compose_recipient.set_high_attention_recipient_row();
+    }
     // We explicitly call this function here apart from compose_setup.js
     // as this helps to show banner when responding in an interleaved view.
     // While responding, the compose box opens before fading resulting in
@@ -440,6 +463,7 @@ export let start = (raw_opts: ComposeActionsStartOpts): void => {
     // compose-box do not cover the last messages of the current stream
     // while writing a long message.
     resize.reset_compose_message_max_height();
+    compose_tooltips.initialize_compose_tooltips("compose", "#compose .compose_button_tooltip");
 
     complete_starting_tasks(opts);
 
@@ -620,15 +644,18 @@ export function on_narrow(opts: NarrowActivateOpts): void {
             return;
         }
 
-        // Open the compose box, passing the option to skip attempting
-        // an animated adjustment to scroll position, which is useless
-        // because we are called before the narrowing process has set
-        // the view's scroll position. recenter_view is responsible
-        // for taking the open compose box into account when placing
-        // the selecting message.
         start({
             message_type: "private",
+            // Skip attempting an animated adjustment to scroll
+            // position, which is useless because we are called before
+            // the narrowing process has set the view's scroll
+            // position. recenter_view is responsible for taking the
+            // open compose box into account when placing the
+            // selecting message.
             skip_scrolling_selected_message: true,
+            // Defer setting focus on the compose box to avoid a
+            // whole-screen scrolling bug on iPad/Safari.
+            defer_focus: true,
         });
         return;
     }

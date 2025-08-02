@@ -61,4 +61,3 @@ void (async () => {
     document.querySelector<HTMLParagraphElement>("p#done")!.hidden = false;
     window.location.href = "/accounts/login/subdomain/" + encodeURIComponent(token);
 })();
-export {};

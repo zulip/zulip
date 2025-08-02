@@ -264,7 +264,7 @@ _properties = {
     Confirmation.INVITATION: ConfirmationType(
         "get_prereg_key_and_redirect", validity_in_days=settings.INVITATION_LINK_VALIDITY_DAYS
     ),
-    Confirmation.EMAIL_CHANGE: ConfirmationType("confirm_email_change"),
+    Confirmation.EMAIL_CHANGE: ConfirmationType("confirm_email_change_get"),
     Confirmation.UNSUBSCRIBE: ConfirmationType(
         "unsubscribe",
         validity_in_days=1000000,  # should never expire
@@ -273,7 +273,7 @@ _properties = {
         "join", validity_in_days=settings.INVITATION_LINK_VALIDITY_DAYS
     ),
     Confirmation.REALM_CREATION: ConfirmationType("get_prereg_key_and_redirect"),
-    Confirmation.REALM_REACTIVATION: ConfirmationType("realm_reactivation"),
+    Confirmation.REALM_REACTIVATION: ConfirmationType("realm_reactivation_get"),
 }
 if settings.ZILENCER_ENABLED:
     _properties[Confirmation.REMOTE_SERVER_BILLING_LEGACY_LOGIN] = ConfirmationType(

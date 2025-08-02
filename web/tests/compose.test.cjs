@@ -67,7 +67,7 @@ const stream_data = zrequire("stream_data");
 const compose_validate = zrequire("compose_validate");
 const {initialize_user_settings} = zrequire("user_settings");
 
-const realm = {};
+const realm = {realm_topics_policy: "allow_empty_topic"};
 set_realm(realm);
 const current_user = {};
 set_current_user(current_user);

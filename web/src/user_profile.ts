@@ -4,7 +4,7 @@ import $ from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
 import type * as tippy from "tippy.js";
-import {z} from "zod";
+import * as z from "zod/mini";
 
 import render_profile_access_error_model from "../templates/profile_access_error_modal.hbs";
 import render_admin_human_form from "../templates/settings/admin_human_form.hbs";
@@ -21,6 +21,7 @@ import * as avatar from "./avatar.ts";
 import * as bot_data from "./bot_data.ts";
 import * as browser_history from "./browser_history.ts";
 import * as buddy_data from "./buddy_data.ts";
+import * as buttons from "./buttons.ts";
 import * as channel from "./channel.ts";
 import * as components from "./components.ts";
 import {show_copied_confirmation} from "./copied_tooltip.ts";
@@ -815,6 +816,7 @@ export function show_edit_bot_info_modal(user_id: number, $container: JQuery): v
         disable_role_dropdown: !current_user.is_admin || (bot.is_owner && !current_user.is_owner),
         bot_avatar_url: bot.avatar_url,
         is_incoming_webhook_bot: bot.bot_type === INCOMING_WEBHOOK_BOT_TYPE,
+        max_bot_name_length: people.MAX_USER_NAME_LENGTH,
     });
     $container.append($(html_body));
     let avatar_widget: UploadWidget;
@@ -1006,7 +1008,7 @@ export function show_edit_bot_info_modal(user_id: number, $container: JQuery): v
             $(".edit_bot_avatar_file_input").trigger("input");
         });
 
-        $("#bot-edit-form").on("click", ".deactivate_bot_button", (e) => {
+        $("#bot-edit-form").on("click", ".deactivate-bot-button", (e) => {
             e.preventDefault();
             e.stopPropagation();
             const bot_id = Number($("#bot-edit-form").attr("data-user-id"));
@@ -1018,7 +1020,7 @@ export function show_edit_bot_info_modal(user_id: number, $container: JQuery): v
         });
 
         // Handle reactivation
-        $("#bot-edit-form").on("click", ".reactivate_user_button", (e) => {
+        $("#bot-edit-form").on("click", ".reactivate-user-button", (e) => {
             e.preventDefault();
             e.stopPropagation();
             const user_id = Number($("#bot-edit-form").attr("data-user-id"));
@@ -1164,6 +1166,7 @@ export function show_edit_user_info_modal(user_id: number, $container: JQuery): 
         user_is_bot: person.is_bot,
         user_avatar: person.avatar_url,
         user_can_change_avatar: current_user.is_admin,
+        max_user_name_length: people.MAX_USER_NAME_LENGTH,
     });
 
     $container.append($(html_body));
@@ -1205,19 +1208,26 @@ export function show_edit_user_info_modal(user_id: number, $container: JQuery): 
     original_values = get_current_values($("#edit-user-form"));
 
     // Handle deactivation
-    $("#edit-user-form").on("click", ".deactivate_user_button", (e) => {
+    $("#edit-user-form").on("click", ".deactivate-user-button", (e) => {
         e.preventDefault();
         e.stopPropagation();
         const user_id = Number($("#edit-user-form").attr("data-user-id"));
         function handle_confirm(): void {
             const url = "/json/users/" + encodeURIComponent(user_id);
-            dialog_widget.submit_api_request(channel.del, url, {});
+            let data = {};
+            if ($(".send_email").is(":checked")) {
+                data = {
+                    deactivation_notification_comment: $(".email_field_textarea").val(),
+                };
+            }
+
+            dialog_widget.submit_api_request(channel.del, url, data);
         }
         user_deactivation_ui.confirm_deactivation(user_id, handle_confirm, true);
     });
 
     // Handle reactivation
-    $("#edit-user-form").on("click", ".reactivate_user_button", (e) => {
+    $("#edit-user-form").on("click", ".reactivate-user-button", (e) => {
         e.preventDefault();
         e.stopPropagation();
         const user_id = Number($("#edit-user-form").attr("data-user-id"));
@@ -1348,6 +1358,8 @@ export function initialize(): void {
 
     $("body").on("click", "#user-profile-modal .remove-subscription-button", (e) => {
         e.preventDefault();
+        const $remove_button = $(e.currentTarget).closest(".remove-subscription-button");
+        buttons.show_button_loading_indicator($remove_button);
         const $stream_row = $(e.currentTarget).closest("[data-stream-id]");
         const stream_id = Number.parseInt($stream_row.attr("data-stream-id")!, 10);
         const sub = sub_store.get(stream_id);
@@ -1411,6 +1423,8 @@ export function initialize(): void {
 
     $("body").on("click", "#user-profile-modal .remove-member-button", (e) => {
         e.preventDefault();
+        const $remove_button = $(e.currentTarget).closest(".remove-member-button");
+        buttons.show_button_loading_indicator($remove_button);
         const $group_row = $(e.currentTarget).closest("[data-group-id]");
         const group_id = Number.parseInt($group_row.attr("data-group-id")!, 10);
         const target_user_id = Number.parseInt($("#user-profile-modal").attr("data-user-id")!, 10);

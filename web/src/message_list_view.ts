@@ -34,7 +34,6 @@ import * as popovers from "./popovers.ts";
 import * as reactions from "./reactions.ts";
 import * as rendered_markdown from "./rendered_markdown.ts";
 import * as rows from "./rows.ts";
-import * as settings_data from "./settings_data.ts";
 import * as sidebar_ui from "./sidebar_ui.ts";
 import * as stream_color from "./stream_color.ts";
 import * as stream_data from "./stream_data.ts";
@@ -83,7 +82,7 @@ export type MessageContainer = {
 
 export type MessageGroup = {
     bookend_top?: boolean;
-    date: string;
+    date_html: string;
     date_unchanged: boolean;
     message_containers: MessageContainer[];
     message_group_id: string;
@@ -97,7 +96,7 @@ export type MessageGroup = {
           is_topic_editable: boolean;
           is_web_public: boolean;
           just_unsubscribed?: boolean;
-          match_topic: string | undefined;
+          match_topic_html: string | undefined;
           recipient_bar_color: string;
           stream_id: number;
           stream_name?: string;
@@ -365,7 +364,7 @@ function populate_group_from_message(
     const is_private = message.is_private;
     const display_recipient = message.display_recipient;
     const message_group_id = _.uniqueId("message_group_");
-    const date = get_group_display_date(message, year_changed);
+    const date_html = get_group_display_date(message, year_changed);
 
     // Each searched message is a self-contained result,
     // so we always display date in the recipient bar for those messages.
@@ -382,7 +381,7 @@ function populate_group_from_message(
         const topic = message.topic;
         const topic_display_name = util.get_final_topic_display_name(topic);
         const is_empty_string_topic = topic === "";
-        const match_topic = util.get_match_topic(message);
+        const match_topic_html = util.get_match_topic(message);
         const stream_url = hash_util.channel_url_by_user_setting(message.stream_id);
         const is_archived = stream_data.is_stream_archived(message.stream_id);
         const topic_url = internal_url.by_stream_topic_url(
@@ -406,6 +405,7 @@ function populate_group_from_message(
 
         const is_subscribed = stream_data.is_subscribed(stream_id);
         const topic_is_resolved = resolved_topic.is_resolved(topic);
+        const user_can_resolve_topic = stream_data.can_resolve_topics(sub);
         const visibility_policy = user_topics.get_topic_visibility_policy(stream_id, topic);
         // The following field is not specific to this group, but this is the
         // easiest way we've figured out for passing the data to the template rendering.
@@ -418,9 +418,9 @@ function populate_group_from_message(
             message_containers: [],
             is_stream,
             ...get_topic_edit_properties(message),
-            user_can_resolve_topic: settings_data.user_can_resolve_topic(),
+            user_can_resolve_topic,
             ...subscription_markers,
-            date,
+            date_html,
             display_recipient,
             date_unchanged,
             topic_links,
@@ -431,7 +431,7 @@ function populate_group_from_message(
             stream_privacy_icon_color,
             invite_only,
             is_web_public,
-            match_topic,
+            match_topic_html,
             stream_url,
             is_archived,
             topic_url,
@@ -454,7 +454,7 @@ function populate_group_from_message(
         is_stream,
         is_private,
         ...get_topic_edit_properties(message),
-        date,
+        date_html,
         date_unchanged,
         display_recipient,
         pm_with_url: message.pm_with_url,
@@ -1331,7 +1331,7 @@ export class MessageListView {
     _new_messages_height(rendered_elems: JQuery[]): number {
         let new_messages_height = 0;
 
-        for (const $elem of rendered_elems.reverse()) {
+        for (const $elem of rendered_elems.toReversed()) {
             // Sometimes there are non-DOM elements in rendered_elems; only
             // try to get the heights of actual trs.
             if ($elem.is("div")) {
@@ -2000,7 +2000,7 @@ export class MessageListView {
                 .attr("id")!;
             const group = this._find_message_group(message_group_id);
             if (group !== undefined) {
-                const rendered_date = group.date;
+                const rendered_date = group.date_html;
                 dom_updates.html_updates.push({
                     $element: $current_sticky_header.find(".recipient_row_date"),
                     rendered_date,

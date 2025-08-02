@@ -53,6 +53,7 @@ const test_user = {
 
 const admin_user_id = 1;
 const moderator_user_id = 2;
+
 // set up user data
 const admins_group = {
     name: "Admins",
@@ -1588,6 +1589,41 @@ test("can_move_messages_within_channel", ({override}) => {
     assert.equal(stream_data.user_can_move_messages_within_channel(scotland), false);
 });
 
+test("can_resolve_topics", ({override}) => {
+    override(realm, "realm_can_resolve_topics_group", admins_group.id);
+    const sub = {
+        name: "Denmark",
+        subscribed: true,
+        color: "red",
+        stream_id: 1,
+        can_resolve_topics_group: admins_group.id,
+    };
+    stream_data.add_sub(sub);
+
+    assert.equal(stream_data.can_resolve_topics(undefined), false);
+    initialize_and_override_current_user(admin_user_id, override);
+    assert.equal(stream_data.can_resolve_topics(undefined), true);
+    assert.equal(stream_data.can_resolve_topics(sub), true);
+    initialize_and_override_current_user(moderator_user_id, override);
+    assert.equal(stream_data.can_resolve_topics(sub), false);
+
+    sub.can_resolve_topics_group = moderators_group.id;
+    initialize_and_override_current_user(admin_user_id, override);
+    assert.equal(stream_data.can_resolve_topics(sub), true);
+    initialize_and_override_current_user(moderator_user_id, override);
+    assert.equal(stream_data.can_resolve_topics(sub), true);
+    initialize_and_override_current_user(test_user.user_id, override);
+    assert.equal(stream_data.can_resolve_topics(sub), false);
+
+    sub.can_resolve_topics_group = everyone_group.id;
+    initialize_and_override_current_user(admin_user_id, override);
+    assert.equal(stream_data.can_resolve_topics(sub), true);
+    initialize_and_override_current_user(moderator_user_id, override);
+    assert.equal(stream_data.can_resolve_topics(sub), true);
+    initialize_and_override_current_user(test_user.user_id, override);
+    assert.equal(stream_data.can_resolve_topics(sub), true);
+});
+
 test("can_unsubscribe_others", ({override}) => {
     const sub = {
         name: "Denmark",
@@ -1754,6 +1790,41 @@ test("user_can_set_topics_policy", ({override}) => {
     assert.equal(stream_data.user_can_set_topics_policy(), true);
     override(realm, "realm_can_set_topics_policy_group", nobody_group.id);
     assert.equal(stream_data.user_can_set_topics_policy(sub), false);
+});
+
+test("user_can_set_delete_message_policy", ({override}) => {
+    const sub = {
+        name: "Denmark",
+        subscribed: true,
+        color: "red",
+        stream_id: 1,
+        can_add_subscribers_group: admins_group.id,
+        can_administer_channel_group: nobody_group.id,
+        can_remove_subscribers_group: admins_group.id,
+    };
+    stream_data.add_sub(sub);
+
+    override(realm, "realm_can_set_delete_message_policy_group", nobody_group.id);
+    // Admins can always change per-channel delete_message policy.
+    initialize_and_override_current_user(admin_user_id, override);
+    override(current_user, "is_admin", true);
+    assert.equal(stream_data.user_can_set_delete_message_policy(sub), true);
+
+    initialize_and_override_current_user(moderator_user_id, override);
+    override(current_user, "is_admin", false);
+    assert.equal(stream_data.user_can_set_delete_message_policy(sub), false);
+
+    // Not allowed as user not in can_administer_channel_group.
+    override(realm, "realm_can_set_delete_message_policy_group", everyone_group.id);
+    assert.equal(stream_data.user_can_set_delete_message_policy(sub), false);
+
+    sub.can_administer_channel_group = moderators_group.id;
+    assert.equal(stream_data.user_can_set_delete_message_policy(sub), true);
+
+    // Only realm_can_set_delete_message_policy_group is checked if sub is not provided.
+    assert.equal(stream_data.user_can_set_delete_message_policy(), true);
+    override(realm, "realm_can_set_delete_message_policy_group", nobody_group.id);
+    assert.equal(stream_data.user_can_set_delete_message_policy(sub), false);
 });
 
 test("options for dropdown widget", () => {
@@ -2173,4 +2244,31 @@ run_test("can_archive_stream", ({override}) => {
 
     social.can_administer_channel_group = me_group.id;
     assert.equal(stream_data.can_archive_stream(social), true);
+});
+
+run_test("is_empty_topic_only_channel", ({override}) => {
+    const social = {
+        subscribed: true,
+        color: "red",
+        name: "social",
+        stream_id: 2,
+        topics_policy: "empty_topic_only",
+    };
+    stream_data.add_sub(social);
+    const scotland = {
+        subscribed: true,
+        color: "red",
+        name: "scotland",
+        stream_id: 3,
+        topics_policy: "inherit",
+    };
+    override(realm, "realm_topics_policy", "allow_empty_topic");
+    assert.equal(stream_data.is_empty_topic_only_channel(undefined), false);
+
+    stream_data.add_sub(scotland);
+    override(current_user, "user_id", me.user_id);
+
+    override(current_user, "is_admin", true);
+    assert.equal(stream_data.is_empty_topic_only_channel(social.stream_id), true);
+    assert.equal(stream_data.is_empty_topic_only_channel(scotland.stream_id), false);
 });

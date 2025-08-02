@@ -3,7 +3,7 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
 import * as tippy from "tippy.js";
-import {z} from "zod";
+import * as z from "zod/mini";
 
 import render_buddy_list_tooltip_content from "../templates/buddy_list_tooltip_content.hbs";
 
@@ -400,15 +400,7 @@ export function initialize(): void {
         e.stopPropagation();
         const $recipient_row = $(e.target).closest(".recipient_row");
         const message_id = rows.id_for_recipient_row($recipient_row);
-        const topic_name = $(e.target).attr("data-topic-name")!;
-        message_edit.toggle_resolve_topic(message_id, topic_name, false, $recipient_row);
-    });
-
-    $("body").on("click", ".message_header .on_hover_topic_unresolve", (e) => {
-        e.stopPropagation();
-        const $recipient_row = $(e.target).closest(".recipient_row");
-        const message_id = rows.id_for_recipient_row($recipient_row);
-        const topic_name = $(e.target).attr("data-topic-name")!;
+        const topic_name = $(e.target).closest(".message_header").attr("data-topic-name")!;
         message_edit.toggle_resolve_topic(message_id, topic_name, false, $recipient_row);
     });
 
@@ -520,6 +512,10 @@ export function initialize(): void {
                     observer.disconnect();
                 }
             },
+            onCreate(instance) {
+                const $popover = $(instance.popper);
+                $popover.addClass("buddy-list-tooltip-root");
+            },
             onShow(instance) {
                 if (!is_custom_observer_needed) {
                     return;
@@ -585,7 +581,13 @@ export function initialize(): void {
             $(".user_sidebar_entry .status-emoji-name").on("mouseenter", () => {
                 const element: tippy.ReferenceElement = util.the($elem);
                 const instance = element._tippy;
-                if (instance?.state.isVisible) {
+                // We make sure instance is of buddy list since we don't want to
+                // close any other tippy instances.
+                if (
+                    instance?.state.isVisible &&
+                    instance.reference.classList.contains("user_sidebar_entry") &&
+                    instance.popper.classList.contains("buddy-list-tooltip-root")
+                ) {
                     instance.destroy();
                 }
             });
@@ -655,20 +657,6 @@ export function initialize(): void {
                 get_target_node,
                 check_reference_removed,
             );
-        });
-    });
-
-    // Left sidebar channel rows
-    $("body").on("click", ".channel-new-topic-button", function (this: HTMLElement, e) {
-        e.stopPropagation();
-        e.preventDefault();
-        const stream_id = Number.parseInt(this.dataset.streamId!, 10);
-        compose_actions.start({
-            message_type: "stream",
-            stream_id,
-            topic: "",
-            trigger: "clear topic button",
-            keep_composebox_empty: true,
         });
     });
 
@@ -836,12 +824,11 @@ export function initialize(): void {
 
     // LEFT SIDEBAR
 
-    $("body").on("click", "#clear_search_topic_button", topic_list.clear_topic_search);
-
-    $(".streams_filter_icon").on("click", (e) => {
-        e.stopPropagation();
-        stream_list.toggle_filter_displayed(e);
-    });
+    $("body").on(
+        "click",
+        ".filter-topics .input-close-filter-button",
+        topic_list.clear_topic_search,
+    );
 
     $("body").on("click", "#direct-messages-section-header.zoom-out", (e) => {
         if ($(e.target).closest("#show-all-direct-messages").length === 1) {
@@ -992,5 +979,15 @@ export function initialize(): void {
 
     $(".settings-header.mobile .fa-chevron-left").on("click", () => {
         settings_panel_menu.mobile_deactivate_section();
+    });
+
+    $(document).on("click", ".request-upgrade", (e) => {
+        e.preventDefault();
+        window.open("/upgrade/", "_blank", "noopener,noreferrer");
+    });
+
+    $(document).on("click", ".request-sponsorship", (e) => {
+        e.preventDefault();
+        window.open("/sponsorship/", "_blank", "noopener,noreferrer");
     });
 }

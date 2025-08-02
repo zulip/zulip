@@ -1,7 +1,7 @@
 import * as Sentry from "@sentry/browser";
 import $ from "jquery";
 import _ from "lodash";
-import {z} from "zod";
+import * as z from "zod/mini";
 
 import {page_params} from "./base_page_params.ts";
 import * as blueslip from "./blueslip.ts";

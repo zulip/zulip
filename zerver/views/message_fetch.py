@@ -5,10 +5,9 @@ from django.conf import settings
 from django.contrib.auth.models import AnonymousUser
 from django.db import connection, transaction
 from django.http import HttpRequest, HttpResponse
-from django.utils.html import escape as escape_html
 from django.utils.translation import gettext as _
 from pydantic import Json, NonNegativeInt
-from sqlalchemy.sql import column
+from sqlalchemy.sql import column, func
 from sqlalchemy.types import Integer, Text
 
 from zerver.context_processors import get_valid_realm_from_request
@@ -32,7 +31,7 @@ from zerver.lib.narrow import (
 from zerver.lib.request import RequestNotes
 from zerver.lib.response import json_success
 from zerver.lib.sqlalchemy_utils import get_sqlalchemy_connection
-from zerver.lib.topic import DB_TOPIC_NAME, MATCH_TOPIC
+from zerver.lib.topic import MATCH_TOPIC
 from zerver.lib.topic_sqlalchemy import topic_column_sa
 from zerver.lib.typed_endpoint import ApiParamConfig, typed_endpoint
 from zerver.models import UserMessage, UserProfile
@@ -79,13 +78,13 @@ def highlight_string(text: str, locs: Iterable[tuple[int, int]]) -> str:
 
 def get_search_fields(
     rendered_content: str,
-    topic_name: str,
+    escaped_topic_name: str,
     content_matches: Iterable[tuple[int, int]],
     topic_matches: Iterable[tuple[int, int]],
 ) -> dict[str, str]:
     return {
         "match_content": highlight_string(rendered_content, content_matches),
-        MATCH_TOPIC: highlight_string(escape_html(topic_name), topic_matches),
+        MATCH_TOPIC: highlight_string(escaped_topic_name, topic_matches),
     }
 
 
@@ -294,9 +293,9 @@ def get_messages_backend(
         if is_search:
             for row in rows:
                 message_id = row[0]
-                (topic_name, rendered_content, content_matches, topic_matches) = row[-4:]
+                (escaped_topic_name, rendered_content, content_matches, topic_matches) = row[-4:]
                 search_fields[message_id] = get_search_fields(
-                    rendered_content, topic_name, content_matches, topic_matches
+                    rendered_content, escaped_topic_name, content_matches, topic_matches
                 )
 
         message_list = messages_for_ids(
@@ -354,7 +353,7 @@ def messages_in_narrow_backend(
     query = query.where(column("message_id", Integer).in_(msg_ids))
 
     updated_narrow = update_narrow_terms_containing_empty_topic_fallback_name(narrow)
-    query, is_search = add_narrow_conditions(
+    query, is_search, _is_dm_narrow = add_narrow_conditions(
         user_profile=user_profile,
         inner_msg_id_col=inner_msg_id_col,
         query=query,
@@ -365,19 +364,22 @@ def messages_in_narrow_backend(
 
     if not is_search:
         # `add_narrow_conditions` adds the following columns only if narrow has search operands.
-        query = query.add_columns(topic_column_sa(), column("rendered_content", Text))
+        query = query.add_columns(
+            func.escape_html(topic_column_sa(), type_=Text).label("escaped_topic_name"),
+            column("rendered_content", Text),
+        )
 
     search_fields = {}
     with get_sqlalchemy_connection() as sa_conn:
         for row in sa_conn.execute(query).mappings():
             message_id = row["message_id"]
-            topic_name: str = row[DB_TOPIC_NAME]
+            escaped_topic_name: str = row["escaped_topic_name"]
             rendered_content: str = row["rendered_content"]
             content_matches = row.get("content_matches", [])
             topic_matches = row.get("topic_matches", [])
             search_fields[str(message_id)] = get_search_fields(
                 rendered_content,
-                topic_name,
+                escaped_topic_name,
                 content_matches,
                 topic_matches,
             )

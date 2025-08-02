@@ -7,6 +7,7 @@ import logging
 import os
 import re
 import signal
+import statistics
 import sys
 from datetime import date, datetime, timedelta, timezone
 from enum import Enum, auto
@@ -83,7 +84,7 @@ def parser() -> argparse.ArgumentParser:
     filtering.add_argument(
         "--all-lines",
         "-L",
-        help="Show all matching lines; equivalent to -suemtpr",
+        help="Show all matching lines; equivalent to -suaemtpr",
         action="store_true",
     )
     filtering.add_argument("--static", "-s", help="Include static file paths", action="store_true")
@@ -114,6 +115,7 @@ def parser() -> argparse.ArgumentParser:
     output = parser.add_argument_group("Output")
     output.add_argument("--full-line", "-F", help="Show full matching line", action="store_true")
     output.add_argument("--timeline", "-T", help="Show start, end, and gaps", action="store_true")
+    output.add_argument("--stats", "-S", help="Compute and show statistics", action="store_true")
     return parser
 
 
@@ -207,6 +209,10 @@ def main() -> None:
 
     use_color = sys.stdout.isatty()
     lowered_terms = [term.lower() for term in substr_terms]
+    if args.stats:
+        durations: list[int] | None = []
+    else:
+        durations = None
     try:
         for logfile_name in reversed(logfile_names):
             with maybe_gzip(logfile_name) as logfile:
@@ -232,6 +238,7 @@ def main() -> None:
                             args,
                             filter_types=filter_types,
                             use_color=use_color,
+                            durations=durations,
                         )
     except BrokenPipeError:
         # Python flushes standard streams on exit; redirect remaining output
@@ -241,6 +248,19 @@ def main() -> None:
         sys.exit(1)
     except KeyboardInterrupt:
         sys.exit(signal.SIGINT + 128)
+
+    if durations is not None:
+        # Prepend [0] to make the percentiles 1-indexed, instead of 0-indexed
+        percentiles = [0, *statistics.quantiles(durations, n=100)]
+        print()
+        print(f"Total requests: {len(durations)}")
+        print(f"Min duration:   {min(durations):>5}ms")
+        print(f"p50 duration:   {int(percentiles[50]):>5}ms")
+        print(f"p75 duration:   {int(percentiles[75]):>5}ms")
+        print(f"p90 duration:   {int(percentiles[90]):>5}ms")
+        print(f"p95 duration:   {int(percentiles[95]):>5}ms")
+        print(f"p99 duration:   {int(percentiles[99]):>5}ms")
+        print(f"Max duration:   {max(durations):>5}ms")
 
 
 def parse_logfile_names(args: argparse.Namespace) -> list[str]:
@@ -437,8 +457,16 @@ def print_line(
     args: argparse.Namespace,
     filter_types: set[FilterType],
     use_color: bool,
+    durations: list[int] | None = None,
 ) -> None:
     global last_match_end
+
+    if match["duration"].endswith("ms"):
+        duration_ms = int(match["duration"].removesuffix("ms"))
+    else:
+        duration_ms = int(float(match["duration"].removesuffix("s")) * 1000)
+    if durations is not None:
+        durations.append(duration_ms)
 
     if args.full_line:
         print(match.group(0))

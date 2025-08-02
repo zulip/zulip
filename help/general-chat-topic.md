@@ -1,4 +1,4 @@
-# “*General chat*” topic
+# “General chat” topic
 
 Zulip's [topics](/help/introduction-to-topics) help you keep conversations
 organized, but you may sometimes want to send a message without a topic. For
@@ -8,7 +8,9 @@ example, this could be appropriate for social chatter, or for a one-off request
 {!general-chat-intro.md!}
 
 The “*general chat*” topic can be used only if [allowed](/help/require-topics)
-by your organization's administrators.
+by your organization's administrators, and channels can be
+[configured](/help/general-chat-channels) to only allow the “*general chat*”
+topic.
 
 ## Sending a message to the “*general chat*” topic
 
@@ -19,8 +21,8 @@ topic, or follow the instructions below.
 
 {tab|via-left-sidebar}
 
-1. Click the **plus** (<i class="zulip-icon zulip-icon-square-plus"></i>) button next
-   to the name of the channel where you'd like to send a message.
+1. Click the **new topic** (<i class="zulip-icon zulip-icon-square-plus"></i>)
+   button next to the name of the channel where you'd like to send a message.
 
 {!compose-and-send-message.md!}
 
@@ -49,4 +51,5 @@ topic, or follow the instructions below.
 ## Related articles
 
 - [Introduction to topics](/help/introduction-to-topics)
+- [“*General chat*” channels](/help/general-chat-channels)
 - [Require topics in channel messages](/help/require-topics)

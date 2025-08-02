@@ -45,9 +45,9 @@ Standard hosting.
 
 1. Select a channel.
 
-{!select-channel-view-general.md!}
+{!select-channel-view-general-advanced.md!}
 
-1. Under **Channel permissions**, configure the
+1. Under **Administrative permissions**, configure the
    **Message retention period**.
 
 {!save-changes.md!}
@@ -60,7 +60,6 @@ Standard hosting.
 
 * Retention policies are processed in a daily job; so changes in the
   policy won't have any effect until the next time the daily job runs.
-
 * Deleted messages are preserved temporarily in a special archive.  So
 if you discover a misconfiguration accidentally deleted content you
 meant to preserve, contact Zulip support promptly for assistance with

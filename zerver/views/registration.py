@@ -137,6 +137,8 @@ from zproject.backends import (
     password_auth_enabled,
 )
 
+logger = logging.getLogger("")
+
 
 @typed_endpoint
 def get_prereg_key_and_redirect(
@@ -476,7 +478,7 @@ def registration_helper(
             return redirect_to_deactivation_notice()
 
         try:
-            validate_email_not_already_in_realm(realm, email)
+            validate_email_not_already_in_realm(realm, email, allow_inactive_mirror_dummies=True)
         except ValidationError:
             return redirect_to_email_login_url(email)
 
@@ -507,7 +509,7 @@ def registration_helper(
                     try:
                         ldap_username = backend.django_to_ldap_username(email)
                     except NoMatchingLDAPUserError:
-                        logging.warning("New account email %s could not be found in LDAP", email)
+                        logger.warning("New account email %s could not be found in LDAP", email)
                         break
 
                     # Note that this `ldap_user` object is not a
@@ -860,7 +862,7 @@ def registration_helper(
         )
         if return_data.get("invalid_subdomain"):
             # By construction, this should never happen.
-            logging.error(
+            logger.error(
                 "Subdomain mismatch in registration %s: %s",
                 realm.subdomain,
                 user_profile.delivery_email,
@@ -1267,7 +1269,7 @@ def create_realm(request: HttpRequest, creation_key: str | None = None) -> HttpR
     # When settings.OPEN_REALM_CREATION is enabled, anyone can create a new realm,
     # with a few restrictions on their email address.
     if request.method == "POST":
-        if settings.USING_CAPTCHA:
+        if settings.USING_CAPTCHA and settings.ALTCHA_HMAC_KEY:
             form: RealmCreationForm = CaptchaRealmCreationForm(data=request.POST, request=request)
         else:
             form = RealmCreationForm(request.POST)
@@ -1315,7 +1317,7 @@ def create_realm(request: HttpRequest, creation_key: str | None = None) -> HttpR
                     request=request,
                 )
             except EmailNotDeliveredError:
-                logging.exception("Failed to deliver email during realm creation")
+                logger.exception("Failed to deliver email during realm creation")
                 if settings.CORPORATE_ENABLED:
                     return render(request, "500.html", status=500)
                 return config_error(request, "smtp")
@@ -1341,7 +1343,7 @@ def create_realm(request: HttpRequest, creation_key: str | None = None) -> HttpR
         initial_data = {
             "realm_default_language": default_language_code,
         }
-        if settings.USING_CAPTCHA:
+        if settings.USING_CAPTCHA and settings.ALTCHA_HMAC_KEY:
             form = CaptchaRealmCreationForm(request=request, initial=initial_data)
         else:
             form = RealmCreationForm(initial=initial_data)
@@ -1463,7 +1465,9 @@ def accounts_home(
             email = form.cleaned_data["email"]
 
             try:
-                validate_email_not_already_in_realm(realm, email)
+                validate_email_not_already_in_realm(
+                    realm, email, allow_inactive_mirror_dummies=True
+                )
             except ValidationError:
                 return redirect_to_email_login_url(email)
 
@@ -1480,7 +1484,7 @@ def accounts_home(
             try:
                 send_confirm_registration_email(email, activation_url, request=request, realm=realm)
             except EmailNotDeliveredError:
-                logging.exception("Failed to deliver email during user registration")
+                logger.exception("Failed to deliver email during user registration")
                 if settings.CORPORATE_ENABLED:
                     return render(request, "500.html", status=500)
                 return config_error(request, "smtp")

@@ -2,7 +2,7 @@ import $ from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
 import * as tippy from "tippy.js";
-import {z} from "zod";
+import * as z from "zod/mini";
 
 import render_confirm_delete_all_drafts from "../templates/confirm_dialog/confirm_delete_all_drafts.hbs";
 
@@ -40,17 +40,17 @@ const draft_schema = z.intersection(
     z.object({
         content: z.string(),
         updatedAt: z.number(),
-        is_sending_saving: z.boolean().default(false),
+        is_sending_saving: z._default(z.boolean(), false),
         // `drafts_version` is 0 for drafts that aren't auto-restored
         // and 1 for drafts created since that change, to avoid a flood
         // of old drafts showing up when this feature was introduced.
-        drafts_version: z.number().default(0),
+        drafts_version: z._default(z.number(), 0),
     }),
     z.discriminatedUnion("type", [
         z.object({
             type: z.literal("stream"),
             topic: z.string(),
-            stream_id: z.number().optional(),
+            stream_id: z.optional(z.number()),
         }),
         z.object({
             type: z.literal("private"),
@@ -70,21 +70,21 @@ const possibly_buggy_draft_schema = z.intersection(
     z.object({
         content: z.string(),
         updatedAt: z.number(),
-        is_sending_saving: z.boolean().default(false),
-        drafts_version: z.number().default(0),
+        is_sending_saving: z._default(z.boolean(), false),
+        drafts_version: z._default(z.number(), 0),
     }),
     z.discriminatedUnion("type", [
         z.object({
             type: z.literal("stream"),
-            topic: z.string().optional(),
-            stream_id: z.number().optional(),
-            stream: z.string().optional(),
+            topic: z.optional(z.string()),
+            stream_id: z.optional(z.number()),
+            stream: z.optional(z.string()),
         }),
         z.object({
             type: z.literal("private"),
             reply_to: z.string(),
-            private_message_recipient: z.string().optional(),
-            private_message_recipient_ids: z.array(z.number()).optional(),
+            private_message_recipient: z.optional(z.string()),
+            private_message_recipient_ids: z.optional(z.array(z.number())),
         }),
     ]),
 );
@@ -317,10 +317,12 @@ export function rename_stream_recipient(
     }
 }
 
-export function snapshot_message(): LocalStorageDraft | undefined {
-    if (!compose_state.composing() || !compose_state.has_savable_message_content()) {
+export function snapshot_message(force_save = false): LocalStorageDraft | undefined {
+    const can_save_message = force_save || compose_state.has_savable_message_content();
+    if (!compose_state.composing() || !can_save_message) {
         // If you aren't in the middle of composing the body of a
-        // message or the message is shorter than 2 characters long, don't try to snapshot.
+        // message, forcing a save or the message is shorter than 2 characters long,
+        // don't try to snapshot.
         return undefined;
     }
 
@@ -423,6 +425,7 @@ type UpdateDraftOptions = {
     no_notify?: boolean;
     update_count?: boolean;
     is_sending_saving?: boolean;
+    force_save?: boolean;
 };
 
 export let update_draft = (opts: UpdateDraftOptions = {}): string | undefined => {
@@ -430,7 +433,8 @@ export let update_draft = (opts: UpdateDraftOptions = {}): string | undefined =>
     const old_draft = draft_id === undefined ? undefined : draft_model.getDraft(draft_id);
 
     const no_notify = opts.no_notify ?? false;
-    const draft = snapshot_message();
+    const force_save = opts.force_save ?? false;
+    const draft = snapshot_message(force_save);
 
     if (draft === undefined) {
         // The user cleared the compose box, which means

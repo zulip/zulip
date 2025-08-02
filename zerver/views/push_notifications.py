@@ -1,9 +1,12 @@
+from typing import Annotated
+
 import orjson
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
 from django.utils.translation import gettext as _
+from pydantic import Json
 
 from zerver.decorator import human_users_only, zulip_login_required
 from zerver.lib import redis_utils
@@ -12,17 +15,20 @@ from zerver.lib.exceptions import (
     JsonableError,
     MissingRemoteRealmError,
     OrganizationOwnerRequiredError,
+    PushServiceNotConfiguredError,
     RemoteRealmServerMismatchError,
     ResourceNotFoundError,
 )
 from zerver.lib.push_notifications import (
     InvalidPushDeviceTokenError,
     add_push_device_token,
-    b64_to_hex,
     remove_push_device_token,
     send_test_push_notification,
     uses_notification_bouncer,
+    validate_token,
 )
+from zerver.lib.push_registration import RegisterPushDeviceToBouncerQueueItem
+from zerver.lib.queue import queue_event_on_commit
 from zerver.lib.remote_server import (
     SELF_HOSTING_REGISTRATION_TAKEOVER_CHALLENGE_TOKEN_REDIS_KEY,
     UserDataForRemoteBilling,
@@ -32,21 +38,11 @@ from zerver.lib.remote_server import (
 )
 from zerver.lib.response import json_success
 from zerver.lib.typed_endpoint import ApnsAppId, typed_endpoint, typed_endpoint_without_parameters
-from zerver.models import PushDeviceToken, UserProfile
+from zerver.lib.typed_endpoint_validators import check_string_in_validator
+from zerver.models import PushDevice, PushDeviceToken, UserProfile
 from zerver.views.errors import config_error
 
 redis_client = redis_utils.get_redis_client()
-
-
-def validate_token(token_str: str, kind: int) -> None:
-    if token_str == "" or len(token_str) > 4096:
-        raise JsonableError(_("Empty or invalid length token"))
-    if kind == PushDeviceToken.APNS:
-        # Validate that we can actually decode the token.
-        try:
-            b64_to_hex(token_str)
-        except Exception:
-            raise JsonableError(_("Invalid APNS token"))
 
 
 @human_users_only
@@ -265,3 +261,57 @@ def self_hosting_registration_transfer_challenge_verify(
     verification_secret = data["verification_secret"]
 
     return json_success(request, data={"verification_secret": verification_secret})
+
+
+@human_users_only
+@typed_endpoint
+def register_push_device(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    *,
+    token_kind: Annotated[str, check_string_in_validator(PushDevice.TokenKind.values)],
+    push_account_id: Json[int],
+    # Key that the client is requesting be used for
+    # encrypting push notifications for delivery to it.
+    push_public_key: str,
+    # Key that the client claims was used to encrypt
+    # `encrypted_push_registration`.
+    bouncer_public_key: str,
+    # Registration data encrypted by mobile client for bouncer.
+    encrypted_push_registration: str,
+) -> HttpResponse:
+    if not (settings.ZILENCER_ENABLED or uses_notification_bouncer()):
+        raise PushServiceNotConfiguredError
+
+    # Idempotency
+    already_registered = PushDevice.objects.filter(
+        user=user_profile, push_account_id=push_account_id, error_code__isnull=True
+    ).exists()
+    if already_registered:
+        return json_success(request)
+
+    PushDevice.objects.update_or_create(
+        user=user_profile,
+        push_account_id=push_account_id,
+        defaults={"token_kind": token_kind, "push_public_key": push_public_key, "error_code": None},
+    )
+
+    # We use a queue worker to make the request to the bouncer
+    # to complete the registration, so that any transient failures
+    # can be managed between the two servers, without the mobile
+    # device and its often-irregular network access in the picture.
+    queue_item: RegisterPushDeviceToBouncerQueueItem = {
+        "user_profile_id": user_profile.id,
+        "bouncer_public_key": bouncer_public_key,
+        "encrypted_push_registration": encrypted_push_registration,
+        "push_account_id": push_account_id,
+    }
+    queue_event_on_commit(
+        "missedmessage_mobile_notifications",
+        {
+            "type": "register_push_device_to_bouncer",
+            "payload": queue_item,
+        },
+    )
+
+    return json_success(request)

@@ -243,10 +243,11 @@ assume that messages sent prior to the introduction of thumbnailing
 have been re-rendered to use the new format or have thumbnails
 available.
 
-## Video previews
+## Video embeddings and previews
 
-When a Zulip message is sent linking to an uploaded video, Zulip will
+When a Zulip message is sent linking to an uploaded video, Zulip may
 generate a video preview element with the following format.
+
 
 ``` html
 <div class="message_inline_image message_inline_video">
@@ -256,6 +257,40 @@ generate a video preview element with the following format.
   </a>
 </div>
 ```
+
+## Audio Players
+
+When the Markdown media syntax is used with an uploaded file with an
+audio `Content-Type`, Zulip will generate an HTML5 `<audio>` player
+element. Supported MIME types are currently `audio/aac`, `audio/flac`,
+`audio/mpeg`, and `audio/wav`.
+
+For example, `[file.mp3](/user_uploads/path/to/file.mp3)` renders as:
+
+``` html
+<audio controls preload="metadata"
+  src="/user_uploads/path/to/file.mp3" title="file.mp3">
+</audio>
+```
+
+If the Zulip server has rewritten the URL of the audio file, it will
+provide the URL in a `data-original-url` parameter. The Zulip server
+does this for all non-uploaded file audio URLs.
+
+``` html
+<audio controls preload="metadata"
+  data-original-url="https://example.com/path/to/original/file.mp3"
+  src="https://zulipcdn.example.com/path/to/playable/file.mp3" title="file.mp3">
+</audio>
+```
+
+Clients that cannot render an audio player are recommended to convert
+audio elements into a link to the original URL.
+
+The Zulip server does not validate whether uploaded files with an
+audio `Content-Type` are actually playable.
+
+**Changes**: New in Zulip 11.0 (feature level 405).
 
 ## Mentions and silent mentions
 

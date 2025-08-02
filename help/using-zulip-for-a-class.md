@@ -30,7 +30,7 @@ Share lecture notes and reading materials with [drag-and-drop file
 uploads](/help/share-and-upload-files), for example:
 
 * **\#Unit 3: Sorting algorithms** > **lecture notes**: Here are the notes
-from today’s lecture. [lecture notes 10/2.pdf]() You can view a recording of the lecture [here]().
+from today’s lecture. [lecture notes 10/2.pdf](/help/using-zulip-for-a-class) You can view a recording of the lecture [here](/help/using-zulip-for-a-class).
 
 ### Formatting tips
 

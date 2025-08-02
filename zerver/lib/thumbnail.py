@@ -12,9 +12,9 @@ from django.utils.translation import gettext as _
 from typing_extensions import Self, override
 
 from zerver.lib.exceptions import ErrorCode, JsonableError
-from zerver.lib.mime_types import INLINE_MIME_TYPES
+from zerver.lib.mime_types import AUDIO_INLINE_MIME_TYPES, INLINE_MIME_TYPES
 from zerver.lib.queue import queue_event_on_commit
-from zerver.models import ImageAttachment
+from zerver.models import Attachment, ImageAttachment
 
 DEFAULT_AVATAR_SIZE = 100
 MEDIUM_AVATAR_SIZE = 500
@@ -408,19 +408,28 @@ class MarkdownImageMetadata:
     transcoded_image: StoredThumbnailFormat | None = None
 
 
+@dataclass
+class AttachmentData:
+    audio_path_ids: set[str]
+    image_metadata: dict[str, MarkdownImageMetadata]
+
+
 def get_user_upload_previews(
     realm_id: int,
     content: str,
     lock: bool = False,
     enqueue: bool = True,
     path_ids: list[str] | None = None,
-) -> dict[str, MarkdownImageMetadata]:
+) -> AttachmentData:
     if path_ids is None:
         path_ids = re.findall(r"/user_uploads/(\d+/[/\w.-]+)", content)
     if not path_ids:
-        return {}
+        return AttachmentData(
+            audio_path_ids=set(),
+            image_metadata={},
+        )
 
-    upload_preview_data: dict[str, MarkdownImageMetadata] = {}
+    image_metadata: dict[str, MarkdownImageMetadata] = {}
 
     image_attachments = ImageAttachment.objects.filter(
         realm_id=realm_id, path_id__in=path_ids
@@ -432,7 +441,7 @@ def get_user_upload_previews(
             # Image exists, and header of it parsed as a valid image,
             # but has not been thumbnailed yet; we will render a
             # spinner.
-            upload_preview_data[image_attachment.path_id] = MarkdownImageMetadata(
+            image_metadata[image_attachment.path_id] = MarkdownImageMetadata(
                 url=None,
                 is_animated=False,
                 original_width_px=image_attachment.original_width_px,
@@ -450,7 +459,7 @@ def get_user_upload_previews(
                 queue_event_on_commit("thumbnail", {"id": image_attachment.id})
         else:
             url, is_animated = get_default_thumbnail_url(image_attachment)
-            upload_preview_data[image_attachment.path_id] = MarkdownImageMetadata(
+            image_metadata[image_attachment.path_id] = MarkdownImageMetadata(
                 url=url,
                 is_animated=is_animated,
                 original_width_px=image_attachment.original_width_px,
@@ -458,7 +467,21 @@ def get_user_upload_previews(
                 original_content_type=image_attachment.content_type,
                 transcoded_image=get_transcoded_format(image_attachment),
             )
-    return upload_preview_data
+
+    non_image_path_ids = [path_id for path_id in path_ids if image_metadata.get(path_id) is None]
+    non_image_attachments = Attachment.objects.filter(
+        realm_id=realm_id, path_id__in=non_image_path_ids
+    ).order_by("id")
+    audio_path_ids = {
+        attachment.path_id
+        for attachment in non_image_attachments
+        if attachment.content_type in AUDIO_INLINE_MIME_TYPES
+    }
+
+    return AttachmentData(
+        audio_path_ids=audio_path_ids,
+        image_metadata=image_metadata,
+    )
 
 
 def get_default_thumbnail_url(image_attachment: ImageAttachment) -> tuple[str, bool]:

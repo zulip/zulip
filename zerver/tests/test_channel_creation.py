@@ -1,7 +1,10 @@
 import orjson
 
 from zerver.actions.channel_folders import check_add_channel_folder
-from zerver.actions.realm_settings import do_change_realm_plan_type
+from zerver.actions.realm_settings import (
+    do_change_realm_permission_group_setting,
+    do_change_realm_plan_type,
+)
 from zerver.actions.user_groups import check_add_user_group
 from zerver.actions.users import do_change_user_role
 from zerver.lib.default_streams import get_default_stream_ids_for_realm
@@ -563,6 +566,17 @@ class TestCreateStreams(ZulipTestCase):
         )
 
     def test_permission_settings_on_stream_creation(self) -> None:
+        realm = get_realm("zulip")
+        members_system_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MEMBERS, realm=realm, is_system_group=True
+        )
+        do_change_realm_permission_group_setting(
+            realm,
+            "can_set_delete_message_policy_group",
+            members_system_group,
+            acting_user=None,
+        )
+
         for setting_name in Stream.stream_permission_group_settings:
             self.do_test_permission_setting_on_stream_creation(setting_name)
 

@@ -31,8 +31,15 @@ type MessageType = "stream" | "private";
 let compose_select_recipient_dropdown_widget: DropdownWidget;
 
 function composing_to_current_topic_narrow(): boolean {
+    // If the narrow state's stream ID or topic is undefined, then
+    // the user cannot be composing to a current topic narrow. Note
+    // that both lists of channel topics and channel feeds have a
+    // stream_id, but not a topic.
+    if (narrow_state.stream_id() === undefined || narrow_state.topic() === undefined) {
+        return false;
+    }
     return (
-        util.lower_same(compose_state.stream_name(), narrow_state.stream_name() ?? "") &&
+        compose_state.stream_id() === narrow_state.stream_id() &&
         util.lower_same(compose_state.topic(), narrow_state.topic() ?? "")
     );
 }
@@ -59,13 +66,13 @@ export let update_recipient_row_attention_level = (): void => {
 
     // We're piggy-backing here, in a roundabout way, on
     // compose_ui.set_focus(). Any time the topic or DM recipient
-    // row is focused, that puts us outside the low-attention
+    // row is focused, that puts users outside the low-attention
     // recipient-row state--including the `c` hotkey or the
-    // Start new conversation button being clicked.
-    const is_compose_textarea_focused = document.activeElement?.id === "compose-textarea";
+    // Start new conversation button being clicked. But that
+    // logic is handled via the event handlers in compose_setup.js
+    // that call set_high_attention_recipient_row().
     if (
-        is_compose_textarea_focused &&
-        composing_to_current_topic_narrow() &&
+        (composing_to_current_topic_narrow() || composing_to_current_private_message_narrow()) &&
         compose_state.has_full_recipient() &&
         !compose_state.is_recipient_edited_manually()
     ) {
@@ -273,6 +280,8 @@ function item_click_callback(event: JQuery.ClickEvent, dropdown: tippy.Instance)
     }
     compose_state.set_selected_recipient_id(recipient_id);
     compose_state.set_recipient_edited_manually(true);
+    // Enable or disable topic input based on `topics_policy`.
+    update_topic_displayed_text(compose_state.topic());
     on_compose_select_recipient_update();
     compose_select_recipient_dropdown_widget.item_clicked = true;
     dropdown.hide();
@@ -394,16 +403,17 @@ export function update_topic_displayed_text(topic_name = "", has_topic_focus = f
     compose_state.topic(topic_name);
 
     const $input = $("input#stream_message_recipient_topic");
-    const is_empty_string_topic = topic_name === "";
     const recipient_widget_hidden =
         $(".compose_select_recipient-dropdown-list-container").length === 0;
     const $topic_not_mandatory_placeholder = $("#topic-not-mandatory-placeholder");
 
     // reset
+    $input.prop("disabled", false);
     $input.attr("placeholder", "");
-    $input.removeClass("empty-topic-display");
+    $input.removeClass("empty-topic-display empty-topic-only");
     $topic_not_mandatory_placeholder.removeClass("visible");
     $topic_not_mandatory_placeholder.hide();
+    $("#compose_recipient_box").removeClass("disabled");
 
     if (!stream_data.can_use_empty_topic(compose_state.stream_id())) {
         $input.attr("placeholder", $t({defaultMessage: "Topic"}));
@@ -412,6 +422,17 @@ export function update_topic_displayed_text(topic_name = "", has_topic_focus = f
         // placeholder will always be "Topic" and never "general chat".
         return;
     }
+
+    // If `topics_policy` is set to `empty_topic_only`, disable the topic input
+    // and empty the input box.
+    if (stream_data.is_empty_topic_only_channel(compose_state.stream_id())) {
+        compose_state.topic("");
+        $input.prop("disabled", true);
+        $input.addClass("empty-topic-only");
+        $("#compose_recipient_box").addClass("disabled");
+        $("textarea#compose-textarea").trigger("focus");
+        has_topic_focus = false;
+    }
     // Otherwise, we have some adjustments to make to display:
     // * a placeholder with the default topic name stylized
     // * the empty string topic stylized
@@ -419,7 +440,11 @@ export function update_topic_displayed_text(topic_name = "", has_topic_focus = f
         $topic_not_mandatory_placeholder.toggleClass("visible", $input.val() === "");
     }
 
-    if (is_empty_string_topic && !has_topic_focus && recipient_widget_hidden) {
+    const is_empty_string_topic = compose_state.topic() === "";
+    if (
+        is_empty_string_topic &&
+        ($input.prop("disabled") || (!has_topic_focus && recipient_widget_hidden))
+    ) {
         $input.attr("placeholder", util.get_final_topic_display_name(""));
         $input.addClass("empty-topic-display");
     } else {

@@ -7,9 +7,10 @@ party issue trackers, like GitHub, Salesforce, Zendesk, and others.
 For instance, you can add a linkifier that automatically turns `#2468`
 into a link to `https://github.com/zulip/zulip/issues/2468`.
 
-If the pattern appears in a topic, Zulip adds an **Open**
-(<i class="fa fa-external-link-square"></i>) button to the right of the
-topic in the message recipient bar that links to the appropriate URL.
+If the pattern appears in a topic, Zulip adds an
+**Open** (<i class="zulip-icon zulip-icon-external-link"></i>) button
+to the right of the topic in the message recipient bar that links to
+the appropriate URL.
 
 If you have any trouble creating the linkifiers you want, please [contact Zulip
 support](/help/contact-support) with details on what you're trying to do.
@@ -185,15 +186,12 @@ interest (`django/django`) that is in a different organization.
 * Specific linkifier (ordered before the general linkifier)
     * Pattern: `django#(?P<id>[0-9]+)`
     * URL template: `https://github.com/django/django/pull/{id}`
-
 * General linkifier
     * Pattern: `(?P<repo>[a-zA-Z0-9_-]+)#(?P<id>[0-9]+)`
     * URL template: `https://github.com/zulip/{repo}/pull/{id}`
-
 * Example matching both linkifiers; specific linkifier takes precedence:
     * Original text: `django#123`
     * Automatically links to: `https://github.com/django/django/pull/123`
-
 * Example matching only the general linkifier:
     * Original text: `zulip-desktop#123`
     * Automatically links to: `https://github.com/zulip/zulip-desktop/pull/123`

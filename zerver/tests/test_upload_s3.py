@@ -34,7 +34,7 @@ from zerver.lib.thumbnail import (
 )
 from zerver.lib.upload import (
     all_message_attachments,
-    attachment_vips_source,
+    attachment_source,
     delete_export_tarball,
     delete_message_attachment,
     delete_message_attachments,
@@ -82,7 +82,7 @@ class S3Test(ZulipTestCase):
         self.assertEqual(output.getvalue(), b"zulip!")
 
     @use_s3_backend
-    def test_attachment_vips_source(self) -> None:
+    def test_attachment_source(self) -> None:
         create_s3_buckets(settings.S3_AUTH_UPLOADS_BUCKET)
         user_profile = self.example_user("hamlet")
         url = upload_message_attachment(
@@ -90,10 +90,10 @@ class S3Test(ZulipTestCase):
         )[0]
         path_id = re.sub(r"/user_uploads/", "", url)
 
-        source = attachment_vips_source(path_id)
+        source = attachment_source(path_id)
         self.assertIsInstance(source, StreamingSourceWithSize)
         self.assertEqual(source.size, len(read_test_image_file("img.png")))
-        image = pyvips.Image.new_from_source(source.source, "", access="sequential")
+        image = pyvips.Image.new_from_source(source.vips_source, "", access="sequential")
         self.assertEqual(128, image.height)
         self.assertEqual(128, image.width)
 

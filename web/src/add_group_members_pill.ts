@@ -122,10 +122,12 @@ export function create({
     }
 
     if (onPillRemoveAction) {
-        void (async () => {
-            const user_ids = await get_pill_user_ids(pill_widget);
-            onPillRemoveAction(user_ids, get_pill_group_ids(pill_widget));
-        })();
+        pill_widget.onPillRemove(() => {
+            void (async () => {
+                const user_ids = await get_pill_user_ids(pill_widget);
+                onPillRemoveAction(user_ids, get_pill_group_ids(pill_widget));
+            })();
+        });
     }
 
     function get_users(): User[] {

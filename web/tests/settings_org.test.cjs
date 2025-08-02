@@ -16,6 +16,7 @@ mock_esm("../src/loading", {
     make_indicator: noop,
     destroy_indicator: noop,
 });
+mock_esm("../src/settings_banner", {set_up_upgrade_banners: noop});
 mock_esm("../src/buttons", {
     show_button_loading_indicator: noop,
     hide_button_loading_indicator: noop,
@@ -181,6 +182,7 @@ function test_change_save_button_state() {
         props,
     } = createSaveButtons("msg-editing");
     $save_button_header.attr("id", "org-msg-editing");
+    $("#org-msg-editing").closest = () => ({});
 
     {
         settings_components.change_save_button_state($save_button_controls, "unsaved");

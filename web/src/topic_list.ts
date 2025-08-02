@@ -26,17 +26,28 @@ import type {TopicInfo} from "./topic_list_data.ts";
 import * as typeahead_helper from "./typeahead_helper.ts";
 import * as vdom from "./vdom.ts";
 
-/*
-    Track all active widgets with a Map by stream_id.
+type TopicFilterPill = {
+    label: string;
+    syntax: string;
+};
 
-    (We have at max one for now, but we may
-    eventually allow multiple streams to be
-    expanded.)
-*/
+const filter_options: TopicFilterPill[] = [
+    {
+        label: $t({defaultMessage: "Unresolved topics"}),
+        syntax: "-is:resolved",
+    },
+    {
+        label: $t({defaultMessage: "Resolved topics"}),
+        syntax: "is:resolved",
+    },
+];
 
+/* Track all active widgets with a Map by stream_id. We have at max
+   one for now, but we may eventually allow multiple streams to be
+   expanded. */
 const active_widgets = new Map<number, LeftSidebarTopicListWidget>();
 export let search_pill_widget: SearchPillWidget | null = null;
-export let topic_state_typeahead: Typeahead<string> | undefined;
+export let topic_state_typeahead: Typeahead<TopicFilterPill> | undefined;
 
 // We know whether we're zoomed or not.
 let zoomed = false;
@@ -374,26 +385,17 @@ export class LeftSidebarTopicListWidget extends TopicListWidget {
 
 export function clear_topic_search(e: JQuery.Event): void {
     e.stopPropagation();
+
+    search_pill_widget?.clear(true);
+
     const $input = $("#topic_filter_query");
-    if ($input.length > 0) {
-        $input.text("");
-        $input.trigger("blur");
-
-        search_pill_widget?.clear(true);
-        update_clear_button();
-
-        // Since this changes the contents of the search input, we
-        // need to rerender the topic list.
-        const stream_ids = [...active_widgets.keys()];
-
-        const stream_id = stream_ids[0];
-        assert(stream_id !== undefined);
-        const widget = active_widgets.get(stream_id);
-        assert(widget !== undefined);
-        const parent_widget = widget.get_parent();
-
-        rebuild_left_sidebar(parent_widget, stream_id);
-    }
+    // Since the `clear` function of the search_pill_widget
+    // takes care of clearing both the text content and the
+    // pills, we just need to trigger an input event on the
+    // contenteditable element to reset the topic list via
+    // the `input` event handler without having to manually
+    // manage the reset of the topic list.
+    $input.trigger("input");
 }
 
 export function active_stream_id(): number | undefined {
@@ -494,7 +496,7 @@ export function zoom_in(): void {
 }
 
 export function get_left_sidebar_topic_search_term(): string {
-    return $("#left-sidebar-filter-topic-input .input").text().trim();
+    return $("#topic_filter_query").text().trim();
 }
 
 export function get_typeahead_search_term(): string {
@@ -507,27 +509,6 @@ function set_search_bar_text(text: string): void {
     const $input = $("#topic_filter_query");
     $input.text(text);
     $input.trigger("input");
-}
-
-const filter_options = new Map<string, string>([
-    [$t({defaultMessage: "Unresolved topics"}), "-is:resolved"],
-    [$t({defaultMessage: "Resolved topics"}), "is:resolved"],
-    [$t({defaultMessage: "All topics"}), ""],
-]);
-
-export function update_clear_button(): void {
-    const $filter_query = $("#topic_filter_query");
-    const $clear_button = $("#clear_search_topic_button");
-    if (get_left_sidebar_topic_search_term() === "" && get_typeahead_search_term() === "") {
-        $clear_button.css("visibility", "hidden");
-        // When we use backspace to clear the content of the search box,
-        // a <br> tag is left inside it, preventing the data-placeholder
-        // value from reappearing as the element never becomes truly empty.
-        // Therefore, we manually set the text to empty.
-        $filter_query.empty();
-    } else {
-        $clear_button.css("visibility", "visible");
-    }
 }
 
 export function setup_topic_search_typeahead(): void {
@@ -546,7 +527,6 @@ export function setup_topic_search_typeahead(): void {
     };
 
     const options = {
-        items: filter_options.size,
         source() {
             const stream_id = active_stream_id();
             assert(stream_id !== undefined);
@@ -558,34 +538,39 @@ export function setup_topic_search_typeahead(): void {
             if ($pills.length > 0) {
                 return [];
             }
-            return [...filter_options.keys()];
+            return [...filter_options];
         },
-        item_html(item: string) {
-            return typeahead_helper.render_topic_state(item);
+        item_html(item: TopicFilterPill) {
+            return typeahead_helper.render_topic_state(item.label);
         },
-        matcher(item: string, query: string) {
-            return item.toLowerCase().includes(query.toLowerCase());
+        matcher(item: TopicFilterPill, query: string) {
+            // This basically only matches if `is:` is in the query.
+            return (
+                query.includes(":") &&
+                (item.syntax.toLowerCase().startsWith(query.toLowerCase()) ||
+                    (item.syntax.startsWith("-") &&
+                        item.syntax.slice(1).toLowerCase().startsWith(query.toLowerCase())))
+            );
         },
-        sorter(items: string[]) {
+        sorter(items: TopicFilterPill[]) {
+            // This sort order places "Unresolved topics" first
+            // always, which is good because that's almost always what
+            // users will want.
             return items;
         },
-        updater(item: string) {
-            const value = filter_options.get(item)!;
+        updater(item: TopicFilterPill) {
             assert(search_pill_widget !== null);
             search_pill_widget.clear(true);
-            search_pill_widget.appendValue(value);
+            search_pill_widget.appendValue(item.syntax);
             set_search_bar_text("");
             $input.trigger("focus");
             return get_left_sidebar_topic_search_term();
         },
-        // Prevents key events from propagating to other handlers or triggering default browser actions.
+        // Prevents key events from propagating to other handlers or
+        // triggering default browser actions.
         stopAdvance: true,
         // Use dropup, to match compose typeahead.
         dropup: true,
-        // Display typeahead menu when input gains focus and is empty.
-        helpOnEmptyStrings: true,
-        // Prevents displaying the typeahead menu when a pill is deleted via backspace.
-        hideOnEmptyAfterBackspace: true,
     };
 
     topic_state_typeahead = new Typeahead(typeahead_input, options);
@@ -594,7 +579,6 @@ export function setup_topic_search_typeahead(): void {
         if (e.key === "Enter") {
             e.preventDefault();
             e.stopPropagation();
-            $input.addClass("shake");
         } else if (e.key === ",") {
             e.stopPropagation();
             return;
@@ -602,7 +586,6 @@ export function setup_topic_search_typeahead(): void {
     });
 
     search_pill_widget.onPillRemove(() => {
-        update_clear_button();
         const stream_id = active_stream_id();
         if (stream_id !== undefined) {
             const widget = active_widgets.get(stream_id);
@@ -649,8 +632,20 @@ export function initialize({
         const stream_id = active_stream_id();
         assert(stream_id !== undefined);
         active_widgets.get(stream_id)?.build();
-        update_clear_button();
-    });
 
-    update_clear_button();
+        if (get_left_sidebar_topic_search_term() === "") {
+            // When the contenteditable div is empty, the browser
+            // adds a <br> element to it, which interferes with
+            // the ":empty" selector in the CSS. Hence, we detect
+            // this case and clear the content of the div to ensure
+            // that the CSS styles are applied correctly.
+            // TODO: Remove this when we have a better way to handle
+            // empty contenteditable elements. Since while testing this
+            // effect in a sandbox, a `display: inline` applied to the
+            // contenteditable element seems to fix the issue, but that
+            // doesn't work in this particular case.
+            // See: https://stackoverflow.com/questions/14638887/br-is-inserted-into-contenteditable-html-element-if-left-empty
+            $("#topic_filter_query").empty();
+        }
+    });
 }

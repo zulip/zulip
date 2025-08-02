@@ -1,13 +1,19 @@
 .input-active-styles {
-    color: var(--color-text-input-focus);
+    color: var(--color-text-input);
     background-color: var(--color-background-input-focus);
-    border-color: var(--color-border-input-focus);
+    outline-color: var(--color-outline-input-focus);
 }
 
 .input-element-wrapper {
     display: grid;
     grid-template:
-        [input-element-start] "icon-starting-offset input-icon icon-content-gap content button-content-gap input-button button-ending-offset" auto [input-element-end] / [input-element-start] var(
+        /* We present a variable to set a uniform row height when needed;
+           otherwise, we fall back to the sensible `auto` value. */
+        [input-element-start] "icon-starting-offset input-icon icon-content-gap content button-content-gap input-button button-ending-offset" var(
+            --input-element-row-height,
+            auto
+        )
+        [input-element-end] / [input-element-start] var(
             --input-icon-starting-offset
         )
         var(--input-icon-width) var(--input-icon-content-gap) minmax(0, 1fr)
@@ -20,30 +26,28 @@
     .input-element {
         grid-area: input-element;
         box-sizing: border-box;
-        padding: 0.1875em 0.5em; /* 3px at 16px/1em and 8px at 16px/1em */
+        padding: 0.25em 0.5em; /* 4px at 16px/1em and 8px at 16px/1em */
         font-size: var(--base-font-size-px);
         font-family: "Source Sans 3 VF", sans-serif;
         line-height: 1.25;
         text-overflow: ellipsis;
         color: var(--color-text-input);
         background: var(--color-background-input);
-        border: 1px solid var(--color-border-input);
+        outline: 1px solid var(--color-outline-input);
+        outline-offset: -1px;
+        border: none;
         border-radius: 4px;
-        outline: none;
         transition: 0.1s linear;
-        transition-property: border-color, box-shadow;
+        transition-property: outline-color, box-shadow;
 
         &:hover {
-            border-color: var(--color-border-input-hover);
+            outline-color: var(--color-outline-input-hover);
         }
 
         &:focus {
-            box-shadow: 0 0 5px var(--color-box-shadow-input-focus);
-        }
-
-        &:focus,
-        &.input-element-nonempty {
             @extend .input-active-styles;
+
+            box-shadow: 0 0 5px var(--color-box-shadow-input-focus);
         }
     }
 
@@ -60,11 +64,43 @@
                 var(--input-button-ending-offset)
         );
     }
+
+    /* Special styles for input with pills */
+    &.has-input-pills .pill-container {
+        .input {
+            flex-grow: 1;
+            /* Override default values in web/styles/input_pill.css  */
+            padding: 0;
+            line-height: inherit;
+
+            &:empty::before {
+                color: var(--color-text-placeholder);
+                content: attr(data-placeholder);
+            }
+        }
+
+        .pill {
+            height: 1.25em; /* 20px at 16px/1em */
+        }
+
+        &:has(.input:hover) {
+            outline-color: var(--color-outline-input-hover);
+        }
+
+        &:has(.input:focus) {
+            @extend .input-active-styles;
+
+            box-shadow: 0 0 5px var(--color-box-shadow-input-focus);
+        }
+    }
 }
 
 .input-icon {
     grid-area: input-icon;
-    color: var(--color-text-input);
+    /* Matching the color of input icon on the left to
+       that of a neutral icon button gives us a consistent
+       look when paired with the input button on the right. */
+    color: var(--color-text-neutral-icon-button);
     /* We need to set the z-index, since the input icon
        comes before the input element in the DOM, but we
        want to display it over the input element in the UI. */
@@ -77,19 +113,42 @@
     padding: 0.25em; /* 4px at 16px/1em */
 }
 
-.filter-input .input-element {
-    &:placeholder-shown {
-        /* In case of filter inputs, when the input field
-        is empty, we hide the input button and adjust
-        the right padding to compensate for the same. */
-        padding-right: 0.5em;
+.filter-input {
+    /* We use the `input` tag in the selector to avoid conflicts
+       with the pill containing counterpart, which uses a `contenteditable`
+       div instead of an input element, and thus doesn't support the
+       placeholder pseudo-classes. */
+    input.input-element {
+        &:placeholder-shown {
+            /* In case of filter inputs, when the input field
+            is empty, we hide the input button and adjust
+            the right padding to compensate for the same. */
+            padding-right: 0.5em;
 
-        ~ .input-button {
-            visibility: hidden;
+            ~ .input-close-filter-button {
+                visibility: hidden;
+            }
+        }
+
+        &:not(:placeholder-shown) {
+            @extend .input-active-styles;
         }
     }
 
-    &:not(:placeholder-shown) {
-        @extend .input-active-styles;
+    /* Specific styles for filter input with pills */
+    &.has-input-pills {
+        &:not(:has(.pill)):has(.input:empty) {
+            .input-element {
+                padding-right: 0.5em;
+            }
+
+            .input-close-filter-button {
+                visibility: hidden;
+            }
+        }
+
+        &:has(.pill):not(:has(.input:empty)) .input-element {
+            @extend .input-active-styles;
+        }
     }
 }

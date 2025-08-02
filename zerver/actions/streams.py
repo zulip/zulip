@@ -38,6 +38,7 @@ from zerver.lib.stream_subscription import (
 from zerver.lib.stream_traffic import get_streams_traffic
 from zerver.lib.streams import (
     can_access_stream_metadata_user_ids,
+    channel_events_topic_name,
     check_basic_stream_access,
     get_anonymous_group_membership_dict_for_streams,
     get_stream_permission_policy_key,
@@ -190,7 +191,7 @@ def do_deactivate_stream(stream: Stream, *, acting_user: UserProfile | None) -> 
         internal_send_stream_message(
             sender,
             stream,
-            topic_name=str(Realm.STREAM_EVENTS_NOTIFICATION_TOPIC_NAME),
+            topic_name=channel_events_topic_name(stream),
             content=_("Channel #**{channel_name}** has been archived.").format(
                 channel_name=stream.name
             ),
@@ -314,7 +315,7 @@ def do_unarchive_stream(stream: Stream, new_name: str, *, acting_user: UserProfi
         internal_send_stream_message(
             sender,
             stream,
-            str(Realm.STREAM_EVENTS_NOTIFICATION_TOPIC_NAME),
+            channel_events_topic_name(stream),
             _("Channel #**{channel_name}** has been unarchived.").format(channel_name=new_name),
         )
 
@@ -458,6 +459,8 @@ def send_subscription_add_events(
                 is_archived=stream_dict["is_archived"],
                 can_add_subscribers_group=stream_dict["can_add_subscribers_group"],
                 can_administer_channel_group=stream_dict["can_administer_channel_group"],
+                can_delete_any_message_group=stream_dict["can_delete_any_message_group"],
+                can_delete_own_message_group=stream_dict["can_delete_own_message_group"],
                 can_move_messages_out_of_channel_group=stream_dict[
                     "can_move_messages_out_of_channel_group"
                 ],
@@ -466,6 +469,7 @@ def send_subscription_add_events(
                 ],
                 can_send_message_group=stream_dict["can_send_message_group"],
                 can_remove_subscribers_group=stream_dict["can_remove_subscribers_group"],
+                can_resolve_topics_group=stream_dict["can_resolve_topics_group"],
                 can_subscribe_group=stream_dict["can_subscribe_group"],
                 creator_id=stream_dict["creator_id"],
                 date_created=stream_dict["date_created"],
@@ -1246,7 +1250,7 @@ def send_change_stream_permission_notification(
         internal_send_stream_message(
             sender,
             stream,
-            str(Realm.STREAM_EVENTS_NOTIFICATION_TOPIC_NAME),
+            channel_events_topic_name(stream),
             notification_string,
             archived_channel_notice=stream.deactivated,
         )
@@ -1480,7 +1484,7 @@ def send_stream_posting_permission_update_notification(
         internal_send_stream_message(
             sender,
             stream,
-            str(Realm.STREAM_EVENTS_NOTIFICATION_TOPIC_NAME),
+            channel_events_topic_name(stream),
             notification_string,
             archived_channel_notice=stream.deactivated,
         )
@@ -1535,7 +1539,7 @@ def do_rename_stream(stream: Stream, new_name: str, user_profile: UserProfile) -
         internal_send_stream_message(
             sender,
             stream,
-            str(Realm.STREAM_EVENTS_NOTIFICATION_TOPIC_NAME),
+            channel_events_topic_name(stream),
             _("{user_name} renamed channel {old_channel_name} to {new_channel_name}.").format(
                 user_name=silent_mention_syntax_for_user(user_profile),
                 old_channel_name=f"**{old_name}**",
@@ -1572,7 +1576,7 @@ def send_change_stream_description_notification(
         internal_send_stream_message(
             sender,
             stream,
-            str(Realm.STREAM_EVENTS_NOTIFICATION_TOPIC_NAME),
+            channel_events_topic_name(stream),
             notification_string,
             archived_channel_notice=stream.deactivated,
         )
@@ -1666,7 +1670,7 @@ def send_change_stream_message_retention_days_notification(
         internal_send_stream_message(
             sender,
             stream,
-            str(Realm.STREAM_EVENTS_NOTIFICATION_TOPIC_NAME),
+            channel_events_topic_name(stream),
             notification_string,
             archived_channel_notice=stream.deactivated,
         )
@@ -1755,6 +1759,9 @@ def do_set_stream_property(stream: Stream, name: str, value: Any, acting_user: U
         StreamTopicsPolicyEnum.disable_empty_topic.value: _(
             "No *{empty_topic_display_name}* topic"
         ).format(empty_topic_display_name=empty_topic_display_name),
+        StreamTopicsPolicyEnum.empty_topic_only.value: _(
+            "Only *{empty_topic_display_name}* topic allowed"
+        ).format(empty_topic_display_name=empty_topic_display_name),
     }
 
     NOTIFICATION_MESSAGES = {
@@ -1771,7 +1778,7 @@ def do_set_stream_property(stream: Stream, name: str, value: Any, acting_user: U
             internal_send_stream_message(
                 sender,
                 stream,
-                str(Realm.STREAM_EVENTS_NOTIFICATION_TOPIC_NAME),
+                channel_events_topic_name(stream),
                 NOTIFICATION_MESSAGES[name],
             )
 

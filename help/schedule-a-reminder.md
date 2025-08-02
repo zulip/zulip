@@ -1,9 +1,13 @@
 # Schedule a reminder
 
-Zulip allows you to schedule a reminder for a message at a later
-time. The reminder is delivered to you as a [direct
-message](/help/direct-messages) by Notification Bot at the scheduled
-time.
+Zulip allows you to schedule a reminder for a message at a later time. The
+reminder is delivered to you as a [direct message](/help/direct-messages) by
+Notification Bot at the scheduled time. For example, you might schedule a
+reminder for a message to reply to when you have more time, or one about a task
+to take care of.
+
+You can also [schedule a message](/help/schedule-a-message) to be sent to any
+conversation at a later time.
 
 ## Schedule a reminder
 

@@ -7,7 +7,9 @@ import render_left_sidebar_topic_actions_popover from "../templates/popovers/lef
 
 import * as clipboard_handler from "./clipboard_handler.ts";
 import * as confirm_dialog from "./confirm_dialog.ts";
+import * as hash_util from "./hash_util.ts";
 import {$t_html} from "./i18n.ts";
+import * as message_delete from "./message_delete.ts";
 import * as message_edit from "./message_edit.ts";
 import * as message_summary from "./message_summary.ts";
 import * as popover_menus from "./popover_menus.ts";
@@ -29,7 +31,14 @@ function get_conversation(instance: tippy.Instance): {
     let topic_name;
     let url;
 
-    if (!instance.reference.classList.contains("topic-sidebar-menu-icon")) {
+    if (instance.reference.classList.contains("recipient-bar-control")) {
+        const $elt = $(instance.reference);
+        const $message_header = $elt.closest(".message_header").expectOne();
+        stream_id = Number.parseInt($message_header.attr("data-stream-id")!, 10);
+        topic_name = $message_header.attr("data-topic-name")!;
+        const topic_narrow_url = hash_util.by_stream_topic_url(stream_id, topic_name);
+        url = new URL(topic_narrow_url, realm.realm_url).href;
+    } else if (!instance.reference.classList.contains("topic-sidebar-menu-icon")) {
         const $elt = $(instance.reference);
         stream_id = Number.parseInt($elt.attr("data-stream-id")!, 10);
         topic_name = $elt.attr("data-topic-name")!;
@@ -63,6 +72,7 @@ export function initialize(): void {
                 );
             },
             onMount(instance) {
+                const $reference = $(instance.reference);
                 const $popper = $(instance.popper);
                 const {stream_id, topic_name, url} = get_conversation(instance);
                 const context = popover_menus_data.get_topic_popover_content_context({
@@ -158,7 +168,7 @@ export function initialize(): void {
                         help_link: "/help/delete-a-topic",
                         html_body,
                         on_click() {
-                            message_edit.delete_topic(stream_id, topic_name);
+                            message_delete.delete_topic(stream_id, topic_name);
                         },
                     });
 
@@ -174,7 +184,19 @@ export function initialize(): void {
                 $popper.one("click", ".sidebar-popover-toggle-resolved", () => {
                     message_edit.with_first_message_id(stream_id, topic_name, (message_id) => {
                         assert(message_id !== undefined);
-                        message_edit.toggle_resolve_topic(message_id, topic_name, true);
+                        let $recipient_row;
+                        if ($reference.hasClass("recipient-row-topic-menu")) {
+                            // If the popover was opened from the recipient row, we
+                            // we pass the recipient row to the toggle_resolve_topic
+                            // function to show the loading indicator accordingly.
+                            $recipient_row = $reference.closest(".recipient_row");
+                        }
+                        message_edit.toggle_resolve_topic(
+                            message_id,
+                            topic_name,
+                            true,
+                            $recipient_row,
+                        );
                     });
 
                     popover_menus.hide_current_popover_if_visible(instance);

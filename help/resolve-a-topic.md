@@ -10,16 +10,15 @@ Marking a topic as resolved:
 
 * Puts a ✔ at the beginning of the topic name, e.g., `example topic`
   becomes `✔ example topic`.
-* Triggers an automated notice from the [notification
-  bot](/help/configure-automated-notices) indicating that you resolved the
-  topic. Users can
+* Triggers an automated notice from Notification Bot indicating that
+  you resolved the topic. Users can
   [configure](/help/marking-messages-as-read#configure-whether-resolved-topic-notices-are-marked-as-read)
   whether these notices are automatically marked as read.
 * Changes whether the topic appears when using the `is:resolved` and
   `-is:resolved` [search filters](/help/search-for-messages#search-filters).
 
 Marking a topic as unresolved removes the ✔ and also triggers an
-automated notice from the notification bot.
+automated notice from Notification Bot.
 
 It's often helpful to define a policy for when to resolve topics that
 fits how topics are used in a given channel. Here are some common
@@ -36,9 +35,8 @@ approaches for deciding when to mark a topic as resolved:
 * **Answering questions**: When the question has been fully answered,
   and follow-ups would be best discussed in a new topic.
 
-Users can resolve and unresolve a topic if they have permission to edit
-topics. Organization administrators can [configure who can edit
-topics](/help/restrict-moving-messages).
+Users can resolve or unresolve a topic if they have
+[permission](/help/restrict-resolving-topics) to do so.
 
 ## Mark a topic as resolved
 
@@ -52,8 +50,8 @@ topics](/help/restrict-moving-messages).
 
 !!! tip ""
 
-    You can also click on the **✔** icon in the message recipient bar to
-    mark an unresolved topic as resolved.
+    You can also click on the **mark as resolved** (<i class="zulip-icon zulip-icon-check"></i>)
+    icon in the message recipient bar to mark an unresolved topic as resolved.
 
 {tab|mobile}
 
@@ -67,8 +65,8 @@ topics](/help/restrict-moving-messages).
 
 ## Mark a topic as unresolved
 
-Marking a topic as unresolved normally triggers an automated notice from the
-notification bot. However, unresolving a topic right after you resolved it
+Marking a topic as unresolved normally triggers an automated notice from
+Notification Bot. However, unresolving a topic right after you resolved it
 removes the original notice instead. This is helpful if you resolved a topic by
 accident.
 
@@ -82,8 +80,8 @@ accident.
 
 !!! tip ""
 
-    You can also click on the **✔** icon in the message recipient bar to
-    mark a resolved topic as unresolved.
+    You can also click on the **ellipsis** (<i class="zulip-icon zulip-icon-more-vertical"></i>)
+    in the message recipient bar, and select the **Mark as unresolved** option.
 
 {tab|mobile}
 
@@ -148,19 +146,27 @@ accident.
 
 {end_tabs}
 
-## Details
+## Filter by whether topics are resolved
 
-* Resolving a topic works by moving the messages to a new topic.
-* Like with all topic editing, Zulip clients update instantly, so
-  human users will likely only send messages to the resolved topic.
-* [Integrations](/integrations/) will usually send new messages to the
-  original topic (`example topic`) after a topic is resolved. This is
-  useful for alerting integrations, where a repeating alert might have a
-  different cause. You can mark the topic resolved (as normal) once
-  you've investigated the situation.
-* Users can still send messages to a resolved topic; this
-  is important for _"thank you"_ messages and to discuss whether
-  the topic was incorrectly marked as resolved.
+{!filter-resolved-left-sidebar.md!}
+
+## Configure whether resolved topic notices are marked as read
+
+{!configure-resolved-notices-marked-as-read.md!}
+
+## Sending messages to resolved topics
+
+You can send messages to a resolved topic, which is handy for _"thank you"_
+messages, or to discuss whether a topic was incorrectly marked as resolved.
+
+When a topic is resolved or unresolved, users' compose boxes and message views
+automatically update to show the topic's current state. This helps make sure
+everyone sends messages to the correct place.
+
+[Integrations](/help/integrations-overview) will still send messages to the
+original topic after a topic is resolved. This is useful for alerting
+integrations, where a repeating alert might have a different cause. As usual,
+you can mark the topic resolved once you've investigated the situation.
 
 ## Related articles
 

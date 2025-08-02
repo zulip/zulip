@@ -209,7 +209,7 @@ async function search_tests(page: Page): Promise<void> {
     await search_and_check(
         page,
         "Verona",
-        "Channel",
+        "#Verona",
         expect_verona_stream,
         "#Verona - Zulip Dev - Zulip",
     );
@@ -217,7 +217,7 @@ async function search_tests(page: Page): Promise<void> {
     await search_and_check(
         page,
         "Cordelia",
-        "Direct",
+        "dm:",
         expect_cordelia_direct_messages,
         "Cordelia, Lear's daughter - Zulip Dev - Zulip",
     );
@@ -304,7 +304,7 @@ async function test_search_venice(page: Page): Promise<void> {
     await common.clear_and_type(page, ".stream-list-filter", "vEnI"); // Must be case insensitive.
     await page.waitForSelector(await get_stream_li(page, "Denmark"), {hidden: true});
     await page.waitForSelector(await get_stream_li(page, "Verona"), {hidden: true});
-    await page.waitForSelector((await get_stream_li(page, "Venice")) + ".highlighted_stream", {
+    await page.waitForSelector((await get_stream_li(page, "Venice")) + ".highlighted_row", {
         visible: true,
     });
 
@@ -313,18 +313,12 @@ async function test_search_venice(page: Page): Promise<void> {
     await page.waitForSelector(await get_stream_li(page, "Denmark"), {visible: true});
     await page.waitForSelector(await get_stream_li(page, "Venice"), {visible: true});
     await page.waitForSelector(await get_stream_li(page, "Verona"), {visible: true});
-
-    await page.click("#streams_header .left-sidebar-title");
-    await page.waitForSelector(".stream_search_section.notdisplayed");
 }
 
 async function test_stream_search_filters_stream_list(page: Page): Promise<void> {
     console.log("Filter streams using left side bar");
 
-    await page.waitForSelector(".stream_search_section.notdisplayed"); // Stream filter box invisible initially
-    await page.click("#streams_header .left-sidebar-title");
-
-    await page.waitForSelector("#streams_list .stream_search_section.notdisplayed", {hidden: true});
+    await page.waitForSelector(".stream_search_section");
 
     // assert streams exist by waiting till they're visible
     await page.waitForSelector(await get_stream_li(page, "Denmark"), {visible: true});
@@ -334,25 +328,25 @@ async function test_stream_search_filters_stream_list(page: Page): Promise<void>
     // Enter the search box and test highlighted suggestion
     await page.click(".stream-list-filter");
 
-    await page.waitForSelector("#stream_filters .highlighted_stream", {visible: true});
+    await page.waitForSelector("#stream_filters .highlighted_row", {visible: true});
     // First stream in list gets highlighted on clicking search.
-    await page.waitForSelector((await get_stream_li(page, "core team")) + ".highlighted_stream", {
+    await page.waitForSelector((await get_stream_li(page, "core team")) + ".highlighted_row", {
         visible: true,
     });
 
-    await page.waitForSelector((await get_stream_li(page, "Denmark")) + ".highlighted_stream", {
+    await page.waitForSelector((await get_stream_li(page, "Denmark")) + ".highlighted_row", {
         hidden: true,
     });
-    await page.waitForSelector((await get_stream_li(page, "sandbox")) + ".highlighted_stream", {
+    await page.waitForSelector((await get_stream_li(page, "sandbox")) + ".highlighted_row", {
         hidden: true,
     });
-    await page.waitForSelector((await get_stream_li(page, "Venice")) + ".highlighted_stream", {
+    await page.waitForSelector((await get_stream_li(page, "Venice")) + ".highlighted_row", {
         hidden: true,
     });
-    await page.waitForSelector((await get_stream_li(page, "Verona")) + ".highlighted_stream", {
+    await page.waitForSelector((await get_stream_li(page, "Verona")) + ".highlighted_row", {
         hidden: true,
     });
-    await page.waitForSelector((await get_stream_li(page, "Zulip")) + ".highlighted_stream", {
+    await page.waitForSelector((await get_stream_li(page, "Zulip")) + ".highlighted_row", {
         hidden: true,
     });
 
@@ -367,26 +361,25 @@ async function test_stream_search_filters_stream_list(page: Page): Promise<void>
     await arrow(page, "Down"); // sandbox-> Venice
     await arrow(page, "Down"); // Venice -> Verona
 
-    await page.waitForSelector((await get_stream_li(page, "Verona")) + ".highlighted_stream", {
+    await page.waitForSelector((await get_stream_li(page, "Verona")) + ".highlighted_row", {
         visible: true,
     });
 
-    await page.waitForSelector((await get_stream_li(page, "core team")) + ".highlighted_stream", {
+    await page.waitForSelector((await get_stream_li(page, "core team")) + ".highlighted_row", {
         hidden: true,
     });
-    await page.waitForSelector((await get_stream_li(page, "Denmark")) + ".highlighted_stream", {
+    await page.waitForSelector((await get_stream_li(page, "Denmark")) + ".highlighted_row", {
         hidden: true,
     });
-    await page.waitForSelector((await get_stream_li(page, "Venice")) + ".highlighted_stream", {
+    await page.waitForSelector((await get_stream_li(page, "Venice")) + ".highlighted_row", {
         hidden: true,
     });
-    await page.waitForSelector((await get_stream_li(page, "Zulip")) + ".highlighted_stream", {
+    await page.waitForSelector((await get_stream_li(page, "Zulip")) + ".highlighted_row", {
         hidden: true,
     });
     await test_search_venice(page);
 
     // Search for beginning of "Verona".
-    await page.click("#streams_header .left-sidebar-title");
     await page.type(".stream-list-filter", "ver");
     await page.waitForSelector(await get_stream_li(page, "core team"), {hidden: true});
     await page.waitForSelector(await get_stream_li(page, "Denmark"), {hidden: true});

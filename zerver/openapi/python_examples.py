@@ -1632,7 +1632,7 @@ def get_stream_topics(client: Client, stream_id: int) -> None:
 @openapi_test_function("/users/me/apns_device_token:post")
 def add_apns_token(client: Client) -> None:
     # {code_example|start}
-    request = {"token": "apple-tokenbb", "appid": "org.zulip.Zulip"}
+    request = {"token": "c0ffee", "appid": "org.zulip.Zulip"}
     result = client.call_endpoint(url="/users/me/apns_device_token", method="POST", request=request)
     # {code_example|end}
     assert_success_response(result)
@@ -1643,7 +1643,7 @@ def add_apns_token(client: Client) -> None:
 def remove_apns_token(client: Client) -> None:
     # {code_example|start}
     request = {
-        "token": "apple-tokenbb",
+        "token": "c0ffee",
     }
     result = client.call_endpoint(
         url="/users/me/apns_device_token", method="DELETE", request=request
@@ -1677,6 +1677,23 @@ def remove_fcm_token(client: Client) -> None:
     # {code_example|end}
     assert_success_response(result)
     validate_against_openapi_schema(result, "/users/me/android_gcm_reg_id", "delete", "200")
+
+
+@openapi_test_function("/mobile_push/register:post")
+def register_push_device(client: Client) -> None:
+    # {code_example|start}
+    # Register a push device.
+    request = {
+        "token_kind": "fcm",
+        "push_account_id": 2408,
+        "push_public_key": "push-public-key",
+        "bouncer_public_key": "bouncer-public-key",
+        "encrypted_push_registration": "encrypted-push-registration-data",
+    }
+    result = client.call_endpoint(url="/mobile_push/register", method="POST", request=request)
+    # {code_example|end}
+    assert_success_response(result)
+    validate_against_openapi_schema(result, "/mobile_push/register", "post", "200")
 
 
 @openapi_test_function("/typing:post")
@@ -1986,6 +2003,7 @@ def test_users(client: Client, owner_client: Client) -> None:
     remove_apns_token(client)
     add_fcm_token(client)
     remove_fcm_token(client)
+    register_push_device(client)
 
 
 def test_streams(client: Client, nonadmin_client: Client) -> None:

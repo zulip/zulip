@@ -9,7 +9,7 @@ from django.utils.timezone import now as timezone_now
 from typing_extensions import override
 
 from zerver.actions.create_realm import do_create_realm
-from zerver.actions.streams import do_deactivate_stream
+from zerver.actions.streams import do_deactivate_stream, do_set_stream_property
 from zerver.data_import.mattermost import do_convert_data
 from zerver.lib.import_realm import do_import_realm
 from zerver.lib.message import remove_single_newlines
@@ -21,7 +21,7 @@ from zerver.lib.zulip_update_announcements import (
 from zerver.models.messages import Message
 from zerver.models.realms import get_realm
 from zerver.models.recipients import Recipient, get_direct_message_group_user_ids
-from zerver.models.streams import get_stream
+from zerver.models.streams import StreamTopicsPolicyEnum, get_stream
 from zerver.models.users import get_system_bot
 
 
@@ -129,6 +129,42 @@ class ZulipUpdateAnnouncementsTest(ZulipTestCase):
             self.assertEqual(stream_messages[1].content, "Announcement message 3.")
             self.assertEqual(stream_messages[2].content, "Announcement message 4.")
             self.assertEqual(realm.zulip_update_announcements_level, 4)
+            self.assertEqual(
+                stream_messages[0].topic_name(), realm.ZULIP_UPDATE_ANNOUNCEMENTS_TOPIC_NAME
+            )
+            self.assertEqual(
+                stream_messages[1].topic_name(), realm.ZULIP_UPDATE_ANNOUNCEMENTS_TOPIC_NAME
+            )
+            self.assertEqual(
+                stream_messages[2].topic_name(), realm.ZULIP_UPDATE_ANNOUNCEMENTS_TOPIC_NAME
+            )
+
+            # Test sending updates with announcements stream allowing empty topics only.
+            iago = self.example_user("iago")
+            do_set_stream_property(
+                verona, "topics_policy", StreamTopicsPolicyEnum.empty_topic_only.value, iago
+            )
+
+            new_updates = [
+                ZulipUpdateAnnouncement(
+                    level=5,
+                    message="Announcement message 5.",
+                ),
+            ]
+            self.zulip_update_announcements.extend(new_updates)
+            with time_machine.travel(now + timedelta(days=15), tick=False):
+                send_zulip_update_announcements(skip_delay=False)
+            realm.refresh_from_db()
+            stream_messages = Message.objects.filter(
+                realm=realm,
+                sender=notification_bot,
+                recipient__type_id=verona.id,
+                date_sent__gte=now + timedelta(days=15),
+            ).order_by("id")
+            self.assert_length(stream_messages, 1)
+            self.assertEqual(stream_messages[0].topic_name(), "")
+            self.assertEqual(stream_messages[0].content, "Announcement message 5.")
+            self.assertEqual(realm.zulip_update_announcements_level, 5)
 
     def test_send_zulip_update_announcements_with_stream_configured(self) -> None:
         with mock.patch(
@@ -392,20 +428,24 @@ class ZulipUpdateAnnouncementsTest(ZulipTestCase):
             imported_realm = get_realm("gryffindor")
             notification_bot = get_system_bot(settings.NOTIFICATION_BOT, imported_realm.id)
 
+            gryffindor_common_room = get_stream("Gryffindor common room", imported_realm)
+
             # Verify for realm imported from other product:
             # * zulip_update_announcements_level = latest level
-            # * zulip_update_announcements_stream = None
-            # * group DM sent to admins suggesting to set the stream.
+            # * zulip_update_announcements_stream = gryffindor_common_room - channel with the most subscribers,
+            #   with earliest id as tiebreaker.
+            # * announcements sent to the channel.
             self.assertEqual(imported_realm.zulip_update_announcements_level, 2)
-            self.assertIsNone(imported_realm.zulip_update_announcements_stream)
-            group_direct_message = Message.objects.filter(
-                realm=imported_realm, sender=notification_bot
+            self.assertEqual(
+                imported_realm.zulip_update_announcements_stream, gryffindor_common_room
+            )
+            personal_message = Message.objects.filter(
+                realm=imported_realm, sender=notification_bot, recipient__type=Recipient.PERSONAL
             ).first()
-            assert group_direct_message is not None
+            assert personal_message is not None
             self.assertIn(
-                "These notifications are currently turned off in your organization. "
-                "If you configure a channel within one week, your organization will not miss any update messages.",
-                group_direct_message.content,
+                "Starting tomorrow, users in your organization will receive",
+                personal_message.content,
             )
 
             # Two new updates added.
@@ -421,15 +461,15 @@ class ZulipUpdateAnnouncementsTest(ZulipTestCase):
             ]
             self.zulip_update_announcements.extend(new_updates)
 
-            # Wait for one week before starting to skip sending updates.
+            # Wait for 24h before starting to send updates.
             now = timezone_now()
-            with time_machine.travel(now + timedelta(days=6), tick=False):
+            with time_machine.travel(now + timedelta(hours=23), tick=False):
                 send_zulip_update_announcements(skip_delay=False)
             imported_realm.refresh_from_db()
             self.assertEqual(imported_realm.zulip_update_announcements_level, 2)
 
-            # No stream configured. Skip updates.
-            with time_machine.travel(now + timedelta(days=8), tick=False):
+            # After 24h, send updates.
+            with time_machine.travel(now + timedelta(hours=25), tick=False):
                 send_zulip_update_announcements(skip_delay=False)
             imported_realm.refresh_from_db()
             self.assertEqual(imported_realm.zulip_update_announcements_level, 4)
@@ -438,30 +478,6 @@ class ZulipUpdateAnnouncementsTest(ZulipTestCase):
                 sender=notification_bot,
                 recipient__type=Recipient.STREAM,
             )
-            self.assertFalse(zulip_updates_message_query.exists())
-
-            new_updates = [
-                ZulipUpdateAnnouncement(
-                    level=5,
-                    message="Announcement message 5.",
-                ),
-                ZulipUpdateAnnouncement(
-                    level=6,
-                    message="Announcement message 6.",
-                ),
-            ]
-            self.zulip_update_announcements.extend(new_updates)
-
-            # Stream configured, send update messages.
-            imported_realm.zulip_update_announcements_stream = get_stream(
-                "Gryffindor common room", imported_realm
-            )
-            imported_realm.save()
-
-            with time_machine.travel(now + timedelta(days=10), tick=False):
-                send_zulip_update_announcements(skip_delay=False)
-            imported_realm.refresh_from_db()
-            self.assertEqual(imported_realm.zulip_update_announcements_level, 6)
             self.assertTrue(zulip_updates_message_query.exists())
 
     def test_send_zulip_update_announcements_new_realm(self) -> None:

@@ -35,6 +35,7 @@ from zerver.lib.exceptions import (
     StreamDoesNotExistError,
     StreamWildcardMentionNotAllowedError,
     StreamWithIDDoesNotExistError,
+    TopicsNotAllowedError,
     TopicWildcardMentionNotAllowedError,
     ZephyrMessageAlreadySentError,
 )
@@ -903,7 +904,7 @@ def do_send_messages(
                     lock=True,
                     enqueue=False,
                     path_ids=list(send_request.rendering_result.thumbnail_spinners),
-                )
+                ).image_metadata
                 new_rendered_content = rewrite_thumbnailed_images(
                     send_request.message.rendered_content, previews
                 )[0]
@@ -1234,7 +1235,9 @@ def do_send_messages(
             }
             queue_event_on_commit("embed_links", event_data)
 
-        if send_request.message.recipient.type == Recipient.PERSONAL:
+        # Check if this is a 1:1 DM between a user and the Welcome Bot,
+        # in which case we may want to send an automated response.
+        if not send_request.message.is_stream_message() and len(send_request.active_user_ids) == 2:
             welcome_bot_id = get_system_bot(settings.WELCOME_BOT, send_request.realm.id).id
             if (
                 welcome_bot_id in send_request.active_user_ids
@@ -1785,14 +1788,13 @@ def check_message(
             # else can sneak past the access check.
             assert sender.bot_type == sender.OUTGOING_WEBHOOK_BOT
 
-        if (
-            get_stream_topics_policy(realm, stream)
-            == StreamTopicsPolicyEnum.disable_empty_topic.value
-            and topic_name == ""
-        ):
-            raise MessagesNotAllowedInEmptyTopicError(
-                get_topic_display_name("", sender.default_language)
-            )
+        topics_policy = get_stream_topics_policy(realm, stream)
+        empty_topic_display_name = get_topic_display_name("", sender.default_language)
+        if topics_policy == StreamTopicsPolicyEnum.disable_empty_topic.value and topic_name == "":
+            raise MessagesNotAllowedInEmptyTopicError(empty_topic_display_name)
+
+        if topics_policy == StreamTopicsPolicyEnum.empty_topic_only.value and topic_name != "":
+            raise TopicsNotAllowedError(empty_topic_display_name)
 
     elif addressee.is_private():
         user_profiles = addressee.user_profiles()

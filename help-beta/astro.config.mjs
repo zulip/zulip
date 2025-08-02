@@ -12,11 +12,6 @@ export default defineConfig({
             // eslint-disable-next-line new-cap
             Icons({
                 compiler: "astro",
-                // unplugin-icons sets height and width by itself.
-                // It was setting the height to 1024 and 960 for some
-                // icons. It is better to set the height explicitly.
-                defaultStyle:
-                    "display: inline; vertical-align: text-bottom; height: 1em; width: 1em; margin-bottom: 0;",
                 customCollections: {
                     // unplugin-icons has a FileSystemIconLoader which is more
                     // versatile. But it only supports one directory path for
@@ -34,6 +29,19 @@ export default defineConfig({
                         throw new Error("Zulip icon not found.");
                     },
                 },
+                iconCustomizer(collection, icon, props) {
+                    if (collection === "zulip-icon" || collection === "fa") {
+                        // We need to override some default starlight behaviour to make
+                        // icons look nice, see the css for this class to see the reasoning
+                        // for each individual override of the default css.
+                        props.class = "zulip-unplugin-icon";
+
+                        if (collection === "zulip-icon" && icon.startsWith("user-circle-")) {
+                            const iconSuffix = icon.replace("user-circle-", "");
+                            props.class = `zulip-unplugin-icon user-circle user-circle-${iconSuffix}`;
+                        }
+                    }
+                },
             }),
         ],
     },
@@ -45,18 +53,29 @@ export default defineConfig({
                 optional: true,
                 default: true,
             }),
-            SHOW_BILLING_HELP_LINKS: envField.boolean({
+            CORPORATE_ENABLED: envField.boolean({
                 context: "client",
                 access: "public",
                 optional: true,
                 default: true,
+            }),
+            SUPPORT_EMAIL: envField.string({
+                context: "client",
+                access: "public",
+                optional: true,
+                default: "zulip-admin@example.com",
             }),
         },
     },
     integrations: [
         starlight({
             title: "Zulip help center",
+            components: {
+                Footer: "./src/components/Footer.astro",
+                Head: "./src/components/Head.astro",
+            },
             pagination: false,
+            routeMiddleware: "./src/route_data.ts",
             customCss: ["./src/styles/main.css", "./src/styles/steps.css"],
             sidebar: [
                 {
@@ -71,6 +90,14 @@ export default defineConfig({
                     label: "Guides",
                     items: [
                         "getting-started-with-zulip",
+                        {
+                            label: "Choosing a team chat app",
+                            link: "https://blog.zulip.com/2024/11/04/choosing-a-team-chat-app/",
+                        },
+                        {
+                            label: "Why Zulip",
+                            link: "https://zulip.com/why-zulip/",
+                        },
                         "trying-out-zulip",
                         "zulip-cloud-or-self-hosting",
                         "moving-to-zulip",
@@ -103,11 +130,11 @@ export default defineConfig({
                     items: [
                         "migrating-from-other-chat-tools",
                         "create-your-organization-profile",
+                        "create-user-groups",
                         "customize-organization-settings",
                         "create-channels",
                         "customize-settings-for-new-users",
                         "invite-users-to-join",
-                        "create-user-groups",
                         "set-up-integrations",
                     ],
                 },
@@ -133,6 +160,8 @@ export default defineConfig({
                     items: [
                         "dark-theme",
                         "font-size",
+                        "line-spacing",
+                        "configure-send-message-keys",
                         "change-your-language",
                         "change-your-timezone",
                         "change-the-time-format",
@@ -152,6 +181,7 @@ export default defineConfig({
                         "quote-or-forward-a-message",
                         "emoji-and-emoticons",
                         "insert-a-link",
+                        "saved-snippets",
                         "share-and-upload-files",
                         "animated-gifs-from-giphy",
                         "text-emphasis",
@@ -193,14 +223,17 @@ export default defineConfig({
                         "recent-conversations",
                         "combined-feed",
                         "channel-feed",
+                        "list-of-topics",
                         "left-sidebar",
                         "message-actions",
                         "marking-messages-as-read",
                         "marking-messages-as-unread",
                         "configure-unread-message-counters",
+                        "configure-where-you-land",
                         "emoji-reactions",
                         "view-your-mentions",
                         "star-a-message",
+                        "schedule-a-reminder",
                         "view-images-and-videos",
                         "view-messages-sent-by-a-user",
                         "link-to-a-message-or-conversation",
@@ -216,25 +249,34 @@ export default defineConfig({
                 {
                     label: "People",
                     items: [
+                        "introduction-to-users",
                         "user-list",
                         "status-and-availability",
                         "user-cards",
                         "view-someones-profile",
                         "direct-messages",
-                        "user-groups",
                         "find-administrators",
                     ],
+                },
+                {
+                    label: "Groups",
+                    items: ["user-groups", "view-group-members"],
                 },
                 {
                     label: "Channels",
                     items: [
                         "introduction-to-channels",
+                        {
+                            label: "Subscribe to a channel",
+                            link: "/introduction-to-channels#browse-and-subscribe-to-channels",
+                        },
                         "create-a-channel",
                         "pin-a-channel",
                         "change-the-color-of-a-channel",
                         "unsubscribe-from-a-channel",
                         "manage-inactive-channels",
                         "move-content-to-another-channel",
+                        "view-channel-information",
                         "view-channel-subscribers",
                     ],
                 },
@@ -245,6 +287,7 @@ export default defineConfig({
                         "rename-a-topic",
                         "resolve-a-topic",
                         "move-content-to-another-topic",
+                        "general-chat-topic",
                         "delete-a-topic",
                     ],
                 },
@@ -271,6 +314,7 @@ export default defineConfig({
                             label: "Download apps for every platform",
                             link: "https://zulip.com/apps/",
                         },
+                        "mobile-app-install-guide",
                         "desktop-app-install-guide",
                         "supported-browsers",
                         "configure-how-links-open",
@@ -279,80 +323,112 @@ export default defineConfig({
                     ],
                 },
                 {
-                    label: "Zulip Administration",
+                    label: "Zulip administration",
                     link: "#",
                     attrs: {
                         class: "non-clickable-sidebar-heading",
                     },
                 },
                 {
-                    label: "Organization basics",
+                    label: "Organization profile",
                     items: [
                         "organization-type",
                         "communities-directory",
-                        "import-from-mattermost",
-                        "import-from-slack",
-                        "import-from-rocketchat",
-                        "configure-authentication-methods",
-                        "saml-authentication",
-                        "scim",
-                        "export-your-organization",
+                        "linking-to-zulip",
                         "change-organization-url",
                         "deactivate-your-organization",
-                        "analytics",
-                        "linking-to-zulip",
-                        "gdpr-compliance",
                     ],
                 },
                 {
-                    label: "Users",
+                    label: "Import an organization",
                     items: [
-                        "manage-permissions",
+                        "import-from-mattermost",
+                        "import-from-slack",
+                        "import-from-rocketchat",
+                        "export-your-organization",
+                    ],
+                },
+                {
+                    label: "Account creation and authentication",
+                    items: [
+                        "configure-default-new-user-settings",
+                        "custom-profile-fields",
                         "invite-new-users",
                         "restrict-account-creation",
-                        "guest-users",
+                        "configure-authentication-methods",
+                        "saml-authentication",
+                        "scim",
+                    ],
+                },
+                {
+                    label: "User management",
+                    items: [
                         "manage-a-user",
                         "deactivate-or-reactivate-a-user",
-                        "custom-profile-fields",
-                        "configure-default-new-user-settings",
-                        "configure-organization-language",
-                        "manage-user-groups",
-                        "user-roles",
                         "change-a-users-name",
                         "manage-user-channel-subscriptions",
+                        "manage-user-group-membership",
+                    ],
+                },
+                {
+                    label: "Channel management",
+                    items: [
+                        "create-a-channel",
+                        {
+                            label: "Private channels",
+                            link: "/channel-permissions#private-channels",
+                        },
+                        {
+                            label: "Public channels",
+                            link: "/channel-permissions#public-channels",
+                        },
+                        "public-access-option",
+                        "general-chat-channels",
+                        "channel-folders",
+                        "channel-permissions",
+                        "channel-posting-policy",
+                        "configure-who-can-administer-a-channel",
+                        "configure-who-can-create-channels",
+                        "configure-who-can-subscribe",
+                        "configure-who-can-invite-to-channels",
+                        "configure-who-can-unsubscribe-others",
+                        "subscribe-users-to-a-channel",
+                        "unsubscribe-users-from-a-channel",
+                        "set-default-channels-for-new-users",
+                        "rename-a-channel",
+                        "change-the-channel-description",
+                        "pin-information",
+                        "change-the-privacy-of-a-channel",
+                        "archive-a-channel",
+                    ],
+                },
+                {
+                    label: "Permissions management",
+                    items: [
+                        "manage-permissions",
+                        "manage-user-groups",
+                        "deactivate-a-user-group",
+                        "user-roles",
+                        "guest-users",
+                        "restrict-direct-messages",
+                        "restrict-wildcard-mentions",
+                        "restrict-message-editing-and-deletion",
+                        "restrict-message-edit-history-access",
+                        "restrict-moving-messages",
+                        "restrict-resolving-topics",
                         "restrict-name-and-email-changes",
                         "restrict-profile-picture-changes",
                         "restrict-permissions-of-new-members",
                     ],
                 },
                 {
-                    label: "Channel Management",
+                    label: "Organization settings",
                     items: [
-                        "create-a-channel",
-                        "channel-permissions",
-                        "public-access-option",
-                        "channel-posting-policy",
-                        "configure-who-can-create-channels",
-                        "configure-who-can-invite-to-channels",
-                        "subscribe-users-to-a-channel",
-                        "unsubscribe-users-from-a-channel",
-                        "set-default-channels-for-new-users",
-                        "rename-a-channel",
-                        "change-the-channel-description",
-                        "change-the-privacy-of-a-channel",
-                        "archive-a-channel",
-                    ],
-                },
-                {
-                    label: "Organization Settings",
-                    items: [
+                        "configure-organization-language",
                         "custom-emoji",
+                        "configure-call-provider",
                         "add-a-custom-linkifier",
                         "require-topics",
-                        "restrict-direct-messages",
-                        "restrict-wildcard-mentions",
-                        "restrict-moving-messages",
-                        "restrict-message-editing-and-deletion",
                         "image-video-and-website-previews",
                         "hide-message-content-in-emails",
                         "message-retention-policy",
@@ -360,10 +436,11 @@ export default defineConfig({
                         "disable-welcome-emails",
                         "configure-automated-notices",
                         "configure-multi-language-search",
+                        "analytics",
                     ],
                 },
                 {
-                    label: "Bots & Integrations",
+                    label: "Bots & integrations",
                     items: [
                         "bots-overview",
                         "integrations-overview",
@@ -383,6 +460,8 @@ export default defineConfig({
                         "view-zulip-version",
                         "zulip-cloud-billing",
                         "self-hosted-billing",
+                        "gdpr-compliance",
+                        "move-to-zulip-cloud",
                         "support-zulip-project",
                         "linking-to-zulip-website",
                         "contact-support",

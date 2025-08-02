@@ -75,7 +75,7 @@
                   rendered_description=rendered_description
                   }}
             </div>
-            {{> stream_types .
+            {{> stream_permissions .
               stream_privacy_policy_values=../stream_privacy_policy_values
               stream_privacy_policy=../stream_privacy_policy
               stream_topics_policy_values=../stream_topics_policy_values
@@ -91,7 +91,6 @@
               group_setting_labels=../group_setting_labels
               channel_folder_widget_name="folder_id"
               is_admin=../is_admin
-              is_development_environment=../is_development_environment
               }}
             {{/with}}
             <div class="stream_details_box">
@@ -152,7 +151,7 @@
                 {{/each}}
                 <div class="input-group">
                     <label class="settings-field-label channel-color-label">{{t "Channel color" }}</label>
-                    <button class="button small rounded stream-settings-color-selector choose_stream_color" data-stream-id="{{ sub.stream_id }}">
+                    <button class="action-button action-button-quiet-neutral stream-settings-color-selector choose_stream_color" data-stream-id="{{ sub.stream_id }}">
                         <span class="stream-settings-color-preview" style="background: {{sub.color}};"></span>
                         <span class="stream-settings-color-selector-label">{{t "Change color"}}</span>
                     </button>

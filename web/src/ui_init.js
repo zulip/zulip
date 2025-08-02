@@ -561,7 +561,7 @@ export async function initialize_everything(state_data) {
     left_sidebar_navigation_area.initialize();
     stream_list_sort.initialize();
     stream_list.initialize({
-        on_stream_click(stream_id, trigger) {
+        show_channel_feed(stream_id, trigger) {
             const sub = sub_store.get(stream_id);
             sidebar_ui.hide_all();
             popovers.hide_all();
@@ -587,7 +587,9 @@ export async function initialize_everything(state_data) {
     add_stream_options_popover.initialize();
     click_handlers.initialize();
     scheduled_messages_overlay_ui.initialize();
-    compose_paste.initialize();
+    compose_paste.initialize({
+        upload_pasted_file: upload.upload_pasted_file,
+    });
     overlays.initialize();
     invite.initialize();
     message_view_header.initialize();

@@ -19,7 +19,7 @@ subscribe to [private](/help/channel-permissions#private-channels) channels.
 1. Scroll through the list of channels. You can use the **search box** near the
    top of the menu to filter the list by channel name or description.
 
-1. Click the **plus**
+1. Click the **subscribe to channel**
    (<img src="/static/images/help/desktop-web-plus-icon.svg" alt="plus" class="help-center-icon"/>)
    icon to the left of a channel to subscribe to it.
 

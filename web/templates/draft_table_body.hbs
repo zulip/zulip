@@ -6,7 +6,7 @@
                 <div class="exit">
                     <span class="exit-sign">&times;</span>
                 </div>
-                <div id="draft_overlay_banner_container" class="banner-container"></div>
+                <div id="draft_overlay_banner_container" class="banner-container banner-wrapper"></div>
                 <div class="header-body">
                     <div class="drafts-header-note">
                         <div class="overlay-keyboard-shortcuts">
@@ -21,9 +21,9 @@
                         <div class="delete-selected-drafts-button-container">
                             {{> ./components/icon_button intent="danger" custom_classes="delete-selected-drafts-button" icon="trash" disabled=true  }}
                         </div>
-                        <button class="button small rounded select-drafts-button" role="checkbox" aria-checked="false">
+                        <button class="action-button action-button-quiet-neutral select-drafts-button" role="checkbox" aria-checked="false">
                             <span>{{t "Select all drafts" }}</span>
-                            <i class="fa fa-square-o fa-lg select-state-indicator" aria-hidden="true"></i>
+                            <i class="fa fa-square-o select-state-indicator" aria-hidden="true"></i>
                         </button>
                     </div>
                 </div>

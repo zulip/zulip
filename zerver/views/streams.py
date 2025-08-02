@@ -73,6 +73,7 @@ from zerver.lib.streams import (
     access_stream_by_name,
     access_stream_for_delete_or_update_requiring_metadata_access,
     access_web_public_stream,
+    channel_events_topic_name,
     check_stream_name_available,
     do_get_streams,
     filter_stream_authorization_for_adding_subscribers,
@@ -82,6 +83,7 @@ from zerver.lib.streams import (
     list_to_streams,
     stream_to_dict,
     user_has_content_access,
+    validate_topics_policy,
 )
 from zerver.lib.subscription_info import gather_subscriptions
 from zerver.lib.topic import (
@@ -108,7 +110,15 @@ from zerver.lib.user_groups import (
 from zerver.lib.user_topics import get_users_with_user_topic_visibility_policy
 from zerver.lib.users import access_bot_by_id, bulk_access_users_by_email, bulk_access_users_by_id
 from zerver.lib.utils import assert_is_not_none
-from zerver.models import ChannelFolder, Realm, Stream, UserMessage, UserProfile, UserTopic
+from zerver.models import (
+    ChannelFolder,
+    Realm,
+    Stream,
+    UserGroup,
+    UserMessage,
+    UserProfile,
+    UserTopic,
+)
 from zerver.models.groups import SystemGroups
 from zerver.models.streams import StreamTopicsPolicyEnum
 from zerver.models.users import get_system_bot
@@ -262,6 +272,14 @@ def remove_default_stream(
     return json_success(request)
 
 
+ChannelDescription = Annotated[
+    str | None,
+    StringConstraints(max_length=Stream.MAX_DESCRIPTION_LENGTH),
+    # We don't allow newline characters in stream descriptions.
+    AfterValidator(lambda val: val.replace("\n", " ") if val is not None else None),
+]
+
+
 @typed_endpoint
 def update_stream_backend(
     request: HttpRequest,
@@ -269,13 +287,15 @@ def update_stream_backend(
     *,
     can_add_subscribers_group: Json[GroupSettingChangeRequest] | None = None,
     can_administer_channel_group: Json[GroupSettingChangeRequest] | None = None,
+    can_delete_any_message_group: Json[GroupSettingChangeRequest] | None = None,
+    can_delete_own_message_group: Json[GroupSettingChangeRequest] | None = None,
     can_move_messages_out_of_channel_group: Json[GroupSettingChangeRequest] | None = None,
     can_move_messages_within_channel_group: Json[GroupSettingChangeRequest] | None = None,
     can_remove_subscribers_group: Json[GroupSettingChangeRequest] | None = None,
+    can_resolve_topics_group: Json[GroupSettingChangeRequest] | None = None,
     can_send_message_group: Json[GroupSettingChangeRequest] | None = None,
     can_subscribe_group: Json[GroupSettingChangeRequest] | None = None,
-    description: Annotated[str, StringConstraints(max_length=Stream.MAX_DESCRIPTION_LENGTH)]
-    | None = None,
+    description: ChannelDescription = None,
     folder_id: Json[int | None] | MissingType = Missing,
     history_public_to_subscribers: Json[bool] | None = None,
     is_archived: Json[bool] | None = None,
@@ -385,6 +405,10 @@ def update_stream_backend(
         if not user_profile.can_create_web_public_streams():
             raise JsonableError(_("Insufficient permission"))
 
+    validated_topics_policy = validate_topics_policy(topics_policy, user_profile, stream)
+    if validated_topics_policy is not None:
+        do_set_stream_property(stream, "topics_policy", validated_topics_policy.value, user_profile)
+
     if (
         is_private is not None
         or is_web_public is not None
@@ -420,16 +444,12 @@ def update_stream_backend(
     if is_archived is not None and not is_archived:
         do_unarchive_stream(stream, stream.name, acting_user=None)
 
-    if topics_policy is not None and isinstance(topics_policy, StreamTopicsPolicyEnum):
-        if not user_profile.can_set_topics_policy():
-            raise JsonableError(_("Insufficient permission"))
-
-        do_set_stream_property(stream, "topics_policy", topics_policy.value, user_profile)
+    if (
+        can_delete_any_message_group is not None or can_delete_own_message_group is not None
+    ) and not user_profile.can_set_delete_message_policy():
+        raise JsonableError(_("Insufficient permission"))
 
     if description is not None:
-        if "\n" in description:
-            # We don't allow newline characters in stream descriptions.
-            description = description.replace("\n", " ")
         do_change_stream_description(stream, description, acting_user=user_profile)
     if new_name is not None:
         new_name = new_name.strip()
@@ -483,7 +503,7 @@ def update_stream_backend(
             with transaction.atomic(durable=True):
                 user_group_api_value_for_setting = access_user_group_api_value_for_setting(
                     new_setting_value,
-                    user_profile,
+                    user_profile.realm,
                     setting_name=setting_name,
                     permission_configuration=permission_configuration,
                 )
@@ -515,9 +535,7 @@ def list_subscriptions_backend(
 class AddSubscriptionData(BaseModel):
     name: str
     color: str | None = None
-    description: (
-        Annotated[str, StringConstraints(max_length=Stream.MAX_DESCRIPTION_LENGTH)] | None
-    ) = None
+    description: ChannelDescription = None
 
     @model_validator(mode="after")
     def validate_terms(self) -> "AddSubscriptionData":
@@ -634,6 +652,50 @@ def you_were_just_subscribed_message(
 RETENTION_DEFAULT: str | int = "realm_default"
 
 
+def access_requested_group_permissions(
+    user_profile: UserProfile,
+    realm: Realm,
+    request_settings_dict: dict[str, Any],
+) -> tuple[dict[str, UserGroup], dict[int, UserGroupMembersData]]:
+    anonymous_group_membership = {}
+    group_settings_map = {}
+    system_groups_name_dict = get_role_based_system_groups_dict(realm)
+    for setting_name, permission_configuration in Stream.stream_permission_group_settings.items():
+        assert setting_name in request_settings_dict
+        if request_settings_dict[setting_name] is not None:
+            setting_request_value = request_settings_dict[setting_name]
+            setting_value = parse_group_setting_value(
+                setting_request_value, system_groups_name_dict[SystemGroups.NOBODY]
+            )
+            group_settings_map[setting_name] = access_user_group_for_setting(
+                setting_value,
+                user_profile,
+                setting_name=setting_name,
+                permission_configuration=permission_configuration,
+            )
+            if (
+                setting_name in ["can_delete_any_message_group", "can_delete_own_message_group"]
+                and group_settings_map[setting_name].id
+                != system_groups_name_dict[SystemGroups.NOBODY].id
+                and not user_profile.can_set_delete_message_policy()
+            ):
+                raise JsonableError(_("Insufficient permission"))
+
+            if not isinstance(setting_value, int):
+                anonymous_group_membership[group_settings_map[setting_name].id] = setting_value
+        else:
+            group_settings_map[setting_name] = get_stream_permission_default_group(
+                setting_name, system_groups_name_dict, creator=user_profile
+            )
+            if permission_configuration.default_group_name == "stream_creator_or_nobody":
+                # Default for some settings like "can_administer_channel_group"
+                # is anonymous group with stream creator.
+                anonymous_group_membership[group_settings_map[setting_name].id] = (
+                    UserGroupMembersData(direct_subgroups=[], direct_members=[user_profile.id])
+                )
+    return group_settings_map, anonymous_group_membership
+
+
 @transaction.atomic(savepoint=False)
 @require_non_guest_user
 @typed_endpoint
@@ -644,10 +706,13 @@ def add_subscriptions_backend(
     announce: Json[bool] = False,
     authorization_errors_fatal: Json[bool] = True,
     can_add_subscribers_group: Json[int | UserGroupMembersData] | None = None,
+    can_delete_any_message_group: Json[int | UserGroupMembersData] | None = None,
+    can_delete_own_message_group: Json[int | UserGroupMembersData] | None = None,
     can_administer_channel_group: Json[int | UserGroupMembersData] | None = None,
     can_move_messages_out_of_channel_group: Json[int | UserGroupMembersData] | None = None,
     can_move_messages_within_channel_group: Json[int | UserGroupMembersData] | None = None,
     can_remove_subscribers_group: Json[int | UserGroupMembersData] | None = None,
+    can_resolve_topics_group: Json[int | UserGroupMembersData] | None = None,
     can_send_message_group: Json[int | UserGroupMembersData] | None = None,
     can_subscribe_group: Json[int | UserGroupMembersData] | None = None,
     folder_id: Json[int] | None = None,
@@ -679,41 +744,12 @@ def add_subscriptions_backend(
     if principals is None:
         principals = []
 
-    anonymous_group_membership = {}
-    group_settings_map = {}
     request_settings_dict = locals()
-    # We don't want to calculate this value if no default values are
-    # needed.
-    system_groups_name_dict = None
-    for setting_name, permission_configuration in Stream.stream_permission_group_settings.items():
-        assert setting_name in request_settings_dict
-        if request_settings_dict[setting_name] is not None:
-            setting_request_value = request_settings_dict[setting_name]
-            if system_groups_name_dict is None:
-                system_groups_name_dict = get_role_based_system_groups_dict(realm)
-            setting_value = parse_group_setting_value(
-                setting_request_value, system_groups_name_dict[SystemGroups.NOBODY]
-            )
-            group_settings_map[setting_name] = access_user_group_for_setting(
-                setting_value,
-                user_profile,
-                setting_name=setting_name,
-                permission_configuration=permission_configuration,
-            )
-            if not isinstance(setting_value, int):
-                anonymous_group_membership[group_settings_map[setting_name].id] = setting_value
-        else:
-            if system_groups_name_dict is None:
-                system_groups_name_dict = get_role_based_system_groups_dict(realm)
-            group_settings_map[setting_name] = get_stream_permission_default_group(
-                setting_name, system_groups_name_dict, creator=user_profile
-            )
-            if permission_configuration.default_group_name == "stream_creator_or_nobody":
-                # Default for some settings like "can_administer_channel_group"
-                # is anonymous group with stream creator.
-                anonymous_group_membership[group_settings_map[setting_name].id] = (
-                    UserGroupMembersData(direct_subgroups=[], direct_members=[user_profile.id])
-                )
+    group_settings_map, anonymous_group_membership = access_requested_group_permissions(
+        user_profile,
+        realm,
+        request_settings_dict,
+    )
 
     folder: ChannelFolder | None = None
     if folder_id is not None:
@@ -728,9 +764,8 @@ def add_subscriptions_backend(
         stream_dict_copy: StreamDict = {}
         stream_dict_copy["name"] = stream_obj.name.strip()
 
-        # We don't allow newline characters in stream descriptions.
         if stream_obj.description is not None:
-            stream_dict_copy["description"] = stream_obj.description.replace("\n", " ")
+            stream_dict_copy["description"] = stream_obj.description
 
         stream_dict_copy["invite_only"] = invite_only
         stream_dict_copy["is_web_public"] = is_web_public
@@ -738,18 +773,20 @@ def add_subscriptions_backend(
         stream_dict_copy["message_retention_days"] = parse_message_retention_days(
             message_retention_days, Stream.MESSAGE_RETENTION_SPECIAL_VALUES_MAP
         )
-        if topics_policy is not None and isinstance(topics_policy, StreamTopicsPolicyEnum):
-            if (
-                topics_policy != StreamTopicsPolicyEnum.inherit
-                and not user_profile.can_set_topics_policy()
-            ):
-                raise JsonableError(_("Insufficient permission"))
-            stream_dict_copy["topics_policy"] = topics_policy.value
+        validated_topics_policy = validate_topics_policy(topics_policy, user_profile)
+        if validated_topics_policy is not None:
+            stream_dict_copy["topics_policy"] = validated_topics_policy.value
         stream_dict_copy["can_add_subscribers_group"] = group_settings_map[
             "can_add_subscribers_group"
         ]
         stream_dict_copy["can_administer_channel_group"] = group_settings_map[
             "can_administer_channel_group"
+        ]
+        stream_dict_copy["can_delete_any_message_group"] = group_settings_map[
+            "can_delete_any_message_group"
+        ]
+        stream_dict_copy["can_delete_own_message_group"] = group_settings_map[
+            "can_delete_own_message_group"
         ]
         stream_dict_copy["can_move_messages_out_of_channel_group"] = group_settings_map[
             "can_move_messages_out_of_channel_group"
@@ -760,6 +797,9 @@ def add_subscriptions_backend(
         stream_dict_copy["can_send_message_group"] = group_settings_map["can_send_message_group"]
         stream_dict_copy["can_remove_subscribers_group"] = group_settings_map[
             "can_remove_subscribers_group"
+        ]
+        stream_dict_copy["can_resolve_topics_group"] = group_settings_map[
+            "can_resolve_topics_group"
         ]
         stream_dict_copy["can_subscribe_group"] = group_settings_map["can_subscribe_group"]
         stream_dict_copy["folder"] = folder
@@ -935,6 +975,11 @@ def send_messages_for_new_subscribers(
                 else:
                     content = _("{user_name} created a new channel {new_channels}.")
                 topic_name = _("new channels")
+                if (
+                    new_stream_announcements_stream.topics_policy
+                    == StreamTopicsPolicyEnum.empty_topic_only.value
+                ):
+                    topic_name = ""
 
             content = content.format(
                 user_name=silent_mention_syntax_for_user(user_profile),
@@ -996,7 +1041,7 @@ def send_messages_for_new_subscribers(
                     internal_prep_stream_message(
                         sender=sender,
                         stream=stream,
-                        topic_name=str(Realm.STREAM_EVENTS_NOTIFICATION_TOPIC_NAME),
+                        topic_name=channel_events_topic_name(stream),
                         content=new_channel_message.format(
                             user_name=silent_mention_syntax_for_user(user_profile),
                         )

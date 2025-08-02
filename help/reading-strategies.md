@@ -10,28 +10,6 @@ in Zulip.
 
 ## Conversation by conversation
 
-{!conversation-definition.md!}
-
-{!conversation-recommendation.md!}
-
-### Finding a conversation to read
-
-#### From the Inbox view
-
-{!inbox-intro.md!}
-
-{!inbox-instructions.md!}
-
-#### From Recent conversations
-
-{!recent-conversations.md!}
-
-#### From the left sidebar
-
-{!left-sidebar-conversations.md!}
-
-### Reading conversations
-
 {!reading-conversations.md!}
 
 ### Following, muting and unmuting conversations
@@ -53,26 +31,7 @@ workflows:
 
 You can see all your direct messages in one place.
 
-{start_tabs}
-
-{tab|desktop-web}
-
-1. Click on the **Direct message feed** (<i class="zulip-icon
-   zulip-icon-all-messages"></i>) icon next to **DIRECT MESSAGES** in the left
-   sidebar.
-
-1. Read your direct messages, starting from your first unread message. You can
-   scroll using your mouse, the arrow keys, <kbd>End</kbd>, or page up/down.
-
-1. You can click on a conversation in the left sidebar or a message recipient
-   bar to view that conversation.
-
-!!! keyboard_tip ""
-
-    Use the <kbd>Shift</kbd> + <kbd>P</kbd> keyboard shortcut to go to
-    **Direct message feed**.
-
-{end_tabs}
+{!dm-feed-instructions.md!}
 
 ### Channel view
 
@@ -85,7 +44,7 @@ on.
 {tab|desktop-web}
 
 1. Find the channel you want to read in the left sidebar. If you don't see it
-   right away, you can search for a channel by clicking on **CHANNELS** in the
+   right away, you can search for a channel by clicking on **channels** in the
    left sidebar, or using the <kbd>Q</kbd> [keyboard
    shortcut](/help/keyboard-shortcuts).
 
@@ -116,6 +75,10 @@ You can [star messages](/help/star-a-message) that you plan to follow up on late
 #### View starred messages
 
 {!view-starred-messages.md!}
+
+### Reactions
+
+{!view-emoji-reactions.md!}
 
 ## Related articles
 

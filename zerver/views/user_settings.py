@@ -9,6 +9,7 @@ from django.core.files.uploadedfile import UploadedFile
 from django.db import transaction
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
+from django.urls import reverse
 from django.utils.html import escape
 from django.utils.safestring import SafeString
 from django.utils.translation import gettext as _
@@ -32,7 +33,7 @@ from zerver.actions.user_settings import (
     do_start_email_change_process,
 )
 from zerver.actions.users import generate_password_reset_url
-from zerver.decorator import human_users_only
+from zerver.decorator import human_users_only, require_post
 from zerver.lib.avatar import avatar_url
 from zerver.lib.email_notifications import enqueue_welcome_emails
 from zerver.lib.email_validation import (
@@ -81,24 +82,44 @@ def validate_email_change_request(user_profile: UserProfile, new_email: str) -> 
         validate_email_not_already_in_realm(
             user_profile.realm,
             new_email,
+            allow_inactive_mirror_dummies=False,
             verbose=False,
         )
     except ValidationError as e:
         raise JsonableError(e.message)
 
 
-def confirm_email_change(request: HttpRequest, confirmation_key: str) -> HttpResponse:
+def confirm_email_change_get(request: HttpRequest, confirmation_key: str) -> HttpResponse:
     try:
-        email_change_object = get_object_from_key(
-            confirmation_key, [Confirmation.EMAIL_CHANGE], mark_object_used=True
-        )
-    except ConfirmationKeyError as exception:
+        get_object_from_key(confirmation_key, [Confirmation.EMAIL_CHANGE], mark_object_used=False)
+    except ConfirmationKeyError as exception:  # nocoverage
         return render_confirmation_key_error(request, exception)
 
-    assert isinstance(email_change_object, EmailChangeStatus)
-    new_email = email_change_object.new_email
-    old_email = email_change_object.old_email
+    return render(
+        request,
+        "confirmation/redirect_to_post.html",
+        context={
+            "target_url": reverse("confirm_email_change"),
+            "key": confirmation_key,
+        },
+    )
+
+
+@require_post
+@typed_endpoint
+def confirm_email_change(request: HttpRequest, *, key: str) -> HttpResponse:
     with transaction.atomic(durable=True):
+        try:
+            email_change_object = get_object_from_key(
+                key, [Confirmation.EMAIL_CHANGE], mark_object_used=True
+            )
+        except ConfirmationKeyError as exception:
+            return render_confirmation_key_error(request, exception)
+
+        assert isinstance(email_change_object, EmailChangeStatus)
+        new_email = email_change_object.new_email
+        old_email = email_change_object.old_email
+
         user_profile = UserProfile.objects.select_for_update().get(
             id=email_change_object.user_profile_id
         )
@@ -311,6 +332,7 @@ def json_change_settings(
     web_escape_navigates_to_home_view: Json[bool] | None = None,
     web_font_size_px: Json[int] | None = None,
     web_home_view: Annotated[str, check_string_in_validator(web_home_view_options)] | None = None,
+    web_left_sidebar_show_channel_folders: Json[bool] | None = None,
     web_left_sidebar_unreads_count_summary: Json[bool] | None = None,
     web_line_height_percent: Json[int] | None = None,
     web_mark_read_on_scroll_policy: Annotated[

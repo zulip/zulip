@@ -105,31 +105,33 @@ in order to export direct message data.
 
 {tab|self-hosting}
 
-{!import-into-a-self-hosted-zulip-server.md!}
+{!import-into-a-self-hosted-server-description.md!}
+
+{!import-into-a-self-hosted-server-instructions.md!}
 
 1. To import into an organization hosted on the root domain
    (`EXTERNAL_HOST`) of the Zulip installation, run the following
    commands, replacing `<token>` with your Slack **Bot User OAuth Token**.
 
-    {!import-self-hosted-server-tips.md!}
+      {!import-self-hosted-server-tips.md!}
 
-    ```
-    cd /home/zulip/deployments/current
-    ./scripts/stop-server
-    ./manage.py convert_slack_data /tmp/slack_data.zip --token <token> --output /tmp/converted_slack_data
-    ./manage.py import '' /tmp/converted_slack_data
-    ./scripts/start-server
-    ```
+      ```
+      cd /home/zulip/deployments/current
+      ./scripts/stop-server
+      ./manage.py convert_slack_data /tmp/slack_data.zip --token <token> --output /tmp/converted_slack_data
+      ./manage.py import '' /tmp/converted_slack_data
+      ./scripts/start-server
+      ```
 
-    Alternatively, to import into a custom subdomain, run:
+      Alternatively, to import into a custom subdomain, run:
 
-    ```
-    cd /home/zulip/deployments/current
-    ./scripts/stop-server
-    ./manage.py convert_slack_data /tmp/slack_data.zip --token <token> --output /tmp/converted_slack_data
-    ./manage.py import <subdomain> /tmp/converted_slack_data
-    ./scripts/start-server
-    ```
+      ```
+      cd /home/zulip/deployments/current
+      ./scripts/stop-server
+      ./manage.py convert_slack_data /tmp/slack_data.zip --token <token> --output /tmp/converted_slack_data
+      ./manage.py import <subdomain> /tmp/converted_slack_data
+      ./scripts/start-server
+      ```
 
 1. Follow [step 4](https://zulip.readthedocs.io/en/stable/production/install.html#step-4-configure-and-use)
    of the guide for [installing a new Zulip
@@ -148,26 +150,23 @@ in mind about the import process:
   visibility](/help/configure-email-visibility),
   [message editing permissions](/help/restrict-message-editing-and-deletion),
   and [how users can join your organization](/help/restrict-account-creation).
-
 - Slack does not export user settings, so users in your organization may want to
   [customize their account settings](/help/getting-started-with-zulip).
-
 - Slack's user roles are mapped to Zulip's [user
   roles](/help/user-roles) in the following way:
 
-| Slack role              | Zulip role    |
-|-------------------------|---------------|
-| Workspace Primary Owner | Owner         |
-| Workspace Owner         | Owner         |
-| Workspace Admin         | Administrator |
-| Member                  | Member        |
-| Single Channel Guest    | Guest         |
-| Multi Channel Guest     | Guest         |
-| Channel creator         | none          |
+    | Slack role              | Zulip role    |
+    |-------------------------|---------------|
+    | Workspace Primary Owner | Owner         |
+    | Workspace Owner         | Owner         |
+    | Workspace Admin         | Administrator |
+    | Member                  | Member        |
+    | Single Channel Guest    | Guest         |
+    | Multi Channel Guest     | Guest         |
+    | Channel creator         | none          |
 
-- Slack threads are imported as topics with names like "2023-05-30
-  Slack thread 1".
-
+- Slack threads are imported as topics with names that include snippets of the
+  original message, such as "2023-05-30 Hi, can anyone reply if you're o…".
 - Message edit history and `@user joined #channel_name` messages are not imported.
 
 ## Clean up after the Slack export

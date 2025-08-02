@@ -1,5 +1,5 @@
 import _ from "lodash";
-import type {z} from "zod";
+import type * as z from "zod/mini";
 
 import * as blueslip from "./blueslip.ts";
 import type {StateData, realm_emoji_map_schema, server_emoji_schema} from "./state_data.ts";

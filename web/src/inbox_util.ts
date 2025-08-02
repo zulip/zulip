@@ -45,7 +45,7 @@ export function update_stream_colors(): void {
         return;
     }
 
-    const $stream_headers = $("#inbox-streams-container .inbox-header");
+    const $stream_headers = $(".inbox-streams-container .inbox-header");
     $stream_headers.each((_index, stream_header) => {
         const $stream_header = $(stream_header);
         const stream_id = Number.parseInt($stream_header.attr("data-stream-id")!, 10);
