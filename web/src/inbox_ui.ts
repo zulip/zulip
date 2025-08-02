@@ -1235,6 +1235,7 @@ export function complete_rerender(): void {
         get_options: inbox_view_dropdown_options,
     });
     filters_dropdown_widget.setup();
+    update_collapsed_note_visibility();
 }
 
 export function search_and_update(): void {
@@ -1321,6 +1322,39 @@ export function collapse_or_expand(container_id: string): void {
     }
 
     save_data_to_ls();
+    update_collapsed_note_visibility();
+}
+
+export function count_collapsed_folders(): number {
+    return $("#inbox-list .inbox-folder.inbox-collapsed-state").length;
+}
+
+export function count_all_folders(): number {
+    return $("#inbox-list .inbox-folder:not(.hidden_by_filters)").length;
+}
+
+function update_collapsed_note_visibility(): void {
+    const total_folders = count_all_folders();
+    const collapsed_folders = count_collapsed_folders();
+    const has_rows_in_inbox_list = $("#inbox-list .inbox-row:not(.hidden_by_filters)").length > 0;
+    if (total_folders > 0 && collapsed_folders === total_folders && has_rows_in_inbox_list) {
+        $("#inbox-collapsed-note").show();
+    } else {
+        $("#inbox-collapsed-note").hide();
+    }
+}
+
+function expand_all_folders(): void {
+    $("#inbox-list .inbox-folder.inbox-collapsed-state:not(.hidden_by_filters)").each(function () {
+        const container_id = $(this).attr("id");
+        if (container_id) {
+            $(this).removeClass("inbox-collapsed-state");
+            collapsed_containers.delete(container_id);
+        }
+    });
+
+    save_data_to_ls();
+    update_collapsed_note_visibility();
 }
 
 function focus_current_id(): void {
@@ -2020,6 +2054,7 @@ export function update(): void {
             revive_current_focus();
         }
     }
+    update_collapsed_note_visibility();
 }
 
 function get_focus_class_for_header(): string {
@@ -2208,6 +2243,12 @@ export function initialize({hide_other_views}: {hide_other_views: () => void}): 
             const $elt = $(e.currentTarget);
             $elt.find(get_focus_class_for_row()).trigger("click");
         }
+    });
+
+    $("body").on("click", ".inbox-collapsed-note #inbox-expand-all-button", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        expand_all_folders();
     });
 
     $("body").on("click", "#inbox-list .inbox-left-part-wrapper", function (this: HTMLElement, e) {
