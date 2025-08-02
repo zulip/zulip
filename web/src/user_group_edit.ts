@@ -2179,6 +2179,11 @@ export function initialize(): void {
         open_create_user_group();
     });
 
+    $("#groups_overlay_container").on("click", ".view-all-groups-button", (e) => {
+        e.preventDefault();
+        browser_history.update("#groups/all");
+    });
+
     $("#groups_overlay_container").on(
         "click",
         "#user_group_creation_form .create_user_group_cancel",
