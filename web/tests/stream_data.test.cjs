@@ -1975,6 +1975,28 @@ test("can_access_stream_email", ({override}) => {
 
     override(current_user, "is_guest", true);
     assert.equal(stream_data.can_access_stream_email(social), false);
+    override(current_user, "is_guest", false);
+
+    // Test private stream with protected history - unsubscribed users cannot access email
+    social.invite_only = true;
+    social.history_public_to_subscribers = false;
+    social.subscribed = false;
+    social.can_send_message_group.direct_members = [me.user_id];
+    assert.equal(stream_data.can_access_stream_email(social), false);
+
+    // Test private stream with protected history - subscribed users can access email
+    social.subscribed = true;
+    assert.equal(stream_data.can_access_stream_email(social), true);
+
+    // Test private stream with public history - unsubscribed users can access email
+    social.subscribed = false;
+    social.history_public_to_subscribers = true;
+    assert.equal(stream_data.can_access_stream_email(social), true);
+
+    // Test public stream - unsubscribed users can access email
+    social.invite_only = false;
+    social.history_public_to_subscribers = false;
+    assert.equal(stream_data.can_access_stream_email(social), true);
 });
 
 test("has_metadata_access", ({override}) => {
