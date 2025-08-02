@@ -706,7 +706,24 @@ export function get_current_user_and_their_bots_with_post_messages_permission(
 }
 
 export function can_access_stream_email(sub: StreamSubscription): boolean {
-    return get_current_user_and_their_bots_with_post_messages_permission(sub).length > 0;
+    if (get_current_user_and_their_bots_with_post_messages_permission(sub).length === 0) {
+        return false;
+    }
+    if (sub.is_web_public) {
+        return true;
+    }
+    if (sub.subscribed) {
+        return true;
+    }
+    // For private streams with public history, we need to check if the user
+    // has content access through group permissions, not just the history setting
+    if (sub.invite_only && sub.history_public_to_subscribers) {
+        return has_content_access_via_group_permissions(sub);
+    }
+    if (!sub.invite_only) {
+        return true;
+    }
+    return false;
 }
 
 export function can_access_topic_history(sub: StreamSubscription): boolean {

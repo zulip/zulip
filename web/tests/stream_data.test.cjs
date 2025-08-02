@@ -1937,6 +1937,10 @@ test("can_access_stream_email", ({override}) => {
         name: "social",
         stream_id: 2,
         is_archived: false,
+        is_web_public: false,
+        subscribed: false,
+        invite_only: false,
+        history_public_to_subscribers: false,
         can_send_message_group: {
             direct_subgroups: [],
             direct_members: [me.user_id],
@@ -1956,6 +1960,7 @@ test("can_access_stream_email", ({override}) => {
     override(bot_data, "get_all_bots_for_current_user", () => [bot]);
     override(current_user, "user_id", me.user_id);
 
+    // Test no post messages permissions
     social.is_archived = true;
     assert.equal(stream_data.can_access_stream_email(social), false);
     social.is_archived = false;
@@ -1964,16 +1969,62 @@ test("can_access_stream_email", ({override}) => {
     assert.equal(stream_data.can_access_stream_email(social), false);
     page_params.is_spectator = false;
 
-    social.can_send_message_group.direct_members = [me.user_id];
-    assert.equal(stream_data.can_access_stream_email(social), true);
-
-    social.can_send_message_group.direct_members = [bot.user_id];
-    assert.equal(stream_data.can_access_stream_email(social), true);
-
     social.can_send_message_group.direct_members = [123];
     assert.equal(stream_data.can_access_stream_email(social), false);
 
+    // Test current user has post permission
+    social.can_send_message_group.direct_members = [me.user_id];
+    assert.equal(stream_data.can_access_stream_email(social), true);
+
+    // Test public streams are accessible
+    social.is_web_public = true;
+    social.subscribed = false;
+    social.invite_only = true;
+    social.history_public_to_subscribers = false;
+    assert.equal(stream_data.can_access_stream_email(social), true);
+    social.is_web_public = false;
+
+    // Test subscribed users can access
+    social.subscribed = true;
+    assert.equal(stream_data.can_access_stream_email(social), true);
+
+    // Test subscribed guest users cannot access
     override(current_user, "is_guest", true);
+    assert.equal(stream_data.can_access_stream_email(social), false);
+
+    // Test unsubscribed guests cannot access
+    social.subscribed = false;
+    assert.equal(stream_data.can_access_stream_email(social), false);
+
+    override(current_user, "is_guest", false);
+
+    // Private stream with public history + content access → true
+    social.history_public_to_subscribers = true;
+    social.invite_only = true;
+    social.can_add_subscribers_group = {
+        direct_subgroups: [],
+        direct_members: [me.user_id],
+    };
+    social.can_subscribe_group = {
+        direct_subgroups: [],
+        direct_members: [],
+    };
+    assert.equal(stream_data.can_access_stream_email(social), true);
+
+    // Private stream with public history is not accessible
+    social.can_add_subscribers_group = {
+        direct_subgroups: [],
+        direct_members: [],
+    };
+    assert.equal(stream_data.can_access_stream_email(social), false);
+
+    // Test public streams with protected history
+    social.invite_only = false;
+    social.history_public_to_subscribers = false;
+    assert.equal(stream_data.can_access_stream_email(social), true);
+
+    // Test private stream with protected history (default case)
+    social.invite_only = true;
     assert.equal(stream_data.can_access_stream_email(social), false);
 });
 
