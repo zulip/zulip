@@ -35,7 +35,13 @@ const user_settings = {};
 initialize_user_settings({user_settings});
 
 mock_esm("../src/group_permission_settings", {
-    get_group_permission_setting_config() {
+    get_group_permission_setting_config(setting_name) {
+        if (setting_name === "can_send_message_group") {
+            return {
+                allow_everyone_group: true,
+            };
+        }
+
         return {
             allow_everyone_group: false,
         };
@@ -2012,7 +2018,7 @@ test("options for dropdown widget", () => {
     ]);
 });
 
-test("can_access_stream_email", ({override}) => {
+test("get_current_user_and_their_bots_with_post_messages_permission", ({override}) => {
     const social = {
         name: "social",
         stream_id: 2,
@@ -2032,28 +2038,146 @@ test("can_access_stream_email", ({override}) => {
         user_id: 999,
         is_bot: true,
     };
+
     people.add_active_user(bot_user);
+    override(current_user, "user_id", me.user_id);
     override(bot_data, "get_all_bots_for_current_user", () => [bot]);
+
+    // Test that bot isn't included in the returned users list if bot cannot send message.
+    assert.deepEqual(
+        stream_data.get_current_user_and_their_bots_with_post_messages_permission(social),
+        [current_user],
+    );
+
+    // Test that bot is included in the returned users list if bot can send message.
+    social.can_send_message_group.direct_members = [me.user_id, bot.user_id];
+    assert.deepEqual(
+        stream_data.get_current_user_and_their_bots_with_post_messages_permission(social),
+        [current_user, bot],
+    );
+});
+
+test("can_access_stream_email", ({override}) => {
+    const social = {
+        name: "social",
+        stream_id: 2,
+        is_archived: false,
+        is_web_public: false,
+        subscribed: true,
+        invite_only: false,
+        history_public_to_subscribers: true,
+        can_send_message_group: {
+            direct_subgroups: [],
+            direct_members: [me.user_id],
+        },
+        can_add_subscribers_group: nobody_group.id,
+        can_subscribe_group: nobody_group.id,
+    };
+    const bot = {
+        is_active: true,
+        user_id: 999,
+    };
+    const bot_user = {
+        email: "bot@zulip.com",
+        full_name: "Bot User",
+        user_id: 999,
+        is_bot: true,
+    };
+    people.add_active_user(bot_user);
     override(current_user, "user_id", me.user_id);
 
+    // No user can access email of archived streams.
     social.is_archived = true;
     assert.equal(stream_data.can_access_stream_email(social), false);
     social.is_archived = false;
 
+    // Spectator cannot access email of any stream.
     page_params.is_spectator = true;
     assert.equal(stream_data.can_access_stream_email(social), false);
     page_params.is_spectator = false;
 
-    social.can_send_message_group.direct_members = [me.user_id];
     assert.equal(stream_data.can_access_stream_email(social), true);
 
-    social.can_send_message_group.direct_members = [bot.user_id];
-    assert.equal(stream_data.can_access_stream_email(social), true);
-
+    // User should be in can_send_message_group to access stream email.
     social.can_send_message_group.direct_members = [123];
     assert.equal(stream_data.can_access_stream_email(social), false);
 
+    // Even admins not in can_send_message_group cannot access email.
+    override(current_user, "is_admin", true);
+    assert.equal(stream_data.can_access_stream_email(social), false);
+    override(current_user, "is_admin", false);
+
+    social.can_send_message_group.direct_members = [bot.user_id];
+    assert.equal(stream_data.can_access_stream_email(social), false);
+
+    social.can_send_message_group.direct_members = [me.user_id];
+    assert.equal(stream_data.can_access_stream_email(social), true);
+
+    // Unsubscribe the user to test cases of unsubscribed users
+    // having access to email of web-public and public streams.
+    social.subscribed = false;
+
+    // All users with post permissions, including guests, can
+    // access email of web-public streams.
     override(current_user, "is_guest", true);
+    social.is_web_public = true;
+    assert.equal(stream_data.can_access_stream_email(social), true);
+
+    // Non-guests have access to stream email of all public streams.
+    social.is_web_public = false;
+    assert.equal(stream_data.can_access_stream_email(social), false);
+
+    override(current_user, "is_guest", false);
+    assert.equal(stream_data.can_access_stream_email(social), true);
+
+    // Subscribed users have access to stream email for private
+    // streams with both public and protected history.
+    social.invite_only = true;
+    assert.equal(stream_data.can_access_stream_email(social), false);
+
+    social.subscribed = true;
+    assert.equal(stream_data.can_access_stream_email(social), true);
+
+    social.subscribed = false;
+    social.history_public_to_subscribers = false;
+
+    assert.equal(stream_data.can_access_stream_email(social), false);
+
+    social.subscribed = true;
+    assert.equal(stream_data.can_access_stream_email(social), true);
+
+    social.subscribed = false;
+    const anonymous_setting_group = {
+        direct_members: [me.user_id],
+        direct_subgroups: [],
+    };
+    social.can_add_subscribers_group = anonymous_setting_group;
+    social.can_subscribe_group = anonymous_setting_group;
+
+    // Non subscribed users cannot access email for private streams
+    // with protected history even if they have content access via
+    // group permissions.
+    assert.equal(social.history_public_to_subscribers, false);
+    assert.equal(stream_data.can_access_stream_email(social), false);
+
+    // Non subscribed non-guest users can access email for private streams
+    // with public history  if they have content access to stream via
+    // group permissions.
+    social.history_public_to_subscribers = true;
+    override(current_user, "is_guest", true);
+    assert.equal(stream_data.can_access_stream_email(social), false);
+    override(current_user, "is_guest", false);
+
+    assert.equal(stream_data.can_access_stream_email(social), true);
+
+    social.can_subscribe_group = nobody_group.id;
+    assert.equal(stream_data.can_access_stream_email(social), true);
+
+    social.can_add_subscribers_group = nobody_group.id;
+    social.can_subscribe_group = anonymous_setting_group;
+    assert.equal(stream_data.can_access_stream_email(social), true);
+
+    social.can_subscribe_group = nobody_group.id;
     assert.equal(stream_data.can_access_stream_email(social), false);
 });
 
