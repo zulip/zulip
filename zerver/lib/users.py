@@ -19,7 +19,11 @@ from zulip_bots.custom_exceptions import ConfigValidationError
 from zerver.lib.avatar import avatar_url, get_avatar_field, get_avatar_for_inaccessible_user
 from zerver.lib.cache import cache_with_key, get_cross_realm_dicts_key
 from zerver.lib.create_user import get_dummy_email_address_for_display_regex
-from zerver.lib.exceptions import JsonableError, OrganizationOwnerRequiredError
+from zerver.lib.exceptions import (
+    EmailAlreadyInUseError,
+    JsonableError,
+    OrganizationOwnerRequiredError,
+)
 from zerver.lib.string_validation import check_string_is_printable
 from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.lib.timezone import canonicalize_timezone
@@ -37,7 +41,11 @@ from zerver.models import (
     UserProfile,
 )
 from zerver.models.groups import SystemGroups, get_realm_system_groups_name_dict
-from zerver.models.realms import get_fake_email_domain, require_unique_names
+from zerver.models.realms import (
+    InvalidFakeEmailDomainError,
+    get_fake_email_domain,
+    require_unique_names,
+)
 from zerver.models.users import (
     active_non_guest_user_ids,
     active_user_ids,
@@ -46,6 +54,7 @@ from zerver.models.users import (
     get_partial_realm_user_dicts,
     get_realm_user_dicts,
     get_realm_user_dicts_from_ids,
+    get_user_by_delivery_email,
     get_user_by_id_in_realm_including_cross_realm,
     get_user_profile_by_id_in_realm,
     is_cross_realm_bot_email,
@@ -113,11 +122,48 @@ def check_bot_name_available(realm_id: int, full_name: str, *, is_activation: bo
             raise JsonableError(_("Name is already in use."))
 
 
-def check_short_name(short_name_raw: str) -> str:
+def check_bot_email_available(full_name: str, email: str, realm: Realm) -> None:
+    # Import here to avoid circular imports.
+    from zerver.forms import CreateUserForm
+
+    form = CreateUserForm({"full_name": full_name, "email": email})
+    if not form.is_valid():
+        raise JsonableError(_("Bad name or username"))
+    try:
+        get_user_by_delivery_email(email, realm)
+        raise EmailAlreadyInUseError
+    except UserProfile.DoesNotExist:
+        pass
+
+
+def check_short_name_get_email(user_profile: UserProfile, short_name_raw: str) -> str:
     short_name = short_name_raw.strip()
     if len(short_name) == 0:
         raise JsonableError(_("Bad name or username"))
-    return short_name
+
+    new_short_name = f"{short_name}-bot"
+    # This comparison must be "startswith" because
+    # user_profile.email also contains FAKE_EMAIL_DOMAIN
+    if user_profile.email.startswith(new_short_name):
+        # Our web app will try to patch short_name even if the user didn't
+        # modify the name in the form.  We just silently ignore those
+        # situations.
+        return user_profile.email
+    try:
+        email = Address(
+            username=new_short_name, domain=user_profile.realm.get_bot_domain()
+        ).addr_spec
+    except InvalidFakeEmailDomainError:
+        raise JsonableError(
+            _(
+                "Can't create bots until FAKE_EMAIL_DOMAIN is correctly configured.\n"
+                "Please contact your server administrator."
+            )
+        )
+    except ValueError:
+        raise JsonableError(_("Bad name or username"))
+
+    return email
 
 
 def check_valid_bot_config(

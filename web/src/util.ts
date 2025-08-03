@@ -617,3 +617,8 @@ export async function sha256_hash(text: string): Promise<string | undefined> {
     const hashHex = hashArray.map((byte) => byte.toString(16).padStart(2, "0")).join("");
     return hashHex;
 }
+
+export function is_local_part(value: string): boolean {
+    // Adapted from Django's EmailValidator
+    return /^[\w!#$%&'*+/=?^`{|}~-]+(\.[\w!#$%&'*+/=?^`{|}~-]+)*$/i.test(value);
+}
