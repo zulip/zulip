@@ -1,5 +1,4 @@
 from collections.abc import Mapping
-from email.headerregistry import Address
 from typing import Annotated, Any, TypeAlias
 
 from django.conf import settings
@@ -26,6 +25,7 @@ from zerver.actions.custom_profile_fields import (
 )
 from zerver.actions.user_settings import (
     check_change_bot_full_name,
+    check_change_bot_short_name,
     check_change_full_name,
     do_change_avatar_fields,
     do_change_user_delivery_email,
@@ -72,11 +72,12 @@ from zerver.lib.users import (
     access_user_by_email,
     access_user_by_id,
     add_service,
+    check_bot_email_available,
     check_bot_name_available,
     check_can_access_user,
     check_can_create_bot,
     check_full_name,
-    check_short_name,
+    check_short_name_get_email,
     check_valid_bot_config,
     check_valid_bot_type,
     check_valid_interface_type,
@@ -90,7 +91,6 @@ from zerver.models.realms import (
     DisposableEmailError,
     DomainNotAllowedForRealmError,
     EmailContainsPlusError,
-    InvalidFakeEmailDomainError,
     Realm,
 )
 from zerver.models.users import (
@@ -450,11 +450,15 @@ def patch_bot_backend(
     role: Json[RoleParamType] | None = None,
     service_interface: Json[int] = 1,
     service_payload_url: Json[Annotated[str, AfterValidator(check_url)]] | None = None,
+    short_name: str | None = None,
 ) -> HttpResponse:
     bot = access_bot_by_id(user_profile, bot_id)
 
     if full_name is not None:
         check_change_bot_full_name(bot, full_name, user_profile)
+
+    if short_name is not None:
+        check_change_bot_short_name(bot, short_name, user_profile)
 
     if role is not None and bot.role != role:
         # Logic duplicated from update_user_backend.
@@ -522,6 +526,7 @@ def patch_bot_backend(
         raise JsonableError(_("You may only upload one file at a time"))
 
     json_result = dict(
+        username=bot.email,
         full_name=bot.full_name,
         avatar_url=avatar_url(bot),
         service_interface=service_interface,
@@ -577,25 +582,12 @@ def add_bot_backend(
 ) -> HttpResponse:
     if config_data is None:
         config_data = {}
-    short_name = check_short_name(short_name_raw)
+    email = check_short_name_get_email(user_profile, short_name_raw)
     if bot_type != UserProfile.INCOMING_WEBHOOK_BOT:
-        service_name = service_name or short_name
-    short_name += "-bot"
+        service_name = service_name or short_name_raw.strip()
     full_name = check_full_name(
         full_name_raw=full_name_raw, user_profile=user_profile, realm=user_profile.realm
     )
-    try:
-        email = Address(username=short_name, domain=user_profile.realm.get_bot_domain()).addr_spec
-    except InvalidFakeEmailDomainError:
-        raise JsonableError(
-            _(
-                "Can't create bots until FAKE_EMAIL_DOMAIN is correctly configured.\n"
-                "Please contact your server administrator."
-            )
-        )
-    except ValueError:
-        raise JsonableError(_("Bad name or username"))
-    form = CreateUserForm({"full_name": full_name, "email": email})
 
     if bot_type == UserProfile.EMBEDDED_BOT:
         if not settings.EMBEDDED_BOTS_ENABLED:
@@ -603,21 +595,16 @@ def add_bot_backend(
         if service_name not in [bot.name for bot in EMBEDDED_BOTS]:
             raise JsonableError(_("Invalid embedded bot name."))
 
-    if not form.is_valid():  # nocoverage
-        # coverage note: The similar block above covers the most
-        # common situation where this might fail, but this case may be
-        # still possible with an overly long username.
-        raise JsonableError(_("Bad name or username"))
-    try:
-        get_user_by_delivery_email(email, user_profile.realm)
-        raise EmailAlreadyInUseError
-    except UserProfile.DoesNotExist:
-        pass
-
     check_bot_name_available(
         realm_id=user_profile.realm_id,
         full_name=full_name,
         is_activation=False,
+    )
+
+    check_bot_email_available(
+        full_name=full_name,
+        email=email,
+        realm=user_profile.realm,
     )
 
     check_can_create_bot(user_profile, bot_type)

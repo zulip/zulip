@@ -1,13 +1,11 @@
 from collections.abc import Iterable
 from datetime import timedelta
-from email.headerregistry import Address
 from enum import Enum
 
 from django.conf import settings
 from django.db import transaction
 from django.db.models import F
 from django.utils.timezone import now as timezone_now
-from django.utils.translation import gettext as _
 
 from confirmation.models import Confirmation, create_confirmation_link
 from confirmation.settings import STATUS_REVOKED
@@ -20,7 +18,6 @@ from zerver.lib.cache import (
     user_profile_by_api_key_cache_key,
 )
 from zerver.lib.create_user import get_display_email_address
-from zerver.lib.exceptions import JsonableError
 from zerver.lib.i18n import get_language_name
 from zerver.lib.queue import queue_event_on_commit
 from zerver.lib.send_email import FromAddress, clear_scheduled_emails, send_email
@@ -31,7 +28,7 @@ from zerver.lib.users import (
     check_bot_email_available,
     check_bot_name_available,
     check_full_name,
-    check_short_name,
+    check_short_name_get_email,
     get_user_ids_who_can_access_user,
     get_users_with_access_to_real_email,
     user_access_restricted_in_realm,
@@ -296,21 +293,7 @@ def check_change_bot_full_name(
 def check_change_bot_short_name(
     user_profile: UserProfile, short_name_raw: str, acting_user: UserProfile
 ) -> None:
-    new_short_name = check_short_name(short_name_raw)
-    new_short_name += "-bot"
-
-    if user_profile.email.startswith(new_short_name):
-        # Our web app will try to patch short_name even if the user didn't
-        # modify the name in the form.  We just silently ignore those
-        # situations.
-        return
-
-    try:
-        email = Address(
-            username=new_short_name, domain=user_profile.realm.get_bot_domain()
-        ).addr_spec
-    except ValueError:
-        raise JsonableError(_("Bad name or username"))
+    email = check_short_name_get_email(user_profile, short_name_raw)
 
     check_bot_email_available(
         full_name=user_profile.full_name,
