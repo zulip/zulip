@@ -2208,7 +2208,7 @@ class TestAddRemoveDeviceTokenAPI(BouncerTestCase):
 
         # PushDeviceToken will include all the device tokens.
         token_values = list(PushDeviceToken.objects.values_list("token", flat=True))
-        self.assertEqual(
+        self.assertCountEqual(
             token_values, ["c0ffee01", "android-token-1", "c0ffee02", "android-token-2"]
         )
 
