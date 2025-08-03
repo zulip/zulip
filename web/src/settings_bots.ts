@@ -27,7 +27,7 @@ import * as ui_report from "./ui_report.ts";
 import type {UploadWidget} from "./upload_widget.ts";
 import * as user_deactivation_ui from "./user_deactivation_ui.ts";
 import * as user_profile from "./user_profile.ts";
-import * as util from "./util.ts"
+import * as util from "./util.ts";
 
 const INCOMING_WEBHOOK_BOT_TYPE = 2;
 const OUTGOING_WEBHOOK_BOT_TYPE = "3";
@@ -58,11 +58,6 @@ function add_bot_row(info: BotInfo): void {
     } else {
         $("#inactive_bots_list").append($row);
     }
-}
-
-function is_local_part(value: string): boolean {
-    // Adapted from Django's EmailValidator
-    return /^[\w!#$%&'*+/=?^`{|}~-]+(\.[\w!#$%&'*+/=?^`{|}~-]+)*$/i.test(value);
 }
 
 export function render_bots(): void {
@@ -350,7 +345,7 @@ export function add_a_new_bot(): void {
     function validate_input(): boolean {
         const bot_short_name = $<HTMLInputElement>("input#create_bot_short_name").val()!;
 
-        if (is_local_part(bot_short_name)) {
+        if (util.is_local_part(bot_short_name)) {
             return true;
         }
         ui_report.error(
