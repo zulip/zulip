@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 set -eu
 
-version=0.10.0
+version=0.11.0
 arch="$(uname -m)"
 tarball="shellcheck-v$version.linux.$arch.tar.xz"
 declare -A sha256=(
-    [aarch64]=324a7e89de8fa2aed0d0c28f3dab59cf84c6d74264022c00c22af665ed1a09bb
-    [x86_64]=6c881ab0698e4e6ea235245f22832860544f17ba386442fe7e9d629f8cbedf87
+    [aarch64]=12b331c1d2db6b9eb13cfca64306b1b157a86eb69db83023e261eaa7e7c14588
+    [x86_64]=8c3be12b05d5c177a04c29e3c78ce89ac86f1595681cab149b65b97c4e227198
 )
 
 check_version() {
