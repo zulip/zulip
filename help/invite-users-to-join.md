@@ -1,10 +1,10 @@
 # Invite users to join
 
+[delete-message]: /help/delete-a-message#delete-a-message-completely
+
 !!! tip ""
      Before inviting users, you may want to [delete any test messages][delete-message]
      or [topics](/help/delete-a-topic).
-
-[delete-message]: /help/delete-a-message#delete-a-message-completely
 
 ## How to invite users to join
 

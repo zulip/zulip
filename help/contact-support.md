@@ -1,5 +1,9 @@
 # Contact support
 
+[development-community]: https://zulip.com/development-community/
+[community-norms]: https://zulip.com/development-community/#community-norms
+[development-community-channels]: https://zulip.com/development-community/#channels-for-zulip-users-and-administrators
+
 We're here to help! This page will guide you to the best way to reach us.
 
 ## Zulip community
@@ -64,10 +68,6 @@ for your organization.
   [feedback@zulip.com](mailto:feedback@zulip.com). This works well if you'd like
   to include details about your organization that shouldn't be posted in public.
     * Response time: Usually within 1-3 business days.
-
-[development-community]: https://zulip.com/development-community/
-[community-norms]: https://zulip.com/development-community/#community-norms
-[development-community-channels]: https://zulip.com/development-community/#channels-for-zulip-users-and-administrators
 
 ## Related articles
 

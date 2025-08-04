@@ -1,5 +1,7 @@
 # Animated GIFs from GIPHY
 
+[configure-giphy]: https://zulip.readthedocs.io/en/stable/production/giphy-gif-integration.html
+
 !!! warn ""
 
     On self-hosted servers, this feature need to be
@@ -67,8 +69,6 @@ GIPHY website and typed the same search keywords there.
 Zulip proxies all external images in messages through the server,
 including those from GIPHY, to prevent images from being used to track
 recipients of GIFs from GIPHY.
-
-[configure-giphy]: https://zulip.readthedocs.io/en/stable/production/giphy-gif-integration.html
 
 ## Related articles
 

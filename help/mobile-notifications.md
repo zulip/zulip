@@ -1,5 +1,8 @@
 # Mobile notifications
 
+[notifications-wildcard-mentions]: /help/dm-mention-alert-notifications#wildcard-mentions
+[e2ee-flutter-issue]: https://github.com/zulip/zulip-flutter/issues/1764
+
 Zulip can be configured to send [mobile](/help/mobile-app-install-guide)
 notifications for [DMs, mentions, and
 alerts](/help/dm-mention-alert-notifications), as well as [channel
@@ -17,16 +20,12 @@ topics](/help/follow-a-topic#configure-notifications-for-followed-topics).
 
 {end_tabs}
 
-[notifications-wildcard-mentions]: /help/dm-mention-alert-notifications#wildcard-mentions
-
 ## End-to-end encryption (E2EE) for mobile push notifications
 
 Zulip Server 11.0+ and Zulip Cloud support end-to-end encryption for mobile push
 notifications. Support is [coming soon][e2ee-flutter-issue] to the Zulip mobile
 app. Once implemented, all push notifications sent from an up-to-date version of
 the server to an updated version of the app will be end-to-end encrypted.
-
-[e2ee-flutter-issue]: https://github.com/zulip/zulip-flutter/issues/1764
 
 Organization administrators can require end-to-end encryption for
 message content in mobile push notifications. When this setting is

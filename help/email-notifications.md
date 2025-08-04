@@ -1,5 +1,7 @@
 # Email notifications
 
+[incoming-email-gateway]: https://zulip.readthedocs.io/en/stable/production/email-gateway.html
+
 ## Message notification emails
 
 Zulip can be configured to send message notification emails for [DMs, mentions,
@@ -31,8 +33,6 @@ You can reply to Zulip messages by replying to message notification emails.
    triggers** table.
 
 {end_tabs}
-
-[incoming-email-gateway]: https://zulip.readthedocs.io/en/stable/production/email-gateway.html
 
 ### Include organization name in subject line
 

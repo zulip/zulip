@@ -1,5 +1,7 @@
 # Use a custom certificate
 
+[linux]: https://chromium.googlesource.com/chromium/src.git/+/main/docs/linux/cert_management.md
+
 By default, Zulip generates a signed certificate during the server install
 process. In some cases, a server administrator may choose not to use that
 feature, in which case your Zulip server may be using a self-signed
@@ -107,5 +109,3 @@ server. You'll need to get a certificate file (should end in `.crt` or
 
 
 
-
-[linux]: https://chromium.googlesource.com/chromium/src.git/+/main/docs/linux/cert_management.md

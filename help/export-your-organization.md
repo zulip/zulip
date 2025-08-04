@@ -1,5 +1,12 @@
 # Export your organization
 
+[plans]: https://zulip.com/plans/
+[production-backups]: https://zulip.readthedocs.io/en/stable/production/export-and-import.html#backups
+[export-and-import]: https://zulip.readthedocs.io/en/stable/production/export-and-import.html#data-export
+[import-only]: https://zulip.readthedocs.io/en/stable/production/export-and-import.html#import-into-a-new-zulip-server
+[compliance-exports-self-hosted]: https://zulip.readthedocs.io/en/stable/production/export-and-import.html#compliance-exports
+
+
 !!! warn ""
 
     If you're self-hosting Zulip, you may want to check out the
@@ -26,8 +33,6 @@ available for all Zulip organizations:
 
 Two additional types of data exports are available to **corporate** [Zulip Cloud
 Standard][plans] and [Zulip Cloud Plus][plans] customers:
-
-[plans]: https://zulip.com/plans/
 
 * [**Full export without member consent**](#full-export-without-member-consent):
   All the data in the organization.
@@ -143,8 +148,3 @@ importing the export into a new Zulip organization.
 * [Deactivate your organization](/help/deactivate-your-organization)
 * [Import organization into a self-hosted Zulip server][import-only]
 * [Compliance exports for self-hosted organizations][compliance-exports-self-hosted]
-
-[production-backups]: https://zulip.readthedocs.io/en/stable/production/export-and-import.html#backups
-[export-and-import]: https://zulip.readthedocs.io/en/stable/production/export-and-import.html#data-export
-[import-only]: https://zulip.readthedocs.io/en/stable/production/export-and-import.html#import-into-a-new-zulip-server
-[compliance-exports-self-hosted]: https://zulip.readthedocs.io/en/stable/production/export-and-import.html#compliance-exports

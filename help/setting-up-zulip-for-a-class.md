@@ -32,16 +32,16 @@ We also highly recommend trying Zulip for yourself! You can:
 
 ## Choosing between Zulip Cloud and self-hosting
 
+[install-self-hosted]: https://zulip.readthedocs.io/en/stable/production/install.html
+[export-cloud]: /help/export-your-organization
+[export-self-hosted]: https://zulip.readthedocs.io/en/stable/production/export-and-import.html
+
 Whether [signing up for Zulip Cloud](/new/) or [self-hosting
 Zulip][install-self-hosted] is the right choice for you depends on your needs.
 
 If you aren’t sure what you need, our high quality export and import
 tools ([cloud][export-cloud], [self-hosted][export-self-hosted])
 ensure you can always move from our hosting to yours (and back).
-
-[install-self-hosted]: https://zulip.readthedocs.io/en/stable/production/install.html
-[export-cloud]: /help/export-your-organization
-[export-self-hosted]: https://zulip.readthedocs.io/en/stable/production/export-and-import.html
 
 ### Advantages of Zulip Cloud
 
@@ -56,6 +56,10 @@ ensure you can always move from our hosting to yours (and back).
 
 ### Advantages of self-hosting Zulip
 
+[install-zulip]: https://zulip.readthedocs.io/en/stable/production/install.html
+[back-up-zulip]: https://zulip.readthedocs.io/en/stable/production/export-and-import.html#backups
+[maintain-zulip]: https://zulip.readthedocs.io/en/stable/production/upgrade.html
+
 * Zulip is [100% open-source software](https://github.com/zulip), with
   no "open core" catch.
 * We work hard to make it easy to [set up][install-zulip],
@@ -65,11 +69,6 @@ ensure you can always move from our hosting to yours (and back).
   option due to stringent data and privacy requirements (e.g., in the
   European Union), self-hosting is the option for you.
 * Customize Zulip for all your needs.
-
-[install-zulip]: https://zulip.readthedocs.io/en/stable/production/install.html
-[back-up-zulip]: https://zulip.readthedocs.io/en/stable/production/export-and-import.html#backups
-[maintain-zulip]: https://zulip.readthedocs.io/en/stable/production/upgrade.html
-
 
 ## Do I need a separate Zulip organization for each class?
 There are a few ways to set up Zulip, and different ones may be convenient for your needs:
@@ -115,6 +114,9 @@ registration and login page for your organization, and in the Zulip app.
 
 ## Customize organization settings
 
+[default-code-block-language]: /help/code-blocks#default-code-block-language
+[code-playgrounds]: /help/code-blocks#code-playgrounds
+
 {!review-organization-settings-instructions.md!}
 
 A few settings to highlight:
@@ -126,9 +128,6 @@ A few settings to highlight:
   linkifiers](/help/add-a-custom-linkifier) to make it easy to link to
   issues (e.g., just by typing #1234 for issue 1234).
 * [Add custom emoji](/help/custom-emoji) that your class will enjoy.
-
-[default-code-block-language]: /help/code-blocks#default-code-block-language
-[code-playgrounds]: /help/code-blocks#code-playgrounds
 
 ### Roles and permissions
 
@@ -146,6 +145,9 @@ how to assign roles and permissions for a class.
 | Students                            | Member                                         |
 
 ##### Settings
+
+[user-group-permissions]: /help/manage-user-groups#configure-who-can-create-user-groups
+[move-between-channels]: /help/restrict-moving-messages#configure-who-can-move-messages-out-of-any-channel
 
 !!! warn ""
      These are the default permissions for new **Education
@@ -166,9 +168,6 @@ how to assign roles and permissions for a class.
   (Recommended: Admins and moderators)
 - Set [who can create and manage user groups][user-group-permissions].
   (Recommended: Admins and moderators)
-
-[user-group-permissions]: /help/manage-user-groups#configure-who-can-create-user-groups
-[move-between-channels]: /help/restrict-moving-messages#configure-who-can-move-messages-out-of-any-channel
 
 #### Recommended roles and permissions for a department
 
@@ -215,6 +214,8 @@ how to assign roles and permissions for a class.
 
 ### Tips for creating channels
 
+[separate-orgs]: /help/setting-up-zulip-for-a-class#do-i-need-a-separate-zulip-organization-for-each-class
+
 For most classes, the following channels are recommended:
 
 - **#announcements**: For general announcements about the class. When
@@ -242,9 +243,9 @@ A few notes:
   more than one class, all channel names should be prefixed with the
   name of the class, e.g., “CS101 > Lecture 1: Course intro”.
 
-[separate-orgs]: /help/setting-up-zulip-for-a-class#do-i-need-a-separate-zulip-organization-for-each-class
-
 ## Customize settings for new users
+
+[delete-message]: /help/delete-a-message#delete-a-message-completely
 
 {!customize-settings-for-new-users.md!}
 
@@ -261,9 +262,9 @@ A few notes:
     Before inviting users, you may want to [delete any test
     messages][delete-message] or [topics](/help/delete-a-topic).
 
-[delete-message]: /help/delete-a-message#delete-a-message-completely
-
 ### How to invite users to join
+
+[create-user-groups]: /help/setting-up-zulip-for-a-class#create-user-groups
 
 To simplify subscription management, be sure to set the channels
 students and staff should be subscribed to when you create the
@@ -282,8 +283,6 @@ to [Getting started with Zulip][getting-started] and the guide to
     If you create new channels later on, you can subscribe users
     [by group][create-user-groups] or copy membership from another
     channel (e.g., from Lecture 5 to Lecture 6).
-
-[create-user-groups]: /help/setting-up-zulip-for-a-class#create-user-groups
 
 ## Create user groups
 
@@ -315,6 +314,11 @@ product.
 
 ## Cleaning up at the end of a class
 
+[make-private]: /help/change-the-privacy-of-a-channel
+[subscribe-to-channel]: /help/subscribe-users-to-a-channel
+[deactivate-user]: /help/deactivate-or-reactivate-a-user#deactivate-a-user
+[getting-started]: /help/getting-started-with-zulip
+
 If you plan to use the same Zulip organization in future terms (either
 for your own classes or for your department), you will likely want to:
 
@@ -345,8 +349,3 @@ HTML archive](https://github.com/zulip/zulip-archive) to archive the information
 * [Getting started with Zulip](/help/getting-started-with-zulip)
 * [Introduction to topics](/help/introduction-to-topics)
 * [Moderating open organizations](/help/moderating-open-organizations)
-
-[make-private]: /help/change-the-privacy-of-a-channel
-[subscribe-to-channel]: /help/subscribe-users-to-a-channel
-[deactivate-user]: /help/deactivate-or-reactivate-a-user#deactivate-a-user
-[getting-started]: /help/getting-started-with-zulip

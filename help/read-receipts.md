@@ -1,5 +1,9 @@
 # Read receipts
 
+[configure-personal-read-receipts]: /help/read-receipts#configure-whether-zulip-lets-others-see-when-youve-read-messages
+[configure-organization-read-receipts]:
+    /help/read-receipts#configure-whether-read-receipts-are-enabled-in-your-organization
+
 Read receipts let you check who has read a message. You can see read receipts
 for any message, including both [channel messages](/help/introduction-to-channels)
 and [direct messages](/help/direct-messages).
@@ -98,7 +102,3 @@ You can configure:
 * [Typing notifications](/help/typing-notifications)
 * [Marking messages as read](/help/marking-messages-as-read)
 * [Marking messages as unread](/help/marking-messages-as-unread)
-
-[configure-personal-read-receipts]: /help/read-receipts#configure-whether-zulip-lets-others-see-when-youve-read-messages
-[configure-organization-read-receipts]:
-    /help/read-receipts#configure-whether-read-receipts-are-enabled-in-your-organization

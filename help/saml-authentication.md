@@ -1,5 +1,8 @@
 # SAML authentication
 
+[saml-readthedocs]: https://zulip.readthedocs.io/en/stable/production/authentication-methods.html#saml
+[saml-group-sync-readthedocs]: https://zulip.readthedocs.io/en/latest/production/authentication-methods.html#synchronizing-group-membership-with-saml
+
 {!admin-only.md!}
 
 Zulip supports using SAML authentication for single sign-on, both for Zulip
@@ -267,6 +270,3 @@ to Zulip groups for details.
 * [SAML configuration for self-hosting][saml-readthedocs]
 * [SCIM provisioning](/help/scim)
 * [Moving to Zulip](/help/moving-to-zulip)
-
-[saml-readthedocs]: https://zulip.readthedocs.io/en/stable/production/authentication-methods.html#saml
-[saml-group-sync-readthedocs]: https://zulip.readthedocs.io/en/latest/production/authentication-methods.html#synchronizing-group-membership-with-saml

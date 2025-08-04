@@ -1,5 +1,8 @@
 # Keyboard shortcuts
 
+[disable-escape]: /help/configure-home-view#configure-whether-esc-navigates-to-the-home-view
+[toggle-enter-to-send]: /help/configure-send-message-keys
+
 Everything in Zulip can be done with the mouse, but mastering a few keyboard
 shortcuts will change your experience of the app. Start with the basics below,
 and use the convenient [**keyboard shortcuts**](#keyboard-shortcuts-reference)
@@ -44,7 +47,6 @@ reference in the Zulip app to add more to your repertoire as needed.
   (or <kbd>Esc</kbd>, [if enabled][disable-escape])
   until you are in your [home view](/help/configure-home-view).
 
-[disable-escape]: /help/configure-home-view#configure-whether-esc-navigates-to-the-home-view
 ## Search
 
 * **Search messages**: <kbd>/</kbd> or <kbd>Ctrl</kbd> + <kbd>K</kbd>
@@ -98,9 +100,6 @@ reference in the Zulip app to add more to your repertoire as needed.
 * **Forward message**: <kbd>&lt;</kbd>
 * **Reply directly to sender**: <kbd>Shift</kbd> + <kbd>R</kbd>
 * **Reply @-mentioning sender**: <kbd>@</kbd>
-
-
-[toggle-enter-to-send]: /help/configure-send-message-keys
 
 ### In the compose box
 

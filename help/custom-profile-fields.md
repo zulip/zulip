@@ -1,5 +1,7 @@
 # Custom profile fields
 
+[authentication-production]: https://zulip.readthedocs.io/en/stable/production/authentication-methods.html
+
 {!admin-only.md!}
 
 [User cards](/help/user-cards) show basic information about a user, and [user
@@ -141,5 +143,3 @@ Choose the profile field type that's most appropriate for the requested informat
 * [Edit your profile](/help/edit-your-profile)
 * [User cards](/help/user-cards)
 * [View someone's profile](/help/view-someones-profile)
-
-[authentication-production]: https://zulip.readthedocs.io/en/stable/production/authentication-methods.html

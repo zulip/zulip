@@ -1,5 +1,7 @@
 # Configure default settings for new users
 
+[default-notifications]: /help/channel-notifications#configure-default-notifications-for-all-channels
+
 {!admin-only.md!}
 
 Organization administrators can configure the default values of
@@ -34,8 +36,6 @@ preference settings, including the following:
     * Which topics users will [automatically follow](/help/follow-a-topic). This
       minimizes the need to [mention](/help/mention-a-user-or-group) other users
       to get their attention.
-
-[default-notifications]: /help/channel-notifications#configure-default-notifications-for-all-channels
 
 ## Configure default settings for new users
 

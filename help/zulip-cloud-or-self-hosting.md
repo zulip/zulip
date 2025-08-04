@@ -1,5 +1,11 @@
 # Choosing between Zulip Cloud and self-hosting
 
+[zulip-github]: https://github.com/zulip/zulip#readme
+[install-zulip]: https://zulip.readthedocs.io/en/stable/production/install.html
+[back-up-zulip]: https://zulip.readthedocs.io/en/stable/production/export-and-import.html#backups
+[maintain-zulip]: https://zulip.readthedocs.io/en/stable/production/upgrade.html
+[modify-zulip]: https://zulip.readthedocs.io/en/stable/production/modify.html
+
 This page will help you decide whether [signing up for Zulip
 Cloud](https://zulip.com/new/) or [self-hosting
 Zulip](https://zulip.com/self-hosting/) best fits the needs of your
@@ -41,12 +47,6 @@ organization. For additional guidance, reach out to
   plan](https://zulip.com/plans/#self-hosted) can be a great choice.
 
 Learn more about [self-hosting Zulip](https://zulip.com/self-hosting/).
-
-[zulip-github]: https://github.com/zulip/zulip#readme
-[install-zulip]: https://zulip.readthedocs.io/en/stable/production/install.html
-[back-up-zulip]: https://zulip.readthedocs.io/en/stable/production/export-and-import.html#backups
-[maintain-zulip]: https://zulip.readthedocs.io/en/stable/production/upgrade.html
-[modify-zulip]: https://zulip.readthedocs.io/en/stable/production/modify.html
 
 ## Plans and pricing
 

@@ -1,5 +1,8 @@
 # Restrict profile picture change
 
+[change-avatar]: /help/change-your-profile-picture
+[ldap-sync-avatars]: https://zulip.readthedocs.io/en/stable/production/authentication-methods.html#synchronizing-avatars
+
 {!admin-only.md!}
 
 By default, any user can [change their profile picture][change-avatar].
@@ -22,6 +25,3 @@ profile pictures from LDAP][ldap-sync-avatars] or a similar directory.
 {!save-changes.md!}
 
 {end_tabs}
-
-[change-avatar]: /help/change-your-profile-picture
-[ldap-sync-avatars]: https://zulip.readthedocs.io/en/stable/production/authentication-methods.html#synchronizing-avatars

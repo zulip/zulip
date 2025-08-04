@@ -1,5 +1,9 @@
 # GDPR compliance
 
+[mobile-push]: https://zulip.readthedocs.io/en/stable/production/mobile-push-notifications.html
+[management-commands]: https://zulip.readthedocs.io/en/stable/production/management-commands.html
+[export-and-import-tool]: https://zulip.readthedocs.io/en/stable/production/export-and-import.html
+
 This page covers how Zulip interacts with the EU's landmark GDPR
 legislation; you can read the
 [Zulip Cloud privacy policy](https://zulip.com/policies/privacy) for our
@@ -65,8 +69,6 @@ Labs, Inc. Kandra Labs acts as a data processor to deliver the service, which
 uses the same hosting infrastructure and [terms of
 service](https://zulip.com/policies/terms) as Zulip Cloud.
 
-[mobile-push]: https://zulip.readthedocs.io/en/stable/production/mobile-push-notifications.html
-
 In addition to the features [described
 above](#gdpr-compliance-with-zulip-cloud), the following tools help self-hosted
 Zulip installations comply with GDPR-related requests from users:
@@ -86,9 +88,6 @@ backups, etc. [Zulip Business](https://zulip.com/plans/#self-hosted) and [Zulip
 Enterprise](https://zulip.com/plans/#self-hosted) customers can contact
 [support@zulip.com](mailto:support@zulip.com) for assistance with GDPR
 compliance with Zulip.
-
-[management-commands]: https://zulip.readthedocs.io/en/stable/production/management-commands.html
-[export-and-import-tool]: https://zulip.readthedocs.io/en/stable/production/export-and-import.html
 
 ## Background on controllers and processors
 

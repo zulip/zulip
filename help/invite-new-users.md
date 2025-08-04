@@ -1,5 +1,7 @@
 # Invite new users
 
+[org-lang]: /help/configure-organization-language
+
 You can invite users to join your organization by sending out email invitations,
 or creating reusable invitation links to share.
 
@@ -136,5 +138,3 @@ for invitations for the organization owners role.
 * [User roles](/help/user-roles)
 * [User groups](/help/user-groups)
 * [Joining a Zulip organization](/help/join-a-zulip-organization)
-
-[org-lang]: /help/configure-organization-language

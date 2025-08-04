@@ -1,5 +1,11 @@
 # Self-hosted Zulip billing
 
+[basic-metadata]: https://zulip.readthedocs.io/en/latest/production/mobile-push-notifications.html#uploading-basic-metadata
+[usage-statistics]: https://zulip.readthedocs.io/en/latest/production/mobile-push-notifications.html#uploading-usage-statistics
+[push-notifications]: https://zulip.readthedocs.io/en/stable/production/mobile-push-notifications.html
+[production-install]: https://zulip.readthedocs.io/en/stable/production/install.html
+[sustainable-growth]: https://zulip.com/values/#building-a-sustainable-business-aligned-with-our-values
+
 This page describes how to manage your self-hosted plan, and answers some common
 questions about plans and billing for self-hosted organizations. Please refer to
 [Self-hosted Zulip plans and pricing](https://zulip.com/plans/#self-hosted) for plan
@@ -459,9 +465,3 @@ started with the [installation guide][production-install].
 * [Zulip Cloud or self-hosting?](/help/zulip-cloud-or-self-hosting)
 * [Migrating from other chat tools](/help/migrating-from-other-chat-tools)
 * [Contact support](/help/contact-support)
-
-[basic-metadata]: https://zulip.readthedocs.io/en/latest/production/mobile-push-notifications.html#uploading-basic-metadata
-[usage-statistics]: https://zulip.readthedocs.io/en/latest/production/mobile-push-notifications.html#uploading-usage-statistics
-[push-notifications]: https://zulip.readthedocs.io/en/stable/production/mobile-push-notifications.html
-[production-install]: https://zulip.readthedocs.io/en/stable/production/install.html
-[sustainable-growth]: https://zulip.com/values/#building-a-sustainable-business-aligned-with-our-values

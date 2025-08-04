@@ -1,5 +1,8 @@
 # Code blocks
 
+[pygments-lexers]: https://pygments.org/docs/lexers/
+[get_lexer_by_name]: https://pygments-doc.readthedocs.io/en/latest/lexers/lexers.html#pygments.lexers.get_lexer_by_name
+
 {!code-blocks-intro.md!}
 
 ## Insert code formatting
@@ -187,6 +190,3 @@ be happy to help you out.
 * [LaTeX](/help/latex)
 * [Spoilers](/help/spoilers)
 * [Quote message](/help/quote-or-forward-a-message)
-
-[pygments-lexers]: https://pygments.org/docs/lexers/
-[get_lexer_by_name]: https://pygments-doc.readthedocs.io/en/latest/lexers/lexers.html#pygments.lexers.get_lexer_by_name

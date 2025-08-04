@@ -1,5 +1,9 @@
 # Change a channel's description
 
+[markdown-formatting]: /help/format-your-message-using-markdown
+[message-link]: /help/link-to-a-message-or-conversation#get-a-link-to-a-specific-message
+[topic-link]: /help/link-to-a-message-or-conversation#get-a-link-to-a-specific-topic
+
 Channel descriptions can be used to explain the purpose of a channel, and link
 to usage guidelines, resources, or related channels. They appear in the
 navigation bar at the top of the web and desktop apps when you view the channel.
@@ -51,7 +55,3 @@ description with 👍.
 * [Rename a channel](/help/rename-a-channel)
 * [Markdown formatting][markdown-formatting]
 * [Channel permissions](/help/channel-permissions)
-
-[markdown-formatting]: /help/format-your-message-using-markdown
-[message-link]: /help/link-to-a-message-or-conversation#get-a-link-to-a-specific-message
-[topic-link]: /help/link-to-a-message-or-conversation#get-a-link-to-a-specific-topic

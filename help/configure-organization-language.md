@@ -1,5 +1,8 @@
 # Organization language for automated messages and invitation emails
 
+[api-create-user]: https://zulip.com/api/create-user
+[user-lang]: /help/change-your-language
+
 {!admin-only.md!}
 
 {!translation-project-info.md!}
@@ -38,6 +41,3 @@ automated messages and invitation emails. This setting:
 * [Configure multi-language search](/help/configure-multi-language-search)
 * [Configure default settings for new users](/help/configure-default-new-user-settings)
 * [Configure automated notices](/help/configure-automated-notices)
-
-[api-create-user]: https://zulip.com/api/create-user
-[user-lang]: /help/change-your-language

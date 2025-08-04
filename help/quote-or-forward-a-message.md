@@ -1,5 +1,7 @@
 # Quote or forward a message
 
+[link-to-message]: /help/link-to-a-message-or-conversation
+
 Conversations in Zulip are [organized by topic](/help/introduction-to-topics),
 so it's generally clear what you're responding to when you send a message.
 However, when responding to an older message, you may want to
@@ -89,5 +91,3 @@ unnecessarily mentioning someone twice.
 * [Format a quote](/help/format-a-quote)
 * [Link to a message or conversation][link-to-message]
 * [Mention a user or group](/help/mention-a-user-or-group)
-
-[link-to-message]: /help/link-to-a-message-or-conversation

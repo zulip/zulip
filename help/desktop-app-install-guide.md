@@ -1,5 +1,8 @@
 # Installing the Zulip desktop app
 
+[latest]: https://github.com/zulip/zulip-desktop/releases/latest
+[release-list]: https://github.com/zulip/zulip-desktop/releases
+
 The Zulip desktop app comes with native desktop notifications, support for
 multiple Zulip accounts, and a dedicated tray icon.
 
@@ -187,9 +190,6 @@ Get a peek at new features before they're released!
 1. Run Zulip from your app launcher, or with `zulip` from a terminal.
 
 {end_tabs}
-
-[latest]: https://github.com/zulip/zulip-desktop/releases/latest
-[release-list]: https://github.com/zulip/zulip-desktop/releases
 
 ## Related articles
 

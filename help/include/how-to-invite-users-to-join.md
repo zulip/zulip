@@ -1,3 +1,9 @@
+[email-invitations]:/help/invite-new-users#send-email-invitations
+[invitation-links]: /help/invite-new-users#create-a-reusable-invitation-link
+[set-if-invitations-required]: /help/restrict-account-creation#set-whether-invitations-are-required-to-join
+[restrict-email-domain]: /help/restrict-account-creation#configuring-email-domain-restrictions
+[logging-in]: /help/logging-in
+
 {start_tabs}
 {tab|require-invitations}
 
@@ -46,9 +52,3 @@
      on your organization's login page.
 
 {end_tabs}
-
-[email-invitations]:/help/invite-new-users#send-email-invitations
-[invitation-links]: /help/invite-new-users#create-a-reusable-invitation-link
-[set-if-invitations-required]: /help/restrict-account-creation#set-whether-invitations-are-required-to-join
-[restrict-email-domain]: /help/restrict-account-creation#configuring-email-domain-restrictions
-[logging-in]: /help/logging-in

@@ -1,5 +1,9 @@
 # Zulip communities directory
 
+[join-without-invite]: /help/restrict-account-creation#set-whether-invitations-are-required-to-join
+[communities-directory-permission]: /help/communities-directory#give-permission-to-be-in-the-zulip-communities-directory
+[push-notifications]: https://zulip.readthedocs.io/en/stable/production/mobile-push-notifications.html
+
 {!communities-directory-intro.md!}
 
 ## Eligibility
@@ -30,10 +34,6 @@ community and would like to be listed in the directory, please contact
 Zulip organization will not send any information to the Zulip project
 at this time, even if you use the Zulip mobile push notifications
 service.
-
-[join-without-invite]: /help/restrict-account-creation#set-whether-invitations-are-required-to-join
-[communities-directory-permission]: /help/communities-directory#give-permission-to-be-in-the-zulip-communities-directory
-[push-notifications]: https://zulip.readthedocs.io/en/stable/production/mobile-push-notifications.html
 
 ## Change whether your organization may be listed in the Zulip communities directory
 

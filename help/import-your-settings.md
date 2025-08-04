@@ -1,5 +1,8 @@
 # Import your settings
 
+[send-typing-notifications]: /help/typing-notifications#disable-sending-typing-notifications
+[share-read-receipts]: /help/read-receipts#configure-whether-zulip-lets-others-see-when-youve-read-messages
+
 When you create a Zulip account using an email address already associated with
 an account in another Zulip organization, on Zulip Cloud or the same self-hosted
 Zulip installation, you can import your user settings from an existing account.
@@ -44,6 +47,3 @@ The import will include your:
 
 * [Joining a Zulip organization](/help/join-a-zulip-organization)
 * [Review your settings](/help/review-your-settings)
-
-[send-typing-notifications]: /help/typing-notifications#disable-sending-typing-notifications
-[share-read-receipts]: /help/read-receipts#configure-whether-zulip-lets-others-see-when-youve-read-messages

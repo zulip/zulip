@@ -1,5 +1,13 @@
 # Customize organization settings
 
+[message-editing-permissions]: /help/restrict-message-editing-and-deletion
+[topic-editing-permissions]: /help/restrict-moving-messages
+[default-code-block-language]: /help/code-blocks#default-code-block-language
+[code-playgrounds]: /help/code-blocks#code-playgrounds
+[email-address-visibility]: /help/configure-email-visibility
+[who-can-invite]: /help/restrict-account-creation#change-who-can-send-invitations
+[who-can-join]: /help/restrict-account-creation#set-whether-invitations-are-required-to-join
+
 {!review-organization-settings-instructions.md!}
 
 A few settings to highlight:
@@ -19,14 +27,6 @@ For many other settings, e.g., [message][message-editing-permissions] and
 [topic][topic-editing-permissions] editing permissions, you can experience how
 Zulip works for your organization before deciding what settings are best for
 you.
-
-[message-editing-permissions]: /help/restrict-message-editing-and-deletion
-[topic-editing-permissions]: /help/restrict-moving-messages
-[default-code-block-language]: /help/code-blocks#default-code-block-language
-[code-playgrounds]: /help/code-blocks#code-playgrounds
-[email-address-visibility]: /help/configure-email-visibility
-[who-can-invite]: /help/restrict-account-creation#change-who-can-send-invitations
-[who-can-join]: /help/restrict-account-creation#set-whether-invitations-are-required-to-join
 
 ## Related articles
 

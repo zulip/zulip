@@ -1,5 +1,8 @@
 # Start a call
 
+[big-blue-button-configuration]: https://zulip.readthedocs.io/en/stable/production/video-calls.html#bigbluebutton
+[zoom-configuration]: https://zulip.readthedocs.io/en/stable/production/video-calls.html#zoom
+
 Zulip makes it convenient to add a video or voice call link to any message,
 using the call provider (Jitsi, Zoom, etc.)
 [configured](/help/configure-call-provider) by your organization's
@@ -81,9 +84,6 @@ you can unlink it.
 1. Click **Confirm**.
 
 {end_tabs}
-
-[big-blue-button-configuration]: https://zulip.readthedocs.io/en/stable/production/video-calls.html#bigbluebutton
-[zoom-configuration]: https://zulip.readthedocs.io/en/stable/production/video-calls.html#zoom
 
 ## Related articles
 

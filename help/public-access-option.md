@@ -1,5 +1,7 @@
 # Public access option
 
+[info-via-api]: /help/public-access-option#information-that-can-be-accessed-via-api-when-web-public-channels-are-enabled
+
 {!web-public-channels-intro.md!}
 
 ## Enabling web-public channels in your organization
@@ -99,8 +101,6 @@ detailed below.
   available to logged out visitors. However, organization settings data is
   required for Zulip to load, and may thus be [accessed via the Zulip API][info-via-api].
 * Logged out visitors cannot view [usage statistics](/help/analytics).
-
-[info-via-api]: /help/public-access-option#information-that-can-be-accessed-via-api-when-web-public-channels-are-enabled
 
 ### Information about users
 

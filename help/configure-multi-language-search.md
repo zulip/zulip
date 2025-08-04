@@ -1,5 +1,7 @@
 # Configure multi-language search
 
+[org-lang]: /help/configure-organization-language
+
 Zulip supports [full-text search](/help/search-for-messages), which can be
 combined arbitrarily with Zulip's full suite of [search
 filters](/help/search-for-messages#search-filters). By default, Zulip search
@@ -17,5 +19,3 @@ for setup instructions.
 
 * [Configure organization language for automated messages and invitation emails][org-lang]
 * [Searching for messages](/help/search-for-messages)
-
-[org-lang]: /help/configure-organization-language

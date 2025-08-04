@@ -1,5 +1,7 @@
 # Manage a user's group membership
 
+[configure-invites]: /help/configure-who-can-invite-to-channels
+
 ## View a user's group membership
 
 {start_tabs}
@@ -55,5 +57,3 @@
 * [Mention a user or group](/help/mention-a-user-or-group)
 * [Create user groups](/help/create-user-groups)
 * [User roles](/help/user-roles)
-
-[configure-invites]: /help/configure-who-can-invite-to-channels

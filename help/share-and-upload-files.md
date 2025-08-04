@@ -1,5 +1,7 @@
 # Share and upload files
 
+[system-settings]: https://zulip.readthedocs.io/en/stable/production/settings.html
+
 Zulip supports attaching multiple files to messages, including images,
 documents, sound, and video. You can edit the names of the files others see
 after you upload them.
@@ -125,8 +127,6 @@ In organizations on a self-hosted server, server administrators can configure
 the maximum size for uploaded files via the `MAX_FILE_UPLOAD_SIZE`
 [server setting][system-settings]. Setting it to 0 disables file uploads, and
 hides the UI for uploading files from the web and desktop apps.
-
-[system-settings]: https://zulip.readthedocs.io/en/stable/production/settings.html
 
 ## Related articles
 

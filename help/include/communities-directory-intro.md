@@ -1,3 +1,5 @@
+[zulip-cloud]: https://zulip.com/plans/
+
 The [Zulip communities directory](https://zulip.com/communities/) offers
 publicly accessible [Zulip Cloud][zulip-cloud] organizations an opportunity to
 be listed on the [Zulip website](https://zulip.com). It's a way for [open-source
@@ -10,5 +12,3 @@ The directory will display your community's name, logo, and a link to you Zulip
 chat. Other information from your [organization
 profile](/help/create-your-organization-profile) and the size of your
 organization may be included as well.
-
-[zulip-cloud]: https://zulip.com/plans/

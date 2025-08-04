@@ -1,5 +1,9 @@
 # SCIM provisioning
 
+[attribute-mappings]: https://learn.microsoft.com/en-us/entra/identity/app-provisioning/customize-application-attributes
+[feature-flag]: https://learn.microsoft.com/en-us/entra/identity/app-provisioning/application-provisioning-config-problem-scim-compatibility#flags-to-alter-the-scim-behavior
+[provision-on-demand]: https://learn.microsoft.com/en-us/entra/identity/app-provisioning/provision-on-demand
+
 {!admin-only.md!}
 
 SCIM (System for Cross-domain Identity Management) is a standard
@@ -149,10 +153,6 @@ Zulip's SCIM integration has the following limitations:
    testing the integration.
 
 {end_tabs}
-
-[attribute-mappings]: https://learn.microsoft.com/en-us/entra/identity/app-provisioning/customize-application-attributes
-[feature-flag]: https://learn.microsoft.com/en-us/entra/identity/app-provisioning/application-provisioning-config-problem-scim-compatibility#flags-to-alter-the-scim-behavior
-[provision-on-demand]: https://learn.microsoft.com/en-us/entra/identity/app-provisioning/provision-on-demand
 
 !!! tip ""
 

@@ -1,12 +1,12 @@
 # Message a channel by email
 
+[email-gateway]: https://zulip.readthedocs.io/en/stable/production/email-gateway.html
+
 !!! tip ""
 
     This feature is not available on self-hosted Zulip servers where
     the [incoming email gateway][email-gateway] has not been
     configured by a system administrator.
-
-[email-gateway]: https://zulip.readthedocs.io/en/stable/production/email-gateway.html
 
 You can send emails to Zulip channels. This can be useful:
 
