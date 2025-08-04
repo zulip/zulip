@@ -32,3 +32,11 @@ channel. Changing a channel's color does not change it for anyone else.
 1. Click **Choose** to save and apply the color change.
 
 {end_tabs}
+
+## Related articles
+
+* [Introduction to channels](/help/introduction-to-channels)
+* [Channel folders](/help/channel-folders)
+* [Pin a channel](/help/pin-a-channel)
+* [Mute or unmute a channel](/help/mute-a-channel)
+* [Hide or reveal inactive channels](/help/manage-inactive-channels)
