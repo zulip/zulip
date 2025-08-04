@@ -1180,13 +1180,12 @@ def get_message_payload_gcm(
 
     assert message.rendered_content is not None
     with override_language(user_profile.default_language):
-        content, truncated = truncate_content(get_mobile_push_content(message.rendered_content))
+        content, unused = truncate_content(get_mobile_push_content(message.rendered_content))
         data.update(
             event="message",
             zulip_message_id=message.id,  # message_id is reserved for CCS
             time=datetime_to_timestamp(message.date_sent),
             content=content,
-            content_truncated=truncated,
             sender_full_name=sender_name,
             sender_avatar_url=sender_avatar_url,
         )
