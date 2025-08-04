@@ -767,6 +767,62 @@ class GetSubscribersTest(ZulipTestCase):
             # fewer than MIN_PARTIAL_SUBSCRIBERS_CHANNEL_SIZE subscribers,
             # so we get all of them
             if sub["name"] == "subscribed_more_than_bots_including_idle":
+                self.assertNotIn("partial_subscribers", sub)
+                self.assert_length(sub["subscribers"], 4)
+            if sub["name"] == "subscribed_many_more_than_bots":
+                # the bot, Othello (who is not long_term_idle), and current user
+                self.assert_length(sub["partial_subscribers"], 3)
+                self.assertNotIn("subscribers", sub)
+
+    @override_settings(MIN_PARTIAL_SUBSCRIBERS_CHANNEL_SIZE=5)
+    def test_gather_partial_subscriptions_api(self) -> None:
+        othello = self.example_user("othello")
+        idle_users = [
+            create_user(
+                email=f"original_user{i}@zulip.com",
+                password=None,
+                realm=othello.realm,
+                full_name=f"Full Name {i}",
+            )
+            for i in range(5)
+        ]
+        for user in idle_users:
+            user.long_term_idle = True
+            user.save()
+        bot = self.create_test_bot("bot", othello, "Foo Bot")
+
+        stream_names = [
+            "subscribed_more_than_bots_including_idle",
+            "subscribed_many_more_than_bots",
+        ]
+        for stream_name in stream_names:
+            self.make_stream(stream_name)
+
+        for user in [bot, othello, self.user_profile, idle_users[0]]:
+            self.subscribe(user, stream_names[0])
+
+        for user in [bot, othello, self.user_profile, *idle_users]:
+            self.subscribe(user, stream_names[1])
+
+        with self.assert_database_query_count(11):
+            result = self.api_get(
+                self.user_profile,
+                "/api/v1/users/me/subscriptions",
+                {"include_subscribers": "partial"},
+            )
+            sub_data = self.assert_json_success(result)
+            subscribed_streams = sub_data["subscriptions"]
+        self.assertGreaterEqual(len(subscribed_streams), 2)
+
+        # Streams with only bots have sent all of their subscribers,
+        # since we always send bots. We tell the client it doesn't
+        # need to fetch more, by filling "subscribers" instead
+        # of "partial_subscribers". If there are non-bot subscribers,
+        # a partial fetch will return only partial subscribers.
+        for sub in subscribed_streams:
+            # fewer than MIN_PARTIAL_SUBSCRIBERS_CHANNEL_SIZE subscribers,
+            # so we get all of them
+            if sub["name"] == "subscribed_more_than_bots_including_idle":
                 self.assertIsNone(sub.get("partial_subscribers"))
                 self.assert_length(sub["subscribers"], 4)
                 continue

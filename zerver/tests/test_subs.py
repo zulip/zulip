@@ -3261,6 +3261,27 @@ class SubscriptionAPITest(ZulipTestCase):
             self.assertIsInstance(stream["name"], str)
             self.assertIsInstance(stream["color"], str)
             self.assertIsInstance(stream["invite_only"], bool)
+            self.assertNotIn("partial_subscribers", stream)
+            self.assertNotIn("subscribers", stream)
+            # check that the stream name corresponds to an actual
+            # stream; will throw Stream.DoesNotExist if it doesn't
+            get_stream(stream["name"], self.test_realm)
+        list_streams = [stream["name"] for stream in json["subscriptions"]]
+        # also check that this matches the list of your subscriptions
+        self.assertEqual(sorted(list_streams), sorted(self.streams))
+
+        # Text explicitly passing `include_subscribers` as "false"
+        result = self.api_get(
+            self.test_user, "/api/v1/users/me/subscriptions", {"include_subscribers": "false"}
+        )
+        json = self.assert_json_success(result)
+        self.assertIn("subscriptions", json)
+        for stream in json["subscriptions"]:
+            self.assertIsInstance(stream["name"], str)
+            self.assertIsInstance(stream["color"], str)
+            self.assertIsInstance(stream["invite_only"], bool)
+            self.assertNotIn("partial_subscribers", stream)
+            self.assertNotIn("subscribers", stream)
             # check that the stream name corresponds to an actual
             # stream; will throw Stream.DoesNotExist if it doesn't
             get_stream(stream["name"], self.test_realm)
@@ -3283,6 +3304,7 @@ class SubscriptionAPITest(ZulipTestCase):
             self.assertIsInstance(stream["name"], str)
             self.assertIsInstance(stream["color"], str)
             self.assertIsInstance(stream["invite_only"], bool)
+            self.assertIn("subscribers", stream)
             # check that the stream name corresponds to an actual
             # stream; will throw Stream.DoesNotExist if it doesn't
             get_stream(stream["name"], self.test_realm)
