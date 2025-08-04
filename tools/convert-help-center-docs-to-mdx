@@ -379,6 +379,50 @@ def insert_flattened_steps_component(
     return "\n".join(lines)
 
 
+def insert_steps_component_for_ordered_lists(
+    markdown_string: str, import_statements: set[str]
+) -> str:
+    list_item_pattern = re.compile(r"^\s*1\.\s+")
+
+    lines = markdown_string.split("\n")
+    output_lines = []
+    inside_flattened_steps = False
+
+    i = 0
+    while i < len(lines):
+        line = lines[i]
+
+        if "<FlattenedSteps>" in line:
+            inside_flattened_steps = True
+        elif "</FlattenedSteps>" in line:
+            inside_flattened_steps = False
+
+        if not inside_flattened_steps and list_item_pattern.match(line):
+            list_block = []
+
+            while i < len(lines):
+                current = lines[i]
+                if (
+                    list_item_pattern.match(current)
+                    or current.strip() == ""
+                    or current.startswith((" ", "\t"))
+                ):
+                    list_block.append(current)
+                    i += 1
+                else:
+                    break
+
+            import_statements.add("import { Steps } from '@astrojs/starlight/components';")
+            output_lines.append("<Steps>")
+            output_lines.extend(list_block)
+            output_lines.append("</Steps>")
+        else:
+            output_lines.append(line)
+            i += 1
+
+    return "\n".join(output_lines)
+
+
 def convert_admonitions_to_asides(
     markdown_string: str, import_statement_set: set[str], components_dir_path: str
 ) -> str:
@@ -526,6 +570,7 @@ def convert_help_center_file_to_mdx(
     result = insert_flattened_steps_component(
         result, include_files_info, import_statement_set, "../../components"
     )
+    result = insert_steps_component_for_ordered_lists(result, import_statement_set)
 
     result = fix_file_imports(result, import_statement_set, "./include")
     result = convert_admonitions_to_asides(result, import_statement_set, "../../components")
@@ -570,6 +615,12 @@ def convert_include_file_to_mdx(
     result = insert_flattened_steps_component(
         result, include_files_info, import_statement_set, "../../../components"
     )
+
+    # If the file is only an ordered list, it will already have been
+    # wrapped by FlattenedSteps and does not need any changes inside
+    # the file itself.
+    if not include_files_info[os.path.basename(markdown_file_path)]["is_only_ordered_list"]:
+        result = insert_steps_component_for_ordered_lists(result, import_statement_set)
 
     result = fix_file_imports(result, import_statement_set, ".")
     result = convert_admonitions_to_asides(result, import_statement_set, "../../../components")
