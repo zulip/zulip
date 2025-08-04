@@ -615,9 +615,6 @@ importers:
       remark-lint-no-unused-definitions:
         specifier: ^4.0.2
         version: 4.0.2
-      remark-lint-ordered-list-marker-value:
-        specifier: ^4.0.1
-        version: 4.0.1
       remark-lint-unordered-list-marker-style:
         specifier: ^4.0.1
         version: 4.0.1
@@ -627,6 +624,9 @@ importers:
       remark-preset-lint-recommended:
         specifier: ^7.0.1
         version: 7.0.1
+      remark-stringify:
+        specifier: ^11.0.0
+        version: 11.0.0
       unified:
         specifier: ^11.0.5
         version: 11.0.5

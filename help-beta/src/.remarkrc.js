@@ -23,10 +23,10 @@ import remarkLintNoDuplicateHeadings from "remark-lint-no-duplicate-headings";
 import remarkLintNoFileNameIrregularCharacters from "remark-lint-no-file-name-irregular-characters";
 import remarkLintNoFileNameMixedCase from "remark-lint-no-file-name-mixed-case";
 import remarkLintNoUnusedDefinitions from "remark-lint-no-unused-definitions";
-import remarkLintOrderedListMarkerValue from "remark-lint-ordered-list-marker-value";
 import remarkLintUnorderedListMarkerStyle from "remark-lint-unordered-list-marker-style";
 import remarkPresentLintMarkdownStyleGuide from "remark-preset-lint-markdown-style-guide";
 import remarkLintRulesLintRecommended from "remark-preset-lint-recommended";
+import remarkStringify from "remark-stringify";
 
 const remarkLintRules = {
     plugins: [
@@ -38,7 +38,6 @@ const remarkLintRules = {
         [remarkLintNoUnusedDefinitions, false],
         [remarkLintMaximumLineLength, false],
         [remarkLintListItemIndent, false],
-        [remarkLintOrderedListMarkerValue, false],
         [remarkLintFencedCodeFlag, false],
         [remarkLintNoFileNameIrregularCharacters, false],
         [remarkLintNoFileNameMixedCase, false],
@@ -52,7 +51,11 @@ const remarkLintRules = {
 
 /** @type {Preset} */
 const config = {
-    plugins: [[remarkFrontmatter, ["yaml"]], remarkLintRules],
+    plugins: [
+        [remarkFrontmatter, ["yaml"]],
+        remarkLintRules,
+        [remarkStringify, {incrementListMarker: false}],
+    ],
 };
 
 export default config;

@@ -49,4 +49,4 @@ API_FEATURE_LEVEL = 411
 #   historical commits sharing the same major version, in which case a
 #   minor version bump suffices.
 
-PROVISION_VERSION = (338, 0)  # bumped 2025-07-18 to add chardet and remove types-chardet
+PROVISION_VERSION = (339, 0)  # bumped 2025-08-04 to remove remark-lint-ordered-list-marker-value
