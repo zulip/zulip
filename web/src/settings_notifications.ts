@@ -388,8 +388,6 @@ export function set_up(settings_panel: SettingsPanel): void {
         settings_object.automatically_unmute_topics_in_muted_streams_policy,
     );
 
-    update_desktop_notification_banner();
-
     $container.on("click", ".desktop-notifications-request", (e) => {
         e.preventDefault();
         // This is only accessed via the notifications banner, so we
