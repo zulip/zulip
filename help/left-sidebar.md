@@ -17,6 +17,8 @@ section by:
 - [Pinning channels](/help/pin-a-channel) so that they appear in a dedicated
   section at the top of the list of channels.
 - [Changing channel colors](/help/change-the-color-of-a-channel).
+- [Configuring](/help/channel-folders#configure-whether-channels-are-grouped-by-folder-in-the-left-sidebar)
+  whether channels are grouped by folder.
 - [Configuring](/help/manage-inactive-channels) whether inactive channels are
   hidden.
 
