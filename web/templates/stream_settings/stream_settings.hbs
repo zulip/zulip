@@ -99,17 +99,14 @@
                         {{t "Email address" }}
                         {{> ../help_link_widget link="/help/message-a-channel-by-email" }}
                     </label>
-                    <span class="generate-channel-email-button-container {{#unless can_access_stream_email}}disabled_setting_tooltip{{/unless}}">
-                        {{> ../components/action_button
-                          label=(t "Generate email address")
-                          attention="quiet"
-                          intent="neutral"
-                          type="button"
-                          custom_classes="copy_email_button"
-                          id="copy_stream_email_button"
-                          disabled=(not can_access_stream_email)
-                          }}
-                    </span>
+                    {{> ../components/action_button
+                      label=(t "Generate email address")
+                      attention="quiet"
+                      intent="neutral"
+                      type="button"
+                      custom_classes="copy_email_button"
+                      id="copy_stream_email_button"
+                      }}
                 </div>
             </div>
         </div>
