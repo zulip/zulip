@@ -2,15 +2,15 @@
 {{#if modified}}
     {{#if msg/local_edit_timestamp}}
         <div class="message_edit_notice">
-            {{t "SAVING"}}
+            {{> editing_notifications}}
         </div>
     {{else if edited}}
         <div class="message_edit_notice">
-            {{t "EDITED"}}
+            <i class="message-edited-icon zulip-icon zulip-icon-message-edited"></i>
         </div>
     {{else}}
         <div class="message_edit_notice">
-            {{t "MOVED"}}
+            <i class="message-moved-icon zulip-icon zulip-icon-message-moved"></i>
         </div>
     {{/if}}
 {{/if}}
