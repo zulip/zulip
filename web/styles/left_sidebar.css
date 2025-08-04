@@ -982,12 +982,23 @@ li.active-sub-filter {
             }
         }
 
+        /* Hide the unread dot, assuming that message
+           counts are not hidden. */
+        &.selected-home-view .unread_count {
+            display: none;
+        }
+
         &.top_left_starred_messages .unread_count {
             display: none;
         }
     }
 
     &.hide-unread-messages-count {
+        /* Restore the unread dot when message counts
+           are hidden. */
+        .selected-home-view .unread_count {
+            display: block;
+        }
         /* We suppress the entire unread area
            for users who prefer masked unreads. */
         .top_left_condensed_unread_marker {
