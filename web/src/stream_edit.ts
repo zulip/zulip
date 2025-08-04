@@ -469,7 +469,6 @@ export function show_settings_for(node: HTMLElement): void {
             realm.realm_org_type === settings_config.all_org_type_values.business.code,
         is_admin: current_user.is_admin,
         org_level_message_retention_setting: get_display_text_for_realm_message_retention_setting(),
-        can_access_stream_email: stream_data.can_access_stream_email(sub),
         group_setting_labels: settings_config.all_group_setting_labels.stream,
         has_billing_access: settings_data.user_has_billing_access(),
         empty_string_topic_display_name: util.get_final_topic_display_name(""),
@@ -497,6 +496,7 @@ export function show_settings_for(node: HTMLElement): void {
     stream_ui_updates.update_can_subscribe_group_label($edit_container);
     stream_settings_components.set_up_folder_dropdown_widget(sub);
     stream_ui_updates.set_folder_dropdown_visibility($("#stream_settings"));
+    stream_ui_updates.update_regular_sub_settings(sub);
 
     $("#channels_overlay_container").on(
         "click",
