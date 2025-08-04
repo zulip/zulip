@@ -236,12 +236,6 @@
         text-align: center;
         white-space: nowrap;
     }
-
-    .sl-steps {
-        li > p:last-child {
-            margin-bottom: 8px;
-        }
-    }
 }
 
 footer {
