@@ -45,10 +45,10 @@
     "remark-lint-no-file-name-irregular-characters": "^3.0.1",
     "remark-lint-no-file-name-mixed-case": "^3.0.1",
     "remark-lint-no-unused-definitions": "^4.0.2",
-    "remark-lint-ordered-list-marker-value": "^4.0.1",
     "remark-lint-unordered-list-marker-style": "^4.0.1",
     "remark-preset-lint-markdown-style-guide": "^6.0.1",
     "remark-preset-lint-recommended": "^7.0.1",
+    "remark-stringify": "^11.0.0",
     "unified": "^11.0.5"
   }
 }
