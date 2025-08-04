@@ -379,6 +379,30 @@ def insert_flattened_steps_component(
     return "\n".join(lines)
 
 
+def remove_blank_lines_from_steps(markdown_string: str) -> str:
+    lines = markdown_string.split("\n")
+    output_lines = []
+    inside_flattened_steps = False
+    inside_steps = False
+
+    for line in lines:
+        if "<FlattenedSteps>" in line:
+            inside_flattened_steps = True
+        elif "</FlattenedSteps>" in line:
+            inside_flattened_steps = False
+        if "<Steps>" in line:
+            inside_steps = True
+        elif "</Steps>" in line:
+            inside_steps = False
+
+        if (inside_flattened_steps or inside_steps) and line.strip() == "":
+            continue
+
+        output_lines.append(line)
+
+    return "\n".join(output_lines)
+
+
 def insert_steps_component_for_ordered_lists(
     markdown_string: str, import_statements: set[str]
 ) -> str:
@@ -572,6 +596,7 @@ def convert_help_center_file_to_mdx(
     )
     result = insert_steps_component_for_ordered_lists(result, import_statement_set)
 
+    result = remove_blank_lines_from_steps(result)
     result = fix_file_imports(result, import_statement_set, "./include")
     result = convert_admonitions_to_asides(result, import_statement_set, "../../components")
     result = convert_tab_syntax(result, import_statement_set)
@@ -621,7 +646,12 @@ def convert_include_file_to_mdx(
     # the file itself.
     if not include_files_info[os.path.basename(markdown_file_path)]["is_only_ordered_list"]:
         result = insert_steps_component_for_ordered_lists(result, import_statement_set)
+    else:
+        # We just remove all blank lines except the trailing blank line
+        # at the end of the file if the file is only an ordered list.
+        result = "\n".join(line for line in result.splitlines() if line.strip()) + "\n"
 
+    result = remove_blank_lines_from_steps(result)
     result = fix_file_imports(result, import_statement_set, ".")
     result = convert_admonitions_to_asides(result, import_statement_set, "../../../components")
     result = convert_tab_syntax(result, import_statement_set)
