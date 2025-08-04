@@ -20,6 +20,16 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 11.0
 
+**Feature level 412**
+
+* [`POST /register`](/api/register-queue),
+  [`GET /users/me/subscriptions`](/api/get-subscriptions):
+  Added support for passing `partial` as argument to `include_subscribers`
+  parameter to get only partial subscribers data of the channel.
+* [`POST /register`](/api/register-queue),
+  [`GET /users/me/subscriptions`](/api/get-subscriptions):
+  Added `partial_subscribers` field in `subscription` objects.
+
 **Feature level 411**
 
 * [`POST /register`](/api/register-queue), [`PATCH /settings`](/api/update-settings),

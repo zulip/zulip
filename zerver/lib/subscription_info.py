@@ -974,7 +974,7 @@ def gather_subscriptions_helper(
 
 def gather_subscriptions(
     user_profile: UserProfile,
-    include_subscribers: bool = False,
+    include_subscribers: bool | Literal["partial"] = False,
 ) -> tuple[list[SubscriptionStreamDict], list[SubscriptionStreamDict]]:
     helper_result = gather_subscriptions_helper(
         user_profile,
