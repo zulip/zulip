@@ -28,6 +28,8 @@ format used by the Zulip server that they are interacting with.
   notifications no longer contain the legacy pre-2019
   `zulip_message_id` field; all functional clients support the newer
   `zulip_message_ids`.
+* Mobile push notification payloads for FCM to for new messages no
+  longer contain the (unused) `content_truncated` boolean field.
 
 **Feature level 412**
 
