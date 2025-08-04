@@ -216,11 +216,6 @@
         margin-top: 0.25rem;
     }
 
-    ol > li {
-        /* Original value was 1px which made the steps feel too tight. */
-        padding-bottom: 8px;
-    }
-
     & .sl-heading-wrapper:has(> :first-child:target) {
         /* Increase the highlighted space around the text... */
         /* We are trying to recreate `padding: 6px 0 6px 8px` below
