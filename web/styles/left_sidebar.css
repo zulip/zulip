@@ -1464,7 +1464,10 @@ li.top_left_scheduled_messages {
         display: flex;
         align-items: center;
         justify-content: center;
-        margin-right: 2px;
+        /* These margin and padding values should be
+           coordinated with those on .sidebar-menu-icon. */
+        margin: 2px 2px 2px 1px;
+        padding-left: 1px;
         border-radius: 3px;
         color: var(--color-vdots-visible);
 
@@ -1798,6 +1801,9 @@ li.top_left_scheduled_messages {
        centering regime for the row. */
     align-self: stretch;
     border-radius: 3px;
+    /* These margin and padding values should be
+       coordinated with those on
+       .left-sidebar-navigation-menu-icon. */
     margin: 2px 2px 2px 1px;
     /* This helps horizontally align the vdots,
        given the reduced margin-left above. */
