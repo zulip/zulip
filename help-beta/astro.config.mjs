@@ -76,7 +76,7 @@ export default defineConfig({
             },
             pagination: false,
             routeMiddleware: "./src/route_data.ts",
-            customCss: ["./src/styles/main.css", "./src/styles/steps.css"],
+            customCss: ["./src/styles/main.css"],
             sidebar: [
                 {
                     label: "Zulip homepage",

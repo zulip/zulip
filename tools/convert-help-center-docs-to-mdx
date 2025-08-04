@@ -309,12 +309,12 @@ def insert_flattened_steps_component(
     components_dir_path: str,
 ) -> str:
     """
-    We insert FlattenList components where include files
+    We insert FlattenedSteps components where include files
     are being treated as part of ordered lists. Astro renders
     included files as it's own component, which would result in
     multiple ordered lists instead of a single list if we did
     not use this component. See the astro component file itself
-    to know more how FlattenList works.
+    to know more how FlattenedSteps works.
     """
     file_include_pattern = re.compile(r"^ {,3}\{!([^!]+)!\} *$", re.MULTILINE)
     lines = markdown_string.splitlines()
@@ -343,7 +343,7 @@ def insert_flattened_steps_component(
     # If a file with `is_only_ordered_list` set to True is followed
     # immediately by a similar file with it set to true, our loop
     # will try to insert the same text at the same position twice
-    # resulting in two opening <FlattenList> one after the other.
+    # resulting in two opening <FlattenedSteps> one after the other.
     # Using a set avoids this problem.
     insertions = set()
 
@@ -351,10 +351,10 @@ def insert_flattened_steps_component(
         match_line_index = markdown_string[: match.start()].count("\n")
 
         upper_bound = traverse_to_boundary(match_line_index - 1, step=-1)
-        insertions.add((upper_bound + 1, "<FlattenList>"))
+        insertions.add((upper_bound + 1, "<FlattenedSteps>"))
 
         lower_bound = traverse_to_boundary(match_line_index + 1, step=1)
-        insertions.add((lower_bound, "</FlattenList>"))
+        insertions.add((lower_bound, "</FlattenedSteps>"))
 
     for match in SETTINGS_LINK_PATTERN.finditer(markdown_string):
         insert_flatten_list(match)
@@ -370,7 +370,7 @@ def insert_flattened_steps_component(
 
     if insertions:
         import_statement_set.add(
-            f"import FlattenList from '{components_dir_path}/FlattenList.astro';"
+            f"import FlattenedSteps from '{components_dir_path}/FlattenedSteps.astro';"
         )
         # Insert tags in reverse order to avoid index shifting
         for index, tag in sorted(insertions, reverse=True):
