@@ -3,6 +3,7 @@
 import os
 import re
 import shutil
+import subprocess
 import sys
 from textwrap import indent
 from typing import TypedDict
@@ -659,6 +660,15 @@ def run() -> None:
             ) as mdx_file:
                 mdx_file.write(mdx)
     print(f"Converted {converted_count} main help files. Conversion completed.")
+
+    # We use format-silent here, since running format on the converted
+    # files gives us tons of warnings while fixing those warnings. We
+    # also remove the frail flag when compared to the standard format
+    # since the first run will always give us warnings.
+    subprocess.check_call(
+        ["/usr/local/bin/corepack", "pnpm", "run", "format-silent"],
+        cwd="help-beta",
+    )
 
 
 run()

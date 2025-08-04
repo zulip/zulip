@@ -8,7 +8,8 @@
     "build": "astro check && astro build",
     "preview": "astro preview",
     "astro": "astro",
-    "format": "remark --ext mdx --frail --output --quiet --use remark-mdx -- ."
+    "format": "remark --ext mdx --frail --output --quiet --use remark-mdx -- .",
+    "format-silent": "remark --ext mdx --output --silent --use remark-mdx -- ."
   },
   "dependencies": {
     "@astrojs/check": "^0.9.3",
