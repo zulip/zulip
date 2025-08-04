@@ -1,6 +1,7 @@
 ---
 import assert from "node:assert/strict";
 
+import {Steps} from "@astrojs/starlight/components";
 import {fromHtml} from "hast-util-from-html";
 import {toHtml} from "hast-util-to-html";
 
@@ -39,4 +40,4 @@ const flattened = {
 };
 ---
 
-<Fragment set:html={toHtml(flattened)} />
+<Steps><Fragment set:html={toHtml(flattened)} /></Steps>
