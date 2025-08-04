@@ -1,9 +1,10 @@
 # Channel folders
 
-Organizations can sort channels into folders. For example, you can put all
-the channels associated with a team into a dedicated folder. Channels will be
-grouped into folders in the [left sidebar](/help/left-sidebar) and the
-[**Inbox**](/help/inbox) view.
+Organizations can sort channels into folders. For example, you can put all the
+channels associated with a team into a dedicated folder. Channels will be
+grouped into folders in the [**Inbox**](/help/inbox) view, and users can
+[decide](#configure-whether-channels-are-grouped-by-folder-in-the-left-sidebar)
+whether to group them by folder in the [left sidebar](/help/left-sidebar).
 
 Everyone can [pin channels](/help/pin-a-channel) they personally want to pay
 close attention to. Pinned channels appear in a dedicated **pinned channels**
@@ -50,6 +51,19 @@ section above channel folders.
    folder selection dropdown.
 
 1. Fill out the requested information, and click **Create**.
+
+{end_tabs}
+
+## Configure whether channels are grouped by folder in the left sidebar
+
+{start_tabs}
+
+{tab|desktop-web}
+
+{settings_tab|preferences}
+
+1. Under **Information**, toggle **Group channels by folder in the left
+   sidebar**.
 
 {end_tabs}
 
