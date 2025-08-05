@@ -15,6 +15,7 @@ class ChannelFolder(models.Model):
     name = models.CharField(max_length=MAX_NAME_LENGTH)
     description = models.CharField(max_length=MAX_DESCRIPTION_LENGTH, default="")
     rendered_description = models.TextField(default="")
+    order = models.IntegerField(default=0)
 
     date_created = models.DateTimeField(default=timezone_now)
     creator = models.ForeignKey(UserProfile, null=True, on_delete=models.SET_NULL)

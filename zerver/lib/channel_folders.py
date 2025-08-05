@@ -15,6 +15,7 @@ class ChannelFolderDict(TypedDict):
     name: str
     description: str
     rendered_description: str
+    order: int
     creator_id: int | None
     date_created: int
     is_archived: bool
@@ -49,6 +50,7 @@ def get_channel_folder_dict(channel_folder: ChannelFolder) -> ChannelFolderDict:
         name=channel_folder.name,
         description=channel_folder.description,
         rendered_description=channel_folder.rendered_description,
+        order=channel_folder.order,
         date_created=date_created,
         creator_id=channel_folder.creator_id,
         is_archived=channel_folder.is_archived,

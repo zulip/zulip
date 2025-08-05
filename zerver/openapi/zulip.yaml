@@ -6081,6 +6081,7 @@ paths:
                                       "date_created": 1717484476,
                                       "description": "Channels for frontend discussions",
                                       "rendered_description": "<p>Channels for frontend discussions</p>",
+                                      "order": 1,
                                       "id": 2,
                                       "is_archived": false,
                                     },
@@ -27561,6 +27562,14 @@ components:
             work correctly. And any client-side security logic for
             user-generated message content should be applied when displaying
             this HTML as though it were the body of a Zulip message.
+        order:
+          type: integer
+          description: |
+            This value determines in which order the channel folders will be
+            displayed in the UI. The value is 0 indexed, and the value with
+            the lower order will be displayed first.
+
+            **Changes**: New in Zulip 11.0 (feature level ZF-fcae8c).
         id:
           type: integer
           description: |
