@@ -94,7 +94,7 @@ can disable that feature.
 
 {settings_tab|preferences}
 
-1. Under **Information**, toggle **Show counts for starred messages**.
+1. Under **Left sidebar**, toggle **Show counts for starred messages**.
 
 {end_tabs}
 
