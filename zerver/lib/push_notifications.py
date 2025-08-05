@@ -256,7 +256,7 @@ def get_info_from_apns_result(
         logger.info(
             "APNs: Removing invalid/expired token %s (%s)", device.token, result.description
         )
-        if isinstance(device, RemotePushDevice):
+        if settings.ZILENCER_ENABLED and isinstance(device, RemotePushDevice):
             result_info.delete_device_id = device.device_id
         else:
             result_info.delete_device_token = device.token
