@@ -29,7 +29,7 @@ export function is_message_sent_by_my_bot(message: Message): boolean {
 }
 
 export function get_deletability(message: Message): boolean {
-    if (message.type === "stream" && stream_data.is_stream_archived(message.stream_id)) {
+    if (message.type === "stream" && stream_data.is_stream_archived_by_id(message.stream_id)) {
         return false;
     }
     if (settings_data.user_can_delete_any_message()) {

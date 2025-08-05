@@ -937,10 +937,10 @@ test("mark_archived", () => {
     assert.ok(stream_data.is_subscribed(canada.stream_id));
     assert.equal(stream_data.get_sub("Canada").stream_id, canada.stream_id);
     assert.equal(sub_store.get(canada.stream_id).name, "Canada");
-    assert.equal(stream_data.is_stream_archived(canada.stream_id), false);
+    assert.equal(stream_data.is_stream_archived_by_id(canada.stream_id), false);
 
     stream_data.mark_archived(canada.stream_id);
-    assert.ok(stream_data.is_stream_archived(canada.stream_id));
+    assert.ok(stream_data.is_stream_archived_by_id(canada.stream_id));
     assert.ok(stream_data.is_subscribed(canada.stream_id));
     assert.ok(stream_data.get_sub("Canada"));
     assert.ok(sub_store.get(canada.stream_id));
@@ -960,11 +960,11 @@ test("mark_unarchived", () => {
     };
 
     stream_data.add_sub(canada);
-    assert.ok(stream_data.is_stream_archived(canada.stream_id));
+    assert.ok(stream_data.is_stream_archived_by_id(canada.stream_id));
     assert.ok(stream_data.is_subscribed(canada.stream_id));
 
     stream_data.mark_unarchived(canada.stream_id);
-    assert.ok(!stream_data.is_stream_archived(canada.stream_id));
+    assert.ok(!stream_data.is_stream_archived_by_id(canada.stream_id));
     assert.ok(stream_data.is_subscribed(canada.stream_id));
     const sub = stream_data.get_sub("Canada");
     assert.equal(sub.stream_id, canada.stream_id);

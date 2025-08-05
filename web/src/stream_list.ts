@@ -739,7 +739,7 @@ export function get_sidebar_stream_topic_info(filter: Filter): {
         return result;
     }
 
-    if (!stream_data.is_subscribed(stream_id) || stream_data.is_stream_archived(stream_id)) {
+    if (!stream_data.is_subscribed(stream_id) || stream_data.is_stream_archived_by_id(stream_id)) {
         return result;
     }
 

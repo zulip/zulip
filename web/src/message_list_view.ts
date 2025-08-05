@@ -383,7 +383,7 @@ function populate_group_from_message(
         const is_empty_string_topic = topic === "";
         const match_topic_html = util.get_match_topic(message);
         const stream_url = hash_util.channel_url_by_user_setting(message.stream_id);
-        const is_archived = stream_data.is_stream_archived(message.stream_id);
+        const is_archived = stream_data.is_stream_archived_by_id(message.stream_id);
         const topic_url = internal_url.by_stream_topic_url(
             message.stream_id,
             message.topic,

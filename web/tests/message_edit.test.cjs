@@ -93,7 +93,7 @@ run_test("is_topic_editable", ({override}) => {
         type: "stream",
     };
     override(realm, "realm_allow_message_editing", true);
-    override(stream_data, "is_stream_archived", () => false);
+    override(stream_data, "is_stream_archived_by_id", () => false);
     override(stream_data, "user_can_move_messages_within_channel", () => true);
     override(stream_data, "get_sub_by_id", () => ({}));
     override(stream_data, "is_empty_topic_only_channel", () => false);
@@ -153,7 +153,7 @@ run_test("is_stream_editable", ({override}) => {
     override(stream_data, "user_can_move_messages_out_of_channel", () => true);
     override(stream_data, "get_sub_by_id", () => ({}));
     override(current_user, "is_moderator", true);
-    override(stream_data, "is_stream_archived", () => false);
+    override(stream_data, "is_stream_archived_by_id", () => false);
 
     assert.equal(message_edit.is_stream_editable(message), false);
 

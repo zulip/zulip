@@ -232,7 +232,7 @@ export function get_actions_popover_content_context(message_id: number): ActionP
         !message.is_me_message &&
         !is_add_reaction_icon_visible() &&
         not_spectator &&
-        !(stream_id && stream_data.is_stream_archived(stream_id));
+        !(stream_id && stream_data.is_stream_archived_by_id(stream_id));
 
     return {
         message_id: message.id,

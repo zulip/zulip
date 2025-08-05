@@ -388,7 +388,7 @@ test("update_property", ({override}) => {
 
         stream_events.update_property(stream_id, "is_archived", true);
 
-        assert.ok(stream_data.is_stream_archived(stream_id));
+        assert.ok(stream_data.is_stream_archived_by_id(stream_id));
         assert.ok(stream_data.is_subscribed(stream_id));
 
         const args = stub.get_args("sub");
@@ -418,7 +418,7 @@ test("update_property", ({override}) => {
 
         // Unarchive the stream
         stream_events.update_property(stream_id, "is_archived", false);
-        assert.ok(!stream_data.is_stream_archived(stream_id));
+        assert.ok(!stream_data.is_stream_archived_by_id(stream_id));
         assert.ok(stream_data.is_subscribed(stream_id));
 
         const args = stub.get_args("sub");

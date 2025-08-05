@@ -104,7 +104,7 @@ export function is_topic_editable(message: Message, edit_limit_seconds_buffer = 
         return false;
     }
 
-    if (message.type === "stream" && stream_data.is_stream_archived(message.stream_id)) {
+    if (message.type === "stream" && stream_data.is_stream_archived_by_id(message.stream_id)) {
         return false;
     }
 
@@ -192,7 +192,7 @@ export function is_content_editable(message: Message, edit_limit_seconds_buffer 
         return false;
     }
 
-    if (message.type === "stream" && stream_data.is_stream_archived(message.stream_id)) {
+    if (message.type === "stream" && stream_data.is_stream_archived_by_id(message.stream_id)) {
         return false;
     }
 
@@ -228,7 +228,7 @@ export function is_stream_editable(message: Message, edit_limit_seconds_buffer =
         return false;
     }
 
-    if (message.type === "stream" && stream_data.is_stream_archived(message.stream_id)) {
+    if (message.type === "stream" && stream_data.is_stream_archived_by_id(message.stream_id)) {
         return false;
     }
 

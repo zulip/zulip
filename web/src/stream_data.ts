@@ -939,7 +939,9 @@ export function get_stream_privacy_policy(stream_id: number): string {
     return settings_config.stream_privacy_policy_values.private_with_public_history.code;
 }
 
-export function is_stream_archived(stream_id: number): boolean {
+export function is_stream_archived_by_id(stream_id: number): boolean {
+    // If you've already got a channel object, you can just use
+    // `sub.is_archived` directly instead of calling this function.
     const sub = sub_store.get(stream_id);
     return sub ? sub.is_archived : false;
 }
