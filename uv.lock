@@ -7,6 +7,9 @@ resolution-markers = [
     "python_full_version < '3.11'",
 ]
 
+[manifest]
+build-constraints = [{ name = "setuptools-scm", specifier = "<9" }]
+
 [[package]]
 name = "aioapns"
 version = "4.0"

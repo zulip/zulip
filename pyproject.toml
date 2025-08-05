@@ -313,6 +313,9 @@ dev = [
 ]
 
 [tool.uv]
+build-constraint-dependencies = [
+  "setuptools-scm<9",
+]
 no-binary-package = ["lxml", "xmlsec"]
 
 [tool.uv.sources]
