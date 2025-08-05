@@ -19,7 +19,7 @@
                 <div class="settings-radio-input-parent">
                     <label class="radio">
                         <input type="radio" name="privacy" value="{{ this.code }}" {{#if (eq this.code ../stream_privacy_policy) }}checked{{/if}} />
-                        <b>{{ this.name }}:</b> {{ this.description }}
+                        <b class="highlighted-element">{{ this.name }}:</b> {{ this.description }}
                     </label>
                 </div>
             {{/each}}
