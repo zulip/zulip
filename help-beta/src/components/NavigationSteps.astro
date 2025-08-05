@@ -164,6 +164,7 @@ const setting_link_mapping: Record<
 type RelativeLinkInfo = {
     label: string;
     relative_link: string;
+    icon?: string | undefined;
 };
 
 const default_template_for_relative_links = `
@@ -184,28 +185,34 @@ const relative_link_mapping: Record<
     gear: {
         data: {
             "channel-settings": {
-                label: `${RawHashIcon}Channel settings`,
+                label: "Channel settings",
                 relative_link: "/#channels/subscribed",
+                icon: `${RawHashIcon}`,
             },
             settings: {
-                label: `${RawToolIcon}Personal Settings`,
+                label: "Personal Settings",
                 relative_link: "/#settings/profile",
+                icon: `${RawToolIcon}`,
             },
             "organization-settings": {
-                label: `${RawBuildingIcon}Organization settings`,
+                label: "Organization settings",
                 relative_link: "/#organization/organization-profile",
+                icon: `${RawBuildingIcon}`,
             },
             "group-settings": {
-                label: `${RawUserGroupCogIcon}Group settings`,
+                label: "Group settings",
                 relative_link: "/#groups/your",
+                icon: `${RawUserGroupCogIcon}`,
             },
             stats: {
-                label: `${RawBarChartIcon}Usage statistics`,
+                label: "Usage statistics",
                 relative_link: "/stats",
+                icon: `${RawBarChartIcon}`,
             },
             integrations: {
-                label: `${RawGitPullRequestIcon}Integrations`,
+                label: "Integrations",
                 relative_link: "/integrations/",
+                icon: `${RawGitPullRequestIcon}`,
             },
             "about-zulip": {
                 label: "About Zulip",
@@ -218,12 +225,14 @@ const relative_link_mapping: Record<
     "gear-billing": {
         data: {
             plans: {
-                label: `${RawRocketIcon}Plans and pricing`,
+                label: "Plans and pricing",
                 relative_link: "/plans/",
+                icon: `${RawRocketIcon}`,
             },
             billing: {
-                label: `${RawCreditCardIcon}Billing`,
+                label: "Billing",
                 relative_link: "/billing/",
+                icon: `${RawCreditCardIcon}`,
             },
         },
         template: default_template_for_relative_links,
@@ -232,20 +241,24 @@ const relative_link_mapping: Record<
     help: {
         data: {
             "keyboard-shortcuts": {
-                label: `${RawKeyboardIcon}Keyboard shortcuts`,
+                label: "Keyboard shortcuts",
                 relative_link: "/#keyboard-shortcuts",
+                icon: `${RawKeyboardIcon}`,
             },
             "message-formatting": {
-                label: `${RawEditIcon}Message formatting`,
+                label: "Message formatting",
                 relative_link: "/#message-formatting",
+                icon: `${RawEditIcon}`,
             },
             "search-filters": {
-                label: `${RawManageSearchIcon}Search filters`,
+                label: "Search filters",
                 relative_link: "/#search-operators",
+                icon: `${RawManageSearchIcon}`,
             },
             "about-zulip": {
-                label: `${RawInfoIcon}About Zulip`,
+                label: "About Zulip",
                 relative_link: "/#about-zulip",
+                icon: `${RawInfoIcon}`,
             },
         },
         template: `
@@ -347,10 +360,15 @@ for (const type of Object.keys(relative_link_mapping)) {
     const {data, template, is_link_relative} = relative_link_mapping[type]!;
 
     RELATIVE_NAVIGATION_HANDLERS_BY_TYPE[type] = (key: string) => {
-        const {label, relative_link} = data[key]!;
+        const {label, relative_link, icon} = data[key]!;
+        let formattedLabel = label;
+        if (icon !== undefined) {
+            const trimmedIcon = `${icon}`.trim();
+            formattedLabel = trimmedIcon + label;
+        }
         const formattedItem = is_link_relative()
-            ? `<a href="${relative_link}">${label}</a>`
-            : `<strong>${label}</strong>`;
+            ? `<a href="${relative_link}">${formattedLabel}</a>`
+            : `<strong>${formattedLabel}</strong>`;
         return template.replace("{item}", formattedItem);
     };
 }
