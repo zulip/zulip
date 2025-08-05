@@ -4,20 +4,20 @@ import assert from "node:assert";
 import {CORPORATE_ENABLED, SHOW_RELATIVE_LINKS} from "astro:env/client";
 
 /* eslint-disable import/extensions */
-import RawZulipIconBarChart from "~icons/zulip-icon/bar-chart?raw";
-import RawZulipIconBuilding from "~icons/zulip-icon/building?raw";
-import RawZulipIconCreditCard from "~icons/zulip-icon/credit-card?raw";
-import RawZulipIconEdit from "~icons/zulip-icon/edit?raw";
-import RawZulipIconGear from "~icons/zulip-icon/gear?raw";
-import RawZulipIconGitPullRequest from "~icons/zulip-icon/git-pull-request?raw";
-import RawZulipIconHash from "~icons/zulip-icon/hash?raw";
-import RawZulipIconHelp from "~icons/zulip-icon/help?raw";
-import RawZulipIconInfo from "~icons/zulip-icon/info?raw";
-import RawZulipIconKeyboard from "~icons/zulip-icon/keyboard?raw";
-import RawZulipIconManageSearch from "~icons/zulip-icon/manage-search?raw";
-import RawZulipIconRocket from "~icons/zulip-icon/rocket?raw";
-import RawZulipIconTool from "~icons/zulip-icon/tool?raw";
-import RawZulipIconUserGroupCog from "~icons/zulip-icon/user-group-cog?raw";
+import RawBarChartIcon from "~icons/zulip-icon/bar-chart?raw";
+import RawBuildingIcon from "~icons/zulip-icon/building?raw";
+import RawCreditCardIcon from "~icons/zulip-icon/credit-card?raw";
+import RawEditIcon from "~icons/zulip-icon/edit?raw";
+import RawGearIcon from "~icons/zulip-icon/gear?raw";
+import RawGitPullRequestIcon from "~icons/zulip-icon/git-pull-request?raw";
+import RawHashIcon from "~icons/zulip-icon/hash?raw";
+import RawHelpIcon from "~icons/zulip-icon/help?raw";
+import RawInfoIcon from "~icons/zulip-icon/info?raw";
+import RawKeyboardIcon from "~icons/zulip-icon/keyboard?raw";
+import RawManageSearchIcon from "~icons/zulip-icon/manage-search?raw";
+import RawRocketIcon from "~icons/zulip-icon/rocket?raw";
+import RawToolIcon from "~icons/zulip-icon/tool?raw";
+import RawUserGroupCogIcon from "~icons/zulip-icon/user-group-cog?raw";
 /* eslint-enable import/extensions */
 
 const PERSONAL_SETTINGS_TYPE = "Personal settings";
@@ -168,7 +168,7 @@ type RelativeLinkInfo = {
 
 const default_template_for_relative_links = `
 <ol>
-  <li>Click on the <strong>gear</strong> (${RawZulipIconGear}) icon in the upper right corner of the web or desktop app.</li>
+  <li>Click on the <strong>gear</strong> (${RawGearIcon}) icon in the upper right corner of the web or desktop app.</li>
   <li class="navigation-step-relative-type">Select {item}.</li>
 </ol>
 `;
@@ -184,27 +184,27 @@ const relative_link_mapping: Record<
     gear: {
         data: {
             "channel-settings": {
-                label: `${RawZulipIconHash}Channel settings`,
+                label: `${RawHashIcon}Channel settings`,
                 relative_link: "/#channels/subscribed",
             },
             settings: {
-                label: `${RawZulipIconTool}Personal Settings`,
+                label: `${RawToolIcon}Personal Settings`,
                 relative_link: "/#settings/profile",
             },
             "organization-settings": {
-                label: `${RawZulipIconBuilding}Organization settings`,
+                label: `${RawBuildingIcon}Organization settings`,
                 relative_link: "/#organization/organization-profile",
             },
             "group-settings": {
-                label: `${RawZulipIconUserGroupCog}Group settings`,
+                label: `${RawUserGroupCogIcon}Group settings`,
                 relative_link: "/#groups/your",
             },
             stats: {
-                label: `${RawZulipIconBarChart}Usage statistics`,
+                label: `${RawBarChartIcon}Usage statistics`,
                 relative_link: "/stats",
             },
             integrations: {
-                label: `${RawZulipIconGitPullRequest}Integrations`,
+                label: `${RawGitPullRequestIcon}Integrations`,
                 relative_link: "/integrations/",
             },
             "about-zulip": {
@@ -218,11 +218,11 @@ const relative_link_mapping: Record<
     "gear-billing": {
         data: {
             plans: {
-                label: `${RawZulipIconRocket}Plans and pricing`,
+                label: `${RawRocketIcon}Plans and pricing`,
                 relative_link: "/plans/",
             },
             billing: {
-                label: `${RawZulipIconCreditCard}Billing`,
+                label: `${RawCreditCardIcon}Billing`,
                 relative_link: "/billing/",
             },
         },
@@ -232,25 +232,25 @@ const relative_link_mapping: Record<
     help: {
         data: {
             "keyboard-shortcuts": {
-                label: `${RawZulipIconKeyboard}Keyboard shortcuts`,
+                label: `${RawKeyboardIcon}Keyboard shortcuts`,
                 relative_link: "/#keyboard-shortcuts",
             },
             "message-formatting": {
-                label: `${RawZulipIconEdit}Message formatting`,
+                label: `${RawEditIcon}Message formatting`,
                 relative_link: "/#message-formatting",
             },
             "search-filters": {
-                label: `${RawZulipIconManageSearch}Search filters`,
+                label: `${RawManageSearchIcon}Search filters`,
                 relative_link: "/#search-operators",
             },
             "about-zulip": {
-                label: `${RawZulipIconInfo}About Zulip`,
+                label: `${RawInfoIcon}About Zulip`,
                 relative_link: "/#about-zulip",
             },
         },
         template: `
 <ol>
-  <li>Click on the <strong>Help menu</strong> (${RawZulipIconHelp}) icon in the upper right corner of the app.</li>
+  <li>Click on the <strong>Help menu</strong> (${RawHelpIcon}) icon in the upper right corner of the app.</li>
   <li class="navigation-step-relative-type">Select {item}.</li>
 </ol>
 `,
@@ -269,8 +269,8 @@ const relative_link_mapping: Record<
         },
         template: `
 <ol>
-  <li>Click on the <strong>gear</strong> (${RawZulipIconGear}) icon in the upper right corner of the web or desktop app.</li>
-  <li>Select ${RawZulipIconHash} <strong>Channel settings</strong>.</li>
+  <li>Click on the <strong>gear</strong> (${RawGearIcon}) icon in the upper right corner of the web or desktop app.</li>
+  <li>Select ${RawHashIcon} <strong>Channel settings</strong>.</li>
   <li>Click {item} in the upper left.</li>
 </ol>
 `,
@@ -285,8 +285,8 @@ const relative_link_mapping: Record<
         },
         template: `
 <ol>
-  <li>Click on the <strong>gear</strong> (${RawZulipIconGear}) icon in the upper right corner of the web or desktop app.</li>
-  <li>Select ${RawZulipIconUserGroupCog} <strong>Group settings</strong>.</li>
+  <li>Click on the <strong>gear</strong> (${RawGearIcon}) icon in the upper right corner of the web or desktop app.</li>
+  <li>Select ${RawUserGroupCogIcon} <strong>Group settings</strong>.</li>
   <li>Click {item} in the upper left.</li>
 </ol>
 `,
@@ -297,7 +297,7 @@ const relative_link_mapping: Record<
 const getSettingsMarkdown = (setting_type: string, setting_name: string) => `
 <ol>
     <li>
-        Click on the <b>gear</b> (${RawZulipIconGear}) icon in the upper
+        Click on the <b>gear</b> (${RawGearIcon}) icon in the upper
         right corner of the web or desktop app.
     </li>
     <li>
