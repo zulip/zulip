@@ -284,6 +284,17 @@ export function update_unread_counts_visibility(): void {
     // `update_section_unread_count`, since they depend on unread counts.
 }
 
+function maybe_change_channel_folders_option_visibility(): void {
+    const $channel_folders_sidebar_option = $(
+        "#left-sidebar-search .channel-folders-sidebar-menu-icon",
+    );
+    if (channel_folders.user_has_folders()) {
+        $channel_folders_sidebar_option.show();
+    } else {
+        $channel_folders_sidebar_option.hide();
+    }
+}
+
 export function build_stream_list(force_rerender: boolean): void {
     // The stream list in the left sidebar contains 3 sections:
     // pinned, normal, and dormant streams, with headings above them
@@ -302,6 +313,8 @@ export function build_stream_list(force_rerender: boolean): void {
     if (stream_groups.same_as_before && !force_rerender) {
         return;
     }
+
+    maybe_change_channel_folders_option_visibility();
 
     function add_sidebar_li(stream_id: number, $list: JQuery, inactive_or_muted = false): void {
         const sidebar_row = stream_sidebar.get_row(stream_id);
