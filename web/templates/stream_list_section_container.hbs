@@ -1,12 +1,16 @@
 <div id="stream-list-{{id}}-container" data-section-id="{{id}}" class="stream-list-section-container">
     <div class="stream-list-subsection-header zoom-in-hide">
         <i class="stream-list-section-toggle zulip-icon zulip-icon-heading-triangle-right rotate-icon-down" aria-hidden="true"></i>
-        <h4 class="left-sidebar-title">
+        <h4 class="left-sidebar-title tippy-left-sidebar-tooltip" data-tooltip-template-id="section-tooltip-{{id}}" data-placement="top">
             {{section_title}}
         </h4>
+        <template id="section-tooltip-{{id}}">
+            {{section_title}}
+        </template>
         {{#if plus_icon_url}}
-        <a href="{{plus_icon_url}}" class="add-stream-tooltip add-stream-icon-container hidden-for-spectators" data-tippy-content="{{t 'Create a channel' }}">
-            <i class="add_stream_icon zulip-icon zulip-icon-square-plus" aria-hidden="true" ></i>
+        <a href="{{plus_icon_url}}" class="add-stream-tooltip add-stream-icon-container hidden-for-spectators" data-tippy-content="
+        {{t 'Create a channel' }}">
+            <i class="add_stream_icon zulip-icon zulip-icon-square-plus" aria-hidden="true"></i>
         </a>
         {{/if}}
         <div class="markers-and-unreads">
@@ -18,3 +22,4 @@
     </div>
     <ul id="stream-list-{{id}}" class="stream-list-section"></ul>
 </div>
+ 
