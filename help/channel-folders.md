@@ -14,7 +14,7 @@
 
 {settings_tab|preferences}
 
-1. Under **Information**, toggle **Group channels by folder in the left
+1. Under **Left sidebar**, toggle **Group channels by folder in the left
    sidebar**.
 
 {end_tabs}

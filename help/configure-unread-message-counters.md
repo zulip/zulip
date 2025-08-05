@@ -19,7 +19,7 @@ opening it.
 
 {settings_tab|preferences}
 
-1. Under **Information**, select your preferred option from the
+1. Under **Left sidebar**, select your preferred option from the
    **Show unread counts for** dropdown.
 
 {end_tabs}
@@ -46,7 +46,7 @@ on your home view will also be shown when you're in that view.
 
 {settings_tab|preferences}
 
-1. Under **Information**, toggle **Show unread count total on home view**.
+1. Under **Left sidebar**, toggle **Show unread count total on home view**.
 
 {end_tabs}
 

@@ -1,0 +1,44 @@
+<div class="left-sidebar-settings {{#if for_realm_settings}}settings-subsection-parent{{else}}subsection-parent{{/if}}">
+    <div class="subsection-header">
+        <h3 class="light">{{t "Left sidebar" }}</h3>
+        {{> settings_save_discard_widget section_name="left-sidebar-settings" show_only_indicator=(not for_realm_settings) }}
+    </div>
+
+    <div class="input-group">
+        <label for="{{prefix}}web_stream_unreads_count_display_policy" class="settings-field-label">{{t "Show unread counts for" }}</label>
+        <select name="web_stream_unreads_count_display_policy" class="setting_web_stream_unreads_count_display_policy prop-element bootstrap-focus-style settings_select" id="{{prefix}}web_stream_unreads_count_display_policy"  data-setting-widget-type="number">
+            {{> dropdown_options_widget option_values=web_stream_unreads_count_display_policy_values}}
+        </select>
+    </div>
+
+    {{> settings_checkbox
+      setting_name="web_left_sidebar_unreads_count_summary"
+      is_checked=settings_object.web_left_sidebar_unreads_count_summary
+      label=settings_label.web_left_sidebar_unreads_count_summary
+      render_only=settings_render_only.web_left_sidebar_unreads_count_summary
+      prefix=prefix}}
+
+    {{> settings_checkbox
+      setting_name="starred_message_counts"
+      is_checked=settings_object.starred_message_counts
+      label=settings_label.starred_message_counts
+      render_only=settings_render_only.starred_message_counts
+      prefix=prefix}}
+
+    {{> settings_checkbox
+      setting_name="web_left_sidebar_show_channel_folders"
+      is_checked=settings_object.web_left_sidebar_show_channel_folders
+      label=settings_label.web_left_sidebar_show_channel_folders
+      render_only=settings_render_only.web_left_sidebar_show_channel_folders
+      help_link="/help/channel-folders"
+      prefix=prefix}}
+
+    <div class="input-group">
+        <label for="{{prefix}}demote_inactive_streams" class="settings-field-label">{{t "Hide inactive channels" }}
+            {{> ../help_link_widget link="/help/manage-inactive-channels" }}
+        </label>
+        <select name="demote_inactive_streams" class="setting_demote_inactive_streams prop-element settings_select bootstrap-focus-style" id="{{prefix}}demote_inactive_streams"  data-setting-widget-type="number">
+            {{> dropdown_options_widget option_values=demote_inactive_streams_values}}
+        </select>
+    </div>
+</div>

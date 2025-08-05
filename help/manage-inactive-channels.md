@@ -48,7 +48,7 @@ channels if you need to access them.
 
 {settings_tab|preferences}
 
-1. Under **Information**, configure **Hide inactive channels**.
+1. Under **Left sidebar**, configure **Hide inactive channels**.
 
 {end_tabs}
 
