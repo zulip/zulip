@@ -82,6 +82,16 @@
         }
     }
 
+    & ul,
+    & ol {
+        & p:has(+ ul, + ol) {
+            /* When a paragraph inside a list is immediately followed
+               by a list sibling, we reduce the paragraph's ordinary
+               bottom space by half. */
+            margin-bottom: calc(var(--markdown-interelement-space-px) / 2);
+        }
+    }
+
     /* To avoid cutting off the focus ring on links, we set
        padding on first children most likely to take links.
        We account for this extra space on `.message_content`. */
