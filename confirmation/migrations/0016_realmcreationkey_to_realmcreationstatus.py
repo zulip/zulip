@@ -100,7 +100,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ("confirmation", "0015_alter_confirmation_object_id"),
-        ("zerver", "0743_realmcreationstatus"),
+        ("zerver", "0747_realmcreationstatus"),
     ]
 
     operations = [
