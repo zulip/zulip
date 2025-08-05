@@ -150,7 +150,6 @@ export function update_property<P extends keyof UpdatableStreamProperties>(
         },
         is_muted(value) {
             stream_muting.update_is_muted(sub, value, message_view.rerender_combined_feed);
-            stream_list.refresh_muted_or_unmuted_stream(sub);
             recent_view_ui.complete_rerender();
         },
         desktop_notifications: update_stream_specific_notification_setting("desktop_notifications"),

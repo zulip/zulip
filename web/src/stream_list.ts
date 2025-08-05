@@ -711,11 +711,6 @@ export function refresh_pinned_or_unpinned_stream(sub: StreamSubscription): void
     }
 }
 
-export function refresh_muted_or_unmuted_stream(sub: StreamSubscription): void {
-    build_stream_sidebar_row(sub);
-    update_streams_sidebar();
-}
-
 export function get_sidebar_stream_topic_info(filter: Filter): {
     stream_id: number | undefined;
     topic_selected: boolean;
