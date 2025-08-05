@@ -291,6 +291,27 @@ function get_section_channel_plus_icon_url(section: StreamListSection): string |
     return undefined;
 }
 
+function maybe_change_channel_folders_option_visibility(): void {
+    let has_channel_folders = false;
+    const subscribed_subs = stream_data.subscribed_subs();
+
+    for (const sub of subscribed_subs) {
+        if (sub.folder_id) {
+            has_channel_folders = true;
+            break;
+        }
+    }
+
+    const $channel_folders_sidebar_option = $(
+        "#stream-search-and-add .channel-folders-sidebar-menu-icon",
+    );
+    if (has_channel_folders) {
+        $channel_folders_sidebar_option.show();
+    } else {
+        $channel_folders_sidebar_option.hide();
+    }
+}
+
 export function build_stream_list(force_rerender: boolean): void {
     // The stream list in the left sidebar contains 3 sections:
     // pinned, normal, and dormant streams, with headings above them
@@ -306,6 +327,8 @@ export function build_stream_list(force_rerender: boolean): void {
     if (stream_groups.same_as_before && !force_rerender) {
         return;
     }
+
+    maybe_change_channel_folders_option_visibility();
 
     function add_sidebar_li(
         stream_id: number,
