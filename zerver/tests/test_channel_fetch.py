@@ -10,7 +10,6 @@ from zerver.actions.streams import (
     do_change_stream_permission,
     do_deactivate_stream,
 )
-from zerver.lib.create_user import create_user
 from zerver.lib.email_mirror_helpers import encode_email_address, get_channel_email_token
 from zerver.lib.subscription_info import gather_subscriptions, gather_subscriptions_helper
 from zerver.lib.test_classes import ZulipTestCase
@@ -666,15 +665,8 @@ class GetSubscribersTest(ZulipTestCase):
     @override_settings(MIN_PARTIAL_SUBSCRIBERS_CHANNEL_SIZE=5)
     def test_gather_partial_subscriptions(self) -> None:
         othello = self.example_user("othello")
-        idle_users = [
-            create_user(
-                email=f"original_user{i}@zulip.com",
-                password=None,
-                realm=othello.realm,
-                full_name=f"Full Name {i}",
-            )
-            for i in range(5)
-        ]
+        user_names = ["iago", "cordelia", "polonius", "shiva", "prospero"]
+        idle_users = [self.example_user(name) for name in user_names]
         for user in idle_users:
             user.long_term_idle = True
             user.save()
@@ -777,15 +769,8 @@ class GetSubscribersTest(ZulipTestCase):
     @override_settings(MIN_PARTIAL_SUBSCRIBERS_CHANNEL_SIZE=5)
     def test_gather_partial_subscriptions_api(self) -> None:
         othello = self.example_user("othello")
-        idle_users = [
-            create_user(
-                email=f"original_user{i}@zulip.com",
-                password=None,
-                realm=othello.realm,
-                full_name=f"Full Name {i}",
-            )
-            for i in range(5)
-        ]
+        user_names = ["iago", "cordelia", "polonius", "shiva", "prospero"]
+        idle_users = [self.example_user(name) for name in user_names]
         for user in idle_users:
             user.long_term_idle = True
             user.save()
