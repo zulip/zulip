@@ -2055,6 +2055,94 @@ class MessageMoveTopicTest(ZulipTestCase):
         self.assertEqual(unread_user_ids, {hamlet.id})
         self.assertEqual(read_user_ids, {aaron.id, cordelia.id, admin_user.id})
 
+        do_change_user_setting(
+            aaron,
+            "resolved_topic_notice_auto_read_policy",
+            ResolvedTopicNoticeAutoReadPolicyEnum.never,
+            acting_user=None,
+        )
+        do_change_user_setting(
+            cordelia,
+            "resolved_topic_notice_auto_read_policy",
+            ResolvedTopicNoticeAutoReadPolicyEnum.never,
+            acting_user=None,
+        )
+        do_change_user_setting(
+            admin_user,
+            "resolved_topic_notice_auto_read_policy",
+            ResolvedTopicNoticeAutoReadPolicyEnum.never,
+            acting_user=None,
+        )
+
+        # Test topic resolved notice is automatically mark as read for the user
+        # who resolved the topic.
+        msg_id_5 = self.send_stream_message(admin_user, "stream", topic_name=unfollowed_topic_name)
+        result_5 = self.resolve_topic_containing_message(
+            hamlet,
+            msg_id_5,
+        )
+        self.assert_json_success(result_5)
+        msg_5 = Message.objects.get(id=msg_id_5)
+        self.assertEqual(resolved_unfollowed_topic_name, msg_5.topic_name())
+
+        messages = get_topic_messages(admin_user, stream, resolved_unfollowed_topic_name)
+        self.assert_length(messages, 5)
+
+        unread_user_ids = self.get_user_ids_for_whom_message_unread(messages[-1].id)
+        read_user_ids = self.get_user_ids_for_whom_message_read(messages[-1].id)
+
+        self.assertEqual(read_user_ids, {hamlet.id})
+        self.assertEqual(unread_user_ids, {aaron.id, cordelia.id, admin_user.id})
+
+    def test_move_message_notice_auto_read_for_acting_user(self) -> None:
+        admin_user = self.example_user("iago")
+        cordelia = self.example_user("cordelia")
+        hamlet = self.example_user("hamlet")
+        stream = self.make_stream("stream", hamlet.realm)
+
+        self.subscribe(admin_user, "stream")
+        self.subscribe(cordelia, "stream")
+        self.subscribe(hamlet, "stream")
+
+        old_topic_name = "old topic"
+        new_topic_name = "new topic"
+        message_id = self.send_stream_message(hamlet, stream.name, topic_name=old_topic_name)
+
+        result = self.api_patch(
+            hamlet,
+            "/api/v1/messages/" + str(message_id),
+            {"topic": new_topic_name, "send_notification_to_old_thread": "true"},
+        )
+        self.assert_json_success(result)
+
+        # Messages moved notice should be automatically mark as read for the user
+        # who move the messages.
+        old_topic_messages = get_topic_messages(admin_user, stream, old_topic_name)
+        self.assert_length(old_topic_messages, 1)
+        self.assertEqual(
+            old_topic_messages[-1].content,
+            "This topic was moved to #**stream>new topic** by @_**King Hamlet|10**.",
+        )
+
+        unread_user_ids = self.get_user_ids_for_whom_message_unread(old_topic_messages[-1].id)
+        read_user_ids = self.get_user_ids_for_whom_message_read(old_topic_messages[-1].id)
+
+        self.assertEqual(read_user_ids, {hamlet.id})
+        self.assertEqual(unread_user_ids, {cordelia.id, admin_user.id})
+
+        new_topic_messages = get_topic_messages(admin_user, stream, new_topic_name)
+        self.assert_length(new_topic_messages, 2)
+        self.assertEqual(
+            new_topic_messages[-1].content,
+            "This topic was moved here from #**stream>old topic** by @_**King Hamlet|10**.",
+        )
+
+        unread_user_ids = self.get_user_ids_for_whom_message_unread(new_topic_messages[-1].id)
+        read_user_ids = self.get_user_ids_for_whom_message_read(new_topic_messages[-1].id)
+
+        self.assertEqual(read_user_ids, {hamlet.id})
+        self.assertEqual(unread_user_ids, {cordelia.id, admin_user.id})
+
     @override_settings(RESOLVE_TOPIC_UNDO_GRACE_PERIOD_SECONDS=60)
     def test_mark_topic_as_resolved_within_grace_period(self) -> None:
         self.login("iago")
