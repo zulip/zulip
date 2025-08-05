@@ -357,9 +357,13 @@
     cursor: pointer;
     background-color: var(--color-background);
     position: sticky;
-    /* Input is 31px tall at 16px/1em.
-       Input container has 8px and 3px top/bottom padding = 11px total padding */
-    top: calc(1.9375em + 11px);
+    /* Input is 54px tall at 16px/1em. That includes the
+       input container's top padding that's 2.5 times
+       the value of the left sidebar vertical gutter,
+       plus 3px of bottom padding. */
+    top: calc(
+        1.9375em + (var(--left-sidebar-sections-vertical-gutter) * 2.5) + 3px
+    );
     /* Must be more than .sidebar-topic-check and less than #stream-search-and-add */
     z-index: 2;
     color: var(--color-text-default);
