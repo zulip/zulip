@@ -529,7 +529,7 @@ function load_medium_avatar(user: User, $elt: JQuery): void {
 // user is the user whose profile to show.
 // sender_id is the user id of the sender for the message we are
 // showing the popover from.
-function toggle_user_card_popover_for_message(
+export function toggle_user_card_popover_for_message(
     element: HTMLElement,
     user: User,
     sender_id: number,

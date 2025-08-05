@@ -108,6 +108,14 @@
             }
         }
     }
+
+    #report-message-preview-container & {
+        /* We don't need these effects applied for message preview in the report
+        message modal. */
+        box-shadow: none;
+        border: 0;
+        background: transparent;
+    }
 }
 
 .message_header_private_message {
