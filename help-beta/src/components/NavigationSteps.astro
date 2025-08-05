@@ -307,14 +307,18 @@ const relative_link_mapping: Record<
     },
 };
 
-const getSettingsMarkdown = (setting_type: string, setting_name: string) => `
+const getSettingsMarkdown = (
+    setting_type: string,
+    setting_type_icon: string,
+    setting_name: string,
+) => `
 <ol>
     <li>
         Click on the <b>gear</b> (${RawGearIcon}) icon in the upper
         right corner of the web or desktop app.
     </li>
     <li>
-        Select <b>${setting_type}</b>.
+        Select <b>${setting_type_icon} ${setting_type}</b>.
     </li>
     <li>
         On the left, click <b>${setting_name}</b>.
@@ -330,7 +334,15 @@ const getSettingsHTML = (
         setting_link_mapping[setting_key]!;
 
     if (!SHOW_RELATIVE_LINKS) {
-        return getSettingsMarkdown(setting_type, setting_name);
+        const setting_type_icon =
+            setting_type === ORGANIZATION_SETTINGS_TYPE
+                ? `${RawBuildingIcon}`.trim()
+                : `${RawToolIcon}`.trim();
+        return getSettingsMarkdown(
+            setting_type,
+            setting_type_icon,
+            setting_name,
+        );
     }
 
     const relativeLink = `<a href="${setting_link}">${setting_name}</a>`;
