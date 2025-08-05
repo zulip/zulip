@@ -285,6 +285,7 @@ def maybe_send_resolve_topic_notifications(
             ),
             message_type=Message.MessageType.RESOLVE_TOPIC_NOTIFICATION,
             limit_unread_user_ids=unread_user_ids,
+            mark_as_read_for_acting_user=True,
             acting_user=user_profile,
         )
 
@@ -353,6 +354,7 @@ def send_message_moved_breadcrumbs(
                     user=user_mention,
                     changed_messages_count=changed_messages_count,
                 ),
+                mark_as_read_for_acting_user=True,
                 acting_user=user_profile,
             )
 
@@ -368,6 +370,7 @@ def send_message_moved_breadcrumbs(
                     new_location=new_topic_link,
                     changed_messages_count=changed_messages_count,
                 ),
+                mark_as_read_for_acting_user=True,
                 acting_user=user_profile,
             )
 

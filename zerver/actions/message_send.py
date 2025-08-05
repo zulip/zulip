@@ -2081,6 +2081,7 @@ def internal_send_stream_message(
     email_gateway: bool = False,
     message_type: int = Message.MessageType.NORMAL,
     limit_unread_user_ids: set[int] | None = None,
+    mark_as_read_for_acting_user: bool = False,
     archived_channel_notice: bool = False,
     acting_user: UserProfile | None = None,
 ) -> int | None:
@@ -2099,7 +2100,11 @@ def internal_send_stream_message(
     if message is None:
         return None
 
-    sent_message_result = do_send_messages([message])[0]
+    mark_as_read = []
+    if mark_as_read_for_acting_user and acting_user is not None:
+        mark_as_read.append(acting_user.id)
+
+    sent_message_result = do_send_messages([message], mark_as_read=mark_as_read)[0]
     return sent_message_result.message_id
 
 
