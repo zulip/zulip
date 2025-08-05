@@ -1168,73 +1168,75 @@ export function complete_rerender(): void {
     }
     load_data_from_ls();
 
-    let first_filter: IteratorResult<string>;
-    if (inbox_util.is_channel_view()) {
-        const channel_id = inbox_util.get_channel_id();
-        assert(channel_id !== undefined);
+    // To avoid user scrolling before we have completed the rendering,
+    // Wrap the rendering and position restoration in a requestAnimationFrame.
+    requestAnimationFrame(() => {
+        let first_filter: IteratorResult<string>;
+        if (inbox_util.is_channel_view()) {
+            const channel_id = inbox_util.get_channel_id();
+            assert(channel_id !== undefined);
 
-        if (channel_view_topic_widget?.get_stream_id() === channel_id) {
-            channel_view_topic_widget.build();
-        } else {
-            // Show unknown channel message if we don't have data for channel.
-            if (!stream_data.get_sub_by_id(channel_id)) {
-                $("#inbox-pane").html(
-                    render_inbox_view({
-                        unknown_channel: true,
-                    }),
-                );
-                return;
+            if (channel_view_topic_widget?.get_stream_id() === channel_id) {
+                channel_view_topic_widget.build();
+            } else {
+                // Show unknown channel message if we don't have data for channel.
+                if (!stream_data.get_sub_by_id(channel_id)) {
+                    $("#inbox-pane").html(
+                        render_inbox_view({
+                            unknown_channel: true,
+                        }),
+                    );
+                    return;
+                }
+
+                render_channel_view(channel_id);
             }
-
-            render_channel_view(channel_id);
+            const channel_filter = per_channel_filters.get(channel_id) ?? new Set([DEFAULT_FILTER]);
+            first_filter = channel_filter.values().next();
+        } else {
+            channel_view_topic_widget = undefined;
+            const {has_visible_unreads, ...additional_context} = reset_data();
+            $("#inbox-pane").html(
+                render_inbox_view({
+                    normal_view: true,
+                    search_val: search_keyword,
+                    INBOX_SEARCH_ID,
+                    dms_dict,
+                    topics_dict,
+                    streams_dict,
+                    channel_folders_dict,
+                    ...additional_context,
+                }),
+            );
+            show_empty_inbox_channel_view_text(false);
+            show_empty_inbox_text(has_visible_unreads);
+            first_filter = filters.values().next();
         }
-        const channel_filter = per_channel_filters.get(channel_id) ?? new Set([DEFAULT_FILTER]);
-        first_filter = channel_filter.values().next();
-    } else {
-        channel_view_topic_widget = undefined;
-        const {has_visible_unreads, ...additional_context} = reset_data();
-        $("#inbox-pane").html(
-            render_inbox_view({
-                normal_view: true,
-                search_val: search_keyword,
-                INBOX_SEARCH_ID,
-                dms_dict,
-                topics_dict,
-                streams_dict,
-                channel_folders_dict,
-                ...additional_context,
-            }),
-        );
-        show_empty_inbox_channel_view_text(false);
-        show_empty_inbox_text(has_visible_unreads);
-        first_filter = filters.values().next();
-    }
 
-    // If the focus is not on the inbox rows, the inbox view scrolls
-    // down when moving from other views to the inbox view. To avoid
-    // this, we scroll to top before restoring focus via revive_current_focus.
-    if (!is_list_focused()) {
-        window.scrollTo(0, 0);
-    } else if (last_scroll_offset !== undefined) {
-        // It is important to restore the scroll position as soon
-        // as the rendering is complete to avoid scroll jumping.
-        window.scrollTo(0, last_scroll_offset);
-    }
+        // If the focus is not on the inbox rows, the inbox view scrolls
+        // down when moving from other views to the inbox view. To avoid
+        // this, we scroll to top before restoring focus via revive_current_focus.
+        if (!is_list_focused()) {
+            window.scrollTo(0, 0);
+        } else if (last_scroll_offset !== undefined) {
+            // It is important to restore the scroll position as soon
+            // as the rendering is complete to avoid scroll jumping.
+            window.scrollTo(0, last_scroll_offset);
+        }
 
-    setTimeout(() => {
         revive_current_focus();
         is_waiting_for_revive_current_focus = false;
-    }, 0);
 
-    filters_dropdown_widget = new dropdown_widget.DropdownWidget({
-        ...views_util.COMMON_DROPDOWN_WIDGET_PARAMS,
-        widget_name: "inbox-filter",
-        item_click_callback: filter_click_handler,
-        $events_container: $("#inbox-main"),
-        default_id: first_filter.done ? DEFAULT_FILTER : first_filter.value,
-        get_options: inbox_view_dropdown_options,
+        filters_dropdown_widget = new dropdown_widget.DropdownWidget({
+            ...views_util.COMMON_DROPDOWN_WIDGET_PARAMS,
+            widget_name: "inbox-filter",
+            item_click_callback: filter_click_handler,
+            $events_container: $("#inbox-main"),
+            default_id: first_filter.done ? DEFAULT_FILTER : first_filter.value,
+            get_options: inbox_view_dropdown_options,
+        });
+        filters_dropdown_widget.setup();
     });
-    filters_dropdown_widget.setup();
 }
 
 export function search_and_update(): void {
