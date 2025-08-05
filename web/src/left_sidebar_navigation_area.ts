@@ -186,16 +186,21 @@ export function update_dom_with_unread_counts(
     );
 
     for (const folder_id of channel_folders.get_all_folder_ids()) {
-        const unread_counts = folder_unread_counts.get(folder_id);
+        const unread_counts = folder_unread_counts.get(folder_id) ?? {
+            unmuted: 0,
+            muted: 0,
+            inactive_unmuted: 0,
+            inactive_muted: 0,
+        };
         update_section_unread_count(
             $(`#stream-list-${folder_id}-container .stream-list-subsection-header`),
-            unread_counts?.unmuted ?? 0,
-            unread_counts?.muted ?? 0,
+            unread_counts.unmuted,
+            unread_counts.muted,
         );
         update_section_unread_count(
             $(`#stream-list-${folder_id}-container .show-inactive-channels`),
-            unread_counts?.inactive_unmuted ?? 0,
-            unread_counts?.inactive_muted ?? 0,
+            unread_counts.inactive_unmuted,
+            unread_counts.inactive_muted,
         );
     }
 
