@@ -13,7 +13,8 @@
                 <template id="cannot-leave-{{name}}-because-of-subgroup-tooltip-template">
                     <span>
                         {{#tr}}
-                            You are a member of this group because you are a member of a subgroup (<b>{associated_subgroup_names}</b>).
+                            You are a member of this group because you are a member of a subgroup (<z-highlight>{associated_subgroup_names}</z-highlight>).
+                            {{#*inline "z-highlight"}}<b class="highlighted-element">{{> @partial-block}}</b>{{/inline}}
                         {{/tr}}
                     </span>
                 </template>
