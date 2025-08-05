@@ -102,20 +102,6 @@
     }
 }
 
-#left-sidebar-navigation-list .selected-home-view:hover,
-.selected-home-view.top-left-active-filter {
-    &.hide-unread-messages-count {
-        .masked_unread_count {
-            visibility: hidden;
-            position: absolute;
-        }
-
-        .unread_count {
-            visibility: visible;
-        }
-    }
-}
-
 #stream_filters {
     overflow: visible;
     margin-bottom: 5px;
