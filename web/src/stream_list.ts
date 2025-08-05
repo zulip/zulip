@@ -468,7 +468,6 @@ export function zoom_in_topics(options: {stream_id: number | undefined}): void {
             $elt.toggleClass("hide", false);
             // Add search box for topics list.
             $elt.children("div.bottom_left_row").append($(render_filter_topics()));
-            $("#topic_filter_query").trigger("focus");
             topic_list.setup_topic_search_typeahead();
         } else {
             $elt.toggleClass("hide", true);
@@ -896,6 +895,11 @@ export function initialize({
 
     $("#stream_filters").on("click", ".show-more-topics", (e) => {
         zoom_in();
+        // We define the focus behavior for the topic list search box
+        // outside of the `zoom_in` method, since we want the focus
+        // to only happen when the user clicks on the "SHOW ALL TOPICS"
+        // button, and not interfere with the narrow change handling.
+        $("#topic_filter_query").trigger("focus");
         browser_history.update_current_history_state_data({show_more_topics: true});
 
         e.preventDefault();
