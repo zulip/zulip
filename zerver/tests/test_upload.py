@@ -224,20 +224,37 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         consume_response(result)
 
     def test_guess_content_type_charset(self) -> None:
-        uploaded_file = SimpleUploadedFile(
-            "somefile.txt", "नाम में क्या रक्खा हे".encode(), content_type="text/plain"
-        )
-        result = self.api_post(
-            self.example_user("hamlet"), "/api/v1/user_uploads", {"file": uploaded_file}
-        )
-
+        tests = [
+            ("No high bytes in this string", "ascii", "ascii"),  # Explicit ASCII encoding
+            ("नाम में क्या रक्खा हे", "utf-8", "utf-8"),  # Enough to get 99% confidence UTF-8
+            ("日本語", "iso2022_jp", "ISO-2022-JP"),  # Non-UTF-8 99% confidence
+            ("日本語", "utf-8", "utf-8"),  # UTF-8 is only 87% confident
+            (
+                "Min svävare är full av ålar.",
+                "iso-8859-1",
+                "ISO-8859-1",
+            ),  # iso-8859-1 maxes out at 73%, but we'll still guess it
+            ("Aucune idée", "mac-roman", None),  # Short text in obscure formats is left unguessed
+        ]
         self.login("hamlet")
-        response_dict = self.assert_json_success(result)
-        url = response_dict["url"]
-        result = self.client_get(url)
-        self.assertEqual(result.status_code, 200)
-        self.assertEqual(result["Content-Type"], 'text/plain; charset="utf-8"')
-        consume_response(result)
+        for test_string, encoded_in, found_encoding in tests:
+            with self.subTest(msg=f"Encoding '{test_string}' in {encoded_in}"):
+                uploaded_file = SimpleUploadedFile(
+                    "somefile.txt", test_string.encode(encoded_in), content_type="text/plain"
+                )
+                result = self.api_post(
+                    self.example_user("hamlet"), "/api/v1/user_uploads", {"file": uploaded_file}
+                )
+
+                response_dict = self.assert_json_success(result)
+                url = response_dict["url"]
+                result = self.client_get(url)
+                self.assertEqual(result.status_code, 200)
+                expected = "text/plain"
+                if found_encoding is not None:
+                    expected += f'; charset="{found_encoding}"'
+                self.assertEqual(result["Content-Type"], expected)
+                consume_response(result)
 
     def test_content_type_charset_specified(self) -> None:
         with tempfile.NamedTemporaryFile() as uploaded_file:
