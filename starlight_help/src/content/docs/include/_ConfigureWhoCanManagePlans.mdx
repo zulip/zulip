@@ -1,0 +1,16 @@
+import SaveChanges from "./_SaveChanges.mdx"
+import FlattenedSteps from '../../../components/FlattenedSteps.astro';
+import { Tabs, TabItem } from '@astrojs/starlight/components'
+import NavigationSteps from "../../../components/NavigationSteps.astro"
+
+<Tabs>
+  <TabItem label="Desktop/Web">
+    <FlattenedSteps>
+      <NavigationSteps target="settings/organization-permissions" />
+
+      1. Under **Other permissions**, configure **Who can manage plans and billing**.
+
+      <SaveChanges />
+    </FlattenedSteps>
+  </TabItem>
+</Tabs>
