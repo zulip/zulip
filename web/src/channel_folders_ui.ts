@@ -50,6 +50,7 @@ export function add_channel_folder(): void {
                         rendered_description: "",
                         date_created: 0,
                         creator_id: people.my_current_user_id(),
+                        order: id,
                     };
                     channel_folders.add(channel_folder);
                 },
