@@ -1,6 +1,7 @@
 import logging
 import os
 from concurrent.futures import ProcessPoolExecutor, as_completed
+from glob import glob
 
 import bmemcached
 import magic
@@ -83,6 +84,35 @@ def _transfer_message_files_to_s3(attachment: Attachment) -> None:
                 storage_class=settings.S3_UPLOADS_STORAGE_CLASS,
             )
             logging.info("Uploaded message file in path %s", file_path)
+        thumbnail_dir = os.path.join(settings.LOCAL_FILES_DIR, "thumbnail", attachment.path_id)
+        if os.path.isdir(thumbnail_dir):
+            thumbnails = 0
+            for thumbnail_path in glob(os.path.join(thumbnail_dir, "*")):
+                with open(thumbnail_path, "rb") as f:
+                    # This relies on the thumbnails having guessable
+                    # content-type from their path, in order to avoid
+                    # having to fetch the ImageAttachment inside the
+                    # ProcessPoolExecutor.  We also have no clean way
+                    # to prefetch those rows via select_related in the
+                    # outer query, as they match on `path_id`, which
+                    # is not supported as a foreign key.
+                    guessed_type = guess_type(thumbnail_path)[0]
+                    upload_content_to_s3(
+                        s3backend.uploads_bucket,
+                        os.path.join(
+                            "thumbnail", attachment.path_id, os.path.basename(thumbnail_path)
+                        ),
+                        guessed_type,
+                        None,
+                        f.read(),
+                        storage_class=settings.S3_UPLOADS_STORAGE_CLASS,
+                    )
+                thumbnails += 1
+            logging.info(
+                "Uploaded %d thumbnails into %s",
+                thumbnails,
+                os.path.join("thumbnail", attachment.path_id),
+            )
     except FileNotFoundError:  # nocoverage
         pass
 
