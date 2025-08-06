@@ -76,8 +76,20 @@ class TransferUploadsToS3Test(ZulipTestCase):
         attachments = Attachment.objects.all().order_by("id")
 
         self.assert_length(list(bucket.objects.all()), 2)
-        self.assertEqual(bucket.Object(attachments[0].path_id).get()["Body"].read(), b"zulip1!")
-        self.assertEqual(bucket.Object(attachments[1].path_id).get()["Body"].read(), b"zulip2!")
+
+        s3_dummy1 = bucket.Object(attachments[0].path_id).get()
+        self.assertEqual(s3_dummy1["Body"].read(), b"zulip1!")
+        self.assertEqual(
+            s3_dummy1["Metadata"],
+            {"realm_id": str(attachments[0].realm_id), "user_profile_id": str(hamlet.id)},
+        )
+
+        s3_dummy2 = bucket.Object(attachments[1].path_id).get()
+        self.assertEqual(s3_dummy2["Body"].read(), b"zulip2!")
+        self.assertEqual(
+            s3_dummy2["Metadata"],
+            {"realm_id": str(attachments[1].realm_id), "user_profile_id": str(othello.id)},
+        )
 
     @mock_aws
     def test_transfer_emoji_to_s3(self) -> None:
