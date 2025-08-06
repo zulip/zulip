@@ -180,7 +180,7 @@ def generate_content_blocks(
             data_tab_key=tab["tab_key"],
             # This attribute is not used directly in this file here,
             # we need this for the current conversion script in for
-            # help-beta where this function is being imported.
+            # starlight_help where this function is being imported.
             tab_label=TAB_SECTION_LABELS[tab["tab_key"]],
             # Wrapping the content in two newlines is necessary here.
             # If we don't do this, the inner Markdown does not get

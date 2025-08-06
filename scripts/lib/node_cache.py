@@ -18,12 +18,12 @@ def setup_node_modules(production: bool = DEFAULT_PRODUCTION) -> None:
     except FileNotFoundError:
         pass
 
-    # We need this check when switching between branches without `help-beta`
-    # package. `node_modules` will be removed when working on a non `help-beta`
+    # We need this check when switching between branches without `starlight_help`
+    # package. `node_modules` will be removed when working on a non `starlight_help`
     # branch, but if `node_modules/.pnpm/lock.yaml` has not been updated by that
     # branch, we will end up in a situation where we might not have `node_modules`
     # even when we run the provision command.
-    if not os.path.exists("help-beta/node_modules"):
+    if not os.path.exists("starlight_help/node_modules"):
         skip = False
 
     if not skip:

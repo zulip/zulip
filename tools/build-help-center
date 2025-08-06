@@ -37,7 +37,7 @@ def run() -> None:
     env["SHOW_RELATIVE_LINKS"] = str(args.show_relative_links).lower()
     subprocess.check_call(
         ["/usr/local/bin/corepack", "pnpm", "build"],
-        cwd="help-beta",
+        cwd="starlight_help",
         env=env,
     )
 

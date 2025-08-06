@@ -91,15 +91,15 @@ def replace_image_path(markdown_string: str, replacement_path: str) -> str:
     """
     We will point to the existing image folder till
     the cutover. After that, we will copy the images
-    to src folder for help-beta in order to take
+    to src folder for starlight_help in order to take
     advantage of Astro's image optimization.
     See https://chat.zulip.org/#narrow/stream/6-frontend/topic/Handling.20images.20in.20help.20center.20starlight.20migration.2E/near/1915130
     """
     # We do not replace /static/images directly since there are a few
     # instances in the documentation where zulip.com links are
     # referenced with that blurb as a part of the url.
-    result = markdown_string.replace("(/static/images/help-beta", f"({replacement_path}")
-    return result.replace('="/static/images/help-beta', f'="{replacement_path}')
+    result = markdown_string.replace("(/static/images/starlight_help", f"({replacement_path}")
+    return result.replace('="/static/images/starlight_help', f'="{replacement_path}')
 
 
 def fix_file_imports(
@@ -138,11 +138,11 @@ def escape_curly_braces(markdown_string: str) -> str:
 
 def fix_relative_path(markdown_string: str) -> str:
     """
-    Since the docs will live at the `help-beta/` url
+    Since the docs will live at the `starlight_help/` url
     until we migrate the project completely, we will
-    replace `help/` with `help-beta/`
+    replace `help/` with `starlight_help/`
     """
-    return markdown_string.replace("help/", "help-beta/")
+    return markdown_string.replace("help/", "starlight_help/")
 
 
 def insert_string_at_line(text: str, destination_str: str, n: int) -> str:
@@ -692,7 +692,7 @@ def get_include_files_info(include_input_dir: str) -> dict[str, IncludeFileInfo]
 
 def run() -> None:
     input_dir = os.path.join(BASE_DIR, "help")
-    output_dir = os.path.join(BASE_DIR, "help-beta/src/content/docs")
+    output_dir = os.path.join(BASE_DIR, "starlight_help/src/content/docs")
     include_input_dir = os.path.join(input_dir, "include")
     include_output_dir = os.path.join(output_dir, "include")
     print("Starting the conversion from MD to MDX...")
@@ -748,7 +748,7 @@ def run() -> None:
     # since the first run will always give us warnings.
     subprocess.check_call(
         ["/usr/local/bin/corepack", "pnpm", "run", "format-silent"],
-        cwd="help-beta",
+        cwd="starlight_help",
     )
 
 
