@@ -751,7 +751,6 @@
 
         .data-container {
             grid-area: data-container;
-            overflow: hidden;
         }
     }
 
