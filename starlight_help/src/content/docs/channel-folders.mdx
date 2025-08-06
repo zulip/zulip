@@ -1,0 +1,36 @@
+---
+title: Channel folders
+---
+
+import NavigationSteps from "../../components/NavigationSteps.astro"
+import { Tabs, TabItem } from '@astrojs/starlight/components'
+import FlattenedSteps from '../../components/FlattenedSteps.astro';
+import ChannelFoldersIntro from "./include/_ChannelFoldersIntro.mdx"
+import MoveChannelToFolder from "./include/_MoveChannelToFolder.mdx"
+
+<ChannelFoldersIntro />
+
+## Move a channel to a folder
+
+<MoveChannelToFolder />
+
+## Configure whether channels are grouped by folder in the left sidebar
+
+<Tabs>
+  <TabItem label="Desktop/Web">
+    <FlattenedSteps>
+      <NavigationSteps target="settings/preferences" />
+
+      1. Under **Left sidebar**, toggle **Group channels by folder in the left
+         sidebar**.
+    </FlattenedSteps>
+  </TabItem>
+</Tabs>
+
+## Related articles
+
+* [Manage channel folders](/help/manage-channel-folders)
+* [Introduction to channels](/help/introduction-to-channels)
+* [Pin a channel](/help/pin-a-channel)
+* [Mute or unmute a channel](/help/mute-a-channel)
+* [Hide or reveal inactive channels](/help/manage-inactive-channels)

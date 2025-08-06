@@ -1,0 +1,28 @@
+---
+title: Change your email address
+---
+
+import NavigationSteps from "../../components/NavigationSteps.astro"
+import EditIcon from "~icons/zulip-icon/edit"
+import FlattenedSteps from '../../components/FlattenedSteps.astro';
+
+By default, anyone can change their email address at any time.
+
+Organization administrators can
+[restrict users to certain email domains](/help/restrict-account-creation#configuring-email-domain-restrictions), or
+[prevent users from changing their email](/help/restrict-name-and-email-changes).
+
+## Change your email address
+
+<FlattenedSteps>
+  <NavigationSteps target="settings/account-and-privacy" />
+
+  1. Under **Account**, click on the
+     **change your email** (<EditIcon />) icon
+     to the right of your current email. If you do not see the
+     **change your email** (<EditIcon />) icon,
+     you do not have permission to change your email address.
+  1. Enter your new email, and click **Change**.
+  1. You will receive a confirmation email within a few minutes. Open it,
+     and click **Confirm email change**.
+</FlattenedSteps>

@@ -1,0 +1,30 @@
+---
+title: Organization type
+---
+
+import NavigationSteps from "../../components/NavigationSteps.astro"
+import AdminOnly from "./include/_AdminOnly.mdx"
+import SaveChanges from "./include/_SaveChanges.mdx"
+import FlattenedSteps from '../../components/FlattenedSteps.astro';
+
+The **organization type** is used to customize the experience for users
+in your organization, including initial organization settings and
+Welcome Bot messages received by new users.
+
+## Set organization type
+
+<AdminOnly />
+
+<FlattenedSteps>
+  <NavigationSteps target="settings/organization-profile" />
+
+  1. Under **Organization type**, select the option that best fits
+     your organization.
+
+  <SaveChanges />
+</FlattenedSteps>
+
+## Related articles
+
+* [Configure default new user settings](/help/configure-default-new-user-settings)
+* [Communities directory](/help/communities-directory)

@@ -1,0 +1,69 @@
+---
+title: Unsubscribe from a channel
+---
+
+import NavigationSteps from "../../components/NavigationSteps.astro"
+import ChannelActions from "./include/_ChannelActions.mdx"
+import { Tabs, TabItem } from '@astrojs/starlight/components'
+import FlattenedSteps from '../../components/FlattenedSteps.astro';
+import KeyboardTip from '../../components/KeyboardTip.astro';
+
+You can always unsubscribe from any channel in Zulip.
+
+<Tabs>
+  <TabItem label="Desktop/Web">
+    <FlattenedSteps>
+      <ChannelActions />
+
+      1. Click **Unsubscribe**.
+    </FlattenedSteps>
+  </TabItem>
+
+  <TabItem label="Mobile">
+    Access this feature by following the web app instructions in your
+    mobile device browser.
+
+    Implementation of this feature in the mobile app is tracked [on
+    GitHub](https://github.com/zulip/zulip-flutter/issues/1224). If
+    you're interested in this feature, please react to the issue's
+    description with 👍.
+  </TabItem>
+</Tabs>
+
+## Alternate methods to unsubscribe from a channel
+
+### Via subscribed channels
+
+<Tabs>
+  <TabItem label="Desktop/Web">
+    <FlattenedSteps>
+      <NavigationSteps target="relative/gear/channel-settings" />
+
+      1. Click the **unsubscribe from channel**
+         (<img src="../../../../static/images/help/desktop-web-check-icon.svg" alt="checkmark" class="help-center-icon" />)
+         icon to the left of a channel to unsubscribe from it.
+    </FlattenedSteps>
+  </TabItem>
+</Tabs>
+
+### Via channel settings
+
+<Tabs>
+  <TabItem label="Desktop/Web">
+    <FlattenedSteps>
+      <ChannelActions />
+
+      1. Click **Channel settings**.
+      1. Click **Unsubscribe** near the top right corner of the channel settings panel.
+    </FlattenedSteps>
+
+    <KeyboardTip>
+      You can also use <kbd>Shift</kbd> + <kbd>S</kbd> to unsubscribe from the
+      selected channel.
+    </KeyboardTip>
+  </TabItem>
+</Tabs>
+
+## Related articles
+
+* [Manage a user's channel subscriptions](/help/manage-user-channel-subscriptions)

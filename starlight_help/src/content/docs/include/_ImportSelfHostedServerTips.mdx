@@ -1,0 +1,13 @@
+import ZulipTip from '../../../components/ZulipTip.astro';
+import ZulipNote from '../../../components/ZulipNote.astro';
+
+<ZulipNote>
+  The import could take several minutes to run,
+  depending on how much data you're importing.
+</ZulipNote>
+
+<ZulipTip>
+  The server stop/restart commands are only
+  necessary when importing on a server with minimal
+  RAM, where an OOM kill might otherwise occur.
+</ZulipTip>

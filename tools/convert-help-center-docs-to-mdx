@@ -98,8 +98,8 @@ def replace_image_path(markdown_string: str, replacement_path: str) -> str:
     # We do not replace /static/images directly since there are a few
     # instances in the documentation where zulip.com links are
     # referenced with that blurb as a part of the url.
-    result = markdown_string.replace("(/static/images/starlight_help", f"({replacement_path}")
-    return result.replace('="/static/images/starlight_help', f'="{replacement_path}')
+    result = markdown_string.replace("(/static/images/help", f"({replacement_path}")
+    return result.replace('="/static/images/help', f'="{replacement_path}')
 
 
 def fix_file_imports(
@@ -134,15 +134,6 @@ def escape_curly_braces(markdown_string: str) -> str:
     """
     result = markdown_string.replace("{", r"\{")
     return result.replace("}", r"\}")
-
-
-def fix_relative_path(markdown_string: str) -> str:
-    """
-    Since the docs will live at the `starlight_help/` url
-    until we migrate the project completely, we will
-    replace `help/` with `starlight_help/`
-    """
-    return markdown_string.replace("help/", "starlight_help/")
 
 
 def insert_string_at_line(text: str, destination_str: str, n: int) -> str:
@@ -587,7 +578,6 @@ def convert_help_center_file_to_mdx(
     # All imports inserted during conversion should be tracked here.
     import_statement_set: set[str] = set()
 
-    result = fix_relative_path(result)
     # All unordered lists at the time of writing this comment are
     # standalone components and we do not need to do any transformation
     # for them.
@@ -633,7 +623,6 @@ def convert_include_file_to_mdx(
     # All imports inserted during conversion should be tracked here.
     import_statement_set: set[str] = set()
 
-    result = fix_relative_path(result)
     # All unordered lists at the time of writing this comment are
     # standalone components and we do not need to do any transformation
     # for them.
