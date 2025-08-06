@@ -10,6 +10,7 @@ from zerver.actions.channel_folders import (
     do_change_channel_folder_description,
     do_change_channel_folder_name,
     do_unarchive_channel_folder,
+    try_reorder_realm_channel_folders,
 )
 from zerver.decorator import require_realm_admin
 from zerver.lib.channel_folders import (
@@ -50,6 +51,18 @@ def get_channel_folders(
 ) -> HttpResponse:
     channel_folders = get_channel_folders_in_realm(user_profile.realm, include_archived)
     return json_success(request, data={"channel_folders": channel_folders})
+
+
+@require_realm_admin
+@typed_endpoint
+def reorder_realm_channel_folders(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    *,
+    order: Json[list[int]],
+) -> HttpResponse:
+    try_reorder_realm_channel_folders(user_profile.realm, order)
+    return json_success(request)
 
 
 @require_realm_admin

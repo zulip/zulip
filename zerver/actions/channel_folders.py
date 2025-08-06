@@ -1,7 +1,11 @@
+from collections.abc import Iterable
+
 from django.db import transaction
 from django.utils.timezone import now as timezone_now
+from django.utils.translation import gettext as _
 
 from zerver.lib.channel_folders import get_channel_folder_dict, render_channel_folder_description
+from zerver.lib.exceptions import JsonableError
 from zerver.models import ChannelFolder, Realm, RealmAuditLog, UserProfile
 from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.users import active_user_ids
@@ -22,6 +26,8 @@ def check_add_channel_folder(
         rendered_description=rendered_description,
         creator_id=acting_user.id,
     )
+    channel_folder.order = channel_folder.id
+    channel_folder.save(update_fields=["order"])
 
     creation_time = timezone_now()
     RealmAuditLog.objects.create(
@@ -40,6 +46,18 @@ def check_add_channel_folder(
     send_event_on_commit(realm, event, active_user_ids(realm.id))
 
     return channel_folder
+
+
+@transaction.atomic(durable=True)
+def try_reorder_realm_channel_folders(realm: Realm, order: Iterable[int]) -> None:
+    order_mapping = {_[1]: _[0] for _ in enumerate(order)}
+    channel_folders = ChannelFolder.objects.filter(realm=realm)
+    for channel_folder in channel_folders:
+        if channel_folder.id not in order_mapping:
+            raise JsonableError(_("Invalid order mapping."))
+    for channel_folder in channel_folders:
+        channel_folder.order = order_mapping[channel_folder.id]
+        channel_folder.save(update_fields=["order"])
 
 
 def do_send_channel_folder_update_event(

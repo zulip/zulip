@@ -21,7 +21,10 @@ class ChannelFoldersTestCase(ZulipTestCase):
         lear_user = self.lear_user("cordelia")
 
         check_add_channel_folder(
-            zulip_realm, "Frontend", "Channels for frontend discussions", acting_user=iago
+            zulip_realm,
+            "Frontend",
+            "Channels for frontend discussions",
+            acting_user=iago,
         )
         check_add_channel_folder(
             zulip_realm, "Backend", "Channels for **backend** discussions", acting_user=iago
@@ -50,6 +53,7 @@ class ChannelFolderCreationTest(ZulipTestCase):
         assert channel_folder is not None
         self.assertEqual(channel_folder.name, "Frontend")
         self.assertEqual(channel_folder.description, "")
+        self.assertEqual(channel_folder.id, channel_folder.order)
         response = orjson.loads(result.content)
         self.assertEqual(response["channel_folder_id"], channel_folder.id)
 
@@ -349,3 +353,65 @@ class UpdateChannelFoldersTest(ChannelFoldersTestCase):
         self.assert_json_success(result)
         channel_folder = ChannelFolder.objects.get(id=channel_folder_id)
         self.assertTrue(channel_folder.is_archived)
+
+
+class ReorderChannelFolderTest(ChannelFoldersTestCase):
+    def test_reorder(self) -> None:
+        self.login("iago")
+        realm = get_realm("zulip")
+        order = list(
+            ChannelFolder.objects.filter(realm=realm)
+            .order_by("-order")
+            .values_list("order", flat=True)
+        )
+        result = self.client_patch(
+            "/json/channel_folders", info={"order": orjson.dumps(order).decode()}
+        )
+        self.assert_json_success(result)
+        fields = ChannelFolder.objects.filter(realm=realm).order_by("order")
+        for field in fields:
+            self.assertEqual(field.id, order[field.order])
+
+    def test_reorder_duplicates(self) -> None:
+        self.login("iago")
+        realm = get_realm("zulip")
+        order = list(
+            ChannelFolder.objects.filter(realm=realm)
+            .order_by("-order")
+            .values_list("order", flat=True)
+        )
+        frontend_folder = ChannelFolder.objects.get(name="Frontend", realm=realm)
+        order.append(frontend_folder.id)
+        result = self.client_patch(
+            "/json/channel_folders", info={"order": orjson.dumps(order).decode()}
+        )
+        self.assert_json_success(result)
+        fields = ChannelFolder.objects.filter(realm=realm).order_by("order")
+        for field in fields:
+            self.assertEqual(field.id, order[field.order])
+
+    def test_reorder_unauthorized(self) -> None:
+        self.login("hamlet")
+        realm = get_realm("zulip")
+        order = list(
+            ChannelFolder.objects.filter(realm=realm)
+            .order_by("-order")
+            .values_list("order", flat=True)
+        )
+        result = self.client_patch(
+            "/json/channel_folders", info={"order": orjson.dumps(order).decode()}
+        )
+        self.assert_json_error(result, "Must be an organization administrator")
+
+    def test_reorder_invalid(self) -> None:
+        self.login("iago")
+        order = [100, 200, 300]
+        result = self.client_patch(
+            "/json/channel_folders", info={"order": orjson.dumps(order).decode()}
+        )
+        self.assert_json_error(result, "Invalid order mapping.")
+        order = [1, 2]
+        result = self.client_patch(
+            "/json/channel_folders", info={"order": orjson.dumps(order).decode()}
+        )
+        self.assert_json_error(result, "Invalid order mapping.")
