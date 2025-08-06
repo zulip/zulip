@@ -74,6 +74,7 @@
 * [Remove a default channel](/api/remove-default-stream)
 * [Create a channel folder](/api/create-channel-folder)
 * [Get channel folders](/api/get-channel-folders)
+* [Reorder channel folders](/api/patch-channel-folders)
 * [Update a channel folder](/api/update-channel-folder)
 
 #### Users
