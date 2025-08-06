@@ -367,6 +367,11 @@
        below. This extra margin prevents that overlap. */
     margin-bottom: 1px;
 
+    .markers-and-unreads {
+        display: flex;
+        align-items: center;
+    }
+
     .unread_count,
     .masked_unread_count {
         margin-right: var(--left-sidebar-unread-offset);
@@ -535,6 +540,10 @@
         .masked_unread_count {
             visibility: hidden;
         }
+    }
+
+    .stream-list-subsection-header .unread_mention_info {
+        display: none;
     }
 }
 

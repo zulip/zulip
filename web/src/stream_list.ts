@@ -357,9 +357,33 @@ export function build_stream_list(force_rerender: boolean): void {
     const counts = unread.get_counts();
     left_sidebar_navigation_area.update_dom_with_unread_counts(counts, false);
     update_dom_with_unread_counts(counts);
+    update_stream_section_mention_indicators();
     sidebar_ui.update_unread_counts_visibility();
     set_sections_states();
     $("#streams_list").toggleClass("is_searching", ui_util.get_left_sidebar_search_term() !== "");
+}
+
+export let update_stream_section_mention_indicators = function (): void {
+    const mentions = unread.mention_counts_by_section();
+    for (const section of stream_list_sort.section_ids()) {
+        const $header = $(`#stream-list-${section}-container .stream-list-subsection-header`);
+        const mentions_for_section = mentions.get(section) ?? {
+            has_mentions: false,
+            has_unmuted_mentions: false,
+        };
+        ui_util.update_unread_mention_info_in_dom($header, mentions_for_section.has_mentions);
+
+        $header.toggleClass(
+            "has-only-muted-mentions",
+            mentions_for_section.has_mentions && !mentions_for_section.has_unmuted_mentions,
+        );
+    }
+};
+
+export function rewire_update_stream_section_mention_indicators(
+    value: typeof update_stream_section_mention_indicators,
+): void {
+    update_stream_section_mention_indicators = value;
 }
 
 /* When viewing a channel in a collapsed folder, we show that active
@@ -689,6 +713,7 @@ export let update_dom_with_unread_counts = function (counts: FullUnreadCountsDat
             stream_has_only_muted_unread_mentions,
         );
     }
+    update_stream_section_mention_indicators();
 
     // (2) Unread counts in stream headers and collapse/uncollapse
     // toggles for muted and inactive channels.
