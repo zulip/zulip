@@ -72,7 +72,16 @@ def maybe_add_charset(content_type: str, file_data: bytes | StreamingSourceWithS
         detector.close()
         reader.close()
         detected = detector.result
-    if detected["confidence"] > 0.9 and detected["encoding"]:
+    if detected["confidence"] >= 0.90 and detected["encoding"]:
+        fake_msg.set_param("charset", detected["encoding"], replace=True)
+    elif detected["confidence"] >= 0.73 and detected["encoding"] == "ISO-8859-1":
+        # ISO-8859-1 detection maxes out at 73%, so if that's what
+        # we're seeing as the best guess, provide it.
+        fake_msg.set_param("charset", detected["encoding"], replace=True)
+    elif detected["confidence"] >= 0.66 and detected["encoding"] == "utf-8":
+        # UTF-8 is far and wide the most common current encoding,
+        # so we set a much lower threshold if that's the best guess.
+        # https://en.wikipedia.org/wiki/Popularity_of_text_encodings
         fake_msg.set_param("charset", detected["encoding"], replace=True)
     return fake_msg["content-type"]
 
