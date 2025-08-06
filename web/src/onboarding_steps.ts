@@ -6,6 +6,7 @@ import render_navigation_tour_video_modal from "../templates/navigation_tour_vid
 
 import * as blueslip from "./blueslip.ts";
 import * as channel from "./channel.ts";
+import * as compose_recipient from "./compose_recipient.ts";
 import * as dialog_widget from "./dialog_widget.ts";
 import {$t, $t_html} from "./i18n.ts";
 import type * as message_view from "./message_view.ts";
@@ -158,6 +159,16 @@ function show_navigation_tour_video(navigation_tour_video_url: string | null): v
                 });
             },
             on_hide() {
+                // `narrow_to_dm_with_welcome_bot_new_user` triggers a focus change from
+                // #compose_recipient_box to #compose-textarea (see `compose_actions.show_compose_box`
+                // with `opts.defer_focus = true`). We start initializing this modal while the
+                // focus transition is in progress, resulting in a flaky behaviour of the
+                // element that will be in focus when modal is closed.
+                //
+                // We explicitly set the focus to #compose-textarea to avoid flaky nature.
+                $("textarea#compose-textarea").trigger("focus");
+                compose_recipient.update_recipient_row_attention_level();
+
                 if (!watch_later_clicked) {
                     // $watch_later_button click handler already calls this function.
                     post_onboarding_step_as_read("navigation_tour_video");
