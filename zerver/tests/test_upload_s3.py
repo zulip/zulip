@@ -29,6 +29,7 @@ from zerver.lib.thumbnail import (
     MEDIUM_AVATAR_SIZE,
     THUMBNAIL_OUTPUT_FORMATS,
     BadImageError,
+    ThumbnailFormat,
     resize_avatar,
     resize_emoji,
 )
@@ -69,6 +70,32 @@ class S3Test(ZulipTestCase):
         self.subscribe(self.example_user("hamlet"), "Denmark")
         body = f"First message ...[zulip.txt](http://{user_profile.realm.host}{url})"
         self.send_stream_message(self.example_user("hamlet"), "Denmark", body, "test")
+
+    @use_s3_backend
+    def test_upload_message_attachment_thumbnail(self) -> None:
+        bucket = create_s3_buckets(settings.S3_AUTH_UPLOADS_BUCKET)[0]
+        user_profile = self.example_user("hamlet")
+        with (
+            self.thumbnail_formats(ThumbnailFormat("webp", 100, 75, animated=False)),
+            self.captureOnCommitCallbacks(execute=True),
+        ):
+            url = upload_message_attachment(
+                "img.png", "image/png", read_test_image_file("img.png"), user_profile
+            )[0]
+        self.assertTrue(url.startswith("/user_uploads/"))
+        path_id = url.removeprefix("/user_uploads/")
+        s3_image = bucket.Object(path_id).get()
+        self.assertEqual(s3_image["Body"].read(), read_test_image_file("img.png"))
+        self.assertEqual(
+            s3_image["Metadata"],
+            {"realm_id": str(user_profile.realm_id), "user_profile_id": str(user_profile.id)},
+        )
+
+        s3_thumbnail_image = bucket.Object(f"thumbnail/{path_id}/100x75.webp").get()
+        resized_image = pyvips.Image.new_from_buffer(s3_thumbnail_image["Body"].read(), "")
+        self.assertEqual(75, resized_image.width)
+        self.assertEqual(75, resized_image.height)
+        self.assertEqual(s3_thumbnail_image["Metadata"], {})
 
     @use_s3_backend
     def test_save_attachment_contents(self) -> None:
