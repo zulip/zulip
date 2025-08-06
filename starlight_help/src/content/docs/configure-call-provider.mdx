@@ -1,0 +1,60 @@
+---
+title: Configure call provider
+---
+
+import NavigationSteps from "../../components/NavigationSteps.astro"
+import ZulipTip from '../../components/ZulipTip.astro';
+import FlattenedSteps from '../../components/FlattenedSteps.astro';
+import SaveChanges from "./include/_SaveChanges.mdx"
+import AdminOnly from "./include/_AdminOnly.mdx"
+
+<AdminOnly />
+
+By default, Zulip integrates with
+[Jitsi Meet](https://jitsi.org/jitsi-meet/), a fully-encrypted, 100% open
+source video conferencing solution. Organization administrators can also
+change the organization's call provider. The call providers
+supported by Zulip are:
+
+* [Jitsi Meet](/integrations/doc/jitsi)
+* [Zoom integration](/integrations/doc/zoom)
+* [BigBlueButton integration](/integrations/doc/big-blue-button)
+
+<ZulipTip>
+  You can disable the video and voice call buttons for your organization
+  by setting the **call provider** to "None".
+</ZulipTip>
+
+## Configure your organization's call provider
+
+<FlattenedSteps>
+  <NavigationSteps target="settings/organization-settings" />
+
+  1. Under **Compose settings**, select the desired provider from the
+     **Call provider** dropdown.
+
+  <SaveChanges />
+</FlattenedSteps>
+
+## Use a self-hosted instance of Jitsi Meet
+
+Zulip uses the [cloud version of Jitsi Meet](https://meet.jit.si/)
+as its default call provider. You can also use a self-hosted
+instance of Jitsi Meet.
+
+<FlattenedSteps>
+  <NavigationSteps target="settings/organization-settings" />
+
+  1. Under **Compose settings**, select **Custom URL** from the
+     **Jitsi server URL** dropdown.
+  1. Enter the URL of your self-hosted Jitsi Meet server.
+
+  <SaveChanges />
+</FlattenedSteps>
+
+## Related articles
+
+* [Start a call](/help/start-a-call)
+* [Jitsi Meet integration](/integrations/doc/jitsi)
+* [Zoom integration](/integrations/doc/zoom)
+* [BigBlueButton integration](/integrations/doc/big-blue-button)

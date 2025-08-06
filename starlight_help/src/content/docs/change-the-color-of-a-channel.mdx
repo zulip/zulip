@@ -1,0 +1,47 @@
+---
+title: Change the color of a channel
+---
+
+import NavigationSteps from "../../components/NavigationSteps.astro"
+import FlattenedSteps from '../../components/FlattenedSteps.astro';
+import SelectChannelViewPersonal from "./include/_SelectChannelViewPersonal.mdx"
+import ChannelActions from "./include/_ChannelActions.mdx"
+import { Tabs, TabItem } from '@astrojs/starlight/components'
+
+Zulip assigns each of your channels a color when you subscribe to the
+channel. Changing a channel's color does not change it for anyone else.
+
+<Tabs>
+  <TabItem label="Via left sidebar">
+    <FlattenedSteps>
+      <ChannelActions />
+
+      1. Click **Change color**.
+      1. Select a color from the grid, use the color picker, or enter a hex code.
+      1. Click **Confirm** to save and apply the color change.
+      1. Click outside the box to close the menu.
+    </FlattenedSteps>
+  </TabItem>
+
+  <TabItem label="Via channel settings">
+    <FlattenedSteps>
+      <NavigationSteps target="relative/gear/channel-settings" />
+
+      1. Select a channel.
+
+      <SelectChannelViewPersonal />
+
+      1. Under **Personal settings**, click on the colored square below **Channel color**.
+      1. Select a color from the grid, use the color picker, or enter a hex code.
+      1. Click **Choose** to save and apply the color change.
+    </FlattenedSteps>
+  </TabItem>
+</Tabs>
+
+## Related articles
+
+* [Introduction to channels](/help/introduction-to-channels)
+* [Channel folders](/help/channel-folders)
+* [Pin a channel](/help/pin-a-channel)
+* [Mute or unmute a channel](/help/mute-a-channel)
+* [Hide or reveal inactive channels](/help/manage-inactive-channels)

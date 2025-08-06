@@ -1,0 +1,39 @@
+---
+title: Manage a user
+---
+
+import NavigationSteps from "../../components/NavigationSteps.astro"
+import FlattenedSteps from '../../components/FlattenedSteps.astro';
+import ManageUserTabTip from "./include/_ManageUserTabTip.mdx"
+import ManageThisUser from "./include/_ManageThisUser.mdx"
+import UserCogIcon from "~icons/zulip-icon/user-cog"
+import { Tabs, TabItem } from '@astrojs/starlight/components'
+import AdminOnly from "./include/_AdminOnly.mdx"
+
+<AdminOnly />
+
+<Tabs>
+  <TabItem label="Via user profile">
+    <FlattenedSteps>
+      <ManageThisUser />
+    </FlattenedSteps>
+
+    <ManageUserTabTip />
+  </TabItem>
+
+  <TabItem label="Via organization settings">
+    <FlattenedSteps>
+      <NavigationSteps target="settings/users" />
+
+      1. Find the user you would like to manage. Click the **manage user**
+         (<UserCogIcon />) icon to the right
+         of their name.
+    </FlattenedSteps>
+  </TabItem>
+</Tabs>
+
+## Related articles
+
+* [Deactivate or reactivate a user](/help/deactivate-or-reactivate-a-user)
+* [Change a user's role](/help/user-roles#change-a-users-role)
+* [Change a user's name](/help/change-a-users-name)

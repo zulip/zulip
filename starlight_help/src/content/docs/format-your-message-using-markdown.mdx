@@ -1,0 +1,276 @@
+---
+title: Message formatting
+---
+
+import BulletedListsExamples from "./include/_BulletedListsExamples.mdx"
+import TimeIcon from "~icons/zulip-icon/time"
+import ZulipTip from '../../components/ZulipTip.astro';
+import MathIcon from "~icons/zulip-icon/math"
+import PollsIntro from "./include/_PollsIntro.mdx"
+import UnorderedListIcon from "~icons/zulip-icon/unordered-list"
+import LinksIntro from "./include/_LinksIntro.mdx"
+import GlobalTimesIntro from "./include/_GlobalTimesIntro.mdx"
+import SpoilerIcon from "~icons/zulip-icon/spoiler"
+import ParagraphsAndSectionsIntro from "./include/_ParagraphsAndSectionsIntro.mdx"
+import TodoListIcon from "~icons/zulip-icon/todo-list"
+import NavigationSteps from "../../components/NavigationSteps.astro"
+import ToDoListsIntro from "./include/_ToDoListsIntro.mdx"
+import NumberedListsIntro from "./include/_NumberedListsIntro.mdx"
+import MeActionMessagesExamples from "./include/_MeActionMessagesExamples.mdx"
+import PollIcon from "~icons/zulip-icon/poll"
+import QuoteIcon from "~icons/zulip-icon/quote"
+import MeActionMessagesIntro from "./include/_MeActionMessagesIntro.mdx"
+import OrderedListIcon from "~icons/zulip-icon/ordered-list"
+import LinkIcon from "~icons/zulip-icon/link"
+import MentionsIntro from "./include/_MentionsIntro.mdx"
+import EmojiAndEmoticonsIntro from "./include/_EmojiAndEmoticonsIntro.mdx"
+import { Tabs, TabItem } from '@astrojs/starlight/components'
+import TablesExamples from "./include/_TablesExamples.mdx"
+import ToDoListsExamples from "./include/_ToDoListsExamples.mdx"
+import TablesIntro from "./include/_TablesIntro.mdx"
+import NumberedListsExamples from "./include/_NumberedListsExamples.mdx"
+import QuestionIcon from "~icons/zulip-icon/question"
+import CodeBlocksIntro from "./include/_CodeBlocksIntro.mdx"
+import FlattenedSteps from '../../components/FlattenedSteps.astro';
+import PollsExamples from "./include/_PollsExamples.mdx"
+import EmphasisExamples from "./include/_EmphasisExamples.mdx"
+import ParagraphsAndSectionsExamples from "./include/_ParagraphsAndSectionsExamples.mdx"
+import MentionsExamples from "./include/_MentionsExamples.mdx"
+import QuotesExamples from "./include/_QuotesExamples.mdx"
+import BulletedListsIntro from "./include/_BulletedListsIntro.mdx"
+import SpoilersExamples from "./include/_SpoilersExamples.mdx"
+import GlobalTimesExamples from "./include/_GlobalTimesExamples.mdx"
+import SpoilersIntro from "./include/_SpoilersIntro.mdx"
+import LinksExamples from "./include/_LinksExamples.mdx"
+import QuotesIntro from "./include/_QuotesIntro.mdx"
+import EmojiAndEmoticonsExamples from "./include/_EmojiAndEmoticonsExamples.mdx"
+import LatexExamples from "./include/_LatexExamples.mdx"
+import CodeBlocksExamples from "./include/_CodeBlocksExamples.mdx"
+import EmphasisIntro from "./include/_EmphasisIntro.mdx"
+import LatexIntro from "./include/_LatexIntro.mdx"
+import CodeIcon from "~icons/zulip-icon/code"
+
+{/*
+  - All screenshots here require line-height: 22px and font-size: 16px in .message-content.
+  - Requires some additional fiddling for the LaTeX picture, inline code span, and maybe a few others.
+  */}
+
+Zulip uses Markdown to allow you to easily format your messages. Even if you've
+never heard of Markdown, you are probably familiar with basic Markdown
+formatting, such as using `*` at the start of a line in a bulleted list, or
+around text to indicate emphasis.
+
+Formatting buttons in the compose box make it easy to format your message. For
+those who prefer to type the formatting they need, this page provides an
+overview of all the formatting available in Zulip. There is a convenient
+[message formatting reference](#message-formatting-reference) in the Zulip
+app that you can use whenever you need a reminder of the formatting syntax
+below.
+
+* [Text emphasis](#text-emphasis)
+* [Bulleted lists](#bulleted-lists)
+* [Numbered lists](#numbered-lists)
+* [Links](#links)
+* [Code blocks](#code-blocks)
+* [LaTeX](#latex)
+* [Quotes](#quotes)
+* [Spoilers](#spoilers)
+* [Emoji and emoticons](#emoji-and-emoticons)
+* [Mention a user or group](#mention-a-user-or-group)
+* [/me action messages](#me-action-messages)
+* [Global times](#global-times)
+* [Tables](#tables)
+* [Polls](#polls)
+* [Collaborative to-do lists](#collaborative-to-do-lists)
+* [Paragraph and section formatting](#paragraph-and-section-formatting)
+
+## Text emphasis
+
+<EmphasisIntro />
+
+<EmphasisExamples />
+
+<ZulipTip>
+  You can also use buttons or keyboard shortcuts (<kbd>Ctrl</kbd> +
+  <kbd>B</kbd> or <kbd>Ctrl</kbd> + <kbd>I</kbd>) to make text bold or italic.
+  [Learn more](/help/text-emphasis).
+</ZulipTip>
+
+## Bulleted lists
+
+<BulletedListsIntro />
+
+<BulletedListsExamples />
+
+<ZulipTip>
+  You can also use the **Bulleted list**
+  (<UnorderedListIcon />)
+  button in the compose box to insert bulleted list formatting.
+  [Learn more](/help/bulleted-lists).
+</ZulipTip>
+
+## Numbered lists
+
+<NumberedListsIntro />
+
+<NumberedListsExamples />
+
+<ZulipTip>
+  You can also use the **Numbered list**
+  (<OrderedListIcon />)
+  button in the compose box to insert numbered list formatting.
+  [Learn more](/help/numbered-lists).
+</ZulipTip>
+
+## Links
+
+<LinksIntro />
+
+<LinksExamples />
+
+<ZulipTip>
+  You can also use the **Link**
+  (<LinkIcon />)
+  button or a keyboard shortcut (<kbd>Ctrl</kbd> + <kbd>Shift</kbd> +
+  <kbd>L</kbd>) to insert a link. [Learn more](/help/insert-a-link).
+</ZulipTip>
+
+## Code blocks
+
+<CodeBlocksIntro />
+
+<CodeBlocksExamples />
+
+<ZulipTip>
+  You can also use the **Code** (<CodeIcon />)
+  button in the compose box to insert code formatting.
+  [Learn more](/help/code-blocks).
+</ZulipTip>
+
+## LaTeX
+
+<LatexIntro />
+
+<LatexExamples />
+
+<ZulipTip>
+  You can also use the **LaTeX** (<MathIcon />)
+  button in the compose box to insert LaTeX formatting.
+  [Learn more](/help/latex).
+</ZulipTip>
+
+## Quotes
+
+<QuotesIntro />
+
+<QuotesExamples />
+
+<ZulipTip>
+  There is a handy option to [quote message](/help/quote-or-forward-a-message) to a
+  message in Zulip.
+  You can also use the **Quote** (<QuoteIcon />)
+  button in the compose box to insert quote formatting.
+  [Learn more](/help/format-a-quote).
+</ZulipTip>
+
+## Spoilers
+
+<SpoilersIntro />
+
+<SpoilersExamples />
+
+<ZulipTip>
+  You can also use the **Spoiler**
+  (<SpoilerIcon />) button in the compose
+  box to insert spoiler formatting. [Learn more](/help/spoilers).
+</ZulipTip>
+
+## Emoji and emoticons
+
+<EmojiAndEmoticonsIntro />
+
+<EmojiAndEmoticonsExamples />
+
+## Mention a user or group
+
+<MentionsIntro />
+
+<MentionsExamples />
+
+## /me action messages
+
+<MeActionMessagesIntro />
+
+<MeActionMessagesExamples />
+
+## Global times
+
+<GlobalTimesIntro />
+
+<GlobalTimesExamples />
+
+<ZulipTip>
+  You can also use the **Add global time**
+  (<TimeIcon />) button in the compose
+  box to select a time from the date picker. [Learn more](/help/global-times).
+</ZulipTip>
+
+## Tables
+
+<TablesIntro />
+
+<TablesExamples />
+
+## Polls
+
+<PollsIntro />
+
+<PollsExamples />
+
+<ZulipTip>
+  You can also use the **Add poll** (<PollIcon />) button in the compose box to create a
+  poll. [Learn more](/help/create-a-poll).
+</ZulipTip>
+
+## Collaborative to-do lists
+
+<ToDoListsIntro />
+
+<ToDoListsExamples />
+
+<ZulipTip>
+  You can also use the **Add to-do list** (<TodoListIcon />) button in the compose box to create a
+  shared to-do list. [Learn more](/help/collaborative-to-do-lists).
+</ZulipTip>
+
+## Paragraph and section formatting
+
+<ParagraphsAndSectionsIntro />
+
+<ParagraphsAndSectionsExamples />
+
+## Message formatting reference
+
+A summary of the formatting syntax above is available in the Zulip app.
+
+<Tabs>
+  <TabItem label="Desktop/Web">
+    <FlattenedSteps>
+      <NavigationSteps target="relative/help/message-formatting" />
+    </FlattenedSteps>
+
+    <ZulipTip>
+      You can also [open the compose box](/help/open-the-compose-box), and click
+      the **question mark** (<QuestionIcon />) icon
+      at the bottom of the compose box.
+    </ZulipTip>
+  </TabItem>
+</Tabs>
+
+## Related articles
+
+* [Create a poll](/help/create-a-poll)
+* [Mention a user or group](/help/mention-a-user-or-group)
+* [Preview messages before sending](/help/preview-your-message-before-sending)
+* [Resize the compose box](/help/resize-the-compose-box)
+* [Messaging tips & tricks](/help/messaging-tips)

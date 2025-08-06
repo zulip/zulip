@@ -1,0 +1,18 @@
+import FlattenedSteps from '../../../components/FlattenedSteps.astro';
+import NavigationSteps from "../../../components/NavigationSteps.astro"
+import { Tabs, TabItem } from '@astrojs/starlight/components'
+
+Zulip lets you automatically mark as read Notification Bot notices
+indicating that someone [resolved or unresolved](/help/resolve-a-topic)
+a topic, or do so just for topics you don't follow.
+
+<Tabs>
+  <TabItem label="Desktop/Web">
+    <FlattenedSteps>
+      <NavigationSteps target="settings/notifications" />
+
+      1. Under **Topic notifications**, configure **Automatically mark resolved topic
+         notices as read**.
+    </FlattenedSteps>
+  </TabItem>
+</Tabs>

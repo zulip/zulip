@@ -1,0 +1,21 @@
+import FollowIcon from "~icons/zulip-icon/follow"
+import TopicActions from "./_TopicActions.mdx"
+import MuteIcon from "~icons/zulip-icon/mute"
+import InheritIcon from "~icons/zulip-icon/inherit"
+import UnmuteIcon from "~icons/zulip-icon/unmute"
+import ZulipTip from '../../../components/ZulipTip.astro';
+import FlattenedSteps from '../../../components/FlattenedSteps.astro';
+
+<FlattenedSteps>
+  <TopicActions />
+
+  1. Configure topic notifications using the row of icons at the top of the menu.
+</FlattenedSteps>
+
+<ZulipTip>
+  You can also configure notifications by clicking the topic notifications
+  status icon (<MuteIcon />,
+  <InheritIcon />,
+  <UnmuteIcon />, or
+  <FollowIcon />) wherever it appears.
+</ZulipTip>

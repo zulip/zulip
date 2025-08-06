@@ -1,0 +1,62 @@
+---
+title: Spoilers
+---
+
+import ZulipTip from '../../components/ZulipTip.astro';
+import FlattenedSteps from '../../components/FlattenedSteps.astro';
+import SpoilersIntro from "./include/_SpoilersIntro.mdx"
+import SpoilerIcon from "~icons/zulip-icon/spoiler"
+import SpoilersExamples from "./include/_SpoilersExamples.mdx"
+import StartComposing from "./include/_StartComposing.mdx"
+import { Tabs, TabItem } from '@astrojs/starlight/components'
+
+<SpoilersIntro />
+
+## Insert spoiler formatting
+
+<Tabs>
+  <TabItem label="Via compose box button">
+    <FlattenedSteps>
+      <StartComposing />
+
+      1. *(optional)* Select the text you want to hide inside the spoiler.
+      1. Click the **Spoiler** (<SpoilerIcon />)
+         icon at the bottom of the compose box to insert spoiler formatting.
+      1. Replace `Header` with the desired heading text.
+    </FlattenedSteps>
+
+    <ZulipTip>
+      You can also use the **Spoiler**
+      (<SpoilerIcon />) icon
+      to remove existing spoiler formatting from the selected text.
+    </ZulipTip>
+  </TabItem>
+
+  <TabItem label="Via Markdown">
+    <FlattenedSteps>
+      <StartComposing />
+
+      1. To create a spoiler section, use triple backticks and the word spoiler
+         (\`\`\`\`spoiler\`) followed by an optional spoiler heading, some text, and triple
+         backticks at the end:
+         ```spoiler The spoiler heading
+         This content is initially hidden.
+         ```
+    </FlattenedSteps>
+
+    <ZulipTip>
+      A message can contain both spoilers and other content, and you can combine
+      spoilers with other formatting.
+    </ZulipTip>
+  </TabItem>
+</Tabs>
+
+## Examples
+
+<SpoilersExamples />
+
+## Related articles
+
+* [Message formatting](/help/format-your-message-using-markdown)
+* [Preview messages before sending](/help/preview-your-message-before-sending)
+* [Resize the compose box](/help/resize-the-compose-box)

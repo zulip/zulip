@@ -1,0 +1,206 @@
+---
+title: Manage user groups
+---
+
+import NavigationSteps from "../../components/NavigationSteps.astro"
+import UserGroupsApplications from "./include/_UserGroupsApplications.mdx"
+import UserGroupsIntro from "./include/_UserGroupsIntro.mdx"
+import CloseIcon from "~icons/zulip-icon/close"
+import ZulipTip from '../../components/ZulipTip.astro';
+import FlattenedSteps from '../../components/FlattenedSteps.astro';
+import UserGroupEditIcon from "~icons/zulip-icon/user-group-edit"
+import SaveChanges from "./include/_SaveChanges.mdx"
+import RightSidebarViewProfile from "./include/_RightSidebarViewProfile.mdx"
+import AddUsersToAGroup from "./include/_AddUsersToAGroup.mdx"
+import CloudPaidPlansOnly from "./include/_CloudPaidPlansOnly.mdx"
+import HowToCreateAUserGroup from "./include/_HowToCreateAUserGroup.mdx"
+import UserSubgroupsIntro from "./include/_UserSubgroupsIntro.mdx"
+import { Tabs, TabItem } from '@astrojs/starlight/components'
+import ExpandBothDiagonalsIcon from "~icons/zulip-icon/expand-both-diagonals"
+import ZulipNote from '../../components/ZulipNote.astro';
+import AdminOnly from "./include/_AdminOnly.mdx"
+
+<CloudPaidPlansOnly />
+
+<UserGroupsIntro />
+
+<UserGroupsApplications />
+
+## Create a user group
+
+<ZulipTip>
+  You can modify the group's name, description, and other settings after it
+  has been created.
+</ZulipTip>
+
+<HowToCreateAUserGroup />
+
+## Change a user group's name or description
+
+<Tabs>
+  <TabItem label="Desktop/Web">
+    <FlattenedSteps>
+      <NavigationSteps target="relative/group/all" />
+
+      1. Select a user group.
+      1. Select the **General** tab on the right.
+      1. Click the **change group info** (<UserGroupEditIcon />)
+         icon to the right of the user group, and enter a new name or description.
+
+      <SaveChanges />
+    </FlattenedSteps>
+  </TabItem>
+</Tabs>
+
+## Configure group permissions
+
+<ZulipNote>
+  Guests can never administer user groups, add anyone else to a group, or remove
+  anyone else from a group, even if they belong to a group that has permissions
+  to do so.
+</ZulipNote>
+
+<ZulipTip>
+  Users who can add members to a group can always join the group.
+</ZulipTip>
+
+<Tabs>
+  <TabItem label="Desktop/Web">
+    <FlattenedSteps>
+      <NavigationSteps target="relative/group/all" />
+
+      1. Select a user group.
+      1. Select the **General** tab on the right.
+      1. Under **Group permissions**, configure **Who can administer this group**, **Who
+         can mention this group**, **Who can add members to this group**, **Who can remove
+         members from this group**, **Who can join this group**, and **Who can leave this group**.
+
+      <SaveChanges />
+    </FlattenedSteps>
+  </TabItem>
+</Tabs>
+
+## Add users to a group
+
+<AddUsersToAGroup />
+
+## Add user groups to a group
+
+<UserSubgroupsIntro />
+
+<Tabs>
+  <TabItem label="Desktop/Web">
+    <FlattenedSteps>
+      <NavigationSteps target="relative/group/all" />
+
+      1. Select a user group.
+      1. Select the **Members** tab on the right.
+      1. Under **Add members**, enter groups you want to add.
+      1. Click **Add**.
+    </FlattenedSteps>
+
+    <ZulipTip>
+      Click the <ExpandBothDiagonalsIcon /> icon
+      on a user group pill to add all the members of the group, rather than the
+      group itself.
+    </ZulipTip>
+  </TabItem>
+</Tabs>
+
+## Remove user or group from a group
+
+<Tabs>
+  <TabItem label="Via group settings">
+    <FlattenedSteps>
+      <NavigationSteps target="relative/group/all" />
+
+      1. Select a user group.
+      1. Select the **Members** tab on the right.
+      1. Under **Members**, find the user or group you would like to remove.
+      1. Click the **Remove** (<CloseIcon />) icon in that row. Zulip will notify everyone who is
+         removed from the group.
+    </FlattenedSteps>
+  </TabItem>
+
+  <TabItem label="Via user profile">
+    <FlattenedSteps>
+      <RightSidebarViewProfile />
+
+      1. Select the **User groups** tab.
+      1. Find the group you would like to remove the user from.
+      1. Click the **Remove** (<CloseIcon />) icon in that row.
+    </FlattenedSteps>
+  </TabItem>
+</Tabs>
+
+## Review and remove permissions assigned to a group
+
+You can review which permissions are assigned to a group, and remove permissions
+as needed.
+
+<Tabs>
+  <TabItem label="Desktop/Web">
+    <FlattenedSteps>
+      <NavigationSteps target="relative/group/all" />
+
+      1. Select a user group.
+      1. Select the **Permissions** tab on the right.
+      1. Toggle the checkboxes next to any permissions you'd like to remove.
+      1. Click **Save changes**.
+    </FlattenedSteps>
+  </TabItem>
+</Tabs>
+
+## Configure who can create user groups
+
+<AdminOnly />
+
+You can configure who can create groups in your organization. Guests can never
+create user groups, even if they belong to a group that has permissions to do
+so.
+
+<Tabs>
+  <TabItem label="Desktop/Web">
+    <FlattenedSteps>
+      <NavigationSteps target="settings/organization-permissions" />
+
+      1. Under **Group permissions**, configure **Who can create user groups**.
+
+      <SaveChanges />
+    </FlattenedSteps>
+  </TabItem>
+</Tabs>
+
+## Configure who can administer all user groups
+
+<AdminOnly />
+
+You can configure who can administer all user groups in your
+organization. Guests can never administer user groups, even if they
+belong to a group that has permissions to do so.
+
+In addition, you can [give users
+permission](#configure-group-permissions) to administer a specific
+group.
+
+<Tabs>
+  <TabItem label="Desktop/Web">
+    <FlattenedSteps>
+      <NavigationSteps target="settings/organization-permissions" />
+
+      1. Under **Group permissions**, configure **Who can administer all user groups**.
+
+      <SaveChanges />
+    </FlattenedSteps>
+  </TabItem>
+</Tabs>
+
+## Related articles
+
+* [User groups](/help/user-groups)
+* [View group members](/help/view-group-members)
+* [Mention a user or group](/help/mention-a-user-or-group)
+* [Create user groups](/help/create-user-groups)
+* [Deactivate a user group](/help/deactivate-a-user-group)
+* [Moving to Zulip](/help/moving-to-zulip)
+* [User roles](/help/user-roles)

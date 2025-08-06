@@ -1,0 +1,28 @@
+import AllMessagesIcon from "~icons/zulip-icon/all-messages"
+import { Steps } from '@astrojs/starlight/components';
+import GoToCombinedFeed from "./_GoToCombinedFeed.mdx"
+import FlattenedSteps from '../../../components/FlattenedSteps.astro';
+import { Tabs, TabItem } from '@astrojs/starlight/components'
+
+The **Combined feed** view is a feed of all the unmuted messages you have
+received, which combines channel messages and direct messages. It's a great way
+to see new messages as they come in.
+
+You can configure **Combined feed** to be the [home
+view](/help/configure-home-view#configure-home-view) for the Zulip web app.
+
+<Tabs>
+  <TabItem label="Desktop/Web">
+    <FlattenedSteps>
+      <GoToCombinedFeed />
+    </FlattenedSteps>
+  </TabItem>
+
+  <TabItem label="Mobile">
+    <Steps>
+      1. Tap the **Combined feed**
+         (<AllMessagesIcon />)
+         tab at the bottom of the app.
+    </Steps>
+  </TabItem>
+</Tabs>

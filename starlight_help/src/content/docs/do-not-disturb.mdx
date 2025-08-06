@@ -1,0 +1,60 @@
+---
+title: Do Not Disturb
+---
+
+import ZulipNote from '../../components/ZulipNote.astro';
+import BellIcon from "~icons/fa/bell"
+import { Steps } from '@astrojs/starlight/components';
+import DesktopToggleSidebarTip from "./include/_DesktopToggleSidebarTip.mdx"
+import BellSlashIcon from "~icons/fa/bell-slash"
+import { Tabs, TabItem } from '@astrojs/starlight/components'
+
+The Zulip desktop app offers a **Do Not Disturb (DND)** mode. Turning on **Do Not
+Disturb** mode disables [desktop notifications](/help/desktop-notifications)
+across all the organizations you have
+[added](/help/logging-in#log-in-to-a-new-organization) to the Zulip desktop app.
+This can be convenient for avoiding interruptions during a meeting, or when you need
+time to focus on your work.
+
+<ZulipNote>
+  Other types of notifications will not be affected, including [mobile
+  notifications](/help/mobile-notifications), [email
+  notifications](/help/email-notifications), and [desktop
+  notifications](/help/desktop-notifications) in the Zulip web app.
+</ZulipNote>
+
+## Toggle Do Not Disturb
+
+<Tabs>
+  <TabItem label="Desktop">
+    <Steps>
+      1. Click the **bell** (<BellIcon />) or **bell with a slash** (<BellSlashIcon />) icon in the **organizations sidebar** on the
+         left. You can also select **Toggle Do Not Disturb** from the **Zulip** menu in
+         the top menu bar.
+    </Steps>
+
+    <DesktopToggleSidebarTip />
+  </TabItem>
+</Tabs>
+
+## Check whether Do Not Disturb is enabled
+
+<Tabs>
+  <TabItem label="Desktop">
+    <Steps>
+      1. If the **organizations sidebar** on the left shows a **bell** (<BellIcon />) icon, **Do Not Disturb** is disabled. If the **organizations
+         sidebar** on the left shows a **bell with a slash** (<BellSlashIcon />) icon, **Do Not Disturb** is enabled, and you are not
+         receiving desktop notifications.
+    </Steps>
+
+    <DesktopToggleSidebarTip />
+  </TabItem>
+</Tabs>
+
+## Related articles
+
+* [Desktop notifications](/help/desktop-notifications)
+* [DMs, mentions, and alerts](/help/dm-mention-alert-notifications)
+* [Channel notifications](/help/channel-notifications)
+* [Email notifications](/help/email-notifications)
+* [Mobile notifications](/help/mobile-notifications)

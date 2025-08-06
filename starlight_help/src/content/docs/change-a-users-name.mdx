@@ -1,0 +1,55 @@
+---
+title: Change a user's name
+---
+
+import NavigationSteps from "../../components/NavigationSteps.astro"
+import FlattenedSteps from '../../components/FlattenedSteps.astro';
+import SaveChanges from "./include/_SaveChanges.mdx"
+import ManageUserTabTip from "./include/_ManageUserTabTip.mdx"
+import ManageThisUser from "./include/_ManageThisUser.mdx"
+import UserCogIcon from "~icons/zulip-icon/user-cog"
+import { Tabs, TabItem } from '@astrojs/starlight/components'
+import AdminOnly from "./include/_AdminOnly.mdx"
+
+<AdminOnly />
+
+By default, users can [change their name](/help/change-your-name), though
+organization administrators can
+[restrict name changes](/help/restrict-name-and-email-changes).
+
+Organization administrators can always change any user's name.
+
+## Change a user's name
+
+<Tabs>
+  <TabItem label="Via user profile">
+    <FlattenedSteps>
+      <ManageThisUser />
+
+      1. Under **Name**, enter a new name.
+
+      <SaveChanges />
+    </FlattenedSteps>
+
+    <ManageUserTabTip />
+  </TabItem>
+
+  <TabItem label="Via organization settings">
+    <FlattenedSteps>
+      <NavigationSteps target="settings/users" />
+
+      1. Find the user you would like to manage. Click the
+         **manage user** (<UserCogIcon />) icon
+         to the right of their name.
+      1. Under **Name**, enter a new name.
+
+      <SaveChanges />
+    </FlattenedSteps>
+  </TabItem>
+</Tabs>
+
+## Related articles
+
+* [Change a user's role](/help/user-roles#change-a-users-role)
+* [Deactivate or reactivate a user](/help/deactivate-or-reactivate-a-user)
+* [Manage a user](/help/manage-a-user)

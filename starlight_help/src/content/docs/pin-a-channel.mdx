@@ -1,0 +1,88 @@
+---
+title: Pin a channel
+---
+
+import NavigationSteps from "../../components/NavigationSteps.astro"
+import FlattenedSteps from '../../components/FlattenedSteps.astro';
+import SelectChannelViewPersonal from "./include/_SelectChannelViewPersonal.mdx"
+import ChannelActions from "./include/_ChannelActions.mdx"
+import { Tabs, TabItem } from '@astrojs/starlight/components'
+
+You can [pin channels](/help/pin-a-channel) that you want to pay close attention
+to. Pinned channels appear in a dedicated **pinned channels** section above
+[channel folders](/help/channel-folders) in the [left
+sidebar](/help/left-sidebar) and the [**Inbox**](/help/inbox) view.
+
+## Pin a channel
+
+<Tabs>
+  <TabItem label="Via left sidebar">
+    <FlattenedSteps>
+      <ChannelActions />
+
+      1. Click **Pin channel to top**.
+    </FlattenedSteps>
+  </TabItem>
+
+  <TabItem label="Via channel settings">
+    <FlattenedSteps>
+      <NavigationSteps target="relative/gear/channel-settings" />
+
+      1. Select a channel.
+
+      <SelectChannelViewPersonal />
+
+      1. Under **Personal settings**, toggle **Pin channel to top of left sidebar**.
+    </FlattenedSteps>
+  </TabItem>
+
+  <TabItem label="Mobile">
+    Access this feature by following the web app instructions in your
+    mobile device browser.
+
+    Implementation of this feature in the mobile app is tracked [on
+    GitHub](https://github.com/zulip/zulip-flutter/issues/1223). If
+    you're interested in this feature, please react to the issue's
+    description with 👍.
+  </TabItem>
+</Tabs>
+
+## Unpin a channel
+
+<Tabs>
+  <TabItem label="Via left sidebar">
+    <FlattenedSteps>
+      <ChannelActions />
+
+      1. Click **Unpin channel from top**.
+    </FlattenedSteps>
+  </TabItem>
+
+  <TabItem label="Via channel settings">
+    <FlattenedSteps>
+      <NavigationSteps target="relative/gear/channel-settings" />
+
+      1. Select a channel.
+
+      <SelectChannelViewPersonal />
+
+      1. Under **Personal settings**, toggle **Pin channel to top of left sidebar**.
+    </FlattenedSteps>
+  </TabItem>
+
+  <TabItem label="Mobile">
+    Access this feature by following the web app instructions in your
+    mobile device browser.
+
+    Implementation of this feature in the mobile app is tracked [on
+    GitHub](https://github.com/zulip/zulip-flutter/issues/1223). If
+    you're interested in this feature, please react to the issue's
+    description with 👍.
+  </TabItem>
+</Tabs>
+
+## Related articles
+
+* [Introduction to channels](/help/introduction-to-channels)
+* [Mute or unmute a channel](/help/mute-a-channel)
+* [Channel folders](/help/channel-folders)

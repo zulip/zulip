@@ -1,0 +1,109 @@
+---
+title: Text emphasis
+---
+
+import FlattenedSteps from '../../components/FlattenedSteps.astro';
+import StrikethroughIcon from "~icons/zulip-icon/strikethrough"
+import BoldIcon from "~icons/zulip-icon/bold"
+import EmphasisExamples from "./include/_EmphasisExamples.mdx"
+import KeyboardTip from '../../components/KeyboardTip.astro';
+import StartComposing from "./include/_StartComposing.mdx"
+import ItalicIcon from "~icons/zulip-icon/italic"
+import EmphasisIntro from "./include/_EmphasisIntro.mdx"
+import { Tabs, TabItem } from '@astrojs/starlight/components'
+
+<EmphasisIntro />
+
+## Making text bold
+
+<Tabs>
+  <TabItem label="Via compose box button">
+    <FlattenedSteps>
+      <StartComposing />
+
+      1. Select the text you want to format.
+      1. Click the **Bold** (<BoldIcon />) icon at the
+         bottom of the compose box.
+    </FlattenedSteps>
+
+    <KeyboardTip>
+      You can also use <kbd>Ctrl</kbd> + <kbd>B</kbd> to insert bold formatting.
+    </KeyboardTip>
+  </TabItem>
+
+  <TabItem label="Via Markdown">
+    <FlattenedSteps>
+      <StartComposing />
+
+      1. To make text bold, use double asterisks (`**`) around the text: `**text**`.
+    </FlattenedSteps>
+
+    <KeyboardTip>
+      You can also use <kbd>Ctrl</kbd> + <kbd>B</kbd> to insert bold formatting.
+    </KeyboardTip>
+  </TabItem>
+</Tabs>
+
+## Making text italic
+
+<Tabs>
+  <TabItem label="Via compose box button">
+    <FlattenedSteps>
+      <StartComposing />
+
+      1. Select the text you want to format.
+      1. Click the **Italic** (<ItalicIcon />) icon at
+         the bottom of the compose box.
+    </FlattenedSteps>
+
+    <KeyboardTip>
+      You can also use <kbd>Ctrl</kbd> + <kbd>I</kbd> to insert italic formatting.
+    </KeyboardTip>
+  </TabItem>
+
+  <TabItem label="Via Markdown">
+    <FlattenedSteps>
+      <StartComposing />
+
+      1. To make text italic, use single asterisks (`*`) around the text: `*text*`.
+    </FlattenedSteps>
+
+    <KeyboardTip>
+      You can also use <kbd>Ctrl</kbd> + <kbd>I</kbd> to insert italic formatting.
+    </KeyboardTip>
+  </TabItem>
+</Tabs>
+
+## Applying strikethrough formatting
+
+<Tabs>
+  <TabItem label="Via compose box button">
+    <FlattenedSteps>
+      <StartComposing />
+
+      1. Select the text you want to format.
+      1. Click the **Strikethrough**
+         (<StrikethroughIcon />) icon at the
+         bottom of the compose box.
+    </FlattenedSteps>
+  </TabItem>
+
+  <TabItem label="Via Markdown">
+    <FlattenedSteps>
+      <StartComposing />
+
+      1. To apply strikethrough formatting, use two tildes (`~~`) around the text:
+         `~~text~~`.
+    </FlattenedSteps>
+  </TabItem>
+</Tabs>
+
+## Examples
+
+<EmphasisExamples />
+
+## Related articles
+
+* [Message formatting](/help/format-your-message-using-markdown)
+* [Preview messages before sending](/help/preview-your-message-before-sending)
+* [Resize the compose box](/help/resize-the-compose-box)

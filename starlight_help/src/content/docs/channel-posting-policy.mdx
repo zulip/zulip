@@ -1,0 +1,35 @@
+---
+title: Channel posting policy
+---
+
+import NavigationSteps from "../../components/NavigationSteps.astro"
+import FlattenedSteps from '../../components/FlattenedSteps.astro';
+import AutomatedNoticeChannelEvent from "./include/_AutomatedNoticeChannelEvent.mdx"
+import SaveChanges from "./include/_SaveChanges.mdx"
+import SelectChannelViewGeneralAdvanced from "./include/_SelectChannelViewGeneralAdvanced.mdx"
+
+You can restrict who can send messages to a channel. For example,
+you can set up an announcement channel where only a specific
+[group](/help/user-groups) of users can send messages.
+
+<FlattenedSteps>
+  <NavigationSteps target="relative/channel/all" />
+
+  1. Select a channel.
+
+  <SelectChannelViewGeneralAdvanced />
+
+  1. Under **Messaging permissions**, configure **Who can post to this channel**.
+
+  <SaveChanges />
+</FlattenedSteps>
+
+<AutomatedNoticeChannelEvent />
+
+## Related articles
+
+* [Channel permissions](/help/channel-permissions)
+* [User roles](/help/user-roles)
+* [User groups](/help/user-groups)
+* [Set default channels for new users](/help/set-default-channels-for-new-users)
+* [Configure who can administer a channel](/help/configure-who-can-administer-a-channel)

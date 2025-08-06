@@ -1,0 +1,59 @@
+---
+title: Numbered lists
+---
+
+import NumberedListsIntro from "./include/_NumberedListsIntro.mdx"
+import ZulipTip from '../../components/ZulipTip.astro';
+import FlattenedSteps from '../../components/FlattenedSteps.astro';
+import NumberedListsExamples from "./include/_NumberedListsExamples.mdx"
+import OrderedListIcon from "~icons/zulip-icon/ordered-list"
+import StartComposing from "./include/_StartComposing.mdx"
+import { Tabs, TabItem } from '@astrojs/starlight/components'
+
+<NumberedListsIntro />
+
+## Create a numbered list
+
+<Tabs>
+  <TabItem label="Via compose box button">
+    <FlattenedSteps>
+      <StartComposing />
+
+      1. *(optional)* Select the text you want to format.
+      1. Click the **Numbered list**
+         (<OrderedListIcon />) icon at the
+         bottom of the compose box to insert list formatting.
+      1. Press <kbd>Enter</kbd> to automatically add a new number to the list.
+      1. When your list is done, press <kbd>Enter</kbd> a second time to remove the
+         number.
+    </FlattenedSteps>
+
+    <ZulipTip>
+      You can also use the **Numbered list**
+      (<OrderedListIcon />) icon
+      to remove existing list formatting from the current line or selected text.
+    </ZulipTip>
+  </TabItem>
+
+  <TabItem label="Via Markdown">
+    <FlattenedSteps>
+      <StartComposing />
+
+      1. Type a number followed by a `.` and some text to start a numbered list.
+      1. Press <kbd>Enter</kbd> to automatically add a new number to the list.
+      1. When your list is done, press <kbd>Enter</kbd> a second time to remove the
+         number.
+    </FlattenedSteps>
+  </TabItem>
+</Tabs>
+
+## Examples
+
+<NumberedListsExamples />
+
+## Related articles
+
+* [Message formatting](/help/format-your-message-using-markdown)
+* [Preview messages before sending](/help/preview-your-message-before-sending)
+* [Resize the compose box](/help/resize-the-compose-box)
+* [Bulleted lists](/help/bulleted-lists)

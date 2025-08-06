@@ -1,0 +1,69 @@
+---
+title: Configure who can subscribe other users to channels
+---
+
+import NavigationSteps from "../../components/NavigationSteps.astro"
+import ContentAccessDefinition from "./include/_ContentAccessDefinition.mdx"
+import FlattenedSteps from '../../components/FlattenedSteps.astro';
+import SaveChanges from "./include/_SaveChanges.mdx"
+import SelectChannelViewGeneralAdvanced from "./include/_SelectChannelViewGeneralAdvanced.mdx"
+import AdminOnly from "./include/_AdminOnly.mdx"
+
+You can configure who can subscribe other users to channels. If you have
+permission to subscribe users [to a specific
+channel](#configure-who-can-subscribe-anyone-to-a-specific-channel), you can
+always do so, whether or not you're subscribed yourself.
+
+There is also a [general
+permission](#configure-who-can-subscribe-others-to-channels-in-general), which
+allows subscribing others to all [public
+channels](/help/channel-permissions#public-channels). For [private
+channels](/help/channel-permissions#private-channels), you additionally need to
+have content access to the channel in order to use this permission. Users have
+content access if:
+
+<ContentAccessDefinition />
+
+[Guests](/help/guest-users) are never permitted to subscribe others.
+
+## Configure who can subscribe others to channels in general
+
+<AdminOnly />
+
+<FlattenedSteps>
+  <NavigationSteps target="settings/organization-permissions" />
+
+  1. Under **Channel permissions**, configure **Who can subscribe others to channels**.
+
+  <SaveChanges />
+</FlattenedSteps>
+
+## Configure who can subscribe anyone to a specific channel
+
+If you have permission to administer a public channel, you can configure who can
+subscribe anyone to it. For [private
+channels](/help/channel-permissions#private-channels), you additionally need to
+have content access in order to change this configuration.
+
+<FlattenedSteps>
+  <NavigationSteps target="relative/channel/all" />
+
+  1. Select a channel.
+
+  <SelectChannelViewGeneralAdvanced />
+
+  1. Under **Subscription permissions**, configure **Who can subscribe anyone to
+     this channel**.
+
+  <SaveChanges />
+</FlattenedSteps>
+
+## Related articles
+
+* [Channel permissions](/help/channel-permissions)
+* [User roles](/help/user-roles)
+* [User groups](/help/user-groups)
+* [Configure who can subscribe to a channel](/help/configure-who-can-subscribe)
+* [Configure who can unsubscribe anyone from a channel](/help/configure-who-can-unsubscribe-others)
+* [Subscribe users to a channel](/help/subscribe-users-to-a-channel)
+* [Unsubscribe users from a channel](/help/unsubscribe-users-from-a-channel)

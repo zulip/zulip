@@ -1,0 +1,76 @@
+---
+title: Restrict name and email changes
+---
+
+import NavigationSteps from "../../components/NavigationSteps.astro"
+import ZulipTip from '../../components/ZulipTip.astro';
+import FlattenedSteps from '../../components/FlattenedSteps.astro';
+import SaveChanges from "./include/_SaveChanges.mdx"
+import AdminOnly from "./include/_AdminOnly.mdx"
+
+<AdminOnly />
+
+## Restrict name changes
+
+By default, any user can [change their name](/help/change-your-name).
+You can instead prevent users from changing their name. This setting is
+especially useful if user names are managed via an external source, and
+synced into Zulip via the [Zulip API](/api/), [LDAP][ldap-sync-data] or
+another method.
+
+<ZulipTip>
+  Organization administrators can always [change anyone's
+  name](/help/change-a-users-name).
+</ZulipTip>
+
+<FlattenedSteps>
+  <NavigationSteps target="settings/organization-permissions" />
+
+  1. Under **User identity**, select **Prevent users from changing their
+     name**.
+
+  <SaveChanges />
+</FlattenedSteps>
+
+## Restrict email changes
+
+By default, any user can [change their email address][change-email].
+However, you can instead prevent users from changing their email
+address. This setting is especially useful for organizations that
+are using [LDAP][ldap-sync-data] or another single sign-on solution
+to manage user emails.
+
+<ZulipTip>
+  Organization administrators can always change their own email
+  address.
+</ZulipTip>
+
+<FlattenedSteps>
+  <NavigationSteps target="settings/organization-permissions" />
+
+  1. Under **User identity**, select **Prevent users from changing their
+     email address**.
+
+  <SaveChanges />
+</FlattenedSteps>
+
+## Require unique names
+
+You can require users to choose unique names when joining your organization, or
+changing their name. This helps prevent accidental creation of duplicate
+accounts, and makes it harder to impersonate other users.
+
+When you turn on this setting, users who already have non-unique names are not
+required to change their name.
+
+<FlattenedSteps>
+  <NavigationSteps target="settings/organization-permissions" />
+
+  1. Under **User identity**, select **Require unique names**.
+
+  <SaveChanges />
+</FlattenedSteps>
+
+[change-email]: /help/change-your-email-address
+
+[ldap-sync-data]: https://zulip.readthedocs.io/en/stable/production/authentication-methods.html#synchronizing-data

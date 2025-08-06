@@ -1,0 +1,110 @@
+---
+title: Read receipts
+---
+
+import NavigationSteps from "../../components/NavigationSteps.astro"
+import ZulipTip from '../../components/ZulipTip.astro';
+import FlattenedSteps from '../../components/FlattenedSteps.astro';
+import SaveChanges from "./include/_SaveChanges.mdx"
+import MessageLongPressMenu from "./include/_MessageLongPressMenu.mdx"
+import KeyboardTip from '../../components/KeyboardTip.astro';
+import MessageActionsMenu from "./include/_MessageActionsMenu.mdx"
+import { Tabs, TabItem } from '@astrojs/starlight/components'
+import AdminOnly from "./include/_AdminOnly.mdx"
+
+Read receipts let you check who has read a message. You can see read receipts
+for any message, including both [channel messages](/help/introduction-to-channels)
+and [direct messages](/help/direct-messages).
+
+With privacy in mind, Zulip lets you [control][configure-personal-read-receipts]
+whether your read receipts are shared, and administrators can
+[choose][configure-organization-read-receipts] whether to enable read receipts in
+their organization.
+
+<ZulipTip>
+  Read receipts reflect whether or not someone has marked a message as read,
+  whether by viewing it, or [by marking messages as read in
+  bulk](/help/marking-messages-as-read).
+</ZulipTip>
+
+## View who has read a message
+
+<Tabs>
+  <TabItem label="Desktop/Web">
+    <FlattenedSteps>
+      <MessageActionsMenu />
+
+      1. Click **View read receipts**.
+    </FlattenedSteps>
+
+    <KeyboardTip>
+      You can also use <kbd>Shift</kbd> + <kbd>V</kbd> to show or hide read receipts
+      for the selected message.
+    </KeyboardTip>
+  </TabItem>
+
+  <TabItem label="Mobile">
+    <FlattenedSteps>
+      <MessageLongPressMenu />
+
+      1. Tap **View read receipts**.
+    </FlattenedSteps>
+  </TabItem>
+</Tabs>
+
+<ZulipTip>
+  In addition to a list of names, you will see how many people have read
+  the message.
+</ZulipTip>
+
+## Configure whether Zulip lets others see when you've read messages
+
+Zulip supports the privacy option of never sharing whether or not you have read
+a message. If this setting is turned off, your name will never appear in the
+list of read receipts.
+
+<FlattenedSteps>
+  <NavigationSteps target="settings/account-and-privacy" />
+
+  1. Under **Privacy**, toggle **Let others see when I've read messages**.
+</FlattenedSteps>
+
+## Configure read receipts for your organization
+
+<AdminOnly />
+
+You can configure:
+
+* Whether read receipts are enabled in your organization.
+* Whether new users will allow others to view read receipts by default. (Note
+  that users [can always change this setting][configure-personal-read-receipts]
+  once they join.)
+
+### Configure whether read receipts are enabled in your organization
+
+<FlattenedSteps>
+  <NavigationSteps target="settings/organization-settings" />
+
+  1. Under **Message feed settings**, toggle **Enable read receipts**.
+
+  <SaveChanges />
+</FlattenedSteps>
+
+### Configure default read receipt sharing settings for new users
+
+<FlattenedSteps>
+  <NavigationSteps target="settings/default-user-settings" />
+
+  1. Under **Privacy settings**, toggle **Allow other users to view read receipts**.
+</FlattenedSteps>
+
+## Related articles
+
+* [Status and availability](/help/status-and-availability)
+* [Typing notifications](/help/typing-notifications)
+* [Marking messages as read](/help/marking-messages-as-read)
+* [Marking messages as unread](/help/marking-messages-as-unread)
+
+[configure-personal-read-receipts]: /help/read-receipts#configure-whether-zulip-lets-others-see-when-youve-read-messages
+
+[configure-organization-read-receipts]: /help/read-receipts#configure-whether-read-receipts-are-enabled-in-your-organization

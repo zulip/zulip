@@ -1,0 +1,75 @@
+---
+title: Inbox
+---
+
+import ZulipTip from '../../components/ZulipTip.astro';
+import FlattenedSteps from '../../components/FlattenedSteps.astro';
+import InboxInstructions from "./include/_InboxInstructions.mdx"
+import ConversationDefinition from "./include/_ConversationDefinition.mdx"
+import KeyboardTip from '../../components/KeyboardTip.astro';
+import InboxIntro from "./include/_InboxIntro.mdx"
+import GoToInbox from "./include/_GoToInbox.mdx"
+import { Tabs, TabItem } from '@astrojs/starlight/components'
+
+<ConversationDefinition />
+
+<InboxIntro />
+
+Inbox is a convenient [home view](/help/configure-home-view) if you
+regularly clear all unread messages in your subscribed channels.
+
+<ZulipTip>
+  To find recent conversations with no unread messages, use the [recent
+  conversations](/help/recent-conversations) view instead.
+</ZulipTip>
+
+## Use your inbox
+
+<InboxInstructions />
+
+<KeyboardTip>
+  The arrow keys and vim navigation keys (<kbd>J</kbd>, <kbd>K</kbd>,
+  <kbd>L</kbd>, <kbd>H</kbd>) can be used to move between elements.
+</KeyboardTip>
+
+## Filter conversations
+
+### Filter by topic status
+
+In the web app, you can control whether the **Inbox** includes all topics, just
+[unmuted](/help/mute-a-topic) topics, or only topics you
+[follow](/help/follow-a-topic).
+
+<Tabs>
+  <TabItem label="Desktop/Web">
+    <FlattenedSteps>
+      <GoToInbox />
+
+      1. Select **All topics**, **Standard view**, or **Followed topics** from
+         the dropdown in the upper left of the **inbox** view.
+    </FlattenedSteps>
+  </TabItem>
+</Tabs>
+
+### Filter by keyword
+
+<Tabs>
+  <TabItem label="Desktop/Web">
+    <FlattenedSteps>
+      <GoToInbox />
+
+      1. Use the **Filter** box at the top to find a conversation.
+         You can filter by channel, topic, or direct message participants.
+    </FlattenedSteps>
+  </TabItem>
+</Tabs>
+
+## Related articles
+
+* [Reading strategies](/help/reading-strategies)
+* [Recent conversations](/help/recent-conversations)
+* [List of topics in a channel](/help/list-of-topics)
+* [Combined feed](/help/combined-feed)
+* [Mute or unmute a channel](/help/mute-a-channel)
+* [Mute or unmute a topic](/help/mute-a-topic)
+* [Introduction to channels](/help/introduction-to-channels)

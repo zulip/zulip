@@ -1,0 +1,170 @@
+---
+title: Share and upload files
+---
+
+import MobileCameraIcon from "~icons/zulip-icon/mobile-camera"
+import ModifyLinkText from "./include/_ModifyLinkText.mdx"
+import ZulipTip from '../../components/ZulipTip.astro';
+import FlattenedSteps from '../../components/FlattenedSteps.astro';
+import MobileImageIcon from "~icons/zulip-icon/mobile-image"
+import AttachmentIcon from "~icons/zulip-icon/attachment"
+import { Steps } from '@astrojs/starlight/components';
+import StartComposing from "./include/_StartComposing.mdx"
+import { Tabs, TabItem } from '@astrojs/starlight/components'
+
+Zulip supports attaching multiple files to messages, including images,
+documents, sound, and video. You can edit the names of the files others see
+after you [upload](#uploading-files) or
+[share](#sharing-files-from-other-mobile-apps) them.
+
+For images and videos, a small preview will be shown directly in the message, if
+there are up to 24 attachments. People reading the message can click on the
+preview to [view the full-size image or video](/help/view-images-and-videos).
+
+## Uploading files
+
+<Tabs>
+  <TabItem label="Via drag-and-drop">
+    <FlattenedSteps>
+      1. Drag and drop one or more files anywhere in the Zulip app,
+         whether or not the compose box is open.
+         Zulip will upload the files, and insert named links using
+         [Markdown formatting](/help/format-your-message-using-markdown#links):
+         `[Link text](URL)`.
+
+      <ModifyLinkText />
+    </FlattenedSteps>
+
+    <ZulipTip>
+      You can [preview the message](/help/preview-your-message-before-sending)
+      before sending to see what your uploaded files will look like.
+    </ZulipTip>
+  </TabItem>
+
+  <TabItem label="Via paste">
+    <FlattenedSteps>
+      <StartComposing />
+
+      1. Copy and paste one or more files into the compose box.
+         Zulip will upload the files, and insert named links using
+         [Markdown formatting](/help/format-your-message-using-markdown#links):
+         `[Link text](URL)`.
+
+      <ModifyLinkText />
+    </FlattenedSteps>
+
+    <ZulipTip>
+      You can [preview the message](/help/preview-your-message-before-sending)
+      before sending to see what your uploaded files will look like.
+    </ZulipTip>
+  </TabItem>
+
+  <TabItem label="Via compose box button">
+    <FlattenedSteps>
+      <StartComposing />
+
+      1. Click the **paperclip** (<AttachmentIcon />)
+         icon at the bottom of the compose box to select one or more files.
+         Zulip will upload the files, and insert named links using
+         [Markdown formatting](/help/format-your-message-using-markdown#links):
+         `[Link text](URL)`.
+
+      <ModifyLinkText />
+    </FlattenedSteps>
+
+    <ZulipTip>
+      You can [preview the message](/help/preview-your-message-before-sending)
+      before sending to see what your uploaded files will look like.
+    </ZulipTip>
+  </TabItem>
+
+  <TabItem label="Mobile">
+    <FlattenedSteps>
+      1. Navigate to a channel, topic, or direct message view.
+      1. Tap the
+         **paperclip** (<AttachmentIcon />),
+         **image** (<MobileImageIcon />),
+         or **camera** (<MobileCameraIcon />)
+         button at the bottom of the app to select one or more files. Zulip will
+         upload the files, and insert named links using
+         [Markdown formatting](/help/format-your-message-using-markdown#links):
+         `[Link text](URL)`.
+
+      <ModifyLinkText />
+    </FlattenedSteps>
+  </TabItem>
+</Tabs>
+
+## Sharing files from other mobile apps
+
+<Tabs>
+  <TabItem label="Android">
+    <Steps>
+      1. In another mobile app, select text or one or more files, and tap the
+         **share** button.
+      1. Tap the **Zulip** (<img src="/static/images/logo/zulip-icon-circle.svg" alt="logo" class="help-center-icon" />) logo to share to Zulip.
+      1. To send a channel message, select a channel and type a topic name.
+         To send a direct message, tap the **Direct message** tab, and choose
+         an existing direct message conversation or tap the **New DM** button
+         at the bottom of the screen and select message recipients.
+      1. *(optional)* Write a message.
+      1. Tap the **Send** button.
+    </Steps>
+  </TabItem>
+
+  <TabItem label="iOS">
+    Implementation of this feature for the IOS version of the mobile app is
+    tracked [on GitHub](https://github.com/zulip/zulip-flutter/issues/54).
+    If you're interested in this feature, please react to the issue's
+    description with 👍.
+  </TabItem>
+</Tabs>
+
+## Convert pasted to text to a file
+
+When pasting a large amount of text, you can convert it to a text file upload.
+
+<Tabs>
+  <TabItem label="Desktop/Web">
+    <Steps>
+      1. Paste a large amount of text into the compose box (2,000+ characters).
+      1. In the banner above the compose box, click **Yes, convert** to convert the
+         pasted text to a file.
+    </Steps>
+  </TabItem>
+</Tabs>
+
+## Named file example
+
+### What you type
+
+```
+[A whale of a good time](https://your.zulip.domain/user_uploads/1/46/IPvysqXEtiTG1ZdNBrwAZODi/whale-time.png)
+```
+
+### What it looks like
+
+![Markdown image](../../../../static/images/help/markdown-image.png)
+
+## File upload limits
+
+The Zulip Cloud Standard and Zulip Cloud Plus
+[plans](https://zulip.com/plans/#cloud) include 5 GB of file storage per user.
+Each uploaded file can be up to 1 GB.
+
+The Zulip Cloud Free [plan](https://zulip.com/plans/#cloud) includes a total of
+5 GB of file storage. Each uploaded file can be up to 10 MB.
+
+In organizations on a self-hosted server, server administrators can configure
+the maximum size for uploaded files via the `MAX_FILE_UPLOAD_SIZE`
+[server setting][system-settings]. Setting it to 0 disables file uploads, and
+hides the UI for uploading files from the web and desktop apps.
+
+[system-settings]: https://zulip.readthedocs.io/en/stable/production/settings.html
+
+## Related articles
+
+* [Manage your uploaded files](/help/manage-your-uploaded-files)
+* [View images and videos](/help/view-images-and-videos)
+* [Image, video and website previews](/help/image-video-and-website-previews)
+* [Animated GIFs](/help/animated-gifs-from-giphy)

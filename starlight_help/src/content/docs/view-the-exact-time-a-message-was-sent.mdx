@@ -1,0 +1,29 @@
+---
+title: View the exact time a message was sent
+---
+
+import { Steps } from '@astrojs/starlight/components';
+import { Tabs, TabItem } from '@astrojs/starlight/components'
+import MessageLongPressMenu from "./include/_MessageLongPressMenu.mdx"
+import FlattenedSteps from '../../components/FlattenedSteps.astro';
+
+<Tabs>
+  <TabItem label="Desktop/Web">
+    <Steps>
+      1. Hover over the timestamp to the right of the message.
+    </Steps>
+  </TabItem>
+
+  <TabItem label="Mobile">
+    <FlattenedSteps>
+      <MessageLongPressMenu />
+
+      1. The timestamp will be at the top right of the menu.
+    </FlattenedSteps>
+  </TabItem>
+</Tabs>
+
+## Related articles
+
+* [Change the time format](/help/change-the-time-format)
+* [Message actions](/help/message-actions)

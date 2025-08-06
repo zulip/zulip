@@ -1,0 +1,64 @@
+---
+title: Manage a user's group membership
+---
+
+import NavigationSteps from "../../components/NavigationSteps.astro"
+import CloseIcon from "~icons/zulip-icon/close"
+import FlattenedSteps from '../../components/FlattenedSteps.astro';
+import RightSidebarViewProfile from "./include/_RightSidebarViewProfile.mdx"
+import AddUsersToAGroup from "./include/_AddUsersToAGroup.mdx"
+import DependsOnPermissions from "./include/_DependsOnPermissions.mdx"
+import { Tabs, TabItem } from '@astrojs/starlight/components'
+
+## View a user's group membership
+
+<FlattenedSteps>
+  <RightSidebarViewProfile />
+
+  1. Select the **User groups** tab.
+</FlattenedSteps>
+
+## Add a user to a group
+
+<DependsOnPermissions />
+
+<AddUsersToAGroup />
+
+## Remove user or group from a group
+
+<DependsOnPermissions />
+
+<Tabs>
+  <TabItem label="Via group settings">
+    <FlattenedSteps>
+      <NavigationSteps target="relative/group/all" />
+
+      1. Select a user group.
+      1. Select the **Members** tab on the right.
+      1. Under **Members**, find the user or group you would like to remove.
+      1. Click the **Remove** (<CloseIcon />) icon in that row. Zulip will notify everyone who is
+         removed from the group.
+    </FlattenedSteps>
+  </TabItem>
+
+  <TabItem label="Via user profile">
+    <FlattenedSteps>
+      <RightSidebarViewProfile />
+
+      1. Select the **User groups** tab.
+      1. Find the group you would like to remove the user from.
+      1. Click the **Remove** (<CloseIcon />) icon in that row. Zulip will notify the user about the
+         groups they've been removed from.
+    </FlattenedSteps>
+  </TabItem>
+</Tabs>
+
+## Related articles
+
+* [User groups](/help/user-groups)
+* [Manage user groups](/help/user-groups)
+* [Mention a user or group](/help/mention-a-user-or-group)
+* [Create user groups](/help/create-user-groups)
+* [User roles](/help/user-roles)
+
+[configure-invites]: /help/configure-who-can-invite-to-channels

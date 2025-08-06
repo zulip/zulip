@@ -1,0 +1,50 @@
+---
+title: Configure email visibility
+---
+
+import NavigationSteps from "../../components/NavigationSteps.astro"
+import FlattenedSteps from '../../components/FlattenedSteps.astro';
+import { Steps } from '@astrojs/starlight/components';
+import { Tabs, TabItem } from '@astrojs/starlight/components'
+import AdminOnly from "./include/_AdminOnly.mdx"
+
+With privacy in mind, Zulip lets you control which
+[roles](/help/user-roles) in the organization can view your email
+address. Administrators can set the default email visibility configuration
+for new users in the organization.
+
+## Configure who can access your email address
+
+<Tabs>
+  <TabItem label="On sign-up">
+    <Steps>
+      1. After confirming your email, click **Change** below your email address.
+      1. Configure **Who can access your email address**.
+      1. Click **Confirm** to apply your changes, and continue the account registration
+         process.
+    </Steps>
+  </TabItem>
+
+  <TabItem label="Desktop/Web">
+    <FlattenedSteps>
+      <NavigationSteps target="settings/account-and-privacy" />
+
+      1. Under **Privacy**, configure **Who can access your email address**.
+    </FlattenedSteps>
+  </TabItem>
+</Tabs>
+
+## Configure default email visibility for new users
+
+<AdminOnly />
+
+<FlattenedSteps>
+  <NavigationSteps target="settings/default-user-settings" />
+
+  1. Under **Privacy settings**, configure **Who can access user's email address**.
+</FlattenedSteps>
+
+## Related articles
+
+* [Moderating open organizations](/help/moderating-open-organizations)
+* [Restrict name and email changes](/help/restrict-name-and-email-changes)

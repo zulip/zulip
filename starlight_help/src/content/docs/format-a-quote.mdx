@@ -1,0 +1,57 @@
+---
+title: Format a quote
+---
+
+import ZulipTip from '../../components/ZulipTip.astro';
+import FlattenedSteps from '../../components/FlattenedSteps.astro';
+import QuoteIcon from "~icons/zulip-icon/quote"
+import QuotesIntro from "./include/_QuotesIntro.mdx"
+import StartComposing from "./include/_StartComposing.mdx"
+import { Tabs, TabItem } from '@astrojs/starlight/components'
+import QuotesExamples from "./include/_QuotesExamples.mdx"
+
+<QuotesIntro />
+
+## Insert quote formatting
+
+<Tabs>
+  <TabItem label="Via compose box button">
+    <FlattenedSteps>
+      <StartComposing />
+
+      1. *(optional)* Select the text you want to format.
+      1. Click the **Quote** (<QuoteIcon />) icon at the
+         bottom of the compose box to insert quote block formatting.
+    </FlattenedSteps>
+
+    <ZulipTip>
+      You can also use the **Quote** (<QuoteIcon />)
+      icon to remove existing quote formatting from the selected text.
+    </ZulipTip>
+  </TabItem>
+
+  <TabItem label="Via Markdown">
+    <FlattenedSteps>
+      <StartComposing />
+
+      1. To create a multi-line quote, type `>` followed by a space and some text:
+         > a multi-line
+         > quote on two lines
+         > To create a multi-paragraph quote, use triple backticks and the word quote
+         > (\`\`\`\`quote\`) followed by some text and triple backticks at the end:
+         ```quote
+         A multi-paragraph
+         quote in two paragraphs
+         ```
+    </FlattenedSteps>
+  </TabItem>
+</Tabs>
+
+## Examples
+
+<QuotesExamples />
+
+## Related articles
+
+* [Message formatting](/help/format-your-message-using-markdown)
+* [Quote message](/help/quote-or-forward-a-message)

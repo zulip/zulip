@@ -1,0 +1,26 @@
+---
+title: Configure how links open in mobile apps
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components'
+import MobileSettings from "./include/_MobileSettings.mdx"
+import FlattenedSteps from '../../components/FlattenedSteps.astro';
+
+You can configure whether website links will open directly in the Zulip app, or
+in your device's default browser.
+
+## Configure whether to open links within the app
+
+<Tabs>
+  <TabItem label="Mobile">
+    <FlattenedSteps>
+      <MobileSettings />
+
+      1. Toggle **Open links with in-app browser**.
+    </FlattenedSteps>
+  </TabItem>
+</Tabs>
+
+## Related articles
+
+* [Link to a message or conversation](/help/link-to-a-message-or-conversation)

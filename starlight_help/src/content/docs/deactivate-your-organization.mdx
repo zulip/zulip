@@ -1,0 +1,35 @@
+---
+title: Deactivate your organization
+---
+
+import NavigationSteps from "../../components/NavigationSteps.astro"
+import {SUPPORT_EMAIL} from "astro:env/client";
+import OwnerOnly from "./include/_OwnerOnly.mdx"
+import FlattenedSteps from '../../components/FlattenedSteps.astro';
+
+If you are no longer using a Zulip organization, you can deactivate it. When you
+deactivate an organization, you can specify the time period after which the
+organization's data will be permanently deleted.
+
+## Deactivate an organization
+
+<OwnerOnly />
+
+<FlattenedSteps>
+  <NavigationSteps target="settings/organization-profile" />
+
+  1. Under **Deactivate organization**, click **Deactivate organization**.
+  1. Select when the organization's data (users, channels, messages, etc.)
+     should be permanently deleted.
+  1. Approve by clicking **Confirm**.
+</FlattenedSteps>
+
+## Restore a deactivated organization
+
+A deactivated organization can be restored until its data is deleted.
+If you deactivated your organization by accident, please contact
+[<>{SUPPORT_EMAIL}</>](mailto:\<>\{SUPPORT_EMAIL}\</>) as soon as possible.
+
+## Related articles
+
+* [Deactivate your account](/help/deactivate-your-account)

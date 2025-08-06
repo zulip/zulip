@@ -1,0 +1,42 @@
+---
+title: Restrict message edit history access
+---
+
+import NavigationSteps from "../../components/NavigationSteps.astro"
+import ZulipTip from '../../components/ZulipTip.astro';
+import FlattenedSteps from '../../components/FlattenedSteps.astro';
+import MessageEditHistoryIntro from "./include/_MessageEditHistoryIntro.mdx"
+import SaveChanges from "./include/_SaveChanges.mdx"
+import AdminOnly from "./include/_AdminOnly.mdx"
+
+<AdminOnly />
+
+<MessageEditHistoryIntro />
+
+<ZulipTip>
+  You can remove the edit history of a single message by
+  [deleting it](/help/delete-a-message#delete-a-message-completely).
+</ZulipTip>
+
+## Restrict message edit history access
+
+You can restrict message edit history access to only show moves, or disable it
+altogether.
+
+<FlattenedSteps>
+  <NavigationSteps target="settings/organization-permissions" />
+
+  1. Under **Message editing**, configure **Allow viewing the history of a
+     message?**.
+
+  <SaveChanges />
+</FlattenedSteps>
+
+## Related articles
+
+* [Restrict message editing and deletion](/help/restrict-message-editing-and-deletion)
+* [Restrict moving messages](/help/restrict-moving-messages)
+* [Edit a message](/help/edit-a-message)
+* [Delete a message](/help/delete-a-message)
+* [Move content to another topic](/help/move-content-to-another-topic)
+* [Move content to another channel](/help/move-content-to-another-channel)

@@ -1,0 +1,167 @@
+---
+title: Emoji and emoticons
+---
+
+import NavigationSteps from "../../components/NavigationSteps.astro"
+import ZulipNote from '../../components/ZulipNote.astro';
+import ZulipTip from '../../components/ZulipTip.astro';
+import FlattenedSteps from '../../components/FlattenedSteps.astro';
+import SmileBiggerIcon from "~icons/zulip-icon/smile-bigger"
+import { Steps } from '@astrojs/starlight/components';
+import EmojiAndEmoticonsExamples from "./include/_EmojiAndEmoticonsExamples.mdx"
+import StartComposing from "./include/_StartComposing.mdx"
+import EmojiAndEmoticonsIntro from "./include/_EmojiAndEmoticonsIntro.mdx"
+import { Tabs, TabItem } from '@astrojs/starlight/components'
+
+<EmojiAndEmoticonsIntro />
+
+<ZulipTip>
+  You can also quickly respond to a message by using [emoji reactions](/help/emoji-reactions).
+</ZulipTip>
+
+## Use an emoji in your message
+
+<Tabs>
+  <TabItem label="Via compose box button">
+    <FlattenedSteps>
+      <StartComposing />
+
+      1. Click the **smiley face** (<SmileBiggerIcon />)
+         icon at the bottom of the compose box.
+      1. Select an emoji. You can type to search, use the arrow keys, or click on
+         an emoji with your mouse.
+    </FlattenedSteps>
+  </TabItem>
+
+  <TabItem label="Via Markdown">
+    <FlattenedSteps>
+      <StartComposing />
+
+      1. Type `:`, followed by a few letters from the emoji name, to see autocomplete
+         suggestions. The letters don't have to be at the beginning of the emoji name.
+         For example, `:app` will match both `:apple:` and `:pineapple:`.
+      1. Type the full emoji name followed by `:`, or select an emoji from the list of
+         suggestions.
+    </FlattenedSteps>
+  </TabItem>
+
+  <TabItem label="Via paste">
+    <FlattenedSteps>
+      <StartComposing />
+
+      1. Paste an emoji copied from outside of Zulip directly into the compose box.
+    </FlattenedSteps>
+  </TabItem>
+</Tabs>
+
+<ZulipTip>
+  You can hover over an emoji in the emoji picker, a message, or an [emoji
+  reaction](/help/emoji-reactions) to learn its name.
+</ZulipTip>
+
+### Use an emoticon
+
+You can configure Zulip to convert emoticons into emoji, so that, e.g., `:)`
+will be displayed as 🙂 .
+
+<FlattenedSteps>
+  <NavigationSteps target="settings/preferences" />
+
+  1. Under **Emoji settings**, select **Convert emoticons before sending**.
+</FlattenedSteps>
+
+The list of supported emoticons is available
+[here](/help/configure-emoticon-translations).
+
+## Examples
+
+<EmojiAndEmoticonsExamples />
+
+## Use an emoji in a topic name
+
+You can use unicode characters in topic names, including unicode
+emoji. Each platform has a different way to enter unicode
+emoji. [Custom emoji](/help/custom-emoji) cannot be used in topic
+names.
+
+<Tabs>
+  <TabItem label="macOS">
+    <Steps>
+      1. [Start a new topic](/help/introduction-to-topics#how-to-start-a-new-topic).
+      1. Press <kbd>Command ⌘</kbd> + <kbd>Control</kbd> + <kbd>Space</kbd>
+         to open the **Character Viewer**. See the
+         [macOS documentation](https://support.apple.com/guide/mac-help/use-emoji-and-symbols-on-mac-mchlp1560/mac)
+         to learn more.
+      1. Select an emoji. You can type to search, use the arrow keys, or click on
+         an emoji with your mouse.
+    </Steps>
+  </TabItem>
+
+  <TabItem label="Windows">
+    <Steps>
+      1. [Start a new topic](/help/introduction-to-topics#how-to-start-a-new-topic).
+      1. Press <kbd>Windows</kbd> + <kbd>.</kbd>
+         to open the **emoji keyboard**. See the
+         [Windows documentation](https://support.microsoft.com/en-us/windows/windows-keyboard-tips-and-tricks-588e0b72-0fff-6d3f-aeee-6e5116097942)
+         to learn more.
+      1. Select an emoji. You can type to search, use the arrow keys, or click on
+         an emoji with your mouse.
+    </Steps>
+  </TabItem>
+
+  <TabItem label="Linux">
+    <Steps>
+      1. [Start a new topic](/help/introduction-to-topics#how-to-start-a-new-topic).
+      1. Open the [Characters app for GNOME](https://apps.gnome.org/en/Characters/).
+      1. Select an emoji. You can type to search, use the arrow keys, or click on
+         an emoji with your mouse.
+    </Steps>
+  </TabItem>
+
+  <TabItem label="Chrome">
+    <Steps>
+      1. [Start a new topic](/help/introduction-to-topics#how-to-start-a-new-topic).
+      1. Right-click on the text input box.
+      1. Select **Emoji** or **Emoji & Symbols**. You will only see this option if
+         supported by your operating system.
+      1. Select an emoji. You can type to search, use the arrow keys, or click on
+         an emoji with your mouse.
+    </Steps>
+  </TabItem>
+
+  <TabItem label="Via paste">
+    <Steps>
+      1. [Start a new topic](/help/introduction-to-topics#how-to-start-a-new-topic).
+      1. Paste an emoji copied from outside of Zulip directly into the text input box.
+    </Steps>
+
+    <ZulipTip>
+      [https://emojipedia.org/](https://emojipedia.org/) may be a helpful resource.
+    </ZulipTip>
+  </TabItem>
+</Tabs>
+
+## Change your emoji set
+
+Your emoji set determines how you see emoji. It has no effect on the emoji
+you send. Zulip emoji are compatible with screen readers and other accessibility tools.
+
+<FlattenedSteps>
+  <NavigationSteps target="settings/preferences" />
+
+  1. Under **Emoji**, select **Google**,
+     **Twitter**, **Plain text**, or **Google blobs** for the emoji theme.
+</FlattenedSteps>
+
+<ZulipNote>
+  **Google blobs** is an old style of Google emoji that has not been maintained
+  by Google since 2017, when they switched to a more modern style. Zulip allows
+  you to still use blob emoji, but any new emoji that have been released since
+  2017 will be displayed in the modern **Google** style.
+</ZulipNote>
+
+## Related articles
+
+* [Add custom emoji](/help/custom-emoji)
+* [Emoji reactions](/help/emoji-reactions)
+* [Configure emoticon translations](/help/configure-emoticon-translations)

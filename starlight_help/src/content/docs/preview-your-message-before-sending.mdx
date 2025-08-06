@@ -1,0 +1,34 @@
+---
+title: Preview your message before sending
+---
+
+import EditIcon from "~icons/zulip-icon/edit"
+import PreviewIcon from "~icons/zulip-icon/preview"
+import FlattenedSteps from '../../components/FlattenedSteps.astro';
+import KeyboardTip from '../../components/KeyboardTip.astro';
+import StartComposing from "./include/_StartComposing.mdx"
+import { Tabs, TabItem } from '@astrojs/starlight/components'
+
+<Tabs>
+  <TabItem label="Desktop/Web">
+    <FlattenedSteps>
+      <StartComposing />
+
+      1. Write a message.
+      1. Click the **preview mode** (<PreviewIcon />)
+         icon at the bottom of the compose box.
+      1. *(optional)* Click the **exit preview mode** (<EditIcon />) icon to edit your message.
+    </FlattenedSteps>
+
+    <KeyboardTip>
+      You can also use <kbd>Alt</kbd> + <kbd>P</kbd> to toggle between previewing
+      and editing your message.
+    </KeyboardTip>
+  </TabItem>
+</Tabs>
+
+## Related articles
+
+* [Message formatting](/help/format-your-message-using-markdown)
+* [Resize the compose box](/help/resize-the-compose-box)
+* [Mastering the compose box](/help/mastering-the-compose-box)

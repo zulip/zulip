@@ -1,0 +1,142 @@
+---
+title: Follow a topic
+---
+
+import TopicLongPressMenu from "./include/_TopicLongPressMenu.mdx"
+import ManageConfiguredTopicsDesktopWeb from "./include/_ManageConfiguredTopicsDesktopWeb.mdx"
+import ConfigureTopicNotificationsDesktopWeb from "./include/_ConfigureTopicNotificationsDesktopWeb.mdx"
+import ZulipTip from '../../components/ZulipTip.astro';
+import FlattenedSteps from '../../components/FlattenedSteps.astro';
+import ConfigureNotificationsForFollowedTopics from "./include/_ConfigureNotificationsForFollowedTopics.mdx"
+import KeyboardTip from '../../components/KeyboardTip.astro';
+import FollowedTopicWorkflows from "./include/_FollowedTopicWorkflows.mdx"
+import { Steps } from '@astrojs/starlight/components';
+import SearchIcon from "~icons/zulip-icon/search"
+import GoToInbox from "./include/_GoToInbox.mdx"
+import { Tabs, TabItem } from '@astrojs/starlight/components'
+import ManageConfiguredTopicsMobile from "./include/_ManageConfiguredTopicsMobile.mdx"
+import AutomaticallyFollowTopics from "./include/_AutomaticallyFollowTopics.mdx"
+
+Zulip lets you follow topics you are interested in. You can follow or unfollow
+any topic. You can also configure Zulip to automatically follow topics you start
+or participate in. Participating in a topic means sending a message,
+[reacting](/help/emoji-reactions) with an emoji, or participating in a
+[poll](/help/create-a-poll). You can also automatically follow topics where you
+are [mentioned](/help/mention-a-user-or-group).
+
+It's easy to prioritize catching up on followed topics. You can:
+
+* [Configure](/help/follow-a-topic#configure-notifications-for-followed-topics)
+  how you get notified about new messages for topics you follow.
+* Use the <kbd>Shift</kbd> + <kbd>N</kbd> [keyboard
+  shortcut](/help/keyboard-shortcuts) to go to the next unread followed topic.
+* Filter the [**Inbox**](/help/inbox) and [**Recent
+  conversations**](/help/recent-conversations) views to only show followed
+  topics.
+* See which topics you are following in the **left sidebar**.
+
+You can use followed topics for a variety of workflows:
+
+<FollowedTopicWorkflows />
+
+## Follow or unfollow a topic
+
+<Tabs>
+  <TabItem label="Desktop/Web">
+    <FlattenedSteps>
+      <ConfigureTopicNotificationsDesktopWeb />
+    </FlattenedSteps>
+  </TabItem>
+
+  <TabItem label="Mobile">
+    <FlattenedSteps>
+      <TopicLongPressMenu />
+
+      1. Tap **Follow topic** or **Unfollow topic**.
+    </FlattenedSteps>
+  </TabItem>
+</Tabs>
+
+## Catch up on followed topics
+
+<Tabs>
+  <TabItem label="Desktop/Web">
+    <FlattenedSteps>
+      <GoToInbox />
+
+      1. Filter the view to the topics you follow by selecting **Followed topics**
+         from the dropdown in the upper left of the **inbox** view.
+      1. Click on a conversation you're interested in to view it. You can also use
+         the arrow keys to select a conversation, and press <kbd>Enter</kbd>.
+      1. Return to **Inbox** when done to select the next conversation. You can use
+         the **back** button in your browser or the desktop app, <kbd>Shift</kbd> +
+         <kbd>I</kbd>, or <kbd>Esc</kbd> if **Inbox** is configured as you [home
+         view](/help/configure-home-view).
+    </FlattenedSteps>
+
+    <KeyboardTip>
+      You can also use <kbd>Shift</kbd> + <kbd>N</kbd> from any location to go
+      to the next unread followed topic.
+    </KeyboardTip>
+  </TabItem>
+</Tabs>
+
+## Search for messages in followed topics
+
+<Tabs>
+  <TabItem label="Desktop/Web">
+    <Steps>
+      1. Click the **search** (<SearchIcon />) icon in the top bar to open the search box.
+      1. Type `is:followed`, or start typing and select **Followed topics** from the
+         typeahead.
+      1. *(optional)* Enter additional search terms or
+         [filters](/help/search-for-messages).
+      1. Press <kbd>Enter</kbd>.
+    </Steps>
+
+    <KeyboardTip>
+      You can also use the <kbd>/</kbd> or <kbd>Ctrl</kbd> + <kbd>K</kbd>
+      keyboard shortcut to start searching messages.
+    </KeyboardTip>
+  </TabItem>
+</Tabs>
+
+<ZulipTip>
+  To get a feed of unread messages in all the topics you follow, search for
+  `is:followed is:unread`.
+</ZulipTip>
+
+## Configure notifications for followed topics
+
+You can configure custom notifications for followed topics. You can also
+[configure the unread count
+badge](/help/desktop-notifications#unread-count-badge) to include unread
+messages just in followed topics, without counting other channel messages.
+
+<ConfigureNotificationsForFollowedTopics />
+
+## Automatically follow topics
+
+<AutomaticallyFollowTopics />
+
+## Manage configured topics
+
+<Tabs>
+  <TabItem label="Desktop/Web">
+    <ManageConfiguredTopicsDesktopWeb />
+  </TabItem>
+
+  <TabItem label="Mobile">
+    <FlattenedSteps>
+      <ManageConfiguredTopicsMobile />
+    </FlattenedSteps>
+  </TabItem>
+</Tabs>
+
+## Related articles
+
+* [Reading strategies](/help/reading-strategies)
+* [Topic notifications](/help/topic-notifications)
+* [Channel notifications](/help/channel-notifications)
+* [Mute or unmute a topic](/help/mute-a-topic)
+* [Mute or unmute a channel](/help/mute-a-channel)

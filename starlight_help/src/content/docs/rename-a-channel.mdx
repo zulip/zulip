@@ -1,0 +1,53 @@
+---
+title: Rename a channel
+---
+
+import NavigationSteps from "../../components/NavigationSteps.astro"
+import EditIcon from "~icons/zulip-icon/edit"
+import FlattenedSteps from '../../components/FlattenedSteps.astro';
+import AutomatedNoticeChannelEvent from "./include/_AutomatedNoticeChannelEvent.mdx"
+import SaveChanges from "./include/_SaveChanges.mdx"
+import ChannelSettingsGeneralTabTip from "./include/_ChannelSettingsGeneralTabTip.mdx"
+import SelectChannelViewGeneral from "./include/_SelectChannelViewGeneral.mdx"
+import { Tabs, TabItem } from '@astrojs/starlight/components'
+
+A channel's name can be in any language, and can include spaces, punctuation,
+and Unicode emoji.
+
+<Tabs>
+  <TabItem label="Desktop/Web">
+    <FlattenedSteps>
+      <NavigationSteps target="relative/channel/all" />
+
+      1. Select a channel.
+
+      <SelectChannelViewGeneral />
+
+      1. Click the **edit channel name and description**
+         (<EditIcon />) icon to the right of the
+         channel name, and enter a new channel name.
+
+      <SaveChanges />
+    </FlattenedSteps>
+
+    <ChannelSettingsGeneralTabTip />
+  </TabItem>
+
+  <TabItem label="Mobile">
+    Access this feature by following the web app instructions in your
+    mobile device browser.
+
+    Implementation of this feature in the mobile app is tracked [on
+    GitHub](https://github.com/zulip/zulip-flutter/issues/1102). If
+    you're interested in this feature, please react to the issue's
+    description with 👍.
+  </TabItem>
+</Tabs>
+
+<AutomatedNoticeChannelEvent />
+
+## Related articles
+
+* [View channel information](/help/view-channel-information)
+* [Change a channel's description](/help/change-the-channel-description)
+* [Channel permissions](/help/channel-permissions)
