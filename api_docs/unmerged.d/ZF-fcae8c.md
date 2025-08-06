@@ -7,3 +7,5 @@
 * [`PATCH /channel_folders`](/api/patch-channel-folders): Added a new
   endpoint for reordering channel folders. It accepts an array of channel
   folder IDs arranged in the order the user desires it to be in.
+* [`GET /channel_folders`](/api/get-channel-folders): Channel folders will
+  be ordered by the `order` field instead of `id` field when being returned.

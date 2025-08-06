@@ -3,7 +3,11 @@ from typing import Any
 import orjson
 from typing_extensions import override
 
-from zerver.actions.channel_folders import check_add_channel_folder, do_archive_channel_folder
+from zerver.actions.channel_folders import (
+    check_add_channel_folder,
+    do_archive_channel_folder,
+    try_reorder_realm_channel_folders,
+)
 from zerver.actions.streams import do_change_stream_folder, do_deactivate_stream
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import ChannelFolder
@@ -214,6 +218,24 @@ class GetChannelFoldersTest(ChannelFoldersTestCase):
         )
         channel_folders_data = orjson.loads(result.content)["channel_folders"]
         check_channel_folders_in_zulip_realm(channel_folders_data)
+
+    def test_get_channel_folders_according_to_order(self) -> None:
+        iago = self.example_user("iago")
+        realm = iago.realm
+        self.login_user(iago)
+
+        result = self.client_get("/json/channel_folders")
+        channel_folders_data = orjson.loads(result.content)["channel_folders"]
+        channel_folders_names = [item["name"] for item in channel_folders_data]
+        self.assertEqual(channel_folders_names, ["Frontend", "Backend", "Marketing"])
+
+        try_reorder_realm_channel_folders(
+            realm, reversed([item["id"] for item in channel_folders_data])
+        )
+        result = self.client_get("/json/channel_folders")
+        channel_folders_data = orjson.loads(result.content)["channel_folders"]
+        channel_folders_names = [item["name"] for item in channel_folders_data]
+        self.assertEqual(channel_folders_names, ["Marketing", "Backend", "Frontend"])
 
 
 class UpdateChannelFoldersTest(ChannelFoldersTestCase):
