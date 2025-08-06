@@ -1,0 +1,66 @@
+---
+title: Restrict channel creation
+---
+
+import NavigationSteps from "../../components/NavigationSteps.astro"
+import FlattenedSteps from '../../components/FlattenedSteps.astro';
+import SaveChanges from "./include/_SaveChanges.mdx"
+import { Tabs, TabItem } from '@astrojs/starlight/components'
+import AdminOnly from "./include/_AdminOnly.mdx"
+
+<AdminOnly />
+
+Zulip allows you to separately control [permissions](/help/manage-permissions)
+for creating [web-public](/help/public-access-option), public and private
+channels.
+
+For corporations and other organizations with controlled access, we
+recommend keeping channel creation open to make it easy for users to
+self-organize.
+
+Only users in trusted roles (moderators and administrators) can be
+given permission to create web-public channels. This is intended
+[to help manage abuse](/help/public-access-option#managing-abuse) by
+making it hard for an attacker to host malicious content in an
+unadvertised web-public channel in a legitimate organization.
+
+### Manage who can create channels
+
+<Tabs>
+  <TabItem label="Public channels">
+    <FlattenedSteps>
+      <NavigationSteps target="settings/organization-permissions" />
+
+      1. Under **Channel permissions**, configure **Who can create public channels**.
+
+      <SaveChanges />
+    </FlattenedSteps>
+  </TabItem>
+
+  <TabItem label="Private channels">
+    <FlattenedSteps>
+      <NavigationSteps target="settings/organization-permissions" />
+
+      1. Under **Channel permissions**, configure **Who can create private channels**.
+
+      <SaveChanges />
+    </FlattenedSteps>
+  </TabItem>
+
+  <TabItem label="Web-public channels">
+    <FlattenedSteps>
+      <NavigationSteps target="settings/organization-permissions" />
+
+      1. Under **Channel permissions**, configure **Who can create web-public channels**.
+
+      <SaveChanges />
+    </FlattenedSteps>
+  </TabItem>
+</Tabs>
+
+## Related articles
+
+* [Channel permissions](/help/channel-permissions)
+* [User roles](/help/user-roles)
+* [Create a channel](/help/create-a-channel)
+* [Introduction to channels](/help/introduction-to-channels)

@@ -1,0 +1,178 @@
+---
+title: Draft messages
+---
+
+import ZulipNote from '../../components/ZulipNote.astro';
+import CloseIcon from "~icons/zulip-icon/close"
+import MoreVerticalIcon from "~icons/zulip-icon/more-vertical"
+import FlattenedSteps from '../../components/FlattenedSteps.astro';
+import GoToDraftMessages from "./include/_GoToDraftMessages.mdx"
+import KeyboardTip from '../../components/KeyboardTip.astro';
+import TrashIcon from "~icons/zulip-icon/trash"
+import StartComposing from "./include/_StartComposing.mdx"
+import SendIcon from "~icons/zulip-icon/send"
+import { Tabs, TabItem } from '@astrojs/starlight/components'
+
+Zulip automatically saves the content of your message as a draft when you close
+the compose box, ensuring that you never lose your work. When you start
+composing, the most recently edited draft for the conversation you are composing
+to automatically appears in the compose box.
+
+<ZulipNote>
+  **Note**: Drafts are local to your client, and are not synced to
+  other devices and browsers.
+</ZulipNote>
+
+## Save a draft
+
+### Save a draft and stop composing
+
+<Tabs>
+  <TabItem label="Desktop/Web">
+    <FlattenedSteps>
+      <StartComposing />
+
+      1. Type at least 3 characters of text into the compose box.
+      1. Close the compose box. For example, you can click the
+         **close** (<CloseIcon />) icon in the top right
+         corner of the compose box, or click on an empty area of the app to close the
+         compose box and save your message as a draft.
+    </FlattenedSteps>
+
+    <KeyboardTip>
+      You can also use <kbd>Esc</kbd> to close the compose box and save your
+      message as a draft.
+    </KeyboardTip>
+  </TabItem>
+</Tabs>
+
+### Save a draft and start a new message
+
+<Tabs>
+  <TabItem label="Desktop/Web">
+    <FlattenedSteps>
+      <StartComposing />
+
+      1. Click on the **ellipsis** (<MoreVerticalIcon />)
+         in the bottom right corner of the compose box, next to the **Send**
+         (<SendIcon />) button.
+      1. Select **Save draft and start a new message**.
+    </FlattenedSteps>
+  </TabItem>
+</Tabs>
+
+## Restore a draft
+
+To make it easier to find the draft you are looking for, drafts for the
+conversation you are composing to are shown at the top of the drafts list in the
+web and desktop apps. If you have saved drafts for the current conversation, the
+counter next to the **Drafts** button in the compose box shows how many there are.
+
+<Tabs>
+  <TabItem label="Via left sidebar">
+    <FlattenedSteps>
+      <GoToDraftMessages />
+
+      1. Click on the draft you want to restore.
+    </FlattenedSteps>
+
+    <KeyboardTip>
+      You can also use <kbd>D</kbd> to bring up your list of saved drafts, and
+      <kbd>Enter</kbd> within the drafts view to restore the selected draft.
+    </KeyboardTip>
+  </TabItem>
+
+  <TabItem label="Via compose box button">
+    <FlattenedSteps>
+      <StartComposing />
+
+      1. Click the **Drafts** button on the right side of the compose box.
+      1. Click on the draft you want to restore.
+    </FlattenedSteps>
+
+    <KeyboardTip>
+      You can also use <kbd>D</kbd> to bring up your list of saved drafts, and
+      <kbd>Enter</kbd> within the drafts view to restore the selected draft.
+    </KeyboardTip>
+  </TabItem>
+</Tabs>
+
+## Delete drafts
+
+### Delete a draft
+
+<Tabs>
+  <TabItem label="Via left sidebar">
+    <FlattenedSteps>
+      <GoToDraftMessages />
+
+      1. Click the **delete** (<TrashIcon />) icon on the draft you
+         want to delete.
+    </FlattenedSteps>
+
+    <KeyboardTip>
+      You can also use <kbd>D</kbd> to bring up your list of saved drafts, and
+      <kbd>Backspace</kbd> within the drafts view to delete the selected draft.
+    </KeyboardTip>
+  </TabItem>
+
+  <TabItem label="Via compose box button">
+    <FlattenedSteps>
+      <StartComposing />
+
+      1. Click the **Drafts** button on the right side of the compose box.
+      1. Click the **delete** (<TrashIcon />) icon on the draft you
+         want to delete.
+    </FlattenedSteps>
+
+    <KeyboardTip>
+      You can also use <kbd>D</kbd> to bring up your list of saved drafts, and
+      <kbd>Backspace</kbd> within the drafts view to delete the selected draft.
+    </KeyboardTip>
+  </TabItem>
+</Tabs>
+
+### Delete multiple drafts
+
+<Tabs>
+  <TabItem label="Via left sidebar">
+    <FlattenedSteps>
+      <GoToDraftMessages />
+
+      1. Click **Select all drafts** in the upper right corner of
+         the drafts view, or select the drafts you want to delete
+         by toggling the checkboxes on the right.
+      1. Click the **delete** (<TrashIcon />) icon in the
+         upper right corner of the drafts view to delete all selected drafts.
+    </FlattenedSteps>
+
+    <KeyboardTip>
+      You can also use <kbd>D</kbd> to bring up your list of saved drafts.
+    </KeyboardTip>
+  </TabItem>
+
+  <TabItem label="Via compose box button">
+    <FlattenedSteps>
+      <StartComposing />
+
+      1. Click the **Drafts** button on the right side of the compose box.
+      1. Click **Select all drafts** in the upper right corner of
+         the drafts view, or select the drafts you want to delete
+         by toggling the checkboxes on the right.
+      1. Click the **delete** (<TrashIcon />) icon in the
+         upper right corner of the drafts view to delete all selected drafts.
+    </FlattenedSteps>
+
+    <KeyboardTip>
+      You can also use <kbd>D</kbd> to bring up your list of saved drafts.
+    </KeyboardTip>
+  </TabItem>
+</Tabs>
+
+## Related articles
+
+* [Schedule a message](/help/schedule-a-message)
+* [Preview messages before sending](/help/preview-your-message-before-sending)
+* [Verify a message was sent](/help/verify-your-message-was-successfully-sent)
+* [Edit a message](/help/edit-a-message)
+* [Delete a message](/help/delete-a-message)

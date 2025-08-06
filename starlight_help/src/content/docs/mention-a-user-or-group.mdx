@@ -1,0 +1,113 @@
+---
+title: Mention a user or group
+---
+
+import ZulipTip from '../../components/ZulipTip.astro';
+import FlattenedSteps from '../../components/FlattenedSteps.astro';
+import { Steps } from '@astrojs/starlight/components';
+import MentionsExamples from "./include/_MentionsExamples.mdx"
+import RightSidebarUserCard from "./include/_RightSidebarUserCard.mdx"
+import StartComposing from "./include/_StartComposing.mdx"
+import MentionsIntro from "./include/_MentionsIntro.mdx"
+import { Tabs, TabItem } from '@astrojs/starlight/components'
+
+<MentionsIntro />
+
+<ZulipTip>
+  If you edit a message, adding or removing mentions will update message
+  notifications. [Learn more](/help/edit-a-message#message-notifications).
+</ZulipTip>
+
+## Mention a user or group
+
+### From the compose box
+
+<Tabs>
+  <TabItem label="Desktop/Web">
+    <FlattenedSteps>
+      <StartComposing />
+
+      1. Type `@` followed by a few letters from a name or email address.
+      1. Pick the appropriate user or user group from the autocomplete.
+    </FlattenedSteps>
+  </TabItem>
+
+  <TabItem label="Mobile">
+    <Steps>
+      1. Tap the compose box at the bottom of the app.
+      1. Type `@` followed by a few letters from a name.
+      1. Pick the appropriate user or user group from the autocomplete.
+    </Steps>
+  </TabItem>
+</Tabs>
+
+### From the user list
+
+<FlattenedSteps>
+  <RightSidebarUserCard />
+
+  1. Select **Copy mention syntax** to add it to your clipboard.
+  1. Paste the user's mention syntax in the compose box.
+</FlattenedSteps>
+
+### Via a message
+
+<Steps>
+  1. Click on a user's profile picture or name on a message they sent
+     to open their **user card**.
+  1. Select **Reply mentioning user** to start a reply to the conversation
+     with a mention inserted into the compose box.
+</Steps>
+
+## Silently mention a user
+
+A silent mention allows you to refer to a user without triggering a
+notification. Silent mentions start with `@_` instead of `@`.
+
+<FlattenedSteps>
+  <StartComposing />
+
+  1. Type `@_` followed by a few letters from a name or email address.
+  1. Pick the appropriate user or user group from the autocomplete.
+</FlattenedSteps>
+
+## Mention all topic participants
+
+Using the `@**topic**` mention, you can mention everyone who has previously
+participated in the topic by sending a message or
+[reacting](/help/emoji-reactions) with an emoji. This lets you notify just those
+who have already engaged in the conversation.
+
+Users can disable notifications for `@**topic**` mentions by:
+
+* Disabling notifications for wildcard mentions
+  [globally](/help/dm-mention-alert-notifications) or for [individual
+  channels](/help/channel-notifications).
+* Muting the [topic](/help/mute-a-topic) or [channel](/help/mute-a-channel).
+
+## Mention everyone on a channel
+
+You can mention everyone on a channel with the `@**all**` mention (or,
+equivalently, `@**everyone**` or `@**channel**`). It's best to use these mentions
+only when your message requires timely attention from many channel subscribers.
+An organization can be configured to
+[restrict](/help/restrict-wildcard-mentions) wildcard mentions in large channels.
+
+Users can disable notifications for `@**all**`, `@**everyone**`, and
+`@**channel**` mentions by:
+
+* Disabling notifications for wildcard mentions
+  [globally](/help/dm-mention-alert-notifications) or for [individual
+  channels](/help/channel-notifications).
+* Muting the [topic](/help/mute-a-topic) or [channel](/help/mute-a-channel).
+
+## Examples
+
+<MentionsExamples />
+
+## Related articles
+
+* [Message formatting](/help/format-your-message-using-markdown)
+* [Restrict wildcard mentions](/help/restrict-wildcard-mentions)
+* [Quote message](/help/quote-or-forward-a-message)
+* [View your mentions](/help/view-your-mentions)

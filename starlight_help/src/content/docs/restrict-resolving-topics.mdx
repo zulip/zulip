@@ -1,0 +1,58 @@
+---
+title: Restrict resolving topics
+---
+
+import NavigationSteps from "../../components/NavigationSteps.astro"
+import FlattenedSteps from '../../components/FlattenedSteps.astro';
+import SaveChanges from "./include/_SaveChanges.mdx"
+import SelectChannelViewGeneralAdvanced from "./include/_SelectChannelViewGeneralAdvanced.mdx"
+import { Tabs, TabItem } from '@astrojs/starlight/components'
+import AdminOnly from "./include/_AdminOnly.mdx"
+
+Zulip lets you configure who can [mark topics as resolved](/help/resolve-a-topic). This
+permission can be granted to any combination of [roles](/help/user-roles),
+[groups](/help/user-groups), and individual
+[users](/help/introduction-to-users).
+
+## Configure who can resolve topics in any channel
+
+<AdminOnly />
+
+<Tabs>
+  <TabItem label="Desktop/Web">
+    <FlattenedSteps>
+      <NavigationSteps target="settings/organization-permissions" />
+
+      1. Under **Moving messages**, configure **Who can resolve topics**.
+
+      <SaveChanges />
+    </FlattenedSteps>
+  </TabItem>
+</Tabs>
+
+## Configure who can resolve topics in a specific channel
+
+<Tabs>
+  <TabItem label="Desktop/Web">
+    <FlattenedSteps>
+      <NavigationSteps target="relative/channel/all" />
+
+      1. Select a channel.
+
+      <SelectChannelViewGeneralAdvanced />
+
+      1. Under **Moderation permissions**, configure **Who can resolve topics in this
+         channel**.
+
+      <SaveChanges />
+    </FlattenedSteps>
+  </TabItem>
+</Tabs>
+
+## Related articles
+
+* [Restrict moving messages](/help/restrict-moving-messages)
+* [Resolve a topic](/help/resolve-a-topic)
+* [Rename a topic](/help/rename-a-topic)
+* [Move content to another topic](/help/move-content-to-another-topic)
+* [Move content to another channel](/help/move-content-to-another-channel)

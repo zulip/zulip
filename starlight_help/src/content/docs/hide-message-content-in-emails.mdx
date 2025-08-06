@@ -1,0 +1,31 @@
+---
+title: Hide message content in emails
+---
+
+import NavigationSteps from "../../components/NavigationSteps.astro"
+import AdminOnly from "./include/_AdminOnly.mdx"
+import FlattenedSteps from '../../components/FlattenedSteps.astro';
+
+<AdminOnly />
+
+For security or compliance reasons, you may want to prevent Zulip message
+content from being sent through your email system. The only place Zulip
+currently sends message content is in message notification emails.
+
+This setting also blocks message topics, channel names, and user names from
+being sent through the email system.
+
+### Hide message content in emails
+
+<FlattenedSteps>
+  <NavigationSteps target="settings/organization-settings" />
+
+  1. Under **Notifications security**, toggle
+     **Allow message content in message notification emails**.
+</FlattenedSteps>
+
+## Related articles
+
+* [Hide message content in emails](/help/email-notifications#hide-message-content),
+  as an individual.
+* [End-to-end encryption (E2EE) for mobile push notifications](/help/mobile-notifications#end-to-end-encryption-e2ee-for-mobile-push-notifications)

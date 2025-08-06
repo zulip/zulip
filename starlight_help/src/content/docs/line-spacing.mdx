@@ -1,0 +1,40 @@
+---
+title: Line spacing
+---
+
+import FlattenedSteps from '../../components/FlattenedSteps.astro';
+import LineHeightBigIcon from "~icons/zulip-icon/line-height-big"
+import PlusIcon from "~icons/zulip-icon/plus"
+import PersonalMenu from "./include/_PersonalMenu.mdx"
+import { Tabs, TabItem } from '@astrojs/starlight/components'
+import MinusIcon from "~icons/zulip-icon/minus"
+
+Zulip lets you adjust line spacing in the web and desktop apps, to
+make the Zulip interface feel most comfortable for you. Most
+importantly, this setting modifies how much space there is between
+lines of text in multi-line messages. You can experiment to see what
+configuration makes reading most pleasant for you.
+
+Reducing line spacing and [font size](/help/font-size) may be helpful on small
+screens, so that you can see more content at a time.
+
+## Change line spacing
+
+<Tabs>
+  <TabItem label="Desktop/Web">
+    <FlattenedSteps>
+      <PersonalMenu />
+
+      1. Click <PlusIcon /> to increase the line
+         spacing, <MinusIcon /> to decrease it, and <LineHeightBigIcon /> to reset to the default.
+    </FlattenedSteps>
+  </TabItem>
+</Tabs>
+
+## Related articles
+
+* [Getting started with Zulip](/help/getting-started-with-zulip)
+* [Review your settings](/help/review-your-settings)
+* [Configure default new user settings](/help/configure-default-new-user-settings)
+* [Font size](/help/font-size)
+* [Dark theme](/help/dark-theme)

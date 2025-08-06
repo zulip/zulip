@@ -1,0 +1,45 @@
+---
+title: View messages sent by a user
+---
+
+import SelfUserCard from "./include/_SelfUserCard.mdx"
+import ZulipTip from '../../components/ZulipTip.astro';
+import RightSidebarUserCard from "./include/_RightSidebarUserCard.mdx"
+import FlattenedSteps from '../../components/FlattenedSteps.astro';
+
+Zulip offers a convenient feature to search all messages sent by any user
+including yourself.
+
+## View messages sent by a user
+
+<FlattenedSteps>
+  <RightSidebarUserCard />
+
+  1. Select **View messages sent** to view all messages sent by this user.
+</FlattenedSteps>
+
+## View messages you've sent
+
+<FlattenedSteps>
+  <SelfUserCard />
+
+  1. Select **View messages sent** to view all the messages you've sent.
+</FlattenedSteps>
+
+<ZulipTip>
+  You can also search your messages by typing `sender:me` in the
+  search bar at the top of the app and pressing <kbd>Enter</kbd>.
+</ZulipTip>
+
+## View direct messages with yourself
+
+<FlattenedSteps>
+  <SelfUserCard />
+
+  1. Select **View messages with yourself** to view messages you sent to
+     yourself.
+</FlattenedSteps>
+
+## Related articles
+
+* [Searching for messages](/help/search-for-messages)

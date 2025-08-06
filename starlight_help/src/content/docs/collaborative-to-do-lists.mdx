@@ -1,0 +1,100 @@
+---
+title: Collaborative to-do lists
+---
+
+import ToDoListsIntro from "./include/_ToDoListsIntro.mdx"
+import ZulipNote from '../../components/ZulipNote.astro';
+import ZulipTip from '../../components/ZulipTip.astro';
+import FlattenedSteps from '../../components/FlattenedSteps.astro';
+import PencilIcon from "~icons/fa/pencil"
+import { Steps } from '@astrojs/starlight/components';
+import TrashIcon from "~icons/zulip-icon/trash"
+import CheckIcon from "~icons/fa/check"
+import GripVerticalIcon from "~icons/zulip-icon/grip-vertical"
+import StartComposing from "./include/_StartComposing.mdx"
+import SendIcon from "~icons/zulip-icon/send"
+import RemoveIcon from "~icons/fa/remove"
+import TodoListIcon from "~icons/zulip-icon/todo-list"
+import { Tabs, TabItem } from '@astrojs/starlight/components'
+import ToDoListsExamples from "./include/_ToDoListsExamples.mdx"
+
+<ToDoListsIntro />
+
+## Create a to-do list
+
+<Tabs>
+  <TabItem label="Via compose box button">
+    <FlattenedSteps>
+      <StartComposing />
+
+      1. Make sure the compose box is empty.
+      1. Click the **Add to-do list** (<TodoListIcon />) icon at the bottom of the compose box.
+      1. Fill out todo-list information as desired, and click **Create to-do
+         list** to insert todo-list formatting.
+      1. Click the **Send** (<SendIcon />)
+         button, or use a [keyboard shortcut](/help/configure-send-message-keys)
+         to send your message.
+    </FlattenedSteps>
+
+    <ZulipTip>
+      To reorder the list of todos, click and drag the **vertical dots**
+      (<GripVerticalIcon />) to the left of
+      each option. To delete an option, click the **delete**
+      (<TrashIcon />) icon to the right of it.
+    </ZulipTip>
+  </TabItem>
+
+  <TabItem label="Via Markdown">
+    <FlattenedSteps>
+      <StartComposing />
+
+      1. Make sure the compose box is empty.
+      1. Type `/todo` followed by a space, and the title of the to-do list.
+      1. *(optional)* Type each task on a new line, with its description, if
+         any, after a <kbd>:</kbd> and blank space.
+      1. Click the **Send** (<SendIcon />)
+         button, or use a [keyboard shortcut](/help/configure-send-message-keys)
+         to send your message.
+    </FlattenedSteps>
+
+    <ZulipTip>
+      You will be able to add tasks after the to-do list is created.
+    </ZulipTip>
+  </TabItem>
+</Tabs>
+
+## Add tasks to a to-do list
+
+<Steps>
+  1. Fill out the **New task** field, and optionally the **Description**
+     field at the bottom of the to-do list.
+  1. Click **Add task** to add the new task to the to-do list.
+</Steps>
+
+## Edit the to-do list title
+
+<ZulipNote>
+  Only the creator of a to-do list can edit the title.
+</ZulipNote>
+
+<Steps>
+  1. Click the **pencil** (<PencilIcon />) icon
+     to the right of the title.
+  1. Edit the title as desired.
+  1. Click the **checkmark** (<CheckIcon />) icon or press
+     <kbd>Enter</kbd> to save your changes.
+</Steps>
+
+<ZulipTip>
+  You can click the <RemoveIcon /> icon or press
+  <kbd>Esc</kbd> to discard your changes.
+</ZulipTip>
+
+## Examples
+
+<ToDoListsExamples />
+
+## Related articles
+
+* [Message formatting](/help/format-your-message-using-markdown)
+* [Polls](/help/create-a-poll)

@@ -1,0 +1,60 @@
+---
+title: Bulleted lists
+---
+
+import BulletedListsExamples from "./include/_BulletedListsExamples.mdx"
+import ZulipTip from '../../components/ZulipTip.astro';
+import FlattenedSteps from '../../components/FlattenedSteps.astro';
+import BulletedListsIntro from "./include/_BulletedListsIntro.mdx"
+import UnorderedListIcon from "~icons/zulip-icon/unordered-list"
+import StartComposing from "./include/_StartComposing.mdx"
+import { Tabs, TabItem } from '@astrojs/starlight/components'
+
+<BulletedListsIntro />
+
+## Create a bulleted list
+
+<Tabs>
+  <TabItem label="Via compose box button">
+    <FlattenedSteps>
+      <StartComposing />
+
+      1. *(optional)* Select the text you want to format.
+      1. Click the **Bulleted list**
+         (<UnorderedListIcon />) icon at the
+         bottom of the compose box to insert list formatting.
+      1. Press <kbd>Enter</kbd> to automatically add a new bullet to the list.
+      1. When your list is done, press <kbd>Enter</kbd> a second time to remove the
+         bullet.
+    </FlattenedSteps>
+
+    <ZulipTip>
+      You can also use the **Bulleted list**
+      (<UnorderedListIcon />) icon
+      to remove existing list formatting from the current line or selected text.
+    </ZulipTip>
+  </TabItem>
+
+  <TabItem label="Via Markdown">
+    <FlattenedSteps>
+      <StartComposing />
+
+      1. Type `*`, `-`, or `+` followed by a space and some text to start a bulleted
+         list.
+      1. Press <kbd>Enter</kbd> to automatically add a new bullet to the list.
+      1. When your list is done, press <kbd>Enter</kbd> a second time to remove the
+         bullet.
+    </FlattenedSteps>
+  </TabItem>
+</Tabs>
+
+## Examples
+
+<BulletedListsExamples />
+
+## Related articles
+
+* [Message formatting](/help/format-your-message-using-markdown)
+* [Preview messages before sending](/help/preview-your-message-before-sending)
+* [Resize the compose box](/help/resize-the-compose-box)
+* [Numbered lists](/help/numbered-lists)

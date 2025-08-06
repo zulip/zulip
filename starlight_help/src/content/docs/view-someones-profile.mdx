@@ -1,0 +1,88 @@
+---
+title: View someone's profile
+---
+
+import ZulipTip from '../../components/ZulipTip.astro';
+import FlattenedSteps from '../../components/FlattenedSteps.astro';
+import { Steps } from '@astrojs/starlight/components';
+import RightSidebarViewProfile from "./include/_RightSidebarViewProfile.mdx"
+import LinkIcon from "~icons/zulip-icon/link"
+import { Tabs, TabItem } from '@astrojs/starlight/components'
+
+A user's profile displays key information about the user.
+
+## Information in a user's profile
+
+<Tabs>
+  <TabItem label="Desktop/Web">
+    * Their name.
+    * Their [availability](/help/status-and-availability#availability).
+    * Their profile picture.
+    * Their email address, if you [have
+      permission](/help/configure-email-visibility) to view it.
+    * Their user ID.
+    * Their [role](/help/user-roles) in the organization.
+    * The date they joined the organization.
+    * Their current [local time](/help/change-your-timezone).
+    * Any [custom profile fields](/help/custom-profile-fields) they've filled out.
+
+    Additional tabs showing:
+
+    * The channels that the user is subscribed to. Note that the list is limited to
+      channels for which you have [permission to see all
+      subscribers](/help/channel-permissions).
+    * The [user groups](/help/user-groups) to which they belong.
+  </TabItem>
+
+  <TabItem label="Mobile">
+    * Their name.
+    * Their [availability](/help/status-and-availability#availability) and
+      [status](/help/status-and-availability#statuses).
+    * Their email address, if you [have
+      permission](/help/configure-email-visibility) to view it.
+    * Their [role](/help/user-roles) in the organization.
+    * Any [custom profile fields](/help/custom-profile-fields) they've filled out.
+  </TabItem>
+</Tabs>
+
+## View someone's profile
+
+<Tabs>
+  <TabItem label="Desktop/Web">
+    <FlattenedSteps>
+      <RightSidebarViewProfile />
+    </FlattenedSteps>
+
+    <ZulipTip>
+      You can also click on a user's profile picture or name on a
+      message they sent to open their **user card**, and skip to
+      the last step.
+    </ZulipTip>
+  </TabItem>
+
+  <TabItem label="Mobile">
+    <Steps>
+      1. Tap on a user's profile picture or name.
+    </Steps>
+  </TabItem>
+</Tabs>
+
+## Share someone's profile
+
+<Tabs>
+  <TabItem label="Desktop/Web">
+    <FlattenedSteps>
+      <RightSidebarViewProfile />
+
+      1. Click on the **link** (<LinkIcon />)
+         icon to the right of their name to copy the URL for their profile.
+    </FlattenedSteps>
+  </TabItem>
+</Tabs>
+
+## Related articles
+
+* [Introduction to users](/help/introduction-to-users)
+* [Edit your profile](/help/edit-your-profile)
+* [Custom profile fields](/help/custom-profile-fields)
+* [User cards](/help/user-cards)

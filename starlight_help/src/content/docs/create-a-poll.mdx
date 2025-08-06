@@ -1,0 +1,105 @@
+---
+title: Polls
+---
+
+import ZulipNote from '../../components/ZulipNote.astro';
+import ZulipTip from '../../components/ZulipTip.astro';
+import FlattenedSteps from '../../components/FlattenedSteps.astro';
+import PollsExamples from "./include/_PollsExamples.mdx"
+import PollsIntro from "./include/_PollsIntro.mdx"
+import PencilIcon from "~icons/fa/pencil"
+import { Steps } from '@astrojs/starlight/components';
+import TrashIcon from "~icons/zulip-icon/trash"
+import CheckIcon from "~icons/fa/check"
+import GripVerticalIcon from "~icons/zulip-icon/grip-vertical"
+import StartComposing from "./include/_StartComposing.mdx"
+import SendIcon from "~icons/zulip-icon/send"
+import RemoveIcon from "~icons/fa/remove"
+import { Tabs, TabItem } from '@astrojs/starlight/components'
+import PollIcon from "~icons/zulip-icon/poll"
+
+<PollsIntro />
+
+## Create a poll
+
+<Tabs>
+  <TabItem label="Via compose box button">
+    <FlattenedSteps>
+      <StartComposing />
+
+      1. Make sure the compose box is empty.
+      1. Click the **Add poll** (<PollIcon />) icon at
+         the bottom of the compose box.
+      1. Fill out poll information as desired, and click **Add poll** to insert poll
+         formatting.
+      1. Click the **Send** (<SendIcon />) button, or
+         use a [keyboard shortcut](/help/configure-send-message-keys) to send your
+         message.
+    </FlattenedSteps>
+
+    <ZulipTip>
+      To reorder the list of options, click and drag the **vertical dots**
+      (<GripVerticalIcon />) to the left of each
+      option. To delete an option, click the **delete**
+      (<TrashIcon />) icon to the right of it.
+    </ZulipTip>
+  </TabItem>
+
+  <TabItem label="Via Markdown">
+    <FlattenedSteps>
+      <StartComposing />
+
+      1. Make sure the compose box is empty.
+      1. Type `/poll` followed by a space, and the question you want to ask.
+      1. *(optional)* Type each option on a new line.
+      1. Click the **Send** (<SendIcon />) button, or
+         use a [keyboard shortcut](/help/configure-send-message-keys) to send your
+         message.
+    </FlattenedSteps>
+
+    <ZulipTip>
+      You will be able to add options after the poll is created.
+    </ZulipTip>
+  </TabItem>
+</Tabs>
+
+## Add options to a poll
+
+<ZulipNote>
+  To preserve the meaning of votes in the poll, existing poll options cannot
+  be modified.
+</ZulipNote>
+
+<Steps>
+  1. Fill out the **New option** field at the bottom of the poll.
+  1. Click **Add option** or press <kbd>Enter</kbd> to add the new option to
+     the poll.
+</Steps>
+
+## Edit the question
+
+<ZulipNote>
+  Only the creator of a poll can edit the question.
+</ZulipNote>
+
+<Steps>
+  1. Click the **pencil** (<PencilIcon />) icon
+     to the right of the question.
+  1. Edit the question as desired.
+  1. Click the **checkmark** (<CheckIcon />) icon or press
+     <kbd>Enter</kbd> to save your changes.
+</Steps>
+
+<ZulipTip>
+  You can click the <RemoveIcon /> icon or press
+  <kbd>Esc</kbd> to discard your changes.
+</ZulipTip>
+
+## Examples
+
+<PollsExamples />
+
+## Related articles
+
+* [Message formatting](/help/format-your-message-using-markdown)
+* [Collaborative to-do lists](/help/collaborative-to-do-lists)

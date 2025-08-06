@@ -1,0 +1,93 @@
+---
+title: Marking messages as unread
+---
+
+import MoreVerticalIcon from "~icons/zulip-icon/more-vertical"
+import FollowIcon from "~icons/zulip-icon/follow"
+import ZulipTip from '../../components/ZulipTip.astro';
+import FlattenedSteps from '../../components/FlattenedSteps.astro';
+import MuteIcon from "~icons/zulip-icon/mute"
+import MessageLongPressMenu from "./include/_MessageLongPressMenu.mdx"
+import KeyboardTip from '../../components/KeyboardTip.astro';
+import { Steps } from '@astrojs/starlight/components';
+import MessageActionsMenu from "./include/_MessageActionsMenu.mdx"
+import GoToRecentConversations from "./include/_GoToRecentConversations.mdx"
+import { Tabs, TabItem } from '@astrojs/starlight/components'
+
+Zulip lets you manually mark messages as unread. Specifically, Zulip offers a
+**Mark as unread from here** option, which lets you mark the selected message
+and all newer messages in your current view as unread.
+
+There are many ways to use this feature, including:
+
+* When you don't have time to read a conversation carefully, or to follow up on
+  action items, mark messages as unread to return to them later.
+* You can mark messages as unread when you [subscribe to a
+  channel](/help/introduction-to-channels#browse-and-subscribe-to-channels). This makes it
+  [convenient](/help/reading-strategies) to review all the recent
+  conversations in that channel.
+* Mark the results of your [search](/help/search-for-messages) as unread to
+  review them at leisure.
+
+## Mark as unread from selected message
+
+<Tabs>
+  <TabItem label="Desktop/Web">
+    <FlattenedSteps>
+      <MessageActionsMenu />
+
+      1. Click **Mark as unread from here**.
+    </FlattenedSteps>
+
+    <KeyboardTip>
+      You can also mark messages as unread by selecting a message, and using the
+      <kbd>Shift</kbd> + <kbd>U</kbd> shortcut.
+    </KeyboardTip>
+  </TabItem>
+
+  <TabItem label="Mobile">
+    <FlattenedSteps>
+      <MessageLongPressMenu />
+
+      1. Tap **Mark as unread from here**.
+    </FlattenedSteps>
+  </TabItem>
+</Tabs>
+
+## Mark all messages in a topic or channel as unread
+
+<Tabs>
+  <TabItem label="Via left sidebar">
+    <Steps>
+      1. Hover over a topic or channel in the left sidebar.
+      1. Click on the **ellipsis** (<MoreVerticalIcon />).
+      1. Click **Mark all messages as unread**. This option will appear only if all
+         messages in the topic or channel are currently marked as read.
+    </Steps>
+
+    <ZulipTip>
+      You can also mark all messages in your current view as unread by
+      jumping to the top with the <kbd>Home</kbd> key, and marking as unread
+      [from the first message](#mark-as-unread-from-selected-message).
+    </ZulipTip>
+  </TabItem>
+
+  <TabItem label="Via recent conversations">
+    <FlattenedSteps>
+      <GoToRecentConversations />
+
+      1. Hover over a topic.
+      1. Click on the **ellipsis** (<MoreVerticalIcon />) next to the unread messages counter. You may
+         need to hover over the indicator icon for a followed (<FollowIcon />) or muted (<MuteIcon />) topic in order to see it.
+      1. Click **Mark all messages as unread**. This option will appear only if all
+         messages in the topic are currently marked as read.
+    </FlattenedSteps>
+  </TabItem>
+</Tabs>
+
+## Related articles
+
+* [Reading strategies](/help/reading-strategies)
+* [Marking messages as read](/help/marking-messages-as-read)
+* [Star a message](/help/star-a-message)
+* [Read receipts](/help/read-receipts)

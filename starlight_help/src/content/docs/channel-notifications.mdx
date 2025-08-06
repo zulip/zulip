@@ -1,0 +1,101 @@
+---
+title: Channel notifications
+---
+
+import ChannelActions from "./include/_ChannelActions.mdx"
+import NavigationSteps from "../../components/NavigationSteps.astro"
+import ZulipTip from '../../components/ZulipTip.astro';
+import FlattenedSteps from '../../components/FlattenedSteps.astro';
+import SelectChannelViewPersonal from "./include/_SelectChannelViewPersonal.mdx"
+import ResetIcon from "~icons/zulip-icon/reset"
+import { Tabs, TabItem } from '@astrojs/starlight/components'
+
+You can configure desktop, mobile, and email notifications on a channel by
+channel basis.
+
+## Configure notifications for a single channel
+
+These settings will override any default channel notification settings. In [muted
+channels](/help/mute-a-channel), channel notification settings apply only to
+[unmuted topics](/help/mute-a-topic).
+
+<Tabs>
+  <TabItem label="Via channel settings">
+    <FlattenedSteps>
+      <ChannelActions />
+
+      1. Click **Channel settings**.
+
+      <SelectChannelViewPersonal />
+
+      1. Under **Notification settings**, toggle your preferred
+         notifications settings for the channel.
+    </FlattenedSteps>
+  </TabItem>
+
+  <TabItem label="Via personal settings">
+    <FlattenedSteps>
+      <NavigationSteps target="settings/notifications" />
+
+      1. In the **Notification triggers** table, find the name of the channel
+         you want to configure. If the channel is currently set to the default
+         channel notification settings, you can select it from the **Customize
+         another channel** dropdown at the bottom of the table.
+      1. Toggle your preferred notifications settings for the selected
+         channel.
+    </FlattenedSteps>
+
+    <ZulipTip>
+      To reset a channel's notifications to the default settings, hover
+      over its name in the notification triggers table, and click the
+      **reset to default notifications**
+      (<ResetIcon />) icon.
+    </ZulipTip>
+  </TabItem>
+
+  <TabItem label="Mobile">
+    Access this feature by following the web app instructions in your
+    mobile device browser.
+
+    Implementation of this feature in the mobile app is tracked [on
+    GitHub](https://github.com/zulip/zulip-flutter/issues/1223). If
+    you're interested in this feature, please react to the issue's
+    description with 👍.
+  </TabItem>
+</Tabs>
+
+## Configure default notifications for all channels
+
+These settings only apply to channels where you have not
+explicitly set a notification preference.
+
+<Tabs>
+  <TabItem label="Desktop/Web">
+    <FlattenedSteps>
+      <NavigationSteps target="settings/notifications" />
+
+      1. In the **Notification triggers** table,
+         toggle the settings for **Channels**.
+    </FlattenedSteps>
+  </TabItem>
+
+  <TabItem label="Mobile">
+    Access this feature by following the web app instructions in your
+    mobile device browser.
+
+    Implementation of this feature in the mobile app is tracked [on
+    GitHub](https://github.com/zulip/zulip-flutter/issues/661). If
+    you're interested in this feature, please react to the issue's
+    description with 👍.
+  </TabItem>
+</Tabs>
+
+## Related articles
+
+* [Desktop notifications](/help/desktop-notifications)
+* [Email notifications](/help/email-notifications)
+* [Mobile notifications](/help/mobile-notifications)
+* [Mute or unmute a channel](/help/mute-a-channel)
+* [Mute or unmute a topic](/help/mute-a-topic)
+* [DMs, mentions, and alerts](/help/dm-mention-alert-notifications)
+* [Do not disturb](/help/do-not-disturb)

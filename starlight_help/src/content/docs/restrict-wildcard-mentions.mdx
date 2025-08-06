@@ -1,0 +1,33 @@
+---
+title: Restrict wildcard mentions
+---
+
+import NavigationSteps from "../../components/NavigationSteps.astro"
+import AdminOnly from "./include/_AdminOnly.mdx"
+import SaveChanges from "./include/_SaveChanges.mdx"
+import FlattenedSteps from '../../components/FlattenedSteps.astro';
+
+<AdminOnly />
+
+Organization administrators can configure who is allowed to use [wildcard
+mentions](/help/dm-mention-alert-notifications#wildcard-mentions) that affect a
+large number of users. In particular, an organization can restrict who is
+allowed to use `@all` (and, equivalently, `@everyone` and `@channel`) in channels
+with more than 15 subscribers, and `@topic` in topics with more than 15
+participants.
+
+This permission can be granted to any combination of [roles](/help/user-roles),
+[groups](/help/user-groups), and individual [users](/help/introduction-to-users).
+
+<FlattenedSteps>
+  <NavigationSteps target="settings/organization-permissions" />
+
+  1. Under **Channel permissions**, configure **Who can notify a large number of
+     users with a wildcard mention**.
+
+  <SaveChanges />
+</FlattenedSteps>
+
+## Related articles
+
+* [DMs, mentions, and alerts](/help/dm-mention-alert-notifications)

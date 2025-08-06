@@ -1,0 +1,41 @@
+---
+title: Manage a bot
+---
+
+import NavigationSteps from "../../components/NavigationSteps.astro"
+import UserCogIcon from "~icons/zulip-icon/user-cog"
+import AdminOnly from "./include/_AdminOnly.mdx"
+import FlattenedSteps from '../../components/FlattenedSteps.astro';
+
+Zulip lets you manage the properties of any bot for which you are the owner.
+Organization [administrators](/help/user-roles) can also manage any
+active bot in the organization.
+
+## Manage your bot
+
+<FlattenedSteps>
+  <NavigationSteps target="settings/your-bots" />
+
+  1. Click the **manage bot** (<UserCogIcon />)
+     icon on the profile card for the bot you want to manage.
+  1. Update bot information as desired, and click **Save changes**.
+</FlattenedSteps>
+
+## Manage a bot in your organization
+
+<AdminOnly />
+
+<FlattenedSteps>
+  <NavigationSteps target="settings/bot-list-admin" />
+
+  1. In the **Actions** column, click the **manage bot** (<UserCogIcon />) icon for the bot you want to manage.
+  1. Update bot information as desired, and click **Save changes**.
+</FlattenedSteps>
+
+## Related articles
+
+* [Bots overview](/help/bots-overview)
+* [Integrations overview](/help/integrations-overview)
+* [Add a bot or integration](/help/add-a-bot-or-integration)
+* [Deactivate or reactivate a bot](/help/deactivate-or-reactivate-a-bot)
+* [View all bots in your organization](/help/view-all-bots-in-your-organization)

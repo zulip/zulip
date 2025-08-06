@@ -1,0 +1,71 @@
+---
+title: Mute or unmute a topic
+---
+
+import TopicLongPressMenu from "./include/_TopicLongPressMenu.mdx"
+import ManageConfiguredTopicsDesktopWeb from "./include/_ManageConfiguredTopicsDesktopWeb.mdx"
+import ConfigureTopicNotificationsDesktopWeb from "./include/_ConfigureTopicNotificationsDesktopWeb.mdx"
+import ZulipTip from '../../components/ZulipTip.astro';
+import FlattenedSteps from '../../components/FlattenedSteps.astro';
+import MuteUnmuteIntro from "./include/_MuteUnmuteIntro.mdx"
+import KeyboardTip from '../../components/KeyboardTip.astro';
+import AutomaticallyUnmuteTopicsInMutedChannels from "./include/_AutomaticallyUnmuteTopicsInMutedChannels.mdx"
+import TopicLongPressMenuTip from "./include/_TopicLongPressMenuTip.mdx"
+import { Tabs, TabItem } from '@astrojs/starlight/components'
+import ManageConfiguredTopicsMobile from "./include/_ManageConfiguredTopicsMobile.mdx"
+
+<MuteUnmuteIntro />
+
+## Mute or unmute a topic
+
+<Tabs>
+  <TabItem label="Desktop/Web">
+    <FlattenedSteps>
+      <ConfigureTopicNotificationsDesktopWeb />
+    </FlattenedSteps>
+  </TabItem>
+
+  <TabItem label="Mobile">
+    <FlattenedSteps>
+      <TopicLongPressMenu />
+
+      1. Tap **Mute topic** or **Unmute topic**.
+    </FlattenedSteps>
+
+    <TopicLongPressMenuTip />
+  </TabItem>
+</Tabs>
+
+<KeyboardTip>
+  You can also use the <kbd>Shift</kbd> + <kbd>M</kbd> [keyboard
+  shortcut](/help/keyboard-shortcuts) to mute or unmute a topic.
+</KeyboardTip>
+
+## Automatically unmute topics in muted channels
+
+<AutomaticallyUnmuteTopicsInMutedChannels />
+
+## Manage configured topics
+
+<Tabs>
+  <TabItem label="Desktop/Web">
+    <ManageConfiguredTopicsDesktopWeb />
+  </TabItem>
+
+  <TabItem label="Mobile">
+    <FlattenedSteps>
+      <ManageConfiguredTopicsMobile />
+    </FlattenedSteps>
+
+    <ZulipTip>
+      Muted topics are grayed out in the topics list.
+    </ZulipTip>
+  </TabItem>
+</Tabs>
+
+## Related articles
+
+* [Mute or unmute a channel](/help/mute-a-channel)
+* [Follow a topic](/help/follow-a-topic)
+* [Topic notifications](/help/topic-notifications)
+* [Mute a user](/help/mute-a-user)

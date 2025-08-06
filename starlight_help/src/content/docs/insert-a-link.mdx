@@ -1,0 +1,73 @@
+---
+title: Insert a link
+---
+
+import FlattenedSteps from '../../components/FlattenedSteps.astro';
+import LinksIntro from "./include/_LinksIntro.mdx"
+import KeyboardTip from '../../components/KeyboardTip.astro';
+import LinksExamples from "./include/_LinksExamples.mdx"
+import LinkIcon from "~icons/zulip-icon/link"
+import StartComposing from "./include/_StartComposing.mdx"
+import { Tabs, TabItem } from '@astrojs/starlight/components'
+
+<LinksIntro />
+
+## Insert a link
+
+<Tabs>
+  <TabItem label="Via paste">
+    <FlattenedSteps>
+      <StartComposing />
+
+      1. Select the text you want to linkify.
+      1. Paste a URL to turn the selected text into a named link.
+    </FlattenedSteps>
+
+    <KeyboardTip>
+      You can also use <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>L</kbd>
+      to insert link formatting.
+    </KeyboardTip>
+  </TabItem>
+
+  <TabItem label="Via compose box button">
+    <FlattenedSteps>
+      <StartComposing />
+
+      1. Select the text you want to linkify.
+      1. Click the **link** (<LinkIcon />) icon at the
+         bottom of the compose box.
+      1. Replace `url` with a valid URL.
+    </FlattenedSteps>
+
+    <KeyboardTip>
+      You can also use <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>L</kbd>
+      to insert link formatting.
+    </KeyboardTip>
+  </TabItem>
+
+  <TabItem label="Via Markdown">
+    <FlattenedSteps>
+      <StartComposing />
+
+      1. To create a named link, use `[ ]` around the link text, and `( )` around the
+         URL: `[Link text](URL)`.
+    </FlattenedSteps>
+
+    <KeyboardTip>
+      You can also use <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>L</kbd>
+      to insert link formatting.
+    </KeyboardTip>
+  </TabItem>
+</Tabs>
+
+## Examples
+
+<LinksExamples />
+
+## Related articles
+
+* [Message formatting](/help/format-your-message-using-markdown)
+* [Preview messages before sending](/help/preview-your-message-before-sending)
+* [Resize the compose box](/help/resize-the-compose-box)
+* [Animated GIFs](/help/animated-gifs-from-giphy)
+* [Video calls](/help/start-a-call)

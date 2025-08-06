@@ -1,0 +1,38 @@
+---
+title: View group members
+---
+
+import { Steps } from '@astrojs/starlight/components';
+import NavigationSteps from "../../components/NavigationSteps.astro"
+import { Tabs, TabItem } from '@astrojs/starlight/components'
+import FlattenedSteps from '../../components/FlattenedSteps.astro';
+
+User groups can have other [groups](/help/user-groups),
+[roles](/help/user-roles), and individual [users](/help/introduction-to-users)
+as members.
+
+<Tabs>
+  <TabItem label="Via group card">
+    <Steps>
+      1. Click on a user group mention in a message to open the **group card**. The
+         group's members will be listed on the card.
+      1. If the group has a large number of members, click the **view all** link to
+         see the rest of the list.
+    </Steps>
+  </TabItem>
+
+  <TabItem label="Via group settings">
+    <FlattenedSteps>
+      <NavigationSteps target="relative/group/all" />
+
+      1. Select a user group.
+      1. Select the **Members** tab on the right.
+    </FlattenedSteps>
+  </TabItem>
+</Tabs>
+
+## Related articles
+
+* [User groups](/help/user-groups)
+* [Manage user groups](/help/manage-user-groups)
+* [User roles](/help/user-roles)

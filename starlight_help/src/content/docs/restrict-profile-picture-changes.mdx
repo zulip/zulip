@@ -1,0 +1,34 @@
+---
+title: Restrict profile picture changes
+---
+
+import NavigationSteps from "../../components/NavigationSteps.astro"
+import ZulipTip from '../../components/ZulipTip.astro';
+import FlattenedSteps from '../../components/FlattenedSteps.astro';
+import SaveChanges from "./include/_SaveChanges.mdx"
+import AdminOnly from "./include/_AdminOnly.mdx"
+
+<AdminOnly />
+
+By default, any user can [change their profile picture][change-avatar].
+You can instead prevent users from changing their profile picture. This
+setting is primarily useful in organizations that are [synchronizing
+profile pictures from LDAP][ldap-sync-avatars] or a similar directory.
+
+<ZulipTip>
+  Organization administrators can always change their own profile
+  picture.
+</ZulipTip>
+
+<FlattenedSteps>
+  <NavigationSteps target="settings/organization-permissions" />
+
+  1. Under **User identity**, select **Prevent users from changing their
+     avatar**.
+
+  <SaveChanges />
+</FlattenedSteps>
+
+[change-avatar]: /help/change-your-profile-picture
+
+[ldap-sync-avatars]: https://zulip.readthedocs.io/en/stable/production/authentication-methods.html#synchronizing-avatars

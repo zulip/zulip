@@ -1,0 +1,132 @@
+---
+title: Emoji reactions
+---
+
+import NavigationSteps from "../../components/NavigationSteps.astro"
+import MoreVerticalSpreadIcon from "~icons/zulip-icon/more-vertical-spread"
+import ZulipTip from '../../components/ZulipTip.astro';
+import FlattenedSteps from '../../components/FlattenedSteps.astro';
+import SmileIcon from "~icons/zulip-icon/smile"
+import MessageLongPressMenu from "./include/_MessageLongPressMenu.mdx"
+import KeyboardTip from '../../components/KeyboardTip.astro';
+import { Steps } from '@astrojs/starlight/components';
+import MessageActions from "./include/_MessageActions.mdx"
+import { Tabs, TabItem } from '@astrojs/starlight/components'
+import ChevronRightIcon from "~icons/zulip-icon/chevron-right"
+import ViewEmojiReactions from "./include/_ViewEmojiReactions.mdx"
+
+Emoji reactions let you quickly respond to a message. For example, 👍 is
+commonly used to express agreement or confirm that you've [read the
+message](/help/read-receipts). Any emoji can be used as a reaction, including
+[custom emoji](/help/custom-emoji). Reactions appear at the bottom of the
+message.
+
+## Add a new reaction
+
+<Tabs>
+  <TabItem label="Desktop/Web">
+    <FlattenedSteps>
+      <MessageActions />
+
+      1. Click the **Add emoji reaction** (<SmileIcon />) icon. On messages that you sent, click on the
+         **ellipsis** (<MoreVerticalSpreadIcon />),
+         then **Add emoji reaction**.
+      1. Select an emoji. Type to search, use the arrow keys, or click on an emoji
+         with your mouse.
+    </FlattenedSteps>
+
+    <ZulipTip>
+      To add multiple reactions without closing the emoji picker, hold the
+      <kbd>Shift</kbd> key while selecting emoji.
+    </ZulipTip>
+
+    <KeyboardTip>
+      Use <kbd>:</kbd> to add any reaction, <kbd>=</kbd> to add the first
+      emoji reaction added by others, or <kbd>+</kbd> to react with 👍.
+    </KeyboardTip>
+  </TabItem>
+
+  <TabItem label="Mobile">
+    <FlattenedSteps>
+      <MessageLongPressMenu />
+
+      1. Select one of the emojis at the top of the menu, or tap **more**
+         (<ChevronRightIcon />).
+      1. Start typing the name of the emoji you want to use, and select an emoji from
+         the list of suggestions.
+    </FlattenedSteps>
+  </TabItem>
+</Tabs>
+
+## Add or remove an existing reaction
+
+<Tabs>
+  <TabItem label="Desktop/Web">
+    <Steps>
+      1. Click on an existing emoji reaction to add or remove your reaction.
+    </Steps>
+
+    <ZulipTip>
+      To make it easy to see which reactions you have added, they are
+      highlighted in a different color.
+    </ZulipTip>
+
+    <KeyboardTip>
+      You can also toggle the first emoji reaction on the selected message by
+      using the <kbd>=</kbd> shortcut.
+    </KeyboardTip>
+  </TabItem>
+
+  <TabItem label="Mobile">
+    <Steps>
+      1. Tap on an existing emoji reaction to add or remove your reaction.
+    </Steps>
+
+    <ZulipTip>
+      To make it easy to see which reactions you have added, they are
+      highlighted in a different color.
+    </ZulipTip>
+  </TabItem>
+</Tabs>
+
+## Viewing who reacted to a message
+
+For messages where few users have reacted, the names of users who have reacted
+are displayed directly on the message if the [option to do
+so](#toggle-whether-names-of-reacting-users-are-displayed) is enabled.
+
+### View who reacted to a message
+
+<Tabs>
+  <TabItem label="Desktop/Web">
+    <Steps>
+      1. Hover over an emoji reaction to see who reacted with that emoji.
+    </Steps>
+  </TabItem>
+
+  <TabItem label="Mobile">
+    <FlattenedSteps>
+      <MessageLongPressMenu />
+
+      1. Tap **See who reacted**.
+    </FlattenedSteps>
+  </TabItem>
+</Tabs>
+
+### Toggle whether names of reacting users are displayed
+
+<FlattenedSteps>
+  <NavigationSteps target="settings/preferences" />
+
+  1. Under **Emoji**, toggle **Display names of reacting users when few users have
+     reacted to a message**.
+</FlattenedSteps>
+
+## View your messages with reactions
+
+<ViewEmojiReactions />
+
+## Related articles
+
+* [Add custom emoji](/help/custom-emoji)
+* [Emoji in messages](/help/emoji-and-emoticons)

@@ -1,0 +1,37 @@
+---
+title: Manage permissions
+---
+
+import NavigationSteps from "../../components/NavigationSteps.astro"
+import ZulipTip from '../../components/ZulipTip.astro';
+import FlattenedSteps from '../../components/FlattenedSteps.astro';
+import UserRolesIntro from "./include/_UserRolesIntro.mdx"
+import SaveChanges from "./include/_SaveChanges.mdx"
+
+<UserRolesIntro />
+
+User groups offer a flexible way to manage permissions.
+
+<ZulipTip>
+  Learn about channel [types and permissions](/help/channel-permissions),
+  including **public** and **private** channels.
+</ZulipTip>
+
+## Manage organization permissions
+
+<FlattenedSteps>
+  <NavigationSteps target="settings/organization-permissions" />
+
+  1. Review organization permissions, and modify as needed.
+
+  <SaveChanges />
+</FlattenedSteps>
+
+## Related articles
+
+* [Change a user's role](/help/user-roles#change-a-users-role)
+* [User groups](/help/user-groups)
+* [Channel permissions](/help/channel-permissions)
+* [Inviting new users](/help/invite-new-users)
+* [Zulip Cloud billing](/help/zulip-cloud-billing)
+* [Guest users](/help/guest-users)

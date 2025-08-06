@@ -1,0 +1,52 @@
+---
+title: Recent conversations
+---
+
+import RecentConversations from "./include/_RecentConversations.mdx"
+import FlattenedSteps from '../../components/FlattenedSteps.astro';
+import ConversationDefinition from "./include/_ConversationDefinition.mdx"
+import KeyboardTip from '../../components/KeyboardTip.astro';
+import GoToRecentConversations from "./include/_GoToRecentConversations.mdx"
+import ZulipTip from '../../components/ZulipTip.astro';
+import { Tabs, TabItem } from '@astrojs/starlight/components'
+
+<ConversationDefinition />
+
+<RecentConversations />
+
+<KeyboardTip>
+  The arrow keys and vim navigation keys (<kbd>J</kbd>, <kbd>K</kbd>,
+  <kbd>L</kbd>, <kbd>H</kbd>) can be used to move between elements.
+</KeyboardTip>
+
+## Load more conversations
+
+The **recent conversations** view displays a limited number of conversations
+containing the most recent messages.
+
+<ZulipTip>
+  Use the [search bar](/help/search-for-messages) at the top of the web app
+  to search through all conversations, not just recent ones.
+</ZulipTip>
+
+<Tabs>
+  <TabItem label="Desktop/Web">
+    <FlattenedSteps>
+      <GoToRecentConversations />
+
+      1. Scroll to the bottom of the list of conversations, or bring the bottom into
+         view by filtering for a non-existent keyword.
+      1. Click the **Load more** button in the banner at the bottom.
+    </FlattenedSteps>
+  </TabItem>
+</Tabs>
+
+## Related articles
+
+* [Finding a conversation to read](/help/finding-a-conversation-to-read)
+* [Reading conversations](/help/reading-conversations)
+* [Reading strategies](/help/reading-strategies)
+* [Inbox](/help/inbox)
+* [List of topics in a channel](/help/list-of-topics)
+* [Combined feed](/help/combined-feed)
+* [Configure home view](/help/configure-home-view)

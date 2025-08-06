@@ -1,0 +1,63 @@
+---
+title: Deactivate a user group
+---
+
+import NavigationSteps from "../../components/NavigationSteps.astro"
+import UserGroupPlusIcon from "~icons/zulip-icon/user-group-plus"
+import FlattenedSteps from '../../components/FlattenedSteps.astro';
+import UserGroupXIcon from "~icons/zulip-icon/user-group-x"
+import { Tabs, TabItem } from '@astrojs/starlight/components'
+
+You can deactivate groups you no longer plan to use. Deactivated groups cannot be [mentioned](/help/mention-a-user-or-group), or used for any [permissions](/help/manage-permissions).
+
+## Deactivate a user group
+
+<Tabs>
+  <TabItem label="Desktop/Web">
+    <FlattenedSteps>
+      <NavigationSteps target="relative/group/all" />
+
+      1. Select a user group.
+      1. Select the **Permissions** tab on the right.
+      1. Remove all permissions.
+      1. Click the **Deactivate group** (<UserGroupXIcon />) button in the
+         upper right corner of the user group settings panel.
+      1. Click **Confirm**.
+    </FlattenedSteps>
+  </TabItem>
+</Tabs>
+
+## View deactivated user groups
+
+<Tabs>
+  <TabItem label="Desktop/Web">
+    <FlattenedSteps>
+      <NavigationSteps target="relative/group/all" />
+
+      1. Select **Deactivated groups** from the dropdown next to the **Filter** box
+         above the list of groups.
+    </FlattenedSteps>
+  </TabItem>
+</Tabs>
+
+## Reactivate a user group
+
+<Tabs>
+  <TabItem label="Desktop/Web">
+    <FlattenedSteps>
+      <NavigationSteps target="relative/group/all" />
+
+      1. Select **Deactivated groups** from the dropdown next to the **Filter** box
+         above the list of groups.
+      1. Select a user group.
+      1. Click the **Reactivate group** (<UserGroupPlusIcon />) button in the
+         upper right corner of the user group settings panel.
+    </FlattenedSteps>
+  </TabItem>
+</Tabs>
+
+## Related articles
+
+* [User groups](/help/user-groups)
+* [Create user groups](/help/create-user-groups)
+* [Manage user groups](/help/manage-user-groups)

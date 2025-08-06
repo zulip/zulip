@@ -1,0 +1,20 @@
+import { Steps } from '@astrojs/starlight/components';
+import KeyboardTip from '../../../components/KeyboardTip.astro';
+import { Tabs, TabItem } from '@astrojs/starlight/components'
+
+DM conversations hidden under **more conversations** will be included in your
+search.
+
+<Tabs>
+  <TabItem label="Desktop/Web">
+    <Steps>
+      1. Type the name of a participant in the conversation you're looking for in the
+         **Filter left sidebar** box at the top of the left sidebar.
+    </Steps>
+
+    <KeyboardTip>
+      You can also use the <kbd>Q</kbd> keyboard shortcut to start searching for
+      a conversation.
+    </KeyboardTip>
+  </TabItem>
+</Tabs>

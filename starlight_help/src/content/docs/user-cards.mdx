@@ -1,0 +1,75 @@
+---
+title: User cards
+---
+
+import NavigationSteps from "../../components/NavigationSteps.astro"
+import ZulipTip from '../../components/ZulipTip.astro';
+import FlattenedSteps from '../../components/FlattenedSteps.astro';
+import KeyboardTip from '../../components/KeyboardTip.astro';
+import RightSidebarUserCard from "./include/_RightSidebarUserCard.mdx"
+import { Tabs, TabItem } from '@astrojs/starlight/components'
+
+In the web and desktop apps, user cards contain basic information about a user
+or bot. User cards are also a handy starting point for actions such as a [viewing a
+user's profile](/help/view-someones-profile) or [viewing the messages they've
+sent](/help/view-messages-sent-by-a-user).
+
+## Information in a user's card
+
+<Tabs>
+  <TabItem label="User">
+    * Their profile picture.
+    * Their name.
+    * Their [role](/help/user-roles) in the organization.
+    * Their [status and availability](/help/status-and-availability), and whether
+      the account has been [deactivated](/help/deactivate-or-reactivate-a-user).
+    * Their current [local time](/help/change-your-timezone).
+    * Their email address, if you [have
+      permission](/help/configure-email-visibility) to view it.
+    * The custom profile fields
+      [selected](/help/custom-profile-fields#display-custom-fields-on-user-card) by
+      administrators to be featured on user cards.
+  </TabItem>
+
+  <TabItem label="Bot">
+    * Its profile picture.
+    * Its name.
+    * Its owner's name.
+    * Its email address, if you [have
+      permission](/help/configure-email-visibility) to view it.
+    * Whether the bot has been [deactivated](/help/deactivate-or-reactivate-a-bot).
+  </TabItem>
+</Tabs>
+
+## View someone's user card
+
+<Tabs>
+  <TabItem label="User">
+    <FlattenedSteps>
+      <RightSidebarUserCard />
+    </FlattenedSteps>
+
+    <ZulipTip>
+      You can also click on a user's profile picture or name on a message they sent.
+    </ZulipTip>
+
+    <KeyboardTip>
+      Alternatively, open someone's **user card** by selecting a message they sent, and
+      using the <kbd>U</kbd> shortcut.
+    </KeyboardTip>
+  </TabItem>
+
+  <TabItem label="Bot">
+    <FlattenedSteps>
+      <NavigationSteps target="settings/bot-list-admin" />
+
+      1. Click on the name of a bot in the **Name** column to open its **user card**.
+    </FlattenedSteps>
+  </TabItem>
+</Tabs>
+
+## Related articles
+
+* [Introduction to users](/help/introduction-to-users)
+* [View someone's profile](/help/view-someones-profile)
+* [Message actions](/help/message-actions)

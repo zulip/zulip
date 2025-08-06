@@ -1,0 +1,135 @@
+---
+title: Manage channel folders
+---
+
+import NavigationSteps from "../../components/NavigationSteps.astro"
+import EditIcon from "~icons/zulip-icon/edit"
+import MoveChannelToFolder from "./include/_MoveChannelToFolder.mdx"
+import FlattenedSteps from '../../components/FlattenedSteps.astro';
+import ChannelFoldersIntro from "./include/_ChannelFoldersIntro.mdx"
+import TrashIcon from "~icons/zulip-icon/trash"
+import SelectChannelViewGeneral from "./include/_SelectChannelViewGeneral.mdx"
+import { Tabs, TabItem } from '@astrojs/starlight/components'
+import AdminOnly from "./include/_AdminOnly.mdx"
+
+<ChannelFoldersIntro />
+
+## Move a channel to a folder
+
+<MoveChannelToFolder />
+
+## Create a new channel folder
+
+<AdminOnly />
+
+<Tabs>
+  <TabItem label="Via organization settings">
+    <FlattenedSteps>
+      <NavigationSteps target="settings/channel-folder-settings" />
+
+      1. Click **Add a new channel folder**.
+      1. Fill out channel folder information as desired, and click **Create**.
+      1. In the **Name** column, click and drag the vertical dots to reorder channel
+         folders.
+    </FlattenedSteps>
+  </TabItem>
+
+  <TabItem label="Via channel settings">
+    <FlattenedSteps>
+      <NavigationSteps target="relative/channel/all" />
+
+      1. Select any channel.
+
+      <SelectChannelViewGeneral />
+
+      1. Under **Folders**, click the **Create new folder** button to the right of the
+         folder selection dropdown.
+      1. Fill out the requested information, and click **Create**.
+    </FlattenedSteps>
+  </TabItem>
+</Tabs>
+
+## Edit a channel folder
+
+<AdminOnly />
+
+<Tabs>
+  <TabItem label="Via organization settings">
+    <FlattenedSteps>
+      <NavigationSteps target="settings/channel-folder-settings" />
+
+      1. In the **Actions** column, click the **edit** (<EditIcon />)
+         icon for the channel folder you want to edit.
+      1. Edit channel folder information as desired, and click **Save changes**.
+    </FlattenedSteps>
+  </TabItem>
+
+  <TabItem label="Via channel settings">
+    <FlattenedSteps>
+      <NavigationSteps target="relative/channel/all" />
+
+      1. Select any channel.
+
+      <SelectChannelViewGeneral />
+
+      1. Under **Folders**, click the **edit** (<EditIcon />) icon for the channel folder you want to edit in the
+         **Channel folder** dropdown.
+      1. Edit channel folder information as desired, and click **Save changes**.
+    </FlattenedSteps>
+  </TabItem>
+</Tabs>
+
+## Delete a channel folder
+
+<AdminOnly />
+
+<Tabs>
+  <TabItem label="Via organization settings">
+    <FlattenedSteps>
+      <NavigationSteps target="settings/channel-folder-settings" />
+
+      1. In the **Actions** column, click the **delete** (<TrashIcon />) icon for the channel folder you want to delete.
+      1. Approve by clicking **Confirm**.
+    </FlattenedSteps>
+  </TabItem>
+
+  <TabItem label="Via channel settings">
+    <FlattenedSteps>
+      <NavigationSteps target="relative/channel/all" />
+
+      1. Select any channel.
+
+      <SelectChannelViewGeneral />
+
+      1. Under **Folders**, click the **delete** (<TrashIcon />) icon for the channel folder you want to delete in the
+         **Channel folder** dropdown.
+      1. Approve by clicking **Confirm**.
+    </FlattenedSteps>
+  </TabItem>
+</Tabs>
+
+## Reorder channel folders
+
+<AdminOnly />
+
+Users will see channel folders in the specified order.
+
+<Tabs>
+  <TabItem label="Desktop/Web">
+    <FlattenedSteps>
+      <NavigationSteps target="settings/channel-folder-settings" />
+
+      1. In the **Name** column, click and drag the vertical dots to reorder channel
+         folders.
+    </FlattenedSteps>
+  </TabItem>
+</Tabs>
+
+## Related articles
+
+* [Channel folders](/help/channel-folders)
+* [Introduction to channels](/help/introduction-to-channels)
+* [Pin a channel](/help/pin-a-channel)
+* [Mute or unmute a channel](/help/mute-a-channel)
+* [Hide or reveal inactive channels](/help/manage-inactive-channels)
+* [Manage user groups](/help/manage-user-groups)

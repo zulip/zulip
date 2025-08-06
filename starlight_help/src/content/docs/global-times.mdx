@@ -1,0 +1,50 @@
+---
+title: Global times
+---
+
+import TimeIcon from "~icons/zulip-icon/time"
+import FlattenedSteps from '../../components/FlattenedSteps.astro';
+import GlobalTimesExamples from "./include/_GlobalTimesExamples.mdx"
+import GlobalTimesIntro from "./include/_GlobalTimesIntro.mdx"
+import StartComposing from "./include/_StartComposing.mdx"
+import { Tabs, TabItem } from '@astrojs/starlight/components'
+
+<GlobalTimesIntro />
+
+## Insert a time
+
+<Tabs>
+  <TabItem label="Via compose box button">
+    <FlattenedSteps>
+      <StartComposing />
+
+      1. Click the **Add global time** (<TimeIcon />)
+         icon at the bottom of the compose box to open the date picker.
+      1. Select the desired time by clicking with your mouse, or using the arrow
+         keys + <kbd>Enter</kbd>.
+      1. Click **Confirm** to insert the selected time.
+    </FlattenedSteps>
+  </TabItem>
+
+  <TabItem label="Via Markdown">
+    <FlattenedSteps>
+      <StartComposing />
+
+      1. Type `<time`, and click **Mention a time-zone-aware time**, or press
+         <kbd>Enter</kbd> to open the date picker.
+      1. Select the desired time by clicking with your mouse, or using the arrow
+         keys + <kbd>Enter</kbd>.
+      1. Click **Confirm** to insert the selected time.
+    </FlattenedSteps>
+  </TabItem>
+</Tabs>
+
+## Examples
+
+<GlobalTimesExamples />
+
+## Related articles
+
+* [Message formatting](/help/format-your-message-using-markdown)
+* [Preview messages before sending](/help/preview-your-message-before-sending)
+* [Resize the compose box](/help/resize-the-compose-box)

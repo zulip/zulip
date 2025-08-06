@@ -1,0 +1,16 @@
+import FlattenedSteps from '../../../components/FlattenedSteps.astro';
+import TopicListIcon from "~icons/zulip-icon/topic-list"
+import MobileChannels from "./_MobileChannels.mdx"
+import TopicLongPressMenu from "./_TopicLongPressMenu.mdx"
+
+<FlattenedSteps>
+  <MobileChannels />
+
+  1. Select a channel containing topics you want to configure.
+  1. Tap **topics** (<TopicListIcon />)
+     in the upper right corner of the app.
+
+  <TopicLongPressMenu />
+
+  1. Tap **Mute topic**, **Unmute topic**, or **Follow topic**.
+</FlattenedSteps>

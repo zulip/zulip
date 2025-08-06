@@ -1,0 +1,66 @@
+---
+title: Hide or reveal inactive channels
+---
+
+import NavigationSteps from "../../components/NavigationSteps.astro"
+import FlattenedSteps from '../../components/FlattenedSteps.astro';
+import FilterChannels from "./include/_FilterChannels.mdx"
+import { Steps } from '@astrojs/starlight/components';
+import { Tabs, TabItem } from '@astrojs/starlight/components'
+
+To avoid clutter in the [left sidebar](/help/left-sidebar), Zulip automatically
+hides channels with no recent messages if you're subscribed to 20+ channels. You
+can [configure](#configure-hiding-inactive-channels) Zulip to show or hide
+inactive channels regardless of how many you're subscribed to.
+
+It's easy to [reveal](#reveal-inactive-channels) or [find]() hidden inactive
+channels if you need to access them.
+
+## Reveal inactive channels
+
+<Tabs>
+  <TabItem label="Desktop/Web">
+    <Steps>
+      1. In the left sidebar, scroll to the bottom of the list of channels in the
+         [folder](/help/channel-folders) you're viewing.
+      1. Click **inactive channels** to reveal inactive channels. If you don't see
+         this button, there are no inactive channels, or they are already revealed.
+    </Steps>
+  </TabItem>
+</Tabs>
+
+## Hide inactive channels
+
+<Tabs>
+  <TabItem label="Desktop/Web">
+    <Steps>
+      1. In the left sidebar, scroll to the bottom of the list of channels in the
+         [folder](/help/channel-folders) you're viewing.
+      1. Click **hide inactive channels**. If you don't see this button, there are no
+         inactive channels, or they are already hidden.
+    </Steps>
+  </TabItem>
+</Tabs>
+
+## Find inactive channels
+
+<FilterChannels />
+
+## Configure hiding inactive channels
+
+<Tabs>
+  <TabItem label="Desktop/Web">
+    <FlattenedSteps>
+      <NavigationSteps target="settings/preferences" />
+
+      1. Under **Left sidebar**, configure **Hide inactive channels**.
+    </FlattenedSteps>
+  </TabItem>
+</Tabs>
+
+## Related articles
+
+* [Introduction to channels](/help/introduction-to-channels)
+* [Pin a channel](/help/pin-a-channel)
+* [Mute or unmute a channel](/help/mute-a-channel)
+* [Channel folders](/help/channel-folders)

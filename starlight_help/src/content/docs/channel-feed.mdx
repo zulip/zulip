@@ -1,0 +1,76 @@
+---
+title: Channel feed
+---
+
+import ChannelActions from "./include/_ChannelActions.mdx"
+import NavigationSteps from "../../components/NavigationSteps.astro"
+import ZulipTip from '../../components/ZulipTip.astro';
+import FlattenedSteps from '../../components/FlattenedSteps.astro';
+import AllMessagesIcon from "~icons/zulip-icon/all-messages"
+import MobileChannels from "./include/_MobileChannels.mdx"
+import KeyboardTip from '../../components/KeyboardTip.astro';
+import ConfigureChannelLinks from "./include/_ConfigureChannelLinks.mdx"
+import { Tabs, TabItem } from '@astrojs/starlight/components'
+
+The **Channel feed** is a feed of all the topics that you have not
+[muted](/help/mute-a-topic) in a particular channel. It's a great way to get a
+quick overview of recent messages in a channel.
+
+## Go to channel feed for a subscribed channel
+
+<Tabs>
+  <TabItem label="Desktop/Web">
+    <FlattenedSteps>
+      <ChannelActions />
+
+      1. Click **Go to channel feed**. If you do not see this option, Zulip is
+         [configured](#configure-where-channel-links-in-the-left-sidebar-go) so that
+         clicking on the channel name in the left sidebar will take you directly to
+         the channel feed.
+    </FlattenedSteps>
+
+    <KeyboardTip>
+      Use <kbd>S</kbd> to go from a topic view to the channel feed.
+    </KeyboardTip>
+  </TabItem>
+
+  <TabItem label="Mobile">
+    <FlattenedSteps>
+      <MobileChannels />
+
+      1. Select a channel.
+    </FlattenedSteps>
+
+    <ZulipTip>
+      You can also go to the channel feed from a conversation view or from the
+      [list of topics in a channel](/help/list-of-topics), by tapping the
+      **channel feed** (<AllMessagesIcon />)
+      icon in the upper right corner of the app.
+    </ZulipTip>
+  </TabItem>
+</Tabs>
+
+## Go to channel feed for an unsubscribed channel
+
+<Tabs>
+  <TabItem label="Desktop/Web">
+    <FlattenedSteps>
+      <NavigationSteps target="relative/channel/not-subscribed" />
+
+      1. Select a channel.
+      1. Click the channel name in the top bar.
+    </FlattenedSteps>
+  </TabItem>
+</Tabs>
+
+## Configure where channel links in the left sidebar go
+
+<ConfigureChannelLinks />
+
+## Related articles
+
+* [Combined feed](/help/combined-feed)
+* [List of topics in a channel](/help/list-of-topics)
+* [Left sidebar](/help/left-sidebar)
+* [Reading strategies](/help/reading-strategies)
+* [Reading conversations](/help/reading-conversations)
