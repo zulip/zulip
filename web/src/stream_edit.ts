@@ -17,6 +17,7 @@ import * as blueslip from "./blueslip.ts";
 import type {Bot} from "./bot_data.ts";
 import * as browser_history from "./browser_history.ts";
 import * as channel from "./channel.ts";
+import * as channel_folders from "./channel_folders.ts";
 import * as channel_folders_ui from "./channel_folders_ui.ts";
 import * as confirm_dialog from "./confirm_dialog.ts";
 import {show_copied_confirmation} from "./copied_tooltip.ts";
@@ -256,6 +257,7 @@ export function show_settings_for(node: HTMLElement): void {
         other_settings.push(setting);
         return false;
     });
+    const realm_has_channel_folders = channel_folders.get_active_folder_ids().size > 0;
 
     const html = render_stream_settings({
         sub,
@@ -275,6 +277,7 @@ export function show_settings_for(node: HTMLElement): void {
         group_setting_labels: settings_config.all_group_setting_labels.stream,
         has_billing_access: settings_data.user_has_billing_access(),
         empty_string_topic_display_name: util.get_final_topic_display_name(""),
+        realm_has_channel_folders,
     });
     scroll_util.get_content_element($("#stream_settings")).html(html);
 
