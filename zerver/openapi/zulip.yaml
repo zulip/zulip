@@ -24453,8 +24453,12 @@ paths:
       tags: ["channels"]
       description: |
         Fetches all of the channel folders in the organization.
+        The folders are sorted by the `order` field.
 
-        **Changes**: New in Zulip 11.0 (feature level 389).
+        **Changes**: Before Zulip 11.0 (feature level ZF-fcae8c),
+        these were sorted by ID. (The `order` field didn't exist).
+
+        New in Zulip 11.0 (feature level 389).
       requestBody:
         required: false
         content:
