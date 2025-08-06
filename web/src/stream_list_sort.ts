@@ -107,6 +107,7 @@ export type StreamListSection = {
     streams: number[];
     muted_streams: number[];
     inactive_streams: number[]; // Only used for folder sections
+    order?: number; // Only used for folder sections
 };
 
 type StreamListSortResult = {
@@ -164,6 +165,7 @@ export function sort_groups(stream_ids: number[], search_term: string): StreamLi
                     streams: [],
                     muted_streams: [],
                     inactive_streams: [],
+                    order: folder.order,
                 };
                 folder_sections.set(sub.folder_id, section);
             }
@@ -185,8 +187,8 @@ export function sort_groups(stream_ids: number[], search_term: string): StreamLi
         }
     }
 
-    const folder_sections_sorted = [...folder_sections.values()].sort((section_a, section_b) =>
-        util.strcmp(section_a.section_title, section_b.section_title),
+    const folder_sections_sorted = [...folder_sections.values()].sort(
+        (section_a, section_b) => section_a.order! - section_b.order!,
     );
 
     // This needs to have the same ordering as the order they're displayed in the sidebar.

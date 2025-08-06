@@ -158,6 +158,7 @@ export const channel_folder_schema = z.object({
     creator_id: z.nullable(z.number()),
     date_created: z.number(),
     is_archived: z.boolean(),
+    order: z.number(),
 });
 
 export const navigation_view_schema = z.object({
