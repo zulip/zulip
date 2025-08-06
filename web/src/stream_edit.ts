@@ -257,6 +257,7 @@ export function show_settings_for(node: HTMLElement): void {
         other_settings.push(setting);
         return false;
     });
+    const realm_has_channel_folders = channel_folders.get_all_folder_ids().length > 0;
 
     const html = render_stream_settings({
         sub,
@@ -276,6 +277,7 @@ export function show_settings_for(node: HTMLElement): void {
         group_setting_labels: settings_config.all_group_setting_labels.stream,
         has_billing_access: settings_data.user_has_billing_access(),
         empty_string_topic_display_name: util.get_final_topic_display_name(""),
+        realm_has_channel_folders,
     });
     scroll_util.get_content_element($("#stream_settings")).html(html);
 
