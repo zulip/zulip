@@ -356,9 +356,38 @@ export function build_stream_list(force_rerender: boolean): void {
     }
     // Rerendering can moving channels between folders and change heading unread counts.
     left_sidebar_navigation_area.update_dom_with_unread_counts(unread.get_counts(), false);
+    update_stream_section_mention_indicators();
     sidebar_ui.update_unread_counts_visibility();
     set_sections_states();
     $("#streams_list").toggleClass("is_searching", get_search_term() !== "");
+}
+
+export let update_stream_section_mention_indicators = function (): void {
+    const mentions = unread.mention_counts_by_section();
+    for (const section of stream_list_sort.section_ids()) {
+        const $header = $(`#stream-list-${section}-container .stream-list-subsection-header`);
+        const mentions_for_section = mentions.get(section) ?? {
+            has_mentions: false,
+            has_unmuted_mentions: false,
+        };
+        ui_util.update_unread_mention_info_in_dom($header, mentions_for_section.has_mentions);
+
+        if (mentions_for_section.has_unmuted_mentions) {
+            $header.removeClass("has-only-muted-mentions");
+        } else {
+            if (mentions_for_section.has_mentions && !mentions_for_section.has_unmuted_mentions) {
+                $header.addClass("has-only-muted-mentions");
+            } else {
+                $header.removeClass("has-only-muted-mentions");
+            }
+        }
+    }
+};
+
+export function rewire_update_stream_section_mention_indicators(
+    value: typeof update_stream_section_mention_indicators,
+): void {
+    update_stream_section_mention_indicators = value;
 }
 
 /* When viewing a channel in a collapsed folder, we show that active
@@ -672,6 +701,7 @@ export function update_dom_with_unread_counts(counts: FullUnreadCountsData): voi
             stream_has_only_muted_unread_mentions,
         );
     }
+    update_stream_section_mention_indicators();
 }
 
 function toggle_hide_unread_counts(

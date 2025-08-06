@@ -35,6 +35,10 @@ export function get_stream_ids(): number[] {
     return all_rows.flatMap((row) => (row.type === "stream" ? row.stream_id : []));
 }
 
+export function section_ids(): string[] {
+    return current_sections.map((section) => section.id);
+}
+
 function current_section_ids_for_streams(): Map<number, StreamListSection> {
     const map = new Map<number, StreamListSection>();
     for (const section of current_sections) {
