@@ -678,6 +678,9 @@
 
     .media-audio-element {
         vertical-align: middle;
+        /* Allow browser-native media players
+           to resize in narrow viewports. */
+        max-width: 100%;
     }
 
     .message_embed {
