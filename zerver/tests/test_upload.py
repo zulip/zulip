@@ -257,6 +257,9 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
                 consume_response(result)
 
     def test_content_type_charset_specified(self) -> None:
+        # Setting the charset requires a NamedTemporaryFile, as
+        # SimpleUploadedFile does not transmit a charset even if it's
+        # provided as part of the content_type
         with tempfile.NamedTemporaryFile() as uploaded_file:
             uploaded_file.write("नाम में क्या रक्खा हे".encode())
             uploaded_file.seek(0)
