@@ -260,6 +260,9 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         with tempfile.NamedTemporaryFile() as uploaded_file:
             uploaded_file.write("नाम में क्या रक्खा हे".encode())
             uploaded_file.seek(0)
+            # We intentionally provide the _wrong_ charset on this, so
+            # that we verify that the charset detection code is not
+            # overriding the value that the user claims.
             uploaded_file.content_type = "text/plain; test-key=test_value; charset=big5"  # type: ignore[attr-defined]
 
             result = self.api_post(
