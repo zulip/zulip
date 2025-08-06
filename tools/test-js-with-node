@@ -65,6 +65,7 @@ EXEMPT_FILES = make_set(
         "web/src/browser_history.ts",
         "web/src/buddy_list.ts",
         "web/src/buttons.ts",
+        "web/src/channel_folders_ui.ts",
         "web/src/click_handlers.ts",
         "web/src/color_picker_popover.ts",
         "web/src/compose.js",
