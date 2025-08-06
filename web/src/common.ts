@@ -12,7 +12,7 @@ export function phrase_match(query: string, phrase: string): boolean {
 }
 
 // Any changes to this function should be followed by a check for changes needed
-// to adjust_mac_kbd_tags of help-beta/src/scripts/adjust_mac_kbd_tags.ts.
+// to adjust_mac_kbd_tags of starlight_help/src/scripts/adjust_mac_kbd_tags.ts.
 const keys_map = new Map([
     ["Backspace", "Delete"],
     ["Enter", "Return"],
@@ -21,7 +21,7 @@ const keys_map = new Map([
 ]);
 
 // Any changes to this function should be followed by a check for changes needed
-// to adjust_mac_kbd_tags of help-beta/src/scripts/adjust_mac_kbd_tags.ts.
+// to adjust_mac_kbd_tags of starlight_help/src/scripts/adjust_mac_kbd_tags.ts.
 export function has_mac_keyboard(): boolean {
     // eslint-disable-next-line @typescript-eslint/no-deprecated
     return /mac/i.test(navigator.platform);
@@ -30,7 +30,7 @@ export function has_mac_keyboard(): boolean {
 // We convert the <kbd> tags used for keyboard shortcuts to mac equivalent
 // key combinations, when we detect that the user is using a mac-style keyboard.
 // Any changes to this function should be followed by a check for changes needed
-// to adjust_mac_kbd_tags of help-beta/src/scripts/adjust_mac_kbd_tags.ts.
+// to adjust_mac_kbd_tags of starlight_help/src/scripts/adjust_mac_kbd_tags.ts.
 export function adjust_mac_kbd_tags(kbd_elem_class: string): void {
     if (!has_mac_keyboard()) {
         return;

@@ -303,7 +303,7 @@ def run_help_center_dev_server(external_host: str) -> "subprocess.Popen[bytes]":
             "--host",
             f"--allowed-hosts={urlsplit(external_host).hostname}",
         ],
-        cwd="help-beta",
+        cwd="starlight_help",
     )
 
 
@@ -311,7 +311,7 @@ def run_help_center_dev_server(external_host: str) -> "subprocess.Popen[bytes]":
 async def help_center_middleware(
     request: web.Request, handler: Callable[[web.Request], Awaitable[web.StreamResponse]]
 ) -> web.StreamResponse:
-    if request.path.startswith("/help-beta"):
+    if request.path.startswith("/starlight_help"):
         try:
             filename = request.match_info["filename"]
             name, ext = os.path.splitext(filename)
@@ -336,19 +336,19 @@ def setup_routes(
 ) -> None:
     if enable_help_center:
         # Order of adding the rules matters. aiohttp will stop at the first
-        # match, and we want `/help-beta` to be matched before Django URIs.
+        # match, and we want `/starlight_help` to be matched before Django URIs.
         try:
-            app.router.add_static("/help-beta", "help-beta/dist")
+            app.router.add_static("/starlight_help", "starlight_help/dist")
         except ValueError:
             print("""Please run the build step for the help center before enabling it.
 The instructions for the build step can be found in the `./devtools`
-page. `/help-beta` urls will give you an error until you complete the
+page. `/starlight_help` urls will give you an error until you complete the
 build step and rerun `run-dev`.""")
     elif enable_help_center_dev_server:
         app.add_routes(
             [
                 web.route(
-                    hdrs.METH_ANY, r"/{path:(help-beta).*}", partial(forward, help_center_port)
+                    hdrs.METH_ANY, r"/{path:(starlight_help).*}", partial(forward, help_center_port)
                 ),
             ]
         )

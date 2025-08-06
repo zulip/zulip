@@ -1,4 +1,4 @@
-<!-- Changes to this file should be propagated to help-beta/astro.config.mjs. -->
+<!-- Changes to this file should be propagated to starlight_help/astro.config.mjs. -->
 
 ## Guides
 * [Getting started with Zulip](/help/getting-started-with-zulip)

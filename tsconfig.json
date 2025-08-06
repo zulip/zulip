@@ -37,7 +37,7 @@
     },
     "exclude": [
         // This is a separate package with its own TypeScript configuration.
-        "help-beta",
+        "starlight_help",
 
         // Skip walking large generated directories.
         ".venv",

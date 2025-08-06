@@ -17,9 +17,9 @@ REGEXP = re.compile(r"\{settings_tab\|(?P<setting_identifier>.*?)\}")
 
 
 # If any changes to this link mapping are made,
-# `help-beta/src/components/NavigationSteps.astro` should be updated accordingly.
+# `starlight_help/src/components/NavigationSteps.astro` should be updated accordingly.
 # This manual update mechanism will cease to exist once we have switched to the
-# help-beta system.
+# starlight_help system.
 link_mapping = {
     # a mapping from the setting identifier that is the same as the final URL
     # breadcrumb to that setting to the name of its setting type, the setting

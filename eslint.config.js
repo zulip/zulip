@@ -276,7 +276,7 @@ export default tseslint.config(
         },
     },
     {
-        files: ["help-beta/src/scripts/client/**"],
+        files: ["starlight_help/src/scripts/client/**"],
         rules: {
             "unicorn/prefer-module": "off",
         },
@@ -311,9 +311,9 @@ export default tseslint.config(
     ...astroConfigs.recommended,
     {
         files: [
-            "help-beta/src/components/ZulipNote.astro",
-            "help-beta/src/components/ZulipTip.astro",
-            "help-beta/src/components/KeyboardTip.astro",
+            "starlight_help/src/components/ZulipNote.astro",
+            "starlight_help/src/components/ZulipTip.astro",
+            "starlight_help/src/components/KeyboardTip.astro",
         ],
         rules: {
             "import/unambiguous": "off",

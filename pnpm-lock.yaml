@@ -519,7 +519,7 @@ importers:
         specifier: ^2.0.8
         version: 2.1.0(encoding@0.1.13)
 
-  help-beta:
+  starlight_help:
     dependencies:
       '@astrojs/check':
         specifier: ^0.9.3
