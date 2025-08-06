@@ -64,6 +64,7 @@ def run() -> None:
                 "hbs",
                 "html",
                 "js",
+                "mdx",
                 "mjs",
                 "mts",
                 "svg",
@@ -218,6 +219,12 @@ def run() -> None:
         "thirdparty",
         ["tools/check-thirdparty"],
         description="Check docs/THIRDPARTY copyright file syntax",
+    )
+    linter_config.external_linter(
+        "format-mdx",
+        ["tools/format-mdx"],
+        ["mdx"],
+        description="Lint and format MDX files",
     )
 
     @linter_config.lint
