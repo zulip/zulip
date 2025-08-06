@@ -24455,7 +24455,7 @@ paths:
         Fetches all of the channel folders in the organization.
         The folders are sorted by the `order` field.
 
-        **Changes**: Before Zulip 11.0 (feature level ZF-fcae8c),
+        **Changes**: Before Zulip 11.0 (feature level 414),
         these were sorted by ID. (The `order` field didn't exist).
 
         New in Zulip 11.0 (feature level 389).
@@ -24529,7 +24529,7 @@ paths:
         property of all of the channel folders in the organization according to
         the order of the channel folder IDs specified in the request.
 
-        **Changes**: New in Zulip 11.0 (feature level ZF-fcae8c).
+        **Changes**: New in Zulip 11.0 (feature level 414).
       requestBody:
         required: true
         content:
@@ -27619,7 +27619,7 @@ components:
             displayed in the UI. The value is 0 indexed, and the value with
             the lower order will be displayed first.
 
-            **Changes**: New in Zulip 11.0 (feature level ZF-fcae8c).
+            **Changes**: New in Zulip 11.0 (feature level 414).
         id:
           type: integer
           description: |
