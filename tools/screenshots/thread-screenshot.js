@@ -41,7 +41,7 @@ async function run() {
     try {
         const page = await browser.newPage();
         // deviceScaleFactor:2 gives better quality screenshots (higher pixel density)
-        await page.setViewport({width: 530, height: 1024, deviceScaleFactor: 2});
+        await page.setViewport({width: 580, height: 1024, deviceScaleFactor: 2});
         await page.goto(`${realmUrl}/devlogin`);
         // wait for Iago devlogin button and click on it.
         await page.waitForSelector('[value="iago@zulip.com"]');
@@ -51,6 +51,11 @@ async function run() {
             page.waitForNavigation({waitUntil: "domcontentloaded"}),
             page.click('[value="iago@zulip.com"]'),
         ]);
+
+        // Close any banner at the top of the app before taking any screenshots.
+        const top_banner_close_button_selector = ".banner-close-action";
+        await page.waitForSelector(top_banner_close_button_selector);
+        page.click(top_banner_close_button_selector);
 
         // Navigate to message and capture screenshot
         await page.goto(`${narrowUri}`, {
@@ -83,9 +88,12 @@ async function run() {
             }
         }, background_selectors);
 
+        // This is done so that the message control buttons are not visible.
+        await page.hover(".compose_new_conversation_button");
+
         // Compute screenshot area, with some padding around the message group
         const clip = {...(await messageListBox.boundingBox())};
-        clip.width -= 64;
+        clip.width -= 70;
         clip.y += 10;
         clip.height -= 8;
         const imageDir = path.dirname(imagePath);
