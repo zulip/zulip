@@ -139,6 +139,7 @@ export function dispatch_normal_event(event) {
                             event.channel_folder_id,
                         );
                     }
+                    settings_folders.update_folder_row(event);
                     break;
                 default:
                     blueslip.error("Unexpected event type channel_folder/" + event.op);
