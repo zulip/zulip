@@ -479,7 +479,8 @@ export function paste_handler_converter(
 
     // We override the original upstream implementation of this rule to make
     // several tweaks:
-    // - We turn any single line code blocks into inline markdown code.
+    // - We turn any single line code blocks into inline markdown code, if they don't
+    // have associated language metadata.
     // - We generalise the filter condition to allow a `pre` element with a
     // `code` element as its only non-empty child, which applies to Zulip code
     // blocks too.
@@ -509,9 +510,11 @@ export function paste_handler_converter(
             const code = codeElement.textContent;
             assert(code !== null);
 
-            // We convert single line code inside a code block to inline markdown code,
-            // and the code for this is taken from upstream's `code` rule.
-            if (!code.includes("\n")) {
+            const className = codeElement.getAttribute("class") ?? "";
+            const language = get_code_block_lanaguage(node, className);
+            // We convert single line code inside a code block which does not have language metadata
+            // to inline markdown code, and the code for this is taken from upstream's `code` rule.
+            if (!code.includes("\n") && language === "") {
                 // If the cursor is just after a backtick, then we don't add extra backticks.
                 if (
                     $textarea &&
@@ -535,9 +538,6 @@ export function paste_handler_converter(
 
                 return delimiter + extraSpace + code + extraSpace + delimiter;
             }
-
-            const className = codeElement.getAttribute("class") ?? "";
-            const language = get_code_block_lanaguage(node, className);
 
             assert(options.fence !== undefined);
             const fenceChar = options.fence.charAt(0);
