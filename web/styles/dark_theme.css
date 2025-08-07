@@ -131,6 +131,14 @@
         }
     }
 
+    /* Custom resizer icon for the textarea */
+    textarea::-webkit-resizer {
+        background-image: url("../images/resize-handle-white.svg");
+        background-position: bottom right;
+        background-repeat: no-repeat;
+        background-size: 10px;
+    }
+
     .popover-filter-input-wrapper .popover-filter-input:focus {
         background-color: hsl(225deg 6% 7%);
         border: 1px solid hsl(0deg 0% 100% / 50%);
