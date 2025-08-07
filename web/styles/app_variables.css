@@ -408,6 +408,10 @@
     --opacity-sidebar-heading-hover: 0.9;
     --opacity-left-sidebar-muted: 0.55;
     --opacity-left-sidebar-muted-hover: 0.75;
+    --opacity-unread-mention-info: 0.5;
+    /* Since --opacity-unread-mention-info is too close to
+       --opacity-left-sidebar-muted */
+    --opacity-left-sidebar-muted-mentions: 0.3;
     --opacity-right-sidebar-subheading: 0.65;
     --opacity-right-sidebar-subheading-hover: 0.9;
 
