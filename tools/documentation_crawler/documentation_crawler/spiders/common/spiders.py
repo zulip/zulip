@@ -154,6 +154,10 @@ class BaseDocumentationSpider(scrapy.Spider):
             return
         if url.startswith("http://localhost:9981/plans"):
             return
+        # We are temporarily stopping these tests while we cutover to
+        # the new help center. https://github.com/zulip/zulip/issues/35647.
+        if url.startswith("http://localhost:9981/help"):
+            return
 
         callback: Callable[[Response], Iterator[Request] | None] = self.parse
         dont_filter = False

@@ -6,7 +6,7 @@ import Icons from "unplugin-icons/vite";
 
 // https://astro.build/config
 export default defineConfig({
-    base: "starlight_help",
+    base: "help",
     vite: {
         plugins: [
             // eslint-disable-next-line new-cap
