@@ -337,22 +337,21 @@ export function build_stream_list(force_rerender: boolean): void {
         for (const stream_id of section.streams) {
             add_sidebar_li(stream_id, $(`#stream-list-${section.id}`));
         }
-        for (const stream_id of [...section.muted_streams, ...section.inactive_streams]) {
+        const muted_and_inactive_streams = [...section.muted_streams, ...section.inactive_streams];
+        if (section.id !== "pinned-streams" && muted_and_inactive_streams.length > 0) {
+            $(`#stream-list-${section.id}`).append(
+                $(
+                    render_show_inactive_or_muted_channels({
+                        inactive_or_muted_count: muted_and_inactive_streams.length,
+                    }),
+                ),
+            );
+        }
+        for (const stream_id of muted_and_inactive_streams) {
             add_sidebar_li(
                 stream_id,
                 $(`#stream-list-${section.id}`),
                 section.id !== "pinned-streams",
-            );
-        }
-        const inactive_or_muted_count =
-            section.muted_streams.length + section.inactive_streams.length;
-        if (section.id !== "pinned-streams" && inactive_or_muted_count > 0) {
-            $(`#stream-list-${section.id}`).append(
-                $(
-                    render_show_inactive_or_muted_channels({
-                        inactive_or_muted_count,
-                    }),
-                ),
             );
         }
     }
