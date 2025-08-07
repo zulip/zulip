@@ -162,7 +162,7 @@ export function build_page(): void {
 export function open_settings_overlay(): void {
     overlays.open_overlay({
         name: "settings",
-        $overlay: $("#settings_overlay_container"),
+        $overlay: $("#settings_page"),
         on_close() {
             browser_history.exit_overlay();
             flatpickr.close_all();
