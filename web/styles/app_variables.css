@@ -2260,6 +2260,9 @@
     /* Theme-dependent SVGs */
     --svg-url-thumbnail-loader: url("../images/loading/loader-black.svg");
 
+    /* Zulip resizer handle svg */
+    --svg-resize-handle: url("../images/resize-handle-black.svg");
+
     /* Emoji-picker colors */
     --color-background-emoji-picker-popover: light-dark(
         hsl(0deg 0% 93%),
@@ -3097,6 +3100,9 @@
 
     /* Theme-dependent SVGs */
     --svg-url-thumbnail-loader: url("../images/loading/loader-white.svg");
+
+    /* Zulip resizer handle svg */
+    --svg-resize-handle: url("../images/resize-handle-white.svg");
 }
 
 @media screen {
