@@ -30,7 +30,6 @@ args = parser.parse_args()
 
 
 def run() -> None:
-    subprocess.check_call(["./tools/convert-help-center-docs-to-mdx"])
     env = os.environ.copy()
     env["SUPPORT_EMAIL"] = parseaddr(settings.ZULIP_ADMINISTRATOR)[1]
     env["CORPORATE_ENABLED"] = str(settings.CORPORATE_ENABLED).lower()
