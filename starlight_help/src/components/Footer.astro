@@ -3,7 +3,7 @@ import {CORPORATE_ENABLED, SUPPORT_EMAIL} from "astro:env/client";
 
 let footer_html = `<p>Don't see an answer to your question? <a href="mailto:${SUPPORT_EMAIL}">Contact this Zulip server's administrators</a> for support.</p>`;
 if (CORPORATE_ENABLED) {
-    footer_html = `<p>Your feedback helps us make Zulip better for everyone! Please <a href="/starlight_help/contact-support">contact us</a> with questions, suggestions, and feature requests.</p>`;
+    footer_html = `<p>Your feedback helps us make Zulip better for everyone! Please <a href="/help/contact-support">contact us</a> with questions, suggestions, and feature requests.</p>`;
 }
 ---
 
