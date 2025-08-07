@@ -267,11 +267,11 @@ export class DropdownWidget {
         $popper.find(".list-item.current_selection").removeClass("current_selection");
         if (this.sticky_bottom_option) {
             $popper
-                .find(".sticky-bottom-option.current_selection")
+                .find(".sticky-bottom-option-button.current_selection")
                 .removeClass("current_selection");
         }
         if (this.current_hover_index === list_items.length && this.sticky_bottom_option) {
-            $popper.find(".sticky-bottom-option").addClass("current_selection");
+            $popper.find(".sticky-bottom-option-button").addClass("current_selection");
         } else {
             const current_hover_item = list_items[this.current_hover_index];
             assert(current_hover_item !== undefined);
@@ -382,7 +382,7 @@ export class DropdownWidget {
                     }
 
                     const $search_input = $popper.find(".dropdown-list-search-input");
-                    const $sticky_bottom_option = $popper.find(".sticky-bottom-option");
+                    const $sticky_bottom_option = $popper.find(".sticky-bottom-option-button");
                     assert(this.list_widget !== undefined);
                     const list_items = this.list_widget.get_current_list();
                     if (
@@ -627,7 +627,7 @@ export class DropdownWidget {
                 });
 
                 // Click on $sticky_bottom_option.
-                $popper.on("click", ".sticky-bottom-option", (event) => {
+                $popper.on("click", ".sticky-bottom-option-button", (event) => {
                     this.item_click_callback(event, instance, this, true);
                     this.current_hover_index = 0;
                 });
