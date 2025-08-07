@@ -203,6 +203,35 @@ function improve_katex_selection_range(range: Range): void {
     expand_range_based_on_katex_parent(end_element, false, range);
 }
 
+function maybe_update_range_for_code_blocks(range: Range, ev: ClipboardEvent): boolean {
+    const element = get_nearest_html_element(range.startContainer)?.parentElement;
+    const is_selection_within_code_element = element?.nodeName === "CODE";
+    if (is_selection_within_code_element) {
+        const start = range.startContainer.parentElement?.closest(".codehilite");
+        const end = range.endContainer.parentElement?.closest(".codehilite");
+
+        const is_selection_within_codehilite_element = start && end;
+        // Selections that go beyond the code block always end up containing
+        // the outer `.codehilite` div, so expansion is not required for those cases.
+        if (is_selection_within_codehilite_element) {
+            // We create a new element that contains selected content
+            // wrapped inside a `.codehilite` element containing the language metadata
+            // This element is then stored in the clipboard.
+            const clone: Node = start.cloneNode(false);
+            assert(clone instanceof HTMLElement);
+            const pre = document.createElement("pre");
+            const code = document.createElement("code");
+            pre.append(code);
+            code.append(range.cloneContents());
+            clone.append(pre);
+            ev.clipboardData?.setData("text/html", clone.outerHTML);
+            ev.clipboardData?.setData("text", clone.textContent ?? "");
+            return true;
+        }
+    }
+    return false;
+}
+
 export function copy_handler(ev: ClipboardEvent): boolean {
     // This is the main handler for copying message content via
     // `Ctrl+C` in Zulip (note that this is totally independent of the
@@ -261,11 +290,19 @@ export function copy_handler(ev: ClipboardEvent): boolean {
         //
         // So to handle multi-range selections correctly (especially in Firefox),
         // we process all ranges individually.
+        let custom_handle_copy = false;
         for (let i = 0; i < selection.rangeCount; i += 1) {
             improve_katex_selection_range(selection.getRangeAt(i));
-        }
 
-        return false;
+            if (maybe_update_range_for_code_blocks(selection.getRangeAt(i), ev)) {
+                // This will not disturb katex expansions because the clipboard
+                // altering code will only be triggered if and only if the selection
+                // lies completely within a `.codehilite` block.
+                // We let the browser handle the copy event for all other cases.
+                custom_handle_copy = true;
+            }
+        }
+        return custom_handle_copy;
     }
 
     // We've now decided to handle the copy event ourselves.
