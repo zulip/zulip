@@ -24,8 +24,8 @@ function get_new_heights(): {
     let stream_filters_max_height =
         viewport_height -
         Number.parseInt($("#left-sidebar").css("paddingTop"), 10) -
-        ($("#left-sidebar-navigation-area").outerHeight(true) ?? 0) -
-        ($("#direct-messages-section-header").outerHeight(true) ?? 0) -
+        ($("#left-sidebar-navigation-area").not(".hidden-by-filters").outerHeight(true) ?? 0) -
+        ($("#direct-messages-section-header").not(".hidden-by-filters").outerHeight(true) ?? 0) -
         GAP;
 
     // Don't let us crush the stream sidebar completely out of view

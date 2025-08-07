@@ -1,4 +1,5 @@
 import $ from "jquery";
+import assert from "minimalistic-assert";
 
 import render_left_sidebar from "../templates/left_sidebar.hbs";
 import render_buddy_list_popover from "../templates/popovers/buddy_list_popover.hbs";
@@ -15,6 +16,7 @@ import {page_params} from "./page_params.ts";
 import * as popover_menus from "./popover_menus.ts";
 import * as popovers from "./popovers.ts";
 import * as resize from "./resize.ts";
+import * as search_util from "./search_util.ts";
 import * as settings_config from "./settings_config.ts";
 import * as settings_data from "./settings_data.ts";
 import * as settings_preferences from "./settings_preferences.ts";
@@ -288,6 +290,37 @@ export function initialize(): void {
         },
         {capture: true},
     );
+}
+
+export function get_search_term(): string {
+    const $search_box = $<HTMLInputElement>("input.stream-list-filter").expectOne();
+    const search_term = $search_box.val();
+    assert(search_term !== undefined);
+    return search_term.trim();
+}
+
+export function update_expanded_views_for_search(search_value: string): void {
+    if (!search_value) {
+        // Show all the views if there is no search term.
+        $("#left-sidebar-navigation-area, #left-sidebar-navigation-list .top_left_row").removeClass(
+            "hidden-by-filters",
+        );
+        return;
+    }
+
+    let any_view_visible = false;
+    const expanded_views = left_sidebar_navigation_area.get_built_in_views();
+    for (const view of expanded_views) {
+        const show_view = search_util.vanilla_match({
+            val: view.name,
+            search_terms: search_util.get_search_terms(search_value),
+        });
+        any_view_visible ||= show_view;
+        const $view = $(`.top_left_${view.css_class_suffix}`);
+        $view.toggleClass("hidden-by-filters", !show_view);
+    }
+    // Hide "VIEWS" header if all views are hidden.
+    $("#left-sidebar-navigation-area").toggleClass("hidden-by-filters", !any_view_visible);
 }
 
 export function initialize_left_sidebar(): void {

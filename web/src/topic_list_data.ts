@@ -214,9 +214,7 @@ export function get_list_info(
         topic_names.unshift(narrowed_topic);
     }
 
-    if (zoomed) {
-        topic_names = filter_topics(topic_names);
-    }
+    topic_names = filter_topics(topic_names);
 
     if (stream_muted && !zoomed) {
         const unmuted_or_followed_topics = topic_names.filter((topic) =>

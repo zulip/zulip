@@ -427,17 +427,6 @@
     }
 }
 
-#streams_list.is_searching {
-    .show-inactive-channels,
-    .hide-inactive-channels {
-        display: none;
-    }
-
-    .inactive-in-channel-folder {
-        display: block;
-    }
-}
-
 .stream-list-section-container.showing-inactive {
     .stream-list-toggle-inactive-channels {
         .show-inactive-channels {
@@ -2077,4 +2066,13 @@ li.topic-list-item {
         top: 0;
         z-index: 1;
     }
+}
+
+.top_left_row.hidden-by-filters {
+    display: none !important;
+}
+
+#left-sidebar-navigation-area.hidden-by-filters,
+#direct-messages-section-header.hidden-by-filters {
+    display: none;
 }

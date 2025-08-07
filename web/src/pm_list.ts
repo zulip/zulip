@@ -51,25 +51,31 @@ export function set_count(count: number): void {
 export function close(): void {
     private_messages_collapsed = true;
     ls.set(ls_key, private_messages_collapsed);
-    $("#toggle-direct-messages-section-icon").removeClass("rotate-icon-down");
-    $("#toggle-direct-messages-section-icon").addClass("rotate-icon-right");
-
     update_private_messages();
 }
 
 export function _build_direct_messages_list(): vdom.Tag<PMNode> {
-    const $filter = $<HTMLInputElement>(".direct-messages-list-filter").expectOne();
-    const search_term = $filter.val()!;
+    let search_term = "";
+    if (zoomed) {
+        const $filter = $<HTMLInputElement>(".direct-messages-list-filter").expectOne();
+        search_term = $filter.val()!;
+    } else {
+        search_term = sidebar_ui.get_search_term();
+    }
     const conversations = pm_list_data.get_conversations(search_term);
     const pm_list_info = pm_list_data.get_list_info(zoomed, search_term);
     const conversations_to_be_shown = pm_list_info.conversations_to_be_shown;
     const more_conversations_unread_count = pm_list_info.more_conversations_unread_count;
 
+    const all_conversations_shown = conversations_to_be_shown.length === conversations.length;
+    const is_header_visible =
+        zoomed || conversations_to_be_shown.length > 0 || !all_conversations_shown;
+    $("#direct-messages-section-header").toggleClass("hidden-by-filters", !is_header_visible);
+
     const pm_list_nodes = conversations_to_be_shown.map((conversation) =>
         pm_list_dom.keyed_pm_li(conversation),
     );
 
-    const all_conversations_shown = conversations_to_be_shown.length === conversations.length;
     if (!all_conversations_shown) {
         pm_list_nodes.push(
             pm_list_dom.more_private_conversations_li(more_conversations_unread_count),
@@ -95,8 +101,17 @@ function set_dom_to(new_dom: vdom.Tag<PMNode>): void {
     prior_dom = new_dom;
 }
 
-export function update_private_messages(): void {
-    if (private_messages_collapsed) {
+export function update_private_messages(is_left_sidebar_search_active = false): void {
+    const is_dm_section_expanded = is_left_sidebar_search_active || !private_messages_collapsed;
+    $("#toggle-direct-messages-section-icon").toggleClass(
+        "rotate-icon-down",
+        is_dm_section_expanded,
+    );
+    $("#toggle-direct-messages-section-icon").toggleClass(
+        "rotate-icon-right",
+        !is_dm_section_expanded,
+    );
+    if (!is_dm_section_expanded) {
         // In the collapsed state, we will still display the current
         // conversation, to preserve the UI invariant that there's
         // always something highlighted in the left sidebar.
@@ -124,9 +139,6 @@ export function update_private_messages(): void {
 export function expand(): void {
     private_messages_collapsed = false;
     ls.set(ls_key, private_messages_collapsed);
-
-    $("#toggle-direct-messages-section-icon").addClass("rotate-icon-down");
-    $("#toggle-direct-messages-section-icon").removeClass("rotate-icon-right");
     update_private_messages();
 }
 
@@ -216,6 +228,7 @@ export function toggle_private_messages_section(): void {
 
 function zoom_in(): void {
     zoomed = true;
+    ui_util.disable_left_sidebar_search();
     update_private_messages();
     $(".direct-messages-container").removeClass("zoom-out").addClass("zoom-in");
     $("#hide-more-direct-messages").addClass("dm-zoomed-in");
@@ -228,6 +241,7 @@ function zoom_in(): void {
 
 function zoom_out(): void {
     zoomed = false;
+    ui_util.enable_left_sidebar_search();
     clear_search();
     $(".direct-messages-container").removeClass("zoom-in").addClass("zoom-out");
     $("#hide-more-direct-messages").removeClass("dm-zoomed-in");

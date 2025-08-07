@@ -5,7 +5,11 @@
         </span>
         {{~!-- squash whitespace --~}}
         <span class="left-sidebar-navigation-label">{{name}}</span>
-        <span class="unread_count {{unread_count_type}}"></span>
+        <span class="unread_count {{unread_count_type}}{{#unless unread_count}} hide{{/unless}}">
+            {{#if unread_count}}
+                {{unread_count}}
+            {{/if}}
+        </span>
         {{#if supports_masked_unread}}
         <span class="masked_unread_count">
             <i class="zulip-icon zulip-icon-masked-unread"></i>

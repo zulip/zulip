@@ -46,6 +46,7 @@ import * as user_topics from "./user_topics.ts";
 
 let pending_stream_list_rerender = false;
 let zoomed_in = false;
+let is_left_sidebar_search_active = false;
 let update_inbox_channel_view_callback: (channel_id: number) => void;
 
 export function set_update_inbox_channel_view_callback(value: (channel_id: number) => void): void {
@@ -358,7 +359,6 @@ export function build_stream_list(force_rerender: boolean): void {
     left_sidebar_navigation_area.update_dom_with_unread_counts(unread.get_counts(), false);
     sidebar_ui.update_unread_counts_visibility();
     set_sections_states();
-    $("#streams_list").toggleClass("is_searching", get_search_term() !== "");
 }
 
 /* When viewing a channel in a collapsed folder, we show that active
@@ -392,13 +392,16 @@ function toggle_section_collapse($container: JQuery): void {
 }
 
 function set_sections_states(): void {
-    for (const section_id of collapsed_sections) {
-        const $container = $(`#stream-list-${section_id}-container`);
-        $container.toggleClass("collapsed", true);
-        $container
-            .find(".stream-list-section-toggle")
-            .toggleClass("rotate-icon-down", false)
-            .toggleClass("rotate-icon-right", true);
+    if (!is_left_sidebar_search_active) {
+        // Uncollapse all sections when searching.
+        for (const section_id of collapsed_sections) {
+            const $container = $(`#stream-list-${section_id}-container`);
+            $container.toggleClass("collapsed", true);
+            $container
+                .find(".stream-list-section-toggle")
+                .toggleClass("rotate-icon-down", false)
+                .toggleClass("rotate-icon-right", true);
+        }
     }
     for (const section_id of sections_showing_inactive) {
         $(`#stream-list-${section_id}-container`).toggleClass("showing-inactive", true);
@@ -834,6 +837,21 @@ function focus_stream_filter(e: JQuery.ClickEvent): void {
 }
 
 function actually_update_streams_for_search(): void {
+    is_left_sidebar_search_active =
+        $<HTMLInputElement>("#stream-search-and-add input").val()!.trim() !== "";
+    pm_list.update_private_messages(is_left_sidebar_search_active);
+    sidebar_ui.update_expanded_views_for_search(get_search_term());
+    const $views_label_container = $("#views-label-container");
+    const $views_label_icon = $("#toggle-top-left-navigation-area-icon");
+    if (
+        !$views_label_container.hasClass("showing-expanded-navigation") &&
+        is_left_sidebar_search_active
+    ) {
+        left_sidebar_navigation_area.expand_views($views_label_container, $views_label_icon);
+    } else if (!is_left_sidebar_search_active) {
+        left_sidebar_navigation_area.restore_views_state();
+    }
+
     update_streams_sidebar();
     resize.resize_page_components();
     stream_cursor.reset();

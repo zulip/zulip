@@ -496,7 +496,10 @@ export function zoom_in(): void {
 }
 
 export function get_left_sidebar_topic_search_term(): string {
-    return $("#topic_filter_query").text().trim();
+    if (zoomed) {
+        return $("#topic_filter_query").text().trim();
+    }
+    return sidebar_ui.get_search_term();
 }
 
 export function get_typeahead_search_term(): string {

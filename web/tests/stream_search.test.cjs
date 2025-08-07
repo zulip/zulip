@@ -48,6 +48,7 @@ function clear_search_input() {
 run_test("basics", ({override, override_rewire}) => {
     override(popovers, "hide_all", noop);
     override(sidebar_ui, "show_left_sidebar", noop);
+    override(sidebar_ui, "rerender_expanded_views", noop);
 
     const $input = $(".stream-list-filter");
 
