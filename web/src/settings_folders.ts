@@ -114,11 +114,11 @@ export function update_folder_row(event: ChannelFolderUpdateEvent): void {
     const $folder_row = get_channel_folder_row(folder_id);
 
     if (event.data.name !== undefined) {
-        $folder_row.find(".channel_folder_name").text(event.data.name);
+        $folder_row.find(".channel-folder-name").text(event.data.name);
     }
 
     if (event.data.description !== undefined) {
-        $folder_row.find(".channel_folder_description").text(event.data.description);
+        $folder_row.find(".channel-folder-description").text(event.data.description);
     }
 
     if (event.data.is_archived) {

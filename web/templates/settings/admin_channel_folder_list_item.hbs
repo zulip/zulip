@@ -1,15 +1,15 @@
 <tr class="channel-folder-row movable-row" data-channel-folder-id="{{id}}">
-    <td class="channel_folder_name_container">
+    <td>
         {{#if is_admin}}
         <span class="move-handle">
             <i class="fa fa-ellipsis-v" aria-hidden="true"></i>
             <i class="fa fa-ellipsis-v" aria-hidden="true"></i>
         </span>
         {{/if}}
-        <span class="channel_folder_name">{{folder_name}}</span>
+        <span class="channel-folder-name">{{folder_name}}</span>
     </td>
-    <td class="channel_folder_description_container">
-        <span class="channel_folder_description">{{folder_description}}</span>
+    <td>
+        <span class="channel-folder-description">{{folder_description}}</span>
     </td>
     {{#if is_admin}}
     <td class="actions">
