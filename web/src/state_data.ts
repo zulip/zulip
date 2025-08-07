@@ -300,6 +300,7 @@ export const realm_schema = z.object({
     max_icon_file_size_mib: z.number(),
     max_logo_file_size_mib: z.number(),
     max_message_length: z.number(),
+    max_reminder_note_length: z.number(),
     max_stream_description_length: z.number(),
     max_stream_name_length: z.number(),
     max_topic_length: z.number(),

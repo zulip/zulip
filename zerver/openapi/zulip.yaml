@@ -7276,6 +7276,13 @@ paths:
                     The UNIX timestamp for when the reminder will be sent,
                     in UTC seconds.
                   example: 5681662420
+                note:
+                  type: string
+                  description: |
+                    A note associated with the reminder shown in the Notification Bot message.
+
+                    **Changes**: New in Zulip 11.0 (feature level 415).
+                  example: "This is a reminder note."
       responses:
         "200":
           description: Success.
@@ -16290,6 +16297,12 @@ paths:
                           **Deprecated**: This field may be removed in future versions as it no
                           longer has a clear purpose. Clients wishing to fetch the latest messages
                           should pass `"anchor": "latest"` to `GET /messages`.
+                      max_reminder_note_length:
+                        type: integer
+                        description: |
+                          The maximum allowed length for a reminder note.
+
+                          **Changes**: New in Zulip 11.0 (feature level 415).
                       max_stream_name_length:
                         type: integer
                         description: |

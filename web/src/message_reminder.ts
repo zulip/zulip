@@ -12,12 +12,13 @@ export type Reminder = z.infer<typeof reminder_schema>;
 
 export const reminders_by_id = new Map<number, Reminder>();
 
-export function set_message_reminder(send_at_time: number, message_id: number): void {
+export function set_message_reminder(send_at_time: number, message_id: number, note: string): void {
     channel.post({
         url: "/json/reminders",
         data: {
             message_id,
             scheduled_delivery_timestamp: send_at_time,
+            note,
         },
         success(): void {
             const populate: (element: JQuery) => void = ($container) => {

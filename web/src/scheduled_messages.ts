@@ -3,6 +3,7 @@ import type * as z from "zod/mini";
 import * as channel from "./channel.ts";
 import {$t} from "./i18n.ts";
 import type {StateData, scheduled_message_schema} from "./state_data.ts";
+import {realm} from "./state_data.ts";
 import * as timerender from "./timerender.ts";
 
 export type ScheduledMessage = z.infer<typeof scheduled_message_schema>;
@@ -91,6 +92,7 @@ export function get_filtered_send_opts(date: Date): {
     send_later_tomorrow: SendOption;
     possible_send_later_monday: SendOption | false;
     send_later_custom: {text: string};
+    max_reminder_note_length: number;
 } {
     const send_times = compute_send_times(date);
 
@@ -195,6 +197,7 @@ export function get_filtered_send_opts(date: Date): {
         send_later_tomorrow,
         possible_send_later_monday,
         send_later_custom,
+        max_reminder_note_length: realm.max_reminder_note_length,
     };
 }
 

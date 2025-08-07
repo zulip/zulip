@@ -20,6 +20,14 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 11.0
 
+**Feature level 415**
+
+* [`POST /reminders`](/api/create-message-reminder): Added parameter
+  `note` to allow users to add notes to their reminders.
+* [`POST /register`](/api/register-queue): Added `max_reminder_note_length`
+  for clients to restrict the reminder note length before sending it to
+  the server.
+
 **Feature level 414**
 
 * [`POST /channel_folders/create`](/api/create-channel-folder),

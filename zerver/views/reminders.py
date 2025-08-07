@@ -19,6 +19,7 @@ def create_reminders_message_backend(
     *,
     message_id: Json[int],
     scheduled_delivery_timestamp: Json[int],
+    note: str | None = None,
 ) -> HttpResponse:
     deliver_at = timestamp_to_datetime(scheduled_delivery_timestamp)
     if deliver_at <= timezone_now():
@@ -32,6 +33,7 @@ def create_reminders_message_backend(
         client,
         message_id,
         deliver_at,
+        note=note or "",
     )
     return json_success(request, data={"reminder_id": reminder_id})
 

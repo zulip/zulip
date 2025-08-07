@@ -523,6 +523,17 @@ function handle_popover_events(event_name) {
     }
 
     if (popover_menu_visible_instance) {
+        if (
+            // Allow all hotkeys except for `down_arrow` and `up_arrow`
+            // to be handled by the browser.
+            // Added to handle `schedule-reminder-note` textarea.
+            processing_text() &&
+            event_name !== "down_arrow" &&
+            event_name !== "up_arrow"
+        ) {
+            return false;
+        }
+
         popover_menus.sidebar_menu_instance_handle_keyboard(
             popover_menu_visible_instance,
             event_name,

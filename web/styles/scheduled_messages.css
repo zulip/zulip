@@ -19,3 +19,11 @@
 #reminders-overlay-container .message_content {
     cursor: auto;
 }
+
+.schedule-reminder-note {
+    /* Horizontal resizing in the popover doesn't look good at all. */
+    resize: vertical;
+    width: 100%;
+    min-width: 10em;
+    padding: 3px;
+}

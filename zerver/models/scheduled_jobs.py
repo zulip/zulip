@@ -166,6 +166,7 @@ class ScheduledMessage(models.Model):
     request_timestamp = models.DateTimeField(default=timezone_now)
     # Only used for REMIND delivery_type messages.
     reminder_target_message_id = models.IntegerField(null=True)
+    reminder_note = models.TextField(null=True)
 
     # Metadata for messages that failed to send when their scheduled
     # moment arrived.

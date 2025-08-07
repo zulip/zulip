@@ -8,6 +8,10 @@ const {run_test} = require("./lib/test.cjs");
 const scheduled_messages = zrequire("scheduled_messages");
 const compose_send_menu_popover = zrequire("compose_send_menu_popover");
 const {initialize_user_settings} = zrequire("user_settings");
+const {set_realm} = zrequire("state_data");
+set_realm({
+    max_reminder_note_length: 1000,
+});
 
 initialize_user_settings({user_settings: {}});
 
@@ -73,6 +77,7 @@ function get_expected_send_opts(day, expecteds) {
         },
         possible_send_later_today: false,
         possible_send_later_monday: false,
+        max_reminder_note_length: 1000,
     };
     const optional_modal_opts = {
         send_later_today: {

@@ -16,6 +16,7 @@ def schedule_reminder_for_message(
     client: Client,
     message_id: int,
     deliver_at: datetime.datetime,
+    note: str,
 ) -> int:
     message = access_message(current_user, message_id, is_modifying_message=False)
     # Even though reminder will be sent from NOTIFICATION_BOT, we still
@@ -26,12 +27,13 @@ def schedule_reminder_for_message(
         current_user,
         client,
         addressee,
-        get_reminder_formatted_content(message, current_user),
+        get_reminder_formatted_content(message, current_user, note),
         current_user.realm,
         forwarder_user_profile=current_user,
     )
     send_request.deliver_at = deliver_at
     send_request.reminder_target_message_id = message_id
+    send_request.reminder_note = note
 
     return do_schedule_messages(
         [send_request],

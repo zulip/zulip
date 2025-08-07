@@ -130,6 +130,7 @@ def do_schedule_messages(
 
         if delivery_type == ScheduledMessage.REMIND:
             scheduled_message.reminder_target_message_id = send_request.reminder_target_message_id
+            scheduled_message.reminder_note = send_request.reminder_note
 
         scheduled_messages.append((scheduled_message, send_request))
 
@@ -307,7 +308,9 @@ def send_reminder(scheduled_message: ScheduledMessage) -> None:
     current_user = scheduled_message.sender
     try:
         message = access_message(current_user, message_id, is_modifying_message=False)
-        content = get_reminder_formatted_content(message, current_user)
+        content = get_reminder_formatted_content(
+            message, current_user, scheduled_message.reminder_note
+        )
     except JsonableError:
         # If we no longer have access to the message, we send the reminder with the
         # last known message position and content.

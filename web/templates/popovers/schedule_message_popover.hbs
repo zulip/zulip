@@ -1,4 +1,4 @@
-<div class="popover-menu" id="send-later-options" data-simplebar data-simplebar-tab-index="-1">
+<div class="popover-menu {{#if is_reminder}}message-reminder-popover{{/if}}" id="send-later-options" data-simplebar data-simplebar-tab-index="-1">
     <ul role="menu" class="popover-menu-list">
         <li role="none" class="text-item popover-menu-list-item">
             <span class="popover-header-name">
@@ -9,6 +9,14 @@
                 {{/if}}
             </span>
         </li>
+        {{#if is_reminder}}
+        <li role="separator" class="popover-menu-separator"></li>
+        <li role="none" class="text-item popover-menu-list-item schedule-reminder-note-item">
+            <textarea class="schedule-reminder-note"  placeholder="{{t 'Note'}}" tabindex="0"
+              maxlength="{{max_reminder_note_length}}"
+              ></textarea>
+        </li>
+        {{/if}}
         {{#if possible_send_later_today}}
             <li role="separator" class="popover-menu-separator"></li>
             {{#each possible_send_later_today}}

@@ -104,6 +104,7 @@ class HomeTest(ZulipTestCase):
         "max_logo_file_size_mib",
         "max_message_id",
         "max_message_length",
+        "max_reminder_note_length",
         "max_stream_description_length",
         "max_stream_name_length",
         "max_bulk_new_subscription_messages",
