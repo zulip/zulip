@@ -119,6 +119,11 @@ input::placeholder {
     @extend .placeholder;
 }
 
+/* Custom resizer icon for the textarea */
+textarea::-webkit-resizer {
+    background-image: var(--svg-resize-handle);
+}
+
 /* -- tab switcher -- */
 
 .tab-switcher {
