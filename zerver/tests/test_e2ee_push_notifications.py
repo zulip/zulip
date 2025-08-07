@@ -11,7 +11,17 @@ from firebase_admin.messaging import UnregisteredError
 from analytics.models import RealmCount
 from zerver.actions.user_groups import check_add_user_group
 from zerver.lib.avatar import absolute_avatar_url
-from zerver.lib.push_notifications import handle_push_notification, handle_remove_push_notification
+from zerver.lib.exceptions import MissingRemoteRealmError
+from zerver.lib.push_notifications import (
+    PushNotificationsDisallowedByBouncerError,
+    handle_push_notification,
+    handle_remove_push_notification,
+)
+from zerver.lib.remote_server import (
+    PushNotificationBouncerError,
+    PushNotificationBouncerRetryLaterError,
+    PushNotificationBouncerServerError,
+)
 from zerver.lib.test_classes import E2EEPushNotificationTestCase
 from zerver.lib.test_helpers import activate_push_notification_service
 from zerver.lib.timestamp import datetime_to_timestamp
@@ -864,3 +874,195 @@ class RequireE2EEPushNotificationsSettingTest(E2EEPushNotificationTestCase):
 
             self.assertEqual(send_apple.call_args.args[2]["alert"]["body"], "New message")
             self.assertEqual(send_android.call_args.args[2]["content"], "New message")
+
+
+class SendTestPushNotificationTest(E2EEPushNotificationTestCase):
+    def test_success_cloud(self) -> None:
+        hamlet = self.example_user("hamlet")
+        unused, registered_device_android = self.register_push_devices_for_notification()
+
+        with (
+            self.mock_fcm() as mock_fcm_messaging,
+            self.mock_apns() as send_notification,
+            self.assertLogs("zilencer.lib.push_notifications", level="INFO"),
+            self.assertLogs("zerver.lib.push_notifications", level="INFO") as zerver_logger,
+        ):
+            mock_fcm_messaging.send_each.return_value = self.make_fcm_success_response()
+            send_notification.return_value.is_successful = True
+
+            # Send test notification to all of the registered mobile devices.
+            result = self.api_post(
+                hamlet, "/api/v1/mobile_push/e2ee/test_notification", subdomain="zulip"
+            )
+            self.assert_json_success(result)
+
+            mock_fcm_messaging.send_each.assert_called_once()
+            send_notification.assert_called_once()
+
+            self.assertEqual(
+                "INFO:zerver.lib.push_notifications:"
+                f"Sending E2EE test push notification for user {hamlet.id}",
+                zerver_logger.output[0],
+            )
+            self.assertEqual(
+                "INFO:zerver.lib.push_notifications:"
+                f"Sent E2EE mobile push notifications for user {hamlet.id}: 1 via FCM, 1 via APNs",
+                zerver_logger.output[-1],
+            )
+
+            # Send test notification to a selected mobile device.
+            result = self.api_post(
+                hamlet,
+                "/api/v1/mobile_push/e2ee/test_notification",
+                {"push_account_id": registered_device_android.push_account_id},
+                subdomain="zulip",
+            )
+            self.assert_json_success(result)
+
+            self.assertEqual(
+                "INFO:zerver.lib.push_notifications:"
+                f"Sending E2EE test push notification for user {hamlet.id}",
+                zerver_logger.output[0],
+            )
+            self.assertEqual(
+                "INFO:zerver.lib.push_notifications:"
+                f"Sent E2EE mobile push notifications for user {hamlet.id}: 1 via FCM, 0 via APNs",
+                zerver_logger.output[-1],
+            )
+
+    @responses.activate
+    @override_settings(ZILENCER_ENABLED=False)
+    def test_success_self_hosted(self) -> None:
+        self.add_mock_response()
+
+        hamlet = self.example_user("hamlet")
+        self.register_push_devices_for_notification(is_server_self_hosted=True)
+
+        with (
+            self.mock_fcm() as mock_fcm_messaging,
+            self.mock_apns() as send_notification,
+            mock.patch(
+                "corporate.lib.stripe.RemoteRealmBillingSession.current_count_for_billed_licenses",
+                return_value=10,
+            ),
+            self.assertLogs("zilencer.lib.push_notifications", level="INFO"),
+            self.assertLogs("zerver.lib.push_notifications", level="INFO") as zerver_logger,
+        ):
+            mock_fcm_messaging.send_each.return_value = self.make_fcm_success_response()
+            send_notification.return_value.is_successful = True
+
+            # Send test notification to all of the registered mobile devices.
+            result = self.api_post(
+                hamlet, "/api/v1/mobile_push/e2ee/test_notification", subdomain="zulip"
+            )
+            self.assert_json_success(result)
+
+            mock_fcm_messaging.send_each.assert_called_once()
+            send_notification.assert_called_once()
+
+            self.assertEqual(
+                "INFO:zerver.lib.push_notifications:"
+                f"Sending E2EE test push notification for user {hamlet.id}",
+                zerver_logger.output[0],
+            )
+            self.assertEqual(
+                "INFO:zerver.lib.push_notifications:"
+                f"Sent E2EE mobile push notifications for user {hamlet.id}: 1 via FCM, 1 via APNs",
+                zerver_logger.output[-1],
+            )
+
+    @responses.activate
+    @override_settings(ZILENCER_ENABLED=False)
+    def test_error_responses(self) -> None:
+        self.add_mock_response()
+        hamlet = self.example_user("hamlet")
+
+        # No registered device to send to.
+        result = self.api_post(
+            hamlet, "/api/v1/mobile_push/e2ee/test_notification", subdomain="zulip"
+        )
+        self.assert_json_error(result, "No active registered push device", 400)
+
+        # Verify errors propagated to the client.
+        registered_device_apple, registered_device_android = (
+            self.register_push_devices_for_notification(is_server_self_hosted=True)
+        )
+
+        def assert_error_response(msg: str, http_status_code: int) -> None:
+            with self.assertLogs("zerver.lib.push_notifications", level="INFO") as zerver_logger:
+                result = self.api_post(
+                    hamlet, "/api/v1/mobile_push/e2ee/test_notification", subdomain="zulip"
+                )
+                self.assert_json_error(result, msg, http_status_code)
+
+                self.assertEqual(
+                    "INFO:zerver.lib.push_notifications:"
+                    f"Sending E2EE test push notification for user {hamlet.id}",
+                    zerver_logger.output[0],
+                )
+
+        with (
+            mock.patch(
+                "zerver.lib.remote_server.send_to_push_bouncer",
+                side_effect=PushNotificationBouncerRetryLaterError("network error"),
+            ),
+            self.assertLogs(level="ERROR") as error_logs,
+        ):
+            assert_error_response(
+                "Network error while connecting to Zulip push notification service.", 502
+            )
+            self.assertEqual(
+                "ERROR:django.request:Bad Gateway: /api/v1/mobile_push/e2ee/test_notification",
+                error_logs.output[0],
+            )
+
+        with (
+            mock.patch(
+                "zerver.lib.remote_server.send_to_push_bouncer",
+                side_effect=PushNotificationBouncerServerError("server error"),
+            ),
+            self.assertLogs(level="ERROR") as error_logs,
+        ):
+            assert_error_response(
+                "Internal server error on Zulip push notification service, retry later.", 502
+            )
+            self.assertEqual(
+                "ERROR:django.request:Bad Gateway: /api/v1/mobile_push/e2ee/test_notification",
+                error_logs.output[0],
+            )
+
+        with mock.patch(
+            "zerver.lib.remote_server.send_to_push_bouncer", side_effect=MissingRemoteRealmError
+        ):
+            assert_error_response(
+                "Push notification configuration issue on server, contact the server administrator or retry later.",
+                403,
+            )
+
+        with mock.patch(
+            "zerver.lib.remote_server.send_to_push_bouncer",
+            side_effect=PushNotificationBouncerError,
+        ):
+            assert_error_response(
+                "Push notification configuration issue on server, contact the server administrator or retry later.",
+                403,
+            )
+
+        with mock.patch(
+            "zerver.lib.remote_server.send_to_push_bouncer",
+            side_effect=PushNotificationsDisallowedByBouncerError("plan expired"),
+        ):
+            assert_error_response(
+                "Push notification configuration issue on server, contact the server administrator or retry later.",
+                403,
+            )
+
+        # Device marked expired on bouncer (not on server).
+        registered_device_apple.delete()
+        registered_device_android.delete()
+
+        with mock.patch(
+            "corporate.lib.stripe.RemoteRealmBillingSession.current_count_for_billed_licenses",
+            return_value=10,
+        ):
+            assert_error_response("No active registered push device", 400)

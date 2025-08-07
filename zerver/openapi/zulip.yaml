@@ -12636,6 +12636,69 @@ paths:
                 oneOf:
                   - $ref: "#/components/schemas/InvalidPushDeviceTokenError"
                   - $ref: "#/components/schemas/InvalidRemotePushDeviceTokenError"
+  /mobile_push/e2ee/test_notification:
+    post:
+      operationId: e2ee-test-notify
+      summary: Send an E2EE test notification to mobile device(s)
+      tags: ["mobile"]
+      description: |
+        Trigger sending an end-to-end encrypted (E2EE) test push notification
+        to the user's selected mobile device or all of their mobile devices.
+
+        **Changes**: New in Zulip 11.0 (feature level 420).
+      requestBody:
+        required: false
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                push_account_id:
+                  description: |
+                    The push account ID for the device to which to send the test notification.
+
+                    If this parameter is not submitted, the E2EE test notification will
+                    be sent to all of the user's devices registered on the server.
+
+                    A mobile client should pass this parameter, to avoid triggering a test
+                    notification for other clients.
+
+                    See [`POST /mobile_push/register`](/api/register-push-device)
+                    for details on push account IDs.
+                  type: integer
+                  example: 111222
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JsonSuccess"
+        "400":
+          description: |
+            Bad request.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/NoActivePushDeviceError"
+        "403":
+          description: |
+            Forbidden.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/PushNotificationAdminActionRequiredError"
+        "502":
+          description: |
+            Bad gateway.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/FailedToConnectBouncerError"
+                  - $ref: "#/components/schemas/InternalBouncerServerError"
   /mobile_push/register:
     post:
       operationId: register-push-device
@@ -28459,6 +28522,62 @@ components:
 
             A typical failed JSON response for when the push device token is not recognized
             by the push notification bouncer:
+    NoActivePushDeviceError:
+      allOf:
+        - $ref: "#/components/schemas/CodedError"
+        - example:
+            {
+              "code": "NO_ACTIVE_PUSH_DEVICE",
+              "msg": "No active registered push device",
+              "result": "error",
+            }
+          description: |
+            ## No active push device
+
+            A typical failed JSON response for when no registered device is available
+            for the user (and `push_account_id`) to receive a push notification.
+    FailedToConnectBouncerError:
+      allOf:
+        - $ref: "#/components/schemas/CodedError"
+        - example:
+            {
+              "code": "FAILED_TO_CONNECT_BOUNCER",
+              "msg": "Network error while connecting to Zulip push notification service.",
+              "result": "error",
+            }
+          description: |
+            ## Failed to connect bouncer
+
+            A typical failed JSON response for when a network error occurs
+            while the server attempts to connect to the bouncer server.
+    InternalBouncerServerError:
+      allOf:
+        - $ref: "#/components/schemas/CodedError"
+        - example:
+            {
+              "code": "INTERNAL_SERVER_ERROR_ON_BOUNCER",
+              "msg": "Internal server error on Zulip push notification service, retry later.",
+              "result": "error",
+            }
+          description: |
+            ## Internal bouncer server error
+
+            A typical failed JSON response for when a 5xx error occurs on the bouncer server.
+    PushNotificationAdminActionRequiredError:
+      allOf:
+        - $ref: "#/components/schemas/CodedError"
+        - example:
+            {
+              "code": "ADMIN_ACTION_REQUIRED",
+              "msg": "Push notification configuration issue on server, contact the server administrator or retry later.",
+              "result": "error",
+            }
+          description: |
+            ## Admin action required
+
+            A typical failed JSON response for when there is a push notification
+            configuration issue on the server, such as invalid credentials,
+            an expired plan, or an unregistered organization. Admin action is required.
     Event_types:
       description: |
         A JSON-encoded array indicating which types of events you're interested

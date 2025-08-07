@@ -20,6 +20,12 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 11.0
 
+**Feature level 420**
+
+* [`POST /mobile_push/e2ee/test_notification`](/api/e2ee-test-notify):
+  Added a new endpoint to send an end-to-end encrypted test push notification
+  to the user's selected mobile device or all of their mobile devices.
+
 **Feature level 419**
 
 * [`POST /register`](/api/register-queue): Added `simplified_presence_events`

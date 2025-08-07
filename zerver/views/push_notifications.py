@@ -21,8 +21,10 @@ from zerver.lib.exceptions import (
 )
 from zerver.lib.push_notifications import (
     InvalidPushDeviceTokenError,
+    NoActivePushDeviceError,
     add_push_device_token,
     remove_push_device_token,
+    send_e2ee_test_push_notification,
     send_test_push_notification,
     uses_notification_bouncer,
     validate_token,
@@ -106,6 +108,30 @@ def send_test_push_notification_api(
         devices = list(PushDeviceToken.objects.filter(user=user_profile))
 
     send_test_push_notification(user_profile, devices)
+
+    return json_success(request)
+
+
+@human_users_only
+@typed_endpoint
+def send_e2ee_test_push_notification_api(
+    request: HttpRequest, user_profile: UserProfile, *, push_account_id: Json[int] | None = None
+) -> HttpResponse:
+    # We skip push devices with `bouncer_device_id` set to `null` as they are
+    # not yet registered with the bouncer to send mobile push notifications.
+    if push_account_id is not None:
+        # Uses unique index created for 'unique_push_device_user_push_account_id' constraint.
+        push_devices = PushDevice.objects.filter(
+            user=user_profile, push_account_id=push_account_id, bouncer_device_id__isnull=False
+        )
+    else:
+        # Uses 'zerver_pushdevice_user_bouncer_device_id_idx' index.
+        push_devices = PushDevice.objects.filter(user=user_profile, bouncer_device_id__isnull=False)
+
+    if len(push_devices) == 0:
+        raise NoActivePushDeviceError
+
+    send_e2ee_test_push_notification(user_profile, push_devices)
 
     return json_success(request)
 
