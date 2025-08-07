@@ -1328,7 +1328,7 @@ def handle_remove_push_notification(user_profile_id: int, message_ids: list[int]
     # for sending mobile notifications, since we don't at this time
     # know which mobile app version the user may be using.
     send_push_notifications_legacy(user_profile, apns_payload, gcm_payload, gcm_options)
-    send_push_notifications(user_profile, payload_data_to_encrypt, is_removal=True)
+    send_push_notifications(user_profile, payload_data_to_encrypt)
 
     # We intentionally use the non-truncated message_ids here.  We are
     # assuming in this very rare case that the user has manually
@@ -1463,7 +1463,6 @@ def get_encrypted_data(payload_data_to_encrypt: dict[str, Any], public_key_str: 
 def send_push_notifications(
     user_profile: UserProfile,
     payload_data_to_encrypt: dict[str, Any],
-    is_removal: bool = False,
 ) -> None:
     # Uses 'zerver_pushdevice_user_bouncer_device_id_idx' index.
     push_devices = PushDevice.objects.filter(user=user_profile, bouncer_device_id__isnull=False)
@@ -1474,6 +1473,8 @@ def send_push_notifications(
             user_profile.id,
         )
         return
+
+    is_removal = payload_data_to_encrypt["type"] == "remove"
 
     # Note: The "Final" qualifier serves as a shorthand
     # for declaring that a variable is effectively Literal.
