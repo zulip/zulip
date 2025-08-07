@@ -15,7 +15,7 @@ import orjson
 from aioapns.common import NotificationResult, PushType
 from django.conf import settings
 from django.db import transaction
-from django.db.models import F, Q
+from django.db.models import F, Q, QuerySet
 from django.db.models.functions import Lower
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
@@ -1463,9 +1463,14 @@ def get_encrypted_data(payload_data_to_encrypt: dict[str, Any], public_key_str: 
 def send_push_notifications(
     user_profile: UserProfile,
     payload_data_to_encrypt: dict[str, Any],
+    test_notification_to_push_devices: QuerySet[PushDevice] | None = None,
 ) -> None:
-    # Uses 'zerver_pushdevice_user_bouncer_device_id_idx' index.
-    push_devices = PushDevice.objects.filter(user=user_profile, bouncer_device_id__isnull=False)
+    if test_notification_to_push_devices is not None:
+        assert len(test_notification_to_push_devices) != 0
+        push_devices = test_notification_to_push_devices
+    else:
+        # Uses 'zerver_pushdevice_user_bouncer_device_id_idx' index.
+        push_devices = PushDevice.objects.filter(user=user_profile, bouncer_device_id__isnull=False)
 
     if len(push_devices) == 0:
         logger.info(
@@ -1475,6 +1480,7 @@ def send_push_notifications(
         return
 
     is_removal = payload_data_to_encrypt["type"] == "remove"
+    is_test_notification = payload_data_to_encrypt["type"] == "test"
 
     # Note: The "Final" qualifier serves as a shorthand
     # for declaring that a variable is effectively Literal.
@@ -1549,6 +1555,10 @@ def send_push_notifications(
             acting_user=None,
         )
         do_set_push_notifications_enabled_end_timestamp(user_profile.realm, None, acting_user=None)
+
+        if is_test_notification:
+            raise e
+
         return
 
     # Handle success response data
@@ -1797,6 +1807,24 @@ def send_test_push_notification(user_profile: UserProfile, devices: list[PushDev
     )
 
 
+def send_e2ee_test_push_notification(
+    user_profile: UserProfile, push_devices: QuerySet[PushDevice]
+) -> None:
+    payload_data_to_encrypt = get_base_payload(user_profile, for_legacy_clients=False)
+    payload_data_to_encrypt["type"] = "test"
+    payload_data_to_encrypt["time"] = datetime_to_timestamp(timezone_now())
+
+    logger.info("Sending E2EE test push notification for user %s", user_profile.id)
+
+    try:
+        send_push_notifications(
+            user_profile, payload_data_to_encrypt, test_notification_to_push_devices=push_devices
+        )
+    except JsonableError as e:
+        # Return meaningful error for client.
+        raise e
+
+
 class InvalidPushDeviceTokenError(JsonableError):
     code = ErrorCode.INVALID_PUSH_DEVICE_TOKEN
 
@@ -1858,3 +1886,15 @@ def get_push_devices(user_profile: UserProfile) -> dict[str, PushDeviceInfoDict]
         str(row.push_account_id): {"status": row.status, "error_code": row.error_code}
         for row in rows
     }
+
+
+class NoActivePushDeviceError(JsonableError):
+    code = ErrorCode.NO_ACTIVE_PUSH_DEVICE
+
+    def __init__(self) -> None:
+        pass
+
+    @staticmethod
+    @override
+    def msg_format() -> str:
+        return _("No active registered push device")

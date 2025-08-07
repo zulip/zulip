@@ -21,6 +21,61 @@ from zerver.models.scheduled_jobs import NotificationTriggers
 from zilencer.models import RemoteRealm, RemoteRealmCount
 
 
+class SendTestPushNotificationTest(E2EEPushNotificationTestCase):
+    def test_success_cloud(self) -> None:
+        hamlet = self.example_user("hamlet")
+        unused, registered_device_android = self.register_push_devices_for_notification()
+
+        with (
+            self.mock_fcm() as mock_fcm_messaging,
+            self.mock_apns() as send_notification,
+            self.assertLogs("zilencer.lib.push_notifications", level="INFO"),
+            self.assertLogs("zerver.lib.push_notifications", level="INFO") as zerver_logger,
+        ):
+            mock_fcm_messaging.send_each.return_value = self.make_fcm_success_response()
+            send_notification.return_value.is_successful = True
+
+            # Send test notification to all of the registered mobile devices.
+            result = self.api_post(
+                hamlet, "/api/v1/mobile_push/e2ee/test_notification", subdomain="zulip"
+            )
+            self.assert_json_success(result)
+
+            mock_fcm_messaging.send_each.assert_called_once()
+            send_notification.assert_called_once()
+
+            self.assertEqual(
+                "INFO:zerver.lib.push_notifications:"
+                f"Sending E2EE test push notification for user {hamlet.id}",
+                zerver_logger.output[0],
+            )
+            self.assertEqual(
+                "INFO:zerver.lib.push_notifications:"
+                f"Sent E2EE mobile push notifications for user {hamlet.id}: 1 via FCM, 1 via APNs",
+                zerver_logger.output[-1],
+            )
+
+            # Send test notification to a selected mobile device.
+            result = self.api_post(
+                hamlet,
+                "/api/v1/mobile_push/e2ee/test_notification",
+                {"push_account_id": registered_device_android.push_account_id},
+                subdomain="zulip",
+            )
+            self.assert_json_success(result)
+
+            self.assertEqual(
+                "INFO:zerver.lib.push_notifications:"
+                f"Sending E2EE test push notification for user {hamlet.id}",
+                zerver_logger.output[0],
+            )
+            self.assertEqual(
+                "INFO:zerver.lib.push_notifications:"
+                f"Sent E2EE mobile push notifications for user {hamlet.id}: 1 via FCM, 0 via APNs",
+                zerver_logger.output[-1],
+            )
+
+
 @activate_push_notification_service()
 class SendPushNotificationTest(E2EEPushNotificationTestCase):
     def test_success_cloud(self) -> None:
