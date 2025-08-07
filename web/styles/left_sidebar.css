@@ -799,7 +799,7 @@ ul.filters {
 
     .has-only-muted-mentions {
         .unread_mention_info {
-            opacity: var(--opacity-left-sidebar-muted);
+            opacity: var(--opacity-left-sidebar-muted-mentions);
         }
 
         &:hover .unread_mention_info {
@@ -848,6 +848,12 @@ ul.filters {
         .masked_unread_count,
         .sidebar-menu-icon {
             opacity: var(--opacity-left-sidebar-muted);
+        }
+
+        .unread_mention_info {
+            /* Default opacity for this icon is too close to
+               --opacity-left-sidebar-muted */
+            opacity: var(--opacity-left-sidebar-muted-mentions);
         }
 
         &:hover {
