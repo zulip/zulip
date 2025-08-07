@@ -7,7 +7,7 @@
 {% endblock %}
 
 {% block portico_content %}
-<div class="app help terms-page inline-block{% if page_is_help_center %} help-center{% endif %}{% if page_is_api_center %} api-center{% endif %}">
+<div class="app help terms-page inline-block{% if page_is_api_center %} api-center{% endif %}">
     <div class="sidebar">
         <div class="content">
             {% if not page_is_policy_center %}
@@ -30,8 +30,6 @@
         <div class="content" id="main-content">
             {% if page_is_policy_center %}
             {{ render_markdown_path(article) }}
-            {% elif page_is_help_center %}
-            {{ render_markdown_path(article, context=api_url_context, help_center=True) }}
             {% else %}
             {{ render_markdown_path(article, context=api_url_context) }}
             {% endif %}

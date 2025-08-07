@@ -135,7 +135,7 @@ def getMarkdown(setting_type_name: str, setting_name: str, setting_link: str) ->
             return f"1. Navigate to the {relative_link} \
                     tab of the **{setting_type_name}** menu."
         return f"1. Go to {relative_link}."
-    return settings_markdown.format(
+    return settings_markdown.format(  # nocoverage
         setting_type_name=setting_type_name,
         setting_reference=f"**{setting_name}**",
     )
