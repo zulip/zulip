@@ -423,7 +423,10 @@
 }
 
 .stream-list-section-container:not(.showing-inactive-or-muted) {
-    .inactive-or-muted-in-channel-folder {
+    .inactive-or-muted-in-channel-folder:not(
+            .active-filter,
+            :has(.active-sub-filter)
+        ) {
         display: none;
     }
 
@@ -450,6 +453,24 @@
         .show-inactive-or-muted-channels {
             display: none;
         }
+    }
+}
+
+/* Sections with inactive/muted channels have a button to toggle
+   showing them. If there's only one inactive/muted channel, and
+   it's currently highlighted (.stream-expanded), then we want to
+   always show it, which means there aren't any inactive/muted
+   channels left to toggle visibility for. So we should hide the
+   toggle button.
+
+   (Checking for any .inactive-or-muted-in-channel-folder without
+   .stream-expanded in a .stream-list-section-container, and if none
+   then hide .stream-list-toggle-inactive-or-muted-channels). */
+.stream-list-section-container:not(
+        :has(.inactive-or-muted-in-channel-folder:not(.stream-expanded))
+    ) {
+    .stream-list-toggle-inactive-or-muted-channels {
+        display: none;
     }
 }
 
