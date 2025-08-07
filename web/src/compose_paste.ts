@@ -219,6 +219,7 @@ function get_code_block_lanaguage(
 
     if (parent_contains_lang_metadata) {
         const codehilite_element = pre_element.closest<HTMLElement>(".codehilite");
+        // eslint-disable-next-line unicorn/prefer-dom-node-dataset
         language = codehilite_element?.getAttribute("data-code-language") ?? "";
     } else {
         language = (/language-(\S+)/.exec(code_element_class_name) ?? [null, ""])[1];
