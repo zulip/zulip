@@ -7,6 +7,7 @@ import * as channel from "./channel.ts";
 import * as channel_folders from "./channel_folders.ts";
 import * as channel_folders_ui from "./channel_folders_ui.ts";
 import * as ListWidget from "./list_widget.ts";
+import type {ChannelFolderUpdateEvent} from "./server_event_types.ts";
 import * as settings_ui from "./settings_ui.ts";
 import {current_user} from "./state_data.ts";
 import * as util from "./util.ts";
@@ -96,4 +97,31 @@ export function set_up(): void {
 
 export function reset(): void {
     meta.loaded = false;
+}
+
+function get_channel_folder_row(folder_id: number): JQuery {
+    return $("#admin_channel_folders_table").find(
+        `tr.channel-folder-row[data-channel-folder-id='${CSS.escape(folder_id.toString())}']`,
+    );
+}
+
+export function update_folder_row(event: ChannelFolderUpdateEvent): void {
+    if (!meta.loaded) {
+        return;
+    }
+
+    const folder_id = event.channel_folder_id;
+    const $folder_row = get_channel_folder_row(folder_id);
+
+    if (event.data.name !== undefined) {
+        $folder_row.find(".channel_folder_name").text(event.data.name);
+    }
+
+    if (event.data.description !== undefined) {
+        $folder_row.find(".channel_folder_description").text(event.data.description);
+    }
+
+    if (event.data.is_archived) {
+        $folder_row.remove();
+    }
 }
