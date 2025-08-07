@@ -104,8 +104,8 @@ blocks, which will be used whenever the code block has no tag.
 {end_tabs}
 
 
-When a default language is configured, one can use ````text` to display code
-blocks without any syntax highlighting (e.g., to paste an error message).
+When a default language is configured, one can use ```` ```text ```` to display
+code blocks without any syntax highlighting (e.g., to paste an error message).
 
 ## Code playgrounds
 
