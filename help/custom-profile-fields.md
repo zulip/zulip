@@ -45,6 +45,32 @@ methods][authentication-production] documentation for details.
 
 {end_tabs}
 
+## Delete a custom profile field
+
+{start_tabs}
+
+{settings_tab|profile-field-settings}
+
+1. In the **Actions** column, click the **delete** (<i class="zulip-icon
+   zulip-icon-trash"></i>) icon for the profile field you want to delete.
+
+1. Approve by clicking **Confirm**.
+
+{end_tabs}
+
+## Reorder custom profile fields
+
+Users will see custom profile fields in the specified order.
+
+{start_tabs}
+
+{settings_tab|profile-field-settings}
+
+1. In the **Labels** column, click and drag the vertical dots to reorder the
+   list of custom profile fields.
+
+{end_tabs}
+
 ## Display custom fields on user card
 
 Organizations may find it useful to display additional fields on the
