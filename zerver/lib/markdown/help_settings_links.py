@@ -104,6 +104,11 @@ link_mapping = {
         "Custom profile fields",
         "/#organization/profile-field-settings",
     ],
+    "channel-folder-settings": [
+        "Organization settings",
+        "Channel folders",
+        "/#organization/channel-folders",
+    ],
     "data-exports-admin": [
         "Organization settings",
         "Data exports",
