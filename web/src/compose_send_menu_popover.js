@@ -35,6 +35,7 @@ export function open_schedule_message_menu(
         return;
     }
     let interval;
+    let flatpickr_active = false;
     const message_schedule_callback = (time) => {
         if (remind_message_id !== undefined) {
             do_schedule_reminder(time, remind_message_id);
@@ -56,6 +57,10 @@ export function open_schedule_message_menu(
                     },
                 },
             ],
+        },
+        // Override the default hide behavior to check if flatpickr is active
+        onHide() {
+            return !flatpickr_active;
         },
         onShow(instance) {
             // Only show send later options that are possible today.
@@ -81,9 +86,11 @@ export function open_schedule_message_menu(
             $popper.on("click", ".send_later_custom", (e) => {
                 const $send_later_options_content = $popper.find(".popover-menu-list");
                 const current_time = new Date();
+                flatpickr_active = true;
                 flatpickr.show_flatpickr(
                     $(".send_later_custom")[0],
                     (send_at_time) => {
+                        flatpickr_active = false;
                         message_schedule_callback(send_at_time);
                         popover_menus.hide_current_popover_if_visible(instance);
                     },
@@ -93,12 +100,16 @@ export function open_schedule_message_menu(
                             current_time.getTime() +
                                 scheduled_messages.MINIMUM_SCHEDULED_MESSAGE_DELAY_SECONDS * 1000,
                         ),
-                        onClose(selectedDates, _dateStr, instance) {
+                        onClose(selectedDates, _dateStr, flatpickr_instance) {
+                            flatpickr_active = false;
+                            popover_menus.hide_current_popover_if_visible(instance);
                             // Return to normal state.
                             $send_later_options_content.css("pointer-events", "all");
                             const selected_date = selectedDates[0];
-
-                            if (selected_date && selected_date < instance.config.minDate) {
+                            if (
+                                selected_date &&
+                                selected_date < flatpickr_instance.config.minDate
+                            ) {
                                 scheduled_messages.set_minimum_scheduled_message_delay_minutes_note(
                                     true,
                                 );
@@ -107,6 +118,9 @@ export function open_schedule_message_menu(
                                     false,
                                 );
                             }
+                        },
+                        onOpen() {
+                            flatpickr_active = true;
                         },
                     },
                 );
@@ -128,6 +142,7 @@ export function open_schedule_message_menu(
             );
         },
         onHidden(instance) {
+            flatpickr_active = false;
             clearInterval(interval);
             instance.destroy();
             popover_menus.popover_instances.send_later_options = undefined;
