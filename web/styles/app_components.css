@@ -1347,7 +1347,7 @@ input.settings_text_input {
     color: hsl(1.06deg 44.66% 50.39%);
 }
 
-.sticky-bottom-option {
+.sticky-bottom-option-button {
     width: 100%;
     display: flex;
     padding: 7px 14px;
