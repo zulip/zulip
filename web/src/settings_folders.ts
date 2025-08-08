@@ -22,6 +22,13 @@ function update_folder_order(this: HTMLElement): void {
     $(".channel-folder-row").each(function () {
         order.push(Number.parseInt($(this).attr("data-channel-folder-id")!, 10));
     });
+    const archived_folders = channel_folders
+        .get_channel_folders(true)
+        .filter((folder) => folder.is_archived)
+        .sort((a, b) => util.strcmp(a.name.toLowerCase(), b.name.toLowerCase()));
+    for (const folder of archived_folders) {
+        order.push(folder.id);
+    }
     settings_ui.do_settings_change(
         channel.patch,
         "/json/channel_folders",

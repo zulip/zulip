@@ -24554,6 +24554,10 @@ paths:
                   type: array
                   description: |
                     A list of channel folder IDs representing the new order.
+
+                    This list must include the IDs of all the
+                    organization's channel folders, including archived
+                    folders.
                   items:
                     type: integer
             encoding:
