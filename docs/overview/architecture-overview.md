@@ -9,11 +9,10 @@ incoming webhook [integrations](https://zulip.com/integrations/)
 with other services and applications (see [the directory structure
 guide](directory-structure.md)).
 
-[Zulip Mobile](https://github.com/zulip/zulip-mobile) is the official
-mobile Zulip client supporting both iOS and Android, written in
-JavaScript with React Native, and [Zulip
-Desktop](https://github.com/zulip/zulip-desktop) is the official Zulip
-desktop client for macOS, Linux, and Windows.
+[Zulip Flutter](https://github.com/zulip/zulip-flutter) is the official
+mobile Zulip client supporting both iOS and Android, built with Flutter,
+and [Zulip Desktop](https://github.com/zulip/zulip-desktop) is the
+official Zulip desktop client for macOS, Linux, and Windows.
 [Zulip Terminal](https://github.com/zulip/zulip-terminal) is our
 official terminal-based client.
 

@@ -218,7 +218,7 @@ independently as needed.
 [chat-zulip-org]: https://zulip.com/development-community/
 [fork-zulip]: ../production/modify.md
 [zulip-server]: https://github.com/zulip/zulip
-[mobile-beta]: https://github.com/zulip/zulip-mobile#using-the-beta
+[mobile-beta]: https://zulip.com/help/mobile-app-install-guide#install-a-beta-release
 [label-blocker]: https://github.com/zulip/zulip/issues?q=is%3Aissue+is%3Aopen+label%3A%22priority%3A+blocker%22
 [label-high]: https://github.com/zulip/zulip/issues?q=is%3Aissue+is%3Aopen+label%3A%22priority%3A+high%22
 [label-help-wanted]: https://github.com/zulip/zulip/issues?q=is%3Aopen+is%3Aissue+label%3A%22help+wanted%22
