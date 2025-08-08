@@ -2186,6 +2186,7 @@ body:not(.spectator-view) {
            user-set line-height, so that the icon is always
            vertically centered properly. */
         line-height: 1.214;
+        overflow: hidden;
 
         .channel-privacy-type-icon {
             line-height: 1.214;
