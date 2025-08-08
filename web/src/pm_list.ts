@@ -28,6 +28,7 @@ const ls_key = "left_sidebar_direct_messages_collapsed_state";
 const ls_schema = z._default(z.boolean(), false);
 const ls = localstorage();
 let private_messages_collapsed = false;
+let last_direct_message_count: number | undefined;
 
 // The direct messages section can be zoomed in to view more messages.
 // This keeps track of if we're zoomed in or not.
@@ -168,15 +169,36 @@ export function expand(): void {
     update_private_messages();
 }
 
-export function update_dom_with_unread_counts(counts: FullUnreadCountsData): void {
+export function update_dom_with_unread_counts(
+    counts: FullUnreadCountsData,
+    skip_animations = false,
+): void {
     // In theory, we could support passing the counts object through
     // to pm_list_data, rather than fetching it directly there. But
     // it's not an important optimization, because it's unlikely a
     // user would have 10,000s of unread direct messages where it
     // could matter.
     update_private_messages();
+
     // This is just the global unread count.
-    set_count(counts.direct_message_count);
+    const new_direct_message_count = counts.direct_message_count;
+    set_count(new_direct_message_count);
+
+    if (last_direct_message_count === undefined) {
+        // We don't want to animate the DM header
+        // when Zulip first loads, but we must update
+        // the last DM count to correctly animate
+        // the arrival of new unread DMs.
+        last_direct_message_count = new_direct_message_count;
+        return;
+    }
+
+    if (new_direct_message_count > last_direct_message_count && !skip_animations) {
+        const $dm_header = $("#direct-messages-section-header");
+        ui_util.do_new_unread_animation($dm_header);
+    }
+
+    last_direct_message_count = new_direct_message_count;
 }
 
 export function highlight_all_private_messages_view(): void {

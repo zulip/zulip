@@ -1026,7 +1026,8 @@ li.active-sub-filter {
     }
 }
 
-.top_left_mentions {
+.top_left_mentions,
+#direct-messages-section-header {
     /* To highlight the background when a new unread arrives,
        we set the background on the .new-unread class. */
     &.new-unread {
