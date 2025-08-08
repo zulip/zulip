@@ -301,7 +301,6 @@ to issue 1234 in the main Zulip project repositories:
 - [Flutter mobile client][flutter-repository]: `#F1234`
 - [Terminal client][terminal-repository]: `#T1234`
 - [Desktop client][desktop-repository]: `#D1234`
-- [React Native mobile client][mobile-repository]: `#M1234`
 
 ## New features are tested here
 
@@ -315,6 +314,5 @@ feature.
 [release-lifecycle]: https://zulip.readthedocs.io/en/latest/overview/release-lifecycle.html
 [server-web-repository]: https://github.com/zulip/zulip
 [flutter-repository]: https://github.com/zulip/zulip-flutter
-[mobile-repository]: https://github.com/zulip/zulip-mobile
 [terminal-repository]: https://github.com/zulip/zulip-terminal
 [desktop-repository]: https://github.com/zulip/zulip-desktop
