@@ -304,6 +304,12 @@ _Released 2026-04-26_
   synced but don't exist in the Zulip organization. Starting in 12.0,
   such groups will be created automatically when syncing the groups
   for a user who should be a member of that group.
+- The `AUTH_LDAP_USERNAME_ATTR` setting is now required for all LDAP
+  configurations. It was previously optional when using `LDAP_APPEND_DOMAIN`
+  (configuration (B) in our LDAP setup documentation). It should be set to the
+  name of the LDAP attribute that holds the username in `AUTH_LDAP_USER_SEARCH`
+  results (for example, `uid` or `sAMAccountName`). Configurations which
+  already had this set correctly don't need to take any action on this item.
 - The [`GET /api/v1/users/{user_id_or_email}/presence`](https://zulip.com/api/get-user-presence)
   API endpoint now returns presence data in the modern format, in
   addition to the legacy format that it has always returned. Custom
