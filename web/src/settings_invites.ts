@@ -49,7 +49,7 @@ type Invite = z.output<typeof invite_schema> & {
     invited_absolute_time?: string;
     expiry_date_absolute_time?: string;
     is_admin?: boolean;
-    disable_buttons?: boolean;
+    disable_revoke_and_resend_button?: boolean;
     referrer_name?: string;
     img_src?: string;
     notify_referrer_on_join?: boolean;
@@ -105,7 +105,7 @@ function populate_invites(invites_data: {invites: Invite[]}): void {
                 item.expiry_date_absolute_time = timerender.absolute_time(item.expiry_date * 1000);
             }
             item.is_admin = current_user.is_admin;
-            item.disable_buttons =
+            item.disable_revoke_and_resend_button =
                 item.invited_as === settings_config.user_role_values.owner.code &&
                 !current_user.is_owner;
             item.referrer_name = people.get_by_user_id(item.invited_by_user_id).full_name;

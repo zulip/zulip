@@ -37,7 +37,7 @@
           intent="danger"
           custom_classes="revoke tippy-zulip-delayed-tooltip"
           data-tippy-content=(t "Revoke")
-          disabled=disable_buttons
+          disabled=disable_revoke_and_resend_button
           }}
         {{#unless is_multiuse}}
         {{> ../components/icon_button
@@ -51,7 +51,7 @@
           intent="neutral"
           custom_classes="resend tippy-zulip-delayed-tooltip"
           data-tippy-content=(t "Resend")
-          disabled=disable_buttons
+          disabled=disable_revoke_and_resend_button
           }}
         {{/unless}}
     </td>
