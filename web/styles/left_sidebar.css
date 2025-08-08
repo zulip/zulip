@@ -1331,14 +1331,6 @@ li.top_left_scheduled_messages {
             white-space: nowrap;
             overflow: hidden;
         }
-
-        /* We only establish the ellipsis when
-           the input is not focused, thanks to a
-           Safari bug that makes long inputs
-           unreachable and unscrollable. */
-        .input:not(:focus) {
-            text-overflow: ellipsis;
-        }
     }
 }
 
