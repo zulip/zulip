@@ -215,6 +215,8 @@ In either configuration, you will need to do the following:
 
    - Set `AUTH_LDAP_USER_SEARCH` to query by LDAP username
    - Set `LDAP_APPEND_DOMAIN = "example.com"`.
+   - Set `AUTH_LDAP_USERNAME_ATTR` to the name of the LDAP
+     attribute for the user's LDAP username in that search result.
 
    (C) Using LDAP usernames as Zulip usernames, with email addresses
    taken from some other attribute in LDAP (for example, `mail`):
@@ -407,17 +409,6 @@ that is guaranteed to always map to the same user account.
 For Active Directory installations, the immutable Security Identifier
 [`objectSid`](https://ldapwiki.com/wiki/Wiki.jsp?page=Security%20Identifier)
 is recommended.
-
-:::{note}
-
-While most LDAP data is synced in `sync_ldap_user_data`, email address
-synchronization is only checked on login. The first time a user logs
-in with `unique_account_id` enabled, the unique ID will be linked with
-their Zulip account. After a change in their LDAP email address, Zulip
-will update the linked Zulip account's Zulip email address the next
-time the user logs in.
-
-:::
 
 #### Manually handling LDAP email changes
 
