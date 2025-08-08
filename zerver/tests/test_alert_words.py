@@ -149,7 +149,6 @@ class AlertWordTests(ZulipTestCase):
         )
         self.assert_json_error(result, "alert_words[0] is too long (limit: 100 characters)")
 
-
     def test_json_list_remove(self) -> None:
         user = self.get_user()
         self.login_user(user)

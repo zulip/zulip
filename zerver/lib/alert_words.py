@@ -47,7 +47,12 @@ def get_alert_word_automaton(realm: Realm) -> ahocorasick.Automaton:
 
 
 def user_alert_words(user_profile: UserProfile) -> list[str]:
-    return list(AlertWord.objects.filter(user_profile=user_profile, deactivated=False).values_list("word", flat=True))
+    return list(
+        AlertWord.objects.filter(user_profile=user_profile, deactivated=False).values_list(
+            "word", flat=True
+        )
+    )
+
 
 def user_alert_words_with_deactivated(user_profile: UserProfile) -> list[AlertWord]:
     # returns all alert words for a user, including deactivated ones
@@ -65,31 +70,34 @@ def add_user_alert_words(user_profile: UserProfile, new_words: Iterable[str]) ->
     # Keeping the case, use a dictionary to get the set of
     # case-insensitive distinct, new alert words
     word_dict: dict[str, str] = {}
+    to_reactivate: list[AlertWord] = []
+
     for word in new_words:
         lower_word = word.lower()
-        # if the word already exists, we just reactivate it(soft delete)
-        # we activate it by setting deactivated to False instead of deleting it
-        # so that we can retain historical data for more accurate highlighting logic
         if lower_word in existing_words_map:
-            alert_word = existing_words_map[lower_word]
-            if alert_word.deactivated:
-                alert_word.deactivated = False
-                alert_word.save()
+            aw = existing_words_map[lower_word]
+            if aw.deactivated:
+                aw.deactivated = False
+                to_reactivate.append(aw)
             continue
         word_dict[lower_word] = word
 
-    AlertWord.objects.bulk_create(
-        AlertWord(user_profile=user_profile, word=word, realm=user_profile.realm)
-        for word in word_dict.values()
-    )
-    # Django bulk_create operations don't flush caches, so we need to do this ourselves.
-    flush_realm_alert_words(user_profile.realm_id)
+    if to_reactivate:
+        AlertWord.objects.bulk_update(to_reactivate, fields=["deactivated"])
+    if word_dict:
+        AlertWord.objects.bulk_create(
+            AlertWord(user_profile=user_profile, word=word, realm=user_profile.realm)
+            for word in word_dict.values()
+        )
+    if to_reactivate or word_dict:
+        flush_realm_alert_words(user_profile.realm_id)
 
     return list(
         AlertWord.objects.filter(user_profile=user_profile, deactivated=False).values_list(
             "word", flat=True
         )
     )
+
 
 @transaction.atomic(savepoint=False)
 def remove_user_alert_words(user_profile: UserProfile, delete_words: Iterable[str]) -> list[str]:
@@ -102,7 +110,6 @@ def remove_user_alert_words(user_profile: UserProfile, delete_words: Iterable[st
         AlertWord.objects.filter(user_profile=user_profile, word__iexact=delete_word).update(
             deactivated=True
         )
-
     # Important: clear cache so that realm-level alert_words are updated
     flush_realm_alert_words(user_profile.realm_id)
     return user_alert_words(user_profile)
