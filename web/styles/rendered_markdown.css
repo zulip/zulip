@@ -13,6 +13,13 @@
 .rendered_markdown {
     & p {
         margin: 0 0 var(--markdown-interelement-space-px);
+
+        &:has(+ ul, + ol) {
+            /* When a paragraph is immediately followed
+               by a list sibling, we reduce the paragraph's
+               ordinary bottom space by half. */
+            margin-bottom: calc(var(--markdown-interelement-space-px) / 2);
+        }
     }
 
     /* The spacing between two paragraphs is double the usual value.
@@ -79,16 +86,6 @@
 
         & > li::marker {
             content: counter(count, decimal) ". ";
-        }
-    }
-
-    & ul,
-    & ol {
-        & p:has(+ ul, + ol) {
-            /* When a paragraph inside a list is immediately followed
-               by a list sibling, we reduce the paragraph's ordinary
-               bottom space by half. */
-            margin-bottom: calc(var(--markdown-interelement-space-px) / 2);
         }
     }
 
