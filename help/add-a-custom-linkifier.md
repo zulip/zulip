@@ -75,10 +75,10 @@ variants. For example, the Zulip development community
 
 {start_tabs}
 
-* Pattern: `#M(?P<id>[0-9]+)`
-* URL template: `https://github.com/zulip/zulip-mobile/issues/{id}`
-* Original text: `#M2468`
-* Automatically links to: `https://github.com/zulip/zulip-mobile/issues/2468`
+* Pattern: `#F(?P<id>[0-9]+)`
+* URL template: `https://github.com/zulip/zulip-flutter/issues/{id}`
+* Original text: `#F245`
+* Automatically links to: `https://github.com/zulip/zulip-flutter/issues/245`
 
 {end_tabs}
 

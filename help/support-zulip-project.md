@@ -40,7 +40,7 @@ Collective](https://opencollective.com/zulip).
   practices.
 * **Star** Zulip on GitHub. There are four main repositories:
   [server/web](https://github.com/zulip/zulip),
-  [mobile](https://github.com/zulip/zulip-mobile),
+  [mobile](https://github.com/zulip/zulip-flutter),
   [desktop](https://github.com/zulip/zulip-desktop), and
   [Python API](https://github.com/zulip/python-zulip-api).
 * **Review** Zulip on product comparison websites, such as
