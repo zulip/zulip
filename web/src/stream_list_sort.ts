@@ -49,11 +49,11 @@ function current_section_ids_for_streams(): Map<number, StreamListSection> {
     return map;
 }
 
-export function current_section_id_for_stream(stream_id: number): string {
+// Will return undefined if the given stream isn't in the user's stream
+// list (i.e. they're not subscribed to it).
+export function current_section_id_for_stream(stream_id: number): string | undefined {
     // Warning: This function is O(n), so it should not be called in a loop.
-    const section = current_section_ids_for_streams().get(stream_id);
-    assert(section !== undefined);
-    return section.id;
+    return current_section_ids_for_streams().get(stream_id)?.id;
 }
 
 function compare_function(a: number, b: number): number {

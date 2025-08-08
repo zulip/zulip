@@ -261,7 +261,9 @@ export function update_channel_folder(sub: StreamSubscription, folder_id: number
     stream_ui_updates.update_channel_folder_dropdown(sub);
     stream_list.build_stream_list(false);
     const section_id = stream_list_sort.current_section_id_for_stream(sub.stream_id);
-    stream_list.maybe_hide_topic_bracket(section_id);
+    if (section_id !== undefined) {
+        stream_list.maybe_hide_topic_bracket(section_id);
+    }
 }
 
 export function reset_dropdown_set_to_archived_folder(folder_id: number): void {

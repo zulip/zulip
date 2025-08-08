@@ -696,7 +696,9 @@ export function refresh_pinned_or_unpinned_stream(sub: StreamSubscription): void
     build_stream_sidebar_row(sub);
     update_streams_sidebar();
     const section_id = stream_list_sort.current_section_id_for_stream(sub.stream_id);
-    maybe_hide_topic_bracket(section_id);
+    if (section_id !== undefined) {
+        maybe_hide_topic_bracket(section_id);
+    }
 
     // Only scroll pinned topics into view.  If we're unpinning
     // a topic, we may be literally trying to get it out of
@@ -967,7 +969,7 @@ function on_sidebar_channel_click(
     }
 
     const section_for_stream = stream_list_sort.current_section_id_for_stream(stream_id);
-    if (collapsed_sections.has(section_for_stream)) {
+    if (section_for_stream !== undefined && collapsed_sections.has(section_for_stream)) {
         // In the event that user clicks on the channel in the left
         // sidebar when its folder is collapsed, which is only there
         // to click on if the user was already viewing that channel,
