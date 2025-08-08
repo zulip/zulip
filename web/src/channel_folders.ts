@@ -11,7 +11,16 @@ export type ChannelFolder = z.infer<typeof channel_folder_schema>;
 let channel_folder_name_dict: FoldDict<ChannelFolder>;
 let channel_folder_by_id_dict: Map<number, ChannelFolder>;
 
+export function clean_up_description(channel_folder: ChannelFolder): void {
+    if (channel_folder.rendered_description !== undefined) {
+        channel_folder.rendered_description = channel_folder.rendered_description
+            .replace("<p>", "")
+            .replace("</p>", "");
+    }
+}
+
 export function add(channel_folder: ChannelFolder): void {
+    clean_up_description(channel_folder);
     channel_folder_name_dict.set(channel_folder.name, channel_folder);
     channel_folder_by_id_dict.set(channel_folder.id, channel_folder);
 }
@@ -65,6 +74,7 @@ export function update(event: ChannelFolderUpdateEvent): void {
         channel_folder.description = event.data.description;
         assert(event.data.rendered_description !== undefined);
         channel_folder.rendered_description = event.data.rendered_description;
+        clean_up_description(channel_folder);
     }
 
     if (event.data.is_archived !== undefined) {

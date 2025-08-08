@@ -7,6 +7,7 @@ import * as channel from "./channel.ts";
 import * as channel_folders from "./channel_folders.ts";
 import * as channel_folders_ui from "./channel_folders_ui.ts";
 import * as ListWidget from "./list_widget.ts";
+import {postprocess_content} from "./postprocess_content.ts";
 import type {ChannelFolderUpdateEvent} from "./server_event_types.ts";
 import * as settings_ui from "./settings_ui.ts";
 import {current_user} from "./state_data.ts";
@@ -42,7 +43,7 @@ export function do_populate_channel_folders(): void {
         modifier_html(folder) {
             return render_admin_channel_folder_list_item({
                 folder_name: folder.name,
-                folder_description: folder.description,
+                rendered_description: folder.rendered_description,
                 id: folder.id,
                 is_admin: current_user.is_admin,
             });
@@ -118,7 +119,10 @@ export function update_folder_row(event: ChannelFolderUpdateEvent): void {
     }
 
     if (event.data.description !== undefined) {
-        $folder_row.find(".channel-folder-description").text(event.data.description);
+        const folder = channel_folders.get_channel_folder_by_id(folder_id);
+        $folder_row
+            .find(".channel-folder-description")
+            .html(postprocess_content(folder.rendered_description));
     }
 
     if (event.data.is_archived) {

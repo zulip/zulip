@@ -578,7 +578,10 @@ run_test("channel_folders", ({override}) => {
         assert.equal(folders[0].id, event.channel_folder_id);
         assert.equal(folders[0].name, event.data.name);
         assert.equal(folders[0].description, event.data.description);
-        assert.equal(folders[0].rendered_description, event.data.rendered_description);
+        assert.equal(
+            folders[0].rendered_description,
+            event.data.rendered_description.replace("<p>", "").replace("</p>", ""),
+        );
         assert.equal(folders[0].is_archived, event.data.is_archived);
     }
 
