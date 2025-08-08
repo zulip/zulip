@@ -14,6 +14,7 @@ from django_stubs_ext import StrPromise
 from zerver.lib.storage import static_path
 from zerver.lib.validator import check_bool, check_string
 from zerver.lib.webhooks.common import WebhookConfigOption, WebhookUrlOption
+from zerver.webhooks.fixtureless_integrations import FIXTURELESS_SCREENSHOT_CONTENT
 
 """This module declares all of the (documented) integrations available
 in the Zulip server.  The Integration class is used as part of
@@ -598,7 +599,10 @@ INTEGRATIONS: dict[str, Integration] = {
     "errbot": Integration("errbot", ["meta-integration", "bots"]),
     "giphy": Integration("giphy", ["misc"], display_name="GIPHY"),
     "github-actions": Integration(
-        "github-actions", ["continuous-integration"], display_name="GitHub Actions"
+        "github-actions",
+        ["continuous-integration"],
+        display_name="GitHub Actions",
+        stream_name="github-actions updates",
     ),
     "hubot": Integration("hubot", ["meta-integration", "bots"]),
     "jenkins": Integration("jenkins", ["continuous-integration"]),
@@ -695,13 +699,39 @@ for webhook_integration in WEBHOOK_INTEGRATIONS:
 for bot_integration in BOT_INTEGRATIONS:
     INTEGRATIONS[bot_integration.name] = bot_integration
 
-# Add integrations that don't have automated screenshots here
+# Add webhook integrations that don't have automated screenshots here
 NO_SCREENSHOT_WEBHOOKS = {
     "beeminder",  # FIXME: fixture's goal.losedate needs to be modified dynamically
-    "ifttt",  # Docs don't have a screenshot
-    "slack_incoming",  # Docs don't have a screenshot
-    "zapier",  # Docs don't have a screenshot
+    "ifttt",  # Doc doesn't have a screenshot because it's a platform for integrations
+    "slack_incoming",  # Doc doesn't have a screenshot because it's a type of integration
+    "zapier",  # Doc doesn't have a screenshot because it's a platform for integrations
 }
+
+hubot_integration_names = {integration.name for integration in HUBOT_INTEGRATIONS}
+
+# Add fixtureless integrations that don't have automated screenshots here
+NO_SCREENSHOT_CONFIG = (
+    {
+        "giphy",  # Doc doesn't have a screenshot
+        "twitter",  # the integration is planned to be removed
+        # Outgoing integrations - Docs won't have a screenshot
+        "email",
+        "onyx",
+        # Video call integrations - Docs won't have a screenshot
+        "zoom",
+        "jitsi",
+        "big-blue-button",
+        # Integrations that require screenshots of message threads - support is yet to be added
+        "errbot",
+        "hubot",
+        "github_detail",
+        "irc",
+        "matrix",  # Also requires a screenshot on the Matrix side of the bridge
+        "xkcd",
+    }
+    | NO_SCREENSHOT_WEBHOOKS
+    | hubot_integration_names
+)
 
 
 WEBHOOK_SCREENSHOT_CONFIG: dict[str, list[WebhookScreenshotConfig]] = {
@@ -850,6 +880,23 @@ WEBHOOK_SCREENSHOT_CONFIG: dict[str, list[WebhookScreenshotConfig]] = {
 }
 
 FIXTURELESS_SCREENSHOT_CONFIG: dict[str, list[FixturelessScreenshotConfig]] = {}
+for integration, screenshots_contents in FIXTURELESS_SCREENSHOT_CONTENT.items():
+    FIXTURELESS_SCREENSHOT_CONFIG[integration] = [
+        FixturelessScreenshotConfig(screenshot_content["content"], screenshot_content["topic"])
+        for screenshot_content in screenshots_contents
+    ]
+
+FIXTURELESS_SCREENSHOT_CONFIG_OPTIONAL_FIELDS = {
+    "mercurial": {"image_dir": "hg"},
+    "jenkins": {"image_name": "004.png"},
+    "google-calendar": {"image_name": "003.png", "image_dir": "google/calendar"},
+}
+
+for integration, fields in FIXTURELESS_SCREENSHOT_CONFIG_OPTIONAL_FIELDS.items():
+    assert integration in FIXTURELESS_SCREENSHOT_CONFIG
+    for field_name, value in fields.items():
+        # Assume a single screenshot config for each integration
+        setattr(FIXTURELESS_SCREENSHOT_CONFIG[integration][0], field_name, value)
 
 DOC_SCREENSHOT_CONFIG: dict[
     str, list[WebhookScreenshotConfig] | list[FixturelessScreenshotConfig]
