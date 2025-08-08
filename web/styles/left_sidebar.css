@@ -912,7 +912,23 @@ li.active-sub-filter {
     }
 }
 
-#stream_filters .narrow-filter.active-filter {
+.top_left_mentions {
+    /* To highlight the background when a new unread arrives,
+       we set the background on the .new-unread class. */
+    &.new-unread {
+        background-color: var(--color-background-active-narrow-filter);
+    }
+    /* The background-color transition is maintained by this class,
+       which ensures an immediate opening transition, and lingers
+       some time longer beyond the CSS Animation on the unread count,
+       ensuring a smooth transition back to the normal background
+       color on the sidebar row that's been targeted. */
+    &.new-unread-highlight {
+        transition: background-color 1s ease-in-out;
+    }
+}
+
+.top_left_mentions #stream_filters .narrow-filter.active-filter {
     .topic-list .filter-topics,
     > .bottom_left_row {
         background-color: var(--color-background-active-narrow-filter);
