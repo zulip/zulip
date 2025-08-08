@@ -779,16 +779,22 @@ export class BuddyList extends BuddyListConf {
         // all participants to be shown (except bots or deactivated users).
     }
 
+    section_is_visible_and_has_users(section: BuddyListSection): boolean {
+        return (
+            (this.render_data.hide_headers || !section.is_collapsed) && section.user_ids.length > 0
+        );
+    }
+
     // From `type List<Key>`, where the key is a user_id.
     first_key(): number | undefined {
-        if (this.participants_section.user_ids.length > 0) {
-            return this.participants_section.user_ids[0];
-        }
-        if (this.users_matching_view_section.user_ids.length > 0) {
-            return this.users_matching_view_section.user_ids[0];
-        }
-        if (this.other_users_section.user_ids.length > 0) {
-            return this.other_users_section.user_ids[0];
+        for (const section of [
+            this.participants_section,
+            this.users_matching_view_section,
+            this.other_users_section,
+        ]) {
+            if (this.section_is_visible_and_has_users(section)) {
+                return section.user_ids[0];
+            }
         }
         return undefined;
     }
@@ -796,49 +802,49 @@ export class BuddyList extends BuddyListConf {
     // From `type List<Key>`, where the key is a user_id.
     prev_key(key: number): number | undefined {
         let i = this.participants_section.user_ids.indexOf(key);
+        // If it's the first participant, we don't move the selection.
+        if (i === 0) {
+            return undefined;
+        }
         // This would be the middle of the list of participants,
         // moving to a prev participant.
         if (i > 0) {
             return this.participants_section.user_ids[i - 1];
         }
-        // If it's the first participant, we don't move the selection.
-        if (i === 0) {
-            return undefined;
-        }
 
         i = this.users_matching_view_section.user_ids.indexOf(key);
+        // The key before the first user matching view is the last participant,
+        // if that exists (and the participants view isn't collapsed), and if
+        // it doesn't then we don't move the selection.
+        if (i === 0) {
+            if (this.section_is_visible_and_has_users(this.participants_section)) {
+                return this.participants_section.user_ids.at(-1);
+            }
+            return undefined;
+        }
         // This would be the middle of the list of users matching view,
         // moving to a prev user matching the view.
         if (i > 0) {
             return this.users_matching_view_section.user_ids[i - 1];
         }
-        // The key before the first user matching view is the last participant, if that exists,
-        // and if it doesn't then we don't move the selection.
+
+        i = this.other_users_section.user_ids.indexOf(key);
+        // If we're at the start of the other users list, we move back into users matching
+        // view, or if it's empty or collapsed we move to the participants section. If both
+        // are empty or collapsed, then we don't move the selection.
         if (i === 0) {
-            if (this.participants_section.user_ids.length > 0) {
-                return this.participants_section.user_ids.at(-1);
+            for (const section of [this.users_matching_view_section, this.participants_section]) {
+                if (this.section_is_visible_and_has_users(section)) {
+                    return section.user_ids.at(-1);
+                }
             }
             return undefined;
         }
-
         // This would be the middle of the other users list moving to a prev other user.
-        i = this.other_users_section.user_ids.indexOf(key);
         if (i > 0) {
             return this.other_users_section.user_ids[i - 1];
         }
-        // The key before the first other user is the last user matching view, if that exists,
-        // and if it doesn't then we don't move the selection.
-        if (i === 0) {
-            if (this.users_matching_view_section.user_ids.length > 0) {
-                return this.users_matching_view_section.user_ids.at(-1);
-            }
-            // If there are no matching users but there are participants, go there
-            if (this.participants_section.user_ids.length > 0) {
-                return this.participants_section.user_ids.at(-1);
-            }
-            return undefined;
-        }
-        // The only way we reach here is if the key isn't found in either list,
+        // The only way we reach here is if the key isn't found in any section,
         // which shouldn't happen.
         blueslip.error("Couldn't find key in buddy list", {
             key,
@@ -855,12 +861,10 @@ export class BuddyList extends BuddyListConf {
         // Moving from participants to the list of users matching view,
         // if they exist, otherwise do nothing.
         if (i >= 0 && i === this.participants_section.user_ids.length - 1) {
-            if (this.users_matching_view_section.user_ids.length > 0) {
-                return this.users_matching_view_section.user_ids[0];
-            }
-            // If there are no matching users but there are other users, go there
-            if (this.other_users_section.user_ids.length > 0) {
-                return this.other_users_section.user_ids[0];
+            for (const section of [this.users_matching_view_section, this.other_users_section]) {
+                if (this.section_is_visible_and_has_users(section)) {
+                    return section.user_ids[0];
+                }
             }
             return undefined;
         }
@@ -871,9 +875,9 @@ export class BuddyList extends BuddyListConf {
 
         i = this.users_matching_view_section.user_ids.indexOf(key);
         // Moving from users matching the view to the list of other users,
-        // if they exist, otherwise do nothing.
+        // if they exist (and aren't collapsed), otherwise do nothing.
         if (i >= 0 && i === this.users_matching_view_section.user_ids.length - 1) {
-            if (this.other_users_section.user_ids.length > 0) {
+            if (this.section_is_visible_and_has_users(this.other_users_section)) {
                 return this.other_users_section.user_ids[0];
             }
             return undefined;
