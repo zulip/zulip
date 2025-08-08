@@ -42,7 +42,7 @@ export function get_channel_folders(include_archived = false): ChannelFolder[] {
         }
 
         return true;
-    });
+    }).sort((folder_a, folder_b) => folder_a.order - folder_b.order);
 }
 
 /* TODO/channel-folders: Remove when tests are restored */
