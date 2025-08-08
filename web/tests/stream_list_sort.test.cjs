@@ -103,6 +103,7 @@ test("no_subscribed_streams", () => {
         sections: [
             {
                 id: "pinned-streams",
+                folder_id: null,
                 inactive_streams: [],
                 muted_streams: [],
                 section_title: "translated: PINNED CHANNELS",
@@ -110,6 +111,7 @@ test("no_subscribed_streams", () => {
             },
             {
                 id: "normal-streams",
+                folder_id: null,
                 inactive_streams: [],
                 muted_streams: [],
                 section_title: "translated: CHANNELS",
