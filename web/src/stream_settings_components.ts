@@ -27,7 +27,6 @@ import * as stream_settings_data from "./stream_settings_data.ts";
 import type {StreamSubscription} from "./sub_store.ts";
 import * as ui_report from "./ui_report.ts";
 import * as user_groups from "./user_groups.ts";
-import * as util from "./util.ts";
 
 export let filter_dropdown_widget: DropdownWidget;
 
@@ -322,9 +321,7 @@ export function filter_includes_channel(sub: StreamSubscription): boolean {
 
 export function set_up_folder_dropdown_widget(sub?: StreamSubscription): DropdownWidget {
     const folder_options = (): dropdown_widget.Option[] => {
-        const folders = channel_folders
-            .get_channel_folders()
-            .sort((a, b) => util.strcmp(a.name.toLowerCase(), b.name.toLowerCase()));
+        const folders = channel_folders.get_channel_folders();
         const options: dropdown_widget.Option[] = folders.map((folder) => ({
             name: folder.name,
             unique_id: folder.id,
