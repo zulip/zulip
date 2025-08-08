@@ -21,6 +21,9 @@ conversation at a later time.
 
 1. Click **Remind me about this**.
 
+1. *(optional)* Add a note for yourself. You can use Zulip's standard [Markdown
+formatting](/help/format-your-message-using-markdown).
+
 1. Select one of the suggested scheduling options, or pick a custom time.
 
 {end_tabs}
