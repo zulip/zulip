@@ -133,6 +133,56 @@ function update_ui_and_send_reaction_ajax(
     }
 }
 
+export async function get_frequently_used_emojis_for_user_ajax(): Promise<{emoji_code: string}[]> {
+    return new Promise((resolve, reject) => {
+        const user_id = current_user.user_id;
+
+        // Only valid, logged-in users can access this feature
+        if (!people.is_valid_user_id(user_id)) {
+            if (page_params.is_spectator) {
+                spectators.login_to_access();
+                reject(new Error("User is a spectator, needs login"));
+                return;
+            }
+            blueslip.error("Error with validating user_id", {user_id});
+            reject(new Error("Invalid user_id"));
+            return;
+        }
+        channel.get({
+            url: "/json/reactions",
+            success(response) {
+                const emoji_data = z
+                    .object({
+                        reactions: z.array(z.object({emoji_code: z.string()})),
+                    })
+                    .safeParse(response);
+
+                if (emoji_data.success) {
+                    resolve(emoji_data.data.reactions);
+                } else {
+                    blueslip.error("Error parsing frequently used emojis response", {response});
+                    reject(new Error("Parsing error"));
+                }
+            },
+            error(xhr: JQuery.jqXHR) {
+                if (xhr.readyState !== 0) {
+                    const parsed_response = z
+                        .object({code: z.string()})
+                        .safeParse(xhr.responseJSON);
+                    if (parsed_response.success && parsed_response.data.code === "NOT_LOGGED_IN") {
+                        window.location.replace(page_params.login_page);
+                    } else {
+                        blueslip.error(
+                            channel.xhr_error_message("Error fetching frequently used emojis", xhr),
+                        );
+                    }
+                }
+                reject(new Error("XHR error"));
+            },
+        });
+    });
+}
+
 export function toggle_emoji_reaction(message: Message, emoji_name: string): void {
     // This codepath doesn't support toggling a deactivated realm emoji.
     // Since a user can interact with a deactivated realm emoji only by
