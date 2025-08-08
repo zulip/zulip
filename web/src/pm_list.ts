@@ -4,6 +4,7 @@ import * as z from "zod/mini";
 
 import type {Filter} from "./filter.ts";
 import {localstorage} from "./localstorage.ts";
+import * as narrow_state from "./narrow_state.ts";
 import * as pm_list_data from "./pm_list_data.ts";
 import * as pm_list_dom from "./pm_list_dom.ts";
 import type {PMNode} from "./pm_list_dom.ts";
@@ -143,7 +144,13 @@ export function update_dom_with_unread_counts(counts: FullUnreadCountsData): voi
     const new_direct_message_count = counts.direct_message_count;
     set_count(new_direct_message_count);
 
-    if (last_direct_message_count === undefined) {
+    // TODO: We want to enhance this logic so that
+    // we only suppress the animation when a user
+    // is narrowed to the DM that's received a new
+    // unread. The narrow_state check here is just
+    // a stopgap measure to keep the animation from
+    // being annoying.
+    if (last_direct_message_count === undefined || narrow_state.narrowed_by_pm_reply()) {
         // We don't want to animate the DM header
         // when Zulip first loads, but we must update
         // the last DM count to correctly animate
