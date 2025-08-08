@@ -1,12 +1,15 @@
 import $ from "jquery";
+import assert from "minimalistic-assert";
 import SortableJS from "sortablejs";
 
 import render_admin_channel_folder_list_item from "../templates/settings/admin_channel_folder_list_item.hbs";
 
 import * as channel from "./channel.ts";
 import * as channel_folders from "./channel_folders.ts";
+import type {ChannelFolder} from "./channel_folders.ts";
 import * as channel_folders_ui from "./channel_folders_ui.ts";
 import * as ListWidget from "./list_widget.ts";
+import type {ListWidget as ListWidgetType} from "./list_widget.ts";
 import {postprocess_content} from "./postprocess_content.ts";
 import type {ChannelFolderUpdateEvent} from "./server_event_types.ts";
 import * as settings_ui from "./settings_ui.ts";
@@ -16,6 +19,8 @@ import * as util from "./util.ts";
 const meta = {
     loaded: false,
 };
+
+let folders_list_widget: ListWidgetType<ChannelFolder, ChannelFolder>;
 
 function update_folder_order(this: HTMLElement): void {
     const order: number[] = [];
@@ -29,11 +34,20 @@ function update_folder_order(this: HTMLElement): void {
     for (const folder of archived_folders) {
         order.push(folder.id);
     }
+
+    const opts = {
+        error_continuation() {
+            assert(folders_list_widget !== undefined);
+            const folders = channel_folders.get_channel_folders();
+            folders_list_widget.replace_list_data(folders);
+        },
+    };
     settings_ui.do_settings_change(
         channel.patch,
         "/json/channel_folders",
         {order: JSON.stringify(order)},
         $("#admin-channel-folder-status").expectOne(),
+        opts,
     );
 }
 
@@ -42,7 +56,7 @@ export function do_populate_channel_folders(): void {
 
     const $channel_folders_table = $("#admin_channel_folders_table").expectOne();
 
-    ListWidget.create($channel_folders_table, folders_data, {
+    folders_list_widget = ListWidget.create($channel_folders_table, folders_data, {
         name: "channel_folders_list",
         get_item(folder) {
             return folder;
