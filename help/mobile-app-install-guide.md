@@ -71,8 +71,8 @@ not be updated with bug fixes or new features.
 
 1. Uninstall the Zulip app, if it's already installed.
 
-1. Download [the legacy
-   app](https://github.com/zulip/zulip-mobile/releases/latest) APK file.
+1. Download [the legacy app](https://github.com/zulip/zulip-mobile/releases/latest)
+   APK file.
 
 1. Open the APK file, and follow prompts to install it.
 
