@@ -103,6 +103,7 @@ export function has_recent_activity(sub: StreamSubscription): boolean {
 
 export type StreamListSection = {
     id: string;
+    folder_id: number | null;
     section_title: string;
     streams: number[];
     muted_streams: number[];
@@ -128,6 +129,7 @@ export function sort_groups(stream_ids: number[], search_term: string): StreamLi
 
     const pinned_section: StreamListSection = {
         id: "pinned-streams",
+        folder_id: null,
         section_title: $t({defaultMessage: "PINNED CHANNELS"}),
         streams: [],
         muted_streams: [],
@@ -135,6 +137,7 @@ export function sort_groups(stream_ids: number[], search_term: string): StreamLi
     };
     const normal_section: StreamListSection = {
         id: "normal-streams",
+        folder_id: null,
         section_title: $t({defaultMessage: "CHANNELS"}),
         streams: [],
         muted_streams: [],
@@ -161,6 +164,7 @@ export function sort_groups(stream_ids: number[], search_term: string): StreamLi
             if (!section) {
                 section = {
                     id: sub.folder_id.toString(),
+                    folder_id: sub.folder_id,
                     section_title: folder.name.toUpperCase(),
                     streams: [],
                     muted_streams: [],
