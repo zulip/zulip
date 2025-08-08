@@ -48,7 +48,6 @@ class DocPageTest(ZulipTestCase):
             "/devtools/",
             "/emails/",
             "/errors/",
-            "/help/",
             "/integrations/",
         ]:
             if url.startswith(prefix):
@@ -428,79 +427,26 @@ class DocPageTest(ZulipTestCase):
         self.assertTrue('data-platform="ZulipElectron"' in result.content.decode())
 
 
-class HelpTest(ZulipTestCase):
-    def test_help_settings_links(self) -> None:
-        result = self.client_get("/help/change-the-time-format")
+class CustomShorthandLinksTest(ZulipTestCase):
+    # We do not test relative links here since relative links were only
+    # used in the old help pages. We should probably remove the logic
+    # for relative links after we have done the official cutover to the
+    # starlight help center: https://github.com/zulip/zulip/issues/35654.
+    def test_settings_links(self) -> None:
+        result = self.client_get("/api/api-keys")
         self.assertEqual(result.status_code, 200)
-        self.assertIn('Go to <a href="/#settings/preferences">Preferences</a>', str(result.content))
+        self.assertIn(
+            'Go to <a href="/#settings/account-and-privacy">Account &amp; privacy</a>',
+            str(result.content),
+        )
         # Check that the sidebar was rendered properly.
-        self.assertIn("Getting started with Zulip", str(result.content))
+        self.assertIn("API documentation home", str(result.content))
 
         with self.settings(ROOT_DOMAIN_LANDING_PAGE=True):
-            result = self.client_get("/help/change-the-time-format", subdomain="")
+            result = self.client_get("/api/api-keys", subdomain="")
         self.assertEqual(result.status_code, 200)
-        self.assertIn("<strong>Preferences</strong>", str(result.content))
+        self.assertIn("<strong>Account &amp; privacy</strong>", str(result.content))
         self.assertNotIn("/#settings", str(result.content))
-
-    def test_help_relative_links_for_gear(self) -> None:
-        result = self.client_get("/help/analytics")
-        self.assertIn(
-            '<a href="/stats"><i class="zulip-icon zulip-icon-bar-chart"></i> Usage statistics</a>',
-            str(result.content),
-        )
-        self.assertEqual(result.status_code, 200)
-
-        with self.settings(ROOT_DOMAIN_LANDING_PAGE=True):
-            result = self.client_get("/help/analytics", subdomain="")
-        self.assertEqual(result.status_code, 200)
-        self.assertIn(
-            '<strong><i class="zulip-icon zulip-icon-bar-chart"></i> Usage statistics</strong>',
-            str(result.content),
-        )
-        self.assertNotIn("/stats", str(result.content))
-
-    def test_help_relative_gear_billing_links(self) -> None:
-        result = self.client_get("/help/zulip-cloud-billing")
-        self.assertIn(
-            '<a href="/plans/"><i class="zulip-icon zulip-icon-rocket"></i> Plans and pricing</a>',
-            str(result.content),
-        )
-        self.assertEqual(result.status_code, 200)
-
-        with self.settings(CORPORATE_ENABLED=False):
-            result = self.client_get("/help/zulip-cloud-billing")
-        self.assertEqual(result.status_code, 200)
-        self.assertIn(
-            '<strong><i class="zulip-icon zulip-icon-rocket"></i> Plans and pricing</strong>',
-            str(result.content),
-        )
-        self.assertNotIn('<a href="/plans/">', str(result.content))
-
-        with self.settings(ROOT_DOMAIN_LANDING_PAGE=True):
-            result = self.client_get("/help/zulip-cloud-billing", subdomain="")
-        self.assertEqual(result.status_code, 200)
-        self.assertIn(
-            '<strong><i class="zulip-icon zulip-icon-rocket"></i> Plans and pricing</strong>',
-            str(result.content),
-        )
-        self.assertNotIn('a href="/plans/">', str(result.content))
-
-    def test_help_relative_links_for_stream(self) -> None:
-        result = self.client_get("/help/message-a-channel-by-email")
-        self.assertIn(
-            '<a href="/#channels/subscribed"><i class="zulip-icon zulip-icon-hash"></i> Channel settings</a>',
-            str(result.content),
-        )
-        self.assertEqual(result.status_code, 200)
-
-        with self.settings(ROOT_DOMAIN_LANDING_PAGE=True):
-            result = self.client_get("/help/message-a-channel-by-email", subdomain="")
-        self.assertEqual(result.status_code, 200)
-        self.assertIn(
-            '<strong><i class="zulip-icon zulip-icon-hash"></i> Channel settings</strong>',
-            str(result.content),
-        )
-        self.assertNotIn("/#channels", str(result.content))
 
 
 class IntegrationTest(ZulipTestCase):

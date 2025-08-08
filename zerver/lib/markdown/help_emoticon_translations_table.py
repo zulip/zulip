@@ -53,7 +53,7 @@ class EmoticonTranslationsHelpExtension(Extension):
 
 class EmoticonTranslation(Preprocessor):
     @override
-    def run(self, lines: list[str]) -> list[str]:
+    def run(self, lines: list[str]) -> list[str]:  # nocoverage
         for loc, line in enumerate(lines):
             match = REGEXP.search(line)
             if match:
@@ -62,7 +62,7 @@ class EmoticonTranslation(Preprocessor):
                 break
         return lines
 
-    def handleMatch(self, match: Match[str]) -> list[str]:
+    def handleMatch(self, match: Match[str]) -> list[str]:  # nocoverage
         rows = [
             ROW_HTML.format(
                 emoticon=emoticon,

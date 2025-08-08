@@ -100,7 +100,10 @@ class MarkdownDirectoryView(ApiURLView):
         http_status = 200
         if article == "":
             article = "index"
-        elif article == "include/sidebar_index":
+        # Only help center has this article nested inside an include,
+        # after switching to the new help center, we should remove this
+        # elif block.
+        elif article == "include/sidebar_index":  # nocoverage.
             pass
         elif article == "api-doc-template":
             # This markdown template shouldn't be accessed directly.
@@ -190,7 +193,10 @@ class MarkdownDirectoryView(ApiURLView):
                 settings.DEPLOY_ROOT, "templates", documentation_article.article_path
             )
 
-        if self.help_view:
+        # The nocoverage blocks here are very temporary since this
+        # whole block will be removed once we switch to the new help
+        # center.
+        if self.help_view:  # nocoverage
             context["page_is_help_center"] = True
             context["doc_root"] = "/help/"
             context["doc_root_title"] = "Help center"
