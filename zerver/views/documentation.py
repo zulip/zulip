@@ -106,7 +106,12 @@ class MarkdownDirectoryView(ApiURLView):
             # This markdown template shouldn't be accessed directly.
             article = "missing"
             http_status = 404
-        elif "/" in article:
+        # Only help center allows nested paths in urls.py, once we
+        # remove that help center url declaration in urls.py after
+        # switching to the new help center, we should remove this elif
+        # block altogether since api docs and policies only allow slugs
+        # which cannot have nested paths.
+        elif "/" in article:  # nocoverage
             article = "missing"
             http_status = 404
         elif len(article) > 100 or not re.match(r"^[0-9a-zA-Z_-]+$", article):
