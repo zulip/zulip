@@ -849,13 +849,16 @@ export function initialize_stream_cursor(): void {
         list: {
             scroll_container_selector: "#left_sidebar_scroll_container",
             find_li(opts) {
-                if (opts.key.type === "stream") {
-                    const $li = get_stream_li(opts.key.stream_id);
-                    return $li;
+                switch (opts.key.type) {
+                    case "stream":
+                        return get_stream_li(opts.key.stream_id);
+                    case "inactive_toggle":
+                        return $(
+                            `#stream-list-${opts.key.section_id}-container .stream-list-toggle-inactive-channels`,
+                        );
+                    default:
+                        throw new Error("Unexpected key type");
                 }
-                return $(
-                    `#stream-list-${opts.key.section_id}-container .stream-list-toggle-inactive-channels`,
-                );
             },
             first_key: stream_list_sort.first_row,
             prev_key: (row) =>
@@ -1136,10 +1139,15 @@ export function set_event_handlers({
             return;
         }
 
-        if (row.type === "stream") {
-            on_sidebar_channel_click(row.stream_id, null, show_channel_feed);
-        } else {
-            toggle_inactive_channels($(`#stream-list-${row.section_id}-container`));
+        switch (row.type) {
+            case "stream":
+                on_sidebar_channel_click(row.stream_id, null, show_channel_feed);
+                break;
+            case "inactive_toggle":
+                toggle_inactive_channels($(`#stream-list-${row.section_id}-container`));
+                break;
+            default:
+                throw new Error("Unexpected key type");
         }
     }
 
