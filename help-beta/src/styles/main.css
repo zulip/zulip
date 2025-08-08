@@ -71,6 +71,26 @@
         hsl(225deg 57.09% 42.9%),
         hsl(225deg 100% 84%)
     );
+
+    /* Start of the block of variables taken from app_variables.css,
+       we need to cross-check for modifications while changing the
+       variables below. */
+    /* stylelint-disable color-no-hex */
+    --color-text-generic-link: #08c;
+    --color-text-generic-link-interactive: light-dark(
+        #005580,
+        hsl(200deg 79% 66%)
+    );
+    /* stylelint-enable color-no-hex */
+    --color-markdown-link: light-dark(
+        hsl(200deg 100% 40%),
+        var(--color-text-generic-link)
+    );
+    --color-markdown-link-hover: light-dark(
+        hsl(200deg 100% 25%),
+        var(--color-text-generic-link-interactive)
+    );
+    /* End of the block of variables taken from app_variables.css */
 }
 
 .non-clickable-sidebar-heading {
@@ -209,6 +229,14 @@
             border: none;
             vertical-align: text-top;
         }
+    }
+
+    a:not(:where(.not-content *)) {
+        color: var(--color-markdown-link);
+    }
+
+    a:hover:not(:where(.not-content *)) {
+        color: var(--color-markdown-link-hover);
     }
 
     li > ul,
