@@ -174,36 +174,9 @@ function toggle_condensed_navigation_area(): void {
 
 export function animate_mention_changes($li: JQuery, new_mention_count: number): void {
     if (new_mention_count > last_mention_count) {
-        do_new_unread_animation($li);
+        ui_util.do_new_unread_animation($li);
     }
     last_mention_count = new_mention_count;
-}
-
-function do_new_unread_animation($target: JQuery): void {
-    // The .new-unread-highlight class manages the
-    // transition on the target element's background.
-    // The pulse effect on unread counts, by contrast,
-    // is handled via CSS animations on the .new-unread
-    // class.
-    $target.addClass("new-unread new-unread-highlight");
-    // We listen for the end of the animation to remove
-    // the .new-unread class; this allows us to express
-    // exclusively in CSS our desired timing, duration,
-    // and any other effects. Doing so also gives us
-    // very smooth rendering, as no visual properties
-    // get tied to JavaScript's event loop.
-    $target.on("animationend", (): void => {
-        $target.removeClass("new-unread");
-        // We remove the transition-managing highlight
-        // some time after the animation has run; how
-        // long after doesn't really matter, as the
-        // transition will run as soon as .new-unread
-        // is removed above. This just ensures that we
-        // *do* see a transition on the background color.
-        setTimeout(() => {
-            $target.removeClass("new-unread-highlight");
-        }, 2000);
-    });
 }
 
 export function highlight_inbox_view(): void {
