@@ -396,8 +396,8 @@ function initialize_unread_ui() {
     unread_ui.register_update_unread_counts_hook((counts) =>
         stream_list.update_dom_with_unread_counts(counts),
     );
-    unread_ui.register_update_unread_counts_hook((counts) =>
-        pm_list.update_dom_with_unread_counts(counts),
+    unread_ui.register_update_unread_counts_hook((counts, skip_animations) =>
+        pm_list.update_dom_with_unread_counts(counts, skip_animations),
     );
     unread_ui.register_update_unread_counts_hook(() => topic_list.update());
     unread_ui.register_update_unread_counts_hook((counts) =>
