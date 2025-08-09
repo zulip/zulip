@@ -2138,7 +2138,7 @@ class EditMessageTest(ZulipTestCase):
         )
         self.assert_json_error(
             result,
-            f"You are not allowed to mention user group '{leadership.name}'.",
+            f"You do not have permission to mention @{leadership.name}.",
         )
 
         # The restriction does not apply on silent mention.
@@ -2187,7 +2187,7 @@ class EditMessageTest(ZulipTestCase):
         )
         self.assert_json_error(
             result,
-            f"You are not allowed to mention user group '{support.name}'.",
+            f"You do not have permission to mention @{support.name}.",
         )
 
         msg_id = self.send_stream_message(othello, "test_stream", "Test message")
@@ -2222,7 +2222,7 @@ class EditMessageTest(ZulipTestCase):
         )
         self.assert_json_error(
             result,
-            f"You are not allowed to mention user group '{support.name}'.",
+            f"You do not have permission to mention @{support.name}.",
         )
 
         msg_id = self.send_stream_message(othello, "test_stream", "Test message")
@@ -2235,7 +2235,7 @@ class EditMessageTest(ZulipTestCase):
         )
         self.assert_json_error(
             result,
-            f"You are not allowed to mention user group '{leadership.name}'.",
+            f"You do not have permission to mention @{leadership.name}.",
         )
 
         msg_id = self.send_stream_message(shiva, "test_stream", "Test message")
@@ -2294,9 +2294,7 @@ class EditMessageTest(ZulipTestCase):
                 "content": content,
             },
         )
-        self.assert_json_error(
-            result, f"You are not allowed to mention user group '{leadership.name}'."
-        )
+        self.assert_json_error(result, f"You do not have permission to mention @{leadership.name}.")
 
         content = "Test mentioning user group @_*leadership*"
         result = self.client_patch(
