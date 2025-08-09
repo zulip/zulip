@@ -209,6 +209,23 @@ export function is_single_image(paste_html: string): boolean {
     );
 }
 
+function get_code_block_lanaguage(
+    pre_element: HTMLElement,
+    code_element_class_name: string,
+): string {
+    let language = "";
+    const parent_contains_lang_metadata =
+        pre_element.parentElement?.classList.contains("zulip-code-block");
+
+    if (parent_contains_lang_metadata) {
+        const codehilite_element = pre_element.closest<HTMLElement>(".codehilite");
+        language = codehilite_element?.getAttribute("data-code-language") ?? "";
+    } else {
+        language = (/language-(\S+)/.exec(code_element_class_name) ?? [null, ""])[1];
+    }
+    return language;
+}
+
 export function paste_handler_converter(
     paste_html: string,
     $textarea?: JQuery<HTMLTextAreaElement>,
@@ -520,9 +537,7 @@ export function paste_handler_converter(
             }
 
             const className = codeElement.getAttribute("class") ?? "";
-            const language = node.parentElement?.classList.contains("zulip-code-block")
-                ? (node.closest<HTMLElement>(".codehilite")?.dataset?.codeLanguage ?? "")
-                : (/language-(\S+)/.exec(className) ?? [null, ""])[1];
+            const language = get_code_block_lanaguage(node, className);
 
             assert(options.fence !== undefined);
             const fenceChar = options.fence.charAt(0);
