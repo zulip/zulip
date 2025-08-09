@@ -1203,10 +1203,8 @@ class InviteUserTest(InviteUserBase):
         )
 
         hamlet = self.example_user("hamlet")
-        hamlet.date_joined = timezone_now() - timedelta(days=9)
 
-        do_set_realm_property(realm, "waiting_period_threshold", 10, acting_user=None)
-
+        do_set_realm_property(realm, "waiting_period_threshold", 100000, acting_user=None)
         email = "issac-test@zulip.com"
         email2 = "steven-test@zulip.com"
         invitee = f"Issac Test <{email}>, {email2}"
