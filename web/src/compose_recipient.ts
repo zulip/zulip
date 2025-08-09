@@ -73,8 +73,7 @@ export let update_recipient_row_attention_level = (): void => {
     // that call set_high_attention_recipient_row().
     if (
         (composing_to_current_topic_narrow() || composing_to_current_private_message_narrow()) &&
-        compose_state.has_full_recipient() &&
-        !compose_state.is_recipient_edited_manually()
+        compose_state.has_full_recipient()
     ) {
         $("#compose-recipient").toggleClass("low-attention-recipient-row", true);
     } else {
