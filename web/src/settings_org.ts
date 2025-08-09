@@ -412,7 +412,8 @@ function update_view_welcome_bot_custom_message_button_status(
         const message_id = Number($view_message_button.attr("data-message-id"));
         const message = message_store.get(message_id);
         assert(message !== undefined);
-        window.location.href = hash_util.by_conversation_and_time_url(message);
+        const url = hash_util.by_conversation_and_time_url(message);
+        window.open(url, "_blank", "noopener,noreferrer");
     });
 }
 
