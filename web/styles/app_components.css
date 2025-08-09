@@ -119,6 +119,14 @@ input::placeholder {
     @extend .placeholder;
 }
 
+/* Custom resizer icon for the textarea */
+textarea::-webkit-resizer {
+    background-image: url("../images/resize-handle-white.svg");
+    background-position: bottom right;
+    background-repeat: no-repeat;
+    background-size: 10px;
+}
+
 /* -- base button styling -- */
 
 .button {

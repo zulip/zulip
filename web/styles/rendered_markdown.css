@@ -976,6 +976,14 @@
     }
 }
 
+.message_edit_form textarea {
+    /* Removes the white bg color in scrollbar corner when
+       scrollbar appears and makes resizer visible */
+    &::-webkit-scrollbar-corner {
+        background-color: transparent;
+    }
+}
+
 /* Search highlight used in both topics and rendered_markdown */
 .highlight {
     background-color: hsl(51deg 100% 79%);
