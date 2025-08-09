@@ -767,13 +767,13 @@ export class BuddyList extends BuddyListConf {
 
     // From `type List<Key>`, where the key is a user_id.
     first_key(): number | undefined {
-        if (this.participant_user_ids.length > 0) {
+        if (this.participant_user_ids.length > 0 && !this.participants_is_collapsed) {
             return this.participant_user_ids[0];
         }
-        if (this.users_matching_view_ids.length > 0) {
+        if (this.users_matching_view_ids.length > 0 && !this.users_matching_view_is_collapsed) {
             return this.users_matching_view_ids[0];
         }
-        if (this.other_user_ids.length > 0) {
+        if (this.other_user_ids.length > 0 && !this.other_users_is_collapsed) {
             return this.other_user_ids[0];
         }
         return undefined;
@@ -798,10 +798,11 @@ export class BuddyList extends BuddyListConf {
         if (i > 0) {
             return this.users_matching_view_ids[i - 1];
         }
-        // The key before the first user matching view is the last participant, if that exists,
-        // and if it doesn't then we don't move the selection.
+        // The key before the first user matching view is the last participant,
+        // if that exists (and the participants view isn't collapsed), and if
+        // it doesn't then we don't move the selection.
         if (i === 0) {
-            if (this.participant_user_ids.length > 0) {
+            if (this.participant_user_ids.length > 0 && !this.participants_is_collapsed) {
                 return this.participant_user_ids.at(-1);
             }
             return undefined;
@@ -812,14 +813,15 @@ export class BuddyList extends BuddyListConf {
         if (i > 0) {
             return this.other_user_ids[i - 1];
         }
-        // The key before the first other user is the last user matching view, if that exists,
-        // and if it doesn't then we don't move the selection.
+        // If we're at the start of the other users list, we move back into users matching
+        // view, or if it's empty or collapsed we move to the participants section. If both
+        // are empty or collapsed, then we don't move the selection.
         if (i === 0) {
-            if (this.users_matching_view_ids.length > 0) {
+            if (this.users_matching_view_ids.length > 0 && !this.users_matching_view_is_collapsed) {
                 return this.users_matching_view_ids.at(-1);
             }
             // If there are no matching users but there are participants, go there
-            if (this.participant_user_ids.length > 0) {
+            if (this.participant_user_ids.length > 0 && !this.participants_is_collapsed) {
                 return this.participant_user_ids.at(-1);
             }
             return undefined;
@@ -841,11 +843,12 @@ export class BuddyList extends BuddyListConf {
         // Moving from participants to the list of users matching view,
         // if they exist, otherwise do nothing.
         if (i >= 0 && i === this.participant_user_ids.length - 1) {
-            if (this.users_matching_view_ids.length > 0) {
+            if (this.users_matching_view_ids.length > 0 && !this.users_matching_view_is_collapsed) {
                 return this.users_matching_view_ids[0];
             }
-            // If there are no matching users but there are other users, go there
-            if (this.other_user_ids.length > 0) {
+            // If there are no matching users (or it's collapsed) but there
+            // are other users (in a section that isn't collapsed), go there.
+            if (this.other_user_ids.length > 0 && !this.other_users_is_collapsed) {
                 return this.other_user_ids[0];
             }
             return undefined;
@@ -857,9 +860,9 @@ export class BuddyList extends BuddyListConf {
 
         i = this.users_matching_view_ids.indexOf(key);
         // Moving from users matching the view to the list of other users,
-        // if they exist, otherwise do nothing.
+        // if they exist (and aren't collapsed), otherwise do nothing.
         if (i >= 0 && i === this.users_matching_view_ids.length - 1) {
-            if (this.other_user_ids.length > 0) {
+            if (this.other_user_ids.length > 0 && !this.other_users_is_collapsed) {
                 return this.other_user_ids[0];
             }
             return undefined;
