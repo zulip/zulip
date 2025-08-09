@@ -17,6 +17,47 @@ import {user_settings} from "./user_settings.ts";
 
 export function initialize(): void {
     tippy.delegate("body", {
+        target: ".stream-list-section-container .left-sidebar-title",
+        placement: "top-start",
+        delay: LONG_HOVER_DELAY,
+        appendTo: () => document.body,
+        onShow(instance) {
+            const el = instance.reference;
+            if (!(el instanceof HTMLElement)) {
+                return false;
+            }
+            // Show tooltip only if text is truncated
+            if (el.offsetWidth < el.scrollWidth) {
+                const tooltip_id = el.dataset.tooltipTemplateId;
+                if (tooltip_id) {
+                    const template = document.querySelector<HTMLElement>(
+                        `#${CSS.escape(tooltip_id)}`,
+                    );
+                    if (template) {
+                        instance.setContent(template.innerHTML);
+                    } else {
+                        instance.setContent(el.textContent ?? "");
+                    }
+                } else {
+                    instance.setContent(el.textContent ?? "");
+                }
+                return undefined;
+            }
+            return false;
+        },
+        onHidden(instance) {
+            instance.destroy();
+        },
+        popperOptions: {
+            modifiers: [
+                {
+                    name: "flip",
+                    options: {fallbackPlacements: ["bottom"]},
+                },
+            ],
+        },
+    });
+    tippy.delegate("body", {
         target: ".tippy-left-sidebar-tooltip",
         placement: "right",
         delay: EXTRA_LONG_HOVER_DELAY,

@@ -947,41 +947,6 @@ export function initialize_tippy_tooltips(): void {
         },
         appendTo: () => document.body,
     });
-   tippy.delegate("body", {
-    target: ".tippy-left-sidebar-tooltip",
-    delay: LONG_HOVER_DELAY,
-    placement: "top",   
-    allowHTML: true,
-    appendTo: () => document.body,
-    popperOptions: {
-        modifiers: [
-            {
-                name: 'flip',
-                enabled: false,
-            },
-        ],
-    },
-    onShow(instance) {
-        const reference_element = instance.reference;
-        if (!(reference_element instanceof HTMLElement)) {
-            return false;
-        }
-        if (reference_element.offsetWidth < reference_element.scrollWidth) {
-            const tooltip_id = reference_element.dataset.tooltipTemplateId;
-            if (typeof tooltip_id !== "string") {
-                return false;
-            }
-
-            const template = document.querySelector(`#${CSS.escape(tooltip_id)}`);
-            if (!template) {
-                return false;
-            }
-            instance.setContent(template.innerHTML);
-            return undefined;
-        }
-        return false;
-    },
-});
 }
 
 function on_sidebar_channel_click(
