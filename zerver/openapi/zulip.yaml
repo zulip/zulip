@@ -12567,6 +12567,52 @@ paths:
                 oneOf:
                   - $ref: "#/components/schemas/InvalidPushDeviceTokenError"
                   - $ref: "#/components/schemas/InvalidRemotePushDeviceTokenError"
+  /mobile_push/e2ee/test_notification:
+    post:
+      operationId: e2ee-test-notify
+      summary: Send an E2EE test notification to mobile device(s)
+      tags: ["mobile"]
+      description: |
+        Trigger sending an end-to-end encrypted (E2EE) test push notification
+        to the user's selected mobile device or all of their mobile devices.
+
+        **Changes**: New in Zulip 11.0 (feature level ZF-d338af).
+      requestBody:
+        required: false
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                push_account_id:
+                  description: |
+                    The push account ID for the device to which to send the test notification.
+
+                    If this parameter is not submitted, the E2EE test notification will
+                    be sent to all of the user's devices registered on the server.
+
+                    A mobile client should pass this parameter, to avoid triggering a test
+                    notification for other clients.
+
+                    See [`POST /mobile_push/register`](/api/register-push-device)
+                    for details on push account IDs.
+                  type: integer
+                  example: 111222
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JsonSuccess"
+        "400":
+          description: |
+            Bad request.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/InvalidPushDeviceTokenError"
   /mobile_push/register:
     post:
       operationId: register-push-device

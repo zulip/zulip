@@ -63,6 +63,7 @@ class ErrorCode(Enum):
     INVALID_BOUNCER_PUBLIC_KEY = auto()
     REQUEST_EXPIRED = auto()
     PUSH_SERVICE_NOT_CONFIGURED = auto()
+    NO_ACTIVE_PUSH_DEVICE = auto()
 
 
 class JsonableError(Exception):
