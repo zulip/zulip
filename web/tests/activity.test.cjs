@@ -478,6 +478,7 @@ test("insert_one_user_into_empty_list", ({override, mock_template}) => {
             user_circle_class: "user-circle-active",
             status_emoji_info: undefined,
             status_text: undefined,
+            animate_status_emoji: false,
             has_status_text: false,
             user_list_style: {
                 COMPACT: false,
