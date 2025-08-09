@@ -3,6 +3,7 @@ from unittest import mock
 
 import orjson
 from django.db import connection
+from django.test import override_settings
 from typing_extensions import override
 
 from zerver.actions.message_flags import do_update_message_flags
@@ -38,7 +39,6 @@ from zerver.models import (
 )
 from zerver.models.groups import NamedUserGroup
 from zerver.models.realms import get_realm
-from zerver.models.recipients import get_or_create_direct_message_group
 from zerver.models.streams import get_stream
 
 if TYPE_CHECKING:
@@ -1144,14 +1144,11 @@ class GetUnreadMsgsTest(ZulipTestCase):
             dict(other_user_id=cordelia.id),
         )
 
-    def test_raw_unread_personal_using_direct_group_message(self) -> None:
+    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
+    def test_raw_unread_personal_using_direct_message_group(self) -> None:
         cordelia = self.example_user("cordelia")
         othello = self.example_user("othello")
         hamlet = self.example_user("hamlet")
-
-        # creating direct message group for 1:1 messages
-        get_or_create_direct_message_group(id_list=[cordelia.id, hamlet.id])
-        get_or_create_direct_message_group(id_list=[othello.id, hamlet.id])
 
         cordelia_pm_message_ids = [self.send_personal_message(cordelia, hamlet) for i in range(3)]
         othello_pm_message_ids = [self.send_personal_message(othello, hamlet) for i in range(3)]
@@ -1269,11 +1266,9 @@ class GetUnreadMsgsTest(ZulipTestCase):
             dict(other_user_id=hamlet.id),
         )
 
+    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
     def test_raw_unread_personal_from_self_using_direct_message_group(self) -> None:
         hamlet = self.example_user("hamlet")
-
-        # creating direct message group for self messages
-        get_or_create_direct_message_group(id_list=[hamlet.id])
 
         # Send a message to ourself.
         message_id = self.send_personal_message(
