@@ -81,6 +81,9 @@ def tokenize(text: str, template_format: str | None = None) -> list[Token]:
     def looking_at_handlebars_partial_block() -> bool:
         return template_format == "handlebars" and looking_at("{{#>")
 
+    def looking_at_handlebars_triple_stache() -> bool:
+        return template_format == "handlebars" and looking_at("{{{")
+
     def looking_at_html_start() -> bool:
         return looking_at("<") and not looking_at("</")
 
@@ -184,6 +187,15 @@ def tokenize(text: str, template_format: str | None = None) -> list[Token]:
                 s = get_handlebars_tag(text, state.i)
                 tag = "else"
                 kind = "handlebars_else"
+            elif looking_at_handlebars_triple_stache():
+                s = get_handlebars_triple_stache_tag(text, state.i)
+                variable_name = text[state.i + 3 : state.i + len(s) - 3].strip()
+                if not variable_name.endswith("_html"):
+                    raise TemplateParserError(
+                        "Unescaped variables in triple staches {{{ }}} must be suffixed with `_html`"
+                    )
+                tag = variable_name
+                kind = "handlebars_triple_stache"
             elif looking_at_handlebars_start():
                 s = get_handlebars_tag(text, state.i)
                 tag = s[3:-2].split()[0].strip("#").removeprefix("*")
@@ -321,6 +333,7 @@ def tag_flavor(token: Token) -> str | None:
         "template_var",
         "text",
         "whitespace",
+        "handlebars_triple_stache",
     ):
         return None
 
@@ -629,6 +642,16 @@ def get_handlebars_tag(text: str, i: int) -> str:
     if text[end] != "}" or text[end + 1] != "}":
         raise TokenizationError('Tag missing "}}"', text[i : end + 2])
     s = text[i : end + 2]
+    return s
+
+
+def get_handlebars_triple_stache_tag(text: str, i: int) -> str:
+    end = i + 3
+    while end < len(text) - 2 and text[end] != "}":
+        end += 1
+    if text[end] != "}" or text[end + 1] != "}" or text[end + 2] != "}":
+        raise TokenizationError('Tag missing "}}}"', text[i : end + 3])
+    s = text[i : end + 3]
     return s
 
 

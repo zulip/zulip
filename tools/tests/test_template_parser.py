@@ -139,6 +139,30 @@ class ParserTest(unittest.TestCase):
             template_format="handlebars",
         )
 
+    def test_validate_triple_stache_var_1(self) -> None:
+        my_html = """
+            {{{ foo}}
+        """
+        self._assert_validate_error(
+            'Tag missing "}}}" at line 2 col 13:"{{{ foo}}\n"',
+            text=my_html,
+            template_format="handlebars",
+        )
+
+    def test_validate_triple_stache_var_2(self) -> None:
+        my_html = """
+            {{{ foo }}}
+        """
+        self._assert_validate_error(
+            "Unescaped variables in triple staches {{{ }}} must be suffixed with `_html`",
+            text=my_html,
+            template_format="handlebars",
+        )
+
+    def test_validate_triple_stache_var_3(self) -> None:
+        my_html = "{{{ foo_html}}}"
+        validate(text=my_html, template_format="handlebars")
+
     def test_validate_incomplete_django_tag_1(self) -> None:
         my_html = """
             {% foo
