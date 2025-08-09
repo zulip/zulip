@@ -1742,7 +1742,7 @@ function get_empty_user_group_list_message(
     }
 
     if (is_your_groups_tab_active) {
-        return $t({defaultMessage: "You are not a member of any user groups."});
+        return $t({defaultMessage: "There are no user groups you can view in this organization."});
     }
     return $t({
         defaultMessage: "There are no user groups you can view in this organization.",
@@ -2177,6 +2177,11 @@ export function initialize(): void {
     $("#groups_overlay_container").on("click", ".create_user_group_button", (e) => {
         e.preventDefault();
         open_create_user_group();
+    });
+
+    $("#groups_overlay_container").on("click", ".view-all-groups-button", (e) => {
+        e.preventDefault();
+        browser_history.update("#groups/all");
     });
 
     $("#groups_overlay_container").on(
