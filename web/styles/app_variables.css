@@ -816,6 +816,18 @@
         hsl(0deg 0% 90%),
         hsl(0deg 0% 91% / 10%)
     );
+    --color-modal-selectable-icon: light-dark(
+        hsl(240deg 30% 40%),
+        hsl(240deg 35% 68%)
+    );
+    --color-modal-selectable-icon-hover: light-dark(
+        hsl(240deg 100% 15%),
+        hsl(240deg 100% 90%)
+    );
+    --background-color-modal-selectable-icon-hover: light-dark(
+        hsl(240deg 100% 50% / 7%),
+        hsl(240deg 100% 75% / 20%)
+    );
     --color-background-pill-container-without-placeholder: light-dark(
         hsl(0deg 0% 100%),
         hsl(0deg 0% 0% / 20%)
