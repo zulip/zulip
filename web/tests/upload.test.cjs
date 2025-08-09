@@ -647,6 +647,8 @@ test("main_file_drop_compose_mode", ({override, override_rewire}) => {
             prevent_default_counter += 1;
         },
     };
+    override(($(".message_comp").css = () => {}));
+    override(($("#compose").css = () => {}));
 
     // dragover event test
     const dragover_handler = $(".app, #navbar-fixed-container").get_on_handler("dragover");
@@ -738,6 +740,8 @@ test("main_file_drop_edit_mode", ({override, override_rewire}) => {
             removeFile() {},
         };
     };
+    override(($(".message_comp").css = () => {}));
+    override(($("#compose").css = () => {}));
 
     upload.setup_upload(upload.edit_config(40));
     upload.initialize();
