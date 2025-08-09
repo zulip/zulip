@@ -752,22 +752,34 @@
     }
 
     & a {
-        color: var(--color-markdown-link);
-        text-decoration: none;
-
         & code {
             color: var(--color-markdown-code-link);
         }
 
         &:hover,
         &:focus {
-            color: var(--color-markdown-link-hover);
-            text-decoration: underline;
-
             & code {
                 color: var(--color-markdown-code-link-hover);
             }
         }
+    }
+
+    & a,
+    & a:link,
+    & a:visited {
+        color: var(--color-markdown-link);
+        text-decoration: underline solid var(--color-markdown-link-visited);
+        text-underline-offset: 3px;
+    }
+
+    & a:hover {
+        color: var(--color-markdown-link-hover);
+        text-decoration-color: var(--color-markdown-link-hover-decoration);
+    }
+
+    & a:active {
+        color: var(--color-markdown-link-active);
+        text-decoration-color: var(--color-markdown-link-active-decoration);
     }
 
     & pre {
