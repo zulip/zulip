@@ -1236,6 +1236,7 @@ export function complete_rerender(): void {
             get_options: inbox_view_dropdown_options,
         });
         filters_dropdown_widget.setup();
+        update_collapsed_note_visibility();
     });
 }
 
@@ -1323,6 +1324,53 @@ export function collapse_or_expand(container_id: string): void {
     }
 
     save_data_to_ls();
+    update_collapsed_note_visibility();
+}
+
+// We show the note "All of your unread conversations are hidden.
+// Click on a section, folder, or channel to see what's inside" for
+// the following situations:
+//   - All folders collapsed.
+//   - If all folders are not collapsed, all visible channels are collapsed.
+// For all other cases, the note is hidden.
+function update_collapsed_note_visibility(): void {
+    const $folders = $("#inbox-list .inbox-folder:not(.hidden_by_filters)");
+    const any_expanded_folders = $folders.toArray().some((folder) => {
+        const $folder = $(folder);
+        if (!$folder.hasClass("inbox-collapsed-state")) {
+            if (
+                $folder.attr("id") === "inbox-dm-header" &&
+                !$folder.hasClass("hidden_by_filters")
+            ) {
+                return true;
+            }
+            const $channels = $folder
+                .next(".inbox-folder-components")
+                .find(".inbox-header:not(.hidden_by_filters)");
+            return $channels.filter(":not(.inbox-collapsed-state)").length > 0;
+        }
+        return false;
+    });
+    if (!any_expanded_folders) {
+        $("#inbox-collapsed-note").show();
+    } else {
+        $("#inbox-collapsed-note").hide();
+    }
+}
+
+function expand_all_folders_and_channels(): void {
+    $(
+        "#inbox-list .inbox-folder.inbox-collapsed-state:not(.hidden_by_filters), .inbox-streams-container .inbox-header.inbox-collapsed-state:not(.hidden_by_filters)",
+    ).each(function () {
+        const container_id = $(this).attr("id");
+        if (container_id) {
+            $(this).removeClass("inbox-collapsed-state");
+            collapsed_containers.delete(container_id);
+        }
+    });
+
+    save_data_to_ls();
+    update_collapsed_note_visibility();
 }
 
 function focus_current_id(): void {
@@ -2022,6 +2070,7 @@ export function update(): void {
             revive_current_focus();
         }
     }
+    update_collapsed_note_visibility();
 }
 
 function get_focus_class_for_header(): string {
@@ -2210,6 +2259,12 @@ export function initialize({hide_other_views}: {hide_other_views: () => void}): 
             const $elt = $(e.currentTarget);
             $elt.find(get_focus_class_for_row()).trigger("click");
         }
+    });
+
+    $("body").on("click", ".inbox-collapsed-note #inbox-expand-all-button", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        expand_all_folders_and_channels();
     });
 
     $("body").on("click", "#inbox-list .inbox-left-part-wrapper", function (this: HTMLElement, e) {
