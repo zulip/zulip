@@ -93,13 +93,13 @@ export function update_email_change_display(): void {
     }
 }
 
-function display_avatar_upload_complete(): void {
+export function display_avatar_upload_complete(): void {
     $("#user-avatar-upload-widget .upload-spinner-background").css({visibility: "hidden"});
     $("#user-avatar-upload-widget .image-upload-text").show();
     $("#user-avatar-upload-widget .image-delete-button").show();
 }
 
-function display_avatar_upload_started(): void {
+export function display_avatar_upload_started(): void {
     $("#user-avatar-source").hide();
     $("#user-avatar-upload-widget .upload-spinner-background").css({visibility: "visible"});
     $("#user-avatar-upload-widget .image-upload-text").hide();
