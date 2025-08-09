@@ -62,7 +62,7 @@ message_thread_ids: list[int] = []
 
 USER_AVATARS_MAP = {
     "Ariella Drake": "tools/screenshots/user_avatars/AriellaDrake.png",
-    "Elena Garcia": "tools/screenshots/user_avatars/ElenaGarcia.jpg",
+    "Elena García": "tools/screenshots/user_avatars/ElenaGarcia.jpg",
     "Kevin Lin": "tools/screenshots/user_avatars/KevinLin.png",
     "Zoe Davis": "tools/screenshots/user_avatars/ZoeDavis.png",
     "Bo Williams": "tools/screenshots/user_avatars/BoWilliams.png",
@@ -86,7 +86,7 @@ class MessageThread(BaseModel):
 
 
 def create_user(full_name: str, avatar_filename: str | None) -> None:
-    email = f"{full_name.replace(' ', '')}@zulip.com"
+    email = f"{full_name.replace(' ', '').replace('í', 'i')}@zulip.com"
     try:
         user = UserProfile.objects.get(realm=realm, full_name=full_name)
     except UserProfile.DoesNotExist:
