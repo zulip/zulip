@@ -2001,6 +2001,7 @@ class ClientCapabilities(TypedDict):
     include_deactivated_groups: NotRequired[bool]
     archived_channels: NotRequired[bool]
     empty_topic_name: NotRequired[bool]
+    simplified_presence_events: NotRequired[bool]
 
 
 DEFAULT_CLIENT_CAPABILITIES = ClientCapabilities(notification_settings_null=False)
@@ -2043,6 +2044,7 @@ def do_events_register(
     include_deactivated_groups = client_capabilities.get("include_deactivated_groups", False)
     archived_channels = client_capabilities.get("archived_channels", False)
     empty_topic_name = client_capabilities.get("empty_topic_name", False)
+    simplified_presence_events = client_capabilities.get("simplified_presence_events", False)
 
     if fetch_event_types is not None:
         event_types_set: set[str] | None = set(fetch_event_types)
@@ -2114,6 +2116,7 @@ def do_events_register(
         include_deactivated_groups=include_deactivated_groups,
         archived_channels=archived_channels,
         empty_topic_name=empty_topic_name,
+        simplified_presence_events=simplified_presence_events,
     )
 
     if queue_id is None:

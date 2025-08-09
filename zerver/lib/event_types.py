@@ -320,23 +320,29 @@ class EventNavigationViewUpdate(BaseEvent):
     data: NavigationViewFieldsForUpdate
 
 
-class Presence(BaseModel):
+class LegacyPresence(BaseModel):
     status: Literal["active", "idle"]
     timestamp: int
     client: str
     pushable: bool
 
 
+class ModernPresence(BaseModel):
+    active_timestamp: int
+    idle_timestamp: int
+
+
 class EventPresenceCore(BaseEvent):
     type: Literal["presence"]
-    user_id: int
-    server_timestamp: float | int
-    presence: dict[str, Presence]
 
 
 class EventPresence(EventPresenceCore):
     # TODO: fix types to avoid optional fields
     email: str | None = None
+    user_id: int | None = None
+    server_timestamp: float | int | None = None
+    presence: dict[str, LegacyPresence] | None = None
+    presences: dict[int, ModernPresence] | None = None
 
 
 # Type for the legacy user field; the `user_id` field is intended to

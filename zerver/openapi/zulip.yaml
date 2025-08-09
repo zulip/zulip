@@ -1217,6 +1217,11 @@ paths:
                                   type: integer
                                   description: |
                                     The ID of the modified user.
+
+                                    This field will be present only if the `simplified_presence_events`
+                                    [client capability][client-capabilities] is not supported by the client.
+
+                                    [client-capabilities]: /api/register-queue#parameter-client_capabilities
                                 email:
                                   type: string
                                   description: |
@@ -1230,10 +1235,20 @@ paths:
                                   description: |
                                     The timestamp of when the Zulip server received the user's
                                     presence as a UNIX timestamp.
+
+                                    This field will be present only if the `simplified_presence_events`
+                                    [client capability][client-capabilities] is not supported by the client.
+
+                                    [client-capabilities]: /api/register-queue#parameter-client_capabilities
                                 presence:
                                   type: object
                                   description: |
                                     Object containing the details of the user's most recent presence.
+
+                                    This object will be present only if the `simplified_presence_events`
+                                    [client capability][client-capabilities] is not supported by the client.
+
+                                    [client-capabilities]: /api/register-queue#parameter-client_capabilities
                                   additionalProperties:
                                     type: object
                                     description: |
@@ -1278,6 +1293,46 @@ paths:
                                           **Changes**: Starting with Zulip 7.0 (feature level 178), this
                                           will always be `false` as the server no longer stores which
                                           client submitted presence updates.
+                                presences:
+                                  type: object
+                                  description: |
+                                    `{user_id}`: Presence data (modern format) for the user with
+                                    the specified ID.
+
+                                    This object will be present only if the `simplified_presence_events`
+                                    [client capability][client-capabilities] is supported by the client.
+
+                                    [client-capabilities]: /api/register-queue#parameter-client_capabilities
+
+                                    **Changes**: New in Zulip 11.0 (feature level ZF-15cc09).
+                                  additionalProperties: false
+                                  properties:
+                                    active_timestamp:
+                                      type: integer
+                                      description: |
+                                        The UNIX timestamp of the last time a client connected
+                                        to Zulip reported that the user was actually present
+                                        (e.g. via focusing a browser window or interacting
+                                        with a computer running the desktop app).
+
+                                        Clients should display users with a current
+                                        `active_timestamp` as fully present.
+                                    idle_timestamp:
+                                      type: integer
+                                      description: |
+                                        The UNIX timestamp of the last time the user had a
+                                        client connected to Zulip, including idle clients
+                                        where the user hasn't interacted with the system
+                                        recently.
+
+                                        The Zulip server has no way of distinguishing whether
+                                        an idle web app user is at their computer, but hasn't
+                                        interacted with the Zulip tab recently, or simply left
+                                        their desktop computer on when they left.
+
+                                        Thus, clients should display users with a current
+                                        `idle_timestamp` but no current `active_timestamp` as
+                                        potentially present.
                               additionalProperties: false
                               example:
                                 {
@@ -16154,6 +16209,15 @@ paths:
                       <br/>
                       **Changes**: New in Zulip 10.0 (feature level 334). Previously,
                       the empty string was not a valid topic name.
+
+                    - `simplified_presence_events`: Boolean for whether the client's
+                      handler for the `presence` event type has been
+                      updated to process the modern presence format. If `true`,
+                      server will send the `presence` events in the [modern format](/api/get-events#presence);
+                      otherwise, the legacy format will be used.
+                      <br />
+                      **Changes**: New in Zulip 11.0 (feature level ZF-15cc09). Previously,
+                      only the legacy format was used for the `presence` events.
 
                     [help-linkifiers]: /help/add-a-custom-linkifier
                     [rfc6570]: https://www.rfc-editor.org/rfc/rfc6570.html
