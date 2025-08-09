@@ -7,15 +7,17 @@
                 {{> @partial-block .}}
             {{/if}}
         </span>
-        <span class="banner-action-buttons">
-            {{#each buttons}}
-                {{#if this.intent}}
-                    {{> action_button .}}
-                {{else}}
-                    {{> action_button . intent=../intent}}
-                {{/if}}
-            {{/each}}
-        </span>
+        {{#if buttons}}
+            <span class="banner-action-buttons">
+                {{#each buttons}}
+                    {{#if this.intent}}
+                        {{> action_button .}}
+                    {{else}}
+                        {{> action_button . intent=../intent}}
+                    {{/if}}
+                {{/each}}
+            </span>
+        {{/if}}
     </span>
     {{#if close_button}}
         {{> icon_button custom_classes="banner-close-action banner-close-button" icon="close" intent=intent}}
