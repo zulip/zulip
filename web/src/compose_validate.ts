@@ -31,6 +31,7 @@ import * as recent_senders from "./recent_senders.ts";
 import * as settings_data from "./settings_data.ts";
 import {current_user, realm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
+import {get_recent_topic_names} from "./stream_topic_history.ts";
 import * as sub_store from "./sub_store.ts";
 import type {StreamSubscription} from "./sub_store.ts";
 import type {UserOrMention} from "./typeahead_helper.ts";
@@ -90,6 +91,10 @@ export const UPLOAD_IN_PROGRESS_ERROR_TOOLTIP_MESSAGE = $t({
 });
 export const WILDCARD_MENTION_ERROR_TOOLTIP_MESSAGE = $t({
     defaultMessage: "You do not have permission to use wildcard mentions in large streams.",
+});
+export const CANNOT_CREATE_NEW_TOPIC_TOOLTIP_MESSAGE = $t({
+    defaultMessage:
+        "You are not allowed to start new topics in this channel. Choose an existing topic from the typeahead.",
 });
 
 type StreamWildcardOptions = {
@@ -918,6 +923,19 @@ function validate_stream_message(scheduling_message: boolean, show_banner = true
             posting_policy_error_message = NO_PERMISSION_TO_POST_IN_CHANNEL_ERROR_MESSAGE;
         }
         return false;
+    }
+
+    if (!stream_data.can_create_new_topics_in_stream(stream_id)) {
+        const topic = compose_state.topic();
+        const existing_topics_in_stream = get_recent_topic_names(stream_id).map((topic) =>
+            topic.toLowerCase(),
+        );
+        if (!existing_topics_in_stream.includes(topic.trim().toLowerCase())) {
+            if (is_validating_compose_box) {
+                disabled_send_tooltip_message_html = CANNOT_CREATE_NEW_TOPIC_TOOLTIP_MESSAGE;
+            }
+            return false;
+        }
     }
 
     const stream_wildcard_mention = util.find_stream_wildcard_mentions(
