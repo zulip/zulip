@@ -535,6 +535,18 @@ class NarrowBuilderTest(ZulipTestCase):
             "WHERE NOT ((flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s OR recipient_id IN (__[POSTCOMPILE_recipient_id_3])))",
         )
 
+    def test_add_term_using_dm_including_operator_without_personal_recipient(self) -> None:
+        # Dropping the personal recipient for Othello
+        othello = self.example_user("othello")
+        othello.recipient = None
+        othello.save()
+
+        term = NarrowParameter(operator="dm-including", operand=self.othello_email)
+        self._do_add_term_test(
+            term,
+            "WHERE (flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND recipient_id IN (__[POSTCOMPILE_recipient_id_1])",
+        )
+
     def test_add_term_using_id_operator_integer(self) -> None:
         term = NarrowParameter(operator="id", operand=555)
         self._do_add_term_test(term, "WHERE id = %(param_1)s")
@@ -2471,12 +2483,11 @@ class GetOldMessagesTest(ZulipTestCase):
         result = self.get_and_check_messages(dict(narrow=orjson.dumps(narrow).decode()))
         self.assertNotEqual(result["messages"], [])
 
+    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
     def test_get_1_to_1_messages_with_existent_group_dm(self) -> None:
         me = self.example_user("hamlet")
         other_user = self.example_user("iago")
-
         user_ids = [me.id, other_user.id]
-        direct_message_group = get_or_create_direct_message_group(user_ids)
 
         self.login_user(me)
         narrow = [dict(operator="dm", operand=user_ids)]
@@ -2493,13 +2504,13 @@ class GetOldMessagesTest(ZulipTestCase):
         result = self.get_and_check_messages(dict(narrow=orjson.dumps(narrow).decode()))
         for message in result["messages"]:
             self.assertIn(message["id"], message_ids)
+            direct_message_group = get_or_create_direct_message_group(user_ids)
             self.assertEqual(message["recipient_id"], direct_message_group.recipient_id)
 
+    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
     def test_get_messages_to_self_with_existent_group_dm(self) -> None:
         me = self.example_user("hamlet")
-
         user_ids = [me.id]
-        direct_message_group = get_or_create_direct_message_group(user_ids)
 
         self.login_user(me)
         narrow = [dict(operator="dm", operand=user_ids)]
@@ -2515,6 +2526,7 @@ class GetOldMessagesTest(ZulipTestCase):
         for message in result["messages"]:
             self.assertIn(message["id"], message_ids)
             self.assertEqual(message["sender_id"], me.id)
+            direct_message_group = get_or_create_direct_message_group(user_ids)
             self.assertEqual(message["recipient_id"], direct_message_group.recipient_id)
 
     def test_get_visible_messages_with_narrow_dm(self) -> None:
