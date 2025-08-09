@@ -314,8 +314,10 @@
 
 #stream-search-and-add {
     display: grid;
-    grid-template-areas: "filter-container add-channel";
-    grid-template-columns: minmax(0, 1fr) var(--left-sidebar-header-icon-width);
+    grid-template-areas: "filter-container add-channel channel-folders-option";
+    grid-template-columns:
+        minmax(0, 1fr) var(--left-sidebar-header-icon-width)
+        auto;
     position: sticky;
     top: 0;
     /* Must be more than .stream-list-subsection-header */
@@ -324,6 +326,27 @@
     /* Must be padding not margin so that the sticky headers don't show behind it */
     padding: calc(var(--left-sidebar-sections-vertical-gutter) * 2.5)
         var(--left-sidebar-right-margin) 3px 5px;
+
+    .channel-folders-sidebar-menu-icon {
+        grid-area: channel-folders-option;
+        display: grid;
+        /* width excluding left & right margin */
+        width: calc(var(--left-sidebar-vdots-width) - 3px);
+        cursor: pointer;
+        place-items: center center;
+        border-radius: 3px;
+        margin: 2px 2px 2px 1px;
+        color: var(--color-vdots-visible);
+
+        & i.zulip-icon {
+            font-size: 1.0625em;
+        }
+
+        &:hover {
+            color: var(--color-vdots-hover);
+            background-color: var(--color-background-sidebar-action-hover);
+        }
+    }
 }
 
 .stream-list-subsection-header {

@@ -22,6 +22,7 @@ import * as blueslip from "./blueslip.ts";
 import * as bot_data from "./bot_data.ts";
 import * as channel from "./channel.ts";
 import * as channel_folders from "./channel_folders.ts";
+import * as channel_folders_popover from "./channel_folders_popover.ts";
 import * as click_handlers from "./click_handlers.ts";
 import * as color_picker_popover from "./color_picker_popover.ts";
 import * as common from "./common.ts";
@@ -587,6 +588,7 @@ export async function initialize_everything(state_data) {
     stream_popover.initialize();
     color_picker_popover.initialize();
     add_stream_options_popover.initialize();
+    channel_folders_popover.initialize();
     click_handlers.initialize();
     scheduled_messages_overlay_ui.initialize();
     compose_paste.initialize({
