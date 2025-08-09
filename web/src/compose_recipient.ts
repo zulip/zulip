@@ -144,7 +144,6 @@ export function update_on_recipient_change(): void {
     update_fade();
     update_narrow_to_recipient_visibility();
     compose_validate.warn_if_guest_in_dm_recipient();
-    update_recipient_row_attention_level();
     drafts.update_compose_draft_count();
     check_posting_policy_for_compose_box();
     compose_validate.validate_and_update_send_button_status();
