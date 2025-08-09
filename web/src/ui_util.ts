@@ -335,3 +335,11 @@ export function enable_element_and_remove_tooltip($element: JQuery): void {
         $element.unwrap(".disabled-tooltip");
     }
 }
+
+export function disable_left_sidebar_search(): void {
+    $("#stream-search-and-add input").attr("disabled", "true");
+}
+
+export function enable_left_sidebar_search(): void {
+    $("#stream-search-and-add input").removeAttr("disabled");
+}
