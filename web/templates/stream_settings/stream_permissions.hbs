@@ -56,8 +56,10 @@
         component so that we can show dropdown button and button to create
         a new folder on same line without having to add much CSS with
         hardcoded margin and padding values. --}}
+        {{#if (or is_admin realm_has_channel_folders)}}
         <label class="settings-field-label" for="{{channel_folder_widget_name}}_widget">
             {{t "Channel folder"}}
+            {{> ../help_link_widget link="/help/channel-folders" }}
         </label>
         <span class="prop-element hide" id="id_{{channel_folder_widget_name}}" data-setting-widget-type="dropdown-list-widget" data-setting-value-type="number"></span>
         <div class="dropdown_widget_with_label_wrapper channel-folder-widget-container">
@@ -73,6 +75,12 @@
                   }}
             {{/if}}
         </div>
+        {{else}}
+        <span class="settings-field-label">
+            {{t "There are no channel folders configured in this organization."}}
+            {{> ../help_link_widget link="/help/channel-folders" }}
+        </span>
+        {{/if}}
     </div>
 </div>
 
