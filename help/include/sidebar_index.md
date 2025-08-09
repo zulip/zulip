@@ -126,6 +126,7 @@
 * [View a message's edit history](/help/view-a-messages-edit-history)
 * [Collapse a message](/help/collapse-a-message)
 * [Read receipts](/help/read-receipts)
+* [Report a message](/help/report-a-message)
 
 ## People
 * [Introduction to users](/help/introduction-to-users)
