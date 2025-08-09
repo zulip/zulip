@@ -40,8 +40,65 @@ export function rewire_max_num_of_search_results(value: typeof max_num_of_search
     max_num_of_search_results = value;
 }
 
+// Custom function for unordered word prefix matching
+function query_matches_string_with_prefix_in_any_order(query: string, source_str: string): boolean {
+    if (!query.trim()) {
+        return true;
+    }
+
+    const query_words = query.toLowerCase().trim().split(/\s+/);
+    const source_words = source_str.toLowerCase().trim().split(/\s+/);
+
+    // Each query word must match as a prefix of some source word
+    return query_words.every((query_word) =>
+        source_words.some((source_word) => source_word?.startsWith(query_word)),
+    );
+}
+
+// Custom function for ordered word prefix matching
+function query_matches_string_with_prefix_in_order(query: string, source_str: string): boolean {
+    if (!query.trim()) {
+        return true;
+    }
+
+    const query_words = query.toLowerCase().trim().split(/\s+/);
+    const source_words = source_str.toLowerCase().trim().split(/\s+/);
+
+    if (query_words.length > source_words.length) {
+        return false;
+    }
+
+    // Check if query words match source words in order as prefixes
+    let source_index = 0;
+    for (const query_word of query_words) {
+        let found = false;
+        // Look for this query word as a prefix in remaining source words
+        for (let i = source_index; i < source_words.length; i += 1) {
+            const source_word = source_words[i];
+            if (source_word?.startsWith(query_word)) {
+                source_index = i + 1; // Next query word must match after this position
+                found = true;
+                break;
+            }
+        }
+        if (!found) {
+            return false;
+        }
+    }
+    return true;
+}
+
 function channel_matches_query(channel_name: string, q: string): boolean {
-    return common.phrase_match(q, channel_name);
+    // Use unordered prefix matching for channels
+    const phrase_match = common.phrase_match(q, channel_name);
+    const prefix_match = query_matches_string_with_prefix_in_any_order(q, channel_name);
+
+    return phrase_match || prefix_match;
+}
+
+// Export for testing
+export function test_channel_matches_query(channel_name: string, q: string): boolean {
+    return channel_matches_query(channel_name, q);
 }
 
 function match_criteria(terms: NarrowTerm[], criteria: TermPattern[]): boolean {
@@ -405,7 +462,11 @@ export function get_topic_suggestions_from_candidates({
     const topics: string[] = [];
     for (const topic of candidate_topics) {
         const topic_display_name = util.get_final_topic_display_name(topic);
-        if (common.phrase_match(guess, topic_display_name)) {
+        // Use ordered prefix matching for topics - words must appear in order
+        if (
+            common.phrase_match(guess, topic_display_name) ||
+            query_matches_string_with_prefix_in_order(guess, topic_display_name)
+        ) {
             topics.push(topic);
             if (topics.length >= max_num_topics) {
                 break;
