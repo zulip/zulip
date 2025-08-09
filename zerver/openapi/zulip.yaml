@@ -13923,6 +13923,18 @@ paths:
                     Enable audible desktop notifications for channel messages.
                   type: boolean
                   example: true
+                enable_reaction_desktop_notifications:
+                  type: boolean
+                  description: |
+                    Enable visual desktop notifications for reactions to messages.
+
+                    **Changes**: New in Zulip 11.0 (feature level 415).
+                enable_reaction_audible_notifications:
+                  type: boolean
+                  description: |
+                    Enable audible desktop notifications for reactions to messages.
+
+                    **Changes**: New in Zulip 11.0 (feature level 415).
                 notification_sound:
                   description: |
                     Notification sound name.
@@ -14240,6 +14252,10 @@ paths:
               enable_stream_push_notifications:
                 contentType: application/json
               enable_stream_audible_notifications:
+                contentType: application/json
+              enable_reaction_desktop_notifications:
+                contentType: application/json
+              enable_reaction_audible_notifications:
                 contentType: application/json
               enable_desktop_notifications:
                 contentType: application/json
@@ -17496,6 +17512,18 @@ paths:
                             type: boolean
                             description: |
                               Enable audible desktop notifications for channel messages.
+                          enable_reaction_desktop_notifications:
+                            type: boolean
+                            description: |
+                              Enable visual desktop notifications for reactions to messages.
+
+                              **Changes**: New in Zulip 11.0 (feature level 415).
+                          enable_reaction_audible_notifications:
+                            type: boolean
+                            description: |
+                              Enable audible desktop notifications for reactions to messages.
+
+                              **Changes**: New in Zulip 11.0 (feature level 415).
                           notification_sound:
                             type: string
                             description: |
@@ -20378,6 +20406,18 @@ paths:
                             type: boolean
                             description: |
                               Enable audible desktop notifications for channel messages.
+                          enable_reaction_desktop_notifications:
+                            type: boolean
+                            description: |
+                              Enable visual desktop notifications for reactions to messages.
+
+                              **Changes**: New in Zulip 11.0 (feature level 415).
+                          enable_reaction_audible_notifications:
+                            type: boolean
+                            description: |
+                              Enable audible desktop notifications for reactions to messages.
+
+                              **Changes**: New in Zulip 11.0 (feature level 415).
                           notification_sound:
                             type: string
                             description: |
@@ -21687,6 +21727,18 @@ paths:
                     the `PATCH /settings/notifications` endpoint.
                   type: boolean
                   example: true
+                enable_reaction_desktop_notifications:
+                  type: boolean
+                  description: |
+                    Enable visual desktop notifications for reactions to messages.
+
+                    **Changes**: New in Zulip 11.0 (feature level 415).
+                enable_reaction_audible_notifications:
+                  type: boolean
+                  description: |
+                    Enable audible desktop notifications for reactions to messages.
+
+                    **Changes**: New in Zulip 11.0 (feature level 415).
                 notification_sound:
                   description: |
                     Notification sound name.
@@ -22068,6 +22120,10 @@ paths:
               enable_stream_push_notifications:
                 contentType: application/json
               enable_stream_audible_notifications:
+                contentType: application/json
+              enable_reaction_desktop_notifications:
+                contentType: application/json
+              enable_reaction_audible_notifications:
                 contentType: application/json
               enable_desktop_notifications:
                 contentType: application/json

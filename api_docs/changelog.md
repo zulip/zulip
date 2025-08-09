@@ -18,7 +18,15 @@ clients should check the `zulip_feature_level` field, present in the
 /register`](/api/register-queue) responses, to determine the API
 format used by the Zulip server that they are interacting with.
 
-## Changes in Zulip 11.0
+## Changes in Zulip 11.
+
+**Feature level 415**
+
+* [`PATCH /realm/user_settings_defaults`](/api/update-realm-user-settings-defaults),
+  [`POST /register`](/api/register-queue), [`PATCH /settings`](/api/update-settings):
+  Added new user setting: `enable_reaction_desktop_notifications` and
+  `enable_reaction_audible_notifications`, giving users the option to toggle
+  desktop and audible notification for reactions.
 
 **Feature level 415**
 
