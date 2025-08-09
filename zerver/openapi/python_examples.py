@@ -659,6 +659,16 @@ def add_realm_filter(client: Client) -> int:
     return result["id"]
 
 
+@openapi_test_function("/reactions:get")
+def get_reactions(client: Client) -> None:
+    # {code_example|start}
+    # Get six most frequently used reactions for the current user.
+    result = client.call_endpoint("reactions", method="GET")
+    # {code_example|end}
+    assert_success_response(result)
+    validate_against_openapi_schema(result, "/reactions", "get", "200")
+
+
 @openapi_test_function("/realm/filters/{filter_id}:patch")
 def update_realm_filter(client: Client, filter_id: int) -> None:
     # {code_example|start}
@@ -1961,6 +1971,7 @@ def test_messages(client: Client, nonadmin_client: Client) -> None:
     set_message_edit_typing_status(client, message_id)
     add_reaction(client, message_id)
     remove_reaction(client, message_id)
+    get_reactions(client)
     update_message(client, message_id, content)
     get_raw_message(client, message_id)
     get_messages(client)
