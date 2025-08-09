@@ -1265,4 +1265,13 @@ class ExternalAuthID(models.Model):
                 ],
                 name="zerver_externalauthid_uniq",
             ),
+            # Each user should only have at most a single ExternalAuthID
+            # for any authentication method.
+            models.UniqueConstraint(
+                fields=[
+                    "user",
+                    "external_auth_method_name",
+                ],
+                name="zerver_user_externalauth_uniq",
+            ),
         ]
