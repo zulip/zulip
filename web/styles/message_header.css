@@ -66,6 +66,10 @@
             }
         }
 
+        .stream_topic.channel_name_hidden {
+            padding-left: 10px !important;
+        }
+
         .stream-privacy i {
             font-size: 1.0714em; /* 15px at 14px em */
 
