@@ -2200,6 +2200,7 @@ body:not(.spectator-view) {
            user-set line-height, so that the icon is always
            vertically centered properly. */
         line-height: 1.214;
+        overflow: hidden;
 
         .channel-privacy-type-icon {
             line-height: 1.214;
@@ -2222,12 +2223,12 @@ body:not(.spectator-view) {
         .dropdown-list-edit {
             position: absolute;
             top: 0;
-            right: 5px;
+            right: 0.3125em; /* 5px at 16px em */
             visibility: hidden;
         }
 
         .dropdown-list-edit {
-            right: 30px;
+            right: 1.875em; /* 30px at 16px em */
         }
 
         &:focus,
