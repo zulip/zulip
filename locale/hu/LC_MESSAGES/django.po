@@ -17,7 +17,7 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-07-30 13:46+0000\n"
-"PO-Revision-Date: 2025-07-19 05:03+0000\n"
+"PO-Revision-Date: 2025-08-07 23:52+0000\n"
 "Last-Translator: Alex Vandiver <alexmv@zulip.com>\n"
 "Language-Team: Hungarian <https://hosted.weblate.org/projects/zulip/django/"
 "hu/>\n"
@@ -71,7 +71,7 @@ msgstr ""
 
 #: analytics/views/stats.py:457 analytics/views/stats.py:494
 msgid "No analytics data available. Please contact your server administrator."
-msgstr "Nincs elemzési adat. Lépj kapcsolatba a szerver adminisztrátorával!"
+msgstr "Nincs elemzési adat. Lépj kapcsolatba a szerver adminisztrátorával."
 
 #: corporate/lib/registration.py:35
 #, python-brace-format
@@ -188,7 +188,7 @@ msgstr "Valami elromlott. Kérjük, lépjen kapcsolatba a következővel: {email
 
 #: corporate/lib/stripe.py:404
 msgid "Something went wrong. Please reload the page."
-msgstr "Valami gond van. Töltsd újra az oldalt!"
+msgstr "Valami gond van. Töltsd újra az oldalt."
 
 #: corporate/lib/stripe.py:500
 msgid "Something went wrong. Please wait a few seconds and try again."
@@ -391,7 +391,7 @@ msgstr ""
 #: templates/500.html:4 templates/500.html:16
 #: zerver/actions/scheduled_messages.py:458 zerver/middleware.py:407
 msgid "Internal server error"
-msgstr "Belső kiszolgáló hiba."
+msgstr "Belső kiszolgáló hiba"
 
 #: templates/500.html:20
 msgid ""
@@ -428,10 +428,9 @@ msgid ""
 msgstr ""
 
 #: templates/analytics/stats.html:6
-#, fuzzy, python-format
-#| msgid "Zulip analytics for %(target_name)s"
+#, python-format
 msgid "Analytics for %(target_name)s | Zulip"
-msgstr " Zulip analitika %(target_name)s számára"
+msgstr "Analitika %(target_name)s számára | Zulip"
 
 #: templates/analytics/stats.html:18
 msgid "Analytics are fully available 24 hours after organization creation."
@@ -442,7 +441,7 @@ msgstr ""
 #: templates/analytics/stats.html:23
 #, python-format
 msgid "Zulip analytics for %(target_name)s"
-msgstr " Zulip analitika %(target_name)s számára"
+msgstr "Zulip analitika %(target_name)s számára"
 
 #: templates/analytics/stats.html:25
 msgid "Organization summary"
@@ -1464,7 +1463,7 @@ msgstr "Zulip regisztráció"
 
 #: templates/zerver/accounts_home.html:37
 msgid "You need an invitation to join this organization."
-msgstr "E szervezethez való csatlakozáshoz meghívó szükséges!"
+msgstr "E szervezethez való csatlakozáshoz meghívó szükséges."
 
 #: templates/zerver/accounts_home.html:76 templates/zerver/login.html:50
 #: templates/zerver/login.html:139 templates/zerver/realm_creation_form.html:68
@@ -1740,7 +1739,7 @@ msgstr "Érvénytelen token."
 
 #: templates/zerver/desktop_login.html:28
 msgid "Token accepted.  Logging you in…"
-msgstr "Token elfogadva. Beléptetünk..."
+msgstr "Token elfogadva. Beléptetünk…"
 
 #: templates/zerver/desktop_redirect.html:5
 msgid "Log in to desktop app"
@@ -2388,7 +2387,7 @@ msgstr ""
 #: templates/zerver/emails/invitation.txt:5
 #: templates/zerver/emails/invitation_reminder.txt:5
 msgid "To get started, click the link below."
-msgstr "A kezdéshez kattints az alábbi linkre"
+msgstr "A kezdéshez kattints az alábbi linkre."
 
 #: templates/zerver/emails/invitation_reminder.html:8
 #: templates/zerver/emails/invitation_reminder.txt:1
@@ -2945,7 +2944,7 @@ msgstr ""
 
 #: templates/zerver/emails/password_reset.html:13
 msgid "Click the button below to reset your password."
-msgstr "Kattints az alábbi gombra új jelszó készítéséhez"
+msgstr "Kattints az alábbi gombra új jelszó készítéséhez."
 
 #: templates/zerver/emails/password_reset.html:14
 msgid "Reset password"
@@ -4311,8 +4310,7 @@ msgstr "A widgetek nem szerkeszthetőek."
 
 #: zerver/actions/message_edit.py:170
 msgid "Your organization has turned off message editing"
-msgstr ""
-"A szervezetben az üzenetek szerkesztésének lehetősége ki van kapcsolva."
+msgstr "A szervezetben az üzenetek szerkesztésének lehetősége ki van kapcsolva"
 
 #: zerver/actions/message_edit.py:174 zerver/actions/message_edit.py:1586
 msgid "You don't have permission to edit this message"
@@ -4320,7 +4318,7 @@ msgstr "Nincs jogosultságod az üzenet szerkesztésére"
 
 #: zerver/actions/message_edit.py:179
 msgid "The time limit for editing this message has passed"
-msgstr "Az üzenet módosítására rendelkezésre álló időkorlát letelt."
+msgstr "Az üzenet módosítására rendelkezésre álló időkorlát letelt"
 
 #: zerver/actions/message_edit.py:275
 #, python-brace-format
@@ -4670,7 +4668,7 @@ msgstr "Ez az API nem érhető el bejövő webhook robotok számára."
 
 #: zerver/decorator.py:310
 msgid "Account is not associated with this subdomain"
-msgstr "A fiók nincs ehhez az aldomainhez rendelve."
+msgstr "A fiók nincs ehhez az aldomainhez rendelve"
 
 #: zerver/decorator.py:571 zerver/decorator.py:704
 msgid "This endpoint does not accept bot requests."
@@ -4913,7 +4911,7 @@ msgstr "A domain nem lehet üres."
 
 #: zerver/lib/domains.py:11
 msgid "Domain must have at least one dot (.)"
-msgstr "A domainnek legalább egy pontot (.) kell tartalmaznia."
+msgstr "A domainnek legalább egy pontot (.) kell tartalmaznia"
 
 #: zerver/lib/domains.py:13
 msgid "Domain is too long"
@@ -5054,11 +5052,11 @@ msgstr "A hangulatjelnek nincs neve"
 
 #: zerver/lib/events.py:2119
 msgid "Could not allocate event queue"
-msgstr "Az esemény sor allokálása nem sikerült."
+msgstr "Az esemény sor allokálása nem sikerült"
 
 #: zerver/lib/exceptions.py:160
 msgid "Not logged in: API authentication or user session required"
-msgstr "Nem vagy bejelentkezve: API auth vagy felhasználói folyamat szükséges."
+msgstr "Nem vagy bejelentkezve: API auth vagy felhasználói folyamat szükséges"
 
 #: zerver/lib/exceptions.py:187
 #, python-brace-format
@@ -5120,7 +5118,7 @@ msgstr "A felhasználóneved vagy a jelszavad helytelen"
 
 #: zerver/lib/exceptions.py:346
 msgid "This organization has been deactivated"
-msgstr "Ez a szervezet letiltásra került."
+msgstr "Ez a szervezet letiltásra került"
 
 #: zerver/lib/exceptions.py:356
 msgid ""
@@ -5359,7 +5357,7 @@ msgstr "Az üzenet nem lehet üres"
 
 #: zerver/lib/message.py:206
 msgid "Message must not contain null bytes"
-msgstr "Az üzenet nem tartalmazhat null byteokat."
+msgstr "Az üzenet nem tartalmazhat null byteokat"
 
 #: zerver/lib/message.py:1536
 #, python-brace-format
@@ -6301,7 +6299,7 @@ msgstr ""
 #: zerver/lib/validator.py:407
 #, python-brace-format
 msgid "'{value}' is not a valid choice for '{field_name}'."
-msgstr "'{value}' nem érvényes választási lehetőség '{field_name}' számára"
+msgstr "'{value}' nem érvényes választási lehetőség '{field_name}' számára."
 
 #: zerver/lib/validator.py:559
 #, python-brace-format
@@ -6467,7 +6465,7 @@ msgstr "Zulip extra hangulatjel"
 
 #: zerver/models/realm_emoji.py:42
 msgid "Invalid characters in emoji name"
-msgstr "Érvénytelen karakter a hangulatjel nevében."
+msgstr "Érvénytelen karakter a hangulatjel nevében"
 
 #: zerver/models/realm_playgrounds.py:36 zerver/views/realm_playgrounds.py:27
 msgid "Invalid characters in pygments language"
@@ -6714,7 +6712,7 @@ msgstr "Alapértelmezett egyedi mező frissítése sikertelen."
 
 #: zerver/views/development/dev_login.py:100
 msgid "Endpoint not available in production."
-msgstr "Éles környezetben hozzáférhetetlen endpoint"
+msgstr "Éles környezetben hozzáférhetetlen endpoint."
 
 #: zerver/views/development/dev_login.py:102
 msgid "DevAuthBackend not enabled."
@@ -6756,7 +6754,7 @@ msgstr ""
 #: zerver/views/invite.py:53 zerver/views/invite.py:58
 #: zerver/views/invite.py:69 zerver/views/invite.py:72
 msgid "No such invitation"
-msgstr "Nincs ilyen meghívó."
+msgstr "Nincs ilyen meghívó"
 
 #: zerver/views/invite.py:78
 msgid "Invitation has already been revoked"
@@ -6786,7 +6784,7 @@ msgstr ""
 #: zerver/views/message_edit.py:126
 msgid "Message edit history is disabled in this organization"
 msgstr ""
-"Az üzenet szerkesztési előzmények elérése ebben a szervezetben le van tiltva."
+"Az üzenet szerkesztési előzmények elérése ebben a szervezetben le van tiltva"
 
 #: zerver/views/message_edit.py:195 zerver/views/message_edit.py:199
 #: zerver/views/message_edit.py:206
@@ -6795,7 +6793,7 @@ msgstr "Az üzenet törléséhez nincs jogosultságod"
 
 #: zerver/views/message_edit.py:214
 msgid "The time limit for deleting this message has passed"
-msgstr "Az üzenettörlésre rendelkezésre álló időkorlát letelt."
+msgstr "Az üzenettörlésre rendelkezésre álló időkorlát letelt"
 
 #: zerver/views/message_edit.py:235
 msgid "Message already deleted"
@@ -6839,7 +6837,7 @@ msgstr "Érvénytelen tükrözött üzenet"
 
 #: zerver/views/message_send.py:237
 msgid "Zephyr mirroring is not allowed in this organization"
-msgstr "Zephyr tükrözés nem engedélyezett ebben a szervezetben."
+msgstr "Zephyr tükrözés nem engedélyezett ebben a szervezetben"
 
 #: zerver/views/message_summary.py:28
 msgid "AI features are not enabled on this server."
@@ -6904,7 +6902,7 @@ msgstr "Jelenléti adat hiányzik {user_id_or_email} felhasználónál"
 
 #: zerver/views/presence.py:101
 msgid "Client did not pass any new values."
-msgstr "Az ügyfél nem adott meg semmi új értéket"
+msgstr "Az ügyfél nem adott meg semmi új értéket."
 
 #: zerver/views/presence.py:124
 msgid ""
@@ -7007,7 +7005,7 @@ msgstr ""
 
 #: zerver/views/realm_export.py:62
 msgid "Exceeded rate limit."
-msgstr "Határtúllépés"
+msgstr "Határtúllépés."
 
 #: zerver/views/realm_export.py:84
 #, python-brace-format
@@ -7378,7 +7376,7 @@ msgstr "A téma nincs lenémítva"
 
 #: zerver/views/users.py:130
 msgid "Cannot deactivate the only organization owner"
-msgstr "A szervezet egyedüli tulajdonosa nem tiltható le."
+msgstr "A szervezet egyedüli tulajdonosa nem tiltható le"
 
 #: zerver/views/users.py:269
 msgid "User not authorized to change user emails"
@@ -7402,18 +7400,18 @@ msgstr ""
 #: zerver/views/users.py:473
 msgid "Failed to change owner, no such user"
 msgstr ""
-"Nincs ilyen felhasználó, a tulajdonos megváltoztatása ezért nem sikerült."
+"Nincs ilyen felhasználó, a tulajdonos megváltoztatása ezért nem sikerült"
 
 #: zerver/views/users.py:475
 msgid "Failed to change owner, user is deactivated"
 msgstr ""
-"A tulajdonos megváltoztatása sikertelen volt, a felhasználó le van tiltva."
+"A tulajdonos megváltoztatása sikertelen volt, a felhasználó le van tiltva"
 
 #: zerver/views/users.py:477
 msgid "Failed to change owner, bots can't own other bots"
 msgstr ""
 "A robotok nem lehetnek más robotok tulajdonosai, a tulajdonos "
-"megváltoztatása sikertelen."
+"megváltoztatása sikertelen"
 
 #: zerver/views/users.py:593
 msgid ""
@@ -7443,8 +7441,7 @@ msgstr "A/az '{email}' email cím nincs engedélyezve ebben a szervezetben"
 
 #: zerver/views/users.py:852
 msgid "Disposable email addresses are not allowed in this organization"
-msgstr ""
-"Eldobható email címek használata ebben a szervezetben nem engedélyezett."
+msgstr "Eldobható email címek használata ebben a szervezetben nem engedélyezett"
 
 #: zerver/views/video_calls.py:54
 msgid "Invalid Zoom access token"
@@ -7521,7 +7518,7 @@ msgstr "Ismeretlen webhook kérés"
 
 #: zerver/webhooks/ifttt/view.py:31 zerver/webhooks/zapier/view.py:42
 msgid "Topic can't be empty"
-msgstr "A téma nem lehet üres."
+msgstr "A téma nem lehet üres"
 
 #: zerver/webhooks/ifttt/view.py:34 zerver/webhooks/zapier/view.py:45
 msgid "Content can't be empty"

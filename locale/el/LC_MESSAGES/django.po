@@ -9,8 +9,8 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-07-30 13:46+0000\n"
-"PO-Revision-Date: 2025-07-17 06:39+0000\n"
-"Last-Translator: Anonymous <noreply@weblate.org>\n"
+"PO-Revision-Date: 2025-08-07 23:52+0000\n"
+"Last-Translator: Alex Vandiver <alexmv@zulip.com>\n"
 "Language-Team: Greek <https://hosted.weblate.org/projects/zulip/django/el/>\n"
 "Language: el\n"
 "MIME-Version: 1.0\n"
@@ -1568,7 +1568,7 @@ msgstr "Ο λογαριασμός δεν βρέθηκε"
 
 #: templates/zerver/confirm_continue_registration.html:14
 msgid "Zulip account not found."
-msgstr "Ο λογαριασμός Zulip δεν βρέθηκε"
+msgstr "Ο λογαριασμός Zulip δεν βρέθηκε."
 
 #: templates/zerver/confirm_continue_registration.html:18
 #, python-format

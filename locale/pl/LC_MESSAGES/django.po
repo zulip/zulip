@@ -25,17 +25,16 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-07-30 13:46+0000\n"
-"PO-Revision-Date: 2025-07-28 22:31+0000\n"
-"Last-Translator: Sylwester Cyba <pl-en-silver@users.noreply.hosted.weblate."
-"org>\n"
-"Language-Team: Polish <https://hosted.weblate.org/projects/zulip/django/pl/"
-">\n"
+"PO-Revision-Date: 2025-08-07 16:28+0000\n"
+"Last-Translator: Alex Vandiver <alexmv@zulip.com>\n"
+"Language-Team: Polish <https://hosted.weblate.org/projects/zulip/django/pl/>"
+"\n"
 "Language: pl\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=4; plural=(n==1 ? 0 : (n%10>=2 && n%10<=4) && "
-"(n%100<12 || n%100>14) ? 1 : n!=1 && (n%10>=0 && n%10<=1) || (n%10>=5 && "
+"Plural-Forms: nplurals=4; plural=(n==1 ? 0 : (n%10>=2 && n%10<=4) && ("
+"n%100<12 || n%100>14) ? 1 : n!=1 && (n%10>=0 && n%10<=1) || (n%10>=5 && "
 "n%10<=9) || (n%100>=12 && n%100<=14) ? 2 : 3);\n"
 "X-Generator: Weblate 5.13-dev\n"
 
@@ -105,10 +104,10 @@ msgid ""
 "the number of licenses]({billing_page_link}) or [deactivate inactive users]"
 "({deactivate_user_help_page_link}) to allow more than one user to join."
 msgstr ""
-"W Twojej organizacji pozostała jedna licencja Zulip. Możesz [zwiększyć "
-"liczbę licencji] ({billing_page_link}) albo [odłączyć nieaktywnych "
-"użytkowników] ({deactivate_user_help_page_link}) aby zezwolić więcej niż "
-"jednemu użytkownikowi na dołączenie."
+"W Twojej organizacji pozostała jedna licencja Zulip. Możesz "
+"[zwiększyć liczbę licencji]({billing_page_link}) albo "
+"[odłączyć nieaktywnych użytkowników]({deactivate_user_help_page_link}) aby "
+"zezwolić więcej niż jednemu użytkownikowi na dołączenie."
 
 #: corporate/lib/registration.py:47
 #, python-brace-format
@@ -117,10 +116,10 @@ msgid ""
 "the number of licenses]({billing_page_link}) or [deactivate inactive users]"
 "({deactivate_user_help_page_link}) to allow more than two users to join."
 msgstr ""
-"W Twojej organizacji pozostały dwie licencje Zulip. Możesz [zwiększyć liczbę "
-"licencji] ({billing_page_link}) albo [odłączyć nieaktywnych użytkowników] "
-"({deactivate_user_help_page_link}) aby zezwolić więcej niż dwóm użytkownikom "
-"na dołączenie."
+"W Twojej organizacji pozostały dwie licencje Zulip. Możesz "
+"[zwiększyć liczbę licencji]({billing_page_link}) albo "
+"[odłączyć nieaktywnych użytkowników]({deactivate_user_help_page_link}) aby "
+"zezwolić więcej niż dwóm użytkownikom na dołączenie."
 
 #: corporate/lib/registration.py:52
 #, python-brace-format
@@ -129,10 +128,10 @@ msgid ""
 "the number of licenses]({billing_page_link}) or [deactivate inactive users]"
 "({deactivate_user_help_page_link}) to allow more than three users to join."
 msgstr ""
-"W Twojej organizacji pozostały trzy licencje Zulip. Możesz [zwiększyć liczbę "
-"licencji] ({billing_page_link}) albo [odłączyć nieaktywnych użytkowników] "
-"({deactivate_user_help_page_link}) aby zezwolić więcej niż trzem "
-"użytkownikom na dołączenie."
+"W Twojej organizacji pozostały trzy licencje Zulip. Możesz "
+"[zwiększyć liczbę licencji]({billing_page_link}) albo "
+"[odłączyć nieaktywnych użytkowników]({deactivate_user_help_page_link}) aby "
+"zezwolić więcej niż trzem użytkownikom na dołączenie."
 
 #: corporate/lib/registration.py:63
 #, python-brace-format
@@ -5157,10 +5156,8 @@ msgid "Verified that you're a human user!"
 msgstr "Weryfikacja, że jesteś człowiekiem!"
 
 #: zerver/forms.py:380
-#, fuzzy
-#| msgid "Verifying that you're not a bot..."
 msgid "Verifying that you're not a bot…"
-msgstr "Weryfikacja, że nie jesteś botem..."
+msgstr "Weryfikacja, że nie jesteś botem…"
 
 #: zerver/forms.py:402 zerver/forms.py:413 zerver/forms.py:418
 #: zerver/forms.py:425
@@ -5168,10 +5165,8 @@ msgid "Validation failed, please try again."
 msgstr "Weryfikacja bez powodzenia, spróbuj jeszcze raz."
 
 #: zerver/forms.py:407 zerver/views/antispam.py:29
-#, fuzzy
-#| msgid "Embedded bots are not enabled."
 msgid "Challenges are not enabled."
-msgstr "Wbudowane boty nie są włączone."
+msgstr "Wyzwania nie są włączone."
 
 #: zerver/forms.py:437
 msgid "New password"

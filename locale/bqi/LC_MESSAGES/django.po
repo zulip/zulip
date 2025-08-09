@@ -9,8 +9,8 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-07-30 13:46+0000\n"
-"PO-Revision-Date: 2025-07-17 06:37+0000\n"
-"Last-Translator: Anonymous <noreply@weblate.org>\n"
+"PO-Revision-Date: 2025-08-07 16:28+0000\n"
+"Last-Translator: Alex Vandiver <alexmv@zulip.com>\n"
 "Language-Team: Luri (Bakhtiari) <https://hosted.weblate.org/projects/zulip/"
 "django/bqi/>\n"
 "Language: bqi\n"
@@ -4153,7 +4153,7 @@ msgstr "sāzêmov isā,ālêštê payum nê bîkênêš kerde"
 
 #: zerver/actions/message_edit.py:174 zerver/actions/message_edit.py:1586
 msgid "You don't have permission to edit this message"
-msgstr "isā  dasrasi si ālêštê i payumê nê nađârin"
+msgstr "isā dasrasi si ālêštê i payumê nê nađârin"
 
 #: zerver/actions/message_edit.py:179
 msgid "The time limit for editing this message has passed"

@@ -24,7 +24,7 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-07-30 13:46+0000\n"
-"PO-Revision-Date: 2025-07-26 22:07+0000\n"
+"PO-Revision-Date: 2025-08-07 23:52+0000\n"
 "Last-Translator: Alex Vandiver <alexmv@zulip.com>\n"
 "Language-Team: Chinese (Simplified Han script) <https://hosted.weblate.org/"
 "projects/zulip/django/zh_Hans/>\n"
@@ -1794,7 +1794,7 @@ msgstr "不正确的令牌。"
 
 #: templates/zerver/desktop_login.html:28
 msgid "Token accepted.  Logging you in…"
-msgstr "令牌接受。正在登录..."
+msgstr "令牌接受。正在登录…"
 
 #: templates/zerver/desktop_redirect.html:5
 msgid "Log in to desktop app"
@@ -5974,7 +5974,7 @@ msgstr "不能在“{var_name1}”和“{var_name2}”参数之间进行选择"
 #: zerver/lib/request.py:83 zerver/lib/streams.py:679 zerver/views/typing.py:47
 #, python-brace-format
 msgid "Missing '{var_name}' argument"
-msgstr "缺少参数： '{var_name}' "
+msgstr "缺少参数： '{var_name}'"
 
 #: zerver/lib/request.py:97
 #, python-brace-format
@@ -6756,7 +6756,7 @@ msgstr ""
 
 #: zerver/views/auth.py:599
 msgid "No JSON web token passed in request"
-msgstr "请求中未传递JSON web token "
+msgstr "请求中未传递JSON web token"
 
 #: zerver/views/auth.py:605
 msgid "Bad JSON web token"
@@ -7514,7 +7514,8 @@ msgid ""
 "Can't create bots until FAKE_EMAIL_DOMAIN is correctly configured.\n"
 "Please contact your server administrator."
 msgstr ""
-"在正确配置 FAKE_EMAIL_DOMAIN 之前无法创建机器人。请联系您的服务器管理员。"
+"在正确配置 FAKE_EMAIL_DOMAIN 之前无法创建机器人。\n"
+"请联系您的服务器管理员。"
 
 #: zerver/views/users.py:603
 msgid "Embedded bots are not enabled."

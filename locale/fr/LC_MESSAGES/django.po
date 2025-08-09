@@ -35,10 +35,10 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-07-30 13:46+0000\n"
-"PO-Revision-Date: 2025-07-26 22:07+0000\n"
+"PO-Revision-Date: 2025-08-07 23:52+0000\n"
 "Last-Translator: Alex Vandiver <alexmv@zulip.com>\n"
-"Language-Team: French <https://hosted.weblate.org/projects/zulip/django/fr/"
-">\n"
+"Language-Team: French <https://hosted.weblate.org/projects/zulip/django/fr/>"
+"\n"
 "Language: fr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -3054,7 +3054,7 @@ msgstr "Aller sur Zulip"
 
 #: templates/zerver/emails/onboarding_zulip_topics.subject.txt:1
 msgid "Keep your conversations organized with topics"
-msgstr "Organisez vos conversations à l'aide de sujets."
+msgstr "Organisez vos conversations à l'aide de sujets"
 
 #: templates/zerver/emails/onboarding_zulip_topics.txt:3
 msgid ""
@@ -4498,7 +4498,7 @@ msgstr "Vous n'avez pas la permission de modifier ce message"
 
 #: zerver/actions/message_edit.py:179
 msgid "The time limit for editing this message has passed"
-msgstr "La limite de temps pour modifier ce message est dépassée."
+msgstr "La limite de temps pour modifier ce message est dépassée"
 
 #: zerver/actions/message_edit.py:275
 #, python-brace-format
@@ -4856,7 +4856,7 @@ msgstr "Cette API n'est pas disponible pour les robots de webhook entrants."
 
 #: zerver/decorator.py:310
 msgid "Account is not associated with this subdomain"
-msgstr "Le compte n'est pas associé avec ce sous-domaine."
+msgstr "Le compte n'est pas associé avec ce sous-domaine"
 
 #: zerver/decorator.py:571 zerver/decorator.py:704
 msgid "This endpoint does not accept bot requests."
@@ -5113,7 +5113,7 @@ msgstr "Le domaine doit contenir au moins un point (.)"
 
 #: zerver/lib/domains.py:13
 msgid "Domain is too long"
-msgstr "Le nom de domaine est trop long."
+msgstr "Le nom de domaine est trop long"
 
 #: zerver/lib/domains.py:15
 msgid "Domain cannot start or end with a dot (.)"
@@ -5187,7 +5187,7 @@ msgstr "Les adresses courriel contenant un + ne sont pas autorisées."
 
 #: zerver/lib/email_validation.py:160
 msgid "Reserved for system bots."
-msgstr "Réservé aux robots système"
+msgstr "Réservé aux robots système."
 
 #: zerver/lib/email_validation.py:183
 #, python-brace-format
@@ -5229,7 +5229,7 @@ msgstr "Nom d'emoji invalide."
 
 #: zerver/lib/emoji.py:118
 msgid "Invalid emoji type."
-msgstr "Type d'emoji invalide"
+msgstr "Type d'emoji invalide."
 
 #: zerver/lib/emoji.py:133
 msgid "Must be an organization administrator or emoji author"
@@ -5567,7 +5567,7 @@ msgstr "Le message ne doit pas être vide"
 
 #: zerver/lib/message.py:206
 msgid "Message must not contain null bytes"
-msgstr "Le message ne doit pas contenir d'octets nuls."
+msgstr "Le message ne doit pas contenir d'octets nuls"
 
 #: zerver/lib/message.py:1536
 #, python-brace-format
@@ -5632,7 +5632,7 @@ msgstr ""
 
 #: zerver/lib/narrow.py:1290
 msgid "Missing 'anchor' argument."
-msgstr "Argument 'anchor' manquant"
+msgstr "Argument 'anchor' manquant."
 
 #: zerver/lib/narrow.py:1310
 msgid "Invalid anchor"
@@ -5986,7 +5986,7 @@ msgstr ""
 #. error
 #: zerver/lib/push_notifications.py:754 zilencer/views.py:658
 msgid "Token does not exist"
-msgstr "Le jeton n'existe pas."
+msgstr "Le jeton n'existe pas"
 
 #: zerver/lib/push_notifications.py:1091
 #, python-brace-format
@@ -7021,11 +7021,11 @@ msgstr ""
 #: zerver/views/message_edit.py:195 zerver/views/message_edit.py:199
 #: zerver/views/message_edit.py:206
 msgid "You don't have permission to delete this message"
-msgstr "Vous n'avez pas la permission de supprimer ce message."
+msgstr "Vous n'avez pas la permission de supprimer ce message"
 
 #: zerver/views/message_edit.py:214
 msgid "The time limit for deleting this message has passed"
-msgstr "La limite de temps pour supprimer ce message est dépassée."
+msgstr "La limite de temps pour supprimer ce message est dépassée"
 
 #: zerver/views/message_edit.py:235
 msgid "Message already deleted"
@@ -7071,7 +7071,7 @@ msgstr "Message mirroir non valide"
 
 #: zerver/views/message_send.py:237
 msgid "Zephyr mirroring is not allowed in this organization"
-msgstr "Le mirroir Zephyr n'est pas autorisé dans cette organisation."
+msgstr "Le mirroir Zephyr n'est pas autorisé dans cette organisation"
 
 #: zerver/views/message_summary.py:28
 msgid "AI features are not enabled on this server."
@@ -7521,11 +7521,11 @@ msgstr "Vous devez spécifier un fichier à envoyer"
 #: zerver/views/upload.py:431 zerver/views/users.py:523
 #: zerver/views/users.py:631
 msgid "You may only upload one file at a time"
-msgstr "Vous ne pouvez envoyer qu'un seul fichier à la fois."
+msgstr "Vous ne pouvez envoyer qu'un seul fichier à la fois"
 
 #: zerver/views/user_groups.py:156
 msgid "No new data supplied"
-msgstr "Aucune nouvelle donnée fournie."
+msgstr "Aucune nouvelle donnée fournie"
 
 #: zerver/views/user_groups.py:242
 msgid ""
@@ -7551,7 +7551,7 @@ msgstr "L'utilisateur {user_id} est déjà membre de ce groupe"
 #: zerver/views/user_groups.py:419
 #, python-brace-format
 msgid "There is no member '{user_id}' in this user group"
-msgstr "Il n'y a aucun membre '{user_id}' dans ce groupe d'utilisateurs."
+msgstr "Il n'y a aucun membre '{user_id}' dans ce groupe d'utilisateurs"
 
 #: zerver/views/user_groups.py:448
 #, python-brace-format
@@ -7621,7 +7621,7 @@ msgstr "Vous devez envoyer exactement un avatar."
 
 #: zerver/views/user_topics.py:52
 msgid "Topic is not muted"
-msgstr "Ce sujet n'est pas muet."
+msgstr "Ce sujet n'est pas muet"
 
 #: zerver/views/users.py:130
 msgid "Cannot deactivate the only organization owner"
@@ -7659,7 +7659,7 @@ msgstr "Échec du changement de propriétaire, l'utilisateur est désactivé"
 msgid "Failed to change owner, bots can't own other bots"
 msgstr ""
 "Échec du changement de propriétaire, les robots ne peuvent pas détenir "
-"d'autres bots."
+"d'autres bots"
 
 #: zerver/views/users.py:593
 msgid ""
@@ -7739,7 +7739,7 @@ msgstr "Le serveur BigBlueButton a renvoyé une erreur inattendue."
 
 #: zerver/views/zephyr.py:34
 msgid "Could not find Kerberos credential"
-msgstr "Impossible de trouver la référence Kerberos."
+msgstr "Impossible de trouver la référence Kerberos"
 
 #: zerver/views/zephyr.py:36
 msgid "Webathena login not enabled"
@@ -7757,7 +7757,7 @@ msgstr "Nous n'avons pas réussi à configurer un mirroir pour vous"
 msgid "Projects using this version control system provider aren't supported"
 msgstr ""
 "Les projets utilisant ce fournisseur de système de contrôle de version ne "
-"sont pas pris en charge."
+"sont pas pris en charge"
 
 #: zerver/webhooks/freshstatus/view.py:97
 #: zerver/webhooks/uptimerobot/view.py:58 zerver/webhooks/zabbix/view.py:50
