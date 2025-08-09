@@ -4,6 +4,7 @@ const assert = require("node:assert/strict");
 
 const MockDate = require("mockdate");
 
+const {make_user_group} = require("./lib/example_group.cjs");
 const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {make_stub} = require("./lib/stub.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
@@ -218,10 +219,10 @@ run_test("build_display_recipient", ({override}) => {
     ];
     const user_group_params = {
         realm_user_groups: [
-            {
+            make_user_group({
                 is_system_group: true,
                 members: [123, 21],
-            },
+            }),
         ],
     };
     params.realm_non_active_users = [];
@@ -360,10 +361,10 @@ run_test("insert_local_message direct message", ({override}) => {
     ];
     const user_group_params = {
         realm_user_groups: [
-            {
+            make_user_group({
                 is_system_group: true,
                 members: [123, 21],
-            },
+            }),
         ],
     };
     params.realm_non_active_users = [];

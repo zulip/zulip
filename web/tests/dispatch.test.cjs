@@ -3,6 +3,7 @@
 const assert = require("node:assert/strict");
 
 const events = require("./lib/events.cjs");
+const {make_user_group} = require("./lib/example_group.cjs");
 const {mock_esm, set_global, with_overrides, zrequire} = require("./lib/namespace.cjs");
 const {make_stub} = require("./lib/stub.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
@@ -272,23 +273,25 @@ run_test("attachments", ({override}) => {
 
 run_test("user groups", ({override}) => {
     let event = event_fixtures.user_group__add;
-    user_groups.add({
-        id: 1,
-        name: "Backend",
-        creator_id: null,
-        date_created: 1596713966,
-        description: "Backend folks",
-        members: [1, 2, 4],
-        is_system_group: false,
-        direct_subgroup_ids: [3, 5],
-        can_add_members_group: 16,
-        can_join_group: 16,
-        can_leave_group: 15,
-        can_manage_group: 16,
-        can_mention_group: 11,
-        can_remove_members_group: 16,
-        deactivated: false,
-    });
+    user_groups.add(
+        make_user_group({
+            id: 1,
+            name: "Backend",
+            creator_id: null,
+            date_created: 1596713966,
+            description: "Backend folks",
+            members: [1, 2, 4],
+            is_system_group: false,
+            direct_subgroup_ids: [3, 5],
+            can_add_members_group: 16,
+            can_join_group: 16,
+            can_leave_group: 15,
+            can_manage_group: 16,
+            can_mention_group: 11,
+            can_remove_members_group: 16,
+            deactivated: false,
+        }),
+    );
 
     {
         const user_group_settings_ui_stub = make_stub();

@@ -2,6 +2,7 @@
 
 const assert = require("node:assert/strict");
 
+const {make_user_group} = require("./lib/example_group.cjs");
 const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 
@@ -140,57 +141,57 @@ stream_data.create_streams([dev_sub, linux_sub]);
 stream_data.add_sub(dev_sub);
 stream_data.add_sub(linux_sub);
 
-const bob_system_group = {
+const bob_system_group = make_user_group({
     id: 1,
     name: "Bob system group",
     description: "",
     members: new Set([]),
     is_system_group: true,
-};
+});
 const bob_system_group_item = user_group_item(bob_system_group);
 
-const bob_group = {
+const bob_group = make_user_group({
     id: 2,
     name: "Bob group",
     description: "",
     members: new Set([]),
     is_system_group: false,
-};
+});
 const bob_group_item = user_group_item(bob_group);
 
-const second_bob_group = {
+const second_bob_group = make_user_group({
     id: 3,
     name: "bob 2 group",
     description: "",
     members: new Set([b_user_2.user_id]),
     is_system_group: false,
-};
+});
 
-const admins_group = {
+const admins_group = make_user_group({
     id: 4,
     name: "Admins of zulip",
     description: "",
     members: new Set([]),
     is_system_group: false,
-};
+});
 const admins_group_item = user_group_item(admins_group);
 
-const members_group = {
+const members_group = make_user_group({
     id: 5,
     name: "role:members",
     description: "",
     members: new Set([]),
     is_system_group: true,
-};
+});
 const members_group_item = user_group_item(members_group);
 
-const everyone_group = {
+const everyone_group = make_user_group({
     id: 6,
     name: "role:everyone",
     description: "",
     members: new Set([]),
     is_system_group: true,
-};
+});
 
 user_groups.initialize({
     realm_user_groups: [
