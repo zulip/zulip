@@ -571,11 +571,11 @@ function handle_popover_events(event_name) {
 
 // Returns true if we handled it, false if the browser should.
 export function process_enter_key(e) {
-    if ($(e.currentTarget).hasClass("trigger-click-on-enter")) {
+    if ($(e.target).hasClass("trigger-click-on-enter")) {
         // If the target has the class "trigger-click-on-enter", explicitly
         // trigger a click event on it to call the associated click handler.
         e.preventDefault();
-        $(e.currentTarget).trigger("click");
+        $(e.target).trigger("click");
         return true;
     }
 
