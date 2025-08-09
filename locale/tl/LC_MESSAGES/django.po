@@ -9,10 +9,10 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-07-30 13:46+0000\n"
-"PO-Revision-Date: 2025-07-17 06:38+0000\n"
-"Last-Translator: Anonymous <noreply@weblate.org>\n"
-"Language-Team: Tagalog <https://hosted.weblate.org/projects/zulip/django/tl/"
-">\n"
+"PO-Revision-Date: 2025-08-07 23:52+0000\n"
+"Last-Translator: Alex Vandiver <alexmv@zulip.com>\n"
+"Language-Team: Tagalog <https://hosted.weblate.org/projects/zulip/django/tl/>"
+"\n"
 "Language: tl\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -229,7 +229,7 @@ msgstr ""
 
 #: corporate/lib/stripe.py:3145
 msgid "Nothing to change."
-msgstr "Walang dapat baguhin"
+msgstr "Walang dapat baguhin."
 
 #: corporate/lib/stripe.py:3430
 msgid "No customer for this organization!"
@@ -4763,7 +4763,7 @@ msgstr ""
 
 #: zerver/lib/drafts.py:63
 msgid "Topic must not contain null bytes"
-msgstr "Ang paksa ay dapat hindi maglaman ng walang bytes."
+msgstr "Ang paksa ay dapat hindi maglaman ng walang bytes"
 
 #: zerver/lib/drafts.py:65
 msgid "Must specify exactly 1 channel ID for channel messages"
@@ -4800,7 +4800,7 @@ msgstr ""
 
 #: zerver/lib/email_validation.py:104
 msgid "Invalid address."
-msgstr "Imbalidong pook ng tahanan"
+msgstr "Imbalidong pook ng tahanan."
 
 #: zerver/lib/email_validation.py:109
 msgid "Outside your domain."
@@ -4821,7 +4821,7 @@ msgstr ""
 
 #: zerver/lib/email_validation.py:185
 msgid "Already has an account."
-msgstr "Mayroon nang kwenta"
+msgstr "Mayroon nang kwenta."
 
 #: zerver/lib/email_validation.py:187
 msgid "Account has been deactivated."

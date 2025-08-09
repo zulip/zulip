@@ -12,8 +12,8 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-07-30 13:46+0000\n"
-"PO-Revision-Date: 2025-07-17 06:37+0000\n"
-"Last-Translator: Anonymous <noreply@weblate.org>\n"
+"PO-Revision-Date: 2025-08-07 23:52+0000\n"
+"Last-Translator: Alex Vandiver <alexmv@zulip.com>\n"
 "Language-Team: Indonesian <https://hosted.weblate.org/projects/zulip/django/"
 "id/>\n"
 "Language: id\n"
@@ -4253,7 +4253,7 @@ msgstr "Pesan invalid"
 
 #: zerver/actions/message_send.py:186
 msgid "Unable to render message"
-msgstr "Tidak dapat menampilkan pesan."
+msgstr "Tidak dapat menampilkan pesan"
 
 #: zerver/actions/message_send.py:1317
 msgid "Expected exactly one channel"
@@ -4865,7 +4865,7 @@ msgstr "Nama emoji invalid."
 
 #: zerver/lib/emoji.py:118
 msgid "Invalid emoji type."
-msgstr "Jenis emoji invalid"
+msgstr "Jenis emoji invalid."
 
 #: zerver/lib/emoji.py:133
 msgid "Must be an organization administrator or emoji author"
@@ -5649,7 +5649,7 @@ msgstr ""
 #: zerver/views/events_register.py:72 zerver/views/message_send.py:196
 #: zerver/views/message_send.py:217
 msgid "User not authorized for this query"
-msgstr "Pengguna tidak berotoritas untuk melakukan perintah ini."
+msgstr "Pengguna tidak berotoritas untuk melakukan perintah ini"
 
 #: zerver/lib/recipient_users.py:106
 #, python-brace-format
@@ -6773,7 +6773,7 @@ msgstr ""
 
 #: zerver/views/realm.py:224
 msgid "At least one authentication method must be enabled."
-msgstr "Setidaknya satu metode autentikasi harus diaktifkan"
+msgstr "Setidaknya satu metode autentikasi harus diaktifkan."
 
 #: zerver/views/realm.py:230
 #, python-brace-format

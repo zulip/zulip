@@ -9,10 +9,10 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-07-30 13:46+0000\n"
-"PO-Revision-Date: 2025-07-17 06:38+0000\n"
+"PO-Revision-Date: 2025-08-07 23:52+0000\n"
 "Last-Translator: Alex Vandiver <alexmv@zulip.com>\n"
-"Language-Team: Swedish <https://hosted.weblate.org/projects/zulip/django/sv/"
-">\n"
+"Language-Team: Swedish <https://hosted.weblate.org/projects/zulip/django/sv/>"
+"\n"
 "Language: sv\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -1571,7 +1571,7 @@ msgstr ""
 
 #: templates/zerver/confirm_continue_registration.html:30
 msgid "Log in with another account"
-msgstr "Logga in med annat konto."
+msgstr "Logga in med annat konto"
 
 #: templates/zerver/confirm_continue_registration.html:37
 msgid "Continue to registration"

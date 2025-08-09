@@ -9,10 +9,10 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-07-30 13:46+0000\n"
-"PO-Revision-Date: 2025-07-17 06:39+0000\n"
-"Last-Translator: Anonymous <noreply@weblate.org>\n"
-"Language-Team: Bengali <https://hosted.weblate.org/projects/zulip/django/bn/"
-">\n"
+"PO-Revision-Date: 2025-08-07 16:29+0000\n"
+"Last-Translator: Alex Vandiver <alexmv@zulip.com>\n"
+"Language-Team: Bengali <https://hosted.weblate.org/projects/zulip/django/bn/>"
+"\n"
 "Language: bn\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -1578,7 +1578,7 @@ msgstr ""
 
 #: templates/zerver/create_realm.html:5
 msgid "Create a new organization"
-msgstr "নতুন সংস্থা তৈরি করুন "
+msgstr "নতুন সংস্থা তৈরি করুন"
 
 #: templates/zerver/create_realm.html:16
 msgid "Create a new Zulip organization"
@@ -6264,7 +6264,7 @@ msgstr "যুলিপের অতিরিক্ত ইমোজি"
 
 #: zerver/models/realm_emoji.py:42
 msgid "Invalid characters in emoji name"
-msgstr "ইমোজির নামে অকার্যকর অক্ষর "
+msgstr "ইমোজির নামে অকার্যকর অক্ষর"
 
 #: zerver/models/realm_playgrounds.py:36 zerver/views/realm_playgrounds.py:27
 msgid "Invalid characters in pygments language"

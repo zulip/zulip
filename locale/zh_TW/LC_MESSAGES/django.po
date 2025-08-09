@@ -19,7 +19,7 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-07-30 13:46+0000\n"
-"PO-Revision-Date: 2025-07-30 04:18+0000\n"
+"PO-Revision-Date: 2025-07-31 02:23+0000\n"
 "Last-Translator: Eddie Su <eddiesu.sheico@gmail.com>\n"
 "Language-Team: Chinese (Traditional Han script) <https://hosted.weblate.org/"
 "projects/zulip/django/zh_Hant/>\n"
@@ -4913,8 +4913,6 @@ msgid "Verified that you're a human user!"
 msgstr "已驗證您是真實使用者！"
 
 #: zerver/forms.py:380
-#, fuzzy
-#| msgid "Verifying that you're not a bot..."
 msgid "Verifying that you're not a bot…"
 msgstr "正在驗證您不是機器人…"
 
@@ -4924,10 +4922,8 @@ msgid "Validation failed, please try again."
 msgstr "驗證失敗，請再試一次。"
 
 #: zerver/forms.py:407 zerver/views/antispam.py:29
-#, fuzzy
-#| msgid "Embedded bots are not enabled."
 msgid "Challenges are not enabled."
-msgstr "嵌入式機器人未啟用。"
+msgstr "尚未啟用挑戰功能。"
 
 #: zerver/forms.py:437
 msgid "New password"

@@ -16,7 +16,7 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-07-30 13:46+0000\n"
-"PO-Revision-Date: 2025-07-26 22:07+0000\n"
+"PO-Revision-Date: 2025-08-07 16:28+0000\n"
 "Last-Translator: Alex Vandiver <alexmv@zulip.com>\n"
 "Language-Team: Romanian <https://hosted.weblate.org/projects/zulip/django/ro/"
 ">\n"
@@ -1548,8 +1548,7 @@ msgid ""
 "<a href=\"#\" id=\"resend_email_link\">resend it</a>."
 msgstr ""
 "Dacă nu vedeți un e-mail de confirmare în căsuța de primire sau în dosarul "
-"Spam, <a href=\"#\" id=\"resend_email_link\">îl</a> putem <a href=\"#\" "
-"id=\"resend_email_link\">retrimite</a>."
+"Spam, îl putem <a href=\"#\" id=\"resend_email_link\">retrimite</a>."
 
 #: templates/zerver/app/index.html:6
 #, python-brace-format

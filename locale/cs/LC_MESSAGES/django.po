@@ -17,7 +17,7 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-07-30 13:46+0000\n"
-"PO-Revision-Date: 2025-07-26 22:07+0000\n"
+"PO-Revision-Date: 2025-08-07 23:52+0000\n"
 "Last-Translator: Alex Vandiver <alexmv@zulip.com>\n"
 "Language-Team: Czech <https://hosted.weblate.org/projects/zulip/django/cs/>\n"
 "Language: cs\n"
@@ -675,7 +675,7 @@ msgstr "Zavřít okno"
 #: templates/corporate/billing/billing.html:583
 #: templates/corporate/billing/billing.html:620
 msgid "Never mind"
-msgstr "Nevadí."
+msgstr "Nevadí"
 
 #: templates/corporate/billing/billing.html:441
 #: templates/corporate/billing/billing.html:529
@@ -1804,7 +1804,7 @@ msgstr "Nesprávný elektronický klíč."
 
 #: templates/zerver/desktop_login.html:28
 msgid "Token accepted.  Logging you in…"
-msgstr "Elektronický klíč přijat. Jste přihlašován..."
+msgstr "Elektronický klíč přijat. Jste přihlašován…"
 
 #: templates/zerver/desktop_redirect.html:5
 msgid "Log in to desktop app"
@@ -1827,7 +1827,7 @@ msgstr "Potom toto okno můžete zavřít."
 
 #: templates/zerver/desktop_redirect.html:20
 msgid "Or, continue in your browser."
-msgstr "Nebo pokračovat v prohlížeči:"
+msgstr "Nebo pokračovat v prohlížeči."
 
 #: templates/zerver/development/dev_login.html:26
 msgid "Anonymous user"
@@ -1877,19 +1877,15 @@ msgid "Digest"
 msgstr "Přehled"
 
 #: templates/zerver/emails/account_registered.html:11
-#, fuzzy, python-format
-#| msgid ""
-#| " Congratulations, you have created a new demo Zulip organization. Note "
-#| "that this organization will be automatically deleted in 30 days. Learn "
-#| "more about demo organizations here: %(demo_organizations_help_link)s!"
+#, python-format
 msgid ""
 "Congratulations, you have created a new Zulip demo organization. Note that "
 "this organization will be automatically deleted in 30 days. Learn more about "
 "demo organizations <a href=\"%(demo_organizations_help_link)s\">here</a>!"
 msgstr ""
-" Vytvořili jste ukázkovou organizaci Zulip. Upozorňujeme, že tato organizace "
+"Vytvořili jste ukázkovou organizaci Zulip. Upozorňujeme, že tato organizace "
 "bude automaticky smazána za 30 dní. Zjistěte více o ukázkových organizacích "
-"zde: %(demo_organizations_help_link)s!"
+"<a href=\"%(demo_organizations_help_link)s\">zde</a>!"
 
 #: templates/zerver/emails/account_registered.html:19
 #, python-format
@@ -2703,7 +2699,7 @@ msgstr ""
 msgid ""
 "Organization: %(organization_url)s Time: %(login_time)s Email: %(user_email)s"
 msgstr ""
-"Organizace: %(organization_url)s Čas: %(login_time)s E-mail: %(user_email)s "
+"Organizace: %(organization_url)s Čas: %(login_time)s E-mail: %(user_email)s"
 
 #: templates/zerver/emails/notify_new_login.html:12
 #: templates/zerver/emails/notify_new_login.txt:1
@@ -4684,7 +4680,7 @@ msgstr ""
 
 #: zerver/actions/streams.py:1567
 msgid "Old description"
-msgstr "Starý popis."
+msgstr "Starý popis"
 
 #: zerver/actions/streams.py:1571
 msgid "New description"
@@ -4809,7 +4805,7 @@ msgstr ""
 
 #: zerver/forms.py:71
 msgid "The password is too weak."
-msgstr "Heslo je příliš slabé"
+msgstr "Heslo je příliš slabé."
 
 #: zerver/forms.py:93
 msgid "Subdomain needs to have length 3 or greater."
@@ -4821,7 +4817,7 @@ msgstr "Subdomény nemohou začínat nebo končit na '-'."
 
 #: zerver/forms.py:95
 msgid "Subdomain can only have lowercase letters, numbers, and '-'s."
-msgstr "Subdoména může obsahovat jen malá písmena, čísla a  '-'."
+msgstr "Subdoména může obsahovat jen malá písmena, čísla a '-'."
 
 #: zerver/forms.py:96
 msgid "Subdomain is already in use. Please choose a different one."
@@ -4871,10 +4867,8 @@ msgid ""
 "number of licenses, then try again."
 msgstr ""
 "Noví členové se nemohou připojit k této organizaci, protože všechny licence "
-"Zulip jsou používány. Spojte se, prosím, s osobou, která\n"
-"vás pozvala, a požádejte ji, aby zvýšila počet licencí, pak to zkuste "
-"znovu.\n"
-"    "
+"Zulip jsou používány. Spojte se, prosím, s osobou, která vás pozvala, a "
+"požádejte ji, aby zvýšila počet licencí, pak to zkuste znovu."
 
 #: zerver/forms.py:379
 msgid "Verified that you're a human user!"
@@ -5031,7 +5025,7 @@ msgstr "Subdomény nemohou začínat nebo končit na '-'."
 
 #: zerver/lib/domains.py:22
 msgid "Domain can only have letters, numbers, '.' and '-'s."
-msgstr "Doména může obsahovat jen malá písmena, čísla, '.' a  '-'."
+msgstr "Doména může obsahovat jen malá písmena, čísla, '.' a '-'."
 
 #: zerver/lib/drafts.py:54
 msgid "Timestamp must not be negative."
@@ -5522,7 +5516,7 @@ msgstr ""
 
 #: zerver/lib/narrow.py:1290
 msgid "Missing 'anchor' argument."
-msgstr "Chybí argument 'anchor'"
+msgstr "Chybí argument 'anchor'."
 
 #: zerver/lib/narrow.py:1310
 msgid "Invalid anchor"
@@ -6943,7 +6937,7 @@ msgstr "Neplatná zrcadlená zpráva"
 
 #: zerver/views/message_send.py:237
 msgid "Zephyr mirroring is not allowed in this organization"
-msgstr "Zrcadlení Zephyru není v této organizaci povoleno."
+msgstr "Zrcadlení Zephyru není v této organizaci povoleno"
 
 #: zerver/views/message_summary.py:28
 msgid "AI features are not enabled on this server."
@@ -7154,7 +7148,7 @@ msgstr "Musíte nahrát přesně jednu ikonu."
 
 #: zerver/views/realm_linkifiers.py:54 zerver/views/realm_linkifiers.py:78
 msgid "Linkifier not found."
-msgstr "Tvůrce odkazů nenalezen"
+msgstr "Tvůrce odkazů nenalezen."
 
 #: zerver/views/realm_logo.py:27
 msgid "You must upload exactly one logo."
@@ -7614,7 +7608,7 @@ msgstr "Neplatné užitečné zatížení"
 
 #: zerver/webhooks/front/view.py:148
 msgid "Unknown webhook request"
-msgstr "Neznámý požadavek na zpětné volání HTTP,  \"webhook request\""
+msgstr "Neznámý požadavek na zpětné volání HTTP, \"webhook request\""
 
 #: zerver/webhooks/ifttt/view.py:31 zerver/webhooks/zapier/view.py:42
 msgid "Topic can't be empty"

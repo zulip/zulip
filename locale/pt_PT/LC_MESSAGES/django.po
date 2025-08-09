@@ -14,7 +14,7 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-07-30 13:46+0000\n"
-"PO-Revision-Date: 2025-07-26 22:07+0000\n"
+"PO-Revision-Date: 2025-08-07 23:52+0000\n"
 "Last-Translator: Alex Vandiver <alexmv@zulip.com>\n"
 "Language-Team: Portuguese (Portugal) <https://hosted.weblate.org/projects/"
 "zulip/django/pt_PT/>\n"
@@ -154,7 +154,7 @@ msgstr ""
 #: corporate/lib/remote_billing_util.py:133
 #: corporate/lib/remote_billing_util.py:169
 msgid "Registration is deactivated"
-msgstr "O registo está desativado."
+msgstr "O registo está desativado"
 
 #: corporate/lib/remote_billing_util.py:166
 msgid "Invalid remote server."
@@ -485,7 +485,7 @@ msgstr "Dados analíticos para %(target_name)s | Zulip"
 msgid "Analytics are fully available 24 hours after organization creation."
 msgstr ""
 "Os dados analíticos estão completamente disponíveis após 24 horas da criação "
-"da organização. "
+"da organização."
 
 #: templates/analytics/stats.html:23
 #, python-format
@@ -657,7 +657,7 @@ msgstr ""
 
 #: templates/confirmation/link_expired.html:4
 msgid "Confirmation link expired or deactivated"
-msgstr "Ligação de confirmação expirada ou desativada."
+msgstr "Ligação de confirmação expirada ou desativada"
 
 #: templates/confirmation/link_expired.html:11
 msgid "Whoops. The confirmation link has expired or been deactivated."
@@ -1861,11 +1861,11 @@ msgstr "Finalizar"
 
 #: templates/zerver/desktop_login.html:24
 msgid "Incorrect token."
-msgstr "Código incorreto"
+msgstr "Código incorreto."
 
 #: templates/zerver/desktop_login.html:28
 msgid "Token accepted.  Logging you in…"
-msgstr "Código aceite. A iniciar sessão..."
+msgstr "Código aceite. A iniciar sessão…"
 
 #: templates/zerver/desktop_redirect.html:5
 msgid "Log in to desktop app"
@@ -2587,8 +2587,8 @@ msgid ""
 "This invitation expires in two days. If the invitation expires, you'll need "
 "to ask %(referrer_name)s for another one."
 msgstr ""
-"Este convite expira dentro de dois dias. Se o convite expirar,\n"
-"irá precisar de pedir um novo convite a %(referrer_name)s."
+"Este convite expira dentro de dois dias. Se o convite expirar, irá precisar "
+"de pedir um novo convite a %(referrer_name)s."
 
 #: templates/zerver/emails/invitation_reminder.subject.txt:1
 #, python-format
@@ -3944,7 +3944,7 @@ msgstr "Nenhuma licença disponível"
 
 #: templates/zerver/no_spare_licenses.html:12
 msgid "Organization cannot accept new members right now"
-msgstr "A organização não pode aceitar novos membros neste momento."
+msgstr "A organização não pode aceitar novos membros neste momento"
 
 #: templates/zerver/no_spare_licenses.html:16
 #, python-format
@@ -4546,7 +4546,7 @@ msgstr ""
 
 #: zerver/actions/custom_profile_fields.py:153
 msgid "Invalid order mapping."
-msgstr "Mapeamento de pedido inválido"
+msgstr "Mapeamento de pedido inválido."
 
 #: zerver/actions/custom_profile_fields.py:222 zerver/lib/users.py:542
 msgid ""
@@ -4758,7 +4758,7 @@ msgstr "Não tem permissão para mover esta mensagem"
 
 #: zerver/actions/message_edit.py:1666
 msgid "The time limit for editing this message's channel has passed"
-msgstr "O tempo limite para edição do canal desta mensagem foi ultrapassado."
+msgstr "O tempo limite para edição do canal desta mensagem foi ultrapassado"
 
 #: zerver/actions/message_flags.py:265
 #, python-brace-format
@@ -4864,7 +4864,7 @@ msgstr "Uma lista ordenada não pode conter criadores de ligações em duplicado
 msgid "The ordered list must enumerate all existing linkifiers exactly once"
 msgstr ""
 "Uma lista ordenada tem de enumerar todas os criadores de ligações exatamente "
-"uma vez."
+"uma vez"
 
 #: zerver/actions/realm_settings.py:320
 #, python-brace-format
@@ -5391,7 +5391,7 @@ msgstr "Abrir o Zulip para ver o conteúdo escondido"
 #: zerver/lib/email_notifications.py:605
 #, python-brace-format
 msgid "{service_name} notifications"
-msgstr "Notificações de {service_name} "
+msgstr "Notificações de {service_name}"
 
 #: zerver/lib/email_validation.py:104
 msgid "Invalid address."
@@ -5997,10 +5997,11 @@ msgid ""
 "experience in your [Preferences](#settings/preferences).\n"
 msgstr ""
 "\n"
-"Poderá alternar entre os [temas escuro e claro](/help/dark-theme), [escolher "
+"Poderá alternar entre os [temas escuro e claro](/help/dark-theme), ["
+"escolher\n"
 "o seu conjunto favorito de emojis](/help/emoji-and-emoticons#change-your-"
-"emoji-set), [alterar o seu idioma](/help/change-your-language), ou "
-"personalizar a\n"
+"emoji-set), [alterar\n"
+"o seu idioma](/help/change-your-language), ou personalizar a\n"
 "sua experiência Zulip nas suas [Preferências](#settings/preferences).\n"
 
 #: zerver/lib/onboarding.py:164
@@ -6151,8 +6152,8 @@ msgid ""
 msgstr ""
 "\n"
 "O Zulip está desenhado para ajudá-lo/a a comunicar mais eficientemente\n"
-"As conversações estão identificadas através de tópicos que resumem\n"
-"o tema da conversa.\n"
+"As conversações estão identificadas através de tópicos que resumem o tema da "
+"conversa.\n"
 "\n"
 "Por exemplo, esta mensagem está no tópico “{topic_name}” dentro do canal\n"
 "#**{zulip_discussion_channel_name}**, como pode verificar através da\n"
@@ -6171,9 +6172,9 @@ msgid ""
 "no matter how many other conversations are going on.\n"
 msgstr ""
 "\n"
-"Pode ler uma conversa de cada vez, visualizando cada mensagem \n"
-"dentro de um contexto, independentemente de quantas conversas\n"
-"estejam em curso..\n"
+"Pode ler uma conversa de cada vez, visualizando cada mensagem dentro de um "
+"contexto,\n"
+"independentemente de quantas conversas estejam em curso.\n"
 
 #: zerver/lib/onboarding.py:329
 msgid ""
@@ -6183,7 +6184,8 @@ msgid ""
 msgstr ""
 "\n"
 ":point_right: Quando estiver preparado/a, verifique a sua [caixa de entrada]"
-"(/#inbox) para outras conversas com mensagens por ler.\n"
+"(/#inbox) para outras\n"
+"conversas com mensagens por ler.\n"
 
 #: zerver/lib/onboarding.py:334
 msgid ""
@@ -6467,7 +6469,7 @@ msgstr ""
 #: zerver/lib/streams.py:1007 zerver/lib/streams.py:1144
 #, python-brace-format
 msgid "Invalid channel name '{channel_name}'"
-msgstr " Nome de canal inválido '{channel_name}'"
+msgstr "Nome de canal inválido '{channel_name}'"
 
 #: zerver/lib/streams.py:1559
 #, python-brace-format
@@ -6481,7 +6483,7 @@ msgstr "O canal de grupo pré-definido com o id '{group_id}' não existe."
 
 #: zerver/lib/string_validation.py:40
 msgid "Channel name can't be empty."
-msgstr "O nome do canal não pode estar em branco"
+msgstr "O nome do canal não pode estar em branco."
 
 #: zerver/lib/string_validation.py:44
 #, python-brace-format
@@ -6622,7 +6624,7 @@ msgstr "{var_name} não pode estar em branco"
 #: zerver/lib/typed_endpoint.py:378 zerver/lib/typed_endpoint.py:381
 #, python-brace-format
 msgid "Invalid {var_name}: {msg}"
-msgstr " {var_name} inválido: {msg}"
+msgstr "{var_name} inválido: {msg}"
 
 #: zerver/lib/typed_endpoint.py:384
 #, python-brace-format
@@ -7255,7 +7257,7 @@ msgstr "Tipo de campo não suportado no resumo de perfil."
 
 #: zerver/views/custom_profile_fields.py:105
 msgid "Invalid field type."
-msgstr "Tipo de campo inválido"
+msgstr "Tipo de campo inválido."
 
 #: zerver/views/custom_profile_fields.py:186
 #: zerver/views/custom_profile_fields.py:255
@@ -7366,7 +7368,7 @@ msgstr "Foram pedidas demasiadas mensagens (máximo {max_messages})."
 
 #: zerver/views/message_fetch.py:162 zerver/views/message_flags.py:94
 msgid "The anchor can only be excluded at an end of the range"
-msgstr "A âncora só pode ser excluída no fim da faixa."
+msgstr "A âncora só pode ser excluída no fim da faixa"
 
 #: zerver/views/message_flags.py:184
 #, python-brace-format
@@ -8196,7 +8198,7 @@ msgstr "Endereço de email inválido."
 #: zilencer/views.py:250
 #, python-brace-format
 msgid "{domain} is invalid because it does not have any MX records"
-msgstr "{domain} é inválido por não contém nenhum registo dns tipo MX."
+msgstr "{domain} é inválido por não contém nenhum registo dns tipo MX"
 
 #: zilencer/views.py:255
 #, python-brace-format

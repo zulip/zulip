@@ -29,16 +29,16 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-07-30 13:46+0000\n"
-"PO-Revision-Date: 2025-07-19 05:03+0000\n"
+"PO-Revision-Date: 2025-08-07 23:52+0000\n"
 "Last-Translator: Alex Vandiver <alexmv@zulip.com>\n"
-"Language-Team: Spanish <https://hosted.weblate.org/projects/zulip/django/es/"
-">\n"
+"Language-Team: Spanish <https://hosted.weblate.org/projects/zulip/django/es/>"
+"\n"
 "Language: es\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=3; plural=(n == 1) ? 0 : ((n != 0 && n % 1000000 == "
-"0) ? 1 : 2);\n"
+"Plural-Forms: nplurals=3; plural=(n == 1) ? 0 : ((n != 0 && n % 1000000 == 0)"
+" ? 1 : 2);\n"
 "X-Generator: Weblate 5.13-dev\n"
 
 #: analytics/views/stats.py:109 zerver/decorator.py:682 zerver/decorator.py:700
@@ -1631,7 +1631,7 @@ msgstr "Cargar más"
 
 #: templates/zerver/change_email_address_visibility_modal.html:6
 msgid "Configure email address privacy"
-msgstr "Configurar la privacidad de las direcciones de correo."
+msgstr "Configurar la privacidad de las direcciones de correo"
 
 #: templates/zerver/change_email_address_visibility_modal.html:12
 msgid ""
@@ -1675,7 +1675,7 @@ msgstr "Ya puedes cerrar esta pestaña."
 #: templates/zerver/config_error/container.html:4
 #: templates/zerver/config_error/container.html:12
 msgid "Configuration error"
-msgstr "Error en la configuración."
+msgstr "Error en la configuración"
 
 #: templates/zerver/config_error/ldap.html:4
 msgid ""
@@ -1889,7 +1889,7 @@ msgid ""
 "Copy this login token and return to your Zulip app to finish logging in:"
 msgstr ""
 "Copia este token de inicio de sesión y vuelve a tu aplicación de Zulip para "
-"terminar el inicio de sesión."
+"terminar el inicio de sesión:"
 
 #: templates/zerver/desktop_redirect.html:17
 msgid "Copy"
@@ -2120,7 +2120,7 @@ msgid ""
 "at %(support_email)s."
 msgstr ""
 "Si tienes alguna duda, por favor contacta con el administrador de este "
-"servidor Zulip en el siguiente email %(support_email)s"
+"servidor Zulip en el siguiente email %(support_email)s."
 
 #: templates/zerver/emails/confirm_demo_organization_email.html:8
 #: templates/zerver/emails/confirm_demo_organization_email.txt:1
@@ -2129,7 +2129,7 @@ msgstr ""
 #: templates/zerver/emails/notify_change_in_email.html:8
 #: templates/zerver/emails/notify_change_in_email.txt:1
 msgid "Hi,"
-msgstr "Hola:"
+msgstr "Hola,"
 
 #: templates/zerver/emails/confirm_demo_organization_email.html:10
 #: templates/zerver/emails/confirm_demo_organization_email.txt:4
@@ -2214,7 +2214,7 @@ msgstr ""
 
 #: templates/zerver/emails/confirm_registration.html:23
 msgid "Click the button below to complete registration."
-msgstr "Haz click en el botón inferior para completar registro"
+msgstr "Haz click en el botón inferior para completar registro."
 
 #: templates/zerver/emails/confirm_registration.html:25
 #: templates/zerver/emails/invitation.html:16
@@ -2232,7 +2232,7 @@ msgstr "Activar tu cuenta Zulip"
 
 #: templates/zerver/emails/confirm_registration.txt:14
 msgid "Click the link below to complete registration."
-msgstr "Haz click en el botón inferior para completar registro"
+msgstr "Haz click en el botón inferior para completar registro."
 
 #: templates/zerver/emails/confirm_registration.txt:19
 #: templates/zerver/emails/invitation.txt:9
@@ -2257,7 +2257,7 @@ msgstr "Gestionar preferencias de correo"
 #: templates/zerver/emails/custom_email_base.pre.html:19
 #: templates/zerver/emails/custom_email_base.pre.manage_preferences_block.txt:12
 msgid "Unsubscribe from marketing emails"
-msgstr "Desubscribirse de emails de marketing."
+msgstr "Desubscribirse de emails de marketing"
 
 #: templates/zerver/emails/deactivate.html:8
 #: templates/zerver/portico_error_pages/user_deactivated.html:13
@@ -2352,7 +2352,7 @@ msgstr "Toque acá para iniciar sesión en Zulip y ponerse al día."
 
 #: templates/zerver/emails/digest.html:56
 msgid "Unsubscribe from digest emails"
-msgstr "Desubscribirse de los emails de digesto."
+msgstr "Desubscribirse de los emails de digesto"
 
 #: templates/zerver/emails/digest.subject.txt:1
 #, python-format
@@ -2558,7 +2558,7 @@ msgstr "Para empezar, visita el enlace a continuación."
 #: templates/zerver/emails/invitation_reminder.html:8
 #: templates/zerver/emails/invitation_reminder.txt:1
 msgid "Hi again,"
-msgstr "Hola de nuevo:"
+msgstr "Hola de nuevo,"
 
 #: templates/zerver/emails/invitation_reminder.html:10
 #, python-format
@@ -2573,7 +2573,7 @@ msgstr ""
 #: templates/zerver/emails/invitation_reminder.html:18
 #: templates/zerver/emails/invitation_reminder.txt:8
 msgid "This is the last reminder you'll receive for this invitation."
-msgstr "Este es el ultimo recordatorio que recibirás para esta invitación"
+msgstr "Este es el ultimo recordatorio que recibirás para esta invitación."
 
 #: templates/zerver/emails/invitation_reminder.html:22
 #: templates/zerver/emails/invitation_reminder.txt:10
@@ -3296,7 +3296,7 @@ msgstr ""
 
 #: templates/zerver/emails/realm_reactivation.html:13
 msgid "Click the button below to reactivate your organization."
-msgstr "Haz click en el botón inferior para reactivar su organización"
+msgstr "Haz click en el botón inferior para reactivar su organización."
 
 #: templates/zerver/emails/realm_reactivation.html:14
 msgid "Reactivate organization"
@@ -3978,7 +3978,7 @@ msgstr ""
 #: templates/zerver/portico_error_pages/user_deactivated.html:11
 #: zerver/lib/exceptions.py:337
 msgid "Account is deactivated"
-msgstr "La cuenta está desactivada."
+msgstr "La cuenta está desactivada"
 
 #: templates/zerver/realm_creation_form.html:9
 #: templates/zerver/register.html:48
@@ -5143,7 +5143,7 @@ msgstr "La marca de tiempo no puede ser negativa."
 
 #: zerver/lib/drafts.py:63
 msgid "Topic must not contain null bytes"
-msgstr "El tema no puede contener bytes nulos."
+msgstr "El tema no puede contener bytes nulos"
 
 #: zerver/lib/drafts.py:65
 msgid "Must specify exactly 1 channel ID for channel messages"
@@ -5397,7 +5397,7 @@ msgstr ""
 
 #: zerver/lib/exceptions.py:584
 msgid "Direct messages are disabled in this organization."
-msgstr "Los mensajes directos están deshabilitados para esta organización"
+msgstr "Los mensajes directos están deshabilitados para esta organización."
 
 #: zerver/lib/exceptions.py:586
 msgid "This conversation does not include any users who can authorize it."
@@ -6458,7 +6458,7 @@ msgstr "El usuario está desactivado"
 #: zerver/lib/validator.py:63
 #, python-brace-format
 msgid "{item} cannot be blank."
-msgstr "{item} no puede estar vacío"
+msgstr "{item} no puede estar vacío."
 
 #: zerver/lib/validator.py:101
 #, python-brace-format
@@ -6895,7 +6895,7 @@ msgstr "No se encontró una entrada válida del User-Agent en la petición"
 
 #: zerver/views/custom_profile_fields.py:44
 msgid "Label cannot be blank."
-msgstr "El nombre no puede estar vacío"
+msgstr "El nombre no puede estar vacío."
 
 #: zerver/views/custom_profile_fields.py:58
 msgid "Field must have at least one choice."
@@ -7160,7 +7160,7 @@ msgstr ""
 
 #: zerver/views/realm.py:224
 msgid "At least one authentication method must be enabled."
-msgstr "Al menos un método de autentificación debe ser activado"
+msgstr "Al menos un método de autentificación debe ser activado."
 
 #: zerver/views/realm.py:230
 #, python-brace-format
@@ -7242,7 +7242,7 @@ msgstr ""
 
 #: zerver/views/realm_export.py:141
 msgid "Invalid data export ID"
-msgstr "ID de exportación de datos inválida."
+msgstr "ID de exportación de datos inválida"
 
 #: zerver/views/realm_export.py:144
 msgid "Export already deleted"
@@ -7469,7 +7469,7 @@ msgstr ""
 msgid "User has disabled typing notifications for direct messages"
 msgstr ""
 "El usuario ha desactivado las notificaciones de escritura para los mensajes "
-"directos."
+"directos"
 
 #: zerver/views/upload.py:256
 msgid "<p>This file does not exist or has been deleted.</p>"
@@ -7569,7 +7569,7 @@ msgstr ""
 
 #: zerver/views/user_settings.py:370
 msgid "Your Zulip password is managed in LDAP"
-msgstr "Tu contraseña de Zulip está gestionada en LDAP."
+msgstr "Tu contraseña de Zulip está gestionada en LDAP"
 
 #: zerver/views/user_settings.py:380
 msgid "Wrong password!"
@@ -7582,7 +7582,7 @@ msgstr ""
 
 #: zerver/views/user_settings.py:391
 msgid "New password is too weak!"
-msgstr "La nueva contraseña es demasiado poco segura."
+msgstr "La nueva contraseña es demasiado poco segura!"
 
 #: zerver/views/user_settings.py:447
 msgid "You must upload exactly one avatar."
@@ -7590,7 +7590,7 @@ msgstr "Debes subir exactamente un avatar."
 
 #: zerver/views/user_topics.py:52
 msgid "Topic is not muted"
-msgstr "El tema no está silenciado."
+msgstr "El tema no está silenciado"
 
 #: zerver/views/users.py:130
 msgid "Cannot deactivate the only organization owner"
@@ -7897,7 +7897,7 @@ msgstr ""
 
 #: zproject/backends.py:560
 msgid "You need to reset your password."
-msgstr "Debes reestablecer tu contraseña"
+msgstr "Debes reestablecer tu contraseña."
 
 #: zproject/backends.py:2821
 msgid "Missing id_token parameter"

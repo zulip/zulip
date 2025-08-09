@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-07-30 13:46+0000\n"
-"PO-Revision-Date: 2025-07-26 22:07+0000\n"
+"PO-Revision-Date: 2025-08-07 23:52+0000\n"
 "Last-Translator: Alex Vandiver <alexmv@zulip.com>\n"
 "Language-Team: Gujarati <https://hosted.weblate.org/projects/zulip/django/gu/"
 ">\n"
@@ -140,7 +140,7 @@ msgstr "તમારા સંસ્થામાં મહેમાન યુઝ
 #: corporate/lib/remote_billing_util.py:133
 #: corporate/lib/remote_billing_util.py:169
 msgid "Registration is deactivated"
-msgstr "નોંધણી નિષ્ક્રિય કરવામાં આવી છે."
+msgstr "નોંધણી નિષ્ક્રિય કરવામાં આવી છે"
 
 #: corporate/lib/remote_billing_util.py:166
 msgid "Invalid remote server."
@@ -302,8 +302,8 @@ msgid ""
 "If you could {begin_link}list Zulip as a sponsor on your website{end_link}, "
 "we would really appreciate it!"
 msgstr ""
-"તમારી સંસ્થાની સાથેની હોસ્ટિંગની વિનંતીને મંજૂરી આપવામાં આવી છે! તમને મુક્ત માટે   "
-"{plan_name}, પર અપગ્રેડ કરવામાં આવ્યું છે. {emoji}\n"
+"તમારી સંસ્થાની સાથેની હોસ્ટિંગની વિનંતીને મંજૂરી આપવામાં આવી છે! તમને મુક્ત માટે {plan_name}"
+", પર અપગ્રેડ કરવામાં આવ્યું છે. {emoji}\n"
 "\n"
 "જો તમે {begin_link} તમારી વેબસાઇટ{end_link} પર સ્પોન્સર તરીકે Zulipને લિસ્ટ કરી શકો "
 "તો, અમે ખૂબ આભારી હશીએ!"
@@ -592,7 +592,7 @@ msgid ""
 "%(old_email_html_tag)s to %(new_email_html_tag)s"
 msgstr ""
 "આ પુષ્ટિ કરે છે કે તમારા Zulip એકાઉન્ટનો ઇમેઇલ સરનામું %(old_email_html_tag)s થી "
-"%(new_email_html_tag)s પર બદલાઈ ગયો છે."
+"%(new_email_html_tag)s પર બદલાઈ ગયો છે"
 
 #: templates/confirmation/confirm_preregistrationuser.html:5
 #: templates/confirmation/redirect_to_post.html:5
@@ -617,7 +617,7 @@ msgstr ""
 
 #: templates/confirmation/link_expired.html:4
 msgid "Confirmation link expired or deactivated"
-msgstr "પુષ્ટિકરણ લિંક સમાપ્ત થઈ ગયું છે અથવા નિષ્ક્રિય થયેલ છે."
+msgstr "પુષ્ટિકરણ લિંક સમાપ્ત થઈ ગયું છે અથવા નિષ્ક્રિય થયેલ છે"
 
 #: templates/confirmation/link_expired.html:11
 msgid "Whoops. The confirmation link has expired or been deactivated."
@@ -1399,7 +1399,7 @@ msgstr "અમારો સંપર્ક કરવા માટે આભા�
 
 #: templates/corporate/support/support_request_thanks.html:11
 msgid "We will be in touch with you soon."
-msgstr "અમે તમારી સાથે તેમજ તમારી સાથે જલદીથી સં"
+msgstr "અમે તમારી સાથે તેમજ તમારી સાથે જલદીથી સં."
 
 #: templates/corporate/support/support_request_thanks.html:13
 msgid ""
@@ -1442,7 +1442,7 @@ msgstr "સેવાની શરતો સ્વીકારો"
 
 #: templates/zerver/accounts_accept_terms.html:18
 msgid "Welcome to Zulip"
-msgstr "જુલિપમાં આપનું સ્વાગત છે."
+msgstr "જુલિપમાં આપનું સ્વાગત છે"
 
 #: templates/zerver/accounts_accept_terms.html:25
 #: templates/zerver/accounts_home.html:63 templates/zerver/login.html:101
@@ -1777,7 +1777,7 @@ msgstr "ખોટો ટોકન."
 
 #: templates/zerver/desktop_login.html:28
 msgid "Token accepted.  Logging you in…"
-msgstr "ટોકન સ્વીકાર્ય છે. તમને લોગિન કરવામાં આવી રહ્યું છે..."
+msgstr "ટોકન સ્વીકાર્ય છે. તમને લોગિન કરવામાં આવી રહ્યું છે…"
 
 #: templates/zerver/desktop_redirect.html:5
 msgid "Log in to desktop app"
@@ -1869,7 +1869,7 @@ msgstr "અભિનંદન, તમે નવી ઝુલિપ સંગઠ�
 #: templates/zerver/emails/account_registered.html:24
 #: templates/zerver/emails/account_registered.txt:1
 msgid "Welcome to Zulip!"
-msgstr "જુલિપમાં આપનું સ્વાગત છે."
+msgstr "જુલિપમાં આપનું સ્વાગત છે!"
 
 #: templates/zerver/emails/account_registered.html:26
 #, python-format
@@ -1997,7 +1997,7 @@ msgstr ""
 #, python-format
 msgid "Questions? Contact us at %(support_email)s — we'd love to help!"
 msgstr ""
-"પ્રશ્નો? અમારો સંપર્ક કરો %(support_email)s —  અમે તમને મદદ કરવા માટે ખૂબ આવડીશું!"
+"પ્રશ્નો? અમારો સંપર્ક કરો %(support_email)s — અમે તમને મદદ કરવા માટે ખૂબ આવડીશું!"
 
 #: templates/zerver/emails/account_registered.txt:38
 #: templates/zerver/emails/confirm_registration.txt:21
@@ -2095,6 +2095,7 @@ msgstr "તમે હાલમાં Zulip માટે સાઇન અપ ક�
 
 #: templates/zerver/emails/confirm_registration.html:21
 #: templates/zerver/emails/confirm_registration.txt:12
+#, fuzzy
 msgid ""
 "Click the button below to create the organization and register your account. "
 "You'll be able to update the information above if you like."
@@ -2102,7 +2103,7 @@ msgstr "નીચેની બટન પર ક્લિક ક"
 
 #: templates/zerver/emails/confirm_registration.html:23
 msgid "Click the button below to complete registration."
-msgstr "નોંધઃ નોંધઃ નોંધઃ નોંધઃ નોંધઃ નોંધઃ નોંધઃ ન"
+msgstr ""
 
 #: templates/zerver/emails/confirm_registration.html:25
 #: templates/zerver/emails/invitation.html:16
@@ -2163,7 +2164,7 @@ msgstr "વ્યવસ્થાપકો ને નીચેની ટિપ્
 #: templates/zerver/emails/deactivate.subject.txt:1
 #, python-format
 msgid "Notification of account deactivation on %(realm_name)s"
-msgstr "પરિમાર્જન નોટિફિકેશન %(realm_name)s પર ખાતા નિષ્ક્રિય કરવામાં આવ્યું છે."
+msgstr "પરિમાર્જન નોટિફિકેશન %(realm_name)s પર ખાતા નિષ્ક્રિય કરવામાં આવ્યું છે"
 
 #: templates/zerver/emails/deactivate.txt:1
 #, python-format
@@ -2426,8 +2427,7 @@ msgstr "શરૂ કરવા માટે, નીચેની બટન પર
 #, python-format
 msgid "%(referrer_full_name)s has invited you to join %(referrer_realm_name)s"
 msgstr ""
-"%(referrer_full_name)s ને તમને %(referrer_realm_name)s માં જોડાવવાની આમંત્રણ આપ્યું "
-"છે."
+"%(referrer_full_name)s ને તમને %(referrer_realm_name)s માં જોડાવવાની આમંત્રણ આપ્યું છે"
 
 #: templates/zerver/emails/invitation.txt:3
 #, python-format
@@ -2460,7 +2460,7 @@ msgstr ""
 #: templates/zerver/emails/invitation_reminder.html:18
 #: templates/zerver/emails/invitation_reminder.txt:8
 msgid "This is the last reminder you'll receive for this invitation."
-msgstr "આ આમંત્રણ માટે તમે મેળવશો તેની છેલ્લ"
+msgstr "આ આમંત્રણ માટે તમે મેળવશો તેની છેલ્લ."
 
 #: templates/zerver/emails/invitation_reminder.html:22
 #: templates/zerver/emails/invitation_reminder.txt:10
@@ -2831,11 +2831,11 @@ msgstr ""
 #: templates/zerver/emails/onboarding_zulip_topics.txt:14
 #, python-format
 msgid "Unsubscribe from welcome emails for %(realm_name)s"
-msgstr "આપને %(realm_name)s માટેના સ્વાગત ઇમેઇલોથી અનસબ્સ્ક્રાઈબ થવું."
+msgstr "આપને %(realm_name)s માટેના સ્વાગત ઇમેઇલોથી અનસબ્સ્ક્રાઈબ થવું"
 
 #: templates/zerver/emails/onboarding_team_to_zulip.subject.txt:1
 msgid "Choosing the chat app for your team"
-msgstr "તમારા ટીમ માટે ચેટ એપ પસંદ કરવું છે."
+msgstr "તમારા ટીમ માટે ચેટ એપ પસંદ કરવું છે"
 
 #: templates/zerver/emails/onboarding_team_to_zulip.txt:1
 msgid ""
@@ -2867,7 +2867,6 @@ msgid ""
 msgstr ""
 "તમારા ટીમની સાથે એક સપ્તાહની ટ્રાયલ ચલાવો, કોઈપણ અન્ય ચેટ સાધનોનો ઉપયોગ કરતાં નહીં. "
 "આ એકમાત્ર રીત છે કે નવી ચેટ એપ તમારી ટીમને કેવી રીતે સંવાદ કરવામાં મદદ કરશે તે અનુભવવાની."
-"</text_to_translate>"
 
 #: templates/zerver/emails/onboarding_team_to_zulip.txt:10
 msgid ""
@@ -3074,7 +3073,7 @@ msgstr ""
 #: templates/zerver/emails/password_reset.txt:25
 msgid ""
 "If you do not recognize this activity, you can safely ignore this email."
-msgstr "જો તમે આ પ્રવૃત્તિને ઓળખતા નથી, તો તમે આ ઇમેઇલને સાવધાન"
+msgstr "જો તમે આ પ્રવૃત્તિને ઓળખતા નથી, તો તમે આ ઇમેઇલને સાવધાન."
 
 #: templates/zerver/emails/password_reset.subject.txt:1
 #, python-format
@@ -4235,7 +4234,7 @@ msgstr ""
 
 #: templates/zerver/unsubscribe_link_error.html:4
 msgid "Error unsubscribing email"
-msgstr "ઈમેઇલ થાય છે ત્રુટિ રદ કરવામાં આવી છે."
+msgstr "ઈમેઇલ થાય છે ત્રુટિ રદ કરવામાં આવી છે"
 
 #: templates/zerver/unsubscribe_link_error.html:12
 msgid "Unknown email unsubscribe request"
@@ -4261,7 +4260,7 @@ msgstr ""
 #: templates/zerver/unsubscribe_success.html:4
 #: templates/zerver/unsubscribe_success.html:14
 msgid "Email settings updated"
-msgstr "ઇમેઇલ સેટિંગ્સ અપડેટ થઈ ગયાં છે."
+msgstr "ઇમેઇલ સેટિંગ્સ અપડેટ થઈ ગયાં છે"
 
 #: templates/zerver/unsubscribe_success.html:19
 #, python-format
@@ -6004,7 +6003,7 @@ msgstr "પુશ સૂચનાઓ બાઉન્સર ભૂલ: {error}"
 #: zerver/lib/request.py:70
 #, python-brace-format
 msgid "Can't decide between '{var_name1}' and '{var_name2}' arguments"
-msgstr "'{var_name1}' અને '{var_name2}' તરફનો વિચાર ન કરી શકાય."
+msgstr "'{var_name1}' અને '{var_name2}' તરફનો વિચાર ન કરી શકાય"
 
 #: zerver/lib/request.py:83 zerver/lib/streams.py:679 zerver/views/typing.py:47
 #, python-brace-format

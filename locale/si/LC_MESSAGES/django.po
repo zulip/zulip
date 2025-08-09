@@ -11,10 +11,10 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-07-30 13:46+0000\n"
-"PO-Revision-Date: 2025-07-19 05:03+0000\n"
+"PO-Revision-Date: 2025-08-07 23:52+0000\n"
 "Last-Translator: Alex Vandiver <alexmv@zulip.com>\n"
-"Language-Team: Sinhala <https://hosted.weblate.org/projects/zulip/django/si/"
-">\n"
+"Language-Team: Sinhala <https://hosted.weblate.org/projects/zulip/django/si/>"
+"\n"
 "Language: si\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -2362,7 +2362,7 @@ msgstr ""
 #: templates/zerver/emails/invitation_reminder.subject.txt:1
 #, python-format
 msgid "Reminder: Join %(referrer_name)s at %(referrer_realm_name)s"
-msgstr "සිහිකැඳවීම: %(referrer_realm_name)s හි %(referrer_name)s හා එක් වන්න."
+msgstr "සිහිකැඳවීම: %(referrer_realm_name)s හි %(referrer_name)s හා එක් වන්න"
 
 #: templates/zerver/emails/invitation_reminder.txt:3
 #, python-format
@@ -3942,7 +3942,7 @@ msgstr ""
 #: templates/zerver/reset_done.html:17
 #, python-format
 msgid "Please <a href=\"%(login_url)s\">log in</a> with your new password."
-msgstr "ඔබගේ නව මුරපදය සමඟ <a href=\"%(login_url)s\">ඇතුල් වන්න</a>"
+msgstr "ඔබගේ නව මුරපදය සමඟ <a href=\"%(login_url)s\">ඇතුල් වන්න</a>."
 
 #: templates/zerver/reset_emailed.html:4
 msgid "Password reset email sent"
@@ -4809,7 +4809,7 @@ msgstr "වසම හිස් විය නොහැකිය."
 
 #: zerver/lib/domains.py:11
 msgid "Domain must have at least one dot (.)"
-msgstr "වසමෙහි අවම වශයෙන් එක් තිතක් (.) තිබිය යුතුය "
+msgstr "වසමෙහි අවම වශයෙන් එක් තිතක් (.) තිබිය යුතුය"
 
 #: zerver/lib/domains.py:13
 msgid "Domain is too long"
@@ -4817,7 +4817,7 @@ msgstr "වසම ඉතා දිගු ය"
 
 #: zerver/lib/domains.py:15
 msgid "Domain cannot start or end with a dot (.)"
-msgstr "වසම තිතකින් (.) ආරම්භ හෝ අවසන් විය නොහැකිය "
+msgstr "වසම තිතකින් (.) ආරම්භ හෝ අවසන් විය නොහැකිය"
 
 #: zerver/lib/domains.py:18
 msgid "Consecutive '.' are not allowed."
@@ -6914,7 +6914,7 @@ msgstr ""
 
 #: zerver/views/realm_export.py:141
 msgid "Invalid data export ID"
-msgstr "වලංගු නොවන දත්ත නිර්යාත හැඳු."
+msgstr "වලංගු නොවන දත්ත නිර්යාත හැඳු"
 
 #: zerver/views/realm_export.py:144
 msgid "Export already deleted"
@@ -7151,7 +7151,7 @@ msgstr ""
 
 #: zerver/views/upload.py:381
 msgid "Invalid filename"
-msgstr " ගොනුවේ නම වලංගු නොවේ"
+msgstr "ගොනුවේ නම වලංගු නොවේ"
 
 #: zerver/views/upload.py:429
 msgid "You must specify a file to upload"
