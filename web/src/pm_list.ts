@@ -259,6 +259,13 @@ export function initialize(): void {
         zoom_in();
     });
 
+    $(".dm-list").on("click", ".dm-box", (e) => {
+        // To avoid the click behavior if a dm box is selected.
+        if (document.getSelection()?.type === "Range") {
+            e.preventDefault();
+        }
+    });
+
     $("#left-sidebar").on("click", "#hide-more-direct-messages", (e) => {
         e.stopPropagation();
         e.preventDefault();
