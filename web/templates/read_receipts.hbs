@@ -1,6 +1,11 @@
-{{#each users}}
-    <li class="view_user_profile" data-user-id="{{user_id}}" tabindex="0" role="button">
-        <img class="read_receipts_user_avatar" src="{{avatar_url}}" />
-        <span>{{full_name}}</span>
-    </li>
-{{/each}}
+<ul role="menu" class="popover-menu-list">
+    <li role="separator" class="popover-menu-separator"></li>
+    {{#each users}}
+        <li role="none" class="link-item popover-menu-list-item">
+            <a role="menuitem" class="view_user_profile popover-menu-link" data-user-id="{{user_id}}" tabindex="0">
+                <img class="read_receipts_user_avatar" src="{{avatar_url}}" />
+                <span class="popover-menu-label">{{full_name}}</span>
+            </a>
+        </li>
+    {{/each}}
+</ul>
