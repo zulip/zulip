@@ -65,28 +65,14 @@
 
     .user-status-options {
         padding-top: 15px;
-        padding-left: 2px;
-
-        & button.user-status-value:hover,
-        & button.user-status-value:focus {
-            /* Important is required for generic night them styling to not
-               have precedence over this. */
-            color: var(--color-text-url) !important;
-        }
 
         .user-status-value {
-            display: flex;
-            align-items: center;
-            width: 100%;
-            padding: 3.5px 0;
-            line-height: 1em;
-
             .status-emoji {
                 /* Size and align status emoji to match
                    the top line of the modal. */
                 height: 1.25em; /* 20px at 16px/em */
                 width: 1.25em; /* 20px at 16px/em */
-                margin: 0 7px;
+                margin: 0;
             }
         }
     }
