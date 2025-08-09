@@ -65,7 +65,8 @@
                 }
             }
 
-            &:hover {
+            &:hover,
+            &.active-emoji-picker-reference {
                 background-color: var(
                     --background-color-modal-selectable-icon-hover
                 );
