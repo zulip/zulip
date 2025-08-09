@@ -9,6 +9,7 @@ from psycopg2 import sql
 from zerver.actions.user_activity import update_user_activity_interval
 from zerver.lib.presence import (
     format_legacy_presence_dict,
+    get_modern_user_presence_info,
     user_presence_datetime_with_date_joined_default,
 )
 from zerver.lib.users import get_user_ids_who_can_access_user
@@ -63,13 +64,15 @@ def send_presence_changed(
     # The mobile app handles these events so we need to use the old format.
     # The format of the event should also account for the slim_presence
     # API parameter when this becomes possible in the future.
-    presence_dict = format_legacy_presence_dict(last_active_time, last_connected_time)
+    legacy_presence_dict = format_legacy_presence_dict(last_active_time, last_connected_time)
+    modern_presence_dict = get_modern_user_presence_info(last_active_time, last_connected_time)
     event = dict(
         type="presence",
         email=user_profile.email,
         user_id=user_profile.id,
         server_timestamp=time.time(),
-        presence={presence_dict["client"]: presence_dict},
+        legacy_presence={legacy_presence_dict["client"]: legacy_presence_dict},
+        modern_presence=modern_presence_dict,
     )
     send_event_rollback_unsafe(user_profile.realm, event, user_ids)
 

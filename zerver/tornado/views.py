@@ -218,6 +218,10 @@ def get_events_backend(
         Json[bool],
         ApiParamConfig(documentation_status=DocumentationStatus.INTENTIONALLY_UNDOCUMENTED),
     ] = False,
+    simplified_presence_events: Annotated[
+        Json[bool],
+        ApiParamConfig(documentation_status=DocumentationStatus.INTENTIONALLY_UNDOCUMENTED),
+    ] = False,
 ) -> HttpResponse:
     if narrow is None:
         narrow = []
@@ -259,6 +263,7 @@ def get_events_backend(
             include_deactivated_groups=include_deactivated_groups,
             archived_channels=archived_channels,
             empty_topic_name=empty_topic_name,
+            simplified_presence_events=simplified_presence_events,
         )
 
     result = in_tornado_thread(fetch_events)(
