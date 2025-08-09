@@ -155,3 +155,39 @@ test("has_conversation", ({override}) => {
     assert.ok(!pmc.recent.has_conversation("2"));
     assert.ok(!pmc.recent.has_conversation("72"));
 });
+
+test("deactivated_users", () => {
+    pmc.recent.initialize(params);
+
+    // Deactivate a user.
+    const isaac_real = people.get_by_user_id(isaac.user_id);
+    people.deactivate(isaac_real);
+
+    // By default, conversations with Isaac should be filtered out.
+    // This affects both 1:1 and group conversations.
+    assert.deepEqual(pmc.recent.get(), [
+        {user_ids_string: "1", max_message_id: 100},
+        {user_ids_string: "3", max_message_id: 99},
+        {user_ids_string: "15", max_message_id: 96},
+    ]);
+    assert.deepEqual(pmc.recent.get_strings(), ["1", "3", "15"]);
+
+    // But they should be present if we explicitly include them.
+    assert.deepEqual(pmc.recent.get({include_deactivated: true}), [
+        {user_ids_string: "1", max_message_id: 100},
+        {user_ids_string: "3", max_message_id: 99},
+        {user_ids_string: "1,2", max_message_id: 98},
+        {user_ids_string: "1,2,3", max_message_id: 97},
+        {user_ids_string: "15", max_message_id: 96},
+    ]);
+    assert.deepEqual(pmc.recent.get_strings({include_deactivated: true}), [
+        "1",
+        "3",
+        "1,2",
+        "1,2,3",
+        "15",
+    ]);
+
+    // Reactivate user to not affect other tests.
+    people.add_active_user(isaac);
+});
