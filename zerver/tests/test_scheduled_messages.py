@@ -7,6 +7,7 @@ from unittest import mock
 
 import orjson
 import time_machine
+from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 
 from zerver.actions.scheduled_messages import (
@@ -209,6 +210,7 @@ class ScheduledMessageTest(ZulipTestCase):
 
         self.assert_scheduled_message_delivered(scheduled_message, recipient=sender.recipient)
 
+    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
     def test_successful_deliver_direct_scheduled_message_to_self_using_direct_message_group(
         self,
     ) -> None:
@@ -220,15 +222,13 @@ class ScheduledMessageTest(ZulipTestCase):
         scheduled_delivery_timestamp = int(scheduled_delivery_datetime.timestamp())
         sender = self.example_user("hamlet")
 
-        # Create a direct message group for the sender.
-        direct_message_group = get_or_create_direct_message_group(id_list=[sender.id])
-
         response = self.do_schedule_message(
             "direct", [sender.id], content, scheduled_delivery_timestamp
         )
         self.assert_json_success(response)
         scheduled_message = self.last_scheduled_message()
 
+        direct_message_group = get_or_create_direct_message_group(id_list=[sender.id])
         self.assert_scheduled_message_delivered(
             scheduled_message, recipient=direct_message_group.recipient
         )
