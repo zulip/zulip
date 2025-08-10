@@ -624,7 +624,7 @@ def is_django_block_tag(tag: str) -> bool:
 
 def get_handlebars_tag(text: str, i: int) -> str:
     end = i + 2
-    while end < len(text) - 1 and text[end] != "}":
+    while end < len(text) - 2 and text[end] != "}":
         end += 1
     if text[end] != "}" or text[end + 1] != "}":
         raise TokenizationError('Tag missing "}}"', text[i : end + 2])

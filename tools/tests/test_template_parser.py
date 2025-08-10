@@ -139,6 +139,14 @@ class ParserTest(unittest.TestCase):
             template_format="handlebars",
         )
 
+    def test_validate_incomplete_handlebars_tag_3(self) -> None:
+        my_html = "{{# foo}"
+        self._assert_validate_error(
+            'Tag missing "}}" at line 1 col 1:"{{# foo}"',
+            text=my_html,
+            template_format="handlebars",
+        )
+
     def test_validate_incomplete_django_tag_1(self) -> None:
         my_html = """
             {% foo
