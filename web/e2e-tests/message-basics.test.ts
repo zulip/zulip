@@ -318,7 +318,7 @@ async function test_search_venice(page: Page): Promise<void> {
 async function test_stream_search_filters_stream_list(page: Page): Promise<void> {
     console.log("Filter streams using left side bar");
 
-    await page.waitForSelector(".stream_search_section");
+    await page.waitForSelector(".left-sidebar-search-section");
 
     // assert streams exist by waiting till they're visible
     await page.waitForSelector(await get_stream_li(page, "Denmark"), {visible: true});
