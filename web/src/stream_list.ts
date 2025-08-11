@@ -355,8 +355,11 @@ export function build_stream_list(force_rerender: boolean): void {
             );
         }
     }
+
     // Rerendering can moving channels between folders and change heading unread counts.
-    left_sidebar_navigation_area.update_dom_with_unread_counts(unread.get_counts(), false);
+    const counts = unread.get_counts();
+    left_sidebar_navigation_area.update_dom_with_unread_counts(counts, false);
+    update_dom_with_unread_counts(counts);
     sidebar_ui.update_unread_counts_visibility();
     set_sections_states();
     $("#streams_list").toggleClass("is_searching", get_search_term() !== "");
@@ -661,7 +664,7 @@ type SectionUnreadCount = {
     inactive_muted: number;
 };
 
-export function update_dom_with_unread_counts(counts: FullUnreadCountsData): void {
+export let update_dom_with_unread_counts = function (counts: FullUnreadCountsData): void {
     // (1) Stream unread counts
     // counts.stream_count maps streams to counts
     for (const [stream_id, count] of counts.stream_count) {
@@ -787,6 +790,12 @@ export function update_dom_with_unread_counts(counts: FullUnreadCountsData): voi
             unread_counts.inactive_muted,
         );
     }
+};
+
+export function rewire_update_dom_with_unread_counts(
+    value: typeof update_dom_with_unread_counts,
+): void {
+    update_dom_with_unread_counts = value;
 }
 
 function toggle_hide_unread_counts(

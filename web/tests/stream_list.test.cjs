@@ -175,6 +175,7 @@ test_ui("create_sidebar_row", ({override, override_rewire, mock_template}) => {
         appended_sections.push(section.id);
         return `<stub-section-${section.id}>`;
     });
+    override_rewire(stream_list, "update_dom_with_unread_counts", noop);
 
     const pinned_streams = [];
     $("#stream-list-pinned-streams").append = (stream) => {
@@ -249,7 +250,9 @@ test_ui("create_sidebar_row", ({override, override_rewire, mock_template}) => {
     assert.ok(removed);
 });
 
-test_ui("pinned_streams_never_inactive", ({mock_template}) => {
+test_ui("pinned_streams_never_inactive", ({mock_template, override_rewire}) => {
+    override_rewire(stream_list, "update_dom_with_unread_counts", noop);
+
     stream_data.add_sub(devel);
     stream_data.add_sub(social);
 
@@ -439,6 +442,7 @@ test_ui("zoom_in_and_zoom_out", ({mock_template}) => {
 });
 
 test_ui("narrowing", ({override_rewire}) => {
+    override_rewire(stream_list, "update_dom_with_unread_counts", noop);
     initialize_stream_data();
 
     topic_list.close = noop;
@@ -565,6 +569,7 @@ test_ui("sort_streams", ({override_rewire}) => {
 });
 
 test_ui("separators_only_pinned_and_dormant", ({override_rewire}) => {
+    override_rewire(stream_list, "update_dom_with_unread_counts", noop);
     // Get coverage on early-exit.
     stream_list.build_stream_list();
 
@@ -616,7 +621,8 @@ test_ui("separators_only_pinned_and_dormant", ({override_rewire}) => {
     assert.deepEqual(pinned_streams, [$("<devel-sidebar-row-stub>"), $("<Rome-sidebar-row-stub>")]);
 });
 
-test_ui("rename_stream", ({mock_template, override}) => {
+test_ui("rename_stream", ({mock_template, override, override_rewire}) => {
+    override_rewire(stream_list, "update_dom_with_unread_counts", noop);
     override(user_settings, "web_stream_unreads_count_display_policy", 3);
     override(current_user, "user_id", me.user_id);
     initialize_stream_data();
