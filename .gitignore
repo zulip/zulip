@@ -89,3 +89,4 @@ core
 ## Miscellaneous
 # (Ideally this section is empty.)
 .transifexrc
+/help-beta/node_modules
