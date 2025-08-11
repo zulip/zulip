@@ -1,4 +1,5 @@
 import $ from "jquery";
+import assert from "minimalistic-assert";
 import type * as tippy from "tippy.js";
 
 import * as blueslip from "./blueslip.ts";
@@ -334,4 +335,11 @@ export function enable_element_and_remove_tooltip($element: JQuery): void {
         }
         $element.unwrap(".disabled-tooltip");
     }
+}
+
+export function get_left_sidebar_search_term(): string {
+    const $search_box = $<HTMLInputElement>("input.left-sidebar-search-input").expectOne();
+    const search_term = $search_box.val();
+    assert(search_term !== undefined);
+    return search_term.trim();
 }

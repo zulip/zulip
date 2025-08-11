@@ -236,13 +236,6 @@ class StreamSidebar {
 }
 export const stream_sidebar = new StreamSidebar();
 
-function get_search_term(): string {
-    const $search_box = $<HTMLInputElement>("input.left-sidebar-search-input").expectOne();
-    const search_term = $search_box.val();
-    assert(search_term !== undefined);
-    return search_term.trim();
-}
-
 export function add_sidebar_row(sub: StreamSubscription): void {
     create_sidebar_row(sub);
     update_streams_sidebar();
@@ -302,7 +295,10 @@ export function build_stream_list(force_rerender: boolean): void {
     //
     // The main logic to build the list is in stream_list_sort.ts
     const streams = stream_data.subscribed_stream_ids();
-    const stream_groups = stream_list_sort.sort_groups(streams, get_search_term());
+    const stream_groups = stream_list_sort.sort_groups(
+        streams,
+        ui_util.get_left_sidebar_search_term(),
+    );
 
     if (stream_groups.same_as_before && !force_rerender) {
         return;
@@ -363,7 +359,7 @@ export function build_stream_list(force_rerender: boolean): void {
     update_dom_with_unread_counts(counts);
     sidebar_ui.update_unread_counts_visibility();
     set_sections_states();
-    $("#streams_list").toggleClass("is_searching", get_search_term() !== "");
+    $("#streams_list").toggleClass("is_searching", ui_util.get_left_sidebar_search_term() !== "");
 }
 
 /* When viewing a channel in a collapsed folder, we show that active
