@@ -54,22 +54,14 @@ export function update_starred_count(count: number, hidden: boolean): void {
 export function update_scheduled_messages_row(): void {
     const $scheduled_li = $(".top_left_scheduled_messages");
     const count = scheduled_messages.get_count();
-    if (count > 0) {
-        $scheduled_li.addClass("show-with-scheduled-messages");
-    } else {
-        $scheduled_li.removeClass("show-with-scheduled-messages");
-    }
+    $scheduled_li.toggleClass("hidden-by-filters", count === 0);
     ui_util.update_unread_count_in_dom($scheduled_li, count);
 }
 
 export function update_reminders_row(): void {
     const $reminders_li = $(".top_left_reminders");
     const count = message_reminder.get_count();
-    if (count > 0) {
-        $reminders_li.addClass("show-with-reminders");
-    } else {
-        $reminders_li.removeClass("show-with-reminders");
-    }
+    $reminders_li.toggleClass("hidden-by-filters", count === 0);
     ui_util.update_unread_count_in_dom($reminders_li, count);
 }
 
