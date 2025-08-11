@@ -73,6 +73,18 @@ export function get_channel_folder_by_id(folder_id: number): ChannelFolder {
     return channel_folder;
 }
 
+export function user_has_folders(): boolean {
+    const subscribed_subs = stream_data.subscribed_subs();
+
+    for (const sub of subscribed_subs) {
+        if (sub.folder_id) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 export function update(event: ChannelFolderUpdateEvent): void {
     const folder_id = event.channel_folder_id;
     const channel_folder = get_channel_folder_by_id(folder_id);

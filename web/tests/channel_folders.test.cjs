@@ -89,6 +89,9 @@ run_test("basics", () => {
         folder_id: frontend_folder.id,
     });
     stream_data.add_sub(stream_1);
+
+    assert.deepEqual(channel_folders.user_has_folders(), false);
+
     stream_data.add_sub(stream_2);
     stream_data.add_sub(stream_3);
     stream_data.add_sub(stream_4);
@@ -120,4 +123,6 @@ run_test("basics", () => {
         channel_folders.get_channels_in_folders_matching_seach_term_in_folder_name("Nonexistent"),
         [],
     );
+
+    assert.deepEqual(channel_folders.user_has_folders(), true);
 });
