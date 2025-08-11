@@ -490,7 +490,7 @@ test_ui("narrowing", ({override_rewire}) => {
 test_ui("focusout_user_filter", () => {
     stream_list.set_event_handlers({show_channel_feed() {}});
     const e = {};
-    const click_handler = $(".stream-list-filter").get_on_handler("focusout");
+    const click_handler = $(".left-sidebar-search-input").get_on_handler("focusout");
     click_handler(e);
 });
 
@@ -503,7 +503,7 @@ test_ui("focus_user_filter", () => {
     const e = {
         stopPropagation() {},
     };
-    const click_handler = $(".stream-list-filter").get_on_handler("click");
+    const click_handler = $(".left-sidebar-search-input").get_on_handler("click");
     click_handler(e);
 });
 

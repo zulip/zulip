@@ -237,7 +237,7 @@ class StreamSidebar {
 export const stream_sidebar = new StreamSidebar();
 
 function get_search_term(): string {
-    const $search_box = $<HTMLInputElement>("input.stream-list-filter").expectOne();
+    const $search_box = $<HTMLInputElement>("input.left-sidebar-search-input").expectOne();
     const search_term = $search_box.val();
     assert(search_term !== undefined);
     return search_term.trim();
@@ -1276,7 +1276,7 @@ export function set_event_handlers({
         toggle_pm_header_icon();
     });
 
-    const $search_input = $(".stream-list-filter").expectOne();
+    const $search_input = $(".left-sidebar-search-input").expectOne();
 
     function keydown_enter_key(): void {
         const row = stream_cursor.get_key();
@@ -1365,11 +1365,11 @@ function toggle_inactive_or_muted_channels($section_container: JQuery): void {
 }
 
 export function searching(): boolean {
-    return $(".stream-list-filter").expectOne().is(":focus");
+    return $(".left-sidebar-search-input").expectOne().is(":focus");
 }
 
 export function test_clear_search(): void {
-    const $filter = $(".stream-list-filter").expectOne();
+    const $filter = $(".left-sidebar-search-input").expectOne();
     $filter.val("");
     $filter.trigger("blur");
     update_streams_for_search();
@@ -1378,7 +1378,7 @@ export function test_clear_search(): void {
 export function initiate_search(): void {
     popovers.hide_all();
 
-    const $filter = $(".stream-list-filter").expectOne();
+    const $filter = $(".left-sidebar-search-input").expectOne();
 
     sidebar_ui.show_left_sidebar();
     $filter.trigger("focus");
@@ -1387,7 +1387,7 @@ export function initiate_search(): void {
 }
 
 export function clear_search(): void {
-    const $filter = $(".stream-list-filter").expectOne();
+    const $filter = $(".left-sidebar-search-input").expectOne();
     if ($filter.val() !== "") {
         $filter.val("");
         update_streams_for_search();
