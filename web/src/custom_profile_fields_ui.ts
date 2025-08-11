@@ -209,7 +209,11 @@ export function format_date(date: Date | undefined, format: string): string {
     return flatpickr.formatDate(date, format);
 }
 
-export function initialize_custom_date_type_fields(element_id: string, user_id: number): void {
+export function initialize_custom_date_type_fields(
+    element_id: string,
+    user_id: number,
+    for_profile_settings_panel = false,
+): void {
     const $date_picker_elements = $(element_id).find(".custom_user_field .datepicker");
     if ($date_picker_elements.length === 0) {
         return;
@@ -224,7 +228,7 @@ export function initialize_custom_date_type_fields(element_id: string, user_id: 
             // our case it is a valid value when user does not want
             // to set any value for the custom profile field.
             if ($input_elem.parent().find(".date-field-alt-input").val() === "") {
-                if (user_id !== people.my_current_user_id()) {
+                if (!for_profile_settings_panel) {
                     // For "Manage user" modal, API request is made after
                     // clicking on "Save changes" button.
                     return;
@@ -246,7 +250,7 @@ export function initialize_custom_date_type_fields(element_id: string, user_id: 
             );
             const original_value = people.get_custom_profile_data(user_id, field_id)?.value ?? "";
             instance.setDate(original_value);
-            if (user_id !== people.my_current_user_id()) {
+            if (!for_profile_settings_panel) {
                 // Trigger "input" event so that save button state can
                 // be toggled in "Manage user" modal.
                 $input_elem
@@ -257,7 +261,7 @@ export function initialize_custom_date_type_fields(element_id: string, user_id: 
             return;
         }
 
-        if (user_id !== people.my_current_user_id()) {
+        if (!for_profile_settings_panel) {
             // For "Manage user" modal, API request is made after
             // clicking on "Save changes" button.
             return;
