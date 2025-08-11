@@ -408,15 +408,15 @@ export function show_generate_integration_url_modal(api_key: string): void {
             $(".integration-url-stream-wrapper").trigger("input");
             dropdown.hide();
             const user_selected_option = stream_input_dropdown_widget.value();
-            if (user_selected_option === direct_messages_option.unique_id) {
+            if (
+                user_selected_option &&
+                [direct_messages_option.unique_id, map_channels_option.unique_id].includes(
+                    user_selected_option,
+                )
+            ) {
                 $override_topic.prop("checked", false).prop("disabled", true);
                 $override_topic.closest(".input-group").addClass("control-label-disabled");
                 $topic_input.val("");
-            } else if (user_selected_option === map_channels_option.unique_id) {
-                $override_topic.prop("checked", true).prop("disabled", true);
-                $override_topic.closest(".input-group").addClass("control-label-disabled");
-                $topic_input.val("");
-                $topic_input.parent().removeClass("hide");
             } else {
                 $override_topic.prop("disabled", false);
                 $override_topic.closest(".input-group").removeClass("control-label-disabled");
