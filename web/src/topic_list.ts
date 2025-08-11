@@ -11,9 +11,7 @@ import * as blueslip from "./blueslip.ts";
 import {Typeahead} from "./bootstrap_typeahead.ts";
 import type {TypeaheadInputElement} from "./bootstrap_typeahead.ts";
 import * as popover_menus from "./popover_menus.ts";
-import * as popovers from "./popovers.ts";
 import * as scroll_util from "./scroll_util.ts";
-import * as sidebar_ui from "./sidebar_ui.ts";
 import * as stream_topic_history from "./stream_topic_history.ts";
 import * as stream_topic_history_util from "./stream_topic_history_util.ts";
 import type {StreamSubscription} from "./sub_store.ts";
@@ -58,13 +56,6 @@ export function clear(): void {
     }
 
     active_widgets.clear();
-}
-
-export function focus_topic_search_filter(): void {
-    popovers.hide_all();
-    sidebar_ui.show_left_sidebar();
-    const $filter = $("#topic_filter_query");
-    $filter.trigger("focus");
 }
 
 export function close(): void {
