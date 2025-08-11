@@ -15,13 +15,16 @@
     white-space: nowrap;
 }
 
-#left-sidebar .input-element-wrapper {
+#left-sidebar .input-element-wrapper:not(.left-sidebar-search-section) {
     /* We normalize this based on Firefox's 31px-tall input,
        raising Chrome's (28px) and Safari's (30px) to all
        match, so that `top:` and other offset values are
        identical relative to input elements. This value
        is taken up by the grid-template definition in
-       inputs.css. */
+       inputs.css. We don't do this on the sidebar search, though,
+       so that it matches the height of the filter at the top of the
+       right sidebar. Normalizing the height isn't essential here,
+       as there are no sticky headers offset from the filter input. */
     --input-element-row-height: 1.9375em;
 
     .input-element {
