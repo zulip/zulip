@@ -1129,7 +1129,7 @@ export function process_hotkey(e, hotkey) {
             if (pm_list.is_zoomed_in()) {
                 sidebar_ui.focus_pm_search_filter();
             } else if (stream_list.is_zoomed_in()) {
-                topic_list.focus_topic_search_filter();
+                sidebar_ui.focus_topic_search_filter();
             } else {
                 stream_list.initiate_search();
             }

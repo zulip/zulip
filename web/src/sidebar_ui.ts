@@ -315,6 +315,13 @@ export function initialize_left_sidebar(): void {
     update_unread_counts_visibility();
 }
 
+export function focus_topic_search_filter(): void {
+    popovers.hide_all();
+    show_left_sidebar();
+    const $filter = $("#topic_filter_query");
+    $filter.trigger("focus");
+}
+
 export function initialize_right_sidebar(): void {
     const rendered_sidebar = render_right_sidebar();
 
