@@ -1127,7 +1127,7 @@ export function process_hotkey(e, hotkey) {
             return true;
         case "query_streams":
             if (pm_list.is_zoomed_in()) {
-                pm_list.focus_pm_search_filter();
+                sidebar_ui.focus_pm_search_filter();
             } else if (stream_list.is_zoomed_in()) {
                 topic_list.focus_topic_search_filter();
             } else {
