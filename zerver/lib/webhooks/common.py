@@ -62,6 +62,10 @@ class PresetUrlOption(str, Enum):
     MAPPING = "mapping"
 
 
+class UrlMappingOptions(str, Enum):
+    CHANNELS = "channels"
+
+
 @dataclass
 class WebhookConfigOption:
     name: str
@@ -76,7 +80,7 @@ class WebhookUrlOption:
     validator: Callable[[str, str], str | bool | None]
 
     @classmethod
-    def build_preset_config(cls, config: PresetUrlOption) -> "WebhookUrlOption":
+    def build_preset_config(cls, config: PresetUrlOption, label: str = "") -> "WebhookUrlOption":
         """
         This creates a pre-configured WebhookUrlOption object to be used
         in various incoming webhook integrations.
@@ -100,7 +104,7 @@ class WebhookUrlOption:
             case PresetUrlOption.MAPPING:  # nocoverage # Not used yet
                 return cls(
                     name=config.value,
-                    label="",
+                    label=label,
                     validator=check_string,
                 )
 

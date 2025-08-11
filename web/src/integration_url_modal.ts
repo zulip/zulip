@@ -54,6 +54,7 @@ export function show_generate_integration_url_modal(api_key: string): void {
         name: $t_html({defaultMessage: "Matching Zulip channel"}),
         unique_id: -2,
     };
+
     const html_body = render_generate_integration_url_modal({
         default_url_message,
         max_topic_length: realm.max_topic_length,
@@ -369,12 +370,16 @@ export function show_generate_integration_url_modal(api_key: string): void {
                 return additional_options;
             }
 
-            const mapping_option = url_options?.find(
+            const mapping_options = url_options?.filter(
                 (option) => option.key === PresetUrlOption.MAPPING,
             );
 
-            if (mapping_option) {
-                additional_options.push(map_channels_option);
+            for (const mapping_option of mapping_options) {
+                switch (mapping_option.label) {
+                    case "channels":
+                        additional_options.push(map_channels_option);
+                        break;
+                }
             }
             return additional_options;
         }
