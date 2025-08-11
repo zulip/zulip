@@ -48,7 +48,7 @@ reference in the Zulip app to add more to your repertoire as needed.
 ## Search
 
 * **Search messages**: <kbd>/</kbd> or <kbd>Ctrl</kbd> + <kbd>K</kbd>
-* **Filter channels**: <kbd>Q</kbd>
+* **Filter left sidebar**: <kbd>Q</kbd>
 * **Filter users**: <kbd>W</kbd>
 
 ## Scrolling
@@ -198,7 +198,6 @@ Keyboard navigation (e.g., arrow keys) works as expected.
 
 * **View channel messages**: <kbd>Shift</kbd> + <kbd>V</kbd>
 * **Toggle subscription**: <kbd>Shift</kbd> + <kbd>S</kbd>
-
 
 ## Keyboard shortcuts reference
 

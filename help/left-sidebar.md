@@ -27,13 +27,7 @@ where clicking on channel links in the left sidebar takes you.
 
 ## Find a direct message conversation
 
-{start_tabs}
-
-{tab|desktop-web}
-
 {!find-dm-conversation-left-sidebar.md!}
-
-{end_tabs}
 
 ## Find a channel you're subscribed to
 
