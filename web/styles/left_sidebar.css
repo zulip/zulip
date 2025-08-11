@@ -1659,7 +1659,12 @@ li.top_left_scheduled_messages {
         overflow-wrap: break-word;
 
         line-height: var(--line-height-sidebar-topic-inner);
-        margin: var(--spacing-top-bottom-sidebar-topic-inner) 0;
+        /* To avoid clipping the tops of certain characters,
+           we set the top space with padding. But to make the
+           line-clamp effect work, we set the bottom space
+           with margin. */
+        padding-top: var(--spacing-top-bottom-sidebar-topic-inner);
+        margin: 0 0 var(--spacing-top-bottom-sidebar-topic-inner) 0;
     }
 }
 
@@ -1818,8 +1823,13 @@ li.top_left_scheduled_messages {
     overflow-wrap: break-word;
 
     line-height: var(--line-height-sidebar-topic-inner);
-    margin: var(--spacing-top-bottom-sidebar-topic-inner) 0;
-    padding: 0 var(--left-sidebar-before-unread-count-padding) 0 0;
+    /* To avoid clipping the tops of certain characters,
+       we set the top space with padding. But to make the
+       line-clamp effect work, we set the bottom space
+       with margin. */
+    padding: var(--spacing-top-bottom-sidebar-topic-inner)
+        var(--left-sidebar-before-unread-count-padding) 0 0;
+    margin-bottom: var(--spacing-top-bottom-sidebar-topic-inner);
 }
 
 /*
