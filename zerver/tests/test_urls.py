@@ -30,13 +30,13 @@ class PublicURLTest(ZulipTestCase):
 
     def test_api_doc_pages(self) -> None:
         # Test all files in api_docs documentation directory (except for 'index.md',
-        # 'missing.md', "api-doc-template.md" and `api_docs/include/` files).
+        # 'missing.md', "api-doc-template.md", `api_docs/include/` and `api_docs/unmerged.d/` files).
 
         api_doc_urls = []
         for doc in os.listdir("./api_docs/"):
             if doc.startswith(".") or "~" in doc or "#" in doc:
                 continue  # nocoverage -- just here for convenience
-            if doc in {"index.md", "include", "missing.md", "api-doc-template.md"}:
+            if doc in {"index.md", "include", "missing.md", "api-doc-template.md", "unmerged.d"}:
                 continue
             url = "/api/" + os.path.splitext(doc)[0]  # Strip the extension.
             api_doc_urls.append(url)
