@@ -1354,6 +1354,11 @@ div.settings-radio-input-parent {
     box-sizing: border-box;
 }
 
+#change_stream_name{
+    height: 36px;
+    box-sizing: border-box;
+}
+
 .advanced-configurations-container
     .stream-message-retention-days-input
     input[type="text"] {
