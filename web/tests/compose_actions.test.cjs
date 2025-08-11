@@ -330,6 +330,8 @@ test("respond_to_message", ({override, override_rewire, mock_template}) => {
     override(realm, "realm_direct_message_permission_group", nobody.id);
     override(realm, "realm_direct_message_initiator_group", everyone.id);
 
+    override_rewire(stream_data, "can_post_messages_in_stream", () => true);
+
     // Test direct message
     const person = make_user({
         user_id: 22,
@@ -391,6 +393,8 @@ test("reply_with_mention", ({override, override_rewire, mock_template}) => {
     override_private_message_recipient_ids({override});
     override_rewire(compose_recipient, "check_posting_policy_for_compose_box", noop);
     mock_template("inline_decorated_channel_name.hbs", false, noop);
+
+    override_rewire(stream_data, "can_post_messages_in_stream", () => true);
 
     const denmark = make_stream({
         color: "blue",
