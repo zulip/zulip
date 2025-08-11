@@ -436,6 +436,7 @@ export default defineConfig({
                         "message-retention-policy",
                         "digest-emails",
                         "disable-welcome-emails",
+                        "configure-a-custom-welcome-message",
                         "configure-automated-notices",
                         "configure-multi-language-search",
                         "analytics",
