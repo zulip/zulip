@@ -10,6 +10,7 @@ export type ChannelFolder = z.infer<typeof channel_folder_schema>;
 
 let channel_folder_name_dict: FoldDict<ChannelFolder>;
 let channel_folder_by_id_dict: Map<number, ChannelFolder>;
+let active_channel_folder_ids: Set<number>;
 
 export function clean_up_description(channel_folder: ChannelFolder): void {
     if (channel_folder.rendered_description !== undefined) {
@@ -23,11 +24,15 @@ export function add(channel_folder: ChannelFolder): void {
     clean_up_description(channel_folder);
     channel_folder_name_dict.set(channel_folder.name, channel_folder);
     channel_folder_by_id_dict.set(channel_folder.id, channel_folder);
+    if (!channel_folder.is_archived) {
+        active_channel_folder_ids.add(channel_folder.id);
+    }
 }
 
 export function initialize(params: StateData["channel_folders"]): void {
     channel_folder_name_dict = new FoldDict();
     channel_folder_by_id_dict = new Map<number, ChannelFolder>();
+    active_channel_folder_ids = new Set<number>();
 
     for (const channel_folder of params.channel_folders) {
         add(channel_folder);
@@ -45,6 +50,10 @@ export function get_channel_folders(include_archived = false): ChannelFolder[] {
             return true;
         })
         .sort((folder_a, folder_b) => folder_a.order - folder_b.order);
+}
+
+export function get_active_folder_ids(): Set<number> {
+    return active_channel_folder_ids;
 }
 
 /* TODO/channel-folders: Remove when tests are restored */
@@ -83,6 +92,9 @@ export function update(event: ChannelFolderUpdateEvent): void {
         channel_folder.is_archived = event.data.is_archived;
         channel_folder_name_dict.delete(channel_folder.name);
         channel_folder_name_dict.set(channel_folder.name, channel_folder);
+        if (channel_folder.is_archived) {
+            active_channel_folder_ids.delete(channel_folder.id);
+        }
     }
 }
 

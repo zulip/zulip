@@ -33,6 +33,10 @@ run_test("basics", () => {
     channel_folders.initialize(params);
 
     assert.deepEqual(channel_folders.get_channel_folders(), [frontend_folder, backend_folder]);
+    assert.deepEqual(
+        channel_folders.get_active_folder_ids(),
+        new Set([frontend_folder.id, backend_folder.id]),
+    );
 
     const devops_folder = {
         name: "Devops",
