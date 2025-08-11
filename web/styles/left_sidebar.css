@@ -317,11 +317,11 @@
     }
 }
 
-.spectator-view #stream-search-and-add {
+.spectator-view #left-sidebar-search {
     grid-template-columns: minmax(0, 1fr);
 }
 
-#stream-search-and-add {
+#left-sidebar-search {
     display: grid;
     grid-template-areas: "filter-container add-channel";
     grid-template-columns: minmax(0, 1fr) var(--left-sidebar-header-icon-width);
@@ -359,7 +359,7 @@
     top: calc(
         1.9375em + (var(--left-sidebar-sections-vertical-gutter) * 2.5) + 3px
     );
-    /* Must be more than .sidebar-topic-check and less than #stream-search-and-add */
+    /* Must be more than .sidebar-topic-check and less than #left-sidebar-search */
     z-index: 2;
     color: var(--color-text-default);
     /* There seems to be a bug where when the header returns to normal position after
@@ -2118,7 +2118,7 @@ li.topic-list-item {
     }
 
     .zoom-in-hide,
-    #stream-search-and-add.zoom-in-hide {
+    #left-sidebar-search.zoom-in-hide {
         display: none;
     }
 

@@ -1403,7 +1403,7 @@ export let scroll_stream_into_view = function ($stream_li: JQuery): void {
         blueslip.error("Invalid stream_li was passed in");
         return;
     }
-    const stream_filter_height = $("#stream-search-and-add").outerHeight()!;
+    const stream_filter_height = $("#left-sidebar-search").outerHeight()!;
     const header_height = $stream_li
         .closest(".stream-list-section-container")
         .children(".stream-list-subsection-header")
