@@ -279,6 +279,12 @@ scrape_configs:
       - target_label: __address__
         replacement: localhost:9188
 
+  - job_name: "weblate"
+    scrape_interval: 15m
+    scrape_timeout: 120s
+    static_configs:
+      - targets: ["localhost:9189"]
+
   - job_name: "vector"
     scrape_interval: 30s
     scrape_timeout: 3s

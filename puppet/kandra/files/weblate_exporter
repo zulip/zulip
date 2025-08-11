@@ -1,0 +1,275 @@
+#!/usr/bin/env python3
+
+import argparse
+import configparser
+import json
+import logging
+import os
+import sys
+import time
+from collections.abc import Callable
+from http.server import BaseHTTPRequestHandler, HTTPServer
+from typing import Any
+from urllib.request import Request, urlopen
+
+DEFAULT_PORT = 9189
+PROJECT = "zulip"
+COMPONENTS = ["frontend", "django", "desktop", "zulip-flutter"]
+
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+logger = logging.getLogger(__name__)
+
+
+class WeblateMetricsCollector:
+    def __init__(self, token: str) -> None:
+        self.token = token
+
+    def make_request(self, endpoint: str) -> dict[str, Any]:
+        request = Request(f"https://hosted.weblate.org/{endpoint}")
+        request.add_header("Authorization", f"Token {self.token}")
+        request.add_header("Accept", "application/json")
+        request.add_header("User-Agent", "WeblatePrometheusExporter/1.0")
+        with urlopen(request, timeout=30) as response:
+            return json.loads(response.read().decode("utf-8"))
+
+    def fetch_component_languages(self, project: str, component: str) -> list[str]:
+        endpoint = f"api/components/{project}/{component}/translations/"
+        try:
+            response = self.make_request(endpoint)
+            logger.debug("Fetched translations for %s/%s: %s", project, component, response)
+
+            # Extract language codes from the paginated response
+            languages = []
+            if response.get("results"):
+                languages.extend(
+                    [
+                        translation["language"]["code"]
+                        for translation in response["results"]
+                        if "language" in translation and "code" in translation["language"]
+                    ]
+                )
+
+                logger.debug("Found languages for %s/%s: %s", project, component, languages)
+                return languages
+            else:
+                logger.warning("No translations found for %s/%s", project, component)
+                return []
+        except Exception as e:
+            logger.error("Failed to fetch languages for %s/%s: %s", project, component, e)
+            return []
+
+    def fetch_translation_statistics(
+        self, project: str, component: str, language: str
+    ) -> dict[str, Any] | None:
+        endpoint = f"api/translations/{project}/{component}/{language}/statistics/"
+        try:
+            stats = self.make_request(endpoint)
+            logger.debug("Fetched stats for %s/%s/%s: %s", project, component, language, stats)
+            return stats
+        except Exception as e:
+            logger.error(
+                "Failed to fetch statistics for %s/%s/%s: %s", project, component, language, e
+            )
+            return None
+
+    def collect_all_metrics(self) -> dict[str, dict[str, dict[str, Any]]]:
+        metrics = {}
+
+        for component in COMPONENTS:
+            logger.info("Fetching statistics for %s/%s", PROJECT, component)
+
+            languages = self.fetch_component_languages(PROJECT, component)
+            if not languages:
+                logger.warning("No languages found for %s/%s", PROJECT, component)
+                continue
+
+            component_metrics = {}
+            for language in languages:
+                logger.info("Fetching statistics for %s/%s/%s", PROJECT, component, language)
+                stats = self.fetch_translation_statistics(PROJECT, component, language)
+
+                if stats:
+                    component_metrics[language] = stats
+                else:
+                    logger.warning(
+                        "No statistics available for %s/%s/%s", PROJECT, component, language
+                    )
+
+            if component_metrics:
+                metrics[component] = component_metrics
+            else:
+                logger.warning("No translation statistics available for component %s", component)
+
+        logger.info("Collected metrics for %d components", len(metrics))
+        return metrics
+
+    def format_prometheus_metrics(self, metrics_data: dict[str, dict[str, dict[str, Any]]]) -> str:
+        if not metrics_data:
+            return "# No metrics data available\n"
+
+        lines = [
+            "# HELP weblate_translation_info Translation information",
+            "# TYPE weblate_translation_info gauge",
+        ]
+
+        for component, languages in metrics_data.items():
+            for language, stats in languages.items():
+                lines.append(
+                    f'weblate_translation_info{{component="{component}",language="{language}",name="{stats.get("name", f"{component}-{language}")}"}} 1'
+                )
+
+        metric_definitions = [
+            ("translated", "Number of translated strings"),
+            ("translated_words", "Number of translated words"),
+            ("translated_chars", "Number of translated characters"),
+            ("total", "Total number of strings"),
+            ("total_words", "Total number of words"),
+            ("total_chars", "Total number of characters"),
+            ("fuzzy", "Number of fuzzy strings"),
+            ("fuzzy_words", "Number of fuzzy words"),
+            ("fuzzy_chars", "Number of fuzzy characters"),
+            ("failing", "Number of failing checks"),
+            ("failing_words", "Number of words with failing checks"),
+            ("failing_chars", "Number of characters with failing checks"),
+            ("approved", "Number of approved strings"),
+            ("approved_words", "Number of approved words"),
+            ("approved_chars", "Number of approved characters"),
+            ("suggestions", "Number of suggestions"),
+            ("comments", "Number of comments"),
+            ("translated_percent", "Percentage of translated strings"),
+            ("translated_words_percent", "Percentage of translated words"),
+            ("translated_chars_percent", "Percentage of translated characters"),
+            ("approved_percent", "Percentage of approved strings"),
+            ("approved_words_percent", "Percentage of approved words"),
+            ("approved_chars_percent", "Percentage of approved characters"),
+        ]
+
+        for metric_key, description in metric_definitions:
+            lines.extend(
+                [
+                    f"# HELP weblate_{metric_key} {description}",
+                    f"# TYPE weblate_{metric_key} gauge",
+                ]
+            )
+            for component, languages in metrics_data.items():
+                for language, stats in languages.items():
+                    value = stats.get(metric_key, 0)
+                    lines.append(
+                        f'weblate_{metric_key}{{component="{component}",language="{language}"}} {value}'
+                    )
+
+        lines.extend(
+            [
+                "# HELP weblate_last_update_timestamp Unix timestamp of last metrics update",
+                "# TYPE weblate_last_update_timestamp gauge",
+                f"weblate_last_update_timestamp {time.time()}",
+            ]
+        )
+
+        return "\n".join(lines) + "\n"
+
+
+class PrometheusHandler(BaseHTTPRequestHandler):
+    def __init__(self, collector: WeblateMetricsCollector, *args: Any, **kwargs: Any) -> None:
+        self.collector = collector
+        super().__init__(*args, **kwargs)
+
+    def do_GET(self) -> None:
+        if self.path == "/metrics":
+            self.send_response(200)
+            self.send_header("Content-Type", "text/plain; charset=utf-8")
+            self.end_headers()
+
+            try:
+                metrics_data = self.collector.collect_all_metrics()
+                metrics = self.collector.format_prometheus_metrics(metrics_data)
+            except Exception as e:
+                logger.error("Error collecting metrics: %s", e)
+                metrics = f"# Error collecting metrics: {e}\n"
+
+            self.wfile.write(metrics.encode("utf-8"))
+            return
+
+        elif self.path == "/health":
+            self.send_response(200)
+            self.send_header("Content-Type", "text/plain")
+            self.end_headers()
+            self.wfile.write(b"OK\n")
+            return
+
+        elif self.path == "/":
+            self.send_response(200)
+            self.send_header("Content-Type", "text/html")
+            self.end_headers()
+            html = """<!DOCTYPE html>
+<html>
+<head><title>Weblate Prometheus Exporter</title></head>
+<body>
+<h1>Weblate Prometheus Exporter</h1>
+<p><a href="/metrics">Metrics</a></p>
+<p><a href="/health">Health Check</a></p>
+</body>
+</html>"""
+            self.wfile.write(html.encode("utf-8"))
+            return
+
+        else:
+            self.send_response(404)
+            self.end_headers()
+            self.wfile.write(b"Not Found\n")
+            return
+
+    def log_message(self, format: str, *args: Any) -> None:  # type: ignore[explicit-override]  # @override is available in typing_extensions, which is not core Python
+        logger.info("%s - %s", self.address_string(), format % args)
+
+
+def create_handler(
+    collector: WeblateMetricsCollector,
+) -> Callable[..., PrometheusHandler]:
+    def handler(*args: Any, **kwargs: Any) -> PrometheusHandler:
+        return PrometheusHandler(collector, *args, **kwargs)
+
+    return handler
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Weblate Prometheus Exporter")
+    parser.add_argument(
+        "--port",
+        type=int,
+        default=DEFAULT_PORT,
+        help=f"Port to listen on (default: {DEFAULT_PORT})",
+    )
+    parser.add_argument(
+        "--token",
+        default=os.getenv("WEBLATE_TOKEN"),
+        help="Weblate API token (can also be set via WEBLATE_TOKEN env var)",
+    )
+    parser.add_argument("--verbose", "-v", action="store_true", help="Enable verbose logging")
+
+    args = parser.parse_args()
+
+    if args.verbose:
+        logging.getLogger().setLevel(logging.DEBUG)
+
+    token = args.token
+    if args.token is None:
+        secrets_file = configparser.RawConfigParser()
+        secrets_file.read("/etc/zulip/zulip-secrets.conf")
+        token = secrets_file["secrets"]["weblate_api_key"]
+
+    handler = create_handler(WeblateMetricsCollector(token=token))
+    server = HTTPServer(("", args.port), handler)
+
+    logger.info("Metrics available at http://localhost:%d/metrics", args.port)
+
+    try:
+        server.serve_forever()
+    except KeyboardInterrupt:
+        logger.info("Shutting down server...")
+        server.shutdown()
+        sys.exit(0)
+
+
+if __name__ == "__main__":
+    main()
