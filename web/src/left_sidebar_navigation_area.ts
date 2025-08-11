@@ -145,6 +145,13 @@ export function handle_narrow_activated(filter: Filter): void {
     select_top_left_corner_item("");
 }
 
+export function expand_views($views_label_container: JQuery, $views_label_icon: JQuery): void {
+    $views_label_container.addClass("showing-expanded-navigation");
+    $views_label_container.removeClass("showing-condensed-navigation");
+    $views_label_icon.addClass("rotate-icon-down");
+    $views_label_icon.removeClass("rotate-icon-right");
+}
+
 function toggle_condensed_navigation_area(): void {
     const $views_label_container = $("#views-label-container");
     const $views_label_icon = $("#toggle-top-left-navigation-area-icon");
@@ -162,11 +169,7 @@ function toggle_condensed_navigation_area(): void {
         $views_label_icon.removeClass("rotate-icon-down");
         save_state(STATES.CONDENSED);
     } else {
-        // Toggle into the expanded state
-        $views_label_container.addClass("showing-expanded-navigation");
-        $views_label_container.removeClass("showing-condensed-navigation");
-        $views_label_icon.addClass("rotate-icon-down");
-        $views_label_icon.removeClass("rotate-icon-right");
+        expand_views($views_label_container, $views_label_icon);
         save_state(STATES.EXPANDED);
     }
     resize.resize_stream_filters_container();
