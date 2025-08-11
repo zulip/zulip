@@ -941,7 +941,7 @@ function validate_stream_message(scheduling_message: boolean, show_banner = true
 
 // The function checks whether the recipients are users of the realm or cross realm users (bots
 // for now)
-function validate_private_message(show_banner = true): boolean {
+export function validate_private_message(show_banner = true): boolean {
     const user_ids = compose_pm_pill.get_user_ids();
     const user_ids_string = util.sorted_ids(user_ids).join(",");
     const $banner_container = $("#compose_banners");
