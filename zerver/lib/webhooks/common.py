@@ -98,13 +98,13 @@ class WebhookUrlOption:
                     label="Exclude notifications from private repositories",
                     validator=check_bool,
                 )
-            case PresetUrlOption.CHANNEL_MAPPING:  # nocoverage # Not used yet
+            case PresetUrlOption.CHANNEL_MAPPING:
                 return cls(
                     name=config.value,
                     label="",
                     validator=check_string,
                 )
-            case PresetUrlOption.MAP_TO_TOPICS:  # nocoverage # Not used yet
+            case PresetUrlOption.MAP_TO_TOPICS:
                 return cls(
                     name=config.value,
                     label="Send messages to topics with the same name as the original channel?",
