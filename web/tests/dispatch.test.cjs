@@ -1295,7 +1295,7 @@ run_test("user_settings", ({override}) => {
     assert_same(user_settings.web_left_sidebar_show_channel_folders, false);
 
     event = event_fixtures.user_settings__web_left_sidebar_unreads_count_summary;
-    override(sidebar_ui, "update_unread_counts_visibility", noop);
+    override(stream_list, "update_unread_counts_visibility", noop);
     override(user_settings, "web_left_sidebar_unreads_count_summary", true);
     dispatch(event);
     assert_same(user_settings.web_left_sidebar_unreads_count_summary, false);

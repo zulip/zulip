@@ -714,6 +714,12 @@
     }
 }
 
+.highlighted_row.top_left_row,
+.highlighted_row.bottom_left_row {
+    outline: 2px solid var(--color-outline-focus);
+    outline-offset: -2px;
+}
+
 #stream_filters
     .narrow-filter
     .topic-list
@@ -2151,4 +2157,9 @@ li.topic-list-item {
 
 .top_left_row.hidden-by-filters {
     display: none !important;
+}
+
+#left-sidebar-navigation-area.hidden-by-filters,
+#direct-messages-section-header.hidden-by-filters {
+    display: none;
 }

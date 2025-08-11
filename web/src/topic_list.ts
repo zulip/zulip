@@ -21,6 +21,7 @@ import type {TopicFilterPill, TopicFilterPillWidget} from "./topic_filter_pill.t
 import * as topic_list_data from "./topic_list_data.ts";
 import type {TopicInfo} from "./topic_list_data.ts";
 import * as typeahead_helper from "./typeahead_helper.ts";
+import * as ui_util from "./ui_util.ts";
 import * as vdom from "./vdom.ts";
 
 /* Track all active widgets with a Map by stream_id. We have at max
@@ -65,6 +66,7 @@ export function close(): void {
 
 export function zoom_out(): void {
     zoomed = false;
+    ui_util.enable_left_sidebar_search();
 
     const stream_ids = [...active_widgets.keys()];
 
@@ -427,6 +429,7 @@ export function left_sidebar_scroll_zoomed_in_topic_into_view(): void {
 // handle hiding/showing the non-narrowed streams
 export function zoom_in(): void {
     zoomed = true;
+    ui_util.disable_left_sidebar_search();
 
     const stream_id = active_stream_id();
     if (stream_id === undefined) {
@@ -470,7 +473,10 @@ export function zoom_in(): void {
 }
 
 export function get_left_sidebar_topic_search_term(): string {
-    return $("#topic_filter_query").text().trim();
+    if (zoomed) {
+        return $("#topic_filter_query").text().trim();
+    }
+    return ui_util.get_left_sidebar_search_term();
 }
 
 export function get_typeahead_search_pills_syntax(): string {

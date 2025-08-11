@@ -1131,7 +1131,7 @@ export function process_hotkey(e, hotkey) {
             } else if (stream_list.is_zoomed_in()) {
                 sidebar_ui.focus_topic_search_filter();
             } else {
-                stream_list.initiate_search();
+                sidebar_ui.initiate_search();
             }
             return true;
         case "query_users":

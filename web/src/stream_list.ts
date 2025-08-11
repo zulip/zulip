@@ -1,5 +1,4 @@
 import $ from "jquery";
-import _ from "lodash";
 import assert from "minimalistic-assert";
 import * as tippy from "tippy.js";
 
@@ -18,20 +17,16 @@ import * as channel_folders from "./channel_folders.ts";
 import * as compose_actions from "./compose_actions.ts";
 import type {Filter} from "./filter.ts";
 import * as hash_util from "./hash_util.ts";
-import * as keydown_util from "./keydown_util.ts";
 import * as left_sidebar_navigation_area from "./left_sidebar_navigation_area.ts";
-import {ListCursor} from "./list_cursor.ts";
 import * as narrow_state from "./narrow_state.ts";
 import * as pm_list from "./pm_list.ts";
 import * as popovers from "./popovers.ts";
-import * as resize from "./resize.ts";
 import * as scroll_util from "./scroll_util.ts";
 import {web_channel_default_view_values} from "./settings_config.ts";
 import * as settings_data from "./settings_data.ts";
-import * as sidebar_ui from "./sidebar_ui.ts";
 import * as stream_data from "./stream_data.ts";
 import * as stream_list_sort from "./stream_list_sort.ts";
-import type {StreamListRow, StreamListSection} from "./stream_list_sort.ts";
+import type {StreamListSection} from "./stream_list_sort.ts";
 import * as stream_topic_history from "./stream_topic_history.ts";
 import * as stream_topic_history_util from "./stream_topic_history_util.ts";
 import * as sub_store from "./sub_store.ts";
@@ -51,12 +46,6 @@ let update_inbox_channel_view_callback: (channel_id: number) => void;
 
 export function set_update_inbox_channel_view_callback(value: (channel_id: number) => void): void {
     update_inbox_channel_view_callback = value;
-}
-
-export let stream_cursor: ListCursor<StreamListRow>;
-
-export function rewire_stream_cursor(value: typeof stream_cursor): void {
-    stream_cursor = value;
 }
 
 let has_scrolled = false;
@@ -285,6 +274,16 @@ function get_section_channel_plus_icon_url(section: StreamListSection): string |
     return undefined;
 }
 
+export function update_unread_counts_visibility(): void {
+    const hidden = !user_settings.web_left_sidebar_unreads_count_summary;
+    $(".top_left_row, #left-sidebar-navigation-list-condensed").toggleClass(
+        "hide-unread-messages-count",
+        hidden,
+    );
+    // Note: Channel folder count visibilities are handled in
+    // `update_section_unread_count`, since they depend on unread counts.
+}
+
 export function build_stream_list(force_rerender: boolean): void {
     // The stream list in the left sidebar contains 3 sections:
     // pinned, normal, and dormant streams, with headings above them
@@ -358,8 +357,9 @@ export function build_stream_list(force_rerender: boolean): void {
     left_sidebar_navigation_area.update_dom_with_unread_counts(counts, false);
     update_dom_with_unread_counts(counts);
     update_stream_section_mention_indicators();
-    sidebar_ui.update_unread_counts_visibility();
+    update_unread_counts_visibility();
     set_sections_states();
+    // Show inactive channels when user starts typing.
     $("#streams_list").toggleClass("is_searching", ui_util.get_left_sidebar_search_term() !== "");
 }
 
@@ -457,13 +457,16 @@ function toggle_section_collapse($container: JQuery): void {
 }
 
 function set_sections_states(): void {
-    for (const section_id of collapsed_sections) {
-        const $container = $(`#stream-list-${section_id}-container`);
-        $container.toggleClass("collapsed", true);
-        $container
-            .find(".stream-list-section-toggle")
-            .toggleClass("rotate-icon-down", false)
-            .toggleClass("rotate-icon-right", true);
+    if (ui_util.get_left_sidebar_search_term() === "") {
+        // Restore the collapsed state of sections.
+        for (const section_id of collapsed_sections) {
+            const $container = $(`#stream-list-${section_id}-container`);
+            $container.toggleClass("collapsed", true);
+            $container
+                .find(".stream-list-section-toggle")
+                .toggleClass("rotate-icon-down", false)
+                .toggleClass("rotate-icon-right", true);
+        }
     }
     for (const section_id of sections_showing_inactive_or_muted) {
         $(`#stream-list-${section_id}-container`).toggleClass("showing-inactive-or-muted", true);
@@ -704,8 +707,6 @@ export let update_streams_sidebar = (force_rerender = false): void => {
     set_pending_stream_list_rerender(false);
 
     build_stream_list(force_rerender);
-
-    stream_cursor.redraw();
 
     const filter = narrow_state.filter();
     if (!filter) {
@@ -1038,56 +1039,6 @@ export function handle_message_view_deactivated(): void {
     clear_topics();
 }
 
-function focus_stream_filter(e: JQuery.ClickEvent): void {
-    stream_cursor.reset();
-    e.stopPropagation();
-}
-
-function actually_update_streams_for_search(): void {
-    update_streams_sidebar();
-    resize.resize_page_components();
-    stream_cursor.reset();
-}
-
-const update_streams_for_search = _.throttle(actually_update_streams_for_search, 50);
-
-// Exported for tests only.
-export function initialize_stream_cursor(): void {
-    stream_cursor = new ListCursor<StreamListRow>({
-        list: {
-            scroll_container_selector: "#left_sidebar_scroll_container",
-            find_li(opts) {
-                switch (opts.key.type) {
-                    case "stream":
-                        return get_stream_li(opts.key.stream_id);
-                    case "inactive_or_muted_toggle":
-                        return $(
-                            `#stream-list-${opts.key.section_id}-container .stream-list-toggle-inactive-or-muted-channels`,
-                        );
-                    default:
-                        throw new Error("Unexpected key type");
-                }
-            },
-            first_key: stream_list_sort.first_row,
-            prev_key: (row) =>
-                stream_list_sort.prev_row(
-                    row,
-                    sections_showing_inactive_or_muted,
-                    collapsed_sections,
-                    topic_list.active_stream_id(),
-                ),
-            next_key: (row) =>
-                stream_list_sort.next_row(
-                    row,
-                    sections_showing_inactive_or_muted,
-                    collapsed_sections,
-                    topic_list.active_stream_id(),
-                ),
-        },
-        highlight_class: "highlighted_row",
-    });
-}
-
 export function initialize({
     show_channel_feed,
     update_inbox_channel_view,
@@ -1102,7 +1053,6 @@ export function initialize({
     // when new messages come in, but it's fairly quick.
     build_stream_list(false);
     update_subscribe_to_more_streams_link();
-    initialize_stream_cursor();
     initialize_tippy_tooltips();
     set_event_handlers({show_channel_feed});
 
@@ -1166,7 +1116,7 @@ export function initialize_tippy_tooltips(): void {
     });
 }
 
-function on_sidebar_channel_click(
+export function on_sidebar_channel_click(
     stream_id: number,
     // Null is used when this is called via `Enter`, because the
     // keyboard abstraction we're using doesn't need to pass on the event.
@@ -1337,52 +1287,6 @@ export function set_event_handlers({
         toggle_pm_header_icon();
     });
 
-    const $search_input = $(".left-sidebar-search-input").expectOne();
-
-    function keydown_enter_key(): void {
-        const row = stream_cursor.get_key();
-
-        if (row === undefined) {
-            // This can happen for empty searches, no need to warn.
-            return;
-        }
-
-        switch (row.type) {
-            case "stream":
-                on_sidebar_channel_click(row.stream_id, null, show_channel_feed);
-                break;
-            case "inactive_or_muted_toggle":
-                toggle_inactive_or_muted_channels($(`#stream-list-${row.section_id}-container`));
-                break;
-            default:
-                throw new Error("Unexpected key type");
-        }
-    }
-
-    keydown_util.handle({
-        $elem: $search_input,
-        handlers: {
-            Enter() {
-                keydown_enter_key();
-                return true;
-            },
-            ArrowUp() {
-                stream_cursor.prev();
-                return true;
-            },
-            ArrowDown() {
-                stream_cursor.next();
-                return true;
-            },
-        },
-    });
-
-    $search_input.on("click", focus_stream_filter);
-    $search_input.on("focusout", () => {
-        stream_cursor.clear();
-    });
-    $search_input.on("input", update_streams_for_search);
-
     $("#streams_list").on(
         "click",
         ".stream-list-section-container .stream-list-subsection-header",
@@ -1429,31 +1333,12 @@ export function searching(): boolean {
     return $(".left-sidebar-search-input").expectOne().is(":focus");
 }
 
-export function test_clear_search(): void {
-    const $filter = $(".left-sidebar-search-input").expectOne();
-    $filter.val("");
-    $filter.trigger("blur");
-    update_streams_for_search();
-}
-
-export function initiate_search(): void {
-    popovers.hide_all();
-
-    const $filter = $(".left-sidebar-search-input").expectOne();
-
-    sidebar_ui.show_left_sidebar();
-    $filter.trigger("focus");
-
-    stream_cursor.reset();
-}
-
 export function clear_search(): void {
     const $filter = $(".left-sidebar-search-input").expectOne();
     if ($filter.val() !== "") {
         $filter.val("");
-        update_streams_for_search();
+        $filter.trigger("input");
     }
-    stream_cursor.clear();
     $filter.trigger("blur");
 }
 

@@ -1016,7 +1016,7 @@ export function dispatch_normal_event(event) {
                 starred_messages_ui.rerender_ui();
             }
             if (event.property === "web_left_sidebar_unreads_count_summary") {
-                sidebar_ui.update_unread_counts_visibility();
+                stream_list.update_unread_counts_visibility();
             }
             if (event.property === "web_left_sidebar_show_channel_folders") {
                 stream_list.build_stream_list(true);
