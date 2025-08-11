@@ -70,6 +70,7 @@ export default defineConfig({
     integrations: [
         starlight({
             title: "Zulip help center",
+            favicon: "../static/images/favicon.svg",
             components: {
                 Footer: "./src/components/Footer.astro",
                 Head: "./src/components/Head.astro",
