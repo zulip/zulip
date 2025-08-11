@@ -1156,19 +1156,6 @@ li.active-sub-filter {
     visibility: hidden;
 }
 
-/* Don't show the scheduled messages item... */
-li.top_left_reminders,
-li.top_left_scheduled_messages {
-    display: none;
-    /* ...unless there are scheduled messages to show. */
-    &.show-with-reminders,
-    &.show-with-scheduled-messages {
-        /* Use display: grid to preserve the grid
-           layout when visible. */
-        display: grid;
-    }
-}
-
 .left-sidebar-navigation-label-container {
     grid-area: row-content;
     /* The label container itself is also a grid,
@@ -2140,4 +2127,8 @@ li.topic-list-item {
         top: 0;
         z-index: 1;
     }
+}
+
+.top_left_row.hidden-by-filters {
+    display: none !important;
 }
