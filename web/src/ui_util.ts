@@ -343,3 +343,16 @@ export function get_left_sidebar_search_term(): string {
     assert(search_term !== undefined);
     return search_term.trim();
 }
+
+export function disable_left_sidebar_search(): void {
+    if ($<HTMLInputElement>("#left-sidebar-search input").val()) {
+        // Triggle click on the close button to clear the search term and
+        // update the left sidebar.
+        $("#left-sidebar-search .input-close-filter-button").trigger("click");
+    }
+    $("#left-sidebar-search").hide();
+}
+
+export function enable_left_sidebar_search(): void {
+    $("#left-sidebar-search").show();
+}

@@ -35,7 +35,7 @@ export function get_active_user_ids_string(): string | undefined {
     return people.sorted_other_user_ids(users_ids_array).join(",");
 }
 
-type DisplayObject = {
+export type DisplayObject = {
     recipients: string;
     user_ids_string: string;
     is_current_user: boolean;

@@ -2,10 +2,12 @@ import assert from "minimalistic-assert";
 
 import * as channel_folders from "./channel_folders.ts";
 import {$t} from "./i18n.ts";
+import * as narrow_state from "./narrow_state.ts";
 import * as settings_config from "./settings_config.ts";
 import * as stream_data from "./stream_data.ts";
 import * as sub_store from "./sub_store.ts";
 import type {StreamSubscription} from "./sub_store.ts";
+import * as topic_list_data from "./topic_list_data.ts";
 import {user_settings} from "./user_settings.ts";
 import * as util from "./util.ts";
 
@@ -130,6 +132,20 @@ export function sort_groups(stream_ids: number[], search_term: string): StreamLi
         stream_id_to_name,
         word_separator_regex,
     );
+
+    const current_channel_id = narrow_state.stream_id(narrow_state.filter(), true);
+    if (
+        current_channel_id !== undefined &&
+        stream_data.is_subscribed(current_channel_id) &&
+        !stream_ids.includes(current_channel_id) &&
+        // If any of the topics of the channel match the search term, we need to
+        // include the channel in the list of streams.
+        topic_list_data.get_list_info(current_channel_id, false, (topic_names) =>
+            topic_list_data.filter_topics_by_search_term(topic_names, search_term),
+        ).items.length > 0
+    ) {
+        stream_ids.push(current_channel_id);
+    }
 
     const pinned_section: StreamListSection = {
         id: "pinned-streams",

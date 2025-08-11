@@ -21,10 +21,6 @@ let unread_unmuted_count;
 let stream_has_any_unread_mentions;
 
 const topic_list = mock_esm("../src/topic_list");
-mock_esm("../src/scroll_util", {
-    scroll_element_into_container() {},
-    get_scroll_element: ($element) => $element,
-});
 mock_esm("../src/unread", {
     unread_count_info_for_stream: () => ({
         unmuted_count: unread_unmuted_count,
@@ -409,7 +405,6 @@ test_ui("zoom_in_and_zoom_out", ({mock_template}) => {
     $("#stream-filters-container")[0] = {
         dataset: {},
     };
-    stream_list.initialize_stream_cursor();
 
     mock_template("filter_topics.hbs", false, () => "<filter-topics-stub>");
     let filter_topics_appended = false;
@@ -487,26 +482,6 @@ test_ui("narrowing", ({override_rewire}) => {
     stream_list.handle_message_view_deactivated();
     assert.equal(removed_classes, "active-filter stream-expanded");
     assert.ok(topics_closed);
-});
-
-test_ui("focusout_user_filter", () => {
-    stream_list.set_event_handlers({show_channel_feed() {}});
-    const e = {};
-    const click_handler = $(".left-sidebar-search-input").get_on_handler("focusout");
-    click_handler(e);
-});
-
-test_ui("focus_user_filter", () => {
-    stream_list.set_event_handlers({show_channel_feed() {}});
-
-    initialize_stream_data();
-    stream_list.build_stream_list();
-
-    const e = {
-        stopPropagation() {},
-    };
-    const click_handler = $(".left-sidebar-search-input").get_on_handler("click");
-    click_handler(e);
 });
 
 test_ui("sort_streams", ({override_rewire}) => {

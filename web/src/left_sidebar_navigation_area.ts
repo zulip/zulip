@@ -23,7 +23,7 @@ const STATES = {
     CONDENSED: "condensed",
 };
 
-function restore_views_state(): void {
+export function restore_views_state(): void {
     if (page_params.is_spectator) {
         // Spectators should always see the expanded view.
         return;

@@ -7,7 +7,7 @@ import * as common from "./lib/common.ts";
 async function get_stream_li(page: Page, stream_name: string): Promise<string> {
     const stream_id = await common.get_stream_id(page, stream_name);
     assert.ok(stream_id !== undefined);
-    return `#stream_filters [data-stream-id="${CSS.escape(stream_id.toString())}"]`;
+    return `#stream_filters .narrow-filter[data-stream-id="${CSS.escape(stream_id.toString())}"]`;
 }
 
 async function expect_home(page: Page): Promise<void> {
@@ -304,7 +304,7 @@ async function test_search_venice(page: Page): Promise<void> {
     await common.clear_and_type(page, ".left-sidebar-search-input", "vEnI"); // Must be case insensitive.
     await page.waitForSelector(await get_stream_li(page, "Denmark"), {hidden: true});
     await page.waitForSelector(await get_stream_li(page, "Verona"), {hidden: true});
-    await page.waitForSelector((await get_stream_li(page, "Venice")) + ".highlighted_row", {
+    await page.waitForSelector((await get_stream_li(page, "Venice")) + " .highlighted_row", {
         visible: true,
     });
 
@@ -328,29 +328,17 @@ async function test_stream_search_filters_stream_list(page: Page): Promise<void>
     // Enter the search box and test highlighted suggestion
     await page.click(".left-sidebar-search-input");
 
-    await page.waitForSelector("#stream_filters .highlighted_row", {visible: true});
-    // First stream in list gets highlighted on clicking search.
-    await page.waitForSelector((await get_stream_li(page, "core team")) + ".highlighted_row", {
-        visible: true,
-    });
+    await page.waitForSelector(".top_left_inbox.top_left_row.highlighted_row", {visible: true});
 
-    await page.waitForSelector((await get_stream_li(page, "Denmark")) + ".highlighted_row", {
-        hidden: true,
-    });
-    await page.waitForSelector((await get_stream_li(page, "sandbox")) + ".highlighted_row", {
-        hidden: true,
-    });
-    await page.waitForSelector((await get_stream_li(page, "Venice")) + ".highlighted_row", {
-        hidden: true,
-    });
-    await page.waitForSelector((await get_stream_li(page, "Verona")) + ".highlighted_row", {
-        hidden: true,
-    });
-    await page.waitForSelector((await get_stream_li(page, "Zulip")) + ".highlighted_row", {
+    await page.waitForSelector((await get_stream_li(page, "Verona")) + " .highlighted_row", {
         hidden: true,
     });
 
     // Navigate through suggestions using arrow keys
+    // Reach core team
+    for (let i = 0; i < 10; i += 1) {
+        await arrow(page, "Down");
+    }
     await arrow(page, "Down"); // core team -> Denmark
     await arrow(page, "Down"); // Denmark -> sandbox
     await arrow(page, "Up"); // sandbox -> Denmark
@@ -361,20 +349,20 @@ async function test_stream_search_filters_stream_list(page: Page): Promise<void>
     await arrow(page, "Down"); // sandbox-> Venice
     await arrow(page, "Down"); // Venice -> Verona
 
-    await page.waitForSelector((await get_stream_li(page, "Verona")) + ".highlighted_row", {
+    await page.waitForSelector((await get_stream_li(page, "Verona")) + " .highlighted_row", {
         visible: true,
     });
 
-    await page.waitForSelector((await get_stream_li(page, "core team")) + ".highlighted_row", {
+    await page.waitForSelector((await get_stream_li(page, "core team")) + " .highlighted_row", {
         hidden: true,
     });
-    await page.waitForSelector((await get_stream_li(page, "Denmark")) + ".highlighted_row", {
+    await page.waitForSelector((await get_stream_li(page, "Denmark")) + " .highlighted_row", {
         hidden: true,
     });
-    await page.waitForSelector((await get_stream_li(page, "Venice")) + ".highlighted_row", {
+    await page.waitForSelector((await get_stream_li(page, "Venice")) + " .highlighted_row", {
         hidden: true,
     });
-    await page.waitForSelector((await get_stream_li(page, "Zulip")) + ".highlighted_row", {
+    await page.waitForSelector((await get_stream_li(page, "Zulip")) + " .highlighted_row", {
         hidden: true,
     });
     await test_search_venice(page);
