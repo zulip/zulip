@@ -95,7 +95,7 @@ class WebhookUrlOption:
                     label="Exclude notifications from private repositories",
                     validator=check_bool,
                 )
-            case PresetUrlOption.CHANNEL_MAPPING:  # nocoverage # Not used yet
+            case PresetUrlOption.CHANNEL_MAPPING:
                 return cls(
                     name=config.value,
                     label="",
