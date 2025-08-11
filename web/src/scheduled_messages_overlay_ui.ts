@@ -24,7 +24,7 @@ type ScheduledMessageRenderContext = ScheduledMessage &
               formatted_send_at_time: string;
               recipient_bar_color: string;
               stream_id: number;
-              stream_name: string;
+              stream_name: string | undefined;
               stream_privacy_icon_color: string;
               topic_display_name: string;
               is_empty_string_topic: boolean;
@@ -94,12 +94,15 @@ function format(scheduled_messages: ScheduledMessage[]): ScheduledMessageRenderC
         const formatted_send_at_time = timerender.get_full_datetime(time, "time");
         if (scheduled_msg.type === "stream") {
             const stream_id = scheduled_msg.to;
-            const stream_name = sub_store.maybe_get_stream_name(stream_id);
+            let stream_name;
+            const stream = sub_store.get(stream_id);
+            if (stream) {
+                stream_name = sub_store.maybe_get_stream_name(stream_id);
+            }
             const color = stream_data.get_color(stream_id);
             const recipient_bar_color = stream_color.get_recipient_bar_color(color);
             const stream_privacy_icon_color = stream_color.get_stream_privacy_icon_color(color);
 
-            assert(stream_name !== undefined);
             scheduled_msg_render_context = {
                 ...scheduled_msg,
                 is_stream: true as const,
