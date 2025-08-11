@@ -413,7 +413,9 @@ instructions for other supported platforms.
       ```bash
       /home/zulip/deployments/current/manage.py process_queue --all
       ```
-      to process any events still in the queues. You can also decide
+      ...which will start all workers consuming any remaining events.
+      You should cancel this (with ^C) once `rabitmqctl list_queues`
+      shows that no queues contain events anymore. You can also decide
       to skip this step if you're OK losing a bit of data of the
       relevant type.
    1. As root, run `apt purge rabbitmq-server` to remove the RabbitMQ
