@@ -421,3 +421,10 @@ export function initialize_right_sidebar(): void {
         },
     );
 }
+
+export function focus_pm_search_filter(): void {
+    popovers.hide_all();
+    show_left_sidebar();
+    const $filter = $(".direct-messages-list-filter").expectOne();
+    $filter.trigger("focus");
+}
