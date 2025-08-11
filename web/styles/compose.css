@@ -1283,7 +1283,10 @@ textarea.new_message_textarea {
     }
 }
 
-.low-attention-recipient-row {
+/* For the sake of keyboard use, we do not want to apply
+   these styles when any element (the picker, user pills)
+   has focus. */
+.low-attention-recipient-row:not(:focus-within) {
     &#compose-recipient {
         .decorated-channel-name,
         .conversation-arrow,
