@@ -750,7 +750,9 @@ export function show_user_profile(user: User, default_tab_key = "profile-tab"): 
     if (can_manage_profile) {
         const manage_profile_label = user.is_bot
             ? $t({defaultMessage: "Manage bot"})
-            : $t({defaultMessage: "Manage user"});
+            : people.is_my_user_id(user.user_id)
+              ? $t({defaultMessage: "Edit profile"})
+              : $t({defaultMessage: "Manage user"});
         const manage_profile_tab = {
             label: manage_profile_label,
             key: "manage-profile-tab",
