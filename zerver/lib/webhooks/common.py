@@ -64,6 +64,7 @@ class PresetUrlOption(str, Enum):
 
 class UrlMappingOptions(str, Enum):
     CHANNELS = "channels"
+    TOPICS = "topics"
 
 
 @dataclass

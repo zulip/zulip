@@ -305,13 +305,21 @@ Currently configured preset URL options:
   [generated integration URL](/help/generate-integration-url).
 
 - **`MAPPING`**: This preset is intended to be used for [chat-app
-  integrations](/integrations/communication) (like Slack), and adds a
-  special option, **Matching Zulip channel**, to the UI for where to send
-  Zulip notification messages. This special option maps the notification
-  messages to Zulip channels that match the messages' original channel
-  name in the third-party app. When selected, this requires setting a
-  single topic for notification messages, and adds `&mapping=channels`
-  to the [generated integration URL](/help/generate-integration-url).
+  integrations](/integrations/communication) (like Slack). It offers
+  more UI options for where to send Zulip notification messages.
+  To choose which `MAPPING` option to use, pass one of the supported
+  strings below as the value of the `label` parameter in `build_preset_config`:
+    - `"channels"`: This adds a new dropdown option called **Matching Zulip
+      channels**. This option is used to map the notification messages to Zulip
+      channels that match the messages' original channel name in the third-party
+      app. When selected, this requires setting a single topic for
+      notification messages, and adds `&mapping=channels` to the
+      [generated integration URL](/help/generate-integration-url).
+    - `"topics"`: This adds a new dropdown option called **Matching Zulip
+      topic**. This option is used to map the notification messages to Zulip
+      topics that match the messages' original channel name in the third-party
+      app. When selected, this adds `&mapping=topics` to the
+      [generated integration URL](/help/generate-integration-url).
 
 ## Step 4: Manually testing the webhook
 

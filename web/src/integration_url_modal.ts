@@ -54,6 +54,10 @@ export function show_generate_integration_url_modal(api_key: string): void {
         name: $t_html({defaultMessage: "Matching Zulip channel"}),
         unique_id: -2,
     };
+    const map_topics_option: Option = {
+        name: $t_html({defaultMessage: "Matching Zulip topic"}),
+        unique_id: -3,
+    };
 
     const html_body = render_generate_integration_url_modal({
         default_url_message,
@@ -254,6 +258,9 @@ export function show_generate_integration_url_modal(api_key: string): void {
                         if (stream_input === map_channels_option?.unique_id) {
                             params.delete("stream");
                             params.set(PresetUrlOption.MAPPING, "channels");
+                        } else if (stream_input === map_topics_option?.unique_id) {
+                            params.delete("stream");
+                            params.set(PresetUrlOption.MAPPING, "topics");
                         }
                     } else if (option.key === PresetUrlOption.BRANCHES) {
                         if ($("#integration-url-all-branches").prop("checked")) {
@@ -379,6 +386,9 @@ export function show_generate_integration_url_modal(api_key: string): void {
                     case "channels":
                         additional_options.push(map_channels_option);
                         break;
+                    case "topics":
+                        additional_options.push(map_topics_option);
+                        break;
                 }
             }
             return additional_options;
@@ -410,9 +420,11 @@ export function show_generate_integration_url_modal(api_key: string): void {
             const user_selected_option = stream_input_dropdown_widget.value();
             if (
                 user_selected_option &&
-                [direct_messages_option.unique_id, map_channels_option.unique_id].includes(
-                    user_selected_option,
-                )
+                [
+                    direct_messages_option.unique_id,
+                    map_channels_option.unique_id,
+                    map_topics_option.unique_id,
+                ].includes(user_selected_option)
             ) {
                 $override_topic.prop("checked", false).prop("disabled", true);
                 $override_topic.closest(".input-group").addClass("control-label-disabled");
