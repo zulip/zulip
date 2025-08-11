@@ -49,7 +49,7 @@ run_test("basics", ({override, override_rewire}) => {
     override(popovers, "hide_all", noop);
     override(sidebar_ui, "show_left_sidebar", noop);
 
-    const $input = $(".stream-list-filter");
+    const $input = $(".left-sidebar-search-input");
 
     expand_sidebar();
 
