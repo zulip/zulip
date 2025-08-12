@@ -85,29 +85,51 @@ export function user_has_folders(): boolean {
     return false;
 }
 
-export function update(event: ChannelFolderUpdateEvent): void {
-    const folder_id = event.channel_folder_id;
+export function update_channel_folder(
+    folder_id: number,
+    property: "name" | "description" | "rendered_description" | "is_archived",
+    value: string | boolean,
+): void {
     const channel_folder = get_channel_folder_by_id(folder_id);
-    if (event.data.name !== undefined) {
-        channel_folder_name_dict.delete(channel_folder.name);
-        channel_folder.name = event.data.name;
-        channel_folder_name_dict.set(channel_folder.name, channel_folder);
-    }
 
-    if (event.data.description !== undefined) {
-        channel_folder.description = event.data.description;
-        assert(event.data.rendered_description !== undefined);
-        channel_folder.rendered_description = event.data.rendered_description;
-        clean_up_description(channel_folder);
-    }
-
-    if (event.data.is_archived !== undefined) {
-        channel_folder.is_archived = event.data.is_archived;
-        channel_folder_name_dict.delete(channel_folder.name);
-        channel_folder_name_dict.set(channel_folder.name, channel_folder);
+    if (property === "is_archived") {
+        assert(typeof value === "boolean");
+        channel_folder.is_archived = value;
         if (channel_folder.is_archived) {
             active_channel_folder_ids.delete(channel_folder.id);
         }
+        return;
+    }
+
+    assert(typeof value === "string");
+    const old_value = channel_folder[property];
+
+    channel_folder[property] = value;
+
+    if (property === "name") {
+        channel_folder_name_dict.delete(old_value);
+        channel_folder_name_dict.set(channel_folder.name, channel_folder);
+    }
+
+    if (property === "rendered_description") {
+        clean_up_description(channel_folder);
+    }
+}
+
+export function update(event: ChannelFolderUpdateEvent): void {
+    const folder_id = event.channel_folder_id;
+    if (event.data.name !== undefined) {
+        update_channel_folder(folder_id, "name", event.data.name);
+    }
+
+    if (event.data.description !== undefined) {
+        update_channel_folder(folder_id, "description", event.data.description);
+        assert(event.data.rendered_description !== undefined);
+        update_channel_folder(folder_id, "rendered_description", event.data.rendered_description);
+    }
+
+    if (event.data.is_archived !== undefined) {
+        update_channel_folder(folder_id, "is_archived", event.data.is_archived);
     }
 }
 
