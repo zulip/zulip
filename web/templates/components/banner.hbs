@@ -9,6 +9,8 @@
         </span>
         {{#if buttons}}
             <span class="banner-action-buttons">
+                {{!-- squash whitespace so :empty selector works when no buttons --}}
+                {{~!-- squash whitespace --~}}
                 {{#each buttons}}
                     {{#if this.intent}}
                         {{> action_button .}}
@@ -16,6 +18,7 @@
                         {{> action_button . intent=../intent}}
                     {{/if}}
                 {{/each}}
+                {{~!-- squash whitespace --~}}
             </span>
         {{/if}}
     </span>
