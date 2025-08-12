@@ -14,7 +14,6 @@ import type {
     unread_direct_message_info_schema,
 } from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
-import * as stream_list_sort from "./stream_list_sort.ts";
 import type {TopicHistoryEntry} from "./stream_topic_history.ts";
 import * as sub_store from "./sub_store.ts";
 import {user_settings} from "./user_settings.ts";
@@ -1013,6 +1012,14 @@ export function num_unread_for_topic(stream_id: number, topic_name: string): num
     return unread_topic_counter.get(stream_id, topic_name);
 }
 
+export function get_channels_with_unread_mentions(): Set<number> {
+    return unread_topic_counter.get_streams_with_unread_mentions();
+}
+
+export function get_channels_with_unmuted_mentions(): Set<number> {
+    return unread_topic_counter.get_streams_with_unmuted_mentions();
+}
+
 export function stream_has_any_unread_mentions(stream_id: number): boolean {
     // This function is somewhat inefficient and thus should not be
     // called in loops, since runs in O(total unread mentions) time.
@@ -1025,46 +1032,6 @@ export function stream_has_any_unmuted_mentions(stream_id: number): boolean {
     // called in loops, since runs in O(total unread mentions) time.
     const streams_with_mentions = unread_topic_counter.get_streams_with_unmuted_mentions();
     return streams_with_mentions.has(stream_id);
-}
-
-export function mention_counts_by_section(): Map<
-    string,
-    {
-        has_mentions: boolean;
-        has_unmuted_mentions: boolean;
-    }
-> {
-    const mentions_map = new Map<
-        string,
-        {
-            has_mentions: boolean;
-            has_unmuted_mentions: boolean;
-        }
-    >();
-    const streams_with_mentions = unread_topic_counter.get_streams_with_unread_mentions();
-    const streams_with_unmuted_mentions = unread_topic_counter.get_streams_with_unmuted_mentions();
-    for (const stream_id of streams_with_mentions) {
-        const section_id = stream_list_sort.current_section_id_for_stream(stream_id);
-        if (section_id === undefined) {
-            continue;
-        }
-        if (!mentions_map.has(section_id)) {
-            mentions_map.set(section_id, {
-                has_mentions: false,
-                has_unmuted_mentions: false,
-            });
-        }
-        mentions_map.get(section_id)!.has_mentions = true;
-    }
-    for (const stream_id of streams_with_unmuted_mentions) {
-        const section_id = stream_list_sort.current_section_id_for_stream(stream_id);
-        if (section_id === undefined) {
-            continue;
-        }
-        mentions_map.get(section_id)!.has_unmuted_mentions = true;
-    }
-
-    return mentions_map;
 }
 
 export function topic_has_any_unread_mentions(stream_id: number, topic: string): boolean {
