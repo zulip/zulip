@@ -570,15 +570,6 @@ def write_instrumentation_reports(full_suite: bool, include_webhooks: bool) -> N
 
         untested_patterns -= exempt_patterns
 
-        # A lot of help/ URLs are part of the untested patterns, which
-        # is due to the switch to the new help center. We exempt them
-        # programmatically below.
-        untested_patterns = {
-            untested_pattern
-            for untested_pattern in untested_patterns
-            if not untested_pattern.startswith("help/")
-        }
-
         var_dir = "var"  # TODO make sure path is robust here
         fn = os.path.join(var_dir, "url_coverage.txt")
         with open(fn, "wb") as f:
@@ -587,7 +578,7 @@ def write_instrumentation_reports(full_suite: bool, include_webhooks: bool) -> N
         if full_suite:
             print(f"INFO: URL coverage report is in {fn}")
 
-        if full_suite and untested_patterns:  # nocoverage -- test suite error handling
+        if full_suite and len(untested_patterns):  # nocoverage -- test suite error handling
             print("\nERROR: Some URLs are untested!  Here's the list of untested URLs:")
             for untested_pattern in sorted(untested_patterns):
                 print(f"   {untested_pattern}")
