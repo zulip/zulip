@@ -208,5 +208,4 @@ class FrontendRegexTestCase(ZulipTestCase):
 
         for input_text, expected in data:
             result = command.extract_strings(input_text)
-            self.assert_length(result, 1)
-            self.assertEqual(result[0], expected)
+            self.assertEqual(result, {expected: expected})
