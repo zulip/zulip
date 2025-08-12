@@ -588,6 +588,42 @@ run_test("channel_folders", ({override}) => {
         assert.equal(folders[0].is_archived, event.data.is_archived);
     }
 
+    event = event_fixtures.channel_folder__reorder;
+    {
+        const folder_1 = {
+            name: "Folder 1",
+            description: "",
+            rendered_description: "",
+            creator_id: null,
+            date_created: 1596710000,
+            id: 2,
+            is_archived: false,
+        };
+        const folder_2 = {
+            name: "Folder 2",
+            description: "",
+            rendered_description: "",
+            creator_id: null,
+            date_created: 1596720000,
+            id: 3,
+            is_archived: false,
+        };
+        channel_folders.add(folder_1);
+        channel_folders.add(folder_2);
+        const stub = make_stub();
+        override(stream_list, "update_streams_sidebar", stub.f);
+
+        dispatch(event);
+
+        assert.equal(stub.num_calls, 1);
+        const folders = channel_folders.get_channel_folders(true);
+        assert.equal(folders.length, 3);
+
+        // new order is [2, 3, 1]
+        assert.equal(folder_1.order, 0);
+        assert.equal(folder_2.order, 1);
+    }
+
     blueslip.expect("error", "Unexpected event type channel_folder/other");
     server_events_dispatch.dispatch_normal_event({type: "channel_folder", op: "other"});
 });

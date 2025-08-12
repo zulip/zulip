@@ -19,6 +19,7 @@ run_test("basics", () => {
         date_created: 1596710000,
         id: 1,
         is_archived: false,
+        order: 0,
     };
     const backend_folder = {
         name: "Backend",
@@ -28,6 +29,7 @@ run_test("basics", () => {
         date_created: 1596720000,
         id: 2,
         is_archived: false,
+        order: 1,
     };
     params.channel_folders = [frontend_folder, backend_folder];
     channel_folders.initialize(params);
@@ -46,6 +48,7 @@ run_test("basics", () => {
         date_created: 1596810000,
         id: 3,
         is_archived: false,
+        order: 2,
     };
     channel_folders.add(devops_folder);
     assert.deepEqual(channel_folders.get_channel_folders(), [
@@ -67,6 +70,12 @@ run_test("basics", () => {
     assert.ok(!channel_folders.is_valid_folder_id(999));
 
     assert.equal(channel_folders.get_channel_folder_by_id(frontend_folder.id), frontend_folder);
+
+    const new_order = [backend_folder.id, devops_folder.id, frontend_folder.id];
+    channel_folders.reorder(new_order);
+    assert.equal(backend_folder.order, 0);
+    assert.equal(devops_folder.order, 1);
+    assert.equal(frontend_folder.order, 2);
 
     const stream_1 = make_stream({
         stream_id: 1,

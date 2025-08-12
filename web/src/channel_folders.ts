@@ -154,3 +154,10 @@ export function get_channels_in_folders_matching_search_term_in_folder_name(
     }
     return channel_ids;
 }
+
+export function reorder(order: number[]): void {
+    for (const [index, folder_id] of order.entries()) {
+        const channel_folder = get_channel_folder_by_id(folder_id);
+        channel_folder.order = index;
+    }
+}
