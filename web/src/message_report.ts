@@ -6,6 +6,7 @@ import render_message_preview from "../templates/message_preview.hbs";
 import render_report_message_modal from "../templates/report_message_modal.hbs";
 
 import * as channel from "./channel.ts";
+import * as condense from "./condense.ts";
 import * as dialog_widget from "./dialog_widget.ts";
 import type {Option} from "./dropdown_widget.ts";
 import * as dropdown_widget from "./dropdown_widget.ts";
@@ -153,10 +154,46 @@ function render_report_message_preview(message: Message): void {
         };
     }
 
+    // Condense the message preview, the main motivation is to hide the
+    // potentially unpleasant message content.
     const rendered_report_message_preview = render_message_preview(render_context);
     $report_message_preview_container.append($(rendered_report_message_preview));
 
     register_message_preview_click_handlers($report_message_preview_container, message.sender_id);
+
+    condense.show_message_expander(
+        $report_message_preview_container,
+        null,
+        $t_html({defaultMessage: "Show message"}),
+    );
+
+    $report_message_preview_container.on("click", ".message_expander", (e) => {
+        const $content = $report_message_preview_container.find(".message_content");
+        if ($content.hasClass("collapsed")) {
+            $content.removeClass("collapsed");
+            condense.show_message_condenser(
+                $report_message_preview_container,
+                null,
+                $t_html({defaultMessage: "Hide message"}),
+            );
+        }
+        e.preventDefault();
+        e.stopPropagation();
+    });
+
+    $report_message_preview_container.on("click", ".message_condenser", (e) => {
+        const $content = $report_message_preview_container.find(".message_content");
+        if (!$content.hasClass("collapsed")) {
+            $content.addClass("collapsed");
+            condense.show_message_expander(
+                $report_message_preview_container,
+                null,
+                $t_html({defaultMessage: "Show message"}),
+            );
+        }
+        e.preventDefault();
+        e.stopPropagation();
+    });
 }
 
 export function show_message_report_modal(message: Message): void {
