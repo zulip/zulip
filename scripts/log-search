@@ -111,6 +111,11 @@ def parser() -> argparse.ArgumentParser:
         "-C",
         help="Only include requests whose client/user-agent contains this string",
     )
+    filtering.add_argument(
+        "--extra",
+        "-X",
+        help="Only include requests whose logline includes this in [extra] flags",
+    )
 
     output = parser.add_argument_group("Output")
     output.add_argument("--full-line", "-F", help="Show full matching line", action="store_true")
@@ -167,9 +172,9 @@ PYTHON_LOG_LINE_RE = re.compile(
       (?P<method> [A-Z]+ ) \s+
       (?P<code> \d+ ) \s+
       (?P<duration> \S+ ) \s+ # This can be "217ms" or "1.7s"
-      ( \( [^)]+ \) \s+ )*
+      ( \( (?P<perf> [^)]+ ) \) \s+ )*
       (?P<full_path> (?P<path> /\S* ) ) \s+
-      .*   # Multiple extra things can go here
+      (?P<extra> .* )   # Multiple extra things can go here
       \(
         (?P<user>
            ( (?P<user_id> \d+ ) | unauth )
@@ -413,6 +418,12 @@ def parse_filters(
     if args.client:
         filter_funcs.append(lambda m, t=args.client: t in m["user_agent"])
         filter_terms.append(args.client)
+
+    if args.extra:
+        if args.nginx:
+            raise parser().error("nginx logs do not contain [extra] data; try without --nginx")
+        filter_funcs.append(lambda m, t=args.extra: t in m["extra"])
+        filter_terms.append(args.extra)
 
     return (filter_types, filter_funcs, filter_terms)
 
