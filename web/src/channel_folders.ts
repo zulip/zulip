@@ -116,7 +116,7 @@ export function get_stream_ids_in_folder(folder_id: number): number[] {
     return streams.map((sub) => sub.stream_id);
 }
 
-export function get_channels_in_folders_matching_seach_term_in_folder_name(
+export function get_channels_in_folders_matching_search_term_in_folder_name(
     search_term: string,
 ): number[] {
     const channel_folders = get_channel_folders();

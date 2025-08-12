@@ -153,7 +153,7 @@ export function sort_groups(stream_ids: number[], search_term: string): StreamLi
         stream_ids = [
             ...new Set([
                 ...stream_ids,
-                ...channel_folders.get_channels_in_folders_matching_seach_term_in_folder_name(
+                ...channel_folders.get_channels_in_folders_matching_search_term_in_folder_name(
                     search_term,
                 ),
             ]),
