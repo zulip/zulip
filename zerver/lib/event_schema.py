@@ -39,6 +39,7 @@ from zerver.lib.event_types import (
     EventInvitesChanged,
     EventLegacyPresence,
     EventMessage,
+    EventModernPresence,
     EventMutedTopics,
     EventMutedUsers,
     EventNavigationViewAdd,
@@ -247,6 +248,7 @@ _check_channel_folder_update = make_checker(EventChannelFolderUpdate)
 _check_delete_message = make_checker(EventDeleteMessage)
 _check_has_zoom_token = make_checker(EventHasZoomToken)
 _check_legacy_presence = make_checker(EventLegacyPresence)
+_check_modern_presence = make_checker(EventModernPresence)
 _check_muted_topics = make_checker(EventMutedTopics)
 _check_realm_bot_add = make_checker(EventRealmBotAdd)
 _check_realm_bot_update = make_checker(EventRealmBotUpdate)
@@ -355,6 +357,15 @@ def check_legacy_presence(
     [(event_presence_key, event_presence_value)] = event["presence"].items()
     assert event_presence_key == presence_key
     assert event_presence_value["status"] == status
+
+
+def check_modern_presence(var_name: str, event: dict[str, object], user_id: int) -> None:
+    _check_modern_presence(var_name, event)
+
+    assert isinstance(event["presences"], dict)
+
+    [(event_presences_key, event_presences_value)] = event["presences"].items()
+    assert event_presences_key == str(user_id)
 
 
 def check_realm_bot_add(

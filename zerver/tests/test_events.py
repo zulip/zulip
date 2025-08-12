@@ -185,6 +185,7 @@ from zerver.lib.event_schema import (
     check_invites_changed,
     check_legacy_presence,
     check_message,
+    check_modern_presence,
     check_muted_topics,
     check_muted_users,
     check_navigation_view_add,
@@ -360,6 +361,7 @@ class BaseAction(ZulipTestCase):
         include_deactivated_groups: bool = False,
         archived_channels: bool = False,
         allow_empty_topic_name: bool = True,
+        simplified_presence_events: bool = False,
     ) -> Iterator[list[dict[str, Any]]]:
         """
         Make sure we have a clean slate of client descriptors for these tests.
@@ -392,6 +394,7 @@ class BaseAction(ZulipTestCase):
                 user_list_incomplete=user_list_incomplete,
                 include_deactivated_groups=include_deactivated_groups,
                 archived_channels=archived_channels,
+                simplified_presence_events=simplified_presence_events,
             )
         )
 
@@ -457,6 +460,7 @@ class BaseAction(ZulipTestCase):
             user_list_incomplete=user_list_incomplete,
             include_deactivated_groups=include_deactivated_groups,
             archived_channels=archived_channels,
+            simplified_presence_events=simplified_presence_events,
         )
         post_process_state(
             self.user_profile, hybrid_state, notification_settings_null, allow_empty_topic_name
@@ -490,6 +494,7 @@ class BaseAction(ZulipTestCase):
             user_list_incomplete=user_list_incomplete,
             include_deactivated_groups=include_deactivated_groups,
             archived_channels=archived_channels,
+            simplified_presence_events=simplified_presence_events,
         )
         post_process_state(
             self.user_profile, normal_state, notification_settings_null, allow_empty_topic_name
@@ -1852,6 +1857,16 @@ class NormalActionsTest(BaseAction):
             presence_key="website",
             status="active",
         )
+
+    def test_modern_presence_events(self) -> None:
+        with self.verify_action(simplified_presence_events=True) as events:
+            do_update_user_presence(
+                self.user_profile,
+                get_client("ZulipAndroid/1.0"),
+                timezone_now(),
+                UserPresence.LEGACY_STATUS_ACTIVE_INT,
+            )
+        check_modern_presence("events[0]", events[0], self.user_profile.id)
 
     def test_presence_events_multiple_clients(self) -> None:
         now = timezone_now()

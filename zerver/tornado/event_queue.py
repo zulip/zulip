@@ -84,6 +84,7 @@ class ClientDescriptor:
         include_deactivated_groups: bool,
         archived_channels: bool,
         empty_topic_name: bool,
+        simplified_presence_events: bool,
     ) -> None:
         # TODO: We eventually want to upstream this code to the caller, but
         # serialization concerns make it a bit difficult.
@@ -118,6 +119,7 @@ class ClientDescriptor:
         self.include_deactivated_groups = include_deactivated_groups
         self.archived_channels = archived_channels
         self.empty_topic_name = empty_topic_name
+        self.simplified_presence_events = simplified_presence_events
 
         # Default for lifespan_secs is DEFAULT_EVENT_QUEUE_TIMEOUT_SECS;
         # but users can set it as high as MAX_QUEUE_TIMEOUT_SECS.
@@ -151,6 +153,7 @@ class ClientDescriptor:
             include_deactivated_groups=self.include_deactivated_groups,
             archived_channels=self.archived_channels,
             empty_topic_name=self.empty_topic_name,
+            simplified_presence_events=self.simplified_presence_events,
         )
 
     @override
@@ -191,6 +194,7 @@ class ClientDescriptor:
             include_deactivated_groups=d.get("include_deactivated_groups", False),
             archived_channels=d.get("archived_channels", False),
             empty_topic_name=d.get("empty_topic_name", False),
+            simplified_presence_events=d.get("simplified_presence_events", False),
         )
         ret.last_connection_time = d["last_connection_time"]
         return ret
@@ -1276,7 +1280,7 @@ def process_presence_event(event: Mapping[str, Any], users: Iterable[int]) -> No
         type="presence",
         user_id=event["user_id"],
         server_timestamp=event["server_timestamp"],
-        presence=event["presence"],
+        presence=event["legacy_presence"],
     )
 
     legacy_event = dict(
@@ -1284,13 +1288,20 @@ def process_presence_event(event: Mapping[str, Any], users: Iterable[int]) -> No
         user_id=event["user_id"],
         email=event["email"],
         server_timestamp=event["server_timestamp"],
-        presence=event["presence"],
+        presence=event["legacy_presence"],
+    )
+
+    modern_event = dict(
+        type="presence",
+        presences={str(event["user_id"]): event["modern_presence"]},
     )
 
     for user_profile_id in users:
         for client in get_client_descriptors_for_user(user_profile_id):
             if client.accepts_event(event):
-                if client.slim_presence:
+                if client.simplified_presence_events:
+                    client.add_event(modern_event)
+                elif client.slim_presence:
                     client.add_event(slim_event)
                 else:
                     client.add_event(legacy_event)

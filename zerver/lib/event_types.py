@@ -345,6 +345,16 @@ class EventLegacyPresence(EventLegacyPresenceCore):
     email: str | None = None
 
 
+class ModernPresence(BaseModel):
+    active_timestamp: int
+    idle_timestamp: int
+
+
+class EventModernPresence(BaseEvent):
+    type: Literal["presence"]
+    presences: dict[str, ModernPresence]
+
+
 # Type for the legacy user field; the `user_id` field is intended to
 # replace this and we expect to remove this once clients have migrated
 # to support the modern API.
