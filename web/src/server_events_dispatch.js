@@ -145,6 +145,7 @@ export function dispatch_normal_event(event) {
                     channel_folders.reorder(event.order);
                     stream_list.update_streams_sidebar();
                     settings_folders.populate_channel_folders();
+                    inbox_ui.complete_rerender();
                     break;
                 default:
                     blueslip.error("Unexpected event type channel_folder/" + event.op);

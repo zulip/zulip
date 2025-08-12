@@ -169,6 +169,7 @@ type ChannelFolderContext = {
     unread_count: number | undefined;
     is_collapsed: boolean;
     has_unread_mention: boolean;
+    order: number;
 };
 
 const channel_folder_context_properties: (keyof ChannelFolderContext)[] = [
@@ -833,7 +834,7 @@ function get_sorted_row_dict<T extends DirectMessageContext | TopicContext>(
 
 function sort_channel_folders(): void {
     const sorted_channel_folders = [...channel_folders_dict.values()].sort((a, b) => {
-        // Sort OTHER_CHANNELS_FOLDER_ID last, then by name with PINNED_CHANNEL_FOLDER_ID first.
+        // Sort OTHER_CHANNELS_FOLDER_ID last, then by order with PINNED_CHANNEL_FOLDER_ID first.
         if (a.id === OTHER_CHANNELS_FOLDER_ID) {
             return 1;
         }
@@ -846,7 +847,7 @@ function sort_channel_folders(): void {
         if (b.id === PINNED_CHANNEL_FOLDER_ID) {
             return 1;
         }
-        return util.strcmp(a.name, b.name);
+        return a.order - b.order;
     });
 
     channel_folders_dict = new Map(sorted_channel_folders.map((folder) => [folder.id, folder]));
@@ -864,6 +865,14 @@ function get_folder_name_from_id(folder_id: number): string {
     return channel_folders.get_channel_folder_by_id(folder_id).name;
 }
 
+function get_folder_order_from_id(folder_id: number): number {
+    if (folder_id === PINNED_CHANNEL_FOLDER_ID || folder_id === OTHER_CHANNELS_FOLDER_ID) {
+        return 0;
+    }
+
+    return channel_folders.get_channel_folder_by_id(folder_id).order;
+}
+
 function update_channel_folder_data(channel_context: StreamContext): void {
     const folder_id = channel_context.folder_id;
     const folder_header_id = get_channel_folder_header_id(folder_id);
@@ -877,6 +886,7 @@ function update_channel_folder_data(channel_context: StreamContext): void {
             unread_count: channel_context.unread_count,
             is_collapsed: collapsed_containers.has(folder_header_id),
             has_unread_mention: channel_context.mention_in_unread,
+            order: get_folder_order_from_id(folder_id),
         };
         channel_folders_dict.set(folder_id, folder_context);
     } else {
@@ -1964,6 +1974,7 @@ export function update(): void {
         const is_collapsed = collapsed_containers.has(get_channel_folder_header_id(folder_id));
         const header_id = get_channel_folder_header_id(folder_id);
         const is_header_visible = folder_info.unread_count > 0;
+        const order = get_folder_order_from_id(folder_id);
         channel_folders_dict.set(folder_id, {
             header_id,
             is_header_visible,
@@ -1972,6 +1983,7 @@ export function update(): void {
             has_unread_mention: folder_info.has_unread_mention,
             name,
             is_collapsed,
+            order,
         });
 
         if (folder_dict === undefined) {
