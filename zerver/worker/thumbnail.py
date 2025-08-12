@@ -59,8 +59,9 @@ def ensure_thumbnails(image_attachment: ImageAttachment) -> int:
         return 0
 
     written_images = 0
-    image_bytes = BytesIO()
-    save_attachment_contents(image_attachment.path_id, image_bytes)
+    with BytesIO() as f:
+        save_attachment_contents(image_attachment.path_id, f)
+        image_bytes = f.getvalue()
     try:
         # TODO: We could save some computational time by using the same
         # bytes if multiple resolutions are larger than the source
@@ -96,7 +97,7 @@ def ensure_thumbnails(image_attachment: ImageAttachment) -> int:
                 else:
                     load_opts = "n=1"
             resized = pyvips.Image.thumbnail_buffer(
-                image_bytes.getbuffer(),
+                image_bytes,
                 thumbnail_format.max_width,
                 height=thumbnail_format.max_height,
                 option_string=load_opts,
