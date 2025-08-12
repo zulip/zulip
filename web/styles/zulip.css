@@ -2245,6 +2245,16 @@ body:not(.spectator-view) {
                 "item-text .           " minmax(0, auto) / minmax(0, 1fr)
                 minmax(0, auto);
             align-items: center;
+
+            &:has(.dropdown-list-buttons) {
+                grid-template-rows: 1.75em minmax(0, auto);
+                align-items: start;
+
+                .dropdown-list-text-neutral {
+                    padding-top: 0.2em;
+                    align-self: start;
+                }
+            }
         }
 
         .dropdown-list-text-neutral {
