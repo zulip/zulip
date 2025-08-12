@@ -77,6 +77,8 @@ vendor = distro_info["ID"]
 os_version = distro_info["VERSION_ID"]
 if vendor == "debian" and os_version == "12":  # bookworm
     POSTGRESQL_VERSION = "15"
+elif vendor == "debian" and os_version == "13":  # trixie
+    POSTGRESQL_VERSION = "17"
 elif vendor == "ubuntu" and os_version == "22.04":  # jammy
     POSTGRESQL_VERSION = "14"
 elif vendor == "ubuntu" and os_version == "24.04":  # noble
@@ -150,7 +152,7 @@ COMMON_YUM_DEPENDENCIES = [
 
 BUILD_GROONGA_FROM_SOURCE = False
 BUILD_PGROONGA_FROM_SOURCE = False
-if (vendor == "debian" and os_version in []) or (vendor == "ubuntu" and os_version in []):
+if (vendor == "debian" and os_version in ["13"]) or (vendor == "ubuntu" and os_version in []):
     # For platforms without a PGroonga release, we need to build it
     # from source.
     BUILD_PGROONGA_FROM_SOURCE = True

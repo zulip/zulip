@@ -28,7 +28,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          # Base images are built using `tools/ci/Dockerfile.prod.template`.
+          # Base images are built using `tools/ci/Dockerfile`.
           # The comments at the top explain how to build and upload these images.
           # Ubuntu 22.04 ships with Python 3.10.12.
           - docker_image: zulip/ci:jammy
@@ -46,6 +46,12 @@ jobs:
           - docker_image: zulip/ci:noble
             name: Ubuntu 24.04 (Python 3.12, backend)
             os: noble
+            include_documentation_tests: false
+            include_frontend_tests: false
+          # Debian 13 ships with Python 3.13.5.
+          - docker_image: zulip/ci:trixie
+            name: Debian 13 (Python 3.13, backend)
+            os: trixie
             include_documentation_tests: false
             include_frontend_tests: false
 

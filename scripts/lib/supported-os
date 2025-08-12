@@ -16,7 +16,7 @@ if [ -f /etc/os-release ]; then
 fi
 
 case "$os_id $os_version_id" in
-    'debian 12' | 'ubuntu 22.04' | 'ubuntu 24.04')
+    'debian 12' | 'debian 13' | 'ubuntu 22.04' | 'ubuntu 24.04')
         exit 0
         ;;
     *)
