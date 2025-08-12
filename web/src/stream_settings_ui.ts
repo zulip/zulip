@@ -11,6 +11,7 @@ import render_stream_settings_overlay from "../templates/stream_settings/stream_
 import type {Banner} from "./banners.ts";
 import * as blueslip from "./blueslip.ts";
 import * as browser_history from "./browser_history.ts";
+import * as channel_folders from "./channel_folders.ts";
 import * as components from "./components.ts";
 import type {Toggle} from "./components.ts";
 import * as compose_banner from "./compose_banner.ts";
@@ -894,6 +895,7 @@ function setup_page(callback: () => void): void {
             new_stream_announcements_stream,
         );
         const realm_has_archived_channels = stream_data.get_archived_subs().length > 0;
+        const realm_has_channel_folders = channel_folders.get_active_folder_ids().size > 0;
 
         const template_data = {
             new_stream_announcements_stream_sub,
@@ -923,6 +925,7 @@ function setup_page(callback: () => void): void {
             has_billing_access: settings_data.user_has_billing_access(),
             is_admin: current_user.is_admin,
             empty_string_topic_display_name: util.get_final_topic_display_name(""),
+            realm_has_channel_folders,
         };
 
         const rendered = render_stream_settings_overlay(template_data);
