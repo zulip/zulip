@@ -674,7 +674,7 @@ class EmptyTopicNameTest(ZulipTestCase):
             "narrow": orjson.dumps(
                 [
                     {"operator": "channel", "operand": "Denmark"},
-                    {"operator": "topic", "operand": Message.EMPTY_TOPIC_FALLBACK_NAME},
+                    {"operator": "exact-topic", "operand": Message.EMPTY_TOPIC_FALLBACK_NAME},
                 ]
             ).decode(),
         }
