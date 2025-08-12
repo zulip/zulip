@@ -18,12 +18,11 @@ import {
     type RealmGroupSettingNameSupportingAnonymousGroups,
     realm_group_setting_name_supporting_anonymous_groups_schema,
 } from "./group_permission_settings.ts";
-import * as hash_util from "./hash_util.ts";
 import {$t, $t_html, get_language_name} from "./i18n.ts";
 import * as information_density from "./information_density.ts";
 import * as keydown_util from "./keydown_util.ts";
 import * as loading from "./loading.ts";
-import * as message_store from "./message_store.ts";
+import * as people from "./people.ts";
 import * as pygments_data from "./pygments_data.ts";
 import * as realm_icon from "./realm_icon.ts";
 import * as realm_logo from "./realm_logo.ts";
@@ -406,13 +405,9 @@ function update_view_welcome_bot_custom_message_button_status(
     }
 
     assert(message_id !== undefined);
-    $view_message_button.attr("data-message-id", message_id);
     $view_message_button.on("click", (e) => {
         e.preventDefault();
-        const message_id = Number($view_message_button.attr("data-message-id"));
-        const message = message_store.get(message_id);
-        assert(message !== undefined);
-        window.location.href = hash_util.by_conversation_and_time_url(message);
+        window.location.href = `#narrow/dm/${people.WELCOME_BOT.user_id}/near/${message_id}`;
     });
 }
 
