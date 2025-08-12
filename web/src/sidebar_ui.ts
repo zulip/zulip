@@ -466,16 +466,32 @@ export function initialize_right_sidebar(): void {
 }
 
 function all_rows(): JQuery {
+    // NOTE: This function is designed to be used for keyboard navigation purposes.
     // This function returns all the rows in the left sidebar.
     // It is used to find the first key for the ListCursor.
-    let $all_rows = $(".top_left_row, .bottom_left_row").not(".hidden-by-filters");
+    const $all_rows = $(".top_left_row, .bottom_left_row").not(".hidden-by-filters");
     // Remove rows hidden due to being inactive or muted.
     const $inactive_or_muted_rows = $(
         "#streams_list .stream-list-section-container:not(.showing-inactive-or-muted)" +
             " .inactive-or-muted-in-channel-folder .bottom_left_row:not(.hidden-by-filters)",
     );
-    $all_rows = $all_rows.not($inactive_or_muted_rows);
-    return $all_rows;
+    // Remove rows in collapsed sections / folders.
+    const $collapsed_views = $(
+        "#views-label-container.showing-condensed-navigation +" +
+            " #left-sidebar-navigation-list .top_left_row",
+    ).not(".top-left-active-filter");
+    const $collapsed_channels = $(
+        ".stream-list-section-container.collapsed .narrow-filter:not(.stream-expanded) .bottom_left_row",
+    );
+    const $hidden_topic_rows = $(
+        ".stream-list-section-container.collapsed .topic-list-item:not(.active-sub-filter).bottom_left_row",
+    );
+
+    return $all_rows
+        .not($inactive_or_muted_rows)
+        .not($collapsed_views)
+        .not($collapsed_channels)
+        .not($hidden_topic_rows);
 }
 
 class LeftSidebarListCursor extends ListCursor<JQuery> {
