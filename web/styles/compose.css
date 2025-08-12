@@ -1901,8 +1901,6 @@ textarea.new_message_textarea {
 
     .dropdown-list .dropdown-list-item-common-styles {
         padding: 0.3571em 0.7143em; /* 5px 10px at 14px/em */
-        display: flex;
-        flex-direction: column;
         /* Make content appear more distinct from
            the snippet name. */
         border-bottom: solid 1px var(--color-border-popover-menu-separator);
