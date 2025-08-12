@@ -147,6 +147,19 @@ export function sort_groups(stream_ids: number[], search_term: string): StreamLi
         stream_ids.push(current_channel_id);
     }
 
+    // If the channel folder matches the search term, include all channels
+    // of that folder.
+    if (user_settings.web_left_sidebar_show_channel_folders && search_term) {
+        stream_ids = [
+            ...new Set([
+                ...stream_ids,
+                ...channel_folders.get_channels_in_folders_matching_seach_term_in_folder_name(
+                    search_term,
+                ),
+            ]),
+        ];
+    }
+
     const pinned_section: StreamListSection = {
         id: "pinned-streams",
         folder_id: null,

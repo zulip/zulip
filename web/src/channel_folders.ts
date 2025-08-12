@@ -5,6 +5,7 @@ import {FoldDict} from "./fold_dict.ts";
 import type {ChannelFolderUpdateEvent} from "./server_event_types.ts";
 import type {StateData, channel_folder_schema} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
+import * as util from "./util.ts";
 
 export type ChannelFolder = z.infer<typeof channel_folder_schema>;
 
@@ -101,4 +102,21 @@ export function update(event: ChannelFolderUpdateEvent): void {
 export function get_stream_ids_in_folder(folder_id: number): number[] {
     const streams = stream_data.get_unsorted_subs().filter((sub) => sub.folder_id === folder_id);
     return streams.map((sub) => sub.stream_id);
+}
+
+export function get_channels_in_folders_matching_seach_term_in_folder_name(
+    search_term: string,
+): number[] {
+    const channel_folders = get_channel_folders();
+    const matching_channel_folders = util.filter_by_word_prefix_match(
+        channel_folders,
+        search_term,
+        (channel_folder) => channel_folder.name,
+    );
+
+    const channel_ids: number[] = [];
+    for (const channel_folder of matching_channel_folders) {
+        channel_ids.push(...get_stream_ids_in_folder(channel_folder.id));
+    }
+    return channel_ids;
 }
