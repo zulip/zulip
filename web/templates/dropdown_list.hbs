@@ -5,11 +5,15 @@
             <span class="dropdown-list-item-name">
                 {{#if bold_current_selection}}
                     <span class="dropdown-list-text-selected">{{name}}</span>
-                    {{#if has_edit_icon}}
-                        {{> components/icon_button custom_classes="dropdown-list-edit dropdown-list-control-button" intent="neutral" icon="edit" aria-label=edit_icon_label }}
-                    {{/if}}
-                    {{#if has_delete_icon}}
-                        {{> components/icon_button custom_classes="dropdown-list-delete dropdown-list-control-button" intent="danger" icon="trash" aria-label=delete_icon_label }}
+                    {{# if (or has_edit_icon has_delete_icon)}}
+                    <span class="dropdown-list-buttons">
+                        {{#if has_edit_icon}}
+                            {{> components/icon_button custom_classes="dropdown-list-edit dropdown-list-control-button" intent="neutral" icon="edit" aria-label=edit_icon_label }}
+                        {{/if}}
+                        {{#if has_delete_icon}}
+                            {{> components/icon_button custom_classes="dropdown-list-delete dropdown-list-control-button" intent="danger" icon="trash" aria-label=delete_icon_label }}
+                        {{/if}}
+                    </span>
                     {{/if}}
                 {{else}}
                     <span class="dropdown-list-text-neutral">{{name}}</span>
@@ -45,11 +49,15 @@
                 {{else}}
                     <span class="dropdown-list-text-neutral">{{name}}</span>
                 {{/if}}
-                {{#if has_edit_icon}}
-                    {{> components/icon_button custom_classes="dropdown-list-edit dropdown-list-control-button" intent="neutral" icon="edit" aria-label=(t "Edit folder") }}
-                {{/if}}
-                {{#if has_delete_icon}}
-                    {{> components/icon_button custom_classes="dropdown-list-delete dropdown-list-control-button" intent="danger" icon="trash" aria-label=(t "Delete folder") }}
+                {{# if (or has_edit_icon has_delete_icon)}}
+                <span class="dropdown-list-buttons">
+                    {{#if has_edit_icon}}
+                        {{> components/icon_button custom_classes="dropdown-list-edit dropdown-list-control-button" intent="neutral" icon="edit" aria-label=(t "Edit folder") }}
+                    {{/if}}
+                    {{#if has_delete_icon}}
+                        {{> components/icon_button custom_classes="dropdown-list-delete dropdown-list-control-button" intent="danger" icon="trash" aria-label=(t "Delete folder") }}
+                    {{/if}}
+                </span>
                 {{/if}}
             {{/if}}
         </a>
