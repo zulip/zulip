@@ -417,11 +417,6 @@
         margin-bottom: 1px;
         background-color: transparent;
 
-        .inbox-focus-border {
-            /* Align the folder title with the channel privacy icons; 5px at 16px */
-            padding-left: 0.3125em;
-        }
-
         .inbox-header-name-text,
         .unread_mention_info {
             color: var(--color-folder-header);
@@ -437,6 +432,12 @@
             outline: none;
             /* 16px at 16px / 1em */
             font-size: 1em;
+            /* Align the folder title with the channel privacy icons; 5px at 16px/1em.
+
+            TODO: Reduce the depth of selectors in this file,
+            so that the use of !important becomes unnecessary
+            here. */
+            padding-left: 0.3125em !important;
         }
 
         &:hover {
