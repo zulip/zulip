@@ -10,10 +10,11 @@ To run a Zulip server, you will need:
 - A supported CPU architecture:
   - x86-64
   - aarch64
-- At least 2 GB RAM, and 10 GB disk space
+- At least 2 GB RAM
   - If you have < 5 GB RAM, we require some swap space; we recommend configuring
     2 GB of swap
   - If you expect 100+ users: 4 GB RAM, and 2 CPUs
+- 10GB free space (i.e. approximately a 25GB total disk, given OS requirements)
 - A hostname in DNS
 - Credentials for sending email
 
@@ -68,10 +69,10 @@ sudo apt update
   style instances for organizations with hundreds of users (active or
   no).
 
-- Disk space: You'll need at least 10 GB of free disk space for a
-  server with dozens of users. We recommend using an SSD and avoiding
-  cloud storage backends that limit the IOPS per second, since the
-  disk is primarily used for the Zulip database.
+- Disk space: You'll need at least 10 GB of dedicated free disk space
+  for a server with dozens of users. We recommend using an SSD and
+  avoiding cloud storage backends that limit the IOPS per second,
+  since the disk is primarily used for the Zulip database.
 
 See our [documentation on scalability](#scalability) below for advice
 on hardware requirements for larger organizations.
