@@ -273,17 +273,35 @@ export function update_channel_folder_name(folder_id: number): void {
         return;
     }
 
+    if ($("#subscription_overlay .nothing-selected").css("display") !== "none") {
+        return;
+    }
+
     const active_stream_id = stream_settings_components.get_active_data().id;
     if (!active_stream_id) {
+        const selected_folder_id = stream_create.get_channel_folder_dropdown_value();
+        if (selected_folder_id === folder_id) {
+            stream_create.set_channel_folder_dropdown_value(folder_id);
+        }
         return;
     }
 
     const sub = sub_store.get(active_stream_id)!;
-    if (sub.folder_id !== folder_id) {
+    if (sub.folder_id === folder_id) {
+        settings_components.set_channel_folder_dropdown_value(sub);
         return;
     }
 
-    settings_components.set_channel_folder_dropdown_value(sub);
+    // Even if the channel opened in the right panel does not belong to
+    // the updated folder, user can be in process of changing the folder
+    // to which channel belongs and may have selected the updated folder
+    // without saving it yet.
+    const selected_folder_id = settings_components.get_dropdown_list_widget_setting_value(
+        $("#id_folder_id"),
+    );
+    if (selected_folder_id === folder_id) {
+        settings_components.set_dropdown_list_widget_setting_value("folder_id", selected_folder_id);
+    }
 }
 
 export function reset_dropdown_set_to_archived_folder(folder_id: number): void {
