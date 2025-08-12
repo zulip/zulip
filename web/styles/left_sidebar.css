@@ -146,12 +146,17 @@
             display: none;
         }
 
+        /* When count is 0, we dont want to show unread_count or masked_unread_count. */
+        .unread_count.hide + .masked_unread_count {
+            display: none;
+        }
+
         &:hover {
             .masked_unread_count {
                 display: none;
             }
 
-            .unread_count {
+            .unread_count:not(.hide) {
                 display: inline;
             }
         }
