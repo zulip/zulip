@@ -2180,6 +2180,10 @@ body:not(.spectator-view) {
         }
     }
 
+    &.folder_id-dropdown-list-container {
+        width: calc(var(--modal-input-width) * 0.75);
+    }
+
     .no-dropdown-items {
         color: hsl(0deg 0% 60%);
         display: none;
@@ -2196,7 +2200,8 @@ body:not(.spectator-view) {
             "item-description item-description" minmax(0, min-content) / minmax(
                 0,
                 auto
-            ) minmax(0, 1fr);
+            )
+            minmax(0, 1fr);
         color: var(--color-dropdown-item);
         padding: 3px 10px 3px 8px;
         font-weight: 400;
@@ -2235,11 +2240,10 @@ body:not(.spectator-view) {
         .dropdown-list-item-name {
             grid-area: item-label;
             display: grid;
-            grid-template: "item-text item-buttons" minmax(0, auto)
-                           "item-text .           " minmax(0, auto) / minmax(
-                    0,
-                    1fr
-                ) minmax(0, auto);
+            grid-template:
+                "item-text item-buttons" minmax(0, auto)
+                "item-text .           " minmax(0, auto) / minmax(0, 1fr)
+                minmax(0, auto);
             align-items: center;
         }
 
