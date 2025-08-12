@@ -5,10 +5,11 @@ import type * as tippy from "tippy.js";
 import render_report_message_modal from "../templates/report_message_modal.hbs";
 
 import * as channel from "./channel.ts";
+import * as condense from "./condense.ts";
 import * as dialog_widget from "./dialog_widget.ts";
 import type {Option} from "./dropdown_widget.ts";
 import * as dropdown_widget from "./dropdown_widget.ts";
-import {$t_html} from "./i18n.ts";
+import {$t, $t_html} from "./i18n.ts";
 import {
     type MessageContainer,
     type MessageGroup,
@@ -131,6 +132,42 @@ export function show_message_report_modal(message: Message): void {
             message.sender_id,
         );
 
+        // Condense the message preview, the main motivation is to hide the
+        // potentially unpleasant message content.
+        $report_message_preview_container.find(".message_content").addClass("collapsed");
+        condense.show_message_expander(
+            $report_message_preview_container,
+            null,
+            $t({defaultMessage: "Show message"}),
+        );
+
+        $report_message_preview_container.on("click", ".message_expander", (e) => {
+            const $content = $report_message_preview_container.find(".message_content");
+            if ($content.hasClass("collapsed")) {
+                $content.removeClass("collapsed");
+                condense.show_message_condenser(
+                    $report_message_preview_container,
+                    null,
+                    $t({defaultMessage: "Hide message"}),
+                );
+            }
+            e.preventDefault();
+            e.stopPropagation();
+        });
+
+        $report_message_preview_container.on("click", ".message_condenser", (e) => {
+            const $content = $report_message_preview_container.find(".message_content");
+            if (!$content.hasClass("collapsed")) {
+                $content.addClass("collapsed");
+                condense.show_message_expander(
+                    $report_message_preview_container,
+                    null,
+                    $t({defaultMessage: "Show message"}),
+                );
+            }
+            e.preventDefault();
+            e.stopPropagation();
+        });
         function get_message_report_types(): Option[] {
             return realm.server_report_message_types.map((report_type) => ({
                 unique_id: report_type.key,
