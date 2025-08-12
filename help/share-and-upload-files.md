@@ -2,7 +2,8 @@
 
 Zulip supports attaching multiple files to messages, including images,
 documents, sound, and video. You can edit the names of the files others see
-after you upload them.
+after you [upload](#uploading-files) or
+[share](#sharing-files-from-other-mobile-apps) them.
 
 For images and videos, a small preview will be shown directly in the message, if
 there are up to 24 attachments. People reading the message can click on the
@@ -75,13 +76,35 @@ preview to [view the full-size image or video](/help/view-images-and-videos).
 
 {!modify-link-text.md!}
 
-!!! warn ""
+{end_tabs}
 
-    Implementation of sharing files from other applications in the
-    mobile app is tracked [on
-    GitHub](https://github.com/zulip/zulip-flutter/issues/52). If
-    you're interested in this feature, please react to the issue's
-    description with 👍.
+## Sharing files from other mobile apps
+
+{start_tabs}
+
+{tab|android}
+
+1. In another mobile app, select text or one or more files, and tap the
+   **share** button.
+
+1. Tap the **Zulip** (<img src="/static/images/logo/zulip-icon-circle.svg"
+   alt="logo" class="help-center-icon"/>) logo to share to Zulip.
+
+1. To send a channel message, select a channel and type a topic name.
+   To send a direct message, tap the **Direct message** tab, and choose
+   an existing direct message conversation or tap the **New DM** button
+   at the bottom of the screen and select message recipients.
+
+1. _(optional)_ Write a message.
+
+1. Tap the **Send** button.
+
+{tab|ios}
+
+Implementation of this feature for the IOS version of the mobile app is
+tracked [on GitHub](https://github.com/zulip/zulip-flutter/issues/54).
+If you're interested in this feature, please react to the issue's
+description with 👍.
 
 {end_tabs}
 
