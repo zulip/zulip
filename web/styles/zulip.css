@@ -2182,6 +2182,24 @@ body:not(.spectator-view) {
 
     &.folder_id-dropdown-list-container {
         width: calc(var(--modal-input-width) * 0.75);
+
+        /* Alignment adjustments on channel-folder selector. */
+        .dropdown-list-item-name:has(.dropdown-list-buttons) {
+            /* We hold the first row height to 28px at 16px/1em
+               for the sake of the buttons plus their padding. */
+            grid-template-rows: 1.75em minmax(0, auto);
+            /* We also align everything to start, so that we can
+               offset the text from the top to align it with the
+               buttons. */
+            align-items: start;
+
+            .dropdown-list-text-neutral {
+                /* 0.2em is an eyeballed value that keeps the buttons
+                   well aligned with the first/only line of text. */
+                padding-top: 0.2em;
+                align-self: start;
+            }
+        }
     }
 
     .no-dropdown-items {
