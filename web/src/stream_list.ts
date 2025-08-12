@@ -363,8 +363,48 @@ export function build_stream_list(force_rerender: boolean): void {
     $("#streams_list").toggleClass("is_searching", ui_util.get_left_sidebar_search_term() !== "");
 }
 
+export function mention_counts_by_section(): Map<
+    string,
+    {
+        has_mentions: boolean;
+        has_unmuted_mentions: boolean;
+    }
+> {
+    const mentions_map = new Map<
+        string,
+        {
+            has_mentions: boolean;
+            has_unmuted_mentions: boolean;
+        }
+    >();
+    const streams_with_mentions = unread.get_channels_with_unread_mentions();
+    const streams_with_unmuted_mentions = unread.get_channels_with_unmuted_mentions();
+    for (const stream_id of streams_with_mentions) {
+        const section_id = stream_list_sort.current_section_id_for_stream(stream_id);
+        if (section_id === undefined) {
+            continue;
+        }
+        if (!mentions_map.has(section_id)) {
+            mentions_map.set(section_id, {
+                has_mentions: false,
+                has_unmuted_mentions: false,
+            });
+        }
+        mentions_map.get(section_id)!.has_mentions = true;
+    }
+    for (const stream_id of streams_with_unmuted_mentions) {
+        const section_id = stream_list_sort.current_section_id_for_stream(stream_id);
+        if (section_id === undefined) {
+            continue;
+        }
+        mentions_map.get(section_id)!.has_unmuted_mentions = true;
+    }
+
+    return mentions_map;
+}
+
 export let update_stream_section_mention_indicators = function (): void {
-    const mentions = unread.mention_counts_by_section();
+    const mentions = mention_counts_by_section();
     for (const section of stream_list_sort.section_ids()) {
         const $header = $(`#stream-list-${section}-container .stream-list-subsection-header`);
         const mentions_for_section = mentions.get(section) ?? {
