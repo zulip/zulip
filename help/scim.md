@@ -161,10 +161,10 @@ configure SCIM provisioning for Zulip.
 
 ## Synchronizing group membership with SCIM
 
-You can enable group sync for any of your SCIM providers's groups. When you do,
+You can enable group sync for any of your SCIM provider's groups. When you do,
 the SCIM integration will create a user group in Zulip with the matching name
 and user memberships. When you add or remove users from the group in your SCIM
-provider, these changes will be immediately be reflected in group memberships in
+provider, these changes will immediately be reflected in group memberships in
 Zulip.
 
 In order to ensure consistent state, do not modify the **name** or **user
@@ -174,10 +174,11 @@ reflected in your SCIM provider, and instead will cause the state of the Zulip
 group to become inconsistent with the state of the SCIM provider's group.
 
 Zulip supports [adding user groups to other
-groups](/help/manage-user-groups#add-user-groups-to-a-group), while some SCIM
-providers (including Okta) do not have this feature. In this case, you can
-combine adding groups to other groups in Zulip with using your SCIM provider to
-manage which individual users are in each group.
+groups](/help/manage-user-groups#add-user-groups-to-a-group), but some SCIM
+providers (including Okta) do not. As a result, this concept is also not
+supported in Zulip's SCIM integration. If you want to use nested groups, you can
+add groups to other groups in Zulip and manage the individual members of each
+subgroup in your SCIM provider.
 
 {start_tabs}
 
