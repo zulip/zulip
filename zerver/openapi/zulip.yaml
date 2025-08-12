@@ -15833,9 +15833,9 @@ paths:
       tags: ["server_and_organizations"]
       x-requires-administrator: true
       description: |
-        Sends a test Welcome Bot message with custom text to the acting administrator.
-        This allows administrators to preview how the welcome message will appear when
-        received by new users upon joining the organization.
+        Sends a test Welcome Bot custom message to the acting administrator.
+        This allows administrators to preview how the custom welcome message will
+        appear when received by new users upon joining the organization.
 
         **Changes**: New in Zulip 11.0 (feature level 416).
       requestBody:
