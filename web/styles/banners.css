@@ -63,6 +63,10 @@
     gap: 0.5em; /* 8px at 16px/1em */
 }
 
+.banner-action-buttons:empty {
+    display: none;
+}
+
 .banner-close-button {
     display: flex;
     grid-area: banner-close-button;
