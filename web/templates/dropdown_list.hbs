@@ -12,7 +12,7 @@
                         {{> components/icon_button custom_classes="dropdown-list-delete dropdown-list-control-button" intent="danger" icon="trash" aria-label=delete_icon_label }}
                     {{/if}}
                 {{else}}
-                    {{name}}
+                    <span class="dropdown-list-text-neutral">{{name}}</span>
                 {{/if}}
             </span>
             <span class="dropdown-list-item-description line-clamp">
@@ -31,19 +31,19 @@
                         <i class="setting-disabled-option-icon fa fa-ban" aria-hidden="true"></i>
                     {{/if}}
                     {{#if show_disabled_option_name}}
-                        {{name}}
+                        <span class="dropdown-list-text-neutral">{{name}}</span>
                     {{else}}
-                        {{t "Disable" }}
+                        <span class="dropdown-list-text-neutral">{{t "Disable" }}</span>
                     {{/if}}
                 </span>
             {{else if (eq unique_id -2)}}
                 {{!-- This is the option for PresetUrlOption.MAPPING --}}
-                <i class="zulip-icon zulip-icon-equal channel-privacy-type-icon" aria-hidden="true"></i> {{name}}
+                <i class="zulip-icon zulip-icon-equal channel-privacy-type-icon" aria-hidden="true"></i> <span class="dropdown-list-text-selected">{{name}}</span>
             {{else}}
                 {{#if bold_current_selection}}
                     <span class="dropdown-list-text-selected">{{name}}</span>
                 {{else}}
-                    {{name}}
+                    <span class="dropdown-list-text-neutral">{{name}}</span>
                 {{/if}}
                 {{#if has_edit_icon}}
                     {{> components/icon_button custom_classes="dropdown-list-edit dropdown-list-control-button" intent="neutral" icon="edit" aria-label=(t "Edit folder") }}
