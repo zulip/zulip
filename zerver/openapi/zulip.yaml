@@ -23537,15 +23537,10 @@ paths:
                   example: "Channel for discussing all things music!"
                 subscribers:
                   description: |
-                    A list of user IDs (preferred) or Zulip API email
-                    addresses of the users to be subscribed to the new channel specified in the `channel` parameter.
-                  oneOf:
-                    - type: array
-                      items:
-                        type: string
-                    - type: array
-                      items:
-                        type: integer
+                    A list of user IDs of the users to be subscribed to the new channel.
+                  type: array
+                  items:
+                    type: integer
                   example: [16, 12]
                 announce:
                   description: |
