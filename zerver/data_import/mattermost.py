@@ -457,7 +457,7 @@ def process_raw_message_batch(
 
         try:
             content = convert_html_to_text(content)
-        except Exception:
+        except Exception:  # nocoverage
             logging.warning("Error converting HTML to text for message: '%s'; continuing", content)
             logging.warning(str(raw_message))
 

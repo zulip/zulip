@@ -1,5 +1,6 @@
 import filecmp
 import os
+import sys
 from typing import Any
 from unittest.mock import call, patch
 
@@ -705,9 +706,15 @@ class MatterMostImporter(ZulipTestCase):
             warn_log.output,
             [
                 "WARNING:root:Skipping importing direct message groups and DMs since there are multiple teams in the export",
-                # Check error log when trying to process a message with faulty HTML.
-                "WARNING:root:Error converting HTML to text for message: 'This will crash html2text!!! <g:brand><![CDATSALOMON NORTH AMERICA, IN}}]]></g:brand>'; continuing",
-                "WARNING:root:{'sender_id': 2, 'content': 'This will crash html2text!!! <g:brand><![CDATSALOMON NORTH AMERICA, IN}}]]></g:brand>', 'date_sent': 1553166657, 'reactions': [], 'channel_name': 'dumbledores-army'}",
+                *(
+                    [
+                        # Check error log when trying to process a message with faulty HTML.
+                        "WARNING:root:Error converting HTML to text for message: 'This will crash html2text!!! <g:brand><![CDATSALOMON NORTH AMERICA, IN}}]]></g:brand>'; continuing",
+                        "WARNING:root:{'sender_id': 2, 'content': 'This will crash html2text!!! <g:brand><![CDATSALOMON NORTH AMERICA, IN}}]]></g:brand>', 'date_sent': 1553166657, 'reactions': [], 'channel_name': 'dumbledores-army'}",
+                    ]
+                    if sys.version_info < (3, 13)
+                    else []
+                ),
                 "WARNING:root:Skipping importing direct message groups and DMs since there are multiple teams in the export",
             ],
         )
@@ -955,8 +962,14 @@ class MatterMostImporter(ZulipTestCase):
             warn_log.output,
             [
                 "WARNING:root:Skipping importing direct message groups and DMs since there are multiple teams in the export",
-                "WARNING:root:Error converting HTML to text for message: 'Xxxx xxxx xxxxx xxxx2xxxx!!! <x:xxxxx><![XXXXXXXXXXX XXXXX XXXXXXX, XX}}]]></x:xxxxx>'; continuing",
-                "WARNING:root:{'sender_id': 2, 'content': 'Xxxx xxxx xxxxx xxxx2xxxx!!! <x:xxxxx><![XXXXXXXXXXX XXXXX XXXXXXX, XX}}]]></x:xxxxx>', 'date_sent': 1553166657, 'reactions': [], 'channel_name': 'dumbledores-army'}",
+                *(
+                    [
+                        "WARNING:root:Error converting HTML to text for message: 'Xxxx xxxx xxxxx xxxx2xxxx!!! <x:xxxxx><![XXXXXXXXXXX XXXXX XXXXXXX, XX}}]]></x:xxxxx>'; continuing",
+                        "WARNING:root:{'sender_id': 2, 'content': 'Xxxx xxxx xxxxx xxxx2xxxx!!! <x:xxxxx><![XXXXXXXXXXX XXXXX XXXXXXX, XX}}]]></x:xxxxx>', 'date_sent': 1553166657, 'reactions': [], 'channel_name': 'dumbledores-army'}",
+                    ]
+                    if sys.version_info < (3, 13)
+                    else []
+                ),
                 "WARNING:root:Skipping importing direct message groups and DMs since there are multiple teams in the export",
             ],
         )
@@ -984,8 +997,14 @@ class MatterMostImporter(ZulipTestCase):
             warn_log.output,
             [
                 "WARNING:root:Skipping importing direct message groups and DMs since there are multiple teams in the export",
-                "WARNING:root:Error converting HTML to text for message: 'Xxxx xxxx xxxxx xxxx2xxxx!!! <x:xxxxx><![XXXXXXXXXXX XXXXX XXXXXXX, XX}}]]></x:xxxxx>'; continuing",
-                "WARNING:root:{'sender_id': 2, 'content': 'Xxxx xxxx xxxxx xxxx2xxxx!!! <x:xxxxx><![XXXXXXXXXXX XXXXX XXXXXXX, XX}}]]></x:xxxxx>', 'date_sent': 1553166657, 'reactions': [], 'channel_name': 'dumbledores-army'}",
+                *(
+                    [
+                        "WARNING:root:Error converting HTML to text for message: 'Xxxx xxxx xxxxx xxxx2xxxx!!! <x:xxxxx><![XXXXXXXXXXX XXXXX XXXXXXX, XX}}]]></x:xxxxx>'; continuing",
+                        "WARNING:root:{'sender_id': 2, 'content': 'Xxxx xxxx xxxxx xxxx2xxxx!!! <x:xxxxx><![XXXXXXXXXXX XXXXX XXXXXXX, XX}}]]></x:xxxxx>', 'date_sent': 1553166657, 'reactions': [], 'channel_name': 'dumbledores-army'}",
+                    ]
+                    if sys.version_info < (3, 13)
+                    else []
+                ),
                 "WARNING:root:Skipping importing direct message groups and DMs since there are multiple teams in the export",
             ],
         )
