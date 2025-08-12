@@ -13,5 +13,14 @@ sha256sum -c <<<"$sha256 $tarball"
 tar -xzf "$tarball"
 cd "pgroonga-$version"
 
-make -j "$(nproc)" HAVE_MSGPACK=1
+if pkg-config msgpack-c; then
+    msgpack='msgpack-c'
+elif pkg-config msgpack; then
+    msgpack='msgpack'
+else
+    echo 'build-pgroonga: Cannot find msgpack'
+    exit 1
+fi
+
+make -j "$(nproc)" HAVE_MSGPACK=1 MSGPACK_PACKAGE_NAME="$msgpack"
 make install
