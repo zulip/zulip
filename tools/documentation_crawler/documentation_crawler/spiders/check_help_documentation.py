@@ -42,6 +42,13 @@ class UnusedImagesLinterSpider(BaseDocumentationSpider):
             self.logger.error(exception_message.format(", ".join(unused_images_relatedpath)))
 
 
+class HelpDocumentationSpider(BaseDocumentationSpider):
+    name = "help_documentation_crawler"
+    start_urls = ["http://localhost:9981/help"]
+    deny_domains: list[str] = []
+    deny = ["/policies/privacy"]
+
+
 class APIDocumentationSpider(UnusedImagesLinterSpider):
     name = "api_documentation_crawler"
     start_urls = ["http://localhost:9981/api"]
@@ -54,7 +61,7 @@ class PorticoDocumentationSpider(BaseDocumentationSpider):
     def _is_external_url(self, url: str) -> bool:
         return (
             not url.startswith("http://localhost:9981")
-            or url.startswith("http://localhost:9981/api")
+            or url.startswith(("http://localhost:9981/help", "http://localhost:9981/api"))
             or self._has_extension(url)
         )
 

@@ -57,6 +57,7 @@ def test_server_running(
     external_host: str = "testserver",
     log_file: str | None = None,
     dots: bool = False,
+    enable_help_center: bool = False,
 ) -> Iterator[None]:
     with ExitStack() as stack:
         log = sys.stdout
@@ -75,6 +76,8 @@ def test_server_running(
         run_dev_server_command = ["tools/run-dev", "--test", "--streamlined"]
         if skip_provision_check:
             run_dev_server_command.append("--skip-provision-check")
+        if enable_help_center:
+            run_dev_server_command.append("--help-center")
         server = subprocess.Popen(run_dev_server_command, stdout=log, stderr=log)
 
         try:
