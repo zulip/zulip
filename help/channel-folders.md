@@ -10,7 +10,15 @@
 
 {start_tabs}
 
-{tab|desktop-web}
+{tab|via-left-sidebar}
+
+1. Click the **ellipsis** (<i class="zulip-icon zulip-icon-more-vertical"></i>)
+   to the right of the **Filter left sidebar** box in the upper left.
+
+1. Click **Group channels by folder** or **Don't group channels by folder**, as
+   desired.
+
+{tab|via-personal-settings}
 
 {settings_tab|preferences}
 
