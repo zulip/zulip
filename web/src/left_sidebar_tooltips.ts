@@ -1,4 +1,5 @@
 import $ from "jquery";
+import assert from "minimalistic-assert";
 import * as tippy from "tippy.js";
 
 import * as drafts from "./drafts.ts";
@@ -222,5 +223,26 @@ export function initialize(): void {
             "#left-sidebar-container .visibility-policy-icon",
         ].join(","),
         ...topic_visibility_policy_tooltip_props,
+    });
+
+    tippy.delegate("body", {
+        target: ".stream-list-section-container .left-sidebar-title",
+        delay: LONG_HOVER_DELAY,
+        appendTo: () => document.body,
+        onShow(instance) {
+            const folder_name_element = instance.reference;
+            assert(folder_name_element instanceof HTMLElement);
+
+            if (folder_name_element.offsetWidth < folder_name_element.scrollWidth) {
+                const folder_name = folder_name_element.textContent ?? "";
+                instance.setContent(folder_name);
+                return undefined;
+            }
+
+            return false;
+        },
+        onHidden(instance) {
+            instance.destroy();
+        },
     });
 }
