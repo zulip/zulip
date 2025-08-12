@@ -131,7 +131,7 @@ export function dispatch_normal_event(event) {
                     if (event.data.name !== undefined) {
                         inbox_ui.complete_rerender();
                         stream_list.update_streams_sidebar();
-                        stream_ui_updates.update_channel_folder_name(event.channel_folder_id);
+                        stream_settings_ui.update_channel_folder_name(event.channel_folder_id);
                     }
 
                     if (event.data.is_archived !== undefined) {

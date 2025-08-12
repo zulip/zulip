@@ -566,7 +566,7 @@ run_test("channel_folders", ({override}) => {
     event = event_fixtures.channel_folder__update;
     {
         const stub = make_stub();
-        override(stream_ui_updates, "update_channel_folder_name", stub.f);
+        override(stream_settings_ui, "update_channel_folder_name", stub.f);
         override(stream_list, "update_streams_sidebar", stub.f);
         override(stream_settings_ui, "reset_dropdown_set_to_archived_folder", stub.f);
 

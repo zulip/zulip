@@ -32,6 +32,7 @@ import * as resize from "./resize.ts";
 import * as scroll_util from "./scroll_util.ts";
 import * as search_util from "./search_util.ts";
 import * as settings_banner from "./settings_banner.ts";
+import * as settings_components from "./settings_components.ts";
 import * as settings_config from "./settings_config.ts";
 import * as settings_data from "./settings_data.ts";
 import {type GroupSettingValue, current_user, realm} from "./state_data.ts";
@@ -265,6 +266,24 @@ export function update_channel_folder(sub: StreamSubscription, folder_id: number
     if (section_id !== undefined) {
         stream_list.maybe_hide_topic_bracket(section_id);
     }
+}
+
+export function update_channel_folder_name(folder_id: number): void {
+    if (!overlays.streams_open()) {
+        return;
+    }
+
+    const active_stream_id = stream_settings_components.get_active_data().id;
+    if (!active_stream_id) {
+        return;
+    }
+
+    const sub = sub_store.get(active_stream_id)!;
+    if (sub.folder_id !== folder_id) {
+        return;
+    }
+
+    settings_components.set_channel_folder_dropdown_value(sub);
 }
 
 export function reset_dropdown_set_to_archived_folder(folder_id: number): void {
