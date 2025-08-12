@@ -1920,7 +1920,7 @@ textarea.new_message_textarea {
             overflow: hidden;
         }
 
-        .dropdown-list-bold-selected {
+        .dropdown-list-text-selected {
             font-weight: 500;
             max-width: 210px;
             display: inline-block;

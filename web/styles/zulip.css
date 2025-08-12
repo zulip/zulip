@@ -2274,7 +2274,7 @@ body:not(.spectator-view) {
     }
 }
 
-.dropdown-list-item-common-styles .dropdown-list-bold-selected {
+.dropdown-list-item-common-styles .dropdown-list-text-selected {
     font-weight: 700;
 }
 
