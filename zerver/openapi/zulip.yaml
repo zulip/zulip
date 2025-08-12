@@ -6153,6 +6153,37 @@ paths:
                                   "data": {"name": "New frontend"},
                                   "id": 0,
                                 }
+                            - type: object
+                              additionalProperties: false
+                              description: |
+                                Event sent to users in an organization when channel folders are reordered.
+
+                                **Changes**: New in Zulip 11.0 (feature level 418).
+                              properties:
+                                id:
+                                  $ref: "#/components/schemas/EventIdSchema"
+                                type:
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - channel_folder
+                                op:
+                                  type: string
+                                  enum:
+                                    - reorder
+                                order:
+                                  type: array
+                                  description: |
+                                    A list of channel folder IDs representing the new order.
+                                  items:
+                                    type: integer
+                              example:
+                                {
+                                  "type": "channel_folder",
+                                  "op": "reorder",
+                                  "order": [3, 1, 2],
+                                  "id": 0,
+                                }
                       queue_id:
                         type: string
                         description: |

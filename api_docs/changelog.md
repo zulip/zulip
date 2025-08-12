@@ -20,6 +20,11 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 11.0
 
+**Feature level 418**
+
+* [`GET /events`](/api/get-events): An event with `type: "channel_folder"`
+  and `op: "reorder"` is sent when channel folders are reordered.
+
 **Feature level 417**
 
 * [`POST channels/create`](/api/create-channel): Added a dedicated

@@ -89,6 +89,12 @@ class ChannelFolderDataForUpdate(BaseModel):
     is_archived: bool | None = None
 
 
+class EventChannelFolderReorder(BaseEvent):
+    type: Literal["channel_folder"]
+    op: Literal["reorder"]
+    order: list[int]
+
+
 class EventChannelFolderUpdate(BaseEvent):
     type: Literal["channel_folder"]
     op: Literal["update"]

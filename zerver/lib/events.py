@@ -1964,6 +1964,11 @@ def apply_event(
             for channel_folder in state["channel_folders"]:
                 if channel_folder["id"] == event["channel_folder_id"]:
                     channel_folder.update(event["data"])
+        elif event["op"] == "reorder":
+            order_mapping = {_[1]: _[0] for _ in enumerate(event["order"])}
+            for channel_folder in state["channel_folders"]:
+                channel_folder["order"] = order_mapping[channel_folder["id"]]
+            state["channel_folders"].sort(key=lambda folder: folder["order"])
         else:
             raise AssertionError("Unexpected event type {type}/{op}".format(**event))
     elif event["type"] == "has_zoom_token":

@@ -33,6 +33,7 @@ from zerver.actions.channel_folders import (
     do_change_channel_folder_description,
     do_change_channel_folder_name,
     do_unarchive_channel_folder,
+    try_reorder_realm_channel_folders,
 )
 from zerver.actions.create_user import do_create_user, do_reactivate_user
 from zerver.actions.custom_profile_fields import (
@@ -169,6 +170,7 @@ from zerver.lib.event_schema import (
     check_attachment_remove,
     check_attachment_update,
     check_channel_folder_add,
+    check_channel_folder_reorder,
     check_channel_folder_update,
     check_custom_profile_fields,
     check_default_stream_groups,
@@ -5647,3 +5649,30 @@ class ChannelFolderActionTest(BaseAction):
         check_channel_folder_update("events[0]", events[0], {"is_archived"})
         self.assertEqual(events[0]["channel_folder_id"], channel_folder.id)
         self.assertFalse(events[0]["data"]["is_archived"])
+
+    def test_channel_folders_reordering_event(self) -> None:
+        frontend_folder = check_add_channel_folder(
+            self.user_profile.realm,
+            "Frontend",
+            "Channels for frontend discussion",
+            acting_user=self.user_profile,
+        )
+        backend_folder = check_add_channel_folder(
+            self.user_profile.realm,
+            "Backend",
+            "Channels for backend discussion",
+            acting_user=self.user_profile,
+        )
+        engineering_folder = check_add_channel_folder(
+            self.user_profile.realm,
+            "Engineering",
+            "",
+            acting_user=self.user_profile,
+        )
+
+        new_order = [backend_folder.id, engineering_folder.id, frontend_folder.id]
+        with self.verify_action() as events:
+            try_reorder_realm_channel_folders(self.user_profile.realm, new_order)
+
+        check_channel_folder_reorder("events[0]", events[0])
+        self.assertEqual(events[0]["order"], new_order)
