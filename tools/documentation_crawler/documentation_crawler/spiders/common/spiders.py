@@ -154,10 +154,6 @@ class BaseDocumentationSpider(scrapy.Spider):
             return
         if url.startswith("http://localhost:9981/plans"):
             return
-        # We are temporarily stopping these tests while we cutover to
-        # the new help center. https://github.com/zulip/zulip/issues/35647.
-        if url.startswith("http://localhost:9981/help"):
-            return
 
         callback: Callable[[Response], Iterator[Request] | None] = self.parse
         dont_filter = False
@@ -188,7 +184,7 @@ class BaseDocumentationSpider(scrapy.Spider):
                         "There is no local directory associated with the GitHub URL: %s", url
                     )
                 return
-        elif split_url.fragment != "":
+        elif getattr(self, "skip_check_fragment", False) and split_url.fragment != "":
             dont_filter = True
             callback = self.check_fragment
         if getattr(self, "skip_external", False) and self._is_external_link(url):
