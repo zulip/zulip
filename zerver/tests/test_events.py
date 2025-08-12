@@ -183,6 +183,7 @@ from zerver.lib.event_schema import (
     check_has_zoom_token,
     check_heartbeat,
     check_invites_changed,
+    check_legacy_presence,
     check_message,
     check_muted_topics,
     check_muted_users,
@@ -190,7 +191,6 @@ from zerver.lib.event_schema import (
     check_navigation_view_remove,
     check_navigation_view_update,
     check_onboarding_steps,
-    check_presence,
     check_push_device,
     check_reaction_add,
     check_reaction_remove,
@@ -1820,7 +1820,7 @@ class NormalActionsTest(BaseAction):
         check_navigation_view_remove("events[0]", events[0])
         self.assertEqual(events[0]["fragment"], "inbox")
 
-    def test_presence_events(self) -> None:
+    def test_legacy_presence_events(self) -> None:
         with self.verify_action(slim_presence=False) as events:
             do_update_user_presence(
                 self.user_profile,
@@ -1829,7 +1829,7 @@ class NormalActionsTest(BaseAction):
                 UserPresence.LEGACY_STATUS_ACTIVE_INT,
             )
 
-        check_presence(
+        check_legacy_presence(
             "events[0]",
             events[0],
             has_email=True,
@@ -1845,7 +1845,7 @@ class NormalActionsTest(BaseAction):
                 UserPresence.LEGACY_STATUS_ACTIVE_INT,
             )
 
-        check_presence(
+        check_legacy_presence(
             "events[0]",
             events[0],
             has_email=False,
@@ -1891,7 +1891,7 @@ class NormalActionsTest(BaseAction):
                 UserPresence.LEGACY_STATUS_ACTIVE_INT,
             )
 
-        check_presence(
+        check_legacy_presence(
             "events[0]",
             events[0],
             has_email=True,
@@ -2040,7 +2040,7 @@ class NormalActionsTest(BaseAction):
             events[2],
             {"away", "status_text", "emoji_name", "emoji_code", "reaction_type"},
         )
-        check_presence(
+        check_legacy_presence(
             "events[3]",
             events[3],
             has_email=True,
@@ -2068,7 +2068,7 @@ class NormalActionsTest(BaseAction):
             events[2],
             {"away", "status_text", "emoji_name", "emoji_code", "reaction_type"},
         )
-        check_presence(
+        check_legacy_presence(
             "events[3]",
             events[3],
             has_email=True,
@@ -2092,7 +2092,7 @@ class NormalActionsTest(BaseAction):
         check_user_settings_update("events[0]", events[0])
         check_update_global_notifications("events[1]", events[1], not away_val)
         check_user_status("events[2]", events[2], {"away"})
-        check_presence(
+        check_legacy_presence(
             "events[3]",
             events[3],
             has_email=True,
@@ -2149,7 +2149,7 @@ class NormalActionsTest(BaseAction):
                 reaction_type=None,
                 client_id=client.id,
             )
-        check_presence(
+        check_legacy_presence(
             "events[0]",
             events[0],
             has_email=True,
@@ -3178,7 +3178,7 @@ class NormalActionsTest(BaseAction):
                 )
             check_user_settings_update("events[0]", events[0])
             check_update_global_notifications("events[1]", events[1], val)
-            check_presence(
+            check_legacy_presence(
                 "events[2]", events[2], has_email=True, presence_key="website", status="active"
             )
 

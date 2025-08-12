@@ -37,6 +37,7 @@ from zerver.lib.event_types import (
     EventHasZoomToken,
     EventHeartbeat,
     EventInvitesChanged,
+    EventLegacyPresence,
     EventMessage,
     EventMutedTopics,
     EventMutedUsers,
@@ -44,7 +45,6 @@ from zerver.lib.event_types import (
     EventNavigationViewRemove,
     EventNavigationViewUpdate,
     EventOnboardingSteps,
-    EventPresence,
     EventPushDevice,
     EventReactionAdd,
     EventReactionRemove,
@@ -246,8 +246,8 @@ check_web_reload_client_event = make_checker(EventWebReloadClient)
 _check_channel_folder_update = make_checker(EventChannelFolderUpdate)
 _check_delete_message = make_checker(EventDeleteMessage)
 _check_has_zoom_token = make_checker(EventHasZoomToken)
+_check_legacy_presence = make_checker(EventLegacyPresence)
 _check_muted_topics = make_checker(EventMutedTopics)
-_check_presence = make_checker(EventPresence)
 _check_realm_bot_add = make_checker(EventRealmBotAdd)
 _check_realm_bot_update = make_checker(EventRealmBotUpdate)
 _check_realm_default_update = make_checker(EventRealmUserSettingsDefaultsUpdate)
@@ -338,14 +338,14 @@ def check_muted_topics(
         assert list(map(type, muted_topic_tuple)) == [str, str, int]
 
 
-def check_presence(
+def check_legacy_presence(
     var_name: str,
     event: dict[str, object],
     has_email: bool,
     presence_key: str,
     status: str,
 ) -> None:
-    _check_presence(var_name, event)
+    _check_legacy_presence(var_name, event)
 
     assert ("email" in event) == has_email
 
