@@ -643,7 +643,7 @@ function get_channels_filter_suggestions(last: NarrowTerm, terms: NarrowTerm[]):
         suggestions.push({
             search_string: public_channels_search_string,
             description_html: "all public channels",
-            incompatible_patterns.channels!,
+            incompatible_patterns: incompatible_patterns.channels!,
         });
     }
 
