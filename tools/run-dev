@@ -345,11 +345,13 @@ The instructions for the build step can be found in the `./devtools`
 page. `/starlight_help` urls will give you an error until you complete the
 build step and rerun `run-dev`.""")
     elif enable_help_center_dev_server:
+
+        async def redirect_help(request: web.Request) -> web.HTTPFound:
+            return web.HTTPFound(request.url.with_port(help_center_port))
+
         app.add_routes(
             [
-                web.route(
-                    hdrs.METH_ANY, r"/{path:(starlight_help).*}", partial(forward, help_center_port)
-                ),
+                web.route(hdrs.METH_ANY, r"/{path:(starlight_help).*}", redirect_help),
             ]
         )
     app.add_routes(

@@ -173,6 +173,14 @@
                 want to visualize the changes quickly in the beta help center documentation. You will need the
                 converted MDX files to be already generated through
                 <code>./tools/convert-help-center-docs-to-mdx</code> before you run the dev server with this flag.
+
+                <ul>
+                    <li>
+                        The dev server makes a bunch of request to base Zulip URL instead of scoping it to the astro/starlight
+                        base url. For this reason, we run the dev server on it's own port and redirect help center requests to
+                        the appropriate port (9995 by default).
+                    </li>
+                </ul>
             </li>
         </ul>
     </div>
