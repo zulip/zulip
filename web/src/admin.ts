@@ -55,7 +55,7 @@ const admin_settings_label = {
     }),
     realm_default_code_block_language: $t({defaultMessage: "Default language for code blocks"}),
     realm_enable_welcome_message_custom_text: $t({
-        defaultMessage: "Add a custom Welcome Bot message for new users",
+        defaultMessage: "Send a custom Welcome Bot message to new users",
     }),
 
     // Organization permissions
