@@ -25012,7 +25012,7 @@ paths:
                         description: |
                           The unique ID of the created channel folder.
                     example:
-                      {"msg": "", "result": "success", "channel_folder_id": 123}
+                      {"msg": "", "result": "success", "channel_folder_id": 12}
         "400":
           description: Bad request.
           content:
