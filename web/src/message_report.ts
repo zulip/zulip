@@ -18,6 +18,7 @@ import * as stream_data from "./stream_data.ts";
 import * as sub_store from "./sub_store.ts";
 import * as timerender from "./timerender.ts";
 import * as ui_report from "./ui_report.ts";
+import {toggle_user_card_popover_for_message} from "./user_card_popover.ts";
 import * as util from "./util.ts";
 
 export const message_report_type_options: Option[] = [
@@ -63,6 +64,36 @@ type MessagePreviewRenderContext = {
           recipients: string;
       }
 );
+
+function register_message_preview_click_handlers(
+    message_preview_container: JQuery,
+    sender_id: number,
+): void {
+    // This function registers click handlers and mouseover effects
+    // for the message sender in the message preview container.
+    // The logic here is partly from message_list_hover.ts, and
+    // partly from user_card_popover.ts.
+
+    message_preview_container.on("mouseover", ".sender_info_hover", function (this: HTMLElement) {
+        const $row = $(this).closest(".message_row");
+        $row.addClass("sender_info_hovered");
+    });
+
+    message_preview_container.on("mouseout", ".sender_info_hover", function (this: HTMLElement) {
+        const $row = $(this).closest(".message_row");
+        $row.removeClass("sender_info_hovered");
+    });
+
+    message_preview_container.on(
+        "click",
+        ".sender_name, .inline-profile-picture-wrapper",
+        function (this: HTMLElement, e) {
+            e.stopPropagation();
+            const user = people.get_by_user_id(sender_id);
+            toggle_user_card_popover_for_message(this, user, sender_id, true);
+        },
+    );
+}
 
 function render_report_message_preview(message: Message): void {
     const $report_message_preview_container = $("#report-message-preview-container");
@@ -124,6 +155,8 @@ function render_report_message_preview(message: Message): void {
 
     const rendered_report_message_preview = render_message_preview(render_context);
     $report_message_preview_container.append($(rendered_report_message_preview));
+
+    register_message_preview_click_handlers($report_message_preview_container, message.sender_id);
 }
 
 export function show_message_report_modal(message: Message): void {
