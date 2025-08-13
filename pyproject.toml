@@ -366,12 +366,14 @@ warn_return_any = false
 # Enable optional errors.
 enable_error_code = [
     "redundant-self",
+    "deprecated",
     "redundant-expr",
     "truthy-bool",
     "truthy-iterable",
     "ignore-without-code",
     "unused-awaitable",
     "explicit-override",
+    "exhaustive-match",
 ]
 
 # Display the codes needed for # type: ignore[code] annotations.
