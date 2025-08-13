@@ -161,6 +161,9 @@ format used by the Zulip server that they are interacting with.
   `can_delete_own_message_group` parameter to support setting and
   changing the user group whose members can delete the messages they have sent
   in the channel.
+- [`POST /users/{user_id}/status`](/api/update-status-for-user): Added
+  new API endpoint for an administrator to update the status for
+  another user.
 
 **Feature level 406**
 

@@ -10600,6 +10600,8 @@ paths:
       description: |
         Administrator endpoint for changing the [status](/help/status-and-availability) of
         another user.
+
+        **Changes**: New in Zulip 11.0 (feature level 407).
       x-requires-administrator: true
       requestBody:
         required: false
