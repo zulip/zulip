@@ -991,3 +991,4 @@ export function initialize(): void {
         window.open("/sponsorship/", "_blank", "noopener,noreferrer");
     });
 }
+

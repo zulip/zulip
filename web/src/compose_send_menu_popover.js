@@ -314,10 +314,14 @@ export function update_send_later_options() {
 // Prevent tippy.js from closing popovers when clicking inside flatpickr calendar
 // This must be global and run before any tippy popover logic
 if (typeof window !== "undefined" && window.addEventListener) {
-    window.addEventListener("mousedown", function (event) {
-        const openCalendar = document.querySelector(".flatpickr-calendar.open");
-        if (openCalendar && openCalendar.contains(event.target)) {
-            event.stopPropagation();
-        }
-    }, true); // Use capture phase so it runs before tippy's handler
+    window.addEventListener(
+        "mousedown",
+        (event) => {
+            const openCalendar = document.querySelector(".flatpickr-calendar.open");
+            if (openCalendar && openCalendar.contains(event.target)) {
+                event.stopPropagation();
+            }
+        },
+        true,
+    ); // Use capture phase so it runs before tippy's handler
 }
