@@ -927,11 +927,11 @@
     /* When unreads are hovered on the condensed
        views, they should not have an alpha.
        The first color corresponds to
-       --color-background-unread-counter-prominent.
+       --color-background-unread-counter-normal.
        The second color aligns with light mode's
        --color-background. */
     --color-background-unread-counter-no-alpha: light-dark(
-        color-mix(in srgb, hsl(240deg 10% 50%) 70%, hsl(0deg 0% 94%)),
+        color-mix(in srgb, hsl(240deg 10% 50%) 20%, hsl(0deg 0% 94%)),
         color-mix(in srgb, hsl(240deg 10% 50%) 35%, hsl(0deg 0% 11%))
     );
     --color-background-unread-counter-dot: light-dark(
