@@ -1568,7 +1568,8 @@ li.active-sub-filter {
     text-decoration: none;
     color: inherit;
 
-    &:hover {
+    &:hover,
+    &:active {
         opacity: 1;
         text-decoration: none;
         color: inherit;
@@ -1646,7 +1647,8 @@ li.active-sub-filter {
     text-decoration: none;
     color: inherit;
 
-    &:hover {
+    &:hover,
+    &:active {
         opacity: 1;
         text-decoration: none;
         color: inherit;
