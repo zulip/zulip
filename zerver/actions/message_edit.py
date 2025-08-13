@@ -442,10 +442,15 @@ def do_update_embedded_data(
     user_profile: UserProfile,
     message: Message,
     rendered_content: str | MessageRenderingResult,
+    mention_data: MentionData | None = None,
 ) -> None:
     ums = UserMessage.objects.filter(message=message.id)
     update_fields = ["rendered_content"]
     if isinstance(rendered_content, MessageRenderingResult):
+        assert mention_data is not None
+        for group_id in rendered_content.mentions_user_group_ids:
+            members = mention_data.get_group_members(group_id)
+            rendered_content.mentions_user_ids.update(members)
         update_user_message_flags(rendered_content, ums)
         message.rendered_content = rendered_content.rendered_content
         message.rendered_content_version = markdown_version

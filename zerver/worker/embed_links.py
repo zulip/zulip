@@ -10,6 +10,7 @@ from typing_extensions import override
 
 from zerver.actions.message_edit import do_update_embedded_data
 from zerver.actions.message_send import render_incoming_message
+from zerver.lib.mention import MentionBackend, MentionData
 from zerver.lib.url_preview import preview as url_preview
 from zerver.lib.url_preview.types import UrlEmbedData
 from zerver.models import Message, Realm
@@ -57,13 +58,19 @@ class FetchLinksEmbedData(QueueProcessingWorker):
             realm = Realm.objects.get(id=event["message_realm_id"])
 
             # If rendering fails, the called code will raise a JsonableError.
+            mention_data = MentionData(
+                mention_backend=MentionBackend(message.realm_id),
+                content=message.content,
+                message_sender=message.sender,
+            )
             rendering_result = render_incoming_message(
                 message,
                 message.content,
                 realm,
                 url_embed_data=url_embed_data,
+                mention_data=mention_data,
             )
-            do_update_embedded_data(message.sender, message, rendering_result)
+            do_update_embedded_data(message.sender, message, rendering_result, mention_data)
 
     @override
     def timer_expired(
