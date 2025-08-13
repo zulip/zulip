@@ -122,12 +122,15 @@ type StreamListSortResult = {
     sections: StreamListSection[];
 };
 
-export function sort_groups(stream_ids: number[], search_term: string): StreamListSortResult {
+export function sort_groups(
+    all_subscribed_stream_ids: number[],
+    search_term: string,
+): StreamListSortResult {
     const stream_id_to_name = (stream_id: number): string => sub_store.get(stream_id)!.name;
     // Use -, _, : and / as word separators apart from the default space character
     const word_separator_regex = /[\s/:_-]/;
-    stream_ids = util.filter_by_word_prefix_match(
-        stream_ids,
+    let matching_stream_ids = util.filter_by_word_prefix_match(
+        all_subscribed_stream_ids,
         search_term,
         stream_id_to_name,
         word_separator_regex,
@@ -137,24 +140,25 @@ export function sort_groups(stream_ids: number[], search_term: string): StreamLi
     if (
         current_channel_id !== undefined &&
         stream_data.is_subscribed(current_channel_id) &&
-        !stream_ids.includes(current_channel_id) &&
+        !matching_stream_ids.includes(current_channel_id) &&
         // If any of the topics of the channel match the search term, we need to
         // include the channel in the list of streams.
         topic_list_data.get_list_info(current_channel_id, false, (topic_names) =>
             topic_list_data.filter_topics_by_search_term(topic_names, search_term),
         ).items.length > 0
     ) {
-        stream_ids.push(current_channel_id);
+        matching_stream_ids.push(current_channel_id);
     }
 
     // If the channel folder matches the search term, include all channels
     // of that folder.
     if (user_settings.web_left_sidebar_show_channel_folders && search_term) {
-        stream_ids = [
+        matching_stream_ids = [
             ...new Set([
-                ...stream_ids,
+                ...matching_stream_ids,
                 ...channel_folders.get_channels_in_folders_matching_search_term_in_folder_name(
                     search_term,
+                    new Set(all_subscribed_stream_ids),
                 ),
             ]),
         ];
@@ -179,7 +183,7 @@ export function sort_groups(stream_ids: number[], search_term: string): StreamLi
 
     const folder_sections = new Map<number, StreamListSection>();
 
-    for (const stream_id of stream_ids) {
+    for (const stream_id of matching_stream_ids) {
         const sub = sub_store.get(stream_id);
         assert(sub);
         if (sub.is_archived) {

@@ -140,6 +140,7 @@ export function get_stream_ids_in_folder(folder_id: number): number[] {
 
 export function get_channels_in_folders_matching_search_term_in_folder_name(
     search_term: string,
+    all_subscribed_stream_ids: Set<number>,
 ): number[] {
     const channel_folders = get_channel_folders();
     const matching_channel_folders = util.filter_by_word_prefix_match(
@@ -150,7 +151,11 @@ export function get_channels_in_folders_matching_search_term_in_folder_name(
 
     const channel_ids: number[] = [];
     for (const channel_folder of matching_channel_folders) {
-        channel_ids.push(...get_stream_ids_in_folder(channel_folder.id));
+        for (const stream_id of get_stream_ids_in_folder(channel_folder.id)) {
+            if (all_subscribed_stream_ids.has(stream_id)) {
+                channel_ids.push(stream_id);
+            }
+        }
     }
     return channel_ids;
 }
