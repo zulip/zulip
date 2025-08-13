@@ -216,7 +216,7 @@ export function do_new_unread_animation($target: JQuery): void {
     // and any other effects. Doing so also gives us
     // very smooth rendering, as no visual properties
     // get tied to JavaScript's event loop.
-    $target.on("animationend, animationcancel", (): void => {
+    $target.on("animationend animationcancel", (): void => {
         $target.removeClass("new-unread");
         // We remove the transition-managing highlight
         // some time after the animation has run; how
