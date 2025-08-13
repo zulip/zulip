@@ -1079,25 +1079,15 @@ for webhook_integration in WEBHOOK_INTEGRATIONS:
 for bot_integration in BOT_INTEGRATIONS:
     INTEGRATIONS[bot_integration.name] = bot_integration
 
-# Add webhook integrations that don't have automated screenshots here
-NO_SCREENSHOT_WEBHOOKS = (
+hubot_integration_names = {integration.name for integration in HUBOT_INTEGRATIONS}
+
+# Add integrations whose example screenshots are not yet automated here
+INTEGRATIONS_MISSING_SCREENSHOT_CONFIG = (
     # The fixture's goal.losedate needs to be modified dynamically,
     # so the screenshot config is commented out.
     {"beeminder"}
-    # Meta integrations - Docs won't have a screenshot
-    | {"ifttt", "slack_incoming", "zapier"}
-    # Integrations that calls external API endpoints.
+    # Integrations that call external API endpoints.
     | {"slack"}
-)
-
-hubot_integration_names = {integration.name for integration in HUBOT_INTEGRATIONS}
-
-# Add fixtureless integrations that don't have automated screenshots here
-NO_SCREENSHOT_CONFIG = (
-    # Outgoing integrations - Docs won't have a screenshot
-    {"email", "onyx"}
-    # Video call integrations - Docs won't have a screenshot
-    | {"big-blue-button", "jitsi", "zoom"}
     # Integrations that require screenshots of message threads - support is yet to be added
     | {
         "errbot",
@@ -1108,15 +1098,26 @@ NO_SCREENSHOT_CONFIG = (
         "matrix",
         "xkcd",
     }
+    | hubot_integration_names
+)
+
+# Add integrations that are not meant to have example screenshots here
+INTEGRATIONS_WITHOUT_SCREENSHOTS = (
+    # Integration frameworks
+    {"ifttt", "slack_incoming", "zapier"}
+    # Outgoing integrations
+    | {"email", "onyx"}
+    # Video call integrations
+    | {"big-blue-button", "jitsi", "zoom"}
     | {
-        # Doc doesn't have a screenshot
+        # the integration does not send messages
         "giphy",
         # the integration is planned to be removed
         "twitter",
     }
-    | NO_SCREENSHOT_WEBHOOKS
-    | hubot_integration_names
 )
+
+NO_SCREENSHOT_CONFIG = INTEGRATIONS_MISSING_SCREENSHOT_CONFIG | INTEGRATIONS_WITHOUT_SCREENSHOTS
 
 
 def get_all_event_types_for_integration(integration: Integration) -> list[str] | None:
