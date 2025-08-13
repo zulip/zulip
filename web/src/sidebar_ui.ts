@@ -609,6 +609,9 @@ export function set_event_handlers(): void {
             $(row).trigger("click");
             return;
         }
+        // Clear search input so that there is no confusion
+        // about which search input is active.
+        $search_input.val("");
         const $nearest_link = $(row).find("a").first();
         if ($nearest_link.length > 0) {
             // If the row has a link, we click it.
@@ -618,8 +621,9 @@ export function set_event_handlers(): void {
             // let the browser handle it or add special
             // handling logic for it here.
         }
-        $search_input.val("");
-        $search_input.trigger("input");
+        // Don't trigger `input` which confuses the search input
+        // for zoomed in topic search.
+        update_left_sidebar_for_search();
         $search_input.trigger("blur");
     }
 
