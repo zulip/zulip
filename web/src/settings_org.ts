@@ -364,7 +364,7 @@ function disable_create_user_groups_if_on_limited_plan(): void {
 }
 
 export function maybe_store_unsaved_welcome_message_custom_text(): void {
-    if ($("#org-notifications").find(".save-button[data-status='unsaved']").length === 0) {
+    if ($("#org-onboarding").find(".save-button[data-status='unsaved']").length === 0) {
         return;
     }
 
