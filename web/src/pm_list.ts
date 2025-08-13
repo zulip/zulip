@@ -5,6 +5,7 @@ import * as z from "zod/mini";
 
 import type {Filter} from "./filter.ts";
 import {localstorage} from "./localstorage.ts";
+import * as mouse_drag from "./mouse_drag.ts";
 import * as pm_list_data from "./pm_list_data.ts";
 import type {DisplayObject} from "./pm_list_data.ts";
 import * as pm_list_dom from "./pm_list_dom.ts";
@@ -302,7 +303,7 @@ export function initialize(): void {
 
     $(".dm-list").on("click", ".dm-box", (e) => {
         // To avoid the click behavior if a dm box is selected.
-        if (document.getSelection()?.type === "Range") {
+        if (mouse_drag.is_drag(e)) {
             e.preventDefault();
         }
     });
