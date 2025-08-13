@@ -1015,6 +1015,10 @@
             }
         }
     }
+
+    .secondary-button {
+        margin-left: 10px;
+    }
 }
 
 .upload_banner {
