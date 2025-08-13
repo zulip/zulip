@@ -567,7 +567,7 @@
         }
     }
 
-    .stream-list-subsection-header .unread_mention_info {
+    .stream-list-subsection-header:not(:hover) .unread_mention_info {
         display: none;
     }
 }
