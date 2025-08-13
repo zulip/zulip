@@ -24,8 +24,8 @@ administrators.
 
 {settings_tab|organization-settings}
 
-1. Under **Automated messages and emails**, enable **Add a custom Welcome Bot
-   message for new users**.
+1. Under **Onboarding**, enable **Add a custom Welcome Bot message for
+   new users**.
 
 1. Under **Message text**, enter a custom welcome message using Zulip's standard
    [Markdown formatting](/help/format-your-message-using-markdown).

@@ -15,7 +15,7 @@ email notifying them about their new Zulip account and how to log in.
 
 {settings_tab|organization-settings}
 
-1. Under **Automated messages and emails**, toggle
+1. Under **Onboarding**, toggle
    **Send emails introducing Zulip to new users**.
 
 {end_tabs}
