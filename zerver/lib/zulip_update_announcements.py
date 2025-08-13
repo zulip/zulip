@@ -498,6 +498,25 @@ app released in June.
             user_groups_url="/help/user-groups",
         ),
     ),
+    ZulipUpdateAnnouncement(
+        level=21,
+        message=(
+            """
+We make many improvements to Zulip beyond what we can share here. Learn about
+additional feature highlights, and other Zulip project updates since March,
+in the [blog post]({blog_post_11_0_url}) announcing today's release of
+Zulip Server 11.0.
+"""
+            if settings.CORPORATE_ENABLED
+            else """
+We make many improvements to Zulip beyond what we can share here. Check out our
+[release announcement blog post]({blog_post_11_0_url}) to learn about additional
+feature highlights in Zulip Server 11.0, and other Zulip project updates.
+"""
+        ).format(
+            blog_post_11_0_url="https://blog.zulip.com/zulip-server-11-0",
+        ),
+    ),
 ]
 
 
