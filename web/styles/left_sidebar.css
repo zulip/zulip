@@ -338,8 +338,6 @@
         auto;
     position: sticky;
     top: 0;
-    /* Must be more than .stream-list-subsection-header */
-    z-index: 3;
     background: var(--color-background);
     /* Must be padding not margin so that the sticky headers don't show behind it */
     padding: 0 var(--left-sidebar-right-margin) 3px 5px;
