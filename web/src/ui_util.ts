@@ -180,7 +180,7 @@ export function update_unread_count_in_dom($unread_count_elem: JQuery, count: nu
 
     if (count === 0) {
         $unread_count_span.addClass("hide");
-        $unread_count_span.text("");
+        $unread_count_span.text(count);
         return;
     }
 

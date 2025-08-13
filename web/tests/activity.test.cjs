@@ -283,7 +283,7 @@ test("direct_message_update_dom_counts", () => {
     counts.set(pm_key, 0);
 
     activity_ui.update_dom_with_unread_counts({pm_count: counts});
-    assert.equal($count.text(), "");
+    assert.equal($count.text(), "0");
 });
 
 test("handlers", ({override, override_rewire, mock_template}) => {

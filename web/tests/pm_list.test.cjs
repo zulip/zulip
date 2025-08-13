@@ -28,6 +28,6 @@ run_test("update_dom_with_unread_counts", () => {
     };
 
     pm_list.set_count(counts.direct_message_count);
-    assert.equal($total_count.text(), "");
+    assert.equal($total_count.text(), "0");
     assert.equal($total_count.hasClass("hide"), true);
 });
