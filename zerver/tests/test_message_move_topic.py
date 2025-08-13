@@ -1208,6 +1208,92 @@ class MessageMoveTopicTest(ZulipTestCase):
             original_topic_state=UserTopic.VisibilityPolicy.UNMUTED,
         )
 
+    def test_automatic_follow_target_topic_when_orig_topic_followed(self) -> None:
+        self.login("iago")
+        iago = self.example_user("iago")
+        cordelia = self.example_user("cordelia")
+        hamlet = self.example_user("hamlet")
+        shiva = self.example_user("shiva")
+
+        users = [cordelia, iago, hamlet, shiva]
+
+        for user in users:
+            do_change_user_setting(
+                user,
+                "automatically_follow_topics_policy",
+                UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_NEVER,
+                acting_user=None,
+            )
+
+        orig_stream = self.make_stream("demo")
+        orig_topic = "original"
+
+        for user in users:
+            self.subscribe(user, orig_stream.name)
+
+        target_stream = self.make_stream(
+            "core", invite_only=True, history_public_to_subscribers=False
+        )
+        self.subscribe(iago, target_stream.name)
+        self.subscribe(cordelia, target_stream.name)
+        self.subscribe(shiva, target_stream.name)
+        target_topic = "post-move"
+
+        self.send_stream_message(shiva, orig_stream.name, topic_name=orig_topic)
+        msg_id = self.send_stream_message(shiva, orig_stream.name, topic_name=orig_topic)
+        self.send_stream_message(shiva, target_stream.name, target_topic)
+
+        for sender in users:
+            self.send_stream_message(
+                sender=sender,
+                stream_name=orig_stream.name,
+                topic_name=orig_topic,
+                content=f"Message sent by {sender.full_name}",
+            )
+
+        do_set_user_topic_visibility_policy(
+            user_profile=iago,
+            stream=orig_stream,
+            topic_name=orig_topic,
+            visibility_policy=UserTopic.VisibilityPolicy.FOLLOWED,
+        )
+
+        do_set_user_topic_visibility_policy(
+            user_profile=hamlet,
+            stream=orig_stream,
+            topic_name=orig_topic,
+            visibility_policy=UserTopic.VisibilityPolicy.FOLLOWED,
+        )
+
+        check_update_message(
+            user_profile=iago,
+            message_id=msg_id,
+            stream_id=target_stream.id,
+            topic_name=target_topic,
+            propagate_mode="change_later",
+            send_notification_to_old_thread=False,
+            send_notification_to_new_thread=False,
+            content=None,
+        )
+
+        # If original topic is followed by a user, and target topic is accessible
+        # to user, then target topic is also followed.
+        self.assert_has_visibility_policy(
+            iago, target_topic, target_stream, UserTopic.VisibilityPolicy.FOLLOWED
+        )
+
+        # If original topic is followed by user, and target topic is not accessible
+        # to user, then target topic is INHERIT.
+        self.assert_has_visibility_policy(
+            hamlet, target_topic, target_stream, UserTopic.VisibilityPolicy.INHERIT
+        )
+
+        # If original topic is not followed by user, and target topic is accessible
+        # to user, then target topic is INHERIT.
+        self.assert_has_visibility_policy(
+            cordelia, target_topic, target_stream, UserTopic.VisibilityPolicy.INHERIT
+        )
+
     def test_topic_edit_history_saved_in_all_message(self) -> None:
         self.login("hamlet")
         id1 = self.send_stream_message(self.example_user("hamlet"), "Denmark", topic_name="topic1")
