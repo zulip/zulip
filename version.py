@@ -1,6 +1,6 @@
 import os
 
-ZULIP_VERSION = "11.0-beta2"
+ZULIP_VERSION = "11.0"
 
 # Add information on number of commits and commit hash to version, if available
 zulip_git_version_file = os.path.join(
@@ -13,9 +13,9 @@ if os.path.exists(zulip_git_version_file):
 ZULIP_VERSION = lines.pop(0).strip()
 ZULIP_MERGE_BASE = lines.pop(0).strip()
 
-LATEST_MAJOR_VERSION = "10.0"
-LATEST_RELEASE_VERSION = "10.4"
-LATEST_RELEASE_ANNOUNCEMENT = "https://blog.zulip.com/zulip-server-10-0"
+LATEST_MAJOR_VERSION = "11.0"
+LATEST_RELEASE_VERSION = "11.0"
+LATEST_RELEASE_ANNOUNCEMENT = "https://blog.zulip.com/zulip-server-11-0"
 
 # Versions of the desktop app below DESKTOP_MINIMUM_VERSION will be
 # prevented from connecting to the Zulip server.  Versions above
@@ -34,7 +34,7 @@ DESKTOP_WARNING_VERSION = "5.9.3"
 # new level means in api_docs/changelog.md, as well as "**Changes**"
 # entries in the endpoint's documentation in `zulip.yaml`.
 
-API_FEATURE_LEVEL = 420
+API_FEATURE_LEVEL = 421
 
 # Bump the minor PROVISION_VERSION to indicate that folks should provision
 # only when going from an old version of the code to a newer version. Bump

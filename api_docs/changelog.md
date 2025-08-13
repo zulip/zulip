@@ -20,6 +20,10 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 11.0
 
+**Feature level 421**
+
+No changes; API feature level used for the Zulip 11.0 release.
+
 **Feature level 420**
 
 * [`POST /mobile_push/e2ee/test_notification`](/api/e2ee-test-notify):
