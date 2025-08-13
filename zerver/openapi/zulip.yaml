@@ -25132,6 +25132,7 @@ paths:
                     folders.
                   items:
                     type: integer
+                  example: [2, 1]
               required:
                 - order
             encoding:
