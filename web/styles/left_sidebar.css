@@ -112,6 +112,18 @@
         .unread_count.hide + .masked_unread_count {
             visibility: hidden;
         }
+
+        /* Suppress the unread-count dot and show
+           the unread count on hover. */
+        &:hover {
+            .masked_unread_count {
+                visibility: hidden;
+            }
+
+            .unread_count:not(:empty) {
+                visibility: visible;
+            }
+        }
     }
 }
 
