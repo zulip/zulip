@@ -1039,14 +1039,23 @@ class Command(ZulipBaseCommand):
                     name=SystemGroups.ADMINISTRATORS, realm=zulip_realm, is_system_group=True
                 )
 
-                channel_folder = check_add_channel_folder(
+                engineering_channel_folder = check_add_channel_folder(
                     zulip_realm,
                     "Engineering",
                     "For convenient *channel folder* testing! :octopus:",
                     acting_user=iago,
                 )
+                information_channel_folder = check_add_channel_folder(
+                    zulip_realm,
+                    "Information",
+                    "For user-facing information and questions",
+                    acting_user=iago,
+                )
                 zulip_stream_dict: dict[str, dict[str, Any]] = {
-                    "devel": {"description": "For developing", "folder_id": channel_folder.id},
+                    "devel": {
+                        "description": "For developing",
+                        "folder_id": engineering_channel_folder.id,
+                    },
                     # ビデオゲーム - VideoGames (japanese)
                     "ビデオゲーム": {
                         "description": f"Share your favorite video games!  {raw_emojis[2]}",
@@ -1055,12 +1064,22 @@ class Command(ZulipBaseCommand):
                     "announce": {
                         "description": "For announcements",
                         "can_send_message_group": admins_system_group,
+                        "folder_id": information_channel_folder.id,
                     },
                     "design": {"description": "For design", "creator": hamlet},
-                    "support": {"description": "For support"},
+                    "support": {
+                        "description": "For support",
+                        "folder_id": information_channel_folder.id,
+                    },
                     "social": {"description": "For socializing"},
-                    "test": {"description": "For testing `code`", "folder_id": channel_folder.id},
-                    "errors": {"description": "For errors", "folder_id": channel_folder.id},
+                    "test": {
+                        "description": "For testing `code`",
+                        "folder_id": engineering_channel_folder.id,
+                    },
+                    "errors": {
+                        "description": "For errors",
+                        "folder_id": engineering_channel_folder.id,
+                    },
                     # 조리법 - Recipes (Korean), Пельмени - Dumplings (Russian)
                     "조리법 " + raw_emojis[0]: {
                         "description": "Everything cooking, from pasta to Пельмени"
