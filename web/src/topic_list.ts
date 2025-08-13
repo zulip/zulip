@@ -11,9 +11,7 @@ import * as blueslip from "./blueslip.ts";
 import {Typeahead} from "./bootstrap_typeahead.ts";
 import type {TypeaheadInputElement} from "./bootstrap_typeahead.ts";
 import * as popover_menus from "./popover_menus.ts";
-import * as popovers from "./popovers.ts";
 import * as scroll_util from "./scroll_util.ts";
-import * as sidebar_ui from "./sidebar_ui.ts";
 import * as stream_topic_history from "./stream_topic_history.ts";
 import * as stream_topic_history_util from "./stream_topic_history_util.ts";
 import type {StreamSubscription} from "./sub_store.ts";
@@ -23,6 +21,7 @@ import type {TopicFilterPill, TopicFilterPillWidget} from "./topic_filter_pill.t
 import * as topic_list_data from "./topic_list_data.ts";
 import type {TopicInfo} from "./topic_list_data.ts";
 import * as typeahead_helper from "./typeahead_helper.ts";
+import * as ui_util from "./ui_util.ts";
 import * as vdom from "./vdom.ts";
 
 /* Track all active widgets with a Map by stream_id. We have at max
@@ -60,13 +59,6 @@ export function clear(): void {
     active_widgets.clear();
 }
 
-export function focus_topic_search_filter(): void {
-    popovers.hide_all();
-    sidebar_ui.show_left_sidebar();
-    const $filter = $("#topic_filter_query");
-    $filter.trigger("focus");
-}
-
 export function close(): void {
     zoomed = false;
     clear();
@@ -74,6 +66,7 @@ export function close(): void {
 
 export function zoom_out(): void {
     zoomed = false;
+    ui_util.enable_left_sidebar_search();
 
     const stream_ids = [...active_widgets.keys()];
 
@@ -436,6 +429,7 @@ export function left_sidebar_scroll_zoomed_in_topic_into_view(): void {
 // handle hiding/showing the non-narrowed streams
 export function zoom_in(): void {
     zoomed = true;
+    ui_util.disable_left_sidebar_search();
 
     const stream_id = active_stream_id();
     if (stream_id === undefined) {
@@ -479,7 +473,10 @@ export function zoom_in(): void {
 }
 
 export function get_left_sidebar_topic_search_term(): string {
-    return $("#topic_filter_query").text().trim();
+    if (zoomed) {
+        return $("#topic_filter_query").text().trim();
+    }
+    return ui_util.get_left_sidebar_search_term();
 }
 
 export function get_typeahead_search_pills_syntax(): string {
@@ -613,6 +610,11 @@ export function initialize({
                 return;
             }
 
+            if (document.getSelection()?.type === "Range") {
+                // To avoid the click behavior if a topic link is selected.
+                e.preventDefault();
+                return;
+            }
             const $stream_row = $(e.target).parents(".narrow-filter");
             const stream_id_string = $stream_row.attr("data-stream-id");
             assert(stream_id_string !== undefined);

@@ -119,15 +119,15 @@ class PushDevice(AbstractPushDevice):
                 # We treat (user, push_account_id) as a unique registration.
                 #
                 # Also, the unique index created is used by queries in `get_push_accounts`,
-                # `register_push_device`, and `handle_register_push_device_to_bouncer`.
+                # `register_push_device`, `handle_register_push_device_to_bouncer`, and
+                # `send_e2ee_test_push_notification_api`.
                 fields=["user", "push_account_id"],
                 name="unique_push_device_user_push_account_id",
             ),
         ]
         indexes = [
             models.Index(
-                # Used in 'send_push_notifications' function,
-                # in 'zerver/lib/push_notifications'.
+                # Used in 'send_push_notifications' and `send_e2ee_test_push_notification_api`.
                 fields=["user", "bouncer_device_id"],
                 condition=Q(bouncer_device_id__isnull=False),
                 name="zerver_pushdevice_user_bouncer_device_id_idx",

@@ -27,6 +27,16 @@
             {{> inbox_list .}}
         {{/if}}
     </div>
+    <div id="inbox-collapsed-note">
+        <div class="inbox-collapsed-note-and-button-wrapper">
+            <span class="inbox-collpased-note-span">
+                {{t "All unread conversations are hidden. Click on a section, folder, or channel to expand it."}}
+            </span>
+            <button id="inbox-expand-all-button" class="action-button action-button-quiet-neutral" tabindex="0">
+                <span class="action-button-label">{{t "Show all"}}</span>
+            </button>
+        </div>
+    </div>
     <div id="inbox-loading-indicator">
         {{#unless normal_view}}
         {{> ../view_bottom_loading_indicator}}

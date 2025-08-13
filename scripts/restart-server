@@ -145,7 +145,20 @@ if action == "restart" and len(running_services) == 0:
 elif action == "start":
     existing_services = list_supervisor_processes(check_services)
     if existing_services == running_services:
-        logging.info("Zulip is already started; nothing to do!")
+        # Check if the version we're trying to start is the version
+        # that we would have started.  We do this via checking the CWD
+        # of the oldest uwsgi worker.
+        oldest_pid = subprocess.check_output(
+            ["pgrep", "--oldest", "--full", "zulip-django uWSGI worker"], text=True
+        ).strip()
+        running_cwd = os.readlink(f"/proc/{oldest_pid}/cwd")
+        if deploy_path != running_cwd:
+            logging.warning("Mismatch between 'current' symlink and currently-running code!")
+            logging.warning("Already-running deploy: %s", running_cwd)
+            logging.warning("We would have started:  %s", deploy_path)
+            logging.warning("To restart, call %s/scripts/restart-server", deploy_path)
+        else:
+            logging.info("Zulip is already started; nothing to do!")
         sys.exit(0)
 
 

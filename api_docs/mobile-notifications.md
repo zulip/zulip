@@ -59,7 +59,7 @@ Sample JSON data that gets encrypted:
 {
   "content": "test content",
   "message_id": 46,
-  "pm_users": "6,10,12,15"
+  "pm_users": "6,10,12,15",
   "realm_name": "Zulip Dev",
   "realm_url": "http://zulip.testserver",
   "recipient_type": "direct",
@@ -105,6 +105,24 @@ Sample JSON data that gets encrypted:
 [zulip-bouncer]: https://zulip.readthedocs.io/en/latest/production/mobile-push-notifications.html#mobile-push-notification-service
 
 **Changes**: New in Zulip 11.0 (feature level 413).
+
+### Test push notification
+
+A user can trigger [sending an E2EE test push notification](/api/e2ee-test-notify)
+to the user's selected mobile device or all of their mobile devices.
+
+Sample JSON data that gets encrypted:
+```json
+{
+  "realm_name": "Zulip Dev",
+  "realm_url": "http://zulip.testserver",
+  "time": 1754577820,
+  "type": "test",
+  "user_id": 10
+}
+```
+
+**Changes**: New in Zulip 11.0 (feature level 420).
 
 ## Future work
 

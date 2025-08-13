@@ -302,7 +302,7 @@ test("basics", () => {
     assert.ok(!filter.can_mark_messages_read());
     assert.ok(filter.contains_no_partial_conversations());
     assert.ok(filter.has_negated_operand("channels", "public"));
-    assert.ok(!filter.can_apply_locally());
+    assert.ok(filter.can_apply_locally());
     assert.ok(!filter.is_personal_filter());
     assert.ok(!filter.is_conversation_view());
     assert.ok(!filter.is_channel_view());
@@ -316,7 +316,7 @@ test("basics", () => {
     assert.ok(!filter.can_mark_messages_read());
     assert.ok(filter.contains_no_partial_conversations());
     assert.ok(!filter.has_negated_operand("channels", "public"));
-    assert.ok(!filter.can_apply_locally());
+    assert.ok(filter.can_apply_locally());
     assert.ok(filter.includes_full_stream_history());
     assert.ok(!filter.is_personal_filter());
     assert.ok(!filter.is_conversation_view());
@@ -525,7 +525,7 @@ test("basics", () => {
     assert.ok(filter.contains_no_partial_conversations());
     // This next check verifies what is probably a bug; see the
     // comment in the can_apply_locally implementation.
-    assert.ok(!filter.can_apply_locally());
+    assert.ok(filter.can_apply_locally());
     assert.ok(!filter.is_personal_filter());
     assert.ok(!filter.is_conversation_view());
     assert.ok(filter.may_contain_multiple_conversations());
@@ -606,7 +606,7 @@ test("basics", () => {
     assert.ok(!filter.contains_only_private_messages());
     assert.ok(!filter.allow_use_first_unread_when_narrowing());
     assert.ok(filter.includes_full_stream_history());
-    assert.ok(!filter.can_apply_locally());
+    assert.ok(filter.can_apply_locally());
     assert.ok(!filter.is_personal_filter());
     assert.ok(!filter.is_conversation_view());
     assert.ok(!filter.may_contain_multiple_conversations());
@@ -1091,12 +1091,32 @@ test("predicate_basics", ({override}) => {
     // For old channels that we are no longer subscribed to, we may not have
     // a subscription, but these should still match by channel name.
     const old_sub_id = new_stream_id();
+    const private_sub_id = new_stream_id();
+    const web_public_sub_id = new_stream_id();
     const old_sub = {
         name: "old-subscription",
         stream_id: old_sub_id,
         subscribed: false,
+        invite_only: false,
+        is_web_public: false,
+    };
+    const private_sub = {
+        name: "private-subscription",
+        stream_id: private_sub_id,
+        subscribed: true,
+        invite_only: true,
+        is_web_public: false,
+    };
+    const web_public_sub = {
+        name: "web-public-subscription",
+        stream_id: web_public_sub_id,
+        subscribed: false,
+        invite_only: false,
+        is_web_public: true,
     };
     stream_data.add_sub(old_sub);
+    stream_data.add_sub(private_sub);
+    stream_data.add_sub(web_public_sub);
     predicate = get_predicate([
         ["channel", old_sub_id.toString()],
         ["topic", "Bar"],
@@ -1116,7 +1136,16 @@ test("predicate_basics", ({override}) => {
     assert.ok(!predicate({type: stream_message}));
 
     predicate = get_predicate([["channels", "public"]]);
-    assert.ok(predicate({}));
+    assert.ok(predicate({type: stream_message, stream_id: old_sub_id}));
+    assert.ok(!predicate({type: stream_message, stream_id: private_sub_id}));
+    assert.ok(predicate({type: stream_message, stream_id: web_public_sub_id}));
+
+    predicate = get_predicate([["channels", "web-public"]]);
+    assert.ok(predicate({type: stream_message, stream_id: web_public_sub_id}));
+    assert.ok(!predicate({type: stream_message, stream_id: old_sub_id}));
+
+    predicate = get_predicate([["channels", "bogus"]]);
+    assert.ok(!predicate({type: stream_message, stream_id: old_sub_id}));
 
     predicate = get_predicate([["is", "starred"]]);
     assert.ok(predicate({starred: true}));
@@ -1684,9 +1713,25 @@ test("describe", ({mock_template, override}) => {
     string = "exclude all public channels";
     assert.equal(Filter.search_description_as_html(narrow, false), string);
 
+    narrow = [{operator: "channels", operand: "web-public"}];
+    string = "all web-public channels";
+    assert.equal(Filter.search_description_as_html(narrow, false), string);
+
+    narrow = [{operator: "channels", operand: "web-public", negated: true}];
+    string = "exclude all web-public channels";
+    assert.equal(Filter.search_description_as_html(narrow, false), string);
+
     page_params.is_spectator = true;
     narrow = [{operator: "channels", operand: "public"}];
     string = "all public channels that you can view";
+    assert.equal(Filter.search_description_as_html(narrow, false), string);
+
+    narrow = [{operator: "channels", operand: "web-public"}];
+    string = "all web-public channels";
+    assert.equal(Filter.search_description_as_html(narrow, false), string);
+
+    narrow = [{operator: "channels", operand: "web-public", negated: true}];
+    string = "exclude all web-public channels";
     assert.equal(Filter.search_description_as_html(narrow, false), string);
     page_params.is_spectator = false;
 
@@ -2337,6 +2382,7 @@ test("navbar_helpers", ({override}) => {
     const is_resolved = [{operator: "is", operand: "resolved"}];
     const is_followed = [{operator: "is", operand: "followed"}];
     const channels_public = [{operator: "channels", operand: "public"}];
+    const channels_web_public = [{operator: "channels", operand: "web-public"}];
     const channel_topic_terms = [
         {operator: "channel", operand: foo_stream_id.toString()},
         {operator: "topic", operand: "bar"},
@@ -2492,6 +2538,13 @@ test("navbar_helpers", ({override}) => {
             icon: undefined,
             title: "translated: Messages in all public channels",
             redirect_url_with_search: "/#narrow/channels/public",
+        },
+        {
+            terms: channels_web_public,
+            is_common_narrow: true,
+            icon: undefined,
+            title: "translated: Messages in all web-public channels",
+            redirect_url_with_search: "/#narrow/channels/web-public",
         },
         {
             terms: channel_term,

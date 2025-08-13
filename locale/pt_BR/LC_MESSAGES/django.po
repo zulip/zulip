@@ -10,7 +10,7 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-07-30 13:46+0000\n"
-"PO-Revision-Date: 2025-07-19 05:03+0000\n"
+"PO-Revision-Date: 2025-08-07 23:52+0000\n"
 "Last-Translator: Alex Vandiver <alexmv@zulip.com>\n"
 "Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/"
 "zulip/django/pt_BR/>\n"
@@ -83,7 +83,7 @@ msgstr ""
 "Sua organização não tem mais licenças do Zulip disponíveis e não pode mais "
 "aceitar novos usuários. Por favor [aumente o número de licenças]"
 "({billing_page_link}) ou [desative usuários inativos]"
-"({deactivate_user_help_page_link}) para permitir novos usuários"
+"({deactivate_user_help_page_link}) para permitir novos usuários."
 
 #: corporate/lib/registration.py:42
 #, python-brace-format
@@ -93,8 +93,9 @@ msgid ""
 "({deactivate_user_help_page_link}) to allow more than one user to join."
 msgstr ""
 "Sua organização tem apenas uma licença do Zulip disponível. Você pode "
-"[aumente o número de licenças]({billing_page_link}) ou [desative usuários "
-"inativos]({deactivate_user_help_page_link}) para permitir novos usuários"
+"[aumente o número de licenças]({billing_page_link}) ou "
+"[desative usuários inativos]({deactivate_user_help_page_link}) para permitir "
+"novos usuários."
 
 #: corporate/lib/registration.py:47
 #, python-brace-format
@@ -104,8 +105,9 @@ msgid ""
 "({deactivate_user_help_page_link}) to allow more than two users to join."
 msgstr ""
 "Sua organização tem apenas duas licenças do Zulip disponíveis. Você pode "
-"[aumente o número de licenças]({billing_page_link}) ou [desative usuários "
-"inativos]({deactivate_user_help_page_link}) para permitir novos usuários"
+"[aumente o número de licenças]({billing_page_link}) ou "
+"[desative usuários inativos]({deactivate_user_help_page_link}) para permitir "
+"novos usuários."
 
 #: corporate/lib/registration.py:52
 #, python-brace-format
@@ -115,8 +117,9 @@ msgid ""
 "({deactivate_user_help_page_link}) to allow more than three users to join."
 msgstr ""
 "Sua organização tem apenas três licenças do Zulip disponíveis. Você pode "
-"[aumente o número de licenças]({billing_page_link}) ou [desative usuários "
-"inativos]({deactivate_user_help_page_link}) para permitir novos usuários"
+"[aumente o número de licenças]({billing_page_link}) ou "
+"[desative usuários inativos]({deactivate_user_help_page_link}) para permitir "
+"novos usuários."
 
 #: corporate/lib/registration.py:63
 #, fuzzy, python-brace-format
@@ -660,8 +663,7 @@ msgid ""
 "encountering this page, it's probably our fault. We're sorry."
 msgstr ""
 "Certifique-se de que o link foi copiado corretamente para o seu navegador. "
-"Se \n"
-"você ainda está encontrando esta página, provavelmente a culpa é nossa. \n"
+"Se você ainda está encontrando esta página, provavelmente a culpa é nossa. "
 "Nós lamentamos."
 
 #: templates/corporate/billing/billing.html:5

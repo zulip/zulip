@@ -1,6 +1,7 @@
 import $ from "jquery";
 
 import * as blueslip from "./blueslip.ts";
+import * as mouse_drag from "./mouse_drag.ts";
 import * as overlay_util from "./overlay_util.ts";
 
 type Hook = () => void;
@@ -177,7 +178,7 @@ export function initialize(): void {
     $("body").on("click", "div.overlay, div.overlay .exit", (e) => {
         let $target = $(e.target);
 
-        if (document.getSelection()?.type === "Range") {
+        if (mouse_drag.is_drag(e)) {
             return;
         }
 

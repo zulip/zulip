@@ -4,10 +4,10 @@
 
 SCIM (System for Cross-domain Identity Management) is a standard
 protocol used by Single Sign-On (SSO) services and identity providers
-to provision/deprovision user accounts and groups. Zulip supports SCIM
-integration, both in Zulip Cloud and for [self-hosted](/self-hosting/)
-Zulip servers.  This page describes how to configure SCIM provisioning
-for Zulip.
+to provision/deprovision user accounts and [groups](/help/user-groups).
+Zulip supports SCIM integration, both in Zulip Cloud and for
+[self-hosted](/self-hosting/) Zulip servers. This page describes how to
+configure SCIM provisioning for Zulip.
 
 {!cloud-plus-only.md!}
 
@@ -161,7 +161,24 @@ for Zulip.
 
 ## Synchronizing group membership with SCIM
 
-Zulip also supports syncing of users' [groups](/help/user-groups) via SCIM.
+You can enable group sync for any of your SCIM provider's groups. When you do,
+the SCIM integration will create a user group in Zulip with the matching name
+and user memberships. When you add or remove users from the group in your SCIM
+provider, these changes will immediately be reflected in group memberships in
+Zulip.
+
+In order to ensure consistent state, do not modify the **name** or **user
+memberships** of SCIM-managed groups inside of Zulip. Such groups are meant to
+be managed in your SCIM provider. Changes made on the Zulip side will not be
+reflected in your SCIM provider, and instead will cause the state of the Zulip
+group to become inconsistent with the state of the SCIM provider's group.
+
+Zulip supports [adding user groups to other
+groups](/help/manage-user-groups#add-user-groups-to-a-group), but some SCIM
+providers (including Okta) do not. As a result, this concept is also not
+supported in Zulip's SCIM integration. If you want to use nested groups, you can
+add groups to other groups in Zulip and manage the individual members of each
+subgroup in your SCIM provider.
 
 {start_tabs}
 
@@ -169,34 +186,20 @@ Zulip also supports syncing of users' [groups](/help/user-groups) via SCIM.
 
 1. Follow the instructions [above](#configure-scim) to configure SCIM.
 
+1. [Rename](/help/manage-user-groups#change-a-user-groups-name-or-description)
+   any Zulip groups that have the same names as groups that you want to sync. If
+   you push a group whose name matches an existing Zulip group, the request will
+   fail.
+
 1. Open the **Application** you set up above for the Zulip SCIM integration, and
    go to the **Push groups** tab. This menu allows you to choose the Okta groups
    which should be synchronized with Zulip's user groups.
 
-1. Make sure you're familiar with the below rules governing SCIM group sync behavior:
+!!! warn ""
 
-    * When you set up an Okta group in the **Push groups** tab, the SCIM
-      integration will create a user group in Zulip with the matching name and
-      user memberships.
-    * When you add or remove users from the group in Okta, these changes will
-      be immediately be reflected in group memberships in Zulip.
-    * You can only enable synchronization of groups which do not yet exist in Zulip.
-      If you push a group whose name matches an existing Zulip group, the request
-      will fail.
-    * SCIM `DELETE` requests are not supported for groups. This means that if you choose
-      to **Unlink** a group in Okta from the Zulip SCIM integration, you **must** select
-      **Leave the group in the target app**. The **Delete the group in the target app**
-      option is not supported.
-    * In order to ensure consistent state, do not modify
-      the name or memberships of SCIM-managed groups inside of Zulip. Such groups are
-      meant to be managed in Okta. Changes made on the Zulip side will not be reflected
-      in Okta and instead will cause the state of the Zulip group to become inconsistent
-      with the state of the Okta group.
-    * Note that while Zulip supports nested groups, Okta does not. Zulip,
-      unlike Okta, supports nesting groups inside other groups. This means that
-      you will use SCIM to sync the direct members of groups in Zulip, and then if
-      you'd like to have a group contain another group in Zulip
-      permissions, configure that subgroup relationship directly in Zulip.
+    SCIM `DELETE` requests are not supported for groups. To **Unlink** a group in
+    Okta from the Zulip SCIM integration, select **Leave the group in the target
+    app**. The **Delete the group in the target app** option is not supported.
 
 {end_tabs}
 

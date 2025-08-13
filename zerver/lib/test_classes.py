@@ -1622,7 +1622,7 @@ Output:
     def create_channel_via_post(
         self,
         user: UserProfile,
-        subscribers: list[str] | list[int] | None = None,
+        subscribers: list[int] | None = None,
         name: str | None = None,
         extra_post_data: Mapping[str, Any] = {},
         invite_only: bool = False,

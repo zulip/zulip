@@ -32,6 +32,7 @@ from zerver.lib.debug import maybe_tracemalloc_listen
 from zerver.lib.exceptions import ErrorCode, JsonableError, MissingAuthenticationError, WebhookError
 from zerver.lib.markdown import get_markdown_requests, get_markdown_time
 from zerver.lib.per_request_cache import flush_per_request_caches
+from zerver.lib.push_notifications import FailedToConnectBouncerError, InternalBouncerServerError
 from zerver.lib.rate_limiter import RateLimitResult
 from zerver.lib.request import RequestNotes
 from zerver.lib.response import (
@@ -397,10 +398,16 @@ class JsonErrorHandler(MiddlewareMixin):
 
         if isinstance(exception, JsonableError):
             response = json_response_from_error(exception)
-            if response.status_code < 500 or isinstance(exception, WebhookError):
+            if response.status_code < 500 or isinstance(
+                exception, (FailedToConnectBouncerError | InternalBouncerServerError | WebhookError)
+            ):
                 # Webhook errors are handled in
                 # authenticated_rest_api_view / webhook_view, so we
                 # just return the response without logging further.
+                #
+                # Return the response when `FailedToConnectBouncerError` or
+                # `InternalBouncerServerError` raised (status code 502) as
+                # it helps the client to show the user a more accurate error message.
                 return response
         elif RequestNotes.get_notes(request).error_format == "JSON" and not settings.TEST_SUITE:
             response = json_response(

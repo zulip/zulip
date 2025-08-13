@@ -154,14 +154,25 @@ class BuddyListConf {
     }
 }
 
+type BuddyListSection = {
+    user_ids: number[];
+    is_collapsed: boolean;
+};
+
 export class BuddyList extends BuddyListConf {
     all_user_ids: number[] = [];
-    participant_user_ids: number[] = [];
-    users_matching_view_ids: number[] = [];
-    other_user_ids: number[] = [];
-    participants_is_collapsed = false;
-    users_matching_view_is_collapsed = false;
-    other_users_is_collapsed = true;
+    participants_section: BuddyListSection = {
+        user_ids: [],
+        is_collapsed: false,
+    };
+    users_matching_view_section: BuddyListSection = {
+        user_ids: [],
+        is_collapsed: false,
+    };
+    other_users_section: BuddyListSection = {
+        user_ids: [],
+        is_collapsed: true,
+    };
     render_count = 0;
     render_data = get_render_data();
     // This is a bit of a hack to make sure we at least have
@@ -323,11 +334,11 @@ export class BuddyList extends BuddyListConf {
     populate(opts: {all_user_ids: number[]}): void {
         this.render_count = 0;
         this.$participants_list.empty();
-        this.participant_user_ids = [];
+        this.participants_section.user_ids = [];
         this.$users_matching_view_list.empty();
-        this.users_matching_view_ids = [];
+        this.users_matching_view_section.user_ids = [];
         this.$other_users_list.empty();
-        this.other_user_ids = [];
+        this.other_users_section.user_ids = [];
         $("#user-list").toggleClass(
             "with_avatars",
             user_settings.user_list_style ===
@@ -347,11 +358,11 @@ export class BuddyList extends BuddyListConf {
         } else {
             this.set_section_collapse(
                 "#buddy-list-participants-container",
-                this.participants_is_collapsed,
+                this.participants_section.is_collapsed,
             );
             this.set_section_collapse(
                 "#buddy-list-users-matching-view-container",
-                this.users_matching_view_is_collapsed,
+                this.users_matching_view_section.is_collapsed,
             );
             // Ensure the "other" section is visible when headers are collapsed,
             // because we're hiding its header so there's no way to collapse or
@@ -359,7 +370,7 @@ export class BuddyList extends BuddyListConf {
             // the user specified otherwise.
             this.set_section_collapse(
                 "#buddy-list-other-users-container",
-                this.render_data.hide_headers ? false : this.other_users_is_collapsed,
+                this.render_data.hide_headers ? false : this.other_users_section.is_collapsed,
             );
         }
 
@@ -527,7 +538,7 @@ export class BuddyList extends BuddyListConf {
                 render_section_header({
                     id: "buddy-list-participants-section-heading",
                     header_text: $t({defaultMessage: "THIS CONVERSATION"}),
-                    is_collapsed: this.participants_is_collapsed,
+                    is_collapsed: this.participants_section.is_collapsed,
                 }),
             ),
         );
@@ -539,7 +550,7 @@ export class BuddyList extends BuddyListConf {
                     header_text: current_sub
                         ? $t({defaultMessage: "THIS CHANNEL"})
                         : $t({defaultMessage: "THIS CONVERSATION"}),
-                    is_collapsed: this.users_matching_view_is_collapsed,
+                    is_collapsed: this.users_matching_view_section.is_collapsed,
                 }),
             ),
         );
@@ -549,7 +560,7 @@ export class BuddyList extends BuddyListConf {
                 render_section_header({
                     id: "buddy-list-other-users-section-heading",
                     header_text: $t({defaultMessage: "OTHERS"}),
-                    is_collapsed: this.other_users_is_collapsed,
+                    is_collapsed: this.other_users_section.is_collapsed,
                 }),
             ),
         );
@@ -569,10 +580,10 @@ export class BuddyList extends BuddyListConf {
     }
 
     toggle_participants_section(): void {
-        this.participants_is_collapsed = !this.participants_is_collapsed;
+        this.participants_section.is_collapsed = !this.participants_section.is_collapsed;
         this.set_section_collapse(
             "#buddy-list-participants-container",
-            this.participants_is_collapsed,
+            this.participants_section.is_collapsed,
         );
 
         // Collapsing and uncollapsing sections has a similar effect to
@@ -581,10 +592,11 @@ export class BuddyList extends BuddyListConf {
     }
 
     toggle_users_matching_view_section(): void {
-        this.users_matching_view_is_collapsed = !this.users_matching_view_is_collapsed;
+        this.users_matching_view_section.is_collapsed =
+            !this.users_matching_view_section.is_collapsed;
         this.set_section_collapse(
             "#buddy-list-users-matching-view-container",
-            this.users_matching_view_is_collapsed,
+            this.users_matching_view_section.is_collapsed,
         );
 
         // Collapsing and uncollapsing sections has a similar effect to
@@ -593,10 +605,10 @@ export class BuddyList extends BuddyListConf {
     }
 
     toggle_other_users_section(): void {
-        this.other_users_is_collapsed = !this.other_users_is_collapsed;
+        this.other_users_section.is_collapsed = !this.other_users_section.is_collapsed;
         this.set_section_collapse(
             "#buddy-list-other-users-container",
-            this.other_users_is_collapsed,
+            this.other_users_section.is_collapsed,
         );
 
         // Collapsing and uncollapsing sections has a similar effect to
@@ -627,15 +639,15 @@ export class BuddyList extends BuddyListConf {
         for (const item of items) {
             if (all_participant_ids.has(item.user_id)) {
                 participants.push(item);
-                this.participant_user_ids.push(item.user_id);
+                this.participants_section.user_ids.push(item.user_id);
             } else if (
                 buddy_data.user_matches_narrow(item.user_id, pm_ids_set, current_sub?.stream_id)
             ) {
                 subscribed_users.push(item);
-                this.users_matching_view_ids.push(item.user_id);
+                this.users_matching_view_section.user_ids.push(item.user_id);
             } else {
                 other_users.push(item);
-                this.other_user_ids.push(item.user_id);
+                this.other_users_section.user_ids.push(item.user_id);
             }
         }
 
@@ -724,8 +736,10 @@ export class BuddyList extends BuddyListConf {
             return;
         }
         const has_inactive_users_matching_view =
-            non_participant_users_matching_view_count > this.users_matching_view_ids.length;
-        const has_inactive_other_users = other_users_count > this.other_user_ids.length;
+            non_participant_users_matching_view_count >
+            this.users_matching_view_section.user_ids.length;
+        const has_inactive_other_users =
+            other_users_count > this.other_users_section.user_ids.length;
 
         // After the `await`, we might have changed to a different channel view.
         // If so, we shouldn't update the DOM anymore, and should let the newer `populate`
@@ -765,127 +779,131 @@ export class BuddyList extends BuddyListConf {
         // all participants to be shown (except bots or deactivated users).
     }
 
+    section_is_visible_and_has_users(section: BuddyListSection): boolean {
+        return (
+            (this.render_data.hide_headers || !section.is_collapsed) && section.user_ids.length > 0
+        );
+    }
+
     // From `type List<Key>`, where the key is a user_id.
     first_key(): number | undefined {
-        if (this.participant_user_ids.length > 0) {
-            return this.participant_user_ids[0];
-        }
-        if (this.users_matching_view_ids.length > 0) {
-            return this.users_matching_view_ids[0];
-        }
-        if (this.other_user_ids.length > 0) {
-            return this.other_user_ids[0];
+        for (const section of [
+            this.participants_section,
+            this.users_matching_view_section,
+            this.other_users_section,
+        ]) {
+            if (this.section_is_visible_and_has_users(section)) {
+                return section.user_ids[0];
+            }
         }
         return undefined;
     }
 
     // From `type List<Key>`, where the key is a user_id.
     prev_key(key: number): number | undefined {
-        let i = this.participant_user_ids.indexOf(key);
-        // This would be the middle of the list of participants,
-        // moving to a prev participant.
-        if (i > 0) {
-            return this.participant_user_ids[i - 1];
-        }
+        let i = this.participants_section.user_ids.indexOf(key);
         // If it's the first participant, we don't move the selection.
         if (i === 0) {
             return undefined;
         }
+        // This would be the middle of the list of participants,
+        // moving to a prev participant.
+        if (i > 0) {
+            return this.participants_section.user_ids[i - 1];
+        }
 
-        i = this.users_matching_view_ids.indexOf(key);
+        i = this.users_matching_view_section.user_ids.indexOf(key);
+        // The key before the first user matching view is the last participant,
+        // if that exists (and the participants view isn't collapsed), and if
+        // it doesn't then we don't move the selection.
+        if (i === 0) {
+            if (this.section_is_visible_and_has_users(this.participants_section)) {
+                return this.participants_section.user_ids.at(-1);
+            }
+            return undefined;
+        }
         // This would be the middle of the list of users matching view,
         // moving to a prev user matching the view.
         if (i > 0) {
-            return this.users_matching_view_ids[i - 1];
-        }
-        // The key before the first user matching view is the last participant, if that exists,
-        // and if it doesn't then we don't move the selection.
-        if (i === 0) {
-            if (this.participant_user_ids.length > 0) {
-                return this.participant_user_ids.at(-1);
-            }
-            return undefined;
+            return this.users_matching_view_section.user_ids[i - 1];
         }
 
-        // This would be the middle of the other users list moving to a prev other user.
-        i = this.other_user_ids.indexOf(key);
-        if (i > 0) {
-            return this.other_user_ids[i - 1];
-        }
-        // The key before the first other user is the last user matching view, if that exists,
-        // and if it doesn't then we don't move the selection.
+        i = this.other_users_section.user_ids.indexOf(key);
+        // If we're at the start of the other users list, we move back into users matching
+        // view, or if it's empty or collapsed we move to the participants section. If both
+        // are empty or collapsed, then we don't move the selection.
         if (i === 0) {
-            if (this.users_matching_view_ids.length > 0) {
-                return this.users_matching_view_ids.at(-1);
-            }
-            // If there are no matching users but there are participants, go there
-            if (this.participant_user_ids.length > 0) {
-                return this.participant_user_ids.at(-1);
+            for (const section of [this.users_matching_view_section, this.participants_section]) {
+                if (this.section_is_visible_and_has_users(section)) {
+                    return section.user_ids.at(-1);
+                }
             }
             return undefined;
         }
-        // The only way we reach here is if the key isn't found in either list,
+        // This would be the middle of the other users list moving to a prev other user.
+        if (i > 0) {
+            return this.other_users_section.user_ids[i - 1];
+        }
+        // The only way we reach here is if the key isn't found in any section,
         // which shouldn't happen.
         blueslip.error("Couldn't find key in buddy list", {
             key,
-            participant_user_ids: this.participant_user_ids,
-            users_matching_view_ids: this.users_matching_view_ids,
-            other_user_ids: this.other_user_ids,
+            participant_user_ids: this.participants_section.user_ids,
+            users_matching_view_ids: this.users_matching_view_section.user_ids,
+            other_user_ids: this.other_users_section.user_ids,
         });
         return undefined;
     }
 
     // From `type List<Key>`, where the key is a user_id.
     next_key(key: number): number | undefined {
-        let i = this.participant_user_ids.indexOf(key);
+        let i = this.participants_section.user_ids.indexOf(key);
         // Moving from participants to the list of users matching view,
         // if they exist, otherwise do nothing.
-        if (i >= 0 && i === this.participant_user_ids.length - 1) {
-            if (this.users_matching_view_ids.length > 0) {
-                return this.users_matching_view_ids[0];
-            }
-            // If there are no matching users but there are other users, go there
-            if (this.other_user_ids.length > 0) {
-                return this.other_user_ids[0];
+        if (i >= 0 && i === this.participants_section.user_ids.length - 1) {
+            for (const section of [this.users_matching_view_section, this.other_users_section]) {
+                if (this.section_is_visible_and_has_users(section)) {
+                    return section.user_ids[0];
+                }
             }
             return undefined;
         }
         // This is a regular move within the list of users matching the view.
         if (i >= 0) {
-            return this.participant_user_ids[i + 1];
+            return this.participants_section.user_ids[i + 1];
         }
 
-        i = this.users_matching_view_ids.indexOf(key);
+        i = this.users_matching_view_section.user_ids.indexOf(key);
         // Moving from users matching the view to the list of other users,
-        // if they exist, otherwise do nothing.
-        if (i >= 0 && i === this.users_matching_view_ids.length - 1) {
-            if (this.other_user_ids.length > 0) {
-                return this.other_user_ids[0];
+        // if they exist (and aren't collapsed), otherwise do nothing.
+        if (i >= 0 && i === this.users_matching_view_section.user_ids.length - 1) {
+            if (this.section_is_visible_and_has_users(this.other_users_section)) {
+                return this.other_users_section.user_ids[0];
             }
             return undefined;
         }
         // This is a regular move within the list of users matching the view.
         if (i >= 0) {
-            return this.users_matching_view_ids[i + 1];
+            return this.users_matching_view_section.user_ids[i + 1];
         }
 
-        i = this.other_user_ids.indexOf(key);
+        i = this.other_users_section.user_ids.indexOf(key);
         // If we're at the end of other users, we don't do anything.
-        if (i >= 0 && i === this.other_user_ids.length - 1) {
+        if (i >= 0 && i === this.other_users_section.user_ids.length - 1) {
             return undefined;
         }
         // This is a regular move within other users.
         if (i >= 0) {
-            return this.other_user_ids[i + 1];
+            return this.other_users_section.user_ids[i + 1];
         }
 
         // The only way we reach here is if the key isn't found in either list,
         // which shouldn't happen.
         blueslip.error("Couldn't find key in buddy list", {
             key,
-            participant_user_ids: this.participant_user_ids,
-            users_matching_view_ids: this.users_matching_view_ids,
-            other_user_ids: this.other_user_ids,
+            participant_user_ids: this.participants_section.user_ids,
+            users_matching_view_ids: this.users_matching_view_section.user_ids,
+            other_user_ids: this.other_users_section.user_ids,
         });
         return undefined;
     }
@@ -893,9 +911,9 @@ export class BuddyList extends BuddyListConf {
     maybe_remove_user_id(opts: {user_id: number}): void {
         let was_removed = false;
         for (const user_id_list of [
-            this.participant_user_ids,
-            this.users_matching_view_ids,
-            this.other_user_ids,
+            this.participants_section.user_ids,
+            this.users_matching_view_section.user_ids,
+            this.other_users_section.user_ids,
         ]) {
             const pos = user_id_list.indexOf(opts.user_id);
             if (pos !== -1) {
@@ -1051,11 +1069,11 @@ export class BuddyList extends BuddyListConf {
             );
             let user_id_list;
             if (all_participant_ids.has(user_id)) {
-                user_id_list = this.participant_user_ids;
+                user_id_list = this.participants_section.user_ids;
             } else if (is_subscribed_user) {
-                user_id_list = this.users_matching_view_ids;
+                user_id_list = this.users_matching_view_section.user_ids;
             } else {
-                user_id_list = this.other_user_ids;
+                user_id_list = this.other_users_section.user_ids;
             }
             const new_pos_in_user_list = this.find_position({
                 user_id,
@@ -1090,11 +1108,11 @@ export class BuddyList extends BuddyListConf {
         }
 
         const all_participant_ids = this.render_data.get_all_participant_ids();
-        const users_to_remove = this.participant_user_ids.filter(
+        const users_to_remove = this.participants_section.user_ids.filter(
             (user_id) => !all_participant_ids.has(user_id),
         );
         const users_to_add = [...all_participant_ids].filter(
-            (user_id) => !this.participant_user_ids.includes(user_id),
+            (user_id) => !this.participants_section.user_ids.includes(user_id),
         );
 
         // We are just moving the users around since we still want to show the

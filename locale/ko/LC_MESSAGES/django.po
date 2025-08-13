@@ -23,10 +23,10 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-07-30 13:46+0000\n"
-"PO-Revision-Date: 2025-07-17 06:37+0000\n"
+"PO-Revision-Date: 2025-08-07 23:52+0000\n"
 "Last-Translator: Alex Vandiver <alexmv@zulip.com>\n"
-"Language-Team: Korean <https://hosted.weblate.org/projects/zulip/django/ko/"
-">\n"
+"Language-Team: Korean <https://hosted.weblate.org/projects/zulip/django/ko/>"
+"\n"
 "Language: ko\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -161,7 +161,7 @@ msgstr ""
 #: corporate/lib/stripe.py:365
 #, python-brace-format
 msgid "{brand} ending in {last4}"
-msgstr "{last4}로 끝나는 {brand}  "
+msgstr "{last4}로 끝나는 {brand}"
 
 #: corporate/lib/stripe.py:373
 #, python-brace-format
@@ -541,8 +541,8 @@ msgid ""
 "A full update of all the graphs happens once a day. The “messages sent over "
 "time” graph is updated once an hour."
 msgstr ""
-"모든 그래프의 전체 업데이트는 하루에 한 번 합니다.  \"메세지가 보내진지 시간 "
-"경과된\" 그래프는 한 시간에 한 번 업데이트 됩니다."
+"모든 그래프의 전체 업데이트는 하루에 한 번 합니다. "
+"\"메세지가 보내진지 시간 경과된\" 그래프는 한 시간에 한 번 업데이트 됩니다."
 
 #: templates/confirmation/confirm_email_change.html:4
 msgid "Email changed"
@@ -558,7 +558,7 @@ msgid ""
 "This confirms that the email address for your Zulip account has changed from "
 "%(old_email_html_tag)s to %(new_email_html_tag)s"
 msgstr ""
-"이것은 너의 Zulip 계정에 있는 이메일 주소가 변경되었는지  확인한다. from 전 "
+"이것은 너의 Zulip 계정에 있는 이메일 주소가 변경되었는지 확인한다. from 전 "
 "이메일%(old_email_html_tag)s to 현재 새로운 이메일%(new_email_html_tag)s"
 
 #: templates/confirmation/confirm_preregistrationuser.html:5
@@ -607,7 +607,7 @@ msgid ""
 "Make sure you copied the link correctly in to your browser. If you're still "
 "encountering this page, it's probably our fault. We're sorry."
 msgstr ""
-"너의 브라우저에 올바른 링크를 복사하는 것을 확실히 해주십시오.  이 페이지가 "
+"너의 브라우저에 올바른 링크를 복사하는 것을 확실히 해주십시오. 이 페이지가 "
 "계속 생성될 경우, 아마도 오류가 생겼습니다. 죄송합니다."
 
 #: templates/corporate/billing/billing.html:5
@@ -1714,7 +1714,7 @@ msgstr "잘못된 토큰"
 
 #: templates/zerver/desktop_login.html:28
 msgid "Token accepted.  Logging you in…"
-msgstr "토큰 확인됨, 접속중..."
+msgstr "토큰 확인됨, 접속중…"
 
 #: templates/zerver/desktop_redirect.html:5
 msgid "Log in to desktop app"
@@ -2810,7 +2810,7 @@ msgstr ""
 #: templates/zerver/emails/onboarding_zulip_topics.txt:10
 #: templates/zerver/portico-header-dropdown.html:3
 msgid "Go to Zulip"
-msgstr "   Zulip으로 가기"
+msgstr "Zulip으로 가기"
 
 #: templates/zerver/emails/onboarding_zulip_topics.subject.txt:1
 msgid "Keep your conversations organized with topics"
@@ -6144,7 +6144,7 @@ msgstr ""
 #: zerver/lib/validator.py:385
 #, python-brace-format
 msgid "'{item}' cannot be blank."
-msgstr "'{item}'은 비워 둘 수  없습니다."
+msgstr "'{item}'은 비워 둘 수 없습니다."
 
 #: zerver/lib/validator.py:394
 msgid "Field must not have duplicate choices."
@@ -6475,7 +6475,7 @@ msgstr ""
 
 #: zerver/tornado/event_queue.py:745
 msgid "Missing 'queue_id' argument"
-msgstr "누락된 'queue_id'  인수"
+msgstr "누락된 'queue_id' 인수"
 
 #: zerver/tornado/event_queue.py:748
 msgid "Missing 'last_event_id' argument"

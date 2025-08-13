@@ -1,4 +1,5 @@
 import $ from "jquery";
+import assert from "minimalistic-assert";
 import type * as tippy from "tippy.js";
 
 import * as blueslip from "./blueslip.ts";
@@ -193,12 +194,12 @@ export function update_unread_mention_info_in_dom(
 ): void {
     const $unread_mention_info_span = $unread_mention_info_elem.find(".unread_mention_info");
     if (!stream_has_any_unread_mention_messages) {
-        $unread_mention_info_span.hide();
+        $unread_mention_info_span.toggleClass("no-display", true);
         $unread_mention_info_span.text("");
         return;
     }
 
-    $unread_mention_info_span.show();
+    $unread_mention_info_span.toggleClass("no-display", false);
     $unread_mention_info_span.text("@");
 }
 
@@ -334,4 +335,24 @@ export function enable_element_and_remove_tooltip($element: JQuery): void {
         }
         $element.unwrap(".disabled-tooltip");
     }
+}
+
+export function get_left_sidebar_search_term(): string {
+    const $search_box = $<HTMLInputElement>("input.left-sidebar-search-input").expectOne();
+    const search_term = $search_box.val();
+    assert(search_term !== undefined);
+    return search_term.trim();
+}
+
+export function disable_left_sidebar_search(): void {
+    if ($<HTMLInputElement>("#left-sidebar-search input").val()) {
+        // Triggle click on the close button to clear the search term and
+        // update the left sidebar.
+        $("#left-sidebar-search .input-close-filter-button").trigger("click");
+    }
+    $("#left-sidebar-search").hide();
+}
+
+export function enable_left_sidebar_search(): void {
+    $("#left-sidebar-search").show();
 }

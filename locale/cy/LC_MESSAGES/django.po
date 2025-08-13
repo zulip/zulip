@@ -10,7 +10,7 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-07-30 13:46+0000\n"
-"PO-Revision-Date: 2025-07-19 05:03+0000\n"
+"PO-Revision-Date: 2025-08-07 23:52+0000\n"
 "Last-Translator: Alex Vandiver <alexmv@zulip.com>\n"
 "Language-Team: Welsh <https://hosted.weblate.org/projects/zulip/django/cy/>\n"
 "Language: cy\n"
@@ -76,8 +76,8 @@ msgid ""
 "users to join."
 msgstr ""
 "Nid oes gan eich sefydliad drwyddedau Zulip ar ôl ac ni all dderbyn "
-"defnyddwyr newydd mwyach. Plis [cynyddwch nifer y trwyddedau] "
-"({billing_page_link}) neu [deactivate defnyddwyr anactif] "
+"defnyddwyr newydd mwyach. Plis [cynyddwch nifer y trwyddedau]"
+"({billing_page_link}) neu [deactivate defnyddwyr anactif]"
 "({deactivate_user_help_page_link}) i ganiatáu i ddefnyddwyr newydd ymuno."
 
 #: corporate/lib/registration.py:42
@@ -87,10 +87,10 @@ msgid ""
 "the number of licenses]({billing_page_link}) or [deactivate inactive users]"
 "({deactivate_user_help_page_link}) to allow more than one user to join."
 msgstr ""
-"Dim ond un drwydded Zulip sydd gan eich sefydliad ar ôl. Gallwch [gynyddu "
-"nifer y trwyddedau] ({billing_page_link}) neu [ddadactifadu defnyddwyr "
-"anactif] ({deactivate_user_help_page_link}) i ganiatáu i fwy nag un "
-"defnyddiwr ymuno."
+"Dim ond un drwydded Zulip sydd gan eich sefydliad ar ôl. Gallwch "
+"[gynyddu nifer y trwyddedau]({billing_page_link}) neu "
+"[ddadactifadu defnyddwyr anactif]({deactivate_user_help_page_link}) i "
+"ganiatáu i fwy nag un defnyddiwr ymuno."
 
 #: corporate/lib/registration.py:47
 #, python-brace-format
@@ -99,10 +99,10 @@ msgid ""
 "the number of licenses]({billing_page_link}) or [deactivate inactive users]"
 "({deactivate_user_help_page_link}) to allow more than two users to join."
 msgstr ""
-"Dim ond dwy drwydded Zulip sydd gan eich sefydliad ar ôl. Gallwch [gynyddu "
-"nifer y trwyddedau] ({billing_page_link}) neu [ddadactifadu defnyddwyr "
-"anactif] ({deactivate_user_help_page_link}) i ganiatáu i fwy na dau "
-"ddefnyddiwr ymuno."
+"Dim ond dwy drwydded Zulip sydd gan eich sefydliad ar ôl. Gallwch "
+"[gynyddu nifer y trwyddedau]({billing_page_link}) neu "
+"[ddadactifadu defnyddwyr anactif]({deactivate_user_help_page_link}) i "
+"ganiatáu i fwy na dau ddefnyddiwr ymuno."
 
 #: corporate/lib/registration.py:52
 #, python-brace-format
@@ -111,10 +111,10 @@ msgid ""
 "the number of licenses]({billing_page_link}) or [deactivate inactive users]"
 "({deactivate_user_help_page_link}) to allow more than three users to join."
 msgstr ""
-"Dim ond tair trwydded Zulip sydd gan eich sefydliad ar ôl. Gallwch [gynyddu "
-"nifer y trwyddedau] ({billing_page_link}) neu [ddadactifadu defnyddwyr "
-"anactif] ({deactivate_user_help_page_link}) i ganiatáu i fwy na thri "
-"defnyddiwr ymuno."
+"Dim ond tair trwydded Zulip sydd gan eich sefydliad ar ôl. Gallwch "
+"[gynyddu nifer y trwyddedau]({billing_page_link}) neu "
+"[ddadactifadu defnyddwyr anactif]({deactivate_user_help_page_link}) i "
+"ganiatáu i fwy na thri defnyddiwr ymuno."
 
 #: corporate/lib/registration.py:63
 #, python-brace-format
@@ -597,7 +597,7 @@ msgstr ""
 
 #: templates/confirmation/link_expired.html:4
 msgid "Confirmation link expired or deactivated"
-msgstr "Mae'r ddolen gadarnhau wedi dod i ben neu wedi'i dadactifadu."
+msgstr "Mae'r ddolen gadarnhau wedi dod i ben neu wedi'i dadactifadu"
 
 #: templates/confirmation/link_expired.html:11
 msgid "Whoops. The confirmation link has expired or been deactivated."
@@ -3476,7 +3476,7 @@ msgstr ""
 
 #: templates/zerver/integrations/index.html:40
 msgid "Search integrations"
-msgstr "Chwilio am integreiddiadau "
+msgstr "Chwilio am integreiddiadau"
 
 #: templates/zerver/integrations/index.html:61
 #: templates/zerver/integrations/index.html:88
@@ -4350,7 +4350,7 @@ msgstr "Mae {user} wedi nodi'r pwnc hwn fel un heb ei ddatrys."
 #: zerver/actions/message_edit.py:1266
 #, python-brace-format
 msgid "This topic was moved to {new_location} by {user}."
-msgstr "Symudwyd y pwnc hwn yma i {new_location} gan {user}"
+msgstr "Symudwyd y pwnc hwn yma i {new_location} gan {user}."
 
 #: zerver/actions/message_edit.py:1270
 #, python-brace-format
@@ -4369,7 +4369,7 @@ msgstr ""
 #: zerver/actions/message_edit.py:1313
 #, python-brace-format
 msgid "This topic was moved here from {old_location} by {user}."
-msgstr "Symudwyd y pwnc hwn yma o {old_location} gan {user}"
+msgstr "Symudwyd y pwnc hwn yma o {old_location} gan {user}."
 
 #: zerver/actions/message_edit.py:1318
 #, python-brace-format
@@ -4728,7 +4728,7 @@ msgstr ""
 
 #: zerver/forms.py:71
 msgid "The password is too weak."
-msgstr "Mae'r cyfrinair yn rhy wan"
+msgstr "Mae'r cyfrinair yn rhy wan."
 
 #: zerver/forms.py:93
 msgid "Subdomain needs to have length 3 or greater."
@@ -6689,7 +6689,7 @@ msgstr "Angen isbarth"
 
 #: zerver/views/auth.py:1225
 msgid "Password is incorrect."
-msgstr "Mae'r cyfrinair yn anghywir"
+msgstr "Mae'r cyfrinair yn anghywir."
 
 #: zerver/views/channel_folders.py:81
 msgid "You need to remove all the channels from this folder to archive it."
@@ -7025,7 +7025,7 @@ msgstr ""
 
 #: zerver/views/realm_export.py:62
 msgid "Exceeded rate limit."
-msgstr "Tu hwnt i'r terfyn cyfradd"
+msgstr "Tu hwnt i'r terfyn cyfradd."
 
 #: zerver/views/realm_export.py:84
 #, python-brace-format
@@ -7138,7 +7138,7 @@ msgstr ""
 
 #: zerver/views/streams.py:216
 msgid "You must pass \"new_description\" or \"new_group_name\"."
-msgstr "Rhaid i chi basio \"new_description\" neu \"new_group_name\""
+msgstr "Rhaid i chi basio \"new_description\" neu \"new_group_name\"."
 
 #: zerver/views/streams.py:247
 msgid "Invalid value for \"op\". Specify one of \"add\" or \"remove\"."
@@ -7487,7 +7487,7 @@ msgstr "Nid yw BigBlueButton wedi'i ffurfweddu."
 
 #: zerver/views/video_calls.py:348
 msgid "Invalid signature."
-msgstr "Llofnod annilys"
+msgstr "Llofnod annilys."
 
 #: zerver/views/video_calls.py:371
 msgid "Error connecting to the BigBlueButton server."
@@ -7503,7 +7503,7 @@ msgstr "Dychwelodd gweinydd BigBlueButton wall annisgwyl."
 
 #: zerver/views/zephyr.py:34
 msgid "Could not find Kerberos credential"
-msgstr "Methu dod o hyd i tystiolaeth Kerberos "
+msgstr "Methu dod o hyd i tystiolaeth Kerberos"
 
 #: zerver/views/zephyr.py:36
 msgid "Webathena login not enabled"

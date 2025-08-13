@@ -12,7 +12,7 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-07-30 13:46+0000\n"
-"PO-Revision-Date: 2025-07-26 22:07+0000\n"
+"PO-Revision-Date: 2025-08-07 23:51+0000\n"
 "Last-Translator: Alex Vandiver <alexmv@zulip.com>\n"
 "Language-Team: Bulgarian <https://hosted.weblate.org/projects/zulip/django/"
 "bg/>\n"
@@ -25,7 +25,7 @@ msgstr ""
 
 #: analytics/views/stats.py:109 zerver/decorator.py:682 zerver/decorator.py:700
 msgid "Not allowed for guest users"
-msgstr "Не е позволено за потребители без акаунт."
+msgstr "Не е позволено за потребители без акаунт"
 
 #: analytics/views/stats.py:160
 msgid "Invalid organization"
@@ -231,7 +231,7 @@ msgstr ""
 #, python-brace-format
 msgid ""
 "Your plan is already on {licenses} licenses in the current billing period."
-msgstr "Вашият план вече е на {licenses} лиценза в текущия период на таксуване"
+msgstr "Вашият план вече е на {licenses} лиценза в текущия период на таксуване."
 
 #: corporate/lib/stripe.py:3067
 msgid "You cannot decrease the licenses in the current billing period."
@@ -310,7 +310,7 @@ msgstr ""
 "е надграден до {plan_name} безплатно. {emoji}\n"
 "\n"
 "Ще ви бъдем много благодарни ако можете да {begin_link}добавите Zulip като "
-"спонсор във вашия уебсайт{end_link}."
+"спонсор във вашия уебсайт{end_link}!"
 
 #: corporate/views/billing_page.py:352
 msgid "Parameter 'confirmed' is required"
@@ -621,7 +621,7 @@ msgstr ""
 
 #: templates/confirmation/link_expired.html:4
 msgid "Confirmation link expired or deactivated"
-msgstr "Адреса за потвърждение е изтекъл или е деактивиран."
+msgstr "Адреса за потвърждение е изтекъл или е деактивиран"
 
 #: templates/confirmation/link_expired.html:11
 msgid "Whoops. The confirmation link has expired or been deactivated."
@@ -1410,8 +1410,8 @@ msgid ""
 "You can find answers to frequently asked questions in the <a href=\"/help/"
 "\">Zulip help center</a>."
 msgstr ""
-"Можете да намерите отговори на често задавани въпроси в                 "
-"нашия <a href=\"/help/\">Помощен център</a>."
+"Можете да намерите отговори на често задавани въпроси в нашия <a href="
+"\"/help/\">Помощен център</a>."
 
 #: templates/corporate/team.html:139
 msgid "Avatar"
@@ -1583,7 +1583,7 @@ msgid ""
 "Zulip lets you control which roles in the organization can view your email "
 "address."
 msgstr ""
-"Zulip ви дава контрол над това кои роли в организацията могат да виждат ваши"
+"Zulip ви дава контрол над това кои роли в организацията могат да виждат ваши."
 
 #: templates/zerver/change_email_address_visibility_modal.html:13
 msgid ""
@@ -1614,7 +1614,7 @@ msgstr "Видео разговора завърши"
 
 #: templates/zerver/close_window.html:13
 msgid "You may now close this window."
-msgstr "Може да затворите този прозорец"
+msgstr "Може да затворите този прозорец."
 
 #: templates/zerver/config_error/container.html:4
 #: templates/zerver/config_error/container.html:12
@@ -1782,7 +1782,7 @@ msgstr "Неправилен тоукън."
 
 #: templates/zerver/desktop_login.html:28
 msgid "Token accepted.  Logging you in…"
-msgstr "Тоукъна е приет. Влизате в системата..."
+msgstr "Тоукъна е приет. Влизате в системата…"
 
 #: templates/zerver/desktop_redirect.html:5
 msgid "Log in to desktop app"
@@ -1942,7 +1942,7 @@ msgid ""
 "Questions? <a href=\"mailto:%(support_email)s\">Contact us</a> — we'd love "
 "to help!"
 msgstr ""
-"Имате въпроси? <a href=\"mailto:%(support_email)s\">Свържете се с нас</a>  — "
+"Имате въпроси? <a href=\"mailto:%(support_email)s\">Свържете се с нас</a> — "
 "ще се радваме да ви помогнем!"
 
 #: templates/zerver/emails/account_registered.subject.txt:2
@@ -2425,7 +2425,7 @@ msgid ""
 "%(referrer_name)s wants you to join them on Zulip &mdash; the team "
 "communication tool designed for productivity."
 msgstr ""
-"%(referrer_name)s ви кани да се присъедините към Zulip &mdash;  инструмента "
+"%(referrer_name)s ви кани да се присъедините към Zulip &mdash; инструмента "
 "за комуникация в екип, предназначен за повишаване на продуктивността."
 
 #: templates/zerver/emails/invitation.html:15
@@ -2517,8 +2517,8 @@ msgid ""
 "Do you have questions or feedback to share? <a href=\"mailto:"
 "%(email)s\">Contact us</a> — we'd love to help!"
 msgstr ""
-"Имате въпроси или мнения които искате да споделите? <a href=\"mailto:"
-"%(email)s\">Свържете се с нас</a>  — ще се радваме да ви помогнем!"
+"Имате въпроси или мнения които искате да споделите? <a href="
+"\"mailto:%(email)s\">Свържете се с нас</a> — ще се радваме да ви помогнем!"
 
 #: templates/zerver/emails/missed_message.html:29
 #: templates/zerver/emails/missed_message.txt:23
@@ -2585,7 +2585,7 @@ msgid ""
 msgstr ""
 "Отговорете директно на този имейл, <a href=\"%(narrow_url)s\">вижте го на "
 "%(realm_name)s Zulip</a>, или кликнете <a href=\"%(notif_url)s\">управление "
-"на имейл предпочитанията</a>"
+"на имейл предпочитанията</a>."
 
 #: templates/zerver/emails/missed_message.html:48
 #, python-format
@@ -2729,7 +2729,7 @@ msgstr "Време: %(login_time)s"
 #: templates/zerver/emails/notify_new_login.txt:9
 #, python-format
 msgid "Device: %(device_browser)s on %(device_os)s."
-msgstr "Устройство: %(device_browser)s с %(device_os)s"
+msgstr "Устройство: %(device_browser)s с %(device_os)s."
 
 #: templates/zerver/emails/notify_new_login.html:28
 #: templates/zerver/emails/notify_new_login.txt:11
@@ -3649,7 +3649,7 @@ msgstr ""
 
 #: templates/zerver/invalid_email.html:21
 msgid "The email address you are trying to sign up with is not valid."
-msgstr "Имейл адресът, с който се опитвате да се регистрирате, не е валиден"
+msgstr "Имейл адресът, с който се опитвате да се регистрирате, не е валиден."
 
 #: templates/zerver/invalid_email.html:24
 #, python-format
@@ -3770,7 +3770,7 @@ msgid ""
 "Don't have an account yet? You need to be invited to join this organization."
 msgstr ""
 "Все още нямате акуант? Трябва ви покана за да можете да се присъедините към "
-"тази организация"
+"тази организация."
 
 #: templates/zerver/new_user_email_address_visibility.html:5
 msgid ""
@@ -4046,7 +4046,7 @@ msgstr ""
 
 #: templates/zerver/realm_redirect.html:38
 msgid "Find your organization."
-msgstr "Намерете вашата организация"
+msgstr "Намерете вашата организация."
 
 #: templates/zerver/realm_redirect.html:40
 msgid "Next"
@@ -5210,11 +5210,11 @@ msgstr ""
 
 #: zerver/lib/emoji.py:110 zerver/lib/emoji.py:115
 msgid "Invalid emoji name."
-msgstr "Невалидно име на емоджи"
+msgstr "Невалидно име на емоджи."
 
 #: zerver/lib/emoji.py:118
 msgid "Invalid emoji type."
-msgstr "Невалиден тип емоджи"
+msgstr "Невалиден тип емоджи."
 
 #: zerver/lib/emoji.py:133
 msgid "Must be an organization administrator or emoji author"
@@ -5313,7 +5313,7 @@ msgid ""
 "The mobile push notification service registration for your server has been "
 "deactivated"
 msgstr ""
-"Регистрацията на услугата зa мобилни известия за вашия сървър е деактивирана."
+"Регистрацията на услугата зa мобилни известия за вашия сървър е деактивирана"
 
 #: zerver/lib/exceptions.py:366
 msgid "Password authentication is disabled in this organization"
@@ -6196,7 +6196,7 @@ msgstr ""
 #: zerver/lib/validator.py:71 zerver/lib/validator.py:145
 #, python-brace-format
 msgid "Invalid {var_name}"
-msgstr "Невалиден  {var_name}"
+msgstr "Невалиден {var_name}"
 
 #: zerver/lib/typed_endpoint.py:324 zerver/lib/typed_endpoint.py:339
 #, python-brace-format
@@ -6356,7 +6356,7 @@ msgstr ""
 #, python-brace-format
 msgid "'{setting_name}' setting cannot be set to '{group_name}' group."
 msgstr ""
-"Настройката '{setting_name}' не може да бъде зададена в групата  "
+"Настройката '{setting_name}' не може да бъде зададена в групата "
 "'{group_name}'."
 
 #: zerver/lib/user_groups.py:524
@@ -7479,12 +7479,12 @@ msgstr "Невалидно име на файл"
 
 #: zerver/views/upload.py:429
 msgid "You must specify a file to upload"
-msgstr "Трябва да посочите файл, който да качите."
+msgstr "Трябва да посочите файл, който да качите"
 
 #: zerver/views/upload.py:431 zerver/views/users.py:523
 #: zerver/views/users.py:631
 msgid "You may only upload one file at a time"
-msgstr "Можете да качвате само по един файл наведнъж."
+msgstr "Можете да качвате само по един файл наведнъж"
 
 #: zerver/views/user_groups.py:156
 msgid "No new data supplied"

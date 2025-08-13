@@ -19,6 +19,7 @@ run_test("basics", () => {
         date_created: 1596710000,
         id: 1,
         is_archived: false,
+        order: 0,
     };
     const backend_folder = {
         name: "Backend",
@@ -28,11 +29,16 @@ run_test("basics", () => {
         date_created: 1596720000,
         id: 2,
         is_archived: false,
+        order: 1,
     };
     params.channel_folders = [frontend_folder, backend_folder];
     channel_folders.initialize(params);
 
     assert.deepEqual(channel_folders.get_channel_folders(), [frontend_folder, backend_folder]);
+    assert.deepEqual(
+        channel_folders.get_active_folder_ids(),
+        new Set([frontend_folder.id, backend_folder.id]),
+    );
 
     const devops_folder = {
         name: "Devops",
@@ -42,6 +48,7 @@ run_test("basics", () => {
         date_created: 1596810000,
         id: 3,
         is_archived: false,
+        order: 2,
     };
     channel_folders.add(devops_folder);
     assert.deepEqual(channel_folders.get_channel_folders(), [
@@ -64,6 +71,12 @@ run_test("basics", () => {
 
     assert.equal(channel_folders.get_channel_folder_by_id(frontend_folder.id), frontend_folder);
 
+    const new_order = [backend_folder.id, devops_folder.id, frontend_folder.id];
+    channel_folders.reorder(new_order);
+    assert.equal(backend_folder.order, 0);
+    assert.equal(devops_folder.order, 1);
+    assert.equal(frontend_folder.order, 2);
+
     const stream_1 = make_stream({
         stream_id: 1,
         name: "Stream 1",
@@ -85,6 +98,9 @@ run_test("basics", () => {
         folder_id: frontend_folder.id,
     });
     stream_data.add_sub(stream_1);
+
+    assert.deepEqual(channel_folders.user_has_folders(), false);
+
     stream_data.add_sub(stream_2);
     stream_data.add_sub(stream_3);
     stream_data.add_sub(stream_4);
@@ -97,4 +113,41 @@ run_test("basics", () => {
         stream_3.stream_id,
     ]);
     assert.deepEqual(channel_folders.get_stream_ids_in_folder(backend_folder.id), []);
+
+    const subscribed_streams = new Set([
+        stream_1.stream_id,
+        stream_2.stream_id,
+        stream_3.stream_id,
+        stream_4.stream_id,
+    ]);
+
+    // Tests for get_channels_in_folders_matching_search_term_in_folder_name
+    // Should match 'Frontend' folder and return its streams
+    assert.deepEqual(
+        channel_folders.get_channels_in_folders_matching_search_term_in_folder_name(
+            "Front",
+            subscribed_streams,
+        ),
+        [stream_2.stream_id, stream_4.stream_id],
+    );
+
+    // Should match 'Backend' folder and return no streams
+    assert.deepEqual(
+        channel_folders.get_channels_in_folders_matching_search_term_in_folder_name(
+            "Back",
+            subscribed_streams,
+        ),
+        [],
+    );
+
+    // Should match no folder and return empty array
+    assert.deepEqual(
+        channel_folders.get_channels_in_folders_matching_search_term_in_folder_name(
+            "Nonexistent",
+            subscribed_streams,
+        ),
+        [],
+    );
+
+    assert.deepEqual(channel_folders.user_has_folders(), true);
 });

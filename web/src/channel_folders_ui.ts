@@ -79,7 +79,16 @@ function archive_folder(folder_id: number): void {
         const data = {
             is_archived: JSON.stringify(true),
         };
-        dialog_widget.submit_api_request(channel.patch, url, data);
+        const opts = {
+            success_continuation() {
+                // Update the channel folders data so that
+                // the folder dropdown shows only non-archived
+                // folders immediately even if client receives
+                // the update event after some delay.
+                channel_folders.update_channel_folder(folder_id, "is_archived", true);
+            },
+        };
+        dialog_widget.submit_api_request(channel.patch, url, data, opts);
     }
 
     if (stream_ids.length === 0) {
@@ -150,13 +159,31 @@ export function handle_editing_channel_folder(folder_id: number): void {
         id: "edit_channel_folder",
         on_click() {
             const url = "/json/channel_folders/" + folder_id.toString();
+            const new_name = $<HTMLInputElement>("input#edit_channel_folder_name").val()!.trim();
+            const new_description = $<HTMLTextAreaElement>(
+                "textarea#edit_channel_folder_description",
+            )
+                .val()!
+                .trim();
             const data = {
-                name: $<HTMLInputElement>("input#edit_channel_folder_name").val()!.trim(),
-                description: $<HTMLTextAreaElement>("textarea#edit_channel_folder_description")
-                    .val()!
-                    .trim(),
+                name: new_name,
+                description: new_description,
             };
-            dialog_widget.submit_api_request(channel.patch, url, data);
+            const opts = {
+                success_continuation() {
+                    // Update the channel folders data so that
+                    // the folder dropdown shows updated folder
+                    // names immediately even if client receives
+                    // the update event after some delay.
+                    channel_folders.update_channel_folder(folder_id, "name", new_name);
+                    channel_folders.update_channel_folder(
+                        folder_id,
+                        "description",
+                        new_description,
+                    );
+                },
+            };
+            dialog_widget.submit_api_request(channel.patch, url, data, opts);
         },
         loading_spinner: true,
         on_shown: () => $("#edit_channel_folder_name").trigger("focus"),

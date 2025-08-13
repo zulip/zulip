@@ -12,7 +12,7 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-07-30 13:46+0000\n"
-"PO-Revision-Date: 2025-07-19 05:03+0000\n"
+"PO-Revision-Date: 2025-08-07 23:52+0000\n"
 "Last-Translator: Alex Vandiver <alexmv@zulip.com>\n"
 "Language-Team: Vietnamese <https://hosted.weblate.org/projects/zulip/django/"
 "vi/>\n"
@@ -163,7 +163,7 @@ msgstr ""
 #: corporate/lib/stripe.py:403
 #, python-brace-format
 msgid "Something went wrong. Please contact {email}."
-msgstr "Đã xảy ra lỗi. Vui lòng liên hệ {email}"
+msgstr "Đã xảy ra lỗi. Vui lòng liên hệ {email}."
 
 #: corporate/lib/stripe.py:404
 msgid "Something went wrong. Please reload the page."
@@ -4101,7 +4101,7 @@ msgstr ""
 #: templates/zerver/unsubscribe_success.html:4
 #: templates/zerver/unsubscribe_success.html:14
 msgid "Email settings updated"
-msgstr "Đã cập nhật cài đặt email "
+msgstr "Đã cập nhật cài đặt email"
 
 #: templates/zerver/unsubscribe_success.html:19
 #, python-format
@@ -4939,11 +4939,11 @@ msgstr ""
 
 #: zerver/lib/email_validation.py:104
 msgid "Invalid address."
-msgstr "Địa chỉ không hợp lệ"
+msgstr "Địa chỉ không hợp lệ."
 
 #: zerver/lib/email_validation.py:109
 msgid "Outside your domain."
-msgstr "Ngoài miền của bạn"
+msgstr "Ngoài miền của bạn."
 
 #: zerver/lib/email_validation.py:113 zerver/views/users.py:854
 msgid "Email addresses containing + are not allowed."
@@ -6741,7 +6741,7 @@ msgid ""
 "invitation. We did send invitations to everyone else!"
 msgstr ""
 "Một số địa chỉ đã lập tài khoản Zulip nên chúng tôi không gửi lời mời. Chúng "
-"tôi đã gửi lời mời tới tất cả những người khác."
+"tôi đã gửi lời mời tới tất cả những người khác!"
 
 #: zerver/views/message_edit.py:126
 msgid "Message edit history is disabled in this organization"

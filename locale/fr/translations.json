@@ -54,7 +54,7 @@
   "A channel with this name already exists.": "Il existe déjà un canal avec ce nom.",
   "A deactivated bot cannot send messages, access data, or take any other action.": "Un bot désactivé ne peut pas envoyer de messages, accéder aux données ou effectuer toute autre action.",
   "A deactivated emoji will remain visible in existing messages and emoji reactions, but cannot be used on new messages.": "Un emoji désactivé restera visible dans les messages existants et les réactions emoji, mais ne pourra pas être utilisé dans les nouveaux messages.",
-  "A deactivated user group with this name already exists.": "Un groupe d'utilisateur désactivé avec ce nom existe déjà",
+  "A deactivated user group with this name already exists.": "Un groupe d'utilisateur désactivé avec ce nom existe déjà.",
   "A language is marked as 100% translated only if every string in the web, desktop, and mobile apps is translated, including administrative UI and error messages.": "Une langue est indiquée comme étant 100% traduite seulement si toutes les chaînes des applications web, bureau et mobile ont été traduites, incluant la console d'administration et les messages d'erreur.",
   "A poll must be an entire message.": "Un sondage doit être un message en entier.",
   "A public data export is a complete data export for your organization other than <z-private-channel-link>private channel</z-private-channel-link> messages and <z-direct-messages-link>direct messages</z-direct-messages-link>.": "Un export de données publiques est un export complet de votre organisation hormis <z-private-channel-link>les messages du canal privé </z-private-channel-link> <z-direct-messages-link> et les messages directs </z-direct-messages-link>.",

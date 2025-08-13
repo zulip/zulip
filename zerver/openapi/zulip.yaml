@@ -1199,12 +1199,24 @@ paths:
                                 if the newly-online user sends a message or otherwise demonstrates
                                 they're online).
 
+                                If the client supports the `simplified_presence_events` [client
+                                capability](/api/register-queue#parameter-client_capabilities),
+                                these events will include the `presences` field, which provides the
+                                modified user's presence data in the modern format. Clients are
+                                strongly encouraged to implement this client capability, as legacy
+                                format support will be removed in a future release.
+
                                 If the `CAN_ACCESS_ALL_USERS_GROUP_LIMITS_PRESENCE` server-level
                                 setting is set to `true`, then the event is only sent to users
                                 who can access the user who came back online.
 
-                                **Changes**: Prior to Zulip 8.0 (feature level 228), this event
-                                was sent to all users in the organization.
+                                **Changes**: Prior to Zulip 11.0 (feature level 419), the
+                                `simplified_presence_events` client capability did not exist.
+                                Therefore, all events were in the legacy format, and did not
+                                include the `presences` field.
+
+                                Prior to Zulip 8.0 (feature level 228), this event was sent to all
+                                users in the organization.
                               properties:
                                 id:
                                   $ref: "#/components/schemas/EventIdSchema"
@@ -1213,13 +1225,32 @@ paths:
                                     - $ref: "#/components/schemas/EventTypeSchema"
                                     - enum:
                                         - presence
+                                presences:
+                                  type: object
+                                  description: |
+                                    Only present for clients that support the `simplified_presence_events`
+                                    [client capability](/api/register-queue#parameter-client_capabilities).
+
+                                    A dictionary mapping user IDs to the presence data (modern
+                                    format) for the modified user(s). Clients should support
+                                    updating multiple users in a single event.
+
+                                    **Changes**: New in Zulip 11.0 (feature level 419).
+                                  additionalProperties:
+                                    $ref: "#/components/schemas/ModernPresenceFormat"
                                 user_id:
                                   type: integer
                                   description: |
+                                    Not present for clients that support the `simplified_presence_events`
+                                    [client capability](/api/register-queue#parameter-client_capabilities).
+
                                     The ID of the modified user.
                                 email:
                                   type: string
                                   description: |
+                                    Not present for clients that support the `simplified_presence_events`
+                                    [client capability](/api/register-queue#parameter-client_capabilities).
+
                                     The Zulip API email of the user.
 
                                     **Deprecated**: This field will be removed in a future
@@ -1228,12 +1259,19 @@ paths:
                                 server_timestamp:
                                   type: number
                                   description: |
+                                    Not present for clients that support the `simplified_presence_events`
+                                    [client capability](/api/register-queue#parameter-client_capabilities).
+
                                     The timestamp of when the Zulip server received the user's
                                     presence as a UNIX timestamp.
                                 presence:
                                   type: object
                                   description: |
-                                    Object containing the details of the user's most recent presence.
+                                    Not present for clients that support the `simplified_presence_events`
+                                    [client capability](/api/register-queue#parameter-client_capabilities).
+
+                                    Object containing the presence data (legacy format) of of the modified
+                                    user.
                                   additionalProperties:
                                     type: object
                                     description: |
@@ -6153,6 +6191,37 @@ paths:
                                   "data": {"name": "New frontend"},
                                   "id": 0,
                                 }
+                            - type: object
+                              additionalProperties: false
+                              description: |
+                                Event sent to users in an organization when channel folders are reordered.
+
+                                **Changes**: New in Zulip 11.0 (feature level 418).
+                              properties:
+                                id:
+                                  $ref: "#/components/schemas/EventIdSchema"
+                                type:
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - channel_folder
+                                op:
+                                  type: string
+                                  enum:
+                                    - reorder
+                                order:
+                                  type: array
+                                  description: |
+                                    A list of channel folder IDs representing the new order.
+                                  items:
+                                    type: integer
+                              example:
+                                {
+                                  "type": "channel_folder",
+                                  "op": "reorder",
+                                  "order": [3, 1, 2],
+                                  "id": 0,
+                                }
                       queue_id:
                         type: string
                         description: |
@@ -7970,7 +8039,7 @@ paths:
             Note that many narrows, including all that lack a `channel`, `channels`,
             `stream`, or `streams` operator, search the user's personal message
             history. See [searching shared
-            history](/help/search-for-messages#searching-shared-history)
+            history](/help/search-for-messages#search-shared-history)
             for details.
 
             For example, if you would like to fetch messages from all public channels instead
@@ -12567,6 +12636,69 @@ paths:
                 oneOf:
                   - $ref: "#/components/schemas/InvalidPushDeviceTokenError"
                   - $ref: "#/components/schemas/InvalidRemotePushDeviceTokenError"
+  /mobile_push/e2ee/test_notification:
+    post:
+      operationId: e2ee-test-notify
+      summary: Send an E2EE test notification to mobile device(s)
+      tags: ["mobile"]
+      description: |
+        Trigger sending an end-to-end encrypted (E2EE) test push notification
+        to the user's selected mobile device or all of their mobile devices.
+
+        **Changes**: New in Zulip 11.0 (feature level 420).
+      requestBody:
+        required: false
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                push_account_id:
+                  description: |
+                    The push account ID for the device to which to send the test notification.
+
+                    If this parameter is not submitted, the E2EE test notification will
+                    be sent to all of the user's devices registered on the server.
+
+                    A mobile client should pass this parameter, to avoid triggering a test
+                    notification for other clients.
+
+                    See [`POST /mobile_push/register`](/api/register-push-device)
+                    for details on push account IDs.
+                  type: integer
+                  example: 111222
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JsonSuccess"
+        "400":
+          description: |
+            Bad request.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/NoActivePushDeviceError"
+        "403":
+          description: |
+            Forbidden.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/PushNotificationAdminActionRequiredError"
+        "502":
+          description: |
+            Bad gateway.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/FailedToConnectBouncerError"
+                  - $ref: "#/components/schemas/InternalBouncerServerError"
   /mobile_push/register:
     post:
       operationId: register-push-device
@@ -15833,9 +15965,9 @@ paths:
       tags: ["server_and_organizations"]
       x-requires-administrator: true
       description: |
-        Sends a test Welcome Bot message with custom text to the acting administrator.
-        This allows administrators to preview how the welcome message will appear when
-        received by new users upon joining the organization.
+        Sends a test Welcome Bot custom message to the acting administrator.
+        This allows administrators to preview how the custom welcome message will
+        appear when received by new users upon joining the organization.
 
         **Changes**: New in Zulip 11.0 (feature level 416).
       requestBody:
@@ -16154,6 +16286,15 @@ paths:
                       <br/>
                       **Changes**: New in Zulip 10.0 (feature level 334). Previously,
                       the empty string was not a valid topic name.
+
+                    - `simplified_presence_events`: Boolean for whether the client supports
+                      receiving the [`presence` event type](/api/get-events#presence) with
+                      user presence data in the modern format. If true, the server will
+                      send these events with the `presences` field that has the user presence
+                      data in the modern format. Otherwise, these event will contain fields
+                      with legacy format user presence data.
+                      <br />
+                      **Changes**: New in Zulip 11.0 (feature level 419).
 
                     [help-linkifiers]: /help/add-a-custom-linkifier
                     [rfc6570]: https://www.rfc-editor.org/rfc/rfc6570.html
@@ -23537,15 +23678,10 @@ paths:
                   example: "Channel for discussing all things music!"
                 subscribers:
                   description: |
-                    A list of user IDs (preferred) or Zulip API email
-                    addresses of the users to be subscribed to the new channel specified in the `channel` parameter.
-                  oneOf:
-                    - type: array
-                      items:
-                        type: string
-                    - type: array
-                      items:
-                        type: integer
+                    A list of user IDs of the users to be subscribed to the new channel.
+                  type: array
+                  items:
+                    type: integer
                   example: [16, 12]
                 announce:
                   description: |
@@ -28386,6 +28522,62 @@ components:
 
             A typical failed JSON response for when the push device token is not recognized
             by the push notification bouncer:
+    NoActivePushDeviceError:
+      allOf:
+        - $ref: "#/components/schemas/CodedError"
+        - example:
+            {
+              "code": "NO_ACTIVE_PUSH_DEVICE",
+              "msg": "No active registered push device",
+              "result": "error",
+            }
+          description: |
+            ## No active push device
+
+            A typical failed JSON response for when no registered device is available
+            for the user (and `push_account_id`) to receive a push notification.
+    FailedToConnectBouncerError:
+      allOf:
+        - $ref: "#/components/schemas/CodedError"
+        - example:
+            {
+              "code": "FAILED_TO_CONNECT_BOUNCER",
+              "msg": "Network error while connecting to Zulip push notification service.",
+              "result": "error",
+            }
+          description: |
+            ## Failed to connect bouncer
+
+            A typical failed JSON response for when a network error occurs
+            while the server attempts to connect to the bouncer server.
+    InternalBouncerServerError:
+      allOf:
+        - $ref: "#/components/schemas/CodedError"
+        - example:
+            {
+              "code": "INTERNAL_SERVER_ERROR_ON_BOUNCER",
+              "msg": "Internal server error on Zulip push notification service, retry later.",
+              "result": "error",
+            }
+          description: |
+            ## Internal bouncer server error
+
+            A typical failed JSON response for when a 5xx error occurs on the bouncer server.
+    PushNotificationAdminActionRequiredError:
+      allOf:
+        - $ref: "#/components/schemas/CodedError"
+        - example:
+            {
+              "code": "ADMIN_ACTION_REQUIRED",
+              "msg": "Push notification configuration issue on server, contact the server administrator or retry later.",
+              "result": "error",
+            }
+          description: |
+            ## Admin action required
+
+            A typical failed JSON response for when there is a push notification
+            configuration issue on the server, such as invalid credentials,
+            an expired plan, or an unregistered organization. Admin action is required.
     Event_types:
       description: |
         A JSON-encoded array indicating which types of events you're interested

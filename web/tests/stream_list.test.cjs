@@ -21,10 +21,6 @@ let unread_unmuted_count;
 let stream_has_any_unread_mentions;
 
 const topic_list = mock_esm("../src/topic_list");
-mock_esm("../src/scroll_util", {
-    scroll_element_into_container() {},
-    get_scroll_element: ($element) => $element,
-});
 mock_esm("../src/unread", {
     unread_count_info_for_stream: () => ({
         unmuted_count: unread_unmuted_count,
@@ -176,6 +172,7 @@ test_ui("create_sidebar_row", ({override, override_rewire, mock_template}) => {
         return `<stub-section-${section.id}>`;
     });
     override_rewire(stream_list, "update_dom_with_unread_counts", noop);
+    override_rewire(stream_list, "update_stream_section_mention_indicators", noop);
 
     const pinned_streams = [];
     $("#stream-list-pinned-streams").append = (stream) => {
@@ -251,6 +248,7 @@ test_ui("create_sidebar_row", ({override, override_rewire, mock_template}) => {
 });
 
 test_ui("pinned_streams_never_inactive", ({mock_template, override_rewire}) => {
+    override_rewire(stream_list, "update_stream_section_mention_indicators", noop);
     override_rewire(stream_list, "update_dom_with_unread_counts", noop);
 
     stream_data.add_sub(devel);
@@ -407,7 +405,6 @@ test_ui("zoom_in_and_zoom_out", ({mock_template}) => {
     $("#stream-filters-container")[0] = {
         dataset: {},
     };
-    stream_list.initialize_stream_cursor();
 
     mock_template("filter_topics.hbs", false, () => "<filter-topics-stub>");
     let filter_topics_appended = false;
@@ -442,15 +439,15 @@ test_ui("zoom_in_and_zoom_out", ({mock_template}) => {
 });
 
 test_ui("narrowing", ({override_rewire}) => {
-    override_rewire(stream_list, "update_dom_with_unread_counts", noop);
-    initialize_stream_data();
-
     topic_list.close = noop;
     topic_list.rebuild_left_sidebar = noop;
     topic_list.active_stream_id = noop;
     topic_list.get_stream_li = noop;
     override_rewire(stream_list, "scroll_stream_into_view", noop);
+    override_rewire(stream_list, "update_stream_section_mention_indicators", noop);
+    override_rewire(stream_list, "update_dom_with_unread_counts", noop);
 
+    initialize_stream_data();
     assert.ok(!$("<devel-sidebar-row-stub>").hasClass("active-filter"));
 
     let filter;
@@ -485,26 +482,6 @@ test_ui("narrowing", ({override_rewire}) => {
     stream_list.handle_message_view_deactivated();
     assert.equal(removed_classes, "active-filter stream-expanded");
     assert.ok(topics_closed);
-});
-
-test_ui("focusout_user_filter", () => {
-    stream_list.set_event_handlers({show_channel_feed() {}});
-    const e = {};
-    const click_handler = $(".stream-list-filter").get_on_handler("focusout");
-    click_handler(e);
-});
-
-test_ui("focus_user_filter", () => {
-    stream_list.set_event_handlers({show_channel_feed() {}});
-
-    initialize_stream_data();
-    stream_list.build_stream_list();
-
-    const e = {
-        stopPropagation() {},
-    };
-    const click_handler = $(".stream-list-filter").get_on_handler("click");
-    click_handler(e);
 });
 
 test_ui("sort_streams", ({override_rewire}) => {
@@ -570,6 +547,8 @@ test_ui("sort_streams", ({override_rewire}) => {
 
 test_ui("separators_only_pinned_and_dormant", ({override_rewire}) => {
     override_rewire(stream_list, "update_dom_with_unread_counts", noop);
+    override_rewire(stream_list, "update_stream_section_mention_indicators", noop);
+
     // Get coverage on early-exit.
     stream_list.build_stream_list();
 
@@ -623,6 +602,7 @@ test_ui("separators_only_pinned_and_dormant", ({override_rewire}) => {
 
 test_ui("rename_stream", ({mock_template, override, override_rewire}) => {
     override_rewire(stream_list, "update_dom_with_unread_counts", noop);
+    override_rewire(stream_list, "update_stream_section_mention_indicators", noop);
     override(user_settings, "web_stream_unreads_count_display_policy", 3);
     override(current_user, "user_id", me.user_id);
     initialize_stream_data();

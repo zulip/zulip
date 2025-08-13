@@ -585,7 +585,7 @@ html_rules: list["Rule"] = [
             "web/templates/settings/playground_settings_admin.hbs",
         },
         "good_lines": [
-            '<input class="stream-list-filter" type="text" placeholder="{{ _(\'Filter streams\') }}" />'
+            '<input class="left-sidebar-search-input" type="text" placeholder="{{ _(\'Filter left sidebar\') }}" />'
         ],
         "bad_lines": ['<input placeholder="foo">'],
     },
@@ -611,7 +611,7 @@ html_rules: list["Rule"] = [
         "pattern": "placeholder='[^{]",
         "description": "`placeholder` value should be translatable.",
         "good_lines": [
-            '<input class="stream-list-filter" type="text" placeholder="{{ _(\'Filter streams\') }}" />'
+            '<input class="left-sidebar-search-input" type="text" placeholder="{{ _(\'Filter left sidebar\') }}" />'
         ],
         "bad_lines": ["<input placeholder='foo'>"],
         "exclude": {

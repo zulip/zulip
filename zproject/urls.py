@@ -118,6 +118,7 @@ from zerver.views.push_notifications import (
     self_hosting_auth_not_configured,
     self_hosting_auth_redirect_endpoint,
     self_hosting_registration_transfer_challenge_verify,
+    send_e2ee_test_push_notification_api,
     send_test_push_notification_api,
 )
 from zerver.views.reactions import add_reaction, remove_reaction
@@ -462,6 +463,7 @@ v1_api_and_json_patterns = [
     ),
     rest_path("users/me/android_gcm_reg_id", POST=add_android_reg_id, DELETE=remove_android_reg_id),
     rest_path("mobile_push/test_notification", POST=send_test_push_notification_api),
+    rest_path("mobile_push/e2ee/test_notification", POST=send_e2ee_test_push_notification_api),
     rest_path("mobile_push/register", POST=register_push_device),
     # users/*/presence => zerver.views.presence.
     rest_path(

@@ -207,23 +207,6 @@
         }
     }
 
-    .empty-list-message {
-        font-style: italic;
-        color: var(--color-text-empty-list-message);
-        /* Overwrite default empty list font size, to look better under the subheaders. */
-        /* 14px at 16px/1em */
-        font-size: 0.875em;
-        /* Override .empty-list-message !important styling */
-        padding: 0 !important;
-        text-align: left;
-
-        &:hover {
-            /* Prevent hover styles set on other rows. */
-            box-shadow: none;
-            background-color: inherit;
-        }
-    }
-
     /* Overwrite some stray list rules (including one in left_sidebar.css) to turn color
        back to the bootstrap default. */
     .view-all-subscribers-link,
@@ -238,6 +221,30 @@
             background-color: inherit;
             color: var(--color-text-url-hover);
         }
+    }
+}
+
+#left-sidebar-empty-list-message {
+    list-style-type: none;
+    padding-top: 10px;
+    text-align: center;
+}
+
+#left-sidebar-empty-list-message .empty-list-message,
+.buddy-list-section .empty-list-message {
+    font-style: italic;
+    color: var(--color-text-empty-list-message);
+    /* Overwrite default empty list font size, to look better under the subheaders. */
+    /* 14px at 16px/1em */
+    font-size: 0.875em;
+    /* Override .empty-list-message !important styling */
+    padding: 0 !important;
+    text-align: left;
+
+    &:hover {
+        /* Prevent hover styles set on other rows. */
+        box-shadow: none;
+        background-color: inherit;
     }
 }
 
@@ -349,6 +356,7 @@
 }
 
 .user-presence-link {
+    user-select: text;
     grid-area: row-content;
 
     &:hover,

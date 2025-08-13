@@ -24,6 +24,7 @@ from zerver.lib.event_types import (
     EventAttachmentRemove,
     EventAttachmentUpdate,
     EventChannelFolderAdd,
+    EventChannelFolderReorder,
     EventChannelFolderUpdate,
     EventCustomProfileFields,
     EventDefaultStreamGroups,
@@ -36,14 +37,15 @@ from zerver.lib.event_types import (
     EventHasZoomToken,
     EventHeartbeat,
     EventInvitesChanged,
+    EventLegacyPresence,
     EventMessage,
+    EventModernPresence,
     EventMutedTopics,
     EventMutedUsers,
     EventNavigationViewAdd,
     EventNavigationViewRemove,
     EventNavigationViewUpdate,
     EventOnboardingSteps,
-    EventPresence,
     EventPushDevice,
     EventReactionAdd,
     EventReactionRemove,
@@ -169,6 +171,7 @@ check_attachment_add = make_checker(EventAttachmentAdd)
 check_attachment_remove = make_checker(EventAttachmentRemove)
 check_attachment_update = make_checker(EventAttachmentUpdate)
 check_channel_folder_add = make_checker(EventChannelFolderAdd)
+check_channel_folder_reorder = make_checker(EventChannelFolderReorder)
 check_custom_profile_fields = make_checker(EventCustomProfileFields)
 check_default_stream_groups = make_checker(EventDefaultStreamGroups)
 check_default_streams = make_checker(EventDefaultStreams)
@@ -244,8 +247,9 @@ check_web_reload_client_event = make_checker(EventWebReloadClient)
 _check_channel_folder_update = make_checker(EventChannelFolderUpdate)
 _check_delete_message = make_checker(EventDeleteMessage)
 _check_has_zoom_token = make_checker(EventHasZoomToken)
+_check_legacy_presence = make_checker(EventLegacyPresence)
+_check_modern_presence = make_checker(EventModernPresence)
 _check_muted_topics = make_checker(EventMutedTopics)
-_check_presence = make_checker(EventPresence)
 _check_realm_bot_add = make_checker(EventRealmBotAdd)
 _check_realm_bot_update = make_checker(EventRealmBotUpdate)
 _check_realm_default_update = make_checker(EventRealmUserSettingsDefaultsUpdate)
@@ -336,14 +340,14 @@ def check_muted_topics(
         assert list(map(type, muted_topic_tuple)) == [str, str, int]
 
 
-def check_presence(
+def check_legacy_presence(
     var_name: str,
     event: dict[str, object],
     has_email: bool,
     presence_key: str,
     status: str,
 ) -> None:
-    _check_presence(var_name, event)
+    _check_legacy_presence(var_name, event)
 
     assert ("email" in event) == has_email
 
@@ -353,6 +357,15 @@ def check_presence(
     [(event_presence_key, event_presence_value)] = event["presence"].items()
     assert event_presence_key == presence_key
     assert event_presence_value["status"] == status
+
+
+def check_modern_presence(var_name: str, event: dict[str, object], user_id: int) -> None:
+    _check_modern_presence(var_name, event)
+
+    assert isinstance(event["presences"], dict)
+
+    [(event_presences_key, event_presences_value)] = event["presences"].items()
+    assert event_presences_key == str(user_id)
 
 
 def check_realm_bot_add(

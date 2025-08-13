@@ -463,15 +463,39 @@ app released in June.
     ZulipUpdateAnnouncement(
         level=20,
         message="""
-- Organizations can now sort channels into [folders]({channel_folders_url}) to
-  group them in the left sidebar and the Inbox view. For example, you can put
-  all the channels associated with a team into a dedicated folder.
+- Administrators can now organize channels into [folders]({channel_folders_url})
+  (e.g., a dedicated folder for a team's channels), and
+  [sort]({reorder_channel_folders_url}) folders as needed. Channels are grouped
+  by folder in the [Inbox]({inbox_url}) view, and each person can
+  [decide]({configure_left_sidebar_folders_url}) whether to group channels by
+  folder in the left sidebar.
+- Administrators can now [configure]({configure_a_custom_welcome_message_url}) a
+  custom welcome message for new users. For example, you can describe the
+  purpose of important channels, and link to your guidelines for using Zulip.
+
+**Web and desktop updates**
+- A new filter in the upper left lets you filter everything in your [left
+  sidebar]({left_sidebar_url}).
 
 **Mobile updates**
 - You can now [set your status]({set_a_status_url}).
+- Android users can now [share]({share_and_upload_files_url}) files and text
+  from other applications into Zulip.
+- You can now [check]({read_receipts_url}) who has read a message.
+- You will now see autocomplete suggestions for mentioning
+  [user groups]({user_groups_url}), as well as users.
+
 """.format(
             channel_folders_url="/help/channel-folders",
+            reorder_channel_folders_url="/help/manage-channel-folders#reorder-channel-folders",
+            inbox_url="/help/inbox",
+            configure_left_sidebar_folders_url="/help/channel-folders#configure-whether-channels-are-grouped-by-folder-in-the-left-sidebar",
+            left_sidebar_url="/help/left-sidebar",
+            configure_a_custom_welcome_message_url="/help/configure-a-custom-welcome-message",
             set_a_status_url="/help/status-and-availability#set-a-status",
+            share_and_upload_files_url="/help/share-and-upload-files",
+            read_receipts_url="/help/read-receipts",
+            user_groups_url="/help/user-groups",
         ),
     ),
 ]

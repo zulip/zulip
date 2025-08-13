@@ -63,6 +63,16 @@ export let update_recipient_row_attention_level = (): void => {
 
         stream_color.adjust_stream_privacy_icon_colors(stream_id, channel_picker_icon_selector);
     }
+    // If there is any text that hasn't yet been transformed into a pill,
+    // we should consider that the user is not composing to the current
+    // DM narrow -- even though that input is ignored when sending a DM.
+    // The point here is to avoid a state where we have that input hanging
+    // around on a low-attention recipient row, which can also happen when
+    // the DM-recipient typeahead is open.
+    const has_unpilled_input = $("#private_message_recipient").text().length > 0;
+    // We also want to watch out for cases where the DM isn't valid,
+    // as when trying to message deactivated users.
+    const is_valid_dm = compose_validate.validate_private_message(false);
 
     // We're piggy-backing here, in a roundabout way, on
     // compose_ui.set_focus(). Any time the topic or DM recipient
@@ -72,9 +82,11 @@ export let update_recipient_row_attention_level = (): void => {
     // logic is handled via the event handlers in compose_setup.js
     // that call set_high_attention_recipient_row().
     if (
-        (composing_to_current_topic_narrow() || composing_to_current_private_message_narrow()) &&
-        compose_state.has_full_recipient() &&
-        !compose_state.is_recipient_edited_manually()
+        (composing_to_current_topic_narrow() ||
+            (composing_to_current_private_message_narrow() &&
+                !has_unpilled_input &&
+                is_valid_dm)) &&
+        compose_state.has_full_recipient()
     ) {
         $("#compose-recipient").toggleClass("low-attention-recipient-row", true);
     } else {
@@ -145,7 +157,6 @@ export function update_on_recipient_change(): void {
     update_fade();
     update_narrow_to_recipient_visibility();
     compose_validate.warn_if_guest_in_dm_recipient();
-    update_recipient_row_attention_level();
     drafts.update_compose_draft_count();
     check_posting_policy_for_compose_box();
     compose_validate.validate_and_update_send_button_status();

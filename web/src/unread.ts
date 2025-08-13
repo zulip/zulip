@@ -1012,6 +1012,14 @@ export function num_unread_for_topic(stream_id: number, topic_name: string): num
     return unread_topic_counter.get(stream_id, topic_name);
 }
 
+export function get_channels_with_unread_mentions(): Set<number> {
+    return unread_topic_counter.get_streams_with_unread_mentions();
+}
+
+export function get_channels_with_unmuted_mentions(): Set<number> {
+    return unread_topic_counter.get_streams_with_unmuted_mentions();
+}
+
 export function stream_has_any_unread_mentions(stream_id: number): boolean {
     // This function is somewhat inefficient and thus should not be
     // called in loops, since runs in O(total unread mentions) time.

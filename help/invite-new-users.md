@@ -7,6 +7,8 @@ Prior to inviting users to your organization, it is recommended that administrat
 
 * Configure [default settings](/help/configure-default-new-user-settings) for
   new users.
+* Configure a [custom welcome message](/help/configure-a-custom-welcome-message)
+  for new users.
 * Configure the [organization language for automated messages and invitation
   emails][org-lang] for your organization.
 
@@ -18,6 +20,8 @@ When you invite users, you can:
   subscribed to. The organization's [default
   channels](/help/set-default-channels-for-new-users) will be preselected.
 * Configure which [groups](/help/user-groups) they will be added to.
+* [Customize](/help/configure-a-custom-welcome-message#customize-the-welcome-message-when-sending-an-invitation)
+  the welcome message.
 
 Organization administrators can
 [configure](/help/restrict-account-creation#change-who-can-send-invitations) who
@@ -43,6 +47,9 @@ users** menu option if you have permission to invite users.
    to.
 
 1. Configure which [groups](/help/user-groups) they will be added to.
+
+1. *(optional; administrators only)* Customize the [welcome
+   message](/help/configure-a-custom-welcome-message).
 
 1. Click **Invite**.
 
@@ -82,6 +89,9 @@ users** menu option if you have permission to invite users.
    to.
 
 1. Configure which [groups](/help/user-groups) they will be added to.
+
+1. *(optional; administrators only)* Customize the [welcome
+   message](/help/configure-a-custom-welcome-message).
 
 1. Click **Create link**.
 
@@ -132,6 +142,7 @@ for invitations for the organization owners role.
 * [Restrict account creation](/help/restrict-account-creation)
 * [Set default channels for new users](/help/set-default-channels-for-new-users)
 * [Configure default new user settings](/help/configure-default-new-user-settings)
+* [Configure a custom welcome message](/help/configure-a-custom-welcome-message)
 * [Configure organization language for automated messages and invitation emails][org-lang]
 * [User roles](/help/user-roles)
 * [User groups](/help/user-groups)

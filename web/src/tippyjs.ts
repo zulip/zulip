@@ -604,6 +604,12 @@ export function initialize(): void {
     });
 
     tippy.delegate("body", {
+        target: ".user-status-emoji-picker",
+        delay: INTERACTIVE_HOVER_DELAY,
+        appendTo: () => document.body,
+    });
+
+    tippy.delegate("body", {
         target: ".user-card-status-area .status-emoji",
         appendTo: () => document.body,
     });

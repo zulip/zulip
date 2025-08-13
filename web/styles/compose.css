@@ -1283,7 +1283,10 @@ textarea.new_message_textarea {
     }
 }
 
-.low-attention-recipient-row {
+/* For the sake of keyboard use, we do not want to apply
+   these styles when any element (the picker, user pills)
+   has focus. */
+.low-attention-recipient-row:not(:focus-within) {
     &#compose-recipient {
         .decorated-channel-name,
         .conversation-arrow,
@@ -1898,8 +1901,6 @@ textarea.new_message_textarea {
 
     .dropdown-list .dropdown-list-item-common-styles {
         padding: 0.3571em 0.7143em; /* 5px 10px at 14px/em */
-        display: flex;
-        flex-direction: column;
         /* Make content appear more distinct from
            the snippet name. */
         border-bottom: solid 1px var(--color-border-popover-menu-separator);
@@ -1917,7 +1918,7 @@ textarea.new_message_textarea {
             overflow: hidden;
         }
 
-        .dropdown-list-bold-selected {
+        .dropdown-list-text-selected {
             font-weight: 500;
             max-width: 210px;
             display: inline-block;

@@ -13,8 +13,8 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-07-30 13:46+0000\n"
-"PO-Revision-Date: 2025-07-17 06:37+0000\n"
-"Last-Translator: Anonymous <noreply@weblate.org>\n"
+"PO-Revision-Date: 2025-08-07 23:52+0000\n"
+"Last-Translator: Alex Vandiver <alexmv@zulip.com>\n"
 "Language-Team: Dutch <https://hosted.weblate.org/projects/zulip/django/nl/>\n"
 "Language: nl\n"
 "MIME-Version: 1.0\n"
@@ -1456,7 +1456,7 @@ msgstr "Aanmelden voor Zulip"
 
 #: templates/zerver/accounts_home.html:37
 msgid "You need an invitation to join this organization."
-msgstr "Voor deze organisatie moet u worden uitgenodigd"
+msgstr "Voor deze organisatie moet u worden uitgenodigd."
 
 #: templates/zerver/accounts_home.html:76 templates/zerver/login.html:50
 #: templates/zerver/login.html:139 templates/zerver/realm_creation_form.html:68
@@ -1597,7 +1597,7 @@ msgstr ""
 
 #: templates/zerver/confirm_continue_registration.html:14
 msgid "Zulip account not found."
-msgstr "Zulip-account niet gevonden"
+msgstr "Zulip-account niet gevonden."
 
 #: templates/zerver/confirm_continue_registration.html:18
 #, python-format
@@ -7231,7 +7231,7 @@ msgstr ""
 
 #: zerver/views/user_settings.py:447
 msgid "You must upload exactly one avatar."
-msgstr "Je moet precies één avatar uploaden"
+msgstr "Je moet precies één avatar uploaden."
 
 #: zerver/views/user_topics.py:52
 msgid "Topic is not muted"

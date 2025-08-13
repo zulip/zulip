@@ -1352,6 +1352,8 @@ div.topic_edit_spinner .loading_indicator_spinner {
 }
 
 #invite_welcome_custom_message_text {
+    resize: vertical;
+    height: 8em;
     width: 100%;
     box-sizing: border-box;
 }
@@ -2180,6 +2182,28 @@ body:not(.spectator-view) {
         }
     }
 
+    &.folder_id-dropdown-list-container {
+        width: calc(var(--modal-input-width) * 0.75);
+
+        /* Alignment adjustments on channel-folder selector. */
+        .dropdown-list-item-name:has(.dropdown-list-buttons) {
+            /* We hold the first row height to 28px at 16px/1em
+               for the sake of the buttons plus their padding. */
+            grid-template-rows: 1.75em minmax(0, auto);
+            /* We also align everything to start, so that we can
+               offset the text from the top to align it with the
+               buttons. */
+            align-items: start;
+
+            .dropdown-list-text-neutral {
+                /* 0.2em is an eyeballed value that keeps the buttons
+                   well aligned with the first/only line of text. */
+                padding-top: 0.2em;
+                align-self: start;
+            }
+        }
+    }
+
     .no-dropdown-items {
         color: hsl(0deg 0% 60%);
         display: none;
@@ -2190,8 +2214,14 @@ body:not(.spectator-view) {
     }
 
     .dropdown-list .dropdown-list-item-common-styles {
-        position: relative;
-        display: flex;
+        display: grid;
+        grid-template:
+            "privacy-icon     item-label       " min-content
+            "item-description item-description" minmax(0, min-content) / minmax(
+                0,
+                auto
+            )
+            minmax(0, 1fr);
         color: var(--color-dropdown-item);
         padding: 3px 10px 3px 8px;
         font-weight: 400;
@@ -2202,6 +2232,7 @@ body:not(.spectator-view) {
         line-height: 1.214;
 
         .channel-privacy-type-icon {
+            grid-area: privacy-icon;
             line-height: 1.214;
             font-size: 0.93em;
             /* We set only the width so that flexbox
@@ -2218,16 +2249,43 @@ body:not(.spectator-view) {
             top: 0.05em;
         }
 
-        .dropdown-list-delete,
-        .dropdown-list-edit {
-            position: absolute;
-            top: 0;
-            right: 5px;
-            visibility: hidden;
+        .decorated-channel-name {
+            grid-area: item-label;
         }
 
-        .dropdown-list-edit {
-            right: 30px;
+        .dropdown-list-item-description {
+            grid-area: item-description;
+        }
+
+        .dropdown-list-item-name {
+            grid-area: item-label;
+            display: grid;
+            grid-template:
+                "item-text item-buttons" minmax(0, auto)
+                "item-text .           " minmax(0, auto) / minmax(0, 1fr)
+                minmax(0, auto);
+            align-items: center;
+
+            &:has(.dropdown-list-buttons) {
+                grid-template-rows: 1.75em minmax(0, auto);
+                align-items: start;
+
+                .dropdown-list-text-neutral {
+                    padding-top: 0.2em;
+                    align-self: start;
+                }
+            }
+        }
+
+        .dropdown-list-text-neutral {
+            grid-area: item-text;
+            align-self: center;
+        }
+
+        .dropdown-list-buttons {
+            grid-area: item-buttons;
+            display: flex;
+            visibility: hidden;
         }
 
         &:focus,
@@ -2274,7 +2332,7 @@ body:not(.spectator-view) {
     }
 }
 
-.dropdown-list-item-common-styles .dropdown-list-bold-selected {
+.dropdown-list-item-common-styles .dropdown-list-text-selected {
     font-weight: 700;
 }
 

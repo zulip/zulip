@@ -1,12 +1,11 @@
 import $ from "jquery";
-import _ from "lodash";
 import assert from "minimalistic-assert";
 import * as tippy from "tippy.js";
 
 import render_filter_topics from "../templates/filter_topics.hbs";
 import render_go_to_channel_feed_tooltip from "../templates/go_to_channel_feed_tooltip.hbs";
 import render_go_to_channel_list_of_topics_tooltip from "../templates/go_to_channel_list_of_topics_tooltip.hbs";
-import render_show_inactive_channels from "../templates/show_inactive_channels.hbs";
+import render_show_inactive_or_muted_channels from "../templates/show_inactive_or_muted_channels.hbs";
 import render_stream_list_section_container from "../templates/stream_list_section_container.hbs";
 import render_stream_privacy from "../templates/stream_privacy.hbs";
 import render_stream_sidebar_row from "../templates/stream_sidebar_row.hbs";
@@ -18,20 +17,16 @@ import * as channel_folders from "./channel_folders.ts";
 import * as compose_actions from "./compose_actions.ts";
 import type {Filter} from "./filter.ts";
 import * as hash_util from "./hash_util.ts";
-import * as keydown_util from "./keydown_util.ts";
 import * as left_sidebar_navigation_area from "./left_sidebar_navigation_area.ts";
-import {ListCursor} from "./list_cursor.ts";
 import * as narrow_state from "./narrow_state.ts";
 import * as pm_list from "./pm_list.ts";
 import * as popovers from "./popovers.ts";
-import * as resize from "./resize.ts";
 import * as scroll_util from "./scroll_util.ts";
 import {web_channel_default_view_values} from "./settings_config.ts";
 import * as settings_data from "./settings_data.ts";
-import * as sidebar_ui from "./sidebar_ui.ts";
 import * as stream_data from "./stream_data.ts";
 import * as stream_list_sort from "./stream_list_sort.ts";
-import type {StreamListRow, StreamListSection} from "./stream_list_sort.ts";
+import type {StreamListSection} from "./stream_list_sort.ts";
 import * as stream_topic_history from "./stream_topic_history.ts";
 import * as stream_topic_history_util from "./stream_topic_history_util.ts";
 import * as sub_store from "./sub_store.ts";
@@ -53,16 +48,10 @@ export function set_update_inbox_channel_view_callback(value: (channel_id: numbe
     update_inbox_channel_view_callback = value;
 }
 
-export let stream_cursor: ListCursor<StreamListRow>;
-
-export function rewire_stream_cursor(value: typeof stream_cursor): void {
-    stream_cursor = value;
-}
-
 let has_scrolled = false;
 
 const collapsed_sections = new Set<string>();
-const sections_showing_inactive = new Set<string>();
+const sections_showing_inactive_or_muted = new Set<string>();
 
 export function is_zoomed_in(): boolean {
     return zoomed_in;
@@ -236,13 +225,6 @@ class StreamSidebar {
 }
 export const stream_sidebar = new StreamSidebar();
 
-function get_search_term(): string {
-    const $search_box = $<HTMLInputElement>("input.stream-list-filter").expectOne();
-    const search_term = $search_box.val();
-    assert(search_term !== undefined);
-    return search_term.trim();
-}
-
 export function add_sidebar_row(sub: StreamSubscription): void {
     create_sidebar_row(sub);
     update_streams_sidebar();
@@ -292,6 +274,27 @@ function get_section_channel_plus_icon_url(section: StreamListSection): string |
     return undefined;
 }
 
+export function update_unread_counts_visibility(): void {
+    const hidden = !user_settings.web_left_sidebar_unreads_count_summary;
+    $(".top_left_row, #left-sidebar-navigation-list-condensed").toggleClass(
+        "hide-unread-messages-count",
+        hidden,
+    );
+    // Note: Channel folder count visibilities are handled in
+    // `update_section_unread_count`, since they depend on unread counts.
+}
+
+function maybe_change_channel_folders_option_visibility(): void {
+    const $channel_folders_sidebar_option = $(
+        "#left-sidebar-search .channel-folders-sidebar-menu-icon",
+    );
+    if (channel_folders.user_has_folders()) {
+        $channel_folders_sidebar_option.show();
+    } else {
+        $channel_folders_sidebar_option.hide();
+    }
+}
+
 export function build_stream_list(force_rerender: boolean): void {
     // The stream list in the left sidebar contains 3 sections:
     // pinned, normal, and dormant streams, with headings above them
@@ -302,23 +305,24 @@ export function build_stream_list(force_rerender: boolean): void {
     //
     // The main logic to build the list is in stream_list_sort.ts
     const streams = stream_data.subscribed_stream_ids();
-    const stream_groups = stream_list_sort.sort_groups(streams, get_search_term());
+    const stream_groups = stream_list_sort.sort_groups(
+        streams,
+        ui_util.get_left_sidebar_search_term(),
+    );
 
     if (stream_groups.same_as_before && !force_rerender) {
         return;
     }
 
-    function add_sidebar_li(
-        stream_id: number,
-        $list: JQuery,
-        inactive_in_channel_folder = false,
-    ): void {
+    maybe_change_channel_folders_option_visibility();
+
+    function add_sidebar_li(stream_id: number, $list: JQuery, inactive_or_muted = false): void {
         const sidebar_row = stream_sidebar.get_row(stream_id);
         assert(sidebar_row !== undefined);
         sidebar_row.update_whether_active();
         const $li = sidebar_row.get_li();
-        if (inactive_in_channel_folder) {
-            $li.addClass("inactive-in-channel-folder");
+        if (inactive_or_muted) {
+            $li.addClass("inactive-or-muted-in-channel-folder");
         }
         $list.append($li);
     }
@@ -339,19 +343,24 @@ export function build_stream_list(force_rerender: boolean): void {
             section.inactive_streams.length === 0;
         $(`#stream-list-${section.id}-container`).toggleClass("no-display", is_empty);
 
-        for (const stream_id of [...section.streams, ...section.muted_streams]) {
+        for (const stream_id of section.streams) {
             add_sidebar_li(stream_id, $(`#stream-list-${section.id}`));
         }
-        for (const stream_id of section.inactive_streams) {
-            add_sidebar_li(stream_id, $(`#stream-list-${section.id}`), true);
-        }
-        if (section.inactive_streams.length > 0) {
+        const muted_and_inactive_streams = [...section.muted_streams, ...section.inactive_streams];
+        if (section.id !== "pinned-streams" && muted_and_inactive_streams.length > 0) {
             $(`#stream-list-${section.id}`).append(
                 $(
-                    render_show_inactive_channels({
-                        inactive_count: section.inactive_streams.length,
+                    render_show_inactive_or_muted_channels({
+                        inactive_or_muted_count: muted_and_inactive_streams.length,
                     }),
                 ),
+            );
+        }
+        for (const stream_id of muted_and_inactive_streams) {
+            add_sidebar_li(
+                stream_id,
+                $(`#stream-list-${section.id}`),
+                section.id !== "pinned-streams",
             );
         }
     }
@@ -360,9 +369,74 @@ export function build_stream_list(force_rerender: boolean): void {
     const counts = unread.get_counts();
     left_sidebar_navigation_area.update_dom_with_unread_counts(counts, false);
     update_dom_with_unread_counts(counts);
-    sidebar_ui.update_unread_counts_visibility();
+    update_stream_section_mention_indicators();
+    update_unread_counts_visibility();
     set_sections_states();
-    $("#streams_list").toggleClass("is_searching", get_search_term() !== "");
+    // Show inactive channels when user starts typing.
+    $("#streams_list").toggleClass("is_searching", ui_util.get_left_sidebar_search_term() !== "");
+}
+
+export function mention_counts_by_section(): Map<
+    string,
+    {
+        has_mentions: boolean;
+        has_unmuted_mentions: boolean;
+    }
+> {
+    const mentions_map = new Map<
+        string,
+        {
+            has_mentions: boolean;
+            has_unmuted_mentions: boolean;
+        }
+    >();
+    const streams_with_mentions = unread.get_channels_with_unread_mentions();
+    const streams_with_unmuted_mentions = unread.get_channels_with_unmuted_mentions();
+    for (const stream_id of streams_with_mentions) {
+        const section_id = stream_list_sort.current_section_id_for_stream(stream_id);
+        if (section_id === undefined) {
+            continue;
+        }
+        if (!mentions_map.has(section_id)) {
+            mentions_map.set(section_id, {
+                has_mentions: false,
+                has_unmuted_mentions: false,
+            });
+        }
+        mentions_map.get(section_id)!.has_mentions = true;
+    }
+    for (const stream_id of streams_with_unmuted_mentions) {
+        const section_id = stream_list_sort.current_section_id_for_stream(stream_id);
+        if (section_id === undefined) {
+            continue;
+        }
+        mentions_map.get(section_id)!.has_unmuted_mentions = true;
+    }
+
+    return mentions_map;
+}
+
+export let update_stream_section_mention_indicators = function (): void {
+    const mentions = mention_counts_by_section();
+    for (const section of stream_list_sort.section_ids()) {
+        const $header = $(`#stream-list-${section}-container .stream-list-subsection-header`);
+        const mentions_for_section = mentions.get(section) ?? {
+            has_mentions: false,
+            has_unmuted_mentions: false,
+        };
+        ui_util.update_unread_mention_info_in_dom($header, mentions_for_section.has_mentions);
+
+        $header.toggleClass(
+            "has-only-muted-mentions",
+            mentions_for_section.has_mentions && !mentions_for_section.has_unmuted_mentions,
+        );
+    }
+};
+
+export function rewire_update_stream_section_mention_indicators(
+    value: typeof update_stream_section_mention_indicators,
+): void {
+    update_stream_section_mention_indicators = value;
 }
 
 /* When viewing a channel in a collapsed folder, we show that active
@@ -396,16 +470,19 @@ function toggle_section_collapse($container: JQuery): void {
 }
 
 function set_sections_states(): void {
-    for (const section_id of collapsed_sections) {
-        const $container = $(`#stream-list-${section_id}-container`);
-        $container.toggleClass("collapsed", true);
-        $container
-            .find(".stream-list-section-toggle")
-            .toggleClass("rotate-icon-down", false)
-            .toggleClass("rotate-icon-right", true);
+    if (ui_util.get_left_sidebar_search_term() === "") {
+        // Restore the collapsed state of sections.
+        for (const section_id of collapsed_sections) {
+            const $container = $(`#stream-list-${section_id}-container`);
+            $container.toggleClass("collapsed", true);
+            $container
+                .find(".stream-list-section-toggle")
+                .toggleClass("rotate-icon-down", false)
+                .toggleClass("rotate-icon-right", true);
+        }
     }
-    for (const section_id of sections_showing_inactive) {
-        $(`#stream-list-${section_id}-container`).toggleClass("showing-inactive", true);
+    for (const section_id of sections_showing_inactive_or_muted) {
+        $(`#stream-list-${section_id}-container`).toggleClass("showing-inactive-or-muted", true);
     }
 }
 
@@ -531,6 +608,9 @@ class StreamSidebarRow {
         this.update_unread_count();
     }
 
+    // The `inactive_stream` class is useful for identifying these
+    // channels to node tests, even if the design doesn't currently
+    // style these channels differently.
     update_whether_active(): void {
         if (stream_list_sort.has_recent_activity(this.sub)) {
             this.$list_item.removeClass("inactive_stream");
@@ -641,8 +721,6 @@ export let update_streams_sidebar = (force_rerender = false): void => {
 
     build_stream_list(force_rerender);
 
-    stream_cursor.redraw();
-
     const filter = narrow_state.filter();
     if (!filter) {
         return;
@@ -659,9 +737,12 @@ type SectionUnreadCount = {
     // These both include inactive unreads as well.
     unmuted: number;
     muted: number;
-    // These are used for the "+ n inactive channels" button.
+    // These are used for the count on the inactive/muted channel toggle.
     inactive_unmuted: number;
     inactive_muted: number;
+    // e.g. followed topics in a muted channel, which count towards
+    // the unmuted count in the inactive/muted channels toggle.
+    muted_channel_unmuted: number;
 };
 
 export let update_dom_with_unread_counts = function (counts: FullUnreadCountsData): void {
@@ -686,6 +767,7 @@ export let update_dom_with_unread_counts = function (counts: FullUnreadCountsDat
             stream_has_only_muted_unread_mentions,
         );
     }
+    update_stream_section_mention_indicators();
 
     // (2) Unread counts in stream headers and collapse/uncollapse
     // toggles for muted and inactive channels.
@@ -695,6 +777,7 @@ export let update_dom_with_unread_counts = function (counts: FullUnreadCountsDat
         // Not used for the pinned section, but included here to make typing easier
         inactive_unmuted: 0,
         inactive_muted: 0,
+        muted_channel_unmuted: 0,
     };
     const folder_unread_counts = new Map<number, SectionUnreadCount>();
     const normal_section_unread_counts: SectionUnreadCount = {
@@ -702,6 +785,7 @@ export let update_dom_with_unread_counts = function (counts: FullUnreadCountsDat
         muted: 0,
         inactive_unmuted: 0,
         inactive_muted: 0,
+        muted_channel_unmuted: 0,
     };
 
     for (const [stream_id, stream_count_info] of counts.stream_count.entries()) {
@@ -717,12 +801,16 @@ export let update_dom_with_unread_counts = function (counts: FullUnreadCountsDat
                     muted: 0,
                     inactive_unmuted: 0,
                     inactive_muted: 0,
+                    muted_channel_unmuted: 0,
                 });
             }
 
             const unread_counts = folder_unread_counts.get(sub.folder_id)!;
             unread_counts.unmuted += stream_count_info.unmuted_count;
             unread_counts.muted += stream_count_info.muted_count;
+            if (sub.is_muted) {
+                unread_counts.muted_channel_unmuted += stream_count_info.unmuted_count;
+            }
             if (!stream_list_sort.has_recent_activity(sub)) {
                 unread_counts.inactive_unmuted += stream_count_info.unmuted_count;
                 unread_counts.inactive_muted += stream_count_info.muted_count;
@@ -730,6 +818,10 @@ export let update_dom_with_unread_counts = function (counts: FullUnreadCountsDat
         } else {
             normal_section_unread_counts.unmuted += stream_count_info.unmuted_count;
             normal_section_unread_counts.muted += stream_count_info.muted_count;
+            if (sub.is_muted) {
+                normal_section_unread_counts.muted_channel_unmuted +=
+                    stream_count_info.unmuted_count;
+            }
             if (!stream_list_sort.has_recent_activity(sub)) {
                 normal_section_unread_counts.inactive_unmuted += stream_count_info.unmuted_count;
                 normal_section_unread_counts.inactive_muted += stream_count_info.muted_count;
@@ -767,9 +859,10 @@ export let update_dom_with_unread_counts = function (counts: FullUnreadCountsDat
         normal_section_unread_counts.muted,
     );
     update_section_unread_count(
-        $("#stream-list-normal-streams-container .show-inactive-channels"),
-        normal_section_unread_counts.inactive_unmuted,
-        normal_section_unread_counts.inactive_muted,
+        $("#stream-list-normal-streams-container .show-inactive-or-muted-channels"),
+        normal_section_unread_counts.inactive_unmuted +
+            normal_section_unread_counts.muted_channel_unmuted,
+        normal_section_unread_counts.inactive_muted + normal_section_unread_counts.muted,
     );
 
     for (const folder_id of channel_folders.get_all_folder_ids()) {
@@ -778,6 +871,7 @@ export let update_dom_with_unread_counts = function (counts: FullUnreadCountsDat
             muted: 0,
             inactive_unmuted: 0,
             inactive_muted: 0,
+            muted_channel_unmuted: 0,
         };
         update_section_unread_count(
             $(`#stream-list-${folder_id}-container .stream-list-subsection-header`),
@@ -785,9 +879,9 @@ export let update_dom_with_unread_counts = function (counts: FullUnreadCountsDat
             unread_counts.muted,
         );
         update_section_unread_count(
-            $(`#stream-list-${folder_id}-container .show-inactive-channels`),
-            unread_counts.inactive_unmuted,
-            unread_counts.inactive_muted,
+            $(`#stream-list-${folder_id}-container .show-inactive-or-muted-channels`),
+            unread_counts.inactive_unmuted + unread_counts.muted_channel_unmuted,
+            unread_counts.inactive_muted + unread_counts.muted,
         );
     }
 };
@@ -839,7 +933,11 @@ export function refresh_pinned_or_unpinned_stream(sub: StreamSubscription): void
 
 export function refresh_muted_or_unmuted_stream(sub: StreamSubscription): void {
     build_stream_sidebar_row(sub);
-    update_streams_sidebar();
+    // If a stream is inactive, it'll stay in the same inactive list in its
+    // StreamListSection (so `same_as_before` will be true), so we need to
+    // force the rerender to change its faded/unfaded appearance.
+    const force_rerender = !stream_list_sort.has_recent_activity(sub);
+    update_streams_sidebar(force_rerender);
 }
 
 export function get_sidebar_stream_topic_info(filter: Filter): {
@@ -954,56 +1052,6 @@ export function handle_message_view_deactivated(): void {
     clear_topics();
 }
 
-function focus_stream_filter(e: JQuery.ClickEvent): void {
-    stream_cursor.reset();
-    e.stopPropagation();
-}
-
-function actually_update_streams_for_search(): void {
-    update_streams_sidebar();
-    resize.resize_page_components();
-    stream_cursor.reset();
-}
-
-const update_streams_for_search = _.throttle(actually_update_streams_for_search, 50);
-
-// Exported for tests only.
-export function initialize_stream_cursor(): void {
-    stream_cursor = new ListCursor<StreamListRow>({
-        list: {
-            scroll_container_selector: "#left_sidebar_scroll_container",
-            find_li(opts) {
-                switch (opts.key.type) {
-                    case "stream":
-                        return get_stream_li(opts.key.stream_id);
-                    case "inactive_toggle":
-                        return $(
-                            `#stream-list-${opts.key.section_id}-container .stream-list-toggle-inactive-channels`,
-                        );
-                    default:
-                        throw new Error("Unexpected key type");
-                }
-            },
-            first_key: stream_list_sort.first_row,
-            prev_key: (row) =>
-                stream_list_sort.prev_row(
-                    row,
-                    sections_showing_inactive,
-                    collapsed_sections,
-                    topic_list.active_stream_id(),
-                ),
-            next_key: (row) =>
-                stream_list_sort.next_row(
-                    row,
-                    sections_showing_inactive,
-                    collapsed_sections,
-                    topic_list.active_stream_id(),
-                ),
-        },
-        highlight_class: "highlighted_row",
-    });
-}
-
 export function initialize({
     show_channel_feed,
     update_inbox_channel_view,
@@ -1018,7 +1066,6 @@ export function initialize({
     // when new messages come in, but it's fairly quick.
     build_stream_list(false);
     update_subscribe_to_more_streams_link();
-    initialize_stream_cursor();
     initialize_tippy_tooltips();
     set_event_handlers({show_channel_feed});
 
@@ -1082,7 +1129,7 @@ export function initialize_tippy_tooltips(): void {
     });
 }
 
-function on_sidebar_channel_click(
+export function on_sidebar_channel_click(
     stream_id: number,
     // Null is used when this is called via `Enter`, because the
     // keyboard abstraction we're using doesn't need to pass on the event.
@@ -1209,6 +1256,11 @@ export function set_event_handlers({
         if (e.metaKey || e.ctrlKey || e.shiftKey) {
             return;
         }
+        if (document.getSelection()?.type === "Range") {
+            // To avoid the click behavior if a channel name is selected.
+            e.preventDefault();
+            return;
+        }
 
         const stream_id = stream_id_for_elt($(e.target).parents("li.narrow-filter"));
         on_sidebar_channel_click(stream_id, e, show_channel_feed);
@@ -1253,52 +1305,6 @@ export function set_event_handlers({
         toggle_pm_header_icon();
     });
 
-    const $search_input = $(".stream-list-filter").expectOne();
-
-    function keydown_enter_key(): void {
-        const row = stream_cursor.get_key();
-
-        if (row === undefined) {
-            // This can happen for empty searches, no need to warn.
-            return;
-        }
-
-        switch (row.type) {
-            case "stream":
-                on_sidebar_channel_click(row.stream_id, null, show_channel_feed);
-                break;
-            case "inactive_toggle":
-                toggle_inactive_channels($(`#stream-list-${row.section_id}-container`));
-                break;
-            default:
-                throw new Error("Unexpected key type");
-        }
-    }
-
-    keydown_util.handle({
-        $elem: $search_input,
-        handlers: {
-            Enter() {
-                keydown_enter_key();
-                return true;
-            },
-            ArrowUp() {
-                stream_cursor.prev();
-                return true;
-            },
-            ArrowDown() {
-                stream_cursor.next();
-                return true;
-            },
-        },
-    });
-
-    $search_input.on("click", focus_stream_filter);
-    $search_input.on("focusout", () => {
-        stream_cursor.clear();
-    });
-    $search_input.on("input", update_streams_for_search);
-
     $("#streams_list").on(
         "click",
         ".stream-list-section-container .stream-list-subsection-header",
@@ -1322,54 +1328,35 @@ export function set_event_handlers({
 
     $("#streams_list").on(
         "click",
-        ".stream-list-toggle-inactive-channels",
+        ".stream-list-toggle-inactive-or-muted-channels",
         function (this: HTMLElement, e: JQuery.ClickEvent) {
             e.stopPropagation();
-            toggle_inactive_channels($(this).closest(".stream-list-section-container"));
+            toggle_inactive_or_muted_channels($(this).closest(".stream-list-section-container"));
         },
     );
 }
 
-function toggle_inactive_channels($section_container: JQuery): void {
-    $section_container.toggleClass("showing-inactive");
-    const showing_inactive = $section_container.hasClass("showing-inactive");
+function toggle_inactive_or_muted_channels($section_container: JQuery): void {
+    $section_container.toggleClass("showing-inactive-or-muted");
+    const showing_inactive_or_muted = $section_container.hasClass("showing-inactive-or-muted");
     const section_id = $section_container.attr("data-section-id")!;
-    if (showing_inactive) {
-        sections_showing_inactive.add(section_id);
+    if (showing_inactive_or_muted) {
+        sections_showing_inactive_or_muted.add(section_id);
     } else {
-        sections_showing_inactive.delete(section_id);
+        sections_showing_inactive_or_muted.delete(section_id);
     }
 }
 
 export function searching(): boolean {
-    return $(".stream-list-filter").expectOne().is(":focus");
-}
-
-export function test_clear_search(): void {
-    const $filter = $(".stream-list-filter").expectOne();
-    $filter.val("");
-    $filter.trigger("blur");
-    update_streams_for_search();
-}
-
-export function initiate_search(): void {
-    popovers.hide_all();
-
-    const $filter = $(".stream-list-filter").expectOne();
-
-    sidebar_ui.show_left_sidebar();
-    $filter.trigger("focus");
-
-    stream_cursor.reset();
+    return $(".left-sidebar-search-input").expectOne().is(":focus");
 }
 
 export function clear_search(): void {
-    const $filter = $(".stream-list-filter").expectOne();
+    const $filter = $(".left-sidebar-search-input").expectOne();
     if ($filter.val() !== "") {
         $filter.val("");
-        update_streams_for_search();
+        $filter.trigger("input");
     }
-    stream_cursor.clear();
     $filter.trigger("blur");
 }
 
@@ -1380,7 +1367,7 @@ export let scroll_stream_into_view = function ($stream_li: JQuery): void {
         blueslip.error("Invalid stream_li was passed in");
         return;
     }
-    const stream_filter_height = $("#stream-search-and-add").outerHeight()!;
+    const stream_filter_height = $("#left-sidebar-search").outerHeight()!;
     const header_height = $stream_li
         .closest(".stream-list-section-container")
         .children(".stream-list-subsection-header")

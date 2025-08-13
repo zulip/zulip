@@ -15,13 +15,16 @@
     white-space: nowrap;
 }
 
-#left-sidebar .input-element-wrapper {
+#left-sidebar .input-element-wrapper:not(.left-sidebar-search-section) {
     /* We normalize this based on Firefox's 31px-tall input,
        raising Chrome's (28px) and Safari's (30px) to all
        match, so that `top:` and other offset values are
        identical relative to input elements. This value
        is taken up by the grid-template definition in
-       inputs.css. */
+       inputs.css. We don't do this on the sidebar search, though,
+       so that it matches the height of the filter at the top of the
+       right sidebar. Normalizing the height isn't essential here,
+       as there are no sticky headers offset from the filter input. */
     --input-element-row-height: 1.9375em;
 
     .input-element {
@@ -52,12 +55,22 @@
 .add-stream-icon-container {
     grid-area: add-channel;
     display: grid;
-    place-items: center center;
-    margin: 2px 0;
+    /* 2px right margin here to match the new topic margin-right */
+    margin: 2px 1px 2px 0;
     border-radius: 3px;
 
     .add_stream_icon {
+        /* We display as flex to center the icon while
+           keeping the entire highlighted area clickable. */
+        display: flex;
+        place-items: center center;
         color: var(--color-left-sidebar-heads-up-icon);
+
+        &::before {
+            /* To horizontally center the icon within the
+               flex, though, we need this margin adjustment. */
+            margin: 0 auto;
+        }
     }
 
     &:hover {
@@ -128,7 +141,7 @@
 
     .stream-with-count.hide_unread_counts,
     .stream-list-subsection-header.hide_unread_counts,
-    .show-inactive-channels.hide_unread_counts {
+    .show-inactive-or-muted-channels.hide_unread_counts {
         .masked_unread_count {
             display: flex;
         }
@@ -137,12 +150,17 @@
             display: none;
         }
 
+        /* When count is 0, we dont want to show unread_count or masked_unread_count. */
+        .unread_count.hide + .masked_unread_count {
+            display: none;
+        }
+
         &:hover {
             .masked_unread_count {
                 display: none;
             }
 
-            .unread_count {
+            .unread_count:not(.hide) {
                 display: inline;
             }
         }
@@ -308,22 +326,44 @@
     }
 }
 
-.spectator-view #stream-search-and-add {
+.spectator-view #left-sidebar-search {
     grid-template-columns: minmax(0, 1fr);
 }
 
-#stream-search-and-add {
+#left-sidebar-search {
     display: grid;
-    grid-template-areas: "filter-container add-channel";
-    grid-template-columns: minmax(0, 1fr) var(--left-sidebar-header-icon-width);
+    grid-template-areas: "filter-container add-channel channel-folders-option";
+    grid-template-columns:
+        minmax(0, 1fr) var(--left-sidebar-header-icon-width)
+        auto;
     position: sticky;
     top: 0;
     /* Must be more than .stream-list-subsection-header */
     z-index: 3;
     background: var(--color-background);
     /* Must be padding not margin so that the sticky headers don't show behind it */
-    padding: calc(var(--left-sidebar-sections-vertical-gutter) * 2.5)
-        var(--left-sidebar-right-margin) 3px 5px;
+    padding: 0 var(--left-sidebar-right-margin) 3px 5px;
+
+    .channel-folders-sidebar-menu-icon {
+        grid-area: channel-folders-option;
+        display: grid;
+        /* width excluding left & right margin */
+        width: calc(var(--left-sidebar-vdots-width) - 3px);
+        cursor: pointer;
+        place-items: center center;
+        border-radius: 3px;
+        margin: 2px 2px 2px 1px;
+        color: var(--color-vdots-visible);
+
+        & i.zulip-icon {
+            font-size: 1.0625em;
+        }
+
+        &:hover {
+            color: var(--color-vdots-hover);
+            background-color: var(--color-background-sidebar-action-hover);
+        }
+    }
 }
 
 .stream-list-subsection-header {
@@ -343,20 +383,19 @@
     cursor: pointer;
     background-color: var(--color-background);
     position: sticky;
-    /* Input is 54px tall at 16px/1em. That includes the
-       input container's top padding that's 2.5 times
-       the value of the left sidebar vertical gutter,
-       plus 3px of bottom padding. */
-    top: calc(
-        1.9375em + (var(--left-sidebar-sections-vertical-gutter) * 2.5) + 3px
-    );
-    /* Must be more than .sidebar-topic-check and less than #stream-search-and-add */
+    top: 0;
+    /* Must be more than .sidebar-topic-check and less than #left-sidebar-search */
     z-index: 2;
     color: var(--color-text-default);
     /* There seems to be a bug where when the header returns to normal position after
        being sticky, it's 0.5px below its actual position and thus overlaps the channel
        below. This extra margin prevents that overlap. */
     margin-bottom: 1px;
+
+    .markers-and-unreads {
+        display: flex;
+        align-items: center;
+    }
 
     .unread_count,
     .masked_unread_count {
@@ -374,6 +413,10 @@
 
     .add_stream_icon {
         visibility: hidden;
+    }
+
+    .add-stream-icon-container:focus-visible .add_stream_icon {
+        visibility: visible;
     }
 
     &:hover {
@@ -401,11 +444,11 @@
     }
 }
 
-.stream-list-toggle-inactive-channels {
+.stream-list-toggle-inactive-or-muted-channels {
     padding-left: var(--left-sidebar-toggle-width-offset);
 
-    .show-inactive-channels,
-    .hide-inactive-channels {
+    .show-inactive-or-muted-channels,
+    .hide-inactive-or-muted-channels {
         /* Override the action heading font size, so that em measurements
         on child elements are sized properly */
         font-size: var(--base-font-size-px);
@@ -413,7 +456,7 @@
         font-variant: inherit;
         padding: 0;
 
-        .stream-list-toggle-inactive-channels-text {
+        .stream-list-toggle-inactive-or-muted-channels-text {
             font-size: var(--font-size-sidebar-action-heading);
             font-variant: var(--font-variant-sidebar-action-heading);
             overflow-x: hidden;
@@ -422,47 +465,81 @@
     }
 }
 
-.stream-list-section-container:not(.showing-inactive) {
-    .inactive-in-channel-folder {
+.stream-list-section-container:not(.showing-inactive-or-muted) {
+    .inactive-or-muted-in-channel-folder:not(
+            .active-filter,
+            :has(.active-sub-filter)
+        ) {
         display: none;
     }
 
-    .stream-list-toggle-inactive-channels {
-        .hide-inactive-channels {
+    .stream-list-toggle-inactive-or-muted-channels {
+        .hide-inactive-or-muted-channels {
             display: none;
         }
     }
 }
 
 #streams_list.is_searching {
-    .show-inactive-channels,
-    .hide-inactive-channels {
+    .show-inactive-or-muted-channels,
+    .hide-inactive-or-muted-channels {
         display: none;
     }
 
-    .inactive-in-channel-folder {
+    .inactive-or-muted-in-channel-folder {
         display: block;
     }
 }
 
-.stream-list-section-container.showing-inactive {
-    .stream-list-toggle-inactive-channels {
-        .show-inactive-channels {
+.stream-list-section-container.showing-inactive-or-muted {
+    .stream-list-toggle-inactive-or-muted-channels {
+        .show-inactive-or-muted-channels {
             display: none;
         }
     }
 }
 
-.show-inactive-channels,
-.hide-inactive-channels {
+/* Sections with inactive/muted channels have a button to toggle
+   showing them. If there's only one inactive/muted channel, and
+   it's currently highlighted (.stream-expanded), then we want to
+   always show it, which means there aren't any inactive/muted
+   channels left to toggle visibility for. So we should hide the
+   toggle button.
+
+   (Checking for any .inactive-or-muted-in-channel-folder without
+   .stream-expanded in a .stream-list-section-container, and if none
+   then hide .stream-list-toggle-inactive-or-muted-channels). */
+.stream-list-section-container:not(
+        :has(.inactive-or-muted-in-channel-folder:not(.stream-expanded))
+    ) {
+    .stream-list-toggle-inactive-or-muted-channels {
+        display: none;
+    }
+}
+
+.show-inactive-or-muted-channels,
+.hide-inactive-or-muted-channels {
     display: grid;
     grid-template:
-        "content markers-and-unreads three-dot-placeholder" auto
-        / minmax(0, 1fr) minmax(0, max-content) var(--left-sidebar-vdots-width);
+        "icon content markers-and-unreads three-dot-placeholder" auto
+        / 1.5em minmax(0, 1fr) minmax(0, max-content) var(
+            --left-sidebar-vdots-width
+        );
     align-items: center;
 
     .markers-and-unreads {
         margin-right: var(--left-sidebar-unread-offset);
+    }
+
+    .zulip-icon-collapse,
+    .zulip-icon-expand {
+        grid-area: icon;
+        /* 2px at 16px/1em to properly vertically center it */
+        margin-top: 0.125em;
+    }
+
+    .stream-list-toggle-inactive-or-muted-channels-text {
+        grid-area: content;
     }
 }
 
@@ -476,7 +553,7 @@
 
 .stream-list-section-container.collapsed {
     .narrow-filter:not(.stream-expanded),
-    .stream-list-toggle-inactive-channels,
+    .stream-list-toggle-inactive-or-muted-channels,
     .topic-list-item:not(.active-sub-filter),
     &.hide-topic-bracket ul.topic-list.topic-list-has-topics::before,
     &.hide-topic-bracket ul.topic-list.topic-list-has-topics::after {
@@ -492,6 +569,10 @@
         .masked_unread_count {
             visibility: hidden;
         }
+    }
+
+    .stream-list-subsection-header:not(:hover) .unread_mention_info {
+        display: none;
     }
 }
 
@@ -635,7 +716,7 @@
     }
 }
 
-.stream-list-toggle-inactive-channels.highlighted_row {
+.stream-list-toggle-inactive-or-muted-channels.highlighted_row {
     outline: 2px solid var(--color-outline-focus);
     outline-offset: -2px;
     background-color: var(--color-background-sidebar-action-heading-hover);
@@ -661,6 +742,12 @@
     }
 }
 
+.highlighted_row.top_left_row,
+.highlighted_row.bottom_left_row {
+    outline: 2px solid var(--color-outline-focus);
+    outline-offset: -2px;
+}
+
 #stream_filters
     .narrow-filter
     .topic-list
@@ -681,6 +768,7 @@
     a.stream-name:focus,
     a.sidebar-topic-name:focus,
     a.conversation-partners:focus,
+    a.dm-box:focus,
     a.sidebar-topic-action-heading:focus {
         outline: none;
         text-decoration: none;
@@ -839,8 +927,7 @@ ul.filters {
         }
     }
 
-    & li.out_of_home_view,
-    .inactive_stream:not(.active-filter) {
+    & li.out_of_home_view {
         .stream-privacy,
         .stream-name,
         .channel-new-topic-button,
@@ -1112,19 +1199,6 @@ li.active-sub-filter {
 
 .sidebar-menu-icon.hide {
     visibility: hidden;
-}
-
-/* Don't show the scheduled messages item... */
-li.top_left_reminders,
-li.top_left_scheduled_messages {
-    display: none;
-    /* ...unless there are scheduled messages to show. */
-    &.show-with-reminders,
-    &.show-with-scheduled-messages {
-        /* Use display: grid to preserve the grid
-           layout when visible. */
-        display: grid;
-    }
 }
 
 .left-sidebar-navigation-label-container {
@@ -1479,6 +1553,7 @@ li.top_left_scheduled_messages {
 }
 
 .subscription_block {
+    user-select: text;
     grid-template-columns:
         var(--left-sidebar-toggle-width-offset) var(
             --left-sidebar-icon-column-width
@@ -1493,7 +1568,8 @@ li.top_left_scheduled_messages {
     text-decoration: none;
     color: inherit;
 
-    &:hover {
+    &:hover,
+    &:active {
         opacity: 1;
         text-decoration: none;
         color: inherit;
@@ -1571,7 +1647,8 @@ li.top_left_scheduled_messages {
     text-decoration: none;
     color: inherit;
 
-    &:hover {
+    &:hover,
+    &:active {
         opacity: 1;
         text-decoration: none;
         color: inherit;
@@ -1583,6 +1660,10 @@ li.top_left_scheduled_messages {
         outline: none;
         color: inherit;
     }
+}
+
+.topic-box {
+    user-select: text;
 }
 
 .searching-for-more-topics {
@@ -1617,7 +1698,12 @@ li.top_left_scheduled_messages {
         overflow-wrap: break-word;
 
         line-height: var(--line-height-sidebar-topic-inner);
-        margin: var(--spacing-top-bottom-sidebar-topic-inner) 0;
+        /* To avoid clipping the tops of certain characters,
+           we set the top space with padding. But to make the
+           line-clamp effect work, we set the bottom space
+           with margin. */
+        padding-top: var(--spacing-top-bottom-sidebar-topic-inner);
+        margin: 0 0 var(--spacing-top-bottom-sidebar-topic-inner) 0;
     }
 }
 
@@ -1776,8 +1862,13 @@ li.top_left_scheduled_messages {
     overflow-wrap: break-word;
 
     line-height: var(--line-height-sidebar-topic-inner);
-    margin: var(--spacing-top-bottom-sidebar-topic-inner) 0;
-    padding: 0 var(--left-sidebar-before-unread-count-padding) 0 0;
+    /* To avoid clipping the tops of certain characters,
+       we set the top space with padding. But to make the
+       line-clamp effect work, we set the bottom space
+       with margin. */
+    padding: var(--spacing-top-bottom-sidebar-topic-inner)
+        var(--left-sidebar-before-unread-count-padding) 0 0;
+    margin-bottom: var(--spacing-top-bottom-sidebar-topic-inner);
 }
 
 /*
@@ -1927,6 +2018,7 @@ li.topic-list-item {
 }
 
 .dm-box {
+    user-select: text;
     grid-template-columns:
         var(--left-sidebar-toggle-width-offset) [action-heading-start] var(
             --left-sidebar-icon-column-width
@@ -2089,7 +2181,7 @@ li.topic-list-item {
     }
 
     .zoom-in-hide,
-    #stream-search-and-add.zoom-in-hide {
+    #left-sidebar-search.zoom-in-hide {
         display: none;
     }
 
@@ -2098,4 +2190,13 @@ li.topic-list-item {
         top: 0;
         z-index: 1;
     }
+}
+
+.top_left_row.hidden-by-filters {
+    display: none !important;
+}
+
+#left-sidebar-navigation-area.hidden-by-filters,
+#direct-messages-section-header.hidden-by-filters {
+    display: none;
 }

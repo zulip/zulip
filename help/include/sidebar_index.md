@@ -264,6 +264,7 @@
 * [Message retention policy](/help/message-retention-policy)
 * [Weekly digest emails](/help/digest-emails)
 * [Disable welcome emails](/help/disable-welcome-emails)
+* [Configure a custom welcome message](/help/configure-a-custom-welcome-message)
 * [Configure automated notices](/help/configure-automated-notices)
 * [Configure multi-language search](/help/configure-multi-language-search)
 * [Usage statistics](/help/analytics)

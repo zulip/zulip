@@ -50,6 +50,22 @@ def create_if_missing_realm_internal_bots() -> None:
             setup_realm_internal_bots(realm)
 
 
+def get_custom_welcome_message_string(welcome_message_custom_text: str) -> str:
+    fence = get_unused_fence(welcome_message_custom_text)
+    welcome_bot_custom_message_intro_string = _(
+        "The administrators for this organization would also like to share the following information:"
+    )
+
+    welcome_bot_custom_message_string = f"""
+{welcome_bot_custom_message_intro_string}
+{fence}quote
+{welcome_message_custom_text}
+{fence}
+"""
+
+    return welcome_bot_custom_message_string
+
+
 def send_initial_direct_messages_to_user(
     user: UserProfile,
     *,
@@ -113,16 +129,9 @@ You can always come back to the [Welcome to Zulip video]({navigation_tour_video_
         welcome_bot_custom_message_string = ""
         # Add welcome bot custom message.
         if welcome_message_custom_text:
-            fence = get_unused_fence(welcome_message_custom_text)
-            welcome_bot_custom_message_intro_string = _("""
-The administrators for this organization would also like to share the following information:""")
-
-            welcome_bot_custom_message_string = f"""
-{welcome_bot_custom_message_intro_string}
-{fence}quote
-{welcome_message_custom_text}
-{fence}
-"""
+            welcome_bot_custom_message_string = get_custom_welcome_message_string(
+                welcome_message_custom_text
+            )
 
         content = _("""
 Hello, and welcome to Zulip!👋 {inform_about_tracked_onboarding_messages_text}

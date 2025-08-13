@@ -161,6 +161,12 @@ exports.fixtures = {
         },
     },
 
+    channel_folder__reorder: {
+        type: "channel_folder",
+        op: "reorder",
+        order: [2, 3, 1],
+    },
+
     channel_folder__update: {
         type: "channel_folder",
         op: "update",

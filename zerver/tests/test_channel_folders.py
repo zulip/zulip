@@ -230,7 +230,7 @@ class GetChannelFoldersTest(ChannelFoldersTestCase):
         self.assertEqual(channel_folders_names, ["Frontend", "Backend", "Marketing"])
 
         try_reorder_realm_channel_folders(
-            realm, reversed([item["id"] for item in channel_folders_data])
+            realm, list(reversed([item["id"] for item in channel_folders_data]))
         )
         result = self.client_get("/json/channel_folders")
         channel_folders_data = orjson.loads(result.content)["channel_folders"]

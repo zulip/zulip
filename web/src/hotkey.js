@@ -571,11 +571,11 @@ function handle_popover_events(event_name) {
 
 // Returns true if we handled it, false if the browser should.
 export function process_enter_key(e) {
-    if ($(e.currentTarget).hasClass("trigger-click-on-enter")) {
+    if ($(e.target).hasClass("trigger-click-on-enter")) {
         // If the target has the class "trigger-click-on-enter", explicitly
         // trigger a click event on it to call the associated click handler.
         e.preventDefault();
-        $(e.currentTarget).trigger("click");
+        $(e.target).trigger("click");
         return true;
     }
 
@@ -1127,11 +1127,11 @@ export function process_hotkey(e, hotkey) {
             return true;
         case "query_streams":
             if (pm_list.is_zoomed_in()) {
-                pm_list.focus_pm_search_filter();
+                sidebar_ui.focus_pm_search_filter();
             } else if (stream_list.is_zoomed_in()) {
-                topic_list.focus_topic_search_filter();
+                sidebar_ui.focus_topic_search_filter();
             } else {
-                stream_list.initiate_search();
+                sidebar_ui.initiate_search();
             }
             return true;
         case "query_users":

@@ -15,10 +15,10 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-07-30 13:46+0000\n"
-"PO-Revision-Date: 2025-07-26 22:07+0000\n"
-"Last-Translator: Alex Vandiver <alexmv@zulip.com>\n"
-"Language-Team: Arabic <https://hosted.weblate.org/projects/zulip/django/ar/"
-">\n"
+"PO-Revision-Date: 2025-08-08 21:29+0000\n"
+"Last-Translator: Anders Kaseorg <andersk@mit.edu>\n"
+"Language-Team: Arabic <https://hosted.weblate.org/projects/zulip/django/ar/>"
+"\n"
 "Language: ar\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -161,7 +161,7 @@ msgid ""
 "page. To complete the upgrade, please contact {email}."
 msgstr ""
 "الفواتير المتخطية {max_licenses} رخصة لا يمكن معالجتها في هذه الصفحة. لإكمال "
-"التحديث, من فضلك اتصل ب {email}. "
+"التحديث, من فضلك اتصل ب {email}."
 
 #: corporate/lib/stripe.py:357
 msgid "No payment method on file."
@@ -755,7 +755,7 @@ msgstr "حد معدل تجاوز"
 #: templates/corporate/billing/remote_server_rate_limit_exceeded.html:11
 #: templates/zerver/portico_error_pages/rate_limit_exceeded.html:11
 msgid "Rate limit exceeded."
-msgstr "تم تجاوز حد المعدل. "
+msgstr "تم تجاوز حد المعدل."
 
 #: templates/corporate/billing/remote_server_rate_limit_exceeded.html:13
 msgid ""
@@ -1584,8 +1584,7 @@ msgstr "ضبط خصوصية البريد الإلكتروني"
 msgid ""
 "Zulip lets you control which roles in the organization can view your email "
 "address."
-msgstr ""
-"زوليب يسمح لك باختيار الأدوار التي يمكنها رؤية عنوان بريدك الإلكتروني. "
+msgstr "زوليب يسمح لك باختيار الأدوار التي يمكنها رؤية عنوان بريدك الإلكتروني."
 
 #: templates/zerver/change_email_address_visibility_modal.html:13
 msgid ""
@@ -1809,7 +1808,7 @@ msgstr "رمز غير صحيح."
 
 #: templates/zerver/desktop_login.html:28
 msgid "Token accepted.  Logging you in…"
-msgstr "تم قبول الرمز. جارٍ تسجيل دخولك ..."
+msgstr "تم قبول الرمز. جارٍ تسجيل دخولك…"
 
 #: templates/zerver/desktop_redirect.html:5
 msgid "Log in to desktop app"
@@ -1967,7 +1966,7 @@ msgid ""
 "Questions? <a href=\"mailto:%(support_email)s\">Contact us</a> — we'd love "
 "to help!"
 msgstr ""
-"لديك أسئلة؟ <a href=\"mailto:%(support_email)s\">تواصل معنا</a>  — نحب أن "
+"لديك أسئلة؟ <a href=\"mailto:%(support_email)s\">تواصل معنا</a> — نحب أن "
 "نساعد!"
 
 #: templates/zerver/emails/account_registered.subject.txt:2
@@ -2167,8 +2166,7 @@ msgstr "انقر فوق الرابط أدناه لإكمال التسجيل."
 msgid ""
 "Do you have questions or feedback to share? Contact us at %(support_email)s "
 "— we'd love to help!"
-msgstr ""
-"هل لديك أسئلة أو تعليق؟ اتصل بنا على %(support_email)s  — نحب أن نساعد!"
+msgstr "هل لديك أسئلة أو تعليق؟ اتصل بنا على %(support_email)s — نحب أن نساعد!"
 
 #: templates/zerver/emails/custom_email_base.pre.html:19
 #: templates/zerver/emails/custom_email_base.pre.manage_preferences_block.txt:8
@@ -2370,7 +2368,7 @@ msgid ""
 "organizations:"
 msgstr ""
 "يحتوي عنوان بريدك الإلكتروني %(email)s على حسابات لدى منظمات زوليب السحابية "
-"التالية: "
+"التالية:"
 
 #: templates/zerver/emails/find_team.html:14
 #: templates/zerver/emails/find_team.txt:7
@@ -2541,7 +2539,7 @@ msgid ""
 "Do you have questions or feedback to share? <a href=\"mailto:"
 "%(email)s\">Contact us</a> — we'd love to help!"
 msgstr ""
-"هل لديك أسئلة أو تعليق؟ <a href=\"mailto:%(email)s\">اتصل بنا</a>  — نحب أن "
+"هل لديك أسئلة أو تعليق؟ <a href=\"mailto:%(email)s\">اتصل بنا</a> — نحب أن "
 "نساعد!"
 
 #: templates/zerver/emails/missed_message.html:29
@@ -2904,8 +2902,7 @@ msgid ""
 "organizations like yours!"
 msgstr ""
 "أثناء بدايتك مع زوليب, نود أن نساعدك في اكتشاف كيف يمكن أن يعمل زوليب ملائما "
-"لإحتياجاتك.\n"
-"اقرأ هذا الدليل لميزات زوليب للمنظمات مثل منظمتك!"
+"لإحتياجاتك. اقرأ هذا الدليل لميزات زوليب للمنظمات مثل منظمتك!"
 
 #: templates/zerver/emails/onboarding_zulip_guide.html:13
 #: templates/zerver/emails/onboarding_zulip_guide.txt:4
@@ -3168,7 +3165,7 @@ msgstr ""
 msgid ""
 "Your Zulip organization, %(realm_name)s, was deactivated on "
 "%(localized_date)s."
-msgstr "تم تعطيل منظمة زوليب الخاصة بك, %(realm_name)s, في %(localized_date)s "
+msgstr "تم تعطيل منظمة زوليب الخاصة بك, %(realm_name)s, في %(localized_date)s"
 
 #: templates/zerver/emails/realm_deactivated.html:21
 #: templates/zerver/emails/realm_deactivated.txt:13
@@ -3195,7 +3192,7 @@ msgstr ""
 #: templates/zerver/emails/realm_deactivated.subject.txt:1
 #, python-format
 msgid "Your Zulip organization %(realm_name)s has been deactivated"
-msgstr "منظمة زوليب %(realm_name)s تم تعطيلها "
+msgstr "منظمة زوليب %(realm_name)s تم تعطيلها"
 
 #: templates/zerver/emails/realm_reactivation.html:8
 #: templates/zerver/emails/realm_reactivation.txt:1
@@ -3211,7 +3208,7 @@ msgid ""
 "deactivated Zulip organization hosted at %(realm_url)s."
 msgstr ""
 "أحد المديرين قام بطلب إعادة تفعيل منظمة زوليب التي تم تعطيلها مسبقاً, "
-"المستضافة على %(realm_url)s  "
+"المستضافة على %(realm_url)s."
 
 #: templates/zerver/emails/realm_reactivation.html:13
 msgid "Click the button below to reactivate your organization."
@@ -3502,7 +3499,7 @@ msgstr ""
 
 #: templates/zerver/footer.html:55
 msgid "Installing a Zulip server"
-msgstr "تثبيت خادم \"زوليب\" "
+msgstr "تثبيت خادم \"زوليب\""
 
 #: templates/zerver/footer.html:60
 msgid "Upgrading a Zulip server"
@@ -4118,7 +4115,7 @@ msgstr "ماالذي تهتم به؟"
 
 #: templates/zerver/register.html:202
 msgid "How did you first hear about Zulip?"
-msgstr "كيف سمعت أول مرة عن زوليب؟ "
+msgstr "كيف سمعت أول مرة عن زوليب؟"
 
 #: templates/zerver/register.html:204
 msgid ""
@@ -4305,9 +4302,9 @@ msgid ""
 "href=\"mailto:%(support_email)s\">email us</a> and we'll get this squared "
 "away!"
 msgstr ""
-"من فضلك تأكد من أن لديك الرابط بالكامل و أعد المحاول, أو <a href=\"mailto:"
-"%(support_email)s\">ارسل لنا عبر البريد الإلكتروني</a>  و سوف نقوم بمعالجة "
-"هذا الأمر!"
+"من فضلك تأكد من أن لديك الرابط بالكامل و أعد المحاول, أو <a href="
+"\"mailto:%(support_email)s\">ارسل لنا عبر البريد الإلكتروني</a> و سوف نقوم "
+"بمعالجة هذا الأمر!"
 
 #: templates/zerver/unsubscribe_success.html:4
 #: templates/zerver/unsubscribe_success.html:14
@@ -4320,7 +4317,7 @@ msgid ""
 "You've successfully unsubscribed from Zulip %(subscription_type)s emails for "
 "<a href=\"%(realm_url)s\">%(realm_name)s</a>."
 msgstr ""
-"لقد قمت  بإلغاء الاشتراك بنجاح من زوليب %(subscription_type)s لرسائل البريد "
+"لقد قمت بإلغاء الاشتراك بنجاح من زوليب %(subscription_type)s لرسائل البريد "
 "الإلكتروني ل <a href=\"%(realm_url)s\">%(realm_name)s</a>."
 
 #: templates/zerver/unsubscribe_success.html:27
@@ -4623,7 +4620,7 @@ msgid ""
 "it."
 msgstr ""
 "البوت الخاص بك {bot_identity} حاول إرسال رسالة إلي القناة {channel_name}, و "
-"لكن تلك القناة غير موجودة. اضغط ({new_channel_link})[هنا] لإنشائها"
+"لكن تلك القناة غير موجودة. اضغط [هنا]({new_channel_link}) لإنشائها."
 
 #: zerver/actions/message_send.py:1549
 #, python-brace-format
@@ -4690,7 +4687,7 @@ msgstr ""
 
 #: zerver/actions/scheduled_messages.py:183
 msgid "Scheduled message was already sent"
-msgstr "الرسالة المجدولة بالفعل تم ارسالها "
+msgstr "الرسالة المجدولة بالفعل تم ارسالها"
 
 #: zerver/actions/scheduled_messages.py:347
 msgid "Message could not be sent at the scheduled time."
@@ -4706,7 +4703,7 @@ msgstr ""
 
 #: zerver/actions/scheduled_messages.py:403
 msgid "[View scheduled messages](#scheduled)"
-msgstr "(scheduled#)[عرض الرسائل المجدولة]"
+msgstr "[عرض الرسائل المجدولة](#scheduled)"
 
 #: zerver/actions/streams.py:125
 msgid "Channel is already deactivated"
@@ -5312,7 +5309,7 @@ msgstr "تم تعطيل تسجيل خدمة إرسال الإشعارات إلى
 
 #: zerver/lib/exceptions.py:366
 msgid "Password authentication is disabled in this organization"
-msgstr "تم تعطيل مصادقة كلمة المرور في هذه المنظمة "
+msgstr "تم تعطيل مصادقة كلمة المرور في هذه المنظمة"
 
 #: zerver/lib/exceptions.py:375
 msgid "Your password has been disabled and needs to be reset"
@@ -5793,8 +5790,8 @@ msgstr ""
 "\n"
 "إليك بعض الرسايل اللتي فهمتها : {bot_commands}\n"
 "\n"
-"اقرأ (help/getting-started-with-zulip/)[ دليل بداية الاستخدام],\n"
-"أو تصفح (/help/)[مركز المساعدة] لتعرف المزيد!\n"
+"اقرأ [ دليل بداية الاستخدام](/help/getting-started-with-zulip),\n"
+"أو تصفح [مركز المساعدة](/help/) لتعرف المزيد!\n"
 
 #: zerver/lib/onboarding.py:205
 #, python-brace-format
@@ -6060,7 +6057,7 @@ msgstr ""
 #: zerver/lib/request.py:70
 #, python-brace-format
 msgid "Can't decide between '{var_name1}' and '{var_name2}' arguments"
-msgstr "لا يمكن الاختيار بين الوسيطين '{var_name1}' و '{var_name2}' "
+msgstr "لا يمكن الاختيار بين الوسيطين '{var_name1}' و '{var_name2}'"
 
 #: zerver/lib/request.py:83 zerver/lib/streams.py:679 zerver/views/typing.py:47
 #, python-brace-format
@@ -6240,7 +6237,7 @@ msgstr "{var_name} طويل جدًا (الحد: {max_length} حرفًا)"
 #: zerver/lib/typed_endpoint.py:337
 #, python-brace-format
 msgid "{var_name} is too short."
-msgstr "{var_name}  قصير جدا"
+msgstr "{var_name} قصير جدا"
 
 #: zerver/lib/typed_endpoint.py:338 zerver/lib/validator.py:56
 #: zerver/lib/validator.py:118
@@ -6251,12 +6248,12 @@ msgstr "{var_name} ليس نص"
 #: zerver/lib/typed_endpoint.py:340
 #, python-brace-format
 msgid "{var_name} has invalid format"
-msgstr "{var_name}  لديه صيغة غير صالحة"
+msgstr "{var_name} لديه صيغة غير صالحة"
 
 #: zerver/lib/typed_endpoint.py:341
 #, python-brace-format
 msgid "{var_name} is not length {length}"
-msgstr "{var_name}  ليس بطول {length}"
+msgstr "{var_name} ليس بطول {length}"
 
 #: zerver/lib/typed_endpoint.py:375
 #, python-brace-format
@@ -6547,7 +6544,7 @@ msgstr "يجب أن يكون هناك شرطة مائلة في البداية ف
 #: zerver/lib/zcommand.py:73
 #, python-brace-format
 msgid "No such command: {command}"
-msgstr "أمر غير موجود:  {command}"
+msgstr "أمر غير موجود: {command}"
 
 #: zerver/lib/zulip_update_announcements.py:691
 msgid "`zulip_update_announcements_stream` is unexpectedly deactivated."
@@ -6893,7 +6890,7 @@ msgstr "نوع الحقل غير صالح."
 #: zerver/views/custom_profile_fields.py:186
 #: zerver/views/custom_profile_fields.py:255
 msgid "Only 2 custom profile fields can be displayed in the profile summary."
-msgstr "يمكن إظهار فقط خانتين مخصصتين من الملف الشخصي في ملخص الملف الشخصي. "
+msgstr "يمكن إظهار فقط خانتين مخصصتين من الملف الشخصي في ملخص الملف الشخصي."
 
 #: zerver/views/custom_profile_fields.py:215
 #: zerver/views/custom_profile_fields.py:286

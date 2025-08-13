@@ -31,13 +31,11 @@ class WelcomeBotCustomMessageTest(ZulipTestCase):
         response_dict = self.assert_json_success(result)
         welcome_bot_custom_message_id = response_dict["message_id"]
 
-        received_welcome_bot_message = self.get_second_to_last_message()
-        received_welcome_bot_custom_message = self.get_last_message()
+        # Make sure that only message with custom text is sent.
+        previous_message = self.get_second_to_last_message()
+        self.assertNotEqual(previous_message.sender.email, "welcome-bot@zulip.com")
 
-        self.assertEqual(received_welcome_bot_message.sender.email, "welcome-bot@zulip.com")
-        self.assertTrue(
-            received_welcome_bot_message.content.startswith("Hello, and welcome to Zulip!")
-        )
+        received_welcome_bot_custom_message = self.get_last_message()
 
         self.assertEqual(received_welcome_bot_custom_message.sender.email, "welcome-bot@zulip.com")
         self.assertIn(welcome_message_custom_text, received_welcome_bot_custom_message.content)

@@ -33,6 +33,7 @@ from zerver.actions.channel_folders import (
     do_change_channel_folder_description,
     do_change_channel_folder_name,
     do_unarchive_channel_folder,
+    try_reorder_realm_channel_folders,
 )
 from zerver.actions.create_user import do_create_user, do_reactivate_user
 from zerver.actions.custom_profile_fields import (
@@ -169,6 +170,7 @@ from zerver.lib.event_schema import (
     check_attachment_remove,
     check_attachment_update,
     check_channel_folder_add,
+    check_channel_folder_reorder,
     check_channel_folder_update,
     check_custom_profile_fields,
     check_default_stream_groups,
@@ -181,14 +183,15 @@ from zerver.lib.event_schema import (
     check_has_zoom_token,
     check_heartbeat,
     check_invites_changed,
+    check_legacy_presence,
     check_message,
+    check_modern_presence,
     check_muted_topics,
     check_muted_users,
     check_navigation_view_add,
     check_navigation_view_remove,
     check_navigation_view_update,
     check_onboarding_steps,
-    check_presence,
     check_push_device,
     check_reaction_add,
     check_reaction_remove,
@@ -358,6 +361,7 @@ class BaseAction(ZulipTestCase):
         include_deactivated_groups: bool = False,
         archived_channels: bool = False,
         allow_empty_topic_name: bool = True,
+        simplified_presence_events: bool = False,
     ) -> Iterator[list[dict[str, Any]]]:
         """
         Make sure we have a clean slate of client descriptors for these tests.
@@ -390,6 +394,7 @@ class BaseAction(ZulipTestCase):
                 user_list_incomplete=user_list_incomplete,
                 include_deactivated_groups=include_deactivated_groups,
                 archived_channels=archived_channels,
+                simplified_presence_events=simplified_presence_events,
             )
         )
 
@@ -455,6 +460,7 @@ class BaseAction(ZulipTestCase):
             user_list_incomplete=user_list_incomplete,
             include_deactivated_groups=include_deactivated_groups,
             archived_channels=archived_channels,
+            simplified_presence_events=simplified_presence_events,
         )
         post_process_state(
             self.user_profile, hybrid_state, notification_settings_null, allow_empty_topic_name
@@ -488,6 +494,7 @@ class BaseAction(ZulipTestCase):
             user_list_incomplete=user_list_incomplete,
             include_deactivated_groups=include_deactivated_groups,
             archived_channels=archived_channels,
+            simplified_presence_events=simplified_presence_events,
         )
         post_process_state(
             self.user_profile, normal_state, notification_settings_null, allow_empty_topic_name
@@ -1818,7 +1825,7 @@ class NormalActionsTest(BaseAction):
         check_navigation_view_remove("events[0]", events[0])
         self.assertEqual(events[0]["fragment"], "inbox")
 
-    def test_presence_events(self) -> None:
+    def test_legacy_presence_events(self) -> None:
         with self.verify_action(slim_presence=False) as events:
             do_update_user_presence(
                 self.user_profile,
@@ -1827,7 +1834,7 @@ class NormalActionsTest(BaseAction):
                 UserPresence.LEGACY_STATUS_ACTIVE_INT,
             )
 
-        check_presence(
+        check_legacy_presence(
             "events[0]",
             events[0],
             has_email=True,
@@ -1843,13 +1850,23 @@ class NormalActionsTest(BaseAction):
                 UserPresence.LEGACY_STATUS_ACTIVE_INT,
             )
 
-        check_presence(
+        check_legacy_presence(
             "events[0]",
             events[0],
             has_email=False,
             presence_key="website",
             status="active",
         )
+
+    def test_modern_presence_events(self) -> None:
+        with self.verify_action(simplified_presence_events=True) as events:
+            do_update_user_presence(
+                self.user_profile,
+                get_client("ZulipAndroid/1.0"),
+                timezone_now(),
+                UserPresence.LEGACY_STATUS_ACTIVE_INT,
+            )
+        check_modern_presence("events[0]", events[0], self.user_profile.id)
 
     def test_presence_events_multiple_clients(self) -> None:
         now = timezone_now()
@@ -1889,7 +1906,7 @@ class NormalActionsTest(BaseAction):
                 UserPresence.LEGACY_STATUS_ACTIVE_INT,
             )
 
-        check_presence(
+        check_legacy_presence(
             "events[0]",
             events[0],
             has_email=True,
@@ -2038,7 +2055,7 @@ class NormalActionsTest(BaseAction):
             events[2],
             {"away", "status_text", "emoji_name", "emoji_code", "reaction_type"},
         )
-        check_presence(
+        check_legacy_presence(
             "events[3]",
             events[3],
             has_email=True,
@@ -2066,7 +2083,7 @@ class NormalActionsTest(BaseAction):
             events[2],
             {"away", "status_text", "emoji_name", "emoji_code", "reaction_type"},
         )
-        check_presence(
+        check_legacy_presence(
             "events[3]",
             events[3],
             has_email=True,
@@ -2090,7 +2107,7 @@ class NormalActionsTest(BaseAction):
         check_user_settings_update("events[0]", events[0])
         check_update_global_notifications("events[1]", events[1], not away_val)
         check_user_status("events[2]", events[2], {"away"})
-        check_presence(
+        check_legacy_presence(
             "events[3]",
             events[3],
             has_email=True,
@@ -2147,7 +2164,7 @@ class NormalActionsTest(BaseAction):
                 reaction_type=None,
                 client_id=client.id,
             )
-        check_presence(
+        check_legacy_presence(
             "events[0]",
             events[0],
             has_email=True,
@@ -3176,7 +3193,7 @@ class NormalActionsTest(BaseAction):
                 )
             check_user_settings_update("events[0]", events[0])
             check_update_global_notifications("events[1]", events[1], val)
-            check_presence(
+            check_legacy_presence(
                 "events[2]", events[2], has_email=True, presence_key="website", status="active"
             )
 
@@ -5647,3 +5664,30 @@ class ChannelFolderActionTest(BaseAction):
         check_channel_folder_update("events[0]", events[0], {"is_archived"})
         self.assertEqual(events[0]["channel_folder_id"], channel_folder.id)
         self.assertFalse(events[0]["data"]["is_archived"])
+
+    def test_channel_folders_reordering_event(self) -> None:
+        frontend_folder = check_add_channel_folder(
+            self.user_profile.realm,
+            "Frontend",
+            "Channels for frontend discussion",
+            acting_user=self.user_profile,
+        )
+        backend_folder = check_add_channel_folder(
+            self.user_profile.realm,
+            "Backend",
+            "Channels for backend discussion",
+            acting_user=self.user_profile,
+        )
+        engineering_folder = check_add_channel_folder(
+            self.user_profile.realm,
+            "Engineering",
+            "",
+            acting_user=self.user_profile,
+        )
+
+        new_order = [backend_folder.id, engineering_folder.id, frontend_folder.id]
+        with self.verify_action() as events:
+            try_reorder_realm_channel_folders(self.user_profile.realm, new_order)
+
+        check_channel_folder_reorder("events[0]", events[0])
+        self.assertEqual(events[0]["order"], new_order)

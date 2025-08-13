@@ -715,9 +715,21 @@ export function initialize(): void {
     }
 }
 
+export function set_channel_folder_dropdown_value(folder_id: number): void {
+    assert(folder_widget !== undefined);
+    folder_widget.render(folder_id);
+}
+
 export function maybe_reset_channel_folder_dropdown(archived_folder_id: number): void {
     assert(folder_widget !== undefined);
     if (folder_widget.value() === archived_folder_id) {
-        folder_widget.render(settings_config.no_folder_selected);
+        set_channel_folder_dropdown_value(settings_config.no_folder_selected);
     }
+}
+
+export function get_channel_folder_dropdown_value(): number {
+    assert(folder_widget !== undefined);
+    const value = folder_widget.value()!;
+    assert(typeof value === "number");
+    return value;
 }

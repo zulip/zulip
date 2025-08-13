@@ -131,7 +131,7 @@ export function dispatch_normal_event(event) {
                     if (event.data.name !== undefined) {
                         inbox_ui.complete_rerender();
                         stream_list.update_streams_sidebar();
-                        stream_ui_updates.update_channel_folder_name(event.channel_folder_id);
+                        stream_settings_ui.update_channel_folder_name(event.channel_folder_id);
                     }
 
                     if (event.data.is_archived !== undefined) {
@@ -140,6 +140,12 @@ export function dispatch_normal_event(event) {
                         );
                     }
                     settings_folders.update_folder_row(event);
+                    break;
+                case "reorder":
+                    channel_folders.reorder(event.order);
+                    stream_list.update_streams_sidebar();
+                    settings_folders.populate_channel_folders();
+                    inbox_ui.complete_rerender();
                     break;
                 default:
                     blueslip.error("Unexpected event type channel_folder/" + event.op);
@@ -1016,7 +1022,7 @@ export function dispatch_normal_event(event) {
                 starred_messages_ui.rerender_ui();
             }
             if (event.property === "web_left_sidebar_unreads_count_summary") {
-                sidebar_ui.update_unread_counts_visibility();
+                stream_list.update_unread_counts_visibility();
             }
             if (event.property === "web_left_sidebar_show_channel_folders") {
                 stream_list.build_stream_list(true);

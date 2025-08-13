@@ -2,10 +2,12 @@ import assert from "minimalistic-assert";
 
 import * as channel_folders from "./channel_folders.ts";
 import {$t} from "./i18n.ts";
+import * as narrow_state from "./narrow_state.ts";
 import * as settings_config from "./settings_config.ts";
 import * as stream_data from "./stream_data.ts";
 import * as sub_store from "./sub_store.ts";
 import type {StreamSubscription} from "./sub_store.ts";
+import * as topic_list_data from "./topic_list_data.ts";
 import {user_settings} from "./user_settings.ts";
 import * as util from "./util.ts";
 
@@ -16,10 +18,10 @@ export type StreamListRow =
     | {
           type: "stream";
           stream_id: number;
-          inactive: boolean;
+          inactive_or_muted: boolean;
       }
     | {
-          type: "inactive_toggle";
+          type: "inactive_or_muted_toggle";
           section_id: string;
       };
 let all_rows: StreamListRow[] = [];
@@ -33,6 +35,10 @@ let filter_out_inactives = false;
 
 export function get_stream_ids(): number[] {
     return all_rows.flatMap((row) => (row.type === "stream" ? row.stream_id : []));
+}
+
+export function section_ids(): string[] {
+    return current_sections.map((section) => section.id);
 }
 
 function current_section_ids_for_streams(): Map<number, StreamListSection> {
@@ -107,7 +113,7 @@ export type StreamListSection = {
     section_title: string;
     streams: number[];
     muted_streams: number[];
-    inactive_streams: number[]; // Only used for folder sections
+    inactive_streams: number[];
     order?: number; // Only used for folder sections
 };
 
@@ -116,16 +122,47 @@ type StreamListSortResult = {
     sections: StreamListSection[];
 };
 
-export function sort_groups(stream_ids: number[], search_term: string): StreamListSortResult {
+export function sort_groups(
+    all_subscribed_stream_ids: number[],
+    search_term: string,
+): StreamListSortResult {
     const stream_id_to_name = (stream_id: number): string => sub_store.get(stream_id)!.name;
     // Use -, _, : and / as word separators apart from the default space character
     const word_separator_regex = /[\s/:_-]/;
-    stream_ids = util.filter_by_word_prefix_match(
-        stream_ids,
+    let matching_stream_ids = util.filter_by_word_prefix_match(
+        all_subscribed_stream_ids,
         search_term,
         stream_id_to_name,
         word_separator_regex,
     );
+
+    const current_channel_id = narrow_state.stream_id(narrow_state.filter(), true);
+    if (
+        current_channel_id !== undefined &&
+        stream_data.is_subscribed(current_channel_id) &&
+        !matching_stream_ids.includes(current_channel_id) &&
+        // If any of the topics of the channel match the search term, we need to
+        // include the channel in the list of streams.
+        topic_list_data.get_list_info(current_channel_id, false, (topic_names) =>
+            topic_list_data.filter_topics_by_search_term(topic_names, search_term),
+        ).items.length > 0
+    ) {
+        matching_stream_ids.push(current_channel_id);
+    }
+
+    // If the channel folder matches the search term, include all channels
+    // of that folder.
+    if (user_settings.web_left_sidebar_show_channel_folders && search_term) {
+        matching_stream_ids = [
+            ...new Set([
+                ...matching_stream_ids,
+                ...channel_folders.get_channels_in_folders_matching_search_term_in_folder_name(
+                    search_term,
+                    new Set(all_subscribed_stream_ids),
+                ),
+            ]),
+        ];
+    }
 
     const pinned_section: StreamListSection = {
         id: "pinned-streams",
@@ -146,7 +183,7 @@ export function sort_groups(stream_ids: number[], search_term: string): StreamLi
 
     const folder_sections = new Map<number, StreamListSection>();
 
-    for (const stream_id of stream_ids) {
+    for (const stream_id of matching_stream_ids) {
         const sub = sub_store.get(stream_id);
         assert(sub);
         if (sub.is_archived) {
@@ -156,6 +193,8 @@ export function sort_groups(stream_ids: number[], search_term: string): StreamLi
             if (sub.is_muted) {
                 pinned_section.muted_streams.push(stream_id);
             } else {
+                // Inactive channels aren't treated differently when pinned,
+                // since the user wants chose to put them in the pinned section.
                 pinned_section.streams.push(stream_id);
             }
         } else if (user_settings.web_left_sidebar_show_channel_folders && sub.folder_id) {
@@ -223,23 +262,23 @@ export function sort_groups(stream_ids: number[], search_term: string): StreamLi
         current_sections = new_sections;
         all_rows = [];
         for (const section of current_sections) {
-            for (const stream_id of [...section.streams, ...section.muted_streams]) {
+            for (const stream_id of section.streams) {
                 all_rows.push({
                     type: "stream",
                     stream_id,
-                    inactive: false,
+                    inactive_or_muted: false,
                 });
             }
-            for (const stream_id of section.inactive_streams) {
+            for (const stream_id of [...section.muted_streams, ...section.inactive_streams]) {
                 all_rows.push({
                     type: "stream",
                     stream_id,
-                    inactive: true,
+                    inactive_or_muted: true,
                 });
             }
-            if (section.inactive_streams.length > 0) {
+            if (section.inactive_streams.length > 0 || section.muted_streams.length > 0) {
                 all_rows.push({
-                    type: "inactive_toggle",
+                    type: "inactive_or_muted_toggle",
                     section_id: section.id,
                 });
             }
@@ -259,7 +298,7 @@ export function first_row(): StreamListRow | undefined {
 function is_visible_row(
     row: StreamListRow,
     section_id_map: Map<number, StreamListSection>,
-    sections_showing_inactive: Set<string>,
+    sections_showing_inactive_or_muted: Set<string>,
     collapsed_sections: Set<string>,
     active_stream_id: number | undefined,
 ): boolean {
@@ -270,10 +309,10 @@ function is_visible_row(
         if (collapsed_sections.has(section.id) && active_stream_id !== stream_id) {
             return false;
         }
-        if (!sections_showing_inactive.has(section.id) && row.inactive) {
+        if (!sections_showing_inactive_or_muted.has(section.id) && row.inactive_or_muted) {
             return false;
         }
-    } else if (row.type === "inactive_toggle" && collapsed_sections.has(row.section_id)) {
+    } else if (row.type === "inactive_or_muted_toggle" && collapsed_sections.has(row.section_id)) {
         return false;
     }
     return true;
@@ -281,7 +320,7 @@ function is_visible_row(
 
 export function prev_row(
     row: StreamListRow,
-    sections_showing_inactive: Set<string>,
+    sections_showing_inactive_or_muted: Set<string>,
     collapsed_sections: Set<string>,
     active_stream_id: number | undefined,
 ): StreamListRow | undefined {
@@ -294,7 +333,7 @@ export function prev_row(
             is_visible_row(
                 prev_row,
                 section_id_map,
-                sections_showing_inactive,
+                sections_showing_inactive_or_muted,
                 collapsed_sections,
                 active_stream_id,
             )
@@ -307,7 +346,7 @@ export function prev_row(
 
 export function next_row(
     row: StreamListRow,
-    sections_showing_inactive: Set<string>,
+    sections_showing_inactive_or_muted: Set<string>,
     collapsed_sections: Set<string>,
     active_stream_id: number | undefined,
 ): StreamListRow | undefined {
@@ -320,7 +359,7 @@ export function next_row(
             is_visible_row(
                 next_row,
                 section_id_map,
-                sections_showing_inactive,
+                sections_showing_inactive_or_muted,
                 collapsed_sections,
                 active_stream_id,
             )

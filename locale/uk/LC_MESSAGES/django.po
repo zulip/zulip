@@ -14,18 +14,18 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-07-30 13:46+0000\n"
-"PO-Revision-Date: 2025-07-26 22:07+0000\n"
-"Last-Translator: Максим Горпиніч <gorpinicmaksim5@gmail.com>\n"
+"PO-Revision-Date: 2025-08-07 23:52+0000\n"
+"Last-Translator: Alex Vandiver <alexmv@zulip.com>\n"
 "Language-Team: Ukrainian <https://hosted.weblate.org/projects/zulip/django/"
 "uk/>\n"
 "Language: uk\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=4; plural=(n % 1 == 0 && n % 10 == 1 && n % 100 != "
-"11 ? 0 : n % 1 == 0 && n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 12 || n % "
-"100 > 14) ? 1 : n % 1 == 0 && (n % 10 ==0 || (n % 10 >=5 && n % 10 <=9) || "
-"(n % 100 >=11 && n % 100 <=14 )) ? 2: 3);\n"
+"Plural-Forms: nplurals=4; plural=(n % 1 == 0 && n % 10 == 1 && n % 100 != 11 "
+"? 0 : n % 1 == 0 && n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 12 || n % 100 > "
+"14) ? 1 : n % 1 == 0 && (n % 10 ==0 || (n % 10 >=5 && n % 10 <=9) || (n % "
+"100 >=11 && n % 100 <=14 )) ? 2: 3);\n"
 "X-Generator: Weblate 5.13-dev\n"
 
 #: analytics/views/stats.py:109 zerver/decorator.py:682 zerver/decorator.py:700
@@ -83,8 +83,8 @@ msgid ""
 "users to join."
 msgstr ""
 "В вашій організації не залишилось ліцензій Zulip, і вона більше не може "
-"приймати нових користувачів. Будь ласка, [збільште кількість ліцензій] "
-"({billing_page_link}) або [ввімкніть неактивних користувачів] "
+"приймати нових користувачів. Будь ласка, [збільште кількість ліцензій]"
+"({billing_page_link}) або [ввімкніть неактивних користувачів]"
 "({deactivate_user_help_page_link}), щоб дозволити приєднатися новим "
 "користувачам."
 
@@ -96,9 +96,9 @@ msgid ""
 "({deactivate_user_help_page_link}) to allow more than one user to join."
 msgstr ""
 "В вашій організації залишилась тільки одна ліцензія Zulip. Ви можете "
-"[збільшити кількість ліцензій] ({billing_page_link}) або [відключити "
-"неактивних користувачів] ({deactivate_user_help_page_link}), щоб дозволити "
-"приєднатися більше ніж одному користувачу."
+"[збільшити кількість ліцензій]({billing_page_link}) або "
+"[відключити неактивних користувачів]({deactivate_user_help_page_link}), щоб "
+"дозволити приєднатися більше ніж одному користувачу."
 
 #: corporate/lib/registration.py:47
 #, python-brace-format
@@ -108,9 +108,9 @@ msgid ""
 "({deactivate_user_help_page_link}) to allow more than two users to join."
 msgstr ""
 "В вашій організації залишилось тільки дві ліцензії Zulip. Ви можете "
-"[збільшити кількість ліцензій] ({billing_page_link}) або [відключити "
-"неактивних користувачів] ({deactivate_user_help_page_link}), щоб дозволити "
-"приєднатися більш ніж двум користувачам."
+"[збільшити кількість ліцензій]({billing_page_link}) або "
+"[відключити неактивних користувачів]({deactivate_user_help_page_link}), щоб "
+"дозволити приєднатися більш ніж двум користувачам."
 
 #: corporate/lib/registration.py:52
 #, python-brace-format
@@ -120,9 +120,9 @@ msgid ""
 "({deactivate_user_help_page_link}) to allow more than three users to join."
 msgstr ""
 "В вашій організації залишилось тільки три ліцензії Zulip. Ви можете "
-"[збільшити кількість ліцензій] ({billing_page_link}) або [відключити "
-"неактивних користувачів] ({deactivate_user_help_page_link}), щоб дозволити "
-"приєднатися більш ніж трьом користувачам."
+"[збільшити кількість ліцензій]({billing_page_link}) або "
+"[відключити неактивних користувачів]({deactivate_user_help_page_link}), щоб "
+"дозволити приєднатися більш ніж трьом користувачам."
 
 #: corporate/lib/registration.py:63
 #, python-brace-format
@@ -4928,7 +4928,7 @@ msgstr ""
 
 #: zerver/actions/scheduled_messages.py:403
 msgid "[View scheduled messages](#scheduled)"
-msgstr "[Переглянути заплановані повідомлення](#заплановано)"
+msgstr "[Переглянути заплановані повідомлення](#scheduled)"
 
 #: zerver/actions/streams.py:125
 msgid "Channel is already deactivated"
@@ -5206,10 +5206,8 @@ msgid "Verified that you're a human user!"
 msgstr "Підтверджено, що ви користувач-людина!"
 
 #: zerver/forms.py:380
-#, fuzzy
-#| msgid "Verifying that you're not a bot..."
 msgid "Verifying that you're not a bot…"
-msgstr "Підтверджую, що ви не бот..."
+msgstr "Підтверджуємо, що ви не бот…"
 
 #: zerver/forms.py:402 zerver/forms.py:413 zerver/forms.py:418
 #: zerver/forms.py:425
@@ -5217,10 +5215,8 @@ msgid "Validation failed, please try again."
 msgstr "Не вдалося перевірити, спробуйте ще раз."
 
 #: zerver/forms.py:407 zerver/views/antispam.py:29
-#, fuzzy
-#| msgid "Embedded bots are not enabled."
 msgid "Challenges are not enabled."
-msgstr "Вбудовані боти не активовані."
+msgstr "Випробування не ввімкнено."
 
 #: zerver/forms.py:437
 msgid "New password"
@@ -6116,12 +6112,12 @@ msgid ""
 "times, and more.\n"
 msgstr ""
 "\n"
-"Ви можете **відформатувати** своє `повідомлення` за допомогою зручних кнопок "
-"форматування або\n"
+"Ви можете **відформатувати** *своє* `повідомлення` за допомогою зручних "
+"кнопок форматування або\n"
 "ввівши потрібні параметри форматування за допомогою Markdown.\n"
 "\n"
-"Перегляньте [шпаргалку](#форматування-повідомлення), щоб дізнатися про "
-"спойлери, глобальний\n"
+"Перегляньте [шпаргалку](#message-formatting), щоб дізнатися про спойлери, "
+"глобальний\n"
 "час тощо.\n"
 
 #: zerver/lib/onboarding.py:198
@@ -6238,7 +6234,7 @@ msgid ""
 msgstr ""
 "\n"
 "Щоб розпочати нову розмову, виберіть канал на лівій бічній панелі та "
-"натисніть кнопку «+»\n"
+"натисніть кнопку `+`\n"
 "поруч із його назвою.\n"
 
 #: zerver/lib/onboarding.py:339

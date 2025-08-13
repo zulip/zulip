@@ -335,6 +335,29 @@
             }
         }
 
+        #inbox-collapsed-note {
+            display: none;
+            overflow: hidden;
+            max-width: calc(
+                var(--width-inbox-search) +
+                    var(--width-inbox-filters-dropdown) + 0.25em
+            );
+
+            .inbox-collapsed-note-and-button-wrapper {
+                margin-top: 3px;
+                padding-left: 8px;
+
+                .inbox-collpased-note-span {
+                    font-size: 1em;
+                }
+
+                #inbox-expand-all-button {
+                    display: block;
+                    margin-top: 5px;
+                }
+            }
+        }
+
         .inbox-right-part-wrapper {
             display: flex;
             align-items: center;
@@ -394,11 +417,6 @@
         margin-bottom: 1px;
         background-color: transparent;
 
-        .inbox-focus-border {
-            /* Align the folder title with the channel privacy icons; 5px at 16px */
-            padding-left: 0.3125em;
-        }
-
         .inbox-header-name-text,
         .unread_mention_info {
             color: var(--color-folder-header);
@@ -414,6 +432,12 @@
             outline: none;
             /* 16px at 16px / 1em */
             font-size: 1em;
+            /* Align the folder title with the channel privacy icons; 5px at 16px/1em.
+
+            TODO: Reduce the depth of selectors in this file,
+            so that the use of !important becomes unnecessary
+            here. */
+            padding-left: 0.3125em !important;
         }
 
         &:hover {
@@ -500,7 +524,7 @@
     opacity: 0.4;
 }
 
-.dropdown-list-item-common-styles .dropdown-list-bold-selected {
+.dropdown-list-item-common-styles .dropdown-list-text-selected {
     font-weight: 700;
 }
 

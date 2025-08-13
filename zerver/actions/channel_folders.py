@@ -1,5 +1,3 @@
-from collections.abc import Iterable
-
 from django.db import transaction
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
@@ -49,7 +47,7 @@ def check_add_channel_folder(
 
 
 @transaction.atomic(durable=True)
-def try_reorder_realm_channel_folders(realm: Realm, order: Iterable[int]) -> None:
+def try_reorder_realm_channel_folders(realm: Realm, order: list[int]) -> None:
     order_mapping = {_[1]: _[0] for _ in enumerate(order)}
     channel_folders = ChannelFolder.objects.filter(realm=realm)
     for channel_folder in channel_folders:
@@ -58,6 +56,13 @@ def try_reorder_realm_channel_folders(realm: Realm, order: Iterable[int]) -> Non
     for channel_folder in channel_folders:
         channel_folder.order = order_mapping[channel_folder.id]
         channel_folder.save(update_fields=["order"])
+
+    event = dict(
+        type="channel_folder",
+        op="reorder",
+        order=order,
+    )
+    send_event_on_commit(realm, event, active_user_ids(realm.id))
 
 
 def do_send_channel_folder_update_event(

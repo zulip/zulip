@@ -22,6 +22,7 @@ import * as blueslip from "./blueslip.ts";
 import * as bot_data from "./bot_data.ts";
 import * as channel from "./channel.ts";
 import * as channel_folders from "./channel_folders.ts";
+import * as channel_folders_popover from "./channel_folders_popover.ts";
 import * as click_handlers from "./click_handlers.ts";
 import * as color_picker_popover from "./color_picker_popover.ts";
 import * as common from "./common.ts";
@@ -79,6 +80,7 @@ import * as message_view from "./message_view.ts";
 import * as message_view_header from "./message_view_header.ts";
 import * as message_viewport from "./message_viewport.ts";
 import * as modals from "./modals.ts";
+import * as mouse_drag from "./mouse_drag.ts";
 import * as muted_users from "./muted_users.ts";
 import * as narrow_history from "./narrow_history.ts";
 import * as narrow_state from "./narrow_state.ts";
@@ -440,6 +442,7 @@ export async function initialize_everything(state_data) {
        user_settings before setting the theme. Because information
        density is so fundamental, we initialize that first, however. */
     initialize_user_settings(state_data.user_settings);
+    mouse_drag.initialize();
     sidebar_ui.restore_sidebar_toggle_status();
     i18n.initialize({language_list: page_params.language_list});
     timerender.initialize();
@@ -587,6 +590,7 @@ export async function initialize_everything(state_data) {
     stream_popover.initialize();
     color_picker_popover.initialize();
     add_stream_options_popover.initialize();
+    channel_folders_popover.initialize();
     click_handlers.initialize();
     scheduled_messages_overlay_ui.initialize();
     compose_paste.initialize({

@@ -18,12 +18,11 @@ import {
     type RealmGroupSettingNameSupportingAnonymousGroups,
     realm_group_setting_name_supporting_anonymous_groups_schema,
 } from "./group_permission_settings.ts";
-import * as hash_util from "./hash_util.ts";
 import {$t, $t_html, get_language_name} from "./i18n.ts";
 import * as information_density from "./information_density.ts";
 import * as keydown_util from "./keydown_util.ts";
 import * as loading from "./loading.ts";
-import * as message_store from "./message_store.ts";
+import * as people from "./people.ts";
 import * as pygments_data from "./pygments_data.ts";
 import * as realm_icon from "./realm_icon.ts";
 import * as realm_logo from "./realm_logo.ts";
@@ -63,6 +62,8 @@ export function reset(): void {
 }
 
 const DISABLED_STATE_ID = -1;
+
+let unsaved_welcome_message_custom_text = "";
 
 export function maybe_disable_widgets(): void {
     if (current_user.is_owner) {
@@ -362,6 +363,37 @@ function disable_create_user_groups_if_on_limited_plan(): void {
     }
 }
 
+export function maybe_store_unsaved_welcome_message_custom_text(): void {
+    if ($("#org-notifications").find(".save-button[data-status='unsaved']").length === 0) {
+        return;
+    }
+
+    const message_text = $<HTMLTextAreaElement>("#id_realm_welcome_message_custom_text")
+        .val()!
+        .trim();
+    if (message_text.length === 0) {
+        return;
+    }
+
+    unsaved_welcome_message_custom_text = message_text;
+}
+
+function maybe_restore_unsaved_welcome_message_custom_text(): void {
+    if (unsaved_welcome_message_custom_text.length === 0) {
+        return;
+    }
+
+    $("input#id_realm_enable_welcome_message_custom_text").prop("checked", true);
+    settings_components.change_element_block_display_property(
+        "id_realm_welcome_message_custom_text",
+        true,
+    );
+    $("#id_realm_welcome_message_custom_text")
+        .val(unsaved_welcome_message_custom_text)
+        .trigger("input");
+    update_test_welcome_bot_custom_message_button_status();
+}
+
 function set_welcome_message_custom_text_visibility(): void {
     const welcome_message_custom_text_is_configured =
         realm.realm_welcome_message_custom_text.length > 0;
@@ -406,13 +438,9 @@ function update_view_welcome_bot_custom_message_button_status(
     }
 
     assert(message_id !== undefined);
-    $view_message_button.attr("data-message-id", message_id);
     $view_message_button.on("click", (e) => {
         e.preventDefault();
-        const message_id = Number($view_message_button.attr("data-message-id"));
-        const message = message_store.get(message_id);
-        assert(message !== undefined);
-        window.location.href = hash_util.by_conversation_and_time_url(message);
+        window.location.href = `#narrow/dm/${people.WELCOME_BOT.user_id}/near/${message_id}`;
     });
 }
 
@@ -651,6 +679,7 @@ export function discard_realm_property_element_changes(elem: HTMLElement): void 
             set_realm_waiting_period_setting();
             break;
         case "realm_welcome_message_custom_text":
+            unsaved_welcome_message_custom_text = "";
             set_welcome_message_custom_text_visibility();
             break;
         default:
@@ -1105,6 +1134,14 @@ export function save_organization_settings(
         success() {
             $failed_alert_elem.hide();
             settings_components.change_save_button_state($save_button_container, "succeeded");
+            if ("welcome_message_custom_text" in data) {
+                // If we just confirmed a change to welcome_message_custom_text,
+                // clear our stored unsaved value. Notably, we don't do this via
+                // the server_events_dispatch code path, because we don't want
+                // to discard our unsaved work just because another client made
+                // a change.
+                unsaved_welcome_message_custom_text = "";
+            }
         },
         error(xhr) {
             settings_components.change_save_button_state($save_button_container, "failed");
@@ -1440,6 +1477,7 @@ export function build_page(): void {
     set_welcome_message_custom_text_visibility();
 
     register_save_discard_widget_handlers($(".admin-realm-form"), "/json/realm", false);
+    maybe_restore_unsaved_welcome_message_custom_text();
 
     $(".org-permissions-form").on(
         "input change",

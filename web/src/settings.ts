@@ -16,6 +16,7 @@ import * as people from "./people.ts";
 import * as settings_bots from "./settings_bots.ts";
 import * as settings_config from "./settings_config.ts";
 import * as settings_data from "./settings_data.ts";
+import * as settings_org from "./settings_org.ts";
 import * as settings_panel_menu from "./settings_panel_menu.ts";
 import * as settings_preferences from "./settings_preferences.ts";
 import * as settings_sections from "./settings_sections.ts";
@@ -167,6 +168,7 @@ export function open_settings_overlay(): void {
             browser_history.exit_overlay();
             flatpickr.close_all();
             settings_panel_menu.mobile_deactivate_section();
+            settings_org.maybe_store_unsaved_welcome_message_custom_text();
         },
     });
 }

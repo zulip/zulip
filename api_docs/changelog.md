@@ -20,6 +20,30 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 11.0
 
+**Feature level 420**
+
+* [`POST /mobile_push/e2ee/test_notification`](/api/e2ee-test-notify):
+  Added a new endpoint to send an end-to-end encrypted test push notification
+  to the user's selected mobile device or all of their mobile devices.
+
+**Feature level 419**
+
+* [`POST /register`](/api/register-queue): Added `simplified_presence_events`
+  [client capability](/api/register-queue#parameter-client_capabilities),
+  which allows clients to specify whether they support receiving the
+  `presence` event type with user presence data in the modern API format.
+* [`GET /events`](/api/get-events): Added the `presences` field to the
+  `presence` event type for clients that support the `simplified_presence_events`
+  [client capability](/api/register-queue#parameter-client_capabilities).
+  The `presences` field will have the user presence data in the modern
+  API format. For clients that don't support that client capability the
+  event will contain fields with the legacy format for user presence data.
+
+**Feature level 418**
+
+* [`GET /events`](/api/get-events): An event with `type: "channel_folder"`
+  and `op: "reorder"` is sent when channel folders are reordered.
+
 **Feature level 417**
 
 * [`POST channels/create`](/api/create-channel): Added a dedicated

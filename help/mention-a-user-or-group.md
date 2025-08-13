@@ -13,9 +13,19 @@
 
 {start_tabs}
 
+{tab|desktop-web}
+
 {!start-composing.md!}
 
 1. Type `@` followed by a few letters from a name or email address.
+
+1. Pick the appropriate user or user group from the autocomplete.
+
+{tab|mobile}
+
+1. Tap the compose box at the bottom of the app.
+
+1. Type `@` followed by a few letters from a name.
 
 1. Pick the appropriate user or user group from the autocomplete.
 

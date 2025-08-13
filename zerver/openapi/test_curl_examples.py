@@ -26,7 +26,8 @@ from zerver.openapi.openapi import get_endpoint_from_operationid
 
 UNTESTED_GENERATED_CURL_EXAMPLES = {
     # Would need push notification bouncer set up to test the
-    # generated curl example for this endpoint.
+    # generated curl example for the following two endpoints.
+    "e2ee-test-notify",
     "test-notify",
     # Having a message for a specific user available to test this endpoint
     # is tricky for testing.

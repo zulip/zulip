@@ -4,6 +4,7 @@ const assert = require("node:assert/strict");
 
 const _ = require("lodash");
 
+const {make_stream} = require("./lib/example_stream.cjs");
 const {zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 
@@ -19,71 +20,71 @@ const user_settings = {
 initialize_user_settings({user_settings});
 stream_list_sort.set_filter_out_inactives();
 
-const scalene = {
+const scalene = make_stream({
     subscribed: true,
     name: "scalene",
     stream_id: 1,
     pin_to_top: true,
     is_recently_active: true,
-};
-const fast_tortoise = {
+});
+const fast_tortoise = make_stream({
     subscribed: true,
     name: "fast tortoise",
     stream_id: 2,
     pin_to_top: false,
     is_recently_active: true,
-};
-const pneumonia = {
+});
+const pneumonia = make_stream({
     subscribed: true,
     name: "pneumonia",
     stream_id: 3,
     pin_to_top: false,
     is_recently_active: false,
-};
-const clarinet = {
+});
+const clarinet = make_stream({
     subscribed: true,
     name: "clarinet",
     stream_id: 4,
     pin_to_top: false,
     is_recently_active: true,
-};
-const weaving = {
+});
+const weaving = make_stream({
     subscribed: false,
     name: "weaving",
     stream_id: 5,
     pin_to_top: false,
     is_recently_active: true,
-};
-const stream_hyphen_underscore_slash_colon = {
+});
+const stream_hyphen_underscore_slash_colon = make_stream({
     subscribed: true,
     name: "stream-hyphen_underscore/slash:colon",
     stream_id: 6,
     pin_to_top: false,
     is_recently_active: true,
-};
-const muted_active = {
+});
+const muted_active = make_stream({
     subscribed: true,
     name: "muted active",
     stream_id: 7,
     pin_to_top: false,
     is_recently_active: true,
     is_muted: true,
-};
-const muted_pinned = {
+});
+const muted_pinned = make_stream({
     subscribed: true,
     name: "muted pinned",
     stream_id: 8,
     pin_to_top: true,
     is_recently_active: true,
     is_muted: true,
-};
-const archived = {
+});
+const archived = make_stream({
     subscribed: true,
     name: "archived channel",
     stream_id: 9,
     pin_to_top: true,
     is_archived: true,
-};
+});
 
 function sort_groups(query) {
     const streams = stream_data.subscribed_stream_ids();

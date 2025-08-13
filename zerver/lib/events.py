@@ -178,6 +178,7 @@ def fetch_initial_state_data(
     user_list_incomplete: bool = False,
     include_deactivated_groups: bool = False,
     archived_channels: bool = False,
+    simplified_presence_events: bool = False,
 ) -> dict[str, Any]:
     """When `event_types` is None, fetches the core data powering the
     web app's `page_params` and `/api/v1/register` (for mobile/terminal
@@ -350,7 +351,7 @@ def fetch_initial_state_data(
         state["muted_users"] = [] if user_profile is None else get_user_mutes(user_profile)
 
     if want("presence"):
-        if presence_last_update_id_fetched_by_client is not None:
+        if presence_last_update_id_fetched_by_client is not None or simplified_presence_events:
             # This param being submitted by the client, means they want to use
             # the modern API.
             slim_presence = True
@@ -948,6 +949,7 @@ def apply_events(
     user_list_incomplete: bool,
     include_deactivated_groups: bool,
     archived_channels: bool = False,
+    simplified_presence_events: bool = False,
 ) -> None:
     for event in events:
         if fetch_event_types is not None and event["type"] not in fetch_event_types:
@@ -971,6 +973,7 @@ def apply_events(
             user_list_incomplete=user_list_incomplete,
             include_deactivated_groups=include_deactivated_groups,
             archived_channels=archived_channels,
+            simplified_presence_events=simplified_presence_events,
         )
 
 
@@ -986,6 +989,7 @@ def apply_event(
     user_list_incomplete: bool,
     include_deactivated_groups: bool,
     archived_channels: bool = False,
+    simplified_presence_events: bool = False,
 ) -> None:
     if event["type"] == "message":
         state["max_message_id"] = max(state["max_message_id"], event["message"]["id"])
@@ -1717,13 +1721,17 @@ def apply_event(
         # This means that the state resulting from fetch_initial_state + apply_events will not
         # match the state of a hypothetical fetch_initial_state fetch that included the fully
         # updated data. This is intended and not a bug.
-        if slim_presence:
+        if simplified_presence_events:
+            user_key = next(iter(event["presences"].keys()))
+            user_id = user_key
+            slim_presence = True
+        elif slim_presence:
             user_key = str(event["user_id"])
+            user_id = event["user_id"]
         else:
             user_key = event["email"]
-        state["presences"][user_key] = get_presence_for_user(event["user_id"], slim_presence)[
-            user_key
-        ]
+            user_id = event["user_id"]
+        state["presences"][user_key] = get_presence_for_user(user_id, slim_presence)[user_key]
     elif event["type"] == "update_message":
         # We don't return messages in /register, so we don't need to
         # do anything for content updates, but we may need to update
@@ -1964,6 +1972,11 @@ def apply_event(
             for channel_folder in state["channel_folders"]:
                 if channel_folder["id"] == event["channel_folder_id"]:
                     channel_folder.update(event["data"])
+        elif event["op"] == "reorder":
+            order_mapping = {_[1]: _[0] for _ in enumerate(event["order"])}
+            for channel_folder in state["channel_folders"]:
+                channel_folder["order"] = order_mapping[channel_folder["id"]]
+            state["channel_folders"].sort(key=lambda folder: folder["order"])
         else:
             raise AssertionError("Unexpected event type {type}/{op}".format(**event))
     elif event["type"] == "has_zoom_token":
@@ -2001,6 +2014,7 @@ class ClientCapabilities(TypedDict):
     include_deactivated_groups: NotRequired[bool]
     archived_channels: NotRequired[bool]
     empty_topic_name: NotRequired[bool]
+    simplified_presence_events: NotRequired[bool]
 
 
 DEFAULT_CLIENT_CAPABILITIES = ClientCapabilities(notification_settings_null=False)
@@ -2043,6 +2057,7 @@ def do_events_register(
     include_deactivated_groups = client_capabilities.get("include_deactivated_groups", False)
     archived_channels = client_capabilities.get("archived_channels", False)
     empty_topic_name = client_capabilities.get("empty_topic_name", False)
+    simplified_presence_events = client_capabilities.get("simplified_presence_events", False)
 
     if fetch_event_types is not None:
         event_types_set: set[str] | None = set(fetch_event_types)
@@ -2078,6 +2093,7 @@ def do_events_register(
             include_streams=include_streams,
             spectator_requested_language=spectator_requested_language,
             include_deactivated_groups=include_deactivated_groups,
+            simplified_presence_events=simplified_presence_events,
         )
 
         post_process_state(
@@ -2114,6 +2130,7 @@ def do_events_register(
         include_deactivated_groups=include_deactivated_groups,
         archived_channels=archived_channels,
         empty_topic_name=empty_topic_name,
+        simplified_presence_events=simplified_presence_events,
     )
 
     if queue_id is None:
@@ -2137,6 +2154,7 @@ def do_events_register(
         user_list_incomplete=user_list_incomplete,
         include_deactivated_groups=include_deactivated_groups,
         archived_channels=archived_channels,
+        simplified_presence_events=simplified_presence_events,
     )
 
     # Apply events that came in while we were fetching initial data
@@ -2152,6 +2170,7 @@ def do_events_register(
         linkifier_url_template=linkifier_url_template,
         user_list_incomplete=user_list_incomplete,
         include_deactivated_groups=include_deactivated_groups,
+        simplified_presence_events=simplified_presence_events,
     )
 
     post_process_state(

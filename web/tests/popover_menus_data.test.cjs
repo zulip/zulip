@@ -2,6 +2,7 @@
 
 const assert = require("node:assert/strict");
 
+const {make_user_group} = require("./lib/example_group.cjs");
 const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 const $ = require("./lib/zjquery.cjs");
@@ -96,13 +97,13 @@ const me = {
     is_guest: false,
 };
 
-const everyone = {
+const everyone = make_user_group({
     name: "role:everyone",
     id: 2,
     members: new Set([999, 1000, 2000]),
     is_system_group: true,
     direct_subgroup_ids: new Set([]),
-};
+});
 user_groups.initialize({realm_user_groups: [everyone]});
 
 // Helper functions:

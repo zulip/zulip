@@ -12,9 +12,10 @@ problematic behavior.
 * Decide whether to [allow anyone to create an
   account](/help/restrict-account-creation#set-whether-invitations-are-required-to-join),
   or require invitations to join.
-* Link to a code of conduct in your
-  [organization description](/help/create-your-organization-profile)
-  (displayed on the registration page).
+* Link to a code of conduct in your [organization
+  description](/help/create-your-organization-profile) (displayed on the
+  registration page) and [custom welcome
+  message](/help/configure-a-custom-welcome-message).
 * [Disallow disposable email
   addresses](/help/restrict-account-creation#dont-allow-disposable-domains)
   or [limit authentication

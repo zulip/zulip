@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-07-30 13:46+0000\n"
-"PO-Revision-Date: 2025-07-26 22:07+0000\n"
+"PO-Revision-Date: 2025-08-07 16:29+0000\n"
 "Last-Translator: Alex Vandiver <alexmv@zulip.com>\n"
 "Language-Team: Slovenian <https://hosted.weblate.org/projects/zulip/django/"
 "sl/>\n"
@@ -1794,10 +1794,8 @@ msgstr ""
 "                "
 
 #: templates/zerver/deactivated.html:49
-#, fuzzy
-#| msgid "This organization has been deactivated"
 msgid "This organization has been deactivated."
-msgstr "Ta organizacija je bila deaktivirana"
+msgstr "Ta organizacija je bila deaktivirana."
 
 #: templates/zerver/deactivated.html:51
 #, python-format
@@ -2433,7 +2431,7 @@ msgid ""
 "organizations:"
 msgstr ""
 "Vaš e-poštni naslov %(email)s ima račune v naslednjih organizacijah Zulip "
-"Cloud: "
+"Cloud:"
 
 #: templates/zerver/emails/find_team.html:14
 #: templates/zerver/emails/find_team.txt:7

@@ -23,7 +23,7 @@ const STATES = {
     CONDENSED: "condensed",
 };
 
-function restore_views_state(): void {
+export function restore_views_state(): void {
     if (page_params.is_spectator) {
         // Spectators should always see the expanded view.
         return;
@@ -54,22 +54,14 @@ export function update_starred_count(count: number, hidden: boolean): void {
 export function update_scheduled_messages_row(): void {
     const $scheduled_li = $(".top_left_scheduled_messages");
     const count = scheduled_messages.get_count();
-    if (count > 0) {
-        $scheduled_li.addClass("show-with-scheduled-messages");
-    } else {
-        $scheduled_li.removeClass("show-with-scheduled-messages");
-    }
+    $scheduled_li.toggleClass("hidden-by-filters", count === 0);
     ui_util.update_unread_count_in_dom($scheduled_li, count);
 }
 
 export function update_reminders_row(): void {
     const $reminders_li = $(".top_left_reminders");
     const count = message_reminder.get_count();
-    if (count > 0) {
-        $reminders_li.addClass("show-with-reminders");
-    } else {
-        $reminders_li.removeClass("show-with-reminders");
-    }
+    $reminders_li.toggleClass("hidden-by-filters", count === 0);
     ui_util.update_unread_count_in_dom($reminders_li, count);
 }
 
@@ -145,6 +137,13 @@ export function handle_narrow_activated(filter: Filter): void {
     select_top_left_corner_item("");
 }
 
+export function expand_views($views_label_container: JQuery, $views_label_icon: JQuery): void {
+    $views_label_container.addClass("showing-expanded-navigation");
+    $views_label_container.removeClass("showing-condensed-navigation");
+    $views_label_icon.addClass("rotate-icon-down");
+    $views_label_icon.removeClass("rotate-icon-right");
+}
+
 function toggle_condensed_navigation_area(): void {
     const $views_label_container = $("#views-label-container");
     const $views_label_icon = $("#toggle-top-left-navigation-area-icon");
@@ -162,11 +161,7 @@ function toggle_condensed_navigation_area(): void {
         $views_label_icon.removeClass("rotate-icon-down");
         save_state(STATES.CONDENSED);
     } else {
-        // Toggle into the expanded state
-        $views_label_container.addClass("showing-expanded-navigation");
-        $views_label_container.removeClass("showing-condensed-navigation");
-        $views_label_icon.addClass("rotate-icon-down");
-        $views_label_icon.removeClass("rotate-icon-right");
+        expand_views($views_label_container, $views_label_icon);
         save_state(STATES.EXPANDED);
     }
     resize.resize_stream_filters_container();
