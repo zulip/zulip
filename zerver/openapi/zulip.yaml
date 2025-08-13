@@ -24985,6 +24985,10 @@ paths:
                     Clients should use the `max_channel_folder_description_length`
                     returned by the [`POST /register`](/api/register-queue) endpoint
                     to determine the maximum channel folder description length.
+
+                    Note that this parameter must be passed as part of the request,
+                    but can be an empty string if no description for the new channel
+                    folder is desired.
                   type: string
                   example: Channels for marketing.
               required:
