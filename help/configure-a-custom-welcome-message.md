@@ -24,7 +24,7 @@ administrators.
 
 {settings_tab|organization-settings}
 
-1. Under **Onboarding**, enable **Add a custom Welcome Bot message for
+1. Under **Onboarding**, enable **Send a custom Welcome Bot message to
    new users**.
 
 1. Under **Message text**, enter a custom welcome message using Zulip's standard
