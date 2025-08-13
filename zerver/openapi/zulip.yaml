@@ -25128,6 +25128,8 @@ paths:
                     folders.
                   items:
                     type: integer
+              required:
+                - order
             encoding:
               order:
                 contentType: application/json
