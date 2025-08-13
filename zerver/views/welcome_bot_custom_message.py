@@ -32,7 +32,7 @@ def send_test_welcome_bot_custom_message(
         raise JsonableError(_("Message must not be empty"))
 
     welcome_bot_custom_message_string = get_custom_welcome_message_string(
-        welcome_message_custom_text
+        user_profile.realm, welcome_message_custom_text
     )
     message_id = internal_send_private_message(
         get_system_bot(settings.WELCOME_BOT, user_profile.realm_id),
