@@ -415,6 +415,10 @@
         visibility: hidden;
     }
 
+    .add-stream-icon-container:focus-visible .add_stream_icon {
+        visibility: visible;
+    }
+
     &:hover {
         background-color: var(--color-background-opaque-hover-narrow-filter);
         box-shadow: inset 0 0 0 1px var(--color-shadow-sidebar-row-hover);
