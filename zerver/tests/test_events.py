@@ -1051,9 +1051,14 @@ class NormalActionsTest(BaseAction):
 
         # Verify special case of embedded content update
         content = "embed_content"
-        rendering_result = render_message_markdown(message, content)
+        mention_data = MentionData(
+            mention_backend=MentionBackend(message.realm_id),
+            content=content,
+            message_sender=message.sender,
+        )
+        rendering_result = render_message_markdown(message, content, mention_data=mention_data)
         with self.verify_action(state_change_expected=False) as events:
-            do_update_embedded_data(self.user_profile, message, rendering_result)
+            do_update_embedded_data(self.user_profile, message, rendering_result, mention_data)
         check_update_message(
             "events[0]",
             events[0],
