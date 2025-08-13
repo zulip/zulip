@@ -533,6 +533,9 @@ importers:
       '@types/hast':
         specifier: ^3.0.4
         version: 3.0.4
+      '@types/mdast':
+        specifier: ^4.0.4
+        version: 4.0.4
       astro:
         specifier: ^5.1.2
         version: 5.13.0(@types/node@22.17.1)(encoding@0.1.13)(jiti@1.21.7)(rollup@4.46.2)(terser@5.43.1)(typescript@5.9.2)(yaml@2.8.1)
@@ -564,9 +567,6 @@ importers:
         specifier: ^22.1.0
         version: 22.2.0
     devDependencies:
-      '@types/mdast':
-        specifier: ^4.0.4
-        version: 4.0.4
       remark-cli:
         specifier: ^12.0.1
         version: 12.0.1

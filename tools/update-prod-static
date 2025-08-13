@@ -46,9 +46,16 @@ run(["./tools/setup/build_timezone_values"])
 # need them.
 if settings.CORPORATE_ENABLED:
     run(["./tools/setup/generate_landing_page_images.py"])
+    # We ideally should be generating two builds for Zulip cloud
+    # and serve a different one depending on whether the subdomain
+    # is same as the root domain or not.
+    run(["./tools/build-help-center", "--no-relative-links"])
+else:
+    run(["./tools/build-help-center"])
 
 # Create webpack bundle
 run(["./tools/webpack", "--quiet"])
+
 
 # Collect the files that we're going to serve; this creates prod-static/serve.
 run(["./manage.py", "collectstatic", "-v0", "--noinput"])
