@@ -24975,6 +24975,8 @@ paths:
                     Clients should use the `max_channel_folder_name_length` returned
                     by the [`POST /register`](/api/register-queue) endpoint to determine
                     the maximum channel folder name length.
+
+                    Value cannot be an empty string.
                   type: string
                   example: marketing
                 description:
@@ -24986,6 +24988,8 @@ paths:
                     to determine the maximum channel folder description length.
                   type: string
                   example: Channels for marketing.
+              required:
+                - name
       responses:
         "200":
           description: |
@@ -25182,6 +25186,8 @@ paths:
                     Clients should use the `max_channel_folder_name_length` returned
                     by the [`POST /register`](/api/register-queue) endpoint to determine
                     the maximum channel folder name length.
+
+                    Value cannot be an empty string.
                   type: string
                   example: backend
                 description:
