@@ -24957,8 +24957,7 @@ paths:
       tags: ["channels"]
       x-requires-administrator: true
       description: |
-        Create a new channel folder, that will be used to organize
-        channels in left sidebar.
+        Create a new [channel folder](/help/channel-folders).
 
         **Changes**: New in Zulip 11.0 (feature level 389).
       requestBody:
@@ -25036,11 +25035,11 @@ paths:
       summary: Get channel folders
       tags: ["channels"]
       description: |
-        Fetches all of the channel folders in the organization.
-        The folders are sorted by the `order` field.
+        Fetches all of the [channel folders](/help/channel-folders) in the
+        organization, sorted by the `order` field.
 
-        **Changes**: Before Zulip 11.0 (feature level 414),
-        these were sorted by ID. (The `order` field didn't exist).
+        **Changes**: Before Zulip 11.0 (feature level 414), the list of channel
+        folders was sorted by ID as the `order` field didn't exist.
 
         New in Zulip 11.0 (feature level 389).
       requestBody:
@@ -25110,9 +25109,14 @@ paths:
       tags: ["channels"]
       x-requires-administrator: true
       description: |
-        Given an array of channel folder IDs, this method will set the `order`
-        property of all of the channel folders in the organization according to
-        the order of the channel folder IDs specified in the request.
+        Reorder the [channel folders](/help/channel-folders) in the user's
+        organization.
+
+        Channel folders are displayed in Zulip UI in order; this endpoint allows
+        administrative settings UI to change the ordering of channel folders.
+
+        This endpoint is used to implement the dragging feature described in the
+        [manage channel folders documentation](/help/manage-channel-folders).
 
         **Changes**: New in Zulip 11.0 (feature level 414).
       requestBody:
@@ -25127,9 +25131,8 @@ paths:
                   description: |
                     A list of channel folder IDs representing the new order.
 
-                    This list must include the IDs of all the
-                    organization's channel folders, including archived
-                    folders.
+                    This list must include the IDs of [all the organization's channel
+                    folders](/api/get-channel-folders), including archived folders.
                   items:
                     type: integer
                   example: [2, 1]
@@ -25165,10 +25168,11 @@ paths:
       tags: ["channels"]
       x-requires-administrator: true
       description: |
-        Update the name or description of a channel folder.
+        Update the name or description of a [channel folder](/help/channel-folders)
+        with the specified ID.
 
-        This endpoint is also used to archive and unarchive
-        a channel folder.
+        This endpoint is also used to archive or unarchive the specified channel
+        folder.
 
         **Changes**: New in Zulip 11.0 (feature level 389).
       parameters:
@@ -28171,10 +28175,23 @@ components:
       description: |
         Object containing the channel folder's attributes.
       properties:
+        id:
+          type: integer
+          description: |
+            The unique ID of the channel folder.
         name:
           type: string
           description: |
             The name of the channel folder.
+        order:
+          type: integer
+          description: |
+            This value determines in which order the channel folder should be
+            displayed in the UI. The value is 0 indexed, and a channel folder with
+            a lower value should be displayed before channel folders with higher
+            values.
+
+            **Changes**: New in Zulip 11.0 (feature level 414).
         date_created:
           type: integer
           nullable: true
@@ -28185,37 +28202,25 @@ components:
           type: integer
           nullable: true
           description: |
-            The ID of the user who created this channel folder.
+            The ID of the user who created the channel folder.
         description:
           type: string
           description: |
-            The description of the channel folder.
+            The description of the channel folder. Can be an empty string.
 
-            See [Markdown message formatting](/api/message-formatting) for details on Zulip's HTML format.
+            See [Markdown message formatting](/api/message-formatting) for details
+            on Zulip's HTML format.
         rendered_description:
           type: string
           description: |
-            The description of the channel folder rendered as HTML,
-            intended to be used when displaying the channel folder
-            description in a UI.
+            The description of the channel folder rendered as HTML, intended to be
+            used for UI that displays the channel folder description.
 
-            One should use the standard Zulip rendered_markdown CSS when
-            displaying this content so that emoji, LaTeX, and other syntax
-            work correctly. And any client-side security logic for
-            user-generated message content should be applied when displaying
-            this HTML as though it were the body of a Zulip message.
-        order:
-          type: integer
-          description: |
-            This value determines in which order the channel folders will be
-            displayed in the UI. The value is 0 indexed, and the value with
-            the lower order will be displayed first.
-
-            **Changes**: New in Zulip 11.0 (feature level 414).
-        id:
-          type: integer
-          description: |
-            The ID of the channel folder.
+            Clients should use the standard Zulip rendered_markdown CSS when
+            displaying this content so that emoji, LaTeX, and other syntax work
+            correctly. And any client-side security logic for user-generated
+            message content should be applied when displaying this HTML as though
+            it were the body of a Zulip message.
         is_archived:
           type: boolean
           description: |
