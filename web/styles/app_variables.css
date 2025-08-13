@@ -384,6 +384,9 @@
     /* Legacy values */
     --legacy-body-line-height-unitless: calc(20 / 14);
 
+    /* Special effects */
+    --pulse-unread-scale-max: 1.5;
+
     /* Message area */
     /* In the legacy layout at 16px/1em density, 918.6px is
        the widest the message area gets, so we preserve this
