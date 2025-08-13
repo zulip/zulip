@@ -1120,8 +1120,9 @@ li.active-sub-filter {
 
     &.hide-unread-messages-count {
         /* Restore the unread dot when message counts
-           are hidden. */
-        .selected-home-view .unread_count {
+           are hidden, unless there are no unreads,
+           of course. */
+        .selected-home-view .unread_count:not(:empty) {
             display: block;
         }
         /* We suppress the entire unread area
