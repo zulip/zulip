@@ -844,16 +844,20 @@ strong {
 }
 
 @keyframes pulse-unread {
+    /* Only unread dots in collapsed Views
+       have offset variables set; all others
+       will fall back to 0 (no offset). */
     0% {
-        transform: scale(1);
+        transform: scale(1) translateX(var(--unread-dot-x-offset, 0));
     }
 
     50% {
-        transform: scale(1.5);
+        transform: scale(var(--pulse-unread-scale-max))
+            translateX(var(--unread-dot-x-offset-scaled, 0));
     }
 
     100% {
-        transform: scale(1);
+        transform: scale(1) translateX(var(--unread-dot-x-offset, 0));
     }
 }
 
