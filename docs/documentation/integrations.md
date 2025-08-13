@@ -57,7 +57,8 @@ Typically, the documentation process involves the following steps:
   If your new integration is not a webhook and does not have fixtures, add a
   message template and topic to `zerver/webhooks/fixtureless_integrations.py`.
   Then, add your integration's name to `FIXTURELESS_INTEGRATIONS_WITH_SCREENSHOTS`
-  in `zerver/lib/integrations.py`.
+  in `zerver/lib/integrations.py`. See [this example commit][example-commit]
+  for an example.
 
   Otherwise, you should have already added your integration along with its
   screenshot config to `WEBHOOK_INTEGRATIONS`.
@@ -75,6 +76,8 @@ Typically, the documentation process involves the following steps:
   name like "GitHub Bot", use the project's logo as the bot's avatar, and take
   the screenshot showing the channel/topic bar for the message, not just the
   message body.
+
+[example-commit]: https://github.com/zulip/zulip/pull/35592/commits/e3224640df6af536bec8eda0e01ac6399f9a9acb
 
 ## Markdown macros
 
