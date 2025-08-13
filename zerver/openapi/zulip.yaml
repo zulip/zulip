@@ -24828,12 +24828,10 @@ paths:
       operationId: create-channel-folder
       summary: Create a channel folder
       tags: ["channels"]
+      x-requires-administrator: true
       description: |
         Create a new channel folder, that will be used to organize
         channels in left sidebar.
-
-        Only organization administrators can create a new channel
-        folder.
 
         **Changes**: New in Zulip 11.0 (feature level 389).
       requestBody:
@@ -24979,6 +24977,7 @@ paths:
       operationId: patch-channel-folders
       summary: Reorder channel folders
       tags: ["channels"]
+      x-requires-administrator: true
       description: |
         Given an array of channel folder IDs, this method will set the `order`
         property of all of the channel folders in the organization according to
@@ -25030,14 +25029,12 @@ paths:
       operationId: update-channel-folder
       summary: Update a channel folder
       tags: ["channels"]
+      x-requires-administrator: true
       description: |
         Update the name or description of a channel folder.
 
         This endpoint is also used to archive and unarchive
         a channel folder.
-
-        Only organization administrators can update a
-        channel folder.
 
         **Changes**: New in Zulip 11.0 (feature level 389).
       parameters:
