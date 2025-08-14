@@ -122,7 +122,7 @@ async function test_previously_created_drafts_rendered(page: Page): Promise<void
     assert.strictEqual(
         await common.get_text_from_selector(
             page,
-            "#drafts_table .overlay-message-row:nth-last-child(2) .rendered_markdown.restore-overlay-message",
+            "#drafts_table .overlay-message-row .private-message .rendered_markdown.restore-overlay-message",
         ),
         "Test direct message.",
     );
@@ -136,7 +136,7 @@ async function test_previously_created_drafts_rendered(page: Page): Promise<void
     assert.strictEqual(
         await common.get_text_from_selector(
             page,
-            "#drafts_table .overlay-message-row:last-child .rendered_markdown.restore-overlay-message",
+            "#drafts_table .overlay-message-row .message_row:not(.private-message) .rendered_markdown.restore-overlay-message",
         ),
         "Test stream message.",
     );
