@@ -32,12 +32,14 @@ subscribe to [private](/help/channel-permissions#private-channels) channels.
 
 {tab|mobile}
 
-Access this feature by following the web app instructions in your
-mobile device browser.
+Access this feature by following the web app instructions in your mobile
+device browser. You can also follow a link to an unsubscribed channel in
+a Zulip message, press and hold the channel name until the long-press menu
+appears, and tap **Subscribe**.
 
-Implementation of this feature in the mobile app is tracked [on
-GitHub](https://github.com/zulip/zulip-flutter/issues/188). If
-you're interested in this feature, please react to the issue's
+Implementation of a list of channels to subscribe to in the mobile app is
+tracked [on GitHub](https://github.com/zulip/zulip-flutter/issues/188).
+If you're interested in this feature, please react to the issue's
 description with 👍.
 
 {end_tabs}
