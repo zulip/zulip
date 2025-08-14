@@ -319,8 +319,9 @@ def generate_curl_example(
         )
 
     if authentication_required:
-        auth_email = DEFAULT_AUTH_EMAIL
-        auth_api_key = DEFAULT_AUTH_API_KEY
+        is_zilencer_endpoint = endpoint.startswith("/remotes/")
+        auth_email = "ZULIP_ORG_ID" if is_zilencer_endpoint else DEFAULT_AUTH_EMAIL
+        auth_api_key = "ZULIP_ORG_KEY" if is_zilencer_endpoint else DEFAULT_AUTH_API_KEY
         lines.append("    -u " + shlex.quote(f"{auth_email}:{auth_api_key}"))
 
     for parameter in parameters:
