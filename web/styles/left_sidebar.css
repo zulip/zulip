@@ -752,10 +752,15 @@
     }
 }
 
-.highlighted_row.top_left_row,
-.highlighted_row.bottom_left_row {
-    outline: 2px solid var(--color-outline-focus);
-    outline-offset: -2px;
+#views-label-container,
+#direct-messages-section-header,
+.stream-list-subsection-header,
+.top_left_row,
+.bottom_left_row {
+    &.highlighted_row {
+        outline: 2px solid var(--color-outline-focus);
+        outline-offset: -2px;
+    }
 }
 
 #stream_filters
