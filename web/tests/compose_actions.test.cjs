@@ -62,6 +62,8 @@ const narrow_state = mock_esm("../src/narrow_state", {
 
 mock_esm("../src/reload_state", {
     is_in_progress: () => false,
+    set_csrf_failed_handler: noop,
+    is_pending: () => true,
 });
 mock_esm("../src/drafts", {
     update_draft: noop,
@@ -157,6 +159,7 @@ test("initial_state", () => {
 
 test("start", ({override, override_rewire, mock_template}) => {
     mock_banners();
+    window.addEventListener = noop;
     override_private_message_recipient_ids({override});
     override_rewire(compose_actions, "autosize_message_content", noop);
     override_rewire(compose_actions, "expand_compose_box", noop);

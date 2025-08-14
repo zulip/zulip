@@ -27,6 +27,7 @@ import * as message_viewport from "./message_viewport.ts";
 import * as narrow_state from "./narrow_state.ts";
 import {page_params} from "./page_params.ts";
 import * as popovers from "./popovers.ts";
+import * as reload from "./reload.ts";
 import * as reload_state from "./reload_state.ts";
 import * as resize from "./resize.ts";
 import * as saved_snippets_ui from "./saved_snippets_ui.ts";
@@ -217,7 +218,7 @@ export let complete_starting_tasks = (opts: ComposeActionsOpts): void => {
 
     maybe_scroll_up_selected_message(opts);
     compose_fade.start_compose(opts.message_type);
-    $(document).trigger(new $.Event("compose_started.zulip", opts));
+    reload.maybe_reset_pending_reload_timeout("compose_start");
     compose_recipient.update_compose_area_placeholder_text();
     compose_recipient.update_narrow_to_recipient_visibility();
     compose_recipient.update_recipient_row_attention_level();
@@ -536,6 +537,7 @@ export let cancel = (): void => {
     compose_state.set_message_type(undefined);
     compose_pm_pill.clear();
     $(document).trigger("compose_canceled.zulip");
+    reload.maybe_reset_pending_reload_timeout("compose_end");
 };
 
 export function rewire_cancel(value: typeof cancel): void {

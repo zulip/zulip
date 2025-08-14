@@ -20,6 +20,7 @@ import type {PostMessageAPIData} from "./echo.ts";
 import * as message_events from "./message_events.ts";
 import type {LocalMessage} from "./message_helper.ts";
 import * as onboarding_steps from "./onboarding_steps.ts";
+import * as reload from "./reload.ts";
 import * as scheduled_messages from "./scheduled_messages.ts";
 import * as sent_messages from "./sent_messages.ts";
 import * as server_events_state from "./server_events_state.ts";
@@ -401,6 +402,7 @@ export function do_post_send_tasks(): void {
     // TODO: Do we want to fire the event even if the send failed due
     // to a server-side error?
     $(document).trigger("compose_finished.zulip");
+    reload.maybe_reset_pending_reload_timeout("compose_end");
 }
 
 function schedule_message_to_custom_date(): void {
