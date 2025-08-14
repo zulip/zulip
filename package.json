@@ -1,6 +1,6 @@
 {
   "private": true,
-  "packageManager": "pnpm@10.13.1+sha512.37ebf1a5c7a30d5fabe0c5df44ee8da4c965ca0c5af3dbab28c3a1681b70a256218d05c81c9c0dcf767ef6b8551eb5b960042b9ed4300c59242336377e01cfad",
+  "packageManager": "pnpm@10.14.0+sha512.ad27a79641b49c3e481a16a805baa71817a04bbe06a38d17e60e2eaee83f6a146c6a688125f5792e48dd5ba30e7da52a5cda4c3992b9ccf333f9ce223af84748",
   "type": "module",
   "dependencies": {
     "@babel/core": "^7.5.5",
@@ -12,8 +12,8 @@
     "@giphy/js-components": "^5.13.0",
     "@giphy/js-fetch-api": "^5.6.0",
     "@koa/bodyparser": "^6.0.0",
-    "@sentry/browser": "^9.2.0",
-    "@sentry/core": "^9.2.0",
+    "@sentry/browser": "^10.5.0",
+    "@sentry/core": "^10.5.0",
     "@uppy/core": "^4.3.1",
     "@uppy/drag-drop": "^4.0.2",
     "@uppy/progress-bar": "^4.0.0",
@@ -92,7 +92,7 @@
     "webpack-bundle-tracker": "^3.0.1",
     "webpack-cli": "^6.0.1",
     "winchan": "^0.2.1",
-    "zod": "^4.0.5"
+    "zod": "4.0.15"
   },
   "devDependencies": {
     "@babel/plugin-transform-modules-commonjs": "^7.19.6",
@@ -111,7 +111,7 @@
     "@types/jquery.validation": "^1.16.7",
     "@types/js-cookie": "^3.0.6",
     "@types/katex": "^0.16.0",
-    "@types/koa": "^2.15.0",
+    "@types/koa": "^3.0.0",
     "@types/lodash": "^4.14.172",
     "@types/micromodal": "^0.3.3",
     "@types/minimalistic-assert": "^1.0.1",
@@ -155,7 +155,7 @@
     "puppeteer": "^24.1.1",
     "source-map": "npm:source-map-js@^1.2.1",
     "stylelint": "^16.2.0",
-    "stylelint-config-standard": "^38.0.0",
+    "stylelint-config-standard": "^39.0.0",
     "stylelint-high-performance-animation": "^1.10.0",
     "svgo": "^4.0.0",
     "swagger-parser": "^10.0.0",
