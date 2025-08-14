@@ -2,12 +2,16 @@
 
 const assert = require("node:assert/strict");
 
-const {zrequire} = require("./lib/namespace.cjs");
+const {mock_esm, set_global, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
+
+const channel = mock_esm("../src/channel");
 
 // override file-level function call in reload.ts
 window.addEventListener = noop;
 const reload = zrequire("reload");
+
+set_global("document", {});
 
 run_test("old_metadata_string_is_stale", () => {
     assert.ok(reload.is_stale_refresh_token({reload_data: {hash: ""}}, Date.now()), true);
@@ -35,4 +39,56 @@ run_test("old_token_is_stale ", () => {
             Date.parse("23 Jan 2022 00:00:00 GMT"),
         ),
     );
+});
+
+run_test("reload", ({override}) => {
+    let idle_timeout_created = false;
+    let idle_timeout_canceled = false;
+    override(document, "to_$", () => ({
+        idle() {
+            idle_timeout_created = true;
+            return {
+                cancel() {
+                    idle_timeout_canceled = true;
+                },
+            };
+        },
+    }));
+    channel.get = (opts) => {
+        assert.equal(opts.url, "/compatibility");
+        opts.success();
+    };
+
+    // No reload has been initiated so "maybe_reload_*" shouldn't
+    // do anything
+    reload.maybe_reload_after_compose_start();
+    assert.equal(idle_timeout_created, false);
+    assert.equal(idle_timeout_canceled, false);
+    assert.equal(reload.compose_started_handler, undefined);
+
+    reload.maybe_reload_after_compose_end();
+    assert.equal(idle_timeout_created, false);
+    assert.equal(idle_timeout_canceled, false);
+    assert.equal(reload.compose_done_handler, undefined);
+
+    // Initiate reload should create a new timeout and creates
+    // compose_started_handler and compose_done_handler
+    reload.initiate({});
+    assert.equal(idle_timeout_created, true);
+    assert.equal(idle_timeout_canceled, false);
+    assert.equal(typeof reload.compose_started_handler, "function");
+    assert.equal(typeof reload.compose_done_handler, "function");
+
+    idle_timeout_created = false;
+
+    reload.maybe_reload_after_compose_start();
+    assert.equal(idle_timeout_canceled, true);
+    assert.equal(idle_timeout_created, true);
+
+    idle_timeout_created = false;
+    idle_timeout_canceled = false;
+
+    reload.maybe_reload_after_compose_end();
+    assert.equal(idle_timeout_canceled, true);
+    assert.equal(idle_timeout_created, true);
 });

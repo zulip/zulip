@@ -41,6 +41,22 @@ function call_reload_hooks(): void {
     }
 }
 
+// Exported for tests
+export let compose_started_handler: (() => void) | undefined;
+export let compose_done_handler: (() => void) | undefined;
+
+export function maybe_reload_after_compose_start(): void {
+    if (reload_state.is_pending() && compose_started_handler) {
+        compose_started_handler();
+    }
+}
+
+export function maybe_reload_after_compose_end(): void {
+    if (reload_state.is_pending() && compose_done_handler) {
+        compose_done_handler();
+    }
+}
+
 function preserve_state(
     compose_active_draft_send_immediately: boolean,
     save_compose: boolean,
@@ -268,7 +284,7 @@ export function initiate({
             // particularly disruptive.
             setTimeout(reload_from_idle, unconditional_timeout);
 
-            function compose_done_handler(): void {
+            compose_done_handler = function (): void {
                 // If the user sends their message or otherwise closes
                 // compose, we return them to the not-composing timeouts.
                 idle_control.cancel();
@@ -276,13 +292,8 @@ export function initiate({
                     idle: basic_idle_timeout,
                     onIdle: reload_from_idle,
                 });
-                $(document).off(
-                    "compose_canceled.zulip compose_finished.zulip",
-                    compose_done_handler,
-                );
-                $(document).on("compose_started.zulip", compose_started_handler);
-            }
-            function compose_started_handler(): void {
+            };
+            compose_started_handler = function (): void {
                 // If the user stops being idle and starts composing a
                 // message, switch to the compose-open timeouts.
                 idle_control.cancel();
@@ -290,28 +301,18 @@ export function initiate({
                     idle: composing_idle_timeout,
                     onIdle: reload_from_idle,
                 });
-                $(document).off("compose_started.zulip", compose_started_handler);
-                $(document).on(
-                    "compose_canceled.zulip compose_finished.zulip",
-                    compose_done_handler,
-                );
-            }
+            };
 
             if (compose_state.composing()) {
                 idle_control = $(document).idle({
                     idle: composing_idle_timeout,
                     onIdle: reload_from_idle,
                 });
-                $(document).on(
-                    "compose_canceled.zulip compose_finished.zulip",
-                    compose_done_handler,
-                );
             } else {
                 idle_control = $(document).idle({
                     idle: basic_idle_timeout,
                     onIdle: reload_from_idle,
                 });
-                $(document).on("compose_started.zulip", compose_started_handler);
             }
         },
         error(xhr) {
