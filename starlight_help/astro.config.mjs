@@ -44,6 +44,9 @@ export default defineConfig({
                 },
             }),
         ],
+        ssr: {
+            noExternal: ["zod"],
+        },
     },
     env: {
         schema: {
