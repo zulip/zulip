@@ -2,6 +2,7 @@
 
 const assert = require("node:assert/strict");
 
+const {make_realm} = require("./lib/example_realm.cjs");
 const {make_message_list} = require("./lib/message_list.cjs");
 const {set_global, mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
@@ -44,7 +45,7 @@ const people = zrequire("people");
 const {set_realm} = zrequire("state_data");
 const stream_data = zrequire("stream_data");
 
-const realm = {};
+const realm = make_realm();
 set_realm(realm);
 
 const me = {

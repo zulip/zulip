@@ -2,6 +2,7 @@
 
 const assert = require("node:assert/strict");
 
+const {make_realm} = require("./lib/example_realm.cjs");
 const {$t} = require("./lib/i18n.cjs");
 const {mock_esm, set_global, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
@@ -30,7 +31,7 @@ const text_field_edit = mock_esm("text-field-edit");
 const {set_realm} = zrequire("state_data");
 const {initialize_user_settings} = zrequire("user_settings");
 
-const realm = {realm_topics_policy: "allow_empty_topic"};
+const realm = make_realm({realm_topics_policy: "allow_empty_topic"});
 set_realm(realm);
 initialize_user_settings({user_settings: {}});
 
