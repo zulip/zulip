@@ -49,4 +49,4 @@ API_FEATURE_LEVEL = 425
 #   historical commits sharing the same major version, in which case a
 #   minor version bump suffices.
 
-PROVISION_VERSION = (340, 4)  # bumped 2025-08-13 to upgrade Python requirements
+PROVISION_VERSION = (341, 0)  # bumped 2025-08-14 to upgrade Node.js
