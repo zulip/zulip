@@ -1,8 +1,8 @@
 <div class="group-row {{#if deactivated}}deactivated-group{{/if}}" data-group-id="{{id}}" data-group-name="{{name}}">
     {{#if is_member}}
         <div class="check checked join_leave_button {{#unless can_leave}}disabled{{/unless}} {{#unless is_direct_member}}not-direct-member{{/unless}}">
-            <div class="tippy-zulip-tooltip" data-tooltip-template-id="{{#if can_leave}}{{#if is_direct_member}}leave-{{name}}-group-tooltip-template{{else}}cannot-leave-{{name}}-because-of-subgroup-tooltip-template{{/if}}{{else}}cannot-leave-{{name}}-group-tooltip-template{{/if}}">
-                <template id="leave-{{name}}-group-tooltip-template">
+            <div class="tippy-zulip-tooltip" data-tooltip-template-id="{{#if can_leave}}{{#if is_direct_member}}leave-{{id}}-group-tooltip-template{{else}}cannot-leave-{{id}}-because-of-subgroup-tooltip-template{{/if}}{{else}}cannot-leave-{{id}}-group-tooltip-template{{/if}}">
+                <template id="leave-{{id}}-group-tooltip-template">
                     <span>
                         {{#tr}}
                             Leave group {name}
@@ -10,7 +10,7 @@
                     </span>
                 </template>
 
-                <template id="cannot-leave-{{name}}-because-of-subgroup-tooltip-template">
+                <template id="cannot-leave-{{id}}-because-of-subgroup-tooltip-template">
                     <span>
                         {{#tr}}
                             You are a member of this group because you are a member of a subgroup (<z-highlight>{associated_subgroup_names}</z-highlight>).
@@ -19,7 +19,7 @@
                     </span>
                 </template>
 
-                <template id="cannot-leave-{{name}}-group-tooltip-template">
+                <template id="cannot-leave-{{id}}-group-tooltip-template">
                     {{#if deactivated}}
                         <span>
                             {{#tr}}
@@ -43,8 +43,8 @@
         </div>
     {{else}}
         <div class="check join_leave_button {{#unless can_join}}disabled{{/unless}}">
-            <div class="tippy-zulip-tooltip" data-tooltip-template-id="{{#if can_join}}join-{{name}}-group-tooltip-template{{else}}cannot-join-{{name}}-group-tooltip-template{{/if}}">
-                <template id="join-{{name}}-group-tooltip-template">
+            <div class="tippy-zulip-tooltip" data-tooltip-template-id="{{#if can_join}}join-{{id}}-group-tooltip-template{{else}}cannot-join-{{id}}-group-tooltip-template{{/if}}">
+                <template id="join-{{id}}-group-tooltip-template">
                     <span>
                         {{#tr}}
                             Join group {name}
@@ -52,7 +52,7 @@
                     </span>
                 </template>
 
-                <template id="cannot-join-{{name}}-group-tooltip-template">
+                <template id="cannot-join-{{id}}-group-tooltip-template">
                     {{#if deactivated}}
                         <span>
                             {{#tr}}
