@@ -3,6 +3,7 @@
 // Setup
 const assert = require("node:assert/strict");
 
+const {make_realm} = require("./lib/example_realm.cjs");
 const {mock_esm, set_global, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
 const $ = require("./lib/zjquery.cjs");
@@ -55,7 +56,7 @@ people.add_active_user({
 people.initialize_current_user(1);
 
 const REALM_EMPTY_TOPIC_DISPLAY_NAME = "general chat";
-set_realm({realm_empty_topic_display_name: REALM_EMPTY_TOPIC_DISPLAY_NAME});
+set_realm(make_realm({realm_empty_topic_display_name: REALM_EMPTY_TOPIC_DISPLAY_NAME}));
 
 // Helper test function
 function test_reply_label(expected_label) {
