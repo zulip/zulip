@@ -638,11 +638,11 @@ export function show_user_profile(user: User, default_tab_key = "profile-tab"): 
         user_group_picker_pill.get_user_groups_allowed_to_add_members().length > 0 &&
         people.is_person_active(user.user_id);
     // We currently have the main UI for editing your own profile in
-    // settings, so can_manage_profile is artificially false for those.
+    // settings for non-admins, so can_manage_profile is artificially
+    // false for those.
     const can_manage_profile =
-        (people.can_admin_user(user) || current_user.is_admin) &&
-        !user.is_system_bot &&
-        !people.is_my_user_id(user.user_id);
+        (current_user.is_admin || (user.is_bot && people.can_admin_user(user))) &&
+        !user.is_system_bot;
     const args: Record<string, unknown> = {
         can_manage_profile,
         date_joined: timerender.get_localized_date_or_time_for_format(
