@@ -391,7 +391,7 @@ run_test("show_empty_narrow_message", ({mock_template, override}) => {
     override(realm, "realm_direct_message_permission_group", nobody.id);
 
     // prioritize information about invalid user(s) in narrow/search
-    current_filter = set_filter([["dm", ["Yo"]]]);
+    current_filter = set_filter([["dm", "Yo"]]);
     narrow_banner.show_empty_narrow_message(current_filter);
     assert.equal(
         $(".empty_feed_notice_main").html(),
@@ -399,7 +399,7 @@ run_test("show_empty_narrow_message", ({mock_template, override}) => {
     );
 
     people.add_active_user(alice);
-    current_filter = set_filter([["dm", ["alice@example.com", "Yo"]]]);
+    current_filter = set_filter([["dm", "alice@example.com,Yo"]]);
     narrow_banner.show_empty_narrow_message(current_filter);
     assert.equal(
         $(".empty_feed_notice_main").html(),
@@ -500,7 +500,7 @@ run_test("show_empty_narrow_message", ({mock_template, override}) => {
     override(realm, "realm_direct_message_permission_group", nobody.id);
 
     // prioritize information about invalid user in narrow/search
-    current_filter = set_filter([["dm-including", ["Yo"]]]);
+    current_filter = set_filter([["dm-including", "Yo"]]);
     narrow_banner.show_empty_narrow_message(current_filter);
     assert.equal(
         $(".empty_feed_notice_main").html(),

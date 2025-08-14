@@ -8,7 +8,7 @@ import {$t} from "./i18n.ts";
 import {user_settings} from "./user_settings.ts";
 import * as util from "./util.ts";
 
-export let flatpickr_instance: flatpickr.Instance;
+export let flatpickr_instance: flatpickr.Instance | undefined;
 
 export function is_open(): boolean {
     return Boolean(flatpickr_instance?.isOpen);
@@ -109,8 +109,8 @@ export function show_flatpickr(
         }
 
         if (e.key === "Escape") {
-            flatpickr_instance.close();
-            flatpickr_instance.destroy();
+            flatpickr_instance?.close();
+            flatpickr_instance?.destroy();
         }
 
         if (e.key === "Tab") {
@@ -133,8 +133,8 @@ export function show_flatpickr(
         const time = $flatpickr_input.val();
         assert(typeof time === "string");
         callback(time);
-        flatpickr_instance.close();
-        flatpickr_instance.destroy();
+        flatpickr_instance?.close();
+        flatpickr_instance?.destroy();
     });
     flatpickr_instance.open();
     assert(flatpickr_instance.selectedDateElem !== undefined);

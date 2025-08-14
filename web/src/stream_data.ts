@@ -495,7 +495,7 @@ export function all_subscribed_streams_are_in_home_view(): boolean {
 }
 
 export function canonicalized_name(stream_name: string): string {
-    return stream_name.toString().toLowerCase();
+    return stream_name.toLowerCase();
 }
 
 export function get_color(stream_id: number | undefined): string {

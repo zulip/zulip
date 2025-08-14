@@ -13,7 +13,7 @@ $(() => {
         if (el) {
             $("#top-menu-submenu-backdrop").css(
                 "height",
-                Number(el.offsetHeight) + EXTRA_SUBMENU_BOTTOM_PADDING,
+                el.offsetHeight + EXTRA_SUBMENU_BOTTOM_PADDING,
             );
         } else {
             $("#top-menu-submenu-backdrop").css("height", 0);

@@ -70,6 +70,6 @@ export class FoldDict<V> {
             throw new TypeError("Tried to call a FoldDict method with an undefined key.");
         }
 
-        return key.toString().toLowerCase();
+        return key.toLowerCase();
     }
 }
