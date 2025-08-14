@@ -563,16 +563,18 @@ class TestCountStats(AnalyticsTestCase):
         bot = self.create_user(is_bot=True)
         human1 = self.create_user()
         human2 = self.create_user()
-        recipient_human1 = Recipient.objects.get(type_id=human1.id, type=Recipient.PERSONAL)
 
+        recipient_bot_and_human1 = self.get_dm_recipient(bot, human1)
+        recipient_human1_and_2 = self.get_dm_recipient(human1, human2)
+        recipient_human1 = self.get_dm_recipient(human1)
         recipient_stream = self.create_stream_with_recipient()[1]
         recipient_direct_message_group = self.create_direct_message_group_with_recipient()[1]
 
-        self.create_message(bot, recipient_human1)
+        self.create_message(bot, recipient_bot_and_human1)
         self.create_message(bot, recipient_stream)
         self.create_message(bot, recipient_direct_message_group)
         self.create_message(human1, recipient_human1)
-        self.create_message(human2, recipient_human1)
+        self.create_message(human2, recipient_human1_and_2)
 
         do_fill_count_stat_at_hour(stat, self.TIME_ZERO)
 
@@ -604,20 +606,23 @@ class TestCountStats(AnalyticsTestCase):
         bot = self.create_user(is_bot=True)
         human1 = self.create_user()
         human2 = self.create_user()
-        recipient_human1 = Recipient.objects.get(type_id=human1.id, type=Recipient.PERSONAL)
 
+        recipient_bot_and_human1 = self.get_dm_recipient(bot, human1)
+        recipient_human1_and_2 = self.get_dm_recipient(human1, human2)
+        recipient_human1 = self.get_dm_recipient(human1)
+        recipient_hourly_user_and_human1 = self.get_dm_recipient(self.hourly_user, human1)
         recipient_stream = self.create_stream_with_recipient()[1]
         recipient_direct_message_group = self.create_direct_message_group_with_recipient()[1]
 
         # To be included
-        self.create_message(bot, recipient_human1)
+        self.create_message(bot, recipient_bot_and_human1)
         self.create_message(bot, recipient_stream)
         self.create_message(bot, recipient_direct_message_group)
         self.create_message(human1, recipient_human1)
-        self.create_message(human2, recipient_human1)
+        self.create_message(human2, recipient_human1_and_2)
 
         # To be excluded
-        self.create_message(self.hourly_user, recipient_human1)
+        self.create_message(self.hourly_user, recipient_hourly_user_and_human1)
         self.create_message(self.hourly_user, recipient_stream)
         self.create_message(self.hourly_user, recipient_direct_message_group)
 
@@ -670,11 +675,10 @@ class TestCountStats(AnalyticsTestCase):
         self.create_message(user2, recipient_direct_message_group2)
 
         # direct messages
-        recipient_user1 = Recipient.objects.get(type_id=user1.id, type=Recipient.PERSONAL)
-        recipient_user2 = Recipient.objects.get(type_id=user2.id, type=Recipient.PERSONAL)
-        recipient_user3 = Recipient.objects.get(type_id=user3.id, type=Recipient.PERSONAL)
-        self.create_message(user1, recipient_user2)
-        self.create_message(user2, recipient_user1)
+        recipient_user1_and_2 = self.get_dm_recipient(user1, user2)
+        recipient_user3 = self.get_dm_recipient(user3)
+        self.create_message(user1, recipient_user1_and_2)
+        self.create_message(user2, recipient_user1_and_2)
         self.create_message(user3, recipient_user3)
 
         do_fill_count_stat_at_hour(stat, self.TIME_ZERO)
@@ -778,7 +782,8 @@ class TestCountStats(AnalyticsTestCase):
         self.current_property = stat.property
 
         user = self.create_user()
-        user_recipient = Recipient.objects.get(type_id=user.id, type=Recipient.PERSONAL)
+        user_recipient = self.get_dm_recipient(user)
+        hourly_user_and_user_recipient = self.get_dm_recipient(self.hourly_user, user)
         private_stream_recipient = self.create_stream_with_recipient(invite_only=True)[1]
         stream_recipient = self.create_stream_with_recipient()[1]
         direct_message_group_recipient = self.create_direct_message_group_with_recipient()[1]
@@ -792,7 +797,7 @@ class TestCountStats(AnalyticsTestCase):
         do_fill_count_stat_at_hour(stat, self.TIME_ZERO, self.default_realm)
 
         # To be excluded
-        self.create_message(self.hourly_user, user_recipient)
+        self.create_message(self.hourly_user, hourly_user_and_user_recipient)
         self.create_message(self.hourly_user, private_stream_recipient)
         self.create_message(self.hourly_user, stream_recipient)
         self.create_message(self.hourly_user, direct_message_group_recipient)
@@ -826,7 +831,7 @@ class TestCountStats(AnalyticsTestCase):
         self.current_property = stat.property
 
         user = self.create_user(id=1000)
-        user_recipient = Recipient.objects.get(type_id=user.id, type=Recipient.PERSONAL)
+        user_recipient = self.get_dm_recipient(user)
         stream_recipient = self.create_stream_with_recipient(id=1000)[1]
         direct_message_group_recipient = self.create_direct_message_group_with_recipient(id=1000)[1]
 
@@ -854,14 +859,15 @@ class TestCountStats(AnalyticsTestCase):
 
         user1 = self.create_user(is_bot=True)
         user2 = self.create_user()
-        recipient_user2 = Recipient.objects.get(type_id=user2.id, type=Recipient.PERSONAL)
 
+        recipient_user1_and_2 = self.get_dm_recipient(user1, user2)
+        recipient_user2 = self.get_dm_recipient(user2)
         recipient_stream = self.create_stream_with_recipient()[1]
         recipient_direct_message_group = self.create_direct_message_group_with_recipient()[1]
 
         client2 = Client.objects.create(name="client2")
 
-        self.create_message(user1, recipient_user2, sending_client=client2)
+        self.create_message(user1, recipient_user1_and_2, sending_client=client2)
         self.create_message(user1, recipient_stream)
         self.create_message(user1, recipient_direct_message_group)
         self.create_message(user2, recipient_user2, sending_client=client2)
@@ -901,19 +907,26 @@ class TestCountStats(AnalyticsTestCase):
 
         user1 = self.create_user(is_bot=True)
         user2 = self.create_user()
-        recipient_user2 = Recipient.objects.get(type_id=user2.id, type=Recipient.PERSONAL)
+
+        recipient_user1_and_2 = self.get_dm_recipient(user1, user2)
+        recipient_user2 = self.get_dm_recipient(user2)
+        recipient_hourly_user_and_user2 = self.get_dm_recipient(self.hourly_user, user2)
 
         client2 = Client.objects.create(name="client2")
 
         # TO be included
-        self.create_message(user1, recipient_user2, sending_client=client2)
+        self.create_message(user1, recipient_user1_and_2, sending_client=client2)
         self.create_message(user2, recipient_user2, sending_client=client2)
         self.create_message(user2, recipient_user2)
 
         # To be excluded
-        self.create_message(self.hourly_user, recipient_user2, sending_client=client2)
-        self.create_message(self.hourly_user, recipient_user2, sending_client=client2)
-        self.create_message(self.hourly_user, recipient_user2)
+        self.create_message(
+            self.hourly_user, recipient_hourly_user_and_user2, sending_client=client2
+        )
+        self.create_message(
+            self.hourly_user, recipient_hourly_user_and_user2, sending_client=client2
+        )
+        self.create_message(self.hourly_user, recipient_hourly_user_and_user2)
 
         do_fill_count_stat_at_hour(stat, self.TIME_ZERO, self.default_realm)
 
@@ -938,7 +951,8 @@ class TestCountStats(AnalyticsTestCase):
         bot = self.create_user(is_bot=True)
         human1 = self.create_user()
         human2 = self.create_user()
-        recipient_human1 = Recipient.objects.get(type_id=human1.id, type=Recipient.PERSONAL)
+        recipient_human1_and_2 = self.get_dm_recipient(human1, human2)
+        recipient_bot_and_human1 = self.get_dm_recipient(bot, human1)
 
         stream1, recipient_stream1 = self.create_stream_with_recipient()
         stream2, recipient_stream2 = self.create_stream_with_recipient()
@@ -951,8 +965,8 @@ class TestCountStats(AnalyticsTestCase):
         self.create_message(bot, recipient_stream2)
 
         # To be excluded
-        self.create_message(human2, recipient_human1)
-        self.create_message(bot, recipient_human1)
+        self.create_message(human2, recipient_human1_and_2)
+        self.create_message(bot, recipient_bot_and_human1)
         recipient_direct_message_group = self.create_direct_message_group_with_recipient()[1]
         self.create_message(human1, recipient_direct_message_group)
 
@@ -1437,7 +1451,7 @@ class TestLoggingCountStats(AnalyticsTestCase):
 
         message = Message(
             sender=hamlet,
-            recipient=self.example_user("othello").recipient,
+            recipient=self.get_dm_recipient(hamlet, self.example_user("othello")),
             realm_id=hamlet.realm_id,
             content="This is test content",
             rendered_content="This is test content",

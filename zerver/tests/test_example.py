@@ -3,6 +3,7 @@ from unittest import mock
 
 import orjson
 import time_machine
+from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 
 from zerver.actions.realm_settings import do_change_realm_permission_group_setting
@@ -360,6 +361,18 @@ class TestQueryCounts(ZulipTestCase):
         # they're necessary. You can investiate whether the changes
         # are expected/sensible by comparing print(queries) between
         # your branch and main.
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+
+        with self.assert_database_query_count(24):
+            self.send_personal_message(
+                from_user=hamlet,
+                to_user=cordelia,
+                content="hello there!",
+            )
+
+    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=False)
+    def test_capturing_queries_using_personal_recipient(self) -> None:
         hamlet = self.example_user("hamlet")
         cordelia = self.example_user("cordelia")
 

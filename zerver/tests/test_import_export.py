@@ -951,15 +951,19 @@ class RealmImportExportTest(ExportFile):
         pm_a_msg_id = self.send_personal_message(
             self.example_user("AARON"), self.example_user("othello")
         )
+        dm_group_pm_a = DirectMessageGroup.objects.last()
         pm_b_msg_id = self.send_personal_message(
             self.example_user("cordelia"), self.example_user("iago")
         )
+        dm_group_pm_b = DirectMessageGroup.objects.last()
         pm_c_msg_id = self.send_personal_message(
             self.example_user("hamlet"), self.example_user("othello")
         )
+        dm_group_pm_c = DirectMessageGroup.objects.last()
         pm_d_msg_id = self.send_personal_message(
             self.example_user("iago"), self.example_user("hamlet")
         )
+        dm_group_pm_d = DirectMessageGroup.objects.last()
 
         # Create some non-message private data for users. We will use SavedSnippet objects as they're simple
         # to create and are private data that should not be exported for non-consenting users. There are many
@@ -1153,25 +1157,19 @@ class RealmImportExportTest(ExportFile):
             realm_id=realm.id, recipient__in=private_stream_recipients
         ).values_list("id", flat=True)
 
-        pm_recipients = Recipient.objects.filter(
-            type_id__in=consented_user_ids, type=Recipient.PERSONAL
-        )
-        pm_query = Q(recipient__in=pm_recipients) | Q(sender__in=consented_user_ids)
-        exported_pm_ids = (
-            Message.objects.filter(pm_query, realm=realm.id)
-            .values_list("id", flat=True)
-            .values_list("id", flat=True)
-        )
-
         assert (
             direct_message_group_a is not None
             and direct_message_group_b is not None
             and direct_message_group_c is not None
+            and dm_group_pm_a is not None
+            and dm_group_pm_b is not None
+            and dm_group_pm_c is not None
+            and dm_group_pm_d is not None
         )
         # Third direct message group is not exported since none of
         # the members gave consent
         direct_message_group_recipients = Recipient.objects.filter(
-            type_id__in=[direct_message_group_a.id, direct_message_group_b.id],
+            type_id__in=[direct_message_group_a.id, direct_message_group_b.id, dm_group_pm_b.id],
             type=Recipient.DIRECT_MESSAGE_GROUP,
         )
         pm_query = Q(recipient__in=direct_message_group_recipients) | Q(
@@ -1187,7 +1185,6 @@ class RealmImportExportTest(ExportFile):
             *public_stream_message_ids,
             *private_stream_message_ids,
             stream_b_second_message_id,
-            *exported_pm_ids,
             *exported_dm_group_message_ids,
         }
         self.assertEqual(self.get_set(data["zerver_message"], "id"), exported_msg_ids)
@@ -1213,9 +1210,16 @@ class RealmImportExportTest(ExportFile):
 
         exported_direct_message_group_ids = self.get_set(realm_data["zerver_huddle"], "id")
         self.assertNotIn(direct_message_group_c.id, exported_direct_message_group_ids)
+        self.assertNotIn(dm_group_pm_a.id, exported_direct_message_group_ids)
         self.assertEqual(
             exported_direct_message_group_ids,
-            {direct_message_group_a.id, direct_message_group_b.id},
+            {
+                direct_message_group_a.id,
+                direct_message_group_b.id,
+                dm_group_pm_b.id,
+                dm_group_pm_c.id,
+                dm_group_pm_d.id,
+            },
         )
 
         # We also want to verify Subscriptions to the DirectMessageGroups were exported correctly.
@@ -1773,10 +1777,13 @@ class RealmImportExportTest(ExportFile):
 
         # Check recipient_id was generated correctly for the imported users and streams.
         for user_profile in UserProfile.objects.filter(realm=imported_realm):
-            self.assertEqual(
-                user_profile.recipient_id,
-                Recipient.objects.get(type=Recipient.PERSONAL, type_id=user_profile.id).id,
-            )
+            try:
+                self.assertEqual(
+                    user_profile.recipient_id,
+                    Recipient.objects.get(type=Recipient.PERSONAL, type_id=user_profile.id).id,
+                )
+            except Recipient.DoesNotExist:
+                self.assertIsNone(user_profile.recipient_id)
         for stream in Stream.objects.filter(realm=imported_realm):
             self.assertEqual(
                 stream.recipient_id,
@@ -2956,7 +2963,6 @@ class SingleUserExportTest(ExportFile):
         )
 
         bye_hamlet_message_id = self.send_personal_message(cordelia, hamlet, "bye hamlet")
-
         hi_myself_message_id = self.send_personal_message(cordelia, cordelia, "hi myself")
         bye_stream_message_id = self.send_stream_message(cordelia, "Denmark", "bye stream")
 

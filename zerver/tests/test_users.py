@@ -987,7 +987,8 @@ class PermissionTest(ZulipTestCase):
 
 
 class QueryCountTest(ZulipTestCase):
-    def test_create_user_with_multiple_streams(self) -> None:
+    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=False)
+    def test_create_user_with_multiple_streams_with_personal_recipient(self) -> None:
         # add_new_user_history needs messages to be current
         Message.objects.all().update(date_sent=timezone_now())
 
@@ -1348,9 +1349,13 @@ class AdminCreateUserTest(ZulipTestCase):
         self.assertEqual(new_user.default_language, "ja")
 
         # Make sure the recipient field is set correctly.
-        self.assertEqual(
-            new_user.recipient, Recipient.objects.get(type=Recipient.PERSONAL, type_id=new_user.id)
-        )
+        try:
+            self.assertEqual(
+                new_user.recipient,
+                Recipient.objects.get(type=Recipient.PERSONAL, type_id=new_user.id),
+            )
+        except Recipient.DoesNotExist:
+            self.assertIsNone(new_user.recipient_id)
 
         # we can't create the same user twice.
         result = self.client_post("/json/users", valid_params)
@@ -3301,6 +3306,7 @@ class GetProfileTest(ZulipTestCase):
 
 
 class DeleteUserTest(ZulipTestCase):
+    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=False)
     def test_do_delete_user(self) -> None:
         realm = get_realm("zulip")
         cordelia = self.example_user("cordelia")
@@ -3377,7 +3383,7 @@ class DeleteUserTest(ZulipTestCase):
         cordelia = self.example_user("cordelia")
         othello = self.example_user("othello")
         hamlet = self.example_user("hamlet")
-        hamlet_personal_recipient = hamlet.recipient
+        hamlet_and_cordelia_recipient = self.get_dm_recipient(hamlet, cordelia)
         hamlet_user_id = hamlet.id
         hamlet_date_joined = hamlet.date_joined
 
@@ -3385,7 +3391,7 @@ class DeleteUserTest(ZulipTestCase):
         self.send_personal_message(hamlet, cordelia)
 
         personal_message_ids_to_hamlet = Message.objects.filter(
-            realm_id=realm.id, recipient=hamlet_personal_recipient
+            realm_id=realm.id, recipient=hamlet_and_cordelia_recipient
         ).values_list("id", flat=True)
         self.assertGreater(len(personal_message_ids_to_hamlet), 0)
         self.assertTrue(Message.objects.filter(realm_id=realm.id, sender=hamlet).exists())
