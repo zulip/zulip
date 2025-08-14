@@ -4,7 +4,7 @@ import asyncio
 import copy
 import logging
 import re
-from collections.abc import Iterable, Mapping, Sequence
+from collections.abc import Mapping, Sequence
 from dataclasses import asdict, dataclass, field
 from email.headerregistry import Address
 from functools import cache
@@ -332,28 +332,24 @@ def send_apple_push_notification(
     if have_missing_app_id:
         devices = [device for device in devices if device.ios_app_id is not None]
 
-    async def send_all_notifications() -> Iterable[
-        tuple[DeviceToken, aioapns.common.NotificationResult | BaseException]
-    ]:
-        requests = [
-            aioapns.NotificationRequest(
-                apns_topic=device.ios_app_id,
-                device_token=device.token,
-                message=message,
-                time_to_live=24 * 3600,
-            )
-            for device in devices
-        ]
-        results = await asyncio.gather(
-            *(apns_context.apns.send_notification(request) for request in requests),
-            return_exceptions=True,
+    results: dict[DeviceToken, NotificationResult | BaseException] = {}
+    for device in devices:
+        # TODO obviously this should be made to actually use the async
+        request = aioapns.NotificationRequest(
+            apns_topic=device.ios_app_id,
+            device_token=device.token,
+            message=message,
+            time_to_live=24 * 3600,
         )
-        return zip(devices, results, strict=False)
-
-    results = apns_context.loop.run_until_complete(send_all_notifications())
+        try:
+            results[device] = apns_context.loop.run_until_complete(
+                apns_context.apns.send_notification(request)
+            )
+        except BaseException as e:
+            results[device] = e
 
     successfully_sent_count = 0
-    for device, result in results:
+    for device, result in results.items():
         log_context = f"for user {user_identity} to device {device.token}"
         result_info = get_info_from_apns_result(result, device, log_context)
 
