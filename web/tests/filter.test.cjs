@@ -4,6 +4,7 @@ const assert = require("node:assert/strict");
 
 const {parseOneAddress} = require("email-addresses");
 
+const {make_realm} = require("./lib/example_realm.cjs");
 const {mock_esm, with_overrides, zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 const blueslip = require("./lib/zblueslip.cjs");
@@ -21,7 +22,7 @@ const {set_current_user, set_realm} = zrequire("state_data");
 const {initialize_user_settings} = zrequire("user_settings");
 const muted_users = zrequire("muted_users");
 
-const realm = {};
+const realm = make_realm();
 set_realm(realm);
 const current_user = {};
 set_current_user(current_user);

@@ -2,6 +2,7 @@
 
 const assert = require("node:assert/strict");
 
+const {make_realm} = require("./lib/example_realm.cjs");
 const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
 
@@ -16,7 +17,7 @@ const stream_data = zrequire("stream_data");
 const stream_topic_history = zrequire("stream_topic_history");
 const topic_list = zrequire("topic_list");
 
-set_realm({});
+set_realm(make_realm());
 
 function test(label, f) {
     run_test(label, (helpers) => {
