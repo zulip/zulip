@@ -2,6 +2,7 @@
 
 const assert = require("node:assert/strict");
 
+const {make_realm} = require("./lib/example_realm.cjs");
 const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
 const $ = require("./lib/zjquery.cjs");
@@ -217,7 +218,7 @@ const sub_store = zrequire("sub_store");
 const util = zrequire("util");
 
 const REALM_EMPTY_TOPIC_DISPLAY_NAME = "test general chat";
-set_realm({realm_empty_topic_display_name: REALM_EMPTY_TOPIC_DISPLAY_NAME});
+set_realm(make_realm({realm_empty_topic_display_name: REALM_EMPTY_TOPIC_DISPLAY_NAME}));
 
 for (const stream_id of [stream1, stream2, stream3, stream4, stream6]) {
     sub_store.add_hydrated_sub(stream_id, {
