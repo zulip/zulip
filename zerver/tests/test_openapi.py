@@ -263,7 +263,6 @@ class OpenAPIArgumentsTest(ZulipTestCase):
         "/jwt/fetch_api_key",
         #### Bouncer endpoints
         # Higher priority to document
-        "/remotes/push/e2ee/register",
         "/remotes/push/e2ee/notify",
         # Lower priority to document
         "/remotes/server/register",
