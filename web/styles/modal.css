@@ -40,7 +40,7 @@
     grid-template:
         "heading close-button" 1.8em "heading ." auto / minmax(0, 1fr)
         1.8125em;
-    grid-column-gap: 4px;
+    column-gap: 4px;
 }
 
 .modal__footer {
@@ -59,7 +59,7 @@
     font-weight: 600;
     line-height: 1.25;
     overflow: hidden;
-    word-wrap: break-word;
+    overflow-wrap: break-word;
 
     .channel-privacy-type-icon {
         /* This pushes back on suspect styles

@@ -10,7 +10,7 @@ label.checkbox {
 
     & input[type="checkbox"] {
         position: absolute;
-        clip: rect(0, 0, 0, 0);
+        clip-path: rect(0 0 0 0);
 
         ~ .rendered-checkbox {
             display: inline-block;

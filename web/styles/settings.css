@@ -174,7 +174,7 @@ h3,
 
 .wrapped-table {
     overflow-wrap: anywhere;
-    word-wrap: break-word;
+    overflow-wrap: break-word;
     white-space: pre-wrap;
     white-space: normal;
 }
@@ -1095,7 +1095,7 @@ input[type="checkbox"] {
     .bot-card-api-key .bot-card-api-key-value-and-button {
         display: block;
         margin-left: 0;
-        word-wrap: break-word;
+        overflow-wrap: break-word;
         word-break: break-all;
         white-space: normal;
     }
@@ -1189,7 +1189,7 @@ input[type="checkbox"] {
     }
 
     .alert_word_listing .value {
-        word-wrap: break-word;
+        overflow-wrap: break-word;
         word-break: break-all;
         white-space: normal;
     }

@@ -811,7 +811,7 @@ strong {
 
 .buddy_list_tooltip_content {
     text-align: left;
-    word-wrap: break-word;
+    overflow-wrap: break-word;
     /* 280px at 14px/1em */
     max-width: 20em;
 }
@@ -1399,14 +1399,14 @@ div.topic_edit_spinner .loading_indicator_spinner {
     font-size: 1.5em;
     font-weight: 400;
     line-height: inherit;
-    word-wrap: break-word;
+    overflow-wrap: break-word;
 }
 
 .empty-feed-notice-description {
     font-size: 1.1em;
 
     .search-query-word {
-        word-wrap: break-word;
+        overflow-wrap: break-word;
     }
 }
 
