@@ -778,7 +778,7 @@
         white-space: pre;
         overflow-x: auto;
         word-break: break-all;
-        word-wrap: normal;
+        overflow-wrap: normal;
         margin: 0 0 var(--markdown-interelement-space-px);
         padding: 5px 7px 3px;
         display: block;

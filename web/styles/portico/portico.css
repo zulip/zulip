@@ -718,7 +718,7 @@ input#terminal:checked ~ #tab-terminal {
     .contributors-grid {
         padding-top: 5px;
         display: grid;
-        grid-gap: 5px;
+        gap: 5px;
         grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     }
 }

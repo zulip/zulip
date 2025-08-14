@@ -71,7 +71,7 @@
 
 .messagebox {
     grid-area: messagebox;
-    word-wrap: break-word;
+    overflow-wrap: break-word;
     border: none;
     /* The left padding value accounts for a 2px
       unread marker, ensuring a uniform 5px of
@@ -588,7 +588,7 @@
     /* Tooltips should not follow the width restrictions of their parent element. */
     [data-tippy-root] {
         width: max-content;
-        word-wrap: unset;
+        overflow-wrap: unset;
     }
 
     .edit_content {

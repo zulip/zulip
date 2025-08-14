@@ -1073,7 +1073,7 @@ input.settings_text_input {
 
             [data-tippy-root] {
                 width: max-content;
-                word-wrap: unset;
+                overflow-wrap: unset;
             }
 
             .copy-overlay-message {

@@ -2164,7 +2164,7 @@ button {
 
     @media (width >= 768px) {
         display: grid;
-        grid-column-gap: 5%;
+        column-gap: 5%;
         grid-template-columns: 43% auto;
         max-width: 1300px;
         place-items: center;
