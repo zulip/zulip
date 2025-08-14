@@ -555,8 +555,12 @@ run_test("channel_folders", ({override}) => {
 
     let event = event_fixtures.channel_folder__add;
     {
+        const stub = make_stub();
+        override(stream_ui_updates, "update_folder_dropdown_visibility", stub.f);
+
         dispatch(event);
 
+        assert.equal(stub.num_calls, 1);
         const folders = channel_folders.get_channel_folders();
         assert.equal(folders.length, 1);
         assert.equal(folders[0].id, event.channel_folder.id);
@@ -569,10 +573,17 @@ run_test("channel_folders", ({override}) => {
         override(stream_settings_ui, "update_channel_folder_name", stub.f);
         override(stream_list, "update_streams_sidebar", stub.f);
         override(stream_settings_ui, "reset_dropdown_set_to_archived_folder", stub.f);
+        const update_dropdown_visibility_stub = make_stub();
+        override(
+            stream_ui_updates,
+            "update_folder_dropdown_visibility",
+            update_dropdown_visibility_stub.f,
+        );
 
         dispatch(event);
 
         assert.equal(stub.num_calls, 3);
+        assert.equal(update_dropdown_visibility_stub.num_calls, 1);
         const folders = channel_folders.get_channel_folders(true);
         const args = stub.get_args("folder_id");
         assert_same(args.folder_id, event.channel_folder_id);
