@@ -226,7 +226,7 @@ test("basics", () => {
     terms = [
         {operator: "channel", operand: foo_stream_id.toString()},
         {operator: "topic", operand: "bar"},
-        {operator: "near", operand: 17},
+        {operator: "near", operand: "17"},
     ];
     filter = new Filter(terms);
 
@@ -417,7 +417,7 @@ test("basics", () => {
 
     terms = [
         {operator: "dm", operand: "joe@example.com"},
-        {operator: "near", operand: 17},
+        {operator: "near", operand: "17"},
     ];
     filter = new Filter(terms);
     assert.ok(filter.is_non_group_direct_message());
@@ -555,7 +555,7 @@ test("basics", () => {
     terms = [
         {operator: "channel", operand: foo_stream_id.toString()},
         {operator: "topic", operand: "bar"},
-        {operator: "with", operand: 17},
+        {operator: "with", operand: "17"},
     ];
     filter = new Filter(terms);
 
@@ -999,7 +999,7 @@ test("canonicalization", () => {
     assert.equal(term.operator, "search");
     assert.equal(term.operand, "fOO");
 
-    term = Filter.canonicalize_term({operator: "search", operand: 123});
+    term = Filter.canonicalize_term({operator: "search", operand: "123"});
     assert.equal(term.operator, "search");
     assert.equal(term.operand, "123");
 
@@ -1234,15 +1234,15 @@ test("predicate_basics", ({override}) => {
         assert.ok(!predicate({stream_id: muted_stream.stream_id, topic: "bar"}));
     });
 
-    predicate = get_predicate([["near", 5]]);
+    predicate = get_predicate([["near", "5"]]);
     assert.ok(predicate({}));
 
-    predicate = get_predicate([["id", 5]]);
+    predicate = get_predicate([["id", "5"]]);
     assert.ok(predicate({id: 5}));
     assert.ok(!predicate({id: 6}));
 
     predicate = get_predicate([
-        ["id", 5],
+        ["id", "5"],
         ["topic", "lunch"],
     ]);
     assert.ok(predicate({type: stream_message, id: 5, topic: "lunch"}));
@@ -1488,7 +1488,7 @@ test("predicate_edge_cases", () => {
     predicate = get_predicate([["in", "bogus"]]);
     assert.ok(!predicate({}));
 
-    predicate = get_predicate([["bogus", 33]]);
+    predicate = get_predicate([["bogus", "33"]]);
     assert.ok(predicate({}));
 
     predicate = get_predicate([["is", "bogus"]]);
@@ -1670,11 +1670,11 @@ test("unparse", () => {
     string = "-channels:public";
     assert.deepEqual(Filter.unparse(terms), string);
 
-    terms = [{operator: "id", operand: 50}];
+    terms = [{operator: "id", operand: "50"}];
     string = "id:50";
     assert.deepEqual(Filter.unparse(terms), string);
 
-    terms = [{operator: "near", operand: 150}];
+    terms = [{operator: "near", operand: "150"}];
     string = "near:150";
     assert.deepEqual(Filter.unparse(terms), string);
 

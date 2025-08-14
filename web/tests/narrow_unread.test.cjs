@@ -238,7 +238,7 @@ run_test("get_unread_ids", () => {
     terms = [
         {operator: "channel", operand: sub.stream_id.toString()},
         {operator: "topic", operand: "another topic"},
-        {operator: "with", operand: stream_msg.id},
+        {operator: "with", operand: stream_msg.id.toString()},
     ];
     set_filter(terms);
     unread_ids = candidate_ids();
@@ -247,7 +247,7 @@ run_test("get_unread_ids", () => {
     terms = [
         {operator: "channel", operand: sub.stream_id.toString()},
         {operator: "topic", operand: "another topic"},
-        {operator: "with", operand: private_msg.id},
+        {operator: "with", operand: private_msg.id.toString()},
     ];
     set_filter(terms);
     unread_ids = candidate_ids();

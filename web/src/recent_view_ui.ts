@@ -904,10 +904,11 @@ export function filters_should_hide_row(topic_data: ConversationData): boolean {
     if (dropdown_filters.has(views_util.FILTERS.UNMUTED_TOPICS) && msg.type === "stream") {
         // We want to show the unmuted or followed topics within muted
         // streams in Recent Conversations.
-        const topic_unmuted_or_followed = Boolean(
-            user_topics.is_topic_unmuted_or_followed(msg.stream_id, msg.topic),
+        const topic_unmuted_or_followed = user_topics.is_topic_unmuted_or_followed(
+            msg.stream_id,
+            msg.topic,
         );
-        const topic_muted = Boolean(user_topics.is_topic_muted(msg.stream_id, msg.topic));
+        const topic_muted = user_topics.is_topic_muted(msg.stream_id, msg.topic);
         const stream_muted = stream_data.is_muted(msg.stream_id);
         if (topic_muted || (stream_muted && !topic_unmuted_or_followed)) {
             return true;

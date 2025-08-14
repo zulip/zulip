@@ -88,7 +88,7 @@ function test_fixture(label, fixture) {
 test_fixture("near after unreads", {
     // Current near: behavior is to ignore the unreads and take you
     // to the target message, with reading disabled.
-    filter_terms: [{operator: "near", operand: 42}],
+    filter_terms: [{operator: "near", operand: "42"}],
     target_id: 42,
     unread_info: {
         flavor: "found",
@@ -111,7 +111,7 @@ test_fixture("near after unreads", {
 test_fixture("near not in message list", {
     // Current behavior is to ignore the unreads and take you
     // to the closest messages, with reading disabled.
-    filter_terms: [{operator: "near", operand: 42}],
+    filter_terms: [{operator: "near", operand: "42"}],
     target_id: 42,
     unread_info: {
         flavor: "found",
@@ -132,7 +132,7 @@ test_fixture("near not in message list", {
 });
 
 test_fixture("near before unreads", {
-    filter_terms: [{operator: "near", operand: 42}],
+    filter_terms: [{operator: "near", operand: "42"}],
     target_id: 42,
     unread_info: {
         flavor: "found",
@@ -153,7 +153,7 @@ test_fixture("near before unreads", {
 });
 
 test_fixture("near with no unreads", {
-    filter_terms: [{operator: "near", operand: 42}],
+    filter_terms: [{operator: "near", operand: "42"}],
     target_id: 42,
     unread_info: {
         flavor: "not_found",
@@ -328,7 +328,7 @@ test_fixture("search", {
 test_fixture("search near", {
     filter_terms: [
         {operator: "search", operand: "whatever"},
-        {operator: "near", operand: 22},
+        {operator: "near", operand: "22"},
     ],
     target_id: 22,
     unread_info: {

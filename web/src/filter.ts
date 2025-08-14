@@ -368,13 +368,13 @@ export class Filter {
                 break;
             case "sender":
             case "dm":
-                operand = operand.toString().toLowerCase();
+                operand = operand.toLowerCase();
                 if (operand === "me") {
                     operand = people.my_current_email();
                 }
                 break;
             case "dm-including":
-                operand = operand.toString().toLowerCase();
+                operand = operand.toLowerCase();
                 break;
             case "search":
                 // The mac app automatically substitutes regular quotes with curly
@@ -382,10 +382,10 @@ export class Filter {
                 // phrase search behavior, however.  So, we replace all instances of
                 // curly quotes with regular quotes when doing a search.  This is
                 // unlikely to cause any problems and is probably what the user wants.
-                operand = operand.toString().replaceAll(/[\u201C\u201D]/g, '"');
+                operand = operand.replaceAll(/[\u201C\u201D]/g, '"');
                 break;
             default:
-                operand = operand.toString().toLowerCase();
+                operand = operand.toLowerCase();
         }
 
         // We may want to consider allowing mixed-case operators at some point
@@ -530,11 +530,7 @@ export class Filter {
                     }
                 }
 
-                if (
-                    for_pills &&
-                    operator === "sender" &&
-                    operand.toString().toLowerCase() === "me"
-                ) {
+                if (for_pills && operator === "sender" && operand.toLowerCase() === "me") {
                     operand = people.my_current_email();
                 }
 
@@ -637,9 +633,7 @@ export class Filter {
                 return term.operand;
             }
             const operator = Filter.canonicalize_operator(term.operator);
-            return (
-                sign + operator + ":" + Filter.encodeOperand(term.operand.toString(), term.operator)
-            );
+            return sign + operator + ":" + Filter.encodeOperand(term.operand, term.operator);
         });
         return term_strings.join(" ");
     }
