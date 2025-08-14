@@ -87,6 +87,18 @@ from zerver.models.users import active_non_guest_user_ids, active_user_ids, get_
 from zerver.tornado.django_api import send_event_on_commit
 
 
+def notify_channel_event(stream: Stream, message: str) -> None:
+    # Get the notification bot user
+    bot = get_system_bot(settings.NOTIFICATION_BOT, realm_id=stream.realm_id)
+    # Send message to the stream's "channel events" topic
+    internal_send_stream_message(
+        sender=bot,
+        stream=stream,
+        topic_name="channel events",
+        content=message,
+    )
+
+
 def maybe_set_moderation_or_announcement_channels_none(stream: Stream) -> None:
     realm = get_realm_by_id(realm_id=stream.realm_id)
     realm_moderation_or_announcement_channels = (
@@ -865,6 +877,18 @@ def bulk_add_subscriptions(
         subs_to_add=subs_to_add,
         subs_to_activate=subs_to_activate,
     )
+    # Send join notifications for private streams
+    for sub_info in subs_to_add:
+        stream = getattr(sub_info, "stream", None)
+        user = getattr(sub_info, "user", None)
+        # Skip if missing attributes, public stream, bot, or acting_user is None
+        if not stream or not user or stream.is_public() or not acting_user or user.is_bot:
+            continue
+        # Skip self-adds
+        if user.id == acting_user.id:
+            continue
+        message = f"@_**{acting_user.full_name}** added @_**{user.full_name}** to this channel."
+        notify_channel_event(stream, message)
     bulk_update_subscriber_counts(direction=1, streams=subscriber_count_changes)
 
     stream_dict = {stream.id: stream for stream in streams}
@@ -1127,8 +1151,17 @@ def bulk_remove_subscriptions(
         Subscription.objects.filter(
             id__in=sub_ids_to_deactivate,
         ).update(active=False)
-        bulk_update_subscriber_counts(direction=-1, streams=subscriber_count_changes)
+        # Send leave notifications for private streams
+        for sub_info in subs_to_deactivate:
+            stream = getattr(sub_info, "stream", None)
+            user = getattr(sub_info, "user", None)
+            # Skip if missing attributes, public stream, or bot
+            if not stream or not user or stream.is_public() or user.is_bot:
+                continue
 
+            message = f"@_**{user.full_name}** left this channel."
+            notify_channel_event(stream, message)
+        bulk_update_subscriber_counts(direction=-1, streams=subscriber_count_changes)
         # Log subscription activities in RealmAuditLog
         event_time = timezone_now()
         event_last_message_id = get_last_message_id()
