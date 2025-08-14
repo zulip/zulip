@@ -12788,6 +12788,133 @@ paths:
                       }
                     description: |
                       Error when the server is not configured to use push notification service:
+  /remotes/push/e2ee/register:
+    post:
+      operationId: register-remote-push-device
+      summary: Register E2EE push device to bouncer
+      tags: ["mobile"]
+      description: |
+        Register a push device to bouncer to receive end-to-end encrypted
+        mobile push notifications.
+
+        Self-hosted servers use this endpoint to asynchronously register
+        a push device to the bouncer server after receiving a request from
+        the mobile client to [register E2EE push device](/api/register-push-device).
+
+        It is not meant to be used by mobile clients directly.
+
+        **Changes**: New in Zulip 11.0 (feature level 406).
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                realm_uuid:
+                  description: |
+                    The UUID of the realm to which the push device
+                    being registered belongs.
+                  type: string
+                  example: "realm-uuid"
+                push_account_id:
+                  description: |
+                    The `push_account_id` value provided by the mobile client
+                    to [register E2EE push device](/api/register-push-device).
+                  type: integer
+                  example: 2408
+                encrypted_push_registration:
+                  description: |
+                    The `encrypted_push_registration` value provided by the mobile client
+                    to [register E2EE push device](/api/register-push-device).
+                  type: string
+                  example: "encrypted-push-registration-data"
+                bouncer_public_key:
+                  description: |
+                    The `bouncer_public_key` value provided by the mobile client
+                    to [register E2EE push device](/api/register-push-device).
+                  type: string
+                  example: "bouncer-public-key"
+              required:
+                - realm_uuid
+                - push_account_id
+                - encrypted_push_registration
+                - bouncer_public_key
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - required:
+                      - device_id
+                    additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      ignored_parameters_unsupported: {}
+                      device_id:
+                        type: integer
+                        description: |
+                          Unique identifier assigned by the bouncer for the registration.
+                        example: 2408
+                    example: {"device_id": 2408, "msg": "", "result": "success"}
+        "400":
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - example:
+                          {
+                            "code": "INVALID_BOUNCER_PUBLIC_KEY",
+                            "msg": "Invalid bouncer_public_key",
+                            "result": "error",
+                          }
+                        description: |
+                          An example JSON response for when the given `bouncer_public_key` is invalid:
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - example:
+                          {
+                            "code": "REQUEST_EXPIRED",
+                            "msg": "Request expired",
+                            "result": "error",
+                          }
+                        description: |
+                          An example JSON response for when the given `encrypted_push_registration` is stale:
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - example:
+                          {
+                            "code": "BAD_REQUEST",
+                            "msg": "Invalid encrypted_push_registration",
+                            "result": "error",
+                          }
+                        description: |
+                          An example JSON response for when either the bouncer fails to decrypt
+                          the given `encrypted_push_registration` or the decrypted data is invalid:
+        "403":
+          description: |
+            Forbidden.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/CodedError"
+                  - example:
+                      {
+                        "code": "MISSING_REMOTE_REALM",
+                        "msg": "Organization not registered",
+                        "result": "error",
+                      }
+                    description: |
+                      An example JSON response for when no realm is registered for
+                      the authenticated server on the bouncer for the given `realm_uuid`:
   /user_topics:
     post:
       operationId: update-user-topic
