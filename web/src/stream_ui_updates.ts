@@ -7,6 +7,7 @@ import render_stream_can_subscribe_group_label from "../templates/stream_setting
 import render_stream_privacy_icon from "../templates/stream_settings/stream_privacy_icon.hbs";
 import render_stream_settings_tip from "../templates/stream_settings/stream_settings_tip.hbs";
 
+import * as channel_folders from "./channel_folders.ts";
 import * as hash_parser from "./hash_parser.ts";
 import {$t} from "./i18n.ts";
 import * as overlays from "./overlays.ts";
@@ -638,5 +639,35 @@ export function maybe_reset_channel_folder_dropdown(archived_folder_id: number):
         const active_stream_id = stream_settings_components.get_active_data().id;
         const sub = sub_store.get(active_stream_id)!;
         update_setting_element(sub, "folder_id");
+    }
+}
+
+export function set_folder_dropdown_visibility($container: JQuery): void {
+    if (current_user.is_admin) {
+        $container.find(".channel-folder-container").show();
+        $container.find(".no-folders-configured-message").hide();
+        return;
+    }
+
+    const realm_has_channel_folders = channel_folders.get_active_folder_ids().size > 0;
+    if (realm_has_channel_folders) {
+        $container.find(".channel-folder-container").show();
+        $container.find(".no-folders-configured-message").hide();
+    } else {
+        $container.find(".channel-folder-container").hide();
+        $container.find(".no-folders-configured-message").show();
+    }
+}
+
+export function update_folder_dropdown_visibility(): void {
+    if (!overlays.streams_open()) {
+        return;
+    }
+
+    set_folder_dropdown_visibility($("#stream-creation"));
+
+    const active_stream_id = stream_settings_components.get_active_data().id;
+    if (active_stream_id) {
+        set_folder_dropdown_visibility($("#stream_settings"));
     }
 }
