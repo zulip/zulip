@@ -7,6 +7,7 @@ from django.conf import settings
 from django.contrib.auth.models import AnonymousUser
 from django.core.exceptions import ValidationError
 from django.db import connection
+from django.db.models import QuerySet
 from django.utils.translation import gettext as _
 from pydantic import BaseModel, model_validator
 from sqlalchemy.dialects import postgresql
@@ -38,16 +39,21 @@ from zerver.lib.message import (
     access_message,
     access_web_public_message,
     get_first_visible_message_id,
+    get_messages_with_protected_history_queryset,
 )
 from zerver.lib.narrow_predicate import channel_operators, channels_operators
 from zerver.lib.recipient_users import recipient_for_user_profiles
 from zerver.lib.sqlalchemy_utils import get_sqlalchemy_connection
+from zerver.lib.stream_subscription import get_subscribed_stream_ids_for_user
 from zerver.lib.streams import (
     can_access_stream_history_by_id,
     can_access_stream_history_by_name,
+    get_content_accessible_streams_without_protected_history_queryset,
     get_public_streams_queryset,
     get_stream_by_narrow_operand_access_unchecked,
+    get_subscribed_streams_with_protected_history_queryset,
     get_web_public_streams_queryset,
+    is_user_subscribed_to_protected_history_stream,
 )
 from zerver.lib.topic import maybe_rename_general_chat_to_empty_topic
 from zerver.lib.topic_sqlalchemy import (
@@ -323,6 +329,20 @@ class NarrowBuilder:
                 "No message can be both a channel message and direct message"
             )
 
+    def get_recipient_condition(self, queryset: QuerySet[Stream]) -> ClauseElement:
+        recipient_ids = queryset.values_list("recipient_id", flat=True).order_by("id")
+        return column("recipient_id", Integer).in_(recipient_ids)
+
+    def get_protected_history_condition(
+        self, streams_with_protected_history: QuerySet[Stream]
+    ) -> ClauseElement:
+        assert self.user_profile is not None
+
+        message_ids = get_messages_with_protected_history_queryset(
+            self.user_profile, streams_with_protected_history
+        ).values_list("message_id", flat=True)
+        return self.msg_id_column.in_(message_ids)
+
     def add_term(self, query: Select, term: NarrowParameter) -> Select:
         """
         Extend the given query to one narrowed by the given term, and return the result.
@@ -523,13 +543,43 @@ class NarrowBuilder:
             # Get all both subscribed and non-subscribed public channels
             # but exclude any private subscribed channels.
             recipient_queryset = get_public_streams_queryset(self.realm)
+            cond = self.get_recipient_condition(recipient_queryset)
         elif operand == "web-public":
             recipient_queryset = get_web_public_streams_queryset(self.realm)
+            cond = self.get_recipient_condition(recipient_queryset)
+        elif operand == "all":
+            if self.user_profile is None:
+                recipient_queryset = get_web_public_streams_queryset(self.realm)
+                cond = self.get_recipient_condition(recipient_queryset)
+            else:
+                subscribed_stream_ids = get_subscribed_stream_ids_for_user(self.user_profile)
+
+                full_history_recipient_queryset = (
+                    get_content_accessible_streams_without_protected_history_queryset(
+                        self.user_profile, subscribed_stream_ids
+                    )
+                )
+                full_history_recipient_cond = self.get_recipient_condition(
+                    full_history_recipient_queryset
+                )
+
+                protected_history_recipient_cond: ClauseElement = false()
+                if is_user_subscribed_to_protected_history_stream(
+                    self.user_profile, subscribed_stream_ids
+                ):
+                    streams_with_protected_history = (
+                        get_subscribed_streams_with_protected_history_queryset(
+                            self.user_profile, subscribed_stream_ids
+                        )
+                    )
+                    protected_history_recipient_cond = self.get_protected_history_condition(
+                        streams_with_protected_history
+                    )
+
+                cond = or_(full_history_recipient_cond, protected_history_recipient_cond)
         else:
             raise BadNarrowOperatorError("unknown channels operand " + operand)
 
-        recipient_ids = recipient_queryset.values_list("recipient_id", flat=True).order_by("id")
-        cond = column("recipient_id", Integer).in_(recipient_ids)
         return query.where(maybe_negate(cond))
 
     def by_topic(self, query: Select, operand: str, maybe_negate: ConditionTransform) -> Select:
@@ -886,7 +936,7 @@ def ok_to_include_history(
                     include_history = can_access_stream_history_by_id(user_profile, operand)
             elif (
                 term.operator in channels_operators
-                and term.operand == "public"
+                and term.operand in ["public", "all"]
                 and not term.negated
                 and user_profile.can_access_public_streams()
             ):
