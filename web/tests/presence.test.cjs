@@ -315,10 +315,8 @@ test("update_info_from_event", () => {
     let info;
 
     info = {
-        website: {
-            status: "active",
-            timestamp: 500,
-        },
+        active_timestamp: 500,
+        idle_timestamp: 500,
     };
 
     presence.presence_info.delete(alice.user_id);
@@ -330,10 +328,8 @@ test("update_info_from_event", () => {
     });
 
     info = {
-        mobile: {
-            status: "idle",
-            timestamp: 510,
-        },
+        active_timestamp: 500,
+        idle_timestamp: 500,
     };
     presence.update_info_from_event(alice.user_id, info, 510);
 
@@ -343,10 +339,8 @@ test("update_info_from_event", () => {
     });
 
     info = {
-        mobile: {
-            status: "idle",
-            timestamp: 1000,
-        },
+        active_timestamp: 500,
+        idle_timestamp: 1000,
     };
     presence.update_info_from_event(alice.user_id, info, 1000);
 

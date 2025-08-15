@@ -694,11 +694,10 @@ test("update_presence_info", ({override, override_rewire}) => {
     override(realm, "server_presence_ping_interval_seconds", 60);
     override(realm, "server_presence_offline_threshold_seconds", 200);
 
-    const server_time = 500;
-    const info = {
-        website: {
-            status: "active",
-            timestamp: server_time,
+    let info = {
+        [me.user_id]: {
+            active_timestamp: 500,
+            idle_timestamp: 500,
         },
     };
 
@@ -711,12 +710,19 @@ test("update_presence_info", ({override, override_rewire}) => {
     });
 
     presence.presence_info.delete(me.user_id);
-    activity_ui.update_presence_info(me.user_id, info, server_time);
+    activity_ui.update_presence_info(info);
     assert.ok(inserted);
     assert.deepEqual(presence.presence_info.get(me.user_id).status, "active");
 
+    info = {
+        [alice.user_id]: {
+            active_timestamp: 500,
+            idle_timestamp: 500,
+        },
+    };
+
     presence.presence_info.delete(alice.user_id);
-    activity_ui.update_presence_info(alice.user_id, info, server_time);
+    activity_ui.update_presence_info(info);
     assert.ok(inserted);
 
     const expected = {status: "active", last_active: 500};
@@ -724,7 +730,13 @@ test("update_presence_info", ({override, override_rewire}) => {
 
     // Test invalid and inaccessible user IDs.
     const invalid_user_id = 99;
-    activity_ui.update_presence_info(invalid_user_id, info, server_time);
+    info = {
+        [invalid_user_id]: {
+            active_timestamp: 500,
+            idle_timestamp: 500,
+        },
+    };
+    activity_ui.update_presence_info(info);
     assert.equal(presence.presence_info.get(invalid_user_id), undefined);
 
     const inaccessible_user_id = 10;
@@ -735,7 +747,13 @@ test("update_presence_info", ({override, override_rewire}) => {
         "Unknown user",
     );
     people._add_user(inaccessible_user);
-    activity_ui.update_presence_info(inaccessible_user_id, info, server_time);
+    info = {
+        [inaccessible_user_id]: {
+            active_timestamp: 500,
+            idle_timestamp: 500,
+        },
+    };
+    activity_ui.update_presence_info(info);
     assert.equal(presence.presence_info.get(inaccessible_user_id), undefined);
 });
 

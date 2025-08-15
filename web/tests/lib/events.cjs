@@ -328,17 +328,12 @@ exports.fixtures = {
 
     presence: {
         type: "presence",
-        email: "alice@example.com",
-        user_id: 42,
-        presence: {
-            electron: {
-                status: "active",
-                timestamp: fake_now,
-                client: "electron",
-                pushable: false,
+        presences: {
+            42: {
+                active_timestamp: fake_now,
+                idle_timestamp: fake_now,
             },
         },
-        server_timestamp: fake_now,
     },
 
     reaction__add: {
