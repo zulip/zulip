@@ -527,7 +527,6 @@ export function initialize(): void {
                 );
                 return undefined;
             }
-            instance.destroy();
             return false;
         },
         appendTo: () => document.body,
@@ -884,7 +883,6 @@ export function initialize(): void {
                 instance.setContent(content);
                 return undefined;
             }
-            instance.destroy();
             return false;
         },
         appendTo: () => document.body,
@@ -903,7 +901,6 @@ export function initialize(): void {
                 instance.setContent(ui_util.parse_html(error_message));
                 return undefined;
             }
-            instance.destroy();
             return false;
         },
         appendTo: () => document.body,
@@ -949,7 +946,6 @@ export function initialize(): void {
                 $(instance.popper).find(".tippy-content").css("display", "block");
                 return undefined;
             }
-            instance.destroy();
             return false;
         },
         appendTo: () => document.body,
