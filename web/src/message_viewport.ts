@@ -14,6 +14,12 @@ export type MessageViewportInfo = {
     visible_height: number;
 };
 
+let window_resize_handler: () => void;
+
+export function register_resize_handler(handler: () => void): void {
+    window_resize_handler = handler;
+}
+
 export const $scroll_container = $("html");
 
 let in_stoppable_autoscroll = false;
@@ -557,6 +563,7 @@ export function initialize(): void {
         cached_height.reset();
         top_of_feed.reset();
         bottom_of_feed.reset();
+        window_resize_handler?.();
     });
 
     $(document).on("compose_started compose_canceled compose_finished", () => {
