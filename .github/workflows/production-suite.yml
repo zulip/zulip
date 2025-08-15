@@ -261,6 +261,9 @@ jobs:
           - docker_image: zulip/ci:noble-10.0
             name: 10.0 Version Upgrade
             os: noble
+          - docker_image: zulip/ci:trixie-11.0
+            name: 11.0 Version Upgrade
+            os: trixie
 
     name: ${{ matrix.name  }}
     container:
