@@ -5114,6 +5114,27 @@ class InviteOnlyStreamTest(ZulipTestCase):
         self.assertTrue(hamlet.id in json["subscribers"])
         self.assertTrue(prospero.id in json["subscribers"])
 
+    def test_join_leave_notifications_for_private_stream(self) -> None:
+        owner = self.example_user("hamlet")
+        stream_name = "PrivateTest"
+        self.subscribe_via_post(owner, [stream_name], invite_only=True)
+        stream = get_stream(stream_name, owner.realm)
+
+        # Use a new user to trigger join notification
+        new_user = self.example_user("othello")
+        self.subscribe(new_user, stream_name)
+        msg = self.get_last_message()
+        self.assertEqual(msg.recipient.type, Recipient.STREAM)
+        self.assertEqual(msg.recipient.type_id, stream.id)
+        self.assertIn("added", msg.content)
+
+        # Unsubscribe the new user and check for leave notification
+        self.unsubscribe(new_user, stream_name)
+        msg = self.get_last_message()
+        self.assertEqual(msg.recipient.type, Recipient.STREAM)
+        self.assertEqual(msg.recipient.type_id, stream.id)
+        self.assertIn("left", msg.content)
+
 
 class StreamTrafficTest(ZulipTestCase):
     def test_average_weekly_stream_traffic_calculation(self) -> None:
