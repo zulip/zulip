@@ -86,7 +86,7 @@ export function get_status_emoji(user_id: number): UserStatusEmojiInfo | undefin
 
 export function set_status_emoji(event: UserStatusEvent): void {
     // TODO/typescript: Move validation to the caller when
-    // server_events_dispatch.js is converted to TypeScript.
+    // server_events_dispatch.ts is converted to TypeScript.
     const opts = user_status_event_schema.parse(event);
 
     if (!opts.emoji_name) {
