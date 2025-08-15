@@ -34,6 +34,8 @@ from zerver.data_import.slack import (
     DMMembersT,
     SlackBotEmail,
     SlackBotNotFoundError,
+    SlackToZulipRecipientT,
+    SlackToZulipUserIDT,
     channel_message_to_zerver_message,
     channels_to_zerver_stream,
     check_token_access,
@@ -163,7 +165,106 @@ def request_callback(request: PreparedRequest) -> tuple[int, dict[str, str], byt
     return (200, {}, orjson.dumps({"ok": True, "team": {"id": team_id, "domain": team_domain}}))
 
 
+class SlackMessageConverter:
+    def __init__(
+        self,
+        realm_id: int,
+        users: list[ZerverFieldsT],
+        slack_user_id_to_zulip_user_id: SlackToZulipUserIDT,
+        slack_recipient_name_to_zulip_recipient_id: SlackToZulipRecipientT,
+        all_messages: list[ZerverFieldsT],
+        zerver_realmemoji: list[ZerverFieldsT],
+        subscriber_map: dict[int, set[int]],
+        added_channels: AddedChannelsT,
+        dm_members: DMMembersT,
+        domain_name: str,
+        long_term_idle: set[int],
+        convert_slack_threads: bool,
+    ) -> None:
+        self.realm_id = realm_id
+        self.users = users
+        self.slack_user_id_to_zulip_user_id = slack_user_id_to_zulip_user_id
+        self.slack_recipient_name_to_zulip_recipient_id = slack_recipient_name_to_zulip_recipient_id
+        self.all_messages = all_messages
+        self.zerver_realmemoji = zerver_realmemoji
+        self.subscriber_map = subscriber_map
+        self.added_channels = added_channels
+        self.dm_members = dm_members
+        self.domain_name = domain_name
+        self.long_term_idle = long_term_idle
+        self.convert_slack_threads = convert_slack_threads
+
+    def convert_message_fixture(
+        self,
+    ) -> tuple[
+        list[ZerverFieldsT],
+        list[ZerverFieldsT],
+        list[ZerverFieldsT],
+        list[ZerverFieldsT],
+        list[ZerverFieldsT],
+    ]:
+        return channel_message_to_zerver_message(
+            self.realm_id,
+            self.users,
+            self.slack_user_id_to_zulip_user_id,
+            self.slack_recipient_name_to_zulip_recipient_id,
+            self.all_messages,
+            self.zerver_realmemoji,
+            self.subscriber_map,
+            self.added_channels,
+            self.dm_members,
+            self.domain_name,
+            self.long_term_idle,
+            self.convert_slack_threads,
+        )
+
+
 class SlackImporter(ZulipTestCase):
+    def get_message_converter_for_message_fixture(
+        self,
+        fixture_names: list[str],
+    ) -> SlackMessageConverter:
+        """
+        This is a wrapper for `channe_message_to_zerver_message`, this
+        is used to convert Slack exported messages fixture(s) in the
+        `slack_fixtures/exported_messages_fixtures` directory.
+        """
+        slack_message_fixture_directory = "slack_fixtures/exported_messages_fixtures"
+        all_messages = []
+        for filename in fixture_names:
+            all_messages.extend(
+                orjson.loads(
+                    self.fixture_data(f"{filename}.json", type=slack_message_fixture_directory)
+                )
+            )
+
+        user_data = orjson.loads(
+            self.fixture_data("users.json", type=slack_message_fixture_directory)
+        )
+
+        slack_user_id_to_zulip_user_id = {"U066MTL5U": 5, "U061A5N1G": 24, "U061A1R2R": 43}
+
+        slack_recipient_name_to_zulip_recipient_id = {
+            "random": 2,
+            "general": 1,
+        }
+        added_channels: dict[str, tuple[str, int]] = {"random": ("c5", 1), "general": ("c6", 2)}
+
+        return SlackMessageConverter(
+            1,
+            user_data,
+            slack_user_id_to_zulip_user_id,
+            slack_recipient_name_to_zulip_recipient_id,
+            all_messages,
+            [],
+            {},
+            added_channels,
+            {},
+            "domain",
+            set(),
+            convert_slack_threads=True,
+        )
+
     @responses.activate
     def test_get_slack_api_data_with_pagination(self) -> None:
         token = "xoxb-valid-token"
@@ -1368,194 +1469,30 @@ class SlackImporter(ZulipTestCase):
     def test_channel_message_to_zerver_message_with_threads(
         self, mock_build_usermessage: mock.Mock
     ) -> None:
-        user_data = [
-            {"id": "U066MTL5U", "name": "john doe", "deleted": False, "real_name": "John"},
-            {"id": "U061A5N1G", "name": "jane doe", "deleted": False, "real_name": "Jane"},
-            {
-                "id": "U061A1R2R",
-                "name": "jon",
-                "deleted": False,
-                "real_name": "Jon",
-                "profile": {"email": "jon@example.com"},
-            },
-        ]
-
-        slack_user_id_to_zulip_user_id = {"U066MTL5U": 5, "U061A5N1G": 24, "U061A1R2R": 43}
-
-        all_messages: list[dict[str, Any]] = [
-            {
-                "text": "<@U066MTL5U> has joined the channel",
-                "subtype": "channel_join",
-                "user": "U066MTL5U",
-                "ts": "1434139102.000002",
-                "channel_name": "random",
-            },
-            {
-                "text": "<@U061A5N1G>: hey!",
-                "user": "U061A1R2R",
-                "ts": "1437868294.000006",
-                "has_image": True,
-                "channel_name": "random",
-            },
-            {
-                "text": "message body text",
-                "user": "U061A5N1G",
-                "ts": "1434139102.000002",
-                # Start of thread 1!
-                "thread_ts": "1434139102.000002",
-                "channel_name": "random",
-            },
-            {
-                "text": "random",
-                "user": "U061A5N1G",
-                "ts": "1439868294.000007",
-                # A reply to thread 1
-                "parent_user_id": "U061A5N1G",
-                "thread_ts": "1434139102.000002",
-                "channel_name": "random",
-            },
-            {
-                "text": "random message but it's too long for the thread topic name",
-                "user": "U061A5N1G",
-                "ts": "1439868294.000008",
-                # Start of thread 2!
-                "thread_ts": "1439868294.000008",
-                "channel_name": "random",
-            },
-            {
-                "text": "replying to the second thread :)",
-                "user": "U061A1R2R",
-                "ts": "1439869294.000008",
-                # A reply to thread 2
-                "parent_user_id": "U061A5N1G",
-                "thread_ts": "1439868294.000008",
-                "channel_name": "random",
-            },
-            {
-                "text": "message body text",
-                "user": "U061A5N1G",
-                "ts": "1434139200.000002",
-                # Start of thread 3!
-                "thread_ts": "1434139200.000002",
-                "channel_name": "random",
-            },
-            {
-                "text": "The first reply to the third thread",
-                "user": "U061A1R2R",
-                "ts": "1439869295.000008",
-                # A reply to thread 3!
-                "parent_user_id": "U061A5N1G",
-                "thread_ts": "1434139200.000002",
-                "channel_name": "random",
-            },
-            {
-                "text": "<@U061A1R2R> please reply to this message",
-                "user": "U061A5N1G",
-                "ts": "1437139200.000002",
-                # Start of thread 4!
-                "thread_ts": "1437139200.000002",
-                "channel_name": "random",
-            },
-            {
-                "text": "Yes?",
-                "user": "U061A1R2R",
-                "ts": "1440869295.000008",
-                # A reply to thread 4!
-                "parent_user_id": "U061A5N1G",
-                "thread_ts": "1434139200.000002",
-                "channel_name": "random",
-            },
-            {
-                "text": "Look!",
-                "user": "U061A1R2R",
-                "ts": "1537139200.000002",
-                # Start of thread 5!
-                "thread_ts": "1537139200.000002",
-                "has_image": True,
-                "channel_name": "random",
-                "files": [
-                    {
-                        "url_private": "https://files.slack.com/apple.png",
-                        "title": "Apple",
-                        "name": "apple.png",
-                        "mimetype": "image/png",
-                        "timestamp": 9999,
-                        "created": 8888,
-                        "size": 3000000,
-                    }
-                ],
-            },
-            {
-                "text": "Delicious",
-                "user": "U061A5N1G",
-                "ts": "1637139200.000002",
-                # A reply to thread 5!
-                "parent_user_id": "U061A1R2R",
-                "thread_ts": "1537139200.000002",
-                "channel_name": "random",
-            },
-            {
-                "text": "*foo* _bar_ ~baz~ [qux](https://chat.zulip.org)",
-                "user": "U061A1R2R",
-                "ts": "1547139200.000002",
-                # Start of thread 6!
-                "thread_ts": "1547139200.000002",
-                "channel_name": "random",
-            },
-            {
-                "text": "Delicious",
-                "user": "U061A5N1G",
-                "ts": "1637139200.000002",
-                # A reply to thread 6!
-                "parent_user_id": "U061A1R2R",
-                "thread_ts": "1547139200.000002",
-                "channel_name": "random",
-            },
-        ]
-
-        slack_recipient_name_to_zulip_recipient_id = {
-            "random": 2,
-            "general": 1,
-        }
-        dm_members: DMMembersT = {}
-
-        zerver_usermessage: list[dict[str, Any]] = []
-        subscriber_map: dict[int, set[int]] = {}
-        added_channels: dict[str, tuple[str, int]] = {"random": ("c5", 1), "general": ("c6", 2)}
-
+        slack_converter = self.get_message_converter_for_message_fixture(
+            ["normal_messages", "normal_thread"]
+        )
         (
             zerver_message,
             zerver_usermessage,
             attachment,
             uploads,
             reaction,
-        ) = channel_message_to_zerver_message(
-            1,
-            user_data,
-            slack_user_id_to_zulip_user_id,
-            slack_recipient_name_to_zulip_recipient_id,
-            all_messages,
-            [],
-            subscriber_map,
-            added_channels,
-            dm_members,
-            "domain",
-            set(),
-            convert_slack_threads=True,
-        )
+        ) = slack_converter.convert_message_fixture()
         # functioning already tested in helper function
         self.assertEqual(zerver_usermessage, [])
         # subtype: channel_join is filtered
-        self.assert_length(zerver_message, 13)
+        self.assert_length(zerver_message, 3)
 
-        self.assert_length(uploads, 1)
-        self.assert_length(attachment, 1)
+        self.assert_length(uploads, 0)
+        self.assert_length(attachment, 0)
 
         # Message conversion already tested in tests.test_slack_message_conversion
         self.assertEqual(zerver_message[0]["content"], "@**Jane**: hey!")
         self.assertEqual(zerver_message[0]["has_link"], False)
         self.assertEqual(
-            zerver_message[1]["recipient"], slack_recipient_name_to_zulip_recipient_id["random"]
+            zerver_message[1]["recipient"],
+            slack_converter.slack_recipient_name_to_zulip_recipient_id["random"],
         )
 
         ### THREAD 1 CONVERSATION ###
@@ -1569,56 +1506,143 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(zerver_message[2]["content"], "random")
         self.assertEqual(zerver_message[2][EXPORT_TOPIC_NAME], expected_thread_1_topic_name)
 
+    @mock.patch("zerver.data_import.slack.build_usermessages", return_value=(2, 4))
+    def test_convert_thread_topic_name_cut_off(self, mock_build_usermessage: mock.Mock) -> None:
+        slack_converter = self.get_message_converter_for_message_fixture(
+            ["thread_with_long_topic_name"]
+        )
+        (
+            zerver_message,
+            zerver_usermessage,
+            attachment,
+            uploads,
+            reaction,
+        ) = slack_converter.convert_message_fixture()
+        self.assert_length(zerver_message, 4)
+
+        ### THREAD 1 CONVERSATION ###
+        # Test thread topic name cut off.
+        expected_thread_1_message_1_content = (
+            "random message but it is too long for the thread topic name"
+        )
+        expected_thread_1_topic_name = (
+            "2015-08-18 random message but it is too long for the thread…"
+        )
+        self.assertEqual(zerver_message[0]["content"], expected_thread_1_message_1_content)
+        self.assertEqual(zerver_message[0][EXPORT_TOPIC_NAME], expected_thread_1_topic_name)
+        # Record that truncation should use the full maximum topic length.
+        self.assert_length(zerver_message[0][EXPORT_TOPIC_NAME], 60)
+
         ### THREAD 2 CONVERSATION ###
-        # Test thread topic name cut off
+        # Test two different thread topics with unique original topic name
+        # but with identical truncated names collide.
         expected_thread_2_message_1_content = (
-            "random message but it's too long for the thread topic name"
+            "random message but it is too long for the thread two electric boogaloo"
         )
         expected_thread_2_topic_name = (
-            "2015-08-18 random message but it's too long for the thread …"
+            "2015-08-18 random message but it is too long for the th… (2)"
         )
-        self.assertEqual(zerver_message[3]["content"], expected_thread_2_message_1_content)
-        self.assertEqual(zerver_message[3][EXPORT_TOPIC_NAME], expected_thread_2_topic_name)
+        self.assertEqual(zerver_message[2]["content"], expected_thread_2_message_1_content)
+        self.assertEqual(zerver_message[2][EXPORT_TOPIC_NAME], expected_thread_2_topic_name)
         # Record that truncation should use the full maximum topic length.
-        self.assert_length(zerver_message[3][EXPORT_TOPIC_NAME], 60)
+        self.assert_length(zerver_message[2][EXPORT_TOPIC_NAME], 60)
 
-        expected_thread_2_reply_1_message = "replying to the second thread :)"
-        self.assertEqual(zerver_message[4]["content"], expected_thread_2_reply_1_message)
-        self.assertEqual(zerver_message[4][EXPORT_TOPIC_NAME], expected_thread_2_topic_name)
+    @mock.patch("zerver.data_import.slack.build_usermessages", return_value=(2, 4))
+    def test_convert_colliding_thread_topic_names(self, mock_build_usermessage: mock.Mock) -> None:
+        slack_converter = self.get_message_converter_for_message_fixture(
+            ["threads_with_colliding_topic_names"]
+        )
+        (
+            zerver_message,
+            zerver_usermessage,
+            attachment,
+            uploads,
+            reaction,
+        ) = slack_converter.convert_message_fixture()
+        self.assert_length(zerver_message, 6)
+        ### THREAD 1 CONVERSATION ###
+        expected_thread_1_message_1_content = "message body text"
+        expected_thread_1_topic_name = "2015-06-12 message body text"
+        self.assertEqual(zerver_message[0]["content"], expected_thread_1_message_1_content)
+        self.assertEqual(zerver_message[0][EXPORT_TOPIC_NAME], expected_thread_1_topic_name)
+
+        ### THREAD 2 CONVERSATION ###
+        # Test thread topic name collision.
+        expected_thread_2_message_1_content = "message body text"
+        expected_thread_2_topic_name = "2015-06-12 message body text (2)"
+        self.assertEqual(zerver_message[2]["content"], expected_thread_2_message_1_content)
+        self.assertEqual(zerver_message[2][EXPORT_TOPIC_NAME], expected_thread_2_topic_name)
 
         ### THREAD 3 CONVERSATION ###
-        # Test thread topic name collision
-        expected_thread_3_message_1_content = "message body text"
-        expected_thread_3_topic_name = "2015-06-12 message body text (2)"
-        self.assertEqual(zerver_message[5]["content"], expected_thread_3_message_1_content)
-        self.assertEqual(zerver_message[5][EXPORT_TOPIC_NAME], expected_thread_3_topic_name)
+        # Test two thread topic names with the same message
+        # snippet don't collide if they're on different days.
+        expected_thread_3_topic_name = "1974-07-27 message body text"
+        self.assertEqual(zerver_message[4][EXPORT_TOPIC_NAME], expected_thread_3_topic_name)
 
-        ### THREAD 4 CONVERSATION ###
-        # Test mention syntax in thread topic name
-        expected_thread_4_message_1_content = "@**Jon** please reply to this message"
-        expected_thread_4_topic_name = "2015-07-17 @**Jon** please reply to this message"
-        self.assertEqual(zerver_message[7]["content"], expected_thread_4_message_1_content)
-        self.assertEqual(zerver_message[7][EXPORT_TOPIC_NAME], expected_thread_4_topic_name)
+    @mock.patch("zerver.data_import.slack.build_usermessages", return_value=(2, 4))
+    def test_convert_thread_topic_name_with_mention_syntax(
+        self, mock_build_usermessage: mock.Mock
+    ) -> None:
+        slack_converter = self.get_message_converter_for_message_fixture(
+            ["thread_with_mention_syntax_in_topic_name"]
+        )
+        (
+            zerver_message,
+            zerver_usermessage,
+            attachment,
+            uploads,
+            reaction,
+        ) = slack_converter.convert_message_fixture()
+        self.assert_length(zerver_message, 2)
+        # Test mention syntax in thread topic name.
+        expected_thread_message_1_content = "@**Jon** please reply to this message"
+        expected_thread_topic_name = "2015-07-17 @**Jon** please reply to this message"
+        self.assertEqual(zerver_message[0]["content"], expected_thread_message_1_content)
+        self.assertEqual(zerver_message[0][EXPORT_TOPIC_NAME], expected_thread_topic_name)
 
-        ### THREAD 5 CONVERSATION ###
-        # Test file link in thread topic name
-        expected_thread_4_message_1_content = "Look!\n[Apple](/user_uploads/"
-        expected_thread_4_topic_name = "2018-09-16 Look!\n[Apple](/user_uploads/"
-        self.assertTrue(
-            zerver_message[9]["content"].startswith(expected_thread_4_message_1_content)
+    @mock.patch("zerver.data_import.slack.build_usermessages", return_value=(2, 4))
+    def test_convert_thread_topic_name_with_file_link_syntaxes(
+        self, mock_build_usermessage: mock.Mock
+    ) -> None:
+        slack_converter = self.get_message_converter_for_message_fixture(
+            ["thread_with_file_link_syntaxes_in_topic_name"]
         )
-        self.assertTrue(
-            zerver_message[9][EXPORT_TOPIC_NAME].startswith(expected_thread_4_topic_name)
-        )
+        (
+            zerver_message,
+            zerver_usermessage,
+            attachment,
+            uploads,
+            reaction,
+        ) = slack_converter.convert_message_fixture()
+        self.assert_length(zerver_message, 2)
+        self.assert_length(uploads, 1)
+        self.assert_length(attachment, 1)
+        # Test file link in thread topic name.
+        expected_thread_message_1_content = "Look!\n[Apple](/user_uploads/"
+        expected_thread_topic_name = "2018-09-16 Look!\n[Apple](/user_uploads/"
+        self.assertTrue(zerver_message[0]["content"].startswith(expected_thread_message_1_content))
+        self.assertTrue(zerver_message[0][EXPORT_TOPIC_NAME].startswith(expected_thread_topic_name))
 
-        ### THREAD 6 CONVERSATION ###
-        # Test various formatting syntaxes in thread topic name
-        expected_thread_4_message_1_content = "**foo** *bar* ~~baz~~ [qux](https://chat.zulip.org)"
-        expected_thread_4_topic_name = (
-            "2019-01-10 **foo** *bar* ~~baz~~ [qux](https://chat.zulip.o…"
+    @mock.patch("zerver.data_import.slack.build_usermessages", return_value=(2, 4))
+    def test_convert_thread_topic_name_with_text_formattings(
+        self, mock_build_usermessage: mock.Mock
+    ) -> None:
+        slack_converter = self.get_message_converter_for_message_fixture(
+            ["thread_with_text_formattings_in_topic_name"]
         )
-        self.assertEqual(zerver_message[11]["content"], expected_thread_4_message_1_content)
-        self.assertEqual(zerver_message[11][EXPORT_TOPIC_NAME], expected_thread_4_topic_name)
+        (
+            zerver_message,
+            zerver_usermessage,
+            attachment,
+            uploads,
+            reaction,
+        ) = slack_converter.convert_message_fixture()
+        self.assert_length(zerver_message, 2)
+        # Test various formatting syntaxes in thread topic name.
+        expected_thread_message_1_content = "**foo** *bar* ~~baz~~ [qux](https://chat.zulip.org)"
+        expected_thread_topic_name = "2019-01-10 **foo** *bar* ~~baz~~ [qux](https://chat.zulip.o…"
+        self.assertEqual(zerver_message[0]["content"], expected_thread_message_1_content)
+        self.assertEqual(zerver_message[0][EXPORT_TOPIC_NAME], expected_thread_topic_name)
 
     @mock.patch("zerver.data_import.slack.build_usermessages", return_value=(2, 4))
     def test_channel_message_to_zerver_message_with_integration_bots(
