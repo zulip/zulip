@@ -5,6 +5,7 @@ import render_scheduled_message from "../templates/scheduled_message.hbs";
 import render_scheduled_messages_overlay from "../templates/scheduled_messages_overlay.hbs";
 
 import * as browser_history from "./browser_history.ts";
+import {handle_inline_media_element_click} from "./lightbox.ts";
 import * as messages_overlay_ui from "./messages_overlay_ui.ts";
 import * as overlays from "./overlays.ts";
 import * as people from "./people.ts";
@@ -172,6 +173,20 @@ export function remove_scheduled_message_id(scheduled_msg_id: number): void {
 export function initialize(): void {
     $("body").on("click", ".scheduled-message-row .restore-overlay-message", (e) => {
         if (document.getSelection()?.type === "Range") {
+            return;
+        }
+
+        if ($(e.target).closest(".message_inline_image:not(.message_inline_video)").length > 0) {
+            overlays.close_overlay("scheduled");
+            const $img = $(e.currentTarget).find<HTMLImageElement>("img");
+            handle_inline_media_element_click(e, $img);
+            return;
+        }
+
+        if ($(e.target).closest(".message_inline_video").length > 0) {
+            overlays.close_overlay("scheduled");
+            const $video = $(e.currentTarget).find<HTMLMediaElement>("video");
+            handle_inline_media_element_click(e, $video);
             return;
         }
 
