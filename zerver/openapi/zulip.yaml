@@ -8574,6 +8574,20 @@ paths:
 
                           **Changes**: New in Zulip 8.0 (feature level 229). Previously,
                           `wildcard_mention_policy` was not enforced for topic mentions.
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - example:
+                          {
+                            "result": "error",
+                            "msg": "You do not have permission to mention @leadership.",
+                            "code": "USER_GROUP_MENTION_NOT_ALLOWED",
+                          }
+                        description: |
+                          An example JSON error response for when the message was rejected because
+                          the message contains a user group mention, but the user doesn't have
+                          permission to mention that user group.
+
+                          **Changes**: New in Zulip 11.0 (feature level 408).
   /messages/{message_id}/history:
     get:
       operationId: get-message-history
