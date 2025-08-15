@@ -121,7 +121,6 @@ test("no_subscribed_streams", () => {
         ],
         same_as_before: sorted.same_as_before,
     });
-    assert.equal(stream_list_sort.first_row(), undefined);
 });
 
 test("basics", () => {
@@ -149,15 +148,6 @@ test("basics", () => {
         stream_hyphen_underscore_slash_colon.stream_id,
     ]);
     assert.deepEqual(normal.muted_streams, [muted_active.stream_id]);
-
-    // Test keyboard UI / cursor code (currently mostly deleted).
-    // TODO/channel-folders: Re-add keyboard navigation tests,
-    // including some with filtering. This mainly requires either
-    // exporting some parts of the stream_list module, or refactoring
-    // to move some of the stream_list data objects to another module.
-    const row = stream_list_sort.first_row();
-    assert.equal(row.type, "stream");
-    assert.equal(row.stream_id, scalene.stream_id);
 
     // Test filtering
     sorted_sections = sort_groups("s").sections;
