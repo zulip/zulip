@@ -2279,10 +2279,18 @@ body:not(.spectator-view) {
                     align-self: start;
                 }
             }
+
+            .dropdown-list-text-neutral {
+                grid-area: item-text;
+                align-self: center;
+            }
         }
 
+        /* This correctly places neutral text items
+           appearing without a wrapping
+           `.dropdown-list-item-name` class. */
         .dropdown-list-text-neutral {
-            grid-area: item-text;
+            grid-area: item-label;
             align-self: center;
         }
 
