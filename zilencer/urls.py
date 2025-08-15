@@ -26,9 +26,6 @@ i18n_urlpatterns: Any = []
 # Zilencer views following the REST API style
 push_bouncer_patterns = [
     remote_server_path("remotes/push/register", POST=register_remote_push_device),
-    remote_server_path(
-        "remotes/push/e2ee/register", POST=register_remote_push_device_for_e2ee_push_notification
-    ),
     remote_server_path("remotes/push/unregister", POST=unregister_remote_push_device),
     remote_server_path("remotes/push/unregister/all", POST=unregister_all_remote_push_devices),
     remote_server_path("remotes/push/notify", POST=remote_server_notify_push),
@@ -47,9 +44,16 @@ push_bouncer_patterns = [
     remote_server_path("remotes/server/analytics/status", GET=remote_server_check_analytics),
 ]
 
+documented_push_bouncer_patterns = [
+    remote_server_path(
+        "remotes/push/e2ee/register", POST=register_remote_push_device_for_e2ee_push_notification
+    ),
+]
+
 billing_patterns = [remote_server_path("remotes/server/billing", POST=remote_realm_billing_entry)]
 
 urlpatterns = [
+    path("api/v1/", include(documented_push_bouncer_patterns)),
     path("api/v1/", include(push_bouncer_patterns)),
     path("api/v1/", include(billing_patterns)),
 ]
