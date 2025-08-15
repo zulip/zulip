@@ -26,6 +26,12 @@ parser.add_argument(
     action="store_true",
     help="Skip checking of external links.",
 )
+parser.add_argument(
+    "--help-center",
+    dest="enable_help_center",
+    action="store_true",
+    help="Test help center generated as part of the astro build process. If this option is set to True, this script assumes that you already have performend the build step.",
+)
 options = parser.parse_args()
 
 os.makedirs("var/help-documentation", exist_ok=True)
@@ -33,7 +39,7 @@ os.makedirs("var/help-documentation", exist_ok=True)
 LOG_FILE = "var/help-documentation/server.log"
 external_host = "localhost:9981"
 
-extra_args = ["-a", "validate_html=set"]
+extra_args = []
 
 if options.skip_external_link_check:
     extra_args += ["-a", "skip_external=set"]
@@ -60,12 +66,26 @@ def vnu_servlet() -> Iterator[None]:
 
 with (
     vnu_servlet(),
-    test_server_running(options.skip_provision_check, external_host, log_file=LOG_FILE, dots=True),
+    test_server_running(
+        options.skip_provision_check,
+        external_host,
+        log_file=LOG_FILE,
+        dots=True,
+        enable_help_center=options.enable_help_center,
+    ),
 ):
     ret_help_doc = subprocess.call(
-        ["scrapy", "crawl_with_status", *extra_args, "help_documentation_crawler"],
+        [
+            "scrapy",
+            "crawl_with_status",
+            *extra_args,
+            "-a",
+            "skip_check_fragment=set",
+            "help_documentation_crawler",
+        ],
         cwd="tools/documentation_crawler",
     )
+    extra_args += ["-a", "validate_html=set"]
     ret_api_doc = subprocess.call(
         ["scrapy", "crawl_with_status", *extra_args, "api_documentation_crawler"],
         cwd="tools/documentation_crawler",

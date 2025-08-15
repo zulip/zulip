@@ -184,7 +184,7 @@ class BaseDocumentationSpider(scrapy.Spider):
                         "There is no local directory associated with the GitHub URL: %s", url
                     )
                 return
-        elif split_url.fragment != "":
+        elif getattr(self, "skip_check_fragment", False) and split_url.fragment != "":
             dont_filter = True
             callback = self.check_fragment
         if getattr(self, "skip_external", False) and self._is_external_link(url):
