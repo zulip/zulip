@@ -1337,13 +1337,9 @@ div.settings-radio-input-parent {
     /* Subtract 2 * (2px padding) + 2 * (1px border) */
     min-width: calc(var(--modal-input-width) - 6px);
 
-    .input {
-        flex-grow: 1;
-
-        &:first-child:empty::before {
-            opacity: 0.5;
-            content: attr(data-placeholder);
-        }
+    .input:first-child:empty::before {
+        opacity: 0.5;
+        content: attr(data-placeholder);
     }
 }
 

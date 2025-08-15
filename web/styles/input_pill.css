@@ -206,6 +206,7 @@
 
         min-width: 2px;
         overflow-wrap: anywhere;
+        flex: 1 1 auto;
 
         outline: none;
 
