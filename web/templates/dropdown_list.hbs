@@ -41,8 +41,11 @@
                     {{/if}}
                 </span>
             {{else if (eq unique_id -2)}}
-                {{!-- This is the option for PresetUrlOption.MAPPING --}}
-                <i class="zulip-icon zulip-icon-equal channel-privacy-type-icon" aria-hidden="true"></i> <span class="dropdown-list-text-selected">{{name}}</span>
+                {{!-- This is the option for the "channels" PresetUrlOption.MAPPING --}}
+                <i class="zulip-icon zulip-icon-hashtag channel-privacy-type-icon" aria-hidden="true"></i> <span class="decorated-map-to-channels-name">{{name}}</span>
+            {{else if (eq unique_id -3)}}
+                {{!-- This is the option for the "topics" PresetUrlOption.MAPPING --}}
+                <i class="zulip-icon zulip-icon-chevron-right channel-privacy-type-icon" aria-hidden="true"></i> <span class="decorated-map-to-topics-name">{{name}}</span>
             {{else}}
                 <span class="dropdown-list-item-name">
                     {{#if bold_current_selection}}
