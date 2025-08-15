@@ -1666,6 +1666,7 @@ export function make_user(user_id: number, email: string, full_name: string): Us
         // will ask the server or compute a gravatar URL only once we need the avatar URL,
         // it's important for performance that we not hash every user's email to get gravatar URLs.
         avatar_version: 0,
+        avatar_source: "S",
         timezone: "",
         date_joined: "",
         delivery_email: null,

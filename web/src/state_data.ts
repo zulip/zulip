@@ -95,6 +95,7 @@ export const user_schema = z.intersection(
         role: z.number(),
         timezone: z.optional(z.string()),
         avatar_url: z.nullish(z.string()),
+        avatar_source: z.optional(z.string()),
         avatar_version: z.number(),
         profile_data: z.optional(z.record(z.coerce.number<string>(), profile_datum_schema)),
         // used for fake user objects.
