@@ -34,7 +34,6 @@ from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import Message, UserMessage, UserProfile, UserTopic
 from zerver.models.realm_emoji import get_name_keyed_dict_for_active_realm_emoji
 from zerver.models.realms import get_realm
-from zerver.models.recipients import get_or_create_direct_message_group
 from zerver.models.scheduled_jobs import NotificationTriggers
 from zerver.models.streams import get_stream
 
@@ -1297,11 +1296,10 @@ class TestMessageNotificationEmails(ZulipTestCase):
         email_subject = "Group DMs with iago and Iago"
         self._test_cases(msg_id, verify_body_include, email_subject)
 
+    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
     def test_pm_link_in_missed_message_header_using_direct_message_group(self) -> None:
         cordelia = self.example_user("cordelia")
         hamlet = self.example_user("hamlet")
-
-        get_or_create_direct_message_group(id_list=[cordelia.id, hamlet.id])
 
         msg_id = self.send_personal_message(
             cordelia,
@@ -1360,11 +1358,10 @@ class TestMessageNotificationEmails(ZulipTestCase):
             mail.outbox[2].alternatives[0][0],
         )
 
+    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
     def test_sender_name_in_missed_pm_using_direct_message_group(self) -> None:
         hamlet = self.example_user("hamlet")
         iago = self.example_user("iago")
-
-        get_or_create_direct_message_group(id_list=[hamlet.id, iago.id])
 
         msg_id = self.send_personal_message(iago, hamlet, "Hello")
 
@@ -1382,10 +1379,9 @@ class TestMessageNotificationEmails(ZulipTestCase):
             mail.outbox[0].alternatives[0][0],
         )
 
+    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
     def test_your_name_in_missed_pm_to_self_using_direct_message_group(self) -> None:
         hamlet = self.example_user("hamlet")
-
-        get_or_create_direct_message_group(id_list=[hamlet.id])
 
         msg_id = self.send_personal_message(hamlet, hamlet, "Hello", read_by_sender=False)
 
