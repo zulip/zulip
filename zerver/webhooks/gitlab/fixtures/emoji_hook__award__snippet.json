@@ -1,0 +1,54 @@
+{
+    "object_kind": "emoji",
+    "event_type": "award",
+    "user": {
+        "id": 26076637,
+        "name": "Varun Kolanu",
+        "username": "kolanuvarun739",
+        "avatar_url": "https://secure.gravatar.com/avatar/dde05c11435528ac083e918ce384c5b943c7ec54be520b7f4a4bcd3863b36060?s=80&d=identicon",
+        "email": "[REDACTED]"
+    },
+    "project_id": 68452408,
+    "project": {
+        "id": 68452408,
+        "name": "sample",
+        "description": null,
+        "web_url": "https://gitlab.com/kolanuvarun/sample",
+        "avatar_url": null,
+        "git_ssh_url": "git@gitlab.com:kolanuvarun/sample.git",
+        "git_http_url": "https://gitlab.com/kolanuvarun/sample.git",
+        "namespace": "kolanuvarun",
+        "visibility_level": 0,
+        "path_with_namespace": "kolanuvarun/sample",
+        "default_branch": "master",
+        "ci_config_path": "",
+        "homepage": "https://gitlab.com/kolanuvarun/sample",
+        "url": "git@gitlab.com:kolanuvarun/sample.git",
+        "ssh_url": "git@gitlab.com:kolanuvarun/sample.git",
+        "http_url": "https://gitlab.com/kolanuvarun/sample.git"
+    },
+    "object_attributes": {
+        "user_id": 26076637,
+        "created_at": "2025-04-06 03:56:58 UTC",
+        "id": 33658637,
+        "name": "thumbsup",
+        "awardable_type": "Snippet",
+        "awardable_id": 4831194,
+        "updated_at": "2025-04-06 03:56:58 UTC",
+        "awarded_on_url": "https://gitlab.com/kolanuvarun/sample/-/snippets/4831194"
+    },
+    "project_snippet": {
+        "id": 4831194,
+        "title": "Sample Snippet",
+        "description": "Hello",
+        "content": "console.log(\"hello\");",
+        "author_id": 26076637,
+        "project_id": 68452408,
+        "created_at": "2025-04-02 17:57:11 UTC",
+        "updated_at": "2025-04-06 03:56:53 UTC",
+        "file_name": "hello.js",
+        "type": "ProjectSnippet",
+        "visibility_level": 20,
+        "url": "https://gitlab.com/kolanuvarun/sample/-/snippets/4831194"
+    }
+}
