@@ -505,10 +505,7 @@
     cursor: pointer;
     display: grid;
     gap: 5px;
-    grid-template-rows: var(--line-height-sidebar-row-prominent);
     grid-template-columns: minmax(0, 1fr) auto;
-    align-items: center;
-    padding-bottom: 10px;
     padding-left: var(--right-sidebar-heading-left-spacing);
     /* The scrollbar doesn't extend this high, but we want the three-dot
        menus to line up. */
@@ -518,11 +515,12 @@
     #buddy-list-menu-icon {
         color: var(--color-vdots-visible);
         width: var(--right-sidebar-vdots-width);
-        /* Match the height of the buddy list filter input */
-        height: 100%;
         /* Push back against default right-sidebar
            spacing for better vdots alignment. */
         padding: 0;
+        /* No left/right margin to maintain vdots
+           alignment with user rows below. */
+        margin: 2px 0;
 
         &:hover {
             color: var(--color-vdots-hover);
