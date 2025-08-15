@@ -236,6 +236,7 @@ export function add_custom_profile_fields_to_settings(): void {
     custom_profile_fields_ui.initialize_custom_date_type_fields(
         element_id,
         people.my_current_user_id(),
+        true,
     );
     custom_profile_fields_ui.initialize_custom_pronouns_type_fields(element_id);
 }

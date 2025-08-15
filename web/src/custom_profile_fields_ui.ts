@@ -209,7 +209,11 @@ export function format_date(date: Date | undefined, format: string): string {
     return flatpickr.formatDate(date, format);
 }
 
-export function initialize_custom_date_type_fields(element_id: string, user_id: number): void {
+export function initialize_custom_date_type_fields(
+    element_id: string,
+    user_id: number,
+    for_profile_settings_panel = false,
+): void {
     const $date_picker_elements = $(element_id).find(".custom_user_field .datepicker");
     if ($date_picker_elements.length === 0) {
         return;
@@ -224,12 +228,10 @@ export function initialize_custom_date_type_fields(element_id: string, user_id: 
             // our case it is a valid value when user does not want
             // to set any value for the custom profile field.
             if ($input_elem.parent().find(".date-field-alt-input").val() === "") {
-                if (user_id !== people.my_current_user_id()) {
-                    // For "Manage user" modal, API request is made after
-                    // clicking on "Save changes" button.
-                    return;
+                if (for_profile_settings_panel) {
+                    // Only auto-save for current user's own profile, not in manage user modal
+                    update_user_custom_profile_fields([{id: field_id}], channel.del);
                 }
-                update_user_custom_profile_fields([{id: field_id}], channel.del);
                 return;
             }
 
@@ -246,9 +248,9 @@ export function initialize_custom_date_type_fields(element_id: string, user_id: 
             );
             const original_value = people.get_custom_profile_data(user_id, field_id)?.value ?? "";
             instance.setDate(original_value);
-            if (user_id !== people.my_current_user_id()) {
-                // Trigger "input" event so that save button state can
-                // be toggled in "Manage user" modal.
+            // Trigger "input" event so that save button state can
+            // be toggled in "Manage user" modal.
+            if (!for_profile_settings_panel) {
                 $input_elem
                     .closest(".custom_user_field")
                     .find(".date-field-alt-input")
@@ -257,7 +259,8 @@ export function initialize_custom_date_type_fields(element_id: string, user_id: 
             return;
         }
 
-        if (user_id !== people.my_current_user_id()) {
+        // Only auto-save for current user's own profile, not in manage user modal
+        if (!for_profile_settings_panel) {
             // For "Manage user" modal, API request is made after
             // clicking on "Save changes" button.
             return;
