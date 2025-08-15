@@ -9161,6 +9161,66 @@ paths:
                         "found_newest": true,
                         "ignored_because_not_subscribed_channels": [12, 13, 9],
                       }
+
+  /reactions:
+    get:
+      operationId: get-frequently-used-emojis
+      summary: Get frequently used emojis
+      tags: ["frequent_emojis"]
+      description: |
+        Get a list of the six most frequently used emojis for the user.
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      reactions:
+                        type: array
+                        description: |
+                          A list of emoji code objects.
+                        items:
+                          type: object
+                          additionalProperties: false
+                          properties:
+                            emoji_code:
+                              type: string
+                              description: The Unicode emoji code used for the reaction.
+                example:
+                  {
+                    "result": "success",
+                    "msg": "",
+                    "reactions":
+                      [
+                        {"emoji_code": "1f603"},
+                        {"emoji_code": "1f415"},
+                        {"emoji_code": "1f436"},
+                        {"emoji_code": "1f54a"},
+                        {"emoji_code": "1f602"},
+                        {"emoji_code": "1f607"},
+                      ],
+                  }
+        "401":
+          description: Unauthorized.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/CodedError"
+                  - example:
+                      {
+                        "result": "error",
+                        "msg": "Not logged in: API authentication or user session required",
+                        "code": "UNAUTHORIZED",
+                      }
+                    description: |
+                      User is not logged in or does not have a valid API key.
   /messages/render:
     post:
       operationId: render-message
