@@ -6,7 +6,13 @@ const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
 const {page_params} = require("./lib/zpage_params.cjs");
 
-const narrow_state = mock_esm("../src/narrow_state");
+const narrow_state = mock_esm("../src/narrow_state", {
+    // We just want to simulate last term not being a search
+    // operator
+    search_terms() {
+        return [];
+    },
+});
 const stream_topic_history_util = mock_esm("../src/stream_topic_history_util");
 
 const direct_message_group_data = zrequire("direct_message_group_data");
@@ -159,11 +165,7 @@ test("subset_suggestions", ({mock_template}) => {
 
     const suggestions = get_suggestions(query);
 
-    const expected = [
-        `channel:${denmark_id} topic:Hamlet shakespeare`,
-        `channel:${denmark_id} topic:Hamlet`,
-        `channel:${denmark_id}`,
-    ];
+    const expected = [`channel:${denmark_id} topic:Hamlet shakespeare`, `channel:${denmark_id}`];
 
     assert.deepEqual(suggestions.strings, expected);
 });
@@ -191,7 +193,6 @@ test("dm_suggestions", ({override, mock_template}) => {
         "is:dm dm:alice@zulip.com",
         "is:dm sender:alice@zulip.com",
         "is:dm dm-including:alice@zulip.com",
-        "is:dm",
     ];
     assert.deepEqual(suggestions.strings, expected);
 
@@ -282,7 +283,6 @@ test("dm_suggestions", ({override, mock_template}) => {
         "is:starred has:link is:dm dm:alice@zulip.com",
         "is:starred has:link is:dm sender:alice@zulip.com",
         "is:starred has:link is:dm dm-including:alice@zulip.com",
-        "is:starred has:link is:dm",
         "is:starred has:link",
         "is:starred",
     ];
@@ -321,7 +321,6 @@ test("group_suggestions", ({mock_template}) => {
         "dm:bob@zulip.com,alice@zulip.com",
         "dm:bob@zulip.com sender:alice@zulip.com",
         "dm:bob@zulip.com dm-including:alice@zulip.com",
-        "dm:bob@zulip.com",
     ];
     assert.deepEqual(suggestions.strings, expected);
 
@@ -333,7 +332,6 @@ test("group_suggestions", ({mock_template}) => {
         "dm:ted@zulip.com my",
         "dm:ted@zulip.com sender:myself@zulip.com",
         "dm:ted@zulip.com dm-including:myself@zulip.com",
-        "dm:ted@zulip.com",
     ];
     assert.deepEqual(suggestions.strings, expected);
 
@@ -355,7 +353,6 @@ test("group_suggestions", ({mock_template}) => {
         "dm:bob@zulip.com,alice@zulip.com",
         "dm:bob@zulip.com sender:alice@zulip.com",
         "dm:bob@zulip.com dm-including:alice@zulip.com",
-        "dm:bob@zulip.com",
     ];
     assert.deepEqual(suggestions.strings, expected);
 
@@ -368,7 +365,6 @@ test("group_suggestions", ({mock_template}) => {
         "is:starred has:link dm:bob@zulip.com,ted@zulip.com",
         "is:starred has:link dm:bob@zulip.com sender:ted@zulip.com",
         "is:starred has:link dm:bob@zulip.com dm-including:ted@zulip.com",
-        "is:starred has:link dm:bob@zulip.com",
         "is:starred has:link",
         "is:starred",
     ];
@@ -662,7 +658,6 @@ test("sent_by_me_suggestions", ({override, mock_template}) => {
     expected = [
         `channel:${denmark_id} topic:Denmark1 sent`,
         `channel:${denmark_id} topic:Denmark1 sender:myself@zulip.com`,
-        `channel:${denmark_id} topic:Denmark1`,
         `channel:${denmark_id}`,
     ];
     assert.deepEqual(suggestions.strings, expected);
@@ -983,7 +978,7 @@ test("people_suggestions", ({override, mock_template}) => {
     assert.deepEqual(suggestions.strings, expected);
 
     query = "sender:ted@zulip.com new";
-    expected = ["sender:ted@zulip.com new", "sender:ted@zulip.com"];
+    expected = ["sender:ted@zulip.com new"];
     suggestions = get_suggestions(query);
     assert.deepEqual(suggestions.strings, expected);
 
@@ -1021,7 +1016,6 @@ test("operator_suggestions", ({override, mock_template}) => {
         "channel:66 is:alerted -f",
         "channel:66 is:alerted -sender:",
         "channel:66 is:alerted -sender:myself@zulip.com",
-        "channel:66 is:alerted",
         "channel:66",
     ];
     assert.deepEqual(suggestions.strings, expected);
