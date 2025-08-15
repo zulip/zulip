@@ -218,7 +218,7 @@ class Message(AbstractMessage):
                 name="zerver_message_realm_sender_recipient",
             ),
             models.Index(
-                # For analytics queries
+                # For analytics and retention queries
                 "realm_id",
                 "date_sent",
                 name="zerver_message_realm_date_sent",
