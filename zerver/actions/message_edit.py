@@ -83,7 +83,10 @@ from zerver.lib.topic_link_util import get_stream_topic_link_syntax
 from zerver.lib.types import DirectMessageEditRequest, EditHistoryEvent, StreamMessageEditRequest
 from zerver.lib.url_encoding import stream_message_url
 from zerver.lib.user_message import bulk_insert_all_ums
-from zerver.lib.user_topics import get_users_with_user_topic_visibility_policy
+from zerver.lib.user_topics import (
+    get_users_with_followed_origin_but_not_target_visibility_policy,
+    get_users_with_user_topic_visibility_policy,
+)
 from zerver.lib.widget import is_widget_message
 from zerver.models import (
     ArchivedAttachment,
@@ -633,6 +636,30 @@ def apply_automatic_unmute_follow_topics_policy(
                 target_topic_name,
                 visibility_policy=UserTopic.VisibilityPolicy.UNMUTED,
             )
+
+
+def automatic_follow_target_topic_when_orig_topic_followed(
+    orig_channel_id: int,
+    orig_topic_name: str,
+    target_stream: Stream,
+    target_topic_name: str,
+    users_losing_access: QuerySet[UserProfile, UserProfile],
+) -> None:
+    users_following_orig_topic = [
+        user_topic.user_profile
+        for user_topic in get_users_with_followed_origin_but_not_target_visibility_policy(
+            orig_channel_id, orig_topic_name, target_stream.id, target_topic_name
+        )
+        if user_topic.user_profile not in users_losing_access
+    ]
+
+    if users_following_orig_topic:
+        bulk_do_set_user_topic_visibility_policy(
+            users_following_orig_topic,
+            target_stream,
+            target_topic_name,
+            visibility_policy=UserTopic.VisibilityPolicy.FOLLOWED,
+        )
 
 
 # This must be called already in a transaction, with a write lock on
@@ -1236,6 +1263,14 @@ def do_update_message(
 
         if not sender.is_bot and sender not in users_losing_access and is_target_message_first:
             apply_automatic_unmute_follow_topics_policy(sender, target_stream, target_topic)
+
+        automatic_follow_target_topic_when_orig_topic_followed(
+            stream_being_edited.id,
+            orig_topic_name,
+            target_stream,
+            target_topic,
+            users_losing_access,
+        )
 
     send_event_on_commit(user_profile.realm, event, users_to_be_notified)
 
