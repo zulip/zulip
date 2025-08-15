@@ -264,6 +264,20 @@
            This works for condensed messages, too. */
         display: none;
     }
+
+    .animated-emoji {
+        display: none;
+    }
+
+    &:hover {
+        .still-emoji {
+            display: none;
+        }
+
+        .animated-emoji {
+            display: inline;
+        }
+    }
 }
 
 .messagebox-includes-sender {
