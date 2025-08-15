@@ -132,8 +132,8 @@ h3,
 .admin-realm-description,
 .admin-realm-welcome-message-custom-text {
     height: 12em;
-    width: 100%;
-    max-width: 500px;
+    width: 500px;
+    max-width: 100%;
     box-sizing: border-box;
 }
 
