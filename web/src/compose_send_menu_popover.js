@@ -50,6 +50,19 @@ export function open_schedule_message_menu(
                 },
             ],
         },
+        hideOnClick: false, // Prevent tippy from closing on outside click; we handle it manually
+        onClickOutside(instance, event) {
+            const openCalendar = document.querySelector(".flatpickr-calendar.open");
+            if (
+                (openCalendar && openCalendar.contains(event.target)) ||
+                (event.target.closest && event.target.closest(".flatpickr-input"))
+            ) {
+                return;
+            }
+            if (!instance.state.isDestroyed) {
+                instance.hide();
+            }
+        },
         onShow(instance) {
             // Only show send later options that are possible today.
             const date = new Date();
@@ -296,4 +309,19 @@ export function update_send_later_options() {
             $(render_schedule_message_popover(filtered_send_opts)),
         );
     }
+}
+
+// Prevent tippy.js from closing popovers when clicking inside flatpickr calendar
+// This must be global and run before any tippy popover logic
+if (typeof window !== "undefined" && window.addEventListener) {
+    window.addEventListener(
+        "mousedown",
+        (event) => {
+            const openCalendar = document.querySelector(".flatpickr-calendar.open");
+            if (openCalendar && openCalendar.contains(event.target)) {
+                event.stopPropagation();
+            }
+        },
+        true,
+    ); // Use capture phase so it runs before tippy's handler
 }
