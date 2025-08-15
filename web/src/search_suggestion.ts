@@ -558,11 +558,21 @@ function get_topic_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggestio
 }
 
 function get_term_subset_suggestions(terms: NarrowTerm[]): Suggestion[] {
-    // For channel:a topic:b search:c, suggest:
+    // For channel:a topic:b search:c (in current narrow), suggest:
     //  channel:a topic:b
     //  channel:a
     if (terms.length === 0) {
         return [];
+    }
+
+    const current_narrow_terms = narrow_state.search_terms();
+
+    // If we are in a narrow and only type something in search box,
+    // we don't want to show current narrow terms as suggestion.
+    // We don't want to do anything when we are already narrowed to
+    // search view.
+    if (terms.at(-1)?.operator === "search" && current_narrow_terms.at(-1)?.operator !== "search") {
+        terms.pop();
     }
 
     const suggestions: Suggestion[] = [];
