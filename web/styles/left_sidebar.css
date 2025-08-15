@@ -1190,7 +1190,7 @@ li.active-sub-filter {
 }
 
 #left-sidebar-navigation-list {
-    margin-bottom: var(--left-sidebar-sections-vertical-gutter);
+    margin-bottom: 0;
     display: grid;
     line-height: var(--line-height-sidebar-row);
     /* Explicitly ensure parity with the line-height
