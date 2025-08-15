@@ -367,3 +367,25 @@ $(document).on("click", ".comparison-tab", function (this: HTMLElement, _event: 
         }
     }
 });
+function scrollToTop(): void {
+    window.scrollTo({
+        top: 0,
+        behavior: "smooth",
+    });
+}
+
+function bindScrollToTop(): void {
+    const desktopLogo = document.querySelector("#scroll-to-top-logo-desktop");
+    const mobileLogo = document.querySelector("#scroll-to-top-logo-mobile");
+
+    for (const logo of [desktopLogo, mobileLogo]) {
+        logo?.addEventListener("click", (e) => {
+            e.preventDefault();
+            scrollToTop();
+        });
+    }
+}
+
+if (typeof window !== "undefined" && typeof document !== "undefined") {
+    bindScrollToTop();
+}
