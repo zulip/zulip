@@ -20,6 +20,7 @@ import * as message_edit from "./message_edit.ts";
 import * as message_lists from "./message_lists.ts";
 import * as message_store from "./message_store.ts";
 import * as message_view from "./message_view.ts";
+import * as mouse_drag from "./mouse_drag.ts";
 import * as narrow_state from "./narrow_state.ts";
 import * as navigate from "./navigate.ts";
 import {page_params} from "./page_params.ts";
@@ -939,11 +940,14 @@ export function initialize(): void {
         }
 
         if (compose_state.composing() && $(e.target).parents("#compose").length === 0) {
-            const is_inside_link = $(e.target).closest("a").length > 0;
-            if (is_inside_link || $(e.target).closest(".copy_codeblock").length > 0) {
+            const should_prevent_click_behavior = mouse_drag.is_drag(e);
+            if (
+                should_prevent_click_behavior ||
+                $(e.target).closest(".copy_codeblock").length > 0
+            ) {
                 // We want to avoid blurring a selected link by triggering a
                 // focus event on the compose textarea.
-                if (is_inside_link && document.getSelection()?.type === "Range") {
+                if (should_prevent_click_behavior) {
                     // To avoid the click behavior if a link is selected.
                     e.preventDefault();
                     return;
