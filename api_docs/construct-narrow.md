@@ -58,6 +58,9 @@ as an empty string.
 
 ## Changes
 
+* In Zulip 12.0 (feature level ZF-cf1fc8), support was added for a new
+  `channels:all` filter, matching messages in all the accessible channels.
+
 * In Zulip 12.0 (feature level 446), add the `mentions` operator,
   matching messages that contain a direct personal mention of the
   specified user.
