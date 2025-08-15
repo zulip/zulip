@@ -66,7 +66,7 @@ type Part =
           is_empty_string_topic?: boolean;
       };
 
-const channels_operands = new Set(["archived", "public", "web-public"]);
+const channels_operands = new Set(["archived", "public", "web-public", "all"]);
 
 function message_in_home(message: Message): boolean {
     // The home view contains messages not sent to muted channels,
@@ -179,6 +179,14 @@ function build_term_predicate(term: NarrowCanonicalTerm): ((message: Message) =>
                     return (message) =>
                         message.type === "stream" &&
                         stream_data.is_stream_archived_by_id(message.stream_id);
+                case "all":
+                    return (message) => {
+                        if (message.type !== "stream") {
+                            return false;
+                        }
+                        const policy = stream_data.get_stream_privacy_policy(message.stream_id);
+                        return ["public", "web-public", "invite-only"].includes(policy);
+                    };
                 default:
                     return () => false;
             }
@@ -739,6 +747,7 @@ export class Filter {
     static sorted_term_types(term_types: string[]): string[] {
         const levels = [
             "in",
+            "channels-all",
             "channels-public",
             "channels-archived",
             "not-channels-archived",
@@ -971,6 +980,8 @@ export class Filter {
                 return possible_prefix + "all web-public channels";
             case "archived":
                 return possible_prefix + "archived channels";
+            case "all":
+                return possible_prefix + "all channels that you can view";
             default:
                 return possible_prefix + "all public channels";
         }
@@ -1238,6 +1249,8 @@ export class Filter {
             "not-is-muted",
             "in-home",
             "in-all",
+            "channels-all",
+            "not-channels-all",
             "channels-public",
             "not-channels-public",
             "channels-archived",
@@ -1360,6 +1373,9 @@ export class Filter {
         if (_.isEqual(term_types, ["is-starred"])) {
             return true;
         }
+        if (_.isEqual(term_types, ["channels-all"])) {
+            return true;
+        }
         if (_.isEqual(term_types, ["channels-public"])) {
             return true;
         }
@@ -1445,6 +1461,8 @@ export class Filter {
                     return "/#narrow/is/starred";
                 case "is-mentioned":
                     return "/#narrow/is/mentioned";
+                case "channels-all":
+                    return "/#narrow/channels/all";
                 case "channels-public":
                     return "/#narrow/channels/public";
                 case "channels-archived":
@@ -1634,6 +1652,8 @@ export class Filter {
                     return $t({defaultMessage: "Combined feed"});
                 case "in-all":
                     return $t({defaultMessage: "All messages including muted channels"});
+                case "channels-all":
+                    return $t({defaultMessage: "Messages in all channels"});
                 case "channels-public":
                     if (page_params.is_spectator || current_user.is_guest) {
                         return $t({
@@ -2057,6 +2077,8 @@ export class Filter {
             "not-is-followed",
             "is-resolved",
             "not-is-resolved",
+            "channels-all",
+            "not-channels-all",
             "channels-public",
             "not-channels-public",
             "channels-archived",
