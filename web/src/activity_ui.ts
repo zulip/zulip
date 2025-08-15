@@ -227,11 +227,12 @@ export function initialize(opts: {narrow_by_email: (email: string) => void}): vo
     activity.send_presence_to_server();
 }
 
-export function update_presence_info(
-    user_id: number,
-    info: PresenceInfoFromEvent,
-    server_time: number,
-): void {
+export function update_presence_info(info: PresenceInfoFromEvent): void {
+    const presence_entry = Object.entries(info)[0];
+    assert(presence_entry !== undefined);
+    const [user_id_string, presence_info] = presence_entry;
+    const user_id = Number.parseInt(user_id_string, 10);
+
     // There can be some case where the presence event
     // was set for an inaccessible user if
     // CAN_ACCESS_ALL_USERS_GROUP_LIMITS_PRESENCE is
@@ -241,7 +242,7 @@ export function update_presence_info(
         return;
     }
 
-    presence.update_info_from_event(user_id, info, server_time);
+    presence.update_info_from_event(user_id, presence_info);
     redraw_user(user_id);
     pm_list.update_private_messages();
 }
