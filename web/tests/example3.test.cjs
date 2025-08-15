@@ -2,6 +2,7 @@
 
 const assert = require("node:assert/strict");
 
+const {make_realm} = require("./lib/example_realm.cjs");
 const {make_stream} = require("./lib/example_stream.cjs");
 const {make_message_list} = require("./lib/message_list.cjs");
 const {zrequire} = require("./lib/namespace.cjs");
@@ -16,7 +17,7 @@ const {Filter} = zrequire("../src/filter");
 const {set_realm} = zrequire("state_data");
 const stream_data = zrequire("stream_data");
 
-set_realm({});
+set_realm(make_realm());
 
 const denmark_stream = make_stream({
     color: "blue",

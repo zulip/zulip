@@ -9,6 +9,7 @@ const {
     buddy_list_add_other_user,
     stub_buddy_list_elements,
 } = require("./lib/buddy_list.cjs");
+const {make_realm} = require("./lib/example_realm.cjs");
 const {make_message_list} = require("./lib/message_list.cjs");
 const {mock_esm, set_global, with_overrides, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
@@ -56,7 +57,7 @@ const {initialize_user_settings} = zrequire("user_settings");
 
 const current_user = {};
 set_current_user(current_user);
-const realm = {};
+const realm = make_realm();
 set_realm(realm);
 const user_settings = {};
 initialize_user_settings({user_settings});

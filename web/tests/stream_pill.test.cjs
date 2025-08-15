@@ -3,6 +3,7 @@
 const assert = require("node:assert/strict");
 
 const {make_user_group} = require("./lib/example_group.cjs");
+const {make_realm} = require("./lib/example_realm.cjs");
 const example_settings = require("./lib/example_settings.cjs");
 const {zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
@@ -15,7 +16,7 @@ const stream_pill = zrequire("stream_pill");
 const user_groups = zrequire("user_groups");
 
 const current_user = {};
-const realm = {};
+const realm = make_realm();
 set_current_user(current_user);
 set_realm(realm);
 

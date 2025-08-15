@@ -2,6 +2,7 @@
 
 const assert = require("node:assert/strict");
 
+const {make_realm} = require("./lib/example_realm.cjs");
 const {$t} = require("./lib/i18n.cjs");
 const {mock_cjs, mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
@@ -36,7 +37,7 @@ const {set_realm} = zrequire("state_data");
 const {initialize_user_settings} = zrequire("user_settings");
 
 const REALM_EMPTY_TOPIC_DISPLAY_NAME = "general chat";
-const realm = {realm_empty_topic_display_name: REALM_EMPTY_TOPIC_DISPLAY_NAME};
+const realm = make_realm({realm_empty_topic_display_name: REALM_EMPTY_TOPIC_DISPLAY_NAME});
 set_realm(realm);
 const user_settings = {};
 initialize_user_settings({user_settings});

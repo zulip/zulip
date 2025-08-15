@@ -2,13 +2,14 @@
 
 const assert = require("node:assert/strict");
 
+const {make_realm} = require("./lib/example_realm.cjs");
 const {zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 
 const gear_menu_util = zrequire("gear_menu_util");
 const {set_realm} = zrequire("state_data");
 
-const realm = {};
+const realm = make_realm();
 set_realm(realm);
 
 run_test("version_display_string", ({override}) => {

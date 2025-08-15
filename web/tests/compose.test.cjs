@@ -7,6 +7,7 @@ const MockDate = require("mockdate");
 const {mock_banners} = require("./lib/compose_banner.cjs");
 const {FakeComposeBox} = require("./lib/compose_helpers.cjs");
 const {make_user_group} = require("./lib/example_group.cjs");
+const {make_realm} = require("./lib/example_realm.cjs");
 const {mock_esm, set_global, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
 const $ = require("./lib/zjquery.cjs");
@@ -68,7 +69,7 @@ const stream_data = zrequire("stream_data");
 const compose_validate = zrequire("compose_validate");
 const {initialize_user_settings} = zrequire("user_settings");
 
-const realm = {realm_topics_policy: "allow_empty_topic"};
+const realm = make_realm({realm_topics_policy: "allow_empty_topic"});
 set_realm(realm);
 const current_user = {};
 set_current_user(current_user);
