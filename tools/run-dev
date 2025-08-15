@@ -113,6 +113,7 @@ else:
         "runtornado",
         "--autoreload",
         "--immediate-reloads",
+        "--automated",
     ]
 
 manage_args = [f"--settings={settings_module}"]
@@ -186,14 +187,14 @@ def server_processes() -> list[list[str]]:
         return main_cmds
 
     other_cmds = [
-        ["./manage.py", "process_queue", "--all", *manage_args],
+        ["./manage.py", "process_queue", "--all", *manage_args, "--automated"],
         [
             "env",
             "PGHOST=127.0.0.1",  # Force password authentication using .pgpass
             "./puppet/zulip/files/postgresql/process_fts_updates",
             "--quiet",
         ],
-        ["./manage.py", "deliver_scheduled_messages"],
+        ["./manage.py", "deliver_scheduled_messages", "--automated"],
         [
             "./manage.py",
             "runtusd",
