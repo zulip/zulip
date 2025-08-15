@@ -20,6 +20,7 @@ programming experience, another option is to use our [send message
 API](/api/send-message).
 
 ### Message a channel by email
+!!! warn "You will see the button to generate an email address only if you have permission to send messages to this channel."
 
 {start_tabs}
 
