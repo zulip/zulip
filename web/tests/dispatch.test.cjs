@@ -461,10 +461,8 @@ run_test("presence", ({override}) => {
     override(activity_ui, "update_presence_info", stub.f);
     dispatch(event);
     assert.equal(stub.num_calls, 1);
-    const args = stub.get_args("user_id", "presence", "server_time");
-    assert_same(args.user_id, event.user_id);
-    assert_same(args.presence, event.presence);
-    assert_same(args.server_time, event.server_timestamp);
+    const args = stub.get_args("presences");
+    assert_same(args.presences, event.presences);
 });
 
 run_test("reaction", ({override}) => {

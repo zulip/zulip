@@ -461,10 +461,8 @@ test("level", ({override}) => {
 
     const server_time = 9999;
     const info = {
-        website: {
-            status: "active",
-            timestamp: server_time,
-        },
+        active_timestamp: 9999,
+        idle_timestamp: 9999,
     };
     presence.update_info_from_event(me.user_id, info, server_time);
     presence.update_info_from_event(selma.user_id, info, server_time);
