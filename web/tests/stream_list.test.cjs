@@ -96,6 +96,7 @@ const devel = {
     subscribed: true,
     pin_to_top: true,
     is_recently_active: false,
+    can_create_topic_group: everyone_group.id,
     can_send_message_group: everyone_group.id,
 };
 
@@ -105,6 +106,7 @@ const social = {
     color: "green",
     subscribed: true,
     is_recently_active: true,
+    can_create_topic_group: everyone_group.id,
     can_send_message_group: everyone_group.id,
 };
 
@@ -309,6 +311,7 @@ const develSub = {
     pin_to_top: true,
     subscribed: true,
     is_recently_active: true,
+    can_create_topic_group: everyone_group.id,
     can_send_message_group: everyone_group.id,
 };
 
@@ -319,6 +322,7 @@ const RomeSub = {
     pin_to_top: true,
     subscribed: true,
     is_recently_active: true,
+    can_create_topic_group: everyone_group.id,
     can_send_message_group: everyone_group.id,
 };
 
@@ -329,6 +333,7 @@ const testSub = {
     pin_to_top: true,
     subscribed: true,
     is_recently_active: true,
+    can_create_topic_group: everyone_group.id,
     can_send_message_group: everyone_group.id,
     is_muted: true,
 };
@@ -340,6 +345,7 @@ const announceSub = {
     pin_to_top: false,
     subscribed: true,
     is_recently_active: true,
+    can_create_topic_group: everyone_group.id,
     can_send_message_group: everyone_group.id,
 };
 
@@ -350,6 +356,7 @@ const DenmarkSub = {
     pin_to_top: false,
     subscribed: true,
     is_recently_active: true,
+    can_create_topic_group: everyone_group.id,
     can_send_message_group: everyone_group.id,
 };
 
@@ -360,6 +367,7 @@ const carSub = {
     pin_to_top: false,
     subscribed: true,
     is_recently_active: false,
+    can_create_topic_group: everyone_group.id,
     can_send_message_group: everyone_group.id,
 };
 
@@ -625,8 +633,8 @@ test_ui("rename_stream", ({mock_template, override, override_rewire}) => {
             is_web_public: undefined,
             color: payload.color,
             pin_to_top: true,
+            can_create_topics: true,
             can_post_messages: true,
-            is_empty_topic_only_channel: false,
         });
         return {to_$: () => $li_stub};
     });
@@ -658,6 +666,7 @@ test_ui("refresh_pin", ({override_rewire, mock_template}) => {
         color: "blue",
         pin_to_top: false,
         subscribed: true,
+        can_create_topic_group: everyone_group.id,
         can_send_message_group: everyone_group.id,
     };
 
