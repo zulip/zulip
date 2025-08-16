@@ -59,7 +59,7 @@ def send_message_report(
             last_user_mention=last_user_mention,
         )
     else:
-        assert reported_message.is_stream_message() is True
+        assert reported_message.is_channel_message is True
         topic_name = reported_message.topic_name()
         channel_id = reported_message.recipient.type_id
         channel_name = reported_message.recipient.label()

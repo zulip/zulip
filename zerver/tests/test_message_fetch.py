@@ -2433,7 +2433,7 @@ class GetOldMessagesTest(ZulipTestCase):
         self.assertFalse(aaron.is_active)
 
         personals = [
-            m for m in get_user_messages(self.example_user("hamlet")) if not m.is_stream_message()
+            m for m in get_user_messages(self.example_user("hamlet")) if not m.is_channel_message
         ]
         for personal in personals:
             emails = dr_emails(get_display_recipient(personal.recipient))
@@ -2748,7 +2748,7 @@ class GetOldMessagesTest(ZulipTestCase):
         self.send_personal_message(hamlet, hamlet)
 
         messages = get_user_messages(hamlet)
-        channel_messages = [msg for msg in messages if msg.is_stream_message()]
+        channel_messages = [msg for msg in messages if msg.is_channel_message]
         self.assertGreater(len(messages), len(channel_messages))
         self.assert_length(channel_messages, num_messages_per_channel * len(channel_names))
 
@@ -2804,7 +2804,7 @@ class GetOldMessagesTest(ZulipTestCase):
         )
 
         messages = get_user_messages(self.mit_user("starnine"))
-        channel_messages = [msg for msg in messages if msg.is_stream_message()]
+        channel_messages = [msg for msg in messages if msg.is_channel_message]
 
         self.assert_length(result["messages"], 2)
         for i, message in enumerate(result["messages"]):
@@ -2835,7 +2835,7 @@ class GetOldMessagesTest(ZulipTestCase):
         )
 
         messages = get_user_messages(mit_user_profile)
-        channel_messages = [msg for msg in messages if msg.is_stream_message()]
+        channel_messages = [msg for msg in messages if msg.is_channel_message]
         self.assert_length(result["messages"], 5)
         for i, message in enumerate(result["messages"]):
             self.assertEqual(message["type"], "stream")
@@ -2869,7 +2869,7 @@ class GetOldMessagesTest(ZulipTestCase):
         )
 
         messages = get_user_messages(mit_user_profile)
-        channel_messages = [msg for msg in messages if msg.is_stream_message()]
+        channel_messages = [msg for msg in messages if msg.is_channel_message]
         self.assert_length(result["messages"], 7)
         for i, message in enumerate(result["messages"]):
             self.assertEqual(message["type"], "stream")
