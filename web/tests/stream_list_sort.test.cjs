@@ -5,13 +5,22 @@ const assert = require("node:assert/strict");
 const _ = require("lodash");
 
 const {make_stream} = require("./lib/example_stream.cjs");
+const {make_message_list} = require("./lib/message_list.cjs");
 const {zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 
 const stream_data = zrequire("stream_data");
+const state_data = zrequire("state_data");
 const stream_list_sort = zrequire("stream_list_sort");
 const settings_config = zrequire("settings_config");
+const stream_topic_history = zrequire("stream_topic_history");
+const message_lists = zrequire("message_lists");
+const channel_folders = zrequire("channel_folders");
 const {initialize_user_settings} = zrequire("user_settings");
+
+state_data.set_realm({
+    realm_empty_topic_display_name: "general chat",
+});
 
 // Start with always filtering out inactive streams.
 const user_settings = {
@@ -26,6 +35,7 @@ const scalene = make_stream({
     stream_id: 1,
     pin_to_top: true,
     is_recently_active: true,
+    folder_id: 1,
 });
 const fast_tortoise = make_stream({
     subscribed: true,
@@ -33,6 +43,7 @@ const fast_tortoise = make_stream({
     stream_id: 2,
     pin_to_top: false,
     is_recently_active: true,
+    folder_id: 1,
 });
 const pneumonia = make_stream({
     subscribed: true,
@@ -40,6 +51,7 @@ const pneumonia = make_stream({
     stream_id: 3,
     pin_to_top: false,
     is_recently_active: false,
+    folder_id: 1,
 });
 const clarinet = make_stream({
     subscribed: true,
@@ -61,6 +73,7 @@ const stream_hyphen_underscore_slash_colon = make_stream({
     stream_id: 6,
     pin_to_top: false,
     is_recently_active: true,
+    folder_id: 2,
 });
 const muted_active = make_stream({
     subscribed: true,
@@ -69,6 +82,7 @@ const muted_active = make_stream({
     pin_to_top: false,
     is_recently_active: true,
     is_muted: true,
+    folder_id: 1,
 });
 const muted_pinned = make_stream({
     subscribed: true,
@@ -85,6 +99,43 @@ const archived = make_stream({
     pin_to_top: true,
     is_archived: true,
 });
+
+channel_folders.initialize({
+    channel_folders: [
+        {
+            name: "Frontend",
+            description: "Channels for frontend discussions",
+            rendered_description: "<p>Channels for frontend discussions</p>",
+            creator_id: null,
+            date_created: 1596710000,
+            id: 1,
+            is_archived: false,
+            order: 2,
+        },
+        {
+            name: "Backend",
+            description: "Channels for backend discussions",
+            rendered_description: "<p>Channels for backend discussions</p>",
+            creator_id: null,
+            date_created: 1596720000,
+            id: 2,
+            is_archived: false,
+            order: 1,
+        },
+    ],
+});
+
+function add_all_subs() {
+    stream_data.add_sub(scalene);
+    stream_data.add_sub(fast_tortoise);
+    stream_data.add_sub(pneumonia);
+    stream_data.add_sub(clarinet);
+    stream_data.add_sub(weaving);
+    stream_data.add_sub(stream_hyphen_underscore_slash_colon);
+    stream_data.add_sub(muted_active);
+    stream_data.add_sub(muted_pinned);
+    stream_data.add_sub(archived);
+}
 
 function sort_groups(query) {
     const streams = stream_data.subscribed_stream_ids();
@@ -124,16 +175,8 @@ test("no_subscribed_streams", () => {
     assert.equal(stream_list_sort.first_row(), undefined);
 });
 
-test("basics", () => {
-    stream_data.add_sub(scalene);
-    stream_data.add_sub(fast_tortoise);
-    stream_data.add_sub(pneumonia);
-    stream_data.add_sub(clarinet);
-    stream_data.add_sub(weaving);
-    stream_data.add_sub(stream_hyphen_underscore_slash_colon);
-    stream_data.add_sub(muted_active);
-    stream_data.add_sub(muted_pinned);
-    stream_data.add_sub(archived);
+test("basics", ({override}) => {
+    add_all_subs();
 
     // Test sorting into categories/alphabetized
     let sorted_sections = sort_groups("").sections;
@@ -149,6 +192,26 @@ test("basics", () => {
         stream_hyphen_underscore_slash_colon.stream_id,
     ]);
     assert.deepEqual(normal.muted_streams, [muted_active.stream_id]);
+    assert.deepEqual(normal.inactive_streams, [pneumonia.stream_id]);
+
+    assert.deepEqual(stream_list_sort.get_stream_ids(), [
+        scalene.stream_id,
+        muted_pinned.stream_id,
+        clarinet.stream_id,
+        fast_tortoise.stream_id,
+        stream_hyphen_underscore_slash_colon.stream_id,
+        muted_active.stream_id,
+        pneumonia.stream_id,
+    ]);
+
+    assert.equal(
+        stream_list_sort.current_section_id_for_stream(scalene.stream_id),
+        "pinned-streams",
+    );
+    assert.equal(
+        stream_list_sort.current_section_id_for_stream(clarinet.stream_id),
+        "normal-streams",
+    );
 
     // Test keyboard UI / cursor code (currently mostly deleted).
     // TODO/channel-folders: Re-add keyboard navigation tests,
@@ -227,6 +290,128 @@ test("basics", () => {
     assert.deepEqual(sorted_sections[1].id, "normal-streams");
     assert.deepEqual(sorted_sections[1].streams, [stream_hyphen_underscore_slash_colon.stream_id]);
     assert.deepEqual(sorted_sections[1].inactive_streams, []);
+
+    override(user_settings, "web_left_sidebar_show_channel_folders", true);
+    sorted_sections = sort_groups("").sections;
+    assert.deepEqual(sorted_sections.length, 4);
+    assert.deepEqual(sorted_sections[0].id, "pinned-streams");
+    assert.deepEqual(sorted_sections[0].section_title, "translated: PINNED CHANNELS");
+    assert.deepEqual(sorted_sections[1].id, "2");
+    assert.deepEqual(sorted_sections[1].section_title, "BACKEND");
+    assert.deepEqual(sorted_sections[2].id, "1");
+    assert.deepEqual(sorted_sections[2].section_title, "FRONTEND");
+    assert.deepEqual(sorted_sections[3].id, "normal-streams");
+    assert.deepEqual(sorted_sections[3].section_title, "translated: CHANNELS");
+
+    // If both `pin_to_top` is true and folder_id is set, as in
+    // the channel `scalene`, then the channel ends up in the pinned
+    // section and `folder_id` is ignored.
+    assert.deepEqual(sorted_sections[0].streams, [scalene.stream_id]);
+    assert.deepEqual(sorted_sections[0].muted_streams, [muted_pinned.stream_id]);
+    assert.deepEqual(sorted_sections[0].inactive_streams, []);
+    assert.deepEqual(sorted_sections[1].streams, [stream_hyphen_underscore_slash_colon.stream_id]);
+    assert.deepEqual(sorted_sections[1].muted_streams, []);
+    assert.deepEqual(sorted_sections[1].inactive_streams, []);
+    assert.deepEqual(sorted_sections[2].streams, [fast_tortoise.stream_id]);
+    assert.deepEqual(sorted_sections[2].muted_streams, [muted_active.stream_id]);
+    assert.deepEqual(sorted_sections[2].inactive_streams, [pneumonia.stream_id]);
+    assert.deepEqual(sorted_sections[3].streams, [clarinet.stream_id]);
+    assert.deepEqual(sorted_sections[3].muted_streams, []);
+    assert.deepEqual(sorted_sections[3].inactive_streams, []);
+
+    // The first and last sections are invariant. The intermediate sections
+    // are arranged by the `order` field in the channel folder object.
+    assert.deepEqual(stream_list_sort.section_ids(), [
+        "pinned-streams",
+        "2",
+        "1",
+        "normal-streams",
+    ]);
+});
+
+test("current_section_id_for_stream", ({override}) => {
+    add_all_subs();
+
+    sort_groups("");
+    assert.equal(
+        stream_list_sort.current_section_id_for_stream(scalene.stream_id),
+        "pinned-streams",
+    );
+    assert.equal(
+        stream_list_sort.current_section_id_for_stream(clarinet.stream_id),
+        "normal-streams",
+    );
+    assert.equal(
+        stream_list_sort.current_section_id_for_stream(fast_tortoise.stream_id),
+        "normal-streams",
+    );
+    assert.equal(
+        stream_list_sort.current_section_id_for_stream(
+            stream_hyphen_underscore_slash_colon.stream_id,
+        ),
+        "normal-streams",
+    );
+
+    override(user_settings, "web_left_sidebar_show_channel_folders", true);
+    sort_groups("");
+    // Now fast_tortoise should appear in its respective folder.
+    assert.equal(
+        stream_list_sort.current_section_id_for_stream(scalene.stream_id),
+        "pinned-streams",
+    );
+    assert.equal(
+        stream_list_sort.current_section_id_for_stream(clarinet.stream_id),
+        "normal-streams",
+    );
+    assert.equal(stream_list_sort.current_section_id_for_stream(fast_tortoise.stream_id), "1");
+    assert.equal(
+        stream_list_sort.current_section_id_for_stream(
+            stream_hyphen_underscore_slash_colon.stream_id,
+        ),
+        "2",
+    );
+});
+
+test("left_sidebar_search", ({override}) => {
+    // If a topic in the current channel matches the search query,
+    // the channel should appear in its corresponding section in the result.
+    add_all_subs();
+
+    function setup_search_around_stream(stream) {
+        message_lists.set_current(
+            make_message_list([{operator: "stream", operand: stream.stream_id}]),
+        );
+        const history = stream_topic_history.find_or_create(stream.stream_id);
+        history.add_or_update("an important topic", 1);
+        return stream_list_sort.sort_groups(
+            stream_data.subscribed_stream_ids().filter((id) => id !== stream.stream_id),
+            "import",
+        ).sections;
+    }
+    let sorted_sections = setup_search_around_stream(scalene);
+    // The topic matches the search query, so the stream appears in the search result.
+    // Since `pin_to_top` is true for scalene, it should be in that section.
+    assert.deepEqual(sorted_sections.length, 2);
+    assert.deepEqual(sorted_sections[0].streams, [scalene.stream_id]);
+
+    sorted_sections = stream_list_sort.sort_groups(
+        stream_data.subscribed_stream_ids().filter((id) => id !== scalene.stream_id),
+        "any",
+    ).sections;
+    assert.deepEqual(sorted_sections.length, 2);
+    assert.deepEqual(sorted_sections[0].streams, []);
+    assert.deepEqual(sorted_sections[1].streams, []);
+
+    // Testing the same for custom sections.
+    override(user_settings, "web_left_sidebar_show_channel_folders", true);
+    sorted_sections = setup_search_around_stream(fast_tortoise);
+    // Since no channel in the section `BACKEND` matched the query, it
+    // didn't make it to here.
+    assert.deepEqual(sorted_sections.length, 3);
+    assert.deepEqual(sorted_sections[1].folder_id, fast_tortoise.folder_id);
+    assert.deepEqual(sorted_sections[1].streams, [fast_tortoise.stream_id]);
+    assert.deepEqual(sorted_sections[0].streams, []);
+    assert.deepEqual(sorted_sections[2].streams, []);
 });
 
 test("filter inactives", ({override}) => {
@@ -274,4 +459,122 @@ test("initialize", ({override}) => {
     stream_list_sort.initialize();
 
     assert.ok(!stream_list_sort.is_filtering_inactives());
+});
+
+test("navigate rows", ({override}) => {
+    add_all_subs();
+
+    override(user_settings, "web_left_sidebar_show_channel_folders", true);
+    stream_list_sort.set_filter_out_inactives_for_testing(true);
+    stream_list_sort.reset_stream_list_for_testing();
+
+    sort_groups("");
+    const all_rows = stream_list_sort.get_all_rows_for_testing();
+
+    // The following assertions are the basis for the subsequent tests.
+    assert.deepStrictEqual(all_rows, [
+        {type: "stream", stream_id: 1, inactive_or_muted: false},
+        {type: "stream", stream_id: 8, inactive_or_muted: true},
+        {type: "inactive_or_muted_toggle", section_id: "pinned-streams"},
+        {type: "stream", stream_id: 6, inactive_or_muted: false},
+        {type: "stream", stream_id: 2, inactive_or_muted: false},
+        {type: "stream", stream_id: 7, inactive_or_muted: true},
+        {type: "stream", stream_id: 3, inactive_or_muted: true},
+        {type: "inactive_or_muted_toggle", section_id: "1"},
+        {type: "stream", stream_id: 4, inactive_or_muted: false},
+    ]);
+
+    assert.deepEqual(
+        stream_list_sort.next_row(all_rows[0], new Set(), new Set(), all_rows[0].stream_id),
+        all_rows[2],
+    );
+
+    // `muted_pinned` should be skipped this time since it belongs to `pinned-streams`.
+    assert.deepEqual(
+        stream_list_sort.next_row(
+            all_rows[0],
+            new Set(),
+            new Set(["pinned-streams"]),
+            all_rows[0].stream_id,
+        ),
+        all_rows[3],
+    );
+
+    assert.deepEqual(
+        stream_list_sort.next_row(all_rows.at(-1), new Set(), new Set(), all_rows[0].stream_id),
+        undefined,
+    );
+
+    // 5th and 6th indices have `inactive_or_muted` as `true`,
+    // so the next row (of type `inactive_or_muted_toggle`) is chosen.
+    assert.deepEqual(
+        stream_list_sort.next_row(all_rows[4], new Set(), new Set(), all_rows[0].stream_id),
+        all_rows[7],
+    );
+
+    // If the toggle is collapsed, it is skipped.
+    assert.deepEqual(
+        stream_list_sort.next_row(
+            all_rows[4],
+            new Set(),
+            new Set([all_rows[7].section_id]),
+            all_rows[0].stream_id,
+        ),
+        all_rows[8],
+    );
+
+    // Same kinds of tests for `prev_row`
+    assert.deepEqual(
+        stream_list_sort.prev_row(all_rows[1], new Set(), new Set(), all_rows[0].stream_id),
+        all_rows[0],
+    );
+
+    // index 1 should be skipped since it belongs to `pinned-streams`.
+    assert.deepEqual(
+        stream_list_sort.prev_row(
+            all_rows[3],
+            new Set(),
+            new Set(["pinned-streams"]),
+            all_rows[0].stream_id,
+        ),
+        all_rows[0],
+    );
+
+    assert.deepEqual(
+        stream_list_sort.prev_row(all_rows[0], new Set(), new Set(), all_rows[0].stream_id),
+        undefined,
+    );
+
+    // 5th index has `inactive` as `true`, so the previous row (of type `inactive_toggle`) is chosen.
+    assert.deepEqual(
+        stream_list_sort.prev_row(all_rows[6], new Set(), new Set(), all_rows[0].stream_id),
+        all_rows[4],
+    );
+
+    // - index 6 is skipped as it is an `inactive_toggle` corresponding to
+    // a collapsed section.
+    // - Index 5 is skipped as the row is inactive.
+    // - If a section is collapsed, all rows in it are skipped, so indices
+    // 4 and 3 are skipped.
+    assert.deepEqual(
+        stream_list_sort.prev_row(
+            all_rows[8],
+            new Set(),
+            new Set([all_rows[7].section_id]),
+            all_rows[0].stream_id,
+        ),
+        all_rows[3],
+    );
+
+    // If a row is active, it is navigable despite it being inside a
+    // collapsed section.
+    assert.deepEqual(
+        stream_list_sort.prev_row(
+            all_rows[7],
+            new Set(),
+            new Set([String(fast_tortoise.folder_id)]),
+            all_rows[4].stream_id,
+        ),
+        all_rows[4],
+    );
 });
