@@ -212,7 +212,7 @@ def do_update_mobile_push_notification(
     # in a sent notification if a message was edited to mention a
     # group rather than a user (or vice versa), though it is likely
     # not worth the effort to do such a change.
-    if not message.is_stream_message():
+    if not message.is_channel_message:
         return
 
     remove_notify_users = prior_mention_user_ids - mentions_user_ids - stream_push_user_ids

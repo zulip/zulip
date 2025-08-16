@@ -685,7 +685,7 @@ def handle_missedmessage_emails(
 
     for msg_list in messages_by_bucket.values():
         msg = min(msg_list, key=lambda msg: msg.date_sent)
-        if msg.is_stream_message() and UserMessage.has_any_mentions(user_profile_id, msg.id):
+        if msg.is_channel_message and UserMessage.has_any_mentions(user_profile_id, msg.id):
             context_messages = get_context_for_message(msg)
             filtered_context_messages = bulk_access_messages(
                 user_profile, context_messages, is_modifying_message=False

@@ -46,7 +46,7 @@ def fill_edit_history_entries(
     """
     prev_content = message.content
     prev_rendered_content = message.rendered_content
-    is_channel_message = message.is_stream_message()
+    is_channel_message = message.is_channel_message
     if is_channel_message:
         prev_topic_name = maybe_rename_empty_topic_to_general_chat(
             message.topic_name(), is_channel_message, allow_empty_topic_name
@@ -185,7 +185,7 @@ def validate_can_delete_message(user_profile: UserProfile, message: Message) -> 
         return
 
     stream: Stream | None = None
-    if message.is_stream_message():
+    if message.is_channel_message:
         stream = get_stream_by_id_in_realm(message.recipient.type_id, user_profile.realm)
         if can_delete_any_message_in_channel(user_profile, stream):
             return
@@ -195,7 +195,7 @@ def validate_can_delete_message(user_profile: UserProfile, message: Message) -> 
         raise JsonableError(_("You don't have permission to delete this message"))
 
     if not user_profile.can_delete_own_message():
-        if not message.is_stream_message():
+        if not message.is_channel_message:
             raise JsonableError(_("You don't have permission to delete this message"))
 
         assert stream is not None

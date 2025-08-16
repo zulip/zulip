@@ -914,7 +914,7 @@ class DeleteMessageTest(ZulipTestCase):
         self.assertEqual(stream.first_message_id, message_ids[1])
 
         all_messages = Message.objects.filter(id__in=message_ids)
-        with self.assert_database_query_count(27):
+        with self.assert_database_query_count(25):
             do_delete_messages(realm, all_messages, acting_user=None)
         stream = get_stream(stream_name, realm)
         self.assertEqual(stream.first_message_id, None)

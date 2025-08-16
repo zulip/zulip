@@ -140,7 +140,7 @@ def validate_attachment_request(
         user_profile=user_profile, message__in=messages
     ).select_related("message", "message__recipient")
     for um in usermessage_rows:
-        if not um.message.is_stream_message():
+        if not um.message.is_channel_message:
             # If the attachment was sent in a direct message or group direct
             # message then anyone who received that message can access it.
             return True, attachment
@@ -164,7 +164,7 @@ def validate_attachment_request(
 
     message_channel_ids = set()
     for message in messages:
-        if message.is_stream_message():
+        if message.is_channel_message:
             message_channel_ids.add(message.recipient.type_id)
 
     if len(message_channel_ids) == 0:

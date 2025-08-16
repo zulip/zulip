@@ -2775,6 +2775,7 @@ class PushNotificationTestCase(BouncerTestCase):
             rendered_content="This is test content",
             date_sent=timezone_now(),
             sending_client=self.sending_client,
+            is_channel_message=type == Recipient.STREAM,
         )
         message.set_topic_name("Test topic")
         message.save()

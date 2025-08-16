@@ -126,7 +126,7 @@ def validate_message_edit_payload(
     if topic_name is None and content is None and stream_id is None:
         raise JsonableError(_("Nothing to change"))
 
-    if not message.is_stream_message():
+    if not message.is_channel_message:
         if stream_id is not None:
             raise JsonableError(_("Direct messages cannot be moved to channels."))
         if topic_name is not None:
@@ -1454,7 +1454,7 @@ def build_message_edit_request(
             content = "(deleted)"
         new_content = normalize_body(content)
 
-    if not message.is_stream_message():
+    if not message.is_channel_message:
         # We have already validated that at least one of content, topic, or stream
         # must be modified, and for DMs, only the content can be edited.
         return DirectMessageEditRequest(
@@ -1633,12 +1633,12 @@ def check_update_message(
         )
         links_for_embed |= rendering_result.links_for_preview
 
-        if message.is_stream_message() and rendering_result.mentions_stream_wildcard:
+        if message.is_channel_message and rendering_result.mentions_stream_wildcard:
             stream = access_stream_by_id(user_profile, message.recipient.type_id)[0]
             if not stream_wildcard_mention_allowed(message.sender, stream, message.realm):
                 raise StreamWildcardMentionNotAllowedError
 
-        if message.is_stream_message() and rendering_result.mentions_topic_wildcard:
+        if message.is_channel_message and rendering_result.mentions_topic_wildcard:
             topic_participant_count = len(
                 participants_for_topic(message.realm.id, message.recipient.id, message.topic_name())
             )
@@ -1653,7 +1653,7 @@ def check_update_message(
 
     if isinstance(message_edit_request, StreamMessageEditRequest):
         if message_edit_request.is_stream_edited:
-            assert message.is_stream_message()
+            assert message.is_channel_message
             if not can_move_messages_out_of_channel(user_profile, message_edit_request.orig_stream):
                 raise JsonableError(_("You don't have permission to move this message"))
 

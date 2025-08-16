@@ -111,7 +111,7 @@ def do_delete_messages(
     )
     stream_by_recipient_id = {}
     for message in messages:
-        if message.is_stream_message():
+        if message.is_channel_message:
             recipient_id = message.recipient_id
             # topics are case-insensitive.
             topic_name = message.topic_name().lower()

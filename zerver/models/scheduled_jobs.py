@@ -225,7 +225,7 @@ class ScheduledMessage(models.Model):
     def set_topic_name(self, topic_name: str) -> None:
         self.subject = topic_name
 
-    def is_stream_message(self) -> bool:
+    def is_channel_message(self) -> bool:
         return self.recipient.type == Recipient.STREAM
 
     def to_dict(self) -> APIScheduledStreamMessageDict | APIScheduledDirectMessageDict:

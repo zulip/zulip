@@ -1053,7 +1053,7 @@ def get_apns_alert_title(message: Message, language: str) -> str:
         assert isinstance(recipients, list)
         if len(recipients) > 2:
             return ", ".join(sorted(r["full_name"] for r in recipients))
-    elif message.is_stream_message():
+    elif message.is_channel_message:
         stream_name = get_message_stream_name_from_database(message)
         topic_display_name = get_topic_display_name(message.topic_name(), language)
         return f"#{stream_name} > {topic_display_name}"
@@ -1712,7 +1712,7 @@ def handle_push_notification(user_profile_id: int, missed_message: dict[str, Any
         user_profile, {trigger}, mentioned_user_group_members_count
     )
 
-    if message.is_stream_message():
+    if message.is_channel_message:
         # This will almost always be True. The corner case where you
         # can be receiving a message from a user you cannot access
         # involves your being a guest user whose access is restricted

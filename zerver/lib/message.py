@@ -465,7 +465,7 @@ def access_web_public_message(
     except Message.DoesNotExist:
         raise MissingAuthenticationError
 
-    if not message.is_stream_message():
+    if not message.is_channel_message:
         raise MissingAuthenticationError
 
     queryset = get_web_public_streams_queryset(realm)
@@ -615,7 +615,7 @@ def event_recipient_ids_for_action_on_messages(
         return set(usermessages.values_list("user_profile_id", flat=True))
 
     sample_message = messages[0]
-    if not sample_message.is_stream_message():
+    if not sample_message.is_channel_message:
         # For DM, event is sent to users who actually received the message.
         return get_user_ids_having_usermessage_row_for_messages(message_ids)
 
@@ -1720,7 +1720,7 @@ def should_change_visibility_policy(
 
 def set_visibility_policy_possible(user_profile: UserProfile, message: Message) -> bool:
     """If the user can set a visibility policy."""
-    if not message.is_stream_message():
+    if not message.is_channel_message:
         return False
 
     if user_profile.is_bot:

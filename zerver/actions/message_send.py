@@ -608,7 +608,7 @@ def build_message_send_dict(
         message_sender=message.sender,
     )
 
-    if message.is_stream_message():
+    if message.is_channel_message:
         stream_id = message.recipient.type_id
         stream_topic: StreamTopicTarget | None = StreamTopicTarget(
             stream_id=stream_id,
@@ -745,7 +745,7 @@ def create_user_messages(
     # These properties on the Message are set via
     # render_message_markdown by code in the Markdown inline patterns
     ids_with_alert_words = rendering_result.user_ids_with_alert_words
-    is_stream_message = message.is_stream_message()
+    is_stream_message = message.is_channel_message
 
     base_flags = 0
     if rendering_result.mentions_stream_wildcard:
@@ -968,7 +968,7 @@ def do_send_messages(
     # * Adding links to the embed_links queue for open graph processing.
     for send_request in send_message_requests:
         realm_id: int | None = None
-        if send_request.message.is_stream_message():
+        if send_request.message.is_channel_message:
             if send_request.stream is None:
                 stream_id = send_request.message.recipient.type_id
                 send_request.stream = Stream.objects.get(id=stream_id)
@@ -1172,7 +1172,7 @@ def do_send_messages(
             realm_host=send_request.realm.host,
         )
 
-        if send_request.message.is_stream_message():
+        if send_request.message.is_channel_message:
             # Note: This is where authorization for single-stream
             # get_updates happens! We only attach stream data to the
             # notify new_message request if it's a public stream,
@@ -1237,7 +1237,7 @@ def do_send_messages(
 
         # Check if this is a 1:1 DM between a user and the Welcome Bot,
         # in which case we may want to send an automated response.
-        if not send_request.message.is_stream_message() and len(send_request.active_user_ids) == 2:
+        if not send_request.message.is_channel_message and len(send_request.active_user_ids) == 2:
             welcome_bot_id = get_system_bot(settings.WELCOME_BOT, send_request.realm.id).id
             if (
                 welcome_bot_id in send_request.active_user_ids
