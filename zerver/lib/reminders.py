@@ -32,7 +32,7 @@ def get_reminder_formatted_content(
     if note:
         note = normalize_note_text(note)
 
-    if message.is_stream_message():
+    if message.is_channel_message:
         # We don't need to check access here since we already have the message
         # whose access has already been checked by the caller.
         stream = Stream.objects.get(
