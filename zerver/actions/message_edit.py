@@ -83,7 +83,10 @@ from zerver.lib.topic_link_util import get_stream_topic_link_syntax
 from zerver.lib.types import DirectMessageEditRequest, EditHistoryEvent, StreamMessageEditRequest
 from zerver.lib.url_encoding import stream_message_url
 from zerver.lib.user_message import bulk_insert_all_ums
-from zerver.lib.user_topics import get_users_with_user_topic_visibility_policy
+from zerver.lib.user_topics import (
+    get_moved_messages_senders_to_follow_target_topic,
+    get_users_with_user_topic_visibility_policy,
+)
 from zerver.lib.widget import is_widget_message
 from zerver.models import (
     ArchivedAttachment,
@@ -1236,10 +1239,27 @@ def do_update_message(
                 user_profile, target_stream
             )
 
-        users_to_follow_target_topic = []
+        user_ids_losing_access = {user.id for user in users_losing_access}
 
-        if should_sender_follow_target_topic:
-            users_to_follow_target_topic += [sender]
+        changed_messages_sender_ids = [
+            sender_id
+            for sender_id in changed_messages.values_list("sender", flat=True)
+            if sender_id not in user_ids_losing_access
+        ]
+
+        users_to_follow_target_topic = [
+            user_topic.user_profile
+            for user_topic in get_moved_messages_senders_to_follow_target_topic(
+                stream_being_edited.id,
+                orig_topic_name,
+                target_stream.id,
+                target_topic,
+                changed_messages_sender_ids,
+            )
+        ]
+
+        if should_sender_follow_target_topic and sender not in users_to_follow_target_topic:
+            users_to_follow_target_topic.append(sender)
 
         if users_to_follow_target_topic:
             bulk_do_set_user_topic_visibility_policy(
