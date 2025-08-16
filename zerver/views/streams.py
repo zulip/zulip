@@ -57,6 +57,7 @@ from zerver.lib.default_streams import get_default_stream_ids_for_realm
 from zerver.lib.email_mirror_helpers import encode_email_address, get_channel_email_token
 from zerver.lib.exceptions import (
     CannotManageDefaultChannelError,
+    IncompatibleParametersError,
     JsonableError,
     OrganizationOwnerRequiredError,
 )
@@ -81,6 +82,7 @@ from zerver.lib.streams import (
     do_get_streams,
     filter_stream_authorization_for_adding_subscribers,
     get_anonymous_group_membership_dict_for_streams,
+    get_default_value_for_history_public_to_subscribers,
     get_stream_permission_default_group,
     get_stream_permission_policy_key,
     list_to_streams,
@@ -122,7 +124,7 @@ from zerver.models import (
     UserProfile,
     UserTopic,
 )
-from zerver.models.groups import SystemGroups
+from zerver.models.groups import SystemGroups, get_realm_system_groups_name_dict
 from zerver.models.streams import StreamTopicsPolicyEnum
 from zerver.models.users import get_system_bot
 
@@ -301,6 +303,7 @@ def update_stream_backend(
     user_profile: UserProfile,
     *,
     can_add_subscribers_group: Json[GroupSettingChangeRequest] | None = None,
+    can_create_topic_group: Json[GroupSettingChangeRequest] | None = None,
     can_administer_channel_group: Json[GroupSettingChangeRequest] | None = None,
     can_delete_any_message_group: Json[GroupSettingChangeRequest] | None = None,
     can_delete_own_message_group: Json[GroupSettingChangeRequest] | None = None,
@@ -414,6 +417,40 @@ def update_stream_backend(
     validated_topics_policy = validate_topics_policy(topics_policy, user_profile, stream)
     if validated_topics_policy is not None:
         do_set_stream_property(stream, "topics_policy", validated_topics_policy.value, user_profile)
+
+    # If a group setting has value "Everyone including guests" along with additional
+    # users or groups, we do not treat it as equivalent to just "Everyone including guests".
+    # For a channel with protected history, everyone must be allowed to create new topics.
+    # As a result, enabling protected history for a channel requires the `can_create_topic_group`
+    # setting to have "Everyone including guests" group configuration only.
+    system_groups_name_dict = get_realm_system_groups_name_dict(stream.realm_id)
+    if not proposed_history_public_to_subscribers:
+        if can_create_topic_group is None:
+            if stream.can_create_topic_group_id in system_groups_name_dict:
+                is_everyone_group = (
+                    system_groups_name_dict[stream.can_create_topic_group_id]
+                    == SystemGroups.EVERYONE
+                )
+                if not is_everyone_group:
+                    raise IncompatibleParametersError(
+                        ["history_public_to_subscribers", "can_create_topic_group"]
+                    )
+            else:
+                raise IncompatibleParametersError(
+                    ["history_public_to_subscribers", "can_create_topic_group"]
+                )
+        else:
+            everyone_group = get_system_user_group_by_name(SystemGroups.EVERYONE, stream.realm_id)
+            new_can_create_topic_group = can_create_topic_group.new
+            if isinstance(new_can_create_topic_group, int):
+                if new_can_create_topic_group != everyone_group.id:
+                    raise IncompatibleParametersError(
+                        ["history_public_to_subscribers", "can_create_topic_group"]
+                    )
+            else:
+                raise IncompatibleParametersError(
+                    ["history_public_to_subscribers", "can_create_topic_group"]
+                )
 
     if (
         is_private is not None
@@ -721,6 +758,7 @@ def create_channel(
     *,
     announce: Json[bool] = False,
     can_add_subscribers_group: Json[int | UserGroupMembersData] | None = None,
+    can_create_topic_group: Json[int | UserGroupMembersData] | None = None,
     can_delete_any_message_group: Json[int | UserGroupMembersData] | None = None,
     can_delete_own_message_group: Json[int | UserGroupMembersData] | None = None,
     can_administer_channel_group: Json[int | UserGroupMembersData] | None = None,
@@ -776,6 +814,20 @@ def create_channel(
         is_web_public=is_web_public,
         message_retention_days=parsed_message_retention_days,
     )
+    history_public_to_subscribers = get_default_value_for_history_public_to_subscribers(
+        realm, invite_only, history_public_to_subscribers
+    )
+    if (
+        history_public_to_subscribers is False
+        and can_create_topic_group is not None
+        and (
+            not hasattr(can_create_topic_group, "named_user_group")
+            or can_create_topic_group.named_user_group.name != SystemGroups.EVERYONE
+        )
+    ):
+        raise IncompatibleParametersError(
+            ["history_public_to_subscribers", "can_create_topic_group"]
+        )
 
     group_settings_map, anonymous_group_membership = access_requested_group_permissions(
         user_profile,
@@ -857,6 +909,7 @@ def add_subscriptions_backend(
     can_delete_any_message_group: Json[int | UserGroupMembersData] | None = None,
     can_delete_own_message_group: Json[int | UserGroupMembersData] | None = None,
     can_administer_channel_group: Json[int | UserGroupMembersData] | None = None,
+    can_create_topic_group: Json[int | UserGroupMembersData] | None = None,
     can_move_messages_out_of_channel_group: Json[int | UserGroupMembersData] | None = None,
     can_move_messages_within_channel_group: Json[int | UserGroupMembersData] | None = None,
     can_remove_subscribers_group: Json[int | UserGroupMembersData] | None = None,
@@ -919,6 +972,7 @@ def add_subscriptions_backend(
         stream_dict_copy["can_administer_channel_group"] = group_settings_map[
             "can_administer_channel_group"
         ]
+        stream_dict_copy["can_create_topic_group"] = group_settings_map["can_create_topic_group"]
         stream_dict_copy["can_delete_any_message_group"] = group_settings_map[
             "can_delete_any_message_group"
         ]
