@@ -255,8 +255,6 @@ EXEMPT_FILES = make_set(
         "web/src/stream_edit_subscribers.ts",
         "web/src/stream_edit_toggler.ts",
         "web/src/stream_list.ts",
-        # TODO/channel-folders: Remove when tests are restored.
-        "web/src/stream_list_sort.ts",
         "web/src/stream_muting.ts",
         "web/src/stream_popover.ts",
         "web/src/stream_settings_api.ts",
