@@ -1408,6 +1408,16 @@ class NormalActionsTest(BaseAction):
         if setting_name == "can_send_message_group":
             expected_num_events = 2
 
+        if setting_name == "can_create_topic_group":
+            # For a private stream with protected history everyone can start new topics.
+            do_change_stream_permission(
+                private_stream,
+                invite_only=private_stream.invite_only,
+                history_public_to_subscribers=True,
+                is_web_public=private_stream.is_web_public,
+                acting_user=iago,
+            )
+
         self.assertFalse(
             user_has_metadata_access(
                 hamlet,
