@@ -850,6 +850,30 @@ input.settings_text_input {
     }
 }
 
+/* This is a useful grid-based mechanism to handle
+   message overlays with a header and scrollable
+   content area managed by SimpleBar. It more
+   robustly fills the height of the modal than
+   flexbox, and should be considered as an approach
+   for other modals that currently employ flexbox. */
+.overlay-messages-container.drafts-container {
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr);
+
+    .overlay-messages-list {
+        /* We unset the `overflow` value so SimpleBar
+           can manage scrolling. */
+        overflow: unset;
+        /* We don't need to set a height value; the
+           1fr grid row will occupy the available height. */
+        height: auto;
+        /* And therefore we don't need to worry about padding,
+           so that the scrollbar appears to reach all the way
+           to the bottom of the content. */
+        padding-bottom: 0;
+    }
+}
+
 .overlay-messages-container .overlay-message-row {
     padding: 5px 0;
 
