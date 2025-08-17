@@ -81,7 +81,8 @@ def _process_grouped_messages_deletion(
 
     # We exclude long-term idle users, since they by definition have no active clients.
     users_to_notify = event_recipient_ids_for_action_on_messages(
-        grouped_messages,
+        message_ids,
+        is_channel_message=message_type == "stream",
         channel=stream if message_type == "stream" else None,
     )
 

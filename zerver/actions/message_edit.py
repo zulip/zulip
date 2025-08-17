@@ -402,7 +402,9 @@ def get_mentions_for_message_updates(message: Message) -> set[int]:
         .values_list("user_profile_id", flat=True)
     )
 
-    user_ids_having_message_access = event_recipient_ids_for_action_on_messages([message])
+    user_ids_having_message_access = event_recipient_ids_for_action_on_messages(
+        [message.id], message.is_channel_message
+    )
 
     return set(mentioned_user_ids) & user_ids_having_message_access
 
@@ -476,7 +478,9 @@ def do_update_embedded_data(
         "rendering_only": True,
     }
 
-    users_to_notify = event_recipient_ids_for_action_on_messages([message])
+    users_to_notify = event_recipient_ids_for_action_on_messages(
+        [message.id], message.is_channel_message
+    )
     filtered_ums = [um for um in ums if um.user_profile_id in users_to_notify]
 
     def user_info(um: UserMessage) -> dict[str, Any]:
