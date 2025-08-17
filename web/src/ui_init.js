@@ -713,7 +713,7 @@ export async function initialize_everything(state_data) {
             ];
 
             if (latest_msg_id !== undefined) {
-                narrow.push({operator: "with", operand: latest_msg_id});
+                narrow.push({operator: "with", operand: String(latest_msg_id)});
             }
 
             message_view.show(narrow, {trigger: "sidebar"});
