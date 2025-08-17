@@ -128,6 +128,7 @@ export function clear_compose_box(): void {
     }
     $("textarea#compose-textarea").val("").trigger("focus");
     compose_ui.compose_textarea_typeahead?.hide();
+    compose_banner.clear_split_messages_info_banner();
     compose_validate.check_overflow_text($("#send_message_form"));
     compose_validate.clear_topic_resolved_warning();
     drafts.set_compose_draft_id(undefined);
@@ -181,6 +182,18 @@ export function send_message_success(
             );
         }
     }
+}
+
+export function toggle_split_messages(): void {
+    const state = compose_split_messages.is_split_messages_enabled();
+    compose_split_messages.set_split_messages_enabled(!state);
+    // preview area and compose banner should be updated with the new setting
+    if ($("#compose .preview_message_area").css("display") !== "none") {
+        // re-render the preview area if it is currently visible
+        clear_preview_area();
+        show_preview_area();
+    }
+    compose_banner.update_split_messages_info_banner();
 }
 
 export let send_message = (message_content: string = compose_state.message_content()): void => {
@@ -279,6 +292,7 @@ export let send_message = (message_content: string = compose_state.message_conte
         if (is_content_to_send_split) {
             send_message(rest_of_the_content);
         } else {
+            compose_banner.clear_split_messages_info_banner();
             compose_ui.hide_compose_spinner();
         }
     }
