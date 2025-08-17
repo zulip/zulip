@@ -6,7 +6,7 @@ from typing import Any, TypedDict
 
 from django.conf import settings
 from django.db import connection
-from django.db.models import Exists, F, Max, OuterRef, QuerySet, Sum
+from django.db.models import Exists, F, Max, OuterRef, QuerySet, Subquery, Sum
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from django_cte import CTE, with_cte
@@ -602,7 +602,8 @@ def has_message_access(
 
 
 def event_recipient_ids_for_action_on_messages(
-    messages: list[Message],
+    message_ids: list[int],
+    is_channel_message: bool,
     *,
     channel: Stream | None = None,
     exclude_long_term_idle_users: bool = True,
@@ -610,6 +611,13 @@ def event_recipient_ids_for_action_on_messages(
     """Returns IDs of users who should receive events when an action
     (delete, react, etc) is performed on given set of messages, which
     are expected to all be in a single conversation.
+
+    is_channel_message needs to be passed from the caller to inform about
+    whether we're processing channel or private messages without having
+    to do any work to determine it here in this function.
+    This is independent from the "channel" optional kwarg, in which the caller
+    may pass the relevant channel, but doesn't have to.
+    If needed, the channel will be fetched inside this function.
 
     This function aligns with the 'has_message_access' above to ensure
     that events reach only those users who have access to the messages.
@@ -620,8 +628,7 @@ def event_recipient_ids_for_action_on_messages(
     they are not subscribed. Such events are limited to those messages
     where the user has a UserMessage row (including `historical` rows).
     """
-    assert len(messages) > 0
-    message_ids = [message.id for message in messages]
+    assert len(message_ids) > 0
 
     def get_user_ids_having_usermessage_row_for_messages(message_ids: list[int]) -> set[int]:
         """Returns the IDs of users who actually received the messages."""
@@ -630,17 +637,20 @@ def event_recipient_ids_for_action_on_messages(
             usermessages = usermessages.exclude(user_profile__long_term_idle=True)
         return set(usermessages.values_list("user_profile_id", flat=True))
 
-    sample_message = messages[0]
-    if not sample_message.is_channel_message:
+    if not is_channel_message:
         # For DM, event is sent to users who actually received the message.
         return get_user_ids_having_usermessage_row_for_messages(message_ids)
 
-    channel_id = sample_message.recipient.type_id
     if channel is None:
-        channel = Stream.objects.get(id=channel_id)
+        sample_message_id = message_ids[0]
+        channel = Stream.objects.get(
+            recipient_id=Subquery(
+                Message.objects.filter(id=sample_message_id).values("recipient_id")[:1]
+            )
+        )
 
     subscriptions = get_active_subscriptions_for_stream_id(
-        channel_id, include_deactivated_users=False
+        channel.id, include_deactivated_users=False
     )
     if exclude_long_term_idle_users:
         subscriptions = subscriptions.exclude(user_profile__long_term_idle=True)
