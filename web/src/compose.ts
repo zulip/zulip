@@ -112,7 +112,10 @@ export function clear_compose_box(): void {
     clear_preview_area();
     $("textarea#compose-textarea").val("").trigger("focus");
     compose_ui.compose_textarea_typeahead?.hide();
+<<<<<<< HEAD
     compose_split_messages.set_split_messages_enabled(false);
+=======
+>>>>>>> ae327f6618 (compose_banner: Show banner when message will split.)
     compose_banner.clear_split_messages_info_banner();
     compose_validate.check_overflow_text($("#send_message_form"));
     compose_validate.clear_topic_resolved_warning();
@@ -321,6 +324,7 @@ export let send_message = (
         if (is_content_to_send_split) {
             send_message(rest_of_the_content, captured_recipient, sent_count + 1);
         } else {
+            compose_banner.clear_split_messages_info_banner();
             compose_ui.hide_compose_spinner();
         }
     }
