@@ -245,8 +245,9 @@ def get_recipient_ids(
             to = [recipient.type_id]
         else:
             to = []
-            for r in get_display_recipient(recipient):
+            recipients = get_display_recipient(recipient)
+            for r in recipients:
                 assert not isinstance(r, str)  # It will only be a string for streams
-                if r["id"] != user_profile_id:
+                if r["id"] != user_profile_id or len(recipients) == 1:
                     to.append(r["id"])
     return to, recipient_type_str
