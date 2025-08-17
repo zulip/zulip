@@ -31,6 +31,7 @@ type ScheduledMessageRenderContext = ScheduledMessage &
           }
         | {
               is_stream: false;
+              is_dm_with_self: boolean;
               formatted_send_at_time: string;
               recipients: string;
           }
@@ -120,6 +121,7 @@ function format(scheduled_messages: ScheduledMessage[]): ScheduledMessageRenderC
             scheduled_msg_render_context = {
                 ...scheduled_msg,
                 is_stream: false as const,
+                is_dm_with_self: people.is_direct_message_conversation_with_self(scheduled_msg.to),
                 recipients,
                 formatted_send_at_time,
             };
