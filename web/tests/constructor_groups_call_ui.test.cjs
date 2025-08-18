@@ -36,67 +36,75 @@ const realm_available_video_chat_providers = {
 
 run_test("constructor_groups_video_call_generation", ({override}) => {
     // Setup realm like other video providers
-    override(realm, "realm_video_chat_provider", realm_available_video_chat_providers.constructor_groups.id);
+    override(
+        realm,
+        "realm_video_chat_provider",
+        realm_available_video_chat_providers.constructor_groups.id,
+    );
     override(realm, "realm_available_video_chat_providers", realm_available_video_chat_providers);
-    
+
     const $textarea = $.create("textarea#compose-textarea");
     $textarea.set_parents_result(".message_edit_form", []);
-    
+
     // Mock the clear_constructor_groups_errors function
     override(compose_banner, "clear_constructor_groups_errors", () => {});
-    
+
     let channel_post_called = false;
     let api_url = "";
     let api_data = {};
-    
+
     // Mock channel.post like in compose_video tests
     override(channel, "post", (opts) => {
         channel_post_called = true;
         api_url = opts.url;
         api_data = opts.data;
-        
+
         // Simulate successful API response
         opts.success({
             url: "https://constructor.app/groups/room/room-123",
             result: "success",
             msg: "",
         });
-        
-        return {abort: () => {}};
+
+        return {abort() {}};
     });
-    
+
     let syntax_inserted = "";
     let insert_called = false;
-    
+
     // Mock compose_ui.insert_syntax_and_focus like other tests
     override(compose_ui, "insert_syntax_and_focus", (syntax) => {
         syntax_inserted = syntax;
         insert_called = true;
     });
-    
+
     // Call the function under test
     compose_call_ui.generate_and_insert_audio_or_video_call_link($textarea, false);
-    
+
     // Verify API call was made correctly
-    assert(channel_post_called);
+    assert.ok(channel_post_called);
     assert.equal(api_url, "/json/calls/constructorgroups/create");
     assert.equal(api_data.is_video_call, true);
-    
+
     // Verify UI insertion was called
-    assert(insert_called);
+    assert.ok(insert_called);
     assert.match(syntax_inserted, /https:\/\/constructor\.app\/groups\/room\/room-123/);
 });
 
 run_test("constructor_groups_audio_call_generation", ({override}) => {
-    override(realm, "realm_video_chat_provider", realm_available_video_chat_providers.constructor_groups.id);
+    override(
+        realm,
+        "realm_video_chat_provider",
+        realm_available_video_chat_providers.constructor_groups.id,
+    );
     override(realm, "realm_available_video_chat_providers", realm_available_video_chat_providers);
-    
+
     const $textarea = $.create("textarea#compose-textarea");
     $textarea.set_parents_result(".message_edit_form", []);
-    
+
     // Mock the clear_constructor_groups_errors function
     override(compose_banner, "clear_constructor_groups_errors", () => {});
-    
+
     let api_data = {};
     override(channel, "post", (opts) => {
         api_data = opts.data;
@@ -105,108 +113,117 @@ run_test("constructor_groups_audio_call_generation", ({override}) => {
             result: "success",
             msg: "",
         });
-        return {abort: () => {}};
+        return {abort() {}};
     });
-    
+
     let insert_called = false;
     override(compose_ui, "insert_syntax_and_focus", () => {
         insert_called = true;
     });
-    
+
     // Test audio call (is_audio_call = true)
     compose_call_ui.generate_and_insert_audio_or_video_call_link($textarea, true);
-    
+
     // Verify audio call parameter
     assert.equal(api_data.is_video_call, false);
-    assert(insert_called);
+    assert.ok(insert_called);
 });
 
 run_test("constructor_groups_error_handling", ({override}) => {
-    override(realm, "realm_video_chat_provider", realm_available_video_chat_providers.constructor_groups.id);
+    override(
+        realm,
+        "realm_video_chat_provider",
+        realm_available_video_chat_providers.constructor_groups.id,
+    );
     override(realm, "realm_available_video_chat_providers", realm_available_video_chat_providers);
-    
+
     const $textarea = $.create("textarea#compose-textarea");
     $textarea.set_parents_result(".message_edit_form", []);
-    
+
     let error_shown = false;
     let error_message = "";
-    
+
     // Override show_constructor_groups_error for this test
     override(compose_banner, "show_constructor_groups_error", (message) => {
         error_shown = true;
         error_message = message;
     });
 
-    
     // Mock API error
     override(channel, "post", (opts) => {
-        opts.error({
-            responseJSON: {
-                code: "CONSTRUCTOR_GROUPS_NOT_CONFIGURED",
-                msg: "Constructor Groups is not configured.",
+        opts.error(
+            {
+                responseJSON: {
+                    code: "CONSTRUCTOR_GROUPS_NOT_CONFIGURED",
+                    msg: "Constructor Groups is not configured.",
+                },
             },
-        }, "error");
-        return {abort: () => {}};
+            "error",
+        );
+        return {abort() {}};
     });
-    
+
     compose_call_ui.generate_and_insert_audio_or_video_call_link($textarea, false);
-    
+
     // Verify error handling
-    assert(error_shown);
-    assert(error_message.toString().includes("Constructor Groups is not configured"));
+    assert.ok(error_shown);
+    assert.ok(error_message.toString().includes("Constructor Groups is not configured"));
 });
 
 run_test("constructor_groups_concurrent_clicks_abort_previous", ({override}) => {
-    override(realm, "realm_video_chat_provider", realm_available_video_chat_providers.constructor_groups.id);
+    override(
+        realm,
+        "realm_video_chat_provider",
+        realm_available_video_chat_providers.constructor_groups.id,
+    );
     override(realm, "realm_available_video_chat_providers", realm_available_video_chat_providers);
-    
+
     const $textarea = $.create("textarea#compose-textarea");
     $textarea.set_parents_result(".message_edit_form", []);
-    
+
     override(compose_banner, "clear_constructor_groups_errors", () => {});
-    
+
     let first_request_aborted = false;
     let second_request_made = false;
     let api_call_count = 0;
-    
+
     // Mock channel.post to track XHR objects and abort calls
     override(channel, "post", (opts) => {
-        api_call_count++;
-        
+        api_call_count += 1;
+
         if (api_call_count === 1) {
             // First request - should be aborted when second request starts
             const mock_xhr = {
-                abort: () => {
+                abort() {
                     first_request_aborted = true;
-                }
+                },
             };
             return mock_xhr;
-        } else {
-            // Second request - should complete successfully
-            second_request_made = true;
-            opts.success({
-                url: "https://constructor.app/groups/room/room-789",
-                result: "success",
-                msg: "",
-            });
-            return {abort: () => {}};
         }
+        // Second request - should complete successfully
+        second_request_made = true;
+        opts.success({
+            url: "https://constructor.app/groups/room/room-789",
+            result: "success",
+            msg: "",
+        });
+        return {abort() {}};
     });
-    
+
     let insert_called = false;
     override(compose_ui, "insert_syntax_and_focus", () => {
         insert_called = true;
     });
-    
+
     // First click - starts first request
     compose_call_ui.generate_and_insert_audio_or_video_call_link($textarea, false);
-    
+
     // Second click immediately after - should abort first request and start new one
     compose_call_ui.generate_and_insert_audio_or_video_call_link($textarea, false);
-    
+
     // Verify behavior
-    assert(first_request_aborted, "First request should be aborted");
-    assert(second_request_made, "Second request should be made");
+    assert.ok(first_request_aborted, "First request should be aborted");
+    assert.ok(second_request_made, "Second request should be made");
     assert.equal(api_call_count, 2, "Should make exactly 2 API calls");
-    assert(insert_called, "Should insert syntax after second request completes");
+    assert.ok(insert_called, "Should insert syntax after second request completes");
 });
