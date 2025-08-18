@@ -215,7 +215,12 @@ export function process_notification(notification: {
                 window.focus();
             });
             notification_object.addEventListener("close", () => {
-                desktop_notifications.notice_memory.delete(key);
+                const current_notice_memory = desktop_notifications.notice_memory.get(key);
+                // This check helps avoid race between close event for current notification
+                // object and the previous notification_object close handler.
+                if (current_notice_memory?.obj === notification_object) {
+                    desktop_notifications.notice_memory.delete(key);
+                }
             });
         }
     }
