@@ -156,7 +156,7 @@ def validate_hostname_or_raise_error(hostname: str) -> None:
         # We perform basic validation in two steps:
         # 1. urlsplit doesn't do any proper validation, but parses the string
         #    and ensures that there are no extra components (e.g., path, query, fragment).
-        # 2. Once we know that the string is a clean netloc, we pass that do Django's
+        # 2. Once we know that the string is a clean netloc, we pass that to Django's
         #    URLValidator for validation.
         parsed = urlsplit(f"http://{hostname}")
 
