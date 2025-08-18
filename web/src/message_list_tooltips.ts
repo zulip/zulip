@@ -13,6 +13,7 @@ import * as popover_menus from "./popover_menus.ts";
 import * as reactions from "./reactions.ts";
 import * as rows from "./rows.ts";
 import {message_edit_history_visibility_policy_values} from "./settings_config.ts";
+import * as settings_config from "./settings_config.ts";
 import {realm} from "./state_data.ts";
 import * as timerender from "./timerender.ts";
 import {
@@ -21,6 +22,7 @@ import {
     topic_visibility_policy_tooltip_props,
 } from "./tippyjs.ts";
 import {parse_html} from "./ui_util.ts";
+import {user_settings} from "./user_settings.ts";
 
 type Config = {
     attributes: boolean;
@@ -440,6 +442,25 @@ export function initialize(): void {
 
     message_list_tooltip(".message_expander, .message_condenser", {
         delay: LONG_HOVER_DELAY,
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
+    message_list_tooltip(".message_content a.stream", {
+        delay: LONG_HOVER_DELAY,
+        onShow(instance) {
+            if (
+                user_settings.web_channel_default_view ===
+                settings_config.web_channel_default_view_values.list_of_topics.code
+            ) {
+                instance.setContent("Go to list of topics");
+            } else {
+                instance.setContent("Go to channel feed");
+            }
+
+            return undefined;
+        },
         onHidden(instance) {
             instance.destroy();
         },
