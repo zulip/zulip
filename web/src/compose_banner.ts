@@ -67,6 +67,7 @@ export const CLASSNAMES = {
     generic_compose_error: "generic_compose_error",
     user_not_subscribed: "user_not_subscribed",
     unknown_zoom_user: "unknown_zoom_user",
+    constructor_groups_error: "constructor_groups_error",
 };
 
 export function get_compose_banner_container($textarea: JQuery): JQuery {
@@ -290,6 +291,22 @@ export function show_unknown_zoom_user_error(email: string): void {
         classname: CLASSNAMES.unknown_zoom_user,
     });
     append_compose_banner_to_banner_list($(new_row_html), $("#compose_banners"));
+}
+
+export function show_constructor_groups_error(error_message: string): void {
+    // Remove any existing Constructor Groups error banners
+    clear_constructor_groups_errors();
+
+    const new_row_html = render_compose_banner({
+        banner_type: ERROR,
+        banner_text: error_message,
+        classname: CLASSNAMES.constructor_groups_error,
+    });
+    append_compose_banner_to_banner_list($(new_row_html), $("#compose_banners"));
+}
+
+export function clear_constructor_groups_errors(): void {
+    $(`#compose_banners .${CSS.escape(CLASSNAMES.constructor_groups_error)}`).remove();
 }
 
 export function has_error(): boolean {
