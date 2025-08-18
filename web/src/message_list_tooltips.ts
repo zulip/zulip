@@ -5,8 +5,10 @@ import * as tippy from "tippy.js";
 import render_message_edit_notice_tooltip from "../templates/message_edit_notice_tooltip.hbs";
 import render_message_inline_image_tooltip from "../templates/message_inline_image_tooltip.hbs";
 import render_narrow_tooltip from "../templates/narrow_tooltip.hbs";
+import render_stream_topic_link_tooltip from "../templates/stream_topic_link_tooltip.hbs";
 
 import * as compose_validate from "./compose_validate.ts";
+import * as hash_util from "./hash_util.ts";
 import {$t} from "./i18n.ts";
 import * as message_lists from "./message_lists.ts";
 import * as popover_menus from "./popover_menus.ts";
@@ -15,6 +17,7 @@ import * as rows from "./rows.ts";
 import {message_edit_history_visibility_policy_values} from "./settings_config.ts";
 import * as settings_config from "./settings_config.ts";
 import {realm} from "./state_data.ts";
+import * as stream_data from "./stream_data.ts";
 import * as timerender from "./timerender.ts";
 import {
     INTERACTIVE_HOVER_DELAY,
@@ -458,6 +461,33 @@ export function initialize(): void {
             } else {
                 instance.setContent("Go to channel feed");
             }
+
+            return undefined;
+        },
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
+    message_list_tooltip(".message_content a.stream-topic", {
+        delay: LONG_HOVER_DELAY,
+        onShow(instance) {
+            const $elem = $(instance.reference);
+            const hash_url = $elem.attr("href");
+            assert(hash_url);
+            const channel_topic = hash_util.decode_stream_topic_from_url(hash_url);
+            if (!channel_topic) {
+                return false;
+            }
+            const channel_name = stream_data.get_stream_name_from_id(channel_topic.stream_id);
+            const context = {
+                is_empty_string_topic:
+                    channel_topic.topic_name === "" || channel_topic.topic_name === undefined,
+                channel_name,
+                topic_display_name: channel_topic.topic_name,
+            };
+
+            instance.setContent(parse_html(render_stream_topic_link_tooltip(context)));
 
             return undefined;
         },
