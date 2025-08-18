@@ -313,6 +313,19 @@ Currently configured preset URL options:
   single topic for notification messages, and adds `&mapping=channels`
   to the [generated integration URL](/help/generate-integration-url).
 
+- **`MAP_TO_TOPICS`**: This preset is intended to be used for [chat-app
+  integrations](/integrations/communication) (like Slack), and adds a
+  checkbox field labeled **Send messages to topics with the same name as
+  the original channel?**. This setting will be disabled if:
+    - **Send all notifications to a single topic?** is selected.
+    - the integration also uses the **`MAPPING`** URL option and
+    **Matching Zulip channel** is selected.
+    - **Direct message to me** is selected in the
+    **Where to send notifications?** field.
+
+    When the user selects this option, the `map_to_topics` boolean parameter
+    will be added to the [generated integration URL](/help/generate-integration-url).
+
 ## Step 4: Manually testing the webhook
 
 For either one of the command line tools, first, you'll need to get an
