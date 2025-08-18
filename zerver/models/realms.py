@@ -646,6 +646,10 @@ class Realm(models.Model):
             "name": "Zoom",
             "id": 5,
         },
+        "constructor_groups": {
+            "name": "Constructor Groups",
+            "id": 6,
+        },
     }
 
     video_chat_provider = models.PositiveSmallIntegerField(
@@ -1044,6 +1048,12 @@ class Realm(models.Model):
                 continue
             if provider == "big_blue_button" and (
                 settings.BIG_BLUE_BUTTON_SECRET is None or settings.BIG_BLUE_BUTTON_URL is None
+            ):
+                continue
+            if provider == "constructor_groups" and (
+                settings.CONSTRUCTOR_GROUPS_ACCESS_KEY is None
+                or settings.CONSTRUCTOR_GROUPS_SECRET_KEY is None
+                or settings.CONSTRUCTOR_GROUPS_URL is None
             ):
                 continue
             if provider == "zoom_server_to_server" and (

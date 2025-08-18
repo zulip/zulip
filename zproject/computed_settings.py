@@ -534,6 +534,10 @@ DROPBOX_APP_KEY = get_secret("dropbox_app_key")
 
 BIG_BLUE_BUTTON_SECRET = get_secret("big_blue_button_secret")
 
+# Constructor Groups API credentials
+CONSTRUCTOR_GROUPS_ACCESS_KEY = get_secret("constructor_groups_access_key")
+CONSTRUCTOR_GROUPS_SECRET_KEY = get_secret("constructor_groups_secret_key")
+
 # Twitter API credentials
 # Secrecy not required because its only used for R/O requests.
 # Please don't make us go over our rate limit.
