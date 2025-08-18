@@ -111,6 +111,13 @@ export function show_generate_integration_url_modal(api_key: string): void {
             update_url();
         }
 
+        function set_input_disabled_state($input: JQuery, disable: boolean): void {
+            $input
+                .prop("disabled", disable)
+                .closest(".input-group")
+                .toggleClass("control-label-disabled", disable);
+        }
+
         function render_url_options(config: UrlOption[]): void {
             const validated_config = url_options_schema.parse(config);
             $config_container.empty();
@@ -393,17 +400,16 @@ export function show_generate_integration_url_modal(api_key: string): void {
             dropdown.hide();
             const user_selected_option = stream_input_dropdown_widget.value();
             if (user_selected_option === direct_messages_option.unique_id) {
-                $override_topic.prop("checked", false).prop("disabled", true);
-                $override_topic.closest(".input-group").addClass("control-label-disabled");
+                $override_topic.prop("checked", false);
+                set_input_disabled_state($override_topic, true);
                 $topic_input.val("");
             } else if (user_selected_option === map_channels_option.unique_id) {
-                $override_topic.prop("checked", true).prop("disabled", true);
-                $override_topic.closest(".input-group").addClass("control-label-disabled");
+                $override_topic.prop("checked", true);
+                set_input_disabled_state($override_topic, true);
                 $topic_input.val("");
                 $topic_input.parent().removeClass("hide");
             } else {
-                $override_topic.prop("disabled", false);
-                $override_topic.closest(".input-group").removeClass("control-label-disabled");
+                set_input_disabled_state($override_topic, false);
             }
             $override_topic.trigger("change");
             event.preventDefault();
@@ -437,8 +443,7 @@ export function show_generate_integration_url_modal(api_key: string): void {
             $("#integrations-event-container .integration-event").prop("checked", false);
             $show_integration_events.prop("checked", false);
 
-            $override_topic.prop("checked", false).prop("disabled", true);
-            $override_topic.closest(".input-group").addClass("control-label-disabled");
+            set_input_disabled_state($override_topic, true);
             $topic_input.val("");
             $topic_input.parent().addClass("hide");
 
