@@ -588,6 +588,9 @@ INTEGRATIONS: dict[str, Integration] = {
     "big-blue-button": Integration(
         "big-blue-button", ["communication"], display_name="BigBlueButton"
     ),
+    "constructor-groups": Integration(
+        "constructor-groups", ["communication"], display_name="Constructor Groups"
+    ),
     "capistrano": Integration("capistrano", ["deployment"], display_name="Capistrano"),
     "discourse": Integration("discourse", ["communication"]),
     "email": Integration("email", ["communication"]),
