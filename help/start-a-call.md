@@ -88,7 +88,9 @@ you can unlink it.
 ## Related articles
 
 * [Configure call provider](/help/configure-call-provider)
+* [Constructor Groups calls](/help/constructor-groups-calls)
 * [Jitsi Meet integration](/integrations/doc/jitsi)
 * [Zoom integration](/integrations/doc/zoom)
 * [BigBlueButton integration](/integrations/doc/big-blue-button)
+* [Constructor Groups integration](/integrations/doc/constructor-groups)
 * [Insert a link](/help/insert-a-link)

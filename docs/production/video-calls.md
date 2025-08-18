@@ -9,6 +9,7 @@ supported by Zulip are:
   100% open source video conferencing solution.
 - [Zoom](https://zulip.com/integrations/doc/zoom)
 - [BigBlueButton](https://zulip.com/integrations/doc/big-blue-button)
+- [Constructor Groups](https://zulip.com/integrations/doc/constructor-groups)
 
 By default, Zulip uses the [cloud version of Jitsi Meet](https://meet.jit.si/)
 as its call provider. This page documents the configurations required to support
@@ -159,5 +160,34 @@ Server as follows:
 
 This enables BigBlueButton support in your Zulip server. Finally, [configure
 BigBlueButton as the video call
+provider](https://zulip.com/help/configure-call-provider)
+in the Zulip organizations where you want to use it.
+
+## Constructor Groups
+
+To use the [Constructor Groups](https://constructor.tech/products/learning/groups) video call
+integration on a self-hosted Zulip installation, you'll need to have
+Constructor Groups API access and configure it:
+
+1. Obtain your Constructor Groups API credentials (access key, secret key, and API URL)
+   from your Constructor Groups account.
+
+You can then configure your Zulip server to use Constructor Groups as follows:
+
+1. In `/etc/zulip/zulip-secrets.conf`, set the following:
+
+   ```
+   constructor_groups_access_key = "your-access-key"
+   constructor_groups_secret_key = "your-secret-key"
+   ```
+
+2. In `/etc/zulip/settings.py`, set `CONSTRUCTOR_GROUPS_URL` to your
+   Constructor Groups API URL.
+
+3. Restart the Zulip server with
+   `/home/zulip/deployments/current/scripts/restart-server`.
+
+This enables Constructor Groups support in your Zulip server. Finally, [configure
+Constructor Groups as the video call
 provider](https://zulip.com/help/configure-call-provider)
 in the Zulip organizations where you want to use it.
