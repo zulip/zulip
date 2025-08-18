@@ -25,6 +25,7 @@ from zerver.lib.email_mirror_helpers import (
 from zerver.lib.email_notifications import convert_html_to_markdown
 from zerver.lib.exceptions import JsonableError, RateLimitedError
 from zerver.lib.message import normalize_body, truncate_content, truncate_topic
+from zerver.models.constants import MAX_TOPIC_NAME_LENGTH
 from zerver.lib.rate_limiter import RateLimitedObject
 from zerver.lib.send_email import FromAddress
 from zerver.lib.streams import access_stream_for_send_message
@@ -156,6 +157,7 @@ def construct_zulip_body(
     include_quotes: bool = False,
     include_footer: bool = False,
     prefer_text: bool = True,
+    full_subject_for_preamble: str | None = None,
 ) -> str:
     body = extract_body(message, include_quotes, prefer_text)
     # Remove null characters, since Zulip will reject
@@ -172,6 +174,10 @@ def construct_zulip_body(
     if show_sender:
         from_address = str(message.get("From", ""))
         preamble = f"From: {from_address}\n"
+    # If provided, add the full (untruncated) subject line just below the sender
+    # or at the very top of the message body when there is no sender preamble.
+    if full_subject_for_preamble is not None:
+        preamble += f"Subject: {full_subject_for_preamble}\n"
 
     postamble = extract_and_upload_attachments(message, realm, sender)
     if postamble != "":
@@ -457,7 +463,19 @@ def process_stream_message(to: str, message: EmailMessage) -> None:
     if "include_quotes" not in options:
         options["include_quotes"] = is_forwarded(subject_header)
 
-    body = construct_zulip_body(message, realm, sender=sender, **options)
+    # Include an explicit full Subject line in the message body when the
+    # email subject exceeds Zulip's topic length and would be truncated.
+    full_subject_for_preamble = None
+    if len(subject) > MAX_TOPIC_NAME_LENGTH:
+        full_subject_for_preamble = subject
+
+    body = construct_zulip_body(
+        message,
+        realm,
+        sender=sender,
+        full_subject_for_preamble=full_subject_for_preamble,
+        **options,
+    )
     send_zulip(sender, channel, subject, body)
     logger.info(
         "Successfully processed email to %s (%s)",

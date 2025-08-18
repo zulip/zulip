@@ -56,6 +56,7 @@ from zerver.models.messages import Message
 from zerver.models.realms import get_realm
 from zerver.models.streams import get_stream
 from zerver.models.users import get_system_bot
+from zerver.models.constants import MAX_TOPIC_NAME_LENGTH
 
 logger_name = "zerver.lib.email_mirror"
 
@@ -383,6 +384,66 @@ class TestStreamEmailMessages(ZulipTestCase):
         message = most_recent_message(user_profile)
 
         self.assertEqual(message.topic_name(), "Email with no subject")
+
+    def test_receive_stream_email_messages_long_subject_preamble_without_sender(self) -> None:
+        user_profile = self.example_user("hamlet")
+        self.login_user(user_profile)
+        self.subscribe(user_profile, "Denmark")
+        stream = get_stream("Denmark", user_profile.realm)
+
+        email_token = get_channel_email_token(stream, creator=user_profile, sender=user_profile)
+        stream_to_address = encode_email_address(stream.name, email_token)
+
+        full_subject = "S" * (MAX_TOPIC_NAME_LENGTH + 10)
+        incoming_valid_message = EmailMessage()
+        incoming_valid_message.set_content("Body line")
+        incoming_valid_message["Subject"] = full_subject
+        incoming_valid_message["From"] = self.example_email("hamlet")
+        incoming_valid_message["To"] = stream_to_address
+
+        process_message(incoming_valid_message)
+
+        message = most_recent_message(user_profile)
+        # Expect the full subject echoed at the top of the body since it will be truncated in topic
+        self.assertTrue(message.content.startswith(f"Subject: {full_subject}\n"))
+        self.assertIn("Body line", message.content)
+        # Topic is truncated with ellipsis
+        self.assertEqual(
+            message.topic_name(),
+            full_subject[: MAX_TOPIC_NAME_LENGTH - 3] + "...",
+        )
+
+    def test_receive_stream_email_messages_long_subject_preamble_with_sender(self) -> None:
+        user_profile = self.example_user("hamlet")
+        self.login_user(user_profile)
+        self.subscribe(user_profile, "Denmark")
+        stream = get_stream("Denmark", user_profile.realm)
+
+        email_token = get_channel_email_token(stream, creator=user_profile, sender=user_profile)
+        # Force show-sender in the destination address
+        address = Address(addr_spec=encode_email_address(stream.name, email_token))
+        stream_to_address = Address(
+            username=address.username + "+show-sender", domain=address.domain
+        ).addr_spec
+
+        full_subject = "L" * (MAX_TOPIC_NAME_LENGTH + 15)
+        incoming_valid_message = EmailMessage()
+        incoming_valid_message.set_content("Body with sender")
+        incoming_valid_message["Subject"] = full_subject
+        incoming_valid_message["From"] = self.example_email("hamlet")
+        incoming_valid_message["To"] = stream_to_address
+
+        process_message(incoming_valid_message)
+
+        message = most_recent_message(user_profile)
+        # Expect From then Subject preamble
+        expected_preamble_start = f"From: {self.example_email('hamlet')}\nSubject: {full_subject}\n"
+        self.assertTrue(message.content.startswith(expected_preamble_start))
+        self.assertIn("Body with sender", message.content)
+        self.assertEqual(
+            message.topic_name(),
+            full_subject[: MAX_TOPIC_NAME_LENGTH - 3] + "...",
+        )
 
     def test_receive_private_stream_email_messages_success(self) -> None:
         user_profile = self.example_user("hamlet")
