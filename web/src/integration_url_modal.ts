@@ -36,6 +36,7 @@ const url_options_schema = z.array(url_option_schema);
 const PresetUrlOption = {
     BRANCHES: "branches",
     MAPPING: "mapping",
+    MAP_TO_TOPICS: "map_to_topics",
 };
 
 export function show_generate_integration_url_modal(api_key: string): void {
@@ -72,6 +73,7 @@ export function show_generate_integration_url_modal(api_key: string): void {
         const $dialog_submit_button = $("#generate-integration-url-modal .dialog_submit_button");
         const $show_integration_events = $("#show-integration-events");
         const $config_container = $("#integration-url-config-options-container");
+        let $map_to_topics_checkbox: JQuery<HTMLInputElement>;
 
         $dialog_submit_button.prop("disabled", true);
         $("#integration-url-stream_widget").prop("disabled", true);
@@ -125,7 +127,9 @@ export function show_generate_integration_url_modal(api_key: string): void {
                 .closest(".input-group")
                 .toggleClass("control-label-disabled", disable);
         }
-
+        function get_map_to_topics_checkbox_element(): JQuery<HTMLInputElement> {
+            return $<HTMLInputElement>("input#integration-url-map_to_topics-checkbox");
+        }
         function render_url_options(config: UrlOption[]): void {
             const validated_config = url_options_schema.parse(config);
             $config_container.empty();
@@ -167,6 +171,19 @@ export function show_generate_integration_url_modal(api_key: string): void {
                 }
                 $config_container.append($config_element);
             }
+
+            $map_to_topics_checkbox = get_map_to_topics_checkbox_element();
+            set_checkbox_disabled_state($map_to_topics_checkbox, true);
+
+            // Only one of $override_topic checkbox or $map_to_topics checkbox
+            // can be checked at a time.
+            // Use "click" event to avoid infinite feedback loops.
+            $map_to_topics_checkbox.add($override_topic).on("click", function () {
+                const other_checkbox =
+                    this === $override_topic[0] ? $map_to_topics_checkbox : $override_topic;
+                $map_to_topics_checkbox = get_map_to_topics_checkbox_element();
+                set_checkbox_disabled_state(other_checkbox, this.checked);
+            });
         }
 
         $override_topic.on("change", function () {
@@ -413,9 +430,12 @@ export function show_generate_integration_url_modal(api_key: string): void {
             $(".integration-url-stream-wrapper").trigger("input");
             dropdown.hide();
             const user_selected_option = stream_input_dropdown_widget.value();
+            $map_to_topics_checkbox = get_map_to_topics_checkbox_element();
             if (user_selected_option === direct_messages_option.unique_id) {
                 $override_topic.prop("checked", false);
                 set_checkbox_disabled_state($override_topic, true);
+                $map_to_topics_checkbox.prop("checked", false);
+                set_checkbox_disabled_state($map_to_topics_checkbox, true);
                 $topic_input.val("");
             } else if (user_selected_option === map_channels_option.unique_id) {
                 $override_topic.prop("checked", true);
@@ -423,7 +443,14 @@ export function show_generate_integration_url_modal(api_key: string): void {
                 $topic_input.val("");
                 $topic_input.parent().removeClass("hide");
             } else {
-                set_checkbox_disabled_state($override_topic, false);
+                set_checkbox_disabled_state(
+                    $override_topic,
+                    $map_to_topics_checkbox.is(":checked"),
+                );
+                set_checkbox_disabled_state(
+                    $map_to_topics_checkbox,
+                    $override_topic.is(":checked"),
+                );
             }
             $override_topic.trigger("change");
             event.preventDefault();

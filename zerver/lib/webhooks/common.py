@@ -60,6 +60,7 @@ class PresetUrlOption(str, Enum):
     BRANCHES = "branches"
     IGNORE_PRIVATE_REPOSITORIES = "ignore_private_repositories"
     MAPPING = "mapping"
+    MAP_TO_TOPICS = "map_to_topics"
 
 
 @dataclass
@@ -102,6 +103,12 @@ class WebhookUrlOption:
                     name=config.value,
                     label="",
                     validator=check_string,
+                )
+            case PresetUrlOption.MAP_TO_TOPICS:  # nocoverage # Not used yet
+                return cls(
+                    name=config.value,
+                    label="Send messages to topics with the same name as the original channel?",
+                    validator=check_bool,
                 )
 
         raise AssertionError(_("Unknown 'PresetUrlOption': {config}").format(config=config))
