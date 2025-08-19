@@ -10017,6 +10017,17 @@ class TestRemoteServerBillingFlow(StripeTestCase, RemoteServerTestCase):
         ]:
             self.assert_in_response(substring, response)
 
+        # The last audit log update was 25 days before the plan's next
+        # invoice date, so invoicing the fixed-price plan fails, and an
+        # internal billing notice is sent.
+        last_audit_log_update = self.now + timedelta(days=5)
+        with time_machine.travel(last_audit_log_update, tick=False):
+            send_server_data_to_push_bouncer(consider_usage_statistics=False)
+        invoice_plans_as_needed(self.next_month)
+        current_plan.refresh_from_db()
+        self.assertEqual(current_plan.next_invoice_date, self.next_month)
+        self.assertTrue(current_plan.stale_audit_log_data_email_sent)
+
     @responses.activate
     @mock_stripe()
     def test_upgrade_server_to_fixed_price_plan_pay_by_invoice(self, *mocks: Mock) -> None:
