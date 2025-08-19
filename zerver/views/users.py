@@ -58,7 +58,13 @@ from zerver.lib.rate_limiter import (
 )
 from zerver.lib.response import json_success
 from zerver.lib.send_email import FromAddress, send_email
-from zerver.lib.streams import access_stream_by_id, access_stream_by_name, subscribed_to_stream
+from zerver.lib.stream_subscription import get_user_subscribed_streams
+from zerver.lib.streams import (
+    access_stream_by_id,
+    access_stream_by_name,
+    get_metadata_access_streams,
+    subscribed_to_stream,
+)
 from zerver.lib.typed_endpoint import (
     ApiParamConfig,
     PathOnly,
@@ -69,6 +75,7 @@ from zerver.lib.typed_endpoint_validators import check_int_in_validator, check_u
 from zerver.lib.types import ProfileDataElementUpdateDict
 from zerver.lib.upload import upload_avatar_image
 from zerver.lib.url_encoding import append_url_query_string
+from zerver.lib.user_groups import UserGroupMembershipDetails
 from zerver.lib.users import (
     APIUserDict,
     access_bot_by_id,
@@ -911,6 +918,23 @@ def get_subscription_backend(
     subscription_status = {"is_subscribed": subscribed_to_stream(target_user, stream_id)}
 
     return json_success(request, data=subscription_status)
+
+
+@typed_endpoint
+def get_subscribed_channels_backend(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    *,
+    user_id: PathOnly[Json[int]],
+) -> HttpResponse:
+    target_user = access_user_by_id(user_profile, user_id, for_admin=False)
+    streams = get_metadata_access_streams(
+        user_profile,
+        list(get_user_subscribed_streams(target_user)),
+        UserGroupMembershipDetails(user_recursive_group_ids=None),
+    )
+
+    return json_success(request, data={"subscribed_channel_ids": [stream.id for stream in streams]})
 
 
 @typed_endpoint

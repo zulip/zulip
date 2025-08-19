@@ -59,6 +59,7 @@
 * [Unsubscribe from a channel](/api/unsubscribe)
 * [Get subscription status](/api/get-subscription-status)
 * [Get channel subscribers](/api/get-subscribers)
+* [Get a user's subscribed channels](/api/get-user-channels)
 * [Update subscription settings](/api/update-subscription-settings)
 * [Get all channels](/api/get-streams)
 * [Get a channel by ID](/api/get-stream-by-id)

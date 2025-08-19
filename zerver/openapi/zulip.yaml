@@ -13380,6 +13380,51 @@ paths:
                           Whether the user is subscribed to the channel.
                     example:
                       {"msg": "", "result": "success", "is_subscribed": false}
+  /users/{user_id}/channels:
+    get:
+      operationId: get-user-channels
+      summary: Get a user's subscribed channels
+      tags: ["channels"]
+      description: |
+        Gets the list of channels that the target user is subscribed to.
+
+        The [channel security model](/help/channel-permissions) means only those
+        subscribed channels to which the acting user has metadata access are
+        returned.
+
+        For organization administrators, this is guaranteed to be all channels
+        the target user is subscribed to, since organization administrators
+        implicitly have metadata access to all channels.
+
+        **Changes**: New in Zulip 12.0 (feature level 440).
+      parameters:
+        - $ref: "#/components/parameters/UserId"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      ignored_parameters_unsupported: {}
+                      subscribed_channel_ids:
+                        type: array
+                        items:
+                          type: integer
+                        description: |
+                          IDs of the channels that the target user is subscribed to
+                          (limited by the acting user's permissions to view subscribers).
+                    example:
+                      {
+                        "msg": "",
+                        "result": "success",
+                        "subscribed_channel_ids": [3, 5, 10],
+                      }
   /realm/emoji/{emoji_name}:
     post:
       operationId: upload-custom-emoji
