@@ -85,6 +85,7 @@ export type CustomProfileFieldData = {
 let user_streams_list_widget: ListWidgetType<StreamSubscription> | undefined;
 let user_groups_list_widget: ListWidgetType<UserGroup> | undefined;
 let user_profile_subscribe_widget: DropdownWidget | undefined;
+let user_widget_current_user_id: number | undefined;
 let user_group_pill_widget: user_group_pill.UserGroupPillWidget;
 let toggler: components.Toggle;
 let bot_owner_dropdown_widget: DropdownWidget | undefined;
@@ -124,11 +125,12 @@ export function get_user_id_if_user_profile_modal_open(): number | undefined {
 export function update_user_profile_streams_list_for_users(user_ids: number[]): void {
     const user_id = get_user_id_if_user_profile_modal_open();
     if (user_id && user_ids.includes(user_id) && user_streams_list_widget !== undefined) {
-        const user_streams = stream_data.get_streams_for_user(user_id).subscribed;
+        // The stream data should already be fetched for an open stream list widget.
+        const user_streams = stream_data.get_fetched_streams_for_user(user_id).subscribed;
         user_streams.sort(compare_by_name);
         user_streams_list_widget.replace_list_data(user_streams);
         const user = people.get_by_user_id(user_id);
-        render_or_update_user_streams_tab(user);
+        void render_or_update_user_streams_tab(user);
     }
 }
 
@@ -217,15 +219,18 @@ function initialize_bot_owner(
     return user_pills;
 }
 
-function render_user_profile_subscribe_widget(): void {
+function render_user_profile_subscribe_widget(user_id: number): void {
     const opts: DropdownWidgetOptions = {
         widget_name: "user_profile_subscribe",
-        get_options: get_user_unsub_streams_for_dropdown,
+        // The stream data should already be fetched before calling the render
+        // function, since it's used for checking if we should render it.
+        get_options: get_fetched_user_unsub_streams_for_dropdown,
         item_click_callback: change_state_of_subscribe_button,
         $events_container: $("#user-profile-modal"),
         unique_id_type: "number",
     };
     user_profile_subscribe_widget = new dropdown_widget.DropdownWidget(opts);
+    user_widget_current_user_id = user_id;
     user_profile_subscribe_widget.setup();
 }
 
@@ -257,14 +262,19 @@ function reset_subscribe_widget(): void {
     }
 }
 
-export function get_user_unsub_streams_for_dropdown(): dropdown_widget.Option[] {
+export function get_fetched_user_unsub_streams_for_dropdown(): dropdown_widget.Option[] {
     const target_user_id = Number.parseInt($("#user-profile-modal").attr("data-user-id")!, 10);
-    return get_user_unsub_streams(target_user_id);
+    return get_fetched_user_unsub_streams(target_user_id);
 }
 
-export function get_user_unsub_streams(user_id: number): dropdown_widget.Option[] {
+async function get_user_unsub_streams(user_id: number): Promise<dropdown_widget.Option[]> {
+    await stream_data.get_streams_for_user(user_id);
+    return get_fetched_user_unsub_streams(user_id);
+}
+
+function get_fetched_user_unsub_streams(user_id: number): dropdown_widget.Option[] {
     return stream_data
-        .get_streams_for_user(user_id)
+        .get_fetched_streams_for_user(user_id)
         .can_subscribe.map((stream) => ({
             name: stream.name,
             unique_id: stream.stream_id,
@@ -329,9 +339,24 @@ function format_user_group_list_item_html(group: UserGroup, user: User): string 
     });
 }
 
-function render_or_update_user_streams_tab(user: User): void {
+async function render_or_update_user_streams_tab(user: User): Promise<void> {
+    if (!peer_data.subscriber_data_loaded_for_user(user.user_id)) {
+        $("#user-profile-streams-tab .stream-list-bottom-section").hide();
+        loading.make_indicator($(".stream-list-loader"), {
+            height: 56, // 4em at 14px / 1em
+        });
+    }
+    const user_streams = (await stream_data.get_streams_for_user(user.user_id)).subscribed;
+    const user_unsub_streams = await get_user_unsub_streams(user.user_id);
+    // If a modal for another user was opened while we were fetching data, there's
+    // nothing for us to do here.
+    if (user_widget_current_user_id !== undefined && user_widget_current_user_id !== user.user_id) {
+        return;
+    }
+
+    loading.destroy_indicator($(".stream-list-loader"));
+
     if (!user_streams_list_widget) {
-        const user_streams = stream_data.get_streams_for_user(user.user_id).subscribed;
         render_user_stream_list(user_streams, user);
     }
     // We only show the subscribe widget if the user is an admin, the user has opened
@@ -341,7 +366,6 @@ function render_or_update_user_streams_tab(user: User): void {
     // for that condition.
     // We also don't show the widget if there are no channels the user is currently
     // unsubscribed from and could become subscribed to (i.e. nothing to show in the widget).
-    const user_unsub_streams = get_user_unsub_streams(user.user_id);
     const show_user_subscribe_widget =
         (people.can_admin_user(user) || current_user.is_admin) &&
         user_unsub_streams.length > 0 &&
@@ -350,7 +374,7 @@ function render_or_update_user_streams_tab(user: User): void {
 
     if (show_user_subscribe_widget && user_profile_subscribe_widget === undefined) {
         reset_subscribe_widget();
-        render_user_profile_subscribe_widget();
+        render_user_profile_subscribe_widget(user.user_id);
     }
 
     if (show_user_subscribe_widget) {
@@ -364,6 +388,7 @@ function render_user_stream_list(streams: StreamSubscription[], user: User): voi
     streams.sort(compare_by_name);
     const $container = $("#user-profile-modal .user-stream-list");
     $container.empty();
+    user_widget_current_user_id = user.user_id;
     user_streams_list_widget = ListWidget.create($container, streams, {
         name: `user-${user.user_id}-stream-list`,
         get_item: ListWidget.default_get_item,
@@ -408,6 +433,7 @@ function render_user_group_list(groups: UserGroup[], user: User): void {
     groups.sort(compare_by_name);
     const $container = $("#user-profile-modal .user-group-list");
     $container.empty();
+    user_widget_current_user_id = user.user_id;
     user_groups_list_widget = ListWidget.create($container, groups, {
         name: `user-${user.user_id}-group-list`,
         get_item: ListWidget.default_get_item,
@@ -650,6 +676,7 @@ export function show_user_profile(user: User, default_tab_key = "profile-tab"): 
     user_streams_list_widget = undefined;
     user_groups_list_widget = undefined;
     user_profile_subscribe_widget = undefined;
+    user_widget_current_user_id = undefined;
 
     const field_types = realm.custom_profile_field_types;
     const profile_data = realm.custom_profile_fields
@@ -741,7 +768,7 @@ export function show_user_profile(user: User, default_tab_key = "profile-tab"): 
                     break;
                 }
                 case "user-profile-streams-tab": {
-                    render_or_update_user_streams_tab(user);
+                    void render_or_update_user_streams_tab(user);
                     break;
                 }
                 case "manage-profile-tab":

@@ -25,6 +25,7 @@ const user_groups = zrequire("user_groups");
 const {initialize_user_settings} = zrequire("user_settings");
 
 const bot_data = mock_esm("../src/bot_data");
+const channel = mock_esm("../src/channel");
 
 const current_user = {};
 set_current_user(current_user);
@@ -136,7 +137,7 @@ function test(label, f) {
                 me_group,
             ],
         });
-        f(helpers);
+        return f(helpers);
     });
 }
 
@@ -523,7 +524,11 @@ test("basics", () => {
     ]);
 });
 
-test("get_streams_for_user", ({override}) => {
+test("get_streams_for_user", async ({override}) => {
+    channel.get = (payload) =>
+        payload.success({
+            subscribed_channel_ids: [],
+        });
     const denmark = {
         subscribed: true,
         color: "blue",
@@ -596,7 +601,10 @@ test("get_streams_for_user", ({override}) => {
     peer_data.set_subscribers(world.stream_id, [me.user_id]);
 
     override(realm, "realm_can_add_subscribers_group", students.id);
-    assert.deepEqual(stream_data.get_streams_for_user(me.user_id).can_subscribe, [social, errors]);
+    assert.deepEqual((await stream_data.get_streams_for_user(me.user_id)).can_subscribe, [
+        social,
+        errors,
+    ]);
 
     // test_user is subscribed to all three streams, but current user (me)
     // gets only two because of subscriber visibility policy of stream:
@@ -605,24 +613,24 @@ test("get_streams_for_user", ({override}) => {
     //          user is a guest.
     // #test: current user is no longer subscribed to a private stream, so
     //        he cannot see whether test_user is subscribed to it.
-    assert.deepEqual(stream_data.get_streams_for_user(test_user.user_id).subscribed, [
+    assert.deepEqual((await stream_data.get_streams_for_user(test_user.user_id)).subscribed, [
         denmark,
         social,
     ]);
-    assert.deepEqual(stream_data.get_streams_for_user(test_user.user_id).can_subscribe, []);
+    assert.deepEqual((await stream_data.get_streams_for_user(test_user.user_id)).can_subscribe, []);
     // Administrator is not part of the realm_can_add_subscribers_group
     // or the stream level can_add_subscribers_group. But users with
     // the permission to administer a channel can also subscribe other
     // users. Admins can administer all channels they have access to.
     override(current_user, "is_admin", true);
     assert.equal(user_groups.is_user_in_group(students.id, current_user.user_id), false);
-    assert.deepEqual(stream_data.get_streams_for_user(test_user.user_id).can_subscribe, [
+    assert.deepEqual((await stream_data.get_streams_for_user(test_user.user_id)).can_subscribe, [
         world,
         errors,
     ]);
 
     override(realm, "realm_can_add_subscribers_group", everyone_group.id);
-    assert.deepEqual(stream_data.get_streams_for_user(test_user.user_id).can_subscribe, [
+    assert.deepEqual((await stream_data.get_streams_for_user(test_user.user_id)).can_subscribe, [
         world,
         errors,
     ]);
