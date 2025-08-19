@@ -1,7 +1,9 @@
 {
   "data": [
     {
-      "adaptive_pricing": null,
+      "adaptive_pricing": {
+        "enabled": false
+      },
       "after_expiration": null,
       "allow_promotion_codes": null,
       "amount_subtotal": null,
@@ -50,11 +52,12 @@
       "livemode": false,
       "locale": null,
       "metadata": {
-        "remote_server_user_id": "15",
+        "remote_server_user_id": "1",
         "type": "card_update"
       },
       "mode": "setup",
       "object": "checkout.session",
+      "origin_context": null,
       "payment_intent": null,
       "payment_link": null,
       "payment_method_collection": "always",

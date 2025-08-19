@@ -10017,16 +10017,26 @@ class TestRemoteServerBillingFlow(StripeTestCase, RemoteServerTestCase):
         ]:
             self.assert_in_response(substring, response)
 
-        # The last audit log update was 25 days before the plan's next
-        # invoice date, so invoicing the fixed-price plan fails, and an
-        # internal billing notice is sent.
+        # Since fixed-price plans do not depend on license counts for the
+        # amount due, we invoice them even if the audit log data is stale
+        # from the server.
         last_audit_log_update = self.now + timedelta(days=5)
         with time_machine.travel(last_audit_log_update, tick=False):
             send_server_data_to_push_bouncer(consider_usage_statistics=False)
         invoice_plans_as_needed(self.next_month)
         current_plan.refresh_from_db()
-        self.assertEqual(current_plan.next_invoice_date, self.next_month)
-        self.assertTrue(current_plan.stale_audit_log_data_email_sent)
+        updated_invoice_date = self.next_month + timedelta(days=29)
+        self.assertEqual(current_plan.next_invoice_date, updated_invoice_date)
+        self.assertFalse(current_plan.stale_audit_log_data_email_sent)
+
+        # Audit log data is up-to-date when the plan is next invoiced.
+        with time_machine.travel(updated_invoice_date, tick=False):
+            send_server_data_to_push_bouncer(consider_usage_statistics=False)
+        invoice_plans_as_needed(updated_invoice_date)
+        current_plan.refresh_from_db()
+        final_invoice_date = updated_invoice_date + timedelta(days=31)
+        self.assertEqual(current_plan.next_invoice_date, final_invoice_date)
+        self.assertFalse(current_plan.stale_audit_log_data_email_sent)
 
     @responses.activate
     @mock_stripe()
