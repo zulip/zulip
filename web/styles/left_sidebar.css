@@ -352,7 +352,8 @@
     top: 0;
     background: var(--color-background);
     /* Must be padding not margin so that the sticky headers don't show behind it */
-    padding: 0 var(--left-sidebar-right-margin) 0 5px;
+    padding: 0 var(--left-sidebar-right-margin)
+        var(--sidebar-filter-bottom-spacing) 5px;
 
     .channel-folders-sidebar-menu-icon {
         grid-area: channel-folders-option;
