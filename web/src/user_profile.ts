@@ -84,6 +84,7 @@ export type CustomProfileFieldData = {
 let user_streams_list_widget: ListWidgetType<StreamSubscription> | undefined;
 let user_groups_list_widget: ListWidgetType<UserGroup> | undefined;
 let user_profile_subscribe_widget: DropdownWidget | undefined;
+let user_widget_current_user_id: number | undefined;
 let user_group_pill_widget: user_group_pill.UserGroupPillWidget;
 let toggler: components.Toggle;
 let bot_owner_dropdown_widget: DropdownWidget | undefined;
@@ -120,10 +121,12 @@ export function get_user_id_if_user_profile_modal_open(): number | undefined {
     return undefined;
 }
 
-export function update_user_profile_streams_list_for_users(user_ids: number[]): void {
+export async function update_user_profile_streams_list_for_users(
+    user_ids: number[],
+): Promise<void> {
     const user_id = get_user_id_if_user_profile_modal_open();
     if (user_id && user_ids.includes(user_id) && user_streams_list_widget !== undefined) {
-        const user_streams = stream_data.get_streams_for_user(user_id).subscribed;
+        const user_streams = (await stream_data.get_streams_for_user(user_id)).subscribed;
         user_streams.sort(compare_by_name);
         user_streams_list_widget.replace_list_data(user_streams);
     }
@@ -212,16 +215,20 @@ function initialize_bot_owner(
     return user_pills;
 }
 
-function render_user_profile_subscribe_widget(): void {
+function render_user_profile_subscribe_widget(
+    user_unsub_streams: dropdown_widget.Option[],
+    user_id: number,
+): void {
     const opts: DropdownWidgetOptions = {
         widget_name: "user_profile_subscribe",
-        get_options: get_user_unsub_streams_for_dropdown,
+        get_options: () => user_unsub_streams,
         item_click_callback: change_state_of_subscribe_button,
         $events_container: $("#user-profile-modal"),
         unique_id_type: "number",
     };
     user_profile_subscribe_widget =
         user_profile_subscribe_widget ?? new dropdown_widget.DropdownWidget(opts);
+    user_widget_current_user_id = user_id;
     user_profile_subscribe_widget.setup();
 }
 
@@ -257,15 +264,9 @@ function reset_subscribe_widget(): void {
     }
 }
 
-export function get_user_unsub_streams_for_dropdown(): dropdown_widget.Option[] {
-    const target_user_id = Number.parseInt($("#user-profile-modal").attr("data-user-id")!, 10);
-    return get_user_unsub_streams(target_user_id);
-}
-
-export function get_user_unsub_streams(user_id: number): dropdown_widget.Option[] {
-    return stream_data
-        .get_streams_for_user(user_id)
-        .can_subscribe.map((stream) => ({
+async function get_user_unsub_streams(user_id: number): Promise<dropdown_widget.Option[]> {
+    return (await stream_data.get_streams_for_user(user_id)).can_subscribe
+        .map((stream) => ({
             name: stream.name,
             unique_id: stream.stream_id,
             stream,
@@ -332,6 +333,7 @@ function render_user_stream_list(streams: StreamSubscription[], user: User): voi
     streams.sort(compare_by_name);
     const $container = $("#user-profile-modal .user-stream-list");
     $container.empty();
+    user_widget_current_user_id = user.user_id;
     user_streams_list_widget = ListWidget.create($container, streams, {
         name: `user-${user.user_id}-stream-list`,
         get_item: ListWidget.default_get_item,
@@ -360,6 +362,7 @@ function render_user_group_list(groups: UserGroup[], user: User): void {
     groups.sort(compare_by_name);
     const $container = $("#user-profile-modal .user-group-list");
     $container.empty();
+    user_widget_current_user_id = user.user_id;
     user_groups_list_widget = ListWidget.create($container, groups, {
         name: `user-${user.user_id}-group-list`,
         get_item: ListWidget.default_get_item,
@@ -500,6 +503,7 @@ function on_user_profile_hide(): void {
     user_streams_list_widget = undefined;
     user_groups_list_widget = undefined;
     user_profile_subscribe_widget = undefined;
+    user_widget_current_user_id = undefined;
     const base = get_current_hash_category();
     // After closing the user profile, if the hash consists of `#user`
     // it means that it acts as an overlay rather than a modal (when
@@ -616,7 +620,10 @@ function add_user_to_groups(group_ids: number[], user_id: number, $alert_box: JQ
     add_user_to_next_group();
 }
 
-export function show_user_profile(user: User, default_tab_key = "profile-tab"): void {
+export async function show_user_profile(
+    user: User,
+    default_tab_key = "profile-tab",
+): Promise<void> {
     const field_types = realm.custom_profile_field_types;
     const profile_data = realm.custom_profile_fields
         .flatMap((f) => get_custom_profile_field_data(user, f, field_types) ?? [])
@@ -624,7 +631,7 @@ export function show_user_profile(user: User, default_tab_key = "profile-tab"): 
     original_values = {
         user_id: user.user_id.toString(),
     };
-    const user_unsub_streams = get_user_unsub_streams(user.user_id);
+    const user_unsub_streams = await get_user_unsub_streams(user.user_id);
     // We only show the subscribe widget if the user is an admin, the user has opened their own profile,
     // or if the user profile belongs to a bot whose owner has opened the user profile. However, we don't
     // want to show the subscribe widget for generic bots since they are system bots and for deactivated users.
@@ -708,6 +715,15 @@ export function show_user_profile(user: User, default_tab_key = "profile-tab"): 
             $("#user-profile-modal .manage-profile-tab-footer").removeClass(
                 "modal__footer_wrapper",
             );
+            // TODO: There should be a comment explaining what this setTimeout
+            // is here for, if indeed it's correct. It kinda smells like a workaround
+            // that may not work if there's network delay between client and server.
+            function set_tab_indexes(): void {
+                setTimeout(() => {
+                    $(".modal__container .ind-tab").attr("tabindex", "-1");
+                    $(".modal__container .ind-tab.selected").attr("tabindex", "0");
+                }, 0);
+            }
             switch (key) {
                 case "profile-tab":
                     if (!has_initialized_user_type_fields) {
@@ -723,26 +739,32 @@ export function show_user_profile(user: User, default_tab_key = "profile-tab"): 
                     break;
                 }
                 case "user-profile-streams-tab": {
-                    if (!user_streams_list_widget) {
-                        const user_streams = stream_data.get_streams_for_user(
-                            user.user_id,
-                        ).subscribed;
-                        if (show_user_subscribe_widget) {
-                            render_user_profile_subscribe_widget();
+                    void (async () => {
+                        if (!user_streams_list_widget) {
+                            const user_streams = (
+                                await stream_data.get_streams_for_user(user.user_id)
+                            ).subscribed;
+                            // If another user modal has opened as we were fetching, return early
+                            if (user_widget_current_user_id !== user.user_id) {
+                                return;
+                            }
+                            if (show_user_subscribe_widget) {
+                                render_user_profile_subscribe_widget(
+                                    user_unsub_streams,
+                                    user.user_id,
+                                );
+                            }
+                            render_user_stream_list(user_streams, user);
                         }
-                        render_user_stream_list(user_streams, user);
-                    }
-                    break;
+                    })();
+                    return;
                 }
                 case "manage-profile-tab":
                     $("#user-profile-modal .modal__footer").show();
                     render_manage_profile_content(user);
                     break;
             }
-            setTimeout(() => {
-                $(".modal__container .ind-tab").attr("tabindex", "-1");
-                $(".modal__container .ind-tab.selected").attr("tabindex", "0");
-            }, 0);
+            set_tab_indexes();
         },
     };
 
