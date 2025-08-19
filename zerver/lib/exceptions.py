@@ -67,6 +67,7 @@ class ErrorCode(Enum):
     FAILED_TO_CONNECT_BOUNCER = auto()
     INTERNAL_SERVER_ERROR_ON_BOUNCER = auto()
     ADMIN_ACTION_REQUIRED = auto()
+    USER_GROUP_MENTION_NOT_ALLOWED = auto()
 
 
 class JsonableError(Exception):
@@ -744,6 +745,19 @@ class TopicWildcardMentionNotAllowedError(JsonableError):
     @override
     def msg_format() -> str:
         return _("You do not have permission to use topic wildcard mentions in this topic.")
+
+
+class UserGroupMentionNotAllowedError(JsonableError):
+    code: ErrorCode = ErrorCode.USER_GROUP_MENTION_NOT_ALLOWED
+    data_fields = ["user_group_name"]
+
+    def __init__(self, user_group_name: str) -> None:
+        self.user_group_name = user_group_name
+
+    @staticmethod
+    @override
+    def msg_format() -> str:
+        return _("You do not have permission to mention @{user_group_name}.")
 
 
 class ExpectationMismatchError(JsonableError):

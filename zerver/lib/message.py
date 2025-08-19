@@ -16,7 +16,11 @@ from analytics.lib.counts import COUNT_STATS
 from analytics.models import RealmCount
 from zerver.lib.cache import generic_bulk_cached_fetch, to_dict_cache_key_id
 from zerver.lib.display_recipient import get_display_recipient, get_display_recipient_by_id
-from zerver.lib.exceptions import JsonableError, MissingAuthenticationError
+from zerver.lib.exceptions import (
+    JsonableError,
+    MissingAuthenticationError,
+    UserGroupMentionNotAllowedError,
+)
 from zerver.lib.markdown import MessageRenderingResult
 from zerver.lib.mention import MentionData, sender_can_mention_group
 from zerver.lib.message_cache import MessageDict, extract_message_dict, stringify_message_dict
@@ -1533,11 +1537,7 @@ def check_user_group_mention_allowed(sender: UserProfile, user_group_ids: list[i
 
     for group in user_groups:
         if not sender_can_mention_group(sender, group):
-            raise JsonableError(
-                _("You are not allowed to mention user group '{user_group_name}'.").format(
-                    user_group_name=group.name
-                )
-            )
+            raise UserGroupMentionNotAllowedError(group.name)
 
 
 def parse_message_time_limit_setting(
