@@ -1638,6 +1638,12 @@
         #646671
     );
     --color-user-circle-deactivated: hsl(0deg 0% 50%);
+    /* The gradient is also recreated inside the `user-circle-idle` SVG
+       file. That is needed for the new help center since it does not
+       do the SVG to font conversion that the web app does. We
+       re-apply it here since the linearGradient there is stripped off
+       when that SVG is converted to font for the web app. Any changes
+       to this gradient should be reflected in the SVG file as well. */
     --gradient-user-circle-idle: linear-gradient(
         to right,
         var(--color-user-circle-idle) 5%,
