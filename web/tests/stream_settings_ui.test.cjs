@@ -222,6 +222,12 @@ run_test("redraw_left_panel", ({override, mock_template}) => {
     };
     stream_settings_components.set_archived_status_filters_for_tests(filters_dropdown_widget);
 
+    const folder_filter_dropdown_widget = {
+        render: function render() {},
+        value: () => -2,
+    };
+    stream_settings_components.set_folder_filter_for_tests(folder_filter_dropdown_widget);
+
     stream_settings_ui.render_left_panel_superset();
 
     const sub_stubs = [];

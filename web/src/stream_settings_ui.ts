@@ -11,6 +11,7 @@ import render_stream_settings_overlay from "../templates/stream_settings/stream_
 import type {Banner} from "./banners.ts";
 import * as blueslip from "./blueslip.ts";
 import * as browser_history from "./browser_history.ts";
+import * as channel_folders from "./channel_folders.ts";
 import * as components from "./components.ts";
 import type {Toggle} from "./components.ts";
 import * as compose_banner from "./compose_banner.ts";
@@ -356,7 +357,10 @@ export function add_sub_to_table(sub: StreamSubscription): void {
     const html = render_browse_streams_list_item(setting_sub);
     const $new_row = $(html);
 
-    if (stream_settings_components.archived_status_filter_includes_channel(sub)) {
+    if (
+        stream_settings_components.archived_status_filter_includes_channel(sub) &&
+        stream_settings_components.folder_filter_includes_channel(sub)
+    ) {
         if (stream_create.get_name() === sub.name) {
             scroll_util.get_content_element($(".streams-list")).prepend($new_row);
             scroll_util.reset_scrollbar($(".streams-list"));
@@ -520,6 +524,7 @@ export function update_settings_for_unsubscribed(slim_sub: StreamSubscription): 
 
 function triage_stream(left_panel_params: LeftPanelParams, sub: StreamSubscription): string {
     const archived_status_filters = stream_settings_data.ARCHIVED_STATUS_FILTERS;
+    const folder_filters = stream_settings_data.FOLDER_FILTERS;
     if (
         left_panel_params.archived_status_filter_value ===
             archived_status_filters.NON_ARCHIVED_CHANNELS &&
@@ -534,6 +539,19 @@ function triage_stream(left_panel_params: LeftPanelParams, sub: StreamSubscripti
     ) {
         return "rejected";
     }
+
+    if (left_panel_params.folder_filter_value !== folder_filters.ANY_FOLDER_DROPDOWN_OPTION) {
+        if (
+            left_panel_params.folder_filter_value === folder_filters.UNCATEGORIZED_DROPDOWN_OPTION
+        ) {
+            if (sub.folder_id !== null) {
+                return "rejected";
+            }
+        } else if (sub.folder_id !== left_panel_params.folder_filter_value) {
+            return "rejected";
+        }
+    }
+
     if (left_panel_params.show_subscribed && !sub.subscribed) {
         // reject non-subscribed streams
         return "rejected";
@@ -665,6 +683,23 @@ export function update_empty_left_panel_message(): void {
     $(".no-streams-to-show").show();
 }
 
+function update_folder_filter_button(left_panel_params: LeftPanelParams): void {
+    if (
+        left_panel_params.folder_filter_value ===
+        stream_settings_data.FOLDER_FILTERS.ANY_FOLDER_DROPDOWN_OPTION
+    ) {
+        $("#folder_filter_button").addClass("icon-button-neutral");
+        $("#folder_filter_button").removeClass("icon-button-brand");
+        $("#folder_filter_button .zulip-icon").addClass("zulip-icon-folder");
+        $("#folder_filter_button .zulip-icon").removeClass("zulip-icon-folder-search");
+    } else {
+        $("#folder_filter_button").removeClass("icon-button-neutral");
+        $("#folder_filter_button").addClass("icon-button-brand");
+        $("#folder_filter_button .zulip-icon").removeClass("zulip-icon-folder");
+        $("#folder_filter_button .zulip-icon").addClass("zulip-icon-folder-search");
+    }
+}
+
 // LeftPanelParams { input: String, show_subscribed: Boolean, sort_order: String }
 export function redraw_left_panel(left_panel_params = get_left_panel_params()): number[] {
     // We only get left_panel_params passed in from tests.  Real
@@ -720,6 +755,8 @@ export function redraw_left_panel(left_panel_params = get_left_panel_params()): 
     }
     update_empty_left_panel_message();
 
+    update_folder_filter_button(left_panel_params);
+
     // return this for test convenience
     return [...buckets.name, ...buckets.desc];
 }
@@ -732,6 +769,7 @@ type LeftPanelParams = {
     show_not_subscribed: boolean;
     sort_order: string;
     archived_status_filter_value: string;
+    folder_filter_value: number;
 };
 
 export function get_left_panel_params(): LeftPanelParams {
@@ -739,12 +777,14 @@ export function get_left_panel_params(): LeftPanelParams {
     const input = $search_box.expectOne().val()!.trim();
     const archived_status_filter_value =
         stream_settings_components.get_archived_status_filter_dropdown_value();
+    const folder_filter_value = stream_settings_components.get_folder_filter_dropdown_value();
     return {
         input,
         show_subscribed: stream_ui_updates.show_subscribed,
         show_not_subscribed: stream_ui_updates.show_not_subscribed,
         sort_order,
         archived_status_filter_value,
+        folder_filter_value,
     };
 }
 
@@ -849,6 +889,50 @@ function set_up_dropdown_widget(): void {
     });
     widget.setup();
     stream_settings_components.set_archived_status_filter_dropdown_widget(widget);
+}
+
+function set_up_folder_filter_dropdown_widget(): void {
+    const folder_filters = stream_settings_data.FOLDER_FILTERS;
+
+    const folder_options = (): dropdown_widget.Option[] => {
+        const folders = channel_folders.get_channel_folders();
+        const options: dropdown_widget.Option[] = folders.map((folder) => ({
+            name: folder.name,
+            unique_id: folder.id,
+        }));
+
+        const uncategorized_option = {
+            is_setting_disabled: true,
+            show_disabled_icon: false,
+            show_disabled_option_name: true,
+            unique_id: folder_filters.UNCATEGORIZED_DROPDOWN_OPTION,
+            name: $t({defaultMessage: "Uncategorized"}),
+        };
+        options.unshift(uncategorized_option);
+
+        const any_folder_option = {
+            is_setting_disabled: true,
+            show_disabled_icon: false,
+            show_disabled_option_name: true,
+            unique_id: folder_filters.ANY_FOLDER_DROPDOWN_OPTION,
+            name: $t({defaultMessage: "Any folder"}),
+        };
+        options.unshift(any_folder_option);
+
+        return options;
+    };
+
+    const widget = new dropdown_widget.DropdownWidget({
+        widget_name: "folder_filter",
+        widget_selector: ".filter-folders-dropdown-widget-button",
+        get_options: folder_options,
+        item_click_callback: filter_click_handler,
+        $events_container: $("#stream_filter"),
+        unique_id_type: "number",
+        default_id: folder_filters.ANY_FOLDER_DROPDOWN_OPTION,
+    });
+    widget.setup();
+    stream_settings_components.set_folder_filter_dropdown_widget(widget);
 }
 
 function setup_page(callback: () => void): void {
@@ -972,6 +1056,7 @@ function setup_page(callback: () => void): void {
         $("#channels_overlay_container").append($(rendered));
 
         set_up_dropdown_widget();
+        set_up_folder_filter_dropdown_widget();
         render_left_panel_superset();
         initialize_components();
         redraw_left_panel();
@@ -1104,6 +1189,16 @@ export function change_state(
                 selected_filter = FILTERS.NON_ARCHIVED_CHANNELS;
             }
             stream_settings_components.set_archived_status_filter_dropdown_value(selected_filter);
+        }
+        if (sub && !stream_settings_components.folder_filter_includes_channel(sub)) {
+            const folder_filters = stream_settings_data.FOLDER_FILTERS;
+            let selected_filter;
+            if (sub.folder_id === null) {
+                selected_filter = folder_filters.UNCATEGORIZED_DROPDOWN_OPTION;
+            } else {
+                selected_filter = sub.folder_id;
+            }
+            stream_settings_components.set_folder_filter_dropdown_value(selected_filter);
         }
         return;
     }
