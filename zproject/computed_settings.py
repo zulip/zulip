@@ -426,9 +426,9 @@ CACHES: dict[str, dict[str, object]] = {
     "database": {
         "BACKEND": "django.core.cache.backends.db.DatabaseCache",
         "LOCATION": "third_party_api_results",
-        # This cache shouldn't timeout; we're really just using the
-        # cache API to store the results of requests to third-party
-        # APIs like the Twitter API permanently.
+        # This is currently unused; it was previously used to cache
+        # API responses from third-party APIs like the Twitter API
+        # permanently.
         "TIMEOUT": None,
         "OPTIONS": {
             "MAX_ENTRIES": 100000000,
