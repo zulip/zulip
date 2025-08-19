@@ -527,3 +527,84 @@ test("get_unique_subscriber_count_for_streams", async () => {
 
     assert.equal(count, 2);
 });
+
+test("load_subscriptions_for_user", async () => {
+    people.add_active_user(fred);
+
+    const india = {
+        stream_id: 102,
+        name: "India",
+        subscribed: true,
+    };
+    stream_data.add_sub_for_tests(india);
+    const rome = {name: "Rome", subscribed: true, stream_id: 1001};
+    stream_data.add_sub_for_tests(rome);
+
+    let channel_get_calls = 0;
+    channel.get = (opts) => {
+        assert.equal(opts.url, `/json/users/${fred.user_id}/channels`);
+        channel_get_calls += 1;
+        return {
+            subscribed_channel_ids: [india.stream_id],
+        };
+    };
+
+    // Only one of these will do the fetch, and the other will wait
+    // for the first fetch to complete.
+    const promise1 = peer_data.load_subscriptions_for_user(fred.user_id);
+    const promise2 = peer_data.load_subscriptions_for_user(fred.user_id);
+    await promise1;
+    await promise2;
+    assert.equal(channel_get_calls, 1);
+
+    peer_data.clear_for_testing();
+    channel.get = (payload) => {
+        payload.error({status: 500});
+    };
+    blueslip.expect("warn", "Failure fetching user's subscribed channels. Retrying.", 5);
+    blueslip.expect("error", "Failure fetching user's subscribed channels. Giving up.");
+    await peer_data.load_subscriptions_for_user(fred.user_id);
+    blueslip.reset();
+
+    peer_data.clear_for_testing();
+    channel.get = (payload) => {
+        payload.error({status: 400});
+    };
+    blueslip.expect("error", "Bad request to fetch user's subscribed channels.");
+    await peer_data.load_subscriptions_for_user(fred.user_id);
+    blueslip.reset();
+
+    peer_data.clear_for_testing();
+    assert.ok(!stream_data.is_user_loaded_and_subscribed(india.stream_id, fred.user_id));
+    let error_counter = 0;
+    channel.get = (payload) => {
+        if (error_counter === 3) {
+            payload.success({
+                subscribed_channel_ids: [india.stream_id],
+            });
+        } else {
+            error_counter += 1;
+            payload.error({status: 500});
+        }
+    };
+    blueslip.expect("warn", "Failure fetching user's subscribed channels. Retrying.", 3);
+    await peer_data.load_subscriptions_for_user(fred.user_id);
+    assert.ok(stream_data.is_user_loaded_and_subscribed(india.stream_id, fred.user_id));
+    blueslip.reset();
+
+    channel_get_calls = 0;
+    channel.get = () => {
+        channel_get_calls += 1;
+        return {
+            subscribers: [fred.user_id],
+        };
+    };
+    await peer_data.maybe_fetch_stream_subscribers(india.stream_id);
+    await peer_data.maybe_fetch_stream_subscribers(rome.stream_id);
+    assert.equal(channel_get_calls, 2);
+
+    // No get request here because we already have full subscriber data
+    // for both streams.
+    await peer_data.load_subscriptions_for_user(fred.user_id);
+    assert.equal(channel_get_calls, 2);
+});
