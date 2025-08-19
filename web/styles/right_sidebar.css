@@ -49,7 +49,10 @@
 }
 
 .buddy-list-section-container {
-    margin-bottom: 10px;
+    /* This establishes better visual concord with
+       the left sidebar's spacing between a last
+       channel/topic and the header that follows. */
+    margin-bottom: 3px;
 
     &.no-display {
         display: none;
