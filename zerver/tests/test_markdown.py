@@ -40,8 +40,6 @@ from zerver.lib.markdown import (
     MessageRenderingResult,
     clear_web_link_regex_for_testing,
     content_has_emoji_syntax,
-    fetch_tweet_data,
-    get_tweet_id,
     image_preview_enabled,
     markdown_convert,
     maybe_update_markdown_engines,
@@ -1266,39 +1264,6 @@ class MarkdownEmbedsTest(ZulipTestCase):
             converted,
             f"""<p><a href="https://www.youtube.com/watch?v=0c46YHS3RY8">https://www.youtube.com/watch?v=0c46YHS3RY8</a><br>\n<a href="https://www.youtube.com/watch?v=lXFO2ULktEI">https://www.youtube.com/watch?v=lXFO2ULktEI</a></p>\n<div class="youtube-video message_inline_image"><a data-id="0c46YHS3RY8" href="https://www.youtube.com/watch?v=0c46YHS3RY8"><img src="{get_camo_url("https://i.ytimg.com/vi/0c46YHS3RY8/mqdefault.jpg")}"></a></div><div class="youtube-video message_inline_image"><a data-id="lXFO2ULktEI" href="https://www.youtube.com/watch?v=lXFO2ULktEI"><img src="{get_camo_url("https://i.ytimg.com/vi/lXFO2ULktEI/mqdefault.jpg")}"></a></div>""",
         )
-
-    def test_twitter_id_extraction(self) -> None:
-        self.assertEqual(
-            get_tweet_id("http://twitter.com/#!/VizzQuotes/status/409030735191097344"),
-            "409030735191097344",
-        )
-        self.assertEqual(
-            get_tweet_id("http://twitter.com/VizzQuotes/status/409030735191097344"),
-            "409030735191097344",
-        )
-        self.assertEqual(
-            get_tweet_id("http://twitter.com/VizzQuotes/statuses/409030735191097344"),
-            "409030735191097344",
-        )
-        self.assertEqual(get_tweet_id("https://twitter.com/wdaher/status/1017581858"), "1017581858")
-        self.assertEqual(
-            get_tweet_id("https://twitter.com/wdaher/status/1017581858/"), "1017581858"
-        )
-        self.assertEqual(
-            get_tweet_id("https://twitter.com/windyoona/status/410766290349879296/photo/1"),
-            "410766290349879296",
-        )
-        self.assertEqual(
-            get_tweet_id("https://twitter.com/windyoona/status/410766290349879296/"),
-            "410766290349879296",
-        )
-
-    def test_fetch_tweet_data_settings_validation(self) -> None:
-        with (
-            self.settings(TEST_SUITE=False, TWITTER_CONSUMER_KEY=None),
-            self.assertRaises(NotImplementedError),
-        ):
-            fetch_tweet_data("287977969287315459")
 
 
 class MarkdownEmojiTest(ZulipTestCase):
