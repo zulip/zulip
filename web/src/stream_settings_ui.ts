@@ -519,17 +519,17 @@ export function update_settings_for_unsubscribed(slim_sub: StreamSubscription): 
 }
 
 function triage_stream(left_panel_params: LeftPanelParams, sub: StreamSubscription): string {
-    const current_channel_visibility_filter =
-        stream_settings_components.get_archived_status_filter_dropdown_value();
     const channel_visibility_filters = stream_settings_data.ARCHIVED_STATUS_FILTERS;
     if (
-        current_channel_visibility_filter === channel_visibility_filters.NON_ARCHIVED_CHANNELS &&
+        left_panel_params.archived_status_filter_value ===
+            channel_visibility_filters.NON_ARCHIVED_CHANNELS &&
         sub.is_archived
     ) {
         return "rejected";
     }
     if (
-        current_channel_visibility_filter === channel_visibility_filters.ARCHIVED_CHANNELS &&
+        left_panel_params.archived_status_filter_value ===
+            channel_visibility_filters.ARCHIVED_CHANNELS &&
         !sub.is_archived
     ) {
         return "rejected";
@@ -731,16 +731,20 @@ type LeftPanelParams = {
     show_subscribed: boolean;
     show_not_subscribed: boolean;
     sort_order: string;
+    archived_status_filter_value: string;
 };
 
 export function get_left_panel_params(): LeftPanelParams {
     const $search_box = $<HTMLInputElement>("#stream_filter input[type='text']");
     const input = $search_box.expectOne().val()!.trim();
+    const archived_status_filter_value =
+        stream_settings_components.get_archived_status_filter_dropdown_value();
     return {
         input,
         show_subscribed: stream_ui_updates.show_subscribed,
         show_not_subscribed: stream_ui_updates.show_not_subscribed,
         sort_order,
+        archived_status_filter_value,
     };
 }
 
