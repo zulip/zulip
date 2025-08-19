@@ -220,7 +220,7 @@ run_test("redraw_left_panel", ({override, mock_template}) => {
         render: function render() {},
         value: () => "",
     };
-    stream_settings_components.set_filters_for_tests(filters_dropdown_widget);
+    stream_settings_components.set_archived_status_filters_for_tests(filters_dropdown_widget);
 
     stream_settings_ui.render_left_panel_superset();
 

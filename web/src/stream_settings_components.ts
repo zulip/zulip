@@ -28,7 +28,7 @@ import type {StreamSubscription} from "./sub_store.ts";
 import * as ui_report from "./ui_report.ts";
 import * as user_groups from "./user_groups.ts";
 
-export let filter_dropdown_widget: DropdownWidget;
+export let archived_status_filter_dropdown_widget: DropdownWidget;
 
 export function set_right_panel_title(sub: StreamSubscription): void {
     let title_icon_color = "#333333";
@@ -291,25 +291,25 @@ export function sub_or_unsub(
     }
 }
 
-export function set_filter_dropdown_widget(widget: DropdownWidget): void {
-    filter_dropdown_widget = widget;
+export function set_archived_status_filter_dropdown_widget(widget: DropdownWidget): void {
+    archived_status_filter_dropdown_widget = widget;
 }
 
-export function get_filter_dropdown_value(): string {
-    return z.string().parse(filter_dropdown_widget.value());
+export function get_archived_status_filter_dropdown_value(): string {
+    return z.string().parse(archived_status_filter_dropdown_widget.value());
 }
 
-export function set_filter_dropdown_value(value: string): void {
-    filter_dropdown_widget.render(value);
+export function set_archived_status_filter_dropdown_value(value: string): void {
+    archived_status_filter_dropdown_widget.render(value);
 }
 
-export function set_filters_for_tests(filter_widget: DropdownWidget): void {
-    filter_dropdown_widget = filter_widget;
+export function set_archived_status_filters_for_tests(filter_widget: DropdownWidget): void {
+    archived_status_filter_dropdown_widget = filter_widget;
 }
 
-export function filter_includes_channel(sub: StreamSubscription): boolean {
-    const filter_value = get_filter_dropdown_value();
-    const FILTERS = stream_settings_data.FILTERS;
+export function archived_status_filter_includes_channel(sub: StreamSubscription): boolean {
+    const filter_value = get_archived_status_filter_dropdown_value();
+    const FILTERS = stream_settings_data.ARCHIVED_STATUS_FILTERS;
     if (
         (filter_value === FILTERS.NON_ARCHIVED_CHANNELS && sub.is_archived) ||
         (filter_value === FILTERS.ARCHIVED_CHANNELS && !sub.is_archived)
