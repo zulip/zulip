@@ -294,6 +294,7 @@ def messages_for_ids(
         cache_transformer=lambda obj: obj,
         extractor=extract_message_dict,
         setter=stringify_message_dict,
+        pickled_tupled=False,
     )
 
     message_list: list[dict[str, Any]] = []

@@ -70,7 +70,7 @@ def stringify_message_dict(message_dict: dict[str, Any]) -> bytes:
     return orjson.dumps(message_dict)
 
 
-@cache_with_key(to_dict_cache_key, timeout=3600 * 24)
+@cache_with_key(to_dict_cache_key, timeout=3600 * 24, pickled_tupled=False)
 def message_to_encoded_cache(message: Message, realm_id: int | None = None) -> bytes:
     return MessageDict.messages_to_encoded_cache([message], realm_id)[message.id]
 
@@ -81,15 +81,12 @@ def update_message_cache(
     """Updates the message as stored in the to_dict cache (for serving
     messages)."""
     items_for_remote_cache = {}
-    message_ids = []
     changed_messages_to_dict = MessageDict.messages_to_encoded_cache(changed_messages, realm_id)
     for msg_id, msg in changed_messages_to_dict.items():
-        message_ids.append(msg_id)
-        key = to_dict_cache_key_id(msg_id)
-        items_for_remote_cache[key] = (msg,)
+        items_for_remote_cache[to_dict_cache_key_id(msg_id)] = msg
 
     cache_set_many(items_for_remote_cache)
-    return message_ids
+    return list(changed_messages_to_dict.keys())
 
 
 def save_message_rendered_content(message: Message, content: str) -> str:
