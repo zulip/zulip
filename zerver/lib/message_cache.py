@@ -1,5 +1,4 @@
 import copy
-import zlib
 from collections.abc import Iterable
 from datetime import datetime
 from email.headerregistry import Address
@@ -64,11 +63,11 @@ def sew_messages_and_submessages(
 
 
 def extract_message_dict(message_bytes: bytes) -> dict[str, Any]:
-    return orjson.loads(zlib.decompress(message_bytes))
+    return orjson.loads(message_bytes)
 
 
 def stringify_message_dict(message_dict: dict[str, Any]) -> bytes:
-    return zlib.compress(orjson.dumps(message_dict))
+    return orjson.dumps(message_dict)
 
 
 @cache_with_key(to_dict_cache_key, timeout=3600 * 24)
