@@ -519,17 +519,17 @@ export function update_settings_for_unsubscribed(slim_sub: StreamSubscription): 
 }
 
 function triage_stream(left_panel_params: LeftPanelParams, sub: StreamSubscription): string {
-    const channel_visibility_filters = stream_settings_data.ARCHIVED_STATUS_FILTERS;
+    const archived_status_filters = stream_settings_data.ARCHIVED_STATUS_FILTERS;
     if (
         left_panel_params.archived_status_filter_value ===
-            channel_visibility_filters.NON_ARCHIVED_CHANNELS &&
+            archived_status_filters.NON_ARCHIVED_CHANNELS &&
         sub.is_archived
     ) {
         return "rejected";
     }
     if (
         left_panel_params.archived_status_filter_value ===
-            channel_visibility_filters.ARCHIVED_CHANNELS &&
+            archived_status_filters.ARCHIVED_CHANNELS &&
         !sub.is_archived
     ) {
         return "rejected";
