@@ -1,19 +1,26 @@
 <div class="no-groups-to-show">
     <div class="empty-state-message">
-        <p>{{empty_user_group_list_message}}</p>
-
         {{#if all_groups_tab}}
-        {{!-- "All groups" tab - only show create button --}}
-        {{#if can_create_user_groups}}
-        <button class="create_user_group_button action-button action-button-medium-brand" type="button">
-            <span class="action-button-label">{{t "Create user group"}}</span>
-        </button>
-        {{/if}}
+            <p>{{empty_user_group_list_message}}</p>
+            {{#if can_create_user_groups}}
+                {{> ../components/action_button label=(t "Create user group") custom_classes="create_user_group_button"
+                  attention="medium" intent="brand"
+                }}
+            {{/if}}
         {{else}}
-        {{!-- "Your groups" tab - only show view all groups button --}}
-        <button class="view_all_groups_button action-button action-button-medium-brand" type="button">
-            <span class="action-button-label">{{t "View all groups"}}</span>
-        </button>
+            {{#if (eq empty_user_group_list_message (t "You are not a member of any user groups."))}}
+                <p>{{empty_user_group_list_message}}</p>
+                {{#if can_create_user_groups}}
+                    {{> ../components/action_button label=(t "Create user group") custom_classes="create_user_group_button"
+                      attention="medium" intent="brand"
+                    }}
+                {{/if}}
+            {{else}}
+                <p>{{empty_user_group_list_message}}</p>
+                {{> ../components/action_button label=(t "View all groups") custom_classes="view_all_groups_button"
+                  attention="medium" intent="neutral"
+                }}
+            {{/if}}
         {{/if}}
     </div>
 </div>
