@@ -196,6 +196,10 @@ function initialize_navbar() {
     });
 
     $("#header-container").html(rendered_navbar);
+    // Track when the image is loaded to updated CSS properties.
+    $("#header-container img.header-button-avatar-image").on("load", (e) => {
+        e.currentTarget.classList.add("avatar-loaded");
+    });
 }
 
 function initialize_compose_box() {
