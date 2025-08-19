@@ -444,4 +444,31 @@ export function initialize(): void {
             instance.destroy();
         },
     });
+
+    message_list_tooltip(".message_content a", {
+        onShow(instance) {
+            const $elem = $(instance.reference);
+            const href = $elem.attr("href");
+            assert(href);
+            const url = new URL(href, window.location.href);
+            if (
+                (url.origin === window.location.origin && !href.startsWith("/user_uploads")) ||
+                $elem.hasClass("media-anchor-element")
+            ) {
+                return false;
+            }
+
+            if (href.startsWith("/user_uploads") && !$elem.hasClass("media-anchor-element")) {
+                const filename = decodeURIComponent(href.slice(href.lastIndexOf("/") + 1));
+                instance.setContent(`Download ${filename}`);
+                return undefined;
+            }
+
+            instance.setContent(href);
+            return undefined;
+        },
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
 }
