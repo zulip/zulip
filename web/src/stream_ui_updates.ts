@@ -501,7 +501,10 @@ export function update_stream_row_in_settings_tab(sub: StreamSubscription): void
                 !sub.subscribed &&
                 stream_data.can_toggle_subscription(sub))
         ) {
-            if (stream_settings_components.archived_status_filter_includes_channel(sub)) {
+            if (
+                stream_settings_components.archived_status_filter_includes_channel(sub) &&
+                stream_settings_components.folder_filter_includes_channel(sub)
+            ) {
                 $row.removeClass("notdisplayed");
             }
         } else if (current_user.is_guest || !stream_data.can_toggle_subscription(sub)) {
