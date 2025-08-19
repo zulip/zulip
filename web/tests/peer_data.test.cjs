@@ -504,3 +504,41 @@ test("get_unique_subscriber_count_for_streams", async () => {
 
     assert.equal(count, 2);
 });
+
+test("load_subscriptions_for_user", async () => {
+    people.add_active_user(fred);
+
+    const india = {
+        stream_id: 102,
+        name: "India",
+        subscribed: true,
+    };
+    stream_data.add_sub(india);
+    const rome = {name: "Rome", subscribed: true, stream_id: 1001};
+    stream_data.add_sub(rome);
+
+    let channel_get_calls = 0;
+    channel.get = (opts) => {
+        assert.equal(opts.url, `/json/users/${fred.user_id}/subscriptions`);
+        channel_get_calls += 1;
+        return {
+            subscribed_stream_ids: [india.stream_id],
+        };
+    };
+
+    // Only one of these will do the fetch, and the other will wait
+    // for the first fetch to complete.
+    const promise1 = peer_data.load_subscriptions_for_user(fred.user_id);
+    const promise2 = peer_data.load_subscriptions_for_user(fred.user_id);
+    await promise1;
+    await promise2;
+    assert.equal(channel_get_calls, 1);
+
+    peer_data.clear_for_testing();
+    channel.get = () => {
+        throw new Error("error");
+    };
+    blueslip.expect("error", "Failure fetching user subscriptions");
+    await peer_data.load_subscriptions_for_user(fred.user_id);
+    blueslip.reset();
+});

@@ -20,6 +20,7 @@ const fetched_stream_ids = new Set<number>();
 export function has_full_subscriber_data(stream_id: number): boolean {
     return fetched_stream_ids.has(stream_id);
 }
+// Requests for subscribers of a stream
 const pending_subscriber_requests = new Map<
     number,
     {
@@ -30,15 +31,22 @@ const pending_subscriber_requests = new Map<
         }[];
     }
 >();
+// Requests for subscriptions for a user
+const pending_subscription_requests = new Map<number, Promise<void>>();
 
 export function clear_for_testing(): void {
     stream_subscribers.clear();
     fetched_stream_ids.clear();
     pending_subscriber_requests.clear();
+    pending_subscription_requests.clear();
 }
 
 const fetch_stream_subscribers_response_schema = z.object({
     subscribers: z.array(z.number()),
+});
+
+const fetch_user_subscriptions_response_schema = z.object({
+    subscribed_stream_ids: z.array(z.number()),
 });
 
 // This function will always resolve to a LazySet but could hang
@@ -416,4 +424,37 @@ export async function get_unique_subscriber_count_for_streams(
         }
     }
     return valid_subscribers.size;
+}
+
+export async function load_subscriptions_for_user(user_id: number): Promise<void> {
+    if (pending_subscription_requests.has(user_id)) {
+        return pending_subscription_requests.get(user_id)!;
+    }
+    const subscriptions_promise = (async () => {
+        let subscriptions: number[];
+        try {
+            const result = await channel.get({
+                url: `/json/users/${user_id}/subscriptions`,
+            });
+            subscriptions =
+                fetch_user_subscriptions_response_schema.parse(result).subscribed_stream_ids;
+        } catch {
+            // TODO(questions from evy): I figured retrying probably isn't worth it here,
+            // but we could do that instead. Thoughts?
+            // And should we show an error to the user if this happens? It's not that easy
+            // to connect this code to the UI code.
+            blueslip.error("Failure fetching user subscriptions", {
+                user_id,
+            });
+            pending_subscription_requests.delete(user_id);
+            return;
+        }
+
+        for (const stream_id of subscriptions) {
+            add_subscriber(stream_id, user_id);
+        }
+    })();
+
+    pending_subscription_requests.set(user_id, subscriptions_promise);
+    return subscriptions_promise;
 }

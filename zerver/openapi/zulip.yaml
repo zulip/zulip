@@ -13215,6 +13215,42 @@ paths:
                           Whether the user is subscribed to the channel.
                     example:
                       {"msg": "", "result": "success", "is_subscribed": false}
+  /users/{user_id}/subscriptions:
+    get:
+      operationId: get-user-subscriptions
+      summary: Get subscriptions for a user
+      tags: ["channels"]
+      description: |
+        Get a list of channels the user is known to be subscribed to.
+
+        **Changes**: New in Zulip 11.0 (feature level ZF-93129b).
+      parameters:
+        - $ref: "#/components/parameters/UserId"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      ignored_parameters_unsupported: {}
+                      subscribed_stream_ids:
+                        type: array
+                        items:
+                          type: integer
+                        description: |
+                          Stream ids for streams the user is known to be subscribed to.
+                    example:
+                      {
+                        "msg": "",
+                        "result": "success",
+                        "subscribed_stream_ids": [3, 5, 10],
+                      }
   /realm/emoji/{emoji_name}:
     post:
       operationId: upload-custom-emoji
