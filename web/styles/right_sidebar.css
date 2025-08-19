@@ -510,6 +510,7 @@
     /* The scrollbar doesn't extend this high, but we want the three-dot
        menus to line up. */
     padding-right: var(--width-simplebar-scroll-hover);
+    padding-bottom: var(--sidebar-filter-bottom-spacing);
     background-color: var(--color-background);
 
     #buddy-list-menu-icon {
