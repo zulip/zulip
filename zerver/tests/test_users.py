@@ -1811,6 +1811,41 @@ class UserProfileTest(ZulipTestCase):
         )
         self.assertFalse(result["is_subscribed"])
 
+    def test_get_user_channels(self) -> None:
+        self.login("hamlet")
+        iago = self.example_user("iago")
+        stream = get_stream("Rome", iago.realm)
+
+        # Invalid user ID.
+        result = self.client_get("/json/users/25/channels")
+        self.assert_json_error(result, "No such user")
+
+        result = orjson.loads(self.client_get(f"/json/users/{iago.id}/channels").content)
+        self.assertFalse(stream.id in result["subscribed_channel_ids"])
+
+        # Subscribe to the stream.
+        self.subscribe(iago, stream.name)
+        result = orjson.loads(self.client_get(f"/json/users/{iago.id}/channels").content)
+        self.assertTrue(stream.id in result["subscribed_channel_ids"])
+
+        # Test access of a Guest user.
+        polonius = self.example_user("polonius")
+        self.assertTrue(polonius.is_guest)
+        self.assertTrue(stream.is_web_public)
+
+        with self.assert_database_query_count(6):
+            result = orjson.loads(
+                self.api_get(polonius, f"/api/v1/users/{iago.id}/channels").content
+            )
+        self.assertTrue(stream.id in result["subscribed_channel_ids"])
+
+        # Test case when guest cannot access all users in the realm.
+        self.set_up_db_for_testing_user_access()
+        cordelia = self.example_user("cordelia")
+        with self.assert_database_query_count(7):
+            result = self.api_get(polonius, f"/api/v1/users/{cordelia.id}/channels")
+        self.assert_json_error(result, "Insufficient permission")
+
 
 class ActivateTest(ZulipTestCase):
     def test_basics(self) -> None:
