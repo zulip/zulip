@@ -420,7 +420,7 @@ CACHES: dict[str, dict[str, object]] = {
             "socket_timeout": 3600,
             "username": MEMCACHED_USERNAME,
             "password": MEMCACHED_PASSWORD,
-            "pickle_protocol": 4,
+            "pickle_protocol": 5,
         },
     },
     "database": {
