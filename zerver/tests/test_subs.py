@@ -5171,6 +5171,17 @@ class SubscriptionAPITest(ZulipTestCase):
             "```` quote\n*No description.*\n````",
         )
 
+        response = self.subscribe_via_post(
+            desdemona,
+            ["Test stream 3"],
+            dict(
+                principals=orjson.dumps(user_ids).decode(),
+                send_new_subscription_messages=orjson.dumps(False).decode(),
+            ),
+        )
+        data = self.assert_json_success(response)
+        self.assertNotIn("new_subscription_messages_sent", data)
+
 
 class InviteOnlyStreamTest(ZulipTestCase):
     def test_must_be_subbed_to_send(self) -> None:
