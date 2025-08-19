@@ -493,7 +493,10 @@ export function update_stream_row_in_settings_tab(sub: StreamSubscription): void
             (is_subscribed_stream_tab_active() && sub.subscribed) ||
             (is_not_subscribed_stream_tab_active() && !sub.subscribed)
         ) {
-            if (stream_settings_components.archived_status_filter_includes_channel(sub)) {
+            if (
+                stream_settings_components.archived_status_filter_includes_channel(sub) &&
+                stream_settings_components.folder_filter_includes_channel(sub)
+            ) {
                 $row.removeClass("notdisplayed");
             }
         } else if (sub.invite_only || current_user.is_guest) {
