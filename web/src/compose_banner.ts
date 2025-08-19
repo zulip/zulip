@@ -279,7 +279,7 @@ export function show_stream_not_subscribed_error(
     append_compose_banner_to_banner_list($(new_row_html), $banner_container);
 }
 
-export function show_user_group_mention_not_allowed_error(group_name: string): void {
+export function show_user_group_mention_not_allowed_error(group_name?: string): void {
     // Remove any existing banners with this warning.
     $(`#compose_banners .${CSS.escape(CLASSNAMES.user_group_mention_not_allowed)}`).remove();
 

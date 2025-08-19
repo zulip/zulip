@@ -280,10 +280,10 @@ export let send_message = (): void => {
                     $("#compose_banners"),
                 );
             } else if (server_error_code === "USER_GROUP_MENTION_NOT_ALLOWED") {
-                const group_name = server_data.user_group_name;
+                const parsed = z.object({user_group_name: z.string()}).safeParse(server_data);
+
                 compose_banner.show_user_group_mention_not_allowed_error(
-                    group_name,
-                    $("#compose_banners"),
+                    parsed.data?.user_group_name,
                 );
             } else {
                 compose_banner.show_error_message(
