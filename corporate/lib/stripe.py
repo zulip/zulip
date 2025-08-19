@@ -5531,6 +5531,15 @@ def check_remote_server_audit_log_data(
     next_invoice_date = plan.next_invoice_date
     last_audit_log_update = remote_server.last_audit_log_update
     if last_audit_log_update is None or next_invoice_date > last_audit_log_update:
+        # We still process fixed-price plans because the current license count
+        # won't change the amount due or the fact that we should downgrade the
+        # plan when it is scheduled to end.
+        if plan.fixed_price is not None:
+            # TODO: Possibly send an internal billing notice so that billing admin
+            # have a record that the customer's license ledger entries do not
+            # reflect actual audit log data from the remote server.
+            return True
+
         if not plan.stale_audit_log_data_email_sent:
             maybe_send_stale_audit_log_data_email(
                 plan, billing_session, next_invoice_date, last_audit_log_update
