@@ -32,6 +32,7 @@ import * as user_groups from "./user_groups.ts";
 
 export let archived_status_filter_dropdown_widget: DropdownWidget;
 export let channel_creation_privacy_widget: DropdownWidget;
+let folder_filter_dropdown_widget: DropdownWidget;
 
 export function set_right_panel_title(sub: StreamSubscription): void {
     let title_icon_color = "#333333";
@@ -310,6 +311,22 @@ export function set_archived_status_filters_for_tests(filter_widget: DropdownWid
     archived_status_filter_dropdown_widget = filter_widget;
 }
 
+export function set_folder_filter_dropdown_widget(widget: DropdownWidget): void {
+    folder_filter_dropdown_widget = widget;
+}
+
+export function get_folder_filter_dropdown_value(): number {
+    return z.number().parse(folder_filter_dropdown_widget.value());
+}
+
+export function set_folder_filter_dropdown_value(value: number): void {
+    folder_filter_dropdown_widget.render(value);
+}
+
+export function set_folder_filter_for_tests(filter_widget: DropdownWidget): void {
+    folder_filter_dropdown_widget = filter_widget;
+}
+
 export function archived_status_filter_includes_channel(sub: StreamSubscription): boolean {
     const filter_value = get_archived_status_filter_dropdown_value();
     const FILTERS = stream_settings_data.ARCHIVED_STATUS_FILTERS;
@@ -318,6 +335,21 @@ export function archived_status_filter_includes_channel(sub: StreamSubscription)
         (filter_value === FILTERS.ARCHIVED_CHANNELS && !sub.is_archived)
     ) {
         return false;
+    }
+    return true;
+}
+
+export function folder_filter_includes_channel(sub: StreamSubscription): boolean {
+    const filters = stream_settings_data.FOLDER_FILTERS;
+    const filter_value = get_folder_filter_dropdown_value();
+    if (filter_value !== filters.ANY_FOLDER_DROPDOWN_OPTION) {
+        if (filter_value === filters.UNCATEGORIZED_DROPDOWN_OPTION) {
+            if (sub.folder_id !== null) {
+                return false;
+            }
+        } else if (filter_value !== sub.folder_id) {
+            return false;
+        }
     }
     return true;
 }
