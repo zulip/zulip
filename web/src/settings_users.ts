@@ -470,7 +470,7 @@ function human_info(person: User): {
 }
 
 function set_text_search_value($table: JQuery, value: string): void {
-    $table.closest(".user-settings-section").find(".search").val(value);
+    $table.closest(".settings-section-table").find(".search").val(value);
 }
 
 let bot_list_widget: ListWidgetType<number, BotInfo>;
