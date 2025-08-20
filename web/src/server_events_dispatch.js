@@ -1061,7 +1061,10 @@ export function dispatch_normal_event(event) {
                 message_live_update.rerender_messages_view();
             }
             if (event.property === "web_escape_navigates_to_home_view") {
-                $("#go-to-home-view-hotkey-help").toggleClass("notdisplayed", !event.value);
+                $("#keyboard-shortcuts .go-to-home-view-hotkey-help").toggleClass(
+                    "notdisplayed",
+                    !event.value,
+                );
             }
             if (event.property === "web_suggest_update_timezone") {
                 $("#automatically_offer_update_time_zone").prop("checked", event.value);
