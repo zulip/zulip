@@ -853,12 +853,12 @@ class TestCurlExampleGeneration(ZulipTestCase):
 
     def test_generate_and_render_curl_wrapper(self) -> None:
         generated_curl_example = render_curl_example(
-            "/get_stream_id:GET:email:key", api_url="https://zulip.example.com/api"
+            "/get_stream_id:GET", api_url="https://zulip.example.com/api"
         )
         expected_curl_example = [
             "```curl",
             "curl -sSX GET -G https://zulip.example.com/api/v1/get_stream_id \\",
-            "    -u email:key \\",
+            "    -u BOT_EMAIL_ADDRESS:BOT_API_KEY \\",
             "    --data-urlencode stream=Denmark",
             "```",
         ]
