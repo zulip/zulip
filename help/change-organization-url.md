@@ -9,6 +9,8 @@ organization URL is a disruptive operation for users:
   desktop apps and need to log in again.
 * Any [API clients](/api/) or [integrations](/integrations/) will need
   to be updated to point to the new organization URL.
+* Links to the old subdomain using a browser will redirect to the new
+  one after a brief interstitial.
 
 We recommend using a [wildcard
 mention](/help/mention-a-user-or-group#mention-everyone-on-a-channel)
