@@ -673,11 +673,18 @@
         display: grid;
     }
 
-    .media-audio-element {
+    .media-audio-wrapper {
         vertical-align: middle;
+        display: inline-flex;
+        align-items: center;
+        max-width: 100%;
+    }
+
+    .media-audio-element {
+        flex: 0 1 auto;
         /* Allow browser-native media players
            to resize in narrow viewports. */
-        max-width: 100%;
+        max-width: calc(100% - 30px);
     }
 
     .message_embed {
