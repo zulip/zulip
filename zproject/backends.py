@@ -1913,6 +1913,82 @@ class SocialAuthSyncNewUserInfo:
     group_memberships_sync_map: dict[str, bool]
 
 
+@dataclass
+class SocialAuthGroupInfo:
+    syncable_group_names: set[str]
+    intended_group_names: set[str]
+
+
+def process_social_auth_group_sync_info(
+    backend: Any,
+    user_profile: UserProfile | None,
+    attrs_config: dict[str, Any],
+    extra_attrs: dict[str, Any],
+) -> SocialAuthGroupInfo | None:
+    external_group_name_to_zulip_group_name: dict[str, str] = {}
+    groups_config_list = cast(list[str | tuple[str, str]], attrs_config.get("groups", []))
+    if not groups_config_list:
+        return None
+
+    # Group sync is only supported for SAML for the foreseeable time.
+    assert backend.name == "saml"
+
+    for group_name in groups_config_list:
+        # the objects in the config are either straight-forward group names
+        # or tuples (<saml group name>, <zulip group name>) indicating the
+        # obvious mapping.
+        if isinstance(group_name, str):
+            external_group_name_to_zulip_group_name[group_name] = group_name
+        else:
+            saml_group_name, zulip_group_name = group_name
+            external_group_name_to_zulip_group_name[saml_group_name] = zulip_group_name
+
+    syncable_group_names = set(external_group_name_to_zulip_group_name.values())
+
+    # pop zulip_groups from extra_attrs, so that only user attribute sync
+    # values remain there.
+    # zulip_groups being absent should be treated as if no group memberships
+    # are desired. That's because Okta doesn't send the SAML attribute at all
+    # if the user has no group memberships. Thus we treat this absence as
+    # an empty list.
+    all_received_group_names = extra_attrs.pop("zulip_groups", [])
+    external_group_names = [
+        name
+        for name in all_received_group_names
+        # Ignore group names which aren't configured.
+        if name in external_group_name_to_zulip_group_name
+    ]
+    intended_group_names = {
+        external_group_name_to_zulip_group_name[external_name]
+        for external_name in external_group_names
+    }
+
+    # It's important to log the information about what we received in the request and what Zulip groups
+    # that was translated to based on the configuration - otherwise debugging a misconfiguration would be
+    # a very painful process.
+    #
+    # Notably, it's generally expected for the list of received groups to be shorter than the "translated"
+    # list of intended Zulip groups. The expected way for admins to configure what is sent in zulip_groups
+    # is to send *all* the groups the user belongs to in their user directory. That is very likely to contain
+    # some groups that are irrelevant to their Zulip setup and thus shouldn't be translated into any
+    # Zulip group memberships.
+    # For example, Okta sends the Everyone group, which is just a built-in group inside of Okta described
+    # in their documentation as
+    # "catch-all group where every single user in the Okta instance automatically lands".
+    # That obviously will be irrelevant to Zulip group memberships in almost all configurations.
+    user_string = f"<user:{user_profile.id}>" if user_profile is not None else "<new user signup>"
+    backend.logger.info(
+        "social_auth_sync_user_attributes:%s: received group names: %s|intended Zulip groups: %s. group mapping used: %s",
+        user_string,
+        sorted(all_received_group_names),
+        sorted(intended_group_names),
+        external_group_name_to_zulip_group_name,
+    )
+    return SocialAuthGroupInfo(
+        syncable_group_names=syncable_group_names, intended_group_names=intended_group_names
+    )
+
+
 def social_auth_sync_user_attributes(
     realm: Realm, user_profile: UserProfile | None, extra_attrs: dict[str, Any], backend: Any
 ) -> SocialAuthSyncNewUserInfo | None:
@@ -1937,75 +2013,16 @@ def social_auth_sync_user_attributes(
 
     attrs_by_backend = settings.SOCIAL_AUTH_SYNC_ATTRS_DICT.get(realm.subdomain, {})
     attrs_config = attrs_by_backend.get(backend.name, {})
-    external_group_name_to_zulip_group_name: dict[str, str] = {}
-    groups_config_list = cast(list[str | tuple[str, str]], attrs_config.get("groups", []))
-    if groups_config_list:
-        # Group sync is only supported for SAML for the foreseeable time.
-        assert backend.name == "saml"
-
-        for group_name in groups_config_list:
-            # the objects in the config are either straight-forward group names
-            # or tuples (<saml group name>, <zulip group name>) indicating the
-            # obvious mapping.
-            if isinstance(group_name, str):
-                external_group_name_to_zulip_group_name[group_name] = group_name
-            else:
-                saml_group_name, zulip_group_name = group_name
-                external_group_name_to_zulip_group_name[saml_group_name] = zulip_group_name
-
-    should_sync_groups = bool(external_group_name_to_zulip_group_name)
 
     profile_field_name_to_attr_name = cast(
         dict[str, str], {key: value for key, value in attrs_config.items() if key != "groups"}
     )
 
-    if should_sync_groups:
-        syncable_group_names = set(external_group_name_to_zulip_group_name.values())
-
-        # pop zulip_groups from extra_attrs, so that only user attribute sync
-        # values remain there.
-        # zulip_groups being absent should be treated as if no group memberships
-        # are desired. That's because Okta doesn't send the SAML attribute at all
-        # if the user has no group memberships. Thus we treat this absence as
-        # an empty list.
-        all_received_group_names = extra_attrs.pop("zulip_groups", [])
-        external_group_names = [
-            name
-            for name in all_received_group_names
-            # Ignore group names which aren't configured.
-            if name in external_group_name_to_zulip_group_name
-        ]
-        intended_group_names = {
-            external_group_name_to_zulip_group_name[external_name]
-            for external_name in external_group_names
-        }
-
-        # It's important to log the information about what we received in the request and what Zulip groups
-        # that was translated to based on the configuration - otherwise debugging a misconfiguration would be
-        # a very painful process.
-        #
-        # Notably, it's generally expected for the list of received groups to be shorter than the "translated"
-        # list of intended Zulip groups. The expected way for admins to configure what is sent in zulip_groups
-        # is to send *all* the groups the user belongs to in their user directory. That is very likely to contain
-        # some groups that are irrelevant to their Zulip setup and thus shouldn't be translated into any
-        # Zulip group memberships.
-        # For example, Okta sends the Everyone group, which is just a built-in group inside of Okta described
-        # in their documentation as
-        # "catch-all group where every single user in the Okta instance automatically lands".
-        # That obviously will be irrelevant to Zulip group memberships in almost all configurations.
-        user_string = (
-            f"<user:{user_profile.id}>" if user_profile is not None else "<new user signup>"
-        )
-        backend.logger.info(
-            "social_auth_sync_user_attributes:%s: received group names: %s|intended Zulip groups: %s. group mapping used: %s",
-            user_string,
-            sorted(all_received_group_names),
-            sorted(intended_group_names),
-            external_group_name_to_zulip_group_name,
-        )
-
+    group_sync_config = process_social_auth_group_sync_info(
+        backend, user_profile, attrs_config, extra_attrs
+    )
     should_sync_user_attrs = extra_attrs and profile_field_name_to_attr_name
-    if not (should_sync_user_attrs or should_sync_groups):
+    if not (should_sync_user_attrs or group_sync_config is not None):
         return None
 
     user_id = None
@@ -2045,10 +2062,10 @@ def social_auth_sync_user_attributes(
             backend.logger.info(
                 "Returning role %s for user creation", UserProfile.ROLE_ID_TO_API_NAME[new_role]
             )
-        if should_sync_groups:
+        if group_sync_config is not None:
             group_memberships_sync_map = {
-                group_name: (group_name in intended_group_names)
-                for group_name in syncable_group_names
+                group_name: (group_name in group_sync_config.intended_group_names)
+                for group_name in group_sync_config.syncable_group_names
             }
         else:
             group_memberships_sync_map = {}
@@ -2074,10 +2091,10 @@ def social_auth_sync_user_attributes(
             str(e),
         )
 
-    if should_sync_groups:
+    if group_sync_config is not None:
         sync_groups(
-            all_group_names=syncable_group_names,
-            intended_group_names=intended_group_names,
+            all_group_names=group_sync_config.syncable_group_names,
+            intended_group_names=group_sync_config.intended_group_names,
             user_profile=user_profile,
             logger=backend.logger,
         )
