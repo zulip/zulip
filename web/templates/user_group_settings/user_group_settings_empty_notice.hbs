@@ -3,10 +3,12 @@
         {{empty_user_group_list_message}}
         {{#if all_groups_tab}}
             {{#if can_create_user_groups}}
-                <a href="#groups/new">{{t "Create a user group"}}</a>
+                <button type="button" class="create_user_group_button animated-purple-button">{{t "Create a user group"}}</button>
             {{/if}}
-        {{else}}
-            <a href="#groups/all">{{t "View all user groups"}}</a>
+        {{else if current_realm_has_any_group}}
+            <button type="button" class="view-all-groups-button animated-gray-button">{{t "View all groups"}}</button>
+        {{else if can_create_user_groups}}
+            <button type="button" class="create-realm-group-button animated-purple-button">{{t "Create a user group"}}</button>
         {{/if}}
     </span>
 </div>
