@@ -193,6 +193,16 @@ IGNORED_PHRASES = [
     r"everyone except guests can subscribe to any public channel",
     # Used in branch-filtering label in the integration-url-modal.
     r"comma-separated list",
+    # Used in info_overlay.
+    r"Joe Smith",
+    r"bold",
+    r"channel name",
+    r"is busy working",
+    r"italic",
+    r"strikethrough",
+    r"support team",
+    r"topic name",
+    r"zulip",
 ]
 
 # Sort regexes in descending order of their lengths. As a result, the
