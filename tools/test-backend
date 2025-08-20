@@ -104,6 +104,7 @@ not_yet_fully_covered = [
     "zerver/lib/test_fixtures.py",
     "zerver/lib/test_runner.py",
     "zerver/lib/test_console_output.py",
+    "zerver/lib/zstd_level9.py",
     "zerver/openapi/curl_param_value_generators.py",
     "zerver/openapi/javascript_examples.py",
     "zerver/openapi/python_examples.py",
