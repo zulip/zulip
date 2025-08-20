@@ -1934,14 +1934,16 @@ def process_social_auth_group_sync_info(
     assert backend.name == "saml"
 
     for group_name in groups_config_list:
-        # the objects in the config are either straight-forward group names
-        # or tuples (<saml group name>, <zulip group name>) indicating the
-        # obvious mapping.
-        if isinstance(group_name, str):
-            external_group_name_to_zulip_group_name[group_name] = group_name
-        else:
-            saml_group_name, zulip_group_name = group_name
-            external_group_name_to_zulip_group_name[saml_group_name] = zulip_group_name
+        match group_name:
+            # the objects in the config are either straight-forward group names
+            # or tuples (<saml group name>, <zulip group name>) indicating the
+            # obvious mapping.
+            case str():
+                external_group_name_to_zulip_group_name[group_name] = group_name
+            case (saml_group_name, zulip_group_name):
+                external_group_name_to_zulip_group_name[saml_group_name] = zulip_group_name
+            case _:  # nocoverage
+                raise AssertionError(f"Unsupported item in group sync config list: {group_name}")
 
     syncable_group_names = set(external_group_name_to_zulip_group_name.values())
 
