@@ -2,14 +2,15 @@ import pickle
 from functools import lru_cache
 from typing import Any
 
-import zstd
 from django_bmemcached.memcached import BMemcached
+
+from zerver.lib import zstd_level9
 
 
 @lru_cache(None)
 def _get_bmemcached(location: str, param_bytes: bytes) -> BMemcached:
     params = pickle.loads(param_bytes)  # noqa: S301
-    params["OPTIONS"]["compression"] = zstd
+    params["OPTIONS"]["compression"] = zstd_level9
     return BMemcached(location, params)
 
 
