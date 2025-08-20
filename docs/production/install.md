@@ -56,11 +56,17 @@ tarballs](https://download.zulip.com/server/SHA256SUMS.txt).
 
 ## Step 2: Install Zulip
 
-To set up Zulip with the most common configuration, run the installer as
-follows:
+To set up Zulip with the most common configuration, first become the
+`root` user, if you are not already:
 
 ```bash
-sudo -s  # If not already root
+[ "$(whoami)" != "root" ] && sudo -s
+```
+
+Then, run the installer, providing your email address and the public
+hostname that users will be able to access your server with:
+
+```bash
 ./zulip-server-*/scripts/setup/install --push-notifications --certbot \
     --email=YOUR_EMAIL --hostname=YOUR_HOSTNAME
 ```
