@@ -1915,34 +1915,42 @@ class SocialAuthGroupInfo:
 
 def process_social_auth_group_sync_info(
     backend: Any,
+    realm: Realm,
     user_profile: UserProfile | None,
     attrs_config: dict[str, Any],
     extra_attrs: dict[str, Any],
 ) -> SocialAuthGroupInfo | None:
     external_group_name_to_zulip_group_name: dict[str, str] = {}
-    groups_config_list = cast(list[str | tuple[str, str]], attrs_config.get("groups", []))
-    if groups_config_list:
-        # Group sync is only supported for SAML for the foreseeable time.
-        assert backend.name == "saml"
+    groups_config = cast(str | list[str | tuple[str, str]], attrs_config.get("groups", []))
+    match groups_config:
+        case []:
+            return None
+        case list():
+            for group_name in groups_config:
+                match group_name:
+                    # the objects in the config are either straight-forward group names
+                    # or tuples (<saml group name>, <zulip group name>) indicating the
+                    # obvious mapping.
+                    case str():
+                        external_group_name_to_zulip_group_name[group_name] = group_name
+                    case (saml_group_name, zulip_group_name):
+                        external_group_name_to_zulip_group_name[saml_group_name] = zulip_group_name
+                    case _:
+                        raise AssertionError(
+                            f"Unsupported item in group sync config list: {group_name}"
+                        )
+        case "*":
+            # TODO: explain sync-all-groups mode.
+            all_realm_groups = NamedUserGroup.objects.filter(
+                realm=realm, deactivated=False, is_system_group=False
+            )
+            for group in all_realm_groups:
+                external_group_name_to_zulip_group_name[group.name] = group.name
+        case str():
+            raise AssertionError(f'unsupported groups config string: {groups_config}; expected "*"')
 
-        for group_name in groups_config_list:
-            match group_name:
-                # the objects in the config are either straight-forward group names
-                # or tuples (<saml group name>, <zulip group name>) indicating the
-                # obvious mapping.
-                case str():
-                    external_group_name_to_zulip_group_name[group_name] = group_name
-                case (saml_group_name, zulip_group_name):
-                    external_group_name_to_zulip_group_name[saml_group_name] = zulip_group_name
-                case _:
-                    raise AssertionError(
-                        f"Unsupported item in group sync config list: {group_name}"
-                    )
-
-    should_sync_groups = bool(external_group_name_to_zulip_group_name)
-
-    if not should_sync_groups:
-        return None
+    # Group sync is only supported for SAML for the foreseeable time.
+    assert backend.name == "saml"
 
     syncable_group_names = set(external_group_name_to_zulip_group_name.values())
 
@@ -2020,7 +2028,7 @@ def social_auth_sync_user_attributes(
     )
 
     group_sync_config = process_social_auth_group_sync_info(
-        backend, user_profile, attrs_config, extra_attrs
+        backend, realm, user_profile, attrs_config, extra_attrs
     )
     should_sync_groups = group_sync_config is not None
 
