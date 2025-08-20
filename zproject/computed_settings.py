@@ -1207,6 +1207,9 @@ for idp_name, idp_dict in SOCIAL_AUTH_SAML_ENABLED_IDPS.items():
         path = f"/etc/zulip/saml/idps/{idp_name}.crt"
     idp_dict["x509cert"] = get_from_file_if_exists(path)
 
+    if "zulip_groups" in idp_dict.get("extra_attrs", []):
+        raise AssertionError("zulip_groups can't be listed in extra_attrs in the IdP config.")
+
 
 def ensure_dict_path(d: dict[str, Any], keys: list[str]) -> None:
     for key in keys:
