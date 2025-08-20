@@ -470,7 +470,7 @@ function human_info(person: User): {
 }
 
 function set_text_search_value($table: JQuery, value: string): void {
-    $table.closest(".user-settings-section").find(".search").val(value);
+    $table.closest(".user-or-bot-settings-section").find(".search").val(value);
 }
 
 let bot_list_widget: ListWidgetType<number, BotInfo>;
@@ -550,8 +550,8 @@ function active_create_table(active_users: number[]): void {
     $("#admin_users_table").show();
 }
 
-function handle_clear_button_for_users($tbody: JQuery): void {
-    const $container = $tbody.closest(".user-settings-section");
+function handle_clear_button_for_table_search_input($tbody: JQuery): void {
+    const $container = $tbody.closest(".user-or-bot-settings-section");
     $container.on("click", ".clear-filter", (e) => {
         e.stopPropagation();
         e.preventDefault();
@@ -783,7 +783,7 @@ function handle_filter_change($tbody: JQuery, section: UserSettingsSection): voi
     // can't use that, because we're also filtering on Role with our
     // custom predicate.
     $tbody
-        .closest(".user-settings-section")
+        .closest(".user-or-bot-settings-section")
         .find<HTMLInputElement>(".search")
         .on("input.list_widget_filter", function (this: HTMLInputElement) {
             add_value_to_filters(section, "text_search", this.value.toLocaleLowerCase());
@@ -797,7 +797,7 @@ function active_handle_events(): void {
     handle_deactivation($tbody);
     handle_reactivation($tbody);
     handle_edit_form($tbody);
-    handle_clear_button_for_users($tbody);
+    handle_clear_button_for_table_search_input($tbody);
 }
 
 function deactivated_handle_events(): void {
@@ -807,7 +807,7 @@ function deactivated_handle_events(): void {
     handle_deactivation($tbody);
     handle_reactivation($tbody);
     handle_edit_form($tbody);
-    handle_clear_button_for_users($tbody);
+    handle_clear_button_for_table_search_input($tbody);
 }
 
 function bots_handle_events(): void {
