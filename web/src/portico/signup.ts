@@ -457,6 +457,7 @@ $(() => {
             $("#slack-import-start-upload-wrapper").removeClass("hidden");
             $("#slack-import-uploaded-file-name").text(file.name!);
             $("#slack-import-file-upload-error").text("");
+            $("#realm-creation-form-slack-import .register-button").prop("disabled", false);
         });
         // Reset uppy state to allow user replace existing uploaded file.
         uppy.on("complete", () => {
