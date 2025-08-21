@@ -31,6 +31,8 @@ EXCLUDE_UNDOCUMENTED_ENDPOINTS = {
 # These are skipped but return true as the validator cannot exclude objects
 EXCLUDE_DOCUMENTED_ENDPOINTS: set[tuple[str, str]] = set()
 
+ZULIP_API_REDIRECT_RESPONSE_STATUS_CODES: set[str] = {"302"}
+
 
 # Most of our code expects allOf to be preprocessed away because that is what
 # yamole did.  Its algorithm for doing so is not standards compliant, but we
@@ -275,9 +277,17 @@ def get_parameters_description(endpoint: str, method: str) -> str:
 def generate_openapi_fixture(endpoint: str, method: str) -> list[str]:
     """Generate fixture to be rendered"""
     fixture = []
-    for status_code in sorted(
-        openapi_spec.openapi()["paths"][endpoint][method.lower()]["responses"]
-    ):
+    responses = openapi_spec.openapi()["paths"][endpoint][method.lower()]["responses"]
+    for status_code in sorted(responses):
+        if status_code in ZULIP_API_REDIRECT_RESPONSE_STATUS_CODES:  # nocoverage
+            # Redirect responses have no body, so we describe the
+            # response and its headers instead of showing a JSON example.
+            fixture.extend(responses[status_code]["description"].strip().splitlines())
+            for header_name, header in responses[status_code]["headers"].items():
+                fixture.append("")
+                fixture.append(f"`{header_name}`: {header['description'].strip()}")
+            continue
+
         if (
             "oneOf"
             in openapi_spec.openapi()["paths"][endpoint][method.lower()]["responses"][status_code][
@@ -335,6 +345,11 @@ def get_endpoint_from_operationid(operationid: str) -> tuple[str, str]:
 
 def get_openapi_paths() -> set[str]:
     return set(openapi_spec.openapi()["paths"].keys())
+
+
+def is_redirect_endpoint(endpoint: str, method: str) -> bool:
+    responses = openapi_spec.openapi()["paths"][endpoint][method.lower()].get("responses", {})
+    return any(status_code in ZULIP_API_REDIRECT_RESPONSE_STATUS_CODES for status_code in responses)
 
 
 NO_EXAMPLE = object()
@@ -420,6 +435,9 @@ def get_openapi_parameters(
 
 
 def get_openapi_return_values(endpoint: str, method: str) -> dict[str, Any]:
+    if is_redirect_endpoint(endpoint, method):  # nocoverage
+        # Redirect responses have no JSON body.
+        return {}
     operation = openapi_spec.openapi()["paths"][endpoint][method.lower()]
     schema = operation["responses"]["200"]["content"]["application/json"]["schema"]
     # We do not currently have documented endpoints that have multiple schemas
