@@ -395,7 +395,7 @@ instructions for other supported platforms.
    ```
 
 1. One of Zulip's dependencies, RabbitMQ, is used to store deferred work
-   in queues. RabbitMQ's Ubuntu packaging has [problems][rabbitmq-bug]
+   in queues. RabbitMQ's Ubuntu packaging has [problems][ubuntu-rabbitmq-bug]
    upgrading from version 3.9 in Ubuntu 22.04 to 3.12 in Ubuntu
    24.04. To work around this bug, you'll need to uninstall
    `rabbitmq-server`, purging its database, before upgrading the OS;
@@ -472,7 +472,7 @@ instructions for other supported platforms.
 You should now be able to navigate to your Zulip server's URL and
 confirm everything is working correctly.
 
-[rabbitmq-bug]: https://bugs.launchpad.net/ubuntu/+source/rabbitmq-server/+bug/2074309
+[ubuntu-rabbitmq-bug]: https://bugs.launchpad.net/ubuntu/+source/rabbitmq-server/+bug/2074309
 
 ### Upgrading from Ubuntu 20.04 Focal to 22.04 Jammy
 
@@ -654,6 +654,83 @@ confirm everything is working correctly.
 8. [Upgrade from Ubuntu 18.04 to
    20.04](#upgrading-from-ubuntu-1804-bionic-to-2004-focal), the next
    in chain of upgrades leading to a supported operating system.
+
+### Upgrading from Debian 12 to 13
+
+1. Upgrade your server to the latest `11.x` release.
+
+1. As the Zulip user, stop the Zulip server and run the following
+   to back up the system:
+
+   ```bash
+   /home/zulip/deployments/current/scripts/stop-server
+   /home/zulip/deployments/current/manage.py backup --output=/home/zulip/release-upgrade.backup.tar.gz
+   ```
+
+1. One of Zulip's dependencies, RabbitMQ, is used to store deferred work
+   in queues. RabbitMQ's Debian packaging has [problems][debian-rabbitmq-bug]
+   upgrading from version 3.10 in Debian 12 to 4.0 in Debian 13. To
+   work around this bug, you'll need to uninstall `rabbitmq-server`,
+   purging its database, before upgrading the OS; the steps after the
+   OS upgrade will reinstall the new version and configure it
+   properly. You can do this uninstallation process safely via the
+   following process:
+
+   1. As root, run:
+      ```bash
+      rabbitmqctl list_queues
+      ```
+      to check whether any of Zulip's RabbitMQ queues contain
+      unprocessed events.
+   1. If any queues contain events, you can run as the `zulip` user
+      ```bash
+      /home/zulip/deployments/current/manage.py process_queue --all
+      ```
+      ...which will start all workers consuming any remaining events.
+      You should cancel this (with ^C) once `rabitmqctl list_queues`
+      shows that no queues contain events anymore. You can also decide
+      to skip this step if you're OK losing a bit of data of the
+      relevant type.
+   1. As root, run `apt purge rabbitmq-server` to remove the RabbitMQ
+      package, including, critically, its database and configuration
+      state, which would otherwise cause installation of the Debian 13
+      package to crash.
+
+1. Follow [Debian's instructions to upgrade the OS][trixie-upgrade].
+
+   [trixie-upgrade]: https://www.debian.org/releases/trixie/release-notes/upgrading.en.html
+
+   When prompted for you how to upgrade configuration
+   files for services that Zulip manages like Redis, PostgreSQL,
+   nginx, and memcached, the best choice is `N` to keep the
+   currently installed version. But it's not important; the next
+   step will re-install Zulip's configuration in any case.
+
+1. Next, we need to reinstall the current version of Zulip, which
+   among other things will recompile Zulip's Python module
+   dependencies for your new version of Python and rewrite Zulip's
+   full-text search indexes to work with the upgraded dictionary
+   packages. This will also take care of re-installing and re-configuring
+   RabbitMQ which we removed earlier.
+
+   ```bash
+   rm -rf /srv/zulip-venv-cache/* /home/zulip/deployments/current/.venv /root/.cache/uv
+   /home/zulip/deployments/current/scripts/lib/upgrade-zulip-stage-2 \
+       /home/zulip/deployments/current/ --ignore-static-assets --audit-fts-indexes
+   ```
+
+1. As an additional step, you can also [upgrade the PostgreSQL version](#upgrading-postgresql).
+
+1. As root, restart the server:
+
+   ```bash
+   reboot
+   ```
+
+You should now be able to navigate to your Zulip server's URL and
+confirm everything is working correctly.
+
+[debian-rabbitmq-bug]: https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=1100165
 
 ### Upgrading from Debian 11 to 12
 
