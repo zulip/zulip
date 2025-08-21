@@ -49,7 +49,7 @@ const denmark = {
     name: "Denmark",
     stream_id: 101,
 };
-stream_data.add_sub(denmark);
+stream_data.add_sub_for_tests(denmark);
 
 function test_helper(side_effects) {
     const events = [];

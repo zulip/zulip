@@ -99,7 +99,7 @@ function make_sub(name, stream_id) {
         name,
         stream_id,
     };
-    stream_data.add_sub(sub);
+    stream_data.add_sub_for_tests(sub);
 }
 
 let _stream_id = 0;
@@ -118,7 +118,7 @@ const general_sub = {
     name: "general",
     stream_id: new_stream_id(),
 };
-stream_data.add_sub(general_sub);
+stream_data.add_sub_for_tests(general_sub);
 
 const invalid_sub_id = new_stream_id();
 
@@ -1077,7 +1077,7 @@ test("predicate_basics", ({override}) => {
     // To keep these tests simple, we only pass objects with a few relevant attributes
     // rather than full-fledged message objects.
 
-    stream_data.add_sub(foo_sub);
+    stream_data.add_sub_for_tests(foo_sub);
     let predicate = get_predicate([
         ["channel", foo_stream_id.toString()],
         ["topic", "Bar"],
@@ -1115,9 +1115,9 @@ test("predicate_basics", ({override}) => {
         invite_only: false,
         is_web_public: true,
     };
-    stream_data.add_sub(old_sub);
-    stream_data.add_sub(private_sub);
-    stream_data.add_sub(web_public_sub);
+    stream_data.add_sub_for_tests(old_sub);
+    stream_data.add_sub_for_tests(private_sub);
+    stream_data.add_sub_for_tests(web_public_sub);
     predicate = get_predicate([
         ["channel", old_sub_id.toString()],
         ["topic", "Bar"],
@@ -1200,7 +1200,7 @@ test("predicate_basics", ({override}) => {
         name: "muted",
         is_muted: true,
     };
-    stream_data.add_sub(muted_stream);
+    stream_data.add_sub_for_tests(muted_stream);
     assert.ok(!predicate({stream_id: muted_stream.stream_id, topic: "bar"}));
 
     // Muted stream but topic is unmuted or followed is part of in-home.
@@ -2046,7 +2046,7 @@ test("is_valid_search_term", () => {
         stream_id: 100,
         name: "Denmark",
     };
-    stream_data.add_sub(denmark);
+    stream_data.add_sub_for_tests(denmark);
 
     const test_data = [
         ["has:image", true],
@@ -2255,7 +2255,7 @@ function make_private_sub(name, stream_id) {
         stream_id,
         invite_only: true,
     };
-    stream_data.add_sub(sub);
+    stream_data.add_sub_for_tests(sub);
 }
 
 function make_web_public_sub(name, stream_id) {
@@ -2264,7 +2264,7 @@ function make_web_public_sub(name, stream_id) {
         stream_id,
         is_web_public: true,
     };
-    stream_data.add_sub(sub);
+    stream_data.add_sub_for_tests(sub);
 }
 
 function make_archived_sub(name, stream_id) {
@@ -2273,11 +2273,11 @@ function make_archived_sub(name, stream_id) {
         stream_id,
         is_archived: true,
     };
-    stream_data.add_sub(sub);
+    stream_data.add_sub_for_tests(sub);
 }
 
 test("navbar_helpers", ({override}) => {
-    stream_data.add_sub(foo_sub);
+    stream_data.add_sub_for_tests(foo_sub);
 
     // make sure title has names separated with correct delimiters
     function properly_separated_names(names) {

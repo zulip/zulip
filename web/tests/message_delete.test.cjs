@@ -171,8 +171,8 @@ run_test("get_deletability", ({override}) => {
         can_delete_any_message_group: nobody_group.id,
         can_delete_own_message_group: moderators_group.id,
     };
-    stream_data.add_sub(social);
-    stream_data.add_sub(denmark);
+    stream_data.add_sub_for_tests(social);
+    stream_data.add_sub_for_tests(denmark);
 
     message = {
         locally_echoed: true,

@@ -78,10 +78,10 @@ const stream_2 = make_stream({
     invite_only: false,
     is_web_public: false,
 });
-stream_data.add_sub(stream_A);
-stream_data.add_sub(stream_B);
-stream_data.add_sub(stream_1);
-stream_data.add_sub(stream_2);
+stream_data.add_sub_for_tests(stream_A);
+stream_data.add_sub_for_tests(stream_B);
+stream_data.add_sub_for_tests(stream_1);
+stream_data.add_sub_for_tests(stream_2);
 
 const setTimeout_delay = 3000;
 set_global("setTimeout", (f, delay) => {
