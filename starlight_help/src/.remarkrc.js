@@ -54,6 +54,12 @@ const config = {
     plugins: [
         [remarkFrontmatter, ["yaml"]],
         remarkLintRules,
+        // The format step was converting our ordered list items to have
+        // incremental numbering instead of using 1. for every list item. This
+        // was not because of any remark-lint rule, but because of
+        // remark-stringify which auto increments any lists it processes. We
+        // followed the recommended fix from
+        // https://github.com/remarkjs/remark-lint/blob/ae2f941d88551d0a1103e586495dec0f55469720/packages/remark-lint-ordered-list-marker-value/readme.md?plain=1#L185
         [remarkStringify, {incrementListMarker: false}],
     ],
 };
