@@ -162,8 +162,8 @@ export function unsubscribe_myself(sub: StreamSubscription): void {
     stream_info.set_false(sub.stream_id, sub);
 }
 
-export function add_sub(sub: StreamSubscription): void {
-    // This function is currently used only by tests.
+export function add_sub_for_tests(sub: StreamSubscription): void {
+    // This function is used only by tests.
     // We use create_sub_from_server_data at page load.
     // We use create_streams for new streams in live-update events.
     stream_info.set(sub.stream_id, sub);

@@ -93,7 +93,7 @@ function test(label, f) {
 
 test("unsubscribe", () => {
     const devel = {name: "devel", subscribed: false, stream_id: 1};
-    stream_data.add_sub(devel);
+    stream_data.add_sub_for_tests(devel);
 
     // verify clean slate
     assert.ok(!stream_data.is_subscribed(devel.stream_id));
@@ -126,7 +126,7 @@ test("subscribers", async () => {
         can_administer_channel_group: nobody_group.id,
         can_subscribe_group: nobody_group.id,
     };
-    stream_data.add_sub(sub);
+    stream_data.add_sub_for_tests(sub);
 
     people.add_active_user(fred);
     people.add_active_user(gail);
@@ -213,7 +213,7 @@ test("subscribers", async () => {
 
     // Verify defensive code in set_subscribers, where the second parameter
     // can be undefined.
-    stream_data.add_sub(sub);
+    stream_data.add_sub_for_tests(sub);
     peer_data.add_subscriber(stream_id, brutus.user_id);
     sub.subscribed = true;
     assert.ok(stream_data.is_user_subscribed(stream_id, brutus.user_id));
@@ -271,7 +271,7 @@ test("maybe_fetch_stream_subscribers", async () => {
         name: "India",
         subscribed: true,
     };
-    stream_data.add_sub(india);
+    stream_data.add_sub_for_tests(india);
     let channel_get_calls = 0;
     channel.get = (opts) => {
         assert.equal(opts.url, `/json/streams/${india.stream_id}/members`);
@@ -391,7 +391,7 @@ test("get_subscriber_count", async () => {
     blueslip.expect("warn", "We called get_subscriber_count for an untracked stream: 102");
     assert.equal(peer_data.get_subscriber_count(india.stream_id), 0);
 
-    stream_data.add_sub(india);
+    stream_data.add_sub_for_tests(india);
     assert.equal(peer_data.get_subscriber_count(india.stream_id), 0);
 
     peer_data.add_subscriber(india.stream_id, fred.user_id);
@@ -431,7 +431,7 @@ test("is_subscriber_subset", async () => {
             stream_id,
             name: `stream ${stream_id}`,
         };
-        stream_data.add_sub(sub);
+        stream_data.add_sub_for_tests(sub);
         peer_data.set_subscribers(sub.stream_id, user_ids);
         return sub;
     }
@@ -491,7 +491,7 @@ test("is_subscriber_subset", async () => {
 
 test("get_unique_subscriber_count_for_streams", async () => {
     const sub = {name: "Rome", subscribed: true, stream_id: 1001};
-    stream_data.add_sub(sub);
+    stream_data.add_sub_for_tests(sub);
 
     people.add_active_user(fred);
     people.add_active_user(gail);
