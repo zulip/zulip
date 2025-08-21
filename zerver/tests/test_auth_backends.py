@@ -3421,12 +3421,20 @@ class SAMLAuthBackendTest(SocialAuthBase):
         hamlet = self.example_user("hamlet")
         testgroup1 = create_user_group_in_database("testgroup1", [], realm, acting_user=hamlet)
         testgroup2 = create_user_group_in_database("testgroup2", [], realm, acting_user=hamlet)
+        # Sanity assert. We'll use this group name to verify that groups get created on demand by group sync.
+        assert not NamedUserGroup.objects.filter(
+            name="newtestgroup", realm_for_sharding=realm
+        ).exists()
 
         sync_custom_attrs_dict = {
             "zulip": {
                 "saml": {
                     "role": "zulip_role",
-                    "groups": ["testgroup1", ("samlgroup2", "testgroup2")],
+                    "groups": [
+                        "testgroup1",
+                        ("samlgroup2", "testgroup2"),
+                        ("samlgroup3", "newtestgroup"),
+                    ],
                 }
             }
         }
@@ -3441,7 +3449,9 @@ class SAMLAuthBackendTest(SocialAuthBase):
             result = self.social_auth_test(
                 account_data_dict,
                 subdomain="zulip",
-                extra_attributes=dict(zulip_groups=["testgroup1", "samlgroup2"]),
+                extra_attributes=dict(
+                    zulip_groups=["testgroup1", "samlgroup2", "samlgroup3", "samlgroup99"]
+                ),
             )
         data = load_subdomain_token(result)
         self.assertEqual(data["email"], self.email)
@@ -3461,10 +3471,34 @@ class SAMLAuthBackendTest(SocialAuthBase):
                 direct_member_only=True,
             )
         )
+
+        # newtestgroup exists now. It was created because the zulip_groups attribute implied the user should
+        # be a member of the group.
+        new_test_group = NamedUserGroup.objects.get(name="newtestgroup", realm_for_sharding=realm)
+        self.assertTrue(
+            is_user_in_group(
+                new_test_group.id,
+                hamlet,
+                direct_member_only=True,
+            )
+        )
+        # samlgroup99 is not listed in the configuration, so doesn't get created, despite being passed in
+        # the zulip_groups attribute.
+        self.assertFalse(
+            NamedUserGroup.objects.filter(name="samlgroup99", realm_for_sharding=realm).exists()
+        )
+
         # Verify the expected log line revealing the internal details of the incoming groups -> Zulip groups translation.
         self.assertIn(
             self.logger_output(
-                f"social_auth_sync_user_attributes:<user:{hamlet.id}>: received group names: ['samlgroup2', 'testgroup1']|intended Zulip groups: ['testgroup1', 'testgroup2']. group mapping used: {{'testgroup1': 'testgroup1', 'samlgroup2': 'testgroup2'}}",
+                f"social_auth_sync_user_attributes:<user:{hamlet.id}>: received group names: ['samlgroup2', 'samlgroup3', 'samlgroup99', 'testgroup1']|intended Zulip groups: ['newtestgroup', 'testgroup1', 'testgroup2']. group mapping used: {{'testgroup1': 'testgroup1', 'samlgroup2': 'testgroup2', 'samlgroup3': 'newtestgroup'}}",
+                type="info",
+            ),
+            mock_log.output,
+        )
+        self.assertIn(
+            self.logger_output(
+                f"User {hamlet.id} should be added to groups ['newtestgroup'], but they don't exist. Creating them first.",
                 type="info",
             ),
             mock_log.output,
@@ -3497,6 +3531,13 @@ class SAMLAuthBackendTest(SocialAuthBase):
                 direct_member_only=True,
             )
         )
+        self.assertFalse(
+            is_user_in_group(
+                new_test_group.id,
+                hamlet,
+                direct_member_only=True,
+            )
+        )
 
         with self.settings(
             SOCIAL_AUTH_SYNC_ATTRS_DICT=sync_custom_attrs_dict,
@@ -3521,6 +3562,13 @@ class SAMLAuthBackendTest(SocialAuthBase):
         self.assertFalse(
             is_user_in_group(
                 testgroup2.id,
+                hamlet,
+                direct_member_only=True,
+            )
+        )
+        self.assertFalse(
+            is_user_in_group(
+                new_test_group.id,
                 hamlet,
                 direct_member_only=True,
             )
@@ -3587,6 +3635,13 @@ class SAMLAuthBackendTest(SocialAuthBase):
                 direct_member_only=True,
             )
         )
+        self.assertFalse(
+            is_user_in_group(
+                new_test_group.id,
+                hamlet,
+                direct_member_only=True,
+            )
+        )
 
     def test_social_auth_group_sync_sync_all_groups_mode(self) -> None:
         realm = get_realm("zulip")
@@ -3597,6 +3652,10 @@ class SAMLAuthBackendTest(SocialAuthBase):
         hamletcharacters_group = NamedUserGroup.objects.get(
             name="hamletcharacters", realm_for_sharding=realm
         )
+        # Sanity assert. We'll use this group name to verify that groups get created on demand by group sync.
+        assert not NamedUserGroup.objects.filter(
+            name="newtestgroup", realm_for_sharding=realm
+        ).exists()
 
         sync_custom_attrs_dict = {
             "zulip": {
@@ -3613,12 +3672,21 @@ class SAMLAuthBackendTest(SocialAuthBase):
                 SOCIAL_AUTH_SYNC_ATTRS_DICT=sync_custom_attrs_dict,
             ),
             self.assertLogs(self.logger_string) as mock_log,
+            self.assertLogs("", level="WARNING") as mock_root_logger,
         ):
             account_data_dict = self.get_account_data_dict(email=self.email, name=self.name)
             result = self.social_auth_test(
                 account_data_dict,
                 subdomain="zulip",
-                extra_attributes=dict(zulip_groups=["testgroup1", "testgroup2"]),
+                extra_attributes=dict(
+                    zulip_groups=[
+                        "testgroup1",
+                        "testgroup2",
+                        "newtestgroup",
+                        # Not a valid group name. We will want to verify it gets logged and ignored.
+                        "@@@@",
+                    ]
+                ),
             )
         data = load_subdomain_token(result)
         self.assertEqual(data["email"], self.email)
@@ -3645,13 +3713,36 @@ class SAMLAuthBackendTest(SocialAuthBase):
                 direct_member_only=True,
             )
         )
+
+        # newtestgroup exists now. It was created because the zulip_groups attribute implied the user should
+        # be a member of the group.
+        new_test_group = NamedUserGroup.objects.get(name="newtestgroup", realm_for_sharding=realm)
+        self.assertTrue(
+            is_user_in_group(
+                new_test_group.id,
+                hamlet,
+                direct_member_only=True,
+            )
+        )
+
         # Verify the expected log line revealing the internal details of the incoming groups -> Zulip groups translation.
         self.assertIn(
             self.logger_output(
-                f"social_auth_sync_user_attributes:<user:{hamlet.id}>: received group names: ['testgroup1', 'testgroup2']|intended Zulip groups: ['testgroup1', 'testgroup2']. group mapping used: {{'hamletcharacters': 'hamletcharacters', 'testgroup1': 'testgroup1', 'testgroup2': 'testgroup2'}}",
+                f"social_auth_sync_user_attributes:<user:{hamlet.id}>: received group names: ['@@@@', 'newtestgroup', 'testgroup1', 'testgroup2']|intended Zulip groups: ['@@@@', 'newtestgroup', 'testgroup1', 'testgroup2']. group mapping used: {{'hamletcharacters': 'hamletcharacters', 'testgroup1': 'testgroup1', 'testgroup2': 'testgroup2', 'newtestgroup': 'newtestgroup', '@@@@': '@@@@'}}",
                 type="info",
             ),
             mock_log.output,
+        )
+        self.assertIn(
+            self.logger_output(
+                f"User {hamlet.id} should be added to groups ['@@@@', 'newtestgroup'], but they don't exist. Creating them first.",
+                type="info",
+            ),
+            mock_log.output,
+        )
+        self.assertEqual(
+            mock_root_logger.output[0],
+            "WARNING:root:ensure_missing_groups: received invalid groups names: ['@@@@']",
         )
 
     @override_settings(TERMS_OF_SERVICE_VERSION=None)
@@ -3669,11 +3760,20 @@ class SAMLAuthBackendTest(SocialAuthBase):
         testgroup1 = create_user_group_in_database("testgroup1", [], realm, acting_user=desdemona)
         testgroup2 = create_user_group_in_database("testgroup2", [], realm, acting_user=desdemona)
 
+        # Sanity assert. We'll use this group name to verify that groups get created on demand by group sync.
+        assert not NamedUserGroup.objects.filter(
+            name="newtestgroup", realm_for_sharding=realm
+        ).exists()
+
         sync_custom_attrs_dict = {
             "zulip": {
                 "saml": {
                     "role": "zulip_role",
-                    "groups": ["testgroup1", ("samlgroup2", "testgroup2")],
+                    "groups": [
+                        "testgroup1",
+                        ("samlgroup2", "testgroup2"),
+                        ("samlgroup3", "newtestgroup"),
+                    ],
                 }
             }
         }
@@ -3693,7 +3793,7 @@ class SAMLAuthBackendTest(SocialAuthBase):
                     mobilePhone=["123412341234"],
                     birthday=["2021-01-01"],
                     zulip_role=["owner"],
-                    zulip_groups=["testgroup1"],
+                    zulip_groups=["testgroup1", "samlgroup3", "samlgroup99"],
                 ),
             )
 
@@ -3718,10 +3818,26 @@ class SAMLAuthBackendTest(SocialAuthBase):
             )
         )
 
+        # newtestgroup exists now. It was created because the zulip_groups attribute implied the user should
+        # be a member of the group.
+        new_test_group = NamedUserGroup.objects.get(name="newtestgroup", realm_for_sharding=realm)
+        self.assertTrue(
+            is_user_in_group(
+                new_test_group.id,
+                user_profile,
+                direct_member_only=True,
+            )
+        )
+        # samlgroup99 is not listed in the configuration, so doesn't get created, despite being passed in
+        # the zulip_groups attribute.
+        self.assertFalse(
+            NamedUserGroup.objects.filter(name="samlgroup99", realm_for_sharding=realm).exists()
+        )
+
         self.assertEqual(
             mock_logger.output[0],
             self.logger_output(
-                "social_auth_sync_user_attributes:<new user signup>: received group names: ['testgroup1']|intended Zulip groups: ['testgroup1']. group mapping used: {'testgroup1': 'testgroup1', 'samlgroup2': 'testgroup2'}",
+                "social_auth_sync_user_attributes:<new user signup>: received group names: ['samlgroup3', 'samlgroup99', 'testgroup1']|intended Zulip groups: ['newtestgroup', 'testgroup1']. group mapping used: {'testgroup1': 'testgroup1', 'samlgroup2': 'testgroup2', 'samlgroup3': 'newtestgroup'}",
                 type="info",
             ),
         )
@@ -3733,9 +3849,13 @@ class SAMLAuthBackendTest(SocialAuthBase):
         prereg_user = PreregistrationUser.objects.last()
         assert prereg_user is not None
         self.assertEqual(
-            f"INFO:root:Synced user groups for PreregistrationUser {prereg_user.id} in {realm.id}: "
-            '{"testgroup1": true, "testgroup2": false}. Final groups set: {\'testgroup1\'}',
             mock_root_logger.output[0],
+            f"INFO:root:PreregistrationUser {prereg_user.id} should be added to groups ['newtestgroup'], but they don't exist. Creating them first.",
+        )
+        self.assertEqual(
+            f"INFO:root:Synced user groups for PreregistrationUser {prereg_user.id} in {realm.id}: "
+            '{"newtestgroup": true, "testgroup1": true, "testgroup2": false}. Final groups set: [\'newtestgroup\', \'testgroup1\']',
+            mock_root_logger.output[1],
         )
 
     @override_settings(TERMS_OF_SERVICE_VERSION=None)
@@ -3816,7 +3936,7 @@ class SAMLAuthBackendTest(SocialAuthBase):
         assert prereg_user is not None
         self.assertEqual(
             f"INFO:root:Synced user groups for PreregistrationUser {prereg_user.id} in {realm.id}: "
-            '{"testgroup1": true, "testgroup2": false}. Final groups set: {\'testgroup1\'}',
+            '{"testgroup1": true, "testgroup2": false}. Final groups set: [\'testgroup1\']',
             mock_root_logger.output[0],
         )
 

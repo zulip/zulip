@@ -858,7 +858,9 @@ using SAML, groups are synced as follows:
    is managed entirely in Zulip.
 1. Otherwise, if the group appears in `zulip_groups` in the
    `SAMLResponse`, the user is added to that group (if not already a
-   member).
+   member). If the group doesn't yet exist in Zulip, it will be created.
+   Memberships of groups created in this way will only be editable by
+   organization owners.
 1. Otherwise, the user is removed from that group (if currently a
    member).
 
