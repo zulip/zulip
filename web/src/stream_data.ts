@@ -126,14 +126,17 @@ const stream_ids_by_old_names = new FoldDict<number>();
 const default_stream_ids = new Set<number>();
 const realm_web_public_stream_ids = new Set<number>();
 
-export function clear_subscriptions(): void {
+export function clear_subscriptions(for_tests = true): void {
     // This function is only used once at page load, and then
     // it should only be used in tests.
     stream_info = new BinaryDict((sub) => sub.subscribed);
     sub_store.clear();
+    if (for_tests) {
+        peer_data.clear_subscriber_counts_for_tests();
+    }
 }
 
-clear_subscriptions();
+clear_subscriptions(false);
 
 export function rename_sub(sub: StreamSubscription, new_name: string): void {
     const old_name = sub.name;
@@ -162,7 +165,7 @@ export function unsubscribe_myself(sub: StreamSubscription): void {
     stream_info.set_false(sub.stream_id, sub);
 }
 
-export function add_sub_for_tests(sub: StreamSubscription): void {
+export function add_sub_for_tests(sub: StreamSubscription, subscriber_count = 0): void {
     // This function is used only by tests.
     // We use create_sub_from_server_data at page load.
     // We use create_streams for new streams in live-update events.
@@ -172,6 +175,7 @@ export function add_sub_for_tests(sub: StreamSubscription): void {
         realm_web_public_stream_ids.add(sub.stream_id);
     }
     sub_store.add_hydrated_sub(sub.stream_id, sub);
+    peer_data.set_subscriber_count(sub.stream_id, subscriber_count);
 }
 
 export function get_sub(stream_name: string): StreamSubscription | undefined {
@@ -1078,8 +1082,11 @@ export function create_sub_from_server_data(
     const full_data = attrs.partial_subscribers === undefined;
     const subscriber_user_ids = full_data ? attrs.subscribers : attrs.partial_subscribers;
 
-    delete attrs.subscribers;
-    delete attrs.partial_subscribers;
+    // Omit properties not used for the sub object
+    const {subscribers, subscriber_count, partial_subscribers, ...sub_attrs} = attrs;
+
+    assert(attrs.subscriber_count !== undefined);
+    peer_data.set_subscriber_count(attrs.stream_id, attrs.subscriber_count);
 
     sub = {
         newly_subscribed: false,
@@ -1093,7 +1100,7 @@ export function create_sub_from_server_data(
         color: "color" in attrs ? attrs.color : color_data.pick_color(),
         subscribed,
         previously_subscribed,
-        ...attrs,
+        ...sub_attrs,
     };
 
     clean_up_description(sub);

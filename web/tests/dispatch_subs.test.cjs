@@ -75,9 +75,10 @@ test("add", ({override}) => {
 test("peer add/remove", ({override}) => {
     let event = event_fixtures.subscription__peer_add;
 
+    const devel_stream_id = event.stream_ids[0];
     stream_data.add_sub_for_tests({
         name: "devel",
-        stream_id: event.stream_ids[0],
+        stream_id: devel_stream_id,
     });
 
     const stream_stub = make_stub();
@@ -86,13 +87,13 @@ test("peer add/remove", ({override}) => {
     dispatch(event);
     assert.equal(stream_stub.num_calls, 1);
 
-    assert.ok(peer_data.is_user_subscribed(event.stream_ids[0], event.user_ids[0]));
+    assert.ok(peer_data.is_user_subscribed(devel_stream_id, event.user_ids[0]));
 
     event = event_fixtures.subscription__peer_remove;
     dispatch(event);
     assert.equal(stream_stub.num_calls, 2);
 
-    assert.ok(!peer_data.is_user_subscribed(event.stream_ids[0], event.user_ids[0]));
+    assert.ok(!peer_data.is_user_subscribed(devel_stream_id, event.user_ids[0]));
 });
 
 test("remove", ({override}) => {

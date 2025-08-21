@@ -204,7 +204,12 @@ test("subscribers", async () => {
         "warn",
         "We called get_loaded_subscriber_subset for an untracked stream: " + bad_stream_id,
     );
+    blueslip.expect(
+        "error",
+        "We called decrement_subscriber_count for an untracked stream: " + bad_stream_id,
+    );
     peer_data.remove_subscriber(bad_stream_id, brutus.user_id);
+    blueslip.reset();
 
     // verify that removing an already-removed subscriber is a noop
     peer_data.remove_subscriber(stream_id, brutus.user_id);
@@ -254,6 +259,10 @@ test("subscribers", async () => {
     blueslip.expect(
         "warn",
         "We called get_loaded_subscriber_subset for an untracked stream: 9999999",
+    );
+    blueslip.expect(
+        "error",
+        "We called increment_subscriber_count for an untracked stream: 9999999",
     );
     peer_data.add_subscriber(9999999, brutus.user_id);
     blueslip.reset();
@@ -390,6 +399,7 @@ test("get_subscriber_count", async () => {
 
     blueslip.expect("warn", "We called get_subscriber_count for an untracked stream: 102");
     assert.equal(peer_data.get_subscriber_count(india.stream_id), 0);
+    blueslip.reset();
 
     stream_data.add_sub_for_tests(india);
     assert.equal(peer_data.get_subscriber_count(india.stream_id), 0);
@@ -409,7 +419,7 @@ test("get_subscriber_count", async () => {
 
     // We don't have full data, so we assume this is a decrement even though gail isn't
     // in the subscriber list.
-    india.subscriber_count = 20;
+    peer_data.set_subscriber_count(india.stream_id, 20);
     assert.deepStrictEqual(peer_data.get_subscriber_count(india.stream_id), 20);
     peer_data.remove_subscriber(india.stream_id, gail.user_id);
     assert.deepStrictEqual(peer_data.get_subscriber_count(india.stream_id), 19);
