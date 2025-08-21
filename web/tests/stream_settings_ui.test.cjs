@@ -90,6 +90,7 @@ run_test("redraw_left_panel", ({override, mock_template}) => {
         can_subscribe_group: admins_group.id,
         date_created: 1691057093,
         creator_id: null,
+        subscriber_count: 0,
     };
     const poland = {
         elem: "poland",
@@ -106,6 +107,7 @@ run_test("redraw_left_panel", ({override, mock_template}) => {
         can_subscribe_group: admins_group.id,
         date_created: 1691057093,
         creator_id: null,
+        subscriber_count: 0,
     };
     const pomona = {
         elem: "pomona",
@@ -122,6 +124,7 @@ run_test("redraw_left_panel", ({override, mock_template}) => {
         can_subscribe_group: admins_group.id,
         date_created: 1691057093,
         creator_id: null,
+        subscriber_count: 0,
     };
     const cpp = {
         elem: "cpp",
@@ -138,6 +141,7 @@ run_test("redraw_left_panel", ({override, mock_template}) => {
         can_subscribe_group: admins_group.id,
         date_created: 1691057093,
         creator_id: null,
+        subscriber_count: 0,
     };
     const zzyzx = {
         elem: "zzyzx",
@@ -154,6 +158,7 @@ run_test("redraw_left_panel", ({override, mock_template}) => {
         can_subscribe_group: admins_group.id,
         date_created: 1691057093,
         creator_id: null,
+        subscriber_count: 0,
     };
     const abcd = {
         elem: "abcd",
@@ -170,6 +175,7 @@ run_test("redraw_left_panel", ({override, mock_template}) => {
         can_subscribe_group: admins_group.id,
         date_created: 1691057093,
         creator_id: null,
+        subscriber_count: 0,
     };
     const utopia = {
         elem: "utopia",
@@ -186,6 +192,7 @@ run_test("redraw_left_panel", ({override, mock_template}) => {
         can_subscribe_group: admins_group.id,
         date_created: 1691057093,
         creator_id: null,
+        subscriber_count: 0,
     };
     const jerry = {
         elem: "jerry",
@@ -202,6 +209,7 @@ run_test("redraw_left_panel", ({override, mock_template}) => {
         can_subscribe_group: admins_group.id,
         date_created: 1691057093,
         creator_id: null,
+        subscriber_count: 0,
     };
 
     const sub_row_data = [denmark, poland, pomona, cpp, zzyzx, abcd, utopia, jerry];
