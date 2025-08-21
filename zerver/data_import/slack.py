@@ -67,6 +67,8 @@ from zerver.models import (
 )
 from zerver.models.constants import MAX_TOPIC_NAME_LENGTH
 
+thread_parent_map: dict[str, str] = {}
+
 SlackToZulipUserIDT: TypeAlias = dict[str, int]
 AddedChannelsT: TypeAlias = dict[str, tuple[str, int]]
 AddedMPIMsT: TypeAlias = dict[str, tuple[str, int]]
@@ -1138,7 +1140,12 @@ def channel_message_to_zerver_message(
         if convert_slack_threads and not is_direct_message_type and "thread_ts" in message:
             thread_ts = datetime.fromtimestamp(float(message["thread_ts"]), tz=timezone.utc)
             thread_ts_str = thread_ts.strftime(r"%Y/%m/%d %H:%M:%S")
-            parent_user_id = get_parent_user_id_from_thread_message(message, subtype)
+            if message["thread_ts"] == message["ts"]:
+                thread_parent_map[message["thread_ts"]] = get_parent_user_id_from_thread_message(message, subtype)
+            if message["thread_ts"] in thread_parent_map:
+                parent_user_id = thread_parent_map[message['thread_ts']]
+            else:
+                parent_user_id = get_parent_user_id_from_thread_message(message, subtype)
             thread_key = f"{thread_ts_str}-{parent_user_id}"
 
             if thread_key in thread_map:
