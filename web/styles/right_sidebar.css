@@ -507,7 +507,6 @@
 #userlist-header {
     cursor: pointer;
     display: grid;
-    gap: 5px;
     grid-template-columns: minmax(0, 1fr) auto;
     padding-left: var(--right-sidebar-heading-left-spacing);
     /* The scrollbar doesn't extend this high, but we want the three-dot
