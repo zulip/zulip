@@ -31,6 +31,8 @@ EXCLUDE_UNDOCUMENTED_ENDPOINTS = {
 # These are skipped but return true as the validator cannot exclude objects
 EXCLUDE_DOCUMENTED_ENDPOINTS: set[tuple[str, str]] = set()
 
+REDIRECT_RESPONSE_STATUS_CODE: set[int] = {301, 302, 307, 308}
+
 
 # Most of our code expects allOf to be preprocessed away because that is what
 # yamole did.  Its algorithm for doing so is not standards compliant, but we
@@ -181,26 +183,29 @@ openapi_spec = OpenAPISpec(OPENAPI_SPEC_PATH)
 
 
 def get_schema(endpoint: str, method: str, status_code: str) -> dict[str, Any]:
+    schema_response = openapi_spec.openapi()["paths"][endpoint][method.lower()]["responses"]
+    content_type = "application/json"
+    if int(status_code[:3]) in REDIRECT_RESPONSE_STATUS_CODE:  # nocoverage
+        # The only endpoints that redirects is the avatar URL
+        # endpoints, they all respond with "text/html" as the
+        # content type.
+        content_type = "text/html"
+
     if len(status_code) == 3 and (
-        "oneOf"
-        in openapi_spec.openapi()["paths"][endpoint][method.lower()]["responses"][status_code][
-            "content"
-        ]["application/json"]["schema"]
+        "oneOf" in schema_response[status_code]["content"][content_type]["schema"]
     ):
         # Currently at places where multiple schemas are defined they only
         # differ in example so either can be used.
         status_code += "_0"
     if len(status_code) == 3:
-        schema = openapi_spec.openapi()["paths"][endpoint][method.lower()]["responses"][
-            status_code
-        ]["content"]["application/json"]["schema"]
+        schema = schema_response[status_code]["content"][content_type]["schema"]
         return schema
     else:
         subschema_index = int(status_code[4])
         status_code = status_code[0:3]
-        schema = openapi_spec.openapi()["paths"][endpoint][method.lower()]["responses"][
-            status_code
-        ]["content"]["application/json"]["schema"]["oneOf"][subschema_index]
+        schema = schema_response[status_code]["content"][content_type]["schema"]["oneOf"][
+            subschema_index
+        ]
         return schema
 
 
@@ -266,6 +271,14 @@ def generate_openapi_fixture(endpoint: str, method: str) -> list[str]:
     for status_code in sorted(
         openapi_spec.openapi()["paths"][endpoint][method.lower()]["responses"]
     ):
+        if int(status_code) in REDIRECT_RESPONSE_STATUS_CODE:  # nocoverage
+            # For endpoints endpoints that redirects the caller, there
+            # won't be any request body so we skip building the JSON
+            # body response example.
+            description = get_schema(endpoint, method, status_code)["description"]
+            fixture.extend(description.strip().splitlines())
+            continue
+
         if (
             "oneOf"
             in openapi_spec.openapi()["paths"][endpoint][method.lower()]["responses"][status_code][
@@ -409,13 +422,19 @@ def get_openapi_parameters(
 
 def get_openapi_return_values(endpoint: str, method: str) -> dict[str, Any]:
     operation = openapi_spec.openapi()["paths"][endpoint][method.lower()]
-    schema = operation["responses"]["200"]["content"]["application/json"]["schema"]
-    # We do not currently have documented endpoints that have multiple schemas
-    # ("oneOf", "anyOf", "allOf") for success ("200") responses. If this changes,
-    # then the assertion below will need to be removed, and this function updated
-    # so that endpoint responses will be rendered as expected.
-    assert "properties" in schema
-    return schema["properties"]
+    status_code = next(iter(operation["responses"].keys()))
+    if int(status_code) in REDIRECT_RESPONSE_STATUS_CODE:  # nocoverage
+        # Skip for endpoints that redirect the caller, as they do not return a
+        # JSON body.
+        return {}
+    else:
+        schema = operation["responses"]["200"]["content"]["application/json"]["schema"]
+        # We do not currently have documented endpoints that have multiple schemas
+        # ("oneOf", "anyOf", "allOf") for success ("200") responses. If this changes,
+        # then the assertion below will need to be removed, and this function updated
+        # so that endpoint responses will be rendered as expected.
+        assert "properties" in schema
+        return schema["properties"]
 
 
 def find_openapi_endpoint(path: str) -> str | None:
