@@ -74,20 +74,24 @@ function is_somebody_else_profile_open(): boolean {
     );
 }
 
-function handle_invalid_section_url(user_settings_tab: string): string {
-    const valid_user_settings_tab_values = new Set(["active", "deactivated", "invitations"]);
-    if (!valid_user_settings_tab_values.has(user_settings_tab)) {
-        const valid_users_section_url = "#organization/users/active";
-        browser_history.update(valid_users_section_url);
-        return "active";
+function handle_invalid_section_url(section: "bots" | "users", settings_tab: string): string {
+    const valid_tab_values = {
+        users: new Set(["active", "deactivated", "invitations"]),
+        bots: new Set(["all-bots", "your-bots"]),
+    };
+
+    if (!valid_tab_values[section].has(settings_tab)) {
+        const valid_section_url = `#organization/${section}/${[...valid_tab_values[section]][0]}`;
+        browser_history.update(valid_section_url);
+        return [...valid_tab_values[section]][0]!;
     }
-    return user_settings_tab;
+    return settings_tab;
 }
 
 function get_settings_tab(section: string): string | undefined {
-    if (section === "users") {
-        const current_user_settings_tab = hash_parser.get_current_nth_hash_section(2);
-        return handle_invalid_section_url(current_user_settings_tab);
+    if (section === "users" || section === "bots") {
+        const current_tab = hash_parser.get_current_nth_hash_section(2);
+        return handle_invalid_section_url(section, current_tab);
     }
     return undefined;
 }
@@ -409,7 +413,11 @@ function do_hashchange_overlay(old_hash: string | undefined): void {
             settings_panel_menu.normal_settings.set_current_tab(section);
         } else {
             settings_panel_menu.org_settings.set_current_tab(section);
-            settings_panel_menu.org_settings.set_user_settings_tab(get_settings_tab(section));
+            if (section === "users") {
+                settings_panel_menu.org_settings.set_user_settings_tab(get_settings_tab(section));
+            } else {
+                settings_panel_menu.org_settings.set_bot_settings_tab(get_settings_tab(section));
+            }
         }
         settings_toggle.goto(base);
         return;
