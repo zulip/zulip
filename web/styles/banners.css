@@ -55,6 +55,7 @@
     */
     padding: 0.25em 0; /* 4px at 16px/1em */
     line-height: 1.25; /* 20px at 16px/1em */
+    text-align: start;
 }
 
 .banner-action-buttons {
