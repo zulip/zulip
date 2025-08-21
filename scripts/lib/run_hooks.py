@@ -30,6 +30,10 @@ deploy_path = get_deploy_root()
 
 if args.kind == "post-deploy":
     old_dir_name = "last"
+    if not os.path.exists(DEPLOYMENTS_DIR + "/last"):
+        # Fresh installs which are doing an OS upgrade don't have a
+        # "last" yet
+        old_dir_name = "current"
 else:
     old_dir_name = "current"
 old_version = parse_version_from(DEPLOYMENTS_DIR + "/" + old_dir_name)
