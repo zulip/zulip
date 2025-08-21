@@ -28,6 +28,7 @@ from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.models import PushDevice, UserMessage
 from zerver.models.realms import get_realm
 from zerver.models.scheduled_jobs import NotificationTriggers
+from zilencer.lib.push_notifications import SentPushNotificationResult
 from zilencer.models import RemoteRealm, RemoteRealmCount
 
 
@@ -260,7 +261,11 @@ class SendPushNotificationTest(E2EEPushNotificationTestCase):
         with (
             self.mock_fcm() as mock_fcm_messaging,
             mock.patch(
-                "zilencer.lib.push_notifications.send_e2ee_push_notification_apple", return_value=1
+                "zilencer.lib.push_notifications.send_e2ee_push_notification_apple",
+                return_value=SentPushNotificationResult(
+                    successfully_sent_count=1,
+                    delete_device_ids=[],
+                ),
             ),
             self.assertLogs("zerver.lib.push_notifications", level="INFO") as zerver_logger,
             self.assertLogs("zilencer.lib.push_notifications", level="WARNING") as zilencer_logger,
