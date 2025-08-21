@@ -5484,6 +5484,7 @@ def maybe_send_stale_audit_log_data_email(
             "billing_entity": billing_session.billing_entity_display_name,
             "support_url": billing_session.support_url(),
             "last_audit_log_update": "Never uploaded",
+            "fixed_price_plan": plan.fixed_price is not None,
             "notice_reason": "stale_audit_log_data",
         }
         send_email(
@@ -5506,6 +5507,7 @@ def maybe_send_stale_audit_log_data_email(
         "billing_entity": billing_session.billing_entity_display_name,
         "support_url": billing_session.support_url(),
         "last_audit_log_update": last_audit_log_update.strftime("%Y-%m-%d"),
+        "fixed_price_plan": plan.fixed_price is not None,
         "notice_reason": "stale_audit_log_data",
     }
     send_email(
@@ -5535,9 +5537,26 @@ def check_remote_server_audit_log_data(
         # won't change the amount due or the fact that we should downgrade the
         # plan when it is scheduled to end.
         if plan.fixed_price is not None:
-            # TODO: Possibly send an internal billing notice so that billing admin
-            # have a record that the customer's license ledger entries do not
-            # reflect actual audit log data from the remote server.
+            # Send an internal billing notice so that admin can follow up in the
+            # case that the remote server is not regularly updating audit log data,
+            # but since the fixed-price plan will be invoiced, we don't set the
+            # stale_audit_log_data_email_sent field on the CustomerPlan.
+            context = {
+                "billing_entity": billing_session.billing_entity_display_name,
+                "support_url": billing_session.support_url(),
+                "fixed_price_plan": plan.fixed_price is not None,
+                "notice_reason": "stale_audit_log_data",
+            }
+            if last_audit_log_update is None:  # nocoverage
+                context["last_audit_log_update"] = "Never uploaded"
+            else:
+                context["last_audit_log_update"] = last_audit_log_update.strftime("%Y-%m-%d")
+            send_email(
+                "zerver/emails/internal_billing_notice",
+                to_emails=[BILLING_SUPPORT_EMAIL],
+                from_address=FromAddress.tokenized_no_reply_address(),
+                context=context,
+            )
             return True
 
         if not plan.stale_audit_log_data_email_sent:
