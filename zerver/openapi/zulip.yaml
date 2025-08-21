@@ -27937,6 +27937,11 @@ components:
           type: boolean
           description: |
             Whether the channel folder is archived or not.
+    RedirectResponse:
+      description: |
+        The response will be a simple redirect to a specific URL, so there
+        will be no response body. Refer to the provided Python or curl example
+        above for how best to handle the response from this endpoint.
     JsonResponseBase:
       type: object
       properties:
@@ -28938,6 +28943,12 @@ components:
           schema:
             allOf:
               - $ref: "#/components/schemas/IgnoredParametersSuccess"
+    SuccessRedirect:
+      description: Success.
+      content:
+        text/html:
+          schema:
+            $ref: "#/components/schemas/RedirectResponse"
 
   ################
   # Shared request bodies
