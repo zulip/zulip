@@ -187,7 +187,7 @@ export class SettingsPanelMenu {
 
     activate_section_or_default(
         section: string | undefined,
-        user_settings_tab?: string,
+        settings_tab?: string,
         activate_section_for_mobile = true,
     ): void {
         popovers.hide_all();
@@ -225,9 +225,9 @@ export class SettingsPanelMenu {
             browser_history.update_hash_internally_if_required(settings_section_hash);
         }
         if (section === "users" && this.org_user_settings_toggler !== undefined) {
-            assert(user_settings_tab !== undefined);
+            assert(settings_tab !== undefined);
             this.show_org_user_settings_toggler();
-            this.org_user_settings_toggler.goto(user_settings_tab);
+            this.org_user_settings_toggler.goto(settings_tab);
         }
 
         $(".settings-section").removeClass("show");

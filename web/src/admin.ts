@@ -327,7 +327,7 @@ export function build_page(): void {
     }
 }
 
-export function launch(section: string, user_settings_tab: string | undefined): void {
+export function launch(section: string, settings_tab: string | undefined): void {
     settings_sections.reset_sections();
 
     settings.open_settings_overlay();
@@ -335,7 +335,7 @@ export function launch(section: string, user_settings_tab: string | undefined): 
         settings_panel_menu.org_settings.set_current_tab(section);
     }
     if (section === "users") {
-        settings_panel_menu.org_settings.set_user_settings_tab(user_settings_tab);
+        settings_panel_menu.org_settings.set_user_settings_tab(settings_tab);
     }
     settings_toggle.goto("organization");
 }
