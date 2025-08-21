@@ -968,6 +968,7 @@ def get_parent_user_id_from_thread_message(thread_message: ZerverFieldsT, subtyp
         return thread_parent_map[thread_message["thread_ts"]]
 
 
+
 def get_zulip_thread_topic_name(
     message_content: str, thread_ts: datetime, thread_counter: dict[str, int]
 ) -> str:
@@ -1141,7 +1142,9 @@ def channel_message_to_zerver_message(
             thread_ts = datetime.fromtimestamp(float(message["thread_ts"]), tz=timezone.utc)
             thread_ts_str = thread_ts.strftime(r"%Y/%m/%d %H:%M:%S")
             if message["thread_ts"] == message["ts"]:
-                thread_parent_map[message["thread_ts"]] = get_parent_user_id_from_thread_message(message, subtype)
+                thread_parent_map[message["thread_ts"]] = get_parent_user_id_from_thread_message(
+                    message, subtype
+                )
             if message["thread_ts"] in thread_parent_map:
                 parent_user_id = thread_parent_map[message["thread_ts"]]
             else:
