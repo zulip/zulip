@@ -1240,11 +1240,13 @@ test("create_sub", () => {
         name: "India",
         subscribed: true,
         is_web_public: true,
+        subscriber_count: 3,
     };
 
     const canada = {
         name: "Canada",
         subscribed: true,
+        subscriber_count: 2,
     };
 
     const antarctica = {
@@ -1253,6 +1255,7 @@ test("create_sub", () => {
         subscribed: true,
         color: "#76ce90",
         partial_subscribers: [1, 2, 3],
+        subscriber_count: 10,
     };
 
     const india_sub = stream_data.create_sub_from_server_data(india);
@@ -1310,6 +1313,7 @@ test("initialize", ({override}) => {
             {
                 name: "subscriptions",
                 stream_id: 2001,
+                subscriber_count: 0,
             },
         ];
 
@@ -1317,6 +1321,7 @@ test("initialize", ({override}) => {
             {
                 name: "unsubscribed",
                 stream_id: 2002,
+                subscriber_count: 0,
             },
         ];
 
@@ -1324,6 +1329,7 @@ test("initialize", ({override}) => {
             {
                 name: "never_subscribed",
                 stream_id: 2003,
+                subscriber_count: 0,
             },
         ];
 
