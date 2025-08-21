@@ -1568,3 +1568,10 @@ button#register_auth_button_gitlab {
         text-decoration: underline;
     }
 }
+
+#realm-creation-form-slack-import .register-button {
+    &[disabled] {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+}
