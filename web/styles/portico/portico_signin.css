@@ -1556,3 +1556,15 @@ button#register_auth_button_gitlab {
     overflow: hidden;
     white-space: nowrap;
 }
+
+#cancel-slack-import {
+    color: hsl(200deg 100% 40%);
+    text-decoration: none;
+
+    &:hover,
+    &:focus {
+        cursor: pointer;
+        color: hsl(200.16deg 100% 25.1%);
+        text-decoration: underline;
+    }
+}
