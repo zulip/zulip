@@ -503,7 +503,15 @@ $(() => {
             if (current_countdown > 0) {
                 $countdown_elt.text((current_countdown - 1).toString());
             } else {
-                window.location.href = $("a#deactivated-org-auto-redirect").attr("href")!;
+                let new_org_url = $("a#deactivated-org-auto-redirect").attr("href")!;
+                const url_hash = window.location.hash;
+                if (url_hash.startsWith("#")) {
+                    // Ensure we don't double-add hashes and handle query parameters properly
+                    const url = new URL(new_org_url);
+                    url.hash = url_hash;
+                    new_org_url = url.toString();
+                }
+                window.location.href = new_org_url;
                 clearInterval(interval_id);
             }
         }, 1000);
