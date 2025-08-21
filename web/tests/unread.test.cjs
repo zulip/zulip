@@ -41,7 +41,7 @@ const social = {
     subscribed: true,
     is_muted: false,
 };
-stream_data.add_sub(social);
+stream_data.add_sub_for_tests(social);
 
 function assert_zero_counts(counts) {
     assert.equal(counts.direct_message_count, 0);

@@ -58,7 +58,7 @@ test("add", ({override}) => {
     const sub = event.subscriptions[0];
     const stream_id = sub.stream_id;
 
-    stream_data.add_sub({
+    stream_data.add_sub_for_tests({
         stream_id,
         name: sub.name,
     });
@@ -75,7 +75,7 @@ test("add", ({override}) => {
 test("peer add/remove", ({override}) => {
     let event = event_fixtures.subscription__peer_add;
 
-    stream_data.add_sub({
+    stream_data.add_sub_for_tests({
         name: "devel",
         stream_id: event.stream_ids[0],
     });
@@ -105,7 +105,7 @@ test("remove", ({override}) => {
         name: event_sub.name,
     };
 
-    stream_data.add_sub(sub);
+    stream_data.add_sub_for_tests(sub);
 
     const stub = make_stub();
     override(stream_events, "mark_unsubscribed", stub.f);
@@ -209,8 +209,8 @@ test("stream delete (normal)", ({override}) => {
         is_archived: false,
     };
 
-    stream_data.add_sub(test_sub);
-    stream_data.add_sub(devel_sub);
+    stream_data.add_sub_for_tests(test_sub);
+    stream_data.add_sub_for_tests(devel_sub);
 
     stream_data.subscribe_myself(devel_sub);
 
@@ -252,8 +252,8 @@ test("stream delete (special streams)", ({override}) => {
         is_archived: false,
     };
 
-    stream_data.add_sub(devel_sub);
-    stream_data.add_sub(test_sub);
+    stream_data.add_sub_for_tests(devel_sub);
+    stream_data.add_sub_for_tests(test_sub);
 
     stream_data.subscribe_myself(devel_sub);
 
@@ -303,8 +303,8 @@ test("stream delete (stream is selected in compose)", ({override}) => {
         is_archived: false,
     };
 
-    stream_data.add_sub(devel_sub);
-    stream_data.add_sub(test_sub);
+    stream_data.add_sub_for_tests(devel_sub);
+    stream_data.add_sub_for_tests(test_sub);
 
     stream_data.subscribe_myself(devel_sub);
     compose_state.set_stream_id(event.stream_ids[0]);

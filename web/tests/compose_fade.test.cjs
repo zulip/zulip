@@ -63,7 +63,7 @@ run_test("set_focused_recipient", () => {
     };
 
     stream_data.clear_subscriptions();
-    stream_data.add_sub(sub);
+    stream_data.add_sub_for_tests(sub);
     compose_state.set_stream_id(sub.stream_id);
     peer_data.set_subscribers(sub.stream_id, [me.user_id, alice.user_id]);
     compose_fade.set_focused_recipient("stream");
@@ -107,7 +107,7 @@ run_test("want_normal_display", ({override}) => {
     // Focused recipient is a valid stream with no topic set
     // when topics are mandatory
     override(realm, "realm_topics_policy", "disable_empty_topic");
-    stream_data.add_sub(sub);
+    stream_data.add_sub_for_tests(sub);
     assert.ok(compose_fade_helper.want_normal_display());
 
     // Focused recipient is a valid stream with no topic set

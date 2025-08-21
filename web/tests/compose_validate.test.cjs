@@ -87,7 +87,7 @@ const social_sub = {
     name: "social",
     subscribed: true,
 };
-stream_data.add_sub(social_sub);
+stream_data.add_sub_for_tests(social_sub);
 
 people.add_active_user(me);
 people.initialize_current_user(me.user_id);
@@ -200,11 +200,11 @@ test_ui("validate_stream_message_address_info", ({mock_template, override}) => {
         can_add_subscribers_group: nobody.id,
         can_subscribe_group: nobody.id,
     };
-    stream_data.add_sub(party_sub);
+    stream_data.add_sub_for_tests(party_sub);
     assert.ok(compose_validate.validate_stream_message_address_info(party_sub));
 
     party_sub.subscribed = false;
-    stream_data.add_sub(party_sub);
+    stream_data.add_sub_for_tests(party_sub);
     let user_not_subscribed_rendered = false;
     mock_template("compose_banner/compose_banner.hbs", true, (data, html) => {
         assert.equal(data.classname, compose_banner.CLASSNAMES.user_not_subscribed);
@@ -216,7 +216,7 @@ test_ui("validate_stream_message_address_info", ({mock_template, override}) => {
 
     party_sub.name = "Frontend";
     party_sub.stream_id = 102;
-    stream_data.add_sub(party_sub);
+    stream_data.add_sub_for_tests(party_sub);
     user_not_subscribed_rendered = false;
 
     assert.ok(!compose_validate.validate_stream_message_address_info(party_sub));
@@ -326,7 +326,7 @@ test_ui("validate", ({mock_template, override}) => {
         stream_id: 100,
         name: "Denmark",
     };
-    stream_data.add_sub(denmark);
+    stream_data.add_sub_for_tests(denmark);
     compose_state.set_stream_id(denmark.stream_id);
     override(realm, "realm_topics_policy", "disable_empty_topic");
     let missing_topic_error_rendered = false;
@@ -398,7 +398,7 @@ test_ui("validate_stream_message", ({override, override_rewire, mock_template}) 
         can_send_message_group: everyone.id,
         topics_policy: "inherit",
     };
-    stream_data.add_sub(special_sub);
+    stream_data.add_sub_for_tests(special_sub);
 
     compose_state.set_stream_id(special_sub.stream_id);
     $("#send_message_form").set_find_results(".message-textarea", $("textarea#compose-textarea"));
@@ -445,7 +445,7 @@ test_ui("test_stream_posting_permission", ({mock_template, override}) => {
         can_send_message_group: admin.id,
     };
 
-    stream_data.add_sub(sub_stream_102);
+    stream_data.add_sub_for_tests(sub_stream_102);
     compose_state.topic("topic102");
     compose_state.set_stream_id(sub_stream_102.stream_id);
 
@@ -548,7 +548,7 @@ test_ui("needs_subscribe_warning", async () => {
         name: "stream",
     };
 
-    stream_data.add_sub(sub);
+    stream_data.add_sub_for_tests(sub);
     peer_data.set_subscribers(sub.stream_id, [bob.user_id, me.user_id]);
 
     blueslip.expect("error", "Unknown user_id in maybe_get_user_by_id");
@@ -580,14 +580,14 @@ test_ui("warn_if_private_stream_is_linked", async ({mock_template}) => {
         stream_id: 99,
     };
 
-    stream_data.add_sub(test_sub);
+    stream_data.add_sub_for_tests(test_sub);
     peer_data.set_subscribers(test_sub.stream_id, [1, 2]);
 
     const denmark = {
         stream_id: 100,
         name: "Denmark",
     };
-    stream_data.add_sub(denmark);
+    stream_data.add_sub_for_tests(denmark);
 
     peer_data.set_subscribers(denmark.stream_id, [1, 2, 3]);
 
@@ -624,7 +624,7 @@ test_ui("warn_if_private_stream_is_linked", async ({mock_template}) => {
         name: "Denmark",
         stream_id: 22,
     };
-    stream_data.add_sub(secret_stream);
+    stream_data.add_sub_for_tests(secret_stream);
     peer_data.set_subscribers(secret_stream.stream_id, []);
     banner_rendered = false;
     const $banner_container = $("#compose_banners");
@@ -697,7 +697,7 @@ test_ui("warn_if_mentioning_unsubscribed_user", async ({override, mock_template}
         can_administer_channel_group: admin.id,
         can_subscribe_group: admin.id,
     };
-    stream_data.add_sub(sub);
+    stream_data.add_sub_for_tests(sub);
     compose_state.set_stream_id(sub.stream_id);
 
     // Test with invalid stream in compose box. It should return noop.
@@ -770,7 +770,7 @@ test_ui("test warn_if_topic_resolved", ({override, mock_template}) => {
         can_move_messages_out_of_channel_group: nobody.id,
         can_move_messages_within_channel_group: nobody.id,
     };
-    stream_data.add_sub(sub);
+    stream_data.add_sub_for_tests(sub);
 
     compose_state.set_message_type("stream");
     compose_state.set_stream_id("");

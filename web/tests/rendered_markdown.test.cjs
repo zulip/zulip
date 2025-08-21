@@ -96,7 +96,7 @@ const stream = {
     is_muted: true,
     invite_only: false,
 };
-stream_data.add_sub(stream);
+stream_data.add_sub_for_tests(stream);
 
 const $array = (array) => {
     const each = (func) => {

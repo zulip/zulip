@@ -135,7 +135,7 @@ test("server_history", () => {
         stream_id: 66,
     };
     const stream_id = sub.stream_id;
-    stream_data.add_sub(sub);
+    stream_data.add_sub_for_tests(sub);
 
     assert.equal(topic_list.is_full_topic_history_available(stream_id), false);
 
