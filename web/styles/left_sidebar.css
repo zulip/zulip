@@ -574,13 +574,6 @@
 /* Only show section header unread counts when the section is collapsed
    or when the header is being hovered over. */
 #streams_list .stream-list-section-container:not(.collapsed) {
-    .stream-list-subsection-header:not(:hover) {
-        .unread_count,
-        .masked_unread_count {
-            visibility: hidden;
-        }
-    }
-
     .stream-list-subsection-header:not(:hover) .unread_mention_info {
         display: none;
     }
