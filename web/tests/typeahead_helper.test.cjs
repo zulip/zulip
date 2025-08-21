@@ -139,8 +139,8 @@ const linux_sub = {
     stream_id: 2,
 };
 stream_data.create_streams([dev_sub, linux_sub]);
-stream_data.add_sub(dev_sub);
-stream_data.add_sub(linux_sub);
+stream_data.add_sub_for_tests(dev_sub);
+stream_data.add_sub_for_tests(linux_sub);
 
 const bob_system_group = make_user_group({
     id: 1,

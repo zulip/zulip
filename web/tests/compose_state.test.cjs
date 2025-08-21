@@ -47,7 +47,7 @@ run_test("has_full_recipient", ({override}) => {
     compose_state.topic("foo");
     assert.equal(compose_state.has_full_recipient(), false);
 
-    stream_data.add_sub({name: "bar", stream_id: 99});
+    stream_data.add_sub_for_tests({name: "bar", stream_id: 99});
     compose_state.set_stream_id(99);
     assert.equal(compose_state.has_full_recipient(), true);
 

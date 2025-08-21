@@ -65,7 +65,7 @@ people.add_active_user(isaac);
 run_test("message_store", () => {
     message_store.clear_for_testing();
     stream_data.clear_subscriptions();
-    stream_data.add_sub(denmark_stream);
+    stream_data.add_sub_for_tests(denmark_stream);
 
     const in_message = {...messages.isaac_to_denmark_stream};
 
@@ -89,7 +89,7 @@ run_test("message_store", () => {
 run_test("unread", () => {
     unread.declare_bankruptcy();
     stream_data.clear_subscriptions();
-    stream_data.add_sub(denmark_stream);
+    stream_data.add_sub_for_tests(denmark_stream);
 
     const stream_id = denmark_stream.stream_id;
     const topic_name = "copenhagen";

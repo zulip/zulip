@@ -30,7 +30,7 @@ in `web/tests`. Here is an example test from
         color: 'red',
         stream_id: id
     };
-    stream_data.add_sub('Denmark', sub);
+    stream_data.add_sub_for_tests('Denmark', sub);
     sub = stream_data.get_sub('Denmark');
     assert.equal(sub.color, 'red');
     sub = sub_store.get(id);

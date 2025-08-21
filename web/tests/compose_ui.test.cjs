@@ -210,7 +210,7 @@ run_test("compute_placeholder_text", ({override}) => {
         name: "all",
         stream_id: 2,
     };
-    stream_data.add_sub(stream_all);
+    stream_data.add_sub_for_tests(stream_all);
     opts.stream_id = stream_all.stream_id;
     assert.equal(compose_ui.compute_placeholder_text(opts), $t({defaultMessage: "Message #all"}));
 
@@ -1298,7 +1298,7 @@ run_test("get_focus_area", ({override}) => {
         "#compose_select_recipient_widget_wrapper",
     );
 
-    stream_data.add_sub({
+    stream_data.add_sub_for_tests({
         message_type: "stream",
         name: "fun",
         stream_id: 4,

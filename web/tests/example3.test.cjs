@@ -28,7 +28,7 @@ const denmark_stream = make_stream({
 
 run_test("filter", () => {
     stream_data.clear_subscriptions();
-    stream_data.add_sub(denmark_stream);
+    stream_data.add_sub_for_tests(denmark_stream);
 
     const filter_terms = [
         {operator: "stream", operand: denmark_stream.stream_id.toString()},
@@ -72,7 +72,7 @@ const message_lists = zrequire("message_lists");
 
 run_test("narrow_state", () => {
     stream_data.clear_subscriptions();
-    stream_data.add_sub(denmark_stream);
+    stream_data.add_sub_for_tests(denmark_stream);
     message_lists.set_current(undefined);
 
     // As we often do, first make assertions about the starting

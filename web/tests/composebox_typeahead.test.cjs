@@ -617,12 +617,12 @@ const broken_link_stream = stream_item({
     can_add_subscribers_group: support.id,
 });
 
-stream_data.add_sub(sweden_stream);
-stream_data.add_sub(denmark_stream);
-stream_data.add_sub(netherland_stream);
-stream_data.add_sub(mobile_stream);
-stream_data.add_sub(mobile_team_stream);
-stream_data.add_sub(broken_link_stream);
+stream_data.add_sub_for_tests(sweden_stream);
+stream_data.add_sub_for_tests(denmark_stream);
+stream_data.add_sub_for_tests(netherland_stream);
+stream_data.add_sub_for_tests(mobile_stream);
+stream_data.add_sub_for_tests(mobile_team_stream);
+stream_data.add_sub_for_tests(broken_link_stream);
 
 const make_emoji = (emoji_dict) => ({
     emoji_name: emoji_dict.name,

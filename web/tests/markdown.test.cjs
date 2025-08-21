@@ -206,13 +206,13 @@ const amp_stream = {
     stream_id: 5,
     is_muted: false,
 };
-stream_data.add_sub(denmark);
-stream_data.add_sub(social);
-stream_data.add_sub(edgecase_stream);
-stream_data.add_sub(edgecase_stream_2);
+stream_data.add_sub_for_tests(denmark);
+stream_data.add_sub_for_tests(social);
+stream_data.add_sub_for_tests(edgecase_stream);
+stream_data.add_sub_for_tests(edgecase_stream_2);
 // Note: edgecase_stream cannot be mentioned because it is caught by
 // streamTopicHandler and it would be parsed as edgecase_stream_2.
-stream_data.add_sub(amp_stream);
+stream_data.add_sub_for_tests(amp_stream);
 
 markdown.initialize(markdown_config.get_helpers());
 linkifiers.initialize(example_realm_linkifiers);

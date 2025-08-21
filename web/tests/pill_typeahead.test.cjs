@@ -147,7 +147,7 @@ const sweden_item = stream_item(sweden);
 
 const subs = [denmark, sweden];
 for (const sub of subs) {
-    stream_data.add_sub(sub);
+    stream_data.add_sub_for_tests(sub);
 }
 peer_data.set_subscribers(denmark.stream_id, [me.user_id, mark.user_id]);
 peer_data.set_subscribers(sweden.stream_id, [mark.user_id, jill.user_id]);

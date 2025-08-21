@@ -39,10 +39,10 @@ const unknown = {
     name: "whatever",
 };
 
-stream_data.add_sub(design);
-stream_data.add_sub(devel);
-stream_data.add_sub(office);
-stream_data.add_sub(social);
+stream_data.add_sub_for_tests(design);
+stream_data.add_sub_for_tests(devel);
+stream_data.add_sub_for_tests(office);
+stream_data.add_sub_for_tests(social);
 
 function test(label, f) {
     run_test(label, ({override}) => {

@@ -106,7 +106,7 @@ test("basic_get_suggestions_for_spectator", () => {
     page_params.is_spectator = true;
     const web_public_id = new_stream_id();
     const sub = {name: "Web public", stream_id: web_public_id, is_web_public: true};
-    stream_data.add_sub(sub);
+    stream_data.add_sub_for_tests(sub);
 
     let query = "";
     let suggestions = get_suggestions(query);
@@ -365,13 +365,13 @@ test("empty_query_suggestions", () => {
 
     const devel_id = new_stream_id();
     const office_id = new_stream_id();
-    stream_data.add_sub({
+    stream_data.add_sub_for_tests({
         stream_id: devel_id,
         name: "devel",
         subscribed: true,
         is_web_public: true,
     });
-    stream_data.add_sub({stream_id: office_id, name: "office", subscribed: true});
+    stream_data.add_sub_for_tests({stream_id: office_id, name: "office", subscribed: true});
 
     const suggestions = get_suggestions(query);
 
@@ -420,8 +420,8 @@ test("has_suggestions", ({override, mock_template}) => {
     // Checks that category wise suggestions are displayed instead of a single
     // default suggestion when suggesting `has` operator.
     let query = "h";
-    stream_data.add_sub({stream_id: 44, name: "devel", subscribed: true});
-    stream_data.add_sub({stream_id: 77, name: "office", subscribed: true});
+    stream_data.add_sub_for_tests({stream_id: 44, name: "devel", subscribed: true});
+    stream_data.add_sub_for_tests({stream_id: 77, name: "office", subscribed: true});
     override(narrow_state, "stream_id", noop);
 
     let suggestions = get_suggestions(query);
@@ -628,7 +628,7 @@ test("sent_by_me_suggestions", ({override, mock_template}) => {
 
     const denmark_id = new_stream_id();
     const sub = {name: "Denmark", stream_id: denmark_id};
-    stream_data.add_sub(sub);
+    stream_data.add_sub_for_tests(sub);
     query = `channel:${denmark_id} topic:Denmark1 sent`;
     suggestions = get_suggestions(query);
     expected = [
@@ -650,12 +650,12 @@ test("topic_suggestions", ({override, mock_template}) => {
 
     override(stream_topic_history_util, "get_server_history", noop);
     const office_id = new_stream_id();
-    stream_data.add_sub({stream_id: office_id, name: "office", subscribed: true});
+    stream_data.add_sub_for_tests({stream_id: office_id, name: "office", subscribed: true});
     override(narrow_state, "stream_id", () => office_id);
 
     const devel_id = new_stream_id();
-    stream_data.add_sub({stream_id: devel_id, name: "devel", subscribed: true});
-    stream_data.add_sub({stream_id: office_id, name: "office", subscribed: true});
+    stream_data.add_sub_for_tests({stream_id: devel_id, name: "devel", subscribed: true});
+    stream_data.add_sub_for_tests({stream_id: office_id, name: "office", subscribed: true});
 
     suggestions = get_suggestions("te");
     expected = ["te", "dm:ted@zulip.com", "sender:ted@zulip.com", "dm-including:ted@zulip.com"];
@@ -776,7 +776,7 @@ test("whitespace_glitch", ({override, mock_template}) => {
     const query = "channel:office "; // note trailing space
 
     override(stream_topic_history_util, "get_server_history", noop);
-    stream_data.add_sub({stream_id: office_stream_id, name: "office", subscribed: true});
+    stream_data.add_sub_for_tests({stream_id: office_stream_id, name: "office", subscribed: true});
 
     const suggestions = get_suggestions(query);
 
@@ -787,7 +787,7 @@ test("whitespace_glitch", ({override, mock_template}) => {
 
 test("xss_channel_name", () => {
     const stream_id = new_stream_id();
-    stream_data.add_sub({stream_id, name: "<em> Italics </em>", subscribed: true});
+    stream_data.add_sub_for_tests({stream_id, name: "<em> Italics </em>", subscribed: true});
 
     const query = "channel:ita";
     const suggestions = get_suggestions(query);
@@ -799,9 +799,13 @@ test("xss_channel_name", () => {
 
 test("channel_completion", ({override}) => {
     const office_stream_id = new_stream_id();
-    stream_data.add_sub({stream_id: office_stream_id, name: "office", subscribed: true});
+    stream_data.add_sub_for_tests({stream_id: office_stream_id, name: "office", subscribed: true});
     const dev_help_stream_id = new_stream_id();
-    stream_data.add_sub({stream_id: dev_help_stream_id, name: "dev help", subscribed: true});
+    stream_data.add_sub_for_tests({
+        stream_id: dev_help_stream_id,
+        name: "dev help",
+        subscribed: true,
+    });
 
     override(narrow_state, "stream_id", noop);
 
@@ -982,9 +986,9 @@ test("operator_suggestions", ({override, mock_template}) => {
 
 test("queries_with_spaces", () => {
     const office_id = new_stream_id();
-    stream_data.add_sub({stream_id: office_id, name: "office", subscribed: true});
+    stream_data.add_sub_for_tests({stream_id: office_id, name: "office", subscribed: true});
     const dev_help_id = new_stream_id();
-    stream_data.add_sub({stream_id: dev_help_id, name: "dev help", subscribed: true});
+    stream_data.add_sub_for_tests({stream_id: dev_help_id, name: "dev help", subscribed: true});
 
     // test allowing spaces with quotes surrounding operand
     let query = 'channel:"dev he"';

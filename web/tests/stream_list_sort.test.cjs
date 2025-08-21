@@ -129,15 +129,15 @@ channel_folders.initialize({
 });
 
 function add_all_subs() {
-    stream_data.add_sub(scalene);
-    stream_data.add_sub(fast_tortoise);
-    stream_data.add_sub(pneumonia);
-    stream_data.add_sub(clarinet);
-    stream_data.add_sub(weaving);
-    stream_data.add_sub(stream_hyphen_underscore_slash_colon);
-    stream_data.add_sub(muted_active);
-    stream_data.add_sub(muted_pinned);
-    stream_data.add_sub(archived);
+    stream_data.add_sub_for_tests(scalene);
+    stream_data.add_sub_for_tests(fast_tortoise);
+    stream_data.add_sub_for_tests(pneumonia);
+    stream_data.add_sub_for_tests(clarinet);
+    stream_data.add_sub_for_tests(weaving);
+    stream_data.add_sub_for_tests(stream_hyphen_underscore_slash_colon);
+    stream_data.add_sub_for_tests(muted_active);
+    stream_data.add_sub_for_tests(muted_pinned);
+    stream_data.add_sub_for_tests(archived);
 }
 
 function sort_groups(query) {
@@ -426,7 +426,7 @@ test("filter inactives", ({override}) => {
             newly_subscribed: false,
             stream_id,
         };
-        stream_data.add_sub(sub);
+        stream_data.add_sub_for_tests(sub);
     });
     stream_list_sort.set_filter_out_inactives();
 
