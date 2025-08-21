@@ -7,7 +7,12 @@ requires-python = ">=3.10"
 prod = [
   # Django itself
   "django[argon2]==5.2.*",
-  "asgiref",
+
+  # ≥3.8.0 cause https://github.com/django/asgiref/issues/492
+  # >3.8.1 cause https://github.com/django/asgiref/issues/491
+  # These issues are extremely hard to debug:
+  # https://chat.zulip.org/#narrow/channel/31-production-help/topic/slowness.20on.20receiving.20messages.20.26.20glitches.20on.20send.20path
+  "asgiref==3.9.*",
 
   # needed for NotRequired, ParamSpec
   "typing-extensions",
