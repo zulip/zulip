@@ -42,8 +42,8 @@
                     <span class="setting-disabled-option-text dropdown-list-text-neutral">{{t "Disable" }}</span>
                 {{/if}}
             {{else if (eq unique_id -2)}}
-                {{!-- This is the option for PresetUrlOption.MAPPING --}}
-                <i class="zulip-icon zulip-icon-equal channel-privacy-type-icon" aria-hidden="true"></i> <span class="dropdown-list-text-neutral">{{name}}</span>
+                {{!-- This is the option for PresetUrlOption.CHANNEL_MAPPING --}}
+                <i class="zulip-icon zulip-icon-hashtag channel-privacy-type-icon" aria-hidden="true"></i> <span class="dropdown-list-text-neutral">{{name}}</span>
             {{else}}
                 <span class="dropdown-list-item-name">
                     {{#if bold_current_selection}}

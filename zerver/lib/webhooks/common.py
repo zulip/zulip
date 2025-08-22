@@ -57,7 +57,7 @@ OptionalUserSpecifiedTopicStr: TypeAlias = Annotated[str | None, ApiParamConfig(
 class PresetUrlOption(str, Enum):
     BRANCHES = "branches"
     IGNORE_PRIVATE_REPOSITORIES = "ignore_private_repositories"
-    MAPPING = "mapping"
+    CHANNEL_MAPPING = "mapping"
 
 
 @dataclass
@@ -95,7 +95,7 @@ class WebhookUrlOption:
                     label="Exclude notifications from private repositories",
                     validator=check_bool,
                 )
-            case PresetUrlOption.MAPPING:  # nocoverage # Not used yet
+            case PresetUrlOption.CHANNEL_MAPPING:  # nocoverage # Not used yet
                 return cls(
                     name=config.value,
                     label="",
