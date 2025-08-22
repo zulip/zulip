@@ -201,7 +201,11 @@ This is most often used for legal compliance.
             limits &= Q(recipient__in=[s.recipient_id for s in channels])
 
         attachments_written: set[str] = set()
-        messages_query = Message.objects.filter(limits, realm=realm).order_by("date_sent")
+        messages_query = (
+            Message.objects.filter(limits, realm=realm)
+            .select_related("sender")
+            .order_by("date_sent")
+        )
         print(f"Exporting {len(messages_query)} messages...")
 
         @lru_cache(maxsize=1000)
