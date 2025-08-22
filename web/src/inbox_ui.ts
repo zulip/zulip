@@ -36,6 +36,7 @@ import * as pm_list from "./pm_list.ts";
 import * as stream_color from "./stream_color.ts";
 import * as stream_data from "./stream_data.ts";
 import * as stream_list from "./stream_list.ts";
+import * as stream_settings_api from "./stream_settings_api.ts";
 import * as stream_topic_history from "./stream_topic_history.ts";
 import * as stream_topic_history_util from "./stream_topic_history_util.ts";
 import * as sub_store from "./sub_store.ts";
@@ -2354,6 +2355,40 @@ export function initialize({hide_other_views}: {hide_other_views: () => void}): 
     $("body").on("click", "#inbox-search", () => {
         current_focus_id = INBOX_SEARCH_ID;
         compose_closed_ui.set_standard_text_for_reply_button();
+    });
+
+    $("body").on(
+        "click",
+        "#inbox-list .toggle-channel-visibility",
+        function (this: HTMLElement, e) {
+            e.stopPropagation();
+            const $elt = $(this);
+            focus_clicked_list_element($elt);
+            const stream_id = Number($elt.attr("data-stream-id"));
+            if (stream_id) {
+                const sub = sub_store.get(stream_id);
+                if (sub) {
+                    stream_settings_api.set_stream_property(sub, {
+                        property: "is_muted",
+                        value: false,
+                    });
+                }
+            }
+        },
+    );
+
+    $("body").on("keydown", "#inbox-list .toggle-channel-visibility", (e) => {
+        if (e.metaKey || e.ctrlKey) {
+            return;
+        }
+
+        if (keydown_util.is_enter_event(e)) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            const $elt = $(e.currentTarget);
+            $elt.trigger("click");
+        }
     });
 
     $(document).on("compose_canceled.zulip", () => {
