@@ -1,0 +1,471 @@
+import base64
+import copy
+import json
+import os
+import re
+import secrets
+import time
+from abc import ABC, abstractmethod
+from collections.abc import Callable, Iterable, Iterator, Mapping, Sequence
+from contextlib import contextmanager
+from datetime import timedelta
+from email.headerregistry import Address
+from typing import TYPE_CHECKING, Any
+from unittest import mock
+from urllib.parse import parse_qs, urlencode, urlsplit
+
+import jwt
+import ldap
+import orjson
+import requests
+import responses
+import time_machine
+from bs4 import BeautifulSoup
+from bs4.element import Tag
+from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+from django.conf import settings
+from django.contrib.auth import authenticate
+from django.core import mail
+from django.http import HttpRequest
+from django.test import override_settings
+from django.urls import reverse
+from django.utils.timezone import now as timezone_now
+from django_auth_ldap.backend import LDAPSearch, _LDAPUser
+from jwt.exceptions import PyJWTError
+from onelogin.saml2.auth import OneLogin_Saml2_Auth
+from onelogin.saml2.logout_request import OneLogin_Saml2_Logout_Request
+from onelogin.saml2.logout_response import OneLogin_Saml2_Logout_Response
+from onelogin.saml2.response import OneLogin_Saml2_Response
+from onelogin.saml2.utils import OneLogin_Saml2_Utils
+from social_core.exceptions import AuthFailed, AuthStateForbidden
+from social_django.storage import BaseDjangoStorage
+from social_django.strategy import DjangoStrategy
+from typing_extensions import override
+
+from confirmation.models import Confirmation, create_confirmation_link
+from zerver.actions.create_realm import do_create_realm
+from zerver.actions.create_user import do_create_user, do_reactivate_user
+from zerver.actions.invites import do_invite_users
+from zerver.actions.realm_settings import (
+    do_deactivate_realm,
+    do_reactivate_realm,
+    do_set_realm_authentication_methods,
+    do_set_realm_property,
+)
+from zerver.actions.user_groups import (
+    bulk_add_members_to_user_groups,
+    create_user_group_in_database,
+)
+from zerver.actions.user_settings import do_change_password, do_change_user_setting
+from zerver.actions.users import change_user_is_active, do_deactivate_user
+from zerver.lib.avatar import avatar_url
+from zerver.lib.avatar_hash import user_avatar_path
+from zerver.lib.dev_ldap_directory import generate_dev_ldap_dir
+from zerver.lib.email_validation import (
+    get_existing_user_errors,
+    get_realm_email_validator,
+    validate_email_is_valid,
+)
+from zerver.lib.exceptions import JsonableError, RateLimitedError
+from zerver.lib.initial_password import initial_password
+from zerver.lib.mobile_auth_otp import otp_decrypt_api_key
+from zerver.lib.storage import static_path
+from zerver.lib.streams import ensure_stream
+from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.test_helpers import (
+    HostRequestMock,
+    create_s3_buckets,
+    load_subdomain_token,
+    ratelimit_rule,
+    read_test_image_file,
+    use_s3_backend,
+)
+from zerver.lib.thumbnail import DEFAULT_AVATAR_SIZE, MEDIUM_AVATAR_SIZE, resize_avatar
+from zerver.lib.types import Validator
+from zerver.lib.user_groups import is_user_in_group
+from zerver.lib.users import get_
+        self.raw_user_data = get_users_for_api(
+            self.user_profile.realm,
+            self.user_profile,
+            target_user=self.user_profile,
+            client_gravatar=False,
+            user_avatar_url_field_optional=False,
+            include_custom_profile_fields=False,
+        )[self.user_profile.id]
+
+    def test_success(self) -> None:
+        payload = {"email": self.email}
+        with self.settings(JWT_AUTH_KEYS={"zulip": {"key": "key1", "algorithms": ["HS256"]}}):
+            key = settings.JWT_AUTH_KEYS["zulip"]["key"]
+            [algorithm] = settings.JWT_AUTH_KEYS["zulip"]["algorithms"]
+            web_token = jwt.encode(payload, key, algorithm)
+            req_data = {"token": web_token}
+            result = self.client_post("/api/v1/jwt/fetch_api_key", req_data)
+            self.assert_json_success(result)
+            data = result.json()
+            self.assertEqual(data["api_key"], self.api_key)
+            self.assertEqual(data["email"], self.email)
+            self.assertNotIn("user", data)
+
+    def test_success_with_profile_false(self) -> None:
+        payload = {"email": self.email}
+        with self.settings(JWT_AUTH_KEYS={"zulip": {"key": "key1", "algorithms": ["HS256"]}}):
+            key = settings.JWT_AUTH_KEYS["zulip"]["key"]
+            [algorithm] = settings.JWT_AUTH_KEYS["zulip"]["algorithms"]
+            web_token = jwt.encode(payload, key, algorithm)
+            req_data = {"token": web_token, "include_profile": "false"}
+            result = self.client_post("/api/v1/jwt/fetch_api_key", req_data)
+            self.assert_json_success(result)
+            data = result.json()
+            self.assertEqual(data["api_key"], self.api_key)
+            self.assertEqual(data["email"], self.email)
+            self.assertNotIn("user", data)
+
+    def test_success_with_profile_true(self) -> None:
+        payload = {"email": self.email}
+        with self.settings(JWT_AUTH_KEYS={"zulip": {"key": "key1", "algorithms": ["HS256"]}}):
+            key = settings.JWT_AUTH_KEYS["zulip"]["key"]
+            [algorithm] = settings.JWT_AUTH_KEYS["zulip"]["algorithms"]
+            web_token = jwt.encode(payload, key, algorithm)
+            req_data = {"token": web_token, "include_profile": "true"}
+            result = self.client_post("/api/v1/jwt/fetch_api_key", req_data)
+            self.assert_json_success(result)
+            data = result.json()
+            self.assertEqual(data["api_key"], self.api_key)
+            self.assertEqual(data["email"], self.email)
+            self.assertIn("user", data)
+            self.assertEqual(data["user"], self.raw_user_data)
+
+    def test_invalid_subdomain_from_request_failure(self) -> None:
+        with mock.patch("zerver.views.auth.get_realm_from_request", return_value=None):
+            result = self.client_post("/api/v1/jwt/fetch_api_key")
+            self.assert_json_error_contains(result, "Invalid subdomain", 404)
+
+    def test_jwt_key_not_found_failure(self) -> None:
+        with (
+            self.settings(JWT_AUTH_KEYS={"zulip": {"key": "key1", "algorithms": ["HS256"]}}),
+            mock.patch(
+                "zerver.views.auth.get_realm_from_request", return_value=get_realm("zephyr")
+            ),
+        ):
+            result = self.client_post("/api/v1/jwt/fetch_api_key")
+            self.assert_json_error_contains(
+                result, "JWT authentication is not enabled for this organization", 400
+            )
+
+    def test_missing_jwt_payload_failure(self) -> None:
+        with self.settings(JWT_AUTH_KEYS={"zulip": {"key": "key1", "algorithms": ["HS256"]}}):
+            result = self.client_post("/api/v1/jwt/fetch_api_key")
+            self.assert_json_error_contains(result, "No JSON web token passed in request", 400)
+
+    def test_invalid_jwt_signature_failure(self) -> None:
+        payload = {"email": self.email}
+        with self.settings(JWT_AUTH_KEYS={"zulip": {"key": "key1", "algorithms": ["HS256"]}}):
+            [algorithm] = settings.JWT_AUTH_KEYS["zulip"]["algorithms"]
+            web_token = jwt.encode(payload, "wrong_key", algorithm)
+            req_data = {"token": web_token}
+            result = self.client_post("/api/v1/jwt/fetch_api_key", req_data)
+            self.assert_json_error_contains(result, "Bad JSON web token", 400)
+
+    def test_invalid_jwt_format_failure(self) -> None:
+        with self.settings(JWT_AUTH_KEYS={"zulip": {"key": "key1", "algorithms": ["HS256"]}}):
+            req_data = {"token": "bad_jwt_token"}
+            result = self.client_post("/api/v1/jwt/fetch_api_key", req_data)
+            self.assert_json_error_contains(result, "Bad JSON web token", 400)
+
+    def test_missing_email_in_jwt_failure(self) -> None:
+        payload = {"bar": "baz"}
+        with self.settings(JWT_AUTH_KEYS={"zulip": {"key": "key1", "algorithms": ["HS256"]}}):
+            key = settings.JWT_AUTH_KEYS["zulip"]["key"]
+            [algorithm] = settings.JWT_AUTH_KEYS["zulip"]["algorithms"]
+            web_token = jwt.encode(payload, key, algorithm)
+            req_data = {"token": web_token}
+            result = self.client_post("/api/v1/jwt/fetch_api_key", req_data)
+            self.assert_json_error_contains(
+                result, "No email specified in JSON web token claims", 400
+            )
+
+    def test_empty_email_in_jwt_failure(self) -> None:
+        payload = {"email": ""}
+        with self.settings(JWT_AUTH_KEYS={"zulip": {"key": "key1", "algorithms": ["HS256"]}}):
+            key = settings.JWT_AUTH_KEYS["zulip"]["key"]
+            [algorithm] = settings.JWT_AUTH_KEYS["zulip"]["algorithms"]
+            web_token = jwt.encode(payload, key, algorithm)
+            req_data = {"token": web_token}
+            result = self.client_post("/api/v1/jwt/fetch_api_key", req_data)
+            self.assert_json_error_contains(result, "Your username or password is incorrect", 401)
+
+    def test_user_not_found_failure(self) -> None:
+        payload = {"email": self.nonreg_email("alice")}
+        with self.settings(JWT_AUTH_KEYS={"zulip": {"key": "key1", "algorithms": ["HS256"]}}):
+            key = settings.JWT_AUTH_KEYS["zulip"]["key"]
+            [algorithm] = settings.JWT_AUTH_KEYS["zulip"]["algorithms"]
+            web_token = jwt.encode(payload, key, algorithm)
+            req_data = {"token": web_token}
+            result = self.client_post("/api/v1/jwt/fetch_api_key", req_data)
+            self.assert_json_error_contains(result, "Your username or password is incorrect", 401)
+
+    def test_inactive_user_failure(self) -> None:
+        payload = {"email": self.email}
+        do_deactivate_user(self.user_profile, acting_user=None)
+        with self.settings(JWT_AUTH_KEYS={"zulip": {"key": "key1", "algorithms": ["HS256"]}}):
+            key = settings.JWT_AUTH_KEYS["zulip"]["key"]
+            [algorithm] = settings.JWT_AUTH_KEYS["zulip"]["algorithms"]
+            web_token = jwt.encode(payload, key, algorithm)
+            req_data = {"token": web_token}
+            result = self.client_post("/api/v1/jwt/fetch_api_key", req_data)
+            self.assert_json_error_contains(result, "Account is deactivated", 401)
+
+    def test_inactive_realm_failure(self) -> None:
+        payload = {"email": self.email}
+        do_deactivate_realm(
+            self.user_profile.realm,
+            acting_user=None,
+            deactivation_reason="owner_request",
+            email_owners=False,
+        )
+        with self.settings(JWT_AUTH_KEYS={"zulip": {"key": "key1", "algorithms": ["HS256"]}}):
+            key = settings.JWT_AUTH_KEYS["zulip"]["key"]
+            [algorithm] = settings.JWT_AUTH_KEYS["zulip"]["algorithms"]
+            web_token = jwt.encode(payload, key, algorithm)
+            req_data = {"token": web_token}
+            result = self.client_post("/api/v1/jwt/fetch_api_key", req_data)
+            self.assert_json_error_contains(result, "This organization has been deactivated", 401)
+
+    def test_invalid_realm_for_user_failure(self) -> None:
+        payload = {"email": self.mit_email("starnine")}
+        with self.settings(JWT_AUTH_KEYS={"zulip": {"key": "key1", "algorithms": ["HS256"]}}):
+            key = settings.JWT_AUTH_KEYS["zulip"]["key"]
+            [algorithm] = settings.JWT_AUTH_KEYS["zulip"]["algorithms"]
+            web_token = jwt.encode(payload, key, algorithm)
+            req_data = {"token": web_token}
+            result = self.client_post("/api/v1/jwt/fetch_api_key", req_data)
+            self.assert_json_error_contains(result, "Your username or password is incorrect", 401)
+
+
+class LDAPGroupSyncTest(ZulipTestCase):
+    @override_settings(AUTHENTICATION_BACKENDS=("zproject.backends.ZulipLDAPAuthBackend",))
+    def test_ldap_group_sync(self) -> None:
+        self.init_default_ldap_database()
+
+        hamlet = self.example_user("hamlet")
+        with self.settings(LDAP_APPEND_DOMAIN="zulip.com"):
+            result = sync_user_from_ldap(hamlet, mock.Mock())
+            self.assertTrue(result)
+        self.assertTrue(hamlet.is_active)
+
+        realm = get_realm("zulip")
+
+        with (
+            self.settings(
+                AUTH_LDAP_GROUP_SEARCH=LDAPSearch(
+                    "ou=groups,dc=zulip,dc=com",
+                    ldap.SCOPE_ONELEVEL,
+                    "(objectClass=groupOfUniqueNames)",
+                ),
+                LDAP_SYNCHRONIZED_GROUPS_BY_REALM={
+                    "zulip": [
+                        "cool_test_group",
+                    ]
+                },
+                LDAP_APPEND_DOMAIN="zulip.com",
+            ),
+            self.assertLogs("zulip.ldap", "DEBUG") as zulip_ldap_log,
+        ):
+            self.assertFalse(
+                NamedUserGroup.objects.filter(realm=realm, name="cool_test_group").exists()
+            )
+
+            create_user_group_in_database(
+                "cool_test_group", [], realm, acting_user=hamlet, description="Created by LDAP sync"
+            )
+
+            self.assertTrue(
+                NamedUserGroup.objects.filter(realm=realm, name="cool_test_group").exists()
+            )
+
+            user_group = NamedUserGroup.objects.get(realm=realm, name="cool_test_group")
+
+            self.assertFalse(
+                is_user_in_group(
+                    user_group,
+                    hamlet,
+                    direct_member_only=True,
+                )
+            )
+
+            sync_user_from_ldap(hamlet, mock.Mock())
+            self.assertTrue(
+                is_user_in_group(
+                    user_group,
+                    hamlet,
+                    direct_member_only=True,
+                )
+            )
+
+            # Add a user to a Zulip group that they are not member of in ldap.
+            # This implies that they should be deleted from the Zulip group
+            # upon the next sync.
+            cordelia = self.example_user("cordelia")
+            bulk_add_members_to_user_groups(
+                [user_group],
+                [cordelia.id],
+                acting_user=None,
+            )
+
+            self.assertTrue(
+                is_user_in_group(
+                    NamedUserGroup.objects.get(realm=realm, name="cool_test_group"),
+                    cordelia,
+                    direct_member_only=True,
+                )
+            )
+
+            # This should remove cordelia from cool_test_group
+            sync_user_from_ldap(cordelia, mock.Mock())
+
+            self.assertFalse(
+                is_user_in_group(
+                    NamedUserGroup.objects.get(realm=realm, name="cool_test_group"),
+                    cordelia,
+                    direct_member_only=True,
+                )
+            )
+
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+
+        self.assertEqual(
+            zulip_ldap_log.output,
+            [
+                f"DEBUG:zulip.ldap:Syncing groups for user: {hamlet.id}",
+                "DEBUG:zulip.ldap:intended groups: {'cool_test_group'}; zulip groups: set()",
+                f"DEBUG:zulip.ldap:add {hamlet.id} to ['cool_test_group']",
+                f"DEBUG:zulip.ldap:Syncing groups for user: {cordelia.id}",
+                "DEBUG:zulip.ldap:intended groups: set(); zulip groups: {'cool_test_group'}",
+                f"DEBUG:zulip.ldap:removing groups {{'cool_test_group'}} from {cordelia.id}",
+            ],
+        )
+
+        # Test an exception using a malformed ldap group search setting.
+        with (
+            self.settings(
+                AUTH_LDAP_GROUP_SEARCH=LDAPSearch(
+                    "ou=groups,dc=zulip,dc=com",
+                    ldap.SCOPE_ONELEVEL,
+                    "(objectClass=groupOfUniqueNames",  # this is malformed, missing ")"
+                ),
+                LDAP_SYNCHRONIZED_GROUPS_BY_REALM={
+                    "zulip": [
+                        "cool_test_group",
+                    ]
+                },
+                LDAP_APPEND_DOMAIN="zulip.com",
+            ),
+            self.assertLogs("django_auth_ldap", "DEBUG") as django_ldap_log,
+            self.assertLogs("zulip.ldap", "DEBUG") as zulip_ldap_log,
+            self.assertRaises(
+                PopulateUserLDAPError, msg="populate_user unexpectedly returned None"
+            ),
+        ):
+            sync_user_from_ldap(cordelia, mock.Mock())
+
+        self.assertEqual(
+            zulip_ldap_log.output,
+            [f"DEBUG:zulip.ldap:Syncing groups for user: {cordelia.id}"],
+        )
+        self.assertIn(
+            'DEBUG:django_auth_ldap:Failed to populate user cordelia: search_s("ou=groups,dc=zulip,dc=com", 1, "(&(objectClass=groupOfUniqueNames(uniqueMember=uid=cordelia,ou=users,dc=zulip,dc=com))", "None", 0)',
+            django_ldap_log.output,
+        )
+
+
+# Don't load the base class as a test: https://bugs.python.org/issue17519.
+del SocialAuthBase
+
+
+class TestCustomAuthDecorator(ZulipTestCase):
+    def test_custom_auth_decorator(self) -> None:
+        call_count = 0
+        backends_with_restriction = []
+
+        def custom_auth_wrapper(
+            auth_func: AuthFuncT, *args: Any, **kwargs: Any
+        ) -> UserProfile | None:
+            nonlocal call_count, backends_with_restriction
+            call_count += 1
+
+            backend = args[0]
+            backend_name = backend.name
+            request = args[1]
+            test_header_value = request.headers.get("X-Test-Auth-Header")
+
+            user_profile = auth_func(*args, **kwargs)
+            if backend_name in backends_with_restriction and test_header_value != "allowed":
+                raise JsonableError("Forbidden header value")
+
+            return user_profile
+
+        with self.settings(CUSTOM_AUTHENTICATION_WRAPPER_FUNCTION=custom_auth_wrapper):
+            self.login("hamlet")
+            self.assertEqual(call_count, 1)
+
+            backends_with_restriction = ["email", "dummy"]
+
+            realm = get_realm("zulip")
+            hamlet = self.example_user("hamlet")
+            password = "testpassword"
+
+            request = mock.MagicMock()
+            request.headers = {"X-Test-Auth-Header": "allowed"}
+
+            # The wrapper structurally gets executed whenever .authenticate() for a backend
+            # is called, so it doesn't matter whether e.g. auth credentials are correct or not.
+            result = EmailAuthBackend().authenticate(
+                request, username=hamlet.delivery_email, password="wrong", realm=realm
+            )
+            self.assertEqual(result, None)
+            self.assertEqual(call_count, 2)
+
+            hamlet.set_password(password)
+            hamlet.save()
+            result = EmailAuthBackend().authenticate(
+                request, username=hamlet.delivery_email, password=password, realm=realm
+            )
+            self.assertEqual(result, hamlet)
+            self.assertEqual(call_count, 3)
+
+            # But without the appropriate header value, this fails.
+            request.headers = {}
+            with self.assertRaisesRegex(JsonableError, "Forbidden header value"):
+                EmailAuthBackend().authenticate(
+                    request, username=hamlet.delivery_email, password=password, realm=realm
+                )
+
+            self.assertEqual(call_count, 4)
+
+        # Now try the registration codepath.
+        alice_email = self.nonreg_email("alice")
+        password = "password"
+        inviter = self.example_user("iago")
+        prereg_user = PreregistrationUser.objects.create(
+            email=alice_email, referred_by=inviter, realm=realm
+        )
+
+        confirmation_link = create_confirmation_link(prereg_user, Confirmation.USER_REGISTRATION)
+        registration_key = confirmation_link.split("/")[-1]
+
+        url = "/accounts/register/"
+        with self.settings(CUSTOM_AUTHENTICATION_WRAPPER_FUNCTION=custom_auth_wrapper):
+            self.client_post(
+                url, {"key": registration_key, "from_confirmation": 1, "full_name": "alice"}
+            )
+            result = self.submit_reg_form_for_user(alice_email, password, key=registration_key)
+
+            # The account gets created, because it's the authentication layer that's wrapped
+            # with custom logic, so it doesn't affect the registration process itself - just
+            # the signing in of the user at the end. Ultimately, the user cannot acquire an
+            # authenticated session, so the objective of the functionality is accomplished.
+            self.assert_json_error(result, "Forbidden header value")
+            self.assertEqual(UserProfile.objects.latest("id").delivery_email, alice_email)
+            self.assertEqual(call_count, 5)
