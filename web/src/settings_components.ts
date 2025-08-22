@@ -9,6 +9,7 @@ import render_compose_banner from "../templates/compose_banner/compose_banner.hb
 import * as blueslip from "./blueslip.ts";
 import * as buttons from "./buttons.ts";
 import * as compose_banner from "./compose_banner.ts";
+import * as dropdown_widget from "./dropdown_widget.ts";
 import type {DropdownWidget, Option} from "./dropdown_widget.ts";
 import * as group_permission_settings from "./group_permission_settings.ts";
 import type {
@@ -525,6 +526,7 @@ const dropdown_widget_map = new Map<string, DropdownWidget | null>([
     ["folder_id", null],
     ["channel_privacy", null],
     ["external_accounts_type", null],
+    ["default_code_block_language", null],
 ]);
 
 export function get_widget_for_dropdown_list_settings(
@@ -964,6 +966,9 @@ export function check_stream_settings_property_changed(
             break;
         case "folder_id":
             proposed_val = get_channel_folder_value_from_dropdown_widget($(elem));
+            break;
+        case "default_code_block_language":
+            proposed_val = get_input_element_value(elem, "dropdown-list-widget");
             break;
         default:
             if (current_val !== undefined) {
@@ -2122,6 +2127,54 @@ export const combined_code_language_options = (): Option[] => {
 
     return [disabled_option, ...playground_options, ...default_options];
 };
+
+export function set_up_default_code_block_language_widget(
+    sub?: StreamSubscription,
+): DropdownWidget {
+    let widget_name = "default_code_block_language";
+    if (sub === undefined) {
+        widget_name = "new_" + widget_name;
+    }
+    let $events_container = $("#stream_settings .subscription_settings");
+    if (sub === undefined) {
+        $events_container = $("#stream_creation_form");
+    }
+    const default_code_block_language_widget = new dropdown_widget.DropdownWidget({
+        widget_name,
+        get_options: combined_code_language_options,
+        $events_container,
+        default_id: sub?.default_code_block_language ?? realm.realm_default_code_block_language,
+        unique_id_type: "string",
+        tippy_props: {
+            placement: "bottom-start",
+        },
+        item_click_callback(
+            event: JQuery.ClickEvent,
+            dropdown: tippy.Instance,
+            widget: DropdownWidget,
+        ): void {
+            dropdown.hide();
+            event.preventDefault();
+            event.stopPropagation();
+            widget.render();
+            if (sub) {
+                const $subsection = $(widget.widget_selector).closest(
+                    ".settings-subsection-parent",
+                );
+                save_discard_stream_settings_widget_status_handler($subsection, sub);
+            }
+        },
+    });
+
+    if (sub !== undefined) {
+        set_dropdown_setting_widget(
+            "default_code_block_language",
+            default_code_block_language_widget,
+        );
+    }
+    default_code_block_language_widget.setup();
+    return default_code_block_language_widget;
+}
 
 export function resize_textareas_in_section($section: JQuery): void {
     const $subsections = $section.find(".settings-subsection-parent");

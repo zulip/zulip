@@ -236,6 +236,9 @@ export function update_property<P extends keyof UpdatableStreamProperties>(
             channel_folders_ui.update_channel_folder_channels_list(stream_id, value);
             recent_view_ui.complete_rerender();
         },
+        default_code_block_language(value: string) {
+            stream_settings_ui.update_default_code_block_language(sub, value);
+        },
     };
 
     if (Object.hasOwn(updaters, property) && updaters[property] !== undefined) {
