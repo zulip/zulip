@@ -147,6 +147,7 @@ This is most often used for legal compliance.
         realm = self.get_realm(options)
         assert realm is not None
         need_distinct = False
+        usermessage_joined = False
         limits = Q()
 
         limits = reduce(
@@ -173,6 +174,7 @@ This is most often used for legal compliance.
                 usermessage__user_profile_id__in=[user_profile.id for user_profile in user_profiles]
             )
             need_distinct = len(user_profiles) > 1
+            usermessage_joined = True
         elif options["sender"]:
             limits &= reduce(
                 or_,
@@ -187,6 +189,7 @@ This is most often used for legal compliance.
                     usermessage__user_profile_id=user_profiles[0].id,
                     usermessage__flags__andnz=AbstractUserMessage.flags.is_private.mask,
                 )
+                usermessage_joined = True
             elif len(user_profiles) == 2:
                 user_a, user_b = user_profiles
                 direct_message_group = get_direct_message_group(id_list=[user_a.id, user_b.id])
@@ -281,6 +284,10 @@ This is most often used for legal compliance.
             min_id = 0
             while True:
                 batch_query = messages_query.filter(id__gt=min_id)
+                if usermessage_joined:
+                    batch_query = batch_query.extra(
+                        where=["zerver_usermessage.message_id > %s"], params=[min_id]
+                    )
                 batch = [transform_message(m) for m in batch_query[:BATCH_SIZE]]
                 if len(batch) == 0:
                     break
