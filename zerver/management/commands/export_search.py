@@ -2,6 +2,7 @@ import csv
 import os
 import shutil
 from argparse import ArgumentParser
+from collections.abc import Iterator
 from datetime import datetime, timezone
 from email.headerregistry import Address
 from functools import lru_cache, reduce
@@ -20,6 +21,8 @@ from zerver.models import AbstractUserMessage, Attachment, Message, Recipient, S
 from zerver.models.recipients import get_direct_message_group, get_or_create_direct_message_group
 from zerver.models.streams import get_stream
 from zerver.models.users import get_user_by_delivery_email
+
+BATCH_SIZE = 1000
 
 
 def write_attachment(base_path: str, attachment: Attachment) -> None:
@@ -217,11 +220,10 @@ This is most often used for legal compliance.
                 "edit_history",
                 "has_attachment",
             )
-            .order_by("date_sent")
+            .order_by("id")
         )
         if need_distinct:
             messages_query = messages_query.distinct("id")
-        print(f"Exporting {len(messages_query)} messages...")
 
         @lru_cache(maxsize=1000)
         def format_sender(full_name: str, delivery_email: str) -> str:
@@ -275,14 +277,33 @@ This is most often used for legal compliance.
                     row["attachments"] = ""
             return row
 
+        def chunked_results() -> Iterator[list[dict[str, str]]]:
+            min_id = 0
+            while True:
+                batch_query = messages_query.filter(id__gt=min_id)
+                batch = [transform_message(m) for m in batch_query[:BATCH_SIZE]]
+                if len(batch) == 0:
+                    break
+                min_id = int(batch[-1]["id"])
+                yield batch
+
+        print("Exporting messages...")
         if options["output"].endswith(".json"):
             with open(options["output"], "wb") as json_file:
-                json_file.write(
-                    # orjson doesn't support dumping from a generator
-                    orjson.dumps(
-                        [transform_message(m) for m in messages_query], option=orjson.OPT_INDENT_2
-                    )
-                )
+                first_chunk = True
+                for batch in chunked_results():
+                    print(".")
+                    if not first_chunk:
+                        json_file.write(b",\n")
+                    chunk = orjson.dumps(batch, option=orjson.OPT_INDENT_2)
+                    if not first_chunk:
+                        assert chunk.startswith(b"[\n")
+                        chunk = chunk[2:]
+                    assert chunk.endswith(b"\n]")
+                    chunk = chunk[:-2]
+                    json_file.write(chunk)
+                    first_chunk = False
+                json_file.write(b"\n]")
         elif options["output"].endswith(".csv"):
             with open(options["output"], "w") as csv_file:
                 columns = [
@@ -298,4 +319,6 @@ This is most often used for legal compliance.
                     columns += ["attachments"]
                 csvwriter = csv.DictWriter(csv_file, columns)
                 csvwriter.writeheader()
-                csvwriter.writerows(transform_message(m) for m in messages_query)
+                for batch in chunked_results():
+                    print(".")
+                    csvwriter.writerows(batch)
