@@ -513,6 +513,13 @@ export function update_default_push_notifications(
     sub.default_push_notifications = default_push_notifications;
 }
 
+export function update_default_code_block_language(
+    sub: StreamSubscription,
+    default_code_block_language: string,
+): void {
+    sub.default_code_block_language = default_code_block_language;
+}
+
 export function update_stream_permission_group_setting(
     setting_name: StreamPermissionGroupSetting,
     sub: StreamSubscription,
