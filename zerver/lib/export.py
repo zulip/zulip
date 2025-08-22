@@ -19,7 +19,8 @@ from collections.abc import Callable, Iterable, Mapping
 from datetime import datetime
 from email.headerregistry import Address
 from functools import cache
-from typing import TYPE_CHECKING, Any, Optional, TypeAlias, TypedDict, cast
+from itertools import islice
+from typing import TYPE_CHECKING, Any, Optional, TypeAlias, TypedDict, TypeVar, cast
 from urllib.parse import urlsplit
 
 import orjson
@@ -1837,7 +1838,7 @@ def export_partial_message_files(
 
         all_message_ids |= message_ids
 
-    message_id_chunks = chunkify(sorted(all_message_ids), chunk_size=MESSAGE_BATCH_CHUNK_SIZE)
+    message_id_chunks = batched(sorted(all_message_ids), MESSAGE_BATCH_CHUNK_SIZE)
 
     write_message_partials(
         realm=realm,
@@ -1853,7 +1854,7 @@ def export_partial_message_files(
 def write_message_partials(
     *,
     realm: Realm,
-    message_id_chunks: list[list[int]],
+    message_id_chunks: Iterable[tuple[int, ...]],
     output_dir: Path,
     user_profile_ids: set[int],
     collected_client_ids: set[int],
@@ -2707,19 +2708,16 @@ def get_id_list_gently_from_database(*, base_query: Any, id_field: str) -> list[
     return all_ids
 
 
-def chunkify(lst: list[int], chunk_size: int) -> list[list[int]]:
-    # chunkify([1,2,3,4,5], 2) == [[1,2], [3,4], [5]]
-    result = []
-    i = 0
-    while True:
-        chunk = lst[i : i + chunk_size]
-        if len(chunk) == 0:
-            break
-        else:
-            result.append(chunk)
-            i += chunk_size
+# We only require Python 3.10, which does not include
+# itertools.batched; include our own equivalent
+T = TypeVar("T")
 
-    return result
+
+def batched(iterable: Iterable[T], n: int) -> Iterable[tuple[T, ...]]:
+    iterator = iter(iterable)
+    batch: tuple[T, ...]
+    while batch := tuple(islice(iterator, n)):
+        yield batch
 
 
 def export_messages_single_user(
@@ -2769,7 +2767,7 @@ def export_messages_single_user(
     all_message_ids |= reaction_message_ids
 
     dump_file_id = 1
-    for message_id_chunk in chunkify(sorted(all_message_ids), MESSAGE_BATCH_CHUNK_SIZE):
+    for message_id_chunk in batched(sorted(all_message_ids), MESSAGE_BATCH_CHUNK_SIZE):
         fat_query = (
             UserMessage.objects.select_related("message", "message__sending_client")
             .filter(user_profile=user_profile, message_id__in=message_id_chunk)
