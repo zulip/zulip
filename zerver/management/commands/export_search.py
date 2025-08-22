@@ -143,6 +143,7 @@ This is most often used for legal compliance.
 
         realm = self.get_realm(options)
         assert realm is not None
+        need_distinct = False
         limits = Q()
 
         limits = reduce(
@@ -168,6 +169,7 @@ This is most often used for legal compliance.
             limits &= Q(
                 usermessage__user_profile_id__in=[user_profile.id for user_profile in user_profiles]
             )
+            need_distinct = len(user_profiles) > 1
         elif options["sender"]:
             limits &= reduce(
                 or_,
@@ -217,6 +219,8 @@ This is most often used for legal compliance.
             )
             .order_by("date_sent")
         )
+        if need_distinct:
+            messages_query = messages_query.distinct("id")
         print(f"Exporting {len(messages_query)} messages...")
 
         @lru_cache(maxsize=1000)
