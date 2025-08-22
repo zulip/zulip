@@ -135,7 +135,9 @@
 
     .slow-send-spinner {
         display: none;
-        justify-self: end;
+        place-self: center end;
+        position: unset;
+        margin-top: 1px;
         margin-right: 10px;
         text-align: end;
         grid-area: time;
@@ -395,12 +397,6 @@
                     var(--message-box-markdown-aligned-vertical-space)
             );
             grid-area: message;
-        }
-
-        .slow-send-spinner {
-            align-self: center;
-            position: unset;
-            margin-top: 1px;
         }
 
         .message_edit_notice {
