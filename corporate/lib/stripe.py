@@ -452,7 +452,7 @@ class InvalidBillingScheduleError(Exception):
         super().__init__(self.message)
 
 
-class InvalidTierError(Exception):
+class InvalidTierError(JsonableError):
     def __init__(self, tier: int) -> None:
         self.message = f"Unknown tier: {tier}"
         super().__init__(self.message)
