@@ -366,6 +366,10 @@ export function enable_or_disable_permission_settings_in_edit_panel(
     );
     $default_push_notifications_setting.find("input").prop("disabled", disable_push_notifications);
 
+    $stream_settings
+        .find(".default-code-block-language-widget")
+        .prop("disabled", !sub.can_change_stream_permissions_requiring_metadata_access);
+
     if (!sub.can_change_stream_permissions_requiring_metadata_access) {
         settings_components.disable_group_permission_setting($permission_pill_container_elements);
         return;
