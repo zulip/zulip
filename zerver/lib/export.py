@@ -16,7 +16,6 @@ import shutil
 import subprocess
 import tempfile
 from collections.abc import Callable, Iterable, Mapping
-from contextlib import suppress
 from datetime import datetime
 from email.headerregistry import Address
 from functools import cache
@@ -35,7 +34,6 @@ from psycopg2 import sql
 
 import zerver.lib.upload
 from analytics.models import RealmCount, StreamCount, UserCount
-from scripts.lib.zulip_tools import overwrite_symlink
 from version import ZULIP_VERSION
 from zerver.lib.avatar_hash import user_avatar_base_path_from_ids
 from zerver.lib.migration_status import MigrationStatusJson, parse_migration_status
@@ -2411,8 +2409,6 @@ def do_export_realm(
 
     realm_config = get_realm_config()
 
-    create_soft_link(source=output_dir, in_progress=True)
-
     exportable_scheduled_message_ids = get_exportable_scheduled_message_ids(
         realm, export_type, exportable_user_ids
     )
@@ -2500,7 +2496,6 @@ def do_export_realm(
     do_common_export_processes(output_dir)
 
     logging.info("Finished exporting %s", realm.string_id)
-    create_soft_link(source=output_dir, in_progress=False)
 
     stats = do_write_stats_file_for_realm_export(output_dir)
 
@@ -2530,27 +2525,6 @@ def export_attachment_table(
     output_file = os.path.join(output_dir, "attachment.json")
     write_table_data(output_file=output_file, data=response)
     return attachments
-
-
-def create_soft_link(source: Path, in_progress: bool = True) -> None:
-    is_done = not in_progress
-    if settings.DEVELOPMENT:
-        in_progress_link = os.path.join(settings.DEPLOY_ROOT, "var", "export-in-progress")
-        done_link = os.path.join(settings.DEPLOY_ROOT, "var", "export-most-recent")
-    else:
-        in_progress_link = "/home/zulip/export-in-progress"
-        done_link = "/home/zulip/export-most-recent"
-
-    if in_progress:
-        new_target = in_progress_link
-    else:
-        with suppress(FileNotFoundError):
-            os.remove(in_progress_link)
-        new_target = done_link
-
-    overwrite_symlink(source, new_target)
-    if is_done:
-        logging.info("See %s for output files", new_target)
 
 
 def launch_user_message_subprocesses(
