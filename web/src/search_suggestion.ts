@@ -555,10 +555,6 @@ function get_topic_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggestio
 
     const candidate_topics = stream_topic_history.get_recent_topic_names(subscription.stream_id);
 
-    if (!candidate_topics?.length) {
-        return [];
-    }
-
     assert(guess !== undefined);
     const topics = get_topic_suggestions_from_candidates({candidate_topics, guess});
 
