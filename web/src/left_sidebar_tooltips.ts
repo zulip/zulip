@@ -219,7 +219,7 @@ export function initialize(): void {
 
     tippy.delegate("body", {
         target: [
-            "#inbox-view .recipient_bar_icon",
+            "#inbox-view .visibility-policy-indicator .recipient_bar_icon",
             "#left-sidebar-container .visibility-policy-icon",
         ].join(","),
         ...topic_visibility_policy_tooltip_props,
