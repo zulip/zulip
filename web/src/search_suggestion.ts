@@ -9,6 +9,7 @@ import * as narrow_state from "./narrow_state.ts";
 import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
 import type {User} from "./people.ts";
+import {RESOLVED_TOPIC_PREFIX} from "./resolved_topic.ts";
 import {type NarrowTerm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import * as stream_topic_history from "./stream_topic_history.ts";
@@ -482,6 +483,13 @@ export function get_topic_suggestions_from_candidates({
     return topics;
 }
 
+function ignore_resolved_topic_prefix(topic_name: string): string {
+    if (topic_name.startsWith(RESOLVED_TOPIC_PREFIX)) {
+        return topic_name.slice(2);
+    }
+    return topic_name;
+}
+
 function get_topic_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggestion[] {
     if (
         !check_validity(last, terms, ["channel", "topic", "search"], incompatible_patterns.topic!)
@@ -561,8 +569,10 @@ function get_topic_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggestio
     // Just use alphabetical order.  While recency and read/unreadness of
     // topics do matter in some contexts, you can get that from the left sidebar,
     // and I'm leaning toward high scannability for autocompletion.  I also don't
-    // care about case.
-    topics.sort();
+    // care about case. Also ignore the resolved icon (✔ ) while sorting.
+    topics.sort((a, b) =>
+        ignore_resolved_topic_prefix(a).localeCompare(ignore_resolved_topic_prefix(b)),
+    );
 
     return topics.map((topic) => {
         const topic_term: NarrowTerm = {operator: "topic", operand: topic, negated};
