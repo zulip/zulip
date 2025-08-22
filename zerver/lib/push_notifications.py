@@ -8,7 +8,7 @@ from collections.abc import Mapping, Sequence
 from dataclasses import asdict, dataclass, field
 from email.headerregistry import Address
 from functools import cache
-from typing import TYPE_CHECKING, Any, Final, Literal, Optional, TypeAlias, Union
+from typing import TYPE_CHECKING, Any, Final, Literal, Optional, TypeAlias, Union, cast
 
 import lxml.html
 import orjson
@@ -28,7 +28,8 @@ from firebase_admin import messaging as firebase_messaging
 from firebase_admin.messaging import UnregisteredError as FCMUnregisteredError
 from nacl.encoding import Base64Encoder
 from nacl.public import PublicKey, SealedBox
-from typing_extensions import NotRequired, TypedDict, override
+from pydantic import TypeAdapter
+from typing_extensions import TypedDict, override
 
 from analytics.lib.counts import COUNT_STATS, do_increment_logging_stat
 from zerver.actions.realm_settings import (
@@ -1411,7 +1412,13 @@ class SendNotificationResponseData(TypedDict):
     android_successfully_sent_count: int
     apple_successfully_sent_count: int
     delete_device_ids: list[int]
-    realm_push_status: NotRequired[RealmPushStatusDict]
+
+
+class SendNotificationRemoteResponseData(SendNotificationResponseData):
+    realm_push_status: RealmPushStatusDict
+
+
+send_notification_remote_response_data_adapter = TypeAdapter(SendNotificationRemoteResponseData)
 
 
 FCMPriority: TypeAlias = Literal["high", "normal"]
@@ -1521,10 +1528,11 @@ def send_push_notifications(
 
     # Send push notification
     try:
+        response_data: SendNotificationResponseData | SendNotificationRemoteResponseData
         if settings.ZILENCER_ENABLED:
             from zilencer.lib.push_notifications import send_e2ee_push_notifications
 
-            response_data: SendNotificationResponseData = send_e2ee_push_notifications(
+            response_data = send_e2ee_push_notifications(
                 push_requests,
                 realm=user_profile.realm,
             )
@@ -1534,16 +1542,7 @@ def send_push_notifications(
                 "push_requests": [asdict(push_request) for push_request in push_requests],
             }
             result = send_json_to_push_bouncer("POST", "push/e2ee/notify", post_data)
-            assert isinstance(result["android_successfully_sent_count"], int)  # for mypy
-            assert isinstance(result["apple_successfully_sent_count"], int)  # for mypy
-            assert isinstance(result["delete_device_ids"], list)  # for mypy
-            assert isinstance(result["realm_push_status"], dict)  # for mypy
-            response_data = {
-                "android_successfully_sent_count": result["android_successfully_sent_count"],
-                "apple_successfully_sent_count": result["apple_successfully_sent_count"],
-                "delete_device_ids": result["delete_device_ids"],
-                "realm_push_status": result["realm_push_status"],  # type: ignore[typeddict-item] # TODO: Can't use isinstance() with TypedDict type
-            }
+            response_data = send_notification_remote_response_data_adapter.validate_python(result)
     except (MissingRemoteRealmError, PushNotificationsDisallowedByBouncerError) as e:
         reason = e.reason if isinstance(e, PushNotificationsDisallowedByBouncerError) else e.msg
         logger.warning("Bouncer refused to send E2EE push notification: %s", reason)
@@ -1593,8 +1592,11 @@ def send_push_notifications(
         apple_successfully_sent_count,
     )
 
-    realm_push_status_dict = response_data.get("realm_push_status")
-    if realm_push_status_dict is not None:
+    if "realm_push_status" in response_data:
+        # Cannot use `isinstance` with `TypedDict`s to make mypy know
+        # which of the `TypedDict`s in the Union this is - so just cast it.
+        response_data = cast(SendNotificationRemoteResponseData, response_data)
+        realm_push_status_dict = response_data["realm_push_status"]
         can_push = realm_push_status_dict["can_push"]
         do_set_realm_property(
             user_profile.realm,
