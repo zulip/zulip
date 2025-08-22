@@ -36,6 +36,10 @@ async function submit_announcements_stream_settings(page: Page): Promise<void> {
 }
 
 async function test_change_new_stream_announcements_stream(page: Page): Promise<void> {
+    await page.waitForSelector(
+        "#realm_new_stream_announcements_stream_id_widget.dropdown-widget-button",
+        {visible: true},
+    );
     await page.click("#realm_new_stream_announcements_stream_id_widget.dropdown-widget-button");
     await page.waitForSelector(".dropdown-list-container", {
         visible: true,
@@ -54,6 +58,10 @@ async function test_change_new_stream_announcements_stream(page: Page): Promise<
 }
 
 async function test_change_signup_announcements_stream(page: Page): Promise<void> {
+    await page.waitForSelector(
+        "#realm_signup_announcements_stream_id_widget.dropdown-widget-button",
+        {visible: true},
+    );
     await page.click("#realm_signup_announcements_stream_id_widget.dropdown-widget-button");
     await page.waitForSelector(".dropdown-list-container", {
         visible: true,
@@ -72,6 +80,10 @@ async function test_change_signup_announcements_stream(page: Page): Promise<void
 }
 
 async function test_change_zulip_update_announcements_stream(page: Page): Promise<void> {
+    await page.waitForSelector(
+        "#realm_zulip_update_announcements_stream_id_widget.dropdown-widget-button",
+        {visible: true},
+    );
     await page.click("#realm_zulip_update_announcements_stream_id_widget.dropdown-widget-button");
     await page.waitForSelector(".dropdown-list-container", {
         visible: true,
@@ -129,6 +141,7 @@ async function test_set_new_user_threshold_to_N_days(page: Page): Promise<void> 
 }
 
 async function test_organization_permissions(page: Page): Promise<void> {
+    await page.waitForSelector("li[data-section='organization-permissions']", {visible: true});
     await page.click("li[data-section='organization-permissions']");
 
     // Test temporarily disabled 2024-02-25 due to nondeterminsitic failures.
@@ -156,6 +169,7 @@ async function test_add_emoji(page: Page): Promise<void> {
 }
 
 async function test_delete_emoji(page: Page): Promise<void> {
+    await page.waitForSelector("tr#emoji_zulip_logo button.delete", {visible: true});
     await page.click("tr#emoji_zulip_logo button.delete");
 
     await common.wait_for_micromodal_to_open(page);
@@ -167,7 +181,9 @@ async function test_delete_emoji(page: Page): Promise<void> {
 }
 
 async function test_custom_realm_emoji(page: Page): Promise<void> {
+    await page.waitForSelector("li[data-section='emoji-settings']", {visible: true});
     await page.click("li[data-section='emoji-settings']");
+    await page.waitForSelector("#add-custom-emoji-button", {visible: true});
     await page.click("#add-custom-emoji-button");
     await common.wait_for_micromodal_to_open(page);
 
@@ -193,13 +209,16 @@ async function test_upload_realm_icon_image(page: Page): Promise<void> {
 }
 
 async function delete_realm_icon(page: Page): Promise<void> {
+    await page.waitForSelector("li[data-section='organization-profile']", {visible: true});
     await page.click("li[data-section='organization-profile']");
+    await page.waitForSelector("#realm-icon-upload-widget .image-delete-button", {visible: true});
     await page.click("#realm-icon-upload-widget .image-delete-button");
 
     await page.waitForSelector("#realm-icon-upload-widget .image-delete-button", {hidden: true});
 }
 
 async function test_organization_profile(page: Page): Promise<void> {
+    await page.waitForSelector("li[data-section='organization-profile']", {visible: true});
     await page.click("li[data-section='organization-profile']");
     const gravatar_selector =
         '#realm-icon-upload-widget .image-block[src^="https://secure.gravatar.com/avatar/"]';
@@ -215,11 +234,15 @@ async function test_organization_profile(page: Page): Promise<void> {
 }
 
 async function test_authentication_methods(page: Page): Promise<void> {
+    await page.waitForSelector("li[data-section='auth-methods']", {visible: true});
     await page.click("li[data-section='auth-methods']");
     await page.waitForSelector(".method_row[data-method='Google'] input[type='checkbox'] + span", {
         visible: true,
     });
 
+    await page.waitForSelector(".method_row[data-method='Google'] input[type='checkbox'] + span", {
+        visible: true,
+    });
     await page.click(".method_row[data-method='Google'] input[type='checkbox'] + span");
     const save_button = "#org-auth_settings .save-button";
     assert.strictEqual(await common.get_text_from_selector(page, save_button), "Save changes");
@@ -227,9 +250,11 @@ async function test_authentication_methods(page: Page): Promise<void> {
 
     // Leave the page and return.
     const settings_dropdown = "#settings-dropdown";
+    await page.waitForSelector(settings_dropdown, {visible: true});
     await page.click(settings_dropdown);
 
     await common.manage_organization(page);
+    await page.waitForSelector("li[data-section='auth-methods']", {visible: true});
     await page.click("li[data-section='auth-methods']");
 
     // Test setting was saved.

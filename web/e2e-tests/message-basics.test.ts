@@ -124,10 +124,14 @@ async function un_narrow(page: Page): Promise<void> {
     if ((await (await page.$(".message_comp"))!.boundingBox())?.height) {
         await page.keyboard.press("Escape");
     }
+    await page.waitForSelector("#left-sidebar-navigation-list .top_left_all_messages", {
+        visible: true,
+    });
     await page.click("#left-sidebar-navigation-list .top_left_all_messages");
 }
 
 async function un_narrow_by_clicking_org_icon(page: Page): Promise<void> {
+    await page.waitForSelector(".brand", {visible: true});
     await page.click(".brand");
 }
 
@@ -177,6 +181,7 @@ async function search_and_check(
     check: (page: Page) => Promise<void>,
     expected_narrow_title: string,
 ): Promise<void> {
+    await page.waitForSelector(".search_icon", {visible: true});
     await page.click(".search_icon");
     await page.waitForSelector(".navbar-search.expanded", {visible: true});
     await common.select_item_via_typeahead(page, "#search_query", search_str, item_to_select);
@@ -189,6 +194,7 @@ async function search_and_check(
 }
 
 async function search_silent_user(page: Page, str: string, item: string): Promise<void> {
+    await page.waitForSelector(".search_icon", {visible: true});
     await page.click(".search_icon");
     await page.waitForSelector(".navbar-search.expanded", {visible: true});
     await common.select_item_via_typeahead(page, "#search_query", str, item);
@@ -284,6 +290,9 @@ async function test_narrow_by_clicking_the_left_sidebar(page: Page): Promise<voi
     await page.click((await get_stream_li(page, "Verona")) + " .stream-name");
     await expect_verona_stream_top_topic(page);
 
+    await page.waitForSelector("#left-sidebar-navigation-list .top_left_all_messages a", {
+        visible: true,
+    });
     await page.click("#left-sidebar-navigation-list .top_left_all_messages a");
     await expect_home(page);
 
@@ -326,6 +335,7 @@ async function test_stream_search_filters_stream_list(page: Page): Promise<void>
     await page.waitForSelector(await get_stream_li(page, "Verona"), {visible: true});
 
     // Enter the search box and test highlighted suggestion
+    await page.waitForSelector(".left-sidebar-search-input", {visible: true});
     await page.click(".left-sidebar-search-input");
 
     await page.waitForSelector(".top_left_inbox.top_left_row.highlighted_row", {visible: true});
@@ -410,6 +420,7 @@ async function test_users_search(page: Page): Promise<void> {
     await assert_in_list(page, "aaron");
 
     // Enter the search box and test selected suggestion navigation
+    await page.waitForSelector(".user-list-filter", {visible: true});
     await page.click(".user-list-filter");
     await page.waitForSelector("#buddy-list-other-users .highlighted_user", {visible: true});
     await assert_selected(page, "Desdemona");
@@ -456,6 +467,9 @@ async function test_narrow_public_streams(page: Page): Promise<void> {
             "sub_unsub_button",
         )} and normalize-space()="Subscribe"]`,
     );
+    await page.waitForSelector("#subscription_overlay .two-pane-settings-header .exit-sign", {
+        visible: true,
+    });
     await page.click("#subscription_overlay .two-pane-settings-header .exit-sign");
     await page.waitForSelector("#subscription_overlay", {hidden: true});
     await page.goto(`http://zulip.zulipdev.com:9981/#narrow/channel/${stream_id}-Denmark`);
@@ -483,6 +497,9 @@ async function test_narrow_public_streams(page: Page): Promise<void> {
 
 async function message_basic_tests(page: Page): Promise<void> {
     await common.log_in(page);
+    await page.waitForSelector("#left-sidebar-navigation-list .top_left_all_messages", {
+        visible: true,
+    });
     await page.click("#left-sidebar-navigation-list .top_left_all_messages");
     const message_list_id = await common.get_current_msg_list_id(page, true);
     await page.waitForSelector(

@@ -3,6 +3,7 @@ import type {Page} from "puppeteer";
 import * as common from "./lib/common.ts";
 
 async function open_set_user_status_modal(page: Page): Promise<void> {
+    await page.waitForSelector("#personal-menu", {visible: true});
     await page.click("#personal-menu");
     await page.waitForSelector("#personal-menu-dropdown", {visible: true});
     // We are using evaluate to click because it is very hard to detect if
@@ -18,6 +19,9 @@ async function open_set_user_status_modal(page: Page): Promise<void> {
 async function test_user_status(page: Page): Promise<void> {
     await open_set_user_status_modal(page);
     // Check by clicking on common statues.
+    await page.waitForSelector(".user-status-option:nth-child(2) .user-status-value", {
+        visible: true,
+    });
     await page.click(".user-status-option:nth-child(2) .user-status-value");
     await page.waitForFunction(
         () => document.querySelector<HTMLInputElement>(".user-status")!.value === "In a meeting",
@@ -26,6 +30,7 @@ async function test_user_status(page: Page): Promise<void> {
     await page.waitForSelector(".selected-emoji.emoji-1f4c5");
 
     // Clear everything.
+    await page.waitForSelector("#clear_status_message_button", {visible: true});
     await page.click("#clear_status_message_button");
     await page.waitForFunction(
         () => document.querySelector<HTMLInputElement>(".user-status")!.value === "",
@@ -35,6 +40,7 @@ async function test_user_status(page: Page): Promise<void> {
     // Manually adding everything.
     await page.type(".user-status", "Busy");
     const tada_emoji_selector = ".emoji-1f389";
+    await page.waitForSelector(".status-emoji-wrapper .smiley-icon", {visible: true});
     await page.click(".status-emoji-wrapper .smiley-icon");
     // Wait until emoji popover is opened.
     await page.waitForSelector(`.emoji-popover  ${tada_emoji_selector}`, {visible: true});
@@ -42,6 +48,7 @@ async function test_user_status(page: Page): Promise<void> {
     await page.waitForSelector(".emoji-picker-popover", {hidden: true});
     await page.waitForSelector(`.selected-emoji${tada_emoji_selector}`);
 
+    await page.waitForSelector("#set-user-status-modal .dialog_submit_button", {visible: true});
     await page.click("#set-user-status-modal .dialog_submit_button");
     // It should close the modal after saving.
     await page.waitForSelector("#set-user-status-modal", {hidden: true});

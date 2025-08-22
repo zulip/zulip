@@ -62,12 +62,14 @@ async function test_add_invalid_linkifier_pattern(page: Page): Promise<void> {
 }
 
 async function test_edit_linkifier(page: Page): Promise<void> {
+    await page.waitForSelector(".linkifier_row:nth-last-child(1) .edit", {visible: true});
     await page.click(".linkifier_row:nth-last-child(1) .edit");
     await common.wait_for_micromodal_to_open(page);
     await common.fill_form(page, "form.linkifier-edit-form", {
         pattern: "(?P<num>[0-9a-f]{40})",
         url_template: "https://trac.example.com/commit/{num}",
     });
+    await page.waitForSelector(".dialog_submit_button", {visible: true});
     await page.click(".dialog_submit_button");
 
     await page.waitForSelector(".micromodal", {hidden: true});
@@ -89,12 +91,14 @@ async function test_edit_linkifier(page: Page): Promise<void> {
 }
 
 async function test_edit_invalid_linkifier(page: Page): Promise<void> {
+    await page.waitForSelector(".linkifier_row:nth-last-child(1) .edit", {visible: true});
     await page.click(".linkifier_row:nth-last-child(1) .edit");
     await common.wait_for_micromodal_to_open(page);
     await common.fill_form(page, "form.linkifier-edit-form", {
         pattern: "#(?P<id>d????)",
         url_template: "{id",
     });
+    await page.waitForSelector(".dialog_submit_button", {visible: true});
     await page.click(".dialog_submit_button");
 
     const edit_linkifier_pattern_status_selector = "div#dialog_error";
@@ -116,6 +120,7 @@ async function test_edit_invalid_linkifier(page: Page): Promise<void> {
     );
     assert.strictEqual(edit_linkifier_template_status, "Failed: Invalid URL template.");
 
+    await page.waitForSelector(".dialog_exit_button", {visible: true});
     await page.click(".dialog_exit_button");
     await page.waitForSelector(".micromodal", {hidden: true});
 
@@ -139,6 +144,7 @@ async function test_edit_invalid_linkifier(page: Page): Promise<void> {
 async function linkifier_test(page: Page): Promise<void> {
     await common.log_in(page);
     await common.manage_organization(page);
+    await page.waitForSelector("li[data-section='linkifier-settings']", {visible: true});
     await page.click("li[data-section='linkifier-settings']");
 
     await test_add_linkifier(page);

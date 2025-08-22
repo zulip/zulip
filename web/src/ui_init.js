@@ -693,7 +693,7 @@ export async function initialize_everything(state_data) {
     // All overlays, and also activity_ui, must be initialized before hashchange.ts
     hashchange.initialize();
 
-    emoji_picker.initialize();
+    await emoji_picker.initialize();
     user_group_popover.initialize();
     user_card_popover.initialize();
     playground_links_popover.initialize();

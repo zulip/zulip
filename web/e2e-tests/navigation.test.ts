@@ -7,6 +7,9 @@ import * as common from "./lib/common.ts";
 async function navigate_using_left_sidebar(page: Page, stream_name: string): Promise<void> {
     console.log("Visiting #" + stream_name);
     const stream_id = await page.evaluate(() => zulip_test.get_sub("Verona")!.stream_id);
+    await page.waitForSelector(`.narrow-filter[data-stream-id="${stream_id}"] .stream-name`, {
+        visible: true,
+    });
     await page.click(`.narrow-filter[data-stream-id="${stream_id}"] .stream-name`);
     await page.waitForSelector("#message_view_header .zulip-icon-hashtag", {visible: true});
 }
@@ -95,6 +98,9 @@ async function navigation_tests(page: Page): Promise<void> {
 
     await navigate_using_left_sidebar(page, "Verona");
 
+    await page.waitForSelector("#left-sidebar-navigation-list .top_left_all_messages", {
+        visible: true,
+    });
     await page.click("#left-sidebar-navigation-list .top_left_all_messages");
     await page.waitForSelector("#message_view_header .zulip-icon-all-messages", {visible: true});
 

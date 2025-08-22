@@ -24,6 +24,7 @@ async function edit_stream_message(page: Page, content: string): Promise<void> {
     await trigger_edit_last_message(page);
 
     await common.clear_and_type(page, ".message_edit_content", content);
+    await page.waitForSelector(".message_edit_save", {visible: true});
     await page.click(".message_edit_save");
 
     await common.wait_for_fully_processed_message(page, content);
@@ -91,6 +92,7 @@ async function test_edit_private_message(page: Page): Promise<void> {
     await trigger_edit_last_message(page);
 
     await common.clear_and_type(page, ".message_edit_content", "test edited pm");
+    await page.waitForSelector(".message_edit_save", {visible: true});
     await page.click(".message_edit_save");
     await common.wait_for_fully_processed_message(page, "test edited pm");
 
@@ -102,6 +104,9 @@ async function test_edit_private_message(page: Page): Promise<void> {
 
 async function edit_tests(page: Page): Promise<void> {
     await common.log_in(page);
+    await page.waitForSelector("#left-sidebar-navigation-list .top_left_all_messages", {
+        visible: true,
+    });
     await page.click("#left-sidebar-navigation-list .top_left_all_messages");
     const message_list_id = await common.get_current_msg_list_id(page, true);
     await page.waitForSelector(

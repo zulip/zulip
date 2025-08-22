@@ -10,6 +10,9 @@ const example_settings = require("./lib/example_settings.cjs");
 const {mock_esm, set_global, with_overrides, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
 const $ = require("./lib/zjquery.cjs");
+const {page_params} = require("./lib/zpage_params.cjs");
+
+page_params.is_spectator = true;
 
 let autosize_called;
 const REALM_EMPTY_TOPIC_DISPLAY_NAME = "general chat";
