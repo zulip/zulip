@@ -29162,3 +29162,22 @@ components:
         type: integer
       example: 1
       required: true
+    UserEmailOrDeliveryEmail:
+      name: email
+      in: path
+      description: |
+        The email address of the user to fetch. Two forms are supported:
+
+        - The real email address of the user (`delivery_email`). The lookup will
+          succeed if and only if the user exists and their email address visibility
+          setting permits the client to see the email address.
+
+        - The dummy Zulip API email address of the form `user{user_id}@{realm_host}`. This
+          is identical to simply [getting user by ID](/api/get-user). If the server or
+          realm change domains, the dummy email address used has to be adjusted to
+          match the new realm domain. This is legacy behavior for
+          backwards-compatibility, and will be removed in a future release.
+      schema:
+        type: string
+      example: iago@zulip.com
+      required: true
