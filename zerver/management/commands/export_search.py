@@ -204,6 +204,17 @@ This is most often used for legal compliance.
         messages_query = (
             Message.objects.filter(limits, realm=realm)
             .select_related("sender")
+            .only(
+                "id",
+                "date_sent",
+                "sender__full_name",
+                "sender__delivery_email",
+                "recipient_id",
+                "subject",
+                "content",
+                "edit_history",
+                "has_attachment",
+            )
             .order_by("date_sent")
         )
         print(f"Exporting {len(messages_query)} messages...")
