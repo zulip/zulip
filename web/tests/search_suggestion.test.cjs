@@ -666,7 +666,7 @@ test("topic_suggestions", ({override, mock_template}) => {
         topic_name: "REXX",
     });
 
-    for (const topic_name of ["team", "ignore", "test"]) {
+    for (const topic_name of ["team", "ignore", "✔ ice cream", "✔ team work", "test"]) {
         stream_topic_history.add_message({
             stream_id: office_id,
             topic_name,
@@ -680,6 +680,7 @@ test("topic_suggestions", ({override, mock_template}) => {
         "sender:ted@zulip.com",
         "dm-including:ted@zulip.com",
         `channel:${office_id} topic:team`,
+        `channel:${office_id} topic:✔+team+work`,
         `channel:${office_id} topic:test`,
     ];
     assert.deepEqual(suggestions.strings, expected);
@@ -706,6 +707,7 @@ test("topic_suggestions", ({override, mock_template}) => {
     expected = [
         "-topic:te",
         `channel:${office_id} -topic:team`,
+        `channel:${office_id} -topic:✔+team+work`,
         `channel:${office_id} -topic:test`,
     ];
     assert.deepEqual(suggestions.strings, expected);
