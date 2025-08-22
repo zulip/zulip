@@ -412,7 +412,7 @@ class RealmImportExportTest(ExportFile):
         if export_type == RealmExport.EXPORT_FULL_WITH_CONSENT:
             assert exportable_user_ids is not None
 
-        with patch("zerver.lib.export.create_soft_link"), self.assertLogs(level="INFO"):
+        with self.assertLogs(level="INFO"):
             do_export_realm(
                 realm=realm,
                 output_dir=output_dir,
