@@ -1,6 +1,8 @@
 import Handlebars from "handlebars/runtime.js";
 import assert from "minimalistic-assert";
 
+import {RESOLVED_TOPIC_PREFIX} from "../shared/src/resolved_topic.ts";
+
 import {MAX_ITEMS} from "./bootstrap_typeahead.ts";
 import * as common from "./common.ts";
 import * as direct_message_group_data from "./direct_message_group_data.ts";
@@ -464,6 +466,13 @@ export function get_topic_suggestions_from_candidates({
     return topics;
 }
 
+function ignore_resolved_topic_prefix(topic_name: string): string {
+    if (topic_name.startsWith(RESOLVED_TOPIC_PREFIX)) {
+        return topic_name.slice(2);
+    }
+    return topic_name;
+}
+
 function get_topic_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggestion[] {
     if (
         !check_validity(last, terms, ["channel", "topic", "search"], incompatible_patterns.topic!)
@@ -538,8 +547,10 @@ function get_topic_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggestio
     // Just use alphabetical order.  While recency and read/unreadness of
     // topics do matter in some contexts, you can get that from the left sidebar,
     // and I'm leaning toward high scannability for autocompletion.  I also don't
-    // care about case.
-    topics.sort();
+    // care about case. Also ignore the resolved icon (✔ ) while sorting.
+    topics.sort((a, b) =>
+        ignore_resolved_topic_prefix(a).localeCompare(ignore_resolved_topic_prefix(b)),
+    );
 
     return topics.map((topic) => {
         const topic_term = {operator: "topic", operand: topic, negated};
