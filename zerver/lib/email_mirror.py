@@ -495,10 +495,9 @@ def process_missed_message(to: str, message: EmailMessage) -> None:
         recipient_user = get_user_profile_by_id(recipient_user_id)
         recipient_str = recipient_user.email
         internal_send_private_message(user_profile, recipient_user, body)
-  elif recipient.type == Recipient.DIRECT_MESSAGE_GROUP:
+  
+    elif recipient.type == Recipient.DIRECT_MESSAGE_GROUP:
     display_recipient = get_display_recipient(recipient)
-
-    
     active_emails = []
     for user_dict in display_recipient:
         try:
@@ -506,18 +505,22 @@ def process_missed_message(to: str, message: EmailMessage) -> None:
             if recipient_profile.is_active:
                 active_emails.append(user_dict["email"])
         except UserProfile.DoesNotExist:
-            pass  
-
+            pass
+    
     if not active_emails:
         logger.warning(
             "No active recipients left in DM group for missed-message reply from %s",
             user_profile.email,
         )
         return
-
+    
     recipient_str = ", ".join(active_emails)
-    internal_send_group_direct_message(user_profile.realm, user_profile, body, emails=active_emails)
-
+    internal_send_group_direct_message(
+        user_profile.realm, 
+        user_profile, 
+        body, 
+        emails=active_emails
+    )
     else:
         raise AssertionError("Invalid recipient type!")
 
