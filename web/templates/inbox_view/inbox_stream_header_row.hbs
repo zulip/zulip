@@ -26,6 +26,11 @@
         </div>
         <div class="inbox-right-part-wrapper">
             <div class="inbox-right-part">
+                {{#if is_muted}}
+                <span class="channel-visibility-policy-indicator toggle-channel-visibility tippy-zulip-tooltip" data-stream-id="{{stream_id}}" tabindex="0" data-col-index="{{ column_indexes.TOPIC_VISIBILITY }}" data-tooltip-template-id="inbox-channel-mute-toogle-tooltip-template">
+                    <i class="zulip-icon zulip-icon-mute recipient_bar_icon" role="button"></i>
+                </span>
+                {{/if}}
                 <div class="inbox-action-button inbox-stream-menu" data-stream-id="{{stream_id}}" tabindex="0" data-col-index="{{ column_indexes.ACTION_MENU }}">
                     <i class="zulip-icon zulip-icon-more-vertical" aria-hidden="true"></i>
                 </div>
