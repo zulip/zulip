@@ -1471,3 +1471,135 @@ test("process_reaction_click bad local id", ({override}) => {
     blueslip.expect("error", "Data integrity problem for reaction");
     reactions.process_reaction_click("some-msg-id", "bad-local-id");
 });
+
+run_test("spectator → returns []", async () => {
+    // set as current user
+    set_current_user(alice);
+    const stub = make_stub();
+    channel.get = stub.f;
+    page_params.is_spectator = true;
+    spectators.login_to_access = stub.f;
+    await assert.rejects(
+        async () => {
+            await reactions.get_frequently_used_emojis_for_user_ajax();
+        },
+        (err) => {
+            assert.equal(err.message, "User is a spectator, needs login");
+            return true;
+        },
+    );
+});
+
+run_test("Invalid user attempts to access frequently used emojis", async () => {
+    set_current_user(alice);
+    const stub = make_stub();
+    channel.get = stub.f;
+    page_params.is_spectator = false;
+    spectators.login_to_access = stub.f;
+    blueslip.expect("error", "Error with validating user_id");
+    await assert.rejects(
+        async () => {
+            await reactions.get_frequently_used_emojis_for_user_ajax();
+        },
+        (err) => {
+            assert.equal(err.message, "Invalid user_id");
+            return true;
+        },
+    );
+});
+
+run_test("Access frequently used emojis success", async () => {
+    set_current_user(alice);
+    people.add_valid_user_id(alice.user_id);
+    page_params.is_spectator = false;
+
+    // Stub channel.get to simulate success response
+    channel.get = (opts) => {
+        // Simulate server returning emoji data
+        opts.success({
+            reactions: [
+                {emoji_code: "1f600"}, // 😀
+                {emoji_code: "1f603"}, // 😃
+            ],
+        });
+    };
+
+    const emojis = await reactions.get_frequently_used_emojis_for_user_ajax();
+
+    // Check the returned data is what we mocked
+    assert.deepEqual(emojis, [{emoji_code: "1f600"}, {emoji_code: "1f603"}]);
+});
+
+run_test("Access frequently used emojis - parsing error", async ({override}) => {
+    page_params.is_spectator = false;
+    set_current_user(alice);
+
+    // Stub blueslip.error to expect the parsing error
+    blueslip.expect("error", "Error parsing frequently used emojis response");
+
+    // Override `channel.get` to send an invalid payload (missing 'reactions')
+    override(channel, "get", ({success}) => {
+        success({foo: "bar"});
+    });
+
+    await assert.rejects(
+        async () => {
+            await reactions.get_frequently_used_emojis_for_user_ajax();
+        },
+        (err) => {
+            assert.equal(err.message, "Parsing error");
+            return true;
+        },
+    );
+});
+
+run_test("XHR NOT_LOGGED_IN → []", async ({override}) => {
+    page_params.is_spectator = false;
+    page_params.login_page = "/login";
+    set_current_user(alice);
+
+    const nav_stub = make_stub();
+    const old_location = window.location;
+    Object.defineProperty(window, "location", {
+        value: {...old_location, replace: nav_stub.f},
+        configurable: true,
+    });
+
+    override(channel, "get", ({error}) =>
+        error({readyState: 4, responseJSON: {code: "NOT_LOGGED_IN"}}),
+    );
+
+    await assert.rejects(
+        async () => {
+            await reactions.get_frequently_used_emojis_for_user_ajax();
+        },
+        (err) => {
+            assert.equal(err.message, "XHR error");
+            return true;
+        },
+    );
+});
+
+run_test("generic XHR error → [] and logs", async ({override}) => {
+    page_params.is_spectator = false;
+    set_current_user(alice);
+
+    // Make xhr_error_message deterministic for the assertion
+    override(channel, "xhr_error_message", (prefix, _xhr) => prefix);
+
+    blueslip.expect("error", "Error fetching frequently used emojis");
+
+    override(channel, "get", ({error}) =>
+        error({readyState: 4, status: 500, responseJSON: {code: "SERVER_ERROR"}}),
+    );
+
+    await assert.rejects(
+        async () => {
+            await reactions.get_frequently_used_emojis_for_user_ajax();
+        },
+        (err) => {
+            assert.equal(err.message, "XHR error");
+            return true;
+        },
+    );
+});
