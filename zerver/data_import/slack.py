@@ -926,7 +926,6 @@ def get_parent_user_id_from_thread_message(thread_message: ZerverFieldsT, subtyp
     message.
     """
 
-    global thread_parent_map
     # Some messages posted by bots don't have a user key, but only a bot_id (particularly in
     #  exports created before 2025, or where the bot wasn't spoofing a user). For those, use
     #  bot_id as fallback when the user field doesn't exist.
