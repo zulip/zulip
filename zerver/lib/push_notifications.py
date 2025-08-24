@@ -4,6 +4,7 @@ import asyncio
 import copy
 import logging
 import re
+import time
 from collections.abc import Mapping, Sequence
 from dataclasses import asdict, dataclass, field
 from email.headerregistry import Address
@@ -1528,6 +1529,7 @@ def send_push_notifications(
 
     # Send push notification
     try:
+        start_time = time.perf_counter()
         response_data: SendNotificationResponseData | SendNotificationRemoteResponseData
         if settings.ZILENCER_ENABLED:
             from zilencer.lib.push_notifications import send_e2ee_push_notifications
@@ -1543,6 +1545,7 @@ def send_push_notifications(
             }
             result = send_json_to_push_bouncer("POST", "push/e2ee/notify", post_data)
             response_data = send_notification_remote_response_data_adapter.validate_python(result)
+        send_push_notifications_latency = time.perf_counter() - start_time
     except (MissingRemoteRealmError, PushNotificationsDisallowedByBouncerError) as e:
         reason = e.reason if isinstance(e, PushNotificationsDisallowedByBouncerError) else e.msg
         logger.warning("Bouncer refused to send E2EE push notification: %s", reason)
@@ -1586,10 +1589,11 @@ def send_push_notifications(
     )
 
     logger.info(
-        "Sent E2EE mobile push notifications for user %s: %s via FCM, %s via APNs",
+        "Sent E2EE mobile push notifications for user %s: %s via FCM, %s via APNs in %.3fs",
         user_profile.id,
         android_successfully_sent_count,
         apple_successfully_sent_count,
+        send_push_notifications_latency,
     )
 
     if "realm_push_status" in response_data:
