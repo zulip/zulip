@@ -269,8 +269,10 @@ DEFAULT_RATE_LIMITING_RULES = {
     ],
     # Limits total number of unauthenticated API requests (primarily
     # used by the public access option). Since these are
-    # unauthenticated requests, each IP address is a separate bucket.
+    # unauthenticated requests, each IPv4 address is a separate bucket.
+    # For IPv6, one bucket is used for each /64 subnet.
     "api_by_ip": [
+        # 100 requests per minute.
         (60, 100),
     ],
     # Limits total requests to the Mobile Push Notifications Service
