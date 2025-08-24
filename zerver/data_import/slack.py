@@ -67,6 +67,11 @@ from zerver.models import (
 )
 from zerver.models.constants import MAX_TOPIC_NAME_LENGTH
 
+# This is cached globally so that thread parent lookup works across multiple calls to
+#  channel_message_to_zerver_message, and across multiple message JSON files (e.g.
+#  for responses posted on a date after the thread root was created).
+# For _very_ large Slack imports (with millions of threads), this might cause RAM
+#  issues.
 thread_parent_map: dict[str, str] = {}
 
 SlackToZulipUserIDT: TypeAlias = dict[str, int]
@@ -919,6 +924,11 @@ def get_parent_user_id_from_thread_message(thread_message: ZerverFieldsT, subtyp
     This retrieves the user id of the sender of the original thread
     message.
     """
+    # Some messages posted by bots don't have a user key, but only a bot_id (particularly in
+    #  exports created before 2025, or where the bot wasn't spoofing a user). For those, use
+    #  bot_id as fallback when the user field doesn't exist.
+    # We already treat the bot_id as a pseudo-user - see get_message_sending_user,
+    #  is_integration_bot_message, & convert_bot_info_to_slack_user.
     if subtype == "thread_broadcast":
         try:
             return thread_message["root"]["user"]
@@ -1110,10 +1120,13 @@ def channel_message_to_zerver_message(
             thread_ts = datetime.fromtimestamp(float(message["thread_ts"]), tz=timezone.utc)
             thread_ts_str = thread_ts.strftime(r"%Y/%m/%d %H:%M:%S")
             if message["thread_ts"] == message["ts"]:
+                # This is the original thread message; cache its author's user/bot ID
                 thread_parent_map[message["thread_ts"]] = get_parent_user_id_from_thread_message(
                     message, subtype
                 )
             if message["thread_ts"] in thread_parent_map:
+                # If there's a cached user/bot ID for the root of this thread, use it rather
+                #  than the message's parent_user_id (that might not exist).
                 parent_user_id = thread_parent_map[message["thread_ts"]]
             else:
                 parent_user_id = get_parent_user_id_from_thread_message(message, subtype)
