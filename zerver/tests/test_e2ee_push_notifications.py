@@ -56,6 +56,7 @@ class SendPushNotificationTest(E2EEPushNotificationTestCase):
             self.mock_apns() as send_notification,
             self.assertLogs("zerver.lib.push_notifications", level="INFO") as zerver_logger,
             self.assertLogs("zilencer.lib.push_notifications", level="INFO") as zilencer_logger,
+            mock.patch("time.perf_counter", side_effect=[10.0, 15.0]),
         ):
             mock_fcm_messaging.send_each.return_value = self.make_fcm_success_response()
             send_notification.return_value.is_successful = True
@@ -87,7 +88,7 @@ class SendPushNotificationTest(E2EEPushNotificationTestCase):
             )
             self.assertEqual(
                 "INFO:zerver.lib.push_notifications:"
-                f"Sent E2EE mobile push notifications for user {hamlet.id}: 1 via FCM, 1 via APNs",
+                f"Sent E2EE mobile push notifications for user {hamlet.id}: 1 via FCM, 1 via APNs in 5.000s",
                 zerver_logger.output[3],
             )
 
@@ -153,6 +154,7 @@ class SendPushNotificationTest(E2EEPushNotificationTestCase):
             self.mock_apns() as send_notification,
             self.assertLogs("zerver.lib.push_notifications", level="INFO") as zerver_logger,
             self.assertLogs("zilencer.lib.push_notifications", level="INFO") as zilencer_logger,
+            mock.patch("time.perf_counter", side_effect=[10.5, 11.0]),
         ):
             mock_fcm_messaging.send_each.return_value = self.make_fcm_error_response(
                 UnregisteredError("Token expired")
@@ -187,7 +189,7 @@ class SendPushNotificationTest(E2EEPushNotificationTestCase):
             )
             self.assertEqual(
                 "INFO:zerver.lib.push_notifications:"
-                f"Sent E2EE mobile push notifications for user {hamlet.id}: 0 via FCM, 0 via APNs",
+                f"Sent E2EE mobile push notifications for user {hamlet.id}: 0 via FCM, 0 via APNs in 0.500s",
                 zerver_logger.output[4],
             )
 
@@ -218,6 +220,7 @@ class SendPushNotificationTest(E2EEPushNotificationTestCase):
             mock.patch("zilencer.lib.push_notifications.get_apns_context", return_value=None),
             self.assertLogs("zerver.lib.push_notifications", level="INFO") as zerver_logger,
             self.assertLogs("zilencer.lib.push_notifications", level="DEBUG") as zilencer_logger,
+            mock.patch("time.perf_counter", side_effect=[10.0, 12.0]),
         ):
             mock_fcm_messaging.send_each.return_value = self.make_fcm_error_response(
                 InternalError("fcm-error")
@@ -245,7 +248,7 @@ class SendPushNotificationTest(E2EEPushNotificationTestCase):
             )
             self.assertEqual(
                 "INFO:zerver.lib.push_notifications:"
-                f"Sent E2EE mobile push notifications for user {hamlet.id}: 0 via FCM, 0 via APNs",
+                f"Sent E2EE mobile push notifications for user {hamlet.id}: 0 via FCM, 0 via APNs in 2.000s",
                 zerver_logger.output[2],
             )
 
@@ -269,6 +272,7 @@ class SendPushNotificationTest(E2EEPushNotificationTestCase):
             ),
             self.assertLogs("zerver.lib.push_notifications", level="INFO") as zerver_logger,
             self.assertLogs("zilencer.lib.push_notifications", level="WARNING") as zilencer_logger,
+            mock.patch("time.perf_counter", side_effect=[10.0, 12.0]),
         ):
             mock_fcm_messaging.send_each.side_effect = InternalError("server error")
             handle_push_notification(hamlet.id, missed_message)
@@ -284,7 +288,7 @@ class SendPushNotificationTest(E2EEPushNotificationTestCase):
             )
             self.assertEqual(
                 "INFO:zerver.lib.push_notifications:"
-                f"Sent E2EE mobile push notifications for user {hamlet.id}: 0 via FCM, 1 via APNs",
+                f"Sent E2EE mobile push notifications for user {hamlet.id}: 0 via FCM, 1 via APNs in 2.000s",
                 zerver_logger.output[2],
             )
 
@@ -366,6 +370,7 @@ class SendPushNotificationTest(E2EEPushNotificationTestCase):
             ),
             self.assertLogs("zerver.lib.push_notifications", level="INFO") as zerver_logger,
             self.assertLogs("zilencer.lib.push_notifications", level="INFO") as zilencer_logger,
+            mock.patch("time.perf_counter", side_effect=[10.05, 12.10]),
         ):
             mock_fcm_messaging.send_each.return_value = self.make_fcm_success_response()
             send_notification.return_value.is_successful = True
@@ -397,7 +402,7 @@ class SendPushNotificationTest(E2EEPushNotificationTestCase):
             )
             self.assertEqual(
                 "INFO:zerver.lib.push_notifications:"
-                f"Sent E2EE mobile push notifications for user {hamlet.id}: 1 via FCM, 1 via APNs",
+                f"Sent E2EE mobile push notifications for user {hamlet.id}: 1 via FCM, 1 via APNs in 2.050s",
                 zerver_logger.output[3],
             )
 
@@ -564,6 +569,7 @@ class SendPushNotificationTest(E2EEPushNotificationTestCase):
             ),
             self.assertLogs("zerver.lib.push_notifications", level="INFO") as zerver_logger,
             self.assertLogs("zilencer.lib.push_notifications", level="INFO") as zilencer_logger,
+            mock.patch("time.perf_counter", side_effect=[10.0, 12.0]),
         ):
             mock_fcm_messaging_legacy.send_each.return_value = self.make_fcm_success_response(
                 for_legacy=True
@@ -608,7 +614,7 @@ class SendPushNotificationTest(E2EEPushNotificationTestCase):
             )
             self.assertEqual(
                 "INFO:zerver.lib.push_notifications:"
-                f"Sent E2EE mobile push notifications for user {hamlet.id}: 1 via FCM, 1 via APNs",
+                f"Sent E2EE mobile push notifications for user {hamlet.id}: 1 via FCM, 1 via APNs in 2.000s",
                 zerver_logger.output[7],
             )
 
@@ -716,6 +722,7 @@ class RemovePushNotificationTest(E2EEPushNotificationTestCase):
             self.mock_apns() as send_notification,
             self.assertLogs("zerver.lib.push_notifications", level="INFO") as zerver_logger,
             self.assertLogs("zilencer.lib.push_notifications", level="INFO"),
+            mock.patch("time.perf_counter", side_effect=[10.0, 12.0]),
         ):
             mock_fcm_messaging.send_each.return_value = self.make_fcm_success_response()
             send_notification.return_value.is_successful = True
@@ -730,7 +737,7 @@ class RemovePushNotificationTest(E2EEPushNotificationTestCase):
 
             self.assertEqual(
                 "INFO:zerver.lib.push_notifications:"
-                f"Sent E2EE mobile push notifications for user {hamlet.id}: 1 via FCM, 1 via APNs",
+                f"Sent E2EE mobile push notifications for user {hamlet.id}: 1 via FCM, 1 via APNs in 2.000s",
                 zerver_logger.output[2],
             )
 
@@ -759,6 +766,7 @@ class RemovePushNotificationTest(E2EEPushNotificationTestCase):
             ),
             self.assertLogs("zerver.lib.push_notifications", level="INFO") as zerver_logger,
             self.assertLogs("zilencer.lib.push_notifications", level="INFO"),
+            mock.patch("time.perf_counter", side_effect=[10.0, 12.0]),
         ):
             mock_fcm_messaging.send_each.return_value = self.make_fcm_success_response()
             send_notification.return_value.is_successful = True
@@ -773,7 +781,7 @@ class RemovePushNotificationTest(E2EEPushNotificationTestCase):
 
             self.assertEqual(
                 "INFO:zerver.lib.push_notifications:"
-                f"Sent E2EE mobile push notifications for user {hamlet.id}: 1 via FCM, 1 via APNs",
+                f"Sent E2EE mobile push notifications for user {hamlet.id}: 1 via FCM, 1 via APNs in 2.000s",
                 zerver_logger.output[2],
             )
 
@@ -891,6 +899,7 @@ class SendTestPushNotificationTest(E2EEPushNotificationTestCase):
             self.mock_apns() as send_notification,
             self.assertLogs("zilencer.lib.push_notifications", level="INFO"),
             self.assertLogs("zerver.lib.push_notifications", level="INFO") as zerver_logger,
+            mock.patch("time.perf_counter", side_effect=[10.0, 12.0, 13.0, 16.0]),
         ):
             mock_fcm_messaging.send_each.return_value = self.make_fcm_success_response()
             send_notification.return_value.is_successful = True
@@ -911,7 +920,7 @@ class SendTestPushNotificationTest(E2EEPushNotificationTestCase):
             )
             self.assertEqual(
                 "INFO:zerver.lib.push_notifications:"
-                f"Sent E2EE mobile push notifications for user {hamlet.id}: 1 via FCM, 1 via APNs",
+                f"Sent E2EE mobile push notifications for user {hamlet.id}: 1 via FCM, 1 via APNs in 2.000s",
                 zerver_logger.output[-1],
             )
 
@@ -931,7 +940,7 @@ class SendTestPushNotificationTest(E2EEPushNotificationTestCase):
             )
             self.assertEqual(
                 "INFO:zerver.lib.push_notifications:"
-                f"Sent E2EE mobile push notifications for user {hamlet.id}: 1 via FCM, 0 via APNs",
+                f"Sent E2EE mobile push notifications for user {hamlet.id}: 1 via FCM, 0 via APNs in 3.000s",
                 zerver_logger.output[-1],
             )
 
@@ -952,6 +961,7 @@ class SendTestPushNotificationTest(E2EEPushNotificationTestCase):
             ),
             self.assertLogs("zilencer.lib.push_notifications", level="INFO"),
             self.assertLogs("zerver.lib.push_notifications", level="INFO") as zerver_logger,
+            mock.patch("time.perf_counter", side_effect=[10.0, 12.0]),
         ):
             mock_fcm_messaging.send_each.return_value = self.make_fcm_success_response()
             send_notification.return_value.is_successful = True
@@ -972,7 +982,7 @@ class SendTestPushNotificationTest(E2EEPushNotificationTestCase):
             )
             self.assertEqual(
                 "INFO:zerver.lib.push_notifications:"
-                f"Sent E2EE mobile push notifications for user {hamlet.id}: 1 via FCM, 1 via APNs",
+                f"Sent E2EE mobile push notifications for user {hamlet.id}: 1 via FCM, 1 via APNs in 2.000s",
                 zerver_logger.output[-1],
             )
 
