@@ -584,15 +584,17 @@ ul.popover-group-menu-member-list {
         }
     }
 
+    .group-list-top-section {
+        display: flex;
+        align-items: center;
+    }
+
     .group-list-top-section,
     .stream-list-top-section {
-        display: flex;
         margin-top: 12px;
-        align-items: center;
         margin-bottom: 5px;
 
-        .group-search-container,
-        .stream-search-container {
+        .group-search-container {
             margin-left: auto;
             display: grid;
             grid-template:
@@ -600,18 +602,63 @@ ul.popover-group-menu-member-list {
                 30px;
         }
 
+        .stream-search-container {
+            display: grid;
+            grid-template:
+                "search-icon search-input clear-search" auto / 30px minmax(
+                    0,
+                    1fr
+                )
+                30px;
+            margin: 4px 4px 2px;
+        }
+
+        .search_icon {
+            grid-area: search-icon;
+            align-self: center;
+            text-decoration: none;
+            padding: 0 0.4117em; /* 7px at 17px em */
+            font-size: 1.0625em; /* 17px at 16px em */
+            border: none;
+            background-color: transparent;
+            color: var(--color-search-icons);
+            opacity: 0.5;
+            cursor: default;
+
+            &:active,
+            &:focus {
+                outline: none;
+            }
+
+            &:disabled {
+                visibility: hidden;
+            }
+        }
+
+        .stream-search {
+            grid-column: search-icon-start / clear-search-end;
+            padding-left: 28px;
+        }
+
+        .group-search {
+            grid-column: search-input-start / clear-search-end;
+            /* Override default modal input width, since that overflows.
+               This is 185px (the default "width: unset" width) at 14px/em */
+            width: 13.2142em;
+        }
+
         .group-search,
         .stream-search {
-            grid-column: search-input-start / clear-search-end;
             grid-row: search-input;
             padding-right: 28px;
             white-space: nowrap;
             text-overflow: ellipsis;
             overflow: hidden;
             margin-bottom: 0;
-            /* Override default modal input width, since that overflows.
-               This is 185px (the default "width: unset" width) at 14px/em */
-            width: 13.2142em;
+        }
+
+        .clear_search_button {
+            grid-area: clear-search;
         }
 
         .group-search:placeholder-shown + #clear_groups_search,
@@ -620,8 +667,58 @@ ul.popover-group-menu-member-list {
         }
     }
 
-    .subscription-group-list,
-    .subscription-stream-list {
+    .stream-list-container {
+        height: 40vh;
+        overflow: hidden;
+        border-radius: 6px;
+        background-color: inherit;
+        border: 1px solid hsl(0deg 0% 0% / 40%);
+
+        .user-profile-channel-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 10px;
+            align-items: center;
+
+            .user-stream-list-item {
+                display: flex;
+                overflow: hidden;
+            }
+
+            .user-group-name,
+            .user-stream-name {
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                padding-right: 2px;
+            }
+        }
+
+        .subscription-stream-list {
+            max-height: calc(40vh - 2.4em);
+
+            .user-stream-list {
+                list-style: none;
+                margin: 0;
+            }
+        }
+
+        .stream-list-item {
+            color: var(--color-dropdown-item);
+            cursor: pointer;
+        }
+
+        .stream-list-item:hover {
+            background-color: var(--color-background-hover-narrow-filter);
+        }
+
+        .remove-button-wrapper {
+            display: flex;
+            justify-content: flex-end;
+        }
+    }
+
+    .subscription-group-list {
         border: 1px solid hsl(0deg 0% 83%);
         border-radius: 4px;
         overflow: auto;
@@ -629,7 +726,6 @@ ul.popover-group-menu-member-list {
         margin-bottom: 5px;
         -webkit-overflow-scrolling: touch;
 
-        .user-stream-list,
         .user-group-list {
             width: 100%;
             margin: auto;
@@ -649,20 +745,13 @@ ul.popover-group-menu-member-list {
                 & td {
                     padding: 4px 0;
 
-                    &.remove_subscription,
                     &.remove_member {
                         padding-right: 10px;
                     }
 
-                    &.user-profile-channel-row,
                     &.user-profile-group-row {
                         text-align: left;
                         padding-left: 10px;
-
-                        & .user-profile-channel-container {
-                            display: flex;
-                            gap: 3px;
-                        }
                     }
                 }
             }
@@ -749,7 +838,7 @@ ul.popover-group-menu-member-list {
             }
 
             .group-search,
-            .stream-search {
+            .stream-search-container {
                 margin-bottom: 8px;
             }
 
