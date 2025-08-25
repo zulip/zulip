@@ -16,6 +16,12 @@ assert.ok(
 lightbulb_icon_first_child.properties.class =
     "zulip-unplugin-icon aside-icon-lightbulb";
 
+// We want to add the `Tip: ` prefix without a line break or wrapping
+// it in a paragraph. If we write `Tip: <slot />`, slot will be wrapped
+// in it's own paragraph and thus will be placed on the next line as
+// `Tip:`. We have to edit slot HTML tree directly instead to solve this.
+// Same case applies for the ligthbulb icon we are inserting. We just
+// inject the icon as raw svg.
 let prefix_element_list = [
     lightbulb_icon_first_child,
     {
