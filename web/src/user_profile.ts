@@ -339,18 +339,10 @@ function render_user_stream_list(streams: StreamSubscription[], user: User): voi
         modifier_html(item) {
             return format_user_stream_list_item_html(item, user);
         },
-        callback_after_render() {
-            $container.parent().removeClass("empty-list");
-        },
         filter: {
             $element: $("#user-profile-streams-tab .stream-search"),
             predicate(item, value) {
                 return item?.name.toLocaleLowerCase().includes(value);
-            },
-            onupdate() {
-                if ($container.find(".empty-table-message").length > 0) {
-                    $container.parent().addClass("empty-list");
-                }
             },
         },
         $simplebar_container: $("#user-profile-modal .modal__body"),
@@ -1333,6 +1325,7 @@ export function initialize(): void {
 
     $("body").on("click", "#user-profile-modal .remove-subscription-button", (e) => {
         e.preventDefault();
+        e.stopPropagation();
         const $remove_button = $(e.currentTarget).closest(".remove-subscription-button");
         buttons.show_button_loading_indicator($remove_button);
         const $stream_row = $(e.currentTarget).closest("[data-stream-id]");

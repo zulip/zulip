@@ -1475,6 +1475,22 @@
         hsl(0deg 0% 87%),
         hsl(0deg 0% 100% / 20%)
     );
+    --color-border-user-profile-list-container: light-dark(
+        hsl(0deg 0% 0% / 35%),
+        hsl(0deg 0% 100% / 30%)
+    );
+    --background-color-user-profile-list-container: light-dark(
+        hsl(0deg 0% 100%),
+        hsl(0deg 0% 17%)
+    );
+    --color-user-profile-list-item-hover: light-dark(
+        hsl(0deg 0% 97%),
+        hsl(0deg 0% 21%)
+    );
+    --color-outline-user-profile-list-item: light-dark(
+        hsl(0deg 0% 0%),
+        hsl(0deg 0% 100%)
+    );
 
     /* Link colors */
     --color-text-link: light-dark(hsl(210deg 94% 42%), hsl(200deg 100% 50%));
