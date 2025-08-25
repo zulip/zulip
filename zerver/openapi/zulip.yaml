@@ -23857,8 +23857,6 @@ paths:
                   example: true
                 folder_id:
                   $ref: "#/components/schemas/FolderId"
-                send_new_subscription_messages:
-                  $ref: "#/components/schemas/SendNewSubscriptionMessages"
                 topics_policy:
                   $ref: "#/components/schemas/TopicsPolicy"
                 history_public_to_subscribers:
