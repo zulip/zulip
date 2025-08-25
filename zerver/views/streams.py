@@ -738,7 +738,6 @@ def create_channel(
     is_default_stream: Json[bool] = False,
     message_retention_days: Json[str] | Json[int] = RETENTION_DEFAULT,
     name: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1)],
-    send_new_subscription_messages: Json[bool] = True,
     subscribers: Json[list[int]],
     topics_policy: Json[TopicsPolicy] = None,
 ) -> HttpResponse:
@@ -825,18 +824,16 @@ def create_channel(
         new_subscribers,
         acting_user=user_profile,
     )
-    if (
-        send_new_subscription_messages
-        and len(new_subscribers) <= settings.MAX_BULK_NEW_SUBSCRIPTION_MESSAGES
-    ):
-        send_user_subscribed_and_new_channel_notifications(
-            user_profile=user_profile,
-            subscribers=new_subscribers,
-            new_subscriptions={str(user.id): [name] for user in new_subscribers},
-            id_to_user_profile={str(user.id): user for user in new_subscribers},
-            created_streams=[new_channel],
-            announce=announce,
-        )
+    # We never send DM notifications about newly created channels, so we only
+    # need to send the data for the new channel notification messages.
+    send_user_subscribed_and_new_channel_notifications(
+        user_profile=user_profile,
+        subscribers=set(),
+        new_subscriptions={},
+        id_to_user_profile={},
+        created_streams=[new_channel],
+        announce=announce,
+    )
 
     return json_success(
         request,
