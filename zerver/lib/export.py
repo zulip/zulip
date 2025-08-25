@@ -314,6 +314,9 @@ MESSAGE_TABLES = {
     # zerver_reaction belongs here, since it's added late because it
     # has a foreign key into the Message table.
     "zerver_reaction",
+    # zerver_client is also written after we know what clients got
+    # used
+    "zerver_client",
 }
 
 # These get their own file as analytics data can be quite large and
