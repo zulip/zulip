@@ -195,7 +195,46 @@ export function update_dom_with_unread_counts(
 
     if (new_direct_message_count > last_direct_message_count && !skip_animations) {
         const $dm_header = $("#direct-messages-section-header");
-        ui_util.do_new_unread_animation($dm_header);
+        const $top_dm_item = $(".dm-list .dm-list-item:first-child");
+        const top_item_active = $top_dm_item.hasClass("active-sub-filter");
+        const top_item_no_unreads = $top_dm_item.hasClass("zero-dm-unreads");
+        const $scroll_wrapper = $("#left_sidebar_scroll_container .simplebar-content-wrapper");
+        let dms_scrolled_up = false;
+
+        if ($scroll_wrapper.length > 0) {
+            const scroll_top = $scroll_wrapper.scrollTop() ?? 0;
+            dms_scrolled_up = scroll_top > 0;
+        }
+        // If the DMs area is scrolled up at all, we highlight the
+        // DM header's count. It is possible for the DMs section to
+        // be collapsed *and* the active conversation be scrolled
+        // out of view, too, so we err on the side of highlighting
+        // the header row.
+        // If the DMs area is collapsed without the top item being
+        // active, as is the case when narrowed to a DM, or if the
+        // active DM item has the .zero-dm-unreads class, we highlight
+        // the DM header's count.
+        // That makes the assumption that a new DM has arrived in a
+        // conversation other than the active one. Note that that will
+        // fail animate anything--the header or the row--when an unread
+        // arrives for a conversion other than the active one. But in
+        // typical active DMing, unreads will be cleared immediately,
+        // so that should be a fairly rare edge case.
+        if (
+            dms_scrolled_up ||
+            (is_private_messages_collapsed() && !top_item_active) ||
+            top_item_no_unreads
+        ) {
+            ui_util.do_new_unread_animation($dm_header);
+        }
+        // Unless the top item has the active-sub-filter class, which
+        // we won't highlight to avoid annoying users in an active,
+        // ongoing conversation, we highlight the top DM row, where
+        // the newly arrived unread message will be, as the DM list
+        // will be resorted by the time this logic runs.
+        else if (!top_item_active) {
+            ui_util.do_new_unread_animation($top_dm_item);
+        }
     }
 
     last_direct_message_count = new_direct_message_count;
