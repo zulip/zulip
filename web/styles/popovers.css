@@ -547,6 +547,29 @@ ul.popover-group-menu-member-list {
         font-size: 1.5em;
     }
 
+    #user-profile-streams-tab {
+        /* Assign the height for the tab content minus the 20px margin of container */
+        height: calc(60vh - 20px);
+        display: grid;
+        grid-template:
+            "alert" auto
+            "top" minmax(0, 1fr)
+            "bottom" auto
+            / minmax(0, 1fr);
+
+        .stream_list_info {
+            grid-area: alert;
+        }
+
+        .stream-list-bottom-section {
+            grid-area: bottom;
+        }
+
+        .stream-list-top-section {
+            grid-area: top;
+        }
+    }
+
     #user-profile-groups-tab,
     #user-profile-streams-tab {
         .stream_list_info {
@@ -580,15 +603,22 @@ ul.popover-group-menu-member-list {
         }
     }
 
-    .group-list-top-section,
-    .stream-list-top-section {
+    .group-list-top-section {
         display: flex;
         margin-top: 0.75em;
         align-items: center;
         margin-bottom: 0.3125em;
+    }
 
-        .group-search-container,
-        .stream-search-container {
+    .stream-list-top-section {
+        margin-top: 0.3125em;
+        margin-bottom: 0.75em;
+    }
+
+    .group-list-top-section,
+    .stream-list-top-section {
+
+        .group-search-container {
             margin-left: auto;
             display: grid;
             grid-template:
@@ -596,8 +626,7 @@ ul.popover-group-menu-member-list {
                 30px;
         }
 
-        .group-search,
-        .stream-search {
+        .group-search {
             grid-column: search-input-start / clear-search-end;
             grid-row: search-input;
             padding-right: 1.75em;
@@ -618,8 +647,63 @@ ul.popover-group-menu-member-list {
         }
     }
 
-    .subscription-group-list,
-    .subscription-stream-list {
+    .stream-list-container {
+        /* Takes up the full top section space minus the header space */
+        height: calc(100% - 40px);
+        border-radius: 4px;
+        background-color: var(--background-color-user-profile-list-container);
+        border: 1px solid var(--color-border-user-profile-list-container);
+        padding: 0.25em 0.25em 0;
+        margin-bottom: 5px;
+        -webkit-overflow-scrolling: touch;
+
+        .user-profile-channel-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.3125em 0.625em;
+            align-items: center;
+
+            .user-stream-list-item {
+                display: flex;
+                overflow: hidden;
+            }
+
+            .user-stream-name {
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                padding-right: 2px;
+            }
+        }
+
+        .subscription-stream-list {
+            /* We set max-height to remaining height of stream-list-container
+               so that we don't clip it. Search field height takes up 2em of total. */
+            height: calc(100% - 2em);
+
+            .user-stream-list {
+                list-style: none;
+                margin: 0;
+            }
+        }
+
+        .stream-list-item {
+            border-radius: 4px;
+            color: var(--color-dropdown-item);
+            cursor: pointer;
+        }
+
+        .stream-list-item:hover {
+            background-color: var(--color-user-profile-list-item-hover);
+        }
+
+        .stream-list-item:focus-visible {
+            outline: 1px solid var(--color-outline-user-profile-list-item);
+            outline-offset: -2px;
+        }
+    }
+
+    .subscription-group-list {
         border: 1px solid var(--color-border-user-profile-table);
         border-radius: 4px;
         overflow: auto;
@@ -627,7 +711,6 @@ ul.popover-group-menu-member-list {
         margin-bottom: 5px;
         -webkit-overflow-scrolling: touch;
 
-        .user-stream-list,
         .user-group-list {
             width: 100%;
             margin: auto;
@@ -647,20 +730,13 @@ ul.popover-group-menu-member-list {
                 & td {
                     padding: 4px 0;
 
-                    &.remove_subscription,
                     &.remove_member {
                         padding-right: 10px;
                     }
 
-                    &.user-profile-channel-row,
                     &.user-profile-group-row {
                         text-align: left;
                         padding-left: 10px;
-
-                        & .user-profile-channel-container {
-                            display: flex;
-                            gap: 3px;
-                        }
                     }
                 }
             }
@@ -746,13 +822,11 @@ ul.popover-group-menu-member-list {
                 width: 100%;
             }
 
-            .group-search,
-            .stream-search {
+            .group-search {
                 margin-bottom: 8px;
             }
 
-            #clear_groups_search,
-            #clear_stream_search {
+            #clear_groups_search {
                 padding-top: 1px;
             }
         }
