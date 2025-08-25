@@ -4416,7 +4416,7 @@ class SubscriptionAPITest(ZulipTestCase):
         with (
             self.assert_database_query_count(23),
             self.assert_memcached_count(11),
-            mock.patch("zerver.views.streams.send_messages_for_new_subscribers"),
+            mock.patch("zerver.views.streams.send_user_subscribed_and_new_channel_notifications"),
         ):
             self.subscribe_via_post(
                 desdemona,
