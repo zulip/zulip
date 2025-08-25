@@ -356,9 +356,6 @@ function render_user_group_list(groups: UserGroup[], user: User): void {
     user_groups_list_widget = ListWidget.create($container, groups, {
         name: `user-${user.user_id}-group-list`,
         get_item: ListWidget.default_get_item,
-        callback_after_render() {
-            $container.parent().removeClass("empty-list");
-        },
         modifier_html(item) {
             return format_user_group_list_item_html(item, user);
         },
@@ -366,11 +363,6 @@ function render_user_group_list(groups: UserGroup[], user: User): void {
             $element: $("#user-profile-groups-tab .group-search"),
             predicate(item, value) {
                 return item?.name.toLocaleLowerCase().includes(value);
-            },
-            onupdate() {
-                if ($container.find(".empty-table-message").length > 0) {
-                    $container.parent().addClass("empty-list");
-                }
             },
         },
         $simplebar_container: $("#user-profile-modal .modal__body"),
@@ -1391,6 +1383,7 @@ export function initialize(): void {
 
     $("body").on("click", "#user-profile-modal .remove-member-button", (e) => {
         e.preventDefault();
+        e.stopPropagation();
         const $remove_button = $(e.currentTarget).closest(".remove-member-button");
         buttons.show_button_loading_indicator($remove_button);
         const $group_row = $(e.currentTarget).closest("[data-group-id]");
