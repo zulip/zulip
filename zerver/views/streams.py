@@ -829,7 +829,7 @@ def create_channel(
         send_new_subscription_messages
         and len(new_subscribers) <= settings.MAX_BULK_NEW_SUBSCRIPTION_MESSAGES
     ):
-        send_messages_for_new_subscribers(
+        send_user_subscribed_and_new_channel_notifications(
             user_profile=user_profile,
             subscribers=new_subscribers,
             new_subscriptions={str(user.id): [name] for user in new_subscribers},
@@ -1017,7 +1017,7 @@ def add_subscriptions_backend(
 
     if send_new_subscription_messages:
         if len(result["subscribed"]) <= settings.MAX_BULK_NEW_SUBSCRIPTION_MESSAGES:
-            send_messages_for_new_subscribers(
+            send_user_subscribed_and_new_channel_notifications(
                 user_profile=user_profile,
                 subscribers=subscribers,
                 new_subscriptions=result["subscribed"],
@@ -1036,7 +1036,7 @@ def add_subscriptions_backend(
     return json_success(request, data=result)
 
 
-def send_messages_for_new_subscribers(
+def send_user_subscribed_and_new_channel_notifications(
     user_profile: UserProfile,
     subscribers: set[UserProfile],
     new_subscriptions: dict[str, list[str]],
