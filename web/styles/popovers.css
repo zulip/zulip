@@ -579,15 +579,17 @@ ul.popover-group-menu-member-list {
         }
     }
 
+    .group-list-top-section {
+        display: flex;
+        align-items: center;
+    }
+
     .group-list-top-section,
     .stream-list-top-section {
-        display: flex;
         margin-top: 0.75em;
-        align-items: center;
         margin-bottom: 0.3125em;
 
-        .group-search-container,
-        .stream-search-container {
+        .group-search-container {
             margin-left: auto;
             display: grid;
             grid-template:
@@ -595,8 +597,7 @@ ul.popover-group-menu-member-list {
                 30px;
         }
 
-        .group-search,
-        .stream-search {
+        .group-search {
             grid-column: search-input-start / clear-search-end;
             grid-row: search-input;
             padding-right: 1.75em;
@@ -615,8 +616,60 @@ ul.popover-group-menu-member-list {
         }
     }
 
-    .subscription-group-list,
-    .subscription-stream-list {
+    .stream-list-container {
+        height: 40vh;
+        border-radius: 4px;
+        background-color: inherit;
+        border: 1px solid var(--color-border-user-profile-table);
+        padding: 0.25em 0.25em 0;
+        margin-bottom: 5px;
+        -webkit-overflow-scrolling: touch;
+
+        .user-profile-channel-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.3125em 0.625em;
+            align-items: center;
+
+            .user-stream-list-item {
+                display: flex;
+                overflow: hidden;
+            }
+
+            .user-group-name,
+            .user-stream-name {
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                padding-right: 2px;
+            }
+        }
+
+        .subscription-stream-list {
+            /* We set max-height to remaining height of stream-list-container
+               so that we don't clip it. Search field height takes up 2em of total. */
+            max-height: calc(40vh - 2em);
+            /* We offset the margin to counter the horizontal padding in
+               stream-list-container */
+            margin: 0 -0.25em;
+
+            .user-stream-list {
+                list-style: none;
+                margin: 0;
+            }
+        }
+
+        .stream-list-item {
+            color: var(--color-dropdown-item);
+            cursor: pointer;
+        }
+
+        .stream-list-item:hover {
+            background-color: var(--color-background-hover-narrow-filter);
+        }
+    }
+
+    .subscription-group-list {
         border: 1px solid var(--color-border-user-profile-table);
         border-radius: 4px;
         overflow: auto;
@@ -624,7 +677,6 @@ ul.popover-group-menu-member-list {
         margin-bottom: 5px;
         -webkit-overflow-scrolling: touch;
 
-        .user-stream-list,
         .user-group-list {
             width: 100%;
             margin: auto;
@@ -644,20 +696,13 @@ ul.popover-group-menu-member-list {
                 & td {
                     padding: 4px 0;
 
-                    &.remove_subscription,
                     &.remove_member {
                         padding-right: 10px;
                     }
 
-                    &.user-profile-channel-row,
                     &.user-profile-group-row {
                         text-align: left;
                         padding-left: 10px;
-
-                        & .user-profile-channel-container {
-                            display: flex;
-                            gap: 3px;
-                        }
                     }
                 }
             }
@@ -743,13 +788,11 @@ ul.popover-group-menu-member-list {
                 width: 100%;
             }
 
-            .group-search,
-            .stream-search {
+            .group-search {
                 margin-bottom: 8px;
             }
 
-            #clear_groups_search,
-            #clear_stream_search {
+            #clear_groups_search {
                 padding-top: 1px;
             }
         }

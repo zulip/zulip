@@ -338,18 +338,10 @@ function render_user_stream_list(streams: StreamSubscription[], user: User): voi
         modifier_html(item) {
             return format_user_stream_list_item_html(item, user);
         },
-        callback_after_render() {
-            $container.parent().removeClass("empty-list");
-        },
         filter: {
             $element: $("#user-profile-streams-tab .stream-search"),
             predicate(item, value) {
                 return item?.name.toLocaleLowerCase().includes(value);
-            },
-            onupdate() {
-                if ($container.find(".empty-table-message").length > 0) {
-                    $container.parent().addClass("empty-list");
-                }
             },
         },
         $simplebar_container: $("#user-profile-modal .modal__body"),
@@ -1300,6 +1292,7 @@ export function initialize(): void {
 
     $("body").on("click", "#user-profile-modal .remove-subscription-button", (e) => {
         e.preventDefault();
+        e.stopPropagation();
         const $remove_button = $(e.currentTarget).closest(".remove-subscription-button");
         buttons.show_button_loading_indicator($remove_button);
         const $stream_row = $(e.currentTarget).closest("[data-stream-id]");
@@ -1361,6 +1354,15 @@ export function initialize(): void {
             return;
         }
         handle_remove_stream_subscription(target_user_id, sub, removal_success, removal_failure);
+    });
+
+    $("body").on("click", "#user-profile-modal .stream-list-item", (e) => {
+        const $stream_row = $(e.currentTarget).closest(".stream-list-item");
+        const stream_id = Number.parseInt($stream_row.attr("data-stream-id")!, 10);
+        const sub = sub_store.get(stream_id);
+
+        assert(sub !== undefined);
+        browser_history.go_to_location(hash_util.channels_settings_edit_url(sub, "general"));
     });
 
     $("body").on("click", "#user-profile-modal .remove-member-button", (e) => {
