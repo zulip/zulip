@@ -1045,24 +1045,22 @@ def send_user_subscribed_and_new_channel_notifications(
     announce: bool,
 ) -> None:
     """
-    If you are subscribing lots of new users to new streams,
-    this function can be pretty expensive in terms of generating
-    lots of queries and sending lots of messages.  We isolate
+    If a user is subscribing lots of other users to existing channels,
+    then this function can be pretty expensive in terms of generating
+    lots of queries and sending lots of direct messages. We isolate
     the code partly to make it easier to test things like
     excessive query counts by mocking this function so that it
     doesn't drown out query counts from other code.
     """
-    bots = {str(subscriber.id): subscriber.is_bot for subscriber in subscribers}
-
-    newly_created_stream_names = {s.name for s in created_streams}
-
-    realm = user_profile.realm
-    mention_backend = MentionBackend(realm.id)
-
-    # Inform the user if someone else subscribed them to stuff,
-    # or if a new stream was created with the "announce" option.
     notifications = []
+    # Inform users if someone else subscribed them to an existing channel.
     if new_subscriptions:
+        bots = {str(subscriber.id): subscriber.is_bot for subscriber in subscribers}
+
+        newly_created_stream_names = {s.name for s in created_streams}
+
+        realm = user_profile.realm
+        mention_backend = MentionBackend(realm.id)
         for id, subscribed_stream_names in new_subscriptions.items():
             if id == str(user_profile.id):
                 # Don't send a notification DM if you subscribed yourself.
@@ -1071,8 +1069,8 @@ def send_user_subscribed_and_new_channel_notifications(
                 # Don't send notification DMs to bots.
                 continue
 
-            # For each user, we notify them about newly subscribed streams, except for
-            # streams that were newly created.
+            # For each user, we notify them about newly subscribed channels, except for
+            # channels that were newly created.
             notify_stream_names = set(subscribed_stream_names) - newly_created_stream_names
 
             if not notify_stream_names:
@@ -1097,6 +1095,7 @@ def send_user_subscribed_and_new_channel_notifications(
                 )
             )
 
+    # Send notification if a new channel was created with the "announce" option.
     if announce and len(created_streams) > 0:
         new_stream_announcements_stream = user_profile.realm.new_stream_announcements_stream
         if new_stream_announcements_stream is not None:
@@ -1132,6 +1131,7 @@ def send_user_subscribed_and_new_channel_notifications(
                 ),
             )
 
+    # Send an initial "channel created" notification to newly created channel events topic.
     if not user_profile.realm.is_zephyr_mirror_realm and len(created_streams) > 0:
         sender = get_system_bot(settings.NOTIFICATION_BOT, user_profile.realm_id)
         for stream in created_streams:
