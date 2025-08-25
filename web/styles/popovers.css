@@ -547,6 +547,7 @@ ul.popover-group-menu-member-list {
         font-size: 1.5em;
     }
 
+    #user-profile-groups-tab,
     #user-profile-streams-tab {
         /* Assign the height for the tab content minus the 20px margin of container */
         height: calc(60vh - 20px);
@@ -554,27 +555,15 @@ ul.popover-group-menu-member-list {
         grid-template-rows: auto minmax(0, 1fr) auto;
         grid-template-columns: minmax(0, 1fr);
 
-        .stream_list_info {
-            grid-row: 1;
-        }
-
-        .stream-list-bottom-section {
-            grid-row: 3;
-        }
-
-        .stream-list-top-section {
-            grid-row: 2;
-        }
-    }
-
-    #user-profile-groups-tab,
-    #user-profile-streams-tab {
-        .stream_list_info {
-            margin-bottom: 8px;
-        }
-
+        .stream_list_info,
         .user-profile-group-list-alert {
+            grid-row: 1;
             margin-bottom: 8px;
+        }
+
+        .stream-list-bottom-section,
+        .group-list-bottom-section {
+            grid-row: 3;
         }
 
         .stream-privacy {
@@ -600,43 +589,11 @@ ul.popover-group-menu-member-list {
         }
     }
 
-    .group-list-top-section {
-        display: flex;
-        margin-top: 0.75em;
-        align-items: center;
-        margin-bottom: 0.3125em;
-    }
-
-    .stream-list-top-section {
-        margin-top: 0.3125em;
-        margin-bottom: 0.75em;
-    }
-
     .group-list-top-section,
     .stream-list-top-section {
-
-        .group-search-container {
-            margin-left: auto;
-            display: grid;
-            grid-template:
-                "search-input clear-search" auto / minmax(0, 1fr)
-                30px;
-        }
-
-        .group-search {
-            grid-column: search-input-start / clear-search-end;
-            grid-row: search-input;
-            padding-right: 1.75em;
-            white-space: nowrap;
-            text-overflow: ellipsis;
-            overflow: hidden;
-            margin-bottom: 0;
-            /* Override default modal input width, since that overflows.
-               This is 185px (the default "width: unset" width) at 14px/em */
-            width: 13.2142em;
-            /* subtract padding (6px on left and 28px on right) and border (1px each side) */
-            max-width: calc(100% - 36px);
-        }
+        grid-row: 2;
+        margin-top: 0.3125em;
+        margin-bottom: 0.75em;
 
         .group-search:placeholder-shown + #clear_groups_search,
         .stream-search:placeholder-shown + #clear_stream_search {
@@ -644,6 +601,7 @@ ul.popover-group-menu-member-list {
         }
     }
 
+    .group-list-container,
     .stream-list-container {
         /* Takes up the full top section space minus the header space */
         height: calc(100% - 40px);
@@ -654,12 +612,14 @@ ul.popover-group-menu-member-list {
         margin-bottom: 5px;
         -webkit-overflow-scrolling: touch;
 
+        .user-profile-group-row,
         .user-profile-channel-row {
             display: flex;
             justify-content: space-between;
             padding: 0.3125em 0.625em;
             align-items: center;
 
+            .user-group-list-item,
             .user-stream-list-item {
                 display: flex;
                 overflow: hidden;
@@ -674,75 +634,35 @@ ul.popover-group-menu-member-list {
             }
         }
 
+        .subscription-group-list,
         .subscription-stream-list {
             /* We set max-height to remaining height of stream-list-container
                so that we don't clip it. Search field height takes up 2em of total. */
             height: calc(100% - 2em);
 
+            .user-group-list,
             .user-stream-list {
                 list-style: none;
                 margin: 0;
             }
         }
 
+        .group-list-item,
         .stream-list-item {
             border-radius: 4px;
             color: var(--color-dropdown-item);
             cursor: pointer;
         }
 
+        .group-list-item:hover,
         .stream-list-item:hover {
             background-color: var(--color-user-profile-list-item-hover);
         }
 
+        .group-list-item:focus-visible,
         .stream-list-item:focus-visible {
             outline: 1px solid var(--color-outline-user-profile-list-item);
             outline-offset: -2px;
-        }
-    }
-
-    .subscription-group-list {
-        border: 1px solid var(--color-border-user-profile-table);
-        border-radius: 4px;
-        overflow: auto;
-        text-align: left;
-        margin-bottom: 5px;
-        -webkit-overflow-scrolling: touch;
-
-        .user-group-list {
-            width: 100%;
-            margin: auto;
-            border-radius: 6px;
-            border-collapse: collapse;
-
-            & tr {
-                border-bottom: 1px solid var(--color-border-user-profile-table);
-                /* Ensure equal height for rows with a remove-subscription-button and
-                   those without one. */
-                height: 34px;
-
-                &:last-of-type {
-                    border-bottom: none;
-                }
-
-                & td {
-                    padding: 4px 0;
-
-                    &.remove_member {
-                        padding-right: 10px;
-                    }
-
-                    &.user-profile-group-row {
-                        text-align: left;
-                        padding-left: 10px;
-                    }
-                }
-            }
-
-            .remove-button-wrapper {
-                display: flex;
-                justify-content: flex-end;
-            }
         }
     }
 
@@ -764,14 +684,6 @@ ul.popover-group-menu-member-list {
                 padding-top: unset;
                 padding-bottom: unset;
             }
-        }
-    }
-
-    .empty-list {
-        border: none;
-
-        .empty-table-message {
-            padding: 3em 1em;
         }
     }
 }
@@ -818,14 +730,6 @@ ul.popover-group-menu-member-list {
 
             .header-section {
                 width: 100%;
-            }
-
-            .group-search {
-                margin-bottom: 8px;
-            }
-
-            #clear_groups_search {
-                padding-top: 1px;
             }
         }
     }
