@@ -15,6 +15,12 @@ assert.ok(
 );
 keyboard_icon_first_child.properties.class = "zulip-unplugin-icon";
 
+// We want to add the `Keyboard tip: ` prefix without a line break or
+// wrapping it in a paragraph. If we write `Keyboard tip: <slot />`,
+// slot will be wrapped in it's own paragraph and thus will be placed on
+// the next line as `Keyboard tip:`. We have to edit slot HTML tree
+// directly instead to solve this. Same case applies for the keyboard
+// icon we are inserting. We just inject the icon as raw svg.
 const prefix_element_list = [
     keyboard_icon_first_child,
     {
