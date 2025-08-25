@@ -107,26 +107,29 @@
 
                     <div class="tabcontent" id="user-profile-streams-tab">
                         <div class="alert stream_list_info"></div>
+                        <div class="stream-list-top-section">
+                            <div class="header-section">
+                                <h3 class="stream-tab-element-header">{{t 'Subscribed channels' }}</h3>
+                            </div>
+                            <div class="stream-list-container">
+                                <div class="stream-search-container">
+                                    <i class="search_icon zulip-icon zulip-icon-search"></i>
+                                    <input type="text" class="stream-search filter_text_input" placeholder="{{t 'Filter' }}" />
+                                    <button type="button" class="clear_search_button" id="clear_stream_search">
+                                        <i class="zulip-icon zulip-icon-close" aria-hidden="true"></i>
+                                    </button>
+                                </div>
+                                <div class="subscription-stream-list" data-simplebar data-simplebar-tab-index="-1">
+                                    <ul class="user-stream-list" data-empty="{{t 'No channel subscriptions.' }}" data-search-results-empty="{{t 'No matching channels.' }}"></ul>
+                                </div>
+                            </div>
+                        </div>
                         {{#if show_user_subscribe_widget}}
                             <div class="header-section">
                                 <h3 class="stream-tab-element-header">{{t 'Subscribe {full_name} to channels'}}</h3>
                             </div>
                             {{> user_profile_subscribe_widget}}
                         {{/if}}
-                        <div class="stream-list-top-section">
-                            <div class="header-section">
-                                <h3 class="stream-tab-element-header">{{t 'Subscribed channels' }}</h3>
-                            </div>
-                            <div class="stream-search-container">
-                                <input type="text" class="stream-search modal_text_input" placeholder="{{t 'Filter' }}" />
-                                <button type="button" class="clear_search_button" id="clear_stream_search">
-                                    <i class="zulip-icon zulip-icon-close" aria-hidden="true"></i>
-                                </button>
-                            </div>
-                        </div>
-                        <div class="subscription-stream-list empty-list">
-                            <table class="user-stream-list" data-empty="{{t 'No channel subscriptions.'}}" data-search-results-empty="{{t 'No matching channels' }}"></table>
-                        </div>
                     </div>
 
                     <div class="tabcontent" id="user-profile-groups-tab">
