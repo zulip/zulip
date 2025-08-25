@@ -210,9 +210,7 @@ class OpenAPIArgumentsTest(ZulipTestCase):
         # and thus may be complicated to document with our current tooling.
         # (No /api/v1/ or /json prefix).
         "/avatar/{email_or_id}",
-        ## This one is in zulip.yaml, but not the actual docs.
-        # "/api/v1/user_uploads/{realm_id_str}/{filename}",
-        ## And this one isn't, and isn't really representable
+        ## This one isn't really representable
         # "/user_uploads/{realm_id_str}/{filename}",
         #### These realm administration settings are valuable to document:
         # Delete a data export.

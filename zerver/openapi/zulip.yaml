@@ -10284,17 +10284,24 @@ paths:
   /user_uploads/{realm_id_str}/{filename}:
     get:
       operationId: get-file-temporary-url
-      summary: Get public temporary URL
+      summary: Get public temporary URL for an uploaded file
       tags: ["messages"]
       description: |
-        Get a temporary URL for access to the file that doesn't require authentication.
+        Get a temporary URL for access to an [uploaded file](/api/upload-file)
+        that doesn't require authentication.
+
+        The `SIGNED_ACCESS_TOKEN_VALIDITY_IN_SECONDS` server setting controls
+        the valid length of time for temporary access, which generally is set
+        to a default of 60 seconds. Consumers of this API are expected to
+        immediately request the URL that it returns, and should not store it
+        in any way.
 
         **Changes**: New in Zulip 3.0 (feature level 1).
       parameters:
         - name: realm_id_str
           in: path
           description: |
-            The realm ID.
+            The ID of the Zulip organization.
           schema:
             type: integer
           example: 1
@@ -10302,7 +10309,7 @@ paths:
         - name: filename
           in: path
           description: |
-            Path to the URL.
+            Path to the [uploaded file](/api/upload-file).
           schema:
             type: string
           example: 4e/m2A3MSqFnWRLUf9SaPzQ0Up_/zulip.txt
