@@ -1319,7 +1319,7 @@ export function complete_rerender(): void {
     }
 
     if (!page_params.is_node_test) {
-        max_avatars = Number.parseInt($("html").css("--recent-view-max-avatars"), 10);
+        max_avatars = Number.parseInt($(":root").css("--recent-view-max-avatars"), 10);
     }
 
     // Show topics list
