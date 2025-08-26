@@ -297,6 +297,92 @@ export function refresh_allow_private_data_export_banner(): void {
     }
 }
 
+function maybe_show_notes_about_unusable_users_if_exported(
+    $export_warning_notes_container: JQuery,
+    export_type: number,
+): void {
+    $export_warning_notes_container.empty();
+    let unusable_user_ids: number[] = [];
+    const non_consent_users = get_export_consents_having_consent_value(false);
+
+    // Add a note if at least one user won’t be able to log in
+    // to the exported realm. This can happen if they don’t
+    // consent to their private data being exported when
+    // “Standard export” is selected, or if they both don’t
+    // consent and have set their email visibility to “nobody”
+    // when “Public export” is selected.
+    if (export_type === settings_config.export_type_values.export_full_with_consent.value) {
+        unusable_user_ids = non_consent_users.map((user) => user.user_id);
+    } else {
+        unusable_user_ids = non_consent_users
+            .filter(
+                (user) =>
+                    user.email_address_visibility ===
+                    settings_config.email_address_visibility_values.nobody.code,
+            )
+            .map((user) => user.user_id);
+    }
+
+    if (unusable_user_ids.length === 0) {
+        return;
+    }
+    $("#unusable_user_account_count_info").html(
+        $t_html(
+            {
+                defaultMessage: `
+                <p>If you import the data into a new Zulip organization,
+                {count, plural, one {# user} other {# users}} will be
+                unable to log in. Their email {count, plural, one
+                {address} other {addresses}} will not be included in
+                the export because you don't have permission to
+                <z-link>access</z-link> or export their {count, plural,
+                one {email} other {emails}}.</p>
+                `,
+            },
+            {
+                count: unusable_user_ids.length,
+                "z-link": (content_html) => `
+                <a target="_blank" rel="noopener noreferrer"
+                    href="/help/configure-email-visibility">
+                    ${content_html.join("")}
+                </a>
+                `,
+            },
+        ),
+    );
+
+    // If any admins/owners are among the users who won’t be
+    // able to log in, list their full names in a separate
+    // note.
+    const name_of_admins_or_owners_with_unusable_account =
+        people.get_users_full_names_that_matches_role_ids(
+            new Set(unusable_user_ids),
+            new Set([
+                settings_config.user_role_values.admin.code,
+                settings_config.user_role_values.owner.code,
+            ]),
+        );
+    if (name_of_admins_or_owners_with_unusable_account.length === 0) {
+        return;
+    }
+    $("#unusable_owner_or_admin_user_accounts_info").html(
+        $t_html(
+            {
+                defaultMessage: `
+                <p>The following {count, plural, one {administrator} other
+                {administrators}} will be unable to log in:
+                {name_of_admins_or_owners_with_unusable_account}.</p>
+                `,
+            },
+            {
+                count: name_of_admins_or_owners_with_unusable_account.length,
+                name_of_admins_or_owners_with_unusable_account:
+                    name_of_admins_or_owners_with_unusable_account.join(", "),
+            },
+        ),
+    );
+}
+
 function show_start_export_modal(): void {
     const html_body = render_start_export_modal({
         export_type_values: settings_config.export_type_values,
@@ -356,7 +442,13 @@ function show_start_export_modal(): void {
                 $("#allow_private_data_export_stats").hide();
                 $(".allow_private_data_export_warning").hide();
             }
+            const $export_note_container = $("#unusable_user_account_in_export_note");
+            maybe_show_notes_about_unusable_users_if_exported(
+                $export_note_container,
+                selected_export_type,
+            );
         });
+        $export_type.trigger("change");
     }
 
     dialog_widget.launch({

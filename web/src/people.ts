@@ -1957,6 +1957,19 @@ export function fetch_users_from_server(opts: FetchUserDataParams): void {
         },
     });
 }
+export function get_users_full_names_that_matches_role_ids(
+    user_ids: Set<number>,
+    role_ids: Set<number>,
+): string[] {
+    const full_names = new Array<string>();
+    for (const user_id of user_ids) {
+        const person = get_by_user_id(user_id);
+        if (person && role_ids.has(person.role)) {
+            full_names.push(person.full_name);
+        }
+    }
+    return full_names;
+}
 
 export async function fetch_users(user_ids: Set<number>): Promise<UsersFetchResponse["members"]> {
     // Requested users outside the set of known valid user IDs likely
