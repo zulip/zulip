@@ -740,6 +740,7 @@ test("update_presence_info", ({override, override_rewire}) => {
 });
 
 test("initialize", ({override, override_rewire}) => {
+    override(document, "to_$", () => $("document-stub"));
     override(pm_list, "update_private_messages", noop);
     override(watchdog, "check_for_unsuspend", noop);
     override(buddy_list, "fill_screen_with_content", noop);
@@ -828,7 +829,7 @@ test("initialize", ({override, override_rewire}) => {
 
     // Exercise the mousemove handler, which just
     // sets a flag.
-    $("html").get_on_handler("mousemove")();
+    $(document).get_on_handler("mousemove")();
 
     clear();
 });
