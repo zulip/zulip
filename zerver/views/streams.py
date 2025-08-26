@@ -1013,18 +1013,21 @@ def add_subscriptions_backend(
     result["already_subscribed"] = dict(result["already_subscribed"])
 
     if send_new_subscription_messages:
-        if len(result["subscribed"]) <= settings.MAX_BULK_NEW_SUBSCRIPTION_MESSAGES:
-            send_user_subscribed_and_new_channel_notifications(
-                user_profile=user_profile,
-                subscribers=subscribers,
-                new_subscriptions=result["subscribed"],
-                id_to_user_profile=id_to_user_profile,
-                created_streams=created_streams,
-                announce=announce,
-            )
-            result["new_subscription_messages_sent"] = True
-        else:
-            result["new_subscription_messages_sent"] = False
+        send_user_subscribed_direct_messages = (
+            len(result["subscribed"]) <= settings.MAX_BULK_NEW_SUBSCRIPTION_MESSAGES
+        )
+        result["new_subscription_messages_sent"] = send_user_subscribed_direct_messages
+    else:
+        send_user_subscribed_direct_messages = False
+    send_user_subscribed_and_new_channel_notifications(
+        user_profile=user_profile,
+        subscribers=subscribers,
+        new_subscriptions=result["subscribed"],
+        id_to_user_profile=id_to_user_profile,
+        created_streams=created_streams,
+        announce=announce,
+        send_user_subscribed_direct_messages=send_user_subscribed_direct_messages,
+    )
 
     result["subscribed"] = dict(result["subscribed"])
     result["already_subscribed"] = dict(result["already_subscribed"])
@@ -1040,6 +1043,7 @@ def send_user_subscribed_and_new_channel_notifications(
     id_to_user_profile: dict[str, UserProfile],
     created_streams: list[Stream],
     announce: bool,
+    send_user_subscribed_direct_messages: bool = True,
 ) -> None:
     """
     If a user is subscribing lots of other users to existing channels,
@@ -1051,7 +1055,7 @@ def send_user_subscribed_and_new_channel_notifications(
     """
     notifications = []
     # Inform users if someone else subscribed them to an existing channel.
-    if new_subscriptions:
+    if new_subscriptions and send_user_subscribed_direct_messages:
         bots = {str(subscriber.id): subscriber.is_bot for subscriber in subscribers}
 
         newly_created_stream_names = {s.name for s in created_streams}
