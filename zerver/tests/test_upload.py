@@ -2200,3 +2200,37 @@ class DecompressionBombTests(ZulipTestCase):
                 else:
                     result = self.client_post(url, {"f1": fp})
                 self.assert_json_error(result, "Image size exceeds limit.")
+
+
+class AvatarDeleteAPITest(UploadSerializeMixin, ZulipTestCase):
+    def test_admin_delete_other_user_avatar(self) -> None:
+        """Test that an admin can delete another user's avatar."""
+        # Create admin and target user
+        admin_user = self.example_user("iago")  # Iago is an admin
+        target_user = self.example_user("hamlet")
+
+        # Upload avatar for target user
+        self.login_user(target_user)
+        with get_test_image_file("img.png") as image_file:
+            result = self.client_post("/json/users/me/avatar", {"file": image_file})
+            self.assert_json_success(result)
+
+        target_user.refresh_from_db()
+        self.assertEqual(target_user.avatar_source, UserProfile.AVATAR_FROM_USER)
+
+        # Admin attempts to delete target user's avatar using API endpoint
+        result = self.api_delete(admin_user, f"/api/v1/users/{target_user.id}/avatar")
+        self.assert_json_success(result)
+
+        # Verify avatar is deleted
+        target_user.refresh_from_db()
+        self.assertEqual(target_user.avatar_source, UserProfile.AVATAR_FROM_GRAVATAR)
+
+        # Verify avatar files are removed
+        avatar_path_id = avatar_disk_path(target_user)
+        avatar_original_path_id = avatar_disk_path(target_user, original=True)
+        avatar_medium_path_id = avatar_disk_path(target_user, medium=True)
+
+        self.assertFalse(os.path.isfile(avatar_path_id))
+        self.assertFalse(os.path.isfile(avatar_original_path_id))
+        self.assertFalse(os.path.isfile(avatar_medium_path_id))
