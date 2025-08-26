@@ -162,8 +162,8 @@ export function by_sender_url(reply_to: string): string {
     return search_terms_to_hash([{operator: "sender", operand: reply_to}]);
 }
 
-export function pm_with_url(reply_to: string): string {
-    const slug = people.emails_to_slug(reply_to);
+export function pm_with_url(user_ids_string: string): string {
+    const slug = people.user_ids_string_to_slug(user_ids_string);
     return "#narrow/dm/" + slug;
 }
 

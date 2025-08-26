@@ -231,7 +231,7 @@ export function info_for(user_id: number, direct_message_recipients: Set<number>
     };
 
     return {
-        href: hash_util.pm_with_url(person.email),
+        href: hash_util.pm_with_url(person.user_id.toString()),
         name: person.full_name,
         user_id,
         status_emoji_info,
