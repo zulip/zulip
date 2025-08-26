@@ -925,6 +925,9 @@ test_people("multi_user_methods", () => {
     assert.equal(slug, "401,402-group");
 
     assert.equal(people.reply_to_to_user_ids_string("invalid@example.com"), undefined);
+
+    assert.equal(people.user_ids_string_to_slug("401,402"), "401,402-group");
+    assert.equal(people.user_ids_string_to_slug("402"), "402-whatever-402");
 });
 
 test_people("user_ids_to_full_names_string", () => {
