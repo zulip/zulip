@@ -21,22 +21,13 @@ keyboard_icon_first_child.properties.class = "zulip-unplugin-icon";
 // the next line as `Keyboard tip:`. We have to edit slot HTML tree
 // directly instead to solve this. Same case applies for the keyboard
 // icon we are inserting. We just inject the icon as raw svg.
-const prefix_element_list = [
-    keyboard_icon_first_child,
-    {
-        type: "element",
-        tagName: "strong",
-        properties: {},
-        children: [
-            {
-                type: "text",
-                // Whitespace before the text to ensure space between
-                // this text and the preceding icon.
-                value: " Keyboard tip: ",
-            },
-        ],
-    } as Element,
-];
+const prefix_text_element: Element = {
+    type: "element",
+    tagName: "strong",
+    properties: {},
+    children: [{type: "text", value: " Keyboard tip: "}],
+};
+const prefix_element_list = [keyboard_icon_first_child, prefix_text_element];
 
 const tree = fromHtml(await Astro.slots.render("default"), {fragment: true});
 const first_element = tree.children[0];
