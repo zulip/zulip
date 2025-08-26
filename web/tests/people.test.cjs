@@ -1755,7 +1755,6 @@ test_people("fetch_users", async ({override}) => {
         },
     );
 
-    // Just for coverage, not actually checked by blueslip.
     blueslip.expect("error", "Ignored invalid user_ids: 1, 2");
     await people.fetch_users(new Set([1, 2]));
 });
