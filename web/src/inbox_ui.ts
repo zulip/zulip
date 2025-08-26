@@ -1113,7 +1113,7 @@ class InboxTopicListWidget extends TopicListWidget {
                 );
                 return render_inbox_row(topic_context);
             },
-            $simplebar_container: $("html"),
+            $simplebar_container: $(":root"),
             is_scroll_position_for_render: views_util.is_scroll_position_for_render,
             get_min_load_count,
         });
