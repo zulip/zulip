@@ -20,6 +20,12 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 12.0
 
+**Feature level 430**
+
+* [`GET /export/realm/consents`](/api/get-realm-export-consents): Added an
+  integer field `email_address_visibility` to the objects in the
+  `export_consents` array.
+
 **Feature level 429**
 
 * Replaced the `pm_users` field with `recipient_user_ids` in

@@ -30,6 +30,7 @@ import {user_settings} from "./user_settings.ts";
 export const export_consent_schema = z.object({
     user_id: z.number(),
     consented: z.boolean(),
+    email_address_visibility: z.number(),
 });
 type ExportConsent = z.output<typeof export_consent_schema>;
 
@@ -152,8 +153,11 @@ function sort_user_by_name(a: ExportConsent, b: ExportConsent): number {
     }
     return -1;
 }
-
-const export_consents = new Map<number, boolean>();
+type UserConsentInfo = {
+    consented: boolean;
+    email_address_visibility: number;
+};
+const export_consents = new Map<number, UserConsentInfo>();
 const queued_export_consents: (ExportConsent | number)[] = [];
 let export_consent_list_widget: ListWidgetType<ExportConsent>;
 let filter_by_consent_dropdown_widget: DropdownWidget;
@@ -170,9 +174,15 @@ const filter_by_consent_options: Option[] = [
 
 function get_export_consents_having_consent_value(consent: boolean): ExportConsent[] {
     const export_consent_list: ExportConsent[] = [];
-    for (const [user_id, consented] of export_consents.entries()) {
-        if (consent === consented) {
-            export_consent_list.push({user_id, consented});
+    for (const [user_id, user_consent_info] of export_consents.entries()) {
+        const consented = user_consent_info.consented;
+        const email_address_visibility = user_consent_info.email_address_visibility;
+        if (consent === user_consent_info.consented) {
+            export_consent_list.push({
+                user_id,
+                consented,
+                email_address_visibility,
+            });
         }
     }
     return export_consent_list;
@@ -390,7 +400,10 @@ export function set_up(): void {
                 .parse(raw_data);
 
             for (const export_consent of data.export_consents) {
-                export_consents.set(export_consent.user_id, export_consent.consented);
+                export_consents.set(export_consent.user_id, {
+                    consented: export_consent.consented,
+                    email_address_visibility: export_consent.email_address_visibility,
+                });
             }
 
             // Apply queued_export_consents on top of the received response.
@@ -400,7 +413,10 @@ export function set_up(): void {
                     export_consents.delete(item);
                     continue;
                 }
-                export_consents.set(item.user_id, item.consented);
+                export_consents.set(item.user_id, {
+                    consented: item.consented,
+                    email_address_visibility: item.email_address_visibility,
+                });
             }
             queued_export_consents.length = 0;
 
@@ -503,7 +519,10 @@ export function update_export_consent_data_and_redraw(export_consent: ExportCons
         return;
     }
 
-    export_consents.set(export_consent.user_id, export_consent.consented);
+    export_consents.set(export_consent.user_id, {
+        consented: export_consent.consented,
+        email_address_visibility: export_consent.email_address_visibility,
+    });
     redraw_export_consents_list();
     update_start_export_modal_stats();
 }
