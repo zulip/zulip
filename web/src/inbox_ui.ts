@@ -469,8 +469,6 @@ function format_dm(
         recipient_ids.push(people.my_current_user_id());
     }
 
-    const reply_to = people.user_ids_string_to_emails_string(user_ids_string);
-    assert(reply_to !== undefined);
     const rendered_dm_with_html = recipient_ids
         .map((recipient_id) => ({
             name: people.get_display_full_name(recipient_id),
@@ -501,7 +499,7 @@ function format_dm(
         is_group: recipient_ids.length > 1,
         user_circle_class,
         is_bot,
-        dm_url: hash_util.pm_with_url(reply_to),
+        dm_url: hash_util.pm_with_url(user_ids_string),
         user_ids_string,
         unread_count,
         is_hidden: filter_should_hide_dm_row({dm_key: user_ids_string}),

@@ -207,7 +207,7 @@ run_test("urls", () => {
     people.add_active_user(me);
     people.initialize_current_user(me.user_id);
 
-    let url = hash_util.pm_with_url(ray.email);
+    let url = hash_util.pm_with_url(ray.user_id.toString());
     assert.equal(url, "#narrow/dm/22-Raymond");
 
     url = hash_util.direct_message_group_with_url("22,23");
