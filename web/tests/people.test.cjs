@@ -9,8 +9,8 @@ const MockDate = require("mockdate");
 const {make_user_group} = require("./lib/example_group.cjs");
 const {make_realm} = require("./lib/example_realm.cjs");
 const {$t} = require("./lib/i18n.cjs");
-const {mock_esm, zrequire} = require("./lib/namespace.cjs");
-const {run_test} = require("./lib/test.cjs");
+const {mock_esm, zrequire, set_global} = require("./lib/namespace.cjs");
+const {run_test, noop} = require("./lib/test.cjs");
 const blueslip = require("./lib/zblueslip.cjs");
 const {page_params} = require("./lib/zpage_params.cjs");
 
@@ -19,6 +19,13 @@ const settings_data = mock_esm("../src/settings_data", {
     user_can_access_all_other_users: () => true,
 });
 const channel = mock_esm("../src/channel");
+
+let additional_calls_before_set_timeout = noop;
+
+set_global("setTimeout", (func) => {
+    additional_calls_before_set_timeout();
+    func();
+});
 
 const muted_users = zrequire("muted_users");
 const people = zrequire("people");
@@ -1752,12 +1759,19 @@ run_test("fetch_users", async ({override}) => {
     };
     const my_user_id = 42;
 
+    let user_GET_request_calls = 0;
+    let promise_for_user_already_in_transit;
     override(channel, "get", ({url, data, success, _error}) => {
+        user_GET_request_calls += 1;
         assert.equal(url, "/json/users");
         assert.ok(data.user_ids.includes("15"));
         assert.ok(data.user_ids.includes("16"));
         assert.ok(!data.user_ids.includes("42"));
         assert.ok(!data.user_ids.includes("17"));
+
+        // While this get request is in-flight, request for the
+        // a subset of the users again and check if it resolved.
+        promise_for_user_already_in_transit = people.get_or_fetch_users_from_ids([15]);
         success({
             members: users_in_response,
             result: "success",
@@ -1765,7 +1779,16 @@ run_test("fetch_users", async ({override}) => {
         });
     });
 
+    additional_calls_before_set_timeout = () => {
+        // This fetch request doesn't result in any new GET request,
+        // since the request for this user is added to pending users
+        // for fetch and returns a promise.
+        const promise = people.fetch_users_from_ids_internal([15]);
+        assert.ok(promise instanceof Promise);
+    };
     await people.initialize(my_user_id, params, user_group_params);
+    await promise_for_user_already_in_transit;
+    assert.equal(user_GET_request_calls, 1);
 
     const retiree = people.get_by_user_id(15);
     const alice = people.get_by_user_id(16);
