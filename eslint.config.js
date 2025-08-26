@@ -310,14 +310,9 @@ export default tseslint.config(
     },
     ...astroConfigs.recommended,
     {
-        files: [
-            "starlight_help/src/components/ZulipNote.astro",
-            "starlight_help/src/components/ZulipTip.astro",
-            "starlight_help/src/components/KeyboardTip.astro",
-        ],
+        files: ["starlight_help/src/components/ZulipNote.astro"],
         rules: {
             "import/unambiguous": "off",
-            "@typescript-eslint/consistent-type-assertions": "off",
         },
     },
 );
