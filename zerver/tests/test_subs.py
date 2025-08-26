@@ -5147,8 +5147,11 @@ class SubscriptionAPITest(ZulipTestCase):
             recipient__type_id=announce.id,
             date_sent__gt=now,
         )
-        # Currently, this notification is not sent even though it should be.
-        self.assertEqual(announcement_channel_message.count(), 0)
+        self.assertEqual(announcement_channel_message.count(), 1)
+        self.assertEqual(
+            announcement_channel_message[0].content,
+            f"@_**{desdemona.full_name}|{desdemona.id}** created a new channel #**test D**.",
+        )
 
         new_channel = get_stream("test D", realm)
         new_channel_message = Message.objects.filter(
@@ -5158,8 +5161,15 @@ class SubscriptionAPITest(ZulipTestCase):
             recipient__type_id=new_channel.id,
             date_sent__gt=now,
         )
-        # Currently, this notification is not sent even though it should be.
-        self.assert_length(new_channel_message.values(), 0)
+        self.assert_length(new_channel_message.values(), 1)
+        self.assertEqual(
+            new_channel_message[0].topic_name(), Realm.STREAM_EVENTS_NOTIFICATION_TOPIC_NAME
+        )
+        self.assertEqual(
+            new_channel_message[0].content,
+            f"**Public** channel created by @_**{desdemona.full_name}|{desdemona.id}**. **Description:**\n"
+            "```` quote\n*No description.*\n````",
+        )
 
 
 class InviteOnlyStreamTest(ZulipTestCase):
