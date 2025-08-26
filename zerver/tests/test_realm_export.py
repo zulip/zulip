@@ -340,10 +340,23 @@ class RealmExportTest(ZulipTestCase):
             do_change_user_setting(user, "allow_private_data_export", True, acting_user=None)
 
         # Verify export consents of users.
+        aaron.role = UserProfile.ROLE_REALM_ADMINISTRATOR
+        aaron.save()
+        do_change_user_setting(
+            aaron,
+            "email_address_visibility",
+            UserProfile.EMAIL_ADDRESS_VISIBILITY_NOBODY,
+            acting_user=aaron,
+        )
         result = self.client_get("/json/export/realm/consents")
         response_dict = self.assert_json_success(result)
         export_consents = response_dict["export_consents"]
         for export_consent in export_consents:
+            if export_consent["user_id"] == aaron.id:
+                self.assertEqual(
+                    export_consent["email_address_visibility"],
+                    UserProfile.EMAIL_ADDRESS_VISIBILITY_NOBODY,
+                )
             if export_consent["user_id"] in [hamlet.id, aaron.id]:
                 self.assertTrue(export_consent["consented"])
                 continue

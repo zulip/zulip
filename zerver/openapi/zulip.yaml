@@ -15509,7 +15509,11 @@ paths:
         Fetches which users have [consented](/help/export-your-organization#configure-whether-administrators-can-export-your-private-data)
         for their private data to be exported by organization administrators.
 
-        **Changes**: New in Zulip 10.0 (feature level 295).
+        **Changes**: Changes in Zulip 12.0 (feature level 430). Added an
+        integer field `email_address_visibility` to the objects in the
+        `export_consents` array.
+
+        New in Zulip 10.0 (feature level 295).
       responses:
         "200":
           description: Success.
@@ -15526,8 +15530,9 @@ paths:
                       export_consents:
                         type: array
                         description: |
-                          An array of objects where each object contains a user ID and
-                          whether the user has consented for their private data to be exported.
+                          An array of objects where each object contains a user ID, whether the
+                          user has consented for their private data to be exported, and their
+                          email visibility policy.
                         items:
                           type: object
                           additionalProperties: false
@@ -15540,12 +15545,22 @@ paths:
                               description: |
                                 Whether the user has consented for their private data export.
                               type: boolean
+                            email_address_visibility:
+                              $ref: "#/components/schemas/EmailAddressVisibility"
                     example:
                       {
                         "export_consents":
                           [
-                            {"user_id": 11, "consented": true},
-                            {"user_id": 6, "consented": false},
+                            {
+                              "user_id": 11,
+                              "consented": true,
+                              "email_address_visibility": 1,
+                            },
+                            {
+                              "user_id": 6,
+                              "consented": false,
+                              "email_address_visibility": 2,
+                            },
                           ],
                         "msg": "",
                         "result": "success",
