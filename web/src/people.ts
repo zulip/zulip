@@ -1975,6 +1975,19 @@ export function fetch_users_from_server(opts: FetchUserDataParams): void {
         },
     });
 }
+export function get_users_that_match_role_ids(
+    user_ids: Set<number>,
+    role_ids: Set<number>,
+): User[] {
+    const users = new Array<User>();
+    for (const user_id of user_ids) {
+        const person = get_by_user_id(user_id);
+        if (person && role_ids.has(person.role)) {
+            users.push(person);
+        }
+    }
+    return users;
+}
 
 export async function fetch_users(user_ids: Set<number>): Promise<UsersFetchResponse["members"]> {
     // Requested users outside the set of known valid user IDs likely
