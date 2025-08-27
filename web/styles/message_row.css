@@ -200,6 +200,11 @@
         }
     }
 
+    .muted-message-notice {
+        opacity: 0.5;
+        user-select: none;
+    }
+
     .message_reactions {
         grid-area: reactions;
         display: flex;
