@@ -969,6 +969,7 @@ test_people("message_methods", () => {
     people.add_active_user(leo);
     people.add_active_user(ashton);
 
+    assert.equal(people.get_muted_user_avatar_url(), "/static/images/muted-user/muted-sender.png");
     // We don't rely on Maria to have all flags set explicitly--
     // undefined values are just treated as falsy.
     assert.equal(maria.is_guest, undefined);
