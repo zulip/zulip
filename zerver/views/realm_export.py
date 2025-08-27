@@ -11,11 +11,7 @@ from analytics.models import RealmCount
 from zerver.actions.realm_export import do_delete_realm_export, notify_realm_export
 from zerver.decorator import require_realm_admin
 from zerver.lib.exceptions import JsonableError
-from zerver.lib.export import (
-    check_export_with_consent_is_usable,
-    check_public_export_is_usable,
-    get_realm_exports_serialized,
-)
+from zerver.lib.export import get_realm_exports_serialized
 from zerver.lib.queue import queue_event_on_commit
 from zerver.lib.response import json_success
 from zerver.lib.send_email import FromAddress
@@ -84,25 +80,6 @@ def export_realm(
             _("Please request a manual export from {email}.").format(
                 email=FromAddress.SUPPORT,
             )
-        )
-
-    if (
-        export_type == RealmExport.EXPORT_FULL_WITH_CONSENT
-        and not check_export_with_consent_is_usable(realm)
-    ):
-        raise JsonableError(
-            _(
-                "Make sure at least one Organization Owner is consenting to the export "
-                "or contact {email} for help."
-            ).format(email=FromAddress.SUPPORT)
-        )
-    elif export_type == RealmExport.EXPORT_PUBLIC and not check_public_export_is_usable(realm):
-        raise JsonableError(
-            _(
-                "Make sure at least one Organization Owner allows other "
-                "Administrators to see their email address "
-                "or contact {email} for help"
-            ).format(email=FromAddress.SUPPORT)
         )
 
     row = RealmExport.objects.create(
