@@ -59,6 +59,11 @@ let edit_message_id: number | null = null;
 let current_message_id: number | null = null;
 
 const EMOJI_CATEGORIES = [
+    {
+        name: "Frequently used",
+        icon: "fa-refresh",
+        translated: $t({defaultMessage: "Frequently used"}),
+    },
     {name: "Suggested", icon: "fa-star-o", translated: $t({defaultMessage: "Suggested"})},
     {
         name: "Smileys & Emotion",
@@ -167,6 +172,20 @@ export function rebuild_catalog(): void {
             }
         }
         catalog.set(category, emojis);
+    }
+
+    const frequently_used = [];
+    for (const codepoint of typeahead.frequently_used_emojis) {
+        const name = emoji.get_emoji_name(codepoint);
+        if (name !== undefined) {
+            const emoji_dict = emoji.emojis_by_name.get(name);
+            if (emoji_dict !== undefined) {
+                frequently_used.push(emoji_dict);
+            }
+        }
+    }
+    if (frequently_used.length > 0) {
+        catalog.set("Frequently used", frequently_used);
     }
 
     const popular = [];
@@ -622,9 +641,9 @@ export function emoji_select_tab($elt: JQuery): void {
         // Handles the corner case where the refill_section_head_offsets()
         // is still running and section_head_offset[] is still empty,
         // scroll events in the middle may attempt to access section_head_offset[]
-        // causing exception. In this situation the currently_selected is hardcoded as "Suggested".
+        // causing exception. In this situation the currently_selected is hardcoded as "Frequently used".
         if (section_head_offsets.length === 0) {
-            currently_selected = "Suggested";
+            currently_selected = "Frequently used";
         } else {
             currently_selected = section_head_offsets[0]!.section;
         }
