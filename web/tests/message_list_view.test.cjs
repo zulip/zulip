@@ -26,6 +26,7 @@ mock_esm("../src/people", {
     sender_is_deactivated: () => false,
     should_add_guest_user_indicator: () => false,
     small_avatar_url: () => "fake/small/avatar/url",
+    get_muted_user_avatar_url: () => "fake/muted_user/avatar/url",
     maybe_get_user_by_id: noop,
 });
 
@@ -310,14 +311,17 @@ test("muted_message_vars", () => {
         muted_users.add_muted_user(10);
         result = calculate_variables(list, messages);
 
-        // Check that `is_hidden` is true and `include_sender` is false on all messages.
+        // Check that `is_hidden` is true on all messages and `include_sender` is true for the first one.
         assert.equal(result[0].is_hidden, true);
         assert.equal(result[1].is_hidden, true);
         assert.equal(result[2].is_hidden, true);
 
-        assert.equal(result[0].include_sender, false);
+        assert.equal(result[0].include_sender, true);
         assert.equal(result[1].include_sender, false);
         assert.equal(result[2].include_sender, false);
+
+        // Ensure that `small_avatar_url` is the Muted sender avatar URL.
+        assert.equal(result[0].small_avatar_url, "fake/muted_user/avatar/url");
 
         // Additionally test that, both there is no mention classname even on that message
         // which has a mention, since we don't want to display muted mentions so visibly.
@@ -336,6 +340,9 @@ test("muted_message_vars", () => {
         assert.equal(result[1].include_sender, true);
         assert.equal(result[2].include_sender, true);
 
+        // Ensure that `small_avatar_url` is now set to the sender's avatar URL.
+        assert.equal(result[0].small_avatar_url, "fake/small/avatar/url");
+
         // Additionally test that the message with a mention is marked as such.
         assert.equal(result[1].mention_classname, "group_mention");
 
@@ -343,14 +350,19 @@ test("muted_message_vars", () => {
         is_revealed = false;
         result = calculate_variables(list, messages, is_revealed);
 
-        // Check that `is_hidden` is false and `include_sender` is false on all messages.
+        // Check that `is_hidden` is true and `include_sender` is true on all messages.
         assert.equal(result[0].is_hidden, true);
         assert.equal(result[1].is_hidden, true);
         assert.equal(result[2].is_hidden, true);
 
-        assert.equal(result[0].include_sender, false);
-        assert.equal(result[1].include_sender, false);
-        assert.equal(result[2].include_sender, false);
+        assert.equal(result[0].include_sender, true);
+        assert.equal(result[1].include_sender, true);
+        assert.equal(result[2].include_sender, true);
+
+        // Ensure that `small_avatar_url` is the Muted sender avatar URL.
+        assert.equal(result[0].small_avatar_url, "fake/muted_user/avatar/url");
+        assert.equal(result[1].small_avatar_url, "fake/muted_user/avatar/url");
+        assert.equal(result[2].small_avatar_url, "fake/muted_user/avatar/url");
 
         // Additionally test that, both there is no mention classname even on that message
         // which has a mention, since we don't want to display hidden mentions so visibly.

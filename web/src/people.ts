@@ -1052,6 +1052,10 @@ export function small_avatar_url(message: Message): string {
     return gravatar_url_for_email(email);
 }
 
+export function get_muted_user_avatar_url(): string {
+    return "/static/images/muted-user/muted-sender.png";
+}
+
 export function is_valid_user_id_for_compose(user_id: number): boolean {
     if (cross_realm_dict.has(user_id)) {
         return true;
