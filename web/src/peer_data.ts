@@ -17,6 +17,11 @@ import * as util from "./util.ts";
 const subscriber_counts = new Map<number, number>();
 
 // This maps a stream_id to a LazySet of user_ids who are subscribed.
+// We might not have all the subscribers for a given stream. Streams
+// with full data will be stored in `fetched_stream_ids`, and for the
+// rest we try to have all non-long-term-idle subscribers for streams,
+// though that doesn't account for subscribers that become active after
+// pageload.
 // Make sure that when we have full subscriber data for a stream,
 // the size of its subscribers set stays synced with the relevant
 // stream's `subscriber_count`.
