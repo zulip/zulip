@@ -162,6 +162,11 @@ export function initialize(): void {
             return true;
         }
 
+        // Reveal button for a hidden message
+        if ($target.closest(".reveal-hidden-message").length > 0) {
+            return true;
+        }
+
         return false;
     }
 
@@ -252,7 +257,7 @@ export function initialize(): void {
         reactions.process_reaction_click(message_id, local_id);
     });
 
-    $("body").on("click", ".reveal_hidden_message", (e) => {
+    $("body").on("click", ".reveal-hidden-message", (e) => {
         assert(message_lists.current !== undefined);
         const message_id = rows.id($(e.currentTarget).closest(".message_row"));
         message_lists.current.view.reveal_hidden_message(message_id);

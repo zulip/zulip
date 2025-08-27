@@ -94,6 +94,25 @@
             visibility: visible;
         }
     }
+
+    &:hover .reveal-hidden-message {
+        opacity: 1;
+    }
+}
+
+.reveal-hidden-message {
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    margin-left: 0.1em;
+    /* This is meant to offset the vertical padding of 0.125rem introduced
+    by the action button, which otherwise makes this button look at a
+    slightly lower height than the muted message notice. */
+    margin-top: -0.125em;
+    /* Source : https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/At-rules/@media/hover */
+    @media (hover: none) {
+        opacity: 1;
+        transition: none;
+    }
 }
 
 .messagebox-content {
@@ -215,9 +234,15 @@
         }
     }
 
-    .muted-message-notice {
-        opacity: 0.5;
-        user-select: none;
+    .muted-message-notice-container {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.2em;
+
+        > .muted-message-notice {
+            opacity: 0.5;
+            user-select: none;
+        }
     }
 
     .message_reactions {
