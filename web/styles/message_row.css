@@ -1213,3 +1213,18 @@
     right: 0.25em;
     margin-left: -50%;
 }
+
+@container message-lists (width < $cq_ml_min) {
+    .muted-message-notice {
+        display: none;
+    }
+}
+
+/* Fallback for hiding the muted message notice. */
+@media (width < $ml_min) {
+    .without-container-query-support {
+        .muted-message-notice {
+            display: none;
+        }
+    }
+}
