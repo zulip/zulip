@@ -104,9 +104,11 @@ def direct_message_group_narrow_url(
     *, user: UserProfile, display_recipient: list[UserDisplayRecipient]
 ) -> str:
     realm = user.realm
+
     if len(display_recipient) == 1:
         # For self-DMs, we use the personal narrow URL format.
         return personal_narrow_url(realm=realm, sender_id=user.id, sender_full_name=user.full_name)
+
     if len(display_recipient) == 2:
         # For 1:1 DMs, we use the personal narrow URL format.
         other_user = next(r for r in display_recipient if r["id"] != user.id)
