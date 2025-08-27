@@ -134,7 +134,7 @@ export function mark_disparity(local_id: string): void {
     state.mark_disparity();
 }
 
-export function report_event_received(local_id: string): void {
+export function report_event_received(local_id: string | undefined): void {
     if (local_id === undefined) {
         return;
     }
