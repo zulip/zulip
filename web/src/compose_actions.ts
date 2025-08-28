@@ -220,6 +220,7 @@ export let complete_starting_tasks = (opts: ComposeActionsOpts): void => {
     compose_recipient.update_narrow_to_recipient_visibility();
     compose_recipient.update_recipient_row_attention_level();
     compose_banner.update_split_messages_info_banner();
+    compose_validate.check_overflow_text($("#send_message_form"));
 
     // This logic catches the corner case of starting a new topic
     // from within an existing *general chat* topic via buttons

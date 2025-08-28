@@ -179,6 +179,8 @@ export function toggle_split_messages() {
         show_preview_area();
     }
     compose_banner.update_split_messages_info_banner();
+    compose_validate.check_overflow_text($("#send_message_form"));
+    compose_validate.validate_and_update_send_button_status();
 }
 
 export let send_message = (message_content = compose_state.message_content()) => {

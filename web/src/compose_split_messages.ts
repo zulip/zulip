@@ -57,6 +57,17 @@ export function count_message_content_split_parts(): number {
     return count;
 }
 
+export function get_all_split_parts(message_content: string): string[] {
+    const parts: string[] = [];
+    let remaining_content = message_content;
+    while (remaining_content) {
+        const [part, rest] = split_message(remaining_content);
+        parts.push(part);
+        remaining_content = rest;
+    }
+    return parts;
+}
+
 export function will_split_into_multiple_messages(): boolean {
     if (!is_split_messages_enabled()) {
         return false;
