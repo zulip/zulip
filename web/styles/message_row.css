@@ -338,6 +338,10 @@
                 padding-bottom: var(
                     --message-box-markdown-aligned-vertical-space
                 );
+                /* Don't allow an ellipsis to display on me-messages. This is
+                   an edge case that can happen with elements such as the
+                   inline audio player. */
+                overflow: visible;
 
                 /* Display message components inline, with wrapping white-space,
                    so the sender name and message display as a continuous line
