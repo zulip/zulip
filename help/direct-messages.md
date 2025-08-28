@@ -84,7 +84,7 @@ There are a few different ways to view your DM conversations.
 
 !!! tip ""
 
-    You can also type `dm-including` in the search box to find all 1:1 and group
+    You can also type `dm-with` in the search box to find all 1:1 and group
     DM conversations that include a particular user.
 
 {end_tabs}

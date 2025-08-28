@@ -260,7 +260,20 @@ function message_matches_search_term(message: Message, operator: string, operand
             return _.isEqual(operand_ids, user_ids);
         }
 
+        case "dm-with": {
+            const operand_user = people.get_by_email(operand);
+            if (operand_user === undefined) {
+                return false;
+            }
+            const user_ids = people.all_user_ids_in_pm(message);
+            if (!user_ids) {
+                return false;
+            }
+            return user_ids.includes(operand_user.user_id);
+        }
+
         case "dm-including": {
+            // Legacy alias for "dm-with"
             const operand_user = people.get_by_email(operand);
             if (operand_user === undefined) {
                 return false;
@@ -290,7 +303,8 @@ export function create_user_pill_context(user: User): UserPillItem {
 }
 
 const USER_OPERATORS = new Set([
-    "dm-including",
+    "dm-with",
+    "dm-including", // Legacy alias
     "dm",
     "sender",
     "from",
@@ -322,9 +336,14 @@ export class Filter {
             return "dm";
         }
 
+        if (operator === "dm-including") {
+            // "dm-including:" was renamed to "dm-with:"
+            return "dm-with";
+        }
+
         if (operator === "group-pm-with") {
-            // "group-pm-with:" was replaced with "dm-including:"
-            return "dm-including";
+            // "group-pm-with:" was replaced with "dm-with:"
+            return "dm-with";
         }
 
         if (operator === "from") {
@@ -373,7 +392,8 @@ export class Filter {
                     operand = people.my_current_email();
                 }
                 break;
-            case "dm-including":
+            case "dm-with":
+            case "dm-including": // Legacy alias
                 operand = operand.toLowerCase();
                 break;
             case "search":
@@ -596,7 +616,8 @@ export class Filter {
             case "dm":
             case "pm":
             case "pm-with":
-            case "dm-including":
+            case "dm-with":
+            case "dm-including": // Legacy alias
             case "pm-including":
                 if (term.operand === "me") {
                     return true;
@@ -662,7 +683,8 @@ export class Filter {
             "channel",
             "topic",
             "dm",
-            "dm-including",
+            "dm-with",
+            "dm-including", // Legacy alias
             "with",
             "sender",
             "near",
@@ -733,8 +755,11 @@ export class Filter {
             case "dm":
                 return verb + "direct messages with";
 
-            case "dm-including":
-                return verb + "direct messages including";
+            case "dm-with":
+                return verb + "direct messages with";
+
+            case "dm-including": // Legacy alias
+                return verb + "direct messages with";
 
             case "in":
                 return verb + "messages in";
@@ -1148,8 +1173,10 @@ export class Filter {
             "topic",
             "not-topic",
             "dm",
-            "dm-including",
+            "dm-with",
+            "dm-including", // Legacy alias
             "not-dm-including",
+            "not-dm-with",
             "is-dm",
             "not-is-dm",
             "is-resolved",
@@ -1596,7 +1623,8 @@ export class Filter {
         return (
             (this.has_operator("is") && this.operands("is")[0] === "dm") ||
             this.has_operator("dm") ||
-            this.has_operator("dm-including")
+            this.has_operator("dm-with") ||
+            this.has_operator("dm-including") // Legacy alias
         );
     }
 
@@ -1736,7 +1764,8 @@ export class Filter {
     update_email(user_id: number, new_email: string): void {
         for (const term of this._terms) {
             switch (term.operator) {
-                case "dm-including":
+                case "dm-with":
+                case "dm-including": // Legacy alias
                 case "group-pm-with":
                 case "dm":
                 case "pm-with":
