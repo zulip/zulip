@@ -191,8 +191,6 @@ export function resize_sidebars(): void {
 
 export function update_recent_view(): void {
     const $recent_view_filter_container = $("#recent_view_filter_buttons");
-    const recent_view_filters_height = $recent_view_filter_container.outerHeight(true) ?? 0;
-    $(":root").css("--recent-topics-filters-height", `${recent_view_filters_height}px`);
 
     // Update max avatars to prevent participant avatars from overflowing.
     // These numbers are just based on speculation.
