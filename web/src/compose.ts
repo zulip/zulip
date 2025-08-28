@@ -193,13 +193,15 @@ export function toggle_split_messages(): void {
         show_preview_area();
     }
     compose_banner.update_split_messages_info_banner();
+    compose_validate.check_overflow_text($("#send_message_form"));
+    compose_validate.validate_and_update_send_button_status();
 }
 
-export let send_message = (message_content: string = compose_state.message_content()): void =>{
+export let send_message = (message_content: string = compose_state.message_content()): void => {
     const [content_to_send, rest_of_the_content] =
         compose_split_messages.split_message(message_content);
     const will_split_message = Boolean(rest_of_the_content);
-    //const request = create_message_object(content_to_send);
+    // const request = create_message_object(content_to_send);
     compose_state.set_recipient_edited_manually(false);
     compose_state.set_is_content_unedited_restored_draft(false);
 
@@ -287,14 +289,13 @@ export let send_message = (message_content: string = compose_state.message_conte
             },
             parsed_data,
         );
-if (will_split_message && rest_of_the_content !== undefined) {
+        if (will_split_message && rest_of_the_content !== undefined) {
             send_message(rest_of_the_content);
         } else {
             compose_banner.clear_split_messages_info_banner();
-        
         }
     }
-    
+
     function error(response: string, server_error_code: string): void {
         // Error callback for failed message send attempts.
         if (!locally_echoed) {
@@ -346,9 +347,9 @@ if (will_split_message && rest_of_the_content !== undefined) {
                     compose_split_messages.trim_except_whitespace_before_text(rest_of_the_content),
             );
             $("textarea#compose-textarea").trigger("input");
-            compose_ui.autosize_textarea($("textarea#compose-textarea") as JQuery<HTMLTextAreaElement>);
+            compose_ui.autosize_textarea($("textarea#compose-textarea"));
         }
-}
+    }
 
     transmit.send_message(
         {...message_data, local_id, locally_echoed, resend: false},
@@ -522,4 +523,3 @@ function schedule_message_to_custom_date(): void {
 export function is_topic_input_focused(): boolean {
     return $("#stream_message_recipient_topic").is(":focus");
 }
-
