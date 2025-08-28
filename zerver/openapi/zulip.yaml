@@ -12109,11 +12109,8 @@ paths:
                   $ref: "#/components/schemas/CanResolveTopicsGroup"
                 folder_id:
                   description: |
-                    This parameter determines the folder to which the newly
-                    created channel will be added.
-
-                    If the value is `None`, the channel will not be added to
-                    any folder.
+                    This parameter adds the newly created channel to the specified
+                    [channel folder](/help/channel-folders).
 
                     **Changes**: New in Zulip 11.0 (feature level 389).
                   type: integer
@@ -23016,10 +23013,11 @@ paths:
                   example: true
                 folder_id:
                   description: |
-                    ID of the new folder to which the channel should belong.
+                    ID of the new [channel folder](/help/channel-folders) to which the
+                    channel should belong.
 
-                    It can be `None` if the user wants to just remove the channel
-                    from its existing folder.
+                    A `null` value indicates the user wants to remove the channel from its
+                    current channel folder.
 
                     **Changes**: New in Zulip 11.0 (feature level 389).
                   type: integer
@@ -23856,7 +23854,13 @@ paths:
                   default: false
                   example: true
                 folder_id:
-                  $ref: "#/components/schemas/FolderId"
+                  description: |
+                    This parameter adds the newly created channel to the specified
+                    [channel folder](/help/channel-folders).
+
+                    **Changes**: New in Zulip 11.0 (feature level 389).
+                  type: integer
+                  example: 1
                 topics_policy:
                   $ref: "#/components/schemas/TopicsPolicy"
                 history_public_to_subscribers:
