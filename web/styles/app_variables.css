@@ -570,9 +570,12 @@
     --width-simplebar-scroll: 11px;
     --width-simplebar-scroll-hover: 15px;
 
-    /* This is a rough estimate for height occupied by Recent Conversations filters.
-       We expect `resize.ts` to update this once UI is initialized. */
-    --recent-topics-filters-height: 50px;
+    /* This is the height occupied by Recent Conversations filters,
+       based on the height of the new filter elements in the sidebars
+       and for the topics filter. 31px at 16px/1em. */
+    --recent-topics-filters-height: 1.9375em;
+    /* Legacy margin/flex-gap value for filters. 10px at 14px/1em. */
+    --recent-topics-filters-gap: 0.7142em;
 
     /* Pill dimensions. */
     /* 1.5714em is 22px (border-inclusive) at 14px/1em */
