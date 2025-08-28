@@ -330,12 +330,19 @@ class TestCreateStreams(ZulipTestCase):
             user_profile,
             "/api/v1/channels/create",
             post_data,
-            intentionally_undocumented=True,
         )
         self.assert_json_success(result)
         stream = get_stream("no-sub-channel", user_profile.realm)
         self.assertEqual(stream.name, "no-sub-channel")
         self.assertEqual(stream.subscriber_count, 0)
+
+        # Test creating channel with invalid user ID.
+        result = self.create_channel_via_post(
+            user_profile,
+            name="invalid-user-channel",
+            subscribers=[12, 1000],
+        )
+        self.assert_json_error(result, "No such user")
 
     def test_channel_creation_miscellaneous(self) -> None:
         iago = self.example_user("iago")
