@@ -106,9 +106,6 @@ export class PanZoomControl {
                 case "-":
                     this.zoomOut();
                     break;
-                case "v":
-                    overlays.close_overlay("lightbox");
-                    break;
             }
             e.preventDefault();
             e.stopPropagation();
