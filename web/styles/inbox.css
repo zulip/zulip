@@ -31,7 +31,9 @@
             top: var(--navbar-fixed-height);
             background: var(--color-background-inbox);
             display: flex;
-            padding: 15px 0 10px;
+            /* This padding-top value aligns the inbox filters
+               with the filters in the left and right sidebars. */
+            padding: 10px 0;
             z-index: 1;
         }
 
