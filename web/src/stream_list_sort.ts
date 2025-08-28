@@ -234,6 +234,15 @@ export function sort_groups(
         (section_a, section_b) => section_a.order! - section_b.order!,
     );
 
+    if (
+        pinned_section.streams.length > 0 ||
+        pinned_section.muted_streams.length > 0 ||
+        pinned_section.inactive_streams.length > 0 ||
+        folder_sections.size > 0
+    ) {
+        normal_section.section_title = $t({defaultMessage: "OTHER"});
+    }
+
     // This needs to have the same ordering as the order they're displayed in the sidebar.
     const new_sections = [pinned_section, ...folder_sections_sorted, normal_section];
 
