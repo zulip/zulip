@@ -12587,6 +12587,7 @@ paths:
           $ref: "#/components/responses/SimpleSuccess"
   /mobile_push/test_notification:
     post:
+      deprecated: true
       operationId: test-notify
       summary: Send a test notification to mobile device(s)
       tags: ["mobile"]
@@ -12594,7 +12595,13 @@ paths:
         Trigger sending a test push notification to the user's
         selected mobile device or all of their mobile devices.
 
-        **Changes**: Starting with Zulip 8.0 (feature level 234), test
+        **Changes**: Deprecated in Zulip 11.0 (feature level 420).
+        Clients connecting to newer servers and with E2EE push
+        notifications support should use the
+        [Send an E2EE test notification to mobile device(s)](/api/e2ee-test-notify)
+        endpoint, as this endpoint will be removed in a future release.
+
+        Starting with Zulip 8.0 (feature level 234), test
         notifications sent via this endpoint use `test` rather than
         `test-by-device-token` in the `event` field. Also, as of this
         feature level, all mobile push notifications now include a
