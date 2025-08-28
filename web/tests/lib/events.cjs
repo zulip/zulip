@@ -897,6 +897,12 @@ exports.fixtures = {
             {
                 name: "devel",
                 stream_id: 42,
+                invite_only: false,
+            },
+            {
+                name: "test",
+                stream_id: 102,
+                invite_only: true,
             },
         ],
     },

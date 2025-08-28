@@ -81,7 +81,10 @@ function send_stream_typing_notification(
     topic: string,
     operation: "start" | "stop",
 ): void {
-    const stream = stream_data.get_sub_by_id(stream_id)!;
+    const stream = stream_data.get_sub_by_id(stream_id);
+    if (stream === undefined) {
+        return;
+    }
     if (!stream_data.can_post_messages_in_stream(stream)) {
         return;
     }

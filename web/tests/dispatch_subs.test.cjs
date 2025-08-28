@@ -4,6 +4,7 @@ const assert = require("node:assert/strict");
 
 const events = require("./lib/events.cjs");
 const {make_realm} = require("./lib/example_realm.cjs");
+const {make_message_list} = require("./lib/message_list.cjs");
 const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {make_stub} = require("./lib/stub.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
@@ -23,17 +24,20 @@ const stream_settings_ui = mock_esm("../src/stream_settings_ui");
 const unread_ops = mock_esm("../src/unread_ops");
 
 const compose_state = zrequire("compose_state");
+const message_lists = zrequire("message_lists");
 const peer_data = zrequire("peer_data");
 const people = zrequire("people");
 const server_events_dispatch = zrequire("server_events_dispatch");
 const {set_realm} = zrequire("state_data");
 const stream_data = zrequire("stream_data");
 const sub_store = zrequire("sub_store");
+const user_settings = zrequire("user_settings");
 
 const realm = make_realm();
 set_realm(realm);
 
 people.add_active_user(test_user);
+user_settings.initialize_user_settings({user_settings: {web_home_view: "recents"}});
 
 const me = {
     email: "me@zulip.com",
@@ -109,10 +113,36 @@ test("remove", ({override}) => {
 
     const stub = make_stub();
     override(stream_events, "mark_unsubscribed", stub.f);
-    dispatch(event);
+    dispatch({...event, subscriptions: [event_sub]});
     assert.equal(stub.num_calls, 1);
     const args = stub.get_args("sub");
     assert.deepEqual(args.sub, sub);
+});
+
+test("remove (private stream is selected in compose)", ({override}) => {
+    const event = event_fixtures.subscription__remove;
+
+    for (const sub of event.subscriptions) {
+        stream_data.add_sub(sub);
+    }
+
+    const unsub_stub = make_stub();
+    const recipient_update_stub = make_stub();
+    override(stream_events, "mark_unsubscribed", unsub_stub.f);
+    override(compose_recipient, "on_compose_select_recipient_update", recipient_update_stub.f);
+    assert.ok(event.subscriptions[1].invite_only);
+    compose_state.set_stream_id(event.subscriptions[1].stream_id);
+    compose_state.topic("Removing subs while composing");
+
+    dispatch(event);
+    assert.equal(unsub_stub.num_calls, 2);
+    const args = unsub_stub.get_args("sub");
+    assert.deepEqual(args.sub, event.subscriptions[1]);
+    // If we're unsubscribed from a private channel, we unset
+    // the recipient channel and topic in the compose box.
+    assert.equal(compose_state.stream_id(), undefined);
+    assert.equal(compose_state.topic(), "");
+    assert.equal(recipient_update_stub.num_calls, 1);
 });
 
 test("update", ({override}) => {
@@ -215,6 +245,9 @@ test("stream delete (normal)", ({override}) => {
     stream_data.subscribe_myself(devel_sub);
 
     override(settings_streams, "update_default_streams_table", noop);
+    message_lists.set_current(
+        make_message_list([{operator: "channel", operand: String(test_sub.stream_id)}]),
+    );
 
     const removed_stream_ids = [];
 
@@ -235,6 +268,7 @@ test("stream delete (normal)", ({override}) => {
     assert.deepEqual(removed_stream_ids, [event.stream_ids[0], event.stream_ids[1]]);
 
     assert.equal(removed_sidebar_rows, 1);
+    assert.deepEqual(window.location.hash, "#" + user_settings.user_settings.web_home_view);
 });
 
 test("stream delete (special streams)", ({override}) => {
