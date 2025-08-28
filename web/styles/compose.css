@@ -739,6 +739,24 @@
         }
     }
 
+    & a,
+    & a:link,
+    & a:visited {
+        color: var(--color-markdown-link);
+        text-decoration: underline solid var(--color-markdown-link-visited);
+        text-underline-offset: 3px;
+    }
+
+    & a:hover {
+        color: var(--color-markdown-link-hover);
+        text-decoration-color: var(--color-markdown-link-hover-decoration);
+    }
+
+    & a:active {
+        color: var(--color-markdown-link-active);
+        text-decoration-color: var(--color-markdown-link-active-decoration);
+    }
+
     .main-view-banner-action-button,
     .upload_banner_cancel_button {
         border: none;
