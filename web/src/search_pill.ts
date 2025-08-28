@@ -116,13 +116,19 @@ function on_pill_exit(
     $user_pill.remove();
 }
 
-// TODO: We're calculating `description_html` every time, even though
-// we only show it (in `generate_pills_html`) for lines with only one
-// pill. We can probably simplify things by separating out a function
-// that generates `description_html` from the information in a single
-// search pill, and remove `description_html` from the `Suggestion` type.
 export function generate_pills_html(suggestion: Suggestion, query: string): string {
     const search_terms = Filter.parse(suggestion.search_string);
+    let description: string | undefined;
+    // We're calculating `description_html` when we show it (in `generate_pills_html`)
+    // for lines with only one pill. (Currently we may end up calculating even if
+    // we won't use it. We separately generate for user pills)
+    if (search_terms.length === 1) {
+        const is_operator_suggestion =
+            search_terms[0]!.operator !== "" && search_terms[0]!.operand === "";
+        description = Filter.search_description_as_html(search_terms, is_operator_suggestion);
+        const capitalized_first_letter = description.charAt(0).toUpperCase();
+        description = capitalized_first_letter + description.slice(1);
+    }
 
     const pill_render_data = search_terms.map((term, index) => {
         if (user_pill_operators.has(term.operator) && term.operand !== "") {
@@ -194,7 +200,7 @@ export function generate_pills_html(suggestion: Suggestion, query: string): stri
         if (render_data.type === "generic_operator" && render_data.operator !== "search") {
             return render_search_list_item({
                 pills: pill_render_data,
-                description_html: suggestion.description_html,
+                description_html: description,
             });
         } else if (render_data.type === "search_user" && is_sent_by_me_pill(render_data)) {
             const description_html = render_data.negated

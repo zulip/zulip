@@ -71,9 +71,7 @@ type Part =
           users: ValidOrInvalidUser[];
       };
 
-type ValidOrInvalidUser =
-    | {valid_user: true; user_pill_context: UserPillItem}
-    | {valid_user: false; operand: string};
+type ValidOrInvalidUser = {valid_user: true; user_pill_context: UserPillItem} | {valid_user: false};
 
 const channels_operands = new Set(["public", "web-public"]);
 
@@ -833,13 +831,17 @@ export class Filter {
             if (USER_OPERATORS.has(canonicalized_operator)) {
                 const user_emails = operand.split(",");
                 const users: ValidOrInvalidUser[] = user_emails.map((email) => {
-                    const person = people.get_by_email(email);
-                    if (person === undefined) {
+                    // We are showing operator suggestion here and there isn't
+                    // any email passed on here.
+                    if (email === "") {
                         return {
                             valid_user: false,
-                            operand: email,
                         };
                     }
+                    const person = people.get_by_email(email);
+                    // We should have a valid user passed onto us and shown in the
+                    // suggestion
+                    assert(person !== undefined);
                     return {
                         valid_user: true,
                         user_pill_context: create_user_pill_context(person),
