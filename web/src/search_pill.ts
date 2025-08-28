@@ -386,7 +386,8 @@ function get_search_operand(item: SearchPill, for_display: boolean): string {
 
 export function get_current_search_pill_terms(pill_widget: SearchPillWidget): NarrowTerm[] {
     return pill_widget.items().map((item) => ({
-        ...item,
+        operator: item.operator,
         operand: get_search_operand(item, false),
+        negated: item.negated,
     }));
 }

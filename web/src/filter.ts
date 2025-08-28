@@ -207,15 +207,15 @@ function message_matches_search_term(message: Message, operator: string, operand
         }
 
         case "dm-including": {
-            const operand_user = people.get_by_email(operand);
-            if (operand_user === undefined) {
+            const operand_ids = people.pm_with_operand_ids(operand);
+            if (!operand_ids) {
                 return false;
             }
             const user_ids = people.all_user_ids_in_pm(message);
             if (!user_ids) {
                 return false;
             }
-            return user_ids.includes(operand_user.user_id);
+            return operand_ids.every((operand_id) => user_ids.includes(operand_id));
         }
     }
 

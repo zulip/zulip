@@ -329,7 +329,20 @@ function handle_operators_supporting_id_based_api(narrow_parameter: string): str
 }
 
 export function get_narrow_for_message_fetch(filter: Filter): string {
-    let narrow_data = filter.public_terms();
+    let narrow_data: NarrowTerm[] = [];
+    for (const term of filter.public_terms()) {
+        if (term.operator === "dm-including") {
+            for (const operand of term.operand.split(",")) {
+                narrow_data.push({
+                    ...term,
+                    operand,
+                });
+            }
+        } else {
+            narrow_data.push(term);
+        }
+    }
+
     if (page_params.narrow !== undefined) {
         narrow_data = [...narrow_data, ...page_params.narrow];
     }
