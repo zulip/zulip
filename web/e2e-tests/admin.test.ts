@@ -187,7 +187,7 @@ async function test_upload_realm_icon_image(page: Page): Promise<void> {
         hidden: true,
     });
     await page.waitForSelector(
-        '#realm-icon-upload-widget .image-block[src^="/user_avatars/2/realm/icon.png?version=2"]',
+        '#realm-icon-upload-widget .image-block-image[src^="/user_avatars/2/realm/icon.png?version=2"]',
         {visible: true},
     );
 }
@@ -202,7 +202,7 @@ async function delete_realm_icon(page: Page): Promise<void> {
 async function test_organization_profile(page: Page): Promise<void> {
     await page.click("li[data-section='organization-profile']");
     const gravatar_selector =
-        '#realm-icon-upload-widget .image-block[src^="https://secure.gravatar.com/avatar/"]';
+        '#realm-icon-upload-widget .image-block-image[src^="https://secure.gravatar.com/avatar/"]';
     await page.waitForSelector(gravatar_selector, {visible: true});
     await page.waitForSelector("#realm-icon-upload-widget .image-delete-button", {hidden: true});
 
