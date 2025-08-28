@@ -1,6 +1,7 @@
 import _ from "lodash";
 import assert from "minimalistic-assert";
 
+import * as internal_url from "../shared/src/internal_url.ts";
 import * as resolved_topic from "../shared/src/resolved_topic.ts";
 import render_search_description from "../templates/search_description.hbs";
 
@@ -18,6 +19,7 @@ import type {UserPillItem} from "./search_suggestion.ts";
 import {current_user, realm} from "./state_data.ts";
 import type {NarrowTerm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
+import * as sub_store from "./sub_store.ts";
 import * as user_topics from "./user_topics.ts";
 import * as util from "./util.ts";
 
@@ -1311,12 +1313,12 @@ export class Filter {
             if (!sub) {
                 return "#";
             }
-            return (
-                "/#narrow/channel/" +
-                stream_data.id_to_slug(sub.stream_id) +
-                "/topic/" +
-                this.operands("topic")[0]
-            );
+
+            return `/${internal_url.by_stream_topic_url(
+                sub.stream_id,
+                this.operands("topic")[0]!,
+                sub_store.maybe_get_stream_name,
+            )}`;
         }
 
         // eliminate "complex filters"
@@ -1332,7 +1334,10 @@ export class Filter {
                     if (!sub) {
                         return "#";
                     }
-                    return "/#narrow/channel/" + stream_data.id_to_slug(sub.stream_id);
+                    return `/${internal_url.by_stream_url(
+                        sub.stream_id,
+                        sub_store.maybe_get_stream_name,
+                    )}`;
                 }
                 case "is-dm":
                     return "/#narrow/is/dm";

@@ -2399,6 +2399,14 @@ test("navbar_helpers", ({override}) => {
         {operator: "channel", operand: invalid_channel_id.toString()},
         {operator: "topic", operand: "bar"},
     ];
+    // channel/topic name using special character for url encoding.
+    const special_sub_id = new_stream_id();
+    make_sub("Foo2.0", special_sub_id);
+    const char_channel_term = [{operator: "channel", operand: special_sub_id.toString()}];
+    const char_channel_topic_term = [
+        {operator: "channel", operand: special_sub_id.toString()},
+        {operator: "topic", operand: "bar2.0"},
+    ];
     const public_sub_id = new_stream_id();
     make_private_sub("psub", public_sub_id);
     const private_channel_term = [{operator: "channel", operand: public_sub_id.toString()}];
@@ -2524,6 +2532,20 @@ test("navbar_helpers", ({override}) => {
             zulip_icon: "hashtag",
             title: "Foo",
             redirect_url_with_search: `/#narrow/channel/${foo_stream_id}-Foo/topic/bar`,
+        },
+        {
+            terms: char_channel_term,
+            is_common_narrow: true,
+            zulip_icon: "hashtag",
+            title: "Foo2.0",
+            redirect_url_with_search: `/#narrow/channel/${special_sub_id}-Foo2.2E0`,
+        },
+        {
+            terms: char_channel_topic_term,
+            is_common_narrow: true,
+            zulip_icon: "hashtag",
+            title: "Foo2.0",
+            redirect_url_with_search: `/#narrow/channel/${special_sub_id}-Foo2.2E0/topic/bar2.2E0`,
         },
         {
             terms: invalid_channel_with_topic,
