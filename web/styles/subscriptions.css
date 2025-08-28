@@ -647,7 +647,7 @@ h4.user_group_setting_subsection_title {
     padding: 8px 10px;
     display: grid;
     grid-template:
-        "search-input clear-search folder-filter dropdown-widget" auto / minmax(
+        "folder-filter search-input clear-search dropdown-widget" auto / auto minmax(
             0,
             1fr
         )
@@ -662,9 +662,11 @@ h4.user_group_setting_subsection_title {
 }
 
 #folder_filter_button {
-    font-size: 1.8em;
-    margin-left: 10px;
+    font-size: 1.6em;
+    margin-right: 6px;
     padding: 0;
+    aspect-ratio: auto;
+    grid-area: folder-filter;
 }
 
 .stream_settings_filter_container.hide_filter {

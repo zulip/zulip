@@ -690,13 +690,15 @@ function update_folder_filter_button(left_panel_params: LeftPanelParams): void {
     ) {
         $("#folder_filter_button").addClass("icon-button-neutral");
         $("#folder_filter_button").removeClass("icon-button-brand");
-        $("#folder_filter_button .zulip-icon").addClass("zulip-icon-folder");
-        $("#folder_filter_button .zulip-icon").removeClass("zulip-icon-folder-search");
+        $("#folder_filter_button .zulip-icon-folder-search")
+            .removeClass("zulip-icon-folder-search")
+            .addClass("zulip-icon-folder");
     } else {
         $("#folder_filter_button").removeClass("icon-button-neutral");
         $("#folder_filter_button").addClass("icon-button-brand");
-        $("#folder_filter_button .zulip-icon").removeClass("zulip-icon-folder");
-        $("#folder_filter_button .zulip-icon").addClass("zulip-icon-folder-search");
+        $("#folder_filter_button .zulip-icon-folder")
+            .removeClass("zulip-icon-folder")
+            .addClass("zulip-icon-folder-search");
     }
 }
 
