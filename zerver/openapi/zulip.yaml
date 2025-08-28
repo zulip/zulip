@@ -12994,11 +12994,17 @@ paths:
                           An example JSON response for when the user is not previously muted:
   /users/me/apns_device_token:
     post:
+      deprecated: true
       operationId: add-apns-token
       summary: Add an APNs device token
       tags: ["users"]
       description: |
         This endpoint adds an APNs device token to register for iOS push notifications.
+
+        **Changes**: Deprecated in Zulip 11.0 (feature level 406). Clients connecting
+        to newer servers and with E2EE push notifications support should use the
+        [Register E2EE push device](/api/register-push-device) endpoint, as this
+        endpoint will be removed in a future release.
       requestBody:
         required: true
         content:
@@ -13106,11 +13112,17 @@ paths:
                           A typical failed JSON response for when the token does not exist:
   /users/me/android_gcm_reg_id:
     post:
+      deprecated: true
       operationId: add-fcm-token
       summary: Add an FCM registration token
       tags: ["users"]
       description: |
         This endpoint adds an FCM registration token for push notifications.
+
+        **Changes**: Deprecated in Zulip 11.0 (feature level 406). Clients connecting
+        to newer servers and with E2EE push notifications support should use the
+        [Register E2EE push device](/api/register-push-device) endpoint, as this
+        endpoint will be removed in a future release.
       requestBody:
         required: true
         content:
