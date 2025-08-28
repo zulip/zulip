@@ -2,18 +2,22 @@
 
 {!owner-only.md!}
 
-Zulip supports changing the URL for an organization.  Changing the
-organization URL is a disruptive operation for users:
+Zulip supports changing the URL for an organization. Users who navigate to the
+old URL in the browser will see a notice about the organization being moved,
+prior to being redirected to the new URL. [Links to channels, topics and
+messages](/help/link-to-a-message-or-conversation) will thus continue to work.
 
-* Users will be logged out of existing sessions on the web, mobile and
-  desktop apps and need to log in again.
+When you change the URL:
+
+* All users will be logged out of the web, mobile and desktop apps.
 * Any [API clients](/api/) or [integrations](/integrations/) will need
   to be updated to point to the new organization URL.
 
-We recommend using a [wildcard
-mention](/help/mention-a-user-or-group#mention-everyone-on-a-channel)
-in an announcement channel to notify users that they need to update
-their clients.
+!!! tip ""
+
+    Consider using a [wildcard
+    mention](/help/mention-a-user-or-group#mention-everyone-on-a-channel)
+    in an announcement channel to let users know about an upcoming change.
 
 ## Change your Zulip Cloud subdomain
 
@@ -29,6 +33,10 @@ information:
 1. Your organization's current subdomain.
 
 1. The subdomain you would like to move your organization to.
+
+1. Whether you want links to the old subdomain to redirect to the new one for an
+   extended period of time. By default, the old subdomain may be freed up for
+   reuse after 3 months.
 
 {end_tabs}
 
