@@ -23636,12 +23636,15 @@ paths:
       operationId: create-channel
       summary: Create a channel
       description: |
-        Create a new [channel](/help/create-channels) and optionally
-        subscribe users to the newly created channel. The initial [channel settings](/api/update-stream)
-        will be determined by the optional parameters, like `invite_only`, detailed below.
+        Create a new [channel](/help/create-channels), and optionally subscribe
+        users to the newly created channel.
 
-        **Changes**: New in Zulip 11.0 (feature level 417). Previously, this was only possible via
-        the [`POST /api/subscribe`](/api/subscribe) endpoint, which handled both creation and subscription.
+        The initial [channel settings](/api/update-stream) will be determined
+        by the optional parameters, like `invite_only`, detailed below.
+
+        **Changes**: New in Zulip 11.0 (feature level 417). Previously, this was
+        only possible via the [`POST /api/subscribe`](/api/subscribe) endpoint,
+        which handles both channel subscription and creation.
       x-curl-examples-parameters:
         oneOf:
           - type: include
@@ -23650,12 +23653,11 @@ paths:
                 - name
                 - subscribers
       requestBody:
+        required: true
         content:
           application/x-www-form-urlencoded:
             schema:
               type: object
-              description: |
-                An object containing the top-level fields used to create a channel.
               properties:
                 name:
                   type: string
@@ -23692,11 +23694,11 @@ paths:
                   example: true
                 invite_only:
                   description: |
-                    This parameter and the ones
-                    that follow are used to request an initial configuration of the new channel.
+                    This parameter and the ones that follow are used to request an initial
+                    configuration of the new channel.
 
                     This parameter determines whether the newly created channel will be
-                    a private channel.
+                    a [private channel](/help/channel-permissions#private-channels).
                   type: boolean
                   default: false
                   example: true
@@ -23796,15 +23798,12 @@ paths:
                 contentType: application/json
               topics_policy:
                 contentType: application/json
-        required: true
-
       responses:
         "200":
           description: Success.
           content:
             application/json:
               schema:
-                description: "Success response for creating a channel."
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
                   - type: object
@@ -23822,27 +23821,17 @@ paths:
           content:
             application/json:
               schema:
-                description: "Bad request as channel already exists."
                 allOf:
                   - $ref: "#/components/schemas/CodedError"
-                  - type: object
-                    properties:
-                      result:
-                        type: string
-                        example: "error"
-                      msg:
-                        type: string
-                        example: "Channel 'discussions' already exists"
-                      code:
-                        type: string
-                        example: "CHANNEL_ALREADY_EXISTS"
-                example:
-                  {
-                    result: "error",
-                    msg: "Channel 'discussions' already exists",
-                    code: "CHANNEL_ALREADY_EXISTS",
-                  }
-
+                  - example:
+                      {
+                        result: "error",
+                        msg: "Channel 'discussions' already exists",
+                        code: "CHANNEL_ALREADY_EXISTS",
+                      }
+                    description: |
+                      An example JSON error response for when a channel with the submitted
+                      name already exists.
   /user_groups/create:
     post:
       operationId: create-user-group
