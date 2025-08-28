@@ -324,8 +324,11 @@ function show_start_export_modal(): void {
         $("#allow_private_data_export_stats").text(
             $t(
                 {
-                    defaultMessage:
-                        "Exporting private data for {users_consented_for_export_count} users ({total_users_count} users total).",
+                    defaultMessage: `
+                        Exporting private data for {users_consented_for_export_count,
+                        plural, one {# user} other {# users}} ({total_users_count,
+                        plural, one {# user} other {# users}} total).
+                    `,
                 },
                 {users_consented_for_export_count, total_users_count},
             ),
@@ -464,8 +467,11 @@ function update_start_export_modal_stats(): void {
         $("#allow_private_data_export_stats").text(
             $t(
                 {
-                    defaultMessage:
-                        "Exporting private data for {users_consented_for_export_count} users ({total_users_count} users total).",
+                    defaultMessage: `
+                        Exporting private data for {users_consented_for_export_count,
+                        plural, one {# user} other {# users}} ({total_users_count,
+                        plural, one {# user} other {# users}} total).
+                    `,
                 },
                 {users_consented_for_export_count, total_users_count},
             ),
