@@ -1773,6 +1773,12 @@ class RealmImportExportTest(ExportFile):
                 stream.recipient_id,
                 Recipient.objects.get(type=Recipient.STREAM, type_id=stream.id).id,
             )
+            self.assertEqual(
+                stream.subscriber_count,
+                Subscription.objects.filter(
+                    recipient=stream.recipient, active=True, is_user_active=True
+                ).count(),
+            )
 
         # Check folder field for imported streams
         for stream in Stream.objects.filter(realm=imported_realm):
