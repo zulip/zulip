@@ -84,6 +84,7 @@ const initial_group_filter = FILTERS.ACTIVE_GROUPS;
 
 let group_list_widget: ListWidget.ListWidget<UserGroup, UserGroup>;
 let group_list_toggler: Toggle;
+let current_realm_has_any_group = true;
 
 const GROUP_INFO_BANNER: Banner = {
     intent: "info",
@@ -1617,8 +1618,11 @@ function compare_by_name(a: UserGroup, b: UserGroup): number {
 
 function redraw_left_panel(tab_name: string): void {
     let groups_list_data;
+    const realm_groups = user_groups.get_realm_user_groups(true);
+    current_realm_has_any_group = realm_groups.length > 0;
+
     if (tab_name === "all-groups") {
-        groups_list_data = user_groups.get_realm_user_groups(true);
+        groups_list_data = realm_groups;
     } else if (tab_name === "your-groups") {
         groups_list_data = user_groups.get_user_groups_of_user(people.my_current_user_id(), true);
     }
@@ -1720,6 +1724,7 @@ export function update_empty_left_panel_message(): void {
     const empty_user_group_list_message = get_empty_user_group_list_message(
         current_group_filter,
         is_your_groups_tab_active,
+        current_realm_has_any_group,
     );
 
     const args = {
@@ -1727,6 +1732,7 @@ export function update_empty_left_panel_message(): void {
         can_create_user_groups:
             settings_data.user_can_create_user_groups() && realm.zulip_plan_is_not_limited,
         all_groups_tab: !is_your_groups_tab_active,
+        current_realm_has_any_group,
     };
 
     $(".no-groups-to-show").html(render_user_group_settings_empty_notice(args)).show();
@@ -1735,13 +1741,14 @@ export function update_empty_left_panel_message(): void {
 function get_empty_user_group_list_message(
     current_group_filter: string,
     is_your_groups_tab_active: boolean,
+    realm_has_any_group: boolean,
 ): string {
     const is_searching = $("#search_group_name").val() !== "";
     if (is_searching || current_group_filter !== FILTERS.ACTIVE_AND_DEACTIVATED_GROUPS) {
         return $t({defaultMessage: "There are no groups matching your filters."});
     }
 
-    if (is_your_groups_tab_active) {
+    if (is_your_groups_tab_active && realm_has_any_group) {
         return $t({defaultMessage: "You are not a member of any user groups."});
     }
     return $t({
@@ -2175,6 +2182,18 @@ export function initialize(): void {
     }
 
     $("#groups_overlay_container").on("click", ".create_user_group_button", (e) => {
+        e.preventDefault();
+        open_create_user_group();
+    });
+
+    // Handle click for "View all groups" button in empty notice
+    $("#groups_overlay_container").on("click", ".view-all-groups-button", (e) => {
+        e.preventDefault();
+        group_list_toggler.goto("all-groups");
+    });
+
+    // Handle click for "Create a user group" button in empty notice (realm group creation)
+    $("#groups_overlay_container").on("click", ".create-realm-group-button", (e) => {
         e.preventDefault();
         open_create_user_group();
     });
