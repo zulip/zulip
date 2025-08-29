@@ -10,7 +10,15 @@
                 </thead>
                 <tr>
                     <td class="definition">{{t 'Reply to message' }}</td>
-                    <td><span class="hotkey"><kbd>Enter</kbd> or <kbd>R</kbd></span></td>
+                    <td>
+                        <span class="hotkey">
+                            {{#tr}}
+                                <z-kbd-1></z-kbd-1> or <z-kbd-2></z-kbd-2>
+                                {{#*inline "z-kbd-1"}}<kbd>Enter</kbd>{{/inline}}
+                                {{#*inline "z-kbd-2"}}<kbd>R</kbd>{{/inline}}
+                            {{/tr}}
+                        </span>
+                    </td>
                 </tr>
                 <tr>
                     <td class="definition">{{t 'New channel message' }}</td>
@@ -30,7 +38,15 @@
                 </tr>
                 <tr>
                     <td class="definition">{{t 'Cancel compose and save draft' }}</td>
-                    <td><span class="hotkey"><kbd>Esc</kbd> or <kbd data-mac-key="Ctrl">Ctrl</kbd> + <kbd>[</kbd></span></td>
+                    <td>
+                        <span class="hotkey">
+                            {{#tr}}
+                                <z-kbd-1></z-kbd-1> or <z-kbd-2></z-kbd-2>
+                                {{#*inline "z-kbd-1"}}<kbd>Esc</kbd>{{/inline}}
+                                {{#*inline "z-kbd-2"}}<kbd data-mac-key="Ctrl">Ctrl</kbd> + <kbd>[</kbd>{{/inline}}
+                            {{/tr}}
+                        </span>
+                    </td>
                 </tr>
                 <tr>
                     <td class="definition">{{t 'View drafts' }}</td>
@@ -38,11 +54,27 @@
                 </tr>
                 <tr>
                     <td class="definition">{{t 'Next message' }}</td>
-                    <td><span class="hotkey"><kbd class="arrow-key">↓</kbd> or <kbd>J</kbd></span></td>
+                    <td>
+                        <span class="hotkey">
+                            {{#tr}}
+                                <z-kbd-1></z-kbd-1> or <z-kbd-2></z-kbd-2>
+                                {{#*inline "z-kbd-1"}}<kbd class="arrow-key">↓</kbd>{{/inline}}
+                                {{#*inline "z-kbd-2"}}<kbd>J</kbd>{{/inline}}
+                            {{/tr}}
+                        </span>
+                    </td>
                 </tr>
                 <tr>
                     <td class="definition">{{t 'Last message' }}</td>
-                    <td><span class="hotkey"><kbd>End</kbd> or <kbd>Shift</kbd> + <kbd>G</kbd></span></td>
+                    <td>
+                        <span class="hotkey">
+                            {{#tr}}
+                                <z-kbd-1></z-kbd-1> or <z-kbd-2></z-kbd-2>
+                                {{#*inline "z-kbd-1"}}<kbd>End</kbd>{{/inline}}
+                                {{#*inline "z-kbd-2"}}<kbd>Shift</kbd> + <kbd>G</kbd>{{/inline}}
+                            {{/tr}}
+                        </span>
+                    </td>
                 </tr>
                 <tr>
                     <td class="definition">{{t 'Next unread topic' }}</td>
@@ -58,7 +90,15 @@
                 </tr>
                 <tr>
                     <td class="definition">{{t 'Initiate a search' }}</td>
-                    <td><span class="hotkey"><kbd>Ctrl</kbd> + <kbd>K</kbd> or <kbd>/</kbd></span></td>
+                    <td>
+                        <span class="hotkey">
+                            {{#tr}}
+                                <z-kbd-1></z-kbd-1> or <z-kbd-2></z-kbd-2>
+                                {{#*inline "z-kbd-1"}}<kbd>Ctrl</kbd> + <kbd>K</kbd>{{/inline}}
+                                {{#*inline "z-kbd-2"}}<kbd>/</kbd>{{/inline}}
+                            {{/tr}}
+                        </span>
+                    </td>
                 </tr>
                 <tr>
                     <td class="definition">{{t 'Show keyboard shortcuts' }}</td>
@@ -66,7 +106,16 @@
                 </tr>
                 <tr>
                     <td class="definition">{{t 'Go to your home view' }}</td>
-                    <td><span class="hotkey"><kbd data-mac-key="Ctrl">Ctrl</kbd> + <kbd>[</kbd><span id="go-to-home-view-hotkey-help"> or <kbd>Esc</kbd></span></span></td>
+                    <td>
+                        <span class="hotkey">
+                            {{#tr}}
+                                <z-kbd-1></z-kbd-1> <z-wrapper>or</z-wrapper> <z-kbd-2></z-kbd-2>
+                                {{#*inline "z-kbd-1"}}<kbd data-mac-key="Ctrl">Ctrl</kbd> + <kbd>[</kbd>{{/inline}}
+                                {{#*inline "z-kbd-2"}}<span class="go-to-home-view-hotkey-help"><kbd>Esc</kbd></span>{{/inline}}
+                                {{#*inline "z-wrapper"}}<span class="go-to-home-view-hotkey-help">{{> @partial-block}}</span>{{/inline}}
+                            {{/tr}}
+                        </span>
+                    </td>
                 </tr>
             </table>
         </div>
@@ -79,7 +128,15 @@
                 </thead>
                 <tr>
                     <td class="definition">{{t 'Initiate a search' }}</td>
-                    <td><span class="hotkey"><kbd>Ctrl</kbd> + <kbd>K</kbd> or <kbd>/</kbd></span></td>
+                    <td>
+                        <span class="hotkey">
+                            {{#tr}}
+                                <z-kbd-1></z-kbd-1> or <z-kbd-2></z-kbd-2>
+                                {{#*inline "z-kbd-1"}}<kbd>Ctrl</kbd> + <kbd>K</kbd>{{/inline}}
+                                {{#*inline "z-kbd-2"}}<kbd>/</kbd>{{/inline}}
+                            {{/tr}}
+                        </span>
+                    </td>
                 </tr>
                 <tr>
                     <td class="definition">{{t 'Filter left sidebar' }}</td>
@@ -100,27 +157,79 @@
                 </thead>
                 <tr>
                     <td class="definition">{{t 'Previous message' }}</td>
-                    <td><span class="hotkey"><kbd class="arrow-key">↑</kbd> or <kbd>K</kbd></span></td>
+                    <td>
+                        <span class="hotkey">
+                            {{#tr}}
+                                <z-kbd-1></z-kbd-1> or <z-kbd-2></z-kbd-2>
+                                {{#*inline "z-kbd-1"}}<kbd class="arrow-key">↑</kbd>{{/inline}}
+                                {{#*inline "z-kbd-2"}}<kbd>K</kbd>{{/inline}}
+                            {{/tr}}
+                        </span>
+                    </td>
                 </tr>
                 <tr>
                     <td class="definition">{{t 'Next message' }}</td>
-                    <td><span class="hotkey"><kbd class="arrow-key">↓</kbd> or <kbd>J</kbd></span></td>
+                    <td>
+                        <span class="hotkey">
+                            {{#tr}}
+                                <z-kbd-1></z-kbd-1> or <z-kbd-2></z-kbd-2>
+                                {{#*inline "z-kbd-1"}}<kbd class="arrow-key">↓</kbd>{{/inline}}
+                                {{#*inline "z-kbd-2"}}<kbd>J</kbd>{{/inline}}
+                            {{/tr}}
+                        </span>
+                    </td>
                 </tr>
                 <tr>
                     <td class="definition">{{t 'Scroll up' }}</td>
-                    <td><span class="hotkey"><kbd>PgUp</kbd> or <kbd>Fn</kbd> + <kbd class="arrow-key">↑</kbd> or <kbd>Shift</kbd> + <kbd>K</kbd></span></td>
+                    <td>
+                        <span class="hotkey">
+                            {{#tr}}
+                                <z-kbd-1></z-kbd-1> or <z-kbd-2></z-kbd-2> or <z-kbd-3></z-kbd-3>
+                                {{#*inline "z-kbd-1"}}<kbd>PgUp</kbd>{{/inline}}
+                                {{#*inline "z-kbd-2"}}<kbd>Fn</kbd> + <kbd class="arrow-key">↑</kbd>{{/inline}}
+                                {{#*inline "z-kbd-3"}}<kbd>Shift</kbd> + <kbd>K</kbd>{{/inline}}
+                            {{/tr}}
+                        </span>
+                    </td>
                 </tr>
                 <tr>
                     <td class="definition">{{t 'Scroll down' }}</td>
-                    <td><span class="hotkey"><kbd>PgDn</kbd> or <kbd>Fn</kbd> + <kbd class="arrow-key">↓</kbd> or <kbd>Shift</kbd> + <kbd>J</kbd> or <kbd>Space</kbd></span></td>
+                    <td>
+                        <span class="hotkey">
+                            {{#tr}}
+                                <z-kbd-1></z-kbd-1> or <z-kbd-2></z-kbd-2> or <z-kbd-3></z-kbd-3> or <z-kbd-4></z-kbd-4>
+                                {{#*inline "z-kbd-1"}}<kbd>PgDn</kbd>{{/inline}}
+                                {{#*inline "z-kbd-2"}}<kbd>Fn</kbd> + <kbd class="arrow-key">↓</kbd>{{/inline}}
+                                {{#*inline "z-kbd-3"}}<kbd>Shift</kbd> + <kbd>J</kbd>{{/inline}}
+                                {{#*inline "z-kbd-4"}}<kbd>Space</kbd>{{/inline}}
+                            {{/tr}}
+                        </span>
+                    </td>
                 </tr>
                 <tr>
                     <td class="definition">{{t 'Last message' }}</td>
-                    <td><span class="hotkey"><kbd>End</kbd> or <kbd>Fn</kbd> + <kbd class="arrow-key">→</kbd> or <kbd>Shift</kbd> + <kbd>G</kbd></span></td>
+                    <td>
+                        <span class="hotkey">
+                            {{#tr}}
+                                <z-kbd-1></z-kbd-1> or <z-kbd-2></z-kbd-2> or <z-kbd-3></z-kbd-3>
+                                {{#*inline "z-kbd-1"}}<kbd>End</kbd>{{/inline}}
+                                {{#*inline "z-kbd-2"}}<kbd>Fn</kbd> + <kbd class="arrow-key">→</kbd>{{/inline}}
+                                {{#*inline "z-kbd-3"}}<kbd>Shift</kbd> + <kbd>G</kbd>{{/inline}}
+                            {{/tr}}
+                        </span>
+                    </td>
                 </tr>
                 <tr>
                     <td class="definition">{{t 'First message' }}</td>
-                    <td><span class="hotkey"><kbd>Home</kbd >or <kbd>Fn</kbd> + <kbd class="arrow-key">←</kbd></span></td>
+                    <td>
+                        <span class="hotkey">
+                            {{#tr}}
+                                <z-kbd-1></z-kbd-1> or <z-kbd-2></z-kbd-2>
+                                {{#*inline "z-kbd-1"}}<kbd>Home</kbd>{{/inline}}
+                                {{#*inline "z-kbd-2"}}<kbd>Fn</kbd> + <kbd class="arrow-key">←</kbd>{{/inline}}
+                            {{/tr}}
+                        </span>
+                    </td>
                 </tr>
             </table>
         </div>
@@ -173,7 +282,15 @@
                 </tr>
                 <tr>
                     <td class="definition">{{t 'Cycle between channel views' }}</td>
-                    <td><span class="hotkey"><kbd>Shift</kbd> + <kbd>A</kbd> or <kbd>Shift</kbd> + <kbd>D</kbd></span></td>
+                    <td>
+                        <span class="hotkey">
+                            {{#tr}}
+                                <z-kbd-1></z-kbd-1> or <z-kbd-2></z-kbd-2>
+                                {{#*inline "z-kbd-1"}}<kbd>Shift</kbd> + <kbd>A</kbd>{{/inline}}
+                                {{#*inline "z-kbd-2"}}<kbd>Shift</kbd> + <kbd>D</kbd>{{/inline}}
+                            {{/tr}}
+                        </span>
+                    </td>
                 </tr>
                 <tr>
                     <td class="definition">{{t 'Go to inbox' }}</td>
@@ -214,7 +331,15 @@
                 </tr>
                 <tr>
                     <td class="definition">{{t 'Reply to message' }}</td>
-                    <td><span class="hotkey"><kbd>Enter</kbd> or <kbd>R</kbd></span></td>
+                    <td>
+                        <span class="hotkey">
+                            {{#tr}}
+                                <z-kbd-1></z-kbd-1> or <z-kbd-2></z-kbd-2>
+                                {{#*inline "z-kbd-1"}}<kbd>Enter</kbd>{{/inline}}
+                                {{#*inline "z-kbd-2"}}<kbd>R</kbd>{{/inline}}
+                            {{/tr}}
+                        </span>
+                    </td>
                 </tr>
                 <tr>
                     <td class="definition">{{t 'Quote message' }}</td>
@@ -234,7 +359,16 @@
                 </tr>
                 <tr>
                     <td class="definition">{{t 'Send message' }}</td>
-                    <td><span class="hotkey"><kbd>Tab</kbd> then <kbd>Enter</kbd> or <kbd>Ctrl</kbd> + <kbd>Enter</kbd></span></td>
+                    <td>
+                        <span class="hotkey">
+                            {{#tr}}
+                                <z-kbd-1></z-kbd-1> then <z-kbd-2></z-kbd-2> or <z-kbd-3></z-kbd-3>
+                                {{#*inline "z-kbd-1"}}<kbd>Tab</kbd>{{/inline}}
+                                {{#*inline "z-kbd-2"}}<kbd>Enter</kbd>{{/inline}}
+                                {{#*inline "z-kbd-3"}}<kbd>Ctrl</kbd> + <kbd>Enter</kbd>{{/inline}}
+                            {{/tr}}
+                        </span>
+                    </td>
                 </tr>
                 <tr>
                     <td class="definition">{{t 'Insert new line' }}</td>
@@ -250,7 +384,15 @@
                 </tr>
                 <tr>
                     <td class="definition">{{t 'Cancel compose and save draft' }}</td>
-                    <td><span class="hotkey"><kbd>Esc</kbd> or <kbd data-mac-key="Ctrl">Ctrl</kbd> + <kbd>[</kbd></span></td>
+                    <td>
+                        <span class="hotkey">
+                            {{#tr}}
+                                <z-kbd-1></z-kbd-1> or <z-kbd-2></z-kbd-2>
+                                {{#*inline "z-kbd-1"}}<kbd>Esc</kbd>{{/inline}}
+                                {{#*inline "z-kbd-2"}}<kbd data-mac-key="Ctrl">Ctrl</kbd> + <kbd>[</kbd>{{/inline}}
+                            {{/tr}}
+                        </span>
+                    </td>
                 </tr>
             </table>
         </div>
@@ -401,11 +543,27 @@
                 </thead>
                 <tr>
                     <td class="definition">{{t 'Scroll through channels' }}</td>
-                    <td><span class="hotkey"><kbd class="arrow-key">↑</kbd> or <kbd class="arrow-key">↓</kbd></span></td>
+                    <td>
+                        <span class="hotkey">
+                            {{#tr}}
+                                <z-kbd-1></z-kbd-1> or <z-kbd-2></z-kbd-2>
+                                {{#*inline "z-kbd-1"}}<kbd class="arrow-key">↑</kbd>{{/inline}}
+                                {{#*inline "z-kbd-2"}}<kbd class="arrow-key">↓</kbd>{{/inline}}
+                            {{/tr}}
+                        </span>
+                    </td>
                 </tr>
                 <tr>
                     <td class="definition">{{t 'Switch between tabs' }}</td>
-                    <td><span class="hotkey"><kbd class="arrow-key">←</kbd> or <kbd class="arrow-key">→</kbd></span></td>
+                    <td>
+                        <span class="hotkey">
+                            {{#tr}}
+                                <z-kbd-1></z-kbd-1> or <z-kbd-2></z-kbd-2>
+                                {{#*inline "z-kbd-1"}}<kbd class="arrow-key">←</kbd>{{/inline}}
+                                {{#*inline "z-kbd-2"}}<kbd class="arrow-key">→</kbd>{{/inline}}
+                            {{/tr}}
+                        </span>
+                    </td>
                 </tr>
                 <tr>
                     <td class="definition">{{t 'View channel messages' }}</td>
