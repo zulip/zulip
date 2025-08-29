@@ -22,6 +22,19 @@ let all_rows: number[] = [];
 // to avoid making left sidebar rendering a quadratic operation.
 let filter_out_inactives = false;
 
+export function get_all_rows_for_testing(): StreamListRow[] {
+    return all_rows;
+}
+
+export function reset_stream_list_for_testing(): void {
+    all_rows = [];
+    first_render_completed = false;
+}
+
+export function set_filter_out_inactives_for_testing(value: boolean): void {
+    filter_out_inactives = value;
+}
+
 export function get_stream_ids(): number[] {
     return [...all_rows];
 }
