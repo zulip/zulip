@@ -110,10 +110,7 @@ below are for a webhook named `MyWebHook`.
   `WEBHOOK_INTEGRATIONS`. This will automatically register a
   URL for the incoming webhook of the form `api/v1/external/mywebhook` and
   associate it with the function called `api_mywebhook_webhook` in
-  `zerver/webhooks/mywebhook/view.py`. Also add your integration to
-  `DOC_SCREENSHOT_CONFIG`. This will allow you to automatically generate
-  a screenshot for the documentation by running
-  `tools/screenshots/generate-integration-docs-screenshot --integration mywebhook`.
+  `zerver/webhooks/mywebhook/view.py`.
 
 ## Common Helpers
 
