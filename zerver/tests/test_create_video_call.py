@@ -533,3 +533,167 @@ class BigBlueButtonVideoCallTest(ZulipTestCase):
                 {"bigbluebutton": self.signed_bbb_a_object},
             )
             self.assert_json_error(response, "BigBlueButton is not configured.")
+
+
+class ConstructorGroupsVideoCallTest(ZulipTestCase):
+    @override
+    def setUp(self) -> None:
+        super().setUp()
+        self.user_profile = self.example_user("hamlet")
+        self.login_user(self.user_profile)
+
+    @mock.patch("zerver.views.video_calls.settings.CONSTRUCTOR_GROUPS_URL", None)
+    def test_not_configured_url(self) -> None:
+        response = self.client_post("/json/calls/constructorgroups/create")
+        self.assert_json_error(response, "Failed to create video call")
+
+    @mock.patch("zerver.views.video_calls.settings.CONSTRUCTOR_GROUPS_ACCESS_KEY", None)
+    def test_not_configured_access_key(self) -> None:
+        response = self.client_post("/json/calls/constructorgroups/create")
+        self.assert_json_error(response, "Failed to create video call")
+
+    @mock.patch("zerver.views.video_calls.settings.CONSTRUCTOR_GROUPS_SECRET_KEY", None)
+    def test_not_configured_secret_key(self) -> None:
+        response = self.client_post("/json/calls/constructorgroups/create")
+        self.assert_json_error(response, "Failed to create video call")
+
+    @override_settings(
+        CONSTRUCTOR_GROUPS_URL="https://constructor.app/api/groups/xapi",
+        CONSTRUCTOR_GROUPS_ACCESS_KEY="test-access-key",
+        CONSTRUCTOR_GROUPS_SECRET_KEY="test-secret-key",
+    )
+    @mock.patch("zerver.views.video_calls.ConstructorGroupsService._make_authenticated_request")
+    def test_existing_room_reuse(self, mock_request: mock.Mock) -> None:
+        mock_request.return_value = {
+            "data": [
+                {
+                    "room_guid": "room-123",
+                    "name": "King Hamlet's Zulip Videoconferencing Room",
+                    "url": "https://constructor.app/groups/room/room-123",
+                }
+            ]
+        }
+
+        response = self.client_post("/json/calls/constructorgroups/create")
+
+        response_dict = self.assert_json_success(response)
+        self.assertEqual(response_dict["url"], "https://constructor.app/groups/room/room-123")
+
+        room_name_pattern = f"{self.user_profile.full_name}'s Zulip Videoconferencing Room"
+        mock_request.assert_called_once_with(
+            "GET",
+            "/room/search",
+            {
+                "query": room_name_pattern,
+                "creator_email": self.user_profile.delivery_email,
+                "page": 1,
+                "size": 1,
+            },
+        )
+
+    @override_settings(
+        CONSTRUCTOR_GROUPS_URL="https://constructor.app/api/groups/xapi",
+        CONSTRUCTOR_GROUPS_ACCESS_KEY="test-access-key",
+        CONSTRUCTOR_GROUPS_SECRET_KEY="test-secret-key",
+    )
+    @mock.patch("zerver.views.video_calls.ConstructorGroupsService._make_authenticated_request")
+    def test_create_new_room(self, mock_request: mock.Mock) -> None:
+        mock_request.side_effect = [
+            {"data": []},  # Search returns no rooms
+            {  # Create returns new room
+                "room_guid": "room-456",
+                "name": "King Hamlet's Zulip Videoconferencing Room",
+                "url": "https://constructor.app/groups/room/room-456",
+            },
+        ]
+
+        response = self.client_post("/json/calls/constructorgroups/create")
+
+        response_dict = self.assert_json_success(response)
+        self.assertEqual(response_dict["url"], "https://constructor.app/groups/room/room-456")
+
+        self.assertEqual(mock_request.call_count, 2)
+        search_args, search_kwargs = mock_request.call_args_list[0]
+        create_args, create_kwargs = mock_request.call_args_list[1]
+
+        expected_room_name = f"{self.user_profile.full_name}'s Zulip Videoconferencing Room"
+        self.assertEqual(search_args[0], "GET")
+        self.assertEqual(search_args[1], "/room/search")
+        self.assertEqual(
+            search_args[2],
+            {
+                "query": expected_room_name,
+                "creator_email": self.user_profile.delivery_email,
+                "page": 1,
+                "size": 1,
+            },
+        )
+
+        self.assertEqual(create_args[0], "POST")
+        self.assertEqual(create_args[1], "/room")
+        self.assertEqual(create_args[2]["name"], expected_room_name)
+        self.assertEqual(create_args[2]["creator_email"], self.user_profile.delivery_email)
+
+    @override_settings(
+        CONSTRUCTOR_GROUPS_URL="https://constructor.app/api/groups/xapi",
+        CONSTRUCTOR_GROUPS_ACCESS_KEY="test-access-key",
+        CONSTRUCTOR_GROUPS_SECRET_KEY="test-secret-key",
+    )
+    @mock.patch("zerver.views.video_calls.ConstructorGroupsService._is_configured")
+    def test_api_error_handling(self, mock_configured: mock.Mock) -> None:
+        mock_configured.return_value = False
+
+        response = self.client_post("/json/calls/constructorgroups/create")
+
+        self.assert_json_error(response, "Failed to create video call")
+
+    @override_settings(
+        CONSTRUCTOR_GROUPS_URL="https://constructor.app/api/groups/xapi",
+        CONSTRUCTOR_GROUPS_ACCESS_KEY="test-access-key",
+        CONSTRUCTOR_GROUPS_SECRET_KEY="test-secret-key",
+    )
+    @mock.patch("zerver.views.video_calls.ConstructorGroupsService._make_authenticated_request")
+    def test_call_creation_no_parameter_distinction(self, mock_request: mock.Mock) -> None:
+        """Test that Constructor Groups creates same room regardless of call type"""
+        mock_request.return_value = {
+            "data": [
+                {"room_guid": "room-789", "url": "https://constructor.app/groups/room/room-789"}
+            ]
+        }
+
+        # Constructor Groups doesn't distinguish between audio and video calls
+        response = self.client_post("/json/calls/constructorgroups/create")
+
+        response_dict = self.assert_json_success(response)
+        self.assertEqual(response_dict["url"], "https://constructor.app/groups/room/room-789")
+
+    @override_settings(
+        CONSTRUCTOR_GROUPS_URL="https://constructor.app/api/groups/xapi",
+        CONSTRUCTOR_GROUPS_ACCESS_KEY="test-access-key",
+        CONSTRUCTOR_GROUPS_SECRET_KEY="test-secret-key",
+    )
+    @mock.patch("zerver.views.video_calls.ConstructorGroupsService._make_authenticated_request")
+    def test_room_url_validation(self, mock_request: mock.Mock) -> None:
+        mock_request.return_value = {"data": [{"room_guid": "room-123", "name": "Test Room"}]}
+
+        response = self.client_post("/json/calls/constructorgroups/create")
+
+        self.assert_json_error(response, "Invalid room data received from Constructor Groups.")
+
+    @override_settings(
+        CONSTRUCTOR_GROUPS_URL="https://constructor.app/api/groups/xapi",
+        CONSTRUCTOR_GROUPS_ACCESS_KEY="test-access-key",
+        CONSTRUCTOR_GROUPS_SECRET_KEY="test-secret-key",
+    )
+    @mock.patch("zerver.views.video_calls.ConstructorGroupsService._make_authenticated_request")
+    def test_missing_room_url_error(self, mock_request: mock.Mock) -> None:
+        """Test handling when API returns room data without URL"""
+        # Search returns empty, create returns room without URL
+        mock_request.side_effect = [
+            {"data": []},  # Search returns no rooms
+            {"room_guid": "room-123", "name": "Test Room"},  # Create returns room without URL
+        ]
+
+        response = self.client_post("/json/calls/constructorgroups/create")
+
+        self.assert_json_error(response, "Failed to get room URL from Constructor Groups.")

@@ -145,6 +145,37 @@ export function generate_and_insert_audio_or_video_call_link(
                 }
             },
         });
+    } else if (
+        available_providers.constructor_groups &&
+        realm.realm_video_chat_provider === available_providers.constructor_groups.id
+    ) {
+        // Handle concurrent clicks by aborting previous callbacks
+        compose_call.abort_video_callbacks(edit_message_id);
+        const key = edit_message_id ?? "";
+
+        const xhr = channel.post({
+            url: "/json/calls/constructorgroups/create",
+            data: {},
+            success(response) {
+                const data = call_response_schema.parse(response);
+                compose_call.video_call_xhrs.delete(key);
+                insert_video_call_url(data.url, $target_textarea);
+            },
+            error(_xhr, status) {
+                compose_call.video_call_xhrs.delete(key);
+                if (status !== "abort") {
+                    ui_report.generic_embed_error(
+                        $t_html({defaultMessage: "Failed to create video call."}),
+                        2000,
+                    );
+                }
+            },
+        });
+
+        // Track XHR request for concurrent handling
+        if (xhr !== undefined) {
+            compose_call.video_call_xhrs.set(key, xhr);
+        }
     } else {
         // TODO: Use `new URL` to generate the URLs here.
         const video_call_id = util.random_int(100000000000000, 999999999999999);

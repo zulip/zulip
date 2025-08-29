@@ -11,6 +11,7 @@ supported by Zulip are:
 * [Jitsi Meet](/integrations/doc/jitsi)
 * [Zoom integration](/integrations/doc/zoom)
 * [BigBlueButton integration](/integrations/doc/big-blue-button)
+* [Constructor Groups integration](/integrations/doc/constructor-groups)
 
 !!! tip ""
 
@@ -55,3 +56,4 @@ instance of Jitsi Meet.
 * [Jitsi Meet integration](/integrations/doc/jitsi)
 * [Zoom integration](/integrations/doc/zoom)
 * [BigBlueButton integration](/integrations/doc/big-blue-button)
+* [Constructor Groups integration](/integrations/doc/constructor-groups)
