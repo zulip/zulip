@@ -102,6 +102,7 @@ import * as popovers from "./popovers.ts";
 import * as popup_banners from "./popup_banners.ts";
 import * as presence from "./presence.ts";
 import * as pygments_data from "./pygments_data.ts";
+import * as reactions from "./reactions.ts";
 import * as realm_logo from "./realm_logo.ts";
 import * as realm_playground from "./realm_playground.ts";
 import * as realm_user_settings_defaults from "./realm_user_settings_defaults.ts";
@@ -627,6 +628,8 @@ export async function initialize_everything(state_data) {
         recent_view_ui.set_initial_message_fetch_status(false);
         recent_view_ui.revive_current_focus();
         server_events.finished_initial_fetch();
+        reactions.initialize_frequently_used_emojis();
+        emoji_picker.initialize();
     });
     message_scroll.initialize();
     markdown.initialize(markdown_config.get_helpers());
@@ -697,7 +700,6 @@ export async function initialize_everything(state_data) {
     // All overlays, and also activity_ui, must be initialized before hashchange.ts
     hashchange.initialize();
 
-    emoji_picker.initialize();
     user_group_popover.initialize();
     user_card_popover.initialize();
     playground_links_popover.initialize();

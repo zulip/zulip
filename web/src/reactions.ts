@@ -2,9 +2,11 @@ import $ from "jquery";
 import assert from "minimalistic-assert";
 import * as z from "zod/mini";
 
+import * as typeahead from "../shared/src/typeahead.ts";
 import render_message_reaction from "../templates/message_reaction.hbs";
 import render_message_reactions from "../templates/message_reactions.hbs";
 
+import * as all_messages_data from "./all_messages_data.ts";
 import * as blueslip from "./blueslip.ts";
 import * as channel from "./channel.ts";
 import * as emoji from "./emoji.ts";
@@ -737,4 +739,47 @@ export function rewire_update_vote_text_on_message(
     value: typeof update_vote_text_on_message,
 ): void {
     update_vote_text_on_message = value;
+}
+
+export function initialize_frequently_used_emojis(): void {
+    const message_data = all_messages_data.all_messages_data;
+    const messages = message_data.all_messages();
+
+    const user_emoji_count_map: Record<string, number> = {};
+    const realm_emoji_count_map: Record<string, number> = {};
+    let num_user_emojis = 0;
+    let num_realm_emojis = 0;
+
+    for (let i = messages.length - 1; i >= 0; i -= 1) {
+        const message = messages[i];
+        assert(message !== undefined);
+        const message_reactions = get_message_reactions(message);
+        for (const emoji of message_reactions) {
+            if (num_realm_emojis > 1000 && num_user_emojis > 200) {
+                break;
+            }
+
+            realm_emoji_count_map[emoji.emoji_code] =
+                (realm_emoji_count_map[emoji.emoji_code] ?? 0) + emoji.count;
+            num_realm_emojis += emoji.count;
+
+            if (emoji.user_ids.includes(current_user.user_id) && num_user_emojis < 200) {
+                user_emoji_count_map[emoji.emoji_code] =
+                    (user_emoji_count_map[emoji.emoji_code] ?? 0) + 1;
+                num_user_emojis += 1;
+            }
+        }
+    }
+    if (num_realm_emojis < 100) {
+        return;
+    }
+    const emoji_codes = [
+        ...new Set([...Object.keys(user_emoji_count_map), ...Object.keys(realm_emoji_count_map)]),
+    ];
+    emoji_codes.sort((a, b) => {
+        const rank_a = (user_emoji_count_map[a] ?? 0) * 5 + (realm_emoji_count_map[a] ?? 0);
+        const rank_b = (user_emoji_count_map[b] ?? 0) * 5 + (realm_emoji_count_map[b] ?? 0);
+        return rank_b - rank_a;
+    });
+    typeahead.set_frequently_used_emojis(emoji_codes.slice(0, 6));
 }
