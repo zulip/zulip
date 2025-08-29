@@ -77,7 +77,10 @@ const incompatible_patterns: Record<string, TermPattern[]> = {
         {operator: "dm-including"}, // Legacy alias
     ],
     "is:dm": [
-        {operator: "is", operand: "dm"},
+        // Keep suggesting a plain "is:dm" even when the base terms
+        // already include it (e.g. query "is:dm al"). We therefore
+        // intentionally do not include {operator: "is", operand: "dm"}
+        // in the incompatible patterns for this key.
         {operator: "is", operand: "resolved"},
         {operator: "channel"},
         {operator: "dm"},
@@ -1102,6 +1105,26 @@ export function get_search_result(
         if (attacher.result.length < max_items) {
             const suggestions = filterer(last, base_terms);
             attacher.attach_many(suggestions);
+        }
+    }
+    // When typing more text after valid terms (last is a free-text search),
+    // also include progressively shorter base suggestions so users can easily
+    // back off the trailing search. E.g., for
+    //   "is:starred has:link is:dm al"
+    // include
+    //   "is:starred has:link is:dm"
+    //   "is:starred has:link"
+    //   "is:starred"
+    if (last.operator === "search" && last.operand !== "" && base_terms.length > 0) {
+        const has_is_dm = base_terms.some(
+            (t) => Filter.canonicalize_operator(t.operator) === "is" && t.operand === "dm",
+        );
+        const last_is_dm =
+            Filter.canonicalize_operator(base_terms.at(-1)!.operator) === "dm";
+        if (has_is_dm || last_is_dm) {
+            for (let i = base_terms.length; i >= 1; i -= 1) {
+                attacher.push(get_default_suggestion_line(base_terms.slice(0, i)));
+            }
         }
     }
 
