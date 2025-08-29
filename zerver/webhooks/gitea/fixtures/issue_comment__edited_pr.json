@@ -1,0 +1,79 @@
+{
+  "action": "edited",
+  "issue": {
+    "id": 3,
+    "number": 1,
+    "title": "Fixing a bug in the feature",
+    "state": "open",
+    "user": {
+      "id": 99999,
+      "login": "AuthorOfPR",
+      "full_name": "Pull Request Author",
+      "email": "author@example.com",
+      "avatar_url": "https://example.com/avatar/author",
+      "html_url": "https://dummy-gitea.com/AuthorOfPR"
+    },
+    "body": "The initial implementation had this issue.",
+    "labels": [],
+    "milestone": null,
+    "assignee": null,
+    "created_at": "2025-03-30T01:00:00Z",
+    "updated_at": "2025-03-30T01:00:00Z",
+    "closed_at": null,
+    "pull_request": {
+      "merged": false,
+      "merged_at": null
+    },
+    "html_url": "https://dummy-gitea.com/TestOrg/test-repo/pulls/1"
+  },
+  "comment": {
+    "id": 123456,
+    "poster": {
+      "id": 88888,
+      "login": "TestUser",
+      "full_name": "Test User Full Name",
+      "email": "testuser@example.com",
+      "avatar_url": "https://example.com/avatar/testuser",
+      "html_url": "https://dummy-gitea.com/TestUser"
+    },
+    "body": "Thanks for the fix! Could you also consider **this important** edge case?",
+    "created_at": "2025-03-30T01:15:00Z",
+    "updated_at": "2025-03-30T01:20:00Z",
+    "html_url": "https://dummy-gitea.com/TestOrg/test-repo/pulls/1#issuecomment-123456"
+  },
+  "repository": {
+    "id": 55555,
+    "owner": {
+      "id": 77777,
+      "login": "TestOrg",
+      "full_name": "Test Organization",
+      "email": "org@example.com",
+      "avatar_url": "https://example.com/avatar/testorg",
+      "html_url": "https://dummy-gitea.com/TestOrg"
+    },
+    "name": "test-repo",
+    "full_name": "TestOrg/test-repo",
+    "description": "A repository for testing webhooks.",
+    "private": false,
+    "fork": false,
+    "html_url": "https://dummy-gitea.com/TestOrg/test-repo",
+    "ssh_url": "git@dummy-gitea.com:TestOrg/test-repo.git",
+    "clone_url": "https://dummy-gitea.com/TestOrg/test-repo.git",
+    "default_branch": "main",
+    "created_at": "2025-03-29T10:00:00Z",
+    "updated_at": "2025-03-29T11:00:00Z",
+    "permissions": {
+      "admin": true,
+      "push": true,
+      "pull": true
+    }
+  },
+  "sender": {
+    "id": 88888,
+    "login": "TestUser",
+    "full_name": "Test User Full Name",
+    "email": "testuser@example.com",
+    "avatar_url": "https://example.com/avatar/testuser",
+    "html_url": "https://dummy-gitea.com/TestUser"
+  }
+}
