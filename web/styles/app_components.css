@@ -1137,6 +1137,14 @@ input.settings_text_input {
     }
 }
 
+#edit_bot_owner_widget .dropdown_widget_value {
+    flex: 1;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
 .dropdown_widget_with_label_wrapper {
     margin-top: 0 !important;
 }
