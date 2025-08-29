@@ -84,6 +84,12 @@ Zulip offers the following filters based on the location of the message.
   between you, Bo, and Elena.
 * `dm-including:Bo Lin`: Search all direct message conversations
   (1-on-1 and group) that include you and Bo, as well as any other users.
+* `channels:public`: Search the history of all [public
+  channels](/help/change-the-privacy-of-a-channel) in the organization, including
+  channels you are not subscribed to; see details
+  [below](#search-shared-history).
+* `channels:archived`: Search the history of [archived
+  channels](/help/archive-a-channel#archive-a-channel_1) in the organization.
 
 ### Search shared history
 
