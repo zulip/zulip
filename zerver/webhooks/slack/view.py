@@ -1,5 +1,5 @@
 import re
-from typing import Any, TypeAlias
+from typing import Annotated, Any, TypeAlias
 
 from django.http import HttpRequest
 from django.http.response import HttpResponse
@@ -17,7 +17,7 @@ from zerver.decorator import webhook_view
 from zerver.lib.exceptions import JsonableError, UnsupportedWebhookEventTypeError
 from zerver.lib.request import RequestVariableMissingError
 from zerver.lib.response import json_success
-from zerver.lib.typed_endpoint import typed_endpoint
+from zerver.lib.typed_endpoint import ApiParamConfig, typed_endpoint
 from zerver.lib.validator import WildValue, check_none_or, check_string, to_wild_value
 from zerver.lib.webhooks.common import check_send_webhook_message, get_setup_webhook_message
 from zerver.models import UserProfile
@@ -125,13 +125,16 @@ def is_challenge_handshake(payload: WildValue) -> bool:
     return payload.get("type").tame(check_string) == "url_verification"
 
 
-def handle_slack_webhook_message(
+def legacy_handle_slack_webhook_message(
     request: HttpRequest,
     user_profile: UserProfile,
     content: str,
     channel: str | None,
     channels_map_to_topics: str | None,
 ) -> None:
+    """
+    This handles the legacy `channels_map_to_topics` parameter.
+    """
     topic_name = "Message from Slack"
     if channels_map_to_topics is None:
         check_send_webhook_message(request, user_profile, topic_name, content)
@@ -148,6 +151,42 @@ def handle_slack_webhook_message(
         )
     else:
         raise JsonableError(_("Error: channels_map_to_topics parameter other than 0 or 1"))
+
+
+def handle_slack_webhook_message(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    content: str,
+    channel: str | None,
+    mapping_option: str | None,
+) -> None:
+    topic_name = "Message from Slack"
+    match mapping_option:
+        case "channels":
+            check_send_webhook_message(
+                request,
+                user_profile,
+                topic_name,
+                content,
+                stream=channel,
+            )
+        case "topics":
+            topic_name = f"channel: {channel}"
+            check_send_webhook_message(
+                request,
+                user_profile,
+                topic_name,
+                content,
+            )
+        case None:
+            check_send_webhook_message(
+                request,
+                user_profile,
+                topic_name,
+                content,
+            )
+        case _:
+            raise JsonableError(f"Invalid mapping option: {mapping_option}.")
 
 
 def is_retry_call_from_slack(request: HttpRequest) -> bool:
@@ -184,6 +223,8 @@ def api_slack_webhook(
     *,
     slack_app_token: str = "",
     channels_map_to_topics: str | None = None,
+    map_to_topics: str | None = None,
+    map_to_channels: Annotated[str | None, ApiParamConfig("mapping")] = None,
 ) -> HttpResponse:
     if request.content_type != "application/json":
         # Handle Slack's legacy Outgoing Webhook Service payload.
@@ -200,7 +241,7 @@ def api_slack_webhook(
         text = convert_slack_formatting(legacy_payload["text"])
         text = replace_links(text)
         text = get_message_body(text, legacy_payload["user_name"], [])
-        handle_slack_webhook_message(
+        legacy_handle_slack_webhook_message(
             request,
             user_profile,
             text,
@@ -277,9 +318,32 @@ def api_slack_webhook(
     sender = get_slack_sender_name(user_id, slack_app_token)
     content = get_message_body(text, sender, files)
     channel_id = event_dict.get("channel").tame(check_string)
-    channel = (
-        get_slack_channel_name(channel_id, slack_app_token) if channels_map_to_topics else None
-    )
 
-    handle_slack_webhook_message(request, user_profile, content, channel, channels_map_to_topics)
+    map_to_topics = "topics" if map_to_topics else None
+    mapping_option: str | None = map_to_topics or map_to_channels
+
+    requires_channel_name = (channels_map_to_topics or mapping_option) is not None
+    if requires_channel_name:
+        channel = get_slack_channel_name(channel_id, slack_app_token)
+    else:
+        channel = None
+
+    # Backwards compatibility for existing integrations using
+    # the legacy `channels_map_to_topics` parameter.
+    if channels_map_to_topics is not None:
+        legacy_handle_slack_webhook_message(
+            request,
+            user_profile,
+            content,
+            channel,
+            channels_map_to_topics,
+        )
+    else:
+        handle_slack_webhook_message(
+            request,
+            user_profile,
+            content,
+            channel,
+            mapping_option,
+        )
     return json_success(request)

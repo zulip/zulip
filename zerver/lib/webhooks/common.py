@@ -59,7 +59,8 @@ OptionalUserSpecifiedTopicStr: TypeAlias = Annotated[str | None, ApiParamConfig(
 class PresetUrlOption(str, Enum):
     BRANCHES = "branches"
     IGNORE_PRIVATE_REPOSITORIES = "ignore_private_repositories"
-    MAPPING = "mapping"
+    CHANNEL_MAPPING = "mapping"
+    MAP_TO_TOPICS = "map_to_topics"
 
 
 @dataclass
@@ -97,11 +98,17 @@ class WebhookUrlOption:
                     label="Exclude notifications from private repositories",
                     validator=check_bool,
                 )
-            case PresetUrlOption.MAPPING:  # nocoverage # Not used yet
+            case PresetUrlOption.CHANNEL_MAPPING:
                 return cls(
                     name=config.value,
                     label="",
                     validator=check_string,
+                )
+            case PresetUrlOption.MAP_TO_TOPICS:
+                return cls(
+                    name=config.value,
+                    label="Send messages to topics with the same name as the original channel?",
+                    validator=check_bool,
                 )
 
         raise AssertionError(_("Unknown 'PresetUrlOption': {config}").format(config=config))
