@@ -495,6 +495,19 @@ $(() => {
     });
 
     if ($("a#deactivated-org-auto-redirect").length > 0) {
+        // Update the href of the deactivated organization auto-redirect link
+        // to include the current URL hash, if it exists.
+        const $deactivated_org_auto_redirect = $("a#deactivated-org-auto-redirect");
+        let new_org_url = $deactivated_org_auto_redirect.attr("href")!;
+        const url_hash = window.location.hash;
+        if (url_hash.startsWith("#")) {
+            // Ensure we don't double-add hashes and handle query parameters properly
+            const url = new URL(new_org_url);
+            url.hash = url_hash;
+            new_org_url = url.toString();
+        }
+        $deactivated_org_auto_redirect.attr("href", new_org_url);
+
         // This is a special case for the deactivated organization page,
         // where we want to redirect to the login page after 5 seconds.
         const interval_id = setInterval(() => {
@@ -503,7 +516,8 @@ $(() => {
             if (current_countdown > 0) {
                 $countdown_elt.text((current_countdown - 1).toString());
             } else {
-                window.location.href = $("a#deactivated-org-auto-redirect").attr("href")!;
+                const new_org_url = $deactivated_org_auto_redirect.attr("href")!;
+                window.location.href = new_org_url;
                 clearInterval(interval_id);
             }
         }, 1000);

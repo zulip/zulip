@@ -1,6 +1,5 @@
 # Zulip's main Markdown implementation.  See docs/subsystems/markdown.md for
 # detailed documentation on our Markdown syntax.
-import html
 import logging
 import mimetypes
 import re
@@ -13,7 +12,7 @@ from email.message import EmailMessage
 from functools import lru_cache
 from re import Match, Pattern
 from typing import Any, Generic, Optional, TypeAlias, TypedDict, TypeVar, cast
-from urllib.parse import parse_qs, parse_qsl, quote, urlencode, urljoin, urlsplit, urlunsplit
+from urllib.parse import parse_qs, parse_qsl, urlencode, urljoin, urlsplit, urlunsplit
 from xml.etree.ElementTree import Element, SubElement
 
 import ahocorasick
@@ -39,7 +38,6 @@ from tlds import tld_set
 from typing_extensions import NotRequired, Self, override
 
 from zerver.lib import mention
-from zerver.lib.cache import cache_with_key
 from zerver.lib.camo import get_camo_url
 from zerver.lib.emoji import EMOTICON_RE, codepoint_to_name, name_to_codepoint, translate_emoticons
 from zerver.lib.emoji_utils import emoji_to_hex_codepoint, unqualify_emoji
@@ -463,17 +461,6 @@ def has_blockquote_ancestor(element_pair: ElementPair | None) -> bool:
         return has_blockquote_ancestor(element_pair.parent)
 
 
-@cache_with_key(lambda tweet_id: tweet_id, cache_name="database")
-def fetch_tweet_data(tweet_id: str) -> dict[str, Any] | None:
-    # Twitter removed support for the v1 API that this integration
-    # used. Given that, there's no point wasting time trying to make
-    # network requests to Twitter. But we leave this function, because
-    # existing cached renderings for Tweets is useful. We throw an
-    # exception rather than returning `None` to avoid caching that the
-    # link doesn't exist.
-    raise NotImplementedError("Twitter desupported their v1 API")
-
-
 class OpenGraphSession(OutgoingSession):
     def __init__(self) -> None:
         super().__init__(role="markdown", timeout=1)
@@ -522,24 +509,6 @@ def fetch_open_graph_image(url: str) -> dict[str, Any] | None:
         return None
 
     return None if og["image"] is None else og
-
-
-def get_tweet_id(url: str) -> str | None:
-    parsed_url = urlsplit(url)
-    if not (parsed_url.netloc == "twitter.com" or parsed_url.netloc.endswith(".twitter.com")):
-        return None
-    to_match = parsed_url.path
-    # In old-style twitter.com/#!/wdaher/status/1231241234-style URLs,
-    # we need to look at the fragment instead
-    if parsed_url.path == "/" and len(parsed_url.fragment) > 5:
-        to_match = parsed_url.fragment
-
-    tweet_id_match = re.match(
-        r"^!?/.*?/status(es)?/(?P<tweetid>\d{10,30})(/photo/[0-9])?/?$", to_match
-    )
-    if not tweet_id_match:
-        return None
-    return tweet_id_match.group("tweetid")
 
 
 class InlineImageProcessor(markdown.treeprocessors.Treeprocessor):
@@ -638,8 +607,6 @@ class DropboxMediaInfo(TypedDict):
 
 
 class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
-    TWITTER_MAX_IMAGE_HEIGHT = 400
-    TWITTER_MAX_TO_PREVIEW = 3
     INLINE_PREVIEW_LIMIT_PER_MESSAGE = 24
 
     def __init__(self, zmd: "ZulipMarkdown") -> None:
@@ -937,193 +904,6 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             return f"Vimeo - {extracted_data.title}"
         return None
 
-    def twitter_text(
-        self,
-        text: str,
-        urls: list[dict[str, str]],
-        user_mentions: list[dict[str, Any]],
-        media: list[dict[str, Any]],
-    ) -> Element:
-        """
-        Use data from the Twitter API to turn links, mentions and media into A
-        tags. Also convert Unicode emojis to images.
-
-        This works by using the URLs, user_mentions and media data from
-        the twitter API and searching for Unicode emojis in the text using
-        `POSSIBLE_EMOJI_RE`.
-
-        The first step is finding the locations of the URLs, mentions, media and
-        emoji in the text. For each match we build a dictionary with type, the start
-        location, end location, the URL to link to, and the text(codepoint and title
-        in case of emojis) to be used in the link(image in case of emojis).
-
-        Next we sort the matches by start location. And for each we add the
-        text from the end of the last link to the start of the current link to
-        the output. The text needs to added to the text attribute of the first
-        node (the P tag) or the tail the last link created.
-
-        Finally we add any remaining text to the last node.
-        """
-
-        to_process: list[dict[str, Any]] = []
-        # Build dicts for URLs
-        for url_data in urls:
-            to_process.extend(
-                {
-                    "type": "url",
-                    "start": match.start(),
-                    "end": match.end(),
-                    "url": url_data["url"],
-                    "text": url_data["expanded_url"],
-                }
-                for match in re.finditer(re.escape(url_data["url"]), text, re.IGNORECASE)
-            )
-        # Build dicts for mentions
-        for user_mention in user_mentions:
-            screen_name = user_mention["screen_name"]
-            mention_string = "@" + screen_name
-            to_process.extend(
-                {
-                    "type": "mention",
-                    "start": match.start(),
-                    "end": match.end(),
-                    "url": "https://twitter.com/" + quote(screen_name),
-                    "text": mention_string,
-                }
-                for match in re.finditer(re.escape(mention_string), text, re.IGNORECASE)
-            )
-        # Build dicts for media
-        for media_item in media:
-            short_url = media_item["url"]
-            expanded_url = media_item["expanded_url"]
-            to_process.extend(
-                {
-                    "type": "media",
-                    "start": match.start(),
-                    "end": match.end(),
-                    "url": short_url,
-                    "text": expanded_url,
-                }
-                for match in re.finditer(re.escape(short_url), text, re.IGNORECASE)
-            )
-        # Build dicts for emojis
-        for match in POSSIBLE_EMOJI_RE.finditer(text):
-            orig_syntax = match.group("syntax")
-            codepoint = emoji_to_hex_codepoint(unqualify_emoji(orig_syntax))
-            if codepoint in codepoint_to_name:
-                display_string = ":" + codepoint_to_name[codepoint] + ":"
-                to_process.append(
-                    {
-                        "type": "emoji",
-                        "start": match.start(),
-                        "end": match.end(),
-                        "codepoint": codepoint,
-                        "title": display_string,
-                    }
-                )
-
-        to_process.sort(key=lambda x: x["start"])
-        p = current_node = Element("p")
-
-        def set_text(text: str) -> None:
-            """
-            Helper to set the text or the tail of the current_node
-            """
-            if current_node == p:
-                current_node.text = text
-            else:
-                current_node.tail = text
-
-        db_data: DbData | None = self.zmd.zulip_db_data
-        current_index = 0
-        for item in to_process:
-            # The text we want to link starts in already linked text skip it
-            if item["start"] < current_index:
-                continue
-            # Add text from the end of last link to the start of the current
-            # link
-            set_text(text[current_index : item["start"]])
-            current_index = item["end"]
-            if item["type"] != "emoji":
-                elem = url_to_a(db_data, item["url"], item["text"])
-                assert isinstance(elem, Element)
-            else:
-                elem = make_emoji(item["codepoint"], item["title"])
-            current_node = elem
-            p.append(elem)
-
-        # Add any unused text
-        set_text(text[current_index:])
-        return p
-
-    def twitter_link(self, url: str) -> Element | None:
-        tweet_id = get_tweet_id(url)
-
-        if tweet_id is None:
-            return None
-
-        try:
-            res = fetch_tweet_data(tweet_id)
-            if res is None:
-                return None
-            user: dict[str, Any] = res["user"]
-            tweet = Element("div")
-            tweet.set("class", "twitter-tweet")
-            img_a = SubElement(tweet, "a")
-            img_a.set("href", url)
-            profile_img = SubElement(img_a, "img")
-            profile_img.set("class", "twitter-avatar")
-            # For some reason, for, e.g. tweet 285072525413724161,
-            # python-twitter does not give us a
-            # profile_image_url_https, but instead puts that URL in
-            # profile_image_url. So use _https if available, but fall
-            # back gracefully.
-            image_url = user.get("profile_image_url_https", user["profile_image_url"])
-            profile_img.set("src", image_url)
-
-            text = html.unescape(res["full_text"])
-            urls = res.get("urls", [])
-            user_mentions = res.get("user_mentions", [])
-            media: list[dict[str, Any]] = res.get("media", [])
-            p = self.twitter_text(text, urls, user_mentions, media)
-            tweet.append(p)
-
-            span = SubElement(tweet, "span")
-            span.text = "- {} (@{})".format(user["name"], user["screen_name"])
-
-            # Add image previews
-            for media_item in media:
-                # Only photos have a preview image
-                if media_item["type"] != "photo":
-                    continue
-
-                # Find the image size that is smaller than
-                # TWITTER_MAX_IMAGE_HEIGHT px tall or the smallest
-                size_name_tuples = sorted(
-                    media_item["sizes"].items(), reverse=True, key=lambda x: x[1]["h"]
-                )
-                for size_name, size in size_name_tuples:
-                    if size["h"] < self.TWITTER_MAX_IMAGE_HEIGHT:
-                        break
-
-                media_url = "{}:{}".format(media_item["media_url_https"], size_name)
-                img_div = SubElement(tweet, "div")
-                img_div.set("class", "twitter-image")
-                img_a = SubElement(img_div, "a")
-                img_a.set("href", media_item["url"])
-                img = SubElement(img_a, "img")
-                img.set("src", media_url)
-
-            return tweet
-        except NotImplementedError:
-            return None
-        except Exception:
-            # We put this in its own try-except because it requires external
-            # connectivity. If Twitter flakes out, we don't want to not-render
-            # the entire message; we just want to not show the Twitter preview.
-            markdown_logger.warning("Error building Twitter link", exc_info=True)
-            return None
-
     def get_url_data(self, e: Element) -> tuple[str, str | None] | None:
         if e.tag == "a":
             url = e.get("href")
@@ -1198,23 +978,6 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         if info["remove"] is not None:
             info["parent"].remove(info["remove"])
 
-    def handle_tweet_inlining(
-        self,
-        root: Element,
-        found_url: ResultWithFamily[tuple[str, str | None]],
-        twitter_data: Element,
-    ) -> None:
-        info = self.get_inlining_information(root, found_url)
-
-        if info["index"] is not None:
-            div = Element("div")
-            root.insert(info["index"], div)
-        else:
-            div = SubElement(root, "div")
-
-        div.set("class", "inline-preview-twitter")
-        div.insert(0, twitter_data)
-
     def handle_youtube_url_inlining(
         self,
         root: Element,
@@ -1252,7 +1015,6 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             uncle = grandparent[insertion_index]
             inline_image_classes = {
                 "message_inline_image",
-                "inline-preview-twitter",
             }
             if (
                 uncle.tag != "div"
@@ -1339,7 +1101,6 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             return
 
         processed_urls: set[str] = set()
-        rendered_tweet_count = 0
 
         for found_url in found_urls:
             (url, text) = found_url.result
@@ -1404,17 +1165,6 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                 # We don't have a strong use case for doing URL preview for relative links.
                 continue
 
-            if get_tweet_id(url) is not None:
-                if rendered_tweet_count >= self.TWITTER_MAX_TO_PREVIEW:
-                    # Only render at most one tweet per message
-                    continue
-                twitter_data = self.twitter_link(url)
-                if twitter_data is None:
-                    # This link is not actually a tweet known to twitter
-                    continue
-                rendered_tweet_count += 1
-                self.handle_tweet_inlining(root, found_url, twitter_data)
-                continue
             youtube = self.youtube_image(url)
             if youtube is not None:
                 self.handle_youtube_url_inlining(root, found_url, youtube)

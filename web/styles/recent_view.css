@@ -150,7 +150,11 @@
     }
 
     #recent_view_filter_buttons {
-        padding: 12px 10px 0;
+        /* This padding-top value aligns the recents filters
+           with the filters in the left and right sidebars.
+           TODO: As part of the recents redesign, these filters
+           should match the height of the sidebar filters. */
+        padding: 10px 10px 0;
         display: flex;
         /* Search box has no height without this in safari. */
         flex: 0 0 auto;

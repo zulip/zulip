@@ -4,7 +4,10 @@
 
 You can configure a default set of channels that users will be subscribed to
 when they join your organization. Default channels must be [public or
-web-public](/help/channel-permissions).
+web-public](/help/channel-permissions). Users will be
+subscribed to the default channels configured at the time when they
+accept the invitation, so there's no need to update or revoke invitations when
+you change the default channels.
 
 When you [send an email
 invitation](/help/invite-new-users#send-email-invitations) or [create a reusable

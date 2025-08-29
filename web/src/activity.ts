@@ -192,7 +192,7 @@ export function mark_client_active(): void {
 }
 
 export function initialize(): void {
-    $("html").on("mousemove", () => {
+    $(document).on("mousemove", () => {
         set_new_user_input(true);
     });
 

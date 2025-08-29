@@ -304,6 +304,7 @@ async function test_search_venice(page: Page): Promise<void> {
     await common.clear_and_type(page, ".left-sidebar-search-input", "vEnI"); // Must be case insensitive.
     await page.waitForSelector(await get_stream_li(page, "Denmark"), {hidden: true});
     await page.waitForSelector(await get_stream_li(page, "Verona"), {hidden: true});
+    await arrow(page, "Down");
     await page.waitForSelector((await get_stream_li(page, "Venice")) + " .highlighted_row", {
         visible: true,
     });
@@ -328,6 +329,10 @@ async function test_stream_search_filters_stream_list(page: Page): Promise<void>
     // Enter the search box and test highlighted suggestion
     await page.click(".left-sidebar-search-input");
 
+    await page.waitForSelector("#views-label-container.highlighted_row", {visible: true});
+
+    await arrow(page, "Down");
+
     await page.waitForSelector(".top_left_inbox.top_left_row.highlighted_row", {visible: true});
 
     await page.waitForSelector((await get_stream_li(page, "Verona")) + " .highlighted_row", {
@@ -336,7 +341,7 @@ async function test_stream_search_filters_stream_list(page: Page): Promise<void>
 
     // Navigate through suggestions using arrow keys
     // Reach core team
-    for (let i = 0; i < 10; i += 1) {
+    for (let i = 0; i < 12; i += 1) {
         await arrow(page, "Down");
     }
     await arrow(page, "Down"); // core team -> Denmark

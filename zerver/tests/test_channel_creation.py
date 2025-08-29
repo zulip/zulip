@@ -24,6 +24,7 @@ from zerver.models import (
     Message,
     NamedUserGroup,
     Realm,
+    Recipient,
     Stream,
     Subscription,
     UserMessage,
@@ -303,6 +304,18 @@ class TestCreateStreams(ZulipTestCase):
         self.assertEqual(stream.name, "testchannel")
         self.assertEqual(stream.description, "test channel")
 
+        # Confirm channel created notification message in channel events topic.
+        message = self.get_last_message()
+        self.assertEqual(message.recipient.type, Recipient.STREAM)
+        self.assertEqual(message.recipient.type_id, stream.id)
+        self.assertEqual(message.topic_name(), Realm.STREAM_EVENTS_NOTIFICATION_TOPIC_NAME)
+        self.assertEqual(message.sender_id, self.notification_bot(user_profile.realm).id)
+        expected_message_content = (
+            f"**Public** channel created by @_**{user_profile.full_name}|{user_profile.id}**. **Description:**\n"
+            "```` quote\ntest channel\n````"
+        )
+        self.assertEqual(message.content, expected_message_content)
+
         # Creating an existing channel should return an error.
         result = self.create_channel_via_post(user_profile, name="basketball")
         self.assert_json_error(result, "Channel 'basketball' already exists", status_code=409)
@@ -317,12 +330,19 @@ class TestCreateStreams(ZulipTestCase):
             user_profile,
             "/api/v1/channels/create",
             post_data,
-            intentionally_undocumented=True,
         )
         self.assert_json_success(result)
         stream = get_stream("no-sub-channel", user_profile.realm)
         self.assertEqual(stream.name, "no-sub-channel")
         self.assertEqual(stream.subscriber_count, 0)
+
+        # Test creating channel with invalid user ID.
+        result = self.create_channel_via_post(
+            user_profile,
+            name="invalid-user-channel",
+            subscribers=[12, 1000],
+        )
+        self.assert_json_error(result, "No such user")
 
     def test_channel_creation_miscellaneous(self) -> None:
         iago = self.example_user("iago")

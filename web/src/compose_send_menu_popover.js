@@ -71,6 +71,9 @@ export function open_schedule_message_menu(
         },
         onMount(instance) {
             if (remind_message_id !== undefined) {
+                // Maintain the vdots visibility, as when the message
+                // actions menu is open
+                $(instance.reference).closest(".message_row").addClass("has_actions_popover");
                 popover_menus.focus_first_popover_item(
                     popover_menus.get_popover_items_for_instance(instance),
                 );
@@ -137,6 +140,10 @@ export function open_schedule_message_menu(
             );
         },
         onHidden(instance) {
+            if (remind_message_id !== undefined) {
+                // Hide the vdots
+                $(instance.reference).closest(".message_row").removeClass("has_actions_popover");
+            }
             clearInterval(interval);
             instance.destroy();
             popover_menus.popover_instances.send_later_options = undefined;

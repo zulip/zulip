@@ -41,7 +41,7 @@
           "default_payment_method": null,
           "default_source": null,
           "default_tax_rates": [],
-          "description": null,
+          "description": "If paying by bank transfer outside of the US, use the OUR option for who should pay bank transfer fees, to make sure that your invoice is paid in full.",
           "discounts": [],
           "due_date": null,
           "effective_at": 1000000000,
@@ -155,7 +155,7 @@
           "total_excluding_tax": 10000,
           "total_pretax_credit_amounts": [],
           "total_taxes": [],
-          "webhooks_delivered_at": 1000000000
+          "webhooks_delivered_at": null
         },
         "previous_attributes": {
           "amount_paid": 0,
@@ -171,7 +171,7 @@
       "id": "upgrade_server_to_fixed_price_monthly_basic_plan--Event.list.2.json",
       "livemode": false,
       "object": "event",
-      "pending_webhooks": 0,
+      "pending_webhooks": 2,
       "request": {
         "id": "upgrade_server_to_fixed_price_monthly_basic_plan--Event.list.2.json",
         "idempotency_key": "00000000-0000-0000-0000-000000000000"
@@ -201,6 +201,7 @@
           "currency": "usd",
           "customer": "upgrade_server_to_fixed_price_monthly_basic_plan--Customer.create.1.json",
           "description": "Payment for Invoice",
+          "excluded_payment_method_types": null,
           "id": "upgrade_server_to_fixed_price_monthly_basic_plan--Event.list.2.json",
           "last_payment_error": null,
           "latest_charge": "upgrade_server_to_fixed_price_monthly_basic_plan--Event.list.2.json",
@@ -242,7 +243,7 @@
       "id": "upgrade_server_to_fixed_price_monthly_basic_plan--Event.list.2.json",
       "livemode": false,
       "object": "event",
-      "pending_webhooks": 0,
+      "pending_webhooks": 1,
       "request": {
         "id": "upgrade_server_to_fixed_price_monthly_basic_plan--Event.list.2.json",
         "idempotency_key": "00000000-0000-0000-0000-000000000000"
@@ -311,7 +312,7 @@
           "payment_method_details": {
             "card": {
               "amount_authorized": 10000,
-              "authorization_code": null,
+              "authorization_code": "858239",
               "brand": "visa",
               "checks": {
                 "address_line1_check": "pass",
@@ -339,7 +340,7 @@
               "network_token": {
                 "used": false
               },
-              "network_transaction_id": "100110997670110",
+              "network_transaction_id": "749857738210088",
               "overcapture": {
                 "maximum_amount_capturable": 10000,
                 "status": "unavailable"
@@ -369,7 +370,7 @@
       "id": "upgrade_server_to_fixed_price_monthly_basic_plan--Event.list.2.json",
       "livemode": false,
       "object": "event",
-      "pending_webhooks": 0,
+      "pending_webhooks": 2,
       "request": {
         "id": "upgrade_server_to_fixed_price_monthly_basic_plan--Event.list.2.json",
         "idempotency_key": "00000000-0000-0000-0000-000000000000"
@@ -417,7 +418,7 @@
           "default_payment_method": null,
           "default_source": null,
           "default_tax_rates": [],
-          "description": null,
+          "description": "If paying by bank transfer outside of the US, use the OUR option for who should pay bank transfer fees, to make sure that your invoice is paid in full.",
           "discounts": [],
           "due_date": null,
           "effective_at": 1000000000,
@@ -531,7 +532,7 @@
           "total_excluding_tax": 10000,
           "total_pretax_credit_amounts": [],
           "total_taxes": [],
-          "webhooks_delivered_at": 1000000000
+          "webhooks_delivered_at": null
         }
       },
       "id": "upgrade_server_to_fixed_price_monthly_basic_plan--Event.list.2.json",
@@ -585,7 +586,7 @@
           "default_payment_method": null,
           "default_source": null,
           "default_tax_rates": [],
-          "description": null,
+          "description": "If paying by bank transfer outside of the US, use the OUR option for who should pay bank transfer fees, to make sure that your invoice is paid in full.",
           "discounts": [],
           "due_date": null,
           "effective_at": 1000000000,
@@ -699,7 +700,7 @@
           "total_excluding_tax": 10000,
           "total_pretax_credit_amounts": [],
           "total_taxes": [],
-          "webhooks_delivered_at": 1000000000
+          "webhooks_delivered_at": null
         },
         "previous_attributes": {
           "effective_at": null,
@@ -751,6 +752,7 @@
           "currency": "usd",
           "customer": "upgrade_server_to_fixed_price_monthly_basic_plan--Customer.create.1.json",
           "description": "Payment for Invoice",
+          "excluded_payment_method_types": null,
           "id": "upgrade_server_to_fixed_price_monthly_basic_plan--Event.list.2.json",
           "last_payment_error": null,
           "latest_charge": null,
@@ -840,7 +842,7 @@
           "default_payment_method": null,
           "default_source": null,
           "default_tax_rates": [],
-          "description": null,
+          "description": "If paying by bank transfer outside of the US, use the OUR option for who should pay bank transfer fees, to make sure that your invoice is paid in full.",
           "discounts": [],
           "due_date": null,
           "effective_at": null,
@@ -954,7 +956,7 @@
           "total_excluding_tax": 10000,
           "total_pretax_credit_amounts": [],
           "total_taxes": [],
-          "webhooks_delivered_at": 1000000000
+          "webhooks_delivered_at": null
         },
         "previous_attributes": {
           "amount_due": 0,
@@ -1066,7 +1068,7 @@
           "default_payment_method": null,
           "default_source": null,
           "default_tax_rates": [],
-          "description": null,
+          "description": "If paying by bank transfer outside of the US, use the OUR option for who should pay bank transfer fees, to make sure that your invoice is paid in full.",
           "discounts": [],
           "due_date": null,
           "effective_at": null,
@@ -1139,7 +1141,7 @@
           "total_excluding_tax": 0,
           "total_pretax_credit_amounts": [],
           "total_taxes": [],
-          "webhooks_delivered_at": 1000000000
+          "webhooks_delivered_at": null
         }
       },
       "id": "upgrade_server_to_fixed_price_monthly_basic_plan--Event.list.2.json",
@@ -1203,7 +1205,7 @@
       "type": "customer.updated"
     }
   ],
-  "has_more": true,
+  "has_more": false,
   "object": "list",
   "url": "/v1/events"
 }

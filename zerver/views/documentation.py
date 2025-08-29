@@ -43,8 +43,14 @@ class DocumentationArticle:
     endpoint_method: str | None
 
 
-def add_api_url_context(context: dict[str, Any], request: HttpRequest) -> None:
+def add_api_url_context(
+    context: dict[str, Any], request: HttpRequest, is_zilencer_endpoint: bool = False
+) -> None:
     context.update(zulip_default_context(request))
+
+    if is_zilencer_endpoint:
+        context["api_url"] = settings.ZULIP_SERVICES_URL + "/api"
+        return
 
     subdomain = get_subdomain(request)
     if subdomain != Realm.SUBDOMAIN_FOR_ROOT_DOMAIN or not settings.ROOT_DOMAIN_LANDING_PAGE:
@@ -226,6 +232,7 @@ class MarkdownDirectoryView(ApiURLView):
         # The following is a somewhat hacky approach to extract titles from articles.
         endpoint_name = None
         endpoint_method = None
+        is_zilencer_endpoint = False
         if os.path.exists(article_absolute_path):
             with open(article_absolute_path) as article_file:
                 first_line = article_file.readlines()[0]
@@ -237,6 +244,7 @@ class MarkdownDirectoryView(ApiURLView):
                 assert endpoint_name is not None
                 assert endpoint_method is not None
                 article_title = get_openapi_summary(endpoint_name, endpoint_method)
+                is_zilencer_endpoint = endpoint_name.startswith("/remotes/")
             elif self.api_doc_view and "{generate_api_header(" in first_line:
                 api_operation = context["PAGE_METADATA_URL"].split("/api/")[1]
                 endpoint_name, endpoint_method = get_endpoint_from_operationid(api_operation)
@@ -268,7 +276,7 @@ class MarkdownDirectoryView(ApiURLView):
 
         # An "article" might require the api_url_context to be rendered
         api_url_context: dict[str, Any] = {}
-        add_api_url_context(api_url_context, self.request)
+        add_api_url_context(api_url_context, self.request, is_zilencer_endpoint)
         api_url_context["run_content_validators"] = True
         context["api_url_context"] = api_url_context
         if endpoint_name and endpoint_method:

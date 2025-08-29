@@ -35,7 +35,7 @@
   "default_payment_method": null,
   "default_source": null,
   "default_tax_rates": [],
-  "description": null,
+  "description": "If paying by bank transfer outside of the US, use the OUR option for who should pay bank transfer fees, to make sure that your invoice is paid in full.",
   "discounts": [],
   "due_date": null,
   "effective_at": null,
@@ -108,5 +108,5 @@
   "total_excluding_tax": 0,
   "total_pretax_credit_amounts": [],
   "total_taxes": [],
-  "webhooks_delivered_at": 1000000000
+  "webhooks_delivered_at": null
 }

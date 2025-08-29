@@ -3,6 +3,7 @@
 const assert = require("node:assert/strict");
 
 const {mock_banners} = require("./lib/compose_banner.cjs");
+const {make_realm} = require("./lib/example_realm.cjs");
 const {make_stream} = require("./lib/example_stream.cjs");
 const {make_user} = require("./lib/example_user.cjs");
 const {mock_esm, mock_cjs, set_global, zrequire} = require("./lib/namespace.cjs");
@@ -29,7 +30,7 @@ mock_cjs("clipboard", Clipboard);
 initialize_user_settings({user_settings: {}});
 
 const REALM_EMPTY_TOPIC_DISPLAY_NAME = "test general chat";
-const realm = {realm_empty_topic_display_name: REALM_EMPTY_TOPIC_DISPLAY_NAME};
+const realm = make_realm({realm_empty_topic_display_name: REALM_EMPTY_TOPIC_DISPLAY_NAME});
 set_realm(realm);
 
 const aaron = make_user({

@@ -2,6 +2,7 @@
 
 const assert = require("node:assert/strict");
 
+const {make_realm} = require("./lib/example_realm.cjs");
 const {mock_esm, set_global, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
 const $ = require("./lib/zjquery.cjs");
@@ -36,7 +37,7 @@ const message_lists = mock_esm("../src/message_lists");
 const {set_realm} = zrequire("state_data");
 const compose_validate = zrequire("compose_validate");
 
-const realm = {};
+const realm = make_realm();
 set_realm(realm);
 
 message_lists.current = {

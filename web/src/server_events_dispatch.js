@@ -230,7 +230,7 @@ export function dispatch_normal_event(event) {
             break;
 
         case "presence":
-            activity_ui.update_presence_info(event.user_id, event.presence, event.server_timestamp);
+            activity_ui.update_presence_info(event.presences);
             break;
 
         case "restart":

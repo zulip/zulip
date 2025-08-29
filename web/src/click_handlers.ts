@@ -121,7 +121,8 @@ export function initialize(): void {
             $target.is(".message_inline_animated_image_still") ||
             $target.is("video") ||
             $target.is(".message_inline_video") ||
-            $target.is("img.twitter-avatar")
+            $target.is("img.twitter-avatar") ||
+            $target.is(".media-audio-element")
         ) {
             return true;
         }
@@ -940,18 +941,16 @@ export function initialize(): void {
         }
 
         if (compose_state.composing() && $(e.target).parents("#compose").length === 0) {
-            const should_prevent_click_behavior = mouse_drag.is_drag(e);
-            if (
-                should_prevent_click_behavior ||
-                $(e.target).closest(".copy_codeblock").length > 0
-            ) {
-                // We want to avoid blurring a selected link by triggering a
-                // focus event on the compose textarea.
-                if (should_prevent_click_behavior) {
-                    // To avoid the click behavior if a link is selected.
+            const is_click_within_link = $(e.target).closest("a").length > 0;
+            if (is_click_within_link || $(e.target).closest(".copy_codeblock").length > 0) {
+                const is_selecting_link_text = is_click_within_link && mouse_drag.is_drag(e);
+                if (is_selecting_link_text) {
+                    // Avoid triggering the click handler for a link
+                    // when just dragging over it to select the text.
                     e.preventDefault();
                     return;
                 }
+
                 // Refocus compose message text box if one clicks an external
                 // link/url to view something else while composing a message.
                 // See issue #4331 for more details.

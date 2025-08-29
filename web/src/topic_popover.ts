@@ -36,7 +36,7 @@ function get_conversation(instance: tippy.Instance): {
         const $message_header = $elt.closest(".message_header").expectOne();
         stream_id = Number.parseInt($message_header.attr("data-stream-id")!, 10);
         topic_name = $message_header.attr("data-topic-name")!;
-        const topic_narrow_url = hash_util.by_stream_topic_url(stream_id, topic_name);
+        const topic_narrow_url = hash_util.by_channel_topic_permalink(stream_id, topic_name);
         url = new URL(topic_narrow_url, realm.realm_url).href;
     } else if (!instance.reference.classList.contains("topic-sidebar-menu-icon")) {
         const $elt = $(instance.reference);

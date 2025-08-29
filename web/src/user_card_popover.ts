@@ -355,7 +355,7 @@ function get_user_card_popover_data(
         is_bot: user.is_bot,
         is_me,
         is_sender_popover,
-        pm_with_url: hash_util.pm_with_url(user.email),
+        pm_with_url: hash_util.pm_with_url(user.user_id.toString()),
         user_circle_class: buddy_data.get_user_circle_class(user.user_id),
         private_message_class: private_msg_class,
         sent_by_url: hash_util.by_sender_url(user.email),

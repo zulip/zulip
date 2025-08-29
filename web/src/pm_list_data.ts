@@ -1,5 +1,3 @@
-import assert from "minimalistic-assert";
-
 import * as buddy_data from "./buddy_data.ts";
 import * as hash_util from "./hash_util.ts";
 import * as narrow_state from "./narrow_state.ts";
@@ -79,8 +77,6 @@ export function get_conversations(search_string = ""): DisplayObject[] {
             continue;
         }
 
-        const reply_to = people.user_ids_string_to_emails_string(user_ids_string);
-        assert(reply_to !== undefined);
         const recipients_string = people.format_recipients(user_ids_string, "narrow");
 
         const num_unread = unread.num_unread_for_user_ids_string(user_ids_string);
@@ -117,7 +113,7 @@ export function get_conversations(search_string = ""): DisplayObject[] {
             unread: num_unread,
             is_zero: num_unread === 0,
             is_active,
-            url: hash_util.pm_with_url(reply_to),
+            url: hash_util.pm_with_url(user_ids_string),
             status_emoji_info,
             user_circle_class,
             is_group,
