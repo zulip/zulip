@@ -21250,10 +21250,11 @@ paths:
                           to determine what values to present as possible values for these
                           settings in UI components.
 
-                          This part of the Zulip API is unstable and may change
-                          significantly in future versions.
+                          **Changes**: Before Zulip 10.0 (feature level 326), this part of
+                          the response had a documented-as-unstable format not suitable
+                          for general client use, and should be ignored.
 
-                          **Changes**: New in Zulip 8.0 (feature level 221).
+                          New in Zulip 8.0 (feature level 221).
                         type: object
                         additionalProperties: false
                         properties:
