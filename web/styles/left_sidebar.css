@@ -562,7 +562,7 @@
     display: none;
 }
 
-.stream-list-section-container.collapsed {
+#streams_list .stream-list-section-container.collapsed {
     .narrow-filter:not(.stream-expanded),
     .stream-list-toggle-inactive-or-muted-channels,
     .topic-list-item:not(.active-sub-filter),
