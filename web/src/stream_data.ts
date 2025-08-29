@@ -388,10 +388,11 @@ export function muted_stream_ids(): number[] {
         .map((sub) => sub.stream_id);
 }
 
-export function get_streams_for_user(user_id: number): {
+export async function get_streams_for_user(user_id: number): Promise<{
     subscribed: StreamSubscription[];
     can_subscribe: StreamSubscription[];
-} {
+}> {
+    await peer_data.load_subscriptions_for_user(user_id);
     // Note that we only have access to subscribers of some streams
     // depending on our role.
     const all_subs = get_unsorted_subs();
