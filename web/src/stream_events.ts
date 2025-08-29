@@ -358,15 +358,15 @@ export function mark_unsubscribed(sub: StreamSubscription): void {
     user_profile.update_user_profile_streams_list_for_users([people.my_current_user_id()]);
 }
 
-export function remove_deactivated_user_from_all_streams(user_id: number): void {
+export function report_error_if_user_still_has_subscriptions(user_id: number): void {
     const all_subs = stream_data.get_unsorted_subs();
 
     for (const sub of all_subs) {
-        // If they're not loaded, we don't have to worry about unsubscribing
-        // them since they were never marked as subscribed to begin with.
+        /* istanbul ignore next */
         if (stream_data.is_user_loaded_and_subscribed(sub.stream_id, user_id)) {
-            peer_data.remove_subscriber(sub.stream_id, user_id);
-            stream_settings_ui.update_subscribers_ui(sub);
+            blueslip.error(
+                "The user should have been removed by the `peer_remove` event before reaching this code path. Something went wrong.",
+            );
         }
     }
 }
