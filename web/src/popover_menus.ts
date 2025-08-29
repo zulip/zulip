@@ -360,6 +360,9 @@ function get_props_for_popover_centering(
                             // Calculate the offset needed to place the reference in the center
                             const x_offset_to_center = window.innerWidth / 2;
                             let y_offset_to_center = window.innerHeight / 2 - popper.height / 2;
+                            if (y_offset_to_center < 0) {
+                                y_offset_to_center = 0;
+                            }
 
                             // Move popover to the top of the screen if user is focused on an element which can
                             // open keyboard on a mobile device causing the screen to resize.
@@ -476,6 +479,7 @@ export function toggle_popover_menu(
         showOnCreate: true,
         ...popover_props,
         ...mobile_popover_props,
+        placement: popover_props.placement,
     });
 }
 
