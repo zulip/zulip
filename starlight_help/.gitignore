@@ -1,5 +1,6 @@
 # build output
 dist/
+dist_no_relative_links/
 # generated types
 .astro/
 
@@ -12,7 +13,6 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
-*.mdx
 *.md
 
 

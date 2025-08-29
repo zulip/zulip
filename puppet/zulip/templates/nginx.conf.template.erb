@@ -61,4 +61,9 @@ http {
 
     include /etc/nginx/conf.d/*.conf;
     include /etc/nginx/sites-enabled/*;
+
+    map $host $help_alias {
+        zulip.com /home/zulip/deployments/current/starlight_help/dist_no_relative_links/;
+        default   /home/zulip/deployments/current/starlight_help/dist/;
+    }
 }

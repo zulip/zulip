@@ -46,6 +46,16 @@ run(["./tools/setup/build_timezone_values"])
 # need them.
 if settings.CORPORATE_ENABLED:
     run(["./tools/setup/generate_landing_page_images.py"])
+    run(
+        [
+            "./tools/build-help-center",
+            "--no-relative-links",
+            "--out-dir",
+            "./dist_no_relative_links",
+        ]
+    )
+
+run(["./tools/build-help-center"])
 
 # Create webpack bundle
 run(["./tools/webpack", "--quiet"])
