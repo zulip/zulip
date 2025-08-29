@@ -30,8 +30,14 @@ SETTINGS_LINK_PATTERN = re.compile(r"{settings_tab\|(?P<setting_identifier>.*?)}
 RELATIVE_LINKS_PATTERN = re.compile(r"\{relative\|(?P<link_type>.*?)\|(?P<key>.*?)\}")
 
 
+class HeadingMatches(TypedDict):
+    three_hash: list[str]
+    four_hash: list[str]
+
+
 class IncludeFileInfo(TypedDict):
     is_only_ordered_list: bool
+    heading_matches: HeadingMatches
 
 
 def convert_kebab_to_pascal(text: str) -> str:
@@ -103,7 +109,10 @@ def replace_image_path(markdown_string: str, replacement_path: str) -> str:
 
 
 def fix_file_imports(
-    markdown_string: str, import_statement_set: set[str], import_relative_base_path: str
+    markdown_string: str,
+    include_files_info: dict[str, IncludeFileInfo],
+    import_statement_set: set[str],
+    import_relative_base_path: str,
 ) -> str:
     def get_pascal_filename_without_extension(match_string: str) -> str:
         return convert_kebab_to_pascal(os.path.basename(match_string).split(".")[0])
@@ -111,7 +120,34 @@ def fix_file_imports(
     def convert_to_astro_tag(match: re.Match[str]) -> str:
         # The space before < makes sure that the component is interpreted correctly
         # when it is not occupying it's own line, e.g. it is part of a list item.
-        return " <" + get_pascal_filename_without_extension(match.group(1)) + " />"
+        heading_matches = include_files_info[match.group(1)]["heading_matches"]
+        pascal_filename_without_extension = get_pascal_filename_without_extension(match.group(1))
+        if not heading_matches["three_hash"] and not heading_matches["four_hash"]:
+            return " <" + pascal_filename_without_extension + " />"
+
+        # Starlight help center has an index on the right for each page
+        # called `On this page` for quicker in-page navigation. That index
+        # is generated from the headings inside the markdown. But if a
+        # heading is defined inside an include file, the `on this page`
+        # component doesn't read it. For this, we copy the headings and
+        # paste it between the imports. Anything the imports is not
+        # rendered but putting the text there helps populate `on this
+        # page`.
+        # See https://github.com/withastro/starlight/issues/561#issuecomment-1695482643.
+        # We ignore headings with two hashes since they are only
+        # present in include/sidebar_index which we intend to remove as an
+        # include in the cutover.
+        heading_string = ""
+        for heading_match in heading_matches["three_hash"]:
+            heading_string += f"### {heading_match}\n"
+        for heading_match in heading_matches["four_hash"]:
+            heading_string += f"#### {heading_match}\n"
+
+        return (
+            f"<{pascal_filename_without_extension}>\n"
+            + heading_string
+            + f" </{pascal_filename_without_extension}>\n"
+        )
 
     RE = re.compile(r" {,3}\{!([^!]+)!\} *$", re.MULTILINE)
     result = RE.sub(convert_to_astro_tag, markdown_string)
@@ -597,7 +633,7 @@ def convert_help_center_file_to_mdx(
     result = insert_steps_component_for_ordered_lists(result, import_statement_set)
 
     result = remove_blank_lines_from_steps(result)
-    result = fix_file_imports(result, import_statement_set, "./include")
+    result = fix_file_imports(result, include_files_info, import_statement_set, "./include")
     result = convert_admonitions_to_asides(result, import_statement_set, "../../components")
     result = convert_tab_syntax(result, import_statement_set)
     result = replace_setting_links(result, import_statement_set, "../../components")
@@ -652,7 +688,7 @@ def convert_include_file_to_mdx(
         result = "\n".join(line for line in result.splitlines() if line.strip()) + "\n"
 
     result = remove_blank_lines_from_steps(result)
-    result = fix_file_imports(result, import_statement_set, ".")
+    result = fix_file_imports(result, include_files_info, import_statement_set, ".")
     result = convert_admonitions_to_asides(result, import_statement_set, "../../../components")
     result = convert_tab_syntax(result, import_statement_set)
     result = replace_setting_links(result, import_statement_set, "../../../components")
@@ -664,6 +700,21 @@ def convert_include_file_to_mdx(
     result = convert_env_variables(result, import_statement_set)
     result = insert_imports(result, import_statement_set, 1)
     return result
+
+
+def get_heading_matches(markdown_string: str) -> HeadingMatches:
+    three_hash_pattern = r"^\s*(?:#{3})\s+(.*)$"
+    three_hash_matches = re.findall(three_hash_pattern, markdown_string, re.MULTILINE)
+    three_hash_match_strings = three_hash_matches
+
+    four_hash_pattern = r"^\s*(?:#{4})\s+(.*)$"
+    four_hash_matches = re.findall(four_hash_pattern, markdown_string, re.MULTILINE)
+    four_hash_match_strings = four_hash_matches
+
+    return HeadingMatches(
+        three_hash=three_hash_match_strings,
+        four_hash=four_hash_match_strings,
+    )
 
 
 def get_include_files_info(include_input_dir: str) -> dict[str, IncludeFileInfo]:
@@ -684,7 +735,8 @@ def get_include_files_info(include_input_dir: str) -> dict[str, IncludeFileInfo]
         if name.endswith(".md") and os.path.isfile(markdown_file_path):
             markdown_string = get_markdown_string_from_file(markdown_file_path)
             include_files_info[name] = {
-                "is_only_ordered_list": is_include_only_ordered_list_recursive(markdown_string)
+                "is_only_ordered_list": is_include_only_ordered_list_recursive(markdown_string),
+                "heading_matches": get_heading_matches(markdown_string),
             }
 
     return include_files_info
