@@ -1154,3 +1154,13 @@ of the base style defined for a read-only textarea in dark mode. */
     right: 0.25em;
     margin-left: -50%;
 }
+
+.message-preview-overlay-container {
+    .overlay-message-info-box {
+        .message_row {
+            border-radius: 0 0 7px 7px;
+            border: 1px solid var(--color-message-list-border);
+            border-top: 0;
+        }
+    }
+}
