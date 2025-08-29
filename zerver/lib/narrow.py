@@ -119,6 +119,7 @@ class NarrowParameter(BaseModel):
             "id",
             "sender",
             "group-pm-with",
+            "dm-with",
             "dm-including",
             "with",
         ]
