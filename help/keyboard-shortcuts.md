@@ -116,6 +116,9 @@ reference in the Zulip app to add more to your repertoire as needed.
   <kbd>Shift</kbd> + <kbd>L</kbd>
 * **Insert or create a [saved snippet](/help/saved-snippets)**:
   <kbd>Ctrl</kbd> + <kbd>'</kbd>
+* **Insert code formatting**: `` `code` `` or ```` ```code``` ```` or <kbd>Ctrl</kbd> +
+  <kbd>Shift</kbd> + <kbd>C</kbd>.
+  See [contextually appropriate code formatting](/help/code-blocks#insert-code-formatting).
 * **Toggle preview mode**: <kbd>Alt</kbd> + <kbd>P</kbd>
 * **Cancel compose and save draft**: <kbd>Esc</kbd> or
   <kbd data-mac-key="Ctrl">Ctrl</kbd> + <kbd>[</kbd> — Close the compose box

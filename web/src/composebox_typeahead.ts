@@ -840,8 +840,13 @@ export function get_candidates(
     const syntax_token = current_token.slice(0, 3);
     if (ALLOWED_MARKDOWN_FEATURES.syntax && (syntax_token === "```" || syntax_token === "~~~")) {
         // Only autocomplete if user starts typing a language after ```
-        // unless the fence was added via the code formatting button.
-        if (current_token.length === 3 && !compose_ui.code_formatting_button_triggered) {
+        // unless the fence was added via the code formatting button or
+        // the typeahead is already visible.
+        if (
+            current_token.length === 3 &&
+            !compose_ui.code_formatting_button_triggered &&
+            compose_ui.compose_textarea_typeahead === undefined
+        ) {
             return [];
         }
 
