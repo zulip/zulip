@@ -1310,6 +1310,11 @@ textarea.new_message_textarea {
            outline on them in the low-attention state. */
         .pill {
             outline: 1px solid var(--color-outline-low-attention-input-pill);
+            /* We offset the outline so that pills do not appear to touch,
+               especially in dark mode where the outline color is otherwise
+               the same as the pill color (the opacity makes it brighter
+               when so offset, too). */
+            outline-offset: -1px;
         }
 
         &:hover:not(.disabled) {
