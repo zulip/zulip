@@ -1,26 +1,17 @@
-<div class="no-groups-to-show">
-    <div class="empty-state-message">
+<div class="no-groups-to-show-message">
+    <span class="settings-empty-option-text">
+        {{empty_user_group_list_message}}
         {{#if all_groups_tab}}
-            <p>{{empty_user_group_list_message}}</p>
             {{#if can_create_user_groups}}
-                {{> ../components/action_button label=(t "Create user group") custom_classes="create_user_group_button"
-                  attention="medium" intent="brand"
+                {{> ../components/action_button label=(t "Create a user group") custom_classes="create_user_group_button"
+                  attention="quiet" intent="brand"
                   }}
             {{/if}}
         {{else}}
-            {{#if (eq empty_user_group_list_message (t "You are not a member of any user groups."))}}
-                <p>{{empty_user_group_list_message}}</p>
-                {{#if can_create_user_groups}}
-                    {{> ../components/action_button label=(t "Create user group") custom_classes="create_user_group_button"
-                      attention="medium" intent="brand"
-                      }}
-                {{/if}}
-            {{else}}
-                <p>{{empty_user_group_list_message}}</p>
-                {{> ../components/action_button label=(t "View all groups") custom_classes="view_all_groups_button"
-                  attention="medium" intent="neutral"
-                  }}
-            {{/if}}
+            {{> ../components/action_button label=(t "View all user groups") custom_classes="view_all_groups_button"
+              attention="quiet" intent="neutral"
+              }}
         {{/if}}
-    </div>
+    </span>
 </div>
+
