@@ -23,6 +23,14 @@ format used by the Zulip server that they are interacting with.
 Feature levels 421-424 reserved for future use in 11.x maintenance
 releases.
 
+**Feature level 425**
+
+* [`PATCH /realm/user_settings_defaults`](/api/update-realm-user-settings-defaults),
+  [`POST /register`](/api/register-queue), [`PATCH /settings`](/api/update-settings):
+  Added new user setting: `enable_reaction_desktop_notifications` and
+  `enable_reaction_audible_notifications`, giving users the option to toggle
+  desktop and audible notification for reactions.
+
 ## Changes in Zulip 11.0
 
 **Feature level 421**
