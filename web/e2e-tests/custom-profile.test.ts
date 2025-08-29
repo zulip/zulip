@@ -8,6 +8,7 @@ import * as common from "./lib/common.ts";
 const profile_field_row = "#admin_profile_fields_table tr:nth-last-child(1)";
 
 async function test_add_new_profile_field(page: Page): Promise<void> {
+    await page.waitForSelector("#add-custom-profile-field-button", {visible: true});
     await page.click("#add-custom-profile-field-button");
     await common.wait_for_micromodal_to_open(page);
     assert.strictEqual(
@@ -23,6 +24,7 @@ async function test_add_new_profile_field(page: Page): Promise<void> {
         field_type: "1",
         name: "Teams",
     });
+    await page.waitForSelector(".micromodal .dialog_submit_button", {visible: true});
     await page.click(".micromodal .dialog_submit_button");
     await common.wait_for_micromodal_to_close(page);
 
@@ -36,6 +38,7 @@ async function test_add_new_profile_field(page: Page): Promise<void> {
 }
 
 async function test_edit_profile_field(page: Page): Promise<void> {
+    await page.waitForSelector(`${profile_field_row} button.open-edit-form-modal`, {visible: true});
     await page.click(`${profile_field_row} button.open-edit-form-modal`);
     await common.wait_for_micromodal_to_open(page);
     assert.strictEqual(
@@ -49,6 +52,7 @@ async function test_edit_profile_field(page: Page): Promise<void> {
     await common.fill_form(page, "form.name-setting", {
         name: "team",
     });
+    await page.waitForSelector(".micromodal .dialog_submit_button", {visible: true});
     await page.click(".micromodal .dialog_submit_button");
     await common.wait_for_micromodal_to_close(page);
 
@@ -62,6 +66,7 @@ async function test_edit_profile_field(page: Page): Promise<void> {
 }
 
 async function test_delete_custom_profile_field(page: Page): Promise<void> {
+    await page.waitForSelector(`${profile_field_row} button.delete`, {visible: true});
     await page.click(`${profile_field_row} button.delete`);
     await common.wait_for_micromodal_to_open(page);
     assert.strictEqual(
@@ -72,6 +77,7 @@ async function test_delete_custom_profile_field(page: Page): Promise<void> {
         await common.get_text_from_selector(page, ".micromodal .dialog_submit_button"),
         "Confirm",
     );
+    await page.waitForSelector(".micromodal .dialog_submit_button", {visible: true});
     await page.click(".micromodal .dialog_submit_button");
     await common.wait_for_micromodal_to_close(page);
 
@@ -87,6 +93,7 @@ async function test_custom_profile(page: Page): Promise<void> {
     await common.manage_organization(page);
 
     console.log("Testing custom profile fields");
+    await page.waitForSelector("li[data-section='profile-field-settings']", {visible: true});
     await page.click("li[data-section='profile-field-settings']");
 
     await test_add_new_profile_field(page);
