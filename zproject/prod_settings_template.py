@@ -735,7 +735,7 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
 
 ## Controls the Constructor Groups video call integration. You must also
 ## set constructor_groups_access_key and constructor_groups_secret_key in zulip-secrets.conf.
-# CONSTRUCTOR_GROUPS_URL = "https://constructor.app/api/groups/xapi-public"
+# CONSTRUCTOR_GROUPS_URL = "https://constructor.app/api/groups/xapi"
 
 ################
 ## AI Features

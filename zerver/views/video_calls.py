@@ -51,7 +51,7 @@ class VideoCallSession(OutgoingSession):
 class ConstructorGroupsService:
     def __init__(self) -> None:
         if not self._is_configured():
-            raise ConstructorGroupsNotConfiguredError
+            raise JsonableError(_("Failed to create video call"))
 
         self.access_key = settings.CONSTRUCTOR_GROUPS_ACCESS_KEY
         self.secret_key = settings.CONSTRUCTOR_GROUPS_SECRET_KEY
@@ -112,10 +112,6 @@ class ConstructorGroupsService:
 
         return self._make_authenticated_request("POST", "/room", data)
 
-    def get_room_url(self, room_data: dict[str, Any]) -> str:
-        """Extract access URL from room data"""
-        return room_data.get("url", "")
-
 
 class InvalidZoomTokenError(JsonableError):
     code = ErrorCode.INVALID_ZOOM_TOKEN
@@ -129,13 +125,6 @@ class UnknownZoomUserError(JsonableError):
 
     def __init__(self) -> None:
         super().__init__(_("Unknown Zoom user email"))
-
-
-class ConstructorGroupsNotConfiguredError(JsonableError):
-    code = ErrorCode.CONSTRUCTOR_GROUPS_NOT_CONFIGURED
-
-    def __init__(self) -> None:
-        super().__init__(_("Constructor Groups is not configured."))
 
 
 def get_zoom_session(user: UserProfile) -> OAuth2Session:
@@ -485,43 +474,25 @@ def join_bigbluebutton(request: HttpRequest, *, bigbluebutton: str) -> HttpRespo
     return redirect(append_url_query_string(redirect_url_base, "checksum=" + checksum))
 
 
-@typed_endpoint
+@typed_endpoint_without_parameters
 def make_constructor_groups_video_call(
     request: HttpRequest,
     user_profile: UserProfile,
-    *,
-    is_video_call: Json[bool] = True,
 ) -> HttpResponse:
-    if not ConstructorGroupsService._is_configured():
-        raise ConstructorGroupsNotConfiguredError
+    service = ConstructorGroupsService()
 
-    try:
-        service = ConstructorGroupsService()
+    room_name_pattern = f"{user_profile.full_name}'s Zulip Videoconferencing Room"
+    existing_rooms = service.search_rooms(room_name_pattern, user_profile.delivery_email)
 
-        # Search for existing rooms with user's specific room name pattern
-        room_name_pattern = f"{user_profile.full_name}'s Zulip Videoconferencing Room"
-        existing_rooms = service.search_rooms(room_name_pattern, user_profile.delivery_email)
+    if existing_rooms:
+        room_url = existing_rooms[0].get("url", "")
+        if not room_url:
+            raise JsonableError(_("Invalid room data received from Constructor Groups."))
+    else:
+        room_data = service.create_room(room_name_pattern, user_profile.delivery_email)
+        room_url = room_data.get("url", "")
 
-        if existing_rooms:
-            # Use existing room
-            room_url = service.get_room_url(existing_rooms[0])
-            if not room_url:
-                raise JsonableError(_("Invalid room data received from Constructor Groups."))
-        else:
-            # Create new room with standard naming convention
-            room_name = f"{user_profile.full_name}'s Zulip Videoconferencing Room"
-            room_data = service.create_room(room_name, user_profile.delivery_email)
-            room_url = service.get_room_url(room_data)
+        if not room_url:
+            raise JsonableError(_("Failed to get room URL from Constructor Groups."))
 
-            if not room_url:
-                raise JsonableError(_("Failed to get room URL from Constructor Groups."))
-
-        return json_success(request, {"url": room_url})
-
-    except JsonableError:
-        # Re-raise JsonableError as-is for proper error handling
-        raise
-    except Exception:
-        # Log the full error for debugging but show user-friendly message
-        logging.exception("Constructor Groups API error")
-        raise JsonableError(_("Failed to create video call"))
+    return json_success(request, {"url": room_url})

@@ -153,47 +153,21 @@ export function generate_and_insert_audio_or_video_call_link(
         compose_call.abort_video_callbacks(edit_message_id);
         const key = edit_message_id ?? "";
 
-        const request = {
-            is_video_call: !is_audio_call,
-        };
-
         const xhr = channel.post({
             url: "/json/calls/constructorgroups/create",
-            data: request,
+            data: {},
             success(response) {
                 const data = call_response_schema.parse(response);
                 compose_call.video_call_xhrs.delete(key);
-
-                // Clear any previous Constructor Groups error banners on success
-                compose_banner.clear_constructor_groups_errors();
-
-                if (is_audio_call) {
-                    insert_audio_call_url(data.url, $target_textarea);
-                } else {
-                    insert_video_call_url(data.url, $target_textarea);
-                }
+                insert_video_call_url(data.url, $target_textarea);
             },
-            error(xhr, status) {
+            error(_xhr, status) {
                 compose_call.video_call_xhrs.delete(key);
                 if (status !== "abort") {
-                    const parsed = z
-                        .object({code: z.string(), msg: z.string()})
-                        .safeParse(xhr.responseJSON);
-
-                    let error_message;
-                    if (
-                        parsed.success &&
-                        parsed.data.code === "CONSTRUCTOR_GROUPS_NOT_CONFIGURED"
-                    ) {
-                        error_message = $t({
-                            defaultMessage:
-                                "Constructor Groups is not configured on this server. Please contact your administrator.",
-                        });
-                    } else {
-                        error_message = $t({defaultMessage: "Failed to create video call."});
-                    }
-
-                    compose_banner.show_constructor_groups_error(error_message);
+                    ui_report.generic_embed_error(
+                        $t_html({defaultMessage: "Failed to create video call."}),
+                        2000,
+                    );
                 }
             },
         });

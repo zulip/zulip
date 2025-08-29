@@ -43,7 +43,6 @@ You can configure Zulip to use Constructor Groups as your call provider instead.
 
 ### Related documentation
 
-- [Constructor Groups calls](/help/constructor-groups-calls)
 - [How to start a call](/help/start-a-call)
 - [Jitsi Meet integration](/integrations/doc/jitsi)
 - [Zoom integration](/integrations/doc/zoom)
