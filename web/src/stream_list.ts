@@ -592,7 +592,7 @@ function build_stream_sidebar_li(sub: StreamSubscription): JQuery {
         color: sub.color,
         pin_to_top: sub.pin_to_top,
         can_post_messages,
-        is_empty_topic_only_channel: stream_data.is_empty_topic_only_channel(sub.stream_id),
+        can_create_topics: stream_data.can_create_new_topics_in_stream(sub.stream_id),
     };
     const $list_item = $(render_stream_sidebar_row(args));
     return $list_item;
@@ -1270,6 +1270,10 @@ export function set_event_handlers({
         e.stopPropagation();
         e.preventDefault();
         const stream_id = Number.parseInt(this.dataset.streamId!, 10);
+        const can_create_new_topics = stream_data.can_create_new_topics_in_stream(stream_id);
+        if (!can_create_new_topics) {
+            return;
+        }
         compose_actions.start({
             message_type: "stream",
             stream_id,
