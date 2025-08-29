@@ -233,7 +233,7 @@ const INSECURE_DESKTOP_APP_BANNER: AlertBanner = {
     intent: "warning",
     label: $t({
         defaultMessage:
-            "Zulip desktop is not updating automatically. Please upgrade for security updates and other improvements.",
+            "Zulip Desktop is not updating automatically. Please upgrade for security updates and other improvements.",
     }),
     buttons: [
         {
