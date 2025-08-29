@@ -2975,7 +2975,7 @@ No changes; feature level used for Zulip 5.0 release.
 * [`GET /events`](/api/get-events): Updated `update_message` event type
   to always include `edit_timestamp` and `user_id` fields. If the event
   only updates the rendering of the message, then the `user_id` field
-  will be present, but with a value of null as the update was not the
+  will be present, but with a value of `null`, as the update was not the
   result of a user interaction.
 
 **Feature level 113**
@@ -2983,7 +2983,7 @@ No changes; feature level used for Zulip 5.0 release.
 * `GET /realm/emoji`, `POST /realm/emoji/{emoji_name}`, [`GET
   /events`](/api/get-events), [`POST /register`](/api/register-queue):
   The `still_url` field for custom emoji objects is now always
-  present, with a value of null for non-animated emoji. Previously, it
+  present, with a value of `null` for non-animated emoji. Previously, it
   only was present for animated emoji.
 
 **Feature level 112**
@@ -3908,9 +3908,9 @@ No changes; feature level used for Zulip 3.0 release.
   subscriber data.
 * [`GET /users/me/subscriptions`](/api/get-subscriptions):
   Stream-level notification settings like `push_notifications` were
-  changed to be nullable boolean fields (true/false/null), with `null`
-  meaning that the stream inherits the organization-level default.
-  Previously, the only values were true/false.  A client communicates
+  changed to be nullable boolean fields (`true`/`false`/`null`), with
+  `null` meaning that the stream inherits the organization-level default.
+  Previously, the only values were `true` or `false`. A client communicates
   support for this feature using `client_capabilities`.
 * [`GET /users/me/subscriptions`](/api/get-subscriptions): Added
   `wildcard_mentions_notify` notification setting, with the same
