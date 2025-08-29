@@ -16,6 +16,12 @@ export type MessageViewportInfo = {
 
 export const $scroll_container = $(":root");
 
+let window_resize_handler: () => void;
+
+export function register_resize_handler(handler: () => void): void {
+    window_resize_handler = handler;
+}
+
 let in_stoppable_autoscroll = false;
 
 const cached_width = new util.CachedValue({compute_value: () => $scroll_container.width() ?? 0});
@@ -557,6 +563,7 @@ export function initialize(): void {
         cached_height.reset();
         top_of_feed.reset();
         bottom_of_feed.reset();
+        window_resize_handler?.();
     });
 
     $(document).on("compose_started compose_canceled compose_finished", () => {

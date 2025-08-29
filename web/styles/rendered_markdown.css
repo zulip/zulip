@@ -994,6 +994,23 @@
     }
 }
 
+.message_edit_form textarea {
+    /* Removes the white bg color in scrollbar corner when
+       scrollbar appears and makes resizer visible */
+    &::-webkit-scrollbar-corner {
+        background-color: transparent;
+    }
+
+    /* We externally set the width of scrollbar small for message edit
+       textarea. The resizer will shrink or expand whenever scrollbar appears
+       or disappears. So we match it with the scrollbar width */
+    &::-webkit-resizer {
+        background-position: bottom right;
+        background-repeat: no-repeat;
+        background-size: 10px;
+    }
+}
+
 /* Search highlight used in both topics and rendered_markdown */
 .highlight {
     background-color: hsl(51deg 100% 79%);
