@@ -33,7 +33,8 @@ type PopoverName =
     | "buddy_list"
     | "stream_actions_popover"
     | "color_picker_popover"
-    | "show_channels_sidebar";
+    | "show_channels_sidebar"
+    | "read_receipt_popover";
 
 export const popover_instances: Record<PopoverName, tippy.Instance | null> = {
     compose_control_buttons: null,
@@ -56,6 +57,7 @@ export const popover_instances: Record<PopoverName, tippy.Instance | null> = {
     stream_actions_popover: null,
     color_picker_popover: null,
     show_channels_sidebar: null,
+    read_receipt_popover: null,
 };
 
 // Font size in em for popover derived from popover font size being
