@@ -588,10 +588,10 @@ INTEGRATIONS: dict[str, Integration] = {
     "big-blue-button": Integration(
         "big-blue-button", ["communication"], display_name="BigBlueButton"
     ),
+    "capistrano": Integration("capistrano", ["deployment"], display_name="Capistrano"),
     "constructor-groups": Integration(
         "constructor-groups", ["communication"], display_name="Constructor Groups"
     ),
-    "capistrano": Integration("capistrano", ["deployment"], display_name="Capistrano"),
     "discourse": Integration("discourse", ["communication"]),
     "email": Integration("email", ["communication"]),
     "errbot": Integration("errbot", ["meta-integration", "bots"]),

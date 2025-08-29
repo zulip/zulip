@@ -67,7 +67,6 @@ class ErrorCode(Enum):
     FAILED_TO_CONNECT_BOUNCER = auto()
     INTERNAL_SERVER_ERROR_ON_BOUNCER = auto()
     ADMIN_ACTION_REQUIRED = auto()
-    CONSTRUCTOR_GROUPS_NOT_CONFIGURED = auto()
 
 
 class JsonableError(Exception):
