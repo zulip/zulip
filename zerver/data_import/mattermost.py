@@ -268,7 +268,7 @@ def convert_direct_message_group_data(
 ) -> list[ZerverFieldsT]:
     zerver_direct_message_group = []
     for direct_message_group in direct_message_group_data:
-        if len(direct_message_group["members"]) > 2:
+        if len(direct_message_group["members"]) > 2 or settings.PREFER_DIRECT_MESSAGE_GROUP:
             direct_message_group_members = frozenset(direct_message_group["members"])
             if direct_message_group_id_mapper.has(direct_message_group_members):
                 logging.info("Duplicate direct message group found in the export data. Skipping.")
@@ -628,7 +628,7 @@ def process_posts(
             # groups not channels. Direct messages and direct message groups are known
             # as direct_channels in Slack and hence the name channel_members.
             channel_members = post_dict["channel_members"]
-            if len(channel_members) > 2:
+            if len(channel_members) > 2 or settings.PREFER_DIRECT_MESSAGE_GROUP:
                 message_dict["direct_message_group_members"] = frozenset(channel_members)
             elif len(channel_members) == 2:
                 message_dict["pm_members"] = channel_members
