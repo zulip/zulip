@@ -70,6 +70,21 @@ existing owner's role.
 
 {end_tabs}
 
+## Change your role
+
+{!admin-only.md!}
+
+Organization owners and administrators can change their own roles, with the
+restriction that administrators cannot make themselves owners.
+
+{start_tabs}
+
+{settings_tab|account-and-privacy}
+
+1. Under **Account**, select a [role](#roles) from the **Roles** dropdown.
+
+{end_tabs}
+
 ## Related articles
 
 * [Guest users](/help/guest-users)
