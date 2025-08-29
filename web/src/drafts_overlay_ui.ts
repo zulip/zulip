@@ -19,6 +19,7 @@ import * as overlays from "./overlays.ts";
 import * as people from "./people.ts";
 import * as rendered_markdown from "./rendered_markdown.ts";
 import * as stream_data from "./stream_data.ts";
+import * as sub_store from "./sub_store.ts";
 import * as user_card_popover from "./user_card_popover.ts";
 import * as user_group_popover from "./user_group_popover.ts";
 
@@ -82,6 +83,7 @@ function restore_draft(draft_id: string): void {
     if (compose_args.type === "stream") {
         if (
             compose_args.stream_id !== undefined &&
+            sub_store.get(compose_args.stream_id) !== undefined &&
             (compose_args.topic !== "" || stream_data.can_use_empty_topic(compose_args.stream_id))
         ) {
             message_view.show(
