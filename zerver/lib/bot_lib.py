@@ -23,6 +23,8 @@ from zerver.lib.bot_storage import (
 from zerver.lib.integrations import EMBEDDED_BOTS
 from zerver.lib.topic import get_topic_from_message_info
 from zerver.models import UserProfile
+from zerver.models.bots import Service
+from zerver.models.scheduled_jobs import NotificationTriggers
 from zerver.models.users import get_active_user
 
 
@@ -161,3 +163,23 @@ def do_flag_service_bots_messages_as_processed(
 ) -> None:
     assert bot_profile.is_bot is True and bot_profile.bot_type in UserProfile.SERVICE_BOT_TYPES
     do_update_message_flags(bot_profile, "add", "read", message_ids)
+
+
+BOT_SERVICE_TRIGGER_EVENT_NAME = {
+    Service.BOT_TRIGGER_ALL_DIRECT_MENTIONS: "mention",
+    Service.BOT_TRIGGER_DMS_RECEIVED: NotificationTriggers.DIRECT_MESSAGE,
+}
+
+
+def get_service_bot_trigger_event(
+    received_trigger_events: list[str], bots_triggers: list[str]
+) -> str | None:
+    """
+    `received_trigger_events` is a list of possible trigger events,
+    sorted from most to least specific. Returns the most specific
+    event that matches the bot's triggers, or `None` if none match.
+    """
+    for trigger in received_trigger_events:
+        if trigger in bots_triggers:
+            return BOT_SERVICE_TRIGGER_EVENT_NAME[trigger]
+    return None

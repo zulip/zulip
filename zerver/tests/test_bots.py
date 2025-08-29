@@ -25,7 +25,7 @@ from zerver.lib.test_helpers import avatar_disk_path, get_test_image_file
 from zerver.lib.utils import assert_is_not_none
 from zerver.lib.webhooks.common import WebhookConfigOption
 from zerver.models import RealmUserDefault, Service, Subscription, UserProfile
-from zerver.models.bots import get_bot_services
+from zerver.models.bots import get_bot_services, get_default_service_bot_triggers
 from zerver.models.groups import NamedUserGroup, SystemGroups
 from zerver.models.realms import get_realm
 from zerver.models.streams import get_stream
@@ -1837,12 +1837,14 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
             "bot_type": UserProfile.OUTGOING_WEBHOOK_BOT,
             "payload_url": orjson.dumps("http://foo.bar.com").decode(),
             "interface_type": Service.GENERIC,
+            "service_triggers": orjson.dumps(get_default_service_bot_triggers()).decode(),
         }
         result = self.client_post("/json/bots", bot_info)
         self.assert_json_success(result)
         bot_info = {
             "service_payload_url": orjson.dumps("http://foo.bar2.com").decode(),
             "service_interface": Service.SLACK,
+            "service_triggers": orjson.dumps([Service.BOT_TRIGGER_ALL_DIRECT_MENTIONS]).decode(),
         }
         email = "hambot-bot@zulip.testserver"
         result = self.client_patch(f"/json/bots/{self.get_bot_user(email).id}", bot_info)
@@ -1853,6 +1855,9 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
 
         service_payload_url = orjson.loads(result.content)["service_payload_url"]
         self.assertEqual(service_payload_url, "http://foo.bar2.com")
+
+        service_triggers = orjson.loads(result.content)["service_triggers"]
+        self.assertEqual(service_triggers, [Service.BOT_TRIGGER_ALL_DIRECT_MENTIONS])
 
     @patch("zulip_bots.bots.giphy.giphy.GiphyHandler.validate_config")
     def test_patch_bot_config_data(self, mock_validate_config: MagicMock) -> None:
@@ -1871,6 +1876,66 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         config_data = orjson.loads(result.content)["config_data"]
         self.assertEqual(config_data, orjson.loads(bot_info["config_data"]))
 
+    def test_patch_bot_service_triggers(self) -> None:
+        self.login("hamlet")
+        bot_info = {
+            "full_name": "The Bot of Hamlet",
+            "short_name": "hambot",
+            "bot_type": UserProfile.OUTGOING_WEBHOOK_BOT,
+            "payload_url": orjson.dumps("http://foo.bar.com").decode(),
+            "interface_type": Service.GENERIC,
+            "service_triggers": orjson.dumps(get_default_service_bot_triggers()).decode(),
+        }
+        result = self.client_post("/json/bots", bot_info)
+        self.assert_json_success(result)
+        bot_user_id = orjson.loads(result.content)["user_id"]
+        service = get_bot_services(bot_user_id)[0]
+        self.assertEqual(sorted(service.triggers), sorted(get_default_service_bot_triggers()))
+
+        email = "hambot-bot@zulip.testserver"
+
+        bot_info = {
+            "service_triggers": orjson.dumps([]).decode(),
+        }
+        result = self.client_patch(f"/json/bots/{self.get_bot_user(email).id}", bot_info)
+        self.assert_json_error(result, "A service bot must have at least one trigger.")
+        service = get_bot_services(bot_user_id)[0]
+        self.assertEqual(sorted(service.triggers), sorted(get_default_service_bot_triggers()))
+
+        bot_info = {
+            "service_triggers": orjson.dumps(["unknown_trigger"]).decode(),
+        }
+        result = self.client_patch(f"/json/bots/{self.get_bot_user(email).id}", bot_info)
+        self.assert_json_error(result, "Invalid service bot trigger(s): {'unknown_trigger'}")
+        service = get_bot_services(bot_user_id)[0]
+        self.assertEqual(sorted(service.triggers), sorted(get_default_service_bot_triggers()))
+
+        # all caps, extra white space, and duplicate trigger. This passes because
+        # `validate_service_bot_triggers` also cleans the input.
+        bot_info = {
+            "service_triggers": orjson.dumps(
+                [
+                    Service.BOT_TRIGGER_ALL_DIRECT_MENTIONS.upper(),
+                    Service.BOT_TRIGGER_ALL_DIRECT_MENTIONS,
+                    Service.BOT_TRIGGER_DMS_RECEIVED + "    ",
+                ]
+            ).decode(),
+        }
+        result = self.client_patch(f"/json/bots/{self.get_bot_user(email).id}", bot_info)
+        self.assert_json_success(result)
+        service = get_bot_services(bot_user_id)[0]
+        self.assertEqual(sorted(service.triggers), sorted(get_default_service_bot_triggers()))
+
+        # Test successful patching of service triggers.
+        for trigger in Service.BOT_SERVICE_TRIGGERS:
+            bot_info = {
+                "service_triggers": orjson.dumps([trigger]).decode(),
+            }
+            result = self.client_patch(f"/json/bots/{self.get_bot_user(email).id}", bot_info)
+            self.assert_json_success(result)
+            service = get_bot_services(bot_user_id)[0]
+            self.assertEqual(service.triggers, [trigger])
+
     def test_outgoing_webhook_invalid_interface(self) -> None:
         self.login("hamlet")
         bot_info = {
@@ -1879,6 +1944,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
             "bot_type": UserProfile.OUTGOING_WEBHOOK_BOT,
             "payload_url": orjson.dumps("http://127.0.0.1:5002").decode(),
             "interface_type": -1,
+            "service_triggers": orjson.dumps(get_default_service_bot_triggers()).decode(),
         }
         result = self.client_post("/json/bots", bot_info)
         self.assert_json_error(result, "Invalid interface type")
@@ -1894,6 +1960,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
             "short_name": "outgoingservicebot",
             "bot_type": UserProfile.OUTGOING_WEBHOOK_BOT,
             "payload_url": orjson.dumps("http://127.0.0.1:5002").decode(),
+            "service_triggers": orjson.dumps(get_default_service_bot_triggers()).decode(),
         }
         bot_info.update(extras)
         result = self.client_post("/json/bots", bot_info)
@@ -1912,6 +1979,19 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         bot_info["payload_url"] = orjson.dumps("http://127.0.0.:5002").decode()
         result = self.client_post("/json/bots", bot_info)
         self.assert_json_error(result, "Invalid payload_url: Value error, Not a URL")
+
+        # invalid service triggers.
+        bot_info["payload_url"] = orjson.dumps("http://127.0.0.1:5002").decode()
+        bot_info["service_triggers"] = orjson.dumps(["unknown_trigger"]).decode()
+        result = self.client_post("/json/bots", bot_info)
+        self.assert_json_error(result, "Invalid service bot trigger(s): {'unknown_trigger'}")
+
+        # no service triggers.
+        bot_info["payload_url"] = orjson.dumps("http://127.0.0.1:5002").decode()
+        bot_info["service_triggers"] = orjson.dumps([]).decode()
+        bot_info["short_name"] = "notriggerbot"
+        result = self.client_post("/json/bots", bot_info)
+        self.assert_json_error(result, "A service bot must have at least one trigger.")
 
     def test_get_bot_handler(self) -> None:
         # Test for valid service.
@@ -1939,6 +2019,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
             "bot_type": UserProfile.OUTGOING_WEBHOOK_BOT,
             "payload_url": orjson.dumps("http://127.0.0.1:5002").decode(),
             "interface_type": -1,
+            "service_triggers": orjson.dumps(get_default_service_bot_triggers()).decode(),
         }
         result = self.client_post("/json/bots", bot_info)
         self.assert_json_error(result, "Invalid interface type")
@@ -2006,6 +2087,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
             "bot_type": UserProfile.EMBEDDED_BOT,
             "service_name": "giphy",
             "config_data": orjson.dumps(incorrect_bot_config_info).decode(),
+            "service_triggers": orjson.dumps(get_default_service_bot_triggers()).decode(),
         }
         bot_info.update(extras)
         with patch(

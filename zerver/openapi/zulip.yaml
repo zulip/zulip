@@ -25954,6 +25954,8 @@ components:
 
                       - 1 = Zulip's native outgoing webhook format.
                       - 2 = Emulate the Slack outgoing webhook format.
+                  triggers:
+                    $ref: "#/components/schemas/BotServiceTriggers"
               - type: object
                 additionalProperties: false
                 description: |
@@ -25965,6 +25967,8 @@ components:
                       The name of the bot.
                   config_data:
                     $ref: "#/components/schemas/BotConfiguration"
+                  triggers:
+                    $ref: "#/components/schemas/BotServiceTriggers"
     Bot:
       allOf:
         - $ref: "#/components/schemas/BasicBotBase"
@@ -26077,6 +26081,27 @@ components:
             description: |
               The name of the validator function for the configuration
               option.
+    BotServiceTriggers:
+      type: array
+      items:
+        type: string
+      description: |
+        An array of events that can trigger the bots' service. Supported
+        trigger events are:
+
+        - "all_direct_mentions" = Any mention of the service bot, regardless of whether
+          the bot is part of the recipient or not. This does not include topic, group
+          and @-all mentions that includes the bot.
+        - "dms_received" = Whenever the bot receives a direct message, whether
+          it be from direct message or group direct message.
+
+        **Changes**: New in Zulip 11.0 (feature level ZF-9ff0e2). Previously, all service
+        bots were hardcoded to have the same set of trigger events -- direct mentions of the
+        bot and direct messages to the bot. This change introduces a `triggers` field in the
+        `Service` table, which specifies which events can trigger a service bots function.
+        The previous behavior has been split into two distinct trigger options:
+        "all_direct_mentions" and "dms_received". All existing service bots should have these
+        two triggers.
     CustomProfileField:
       type: object
       additionalProperties: false
