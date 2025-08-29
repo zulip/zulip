@@ -4,10 +4,14 @@ from typing import Any
 
 from django_bmemcached.memcached import BMemcached
 
+from zerver.lib import zstd_level9
+
 
 @lru_cache(None)
-def _get_bmemcached(location: str, params: bytes) -> BMemcached:
-    return BMemcached(location, pickle.loads(params))  # noqa: S301
+def _get_bmemcached(location: str, param_bytes: bytes) -> BMemcached:
+    params = pickle.loads(param_bytes)  # noqa: S301
+    params["OPTIONS"]["compression"] = zstd_level9
+    return BMemcached(location, params)
 
 
 def SingletonBMemcached(location: str, params: dict[str, Any]) -> BMemcached:

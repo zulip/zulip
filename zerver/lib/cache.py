@@ -148,6 +148,7 @@ def cache_with_key(
     keyfunc: Callable[ParamT, str],
     cache_name: str | None = None,
     timeout: int | None = None,
+    pickled_tupled: bool = True,
 ) -> Callable[[Callable[ParamT, ReturnT]], Callable[ParamT, ReturnT]]:
     """Decorator which applies Django caching to a function.
 
@@ -168,9 +169,12 @@ def cache_with_key(
                 log_invalid_cache_keys(stack_trace, [key])
                 return func(*args, **kwargs)
 
-            # Values are singleton tuples so that we can distinguish
-            # a result of None from a missing key.
-            if val is not None:
+            # Values are singleton tuples so that we can distinguish a
+            # result of None from a missing key.  Setting
+            # pickled_tupled=False avoids pickling the result (if it's
+            # a raw string or bytes) at the cost of losing this
+            # distinction.
+            if val is not None and pickled_tupled:
                 return val[0]
 
             val = func(*args, **kwargs)
@@ -180,7 +184,9 @@ def cache_with_key(
                     stack_info=True,
                 )
             else:
-                cache_set(key, val, cache_name=cache_name, timeout=timeout)
+                cache_set(
+                    key, val, cache_name=cache_name, timeout=timeout, pickled_tupled=pickled_tupled
+                )
 
             return val
 
@@ -220,15 +226,21 @@ def validate_cache_key(key: str, auto_prepend_prefix: bool = True) -> None:
 
 
 def cache_set(
-    key: str, val: Any, cache_name: str | None = None, timeout: int | None = None
+    key: str,
+    val: Any,
+    cache_name: str | None = None,
+    timeout: int | None = None,
+    pickled_tupled: bool = True,
 ) -> None:
     final_key = KEY_PREFIX + key
     validate_cache_key(final_key)
 
     remote_cache_stats_start()
     cache_backend = get_cache_backend(cache_name)
+    if pickled_tupled:
+        val = (val,)
     try:
-        cache_backend.set(final_key, (val,), timeout=timeout)
+        cache_backend.set(final_key, val, timeout=timeout)
     except MemcachedException as e:
         logger.exception(e)
     remote_cache_stats_finish()
@@ -380,20 +392,33 @@ def generic_bulk_cached_fetch(
     setter: Callable[[CacheItemT], CompressedItemT],
     id_fetcher: Callable[[ItemT], ObjKT],
     cache_transformer: Callable[[ItemT], CacheItemT],
+    pickled_tupled: bool = True,
 ) -> dict[ObjKT, CacheItemT]:
     if len(object_ids) == 0:
         # Nothing to fetch.
         return {}
 
+    if pickled_tupled:
+        return generic_bulk_cached_fetch(
+            cache_key_function,
+            query_function,
+            object_ids,
+            extractor=lambda val: extractor(val[0]),
+            setter=lambda val: (setter(val),),
+            id_fetcher=id_fetcher,
+            cache_transformer=cache_transformer,
+            pickled_tupled=False,
+        )
+
     cache_keys: dict[ObjKT, str] = {}
     for object_id in object_ids:
         cache_keys[object_id] = cache_key_function(object_id)
 
-    cached_objects_compressed: dict[str, tuple[CompressedItemT]] = safe_cache_get_many(
+    cached_objects_compressed: dict[str, CompressedItemT] = safe_cache_get_many(
         [cache_keys[object_id] for object_id in object_ids],
     )
 
-    cached_objects = {key: extractor(val[0]) for key, val in cached_objects_compressed.items()}
+    cached_objects = {key: extractor(val) for key, val in cached_objects_compressed.items()}
     needed_ids = [
         object_id for object_id in object_ids if cache_keys[object_id] not in cached_objects
     ]
@@ -404,11 +429,11 @@ def generic_bulk_cached_fetch(
     else:
         db_objects = []
 
-    items_for_remote_cache: dict[str, tuple[CompressedItemT]] = {}
+    items_for_remote_cache: dict[str, CompressedItemT] = {}
     for obj in db_objects:
         key = cache_keys[id_fetcher(obj)]
         item = cache_transformer(obj)
-        items_for_remote_cache[key] = (setter(item),)
+        items_for_remote_cache[key] = setter(item)
         cached_objects[key] = item
     if len(items_for_remote_cache) > 0:
         safe_cache_set_many(items_for_remote_cache)

@@ -3,6 +3,7 @@
 const assert = require("node:assert/strict");
 
 const {make_user_group} = require("./lib/example_group.cjs");
+const {make_realm} = require("./lib/example_realm.cjs");
 const {mock_esm, zrequire, set_global} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
 const blueslip = require("./lib/zblueslip.cjs");
@@ -26,7 +27,7 @@ const {MessageList} = zrequire("message_list");
 const {MessageListData} = zrequire("message_list_data");
 
 set_current_user({});
-const realm = {};
+const realm = make_realm();
 set_realm(realm);
 initialize_user_settings({user_settings: {}});
 
@@ -207,7 +208,7 @@ run_test("urls", () => {
     people.add_active_user(me);
     people.initialize_current_user(me.user_id);
 
-    let url = hash_util.pm_with_url(ray.email);
+    let url = hash_util.pm_with_url(ray.user_id.toString());
     assert.equal(url, "#narrow/dm/22-Raymond");
 
     url = hash_util.direct_message_group_with_url("22,23");

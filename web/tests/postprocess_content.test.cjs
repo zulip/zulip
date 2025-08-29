@@ -43,8 +43,7 @@ run_test("postprocess_content", () => {
                 "</div>" +
                 '<div class="message_embed_description">All about us.</div>' +
                 "</div>" +
-                "</div>" +
-                '<p><audio controls preload="metadata" src="http://zulip.zulipdev.com/user_uploads/w/ha/tever/inline.mp3" title="inline.mp3"></audio></p>',
+                "</div>",
         ),
         '<a href="http://example.com" target="_blank" rel="noopener noreferrer" title="http://example.com/">good</a> ' +
             '<a href="http://zulip.zulipdev.com/user_uploads/w/ha/tever/file.png" target="_blank" rel="noopener noreferrer" title="translated: Download file.png">upload</a> ' +
@@ -75,8 +74,7 @@ run_test("postprocess_content", () => {
             "</div>" +
             '<div class="message_embed_description">All about us.</div>' +
             "</div>" +
-            "</div>" +
-            '<p><span class="media-audio-wrapper"><audio controls="" preload="metadata" src="http://zulip.zulipdev.com/user_uploads/w/ha/tever/inline.mp3" title="inline.mp3" class="media-audio-element"></audio></span></p>',
+            "</div>",
     );
 });
 

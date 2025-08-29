@@ -358,6 +358,18 @@ export function initialize(): void {
         },
     });
 
+    message_list_tooltip(".media-audio-download", {
+        delay: LONG_HOVER_DELAY,
+        onShow(instance) {
+            const title = $(instance.reference).attr("aria-label");
+            assert(title !== undefined);
+            instance.setContent(title);
+        },
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
     message_list_tooltip(".view_user_card_tooltip", {
         delay: LONG_HOVER_DELAY,
         onShow(instance) {

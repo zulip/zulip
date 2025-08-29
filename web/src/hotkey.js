@@ -1314,6 +1314,7 @@ export function process_hotkey(e, hotkey) {
             "show_lightbox",
             "toggle_sender_info",
             "edit_message",
+            "copy_with_c",
         ].includes(event_name)
     ) {
         spectators.login_to_access();

@@ -108,7 +108,7 @@ class ReactionEmojiTest(ZulipTestCase):
             self.assertEqual(200, result.status_code)
 
         key = to_dict_cache_key_id(1)
-        message = extract_message_dict(cache_get(key)[0])
+        message = extract_message_dict(cache_get(key))
 
         expected_reaction_data = [
             {

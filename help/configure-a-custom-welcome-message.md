@@ -20,6 +20,10 @@ administrators.
 
 {!admin-only.md!}
 
+Users will receive the message that's configured at the time when they accept
+the invitation, so there's no need to update or revoke invitations when you
+change the welcome message.
+
 {start_tabs}
 
 {settings_tab|organization-settings}

@@ -14,7 +14,7 @@ export type MessageViewportInfo = {
     visible_height: number;
 };
 
-export const $scroll_container = $("html");
+export const $scroll_container = $(":root");
 
 let in_stoppable_autoscroll = false;
 

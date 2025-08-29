@@ -331,10 +331,7 @@ const getSettingsMarkdown = (
 </ol>
 `;
 
-const getSettingsHTML = (
-    setting_key: string,
-    SHOW_RELATIVE_LINKS: boolean,
-): string => {
+const getSettingsHTML = (setting_key: string): string => {
     const {setting_type, setting_name, setting_link} =
         setting_link_mapping[setting_key]!;
 
@@ -404,7 +401,7 @@ if (
 
 let resultHTML: string | undefined;
 if (navigation_link_type === "settings") {
-    resultHTML = getSettingsHTML(target.split("/")[1], SHOW_RELATIVE_LINKS);
+    resultHTML = getSettingsHTML(target.split("/")[1]);
 } else {
     const link_type = target.split("/")[1];
     const key = target.split("/")[2];

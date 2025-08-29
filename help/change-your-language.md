@@ -4,8 +4,8 @@
 
 ## Change the language of the Zulip app
 
-Note that this will not change channel names, topic names, or the language of
-messages you receive.
+Note that this will not change channel names, topic names (other than [*general
+chat*](/help/general-chat-topic)), or the language of messages you receive.
 
 {start_tabs}
 
@@ -15,7 +15,9 @@ messages you receive.
 
 1. Under **General**, click the button under **Language**.
 
-1. Select a language.
+1. Select a language. Languages are marked as 100% translated only if every
+   string in the web, desktop, and mobile apps is translated, including
+   administrative UI and all error messages that the API can return.
 
 1. Click **Reload**.
 

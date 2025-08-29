@@ -172,6 +172,7 @@ def remote_server_dispatch(request: HttpRequest, /, **kwargs: Any) -> HttpRespon
 
 def remote_server_path(
     route: str,
-    **handlers: Callable[Concatenate[HttpRequest, RemoteZulipServer, ParamT], HttpResponse],
+    **handlers: Callable[Concatenate[HttpRequest, RemoteZulipServer, ParamT], HttpResponse]
+    | tuple[Callable[Concatenate[HttpRequest, RemoteZulipServer, ParamT], HttpResponse], set[str]],
 ) -> URLPattern:
     return path(route, remote_server_dispatch, handlers)

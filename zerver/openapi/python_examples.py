@@ -1907,12 +1907,17 @@ def update_user_group_members(client: Client, user_group_id: int) -> None:
 @openapi_test_function("/channels/create:post")
 def add_channel(client: Client) -> None:
     # {code_example|start}
+    # Create a new channel.
     request = {
         "name": "music_group",
         "description": "Channel for discussing and learning about music.",
-        "subscribers": [],
+        "subscribers": [12],
     }
-    result = client.call_endpoint(url="channels/create", method="POST", request=request)
+    result = client.call_endpoint(
+        url="channels/create",
+        method="POST",
+        request=request,
+    )
     # {code_example|end}
     assert_success_response(result)
     validate_against_openapi_schema(result, "/channels/create", "post", "200")

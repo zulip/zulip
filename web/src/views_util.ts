@@ -173,7 +173,7 @@ export function is_scroll_position_for_render(): boolean {
     // new rows to render when the user is scrolling to the bottom of
     // the view. So, we render new rows when user has scrolled 2 / 3
     // of (the total scrollable height - the empty space).
-    const compose_max_height = $("html").css("--max-unmaximized-compose-height");
+    const compose_max_height = $(":root").css("--max-unmaximized-compose-height");
     assert(typeof compose_max_height === "string");
     const scroll_max = document.body.scrollHeight - Number.parseInt(compose_max_height, 10);
     return scroll_position + window_height >= (2 / 3) * scroll_max;

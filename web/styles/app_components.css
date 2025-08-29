@@ -1126,7 +1126,7 @@ input.settings_text_input {
     justify-content: space-between;
     outline: none;
     color: var(--color-text-default);
-    width: 206px;
+    width: var(--width-dropdown-widget-button);
 
     &:disabled {
         cursor: not-allowed;

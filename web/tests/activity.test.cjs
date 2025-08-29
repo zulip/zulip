@@ -9,6 +9,7 @@ const {
     buddy_list_add_other_user,
     stub_buddy_list_elements,
 } = require("./lib/buddy_list.cjs");
+const {make_realm} = require("./lib/example_realm.cjs");
 const {make_message_list} = require("./lib/message_list.cjs");
 const {mock_esm, set_global, with_overrides, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
@@ -56,7 +57,7 @@ const {initialize_user_settings} = zrequire("user_settings");
 
 const current_user = {};
 set_current_user(current_user);
-const realm = {};
+const realm = make_realm();
 set_realm(realm);
 const user_settings = {};
 initialize_user_settings({user_settings});
@@ -694,11 +695,10 @@ test("update_presence_info", ({override, override_rewire}) => {
     override(realm, "server_presence_ping_interval_seconds", 60);
     override(realm, "server_presence_offline_threshold_seconds", 200);
 
-    const server_time = 500;
-    const info = {
-        website: {
-            status: "active",
-            timestamp: server_time,
+    let info = {
+        [me.user_id]: {
+            active_timestamp: 500,
+            idle_timestamp: 500,
         },
     };
 
@@ -711,12 +711,19 @@ test("update_presence_info", ({override, override_rewire}) => {
     });
 
     presence.presence_info.delete(me.user_id);
-    activity_ui.update_presence_info(me.user_id, info, server_time);
+    activity_ui.update_presence_info(info);
     assert.ok(inserted);
     assert.deepEqual(presence.presence_info.get(me.user_id).status, "active");
 
+    info = {
+        [alice.user_id]: {
+            active_timestamp: 500,
+            idle_timestamp: 500,
+        },
+    };
+
     presence.presence_info.delete(alice.user_id);
-    activity_ui.update_presence_info(alice.user_id, info, server_time);
+    activity_ui.update_presence_info(info);
     assert.ok(inserted);
 
     const expected = {status: "active", last_active: 500};
@@ -724,7 +731,13 @@ test("update_presence_info", ({override, override_rewire}) => {
 
     // Test invalid and inaccessible user IDs.
     const invalid_user_id = 99;
-    activity_ui.update_presence_info(invalid_user_id, info, server_time);
+    info = {
+        [invalid_user_id]: {
+            active_timestamp: 500,
+            idle_timestamp: 500,
+        },
+    };
+    activity_ui.update_presence_info(info);
     assert.equal(presence.presence_info.get(invalid_user_id), undefined);
 
     const inaccessible_user_id = 10;
@@ -735,11 +748,18 @@ test("update_presence_info", ({override, override_rewire}) => {
         "Unknown user",
     );
     people._add_user(inaccessible_user);
-    activity_ui.update_presence_info(inaccessible_user_id, info, server_time);
+    info = {
+        [inaccessible_user_id]: {
+            active_timestamp: 500,
+            idle_timestamp: 500,
+        },
+    };
+    activity_ui.update_presence_info(info);
     assert.equal(presence.presence_info.get(inaccessible_user_id), undefined);
 });
 
 test("initialize", ({override, override_rewire}) => {
+    override(document, "to_$", () => $("document-stub"));
     override(pm_list, "update_private_messages", noop);
     override(watchdog, "check_for_unsuspend", noop);
     override(buddy_list, "fill_screen_with_content", noop);
@@ -828,7 +848,7 @@ test("initialize", ({override, override_rewire}) => {
 
     // Exercise the mousemove handler, which just
     // sets a flag.
-    $("html").get_on_handler("mousemove")();
+    $(document).get_on_handler("mousemove")();
 
     clear();
 });

@@ -2,6 +2,7 @@
 
 const assert = require("node:assert/strict");
 
+const {make_realm} = require("./lib/example_realm.cjs");
 const {$t} = require("./lib/i18n.cjs");
 const {mock_cjs, mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
@@ -36,7 +37,7 @@ const {set_realm} = zrequire("state_data");
 const {initialize_user_settings} = zrequire("user_settings");
 
 const REALM_EMPTY_TOPIC_DISPLAY_NAME = "general chat";
-const realm = {realm_empty_topic_display_name: REALM_EMPTY_TOPIC_DISPLAY_NAME};
+const realm = make_realm({realm_empty_topic_display_name: REALM_EMPTY_TOPIC_DISPLAY_NAME});
 set_realm(realm);
 const user_settings = {};
 initialize_user_settings({user_settings});
@@ -150,6 +151,7 @@ const get_content_element = () => {
     $content.set_find_results("div.spoiler-header", $array([]));
     $content.set_find_results("div.codehilite", $array([]));
     $content.set_find_results(".message_inline_video video", $array([]));
+    $content.set_find_results("audio", $array([]));
 
     set_message_for_message_content($content, undefined);
 
@@ -535,6 +537,39 @@ run_test("timestamp without time", () => {
 
     rm.update_elements($content);
     assert.equal($timestamp.text(), "never-been-set");
+});
+
+run_test("audio", ({mock_template}) => {
+    const audio_src = "http://zulip.zulipdev.com/user_uploads/w/ha/tever/inline.mp3";
+    const audio_title = "inline.mp3";
+
+    const $content = get_content_element();
+    const $audio = $.create("audio");
+    $audio.replaceWith = noop;
+    $audio.attr("src", audio_src);
+    $audio.attr("title", audio_title);
+
+    $content.set_find_results("audio", $array([$audio]));
+
+    let audio_html;
+    mock_template("markdown_audio.hbs", true, (data, html) => {
+        assert.deepEqual(data, {audio_src, audio_title});
+        audio_html = html;
+        return html;
+    });
+
+    rm.update_elements($content);
+
+    assert.equal(
+        audio_html,
+        '<span class="media-audio-wrapper">\n' +
+            '    <audio controls="" preload="metadata" src="http://zulip.zulipdev.com/user_uploads/w/ha/tever/inline.mp3" title="inline.mp3" class="media-audio-element"></audio>\n' +
+            '    <a class="media-audio-download icon-button icon-button-square icon-button-neutral"\n' +
+            '      aria-label="Download" href="http://zulip.zulipdev.com/user_uploads/w/ha/tever/inline.mp3" download>\n' +
+            '        <i class="media-download-icon zulip-icon zulip-icon-download"></i>\n' +
+            "    </a>\n" +
+            "</span>",
+    );
 });
 
 run_test("timestamp", ({mock_template}) => {

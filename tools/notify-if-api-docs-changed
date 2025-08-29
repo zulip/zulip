@@ -1,0 +1,55 @@
+#!/usr/bin/env python3
+import os
+import re
+import sys
+from pathlib import Path
+
+TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
+os.chdir(os.path.dirname(TOOLS_DIR))
+sys.path.insert(0, os.path.dirname(TOOLS_DIR))
+
+from zerver.openapi.merge_api_changelogs import get_feature_level
+
+
+def get_build_url_from_environment() -> str:
+    server = os.environ["GITHUB_SERVER_URL"]
+    repo = os.environ["GITHUB_REPOSITORY"]
+    run_id = os.environ["GITHUB_RUN_ID"]
+    return f"{server}/{repo}/actions/runs/{run_id}"
+
+
+def get_changed_api_endpoints() -> list[str]:
+    changelog_path = Path("api_docs/changelog.md")
+    feature_level_pattern = re.compile(r"\*\*Feature level \d+\*\*")
+    link_pattern = re.compile(r"(\[[^\]]+\]\([^)]+\))")
+
+    current_feature_level_found = False
+    endpoints = []
+
+    with open(changelog_path) as file:
+        for line in file:
+            if re.fullmatch(feature_level_pattern, line.strip()):
+                if current_feature_level_found:
+                    break
+                current_feature_level_found = True
+                continue
+
+            if current_feature_level_found and line.strip().startswith("*"):
+                endpoints.extend(link_pattern.findall(line.split(":", 1)[0]))
+
+    return endpoints
+
+
+if __name__ == "__main__":
+    branch = os.environ.get("GITHUB_REF", "unknown branch").split("/")[-1]
+    topic = f"{branch} failing"
+    build_url = get_build_url_from_environment()
+    github_actor = os.environ.get("GITHUB_ACTOR", "unknown user")
+
+    feature_level = get_feature_level(update_feature_level=False)
+    endpoints = get_changed_api_endpoints()
+    topic = f"new feature level: {feature_level}"
+    endpoints_string = ", ".join(endpoints)
+
+    content = f"[Build]({build_url}) triggered by {github_actor} on branch `{branch}` has updated the API documentation for the following endpoints: {endpoints_string}."
+    print(f"topic={topic}\ncontent={content}")

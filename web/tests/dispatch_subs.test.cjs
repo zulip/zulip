@@ -3,6 +3,7 @@
 const assert = require("node:assert/strict");
 
 const events = require("./lib/events.cjs");
+const {make_realm} = require("./lib/example_realm.cjs");
 const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {make_stub} = require("./lib/stub.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
@@ -29,7 +30,7 @@ const {set_realm} = zrequire("state_data");
 const stream_data = zrequire("stream_data");
 const sub_store = zrequire("sub_store");
 
-const realm = {};
+const realm = make_realm();
 set_realm(realm);
 
 people.add_active_user(test_user);

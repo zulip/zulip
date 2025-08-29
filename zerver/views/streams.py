@@ -738,7 +738,6 @@ def create_channel(
     is_default_stream: Json[bool] = False,
     message_retention_days: Json[str] | Json[int] = RETENTION_DEFAULT,
     name: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1)],
-    send_new_subscription_messages: Json[bool] = True,
     subscribers: Json[list[int]],
     topics_policy: Json[TopicsPolicy] = None,
 ) -> HttpResponse:
@@ -825,18 +824,16 @@ def create_channel(
         new_subscribers,
         acting_user=user_profile,
     )
-    if (
-        send_new_subscription_messages
-        and len(new_subscribers) <= settings.MAX_BULK_NEW_SUBSCRIPTION_MESSAGES
-    ):
-        send_messages_for_new_subscribers(
-            user_profile=user_profile,
-            subscribers=new_subscribers,
-            new_subscriptions={str(user.id): [name] for user in new_subscribers},
-            id_to_user_profile={str(user.id): user for user in new_subscribers},
-            created_streams=[new_channel],
-            announce=announce,
-        )
+    # We never send DM notifications about newly created channels, so we only
+    # need to send the data for the new channel notification messages.
+    send_user_subscribed_and_new_channel_notifications(
+        user_profile=user_profile,
+        subscribers=set(),
+        new_subscriptions={},
+        id_to_user_profile={},
+        created_streams=[new_channel],
+        announce=announce,
+    )
 
     return json_success(
         request,
@@ -1016,18 +1013,21 @@ def add_subscriptions_backend(
     result["already_subscribed"] = dict(result["already_subscribed"])
 
     if send_new_subscription_messages:
-        if len(result["subscribed"]) <= settings.MAX_BULK_NEW_SUBSCRIPTION_MESSAGES:
-            send_messages_for_new_subscribers(
-                user_profile=user_profile,
-                subscribers=subscribers,
-                new_subscriptions=result["subscribed"],
-                id_to_user_profile=id_to_user_profile,
-                created_streams=created_streams,
-                announce=announce,
-            )
-            result["new_subscription_messages_sent"] = True
-        else:
-            result["new_subscription_messages_sent"] = False
+        send_user_subscribed_direct_messages = (
+            len(result["subscribed"]) <= settings.MAX_BULK_NEW_SUBSCRIPTION_MESSAGES
+        )
+        result["new_subscription_messages_sent"] = send_user_subscribed_direct_messages
+    else:
+        send_user_subscribed_direct_messages = False
+    send_user_subscribed_and_new_channel_notifications(
+        user_profile=user_profile,
+        subscribers=subscribers,
+        new_subscriptions=result["subscribed"],
+        id_to_user_profile=id_to_user_profile,
+        created_streams=created_streams,
+        announce=announce,
+        send_user_subscribed_direct_messages=send_user_subscribed_direct_messages,
+    )
 
     result["subscribed"] = dict(result["subscribed"])
     result["already_subscribed"] = dict(result["already_subscribed"])
@@ -1036,33 +1036,32 @@ def add_subscriptions_backend(
     return json_success(request, data=result)
 
 
-def send_messages_for_new_subscribers(
+def send_user_subscribed_and_new_channel_notifications(
     user_profile: UserProfile,
     subscribers: set[UserProfile],
     new_subscriptions: dict[str, list[str]],
     id_to_user_profile: dict[str, UserProfile],
     created_streams: list[Stream],
     announce: bool,
+    send_user_subscribed_direct_messages: bool = True,
 ) -> None:
     """
-    If you are subscribing lots of new users to new streams,
-    this function can be pretty expensive in terms of generating
-    lots of queries and sending lots of messages.  We isolate
+    If a user is subscribing lots of other users to existing channels,
+    then this function can be pretty expensive in terms of generating
+    lots of queries and sending lots of direct messages. We isolate
     the code partly to make it easier to test things like
     excessive query counts by mocking this function so that it
     doesn't drown out query counts from other code.
     """
-    bots = {str(subscriber.id): subscriber.is_bot for subscriber in subscribers}
-
-    newly_created_stream_names = {s.name for s in created_streams}
-
-    realm = user_profile.realm
-    mention_backend = MentionBackend(realm.id)
-
-    # Inform the user if someone else subscribed them to stuff,
-    # or if a new stream was created with the "announce" option.
     notifications = []
-    if new_subscriptions:
+    # Inform users if someone else subscribed them to an existing channel.
+    if new_subscriptions and send_user_subscribed_direct_messages:
+        bots = {str(subscriber.id): subscriber.is_bot for subscriber in subscribers}
+
+        newly_created_stream_names = {s.name for s in created_streams}
+
+        realm = user_profile.realm
+        mention_backend = MentionBackend(realm.id)
         for id, subscribed_stream_names in new_subscriptions.items():
             if id == str(user_profile.id):
                 # Don't send a notification DM if you subscribed yourself.
@@ -1071,8 +1070,8 @@ def send_messages_for_new_subscribers(
                 # Don't send notification DMs to bots.
                 continue
 
-            # For each user, we notify them about newly subscribed streams, except for
-            # streams that were newly created.
+            # For each user, we notify them about newly subscribed channels, except for
+            # channels that were newly created.
             notify_stream_names = set(subscribed_stream_names) - newly_created_stream_names
 
             if not notify_stream_names:
@@ -1097,6 +1096,7 @@ def send_messages_for_new_subscribers(
                 )
             )
 
+    # Send notification if a new channel was created with the "announce" option.
     if announce and len(created_streams) > 0:
         new_stream_announcements_stream = user_profile.realm.new_stream_announcements_stream
         if new_stream_announcements_stream is not None:
@@ -1132,6 +1132,7 @@ def send_messages_for_new_subscribers(
                 ),
             )
 
+    # Send an initial "channel created" notification to newly created channel events topic.
     if not user_profile.realm.is_zephyr_mirror_realm and len(created_streams) > 0:
         sender = get_system_bot(settings.NOTIFICATION_BOT, user_profile.realm_id)
         for stream in created_streams:
@@ -1323,10 +1324,8 @@ def delete_in_topic(
         if time.monotonic() >= start_time + 50:
             return json_success(request, data={"complete": False})
         with transaction.atomic(durable=True):
-            messages_to_delete = (
-                messages.select_related("recipient")
-                .order_by("-id")[0:batch_size]
-                .select_for_update(of=("self",))
+            messages_to_delete = messages.order_by("-id")[0:batch_size].select_for_update(
+                of=("self",)
             )
             if not messages_to_delete:
                 break

@@ -463,3 +463,20 @@ class RemindersTest(ZulipTestCase):
                 f"Maximum reminder note length: {len(note) - 1} characters",
                 status_code=400,
             )
+
+        # Test with note containing formatting characters
+        note = "{123}"
+        content = "{456}"
+        message_id = self.send_stream_message(
+            self.example_user("hamlet"), "Verona", content, topic_name="{789}"
+        )
+        result = self.do_schedule_reminder(message_id, scheduled_delivery_timestamp, note)
+        self.assert_json_success(result)
+        scheduled_message = self.last_scheduled_reminder()
+        self.assertEqual(
+            scheduled_message.content,
+            "You requested a reminder for #**Verona>{789}@"
+            + str(message_id)
+            + "**. Note:\n > {123}\n\n"
+            f"@_**King Hamlet|10** [said](http://zulip.testserver/#narrow/channel/3-Verona/topic/.7B789.7D/near/{message_id}):\n```quote\n{content}\n```",
+        )
