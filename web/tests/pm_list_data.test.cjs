@@ -424,3 +424,36 @@ test("get_list_info_no_unread_messages", ({override}) => {
         "Alice",
     ]);
 });
+
+test("get_list_info_deactivated_users", ({override}) => {
+    override(unread, "num_unread_for_user_ids_string", () => 0);
+
+    pm_conversations.recent.insert([alice.user_id], 1);
+    pm_conversations.recent.insert([me.user_id], 2);
+    pm_conversations.recent.insert([bob.user_id], 3);
+    pm_conversations.recent.insert([zoe.user_id], 4);
+    pm_conversations.recent.insert([cardelio.user_id], 5);
+    pm_conversations.recent.insert([zoe.user_id, cardelio.user_id], 6);
+    pm_conversations.recent.insert([alice.user_id, bob.user_id], 7);
+    pm_conversations.recent.insert([zoe.user_id, bob.user_id], 8);
+    pm_conversations.recent.insert([alice.user_id, cardelio.user_id], 9);
+    pm_conversations.recent.insert([bob.user_id, cardelio.user_id], 10);
+
+    // Deactivate a user.
+    const bob_real = people.get_by_user_id(bob.user_id);
+    people.deactivate(bob_real);
+
+    // Visible conversations are limited to value of
+    // `max_conversations_to_show`.
+    const list_info = pm_list_data.get_list_info(false);
+    assert.deepEqual(list_info.conversations_to_be_shown.length, 6);
+    assert.deepEqual(list_info.more_conversations_unread_count, 0);
+    assert.deepEqual(
+        list_info.conversations_to_be_shown.map((conversation) => conversation.recipients),
+        ["Alice, Cardelio", "Cardelio, Zoe", "Cardelio", "Zoe", "Me Myself", "Alice"],
+    );
+    assert.ok(list_info.has_deactivated_user);
+
+    // Reactivate user to not affect other tests.
+    people.add_active_user(bob);
+});

@@ -56,8 +56,9 @@ export function _build_direct_messages_list(opts: {
     );
     const pm_list_info = pm_list_data.get_list_info(zoomed, opts.search_term);
     const more_conversations_unread_count = pm_list_info.more_conversations_unread_count;
+    const has_deactivated_user = pm_list_info.has_deactivated_user;
 
-    if (!opts.all_conversations_shown) {
+    if (!zoomed && (!opts.all_conversations_shown || has_deactivated_user)) {
         pm_list_nodes.push(
             pm_list_dom.more_private_conversations_li(more_conversations_unread_count),
         );
