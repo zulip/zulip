@@ -2546,13 +2546,11 @@ paths:
                                   description: |
                                     The ID of the user who sent the message.
 
-                                    Is `null` when event is for a rendering update of the original message,
-                                    such as for an [inline URL preview][inline-url-previews].
+                                    Will be `null` when event is for a rendering update of the original
+                                    message, such as for an [inline URL preview][inline-url-previews].
 
-                                    **Changes**: As of Zulip 5.0 (feature level 114), this field
-                                    is present for all `update_message` events. Previously, this
-                                    field was omitted for [inline URL preview][inline-url-previews]
-                                    updates.
+                                    **Changes**: Prior to Zulip 5.0 (feature level 114), this field was
+                                    omitted for [inline URL preview][inline-url-previews] updates.
                                 rendering_only:
                                   type: boolean
                                   description: |
@@ -2565,8 +2563,8 @@ paths:
                                     and does not modify the message history.
 
                                     **Changes**: New in Zulip 5.0 (feature level 114). Clients can
-                                    correctly identify these rendering update event with earlier
-                                    Zulip versions by checking whether the `user_id` field was omitted.
+                                    correctly identify these rendering update events prior to this
+                                    feature level by checking whether the `user_id` field was omitted.
                                 message_id:
                                   type: integer
                                   description: |
@@ -2630,13 +2628,11 @@ paths:
                                 edit_timestamp:
                                   type: integer
                                   description: |
-                                    The time when this message edit operation was processed by the
-                                    server.
+                                    The UNIX timestamp when this message edit operation was processed by
+                                    the server, in UTC seconds.
 
-                                    **Changes**: As of Zulip 5.0 (feature level 114), this field
-                                    is present for all `update_message` events. Previously, this
-                                    field was omitted for [inline URL preview][inline-url-previews]
-                                    updates.
+                                    **Changes**: Prior to Zulip 5.0 (feature level 114), this field
+                                    was omitted for [inline URL preview][inline-url-previews] updates.
                                 stream_name:
                                   type: string
                                   description: |
