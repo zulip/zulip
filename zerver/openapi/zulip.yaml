@@ -9175,6 +9175,18 @@ paths:
               properties:
                 content:
                   $ref: "#/components/schemas/RequiredContent"
+                default_code_block_language:
+                  description: |
+                    The language used to render markdown code blocks when
+                    none is specified.
+
+                    Passing empty string will mean that the organization's
+                    default language will be used to render code blocks.
+
+                    **Changes**: New in Zulip 12.0 (feature level ZF-991763).
+                  type: string
+                  example: python
+                  default: ""
               required:
                 - content
       responses:

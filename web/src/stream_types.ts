@@ -65,6 +65,7 @@ export const stream_schema = z.object({
     // the comments on peer_data.get_subscriber_count.
     subscriber_count: z.number(),
     topics_policy: stream_topics_policy_schema,
+    default_code_block_language: z.string(),
 });
 
 export const stream_specific_notification_settings_schema = z.object({
