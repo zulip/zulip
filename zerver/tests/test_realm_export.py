@@ -208,41 +208,6 @@ class RealmExportTest(ZulipTestCase):
         admin = self.example_user("iago")
         self.login_user(admin)
 
-        owner = self.example_user("desdemona")
-        do_change_user_setting(
-            owner,
-            "email_address_visibility",
-            UserProfile.EMAIL_ADDRESS_VISIBILITY_NOBODY,
-            acting_user=None,
-        )
-
-        result = self.client_post("/json/export/realm")
-        self.assert_json_error_contains(
-            result,
-            "Make sure at least one Organization Owner allows "
-            "other Administrators to see their email address",
-        )
-        do_change_user_setting(
-            owner,
-            "email_address_visibility",
-            UserProfile.EMAIL_ADDRESS_VISIBILITY_ADMINS,
-            acting_user=None,
-        )
-
-        do_change_user_setting(
-            owner,
-            "allow_private_data_export",
-            False,
-            acting_user=None,
-        )
-        result = self.client_post(
-            "/json/export/realm",
-            info={"export_type": RealmExport.EXPORT_FULL_WITH_CONSENT},
-        )
-        self.assert_json_error_contains(
-            result, "Make sure at least one Organization Owner is consenting"
-        )
-
         with (
             patch(
                 "zerver.lib.export.do_export_realm", side_effect=Exception("failure")
@@ -375,11 +340,67 @@ class RealmExportTest(ZulipTestCase):
             do_change_user_setting(user, "allow_private_data_export", True, acting_user=None)
 
         # Verify export consents of users.
+        aaron.role = UserProfile.ROLE_REALM_ADMINISTRATOR
+        aaron.save()
+        do_change_user_setting(
+            aaron,
+            "email_address_visibility",
+            UserProfile.EMAIL_ADDRESS_VISIBILITY_NOBODY,
+            acting_user=aaron,
+        )
         result = self.client_get("/json/export/realm/consents")
         response_dict = self.assert_json_success(result)
         export_consents = response_dict["export_consents"]
         for export_consent in export_consents:
+            if export_consent["user_id"] == aaron.id:
+                self.assertEqual(
+                    export_consent["email_address_visibility"],
+                    UserProfile.EMAIL_ADDRESS_VISIBILITY_NOBODY,
+                )
             if export_consent["user_id"] in [hamlet.id, aaron.id]:
                 self.assertTrue(export_consent["consented"])
                 continue
             self.assertFalse(export_consent["consented"])
+
+    def test_allow_export_with_inaccessible_owner_accounts(self) -> None:
+        """
+        Generating export with no usable owner accounts should be
+        allowed.
+        """
+        admin = self.example_user("iago")
+        self.login_user(admin)
+
+        # In standard export, this means no owner consented to their
+        # private data being shared.
+        UserProfile.objects.filter(
+            role=UserProfile.ROLE_REALM_OWNER,
+            realm=admin.realm,
+        ).update(
+            allow_private_data_export=False,
+        )
+        result = self.client_post(
+            "/json/export/realm",
+            {
+                "export_type": RealmExport.EXPORT_FULL_WITH_CONSENT,
+            },
+        )
+        self.assert_json_success(result)
+
+        # In public export, this means no owner consented to their
+        # private data being shared and their email address visibility
+        # policty is also set to nobody.
+        UserProfile.objects.filter(
+            role=UserProfile.ROLE_REALM_OWNER,
+            realm=admin.realm,
+        ).update(
+            allow_private_data_export=False,
+            email_address_visibility=UserProfile.EMAIL_ADDRESS_VISIBILITY_NOBODY,
+        )
+
+        result = self.client_post(
+            "/json/export/realm",
+            {
+                "export_type": RealmExport.EXPORT_PUBLIC,
+            },
+        )
+        self.assert_json_success(result)
