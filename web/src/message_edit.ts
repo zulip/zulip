@@ -53,6 +53,7 @@ import * as resize from "./resize.ts";
 import * as resolved_topic from "./resolved_topic.ts";
 import * as rows from "./rows.ts";
 import * as saved_snippets_ui from "./saved_snippets_ui.ts";
+import * as settings_components from "./settings_components.ts";
 import {current_user, realm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import * as stream_topic_history from "./stream_topic_history.ts";
@@ -1837,11 +1838,15 @@ export function render_preview_area($row: JQuery): void {
     const content = $msg_edit_content.val();
     assert(content !== undefined);
     const $preview_message_area = $row.find(".preview_message_area");
+    const message = message_lists.current?.get(rows.id($row));
+    const sub =
+        message?.type === "stream" ? stream_data.get_sub_by_id(message.stream_id) : undefined;
     compose_ui.render_and_show_preview(
         $row,
         $row.find(".markdown_preview_spinner"),
         $row.find(".preview_content"),
         content,
+        settings_components.get_default_code_block_language(sub),
     );
     const edit_height = $msg_edit_content.height();
     $preview_message_area.css({"min-height": edit_height + "px"});

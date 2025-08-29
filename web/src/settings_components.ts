@@ -2138,3 +2138,13 @@ export function rewire_resize_textareas_in_subsection(
 ): void {
     resize_textareas_in_subsection = value;
 }
+
+export function get_default_code_block_language(sub: StreamSubscription | undefined): string {
+    // An empty channel-level value means the channel inherits the realm
+    // default, so fall back to it. Direct messages have no channel and
+    // always use the realm default.
+    if (sub === undefined) {
+        return realm.realm_default_code_block_language;
+    }
+    return sub.default_code_block_language || realm.realm_default_code_block_language;
+}

@@ -3809,6 +3809,54 @@ class MarkdownApiTests(ZulipTestCase):
             f'<p>This mentions <a class="stream" data-stream-id="{stream_id}" href="/#narrow/channel/{stream_id}-Denmark">#Denmark</a> and <span class="user-mention" data-user-id="{user_id}">@King Hamlet</span>.</p>',
         )
 
+    def test_render_message_api_default_code_block_language(self) -> None:
+        user = self.example_user("othello")
+        realm = user.realm
+        self.assertEqual(realm.default_code_block_language, "")
+
+        unlabeled_code_block = "```\nprint('hello')\n```"
+
+        # Passing default_code_block_language renders the unlabeled block using
+        # that language, regardless of the realm-level default.
+        result = self.api_post(
+            user,
+            "/api/v1/messages/render",
+            dict(content=unlabeled_code_block, default_code_block_language="javascript"),
+        )
+        response_dict = self.assert_json_success(result)
+        self.assertIn('data-code-language="JavaScript"', response_dict["rendered"])
+
+        # Passing an empty string means "no default language".
+        result = self.api_post(
+            user,
+            "/api/v1/messages/render",
+            dict(content=unlabeled_code_block, default_code_block_language=""),
+        )
+        response_dict = self.assert_json_success(result)
+        self.assertNotIn("data-code-language", response_dict["rendered"])
+
+        # When the parameter is omitted, the realm-level default is used.
+        do_set_realm_property(realm, "default_code_block_language", "python", acting_user=None)
+        result = self.api_post(
+            user,
+            "/api/v1/messages/render",
+            dict(content=unlabeled_code_block),
+        )
+        response_dict = self.assert_json_success(result)
+        self.assertIn('data-code-language="Python"', response_dict["rendered"])
+
+        # Labeled code block uses the language mentioned irrespective of
+        # what is passed in the default_code_block_language parameter.
+        unlabeled_code_block = "```rust\nprint('hello')\n```"
+
+        result = self.api_post(
+            user,
+            "/api/v1/messages/render",
+            dict(content=unlabeled_code_block, default_code_block_language="javascript"),
+        )
+        response_dict = self.assert_json_success(result)
+        self.assertIn('data-code-language="Rust"', response_dict["rendered"])
+
 
 class MarkdownErrorTests(ZulipTestCase):
     def test_markdown_error_handling(self) -> None:
@@ -3886,7 +3934,7 @@ class MarkdownErrorTests(ZulipTestCase):
             markdown_text = "```python\nprint('pygments fallback test')\n```"
             rendered_html = markdown_convert(
                 markdown_text,
-                self.example_user("hamlet"),
+                acting_user=self.example_user("hamlet"),
             ).rendered_content
 
         self.assertIn("<pre", rendered_html)
