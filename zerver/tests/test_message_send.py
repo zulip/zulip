@@ -31,6 +31,7 @@ from zerver.actions.realm_settings import (
     do_set_realm_property,
 )
 from zerver.actions.streams import (
+    do_change_default_code_block_language,
     do_change_stream_group_based_setting,
     do_change_stream_permission,
     do_deactivate_stream,
@@ -3646,3 +3647,33 @@ class CheckMessageTest(ZulipTestCase):
             "Only the general chat topic is allowed in this channel.",
         ):
             check_message(sender, client, addressee_named_topic, message_content, realm)
+
+    def test_default_code_block_language_on_sending_message(self) -> None:
+        realm = get_realm("zulip")
+        do_set_realm_property(realm, "default_code_block_language", "javascript", acting_user=None)
+        iago = self.example_user("iago")
+        stream = get_stream("Denmark", realm)
+
+        do_change_default_code_block_language(stream, "python", acting_user=iago)
+
+        message_content = "```\nprint('Hello, world!')\n```"
+
+        # Stream level value should take precedence over the realm level value.
+        msg_id = self.send_stream_message(iago, stream.name, message_content)
+        msg = Message.objects.get(id=msg_id)
+        assert msg.rendered_content is not None
+        self.assertIn('data-code-language="Python"', msg.rendered_content)
+
+        # If the default code block language for stream is empty string,
+        # message should be rendered using realm's default code block language.
+        do_change_default_code_block_language(stream, "", acting_user=iago)
+        msg_id = self.send_stream_message(iago, stream.name, message_content)
+        msg = Message.objects.get(id=msg_id)
+        assert msg.rendered_content is not None
+        self.assertIn('data-code-language="JavaScript"', msg.rendered_content)
+
+        # DMs should use the realm level value.
+        msg_id = self.send_personal_message(iago, self.example_user("hamlet"), message_content)
+        msg = Message.objects.get(id=msg_id)
+        assert msg.rendered_content is not None
+        self.assertIn('data-code-language="JavaScript"', msg.rendered_content)

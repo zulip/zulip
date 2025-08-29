@@ -13,7 +13,11 @@ from zerver.actions.realm_settings import (
     do_change_realm_plan_type,
     do_set_realm_property,
 )
-from zerver.actions.streams import do_change_stream_group_based_setting, do_deactivate_stream
+from zerver.actions.streams import (
+    do_change_default_code_block_language,
+    do_change_stream_group_based_setting,
+    do_deactivate_stream,
+)
 from zerver.actions.user_groups import add_subgroups_to_user_group, check_add_user_group
 from zerver.actions.user_settings import do_change_user_setting
 from zerver.actions.user_topics import do_set_user_topic_visibility_policy
@@ -2783,3 +2787,71 @@ class EditMessageTest(ZulipTestCase):
             ),
             {hamlet.id},
         )
+
+    def test_default_code_block_language_on_editing_message(self) -> None:
+        realm = get_realm("zulip")
+        iago = self.example_user("iago")
+        denmark = get_stream("Denmark", realm)
+        verona = get_stream("Verona", realm)
+
+        do_set_realm_property(realm, "default_code_block_language", "javascript", acting_user=iago)
+        do_change_default_code_block_language(denmark, "python", acting_user=iago)
+        do_change_default_code_block_language(verona, "rust", acting_user=iago)
+        self.login_user(iago)
+
+        message_content = "```\nprint('Hello, world!')\n```"
+
+        # Stream level value should take precedence over the realm level value.
+        msg_id = self.send_stream_message(iago, "Denmark", content=message_content)
+        msg = Message.objects.get(id=msg_id)
+        assert msg.rendered_content is not None
+        self.assertIn('data-code-language="Python"', msg.rendered_content)
+
+        # When editing the message content, the stream level value should still be used.
+        edit_result = self.client_patch(
+            "/json/messages/" + str(msg.id),
+            {
+                "content": "```\nprint('Hello, Zulip!')\n```",
+            },
+        )
+        self.assert_json_success(edit_result)
+        msg.refresh_from_db()
+        self.assertIn('data-code-language="Python"', msg.rendered_content)
+
+        # If the default code block language for stream is changed to empty string,
+        # after editing the content message should be rendered using realm's default
+        # code block language.
+        do_change_default_code_block_language(denmark, "", acting_user=iago)
+        edit_result = self.client_patch(
+            "/json/messages/" + str(msg.id),
+            {
+                "content": "```\nprint('Hello, Zulip!')\n```",
+            },
+        )
+        self.assert_json_success(edit_result)
+        msg.refresh_from_db()
+        self.assertIn('data-code-language="JavaScript"', msg.rendered_content)
+
+        # When the message is moved to another stream, the language used to render
+        # the code blocks should not change.
+        edit_result = self.client_patch(
+            "/json/messages/" + str(msg.id),
+            {
+                "stream_id": verona.id,
+            },
+        )
+        self.assert_json_success(edit_result)
+        msg.refresh_from_db()
+        self.assertIn('data-code-language="JavaScript"', msg.rendered_content)
+
+        # Lnaguage used to render the code blocks should change if the
+        # message content is edited after the move.
+        edit_result = self.client_patch(
+            "/json/messages/" + str(msg.id),
+            {
+                "content": "```\nprint('Hello, Verona!')\n```",
+            },
+        )
+        self.assert_json_success(edit_result)
+        msg.refresh_from_db()
+        self.assertIn('data-code-language="Rust"', msg.rendered_content)
