@@ -1611,6 +1611,7 @@ async function poll_thumbnail_status(
     $preview_spinner: JQuery,
     $preview_content_box: JQuery,
     content: string,
+    default_code_block_language: string,
     attempt = 1,
 ): Promise<void> {
     if (attempt > MAX_THUMBNAIL_RETRIES) {
@@ -1649,6 +1650,7 @@ async function poll_thumbnail_status(
                 $preview_spinner,
                 $preview_content_box,
                 content,
+                default_code_block_language,
                 false,
             );
             return;
@@ -1662,6 +1664,7 @@ async function poll_thumbnail_status(
                     $preview_spinner,
                     $preview_content_box,
                     content,
+                    default_code_block_language,
                     attempt + 1,
                 );
             }, retry_delay_secs * 1000);
@@ -1718,6 +1721,7 @@ export function render_and_show_preview(
     $preview_spinner: JQuery,
     $preview_content_box: JQuery,
     content: string,
+    default_code_block_language: string,
     show_spinner = true,
 ): void {
     if (prevent_next_spinner) {
@@ -1755,6 +1759,7 @@ export function render_and_show_preview(
                 $preview_spinner,
                 $preview_content_box,
                 content,
+                default_code_block_language,
             );
         }
     }
@@ -1777,9 +1782,13 @@ export function render_and_show_preview(
             const rendered_content = markdown.render(content).content;
             show_preview(rendered_content);
         }
+        const data: Record<string, string> = {
+            content,
+            default_code_block_language,
+        };
         void channel.post({
             url: "/json/messages/render",
-            data: {content},
+            data,
             success(response_data) {
                 if (
                     preview_render_count !== compose_state.get_preview_render_count() ||
