@@ -1,6 +1,7 @@
 import logging
 import time
 from abc import ABC, abstractmethod
+from ipaddress import IPv6Network
 from typing import Optional, cast
 
 import orjson
@@ -138,8 +139,11 @@ class RateLimitedUser(RateLimitedObject):
 
 
 class RateLimitedIPAddr(RateLimitedObject):
-    def __init__(self, ip_addr: str, domain: str = "api_by_ip") -> None:
+    def __init__(
+        self, ip_addr: str, domain: str = "api_by_ip", ipv6_network_prefix: int = 64
+    ) -> None:
         self.ip_addr = ip_addr
+        self.ipv6_network_prefix = ipv6_network_prefix
         self.domain = domain
         if settings.RUNNING_INSIDE_TORNADO and domain in settings.RATE_LIMITING_DOMAINS_FOR_TORNADO:
             backend: type[RateLimiterBackend] | None = TornadoInMemoryRateLimiterBackend
@@ -149,8 +153,15 @@ class RateLimitedIPAddr(RateLimitedObject):
 
     @override
     def key(self) -> str:
-        # The angle brackets are important since IPv6 addresses contain :.
-        return f"{type(self).__name__}:<{self.ip_addr}>:{self.domain}"
+        # If it's an IPv6, we use the network portion identified by ipv6_network_prefix
+        # as the bucket key.
+        if ":" in self.ip_addr:
+            ip_addr_key = get_ipv6_network_portion(self.ip_addr, prefix=self.ipv6_network_prefix)
+        else:
+            ip_addr_key = self.ip_addr
+
+        # The angle brackets are important since an IPv6 address contains :
+        return f"{type(self).__name__}:<{ip_addr_key}>:{self.domain}"
 
     @override
     def rules(self) -> list[tuple[int, int]]:
@@ -621,6 +632,33 @@ def rate_limit_endpoint_absolute(endpoint_name: str) -> None:
     ratelimited, secs_to_freedom = RateLimitedEndpoint(endpoint_name).rate_limit()
     if ratelimited:
         raise RateLimitedError(secs_to_freedom)
+
+
+def get_ipv6_network_portion(ipv6: str, prefix: int) -> str:
+    """Returns the standard hex representation of the NETWORK portion
+    of that ipv6 address, omitting leading zeros and substituting
+    consecutive zero-groups with double colons.
+    This essentially tells us which bucket should this ipv6 belong to.
+
+    Examples:
+
+    For a given ipv6 = 2001:0db8:ce1:12::8a2e:0370
+
+    >>> get_network_prefix(ipv6, 64)
+    '2001:db8:ce1:12::/64'
+
+    >>> get_network_prefix(ipv6, 48)
+    '2001:db8:ce1::/48'
+
+    >>> get_network_prefix(ipv6, 32)
+    '2001:db8::/32'
+
+    Note if ipv6 has an early ::
+    >>> get_network_prefix('2001:0db8::ce1:12:8a2e:0370', 64)
+    '2001:db8::/64'
+    """
+
+    return str(IPv6Network(ipv6).supernet(new_prefix=prefix))
 
 
 def should_rate_limit(request: HttpRequest) -> bool:
