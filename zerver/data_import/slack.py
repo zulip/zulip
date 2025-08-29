@@ -912,18 +912,48 @@ def get_messages_iterator(
         yield from sorted(messages_for_one_day, key=get_timestamp_from_message)
 
 
+# This is cached globally so that thread parent lookup works across multiple calls to
+#  channel_message_to_zerver_message, and across multiple message JSON files (e.g.
+#  for responses posted on a date after the thread root was created).
+# For _very_ large Slack imports (with millions of threads), this might cause RAM
+#  issues.
+thread_parent_map: dict[str, str] = {}
+
+
 def get_parent_user_id_from_thread_message(thread_message: ZerverFieldsT, subtype: str) -> str:
     """
     This retrieves the user id of the sender of the original thread
     message.
     """
-    if subtype == "thread_broadcast":
-        return thread_message["root"]["user"]
-    elif thread_message["thread_ts"] == thread_message["ts"]:
-        # This is the original thread message
-        return thread_message["user"]
-    else:
-        return thread_message["parent_user_id"]
+
+    # Some messages posted by bots don't have a user key, but only a bot_id (particularly in
+    #  exports created before 2025, or where the bot wasn't spoofing a user). For those, use
+    #  bot_id as fallback when the user field doesn't exist.
+    # We already treat the bot_id as a pseudo-user - see get_message_sending_user,
+    #  is_integration_bot_message, & convert_bot_info_to_slack_user.
+    try:
+        if subtype == "thread_broadcast":
+            try:
+                return thread_message["root"]["user"]
+            except KeyError:
+                return thread_message["root"]["bot_id"]
+        elif thread_message["thread_ts"] == thread_message["ts"]:
+            # This is the original thread message
+            try:
+                ret = thread_message["user"]
+            except KeyError:
+                ret = thread_message["bot_id"]
+            # Cache the thread parent's user/bot ID for later use
+            thread_parent_map[thread_message["thread_ts"]] = ret
+            return ret
+        else:
+            try:
+                return thread_message["parent_user_id"]
+            except KeyError:
+                return thread_message["bot_id"]
+    except KeyError:
+        # If there's no Slack-memoized parent user/bot ID in this message, use the cached one.
+        return thread_parent_map[thread_message["thread_ts"]]
 
 
 def get_zulip_thread_topic_name(
