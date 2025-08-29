@@ -64,8 +64,8 @@ export function send_message(request, on_success, error) {
                     return;
                 }
 
-                const response = channel.xhr_error_message("Error sending message", xhr);
-                error(response, xhr.responseJSON?.code);
+                const error_message = channel.xhr_error_message("Error sending message", xhr);
+                error(error_message, xhr.responseJSON?.code, xhr.responseJSON);
             },
         });
     });
