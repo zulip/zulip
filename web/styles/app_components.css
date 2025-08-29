@@ -1468,3 +1468,12 @@ input.invalid-input {
         }
     }
 }
+
+/* User group empty state centering */
+.left .no-groups-to-show .empty-state-message {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    padding: 20px;
+}

@@ -3,10 +3,14 @@
         {{empty_user_group_list_message}}
         {{#if all_groups_tab}}
             {{#if can_create_user_groups}}
-                <a href="#groups/new">{{t "Create a user group"}}</a>
+                {{> ../components/action_button label=(t "Create a user group") custom_classes="create_user_group_button"
+                  attention="quiet" intent="brand"
+                  }}
             {{/if}}
         {{else}}
-            <a href="#groups/all">{{t "View all user groups"}}</a>
+            {{> ../components/action_button label=(t "View all user groups") custom_classes="view_all_groups_button"
+              attention="quiet" intent="neutral"
+              }}
         {{/if}}
     </span>
 </div>

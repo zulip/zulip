@@ -132,6 +132,7 @@ export function get_edit_container(group: UserGroup): JQuery {
 export function update_group_creation_ui(): void {
     const $left_panel_icon_button = $("#add_new_user_group .create_user_group_button");
     const $right_panel_permission_text = $("#groups_overlay .right .creation-permission-text");
+    const $inline_create_buttons = $(".no-groups-to-show .create_user_group_button");
     if (settings_data.user_can_create_user_groups()) {
         $left_panel_icon_button.show();
         $right_panel_permission_text.hide();
@@ -139,12 +140,11 @@ export function update_group_creation_ui(): void {
         $left_panel_icon_button.hide();
         $right_panel_permission_text.show();
     }
-
+    const is_disabled =
+        !realm.zulip_plan_is_not_limited || !settings_data.user_can_create_user_groups();
     $left_panel_icon_button.prop("disabled", !realm.zulip_plan_is_not_limited);
-    $("#groups_overlay .right .create_user_group_button").prop(
-        "disabled",
-        !realm.zulip_plan_is_not_limited || !settings_data.user_can_create_user_groups(),
-    );
+    $("#groups_overlay .right .create_user_group_button").prop("disabled", is_disabled);
+    $inline_create_buttons.prop("disabled", is_disabled);
 }
 
 function update_add_members_elements(group: UserGroup): void {
@@ -1727,6 +1727,10 @@ export function update_empty_left_panel_message(): void {
         can_create_user_groups:
             settings_data.user_can_create_user_groups() && realm.zulip_plan_is_not_limited,
         all_groups_tab: !is_your_groups_tab_active,
+        show_inline_create_button:
+            is_your_groups_tab_active &&
+            settings_data.user_can_create_user_groups() &&
+            realm.zulip_plan_is_not_limited,
     };
 
     $(".no-groups-to-show").html(render_user_group_settings_empty_notice(args)).show();
@@ -2012,6 +2016,11 @@ export function initialize(): void {
             });
         },
     );
+
+    $("#groups_overlay_container").on("click", ".view_all_groups_button", (e) => {
+        e.preventDefault();
+        group_list_toggler.goto("all-groups");
+    });
 
     $("#groups_overlay_container").on(
         "click",
