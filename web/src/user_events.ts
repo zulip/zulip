@@ -218,7 +218,9 @@ export const update_person = function update(event: UserUpdate): void {
             stream_events.raise_blueslip_error_if_deactivated_user_shows_up_as_subscribed(
                 event.user_id,
             );
-            user_group_edit.remove_deactivated_user_from_all_groups(event.user_id);
+            user_group_edit.raise_blueslip_error_if_deactivated_user_shows_up_as_group_member(
+                event.user_id,
+            );
             settings_users.update_view_on_deactivate(event.user_id, is_bot_user);
         }
         buddy_list.insert_or_move([event.user_id]);

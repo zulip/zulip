@@ -1753,17 +1753,17 @@ const throttled_update_empty_left_panel_message = _.throttle(() => {
     update_empty_left_panel_message();
 }, 100);
 
-export function remove_deactivated_user_from_all_groups(user_id: number): void {
+export function raise_blueslip_error_if_deactivated_user_shows_up_as_group_member(
+    user_id: number,
+): void {
     const all_user_groups = user_groups.get_realm_user_groups(true);
 
     for (const user_group of all_user_groups) {
+        /* istanbul ignore next */
         if (user_groups.is_direct_member_of(user_id, user_group.id)) {
-            user_groups.remove_members(user_group.id, [user_id]);
-        }
-
-        // update members list if currently rendered.
-        if (overlays.groups_open() && is_editing_group(user_group.id)) {
-            user_group_edit_members.update_member_list_widget(user_group);
+            blueslip.error(
+                "The user should have been removed by the `peer_remove` event before reaching this code path. Something went wrong.",
+            );
         }
     }
 }
