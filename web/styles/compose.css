@@ -1241,9 +1241,10 @@ textarea.new_message_textarea {
    the mouse, once the compose box is open. Any keyboard
    interactions (e.g., Shift-Tabbing from the compose textarea
    to the topic box) show instant changes, so we don't need to
-   accommodate them here. */
-#compose.compose-box-open:hover {
-    .low-attention-recipient-row {
+   accommodate them here, which we prevent by applying the
+   transitions only when focus isn't within the recipient row. */
+#compose.compose-box-open {
+    .low-attention-recipient-row:hover:not(:focus-within) {
         #compose_select_recipient_widget,
         #compose_recipient_box,
         #compose-direct-recipient .pill-container {
