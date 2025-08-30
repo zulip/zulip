@@ -3,7 +3,6 @@ from unittest import mock
 
 import orjson
 from django.db import connection
-from django.test import override_settings
 from typing_extensions import override
 
 from zerver.actions.message_flags import do_update_message_flags
@@ -1203,7 +1202,6 @@ class GetUnreadMsgsTest(ZulipTestCase):
             dict(other_user_id=cordelia.id),
         )
 
-    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
     def test_raw_unread_personal_using_direct_message_group(self) -> None:
         cordelia = self.example_user("cordelia")
         othello = self.example_user("othello")
@@ -1329,7 +1327,6 @@ class GetUnreadMsgsTest(ZulipTestCase):
             dict(other_user_id=hamlet.id),
         )
 
-    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
     def test_raw_unread_personal_from_self_using_direct_message_group(self) -> None:
         hamlet = self.example_user("hamlet")
 
