@@ -44,7 +44,7 @@ class TeamCityHookTests(WebhookTestCase):
         msg = self.get_last_message()
 
         self.assertEqual(msg.content, expected_message)
-        self.assertEqual(msg.recipient.type, Recipient.PERSONAL)
+        self.assertEqual(msg.recipient.type, Recipient.DIRECT_MESSAGE_GROUP)
 
     def test_non_generic_payload_ignore_pm_notification(self) -> None:
         expected_message = MISCONFIGURED_PAYLOAD_TYPE_ERROR_MESSAGE.format(
@@ -58,4 +58,4 @@ class TeamCityHookTests(WebhookTestCase):
         msg = self.get_last_message()
 
         self.assertEqual(msg.content, expected_message)
-        self.assertEqual(msg.recipient.type, Recipient.PERSONAL)
+        self.assertEqual(msg.recipient.type, Recipient.DIRECT_MESSAGE_GROUP)

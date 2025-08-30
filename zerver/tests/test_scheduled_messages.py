@@ -7,6 +7,7 @@ from unittest import mock
 
 import orjson
 import time_machine
+from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 
 from zerver.actions.scheduled_messages import (
@@ -163,6 +164,7 @@ class ScheduledMessageTest(ZulipTestCase):
         recipient = Recipient.objects.get(type=Recipient.STREAM, type_id=stream_id)
         self.assert_scheduled_message_delivered(scheduled_message, recipient)
 
+    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=False)
     def test_successful_deliver_direct_scheduled_message_to_other(self) -> None:
         # No scheduled message
         self.assertFalse(try_deliver_one_scheduled_message())
@@ -193,6 +195,7 @@ class ScheduledMessageTest(ZulipTestCase):
         )
         self.assert_json_error(updated_response, "Scheduled message was already sent")
 
+    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=False)
     def test_successful_deliver_direct_scheduled_message_to_self(self) -> None:
         # No scheduled message
         self.assertFalse(try_deliver_one_scheduled_message())
@@ -268,7 +271,7 @@ class ScheduledMessageTest(ZulipTestCase):
         # the failed scheduled message.
         realm = scheduled_message.realm
         msg = most_recent_message(scheduled_message.sender)
-        self.assertEqual(msg.recipient.type, msg.recipient.PERSONAL)
+        self.assertEqual(msg.recipient.type, msg.recipient.DIRECT_MESSAGE_GROUP)
         self.assertEqual(msg.sender_id, self.notification_bot(realm).id)
         self.assertIn(expected_failure_message, msg.content)
 
@@ -327,9 +330,8 @@ class ScheduledMessageTest(ZulipTestCase):
         self.assertEqual(message_after_deactivation.content, message_before_deactivation.content)
         self.assertNotIn(expected_failure_message, message_after_deactivation.content)
 
-    def test_failed_to_deliver_scheduled_message_unknown_exception(
-        self,
-    ) -> None:
+    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=False)
+    def test_failed_to_deliver_scheduled_message_unknown_exception(self) -> None:
         self.create_scheduled_message()
         scheduled_message = self.last_scheduled_message()
 
@@ -420,6 +422,7 @@ class ScheduledMessageTest(ZulipTestCase):
         )
         self.assert_json_error(result, "Scheduled delivery time must be in the future.")
 
+    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=False)
     def test_edit_schedule_message(self) -> None:
         content = "Original test message"
         scheduled_delivery_timestamp = int(time.time() + 86400)
