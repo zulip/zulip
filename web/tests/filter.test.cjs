@@ -3125,3 +3125,12 @@ run_test("get_stringified_narrow_for_server_query", () => {
         '[{"negated":false,"operator":"channel","operand":1},{"negated":false,"operator":"topic","operand":"bar"}]',
     );
 });
+
+test("operator_to_prefix", () => {
+    // Test the "in" operator specifically to ensure coverage
+    const description = Filter.operator_to_prefix("in", false);
+    assert.equal(description, "messages in");
+    
+    const description_negated = Filter.operator_to_prefix("in", true);
+    assert.equal(description_negated, "exclude messages in");
+});
