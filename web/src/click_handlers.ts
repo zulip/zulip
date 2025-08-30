@@ -916,7 +916,7 @@ export function initialize(): void {
     $("body").on("click", ".language_selection_widget button", (e) => {
         e.preventDefault();
         e.stopPropagation();
-        settings_preferences.launch_default_language_setting_modal();
+        settings_preferences.user_settings_panel.open(); // updated
     });
 
     $("body").on("click", "#header-container .brand", (e) => {

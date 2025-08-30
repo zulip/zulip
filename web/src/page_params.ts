@@ -1,9 +1,20 @@
 import assert from "minimalistic-assert";
-
 import {page_params as base_page_params} from "./base_page_params.ts";
 
 assert(base_page_params.page_type === "home");
 
-// We need to export with a narrowed TypeScript type.
-// eslint-disable-next-line unicorn/prefer-export-from
-export const page_params = base_page_params;
+interface LanguageInfo {
+    name: string;
+    percent_translated: number;
+    code: string;
+}
+
+interface PageParams {
+    default_language: string;
+    page_type: "home";
+    all_languages?: Record<string, LanguageInfo>;
+    // add other fields here as needed
+}
+
+// Export with narrowed type
+export const page_params: PageParams = base_page_params as PageParams;

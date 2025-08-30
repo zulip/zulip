@@ -186,7 +186,7 @@ export function initialize(): void {
                 popover_menus.hide_current_popover_if_visible(instance);
                 e.preventDefault();
                 e.stopPropagation();
-                settings_preferences.launch_default_language_setting_modal();
+                settings_preferences.user_settings_panel.open();
             });
 
             $popper.on("change", "input[name='theme-select']", (e) => {

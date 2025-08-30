@@ -86,6 +86,10 @@ export type DropdownWidgetOptions = {
 };
 
 export class DropdownWidget {
+    set_value(default_language: any) {
+        this.render(this.current_value);
+        this.bind_events();
+    }
     widget_name: string;
     widget_selector: string;
     widget_wrapper_id: string;

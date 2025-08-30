@@ -4,7 +4,7 @@ import {user_settings} from "./user_settings.ts";
 import * as util from "./util.ts";
 
 export function initialize(): void {
-    update_notification_sound_source($("audio#user-notification-sound-audio"), user_settings);
+    // update_notification_sound_source($("audio#user-notification-sound-audio"), user_settings);
 }
 
 export function update_notification_sound_source(

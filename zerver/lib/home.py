@@ -54,9 +54,6 @@ def get_furthest_read_time(user_profile: UserProfile | None) -> float | None:
 def promote_sponsoring_zulip_in_realm(realm: Realm) -> bool:
     if not settings.PROMOTE_SPONSORING_ZULIP:
         return False
-
-    # If PROMOTE_SPONSORING_ZULIP is enabled, advertise sponsoring
-    # Zulip in the gear menu of non-paying organizations.
     return realm.plan_type in [Realm.PLAN_TYPE_STANDARD_FREE, Realm.PLAN_TYPE_SELF_HOSTED]
 
 
@@ -87,13 +84,11 @@ def build_page_params_for_home_page_load(
     narrow: list[NeverNegatedNarrowTerm],
     narrow_stream: Stream | None,
     narrow_topic_name: str | None,
-) -> tuple[int, dict[str, object]]:
+) -> tuple[int | None, dict[str, object]]:
     """
     This function computes page_params for when we load the home page.
-
     The page_params data structure gets sent to the client.
     """
-
     client_capabilities = ClientCapabilities(
         notification_settings_null=True,
         bulk_message_deletion=True,
@@ -127,13 +122,11 @@ def build_page_params_for_home_page_load(
             include_subscribers="partial" if partial_subscribers else True,
         )
         queue_id = state_data["queue_id"]
-        default_language = state_data["user_settings"]["default_language"]
+        default_language = state_data["user_settings"].get("default_language", "en")
     else:
-        # The spectator client will be fetching the /register response
-        # for spectators via the API.
         state_data = None
         queue_id = None
-        default_language = realm.default_language
+        default_language = getattr(realm, "default_language", "en")
 
     if user_profile is None:
         request_language = request.COOKIES.get(settings.LANGUAGE_COOKIE_NAME, default_language)
@@ -153,46 +146,46 @@ def build_page_params_for_home_page_load(
     two_fa_enabled = settings.TWO_FACTOR_AUTHENTICATION_ENABLED and user_profile is not None
     user_permission_info = get_user_permission_info(user_profile)
 
-    # Pass parameters to the client-side JavaScript code.
-    # These end up in a JavaScript Object named 'page_params'.
-    #
-    # Sync this with home_params_schema in base_page_params.ts.
-    page_params: dict[str, object] = dict(
-        page_type="home",
-        ## Server settings.
-        test_suite=settings.TEST_SUITE,
-        insecure_desktop_app=insecure_desktop_app,
-        login_page=settings.HOME_NOT_LOGGED_IN,
-        warn_no_email=settings.WARN_NO_EMAIL,
-        # Only show marketing email settings if on Zulip Cloud
-        corporate_enabled=settings.CORPORATE_ENABLED,
-        ## Misc. extra data.
-        language_list=get_language_list(),
-        furthest_read_time=furthest_read_time,
-        embedded_bots_enabled=settings.EMBEDDED_BOTS_ENABLED,
-        two_fa_enabled=two_fa_enabled,
-        apps_page_url=get_apps_page_url(),
-        promote_sponsoring_zulip=promote_sponsoring_zulip_in_realm(realm),
-        show_webathena=user_permission_info.show_webathena,
-        # Adding two_fa_enabled as condition saves us 3 queries when
-        # 2FA is not enabled.
-        two_fa_enabled_user=two_fa_enabled and bool(default_device(user_profile)),
-        is_spectator=user_profile is None,
-        presence_history_limit_days_for_web_app=settings.PRESENCE_HISTORY_LIMIT_DAYS_FOR_WEB_APP,
-        # There is no event queue for spectators since
-        # events support for spectators is not implemented yet.
-        no_event_queue=user_profile is None,
-        show_try_zulip_modal=show_try_zulip_modal,
-    )
+    # Build the page_params dictionary
+    language_list = get_language_list()
+    all_languages = [
+        {
+            "code": lang["code"],
+            "name": lang["name"],
+            "percent_translated": lang.get("percent_translated", 0),
+        }
+        for lang in language_list
+    ]
+
+    page_params: dict[str, object] = {
+        "page_type": "home",
+        "test_suite": settings.TEST_SUITE,
+        "insecure_desktop_app": insecure_desktop_app,
+        "login_page": settings.HOME_NOT_LOGGED_IN,
+        "warn_no_email": settings.WARN_NO_EMAIL,
+        "corporate_enabled": settings.CORPORATE_ENABLED,
+        "language_list": language_list,
+        "default_language": default_language,
+        "all_languages": all_languages,
+        "furthest_read_time": furthest_read_time,
+        "embedded_bots_enabled": settings.EMBEDDED_BOTS_ENABLED,
+        "two_fa_enabled": two_fa_enabled,
+        "apps_page_url": get_apps_page_url(),
+        "promote_sponsoring_zulip": promote_sponsoring_zulip_in_realm(realm),
+        "show_webathena": user_permission_info.show_webathena,
+        "two_fa_enabled_user": two_fa_enabled and bool(default_device(user_profile)),
+        "is_spectator": user_profile is None,
+        "presence_history_limit_days_for_web_app": settings.PRESENCE_HISTORY_LIMIT_DAYS_FOR_WEB_APP,
+        "no_event_queue": user_profile is None,
+        "show_try_zulip_modal": show_try_zulip_modal,
+    }
 
     page_params["state_data"] = state_data
 
     if narrow_stream is not None and state_data is not None:
-        # In narrow_stream context, initial pointer is just latest message
         recipient = narrow_stream.recipient
         state_data["max_message_id"] = -1
         max_message = (
-            # Uses index: zerver_message_realm_recipient_id
             Message.objects.filter(realm_id=realm.id, recipient=recipient)
             .order_by("-id")
             .only("id")
@@ -212,8 +205,6 @@ def build_page_params_for_home_page_load(
     page_params["translation_data"] = get_language_translation_data(request_language)
 
     if user_profile is None:
-        # Get rendered version of realm description which is displayed in right
-        # sidebar for spectator.
         page_params["realm_rendered_description"] = get_realm_rendered_description(realm)
         page_params["language_cookie_name"] = settings.LANGUAGE_COOKIE_NAME
 

@@ -1,16 +1,12 @@
-<div class="language_selection_widget input-group prop-element" id="id_{{section_name}}" data-language-code="{{language_code}}" data-setting-widget-type="language-setting">
-    <label class="settings-field-label" for="id_language_selection_button">
+<div class="language_selection_widget input-group prop-element"
+     id="id_{{section_name}}"
+     data-language-code="{{language_code}}"
+     data-setting-widget-type="language-setting">
+
+    <label class="settings-field-label" for="default_language_dropdown_container">
         {{section_title}}
-        {{#if help_link_widget_link}}
-        {{> ../help_link_widget link=help_link_widget_link }}
-        {{/if}}
+        {{> ../help_link_widget link="/help/change-your-language" }}
     </label>
-    {{> ../components/action_button
-      label=setting_value
-      custom_classes="language_selection_button tippy-zulip-delayed-tooltip"
-      data-tippy-content=(t "Change language")
-      id="id_language_selection_button"
-      intent="neutral"
-      attention="quiet"
-      }}
+
+    <div id="default_language_dropdown_container"></div>
 </div>

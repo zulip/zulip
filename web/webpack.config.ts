@@ -257,6 +257,7 @@ const config = (
             },
             setupMiddlewares: (middlewares) =>
                 middlewares.filter((middleware) => middleware.name !== "cross-origin-header-check"),
+                    allowedHosts: 'all',
         },
         infrastructureLogging: {
             level: "warn",

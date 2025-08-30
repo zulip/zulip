@@ -26,6 +26,12 @@ from typing import TYPE_CHECKING
 # zproject.settings → django_stubs_ext → django_stubs_ext.patch →
 # django.contrib.admin.options → django.contrib.contenttypes.models →
 # confirmation.models → django.conf → zproject.settings.
+# import os
+# from zproject.config import DEPLOY_ROOT
+# Absolute path to the directory where static files will be collected
+# STATIC_ROOT = os.path.join(DEPLOY_ROOT, "prod-static")
+
+
 if not TYPE_CHECKING:
     import django_stubs_ext
 
