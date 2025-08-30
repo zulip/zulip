@@ -749,9 +749,6 @@ export class Filter {
                 // to highlight membership semantics.
                 return verb + "direct messages including";
 
-            case "dm-including": // Legacy alias
-                return verb + "direct messages with";
-
             case "in":
                 return verb + "messages in";
 
