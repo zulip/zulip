@@ -539,7 +539,8 @@ export function initialize_left_sidebar_cursor(): void {
                 if ($all_rows.length === 0) {
                     return undefined;
                 }
-                return $all_rows.first();
+                const $non_header_rows = $all_rows.not($(header_rows_selector()));
+                return $non_header_rows.first();
             },
             next_key($key) {
                 const $all_rows = all_rows();
