@@ -122,6 +122,8 @@ class NarrowParameter(BaseModel):
             "dm-including",
             "with",
         ]
+        # Note: The client now supports dm-including with multiple ids, but
+        # TODO(evy) why does it just work anyways???
         operators_supporting_ids = ["pm-with", "dm"]
         operators_non_empty_operand = {"search"}
 
@@ -292,6 +294,7 @@ class NarrowBuilder:
             "dm": self.by_dm,
             # "pm-with:" is a legacy alias for "dm:"
             "pm-with": self.by_dm,
+            # TODO(evy): look into this
             "dm-including": self.by_dm_including,
             # "group-pm-with:" was deprecated by the addition of "dm-including:"
             "group-pm-with": self.by_group_pm_with,

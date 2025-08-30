@@ -218,6 +218,115 @@ function get_channel_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggest
     });
 }
 
+function get_dm_including_group_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggestion[] {
+    // We only suggest groups once a term with a valid user already exists
+    if (terms.length === 0) {
+        return [];
+    }
+    const last_complete_term = terms.at(-1)!;
+    if (
+        !check_validity(
+            last_complete_term,
+            terms.slice(-1),
+            ["dm-including"],
+            [{operator: "channel"}],
+        )
+    ) {
+        return [];
+    }
+
+    // If they started typing since a user pill, we'll parse that as "search"
+    // but they might actually want to parse that as a user instead to add to
+    // the most recent pill. So we shuffle some things around to support that.
+    if (last.operator === "search") {
+        const text_input = last.operand;
+        const operand = `${last_complete_term.operand},${text_input}`;
+        last = {
+            ...last_complete_term,
+            operand,
+        };
+        terms = terms.slice(-1);
+    } else if (last.operator === "") {
+        last = last_complete_term;
+    } else {
+        // If they already started another term with an other operator, we're
+        // no longer dealing with a group DM situation.
+        return [];
+    }
+
+    const operand = last.operand;
+    const negated = last.negated;
+
+    // The operand has the form "part1,part2,pa", where all but the last part
+    // are emails, and the last part is an arbitrary query.
+    //
+    // We only generate group suggestions when there's more than one part, and
+    // we only use the last part to generate suggestions.
+
+    const last_comma_index = operand.lastIndexOf(",");
+    let all_but_last_part;
+    let last_part;
+    if (last_comma_index === -1) {
+        all_but_last_part = operand;
+        last_part = "";
+    } else {
+        // Neither all_but_last_part nor last_part include the final comma.
+        all_but_last_part = operand.slice(0, last_comma_index);
+        last_part = operand.slice(last_comma_index + 1);
+    }
+
+    // We don't suggest a person if their email is already present in the
+    // operand (not including the last part).
+    const parts = [...all_but_last_part.split(","), people.my_current_email()];
+
+    const all_users_but_last_part = [];
+    for (const email of all_but_last_part.split(",")) {
+        const user = people.get_by_email(email);
+        // Somehow an invalid email is showing up earlier in the group.
+        // This can happen if e.g. the user manually enters multiple emails.
+        // We won't have group suggestions built from an invalid user, so
+        // return an empty list.
+        if (user === undefined) {
+            return [];
+        }
+        all_users_but_last_part.push(user);
+    }
+
+    const person_matcher = people.build_person_matcher(last_part);
+    let persons = people.filter_all_persons((person) => {
+        if (parts.includes(person.email)) {
+            return false;
+        }
+        return last_part === "" || person_matcher(person);
+    });
+
+    persons.sort(compare_by_direct_message_group(parts));
+
+    // Take top 15 persons, since they're ordered by pm_recipient_count.
+    persons = persons.slice(0, 15);
+
+    const prefix = Filter.operator_to_prefix("dm-including", negated);
+
+    return persons.map((person) => {
+        const term = {
+            operator: "dm-including",
+            operand: all_but_last_part + "," + person.email,
+            negated,
+        };
+
+        // ??
+        // let terms: NarrowTerm[] = [term];
+        // if (negated) {
+        //     terms = [{operator: "is", operand: "dm"}, term];
+        // }
+
+        return {
+            description_html: prefix,
+            search_string: Filter.unparse([term]),
+        };
+    });
+}
+
 function get_group_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggestion[] {
     // We only suggest groups once a term with a valid user already exists
     if (terms.length === 0) {
@@ -934,7 +1043,8 @@ class Attacher {
                 const last_base_string = last_base_term.search_string;
                 const new_search_string = suggestion.search_string;
                 if (
-                    new_search_string.startsWith("dm:") &&
+                    (new_search_string.startsWith("dm:") ||
+                        new_search_string.startsWith("dm-including:")) &&
                     new_search_string.includes(last_base_string)
                 ) {
                     suggestion_line = [...this.base.slice(0, -1), suggestion];
@@ -1057,6 +1167,7 @@ export function get_search_result(
         // name, and if there's already has a DM pill then the
         // searching user probably is looking to make a group DM.
         get_group_suggestions,
+        get_dm_including_group_suggestions,
         get_channels_filter_suggestions,
         get_operator_suggestions,
         get_is_filter_suggestions,
