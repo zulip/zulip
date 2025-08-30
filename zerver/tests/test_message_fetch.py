@@ -2483,7 +2483,6 @@ class GetOldMessagesTest(ZulipTestCase):
         result = self.get_and_check_messages(dict(narrow=orjson.dumps(narrow).decode()))
         self.assertNotEqual(result["messages"], [])
 
-    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
     def test_get_1_to_1_messages_with_existent_group_dm(self) -> None:
         me = self.example_user("hamlet")
         other_user = self.example_user("iago")
@@ -2508,7 +2507,6 @@ class GetOldMessagesTest(ZulipTestCase):
             self.assertIn(message["id"], message_ids)
             self.assertEqual(message["recipient_id"], direct_message_group.recipient_id)
 
-    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
     def test_get_messages_to_self_with_existent_group_dm(self) -> None:
         me = self.example_user("hamlet")
 
