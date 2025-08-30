@@ -34,6 +34,7 @@ let created_stream: string | undefined;
 let current_user_subscribed_to_created_stream = true;
 
 let folder_widget: DropdownWidget | undefined;
+let default_code_block_language_widget: DropdownWidget | undefined;
 
 export function reset_created_stream(): void {
     created_stream = undefined;
@@ -393,6 +394,8 @@ function create_stream(): void {
 
     const topics_policy = $("#id_new_topics_policy").val();
 
+    assert(default_code_block_language_widget !== undefined);
+
     const data: Record<string, string> = {
         subscriptions,
         is_web_public: JSON.stringify(is_web_public),
@@ -402,6 +405,7 @@ function create_stream(): void {
         message_retention_days: JSON.stringify(message_retention_selection),
         announce: JSON.stringify(announce),
         topics_policy: JSON.stringify(topics_policy),
+        default_code_block_language: z.string().parse(default_code_block_language_widget.value()),
         principals,
         ...group_setting_values,
     };
@@ -658,6 +662,8 @@ export function set_up_handlers(): void {
     });
 
     set_up_group_setting_widgets();
+    default_code_block_language_widget =
+        settings_components.set_up_default_code_block_language_widget();
     settings_components.enable_opening_typeahead_on_clicking_label($container);
     folder_widget = stream_settings_components.set_up_folder_dropdown_widget();
 }

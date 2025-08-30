@@ -1576,6 +1576,10 @@ def check_update_message(
         content=content,
     )
 
+    default_code_block_language = ""
+    if isinstance(message_edit_request, StreamMessageEditRequest):
+        default_code_block_language = message_edit_request.target_stream.default_code_block_language
+
     if (
         isinstance(message_edit_request, StreamMessageEditRequest)
         and message_edit_request.is_topic_edited
@@ -1630,6 +1634,7 @@ def check_update_message(
             message_edit_request.content,
             user_profile.realm,
             mention_data=mention_data,
+            default_code_block_language=default_code_block_language,
         )
         links_for_embed |= rendering_result.links_for_preview
 
@@ -1705,6 +1710,7 @@ def check_update_message(
             # `render_incoming_message` call earlier in this function.
             "message_realm_id": user_profile.realm_id,
             "urls": list(links_for_embed),
+            "default_code_block_language": default_code_block_language,
         }
         queue_event_on_commit("embed_links", event_data)
 

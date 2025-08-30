@@ -1362,9 +1362,17 @@ export function render_and_show_preview(
             // authoritative backend rendering from the server).
             markdown.render(content);
         }
+        let default_code_block_language;
+        const current_stream = compose_state.stream();
+        if (current_stream) {
+            default_code_block_language = current_stream.default_code_block_language;
+        }
         void channel.post({
             url: "/json/messages/render",
-            data: {content},
+            data: {
+                content,
+                default_code_block_language,
+            },
             success(response_data) {
                 if (
                     preview_render_count !== compose_state.get_preview_render_count() ||

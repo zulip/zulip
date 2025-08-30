@@ -12,6 +12,8 @@ from requests.exceptions import ConnectionError
 from typing_extensions import override
 
 from zerver.actions.message_delete import do_delete_messages
+from zerver.actions.realm_settings import do_set_realm_property
+from zerver.actions.streams import do_change_default_code_block_language
 from zerver.lib.cache import cache_delete, cache_get, preview_url_cache_key
 from zerver.lib.camo import get_camo_url
 from zerver.lib.queue import queue_json_publish_rollback_unsafe
@@ -22,6 +24,7 @@ from zerver.lib.url_preview.parsers import GenericParser, OpenGraphParser
 from zerver.lib.url_preview.preview import get_link_embed_data
 from zerver.lib.url_preview.types import UrlEmbedData, UrlOEmbedData
 from zerver.models import Message, Realm, UserMessage, UserProfile
+from zerver.models.streams import get_stream
 from zerver.worker.embed_links import FetchLinksEmbedData
 
 
@@ -676,6 +679,7 @@ class PreviewTestCase(ZulipTestCase):
             "urls": [url],
             "message_realm_id": msg.sender.realm_id,
             "message_content": url,
+            "default_code_block_language": "",
         }
 
         self.create_mock_response(url, body=ConnectionError())
@@ -891,6 +895,7 @@ class PreviewTestCase(ZulipTestCase):
             "urls": [url],
             "message_realm_id": msg.sender.realm_id,
             "message_content": url,
+            "default_code_block_language": "",
         }
 
         self.create_mock_response(url, body=ConnectionError())
@@ -938,6 +943,7 @@ class PreviewTestCase(ZulipTestCase):
             "urls": [error_url],
             "message_realm_id": msg.sender.realm_id,
             "message_content": error_url,
+            "default_code_block_language": "",
         }
 
         self.create_mock_response(error_url, status=404)
@@ -975,6 +981,7 @@ class PreviewTestCase(ZulipTestCase):
             "urls": [url],
             "message_realm_id": msg.sender.realm_id,
             "message_content": url,
+            "default_code_block_language": "",
         }
 
         mocked_data = UrlOEmbedData(
@@ -1019,6 +1026,7 @@ class PreviewTestCase(ZulipTestCase):
             "urls": [url],
             "message_realm_id": msg.sender.realm_id,
             "message_content": url,
+            "default_code_block_language": "",
         }
 
         mocked_data = UrlEmbedData(
@@ -1059,6 +1067,7 @@ class PreviewTestCase(ZulipTestCase):
             "urls": [url],
             "message_realm_id": msg.sender.realm_id,
             "message_content": url,
+            "default_code_block_language": "",
         }
 
         mocked_data = UrlEmbedData(
@@ -1082,3 +1091,55 @@ class PreviewTestCase(ZulipTestCase):
         msg.refresh_from_db()
         expected_content = f"""<p><a href="https://www.youtube.com/watch?v=eSJTXC7Ixgg">YouTube link</a></p>\n<div class="youtube-video message_inline_image"><a data-id="eSJTXC7Ixgg" href="https://www.youtube.com/watch?v=eSJTXC7Ixgg"><img src="{get_camo_url("https://i.ytimg.com/vi/eSJTXC7Ixgg/mqdefault.jpg")}"></a></div>"""
         self.assertEqual(expected_content, msg.rendered_content)
+
+    @responses.activate
+    @override_settings(INLINE_URL_EMBED_PREVIEW=True)
+    def test_edit_message_default_code_block_language(self) -> None:
+        user = self.example_user("iago")
+        denmark_stream = get_stream("Denmark", user.realm)
+
+        do_set_realm_property(
+            user.realm, "default_code_block_language", "javascript", acting_user=user
+        )
+        do_change_default_code_block_language(denmark_stream, "python", acting_user=user)
+        self.login_user(user)
+
+        url = "http://test.org/"
+        self.create_mock_response(url)
+
+        with mock_queue_publish("zerver.actions.message_send.queue_event_on_commit") as patched:
+            msg_id = self.send_stream_message(
+                user,
+                denmark_stream.name,
+                topic_name="editing",
+                content=f"```\nprint('Hello, World!')\n``` \n\n {url}",
+            )
+            msg = Message.objects.get(id=msg_id)
+            assert msg.rendered_content is not None
+            self.assertIn('data-code-language="Python"', msg.rendered_content)
+        with mock_queue_publish("zerver.actions.message_edit.queue_event_on_commit") as patched:
+            result = self.client_patch(
+                "/json/messages/" + str(msg_id),
+                {
+                    "content": f"```\nprint('Hello, Zulip!')\n``` \n\nPR:  {url}",
+                },
+            )
+            self.assert_json_success(result)
+            patched.assert_called_once()
+            queue = patched.call_args[0][0]
+            msg.refresh_from_db()
+            self.assertIn('data-code-language="Python"', msg.rendered_content)
+            self.assertEqual(queue, "embed_links")
+            event = patched.call_args[0][1]
+            self.assertEqual(event["default_code_block_language"], "python")
+
+        with self.settings(TEST_SUITE=False):
+            with self.assertLogs(level="INFO") as info_logs:
+                FetchLinksEmbedData().consume(event)
+            self.assertTrue(
+                "INFO:root:Time spent on get_link_embed_data for http://test.org/: "
+                in info_logs.output[0]
+            )
+
+        msg.refresh_from_db()
+        self.assertIn('data-code-language="Python"', msg.rendered_content)
