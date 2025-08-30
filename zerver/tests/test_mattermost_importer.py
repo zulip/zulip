@@ -383,6 +383,7 @@ class MatterMostImporter(ZulipTestCase):
             {malfoy_id, pansy_id},
         )
 
+    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=False)
     def test_convert_direct_message_group_data(self) -> None:
         fixture_file_name = self.fixture_file_name(
             "export.json", "mattermost_fixtures/direct_channel"
@@ -433,7 +434,6 @@ class MatterMostImporter(ZulipTestCase):
             ["INFO:root:Duplicate direct message group found in the export data. Skipping."],
         )
 
-    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
     def test_convert_direct_message_group_data_without_personal_recipient(self) -> None:
         fixture_file_name = self.fixture_file_name(
             "export.json", "mattermost_fixtures/direct_channel"
@@ -892,6 +892,7 @@ class MatterMostImporter(ZulipTestCase):
 
         self.verify_emoji_code_foreign_keys()
 
+    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=False)
     def test_do_convert_data_with_direct_messages(self) -> None:
         mattermost_data_dir = self.fixture_file_name("direct_channel", "mattermost_fixtures")
         output_dir = self.make_import_output_dir("mattermost")
@@ -1030,7 +1031,6 @@ class MatterMostImporter(ZulipTestCase):
         self.assertTrue(personal_messages[0].has_link)
         self.assertEqual(personal_messages[0].topic_name(), Message.DM_TOPIC)
 
-    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
     def test_do_convert_data_with_prefering_direct_messages_for_1_to_1_messages(self) -> None:
         mattermost_data_dir = self.fixture_file_name("direct_channel", "mattermost_fixtures")
         output_dir = self.make_import_output_dir("mattermost")
