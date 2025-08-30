@@ -130,7 +130,7 @@ const social = {
     can_send_message_group: 2,
     topics_policy: "inherit",
 };
-stream_data.add_sub(social);
+stream_data.add_sub_for_tests(social);
 
 const nobody = make_user_group({
     name: "role:nobody",

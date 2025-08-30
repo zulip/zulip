@@ -91,7 +91,7 @@ const general_sub = {
     name: "general",
     subscribed: true,
 };
-stream_data.add_sub(general_sub);
+stream_data.add_sub_for_tests(general_sub);
 
 run_test("process_from_server for un-echoed messages", () => {
     const waiting_for_ack = new Map();

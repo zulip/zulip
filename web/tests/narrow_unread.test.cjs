@@ -100,7 +100,7 @@ run_test("get_unread_ids", () => {
     message_store.update_message_cache(private_msg);
     message_store.update_message_cache(other_topic_message);
 
-    stream_data.add_sub(sub);
+    stream_data.add_sub_for_tests(sub);
 
     terms = [{operator: "search", operand: "whatever"}];
     set_filter(terms);

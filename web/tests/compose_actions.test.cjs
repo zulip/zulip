@@ -212,7 +212,7 @@ test("start", ({override, override_rewire, mock_template}) => {
         name: "Denmark",
         stream_id: 1,
     });
-    stream_data.add_sub(denmark);
+    stream_data.add_sub_for_tests(denmark);
 
     compose_defaults = {
         trigger: "clear topic button",
@@ -241,7 +241,7 @@ test("start", ({override, override_rewire, mock_template}) => {
         name: "social",
         stream_id: 2,
     });
-    stream_data.add_sub(social);
+    stream_data.add_sub_for_tests(social);
 
     compose_state.set_stream_id("");
     // More than 1 subscription, do not autofill
@@ -362,7 +362,7 @@ test("respond_to_message", ({override, override_rewire, mock_template}) => {
         name: "Denmark",
         stream_id: 1,
     });
-    stream_data.add_sub(denmark);
+    stream_data.add_sub_for_tests(denmark);
 
     msg = {
         type: "stream",
@@ -402,7 +402,7 @@ test("reply_with_mention", ({override, override_rewire, mock_template}) => {
         name: "Denmark",
         stream_id: 1,
     });
-    stream_data.add_sub(denmark);
+    stream_data.add_sub_for_tests(denmark);
 
     const msg = {
         type: "stream",
