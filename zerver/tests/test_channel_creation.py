@@ -1307,3 +1307,20 @@ class TestCreateStreams(ZulipTestCase):
         self.assertNotEqual(
             stream_1.can_add_subscribers_group_id, stream_2.can_add_subscribers_group_id
         )
+
+    def test_default_code_block_language_on_stream_creation(self) -> None:
+        hamlet = self.example_user("hamlet")
+        realm = get_realm("zulip")
+
+        subscriptions = [{"name": "new_stream1", "description": ""}]
+        result = self.subscribe_via_post(hamlet, subscriptions)
+        self.assert_json_success(result)
+        stream = get_stream("new_stream1", realm)
+        self.assertEqual(stream.default_code_block_language, "")
+
+        subscriptions = [{"name": "new_stream2", "description": ""}]
+        extra_post_data = {"default_code_block_language": "rust"}
+        result = self.subscribe_via_post(hamlet, subscriptions, extra_post_data)
+        self.assert_json_success(result)
+        stream = get_stream("new_stream2", realm)
+        self.assertEqual(stream.default_code_block_language, "rust")
