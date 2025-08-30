@@ -465,6 +465,17 @@ export function initialize_right_sidebar(): void {
     );
 }
 
+function get_header_rows_selectors(): string {
+    return (
+        // Views header.
+        "#left-sidebar-navigation-area:not(.hidden-by-filters) #views-label-container, " +
+        // DM Headers
+        "#direct-messages-section-header, " +
+        // All channel headers.
+        ".stream-list-section-container:not(.no-display) .stream-list-subsection-header"
+    );
+}
+
 function all_rows(): JQuery {
     // NOTE: This function is designed to be used for keyboard navigation purposes.
     // This function returns all the rows in the left sidebar.
@@ -474,12 +485,7 @@ function all_rows(): JQuery {
         ".top_left_row, " +
             // All DM and channel rows.
             ".bottom_left_row, " +
-            // Views header.
-            "#left-sidebar-navigation-area:not(.hidden-by-filters) #views-label-container, " +
-            // DM Headers
-            "#direct-messages-section-header, " +
-            // All channel headers.
-            ".stream-list-section-container:not(.no-display) .stream-list-subsection-header",
+            get_header_rows_selectors(),
     ).not(".hidden-by-filters");
     // Remove rows hidden due to being inactive or muted.
     const $inactive_or_muted_rows = $(
