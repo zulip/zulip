@@ -63,6 +63,7 @@ exports.test_streams = {
         can_send_message_group: 2,
         can_remove_subscribers_group: 2,
         is_recently_active: true,
+        default_code_block_language: "text",
     },
     test: {
         is_archived: false,
@@ -88,6 +89,7 @@ exports.test_streams = {
         can_send_message_group: 2,
         can_remove_subscribers_group: 2,
         is_recently_active: true,
+        default_code_block_language: "text",
     },
 };
 
