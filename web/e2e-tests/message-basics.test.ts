@@ -329,10 +329,6 @@ async function test_stream_search_filters_stream_list(page: Page): Promise<void>
     // Enter the search box and test highlighted suggestion
     await page.click(".left-sidebar-search-input");
 
-    await page.waitForSelector("#views-label-container.highlighted_row", {visible: true});
-
-    await arrow(page, "Down");
-
     await page.waitForSelector(".top_left_inbox.top_left_row.highlighted_row", {visible: true});
 
     await page.waitForSelector((await get_stream_li(page, "Verona")) + " .highlighted_row", {
