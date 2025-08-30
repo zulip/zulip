@@ -57,6 +57,7 @@ from zerver.actions.realm_settings import (
 from zerver.actions.streams import (
     bulk_add_subscriptions,
     bulk_remove_subscriptions,
+    do_change_default_code_block_language,
     do_change_stream_folder,
     do_change_subscription_property,
     do_deactivate_stream,
@@ -886,6 +887,29 @@ class TestRealmAuditLog(ZulipTestCase):
             ).count(),
             1,
         )
+
+    def test_change_stream_default_code_block_language(self) -> None:
+        now = timezone_now()
+        user = self.example_user("hamlet")
+        stream = self.make_stream("test", user.realm)
+        old_name = stream.default_code_block_language
+        do_change_default_code_block_language(stream, "rust", acting_user=user)
+        self.assertEqual(
+            RealmAuditLog.objects.filter(
+                realm=user.realm,
+                event_type=AuditLogEventType.CHANNEL_PROPERTY_CHANGED,
+                event_time__gte=now,
+                acting_user=user,
+                modified_stream=stream,
+                extra_data={
+                    RealmAuditLog.OLD_VALUE: old_name,
+                    RealmAuditLog.NEW_VALUE: "rust",
+                    "property": "default_code_block_language",
+                },
+            ).count(),
+            1,
+        )
+        self.assertEqual(stream.default_code_block_language, "rust")
 
     def test_change_user_settings(self) -> None:
         user = self.example_user("hamlet")

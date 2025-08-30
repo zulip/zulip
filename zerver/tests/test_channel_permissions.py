@@ -932,6 +932,7 @@ class ChannelAdministerPermissionTest(ZulipTestCase):
 
             do_deactivate_stream(stream, acting_user=None)
             self.do_test_updating_channel(stream, "deactivated", False)
+            self.do_test_updating_channel(stream, "default_code_block_language", "python")
 
     def check_channel_privacy_update(
         self, user: UserProfile, property_name: str, new_value: bool, error_msg: str | None = None
