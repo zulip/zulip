@@ -208,7 +208,7 @@ class TutorialTests(ZulipTestCase):
         )
         self.assertEqual(most_recent_message(user).content, expected_response)
 
-    def test_response_to_pm_for_undefined_using_direct_group_message(self) -> None:
+    def test_response_to_pm_for_undefined_using_direct_message_group(self) -> None:
         user = self.example_user("hamlet")
         bot = get_system_bot(settings.WELCOME_BOT, user.realm_id)
 

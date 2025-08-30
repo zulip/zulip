@@ -113,7 +113,10 @@ from zerver.models.messages import ImageAttachment
 from zerver.models.presence import PresenceSequence
 from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.realms import get_realm
-from zerver.models.recipients import get_direct_message_group_hash
+from zerver.models.recipients import (
+    get_direct_message_group_hash,
+    get_or_create_direct_message_group,
+)
 from zerver.models.streams import get_active_streams, get_stream
 from zerver.models.users import ExternalAuthID, get_system_bot, get_user_by_delivery_email
 
@@ -948,15 +951,19 @@ class RealmImportExportTest(ExportFile):
         pm_a_msg_id = self.send_personal_message(
             self.example_user("AARON"), self.example_user("othello")
         )
+        dm_group_pm_a = DirectMessageGroup.objects.last()
         pm_b_msg_id = self.send_personal_message(
             self.example_user("cordelia"), self.example_user("iago")
         )
+        dm_group_pm_b = DirectMessageGroup.objects.last()
         pm_c_msg_id = self.send_personal_message(
             self.example_user("hamlet"), self.example_user("othello")
         )
+        dm_group_pm_c = DirectMessageGroup.objects.last()
         pm_d_msg_id = self.send_personal_message(
             self.example_user("iago"), self.example_user("hamlet")
         )
+        dm_group_pm_d = DirectMessageGroup.objects.last()
 
         # Create some non-message private data for users. We will use SavedSnippet objects as they're simple
         # to create and are private data that should not be exported for non-consenting users. There are many
@@ -1014,6 +1021,12 @@ class RealmImportExportTest(ExportFile):
         do_deactivate_user(deactivated_non_consented_user, acting_user=None)
 
         self.assertEqual(get_consented_user_ids(realm), consented_user_ids)
+
+        # Remove the recipient of the welcome bot to test exporting bots without personal recipients.
+        internal_realm = get_realm(settings.SYSTEM_BOT_REALM)
+        welcome_bot = get_system_bot(settings.WELCOME_BOT, internal_realm.id)
+        welcome_bot.recipient = None
+        welcome_bot.save(update_fields=["recipient"])
 
         self.export_realm_and_create_auditlog(
             realm,
@@ -1144,25 +1157,19 @@ class RealmImportExportTest(ExportFile):
             realm_id=realm.id, recipient__in=private_stream_recipients
         ).values_list("id", flat=True)
 
-        pm_recipients = Recipient.objects.filter(
-            type_id__in=consented_user_ids, type=Recipient.PERSONAL
-        )
-        pm_query = Q(recipient__in=pm_recipients) | Q(sender__in=consented_user_ids)
-        exported_pm_ids = (
-            Message.objects.filter(pm_query, realm=realm.id)
-            .values_list("id", flat=True)
-            .values_list("id", flat=True)
-        )
-
         assert (
             direct_message_group_a is not None
             and direct_message_group_b is not None
             and direct_message_group_c is not None
+            and dm_group_pm_a is not None
+            and dm_group_pm_b is not None
+            and dm_group_pm_c is not None
+            and dm_group_pm_d is not None
         )
         # Third direct message group is not exported since none of
         # the members gave consent
         direct_message_group_recipients = Recipient.objects.filter(
-            type_id__in=[direct_message_group_a.id, direct_message_group_b.id],
+            type_id__in=[direct_message_group_a.id, direct_message_group_b.id, dm_group_pm_b.id],
             type=Recipient.DIRECT_MESSAGE_GROUP,
         )
         pm_query = Q(recipient__in=direct_message_group_recipients) | Q(
@@ -1178,7 +1185,6 @@ class RealmImportExportTest(ExportFile):
             *public_stream_message_ids,
             *private_stream_message_ids,
             stream_b_second_message_id,
-            *exported_pm_ids,
             *exported_dm_group_message_ids,
         }
         self.assertEqual(self.get_set(data["zerver_message"], "id"), exported_msg_ids)
@@ -1204,9 +1210,22 @@ class RealmImportExportTest(ExportFile):
 
         exported_direct_message_group_ids = self.get_set(realm_data["zerver_huddle"], "id")
         self.assertNotIn(direct_message_group_c.id, exported_direct_message_group_ids)
+        self.assertNotIn(dm_group_pm_a.id, exported_direct_message_group_ids)
+
+        # A direct_message_group for iago is created in the populate_db.py (#L857-L866) script,
+        # when scheduling a message to self.
+        iago_dm_group = get_or_create_direct_message_group(id_list=[self.example_user("iago").id])
+
         self.assertEqual(
             exported_direct_message_group_ids,
-            {direct_message_group_a.id, direct_message_group_b.id},
+            {
+                iago_dm_group.id,
+                direct_message_group_a.id,
+                direct_message_group_b.id,
+                dm_group_pm_b.id,
+                dm_group_pm_c.id,
+                dm_group_pm_d.id,
+            },
         )
 
         # We also want to verify Subscriptions to the DirectMessageGroups were exported correctly.
@@ -1764,10 +1783,13 @@ class RealmImportExportTest(ExportFile):
 
         # Check recipient_id was generated correctly for the imported users and streams.
         for user_profile in UserProfile.objects.filter(realm=imported_realm):
-            self.assertEqual(
-                user_profile.recipient_id,
-                Recipient.objects.get(type=Recipient.PERSONAL, type_id=user_profile.id).id,
-            )
+            try:
+                self.assertEqual(
+                    user_profile.recipient_id,
+                    Recipient.objects.get(type=Recipient.PERSONAL, type_id=user_profile.id).id,
+                )
+            except Recipient.DoesNotExist:
+                self.assertIsNone(user_profile.recipient_id)
         for stream in Stream.objects.filter(realm=imported_realm):
             self.assertEqual(
                 stream.recipient_id,
@@ -2953,7 +2975,6 @@ class SingleUserExportTest(ExportFile):
         )
 
         bye_hamlet_message_id = self.send_personal_message(cordelia, hamlet, "bye hamlet")
-
         hi_myself_message_id = self.send_personal_message(cordelia, cordelia, "hi myself")
         bye_stream_message_id = self.send_stream_message(cordelia, "Denmark", "bye stream")
 
@@ -2984,6 +3005,54 @@ class SingleUserExportTest(ExportFile):
                 (bye_hamlet_message_id, "bye hamlet", hamlet.full_name),
                 (hi_myself_message_id, "hi myself", cordelia.full_name),
                 (bye_stream_message_id, "bye stream", "Denmark"),
+            ],
+        )
+
+    def test_1_to_1_message_data_using_direct_message_group(self) -> None:
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+        othello = self.example_user("othello")
+        bot = self.create_test_bot("test-bot", hamlet)
+
+        get_or_create_direct_message_group([hamlet.id, cordelia.id])
+        get_or_create_direct_message_group([hamlet.id, bot.id])
+        get_or_create_direct_message_group([hamlet.id])
+
+        hi_hamlet_message_id = self.send_personal_message(othello, hamlet, "hi hamlet")
+        hi_cordelia_message_id = self.send_personal_message(hamlet, cordelia, "hi cordelia")
+        bye_hamlet_message_id = self.send_personal_message(cordelia, hamlet, "bye hamlet")
+        test_bot_message_id = self.send_personal_message(hamlet, bot, "test bot message")
+        self.send_personal_message(othello, cordelia, "an irrelevant message")
+        bye_peeps_message_id = self.send_group_direct_message(
+            othello, [cordelia, hamlet], "bye peeps"
+        )
+        self_message_id = self.send_personal_message(hamlet, hamlet, "hi myself")
+
+        output_dir = make_export_output_dir()
+        hamlet = self.example_user("hamlet")
+
+        with self.assertLogs(level="INFO"):
+            do_export_user(hamlet, output_dir)
+
+        messages = read_json("messages-000001.json")
+
+        excerpt = [
+            (rec["id"], rec["content"], rec["recipient_name"])
+            for rec in messages["zerver_message"][-6:]
+        ]
+        self.assertEqual(
+            excerpt,
+            [
+                (hi_hamlet_message_id, "hi hamlet", hamlet.full_name),
+                (hi_cordelia_message_id, "hi cordelia", cordelia.full_name),
+                (bye_hamlet_message_id, "bye hamlet", hamlet.full_name),
+                (test_bot_message_id, "test bot message", bot.full_name),
+                (
+                    bye_peeps_message_id,
+                    "bye peeps",
+                    f"{cordelia.full_name}, {hamlet.full_name}, {othello.full_name}",
+                ),
+                (self_message_id, "hi myself", hamlet.full_name),
             ],
         )
 

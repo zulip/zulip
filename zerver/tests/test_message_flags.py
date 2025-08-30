@@ -1144,7 +1144,7 @@ class GetUnreadMsgsTest(ZulipTestCase):
             dict(other_user_id=cordelia.id),
         )
 
-    def test_raw_unread_personal_using_direct_group_message(self) -> None:
+    def test_raw_unread_personal_using_direct_message_group(self) -> None:
         cordelia = self.example_user("cordelia")
         othello = self.example_user("othello")
         hamlet = self.example_user("hamlet")
