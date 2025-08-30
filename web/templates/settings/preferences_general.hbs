@@ -16,7 +16,9 @@
                 class="setting_twenty_four_hour_time prop-element settings_select bootstrap-focus-style"
                 data-setting-widget-type="language-setting">
             {{#each page_params.all_languages}}
-                <option value="{{this.code}}">{{this.name}}</option>
+                <option value="{{this.code}}">
+                    {{this.name}} ({{this.percent_translated}}%)
+                </option>
             {{/each}}
         </select>
     </div>
