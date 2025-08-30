@@ -695,6 +695,7 @@ paths:
                                         "history_public_to_subscribers": true,
                                         "first_message_id": null,
                                         "folder_id": 1,
+                                        "default_code_block_language": "python",
                                         "is_recently_active": true,
                                         "message_retention_days": null,
                                         "is_announcement_only": false,
@@ -1410,6 +1411,7 @@ paths:
                                         "history_public_to_subscribers": false,
                                         "first_message_id": null,
                                         "folder_id": 1,
+                                        "default_code_block_language": "python",
                                         "is_recently_active": true,
                                         "message_retention_days": null,
                                         "is_announcement_only": false,
@@ -12140,6 +12142,8 @@ paths:
                   example: 1
                 send_new_subscription_messages:
                   $ref: "#/components/schemas/SendNewSubscriptionMessages"
+                default_code_block_language:
+                  $ref: "#/components/schemas/DefaultCodeBlockLanguage"
               required:
                 - subscriptions
             encoding:
@@ -17303,6 +17307,7 @@ paths:
                                   nullable: true
                                 folder_id:
                                   nullable: true
+                                default_code_block_language: {}
                                 is_recently_active: {}
                                 is_announcement_only: {}
                                 can_add_subscribers_group: {}
@@ -22756,6 +22761,7 @@ paths:
                                 can_resolve_topics_group: {}
                                 can_subscribe_group: {}
                                 subscriber_count: {}
+                                default_code_block_language: {}
                                 stream_weekly_traffic:
                                   type: integer
                                   nullable: true
@@ -22802,6 +22808,7 @@ paths:
                                 - stream_weekly_traffic
                                 - is_recently_active
                                 - subscriber_count
+                                - default_code_block_language
                     example:
                       {
                         "msg": "",
@@ -22817,6 +22824,7 @@ paths:
                               "description": "A private channel",
                               "first_message_id": 18,
                               "folder_id": 1,
+                              "default_code_block_language": "python",
                               "is_recently_active": true,
                               "history_public_to_subscribers": false,
                               "invite_only": true,
@@ -22841,6 +22849,7 @@ paths:
                               "description": "A default public channel",
                               "first_message_id": 21,
                               "folder_id": null,
+                              "default_code_block_language": "python",
                               "is_recently_active": true,
                               "history_public_to_subscribers": true,
                               "invite_only": false,
@@ -22893,6 +22902,7 @@ paths:
                             "description": "A Scandinavian country",
                             "first_message_id": 1,
                             "folder_id": 1,
+                            "default_code_block_language": "python",
                             "is_recently_active": true,
                             "history_public_to_subscribers": true,
                             "date_created": 1691057093,
@@ -23082,6 +23092,8 @@ paths:
                   type: integer
                   nullable: true
                   example: 1
+                default_code_block_language:
+                  $ref: "#/components/schemas/DefaultCodeBlockLanguage"
                 topics_policy:
                   $ref: "#/components/schemas/TopicsPolicy"
                 can_add_subscribers_group:
@@ -25645,6 +25657,7 @@ components:
               nullable: true
             folder_id:
               nullable: true
+            default_code_block_language: {}
             is_recently_active: {}
             is_announcement_only: {}
             can_add_subscribers_group: {}
@@ -25828,6 +25841,8 @@ components:
             **Changes**: New in Zulip 2.1.0.
         folder_id:
           $ref: "#/components/schemas/FolderId"
+        default_code_block_language:
+          $ref: "#/components/schemas/DefaultCodeBlockLanguage"
         is_recently_active:
           type: boolean
           description: |
@@ -26981,6 +26996,8 @@ components:
             Is `null` for channels with no message history.
         folder_id:
           $ref: "#/components/schemas/FolderId"
+        default_code_block_language:
+          $ref: "#/components/schemas/DefaultCodeBlockLanguage"
         topics_policy:
           $ref: "#/components/schemas/TopicsPolicy"
         is_recently_active:
@@ -29253,6 +29270,17 @@ components:
         Is `null` if channel does not belong to any folder.
 
         **Changes**: New in Zulip 11.0 (feature level 389).
+    DefaultCodeBlockLanguage:
+      description: |
+        The default language used in markdown code blocks
+        in messages sent to the channel.
+
+        When set to empty string, realm's default code block
+        language is used.
+
+        **Changes**: New in Zulip 12.0 (feature level ZF-991763).
+      type: string
+      example: python
 
   ###################
   # Shared responses

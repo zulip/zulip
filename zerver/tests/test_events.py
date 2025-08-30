@@ -118,6 +118,7 @@ from zerver.actions.scheduled_messages import (
 from zerver.actions.streams import (
     bulk_add_subscriptions,
     bulk_remove_subscriptions,
+    do_change_default_code_block_language,
     do_change_stream_description,
     do_change_stream_folder,
     do_change_stream_group_based_setting,
@@ -5118,6 +5119,12 @@ class SubscribeActionTest(BaseAction):
         check_stream_update("events[0]", events[0])
         self.assertEqual(events[0]["property"], "folder_id")
         self.assertIsNone(events[0]["value"])
+
+        with self.verify_action(include_subscribers=include_subscribers) as events:
+            do_change_default_code_block_language(stream, "rust", acting_user=iago)
+        check_stream_update("events[0]", events[0])
+        self.assertEqual(events[0]["property"], "default_code_block_language")
+        self.assertEqual(events[0]["value"], "rust")
 
         # Update stream privacy - make stream web-public
         with self.verify_action(include_subscribers=include_subscribers, num_events=2) as events:
