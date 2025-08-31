@@ -2,23 +2,13 @@ from collections.abc import Iterable, Sequence
 
 from django.db import transaction
 
-from zerver.lib.alert_words import (
-    add_user_alert_words,
-    recently_removed_alert_words,
-    remove_user_alert_words,
-)
+from zerver.lib.alert_words import add_user_alert_words, remove_user_alert_words
 from zerver.models import AlertWordRemoval, UserProfile
 from zerver.tornado.django_api import send_event_on_commit
 
 
-def notify_alert_words(
-    user_profile: UserProfile,
-    words: Sequence[str],
-    recently_removed: Sequence[dict[str, str]] | None = None,
-) -> None:
-    event: dict[str, object] = {"type": "alert_words", "alert_words": list(words)}
-    if recently_removed is not None:
-        event["recently_removed_alert_words"] = list(recently_removed)
+def notify_alert_words(user_profile: UserProfile, words: Sequence[str]) -> None:
+    event = dict(type="alert_words", alert_words=words)
     send_event_on_commit(user_profile.realm, event, [user_profile.id])
 
 
@@ -41,5 +31,4 @@ def do_remove_alert_words(user_profile: UserProfile, alert_words: Iterable[str])
 
     # For the event, we could send only "just removed" with removed_at=now().
     # For now, send the recent list so clients can stay in sync without extra GETs.
-    recent = recently_removed_alert_words(user_profile)
-    notify_alert_words(user_profile, words, recent)
+    notify_alert_words(user_profile, words)

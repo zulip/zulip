@@ -46,6 +46,7 @@ from zerver.lib.upload.s3 import get_bucket
 from zerver.lib.utils import get_fk_field_name
 from zerver.models import (
     AlertWord,
+    AlertWordRemoval,
     Attachment,
     BotConfigData,
     BotStorageData,
@@ -212,6 +213,7 @@ ALL_ZULIP_TABLES = {
     "zerver_userstatus",
     "zerver_usertopic",
     "zerver_muteduser",
+    "zerver_alertwordremoval",
 }
 
 # This set contains those database tables that we expect to not be
@@ -1163,6 +1165,14 @@ def add_user_profile_child_configs(user_profile_config: Config) -> None:
     Config(
         table="zerver_alertword",
         model=AlertWord,
+        normal_parent=user_profile_config,
+        include_rows="user_profile_id__in",
+        limit_to_consenting_users=True,
+    )
+
+    Config(
+        table="zerver_alertword",
+        model=AlertWordRemoval,
         normal_parent=user_profile_config,
         include_rows="user_profile_id__in",
         limit_to_consenting_users=True,

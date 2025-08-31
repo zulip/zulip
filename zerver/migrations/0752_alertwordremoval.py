@@ -7,7 +7,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0751_externalauthid_zerver_user_externalauth_uniq"),
     ]

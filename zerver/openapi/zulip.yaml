@@ -11147,11 +11147,8 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
-                  - additionalProperties: false
+                  - type: object
                     properties:
-                      result: {}
-                      msg: {}
-                      ignored_parameters_unsupported: {}
                       alert_words:
                         type: array
                         description: |
@@ -11166,13 +11163,15 @@ paths:
                           highlighting consistent for messages sent before removal.
                         items:
                           type: object
-                        additionalProperties: false
-                        properties:
-                          word:
-                            type: string
-                          removed_at:
-                            type: string
-                            format: date-time
+                          additionalProperties: false
+                          properties:
+                            word:
+                              type: string
+                              description: The removed alert word, original case.
+                            removed_at:
+                              type: string
+                              format: date-time
+                              description: ISO 8601 timestamp when the word was removed (UTC).
                     example:
                       {
                         "result": "success",
@@ -11186,6 +11185,7 @@ paths:
                             },
                           ],
                       }
+
     post:
       operationId: add-alert-words
       summary: Add alert words
