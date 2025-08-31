@@ -1,15 +1,20 @@
 from collections.abc import Iterable
+from datetime import datetime, timedelta
+from typing import Any
 
 import ahocorasick
 from django.db import transaction
+from django.utils.timezone import now
 
 from zerver.lib.cache import (
     cache_with_key,
     realm_alert_words_automaton_cache_key,
     realm_alert_words_cache_key,
 )
-from zerver.models import AlertWord, Realm, UserProfile
+from zerver.models import AlertWord, AlertWordRemoval, Realm, UserProfile
 from zerver.models.alert_words import flush_realm_alert_words
+
+DEFAULT_REMOVAL_RETENTION_DAYS = 90
 
 
 @cache_with_key(lambda realm: realm_alert_words_cache_key(realm.id), timeout=3600 * 24)
@@ -73,10 +78,42 @@ def add_user_alert_words(user_profile: UserProfile, new_words: Iterable[str]) ->
 
 
 @transaction.atomic(savepoint=False)
-def remove_user_alert_words(user_profile: UserProfile, delete_words: Iterable[str]) -> list[str]:
+def remove_user_alert_words(
+    user_profile: UserProfile, delete_words: Iterable[str]
+) -> tuple[list[str], list[str]]:
     # TODO: Ideally, this would be a bulk query, but Django doesn't have a `__iexact`.
     # We can clean this up if/when PostgreSQL has more native support for case-insensitive fields.
     # If we turn this into a bulk operation, we will need to call flush_realm_alert_words() here.
+
+    removed_words: list[str] = []
     for delete_word in delete_words:
-        AlertWord.objects.filter(user_profile=user_profile, word__iexact=delete_word).delete()
-    return user_alert_words(user_profile)
+        # Capture originals (case-preserving) before delete
+        originals = list(
+            AlertWord.objects.filter(
+                user_profile=user_profile, word__iexact=delete_word
+            ).values_list("word", flat=True)
+        )
+        if originals:
+            removed_words.extend(originals)
+            AlertWord.objects.filter(user_profile=user_profile, word__iexact=delete_word).delete()
+    return user_alert_words(user_profile), removed_words
+
+
+def recently_removed_alert_words(
+    user_profile: UserProfile,
+    since: datetime | None = None,
+    retention_days: int = DEFAULT_REMOVAL_RETENTION_DAYS,
+) -> list[dict[str, Any]]:
+    # Return recent removals for this user.
+    # We limit to a recent window to keep payloads small.
+
+    qs = AlertWordRemoval.objects.filter(user_profile=user_profile)
+    if since is not None:
+        qs = qs.filter(removed_at__gte=since)
+    else:
+        qs = qs.filter(removed_at__gte=now() - timedelta(days=retention_days))
+
+    return [
+        {"word": row.word, "removed_at": row.removed_at.isoformat()}
+        for row in qs.order_by("-removed_at")
+    ]

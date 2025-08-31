@@ -11159,11 +11159,32 @@ paths:
                           configured by the user.
                         items:
                           type: string
+                      recently_removed_alert_words:
+                        type: array
+                        description: |
+                          Recently removed alert words for this user; used by clients to keep
+                          highlighting consistent for messages sent before removal.
+                        items:
+                          type: object
+                        additionalProperties: false
+                        properties:
+                          word:
+                            type: string
+                          removed_at:
+                            type: string
+                            format: date-time
                     example:
                       {
                         "result": "success",
                         "msg": "",
                         "alert_words": ["natural", "illustrious"],
+                        "recently_removed_alert_words":
+                          [
+                            {
+                              "word": "foo",
+                              "removed_at": "2023-10-01T12:34:56.789012+00:00",
+                            },
+                          ],
                       }
     post:
       operationId: add-alert-words
