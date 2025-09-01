@@ -4888,13 +4888,22 @@ class SubscriptionAPITest(ZulipTestCase):
         test_channel = self.make_stream("test A")
         announce = realm.new_stream_announcements_stream
         assert announce is not None
+
+        cordelia = self.example_user("cordelia")
+        hamlet = self.example_user("hamlet")
+        othello = self.example_user("othello")
+        iago = self.example_user("iago")
+        prospero = self.example_user("prospero")
+
+        self.create_personal_recipient(bot, desdemona, cordelia, hamlet, othello, iago, prospero)
+
         user_ids = [
             desdemona.id,
-            self.example_user("cordelia").id,
-            self.example_user("hamlet").id,
-            self.example_user("othello").id,
-            self.example_user("iago").id,
-            self.example_user("prospero").id,
+            cordelia.id,
+            hamlet.id,
+            othello.id,
+            iago.id,
+            prospero.id,
         ]
         principals_dict = dict(
             principals=orjson.dumps(user_ids).decode(), announce=orjson.dumps(True).decode()

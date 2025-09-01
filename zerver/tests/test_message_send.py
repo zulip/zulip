@@ -777,8 +777,12 @@ class MessagePOSTTest(ZulipTestCase):
         """
         Sending a personal message to a deactivated user returns error JSON.
         """
+        hamlet = self.example_user("hamlet")
         othello = self.example_user("othello")
         cordelia = self.example_user("cordelia")
+
+        self.create_personal_recipient(hamlet, othello, cordelia)
+
         do_deactivate_user(othello, acting_user=None)
         self.login("hamlet")
 
@@ -808,6 +812,8 @@ class MessagePOSTTest(ZulipTestCase):
         cordelia = self.example_user("cordelia")
         hamlet = self.example_user("hamlet")
         iago = self.example_user("iago")
+
+        self.create_personal_recipient(othello, cordelia, hamlet, iago)
 
         self.set_up_db_for_testing_user_access()
         self.login("polonius")
@@ -2455,8 +2461,6 @@ class StreamMessagesTest(ZulipTestCase):
     def test_get_raw_unread_data_for_1_to_1_dms_using_group_direct_message(self) -> None:
         sender = self.example_user("hamlet")
         receiver = self.example_user("cordelia")
-        receiver.recipient = None
-        receiver.save()
 
         message1_id = self.send_personal_message(sender, receiver, "test content 1")
         message2_id = self.send_personal_message(sender, receiver, "test content 2")
@@ -2520,7 +2524,6 @@ class PersonalMessageSendTest(ZulipTestCase):
         new_messages = list(map(message_stream_count, old_user_profiles))
         self.assertEqual(old_messages, new_messages)
 
-        user_profile = self.nonreg_user("test1")
         recipient = Recipient.objects.get(type_id=user_profile.id, type=Recipient.PERSONAL)
         self.assertEqual(most_recent_message(user_profile).recipient, recipient)
 
@@ -2584,11 +2587,14 @@ class PersonalMessageSendTest(ZulipTestCase):
         """
         If you send a personal, only you and the recipient see it.
         """
+        sender = self.example_user("hamlet")
+        receiver = self.example_user("othello")
+
         self.login("hamlet")
-        self.assert_personal(
-            sender=self.example_user("hamlet"),
-            receiver=self.example_user("othello"),
-        )
+        self.assert_personal(sender=sender, receiver=receiver)
+
+        message = most_recent_message(sender)
+        self.assertEqual(message.recipient.type, Recipient.PERSONAL)
 
     def test_personal_using_direct_message_group(self) -> None:
         """
@@ -2597,30 +2603,8 @@ class PersonalMessageSendTest(ZulipTestCase):
         sender = self.example_user("hamlet")
         receiver = self.example_user("othello")
 
-        get_or_create_direct_message_group([sender.id, receiver.id])
-
         self.login("hamlet")
-        self.assert_personal(
-            sender=sender,
-            receiver=receiver,
-        )
-
-    def test_personal_when_personal_recipient_is_none(self) -> None:
-        """
-        If you send a personal using direct_message_group, only you and the recipient see it.
-        """
-        sender = self.example_user("hamlet")
-        receiver = self.example_user("othello")
-
-        # Removing the personal recipient to ensure a new direct message group is created.
-        receiver.recipient = None
-        receiver.save()
-
-        self.login("hamlet")
-        self.assert_personal(
-            sender=sender,
-            receiver=receiver,
-        )
+        self.assert_personal(sender=sender, receiver=receiver)
 
         message = most_recent_message(sender)
         self.assertEqual(message.recipient.type, Recipient.DIRECT_MESSAGE_GROUP)
@@ -2629,6 +2613,8 @@ class PersonalMessageSendTest(ZulipTestCase):
     def test_personal_message_using_personal_recipient(self) -> None:
         user_profile = self.example_user("hamlet")
         cordelia = self.example_user("cordelia")
+
+        self.create_personal_recipient(user_profile, cordelia)
 
         with self.assert_database_query_count(16):
             self.send_personal_message(user_profile, cordelia)

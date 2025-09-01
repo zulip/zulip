@@ -608,11 +608,6 @@ class NarrowBuilderTest(ZulipTestCase):
         self._do_add_term_test(term, "WHERE (flags & %(flags_1)s) != %(param_1)s")
 
     def test_add_term_using_dm_including_operator_with_different_user_email(self) -> None:
-        # Dropping the personal recipient for Othello
-        othello = self.example_user("othello")
-        othello.recipient = None
-        othello.save()
-
         # Test without any such group direct messages existing
         term = NarrowParameter(operator="dm-including", operand=self.othello_email)
         self._do_add_term_test(
@@ -634,11 +629,6 @@ class NarrowBuilderTest(ZulipTestCase):
     def test_add_term_using_dm_including_operator_with_different_user_email_and_negated(
         self,
     ) -> None:  # NEGATED
-        # Dropping the personal recipient for Othello
-        othello = self.example_user("othello")
-        othello.recipient = None
-        othello.save()
-
         term = NarrowParameter(operator="dm-including", operand=self.othello_email, negated=True)
         self._do_add_term_test(
             term,
@@ -647,6 +637,15 @@ class NarrowBuilderTest(ZulipTestCase):
 
     @override_settings(PREFER_DIRECT_MESSAGE_GROUP=False)
     def test_add_term_using_dm_including_operator_with_personal_recipient(self) -> None:
+        hamlet = self.example_user("hamlet")
+        self.create_personal_recipient(hamlet)
+
+        # We need to re-create the NarrowBuilder with the new personal recipient
+        self.builder = NarrowBuilder(hamlet, column("id", Integer), self.realm)
+
+        othello = self.example_user("othello")
+        self.create_personal_recipient(othello)
+
         term = NarrowParameter(operator="dm-including", operand=self.othello_email)
         self._do_add_term_test(
             term,
@@ -827,6 +826,12 @@ class NarrowBuilderTest(ZulipTestCase):
     # Test that "pm-with" (legacy alias for "dm") works.
     @override_settings(PREFER_DIRECT_MESSAGE_GROUP=False)
     def test_add_term_using_pm_with_operator_and_with_personal_recipient(self) -> None:
+        hamlet = self.example_user("hamlet")
+        self.create_personal_recipient(hamlet)
+
+        # We need to re-create the NarrowBuilder with the new personal recipient
+        self.builder = NarrowBuilder(hamlet, column("id", Integer), self.realm)
+
         term = NarrowParameter(operator="pm-with", operand=self.hamlet_email)
         self._do_add_term_test(
             term,
@@ -2089,10 +2094,10 @@ class GetOldMessagesTest(ZulipTestCase):
         query_ids["hamlet_and_othello_recipient"] = self.get_dm_group_recipient(
             hamlet_user, othello_user
         ).id
-        assert hamlet_user.recipient is not None
-        query_ids["hamlet_personal_recipient"] = hamlet_user.recipient.id
-        assert othello_user.recipient is not None
-        query_ids["othello_personal_recipient"] = othello_user.recipient.id
+        if hamlet_user.recipient is not None:
+            query_ids["hamlet_personal_recipient"] = hamlet_user.recipient.id
+        if othello_user.recipient is not None:
+            query_ids["othello_personal_recipient"] = othello_user.recipient.id
         recipients = (
             get_public_streams_queryset(hamlet_user.realm)
             .values_list("recipient_id", flat=True)
@@ -2548,6 +2553,8 @@ class GetOldMessagesTest(ZulipTestCase):
         conversations with that user.
         """
         me = self.example_user("hamlet")
+        iago = self.example_user("iago")
+        aaron = self.example_user("aaron")
 
         def dr_emails(dr: list[UserDisplayRecipient]) -> str:
             assert isinstance(dr, list)
@@ -2555,30 +2562,21 @@ class GetOldMessagesTest(ZulipTestCase):
 
         def dr_ids(dr: list[UserDisplayRecipient]) -> list[int]:
             assert isinstance(dr, list)
-            return sorted({*(r["id"] for r in dr), self.example_user("hamlet").id})
+            return sorted({*(r["id"] for r in dr), me.id})
 
-        self.send_personal_message(me, self.example_user("iago"))
-
-        self.send_group_direct_message(
-            me,
-            [self.example_user("iago"), self.example_user("cordelia")],
-        )
+        self.send_personal_message(me, iago)
+        self.send_group_direct_message(me, [iago, self.example_user("cordelia")])
 
         # Send a 1:1 and group direct message containing Aaron.
         # Then deactivate Aaron to test "dm" narrow includes messages
         # from deactivated users also.
-        self.send_personal_message(me, self.example_user("aaron"))
-        self.send_group_direct_message(
-            me,
-            [self.example_user("iago"), self.example_user("aaron")],
-        )
-        aaron = self.example_user("aaron")
+        self.send_personal_message(me, aaron)
+        self.send_group_direct_message(me, [iago, aaron])
+
         do_deactivate_user(aaron, acting_user=None)
         self.assertFalse(aaron.is_active)
 
-        personals = [
-            m for m in get_user_messages(self.example_user("hamlet")) if not m.is_channel_message
-        ]
+        personals = [m for m in get_user_messages(me) if not m.is_channel_message]
         for personal in personals:
             emails = dr_emails(get_display_recipient(personal.recipient))
             self.login_user(me)
@@ -4517,19 +4515,19 @@ class GetOldMessagesTest(ZulipTestCase):
     @override_settings(PREFER_DIRECT_MESSAGE_GROUP=False)
     def test_use_first_unread_anchor_with_some_unread_messages(self) -> None:
         user_profile = self.example_user("hamlet")
+        othello = self.example_user("othello")
+        cordelia = self.example_user("cordelia")
+        iago = self.example_user("iago")
 
         # Have Othello send messages to Hamlet that he hasn't read.
         # Here, Hamlet isn't subscribed to the channel Scotland
-        self.send_stream_message(self.example_user("othello"), "Scotland")
-        first_unread_message_id = self.send_personal_message(
-            self.example_user("othello"),
-            self.example_user("hamlet"),
-        )
+        self.send_stream_message(othello, "Scotland")
+        first_unread_message_id = self.send_personal_message(othello, user_profile)
 
         # Add a few messages that help us test that our query doesn't
         # look at messages that are irrelevant to Hamlet.
-        self.send_personal_message(self.example_user("othello"), self.example_user("cordelia"))
-        self.send_personal_message(self.example_user("othello"), self.example_user("iago"))
+        self.send_personal_message(othello, cordelia)
+        self.send_personal_message(othello, iago)
 
         query_params = dict(
             anchor="first_unread",
@@ -4666,6 +4664,7 @@ class GetOldMessagesTest(ZulipTestCase):
         self.make_stream("web stuff")
         self.make_stream("bogus")
         user_profile = self.example_user("hamlet")
+        self.create_personal_recipient(user_profile)
         muted_topics = [
             ["Scotland", "golf"],
             ["web stuff", "css"],
@@ -4928,9 +4927,13 @@ WHERE zerver_subscription.user_profile_id = {hamlet_id} AND zerver_subscription.
 
     @override_settings(PREFER_DIRECT_MESSAGE_GROUP=False)
     def test_get_messages_with_narrow_queries_using_personal_recipient(self) -> None:
+        othello = self.example_user("othello")
+        hamlet = self.example_user("hamlet")
+
+        self.create_personal_recipient(othello, hamlet)
+
         query_ids = self.get_query_ids()
-        othello_email = self.example_user("othello").email
-        hamlet_email = self.example_user("hamlet").email
+
         sql_template = """\
 SELECT anon_1.message_id, anon_1.flags \n\
 FROM (SELECT message_id, flags \n\
@@ -4947,7 +4950,7 @@ WHERE zerver_subscription.user_profile_id = {hamlet_id} AND zerver_subscription.
                 "anchor": 0,
                 "num_before": 0,
                 "num_after": 0,
-                "narrow": f'[["dm", "{othello_email}"]]',
+                "narrow": f'[["dm", "{othello.email}"]]',
             },
             sql,
         )
@@ -4968,7 +4971,7 @@ WHERE zerver_subscription.user_profile_id = {hamlet_id} AND zerver_subscription.
                 "anchor": 0,
                 "num_before": 1,
                 "num_after": 0,
-                "narrow": f'[["dm", "{othello_email}"]]',
+                "narrow": f'[["dm", "{othello.email}"]]',
             },
             sql,
         )
@@ -4989,7 +4992,7 @@ WHERE zerver_subscription.user_profile_id = {hamlet_id} AND zerver_subscription.
                 "anchor": 0,
                 "num_before": 0,
                 "num_after": 9,
-                "narrow": f'[["dm", "{othello_email}"]]',
+                "narrow": f'[["dm", "{othello.email}"]]',
             },
             sql,
         )
@@ -5012,7 +5015,7 @@ WHERE zerver_subscription.user_profile_id = {hamlet_id} AND zerver_subscription.
                 "anchor": 0,
                 "num_before": 0,
                 "num_after": 9,
-                "narrow": f'[["dm", "{hamlet_email}"]]',
+                "narrow": f'[["dm", "{hamlet.email}"]]',
             },
             sql,
         )
@@ -5385,6 +5388,9 @@ WHERE zerver_subscription.user_profile_id = {hamlet_id} AND zerver_subscription.
     def test_personal_dm_recipient_id(self) -> None:
         hamlet = self.example_user("hamlet")
         othello = self.example_user("othello")
+
+        self.create_personal_recipient(hamlet, othello)
+
         self.login_user(hamlet)
 
         outgoing_message_id = self.send_personal_message(hamlet, othello)

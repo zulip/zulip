@@ -5,6 +5,7 @@ from typing import Any
 from unittest.mock import call, patch
 
 import orjson
+from django.conf import settings
 from django.test import override_settings
 
 from zerver.data_import.import_util import SubscriberHandler, ZerverFieldsT
@@ -32,7 +33,7 @@ from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import Message, Reaction, Recipient, UserProfile
 from zerver.models.presence import PresenceSequence
 from zerver.models.realms import get_realm
-from zerver.models.users import get_user
+from zerver.models.users import get_system_bot, get_user
 
 
 class MatterMostImporter(ZulipTestCase):
@@ -818,18 +819,18 @@ class MatterMostImporter(ZulipTestCase):
         self.assert_length(realm["zerver_defaultstream"], 0)
 
         exported_recipient_ids = self.get_set(realm["zerver_recipient"], "id")
-        self.assert_length(exported_recipient_ids, 6)
+        self.assert_length(exported_recipient_ids, 3)
         exported_recipient_types = self.get_set(realm["zerver_recipient"], "type")
-        self.assertEqual(exported_recipient_types, {1, 2})
+        self.assertEqual(exported_recipient_types, {Recipient.STREAM})
         exported_recipient_type_ids = self.get_set(realm["zerver_recipient"], "type_id")
         self.assert_length(exported_recipient_type_ids, 3)
 
         exported_subscription_userprofile = self.get_set(
             realm["zerver_subscription"], "user_profile"
         )
-        self.assert_length(exported_subscription_userprofile, 3)
+        self.assert_length(exported_subscription_userprofile, 2)
         exported_subscription_recipients = self.get_set(realm["zerver_subscription"], "recipient")
-        self.assert_length(exported_subscription_recipients, 6)
+        self.assert_length(exported_subscription_recipients, 3)
 
         messages = self.read_file(harry_team_output_dir, "messages-000001.json")
 
@@ -951,6 +952,12 @@ class MatterMostImporter(ZulipTestCase):
         exported_usermessage_messages = self.get_set(messages["zerver_usermessage"], "message")
         self.assertEqual(exported_usermessage_messages, exported_messages_id)
 
+        # Creating personal recipients for bots before importing the data
+        internal_realm = get_realm(settings.SYSTEM_BOT_REALM)
+        notification_bot = get_system_bot(settings.NOTIFICATION_BOT, internal_realm.id)
+        welcome_bot = get_system_bot(settings.WELCOME_BOT, internal_realm.id)
+        self.create_personal_recipient(notification_bot, welcome_bot)
+
         with self.assertLogs(level="INFO"):
             do_import_realm(
                 import_dir=harry_team_output_dir,
@@ -1049,21 +1056,21 @@ class MatterMostImporter(ZulipTestCase):
         self.assert_length(realm["zerver_defaultstream"], 0)
 
         exported_recipient_ids = self.get_set(realm["zerver_recipient"], "id")
-        self.assert_length(exported_recipient_ids, 10)
+        self.assert_length(exported_recipient_ids, 6)
         exported_recipient_types = self.get_set(realm["zerver_recipient"], "type")
         self.assertEqual(
             exported_recipient_types,
-            {Recipient.PERSONAL, Recipient.STREAM, Recipient.DIRECT_MESSAGE_GROUP},
+            {Recipient.STREAM, Recipient.DIRECT_MESSAGE_GROUP},
         )
         exported_recipient_type_ids = self.get_set(realm["zerver_recipient"], "type_id")
-        self.assert_length(exported_recipient_type_ids, 4)
+        self.assert_length(exported_recipient_type_ids, 3)
 
         exported_subscription_userprofile = self.get_set(
             realm["zerver_subscription"], "user_profile"
         )
         self.assert_length(exported_subscription_userprofile, 4)
         exported_subscription_recipients = self.get_set(realm["zerver_subscription"], "recipient")
-        self.assert_length(exported_subscription_recipients, 10)
+        self.assert_length(exported_subscription_recipients, 6)
 
         messages = self.read_file(harry_team_output_dir, "messages-000001.json")
 
