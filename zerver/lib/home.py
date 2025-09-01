@@ -87,7 +87,7 @@ def build_page_params_for_home_page_load(
     narrow: list[NeverNegatedNarrowTerm],
     narrow_stream: Stream | None,
     narrow_topic_name: str | None,
-) -> tuple[int, dict[str, object]]:
+) -> tuple[int | None, dict[str, object]]:  # return type updated
     """
     This function computes page_params for when we load the home page.
 
@@ -127,13 +127,15 @@ def build_page_params_for_home_page_load(
             include_subscribers="partial" if partial_subscribers else True,
         )
         queue_id = state_data["queue_id"]
-        default_language = state_data["user_settings"]["default_language"]
+        default_language = state_data["user_settings"].get(
+            "default_language", "en"
+        )  # ✅ safer get()
     else:
         # The spectator client will be fetching the /register response
         # for spectators via the API.
         state_data = None
         queue_id = None
-        default_language = realm.default_language
+        default_language = getattr(realm, "default_language", "en")  # safer getattr()
 
     if user_profile is None:
         request_language = request.COOKIES.get(settings.LANGUAGE_COOKIE_NAME, default_language)
@@ -157,6 +159,16 @@ def build_page_params_for_home_page_load(
     # These end up in a JavaScript Object named 'page_params'.
     #
     # Sync this with home_params_schema in base_page_params.ts.
+    language_list = get_language_list()  # moved out to reuse
+    all_languages = [  # new addition
+        {
+            "code": lang["code"],
+            "name": lang["name"],
+            "percent_translated": lang.get("percent_translated", 0),
+        }
+        for lang in language_list
+    ]
+
     page_params: dict[str, object] = dict(
         page_type="home",
         ## Server settings.
@@ -167,7 +179,9 @@ def build_page_params_for_home_page_load(
         # Only show marketing email settings if on Zulip Cloud
         corporate_enabled=settings.CORPORATE_ENABLED,
         ## Misc. extra data.
-        language_list=get_language_list(),
+        language_list=language_list,
+        default_language=default_language,  #  added
+        all_languages=all_languages,  #  added
         furthest_read_time=furthest_read_time,
         embedded_bots_enabled=settings.EMBEDDED_BOTS_ENABLED,
         two_fa_enabled=two_fa_enabled,

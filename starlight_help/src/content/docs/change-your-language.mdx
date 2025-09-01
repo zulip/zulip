@@ -19,30 +19,40 @@ chat*](/help/general-chat-topic)), or the language of messages you receive.
 <Tabs>
   <TabItem label="Desktop/Web">
     <FlattenedSteps>
-      <NavigationSteps target="settings/preferences" />
+      <ol>
+        <li>
+          Under <strong>General</strong>, click the <strong>Language</strong> dropdown.
 
-      1. Under **General**, click the button under **Language**.
-      1. Select a language. Languages are marked as 100% translated only if every
-         string in the web, desktop, and mobile apps is translated, including
-         administrative UI and all error messages that the API can return.
-      1. Click **Reload**.
+          <ul>
+            <li>You can see the translation progress for each language in parentheses (e.g., English (100%)).</li>
+            <li>A `?` link next to the setting provides additional help: <a href="https://zulip.com/help/change-your-language">change your language</a>.</li>
+          </ul>
+        </li>
+
+        <li>Select a language from the dropdown.</li>
+
+        <li>Click <strong>Reload</strong> for the change to take effect.</li>
+      </ol>
     </FlattenedSteps>
   </TabItem>
 
   <TabItem label="Mobile">
-    Access this feature by following the web app instructions in your
-    mobile device browser.
+    <FlattenedSteps>
+      <ol>
+        <li>
+          Implementation of this feature in the mobile app is tracked
+          <a href="https://github.com/zulip/zulip-flutter/issues/1139">on GitHub</a>.
+        </li>
 
-    Implementation of this feature in the mobile app is tracked [on
-    GitHub](https://github.com/zulip/zulip-flutter/issues/1139). If
-    you're interested in this feature, please react to the issue's
-    description with 👍.
+        <li>If you're interested in this feature, you may react to the issue's description with 👍.</li>
+      </ol>
+    </FlattenedSteps>
   </TabItem>
 </Tabs>
 
 ## Font configuration for unsupported languages
 
-Zulip uses the Source Sans 3 font, which [supports over 30 languages][adobe-docs].
+Zulip uses the Source Sans 3 font, which [supports over 30 languages][adobe-docs].\
 If Source Sans 3 does not support your language, you may need to configure your
 browser to use a different font or adjust the default font size to properly
 display all the characters. See the documentation for [Chrome][chrome-docs],

@@ -342,7 +342,7 @@ importers:
         specifier: ^1.2.32
         version: 1.2.32
       '@types/jquery':
-        specifier: ^3.3.31
+        specifier: ^3.5.32
         version: 3.5.33
       '@types/jquery.validation':
         specifier: ^1.16.7

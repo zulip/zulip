@@ -1,15 +1,16 @@
+// Use default import for calling $()
 import $ from "jquery";
-import Cookies from "js-cookie";
+// import Cookies from "js-cookie";
 import assert from "minimalistic-assert";
 import * as z from "zod/mini";
 
-import render_dialog_default_language from "../templates/default_language_modal.hbs";
-
+// import render_dialog_default_language from "../templates/default_language_modal.hbs";
 import * as channel from "./channel.ts";
-import * as dialog_widget from "./dialog_widget.ts";
+// import * as dialog_widget from "./dialog_widget.ts";
+import {DropdownWidget} from "./dropdown_widget.ts";
 import * as emojisets from "./emojisets.ts";
-import * as hash_parser from "./hash_parser.ts";
-import {$t_html, get_language_list_columns, get_language_name} from "./i18n.ts";
+// import * as hash_parser from "./hash_parser.ts";
+import {$t_html, get_language_name} from "./i18n.ts";
 import * as information_density from "./information_density.ts";
 import * as loading from "./loading.ts";
 import * as overlays from "./overlays.ts";
@@ -18,7 +19,7 @@ import type {RealmDefaultSettings} from "./realm_user_settings_defaults.ts";
 import * as settings_components from "./settings_components.ts";
 import type {RequestOpts} from "./settings_ui.ts";
 import * as settings_ui from "./settings_ui.ts";
-import {realm} from "./state_data.ts";
+// import {realm} from "./state_data.ts";
 import * as ui_report from "./ui_report.ts";
 import {user_settings, user_settings_schema} from "./user_settings.ts";
 import type {UserSettings} from "./user_settings.ts";
@@ -86,132 +87,135 @@ function change_display_setting(
     settings_ui.do_settings_change(channel.patch, "/json/settings", data, $status_el, opts);
 }
 
-function spectator_default_language_modal_post_render(): void {
-    $("#language_selection_modal")
-        .find(".language")
-        .on("click", (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            dialog_widget.close();
-
-            assert(
-                page_params.language_cookie_name !== undefined,
-                "Expected language_cookie_name present for spectator",
-            );
-
-            const $link = $(e.target).closest("a[data-code]");
-            Cookies.set(page_params.language_cookie_name, $link.attr("data-code")!);
-            window.location.reload();
-        });
-}
-
-function org_notification_default_language_modal_post_render(): void {
-    $("#language_selection_modal")
-        .find(".language")
-        .on("click", (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            dialog_widget.close();
-
-            const $link = $(e.target).closest("a[data-code]");
-            const setting_value = $link.attr("data-code");
-            assert(setting_value !== undefined);
-            const new_language = $link.attr("data-name");
-            assert(new_language !== undefined);
-            const $language_element = $("#org-notifications .language_selection_widget");
-            $language_element.find(".language_selection_button").text(new_language);
-            $language_element.attr("data-language-code", setting_value);
-            settings_components.save_discard_realm_settings_widget_status_handler(
-                $("#org-notifications"),
-            );
-        });
-}
-
-function user_default_language_modal_post_render(): void {
-    $("#language_selection_modal")
-        .find(".language")
-        .on("click", (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            dialog_widget.close();
-
-            const $link = $(e.target).closest("a[data-code]");
-            const setting_value = $link.attr("data-code");
-            assert(setting_value !== undefined);
-            const data = {default_language: setting_value};
-
-            const new_language = $link.attr("data-name");
-            assert(new_language !== undefined);
-            $("#user-preferences .language_selection_widget .language_selection_button").text(
-                new_language,
-            );
-            $("#user-preferences .language_selection_widget").attr(
-                "data-language-code",
-                setting_value,
-            );
-
-            change_display_setting(
-                data,
-                $("#settings_content").find(".general-settings-status"),
-                undefined,
-                undefined,
-                $t_html(
-                    {
-                        defaultMessage:
-                            "Saved. Please <z-link>reload</z-link> for the change to take effect.",
-                    },
-                    {
-                        "z-link": (content_html) =>
-                            `<a class='reload_link'>${content_html.join("")}</a>`,
-                    },
-                ),
-                true,
-            );
-        });
-}
-
-function default_language_modal_post_render(): void {
-    if (page_params.is_spectator) {
-        spectator_default_language_modal_post_render();
-    } else if (hash_parser.get_current_hash_category() === "organization") {
-        org_notification_default_language_modal_post_render();
-    } else {
-        user_default_language_modal_post_render();
-    }
-}
-
-export function launch_default_language_setting_modal(): void {
-    let selected_language = user_settings.default_language;
-
-    if (hash_parser.get_current_hash_category() === "organization") {
-        selected_language = realm.realm_default_language;
-    }
-
-    const html_body = render_dialog_default_language({
-        language_list: get_language_list_columns(selected_language),
-    });
-
-    dialog_widget.launch({
-        html_heading: $t_html({defaultMessage: "Select language"}),
-        html_body,
-        html_submit_button: $t_html({defaultMessage: "Close"}),
-        id: "language_selection_modal",
-        close_on_submit: true,
-        focus_submit_on_open: true,
-        single_footer_button: true,
-        post_render: default_language_modal_post_render,
-        on_click() {
-            // We perform no actions since the 'close_on_submit' field takes care
-            // of closing the modal.
-        },
-    });
-}
-
 export function set_up(settings_panel: SettingsPanel): void {
     meta.loaded = true;
     const $container = $(settings_panel.container);
     const settings_object = settings_panel.settings_object;
     const for_realm_settings = settings_panel.for_realm_settings;
+    const $dropdown_container = $container.find("#default_language_dropdown_container");
+
+    if ($dropdown_container.length > 0) {
+        type Language = {
+            code: string;
+            name: string;
+            percent_translated: number;
+        };
+
+        const all_languages: Language[] | undefined = Array.isArray(page_params.all_languages)
+            ? page_params.all_languages
+            : undefined;
+
+        const language_options: {unique_id: string; name: string}[] = [
+            {unique_id: "search", name: "Search"}, // dummy first option
+            ...(all_languages ?? []).map((lang) => ({
+                unique_id: lang.code,
+                name: `${lang.name} (${lang.percent_translated}%)`,
+            })),
+        ];
+
+        type LanguageProps = {
+            unique_id: string;
+            languages: Language[];
+            selected_language?: string;
+        };
+
+        const default_language_dropdown = new DropdownWidget({
+            widget_name: "default_language",
+            default_id: settings_object.default_language ?? "",
+            $events_container: $container, // for event handling
+            hide_search_box: false,
+
+            // Fix get_options signature to match DropdownWidgetOptions
+            get_options(current_value?: string | number): {unique_id: string; name: string}[] {
+                const search_query = typeof current_value === "string" ? current_value : undefined;
+
+                if (!search_query) {
+                    return language_options;
+                }
+
+                return language_options.filter((lang) =>
+                    lang.name.toLowerCase().includes(search_query.toLowerCase()),
+                );
+            },
+
+            // Fix item_click_callback type
+            item_click_callback(
+                _event,
+                instance,
+                _widget,
+                _is_sticky_bottom_option_clicked: boolean,
+            ) {
+                // Start safe default
+                let props: Partial<LanguageProps> = {languages: all_languages ?? []};
+
+                // Type guard to check unique_id presence
+                function hasUniqueId(
+                    obj: unknown,
+                ): obj is {unique_id: string; languages?: unknown; selected_language?: unknown} {
+                    return typeof obj === "object" && obj !== null && "unique_id" in obj;
+                }
+
+                if (hasUniqueId(instance.props)) {
+                    const maybe_props = instance.props;
+                    props = {
+                        unique_id:
+                            typeof maybe_props.unique_id === "string" ? maybe_props.unique_id : "",
+                        languages:
+                            Array.isArray(maybe_props.languages) &&
+                            maybe_props.languages.every(
+                                (lang): lang is Language =>
+                                    typeof lang === "object" &&
+                                    lang !== null &&
+                                    "code" in lang &&
+                                    "name" in lang &&
+                                    "percent_translated" in lang,
+                            )
+                                ? maybe_props.languages
+                                : (all_languages ?? []),
+                    };
+                }
+
+                // Get the selected language
+                const selected_lang = props.unique_id ?? "";
+
+                if (!selected_lang) {
+                    return;
+                }
+
+                const data = {default_language: selected_lang};
+
+                const $status_element = $container
+                    .closest(".subsection-parent")
+                    .find(".alert-notification");
+
+                change_display_setting(
+                    data,
+                    $status_element,
+                    undefined,
+                    undefined,
+                    $t_html(
+                        {
+                            defaultMessage:
+                                "Saved. Please <z-link>reload</z-link> for the change to take effect.",
+                        },
+                        {
+                            "z-link": (content_html: string[]) =>
+                                `<a class='reload_link'>${content_html.join("")}</a>`,
+                        },
+                    ),
+                    true,
+                );
+            },
+        });
+
+        default_language_dropdown.setup();
+
+        // Ensure .text() gets string, not undefined
+        const language_name = settings_object.default_language ?? "";
+        $dropdown_container
+            .find(".dropdown_widget_value")
+            .text(language_name !== "" ? (get_language_name(language_name) ?? "Search") : "Search");
+    }
 
     // Select current values for enum/select type fields. For boolean
     // fields, the current value is set automatically in the template.
@@ -437,10 +441,13 @@ export function update_page(property: UserSettingsProperty): void {
     const $container = $(user_settings_panel.container);
     let value = user_settings[property];
 
-    // The default_language button text updates to the language
+    // The default_language dropdown text updates to the language
     // name and not the value of the user_settings property.
     if (property === "default_language") {
-        $container.find(".language_selection_button").text(user_default_language_name ?? "");
+        const $dropdown_container = $container.find("#default_language_dropdown_container");
+        const current_lang = user_settings.default_language;
+        const language_name = get_language_name(current_lang);
+        $dropdown_container.find(".dropdown_widget_value").text(language_name ?? "");
         return;
     }
 

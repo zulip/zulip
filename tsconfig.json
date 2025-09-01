@@ -18,7 +18,7 @@
             "*": ["./web/src/types/*"],
         },
         "resolveJsonModule": true,
-        "types": ["@types/jquery.validation"],
+        "types": ["jquery", "@types/jquery.validation", "node"],
 
         /* Emit */
         "noEmit": true,

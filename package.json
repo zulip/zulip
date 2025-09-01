@@ -107,7 +107,7 @@
     "@types/confusing-browser-globals": "^1.0.3",
     "@types/gtag.js": "^0.0.20",
     "@types/is-url": "^1.2.32",
-    "@types/jquery": "^3.3.31",
+    "@types/jquery": "^3.5.32",
     "@types/jquery.validation": "^1.16.7",
     "@types/js-cookie": "^3.0.6",
     "@types/katex": "^0.16.0",
