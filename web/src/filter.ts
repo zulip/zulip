@@ -747,10 +747,9 @@ export class Filter {
                 return verb + "direct messages with";
 
             case "dm-with":
-                return verb + "direct messages with";
-
-            case "dm-including": // Legacy alias
-                return verb + "direct messages with";
+                // User-facing description retains legacy wording
+                // to highlight membership semantics.
+                return verb + "direct messages including";
 
             case "in":
                 return verb + "messages in";

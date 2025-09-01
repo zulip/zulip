@@ -1782,6 +1782,10 @@ test("describe", ({mock_template, override}) => {
     string = "messages in home";
     assert.equal(Filter.search_description_as_html(narrow, false), string);
 
+    narrow = [{operator: "in", operand: "home", negated: true}];
+    string = "exclude messages in home";
+    assert.equal(Filter.search_description_as_html(narrow, false), string);
+
     narrow = [{operator: "is", operand: "mentioned"}];
     string = "messages that mention you";
     assert.equal(Filter.search_description_as_html(narrow, false), string);
@@ -1858,6 +1862,15 @@ test("describe", ({mock_template, override}) => {
     string = "exclude messages with images, messages in #devel";
     assert.equal(Filter.search_description_as_html(narrow, false), string);
 
+    narrow = [
+        {operator: "in", operand: "all"},
+        {operator: "is", operand: "starred"},
+    ];
+    string = "messages in all, starred messages";
+    assert.equal(Filter.search_description_as_html(narrow, false), string);
+
+
+
     narrow = [];
     string = "combined feed";
     assert.equal(Filter.search_description_as_html(narrow, false), string);
@@ -1895,6 +1908,12 @@ test("describe", ({mock_template, override}) => {
     narrow = [{operator: "topic", operand: ""}];
     string = "topic ";
     assert.equal(Filter.search_description_as_html(narrow, true), string);
+});
+
+test("operator_to_prefix_legacy_aliases", () => {
+    // Test dm-including legacy alias coverage - should behave same as dm-with
+    assert.equal(Filter.operator_to_prefix("dm-including", false), "direct messages including");
+    assert.equal(Filter.operator_to_prefix("dm-including", true), "exclude direct messages including");
 });
 
 test("can_bucket_by", () => {
