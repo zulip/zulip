@@ -6,6 +6,7 @@ const {get_final_topic_display_name} = require("../src/util.ts");
 
 const {mock_banners} = require("./lib/compose_banner.cjs");
 const {make_user_group} = require("./lib/example_group.cjs");
+const {make_realm} = require("./lib/example_realm.cjs");
 const example_settings = require("./lib/example_settings.cjs");
 const {mock_esm, set_global, with_overrides, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
@@ -65,10 +66,10 @@ const {set_current_user, set_realm} = zrequire("state_data");
 const {initialize_user_settings} = zrequire("user_settings");
 const current_user = {};
 set_current_user(current_user);
-const realm = {
+const realm = make_realm({
     realm_empty_topic_display_name: REALM_EMPTY_TOPIC_DISPLAY_NAME,
     realm_topics_policy: "allow_empty_topic",
-};
+});
 set_realm(realm);
 const user_settings = {
     web_channel_default_view: settings_config.web_channel_default_view_values.channel_feed.code,

@@ -2,6 +2,7 @@
 
 const assert = require("node:assert/strict");
 
+const {make_realm} = require("./lib/example_realm.cjs");
 const {mock_esm, set_global, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
 const $ = require("./lib/zjquery.cjs");
@@ -64,9 +65,9 @@ const user_settings = {
 initialize_user_settings({user_settings});
 stream_list_sort.set_filter_out_inactives();
 
-const realm = {
+const realm = make_realm({
     realm_topics_policy: "allow_empty_topic",
-};
+});
 set_realm(realm);
 
 const me = {

@@ -103,7 +103,10 @@ export default defineConfig({
                             link: "https://zulip.com/why-zulip/",
                         },
                         "trying-out-zulip",
-                        "zulip-cloud-or-self-hosting",
+                        {
+                            label: "Zulip Cloud or self-hosting?",
+                            link: "/zulip-cloud-or-self-hosting",
+                        },
                         "moving-to-zulip",
                         "moderating-open-organizations",
                         "setting-up-zulip-for-a-class",
@@ -180,14 +183,20 @@ export default defineConfig({
                     items: [
                         "format-your-message-using-markdown",
                         "mention-a-user-or-group",
-                        "link-to-a-message-or-conversation",
+                        {
+                            label: "Link to a channel, topic or message",
+                            link: "/link-to-a-message-or-conversation",
+                        },
                         "format-a-quote",
                         "quote-or-forward-a-message",
                         "emoji-and-emoticons",
                         "insert-a-link",
                         "saved-snippets",
                         "share-and-upload-files",
-                        "animated-gifs-from-giphy",
+                        {
+                            label: "Animated GIFs",
+                            link: "/animated-gifs-from-giphy",
+                        },
                         "text-emphasis",
                         "paragraph-and-section-formatting",
                         "bulleted-lists",
@@ -210,8 +219,14 @@ export default defineConfig({
                         "mastering-the-compose-box",
                         "resize-the-compose-box",
                         "typing-notifications",
-                        "preview-your-message-before-sending",
-                        "verify-your-message-was-successfully-sent",
+                        {
+                            label: "Preview messages before sending",
+                            link: "/preview-your-message-before-sending",
+                        },
+                        {
+                            label: "Verify a message was sent",
+                            link: "/verify-your-message-was-successfully-sent",
+                        },
                         "edit-a-message",
                         "delete-a-message",
                         "view-and-edit-your-message-drafts",
@@ -233,7 +248,10 @@ export default defineConfig({
                         "marking-messages-as-read",
                         "marking-messages-as-unread",
                         "configure-unread-message-counters",
-                        "configure-where-you-land",
+                        {
+                            label: "Configure where you land",
+                            link: "/configure-where-you-land",
+                        },
                         "emoji-reactions",
                         "view-your-mentions",
                         "star-a-message",
@@ -243,8 +261,14 @@ export default defineConfig({
                         "link-to-a-message-or-conversation",
                         "search-for-messages",
                         "printing-messages",
-                        "view-the-markdown-source-of-a-message",
-                        "view-the-exact-time-a-message-was-sent",
+                        {
+                            label: "View message content as Markdown",
+                            link: "/view-the-markdown-source-of-a-message",
+                        },
+                        {
+                            label: "View when message was sent",
+                            link: "/view-the-exact-time-a-message-was-sent",
+                        },
                         "view-a-messages-edit-history",
                         "collapse-a-message",
                         "read-receipts",
@@ -309,7 +333,10 @@ export default defineConfig({
                         "email-notifications",
                         "desktop-notifications",
                         "mobile-notifications",
-                        "do-not-disturb",
+                        {
+                            label: "Do Not Disturb",
+                            link: "/do-not-disturb",
+                        },
                     ],
                 },
                 {
@@ -319,10 +346,19 @@ export default defineConfig({
                             label: "Download apps for every platform",
                             link: "https://zulip.com/apps/",
                         },
-                        "mobile-app-install-guide",
-                        "desktop-app-install-guide",
+                        {
+                            label: "Mobile app installation guides",
+                            link: "/mobile-app-install-guide",
+                        },
+                        {
+                            label: "Desktop installation guides",
+                            link: "/desktop-app-install-guide",
+                        },
                         "supported-browsers",
-                        "configure-how-links-open",
+                        {
+                            label: "Configure how links open",
+                            link: "/configure-how-links-open",
+                        },
                         "connect-through-a-proxy",
                         "custom-certificates",
                     ],
@@ -338,7 +374,10 @@ export default defineConfig({
                     label: "Organization profile",
                     items: [
                         "organization-type",
-                        "communities-directory",
+                        {
+                            label: "Communities directory",
+                            link: "/communities-directory",
+                        },
                         "linking-to-zulip",
                         "change-organization-url",
                         "deactivate-your-organization",
@@ -356,7 +395,10 @@ export default defineConfig({
                 {
                     label: "Account creation and authentication",
                     items: [
-                        "configure-default-new-user-settings",
+                        {
+                            label: "Configure default new user settings",
+                            link: "/configure-default-new-user-settings",
+                        },
                         "custom-profile-fields",
                         "invite-new-users",
                         "restrict-account-creation",
@@ -394,9 +436,18 @@ export default defineConfig({
                         "channel-posting-policy",
                         "configure-who-can-administer-a-channel",
                         "configure-who-can-create-channels",
-                        "configure-who-can-subscribe",
-                        "configure-who-can-invite-to-channels",
-                        "configure-who-can-unsubscribe-others",
+                        {
+                            label: "Configure who can subscribe",
+                            link: "/configure-who-can-subscribe",
+                        },
+                        {
+                            label: "Configure who can subscribe others",
+                            link: "/configure-who-can-invite-to-channels",
+                        },
+                        {
+                            label: "Configure who can unsubscribe anyone",
+                            link: "/configure-who-can-unsubscribe-others",
+                        },
                         "subscribe-users-to-a-channel",
                         "unsubscribe-users-from-a-channel",
                         "set-default-channels-for-new-users",
@@ -404,7 +455,10 @@ export default defineConfig({
                         "change-the-channel-description",
                         "pin-information",
                         "change-the-privacy-of-a-channel",
-                        "archive-a-channel",
+                        {
+                            label: "Delete or archive a channel",
+                            link: "/archive-a-channel",
+                        },
                     ],
                 },
                 {
@@ -417,7 +471,10 @@ export default defineConfig({
                         "guest-users",
                         "restrict-direct-messages",
                         "restrict-wildcard-mentions",
-                        "restrict-message-editing-and-deletion",
+                        {
+                            label: "Restrict message editing",
+                            link: "/restrict-message-editing-and-deletion",
+                        },
                         "restrict-message-edit-history-access",
                         "restrict-moving-messages",
                         "restrict-resolving-topics",
@@ -429,11 +486,17 @@ export default defineConfig({
                 {
                     label: "Organization settings",
                     items: [
-                        "configure-organization-language",
+                        {
+                            label: "Configure organization language",
+                            link: "/configure-organization-language",
+                        },
                         "custom-emoji",
                         "configure-call-provider",
                         "add-a-custom-linkifier",
-                        "require-topics",
+                        {
+                            label: "Require topics in channel messages",
+                            link: "/require-topics",
+                        },
                         "image-video-and-website-previews",
                         "hide-message-content-in-emails",
                         "message-retention-policy",
@@ -451,11 +514,17 @@ export default defineConfig({
                         "bots-overview",
                         "integrations-overview",
                         "add-a-bot-or-integration",
-                        "generate-integration-url",
+                        {
+                            label: "Generate integration URL",
+                            link: "/generate-integration-url",
+                        },
                         "manage-a-bot",
                         "deactivate-or-reactivate-a-bot",
                         "request-an-integration",
-                        "restrict-bot-creation",
+                        {
+                            label: "Restrict bot creation",
+                            link: "/restrict-bot-creation",
+                        },
                         "view-your-bots",
                         "view-all-bots-in-your-organization",
                     ],
@@ -465,9 +534,15 @@ export default defineConfig({
                     items: [
                         "view-zulip-version",
                         "zulip-cloud-billing",
-                        "self-hosted-billing",
+                        {
+                            label: "Self-hosted billing",
+                            link: "/self-hosted-billing",
+                        },
                         "gdpr-compliance",
-                        "move-to-zulip-cloud",
+                        {
+                            label: "Move to Zulip Cloud",
+                            link: "/move-to-zulip-cloud",
+                        },
                         "support-zulip-project",
                         "linking-to-zulip-website",
                         "contact-support",

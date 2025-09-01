@@ -98,7 +98,7 @@ export function render(): void {
     $realm_logo.on("load", () => {
         const logo_width = $realm_logo.width();
         if (logo_width) {
-            $("html").css(
+            $(":root").css(
                 "--realm-logo-current-width",
                 logo_width / user_settings.web_font_size_px + "em",
             );

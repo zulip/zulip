@@ -7,6 +7,7 @@ const _ = require("lodash");
 const MockDate = require("mockdate");
 
 const {make_user_group} = require("./lib/example_group.cjs");
+const {make_realm} = require("./lib/example_realm.cjs");
 const {$t} = require("./lib/i18n.cjs");
 const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
@@ -27,7 +28,7 @@ const {initialize_user_settings} = zrequire("user_settings");
 
 const current_user = {};
 set_current_user(current_user);
-const realm = {};
+const realm = make_realm();
 set_realm(realm);
 const user_settings = {};
 initialize_user_settings({user_settings});
@@ -925,6 +926,9 @@ test_people("multi_user_methods", () => {
     assert.equal(slug, "401,402-group");
 
     assert.equal(people.reply_to_to_user_ids_string("invalid@example.com"), undefined);
+
+    assert.equal(people.user_ids_string_to_slug("401,402"), "401,402-group");
+    assert.equal(people.user_ids_string_to_slug("402"), "402-whatever-402");
 });
 
 test_people("user_ids_to_full_names_string", () => {

@@ -81,6 +81,9 @@ def tokenize(text: str, template_format: str | None = None) -> list[Token]:
     def looking_at_handlebars_partial_block() -> bool:
         return template_format == "handlebars" and looking_at("{{#>")
 
+    def looking_at_handlebars_triple_stache() -> bool:
+        return template_format == "handlebars" and (looking_at("{{{") or looking_at("{{~{"))
+
     def looking_at_html_start() -> bool:
         return looking_at("<") and not looking_at("</")
 
@@ -184,6 +187,19 @@ def tokenize(text: str, template_format: str | None = None) -> list[Token]:
                 s = get_handlebars_tag(text, state.i)
                 tag = "else"
                 kind = "handlebars_else"
+            elif looking_at_handlebars_triple_stache():
+                s = get_handlebars_triple_stache_tag(text, state.i)
+                start_offset = end_offset = 3
+                if s.startswith("{{~{"):
+                    start_offset += 1
+                if s.endswith("}~}}"):
+                    end_offset += 1
+                tag = s[start_offset:-end_offset].strip()
+                if not tag.endswith("_html"):
+                    raise TemplateParserError(
+                        "Unescaped variables in triple staches {{{ }}} must be suffixed with `_html`"
+                    )
+                kind = "handlebars_triple_stache"
             elif looking_at_handlebars_start():
                 s = get_handlebars_tag(text, state.i)
                 tag = s[3:-2].split()[0].strip("#").removeprefix("*")
@@ -321,6 +337,7 @@ def tag_flavor(token: Token) -> str | None:
         "template_var",
         "text",
         "whitespace",
+        "handlebars_triple_stache",
     ):
         return None
 
@@ -624,12 +641,24 @@ def is_django_block_tag(tag: str) -> bool:
 
 def get_handlebars_tag(text: str, i: int) -> str:
     end = i + 2
-    while end < len(text) - 1 and text[end] != "}":
+    while end < len(text) - 2 and text[end] != "}":
         end += 1
     if text[end] != "}" or text[end + 1] != "}":
         raise TokenizationError('Tag missing "}}"', text[i : end + 2])
     s = text[i : end + 2]
     return s
+
+
+def get_handlebars_triple_stache_tag(text: str, i: int) -> str:
+    end = i + 3
+    while end < len(text) - 3 and text[end] != "}":
+        end += 1
+    if text[end : end + 3] == "}}}":
+        return text[i : end + 3]
+    elif end + 4 <= len(text) and text[end : end + 4] == "}~}}":
+        return text[i : end + 4]
+    else:
+        raise TokenizationError('Tag missing "}}}"', text[i : end + 3])
 
 
 def get_spaces(text: str, i: int) -> str:

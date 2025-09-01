@@ -4416,7 +4416,7 @@ class SubscriptionAPITest(ZulipTestCase):
         with (
             self.assert_database_query_count(23),
             self.assert_memcached_count(11),
-            mock.patch("zerver.views.streams.send_messages_for_new_subscribers"),
+            mock.patch("zerver.views.streams.send_user_subscribed_and_new_channel_notifications"),
         ):
             self.subscribe_via_post(
                 desdemona,
@@ -4985,8 +4985,12 @@ class SubscriptionAPITest(ZulipTestCase):
 
     def test_notification_bot_dm_on_subscription(self) -> None:
         desdemona = self.example_user("desdemona")
+        realm = desdemona.realm
         self.login_user(desdemona)
-
+        bot = self.notification_bot(realm)
+        test_channel = self.make_stream("test A")
+        announce = realm.new_stream_announcements_stream
+        assert announce is not None
         user_ids = [
             desdemona.id,
             self.example_user("cordelia").id,
@@ -4995,19 +4999,188 @@ class SubscriptionAPITest(ZulipTestCase):
             self.example_user("iago").id,
             self.example_user("prospero").id,
         ]
-
+        principals_dict = dict(
+            principals=orjson.dumps(user_ids).decode(), announce=orjson.dumps(True).decode()
+        )
+        # When subscribing to an already existing channel with announce=True,
+        # the bot should send DMs to all the newly subscribed users, but
+        # no announcement message.
+        now = timezone_now()
         response = self.subscribe_via_post(
-            desdemona, ["Test stream 1"], dict(principals=orjson.dumps(user_ids).decode())
+            desdemona,
+            [test_channel.name],
+            principals_dict,
         )
         data = self.assert_json_success(response)
         self.assertEqual(data["new_subscription_messages_sent"], True)
 
+        notification_bot_dms = Message.objects.filter(
+            realm_id=realm.id,
+            sender=bot.id,
+            recipient__type=Recipient.PERSONAL,
+            date_sent__gt=now,
+        )
+        self.assert_length(notification_bot_dms, 5)
+        notif_bot_dm_recipients = [
+            dm["recipient__type_id"] for dm in notification_bot_dms.values("recipient__type_id")
+        ]
+        self.assertSetEqual(
+            {id for id in user_ids if id != desdemona.id}, set(notif_bot_dm_recipients)
+        )
+
+        announcement_channel_message = Message.objects.filter(
+            realm_id=realm.id,
+            sender=bot.id,
+            recipient__type=Recipient.STREAM,
+            recipient__type_id=announce.id,
+            date_sent__gt=now,
+        )
+        self.assertEqual(announcement_channel_message.count(), 0)
+
+        # When subscribing to a newly created channel with announce=True,
+        # we expect an announcement message and new channel message,
+        # but no DM notifications.
+        now = timezone_now()
+        response = self.subscribe_via_post(
+            desdemona,
+            ["test B"],
+            principals_dict,
+        )
+        data = self.assert_json_success(response)
+        self.assertEqual(data["new_subscription_messages_sent"], True)
+
+        notification_bot_dms = Message.objects.filter(
+            realm_id=realm.id,
+            sender=bot.id,
+            recipient__type=Recipient.PERSONAL,
+            date_sent__gt=now,
+        )
+        self.assertEqual(notification_bot_dms.count(), 0)
+
+        announcement_channel_message = Message.objects.filter(
+            realm_id=realm.id,
+            sender=bot.id,
+            recipient__type=Recipient.STREAM,
+            recipient__type_id=announce.id,
+            date_sent__gt=now,
+        )
+        self.assert_length(announcement_channel_message.values(), 1)
+        self.assertEqual(
+            announcement_channel_message[0].content,
+            f"@_**{desdemona.full_name}|{desdemona.id}** created a new channel #**test B**.",
+        )
+
+        new_channel = get_stream("test B", realm)
+        new_channel_message = Message.objects.filter(
+            realm_id=realm.id,
+            sender=bot.id,
+            recipient__type=Recipient.STREAM,
+            recipient__type_id=new_channel.id,
+            date_sent__gt=now,
+        )
+        self.assert_length(new_channel_message.values(), 1)
+        self.assertEqual(
+            new_channel_message[0].topic_name(), Realm.STREAM_EVENTS_NOTIFICATION_TOPIC_NAME
+        )
+        self.assertEqual(
+            new_channel_message[0].content,
+            f"**Public** channel created by @_**{desdemona.full_name}|{desdemona.id}**. **Description:**\n"
+            "```` quote\n*No description.*\n````",
+        )
+
+        # When subscribing to an already existing channel, if the number of new
+        # subscriptions exceeds the limit, no DMs or announcement message should
+        # be sent.
+        now = timezone_now()
+        test_channel = self.make_stream("test C")
         with self.settings(MAX_BULK_NEW_SUBSCRIPTION_MESSAGES=5):
             response = self.subscribe_via_post(
-                desdemona, ["Test stream 2"], dict(principals=orjson.dumps(user_ids).decode())
+                desdemona,
+                [test_channel.name],
+                principals_dict,
             )
         data = self.assert_json_success(response)
         self.assertEqual(data["new_subscription_messages_sent"], False)
+
+        notification_bot_dms = Message.objects.filter(
+            realm_id=realm.id,
+            sender=bot.id,
+            recipient__type=Recipient.PERSONAL,
+            date_sent__gt=now,
+        )
+        self.assertEqual(notification_bot_dms.count(), 0)
+
+        announcement_channel_message = Message.objects.filter(
+            realm_id=realm.id,
+            sender=bot.id,
+            recipient__type=Recipient.STREAM,
+            recipient__type_id=announce.id,
+            date_sent__gt=now,
+        )
+        self.assertEqual(announcement_channel_message.count(), 0)
+
+        # When subscribing to an already existing channel, if the number of new
+        # subscriptions exceeds the limit, no DMs are sent, but an announcement
+        # message and new channel message should be sent.
+        now = timezone_now()
+        with self.settings(MAX_BULK_NEW_SUBSCRIPTION_MESSAGES=5):
+            response = self.subscribe_via_post(
+                desdemona,
+                ["test D"],
+                principals_dict,
+            )
+        data = self.assert_json_success(response)
+        self.assertEqual(data["new_subscription_messages_sent"], False)
+
+        notification_bot_dms = Message.objects.filter(
+            realm_id=realm.id,
+            sender=bot.id,
+            recipient__type=Recipient.PERSONAL,
+            date_sent__gt=now,
+        )
+        self.assertEqual(notification_bot_dms.count(), 0)
+
+        announcement_channel_message = Message.objects.filter(
+            realm_id=realm.id,
+            sender=bot.id,
+            recipient__type=Recipient.STREAM,
+            recipient__type_id=announce.id,
+            date_sent__gt=now,
+        )
+        self.assertEqual(announcement_channel_message.count(), 1)
+        self.assertEqual(
+            announcement_channel_message[0].content,
+            f"@_**{desdemona.full_name}|{desdemona.id}** created a new channel #**test D**.",
+        )
+
+        new_channel = get_stream("test D", realm)
+        new_channel_message = Message.objects.filter(
+            realm_id=realm.id,
+            sender=bot.id,
+            recipient__type=Recipient.STREAM,
+            recipient__type_id=new_channel.id,
+            date_sent__gt=now,
+        )
+        self.assert_length(new_channel_message.values(), 1)
+        self.assertEqual(
+            new_channel_message[0].topic_name(), Realm.STREAM_EVENTS_NOTIFICATION_TOPIC_NAME
+        )
+        self.assertEqual(
+            new_channel_message[0].content,
+            f"**Public** channel created by @_**{desdemona.full_name}|{desdemona.id}**. **Description:**\n"
+            "```` quote\n*No description.*\n````",
+        )
+
+        response = self.subscribe_via_post(
+            desdemona,
+            ["Test stream 3"],
+            dict(
+                principals=orjson.dumps(user_ids).decode(),
+                send_new_subscription_messages=orjson.dumps(False).decode(),
+            ),
+        )
+        data = self.assert_json_success(response)
+        self.assertNotIn("new_subscription_messages_sent", data)
 
 
 class InviteOnlyStreamTest(ZulipTestCase):

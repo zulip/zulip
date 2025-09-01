@@ -198,19 +198,6 @@ export function postprocess_content(html: string): string {
         }
     }
 
-    for (const audio of template.content.querySelectorAll("audio")) {
-        const audio_wrapper = inertDocument.createElement("span");
-        audio_wrapper.classList.add("media-audio-wrapper");
-        // We want a class to refer to audio elements
-        audio.classList.add("media-audio-element");
-        audio_wrapper.append(audio.cloneNode());
-        // Now we'll use a template to build additional DOM
-        // structures out of the original <audio> element
-        // const audio_html_string = audio.outerHTML;
-        // const rendered_audio_html = render_markdown_audio({audio_html: audio_html_string});
-        audio.replaceWith(audio_wrapper);
-    }
-
     for (const ol of template.content.querySelectorAll("ol")) {
         const list_start = Number(ol.getAttribute("start") ?? 1);
         // We don't count the first item in the list, as it

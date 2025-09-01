@@ -63,23 +63,147 @@ Files: tools/check-thirdparty
 Copyright: 2020 Kandra Labs, Inc.
 License: GPL-2.0+
 
+Files: web/images/icons/arrow-left-circle.svg
+Copyright: 2013-2017 Cole Bemis (https://feathericons.com)
+License: Expat
+
 Files: web/images/icons/close.svg
 Copyright: 2013-2017 Cole Bemis (https://feathericons.com)
 License: Expat
 
+Files: web/images/icons/close-small.svg
+Copyright: 2013-2017 Cole Bemis (https://feathericons.com)
+License: Expat
+Comment: Icon has been modified by Vlad Koborov
+
 Files: web/images/icons/search.svg
 Copyright: 2015-present Ionic (http://ionic.io/)
 License: Expat
+
+Files: web/images/icons/users.svg
+Source: https://lucide.dev/icons/users
+Copyright: 2013-2023 Cole Bemis, Lucide Contributors 2025 (https://lucide.dev/icons/alarm-clock)
+License: ISC License
+Comment: Icon has been modified by Vlad Koborov
+
+Files: web/shared/icons/account.svg
+Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
+License: Expat
+Comment: Icon has been modified by Vlad Koborov
+
+Files: web/shared/icons/alarm-clock.svg
+Copyright: 2013-2023 Cole Bemis, Lucide Contributors 2025 (https://lucide.dev/icons/alarm-clock)
+License: ISC License
 
 Files: web/shared/icons/all-messages.svg
 Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
 License: Expat
 Comment: Icon has been modified by Vlad Koborov
 
+Files: web/shared/icons/archive.svg
+Copyright: 2013-2023 Cole Bemis, Lucide Contributors 2025 (https://lucide.dev/icons/archive)
+License: ISC License
+
 Files: web/shared/icons/at-sign.svg
 Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
 License: Expat
 Comment: Icon has been modified by Vlad Koborov
+
+Files: web/shared/icons/attachment.svg
+Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
+License: Expat
+
+Files: web/shared/icons/bar-chart.svg
+Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
+License: Expat
+
+Files: web/shared/icons/bold.svg
+Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
+License: Expat
+Comment: Icon has been modified by Vlad Koborov
+
+Files: web/shared/icons/building.svg
+Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
+License: Expat
+
+Files: web/shared/icons/calendar-clock.svg
+Copyright: 2013-2023 Cole Bemis, Lucide Contributors 2025 (https://lucide.dev/icons/calendar-clock)
+License: ISC License
+
+Files: web/shared/icons/calendar-days.svg
+Copyright: 2013-2023 Cole Bemis, Lucide Contributors 2025 (https://lucide.dev/icons/calendar-days)
+License: ISC License
+
+Files: web/shared/icons/calendar.svg
+Copyright: 2013-2023 Cole Bemis, Lucide Contributors 2025 (https://lucide.dev/icons/calendar)
+License: ISC License
+
+Files: web/shared/icons/check-x.svg
+Copyright: 2013-2023 Cole Bemis, Lucide Contributors 2025 (https://lucide.dev/icons/check)
+License: ISC License
+Comment: Icon has been modified by Vlad Koborov
+
+Files: web/shared/icons/check.svg
+Copyright: 2013-2023 Cole Bemis, Lucide Contributors 2025 (https://lucide.dev/icons/check)
+License: ISC License
+
+Files: web/shared/icons/chevron-down.svg
+Copyright: 2013-2023 Cole Bemis, Lucide Contributors 2025 (https://lucide.dev/icons/chevron-down)
+License: ISC License
+
+Files: web/shared/icons/chevron-left.svg
+Copyright: 2013-2023 Cole Bemis, Lucide Contributors 2025 (https://lucide.dev/icons/chevron-left)
+License: ISC License
+
+Files: web/shared/icons/chevron-right.svg
+Copyright: 2013-2023 Cole Bemis, Lucide Contributors 2025 (https://lucide.dev/icons/chevron-right)
+License: ISC License
+
+Files: web/shared/icons/circle-x.svg
+Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
+License: Expat
+Comment: Icon has been modified by Vlad Koborov
+
+Files: web/shared/icons/clock.svg
+Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
+License: Expat
+Comment: Icon has been modified by Vlad Koborov
+
+Files: web/shared/icons/chevron-right.svg
+Copyright: 2013-2023 Cole Bemis, Lucide Contributors 2025 (https://lucide.dev/icons/chevron-right)
+License: ISC License
+Comment: Icon has been modified by Vlad Koborov
+
+Files: web/shared/icons/collapse-diagonal.svg
+Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
+License: Expat
+Comment: Icon has been modified by Vlad Koborov
+
+Files: web/shared/icons/collapse.svg
+Copyright: 2013-2023 Cole Bemis, Lucide Contributors 2025 (https://lucide.dev/icons/chevrons-down-up)
+License: ISC License
+
+Files: web/shared/icons/compose-edit.svg
+Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
+License: Expat
+Comment: Icon has been modified by Vlad Koborov
+
+Files: web/shared/icons/copy.svg
+Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
+License: Expat
+Comment: Icon has been modified by Vlad Koborov
+
+Files: web/shared/icons/corner-down-right.svg
+Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
+License: Expat
+
+Files: web/shared/icons/credit-card.svg
+Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
+License: Expat
+
+Files: web/shared/icons/download.svg
+Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
+License: Expat
 
 Files: web/shared/icons/drafts.svg
 Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
@@ -91,10 +215,166 @@ Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
 License: Expat
 Comment: Icon has been modified by Vlad Koborov
 
+Files: web/shared/icons/equal.svg
+Copyright: 2013-2023 Cole Bemis, Lucide Contributors 2025 (https://lucide.dev/icons/equal)
+License: ISC License
+Comment: Icon has been modified by Vlad Koborov
+
+Files: web/shared/icons/expand-both-diagonals.svg
+Source: https://lucide.dev/icons/expand
+Copyright: 2013-2022 Cole Bemis
+License: ISC License
+
+Files: web/shared/icons/expand.svg
+Copyright: 2013-2023 Cole Bemis, Lucide Contributors 2025 (https://lucide.dev/icons/expand)
+License: ISC License
+
+Files: web/shared/icons/external-link.svg
+Copyright: 2013-2023 Cole Bemis, Lucide Contributors 2025 (https://lucide.dev/icons/external-link)
+License: ISC License
+
+Files: web/shared/icons/eye.svg
+Copyright: 2013-2023 Cole Bemis, Lucide Contributors 2025 (https://lucide.dev/icons/eye)
+License: ISC License
+Comment: Icon has been modified by Vlad Koborov
+
+Files: web/shared/icons/f-globe.svg
+Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
+License: Expat
+
+Files: web/shared/icons/file-check.svg
+Copyright: 2013-2023 Cole Bemis, Lucide Contributors 2025 (https://lucide.dev/icons/file-check)
+License: ISC License
+
+Files: web/shared/icons/file-text.svg
+Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
+License: Expat
+
+Files: web/shared/icons/folder.svg
+Copyright: 2013-2023 Cole Bemis (https://lucide.dev/icons/folder)
+License: ISC License
+
+Files: web/shared/icons/follow.svg
+Copyright: 2013-2023 Cole Bemis (https://lucide.dev/icons/rss)
+License: ISC License
+Comment: Icon has been modified by Vlad Koborov
+
+Files: web/shared/icons/forward-message.svg
+Copyright: 2013-2023 Cole Bemis, Lucide Contributors 2025 (https://lucide.dev/icons/message-square-share)
+License: ISC License
+Comment: Icon has been modified by Vlad Koborov
+
+Files: web/shared/icons/gear.svg
+Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
+License: Expat
+
+Files: web/shared/icons/git-pull-request.svg
+Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
+License: Expat
+
 Files: web/shared/icons/globe.svg
 Source: https://github.com/ionic-team/ionicons/blob/v5.5.2/src/svg/earth.svg, modified to increase the width of the globe outline.
 Copyright: 2015-present Ionic (http://ionic.io/)
 License: Expat
+
+Files: web/shared/icons/grip-vertical.svg
+Copyright: 2013-2023 Cole Bemis, Lucide Contributors 2025 (https://lucide.dev/icons/grip-vertical)
+License: ISC License
+
+Files: web/shared/icons/handshake.svg
+Copyright: 2013-2023 Cole Bemis, Lucide Contributors 2025 (https://lucide.dev/icons/handshake)
+License: ISC License
+
+Files: web/shared/icons/hash.svg
+Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
+License: Expat
+
+Files: web/shared/icons/heart.svg
+Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
+License: Expat
+
+Files: web/shared/icons/hide.svg
+Copyright: 2013-2023 Cole Bemis, Lucide Contributors 2025 (https://lucide.dev/icons/eye-off)
+License: ISC License
+Comment: Icon has been modified by Vlad Koborov
+
+Files: web/shared/icons/house.svg
+Copyright: 2013-2023 Cole Bemis, Lucide Contributors 2025 (https://lucide.dev/icons/house)
+License: ISC License
+
+Files: web/shared/icons/inbox.svg
+Copyright: 2013-2023 Cole Bemis, Lucide Contributors 2025 (https://lucide.dev/icons/inbox)
+License: ISC License
+Comment: Icon has been modified by Vlad Koborov
+
+Files: web/shared/icons/info.svg
+Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
+License: Expat
+
+Files: web/shared/icons/inherit.svg
+Copyright: 2013-2023 Cole Bemis (https://lucide.dev/icons/bell)
+License: ISC License
+Comment: Icon has been modified by Vlad Koborov
+
+Files: web/shared/icons/italic.svg
+Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
+License: Expat
+
+Files: web/shared/icons/life-buoy.svg
+Copyright: 2013-2023 Cole Bemis, Lucide Contributors 2025 (https://lucide.dev/icons/life-buoy)
+License: ISC License
+
+Files: web/shared/icons/lightbulb.svg
+Source: https://lucide.dev/icons/lightbulb
+Copyright: 2013-2022 Cole Bemis
+License: ISC License
+
+Files: web/shared/icons/link-alt.svg
+Copyright: 2013-2023 Cole Bemis, Lucide Contributors 2025 (https://lucide.dev/icons/link)
+License: ISC License
+
+Files: web/shared/icons/log-in-navbar.svg
+Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
+License: Expat
+Comment: Icon has been modified by Karl Stolley
+
+Files: web/shared/icons/log-in.svg
+Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
+License: Expat
+Comment: Icon has been modified by Vlad Koborov
+
+Files: web/shared/icons/log-out.svg
+Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
+License: Expat
+Comment: Icon has been modified by Vlad Koborov
+
+Files: web/shared/icons/mac-command.svg
+Copyright: 2013-2023 Cole Bemis, Lucide Contributors 2025 (https://lucide.dev/icons/command)
+License: ISC License
+
+Files: web/shared/icons/mark-as-unread.svg
+Copyright: 2013-2023 Cole Bemis, Lucide Contributors 2025 (https://lucide.dev/icons/message-square-dot)
+License: ISC License
+Comment: Icon has been modified by Vlad Koborov
+
+Files: web/shared/icons/maximize-diagonal.svg
+Copyright: 2013-2023 Cole Bemis, Lucide Contributors 2025 (https://lucide.dev/icons/maximize-2)
+License: ISC License
+Comment: Icon has been modified by Vlad Koborov
+
+Files: web/shared/icons/message-square-text.svg
+Copyright: 2013-2023 Cole Bemis, Lucide Contributors 2025 (https://lucide.dev/icons/message-square-text)
+License: ISC License
+Comment: Icon has been modified by Vlad Koborov
+
+Files: web/shared/icons/message-square.svg
+Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
+License: Expat
+Comment: Icon has been modified by Vlad Koborov
+
+Files: web/shared/icons/minus.svg
+Copyright: 2013-2023 Cole Bemis, Lucide Contributors 2025 (https://lucide.dev/icons/minus)
+License: ISC License
 
 Files: web/shared/icons/mobile-arrow-left-right.svg
 Copyright: 2013-2023 Cole Bemis (https://lucide.dev/icons/arrow-left-right)
@@ -113,6 +393,14 @@ Files: web/shared/icons/mobile-menu.svg
 Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
 License: Expat
 
+Files: web/shared/icons/monitor.svg
+Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
+License: Expat
+
+Files: web/shared/icons/moon.svg
+Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
+License: Expat
+
 Files: web/shared/icons/more-vertical.svg
 Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
 License: Expat
@@ -128,12 +416,115 @@ Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
 License: Expat
 Comment: Icon has been modified by Vlad Koborov
 
+Files: web/shared/icons/mute.svg
+Copyright: 2013-2023 Cole Bemis (https://lucide.dev/icons/bell-off)
+License: ISC License
+Comment: Icon has been modified by Vlad Koborov
+
+Files: web/shared/icons/past-time.svg
+Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
+License: Expat
+Comment: Icon has been modified by Vlad Koborov
+
+Files: web/shared/icons/pencil.svg
+Copyright: 2013-2023 Cole Bemis, Lucide Contributors 2025 (https://lucide.dev/icons/pencil)
+License: ISC License
+
+Files: web/shared/icons/pipette.svg
+Copyright: 2013-2023 Cole Bemis, Lucide Contributors 2025 (https://lucide.dev/icons/pipette)
+License: ISC License
+
+Files: web/shared/icons/play-circle.svg
+Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
+License: Expat
+Comment: Icon has been modified by Vlad Koborov
+
+Files: web/shared/icons/plus.svg
+Source: https://lucide.dev/icons/plus
+Copyright: 2013-2022 Cole Bemis
+License: ISC License
+
+Files: web/shared/icons/poll.svg
+Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
+License: Expat
+Comment: Icon has been modified by Vlad Koborov
+
+Files: web/shared/icons/preview.svg
+Copyright: 2013-2023 Cole Bemis, Lucide Contributors 2025 (https://lucide.dev/icons/eye)
+License: ISC License
+Comment: Icon has been modified by Vlad Koborov
+
+Files: web/shared/icons/quote-and-reply.svg
+Copyright: 2013-2023 Cole Bemis, Lucide Contributors 2025 (https://lucide.dev/icons/message-square-reply)
+License: ISC License
+Comment: Icon has been modified by Vlad Koborov
+
+Files: web/shared/icons/readreceipts.svg
+Copyright: 2013-2023 Cole Bemis, Lucide Contributors 2025 (https://lucide.dev/icons/check-check)
+License: ISC License
+Comment: Icon has been modified by Vlad Koborov
+
+Files: web/shared/icons/recent.svg
+Source: https://lucide.dev/icons/clock-10
+Copyright: 2013-2022 Cole Bemis
+License: ISC License
+
+Files: web/shared/icons/rename.svg
+Copyright: 2013-2023 Cole Bemis, Lucide Contributors 2025 (https://lucide.dev/icons/pen-line)
+License: ISC License
+Comment: Icon has been modified by Vlad Koborov
+
+Files: web/shared/icons/reply.svg
+Copyright: 2013-2023 Cole Bemis, Lucide Contributors 2025 (https://lucide.dev/icons/corner-up-left)
+License: ISC License
+Comment: Icon has been modified by Vlad Koborov
+
+Files: web/shared/icons/reset.svg
+Source: https://lucide.dev/icons/undo-2
+Copyright: 2013-2022 Cole Bemis
+License: ISC License
+
+Files: web/shared/icons/rocket.svg
+Copyright: 2013-2023 Cole Bemis, Lucide Contributors 2025 (https://lucide.dev/icons/rocket)
+License: ISC License
+Comment: Icon has been modified by Vlad Koborov
+
+Files: web/shared/icons/send-dm.svg
+Copyright: 2013-2024 Cole Bemis (https://feathericons.com)
+License: Expat
+Comment: Icon has been modified by Vlad Koborov
+
 Files: web/shared/icons/smart-toy.svg
 Source: https://fonts.google.com/icons?selected=Material+Symbols+Rounded:smart_toy
 Copyright: Google, Inc.
 License: Apache-2.0
 
+Files: web/shared/icons/smile-bigger.svg
+Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
+License: Expat
+Comment: Icon has been modified by Vlad Koborov
+
+Files: web/shared/icons/smile-smaller.svg
+Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
+License: Expat
+Comment: Icon has been modified by Vlad Koborov
+
 Files: web/shared/icons/smile.svg
+Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
+License: Expat
+Comment: Icon has been modified by Vlad Koborov
+
+Files: web/shared/icons/source.svg
+Copyright: 2013-2023 Cole Bemis, Lucide Contributors 2025 (https://lucide.dev/icons/scroll-text)
+License: ISC License
+Comment: Icon has been modified by Vlad Koborov
+
+Files: web/shared/icons/star-filled.svg
+Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
+License: Expat
+Comment: Icon has been modified by Vlad Koborov
+
+Files: web/shared/icons/square-plus.svg
 Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
 License: Expat
 Comment: Icon has been modified by Vlad Koborov
@@ -143,107 +534,118 @@ Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
 License: Expat
 Comment: Icon has been modified by Vlad Koborov
 
-Files: web/shared/icons/star-filled.svg
+Files: web/shared/icons/stop-circle.svg
 Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
 License: Expat
 Comment: Icon has been modified by Vlad Koborov
 
-Files: web/shared/icons/mute.svg
-Copyright: 2013-2023 Cole Bemis (https://lucide.dev/icons/bell-off)
+Files: web/shared/icons/sun.svg
+Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
+License: Expat
+
+Files: web/shared/icons/time.svg
+Copyright: 2013-2023 Cole Bemis, Lucide Contributors 2025 (https://lucide.dev/icons/clock)
 License: ISC License
 Comment: Icon has been modified by Vlad Koborov
+
+Files: web/shared/icons/time.svg
+Copyright: 2013-2023 Cole Bemis, Lucide Contributors 2025 (https://lucide.dev/icons/clock)
+License: ISC License
+Comment: Icon has been modified by Vlad Koborov
+
+Files: web/shared/icons/todo-list.svg
+Copyright: 2013-2023 Cole Bemis, Lucide Contributors 2025 (https://lucide.dev/icons/list-checks)
+License: ISC License
+Comment: Icon has been modified by Vlad Koborov
+
+Files: web/shared/icons/tool.svg
+Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
+License: Expat
+Comment: Icon has been modified by Vlad Koborov
+
+Files: web/shared/icons/topic-list.svg
+Copyright: 2013-2023 Cole Bemis, Lucide Contributors 2025 (https://lucide.dev/icons/list-minus)
+License: ISC License
+Comment: Icon has been modified by Vlad Koborov
+
+Files: web/shared/icons/trash.svg
+Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
+License: Expat
+Comment: Icon has been modified by Vlad Koborov
+
+Files: web/shared/icons/triple-users.svg
+Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
+License: Expat
+
+Files: web/shared/icons/unarchive.svg
+Copyright: 2013-2023 Cole Bemis, Lucide Contributors 2025 (https://lucide.dev/icons/archive-restore)
+License: ISC License
 
 Files: web/shared/icons/unmute.svg
 Copyright: 2013-2023 Cole Bemis (https://lucide.dev/icons/bell-ring)
 License: ISC License
 Comment: Icon has been modified by Vlad Koborov
 
-Files: web/shared/icons/inherit.svg
-Copyright: 2013-2023 Cole Bemis (https://lucide.dev/icons/bell)
-License: ISC License
-Comment: Icon has been modified by Vlad Koborov
-
-Files: web/shared/icons/follow.svg
-Copyright: 2013-2023 Cole Bemis (https://lucide.dev/icons/rss)
-License: ISC License
-Comment: Icon has been modified by Vlad Koborov
-
-Files: web/shared/icons/bar-chart.svg
-Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
-License: Expat
-
-Files: web/shared/icons/building.svg
-Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
-License: Expat
-
-Files: web/shared/icons/credit-card.svg
-Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
-License: Expat
-
-Files: web/shared/icons/f-globe.svg
-Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
-License: Expat
-
-Files: web/shared/icons/file-text.svg
-Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
-License: Expat
-
-Files: web/shared/icons/gear.svg
-Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
-License: Expat
-
-Files: web/shared/icons/git-pull-request.svg
-Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
-License: Expat
-
-Files: web/shared/icons/hash.svg
-Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
-License: Expat
-
-Files: web/shared/icons/heart.svg
-Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
-License: Expat
-
-Files: web/shared/icons/info.svg
-Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
-License: Expat
-
-Files: web/shared/icons/monitor.svg
-Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
-License: Expat
-
-Files: web/shared/icons/moon.svg
-Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
-License: Expat
-
-Files: web/shared/icons/sun.svg
-Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
-License: Expat
-
-Files: web/shared/icons/triple-users.svg
-Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
-License: Expat
-
-Files: web/shared/icons/user-plus.svg
-Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
-License: Expat
-
 Files: web/shared/icons/user-cog.svg
 Source: https://lucide.dev/icons/user-cog
 Copyright: 2013-2022 Cole Bemis
 License: ISC License
+
+Files: web/shared/icons/user-group-cog.svg
+Source: https://lucide.dev/icons/user-cog
+Copyright: 2013-2022 Cole Bemis
+License: ISC License
+Comment: Icon has been modified by Vlad Koborov
+
+Files: web/shared/icons/user-group-edit.svg
+Source: https://lucide.dev/icons/user-pen
+Copyright: 2013-2022 Cole Bemis
+License: ISC License
+Comment: Icon has been modified by Vlad Koborov
+
+Files: web/shared/icons/user-group-plus.svg
+Source: https://lucide.dev/icons/user-plus
+Copyright: 2013-2022 Cole Bemis
+License: ISC License
+Comment: Icon has been modified by Vlad Koborov
+
+Files: web/shared/icons/user-group-x.svg
+Copyright: 2013-2024 Cole Bemis (https://feathericons.com)
+License: Expat
+Comment: Custom made out of feather icons by Vlad Koborov
+
+Files: web/shared/icons/user-group.svg
+Source: https://lucide.dev/icons/users
+Copyright: 2013-2022 Cole Bemis
+License: ISC License
+Comment: Icon has been modified by Vlad Koborov
+
+Files: web/shared/icons/user-list.svg
+Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
+License: Expat
+Comment: Custom made out of feather icons by Vlad Koborov
+
+Files: web/shared/icons/user-plus.svg
+Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
+License: Expat
 
 Files: web/shared/icons/user-x.svg
 Source: https://lucide.dev/icons/user-x
 Copyright: 2013-2022 Cole Bemis
 License: ISC License
 
-Files: web/shared/icons/lightbulb.svg
-Source: https://lucide.dev/icons/lightbulb
+Files: web/shared/icons/user.svg
+Source: https://lucide.dev/icons/users
 Copyright: 2013-2022 Cole Bemis
 License: ISC License
+Comment: Icon has been modified by Vlad Koborov
 
-Files: web/shared/icons/clock.svg
+Files: web/shared/icons/video-call.svg
+Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
+License: Expat
+Comment: Icon has been modified by Vlad Koborov
+
+Files: web/shared/icons/voice-call.svg
 Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
 License: Expat
 Comment: Icon has been modified by Vlad Koborov
@@ -253,48 +655,8 @@ Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
 License: Expat
 Comment: Icon has been modified by Vlad Koborov
 
-Files: web/shared/icons/play-circle.svg
-Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
-License: Expat
-Comment: Icon has been modified by Vlad Koborov
-
-Files: web/shared/icons/stop-circle.svg
-Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
-License: Expat
-Comment: Icon has been modified by Vlad Koborov
-
-Files: web/shared/icons/account.svg
-Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
-License: Expat
-Comment: Icon has been modified by Vlad Koborov
-
-Files: web/shared/icons/message-square.svg
-Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
-License: Expat
-Comment: Icon has been modified by Vlad Koborov
-
-Files: web/shared/icons/tool.svg
-Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
-License: Expat
-Comment: Icon has been modified by Vlad Koborov
-
-Files: web/shared/icons/send-dm.svg
-Copyright: 2013-2024 Cole Bemis (https://feathericons.com)
-License: Expat
-Comment: Icon has been modified by Vlad Koborov
-
 Files: web/images/empty-view-illustrations/inbox-done.svg
 Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
-License: Expat
-Comment: Custom made out of feather icons by Vlad Koborov
-
-Files: web/shared/icons/user-list.svg
-Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
-License: Expat
-Comment: Custom made out of feather icons by Vlad Koborov
-
-Files: web/shared/icons/user-group-x.svg
-Copyright: 2013-2024 Cole Bemis (https://feathericons.com)
 License: Expat
 Comment: Custom made out of feather icons by Vlad Koborov
 
@@ -302,30 +664,6 @@ Files: web/styles/pygments.css
 Copyright: 2022, Quansight Labs
 License: BSD-3-Clause
 Comment: GitHub theme (light and dark); Selectors have been modified for use with Zulip
-
-Files: web/shared/icons/recent.svg
-Source: https://lucide.dev/icons/clock-10
-Copyright: 2013-2022 Cole Bemis
-License: ISC License
-
-Files: web/shared/icons/plus.svg
-Source: https://lucide.dev/icons/plus
-Copyright: 2013-2022 Cole Bemis
-License: ISC License
-
-Files: web/shared/icons/expand-both-diagonals.svg
-Source: https://lucide.dev/icons/expand
-Copyright: 2013-2022 Cole Bemis
-License: ISC License
-
-Files: web/shared/icons/reset.svg
-Source: https://lucide.dev/icons/undo-2
-Copyright: 2013-2022 Cole Bemis
-License: ISC License
-
-Files: web/shared/icons/folder.svg
-Copyright: 2013-2023 Cole Bemis (https://lucide.dev/icons/folder)
-License: ISC License
 
 Files: web/third/bootstrap/css/bootstrap.app.css
 Copyright: 2012 Twitter, Inc.

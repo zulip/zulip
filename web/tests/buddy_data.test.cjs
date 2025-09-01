@@ -4,6 +4,7 @@ const assert = require("node:assert/strict");
 
 const _ = require("lodash");
 
+const {make_realm} = require("./lib/example_realm.cjs");
 const {make_message_list} = require("./lib/message_list.cjs");
 const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {noop, run_test} = require("./lib/test.cjs");
@@ -32,7 +33,7 @@ const message_lists = zrequire("message_lists");
 const {set_current_user, set_realm} = zrequire("state_data");
 const {initialize_user_settings} = zrequire("user_settings");
 
-const realm = {};
+const realm = make_realm();
 set_realm(realm);
 const current_user = {};
 set_current_user(current_user);
@@ -461,10 +462,8 @@ test("level", ({override}) => {
 
     const server_time = 9999;
     const info = {
-        website: {
-            status: "active",
-            timestamp: server_time,
-        },
+        active_timestamp: 9999,
+        idle_timestamp: 9999,
     };
     presence.update_info_from_event(me.user_id, info, server_time);
     presence.update_info_from_event(selma.user_id, info, server_time);

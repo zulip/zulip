@@ -135,13 +135,15 @@
 
     .slow-send-spinner {
         display: none;
-        justify-self: end;
+        place-self: center end;
+        position: unset;
+        margin-top: 1px;
         margin-right: 10px;
         text-align: end;
         grid-area: time;
     }
 
-    .message_content {
+    .message_content:not(.status-message) {
         grid-area: message;
         padding: var(--message-box-markdown-aligned-vertical-space) 0 0;
         color: var(--color-text-message-default);
@@ -336,6 +338,10 @@
                 padding-bottom: var(
                     --message-box-markdown-aligned-vertical-space
                 );
+                /* Don't allow an ellipsis to display on me-messages. This is
+                   an edge case that can happen with elements such as the
+                   inline audio player. */
+                overflow: visible;
 
                 /* Display message components inline, with wrapping white-space,
                    so the sender name and message display as a continuous line
@@ -395,12 +401,6 @@
                     var(--message-box-markdown-aligned-vertical-space)
             );
             grid-area: message;
-        }
-
-        .slow-send-spinner {
-            align-self: center;
-            position: unset;
-            margin-top: 1px;
         }
 
         .message_edit_notice {

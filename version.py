@@ -49,4 +49,4 @@ API_FEATURE_LEVEL = 425
 #   historical commits sharing the same major version, in which case a
 #   minor version bump suffices.
 
-PROVISION_VERSION = (342, 0)  # bumped 2025-08-14 to upgrade JavaScript dependencies
+PROVISION_VERSION = (343, 0)  # bumped 2025-08-28 to move @types/mdast away from dev dependencies.

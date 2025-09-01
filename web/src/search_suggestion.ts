@@ -557,24 +557,6 @@ function get_topic_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggestio
     });
 }
 
-function get_term_subset_suggestions(terms: NarrowTerm[]): Suggestion[] {
-    // For channel:a topic:b search:c, suggest:
-    //  channel:a topic:b
-    //  channel:a
-    if (terms.length === 0) {
-        return [];
-    }
-
-    const suggestions: Suggestion[] = [];
-
-    for (let i = terms.length - 1; i >= 1; i -= 1) {
-        const subset = terms.slice(0, i);
-        suggestions.push(format_as_suggestion(subset));
-    }
-
-    return suggestions;
-}
-
 type SuggestionAndIncompatiblePatterns = Suggestion & {incompatible_patterns: TermPattern[]};
 
 function get_special_filter_suggestions(
@@ -1110,11 +1092,6 @@ export function get_search_result(
         }
     }
 
-    if (attacher.result.length < max_items) {
-        const subset_suggestions = get_term_subset_suggestions(all_search_terms);
-        const subset_suggestion_lines = subset_suggestions.map((suggestion) => [suggestion]);
-        attacher.push_many(subset_suggestion_lines);
-    }
     return attacher.get_result().slice(0, max_items);
 }
 

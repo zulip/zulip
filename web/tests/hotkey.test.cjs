@@ -2,6 +2,7 @@
 
 const assert = require("node:assert/strict");
 
+const {make_realm} = require("./lib/example_realm.cjs");
 const {mock_esm, set_global, with_overrides, zrequire} = require("./lib/namespace.cjs");
 const {make_stub} = require("./lib/stub.cjs");
 const {run_test} = require("./lib/test.cjs");
@@ -133,7 +134,7 @@ emoji.initialize({
 
 const settings_config = zrequire("settings_config");
 const {set_realm} = zrequire("state_data");
-const realm = {};
+const realm = make_realm();
 set_realm(realm);
 
 function stubbing(module, func_name_to_stub, test_function) {

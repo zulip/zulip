@@ -653,6 +653,10 @@ export function pm_perma_link(message: Message): string | undefined {
     return url;
 }
 
+export function get_slug_from_full_name(full_name: string): string {
+    return full_name.replaceAll(/[ "%/<>`\p{C}]+/gu, "-");
+}
+
 export function pm_with_url(message: Message | MessageWithBooleans): string | undefined {
     const user_ids = pm_with_user_ids(message);
 
@@ -667,7 +671,7 @@ export function pm_with_url(message: Message | MessageWithBooleans): string | un
     } else {
         const person = maybe_get_user_by_id(user_ids[0]);
         if (person?.full_name) {
-            suffix = person.full_name.replaceAll(/[ "%/<>`\p{C}]+/gu, "-");
+            suffix = get_slug_from_full_name(person.full_name);
         } else {
             blueslip.error("Unknown people in message");
             suffix = "unk";
@@ -759,12 +763,25 @@ export function emails_to_slug(emails_string: string): string | undefined {
     if (emails.length === 1 && emails[0] !== undefined) {
         const person = get_by_email(emails[0]);
         assert(person !== undefined, "Unknown person in emails_to_slug");
-        const name = person.full_name;
-        slug += name.replaceAll(/[ "%/<>`\p{C}]+/gu, "-");
+        slug += get_slug_from_full_name(person.full_name);
     } else {
         slug += "group";
     }
 
+    return slug;
+}
+
+export function user_ids_string_to_slug(user_ids_string: string): string | undefined {
+    let slug = user_ids_string;
+    slug += "-";
+    const user_ids = user_ids_string_to_ids_array(user_ids_string);
+    if (user_ids.length === 1 && user_ids[0] !== undefined) {
+        const person = get_by_user_id(user_ids[0]);
+        assert(person !== undefined, "Unknown person in user_ids_string_to_slug");
+        slug += get_slug_from_full_name(person.full_name);
+    } else {
+        slug += "group";
+    }
     return slug;
 }
 

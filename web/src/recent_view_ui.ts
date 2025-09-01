@@ -334,7 +334,7 @@ function set_table_focus(row: number, col: number, using_keyboard = false): bool
     $current_focus_elem = "table";
 
     if (using_keyboard) {
-        const scroll_element = util.the($("html"));
+        const scroll_element = util.the($(":root"));
         const half_height_of_visible_area = scroll_element.offsetHeight / 2;
         const topic_offset = topic_offset_to_visible_area($topic_row);
 
@@ -1319,7 +1319,7 @@ export function complete_rerender(): void {
     }
 
     if (!page_params.is_node_test) {
-        max_avatars = Number.parseInt($("html").css("--recent-view-max-avatars"), 10);
+        max_avatars = Number.parseInt($(":root").css("--recent-view-max-avatars"), 10);
     }
 
     // Show topics list
@@ -1370,7 +1370,7 @@ export function complete_rerender(): void {
             ...list_widget.generic_sort_functions("numeric", ["last_msg_id"]),
         },
         html_selector: get_topic_row,
-        $simplebar_container: $("html"),
+        $simplebar_container: $(":root"),
         callback_after_render,
         is_scroll_position_for_render: views_util.is_scroll_position_for_render,
         post_scroll__pre_render_callback() {

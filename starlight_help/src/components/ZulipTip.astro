@@ -16,22 +16,26 @@ assert.ok(
 lightbulb_icon_first_child.properties.class =
     "zulip-unplugin-icon aside-icon-lightbulb";
 
-let prefix_element_list = [
-    lightbulb_icon_first_child,
-    {
-        type: "element",
-        tagName: "strong",
-        properties: {},
-        children: [
-            {
-                type: "text",
-                // Whitespace before the text to ensure space between
-                // this text and the preceding icon.
-                value: " Tip: ",
-            },
-        ],
-    } as Element,
-];
+// We want to add the `Tip: ` prefix without a line break or wrapping
+// it in a paragraph. If we write `Tip: <slot />`, slot will be wrapped
+// in it's own paragraph and thus will be placed on the next line as
+// `Tip:`. We have to edit slot HTML tree directly instead to solve this.
+// Same case applies for the ligthbulb icon we are inserting. We just
+// inject the icon as raw svg.
+const prefix_text_element: Element = {
+    type: "element",
+    tagName: "strong",
+    properties: {},
+    children: [
+        {
+            type: "text",
+            // Whitespace before the text to ensure space between
+            // this text and the preceding icon.
+            value: " Tip: ",
+        },
+    ],
+};
+let prefix_element_list = [lightbulb_icon_first_child, prefix_text_element];
 
 const tree = fromHtml(await Astro.slots.render("default"), {fragment: true});
 const first_element = tree.children[0];
@@ -41,14 +45,13 @@ assert.ok(first_element?.type === "element");
 // where the tip contains an unordered list. Just placing the element as is without
 // a paragraph does not look good in that case.
 if (first_element.tagName !== "p") {
-    prefix_element_list = [
-        {
-            type: "element",
-            tagName: "p",
-            properties: {},
-            children: [...prefix_element_list],
-        } as Element,
-    ];
+    const paragraph_wrapping_element: Element = {
+        type: "element",
+        tagName: "p",
+        properties: {},
+        children: [...prefix_element_list],
+    };
+    prefix_element_list = [paragraph_wrapping_element];
 }
 
 first_element.children = [...prefix_element_list, ...first_element.children];

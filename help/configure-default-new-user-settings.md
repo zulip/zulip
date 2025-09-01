@@ -39,6 +39,10 @@ preference settings, including the following:
 
 ## Configure default settings for new users
 
+Users will have the initial settings that are configured at the time when they
+accept the invitation, so there's no need to update or revoke invitations when
+you change default settings.
+
 {start_tabs}
 
 {settings_tab|default-user-settings}

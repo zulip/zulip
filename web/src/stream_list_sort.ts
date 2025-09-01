@@ -13,18 +13,7 @@ import * as util from "./util.ts";
 
 let first_render_completed = false;
 let current_sections: StreamListSection[] = [];
-
-export type StreamListRow =
-    | {
-          type: "stream";
-          stream_id: number;
-          inactive_or_muted: boolean;
-      }
-    | {
-          type: "inactive_or_muted_toggle";
-          section_id: string;
-      };
-let all_rows: StreamListRow[] = [];
+let all_rows: number[] = [];
 
 // Because we need to check whether we are filtering inactive streams
 // in a loop over all streams to render the left sidebar, and the
@@ -34,7 +23,7 @@ let all_rows: StreamListRow[] = [];
 let filter_out_inactives = false;
 
 export function get_stream_ids(): number[] {
-    return all_rows.flatMap((row) => (row.type === "stream" ? row.stream_id : []));
+    return [...all_rows];
 }
 
 export function section_ids(): string[] {
@@ -234,6 +223,15 @@ export function sort_groups(
         (section_a, section_b) => section_a.order! - section_b.order!,
     );
 
+    if (
+        pinned_section.streams.length > 0 ||
+        pinned_section.muted_streams.length > 0 ||
+        pinned_section.inactive_streams.length > 0 ||
+        folder_sections.size > 0
+    ) {
+        normal_section.section_title = $t({defaultMessage: "OTHER"});
+    }
+
     // This needs to have the same ordering as the order they're displayed in the sidebar.
     const new_sections = [pinned_section, ...folder_sections_sorted, normal_section];
 
@@ -260,114 +258,17 @@ export function sort_groups(
     if (!same_as_before) {
         first_render_completed = true;
         current_sections = new_sections;
-        all_rows = [];
-        for (const section of current_sections) {
-            for (const stream_id of section.streams) {
-                all_rows.push({
-                    type: "stream",
-                    stream_id,
-                    inactive_or_muted: false,
-                });
-            }
-            for (const stream_id of [...section.muted_streams, ...section.inactive_streams]) {
-                all_rows.push({
-                    type: "stream",
-                    stream_id,
-                    inactive_or_muted: true,
-                });
-            }
-            if (section.inactive_streams.length > 0 || section.muted_streams.length > 0) {
-                all_rows.push({
-                    type: "inactive_or_muted_toggle",
-                    section_id: section.id,
-                });
-            }
-        }
+        all_rows = current_sections.flatMap((section) => [
+            ...section.streams,
+            ...section.muted_streams,
+            ...section.inactive_streams,
+        ]);
     }
 
     return {
         same_as_before,
         sections: new_sections,
     };
-}
-
-export function first_row(): StreamListRow | undefined {
-    return all_rows.at(0);
-}
-
-function is_visible_row(
-    row: StreamListRow,
-    section_id_map: Map<number, StreamListSection>,
-    sections_showing_inactive_or_muted: Set<string>,
-    collapsed_sections: Set<string>,
-    active_stream_id: number | undefined,
-): boolean {
-    if (row.type === "stream") {
-        const stream_id = row.stream_id;
-        assert(stream_id !== undefined);
-        const section = section_id_map.get(stream_id)!;
-        if (collapsed_sections.has(section.id) && active_stream_id !== stream_id) {
-            return false;
-        }
-        if (!sections_showing_inactive_or_muted.has(section.id) && row.inactive_or_muted) {
-            return false;
-        }
-    } else if (row.type === "inactive_or_muted_toggle" && collapsed_sections.has(row.section_id)) {
-        return false;
-    }
-    return true;
-}
-
-export function prev_row(
-    row: StreamListRow,
-    sections_showing_inactive_or_muted: Set<string>,
-    collapsed_sections: Set<string>,
-    active_stream_id: number | undefined,
-): StreamListRow | undefined {
-    let i = all_rows.indexOf(row);
-    const section_id_map = current_section_ids_for_streams();
-    while (i > 0) {
-        i -= 1;
-        const prev_row = all_rows[i]!;
-        if (
-            is_visible_row(
-                prev_row,
-                section_id_map,
-                sections_showing_inactive_or_muted,
-                collapsed_sections,
-                active_stream_id,
-            )
-        ) {
-            return prev_row;
-        }
-    }
-    return undefined;
-}
-
-export function next_row(
-    row: StreamListRow,
-    sections_showing_inactive_or_muted: Set<string>,
-    collapsed_sections: Set<string>,
-    active_stream_id: number | undefined,
-): StreamListRow | undefined {
-    let i = all_rows.indexOf(row);
-    const section_id_map = current_section_ids_for_streams();
-    while (i + 1 < all_rows.length) {
-        i += 1;
-        const next_row = all_rows[i]!;
-        if (
-            is_visible_row(
-                next_row,
-                section_id_map,
-                sections_showing_inactive_or_muted,
-                collapsed_sections,
-                active_stream_id,
-            )
-        ) {
-            return next_row;
-        }
-    }
-    return undefined;
 }
 
 export function initialize(): void {

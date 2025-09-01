@@ -68,8 +68,9 @@ def get_event_checker(event: dict[str, Any]) -> Callable[[str, dict[str, Any]], 
     # Change to CamelCase
     name = name.replace("_", " ").title().replace(" ", "")
 
+    # Use EventModernPresence type to check "presence" events
     if name == "Presence":
-        name = "Legacy" + name
+        name = "Modern" + name
 
     # And add the prefix.
     name = "Event" + name

@@ -2,6 +2,7 @@
 
 const assert = require("node:assert/strict");
 
+const {make_realm} = require("./lib/example_realm.cjs");
 const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 
@@ -14,7 +15,7 @@ const presence = zrequire("presence");
 const {set_realm} = zrequire("state_data");
 const {initialize_user_settings} = zrequire("user_settings");
 
-const realm = {};
+const realm = make_realm();
 set_realm(realm);
 const user_settings = {};
 initialize_user_settings({user_settings});
@@ -315,10 +316,8 @@ test("update_info_from_event", () => {
     let info;
 
     info = {
-        website: {
-            status: "active",
-            timestamp: 500,
-        },
+        active_timestamp: 500,
+        idle_timestamp: 500,
     };
 
     presence.presence_info.delete(alice.user_id);
@@ -330,10 +329,8 @@ test("update_info_from_event", () => {
     });
 
     info = {
-        mobile: {
-            status: "idle",
-            timestamp: 510,
-        },
+        active_timestamp: 500,
+        idle_timestamp: 500,
     };
     presence.update_info_from_event(alice.user_id, info, 510);
 
@@ -343,10 +340,8 @@ test("update_info_from_event", () => {
     });
 
     info = {
-        mobile: {
-            status: "idle",
-            timestamp: 1000,
-        },
+        active_timestamp: 500,
+        idle_timestamp: 1000,
     };
     presence.update_info_from_event(alice.user_id, info, 1000);
 

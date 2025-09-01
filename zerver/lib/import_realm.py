@@ -863,6 +863,22 @@ def bulk_import_client(data: TableData, model: Any, table: TableName) -> None:
         update_id_map(table="client", old_id=item["id"], new_id=client.id)
 
 
+def set_subscriber_count_for_channels(realm: Realm) -> None:
+    query = """
+        UPDATE zerver_stream
+        SET subscriber_count = (
+            SELECT COUNT(*)
+            FROM zerver_subscription
+            WHERE zerver_subscription.recipient_id = zerver_stream.recipient_id
+              AND zerver_subscription.active
+              AND zerver_subscription.is_user_active
+        )
+        WHERE zerver_stream.realm_id = %s;
+    """
+    with connection.cursor() as cursor:
+        cursor.execute(query, [realm.id])
+
+
 def fix_subscriptions_is_user_active_column(
     data: TableData, user_profiles: list[UserProfile], crossrealm_user_ids: set[int]
 ) -> None:
@@ -1509,6 +1525,7 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
     update_model_ids(Subscription, data, "subscription")
     fix_subscriptions_is_user_active_column(data, user_profiles, crossrealm_user_ids)
     bulk_import_model(data, Subscription)
+    set_subscriber_count_for_channels(realm)
 
     if "zerver_realmauditlog" in data:
         fix_datetime_fields(data, "zerver_realmauditlog")

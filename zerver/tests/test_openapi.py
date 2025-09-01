@@ -30,6 +30,7 @@ from zerver.openapi.openapi import (
     validate_schema,
 )
 from zerver.tornado.views import get_events, get_events_backend
+from zilencer.auth import remote_server_dispatch
 
 TEST_ENDPOINT = "/messages/{message_id}"
 TEST_METHOD = "patch"
@@ -209,9 +210,7 @@ class OpenAPIArgumentsTest(ZulipTestCase):
         # and thus may be complicated to document with our current tooling.
         # (No /api/v1/ or /json prefix).
         "/avatar/{email_or_id}",
-        ## This one is in zulip.yaml, but not the actual docs.
-        # "/api/v1/user_uploads/{realm_id_str}/{filename}",
-        ## And this one isn't, and isn't really representable
+        ## This one isn't really representable
         # "/user_uploads/{realm_id_str}/{filename}",
         #### These realm administration settings are valuable to document:
         # Delete a data export.
@@ -260,6 +259,17 @@ class OpenAPIArgumentsTest(ZulipTestCase):
         # Zulip outgoing webhook payload
         "/zulip-outgoing-webhook",
         "/jwt/fetch_api_key",
+        #### Bouncer endpoints
+        # Higher priority to document
+        "/remotes/push/e2ee/notify",
+        # Lower priority to document
+        "/remotes/server/register",
+        "/remotes/server/register/transfer",
+        "/remotes/server/register/verify_challenge",
+        "/remotes/server/deactivate",
+        "/remotes/server/analytics",
+        "/remotes/server/analytics/status",
+        "/remotes/server/billing",
     }
 
     # Endpoints in the API documentation that don't use rest_dispatch
@@ -530,8 +540,8 @@ so maybe we shouldn't include it in pending_endpoints.
         with the arguments declared in our API documentation
         for every API endpoint in Zulip.
 
-        First, we import the fancy-Django version of zproject/urls.py
-        by doing this, each typed_endpoint wrapper around each
+        First, we import the fancy-Django version of zproject/urls.py and
+        zilencer/urls.py. By doing this, each typed_endpoint wrapper around each
         imported view function gets called to generate the wrapped
         view function and thus filling the global arguments_map variable.
         Basically, we're exploiting code execution during import.
@@ -546,15 +556,21 @@ so maybe we shouldn't include it in pending_endpoints.
         in code.
         """
 
+        from zilencer import urls as zilencer_urlconf
         from zproject import urls as urlconf
 
         # We loop through all the API patterns, looking in particular
-        # for those using the rest_dispatch decorator; we then parse
-        # its mapping of (HTTP_METHOD -> FUNCTION).
-        for p in urlconf.v1_api_and_json_patterns + urlconf.v1_api_mobile_patterns:
+        # for those using the rest_dispatch or remote_server_dispatch decorator;
+        # we then parse its mapping of (HTTP_METHOD -> FUNCTION).
+        for p in (
+            urlconf.v1_api_and_json_patterns
+            + urlconf.v1_api_mobile_patterns
+            + zilencer_urlconf.v1_api_bouncer_patterns
+        ):
             methods_endpoints: dict[str, Any] = {}
-            if p.callback is not rest_dispatch:
-                # Endpoints not using rest_dispatch don't have extra data.
+            if p.callback not in [rest_dispatch, remote_server_dispatch]:
+                # Endpoints not using rest_dispatch or remote_server_dispatch
+                # don't have extra data.
                 if str(p.pattern) in self.documented_post_only_endpoints:
                     methods_endpoints = dict(POST=p.callback)
                 else:
@@ -853,12 +869,12 @@ class TestCurlExampleGeneration(ZulipTestCase):
 
     def test_generate_and_render_curl_wrapper(self) -> None:
         generated_curl_example = render_curl_example(
-            "/get_stream_id:GET:email:key", api_url="https://zulip.example.com/api"
+            "/get_stream_id:GET", api_url="https://zulip.example.com/api"
         )
         expected_curl_example = [
             "```curl",
             "curl -sSX GET -G https://zulip.example.com/api/v1/get_stream_id \\",
-            "    -u email:key \\",
+            "    -u BOT_EMAIL_ADDRESS:BOT_API_KEY \\",
             "    --data-urlencode stream=Denmark",
             "```",
         ]

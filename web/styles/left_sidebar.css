@@ -352,7 +352,8 @@
     top: 0;
     background: var(--color-background);
     /* Must be padding not margin so that the sticky headers don't show behind it */
-    padding: 0 var(--left-sidebar-right-margin) 3px 5px;
+    padding: 0 var(--left-sidebar-right-margin)
+        var(--sidebar-filter-bottom-spacing) 5px;
 
     .channel-folders-sidebar-menu-icon {
         grid-area: channel-folders-option;
@@ -561,7 +562,7 @@
     display: none;
 }
 
-.stream-list-section-container.collapsed {
+#streams_list .stream-list-section-container.collapsed {
     .narrow-filter:not(.stream-expanded),
     .stream-list-toggle-inactive-or-muted-channels,
     .topic-list-item:not(.active-sub-filter),
@@ -752,10 +753,15 @@
     }
 }
 
-.highlighted_row.top_left_row,
-.highlighted_row.bottom_left_row {
-    outline: 2px solid var(--color-outline-focus);
-    outline-offset: -2px;
+#views-label-container,
+#direct-messages-section-header,
+.stream-list-subsection-header,
+.top_left_row,
+.bottom_left_row {
+    &.highlighted_row {
+        outline: 2px solid var(--color-outline-focus);
+        outline-offset: -2px;
+    }
 }
 
 #stream_filters
@@ -1190,7 +1196,7 @@ li.active-sub-filter {
 }
 
 #left-sidebar-navigation-list {
-    margin-bottom: var(--left-sidebar-sections-vertical-gutter);
+    margin-bottom: 0;
     display: grid;
     line-height: var(--line-height-sidebar-row);
     /* Explicitly ensure parity with the line-height

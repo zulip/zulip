@@ -2546,13 +2546,11 @@ paths:
                                   description: |
                                     The ID of the user who sent the message.
 
-                                    Is `null` when event is for a rendering update of the original message,
-                                    such as for an [inline URL preview][inline-url-previews].
+                                    Will be `null` when event is for a rendering update of the original
+                                    message, such as for an [inline URL preview][inline-url-previews].
 
-                                    **Changes**: As of Zulip 5.0 (feature level 114), this field
-                                    is present for all `update_message` events. Previously, this
-                                    field was omitted for [inline URL preview][inline-url-previews]
-                                    updates.
+                                    **Changes**: Prior to Zulip 5.0 (feature level 114), this field was
+                                    omitted for [inline URL preview][inline-url-previews] updates.
                                 rendering_only:
                                   type: boolean
                                   description: |
@@ -2565,8 +2563,8 @@ paths:
                                     and does not modify the message history.
 
                                     **Changes**: New in Zulip 5.0 (feature level 114). Clients can
-                                    correctly identify these rendering update event with earlier
-                                    Zulip versions by checking whether the `user_id` field was omitted.
+                                    correctly identify these rendering update events prior to this
+                                    feature level by checking whether the `user_id` field was omitted.
                                 message_id:
                                   type: integer
                                   description: |
@@ -2630,13 +2628,11 @@ paths:
                                 edit_timestamp:
                                   type: integer
                                   description: |
-                                    The time when this message edit operation was processed by the
-                                    server.
+                                    The UNIX timestamp when this message edit operation was processed by
+                                    the server, in UTC seconds.
 
-                                    **Changes**: As of Zulip 5.0 (feature level 114), this field
-                                    is present for all `update_message` events. Previously, this
-                                    field was omitted for [inline URL preview][inline-url-previews]
-                                    updates.
+                                    **Changes**: Prior to Zulip 5.0 (feature level 114), this field
+                                    was omitted for [inline URL preview][inline-url-previews] updates.
                                 stream_name:
                                   type: string
                                   description: |
@@ -10288,17 +10284,24 @@ paths:
   /user_uploads/{realm_id_str}/{filename}:
     get:
       operationId: get-file-temporary-url
-      summary: Get public temporary URL
+      summary: Get public temporary URL for an uploaded file
       tags: ["messages"]
       description: |
-        Get a temporary URL for access to the file that doesn't require authentication.
+        Get a temporary URL for access to an [uploaded file](/api/upload-file)
+        that doesn't require authentication.
+
+        The `SIGNED_ACCESS_TOKEN_VALIDITY_IN_SECONDS` server setting controls
+        the valid length of time for temporary access, which generally is set
+        to a default of 60 seconds. Consumers of this API are expected to
+        immediately request the URL that it returns, and should not store it
+        in any way.
 
         **Changes**: New in Zulip 3.0 (feature level 1).
       parameters:
         - name: realm_id_str
           in: path
           description: |
-            The realm ID.
+            The ID of the Zulip organization.
           schema:
             type: integer
           example: 1
@@ -10306,7 +10309,7 @@ paths:
         - name: filename
           in: path
           description: |
-            Path to the URL.
+            Path to the [uploaded file](/api/upload-file).
           schema:
             type: string
           example: 4e/m2A3MSqFnWRLUf9SaPzQ0Up_/zulip.txt
@@ -12109,11 +12112,8 @@ paths:
                   $ref: "#/components/schemas/CanResolveTopicsGroup"
                 folder_id:
                   description: |
-                    This parameter determines the folder to which the newly
-                    created channel will be added.
-
-                    If the value is `None`, the channel will not be added to
-                    any folder.
+                    This parameter adds the newly created channel to the specified
+                    [channel folder](/help/channel-folders).
 
                     **Changes**: New in Zulip 11.0 (feature level 389).
                   type: integer
@@ -12590,6 +12590,7 @@ paths:
           $ref: "#/components/responses/SimpleSuccess"
   /mobile_push/test_notification:
     post:
+      deprecated: true
       operationId: test-notify
       summary: Send a test notification to mobile device(s)
       tags: ["mobile"]
@@ -12597,7 +12598,13 @@ paths:
         Trigger sending a test push notification to the user's
         selected mobile device or all of their mobile devices.
 
-        **Changes**: Starting with Zulip 8.0 (feature level 234), test
+        **Changes**: Deprecated in Zulip 11.0 (feature level 420).
+        Clients connecting to newer servers and with E2EE push
+        notifications support should use the
+        [Send an E2EE test notification to mobile device(s)](/api/e2ee-test-notify)
+        endpoint, as this endpoint will be removed in a future release.
+
+        Starting with Zulip 8.0 (feature level 234), test
         notifications sent via this endpoint use `test` rather than
         `test-by-device-token` in the `event` field. Also, as of this
         feature level, all mobile push notifications now include a
@@ -12788,6 +12795,133 @@ paths:
                       }
                     description: |
                       Error when the server is not configured to use push notification service:
+  /remotes/push/e2ee/register:
+    post:
+      operationId: register-remote-push-device
+      summary: Register E2EE push device to bouncer
+      tags: ["mobile"]
+      description: |
+        Register a push device to bouncer to receive end-to-end encrypted
+        mobile push notifications.
+
+        Self-hosted servers use this endpoint to asynchronously register
+        a push device to the bouncer server after receiving a request from
+        the mobile client to [register E2EE push device](/api/register-push-device).
+
+        It is not meant to be used by mobile clients directly.
+
+        **Changes**: New in Zulip 11.0 (feature level 406).
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                realm_uuid:
+                  description: |
+                    The UUID of the realm to which the push device
+                    being registered belongs.
+                  type: string
+                  example: "realm-uuid"
+                push_account_id:
+                  description: |
+                    The `push_account_id` value provided by the mobile client
+                    to [register E2EE push device](/api/register-push-device).
+                  type: integer
+                  example: 2408
+                encrypted_push_registration:
+                  description: |
+                    The `encrypted_push_registration` value provided by the mobile client
+                    to [register E2EE push device](/api/register-push-device).
+                  type: string
+                  example: "encrypted-push-registration-data"
+                bouncer_public_key:
+                  description: |
+                    The `bouncer_public_key` value provided by the mobile client
+                    to [register E2EE push device](/api/register-push-device).
+                  type: string
+                  example: "bouncer-public-key"
+              required:
+                - realm_uuid
+                - push_account_id
+                - encrypted_push_registration
+                - bouncer_public_key
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - required:
+                      - device_id
+                    additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      ignored_parameters_unsupported: {}
+                      device_id:
+                        type: integer
+                        description: |
+                          Unique identifier assigned by the bouncer for the registration.
+                        example: 2408
+                    example: {"device_id": 2408, "msg": "", "result": "success"}
+        "400":
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - example:
+                          {
+                            "code": "INVALID_BOUNCER_PUBLIC_KEY",
+                            "msg": "Invalid bouncer_public_key",
+                            "result": "error",
+                          }
+                        description: |
+                          An example JSON response for when the given `bouncer_public_key` is invalid:
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - example:
+                          {
+                            "code": "REQUEST_EXPIRED",
+                            "msg": "Request expired",
+                            "result": "error",
+                          }
+                        description: |
+                          An example JSON response for when the given `encrypted_push_registration` is stale:
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - example:
+                          {
+                            "code": "BAD_REQUEST",
+                            "msg": "Invalid encrypted_push_registration",
+                            "result": "error",
+                          }
+                        description: |
+                          An example JSON response for when either the bouncer fails to decrypt
+                          the given `encrypted_push_registration` or the decrypted data is invalid:
+        "403":
+          description: |
+            Forbidden.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/CodedError"
+                  - example:
+                      {
+                        "code": "MISSING_REMOTE_REALM",
+                        "msg": "Organization not registered",
+                        "result": "error",
+                      }
+                    description: |
+                      An example JSON response for when no realm is registered for
+                      the authenticated server on the bouncer for the given `realm_uuid`:
   /user_topics:
     post:
       operationId: update-user-topic
@@ -12987,11 +13121,17 @@ paths:
                           An example JSON response for when the user is not previously muted:
   /users/me/apns_device_token:
     post:
+      deprecated: true
       operationId: add-apns-token
       summary: Add an APNs device token
       tags: ["users"]
       description: |
         This endpoint adds an APNs device token to register for iOS push notifications.
+
+        **Changes**: Deprecated in Zulip 11.0 (feature level 406). Clients connecting
+        to newer servers and with E2EE push notifications support should use the
+        [Register E2EE push device](/api/register-push-device) endpoint, as this
+        endpoint will be removed in a future release.
       requestBody:
         required: true
         content:
@@ -13099,11 +13239,17 @@ paths:
                           A typical failed JSON response for when the token does not exist:
   /users/me/android_gcm_reg_id:
     post:
+      deprecated: true
       operationId: add-fcm-token
       summary: Add an FCM registration token
       tags: ["users"]
       description: |
         This endpoint adds an FCM registration token for push notifications.
+
+        **Changes**: Deprecated in Zulip 11.0 (feature level 406). Clients connecting
+        to newer servers and with E2EE push notifications support should use the
+        [Register E2EE push device](/api/register-push-device) endpoint, as this
+        endpoint will be removed in a future release.
       requestBody:
         required: true
         content:
@@ -21107,10 +21253,11 @@ paths:
                           to determine what values to present as possible values for these
                           settings in UI components.
 
-                          This part of the Zulip API is unstable and may change
-                          significantly in future versions.
+                          **Changes**: Before Zulip 10.0 (feature level 326), this part of
+                          the response had a documented-as-unstable format not suitable
+                          for general client use, and should be ignored.
 
-                          **Changes**: New in Zulip 8.0 (feature level 221).
+                          New in Zulip 8.0 (feature level 221).
                         type: object
                         additionalProperties: false
                         properties:
@@ -22889,10 +23036,11 @@ paths:
                   example: true
                 folder_id:
                   description: |
-                    ID of the new folder to which the channel should belong.
+                    ID of the new [channel folder](/help/channel-folders) to which the
+                    channel should belong.
 
-                    It can be `None` if the user wants to just remove the channel
-                    from its existing folder.
+                    A `null` value indicates the user wants to remove the channel from its
+                    current channel folder.
 
                     **Changes**: New in Zulip 11.0 (feature level 389).
                   type: integer
@@ -23638,12 +23786,15 @@ paths:
       operationId: create-channel
       summary: Create a channel
       description: |
-        Create a new [channel](/help/create-channels) and optionally
-        subscribe users to the newly created channel. The initial [channel settings](/api/update-stream)
-        will be determined by the optional parameters, like `invite_only`, detailed below.
+        Create a new [channel](/help/create-channels), and optionally subscribe
+        users to the newly created channel.
 
-        **Changes**: New in Zulip 11.0 (feature level 417). Previously, this was only possible via
-        the [`POST /api/subscribe`](/api/subscribe) endpoint, which handled both creation and subscription.
+        The initial [channel settings](/api/update-stream) will be determined
+        by the optional parameters, like `invite_only`, detailed below.
+
+        **Changes**: New in Zulip 11.0 (feature level 417). Previously, this was
+        only possible via the [`POST /api/subscribe`](/api/subscribe) endpoint,
+        which handles both channel subscription and creation.
       x-curl-examples-parameters:
         oneOf:
           - type: include
@@ -23652,12 +23803,11 @@ paths:
                 - name
                 - subscribers
       requestBody:
+        required: true
         content:
           application/x-www-form-urlencoded:
             schema:
               type: object
-              description: |
-                An object containing the top-level fields used to create a channel.
               properties:
                 name:
                   type: string
@@ -23694,11 +23844,11 @@ paths:
                   example: true
                 invite_only:
                   description: |
-                    This parameter and the ones
-                    that follow are used to request an initial configuration of the new channel.
+                    This parameter and the ones that follow are used to request an initial
+                    configuration of the new channel.
 
                     This parameter determines whether the newly created channel will be
-                    a private channel.
+                    a [private channel](/help/channel-permissions#private-channels).
                   type: boolean
                   default: false
                   example: true
@@ -23729,9 +23879,13 @@ paths:
                   default: false
                   example: true
                 folder_id:
-                  $ref: "#/components/schemas/FolderId"
-                send_new_subscription_messages:
-                  $ref: "#/components/schemas/SendNewSubscriptionMessages"
+                  description: |
+                    This parameter adds the newly created channel to the specified
+                    [channel folder](/help/channel-folders).
+
+                    **Changes**: New in Zulip 11.0 (feature level 389).
+                  type: integer
+                  example: 1
                 topics_policy:
                   $ref: "#/components/schemas/TopicsPolicy"
                 history_public_to_subscribers:
@@ -23794,15 +23948,12 @@ paths:
                 contentType: application/json
               topics_policy:
                 contentType: application/json
-        required: true
-
       responses:
         "200":
           description: Success.
           content:
             application/json:
               schema:
-                description: "Success response for creating a channel."
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
                   - type: object
@@ -23820,27 +23971,17 @@ paths:
           content:
             application/json:
               schema:
-                description: "Bad request as channel already exists."
                 allOf:
                   - $ref: "#/components/schemas/CodedError"
-                  - type: object
-                    properties:
-                      result:
-                        type: string
-                        example: "error"
-                      msg:
-                        type: string
-                        example: "Channel 'discussions' already exists"
-                      code:
-                        type: string
-                        example: "CHANNEL_ALREADY_EXISTS"
-                example:
-                  {
-                    result: "error",
-                    msg: "Channel 'discussions' already exists",
-                    code: "CHANNEL_ALREADY_EXISTS",
-                  }
-
+                  - example:
+                      {
+                        result: "error",
+                        msg: "Channel 'discussions' already exists",
+                        code: "CHANNEL_ALREADY_EXISTS",
+                      }
+                    description: |
+                      An example JSON error response for when a channel with the submitted
+                      name already exists.
   /user_groups/create:
     post:
       operationId: create-user-group
@@ -28814,17 +28955,20 @@ components:
     SendNewSubscriptionMessages:
       description: |
         Whether any other users newly subscribed via this request should be
-        sent a Notification Bot DM notifying them about their new
-        subscription.
+        sent a direct message, from Notification Bot, notifying them about their
+        new subscription.
 
-        The server will never send Notification Bot DMs if more than
-        `max_bulk_new_subscription_messages` (available in the [`POST
-        /register`](/api/register-queue) response) users were subscribed in
-        this request.
+        No direct messages are sent for any channels that are created as part of
+        this request, regardless of the value of this parameter.
+
+        The server will never send direct messages when the total number of users
+        who were subscribed to channels in this request was more than the value
+        of `max_bulk_new_subscription_messages`, which is available in the [`POST
+        /register`](/api/register-queue) response.
 
         **Changes**: Before Zulip 11.0 (feature level 397), new subscribers
-        were always sent a Notification Bot DM, which was unduly expensive
-        when bulk-subscribing thousands of users to a channel.
+        were always sent a Notification Bot direct message, which was unduly
+        expensive when bulk-subscribing thousands of users to a channel.
       type: boolean
       default: true
       example: true

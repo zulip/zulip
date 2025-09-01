@@ -2442,6 +2442,11 @@ body:not(.spectator-view) {
                avatar in the navbar from being lower by a pixel. */
             display: block;
         }
+
+        &:has(.avatar-loaded) {
+            background-color: transparent;
+            border-color: transparent;
+        }
     }
 }
 

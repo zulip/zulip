@@ -206,7 +206,10 @@ prod = [
   "pynacl",
 
   # Character set detection for text/plain
-  "chardet>=5.1.0"
+  "chardet>=5.1.0",
+
+  # Better compression than zlib
+  "zstd",
 ]
 docs = [
   # Needed to build RTD docs
@@ -294,6 +297,7 @@ dev = [
   "types-requests",
   "types-requests-oauthlib",
   "types-uwsgi",
+  "types-zstd",
   "types-zxcvbn",
 
   # Needed for tools/check-thirdparty

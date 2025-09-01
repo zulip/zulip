@@ -297,6 +297,7 @@
        Value is chosen to avoid elements overlapping with the browser's URL
        display when hovering links, and should not scale with font size. */
     --sidebar-bottom-spacing: 25px;
+    --sidebar-filter-bottom-spacing: 3px;
 
     /* We base sidebar row heights on their line heights.
        Prominent rows include things like headers (e.g., VIEWS)
@@ -569,9 +570,12 @@
     --width-simplebar-scroll: 11px;
     --width-simplebar-scroll-hover: 15px;
 
-    /* This is a rough estimate for height occupied by Recent Conversations filters.
-       We expect `resize.ts` to update this once UI is initialized. */
-    --recent-topics-filters-height: 50px;
+    /* This is the height occupied by Recent Conversations filters,
+       based on the height of the new filter elements in the sidebars
+       and for the topics filter. 31px at 16px/1em. */
+    --recent-topics-filters-height: 1.9375em;
+    /* Legacy margin/flex-gap value for filters. 10px at 14px/1em. */
+    --recent-topics-filters-gap: 0.7142em;
 
     /* Pill dimensions. */
     /* 1.5714em is 22px (border-inclusive) at 14px/1em */
@@ -610,6 +614,9 @@
     /* Informational overlay */
     --informational-overlay-max-width: 43.75em;
     --modal-input-width: 23.2142em;
+    /* Dropdown menu width. This is a legacy value that comes from bootstrap.
+       See 1c6bed55e4e800b5bad7150f6bdd274cd7f6504e for more context. */
+    --width-dropdown-widget-button: 206px;
 
     /*
     Maximum height of the compose box when it is not in maximised state. This
