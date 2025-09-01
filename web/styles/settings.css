@@ -2325,6 +2325,7 @@ label.preferences-radio-choice-label {
 
     .integration-url {
         font-family: "Source Code Pro", monospace;
+        background-color: var(--color-background-integration-url);
         padding: 10px;
         font-size: 0.85rem;
         border: 1px solid hsl(0deg 0% 87%);

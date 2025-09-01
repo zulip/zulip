@@ -1023,6 +1023,11 @@
         0 0 2px hsl(3deg 57% 33%),
         0 0 2px hsl(3deg 73% 74%)
     );
+    --color-background-white-box: light-dark(
+        hsl(0deg 0% 100%),
+        hsl(0deg 0% 0% / 20%)
+    );
+    --color-background-grey-box: light-dark(#f5f5f5, hsl(0deg 0% 0% / 20%));
 
     /* Recent view */
     --recent-view-max-avatars: 4;
@@ -1560,7 +1565,18 @@
         hsl(0deg 0% 20%),
         hsl(236deg 33% 90%)
     );
-
+    --color-background-stream-email: light-dark(
+        hsl(0deg 0% 98%),
+        hsl(0deg 0% 0% / 20%)
+    );
+    --color-background-integration-url: light-dark(
+        transparent,
+        hsl(0deg 0% 0% / 20%)
+    );
+    --color-background-tbody-th-odd: light-dark(
+        transparent,
+        hsl(0deg 0% 0% / 20%)
+    );
     /* Markdown colors */
     --color-background-rendered-markdown-thead: light-dark(
         hsl(0deg 0% 93%),

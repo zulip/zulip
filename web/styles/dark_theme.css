@@ -180,15 +180,6 @@
         background-color: hsl(228deg 11% 17%);
     }
 
-    & .overlay-messages-header,
-    .grey-box,
-    .white-box,
-    .stream-email,
-    #generate-integration-url-modal .integration-url,
-    .table-striped tbody tr:nth-child(odd) th {
-        background-color: hsl(0deg 0% 0% / 20%);
-    }
-
     .table-striped tbody tr:nth-child(even) td {
         border-color: hsl(0deg 0% 0% / 20%);
         background-color: color-mix(

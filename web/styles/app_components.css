@@ -431,7 +431,7 @@ input.settings_text_input {
 .grey-box {
     margin: 0;
     padding: 5px 10px;
-    background-color: var(--color-background-modal-bar);
+    background-color: var(--color-background-grey-box);
     border: 1px solid var(--color-border-modal-bar);
     border-radius: 4px;
 
@@ -439,7 +439,7 @@ input.settings_text_input {
 }
 
 .white-box {
-    background-color: hsl(0deg 0% 100%);
+    background-color: var(--color-background-white-box);
     border: 1px solid hsl(0deg 0% 87%);
 }
 
@@ -823,8 +823,14 @@ input.settings_text_input {
         }
     }
 
-    tbody > tr:nth-child(odd) > td {
-        background-color: var(--color-background-modal);
+    tbody > tr:nth-child(odd) {
+        td {
+            background-color: var(--color-background-modal);
+        }
+
+        th {
+            background-color: var(--color-background-tbody-th-odd);
+        }
     }
 
     /* Force the actions column to use the minimum space necessary */
