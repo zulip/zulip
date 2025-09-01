@@ -1869,8 +1869,6 @@ test("describe", ({mock_template, override}) => {
     string = "messages in all, starred messages";
     assert.equal(Filter.search_description_as_html(narrow, false), string);
 
-
-
     narrow = [];
     string = "combined feed";
     assert.equal(Filter.search_description_as_html(narrow, false), string);
@@ -1913,7 +1911,10 @@ test("describe", ({mock_template, override}) => {
 test("operator_to_prefix_legacy_aliases", () => {
     // Test dm-including legacy alias coverage - should behave same as dm-with
     assert.equal(Filter.operator_to_prefix("dm-including", false), "direct messages including");
-    assert.equal(Filter.operator_to_prefix("dm-including", true), "exclude direct messages including");
+    assert.equal(
+        Filter.operator_to_prefix("dm-including", true),
+        "exclude direct messages including",
+    );
 });
 
 test("can_bucket_by", () => {
