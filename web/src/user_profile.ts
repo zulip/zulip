@@ -826,16 +826,7 @@ export function show_edit_bot_info_modal(user_id: number, $container: JQuery): v
 
     const bot_type = bot.bot_type.toString();
     const services = bot_data.get_services(bot.user_id);
-    let service:
-        | {
-              config_data: Record<string, string>;
-              service_name: string;
-          }
-        | {
-              base_url: string;
-              interface: number;
-              token: string;
-          };
+    let service: NonNullable<bot_data.Services[number]>;
     if (services?.[0] !== undefined) {
         service = services[0];
     }
