@@ -20,6 +20,13 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 12.0
 
+**Feature level 425**
+
+* [`GET /messages`](/api/get-messages), [`POST /register`](/api/register-queue):
+  The `dm-including` narrow filter has been renamed to `dm-with`. The old
+  `dm-including` name continues to work for backwards compatibility, but
+  `dm-with` is now the preferred and documented name.
+
 Feature levels 421-424 reserved for future use in 11.x maintenance
 releases.
 

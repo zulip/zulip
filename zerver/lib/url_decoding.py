@@ -35,8 +35,10 @@ OPERATOR_SYNONYMS = {
     **CHANNEL_SYNONYMS,
     # "pm-with:" was renamed to "dm:"
     "pm-with": "dm",
-    # "group-pm-with:" was replaced with "dm-including:"
-    "group-pm-with": "dm-including",
+    # "group-pm-with:" was replaced with "dm-with:"
+    "group-pm-with": "dm-with",
+    # "dm-including:" is a legacy alias for "dm-with:"
+    "dm-including": "dm-with",
     "from": "sender",
     DB_TOPIC_NAME: "topic",
 }
@@ -86,7 +88,7 @@ def decode_hash_component(string: str) -> str:
 def decode_narrow_operand(operator: str, operand: str) -> str | int | list[int]:
     # These have the similar slug formatting for their operands which
     # contain object ID(s).
-    if operator in ["dm-including", "dm", "sender", "channel"]:
+    if operator in ["dm-with", "dm-including", "dm", "sender", "channel"]:
         result = parse_recipient_slug(operand)
         return result[0] if isinstance(result, tuple) else ""
 
