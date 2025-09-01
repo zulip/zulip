@@ -1499,6 +1499,10 @@ button#register_auth_button_gitlab {
     }
 }
 
+#realm-creation-import-from-wrapper #import_from[disabled] {
+    cursor: not-allowed;
+}
+
 #realm-creation-import-from-wrapper .extra-info-realm-creation-import-from {
     padding-top: 5px;
 }
