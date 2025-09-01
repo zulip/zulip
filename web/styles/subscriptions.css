@@ -27,7 +27,7 @@
     font-family: "Source Code Pro", monospace;
     padding: 10px;
     font-size: 0.85em; /* 13.6px at 16px/em (previously 0.85rem) */
-    background-color: hsl(0deg 0% 98%);
+    background-color: var(--color-background-stream-email);
     border: 1px solid hsl(0deg 0% 87%);
     border-radius: 4px;
 }
