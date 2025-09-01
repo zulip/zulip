@@ -11149,6 +11149,20 @@ paths:
                   - $ref: "#/components/schemas/JsonSuccessBase"
                   - type: object
                     properties:
+                      result:
+                        type: string
+                        description: The string `"success"`.
+                      msg:
+                        type: string
+                        description: Human-readable success message; usually empty.
+                      ignored_parameters_unsupported:
+                        type: array
+                        description: |
+                          Request parameters sent by the client that the server does not support.
+                          Present for backward compatibility; typically empty.
+                        items:
+                          type: string
+
                       alert_words:
                         type: array
                         description: |
@@ -11156,6 +11170,7 @@ paths:
                           configured by the user.
                         items:
                           type: string
+
                       recently_removed_alert_words:
                         type: array
                         description: |
@@ -11172,19 +11187,14 @@ paths:
                               type: string
                               format: date-time
                               description: ISO 8601 timestamp when the word was removed (UTC).
+                    additionalProperties: false
                     example:
-                      {
-                        "result": "success",
-                        "msg": "",
-                        "alert_words": ["natural", "illustrious"],
-                        "recently_removed_alert_words":
-                          [
-                            {
-                              "word": "foo",
-                              "removed_at": "2023-10-01T12:34:56.789012+00:00",
-                            },
-                          ],
-                      }
+                      result: "success"
+                      msg: ""
+                      alert_words: ["natural", "illustrious"]
+                      recently_removed_alert_words:
+                        - word: "foo"
+                          removed_at: "2023-10-01T12:34:56.789012+00:00"
 
     post:
       operationId: add-alert-words

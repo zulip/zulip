@@ -1171,7 +1171,7 @@ def add_user_profile_child_configs(user_profile_config: Config) -> None:
     )
 
     Config(
-        table="zerver_alertword",
+        table="zerver_alertwordremoval",
         model=AlertWordRemoval,
         normal_parent=user_profile_config,
         include_rows="user_profile_id__in",
