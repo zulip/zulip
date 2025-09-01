@@ -439,7 +439,7 @@ input.settings_text_input {
 }
 
 .white-box {
-    background-color: hsl(0deg 0% 100%);
+    background-color: var(--color-background-white-box);
     border: 1px solid hsl(0deg 0% 87%);
 }
 
