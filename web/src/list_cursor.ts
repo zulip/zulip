@@ -15,10 +15,19 @@ export class ListCursor<Key> {
     highlight_class: string;
     list: List<Key>;
     curr_key?: Key | undefined;
+    // We only the highlight around the current key if:
+    // 1. The query is not empty.
+    // 2. User has to navigate up / down the list.
+    is_highlight_visible: boolean;
 
     constructor({highlight_class, list}: {highlight_class: string; list: List<Key>}) {
         this.highlight_class = highlight_class;
         this.list = list;
+        this.is_highlight_visible = false;
+    }
+
+    set_is_highlight_visible(value: boolean): void {
+        this.is_highlight_visible = value;
     }
 
     clear(): void {
@@ -59,7 +68,9 @@ export class ListCursor<Key> {
 
         return {
             highlight: () => {
-                $li.addClass(this.highlight_class);
+                if (this.is_highlight_visible) {
+                    $li.addClass(this.highlight_class);
+                }
                 this.adjust_scroll($li);
             },
             clear: () => {
@@ -123,6 +134,18 @@ export class ListCursor<Key> {
         if (this.curr_key === undefined) {
             return;
         }
+
+        if (!this.is_highlight_visible) {
+            // Highlight the current key but
+            // don't move the current selection.
+            this.is_highlight_visible = true;
+            const current_row = this.get_row(this.curr_key);
+            if (current_row) {
+                current_row.highlight();
+                return;
+            }
+        }
+
         const key = this.list.prev_key(this.curr_key);
         if (key === undefined) {
             // leave the current key
@@ -138,6 +161,18 @@ export class ListCursor<Key> {
             this.reset();
             return;
         }
+
+        if (!this.is_highlight_visible) {
+            // Highlight the current key but
+            // don't move the current selection.
+            this.is_highlight_visible = true;
+            const current_row = this.get_row(this.curr_key);
+            if (current_row) {
+                current_row.highlight();
+                return;
+            }
+        }
+
         const key = this.list.next_key(this.curr_key);
         if (key === undefined) {
             // leave the current key
