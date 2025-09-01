@@ -172,13 +172,8 @@ test("dm_suggestions", ({override, mock_template}) => {
         "is:dm is:alerted",
         "is:dm dm:alice@zulip.com",
         "is:dm sender:alice@zulip.com",
-<<<<<<< HEAD
         "is:dm dm-with:alice@zulip.com",
         "is:dm",
-=======
-        "is:dm dm-with:alice@zulip.com",
-        "is:dm",
->>>>>>> 62cb8d5353 (search: Rename dm-including filter to dm-with.)
     ];
     assert.deepEqual(suggestions.strings, expected);
 
@@ -268,17 +263,10 @@ test("dm_suggestions", ({override, mock_template}) => {
         "is:starred has:link is:dm is:alerted",
         "is:starred has:link is:dm dm:alice@zulip.com",
         "is:starred has:link is:dm sender:alice@zulip.com",
-<<<<<<< HEAD
         "is:starred has:link is:dm dm-with:alice@zulip.com",
         "is:starred has:link is:dm",
         "is:starred has:link",
         "is:starred",
-=======
-        "is:starred has:link is:dm dm-with:alice@zulip.com",
-        "is:starred has:link is:dm",
-        "is:starred has:link",
-        "is:starred",
->>>>>>> 62cb8d5353 (search: Rename dm-including filter to dm-with.)
     ];
     assert.deepEqual(suggestions.strings, expected);
 
@@ -314,13 +302,8 @@ test("group_suggestions", ({mock_template}) => {
         "dm:bob@zulip.com alice",
         "dm:bob@zulip.com,alice@zulip.com",
         "dm:bob@zulip.com sender:alice@zulip.com",
-<<<<<<< HEAD
         "dm:bob@zulip.com dm-with:alice@zulip.com",
         "dm:bob@zulip.com",
-=======
-        "dm:bob@zulip.com dm-with:alice@zulip.com",
-        "dm:bob@zulip.com",
->>>>>>> 62cb8d5353 (search: Rename dm-including filter to dm-with.)
     ];
     assert.deepEqual(suggestions.strings, expected);
 
@@ -331,13 +314,8 @@ test("group_suggestions", ({mock_template}) => {
     expected = [
         "dm:ted@zulip.com my",
         "dm:ted@zulip.com sender:myself@zulip.com",
-<<<<<<< HEAD
         "dm:ted@zulip.com dm-with:myself@zulip.com",
         "dm:ted@zulip.com",
-=======
-        "dm:ted@zulip.com dm-with:myself@zulip.com",
-        "dm:ted@zulip.com",
->>>>>>> 62cb8d5353 (search: Rename dm-including filter to dm-with.)
     ];
     assert.deepEqual(suggestions.strings, expected);
 
@@ -358,13 +336,8 @@ test("group_suggestions", ({mock_template}) => {
         "dm:bob@zulip.com alice",
         "dm:bob@zulip.com,alice@zulip.com",
         "dm:bob@zulip.com sender:alice@zulip.com",
-<<<<<<< HEAD
         "dm:bob@zulip.com dm-with:alice@zulip.com",
         "dm:bob@zulip.com",
-=======
-        "dm:bob@zulip.com dm-with:alice@zulip.com",
-        "dm:bob@zulip.com",
->>>>>>> 62cb8d5353 (search: Rename dm-including filter to dm-with.)
     ];
     assert.deepEqual(suggestions.strings, expected);
 
@@ -376,17 +349,10 @@ test("group_suggestions", ({mock_template}) => {
         "is:starred has:link dm:bob@zulip.com Smit",
         "is:starred has:link dm:bob@zulip.com,ted@zulip.com",
         "is:starred has:link dm:bob@zulip.com sender:ted@zulip.com",
-<<<<<<< HEAD
         "is:starred has:link dm:bob@zulip.com dm-with:ted@zulip.com",
         "is:starred has:link dm:bob@zulip.com",
         "is:starred has:link",
         "is:starred",
-=======
-        "is:starred has:link dm:bob@zulip.com dm-with:ted@zulip.com",
-        "is:starred has:link dm:bob@zulip.com",
-        "is:starred has:link",
-        "is:starred",
->>>>>>> 62cb8d5353 (search: Rename dm-including filter to dm-with.)
     ];
     assert.deepEqual(suggestions.strings, expected);
 

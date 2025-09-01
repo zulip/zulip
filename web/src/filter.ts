@@ -262,20 +262,9 @@ function message_matches_search_term(message: Message, operator: string, operand
             return _.isEqual(operand_ids, user_ids);
         }
 
-        case "dm-with": {
-            const operand_user = people.get_by_email(operand);
-            if (operand_user === undefined) {
-                return false;
-            }
-            const user_ids = people.all_user_ids_in_pm(message);
-            if (!user_ids) {
-                return false;
-            }
-            return user_ids.includes(operand_user.user_id);
-        }
-
+        case "dm-with":
         case "dm-including": {
-            // Legacy alias for "dm-with"
+            // Legacy alias handled by falling through to the same logic
             const operand_user = people.get_by_email(operand);
             if (operand_user === undefined) {
                 return false;
@@ -758,10 +747,9 @@ export class Filter {
                 return verb + "direct messages with";
 
             case "dm-with":
-                return verb + "direct messages with";
-
-            case "dm-including": // Legacy alias
-                return verb + "direct messages with";
+                // User-facing description retains legacy wording
+                // to highlight membership semantics.
+                return verb + "direct messages including";
 
             case "in":
                 return verb + "messages in";
