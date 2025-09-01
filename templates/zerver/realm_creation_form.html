@@ -87,11 +87,16 @@
     {% if is_realm_import_enabled %}
     <div class="input-box">
         <div class="inline-block" id="realm-creation-import-from-wrapper">
-            <select id="import_from" name="import_from">
+            <select id="import_from" name="import_from"
+              {% if user_registration_form %}
+              disabled
+              {% endif %}
+              >
                 {% for key, choice in import_from_choices %}
                     <option value="{{ key }}" {% if key == "none" %}selected{% endif %}>{{ _(choice) }}</option>
                 {% endfor %}
             </select>
+            {% if not user_registration_form %}
             <p class="extra-info-realm-creation-import-from registration-form-hint">
                 {% trans %}
                 Learn how to import from
@@ -99,6 +104,7 @@
                 <a href="/help/import-from-rocketchat">Rocket.Chat</a>.
                 {% endtrans %}
             </p>
+            {% endif %}
         </div>
         <label for="import_from" class="inline-block">
             {{ _('Import chat history?') }}
