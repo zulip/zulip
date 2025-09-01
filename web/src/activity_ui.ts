@@ -301,6 +301,9 @@ export function set_cursor_and_filter(): void {
         on_focus() {
             user_cursor!.reset();
         },
+        set_is_highlight_visible(value: boolean) {
+            user_cursor!.set_is_highlight_visible(value);
+        },
     });
 
     const $input = user_filter.input_field();

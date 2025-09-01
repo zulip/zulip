@@ -576,6 +576,7 @@ export function initialize_left_sidebar_cursor(): void {
 function actually_update_left_sidebar_for_search(): void {
     const search_value = ui_util.get_left_sidebar_search_term();
     const is_left_sidebar_search_active = search_value !== "";
+    left_sidebar_cursor.set_is_highlight_visible(is_left_sidebar_search_active);
 
     // Update left sidebar navigation area.
     update_expanded_views_for_search(search_value);
