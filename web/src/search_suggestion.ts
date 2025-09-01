@@ -1119,8 +1119,7 @@ export function get_search_result(
         const has_is_dm = base_terms.some(
             (t) => Filter.canonicalize_operator(t.operator) === "is" && t.operand === "dm",
         );
-        const last_is_dm =
-            Filter.canonicalize_operator(base_terms.at(-1)!.operator) === "dm";
+        const last_is_dm = Filter.canonicalize_operator(base_terms.at(-1)!.operator) === "dm";
         if (has_is_dm || last_is_dm) {
             for (let i = base_terms.length; i >= 1; i -= 1) {
                 attacher.push(get_default_suggestion_line(base_terms.slice(0, i)));

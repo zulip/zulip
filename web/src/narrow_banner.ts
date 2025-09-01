@@ -451,7 +451,8 @@ export function pick_empty_narrow_banner(current_filter: Filter): NarrowBannerDa
             };
         }
         case "dm-with":
-        case "dm-including": { // Legacy alias
+        case "dm-including": {
+            // Legacy alias
             const person_in_dms = people.get_by_email(first_operand);
             if (!person_in_dms) {
                 return {
