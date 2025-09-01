@@ -3,6 +3,7 @@ from datetime import datetime, timezone
 from typing import Any
 
 import orjson
+from django.conf import settings
 from django.test import override_settings
 
 from zerver.data_import.import_util import SubscriberHandler, ZerverFieldsT, build_recipients
@@ -31,7 +32,7 @@ from zerver.lib.import_realm import do_import_realm
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import Message, Reaction, Recipient, UserProfile
 from zerver.models.realms import get_realm
-from zerver.models.users import get_user
+from zerver.models.users import get_system_bot, get_user
 
 
 class RocketChatImporter(ZulipTestCase):
@@ -1086,6 +1087,12 @@ class RocketChatImporter(ZulipTestCase):
         self.assert_length(exported_usermessage_userprofiles, 5)
         exported_usermessage_messages = self.get_set(messages["zerver_usermessage"], "message")
         self.assertEqual(exported_usermessage_messages, exported_messages_id)
+
+        # Creating personal recipients for bots before importing the data
+        internal_realm = get_realm(settings.SYSTEM_BOT_REALM)
+        notification_bot = get_system_bot(settings.NOTIFICATION_BOT, internal_realm.id)
+        welcome_bot = get_system_bot(settings.WELCOME_BOT, internal_realm.id)
+        self.create_personal_recipient(notification_bot, welcome_bot)
 
         with self.assertLogs(level="INFO"):
             do_import_realm(

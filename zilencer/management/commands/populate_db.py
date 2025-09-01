@@ -271,7 +271,7 @@ class Command(ZulipBaseCommand):
             "--personals",
             dest="num_personals",
             type=int,
-            default=6,
+            default=0,
             help="The number of personal pairs to create.",
         )
 
@@ -287,7 +287,7 @@ class Command(ZulipBaseCommand):
         parser.add_argument(
             "--percent-personals",
             type=float,
-            default=15,
+            default=0,
             help="The percent of messages to be personals.",
         )
 

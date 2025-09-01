@@ -20,6 +20,7 @@ from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import most_recent_message
 from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.models import Attachment, Message, Recipient, ScheduledMessage, UserMessage
+from zerver.models.realms import get_realm
 from zerver.models.recipients import get_or_create_direct_message_group
 
 if TYPE_CHECKING:
@@ -169,10 +170,15 @@ class ScheduledMessageTest(ZulipTestCase):
         # No scheduled message
         self.assertFalse(try_deliver_one_scheduled_message())
 
+        othello = self.example_user("othello")
+        hamlet = self.example_user("hamlet")
+
+        # manually creating personal recipients since we have stopped creating them by default
+        self.create_personal_recipient(othello, hamlet)
+
         content = "Test message"
         scheduled_delivery_datetime = timezone_now() + timedelta(minutes=5)
         scheduled_delivery_timestamp = int(scheduled_delivery_datetime.timestamp())
-        othello = self.example_user("othello")
         response = self.do_schedule_message(
             "direct", [othello.id], f"{content} 3", scheduled_delivery_timestamp
         )
@@ -204,6 +210,7 @@ class ScheduledMessageTest(ZulipTestCase):
         scheduled_delivery_datetime = timezone_now() + timedelta(minutes=5)
         scheduled_delivery_timestamp = int(scheduled_delivery_datetime.timestamp())
         sender = self.example_user("hamlet")
+        self.create_personal_recipient(sender)
         response = self.do_schedule_message(
             "direct", [sender.id], content, scheduled_delivery_timestamp
         )
@@ -332,6 +339,9 @@ class ScheduledMessageTest(ZulipTestCase):
 
     @override_settings(PREFER_DIRECT_MESSAGE_GROUP=False)
     def test_failed_to_deliver_scheduled_message_unknown_exception(self) -> None:
+        self.create_personal_recipient(self.example_user("hamlet"))
+        self.create_personal_recipient(self.notification_bot(realm=get_realm("zulip")))
+
         self.create_scheduled_message()
         scheduled_message = self.last_scheduled_message()
 
@@ -366,6 +376,7 @@ class ScheduledMessageTest(ZulipTestCase):
         # the failed scheduled message.
         realm = scheduled_message.realm
         msg = most_recent_message(scheduled_message.sender)
+
         self.assertEqual(msg.recipient.type, msg.recipient.PERSONAL)
         self.assertEqual(msg.sender_id, self.notification_bot(realm).id)
         self.assertIn("Internal server error", msg.content)
@@ -424,6 +435,9 @@ class ScheduledMessageTest(ZulipTestCase):
 
     @override_settings(PREFER_DIRECT_MESSAGE_GROUP=False)
     def test_edit_schedule_message(self) -> None:
+        self.create_personal_recipient(self.example_user("hamlet"))
+        self.create_personal_recipient(self.example_user("othello"))
+
         content = "Original test message"
         scheduled_delivery_timestamp = int(time.time() + 86400)
         verona_stream_id = self.get_stream_id("Verona")
