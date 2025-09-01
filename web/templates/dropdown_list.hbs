@@ -37,9 +37,17 @@
                     <i class="setting-disabled-option-icon zulip-icon zulip-icon-deactivated-circle" aria-hidden="true"></i>
                 {{/if}}
                 {{#if show_disabled_option_name}}
-                    <span class="setting-disabled-option-text dropdown-list-text-neutral">{{name}}</span>
+                    {{#if bold_current_selection}}
+                        <span class="setting-disabled-option-text dropdown-list-text-selected">{{name}}</span>
+                    {{else}}
+                        <span class="setting-disabled-option-text dropdown-list-text-neutral">{{name}}</span>
+                    {{/if}}
                 {{else}}
-                    <span class="setting-disabled-option-text dropdown-list-text-neutral">{{t "Disable" }}</span>
+                    {{#if bold_current_selection}}
+                        <span class="setting-disabled-option-text dropdown-list-text-selected">{{t "Disable" }}</span>
+                    {{else}}
+                        <span class="setting-disabled-option-text dropdown-list-text-neutral">{{t "Disable" }}</span>
+                    {{/if}}
                 {{/if}}
             {{else if (eq unique_id -2)}}
                 {{!-- This is the option for PresetUrlOption.CHANNEL_MAPPING --}}
