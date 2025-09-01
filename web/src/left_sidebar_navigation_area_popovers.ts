@@ -285,15 +285,37 @@ export function initialize(): void {
 
     popover_menus.register_popover_menu(".left-sidebar-navigation-menu-icon", {
         ...popover_menus.left_sidebar_tippy_options,
+        onMount(instance) {
+            const $popper = $(instance.popper);
+
+            $popper.one(
+                "click",
+                ".mark_all_messages_as_read",
+                {instance},
+                register_mark_all_read_handler,
+            );
+
+            $popper.one(
+                "click",
+                ".toggle_display_unread_message_count",
+                {instance},
+                register_toggle_unread_message_count,
+            );
+        },
         onShow(instance) {
             const built_in_popover_condensed_views =
                 left_sidebar_navigation_area.get_built_in_popover_condensed_views();
+            const unread_count = unread.get_counts();
+            const unread_messages_present = unread_count.home_unread_messages > 0;
+            const show_unread_count = user_settings.web_left_sidebar_unreads_count_summary;
 
             popovers.hide_all();
             instance.setContent(
                 ui_util.parse_html(
                     render_left_sidebar_views_popover({
                         views: built_in_popover_condensed_views,
+                        unread_messages_present,
+                        show_unread_count,
                     }),
                 ),
             );
