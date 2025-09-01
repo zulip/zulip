@@ -29,7 +29,8 @@ type TermPattern = Omit<NarrowTerm, "operand"> & Partial<Pick<NarrowTerm, "opera
 const channel_incompatible_patterns = [
     {operator: "is", operand: "dm"},
     {operator: "channel"},
-    {operator: "dm-including"},
+    {operator: "dm-with"},
+    {operator: "dm-including"}, // Legacy alias
     {operator: "dm"},
     {operator: "in"},
     {operator: "channels"},
@@ -43,7 +44,8 @@ const incompatible_patterns: Record<string, TermPattern[]> = {
     topic: [
         {operator: "dm"},
         {operator: "is", operand: "dm"},
-        {operator: "dm-including"},
+        {operator: "dm-with"},
+        {operator: "dm-including"}, // Legacy alias
         {operator: "topic"},
     ],
     dm: [
@@ -58,18 +60,21 @@ const incompatible_patterns: Record<string, TermPattern[]> = {
         {operator: "channel"},
         {operator: "is", operand: "resolved"},
     ],
-    "dm-including": [{operator: "channel"}, {operator: "stream"}],
+    "dm-with": [{operator: "channel"}, {operator: "stream"}],
+    "dm-including": [{operator: "channel"}, {operator: "stream"}], // Legacy alias
     "is:resolved": [
         {operator: "is", operand: "resolved"},
         {operator: "is", operand: "dm"},
         {operator: "dm"},
-        {operator: "dm-including"},
+        {operator: "dm-with"},
+        {operator: "dm-including"}, // Legacy alias
     ],
     "-is:resolved": [
         {operator: "is", operand: "resolved"},
         {operator: "is", operand: "dm"},
         {operator: "dm"},
-        {operator: "dm-including"},
+        {operator: "dm-with"},
+        {operator: "dm-including"}, // Legacy alias
     ],
     "is:dm": [
         {operator: "is", operand: "dm"},
@@ -87,7 +92,8 @@ const incompatible_patterns: Record<string, TermPattern[]> = {
         {operator: "is", operand: "followed"},
         {operator: "is", operand: "dm"},
         {operator: "dm"},
-        {operator: "dm-including"},
+        {operator: "dm-with"},
+        {operator: "dm-including"}, // Legacy alias
     ],
     "is:alerted": [{operator: "is", operand: "alerted"}],
     "is:unread": [{operator: "is", operand: "unread"}],
@@ -356,7 +362,7 @@ function make_people_getter(last: NarrowTerm): () => User[] {
     };
 }
 
-// Possible args for autocomplete_operator: dm, pm-with, sender, from, dm-including
+// Possible args for autocomplete_operator: dm, pm-with, sender, from, dm-with
 function get_person_suggestions(
     people_getter: () => User[],
     last: NarrowTerm,
@@ -803,6 +809,7 @@ function get_operator_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Sugges
             "channel",
             "topic",
             "dm",
+            "dm-with",
             "dm-including",
             "sender",
             "near",
@@ -827,6 +834,11 @@ function get_operator_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Sugges
         // who have "pm-with" in their muscle memory.
         if (choice === "pm-with") {
             choice = "dm";
+        }
+        // Map results for "dm-with:" operator for users
+        // who have "dm-including" in their muscle memory.
+        if (choice === "dm-including") {
+            choice = "dm-with";
         }
         // Map results for "channel:" operator for users
         // who have "stream" in their muscle memory.
@@ -992,7 +1004,7 @@ export function get_search_result(
         last = text_search_terms.at(-1)!;
     }
 
-    const person_suggestion_ops = ["sender", "dm", "dm-including", "from", "pm-with"];
+    const person_suggestion_ops = ["sender", "dm", "dm-with", "dm-including", "from", "pm-with"];
 
     // Handle spaces in person name in new suggestions only. Checks if the last operator is 'search'
     // and the second last operator in search_terms is one out of person_suggestion_ops.
@@ -1064,6 +1076,7 @@ export function get_search_result(
         get_channel_suggestions,
         get_people("dm"),
         get_people("sender"),
+        get_people("dm-with"),
         get_people("dm-including"),
         get_people("from"),
         get_topic_suggestions,

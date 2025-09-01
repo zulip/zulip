@@ -472,7 +472,7 @@ test("basics", () => {
     assert.ok(!filter.is_channel_view());
     assert.ok(!filter.has_exactly_channel_topic_operators());
 
-    terms = [{operator: "dm-including", operand: "joe@example.com"}];
+    terms = [{operator: "dm-with", operand: "joe@example.com"}];
     filter = new Filter(terms);
     assert.ok(!filter.is_non_group_direct_message());
     assert.ok(filter.contains_only_private_messages());
@@ -486,10 +486,10 @@ test("basics", () => {
     assert.ok(!filter.is_channel_view());
     assert.ok(!filter.has_exactly_channel_topic_operators());
 
-    // "group-pm-with" was replaced with "dm-including"
+    // "group-pm-with" was replaced with "dm-with"
     terms = [{operator: "group-pm-with", operand: "joe@example.com"}];
     filter = new Filter(terms);
-    assert.ok(filter.has_operator("dm-including"));
+    assert.ok(filter.has_operator("dm-with"));
     assert.ok(!filter.has_operator("group-pm-with"));
     assert.ok(!filter.is_channel_view());
     assert.ok(!filter.has_exactly_channel_topic_operators());
@@ -987,9 +987,14 @@ test("canonicalization", () => {
     assert.equal(term.operator, "dm");
     assert.equal(term.operand, "me@example.com");
 
-    // "group-pm-with" was replaced with "dm-including"
+    // "group-pm-with" was replaced with "dm-with"
     term = Filter.canonicalize_term({operator: "group-pm-with", operand: "joe@example.com"});
-    assert.equal(term.operator, "dm-including");
+    assert.equal(term.operator, "dm-with");
+    assert.equal(term.operand, "joe@example.com");
+
+    // "dm-including" is now a legacy alias for "dm-with"
+    term = Filter.canonicalize_term({operator: "dm-including", operand: "joe@example.com"});
+    assert.equal(term.operator, "dm-with");
     assert.equal(term.operand, "joe@example.com");
 
     term = Filter.canonicalize_term({operator: "search", operand: "foo"});
@@ -1299,7 +1304,7 @@ test("predicate_basics", ({override}) => {
         }),
     );
 
-    predicate = get_predicate([["dm-including", "nobody@example.com"]]);
+    predicate = get_predicate([["dm-with", "nobody@example.com"]]);
     assert.ok(
         !predicate({
             type: direct_message,
@@ -1307,7 +1312,7 @@ test("predicate_basics", ({override}) => {
         }),
     );
 
-    predicate = get_predicate([["dm-including", "Joe@example.com"]]);
+    predicate = get_predicate([["dm-with", "Joe@example.com"]]);
     assert.ok(
         predicate({
             type: direct_message,
@@ -2100,7 +2105,7 @@ test("is_valid_search_term", () => {
         ["channels:public", true],
         ["channels:private", false],
         ["topic:GhostTown", true],
-        ["dm-including:alice@example.com", true],
+        ["dm-with:alice@example.com", true],
         ["sender:ghost@zulip.com", false],
         ["sender:me", true],
         ["dm:alice@example.com,ghost@example.com", false],
@@ -2866,6 +2871,10 @@ run_test("is_spectator_compatible", () => {
     assert.ok(Filter.is_spectator_compatible([{operator: "sender", operand: "hamlet@zulip.com"}]));
     assert.ok(!Filter.is_spectator_compatible([{operator: "dm", operand: "hamlet@zulip.com"}]));
     assert.ok(
+        !Filter.is_spectator_compatible([{operator: "dm-with", operand: "hamlet@zulip.com"}]),
+    );
+    // Test backwards compatibility with dm-including
+    assert.ok(
         !Filter.is_spectator_compatible([{operator: "dm-including", operand: "hamlet@zulip.com"}]),
     );
 
@@ -2897,7 +2906,7 @@ run_test("is_spectator_compatible", () => {
     assert.ok(Filter.is_spectator_compatible([{operator: "stream", operand: "Denmark"}]));
     // "streams" was renamed to "channels"
     assert.ok(Filter.is_spectator_compatible([{operator: "streams", operand: "public"}]));
-    // "group-pm-with:" was replaced with "dm-including:"
+    // "group-pm-with:" was replaced with "dm-with:"
     assert.ok(
         !Filter.is_spectator_compatible([{operator: "group-pm-with", operand: "hamlet@zulip.com"}]),
     );
