@@ -15,11 +15,18 @@ export class UserSearch {
     _reset_items: () => void;
     _update_list: () => void;
     _on_focus: () => void;
+    _set_is_highlight_visible: (value: boolean) => void;
 
-    constructor(opts: {reset_items: () => void; update_list: () => void; on_focus: () => void}) {
+    constructor(opts: {
+        reset_items: () => void;
+        update_list: () => void;
+        on_focus: () => void;
+        set_is_highlight_visible: (value: boolean) => void;
+    }) {
         this._reset_items = opts.reset_items;
         this._update_list = opts.update_list;
         this._on_focus = opts.on_focus;
+        this._set_is_highlight_visible = opts.set_is_highlight_visible;
 
         $("#userlist-header-search .input-close-filter-button").on("click", () => {
             this.clear_search();
@@ -28,6 +35,7 @@ export class UserSearch {
         this.$input.on("input", () => {
             const input_is_empty = this.$input.val() === "";
             buddy_data.set_is_searching_users(!input_is_empty);
+            this._set_is_highlight_visible(!input_is_empty);
             opts.update_list();
         });
         this.$input.on("focus", (e) => {
@@ -54,6 +62,7 @@ export class UserSearch {
     clear_search(): void {
         buddy_data.set_is_searching_users(false);
 
+        this._set_is_highlight_visible(false);
         this.$input.val("");
         this.$input.trigger("blur");
         this._reset_items();
