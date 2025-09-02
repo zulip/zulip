@@ -8,6 +8,7 @@ import render_message_controls_failed_msg from "../templates/message_controls_fa
 import * as alert_words from "./alert_words.ts";
 import * as blueslip from "./blueslip.ts";
 import * as browser_history from "./browser_history.ts";
+import type * as compose from "./compose.ts";
 import * as compose_notifications from "./compose_notifications.ts";
 import * as compose_ui from "./compose_ui.ts";
 import * as echo_state from "./echo_state.ts";
@@ -59,14 +60,14 @@ type PrivateMessageObject = {
     reply_to: string;
     private_message_recipient: string;
     to_user_ids: string | undefined;
+    display_recipient?: DisplayRecipientUser[];
 };
 
 type StreamMessageObject = {
     type: "stream";
     stream_id: number;
+    display_recipient?: string;
 };
-
-type MessageRequest = MessageRequestObject & (PrivateMessageObject | StreamMessageObject);
 
 type LocalEditRequest = Partial<{
     raw_content: string | undefined;
@@ -98,12 +99,10 @@ export type LocalMessage = MessageRequestObject & {
     id: number;
     topic_links: TopicLink[];
     reactions: MessageReaction[];
-} & (
-        | (StreamMessageObject & {display_recipient?: string})
-        | (PrivateMessageObject & {display_recipient?: DisplayRecipientUser[]})
-    );
+    draft_id: string | undefined;
+} & (StreamMessageObject | PrivateMessageObject);
 
-type PostMessageAPIData = z.output<typeof send_message_api_response_schema>;
+export type PostMessageAPIData = z.output<typeof send_message_api_response_schema>;
 
 // These retry spinner functions return true if and only if the
 // spinner already is in the requested state, which can be used to
@@ -159,7 +158,7 @@ function resend_message(
         on_send_message_success,
         send_message,
     }: {
-        on_send_message_success: (request: Message, data: PostMessageAPIData) => void;
+        on_send_message_success: typeof compose.send_message_success;
         send_message: typeof transmit.send_message;
     },
 ): void {
@@ -250,7 +249,7 @@ export function track_local_message(message: ProcessedLocalMessage): void {
 }
 
 export function insert_local_message(
-    message_request: MessageRequest,
+    message_request: compose.SendMessageData,
     local_id_float: number,
     insert_new_messages: (opts: InsertNewMessagesOpts) => Message[],
 ): Message {
@@ -295,7 +294,7 @@ export function is_slash_command(content: string): boolean {
 }
 
 export let try_deliver_locally = (
-    message_request: MessageRequest,
+    message_request: compose.SendMessageData,
     insert_new_messages: (opts: InsertNewMessagesOpts) => Message[],
 ): Message | undefined => {
     // Checks if the message request can be locally echoed, and if so,
@@ -656,7 +655,7 @@ export function initialize({
     on_send_message_success,
     send_message,
 }: {
-    on_send_message_success: (request: Message, data: PostMessageAPIData) => void;
+    on_send_message_success: typeof compose.send_message_success;
     send_message: typeof transmit.send_message;
 }): void {
     function on_failed_action(
@@ -668,7 +667,7 @@ export function initialize({
                 on_send_message_success,
                 send_message,
             }: {
-                on_send_message_success: (request: Message, data: PostMessageAPIData) => void;
+                on_send_message_success: typeof compose.send_message_success;
                 send_message: typeof transmit.send_message;
             },
         ) => void,
