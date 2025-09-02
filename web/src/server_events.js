@@ -6,6 +6,7 @@ import * as channel from "./channel.ts";
 import * as echo from "./echo.ts";
 import * as loading from "./loading.ts";
 import * as message_events from "./message_events.ts";
+import {raw_message_schema} from "./message_store.ts";
 import {page_params} from "./page_params.ts";
 import * as popup_banners from "./popup_banners.ts";
 import * as reload from "./reload.ts";
@@ -13,7 +14,6 @@ import * as reload_state from "./reload_state.ts";
 import * as sent_messages from "./sent_messages.ts";
 import * as server_events_dispatch from "./server_events_dispatch.js";
 import {queue_id} from "./server_events_state.ts";
-import {server_message_schema} from "./server_message.ts";
 import * as util from "./util.ts";
 import * as watchdog from "./watchdog.ts";
 
@@ -68,8 +68,10 @@ function get_events_success(events) {
     const dispatch_event = function dispatch_event(event) {
         switch (event.type) {
             case "message": {
-                const msg = server_message_schema.parse(event.message);
-                msg.flags = event.flags;
+                const msg = raw_message_schema.parse({
+                    ...event.message,
+                    flags: event.flags,
+                });
                 if (event.local_message_id) {
                     msg.local_id = event.local_message_id;
                 }

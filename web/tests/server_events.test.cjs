@@ -132,7 +132,7 @@ run_test("event_dispatch_error", () => {
 run_test("event_new_message_error", () => {
     setup();
 
-    const data = {events: [{type: "message", id: 1, other: "thing", message}]};
+    const data = {events: [{type: "message", id: 1, other: "thing", message, flags: []}]};
     channel.get = (options) => {
         options.success(data);
     };
