@@ -45,6 +45,36 @@ account.
   like to remove before deactivating your account.
 * Any bots that you maintain will be disabled.
 
+## Account deletion
+
+Deleting your account removes all associated data. Messages you've sent and
+files you've shared will be removed, which may make conversations you
+participated in hard to follow.
+
+You can [learn more](/help/gdpr-compliance) about how Zulip supports GDPR
+compliance.
+
+### Delete your account
+
+You can delete an active or deactivated account.
+
+{start_tabs}
+
+{tab|zulip-cloud}
+
+1. Contact [support@zulip.com](support@zulip.com) with your request. You can provide
+   the URL of the organization where your account should be deleted, or request
+   deletion of all of your Zulip Cloud accounts.
+
+1. Zulip support will email you to confirm that you own the email account. Reply
+   to proceed with account deletion.
+
+{tab|self-hosting}
+
+1. Contact your server administrator to request account deletion. Follow their
+   instructions to complete the process.
+
+{end_tabs}
 
 ## Related articles
 
