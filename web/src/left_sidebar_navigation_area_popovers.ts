@@ -288,15 +288,45 @@ export function initialize(): void {
         onShow(instance) {
             const built_in_popover_condensed_views =
                 left_sidebar_navigation_area.get_built_in_popover_condensed_views();
+            const visible_condensed_views =
+                left_sidebar_navigation_area.get_built_in_primary_condensed_views();
+            // Check if home view is not visible in condensed view
+            const home_view_visible = visible_condensed_views.some(
+                (view) => view.home_view_code === user_settings.web_home_view,
+            );
+            const unread_counts = unread.get_counts();
+            const unread_messages_present = unread_counts.home_unread_messages > 0;
+            const show_unread_count = user_settings.web_left_sidebar_unreads_count_summary;
 
             popovers.hide_all();
             instance.setContent(
                 ui_util.parse_html(
                     render_left_sidebar_views_popover({
                         views: built_in_popover_condensed_views,
+                        show_unread_counter_options: !home_view_visible,
+                        unread_messages_present,
+                        show_unread_count,
                     }),
                 ),
             );
+
+            // Register click handlers for unread counter options
+            const $popper = $(instance.popper);
+            if (!home_view_visible) {
+                $popper.one(
+                    "click",
+                    "#mark_all_messages_as_read",
+                    {instance},
+                    register_mark_all_read_handler,
+                );
+
+                $popper.one(
+                    "click",
+                    ".toggle_display_unread_message_count",
+                    {instance},
+                    register_toggle_unread_message_count,
+                );
+            }
         },
         onHidden(instance) {
             instance.destroy();
