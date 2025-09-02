@@ -43,7 +43,7 @@ You can also run them individually or pass specific files:
 
 ```bash
 ./tools/lint
-./tools/lint web/src/compose.js
+./tools/lint web/src/compose.ts
 ./tools/lint web/src/
 ```
 

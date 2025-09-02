@@ -8,6 +8,7 @@ import render_message_sent_banner from "../templates/compose_banner/message_sent
 import render_unmute_topic_banner from "../templates/compose_banner/unmute_topic_banner.hbs";
 
 import * as blueslip from "./blueslip.ts";
+import type {SentMessageData} from "./compose.ts";
 import * as compose_banner from "./compose_banner.ts";
 import * as hash_util from "./hash_util.ts";
 import {$t} from "./i18n.ts";
@@ -78,7 +79,7 @@ export function notify_above_composebox(
 }
 
 export function notify_automatic_new_visibility_policy(
-    message: Message,
+    message: Message | (SentMessageData & {type: "stream"}),
     data: {automatic_new_visibility_policy: number; id: number},
 ): void {
     const followed =
@@ -108,7 +109,9 @@ export function notify_automatic_new_visibility_policy(
 
 // Note that this returns values that are not HTML-escaped, for use in
 // Handlebars templates that will do further escaping.
-function get_message_recipient(message: Message): MessageRecipient {
+function get_message_recipient(
+    message: Message | (SentMessageData & {type: "stream"}),
+): MessageRecipient {
     if (message.type === "stream") {
         const channel_message_recipient: MessageRecipient = {
             message_type: "channel",
@@ -149,7 +152,7 @@ function get_message_recipient(message: Message): MessageRecipient {
     return direct_message_recipient;
 }
 
-export function get_muted_narrow(message: Message): string | undefined {
+export function get_muted_narrow(message: Message | SentMessageData): string | undefined {
     if (
         message.type === "stream" &&
         stream_data.is_muted(message.stream_id) &&
@@ -313,7 +316,9 @@ export function notify_local_mixes(
     }
 }
 
-function get_above_composebox_narrow_url(message: Message): string {
+function get_above_composebox_narrow_url(
+    message: Message | (SentMessageData & {type: "stream"}),
+): string {
     let above_composebox_narrow_url;
     if (message.type === "stream") {
         above_composebox_narrow_url = hash_util.by_stream_topic_url(
