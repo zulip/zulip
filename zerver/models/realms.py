@@ -441,6 +441,8 @@ class Realm(models.Model):
     ZULIP_SANDBOX_CHANNEL_NAME = gettext_lazy("sandbox")
     DEFAULT_NOTIFICATION_STREAM_NAME = gettext_lazy("general")
     STREAM_EVENTS_NOTIFICATION_TOPIC_NAME = gettext_lazy("channel events")
+    # Keep this in sync with the dropdown options in the message report
+    # modal (web/src/message_report.ts)
     REPORT_MESSAGE_REASONS = {
         "spam": gettext_lazy("Spam"),
         "harassment": gettext_lazy("Harassment"),
