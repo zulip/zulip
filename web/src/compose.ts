@@ -2,6 +2,8 @@
 
 import autosize from "autosize";
 import $ from "jquery";
+import assert from "minimalistic-assert";
+import * as z from "zod/mini";
 
 import render_success_message_scheduled_banner from "../templates/compose_banner/success_message_scheduled_banner.hbs";
 import render_wildcard_mention_not_allowed_error from "../templates/compose_banner/wildcard_mention_not_allowed_error.hbs";
@@ -14,7 +16,9 @@ import * as compose_ui from "./compose_ui.ts";
 import * as compose_validate from "./compose_validate.ts";
 import * as drafts from "./drafts.ts";
 import * as echo from "./echo.ts";
+import type {PostMessageAPIData} from "./echo.ts";
 import * as message_events from "./message_events.ts";
+import type {LocalMessage} from "./message_helper.ts";
 import * as onboarding_steps from "./onboarding_steps.ts";
 import * as scheduled_messages from "./scheduled_messages.ts";
 import * as sent_messages from "./sent_messages.ts";
@@ -27,17 +31,45 @@ import * as zcommand from "./zcommand.ts";
 
 // Docs: https://zulip.readthedocs.io/en/latest/subsystems/sending-messages.html
 
-export function clear_invites() {
+// This is similar to transmit.SendMessageData but not quite the same.
+// We might want to try to consolidate them at some point.
+export type SendMessageData = {
+    sender_id: number;
+    queue_id: string | null;
+    to: string;
+    content: string;
+    resend?: boolean;
+    locally_echoed?: boolean;
+    draft_id: string;
+} & (
+    | {
+          type: "stream";
+          stream_id: number;
+          topic: string;
+      }
+    | {
+          type: "private";
+          reply_to: string;
+          private_message_recipient: string;
+          to_user_ids: string | undefined;
+          // TODO: It would be nice to only require stream_id and topic
+          // on "stream" objects, but that requires some refactoring.
+          stream_id: undefined;
+          topic: "";
+      }
+);
+
+export function clear_invites(): void {
     $(
         `#compose_banners .${CSS.escape(compose_banner.CLASSNAMES.recipient_not_subscribed)}`,
     ).remove();
 }
 
-export function clear_private_stream_alert() {
+export function clear_private_stream_alert(): void {
     $(`#compose_banners .${CSS.escape(compose_banner.CLASSNAMES.private_stream_warning)}`).remove();
 }
 
-export function clear_preview_area() {
+export function clear_preview_area(): void {
     $("textarea#compose-textarea").trigger("focus");
     $("#compose .undo_markdown_preview").hide();
     $("#compose .preview_message_area").hide();
@@ -51,7 +83,7 @@ export function clear_preview_area() {
     $("#compose .preview_mode_disabled .compose_control_button").attr("tabindex", 0);
 }
 
-export function show_preview_area() {
+export function show_preview_area(): void {
     // Disable unneeded compose_control_buttons as we don't
     // need them in preview mode.
     $("#compose").addClass("preview_mode");
@@ -64,9 +96,10 @@ export function show_preview_area() {
     render_preview_area();
 }
 
-export function render_preview_area() {
-    const $compose_textarea = $("textarea#compose-textarea");
+export function render_preview_area(): void {
+    const $compose_textarea = $<HTMLTextAreaElement>("textarea#compose-textarea");
     const content = $compose_textarea.val();
+    assert(content !== undefined);
     const $preview_message_area = $("#compose .preview_message_area");
     compose_ui.render_and_show_preview(
         $("#compose"),
@@ -79,7 +112,7 @@ export function render_preview_area() {
     $preview_message_area.show();
 }
 
-export function clear_compose_box() {
+export function clear_compose_box(): void {
     /* Before clearing the compose box, we reset it to the
      * default/normal size. Note that for locally echoed messages, we
      * will have already done this action before echoing the message
@@ -102,7 +135,16 @@ export function clear_compose_box() {
     $(".needs-empty-compose").removeClass("disabled-on-hover");
 }
 
-export function send_message_success(sent_message, data) {
+export type SentMessageData = SendMessageData & {
+    local_id: string;
+    locally_echoed: boolean;
+    resend: boolean;
+};
+
+export function send_message_success(
+    sent_message: SentMessageData | LocalMessage,
+    data: PostMessageAPIData,
+): void {
     if (!sent_message.locally_echoed) {
         clear_compose_box();
     }
@@ -117,7 +159,10 @@ export function send_message_success(sent_message, data) {
             }
             // topic has been automatically unmuted or followed. No need to
             // suggest the user to unmute. Show the banner and return.
-            compose_notifications.notify_automatic_new_visibility_policy(sent_message, data);
+            compose_notifications.notify_automatic_new_visibility_policy(sent_message, {
+                ...data,
+                automatic_new_visibility_policy: data.automatic_new_visibility_policy,
+            });
             return;
         }
 
@@ -132,7 +177,7 @@ export function send_message_success(sent_message, data) {
     }
 }
 
-export let send_message = () => {
+export let send_message = (): void => {
     // Changes here must also be kept in sync with echo.try_deliver_locally
     compose_state.set_recipient_edited_manually(false);
     compose_state.set_is_content_unedited_restored_draft(false);
@@ -148,9 +193,10 @@ export let send_message = () => {
         // message can just disappear into the void.
         force_save: true,
     });
-    const message_type = compose_state.get_message_type();
+    assert(draft_id !== undefined);
 
-    let message_data;
+    const message_type = compose_state.get_message_type();
+    let message_data: SendMessageData;
     if (message_type === "private") {
         const recipient_emails = compose_state.private_message_recipient_emails();
         const recipient_ids = compose_state.private_message_recipient_ids();
@@ -168,7 +214,9 @@ export let send_message = () => {
             stream_id: undefined,
         };
     } else {
+        assert(message_type === "stream");
         const stream_id = compose_state.stream_id();
+        assert(stream_id !== undefined);
         const topic = compose_state.topic();
         message_data = {
             type: message_type,
@@ -182,37 +230,43 @@ export let send_message = () => {
         };
     }
 
-    let local_id;
-    let locally_echoed;
+    let local_id: string;
 
     const message = echo.try_deliver_locally(message_data, message_events.insert_new_messages);
+    const locally_echoed = Boolean(message);
     if (message) {
         // We are rendering this message locally with an id
         // like 92l99.01 that corresponds to a reasonable
         // approximation of the id we'll get from the server
         // in terms of sorting messages.
+        assert(message.local_id !== undefined);
         local_id = message.local_id;
-        locally_echoed = true;
     } else {
         // We are not rendering this message locally, but we
         // track the message's life cycle with an id like
         // loc-1, loc-2, loc-3,etc.
-        locally_echoed = false;
         local_id = sent_messages.get_new_local_id();
     }
 
-    const request = {
-        ...message_data,
-        local_id,
-        locally_echoed,
-        resend: false,
-    };
-
-    function success(data) {
-        send_message_success(request, data);
+    function success(data: unknown): void {
+        const parsed_data = z
+            .object({
+                id: z.number(),
+                automatic_new_visibility_policy: z.optional(z.number()),
+            })
+            .parse(data);
+        send_message_success(
+            {
+                ...message_data,
+                local_id,
+                locally_echoed,
+                resend: false,
+            },
+            parsed_data,
+        );
     }
 
-    function error(response, server_error_code) {
+    function error(response: string, server_error_code: string): void {
         // Error callback for failed message send attempts.
         if (!locally_echoed) {
             if (server_error_code === "TOPIC_WILDCARD_MENTION_NOT_ALLOWED") {
@@ -245,35 +299,45 @@ export let send_message = () => {
             return;
         }
 
+        assert(message !== undefined);
         echo.message_send_error(message.id, response);
 
         // We might not have updated the draft count because we assumed the
         // message would send. Ensure that the displayed count is correct.
         drafts.sync_count();
 
-        const draft = drafts.draft_model.getDraft(message_data.draft_id);
+        assert(draft_id !== undefined);
+        const draft = drafts.draft_model.getDraft(draft_id);
+        assert(draft !== false);
         draft.is_sending_saving = false;
-        drafts.draft_model.editDraft(message_data.draft_id, draft);
+        drafts.draft_model.editDraft(draft_id, draft);
     }
 
-    transmit.send_message(request, success, error);
+    transmit.send_message(
+        {...message_data, local_id, locally_echoed, resend: false},
+        success,
+        error,
+    );
     server_events_state.assert_get_events_running(
         "Restarting get_events because it was not running during send",
     );
 
     if (locally_echoed) {
         clear_compose_box();
+        assert(message !== undefined);
         // Schedule a timer to display a spinner when the message is
         // taking a longtime to send.
-        setTimeout(() => echo.display_slow_send_loading_spinner(message), 5000);
+        setTimeout(() => {
+            echo.display_slow_send_loading_spinner(message);
+        }, 5000);
     }
 };
 
-export function rewire_send_message(value) {
+export function rewire_send_message(value: typeof send_message): void {
     send_message = value;
 }
 
-export function handle_enter_key_with_preview_open(cmd_or_ctrl_pressed = false) {
+export function handle_enter_key_with_preview_open(cmd_or_ctrl_pressed = false): void {
     if (
         (user_settings.enter_sends && !cmd_or_ctrl_pressed) ||
         (!user_settings.enter_sends && cmd_or_ctrl_pressed)
@@ -289,7 +353,7 @@ export function handle_enter_key_with_preview_open(cmd_or_ctrl_pressed = false) 
 // Common entrypoint for asking the server to send the message
 // currently drafted in the compose box, including for scheduled
 // messages.
-export let finish = (scheduling_message = false) => {
+export let finish = (scheduling_message = false): boolean | undefined => {
     if (compose_ui.compose_spinner_visible) {
         // Avoid sending a message twice in parallel in races where
         // the user clicks the `Send` button very quickly twice or
@@ -329,18 +393,18 @@ export let finish = (scheduling_message = false) => {
     return true;
 };
 
-export function rewire_finish(value) {
+export function rewire_finish(value: typeof finish): void {
     finish = value;
 }
 
-export function do_post_send_tasks() {
+export function do_post_send_tasks(): void {
     clear_preview_area();
     // TODO: Do we want to fire the event even if the send failed due
     // to a server-side error?
     $(document).trigger("compose_finished.zulip");
 }
 
-function schedule_message_to_custom_date() {
+function schedule_message_to_custom_date(): void {
     const deliver_at = scheduled_messages.get_formatted_selected_send_later_time();
     const scheduled_delivery_timestamp = scheduled_messages.get_selected_send_later_timestamp();
 
@@ -373,13 +437,15 @@ function schedule_message_to_custom_date() {
         update_count: false,
         is_sending_saving: true,
     });
+    assert(draft_id !== undefined);
 
     const $banner_container = $("#compose_banners");
-    const success = function (data) {
+    const success = function (data: unknown): void {
         drafts.draft_model.deleteDrafts([draft_id]);
         clear_compose_box();
+        const {scheduled_message_id} = z.object({scheduled_message_id: z.number()}).parse(data);
         const new_row_html = render_success_message_scheduled_banner({
-            scheduled_message_id: data.scheduled_message_id,
+            scheduled_message_id,
             minimum_scheduled_message_delay_minutes:
                 scheduled_messages.MINIMUM_SCHEDULED_MESSAGE_DELAY_SECONDS / 60,
             deliver_at,
@@ -390,7 +456,7 @@ function schedule_message_to_custom_date() {
         compose_banner.append_compose_banner_to_banner_list($(new_row_html), $banner_container);
     };
 
-    const error = function (xhr) {
+    const error = function (xhr: JQuery.jqXHR<unknown>): void {
         const response = channel.xhr_error_message("Error sending message", xhr);
         compose_ui.hide_compose_spinner();
         compose_banner.show_error_message(
@@ -400,6 +466,7 @@ function schedule_message_to_custom_date() {
             $("textarea#compose-textarea"),
         );
         const draft = drafts.draft_model.getDraft(draft_id);
+        assert(draft !== false);
         draft.is_sending_saving = false;
         drafts.draft_model.editDraft(draft_id, draft);
     };
@@ -412,6 +479,6 @@ function schedule_message_to_custom_date() {
     });
 }
 
-export function is_topic_input_focused() {
+export function is_topic_input_focused(): boolean {
     return $("#stream_message_recipient_topic").is(":focus");
 }

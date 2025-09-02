@@ -70,7 +70,7 @@ To speed things up, you can [pass specific files or directories
 to the linter](../testing/linters.md):
 
 ```
-$ ./tools/lint web/src/compose.js
+$ ./tools/lint web/src/compose.ts
 ```
 
 If you'd like, you can also set up a local Git commit hook that
