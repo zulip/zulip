@@ -111,7 +111,10 @@ run_test("insert_message", ({override}) => {
     helper.redirect(unread_ui, "update_unread_counts");
     helper.redirect(activity, "set_received_new_messages");
 
-    message_events.insert_new_messages([new_message]);
+    message_events.insert_new_messages({
+        type: "server_message",
+        raw_messages: [new_message],
+    });
 
     // Even though we have stubbed a *lot* of code, our
     // tests can still verify the main "narrative" of how

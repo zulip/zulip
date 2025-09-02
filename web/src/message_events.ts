@@ -16,6 +16,7 @@ import * as compose_validate from "./compose_validate.ts";
 import * as direct_message_group_data from "./direct_message_group_data.ts";
 import * as drafts from "./drafts.ts";
 import * as echo from "./echo.ts";
+import type {LocalMessage} from "./echo.ts";
 import type {Filter} from "./filter.ts";
 import * as lightbox from "./lightbox.ts";
 import * as message_edit from "./message_edit.ts";
@@ -207,7 +208,11 @@ export let update_views_filtered_on_message_property = (
                         messages_to_remove.delete(raw_message.id);
                         const message = message_store.get(raw_message.id);
                         messages_to_add.push(
-                            message ?? message_helper.process_new_message(raw_message),
+                            message ??
+                                message_helper.process_new_message({
+                                    type: "server_message",
+                                    raw_message,
+                                }),
                         );
                     }
                     msg_list.data.remove([...messages_to_remove]);
@@ -238,7 +243,10 @@ export let update_views_filtered_on_message_property = (
                     // we reach here but `message_helper.process_new_message`
                     // already handles that case.
                     for (const raw_message of parsed_data.messages) {
-                        message_helper.process_new_message(raw_message);
+                        message_helper.process_new_message({
+                            type: "server_message",
+                            raw_message,
+                        });
                     }
                     update_views_filtered_on_message_property(
                         message_ids,
@@ -287,14 +295,37 @@ export function rewire_update_views_filtered_on_message_property(
     update_views_filtered_on_message_property = value;
 }
 
-export function insert_new_messages(
-    raw_messages: RawMessage[],
-    sent_by_this_client: boolean,
-    deliver_locally: boolean,
-): Message[] {
-    const messages = raw_messages.map((raw_message) =>
-        message_helper.process_new_message(raw_message, deliver_locally),
-    );
+export type InsertNewMessagesOpts = {
+    sent_by_this_client: boolean;
+} & (
+    | {
+          type: "server_message";
+          raw_messages: RawMessage[];
+      }
+    | {
+          type: "local_message";
+          raw_messages: LocalMessage[];
+      }
+);
+
+export function insert_new_messages(opts: InsertNewMessagesOpts): Message[] {
+    const deliver_locally = opts.type === "local_message";
+    let messages: Message[] = [];
+    if (opts.type === "server_message") {
+        messages = opts.raw_messages.map((raw_message) =>
+            message_helper.process_new_message({
+                type: opts.type,
+                raw_message,
+            }),
+        );
+    } else {
+        messages = opts.raw_messages.map((raw_message) =>
+            message_helper.process_new_message({
+                type: opts.type,
+                raw_message,
+            }),
+        );
+    }
 
     const any_untracked_unread_messages = unread.process_loaded_messages(messages, false);
     direct_message_group_data.process_loaded_messages(messages);
@@ -350,7 +381,7 @@ export function insert_new_messages(
     // sent_by_this_client will be true if ANY of the messages
     // were sent by this client; notifications.notify_local_mixes
     // will filter out any not sent by us.
-    if (sent_by_this_client) {
+    if (opts.sent_by_this_client) {
         compose_notifications.notify_local_mixes(messages, need_user_to_scroll, {
             narrow_to_recipient(message_id) {
                 message_view.narrow_by_topic(message_id, {trigger: "outside_current_view"});
