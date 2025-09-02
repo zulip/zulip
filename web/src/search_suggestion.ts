@@ -862,7 +862,11 @@ function suggestion_search_string(suggestion_line: SuggestionLine): string {
 }
 
 function suggestions_for_empty_search_query(): SuggestionLine[] {
-    if (narrow_state.stream_id() && narrow_state.topic() !== undefined) {
+    // Since the context here is an **empty** search query, we assume
+    // that there is no `near:` operator. So it's safe to use
+    // functions like narrowed_by_topic_reply that return false on
+    // conversation views with `near` or `with` operators.
+    if (narrow_state.narrowed_by_topic_reply()) {
         return [
             get_default_suggestion_line([
                 {
