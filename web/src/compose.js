@@ -80,43 +80,6 @@ export function render_preview_area() {
     $preview_message_area.show();
 }
 
-export function create_message_object(message_content = compose_state.message_content()) {
-    // Changes here must also be kept in sync with echo.try_deliver_locally
-    const message = {
-        type: compose_state.get_message_type(),
-        content: message_content,
-        sender_id: current_user.user_id,
-        queue_id: server_events_state.queue_id,
-        stream_id: undefined,
-    };
-    message.topic = "";
-
-    if (message.type === "private") {
-        // TODO: this should be collapsed with the code in composebox_typeahead.ts
-        const recipient = compose_state.private_message_recipient_emails();
-        const emails = util.extract_pm_recipients(recipient);
-        message.to = emails;
-        message.reply_to = recipient;
-        message.private_message_recipient = recipient;
-        message.to_user_ids = people.email_list_to_user_ids_string(emails);
-
-        // Note: The `undefined` case is for situations like
-        // the is_zephyr_mirror_realm case where users may
-        // be automatically created when you try to send a
-        // direct message to their email address.
-        if (message.to_user_ids !== undefined) {
-            message.to = people.user_ids_string_to_ids_array(message.to_user_ids);
-        }
-    } else {
-        const topic = compose_state.topic();
-        message.topic = util.is_topic_name_considered_empty(topic) ? "" : topic;
-        const stream_id = compose_state.stream_id();
-        message.stream_id = stream_id;
-        message.to = stream_id;
-    }
-    return message;
-}
-
 export function clear_compose_box() {
     /* Before clearing the compose box, we reset it to the
      * default/normal size. Note that for locally echoed messages, we
@@ -167,7 +130,41 @@ export function send_message_success(request, data) {
     }
 }
 
-export let send_message = (request = create_message_object()) => {
+export let send_message = () => {
+    // Changes here must also be kept in sync with echo.try_deliver_locally
+    const request = {
+        type: compose_state.get_message_type(),
+        content: compose_state.message_content(),
+        sender_id: current_user.user_id,
+        queue_id: server_events_state.queue_id,
+        stream_id: undefined,
+    };
+    request.topic = "";
+
+    if (request.type === "private") {
+        // TODO: this should be collapsed with the code in composebox_typeahead.ts
+        const recipient = compose_state.private_message_recipient_emails();
+        const emails = util.extract_pm_recipients(recipient);
+        request.to = emails;
+        request.reply_to = recipient;
+        request.private_message_recipient = recipient;
+        request.to_user_ids = people.email_list_to_user_ids_string(emails);
+
+        // Note: The `undefined` case is for situations like
+        // the is_zephyr_mirror_realm case where users may
+        // be automatically created when you try to send a
+        // direct message to their email address.
+        if (request.to_user_ids !== undefined) {
+            request.to = people.user_ids_string_to_ids_array(request.to_user_ids);
+        }
+    } else {
+        const topic = compose_state.topic();
+        request.topic = util.is_topic_name_considered_empty(topic) ? "" : topic;
+        const stream_id = compose_state.stream_id();
+        request.stream_id = stream_id;
+        request.to = stream_id;
+    }
+
     compose_state.set_recipient_edited_manually(false);
     compose_state.set_is_content_unedited_restored_draft(false);
     if (request.type === "private") {
@@ -344,12 +341,10 @@ export function do_post_send_tasks() {
 }
 
 function schedule_message_to_custom_date() {
-    const compose_message_object = create_message_object();
-
     const deliver_at = scheduled_messages.get_formatted_selected_send_later_time();
     const scheduled_delivery_timestamp = scheduled_messages.get_selected_send_later_timestamp();
 
-    const message_type = compose_message_object.type;
+    const message_type = compose_state.get_message_type();
     let req_type;
 
     if (message_type === "private") {
@@ -358,11 +353,28 @@ function schedule_message_to_custom_date() {
         req_type = message_type;
     }
 
+    let message_to;
+    if (message_type === "private") {
+        const recipient = compose_state.private_message_recipient_emails();
+        const emails = util.extract_pm_recipients(recipient);
+        const to_user_ids = people.email_list_to_user_ids_string(emails);
+        message_to = util.extract_pm_recipients(recipient);
+        // Note: The `undefined` case is for situations like
+        // the is_zephyr_mirror_realm case where users may
+        // be automatically created when you try to send a
+        // direct message to their email address.
+        if (to_user_ids !== undefined) {
+            message_to = people.user_ids_string_to_ids_array(to_user_ids);
+        }
+    } else {
+        message_to = compose_state.stream_id();
+    }
+
     const scheduled_message_data = {
         type: req_type,
-        to: JSON.stringify(compose_message_object.to),
-        topic: compose_message_object.topic,
-        content: compose_message_object.content,
+        to: JSON.stringify(message_to),
+        topic: message_type === "stream" ? compose_state.topic() : "",
+        content: compose_state.message_content(),
         scheduled_delivery_timestamp,
     };
 
