@@ -1,6 +1,6 @@
 import * as activity from "./activity.ts";
 import * as blueslip from "./blueslip.ts";
-import * as compose from "./compose.js";
+import * as compose from "./compose.ts";
 import * as compose_actions from "./compose_actions.ts";
 import {localstorage} from "./localstorage.ts";
 import * as message_fetch from "./message_fetch.ts";

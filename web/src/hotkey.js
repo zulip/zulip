@@ -6,7 +6,7 @@ import * as activity_ui from "./activity_ui.ts";
 import * as browser_history from "./browser_history.ts";
 import * as color_picker_popover from "./color_picker_popover.ts";
 import * as common from "./common.ts";
-import * as compose from "./compose.js";
+import * as compose from "./compose.ts";
 import * as compose_actions from "./compose_actions.ts";
 import * as compose_banner from "./compose_banner.ts";
 import * as compose_recipient from "./compose_recipient.ts";
