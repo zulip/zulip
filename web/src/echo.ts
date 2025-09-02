@@ -14,6 +14,7 @@ import * as echo_state from "./echo_state.ts";
 import * as hash_util from "./hash_util.ts";
 import * as local_message from "./local_message.ts";
 import * as markdown from "./markdown.ts";
+import type {InsertNewMessagesOpts} from "./message_events.ts";
 import * as message_events_util from "./message_events_util.ts";
 import * as message_list_data_cache from "./message_list_data_cache.ts";
 import * as message_lists from "./message_lists.ts";
@@ -87,7 +88,7 @@ export type LocalMessage = MessageRequestObject & {
     content_type: "text/html";
     sender_email: string;
     sender_full_name: string;
-    avatar_url?: string | null | undefined;
+    avatar_url: string;
     timestamp: number;
     local_id: string;
     locally_echoed: boolean;
@@ -253,11 +254,7 @@ export function track_local_message(message: Message): void {
 export function insert_local_message(
     message_request: MessageRequest,
     local_id_float: number,
-    insert_new_messages: (
-        messages: LocalMessage[],
-        send_by_this_client: boolean,
-        deliver_locally: boolean,
-    ) => Message[],
+    insert_new_messages: (opts: InsertNewMessagesOpts) => Message[],
 ): Message {
     // Shallow clone of message request object that is turned into something suitable
     // for zulip.js:add_message
@@ -272,7 +269,7 @@ export function insert_local_message(
         content_type: "text/html",
         sender_email: people.my_current_email(),
         sender_full_name: people.my_full_name(),
-        avatar_url: current_user.avatar_url,
+        avatar_url: people.small_avatar_url_for_person(current_user),
         timestamp: Date.now() / 1000,
         local_id: local_id_float.toString(),
         locally_echoed: true,
@@ -285,7 +282,11 @@ export function insert_local_message(
 
     local_message.display_recipient = build_display_recipient(local_message);
 
-    const [message] = insert_new_messages([local_message], true, true);
+    const [message] = insert_new_messages({
+        type: "local_message",
+        raw_messages: [local_message],
+        sent_by_this_client: true,
+    });
     assert(message !== undefined);
 
     return message;
@@ -297,11 +298,7 @@ export function is_slash_command(content: string): boolean {
 
 export let try_deliver_locally = (
     message_request: MessageRequest,
-    insert_new_messages: (
-        messages: LocalMessage[],
-        send_by_this_client: boolean,
-        deliver_locally: boolean,
-    ) => Message[],
+    insert_new_messages: (opts: InsertNewMessagesOpts) => Message[],
 ): Message | undefined => {
     // Checks if the message request can be locally echoed, and if so,
     // adds a local echoed copy of the message to appropriate message lists.

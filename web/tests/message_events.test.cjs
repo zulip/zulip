@@ -81,9 +81,14 @@ run_test("update_messages", ({override, override_rewire}) => {
         topic: "lunch",
         type: "stream",
         reactions: [],
+        submessages: [],
+        avatar_url: "/some/path/to/avatar",
     };
 
-    const original_message = message_helper.process_new_message(raw_message);
+    const original_message = message_helper.process_new_message({
+        type: "server_message",
+        raw_message,
+    });
 
     assert.equal(original_message.mentioned, true);
     assert.equal(original_message.unread, true);
@@ -141,6 +146,7 @@ run_test("update_messages", ({override, override_rewire}) => {
 
     assert.deepEqual(rendered_mgs, [
         {
+            avatar_url: "/some/path/to/avatar",
             display_reply_to: undefined,
             alerted: false,
             clean_reactions: new Map(),
