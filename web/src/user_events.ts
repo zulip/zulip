@@ -106,6 +106,7 @@ export const update_person = function update(event: UserUpdate): void {
     }
 
     if ("role" in event) {
+        const was_owner = user.is_owner;
         user.role = event.role;
         user.is_owner = event.role === settings_config.user_role_values.owner.code;
         user.is_admin = event.role === settings_config.user_role_values.admin.code || user.is_owner;
@@ -114,12 +115,15 @@ export const update_person = function update(event: UserUpdate): void {
             user.is_admin || event.role === settings_config.user_role_values.moderator.code;
         settings_users.update_user_data(event.user_id, event);
         user_profile.update_profile_modal_ui(user, event);
+        settings_account.set_user_own_role_dropdown_value();
 
         if (people.is_my_user_id(event.user_id) && current_user.is_owner !== user.is_owner) {
             current_user.is_owner = user.is_owner;
             settings_org.maybe_disable_widgets();
             settings_org.enable_or_disable_group_permission_settings();
             settings.update_lock_icon_in_sidebar();
+            settings_account.add_or_remove_owner_from_role_dropdown();
+            settings_account.update_user_own_role_dropdown_state();
         }
 
         if (people.is_my_user_id(event.user_id) && current_user.is_admin !== user.is_admin) {
@@ -132,6 +136,15 @@ export const update_person = function update(event: UserUpdate): void {
             settings_realm_user_settings_defaults.maybe_disable_widgets();
             settings_account.update_account_settings_display();
             settings.update_lock_icon_in_sidebar();
+            settings_account.update_user_own_role_dropdown_state();
+        }
+
+        if (
+            !people.is_my_user_id(event.user_id) &&
+            was_owner !== user.is_owner &&
+            current_user.is_owner
+        ) {
+            settings_account.update_user_own_role_dropdown_state();
         }
 
         if (
