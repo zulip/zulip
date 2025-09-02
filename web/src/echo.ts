@@ -80,7 +80,7 @@ type LocalEditRequest = Partial<{
     mentioned_me_directly: boolean;
 }>;
 
-type LocalMessage = MessageRequestObject & {
+export type LocalMessage = MessageRequestObject & {
     raw_content: string;
     flags: string[];
     is_me_message: boolean;
