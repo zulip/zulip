@@ -2,6 +2,8 @@ import _ from "lodash";
 import * as z from "zod/mini";
 
 import * as blueslip from "./blueslip.ts";
+import type {LocalMessage} from "./echo.ts";
+import type {NewMessage} from "./message_helper.ts";
 import * as people from "./people.ts";
 import {topic_link_schema} from "./types.ts";
 import type {UserStatusEmojiInfo} from "./user_status.ts";
@@ -108,10 +110,7 @@ export type RawMessage = z.infer<typeof raw_message_schema>;
 
 // We add these boolean properties to Raw message in
 // `message_store.convert_raw_message_to_message_with_booleans` method.
-export type MessageWithBooleans = (
-    | Omit<RawMessage & {type: "private"}, "flags">
-    | Omit<RawMessage & {type: "stream"}, "flags">
-) & {
+type Booleans = {
     unread: boolean;
     historical: boolean;
     starred: boolean;
@@ -123,6 +122,20 @@ export type MessageWithBooleans = (
     condensed?: boolean;
     alerted: boolean;
 };
+
+type RawMessageWithBooleans = (
+    | Omit<RawMessage & {type: "private"}, "flags">
+    | Omit<RawMessage & {type: "stream"}, "flags">
+) &
+    Booleans;
+
+type LocalMessageWithBooleans = (
+    | Omit<LocalMessage & {type: "private"}, "flags">
+    | Omit<LocalMessage & {type: "stream"}, "flags">
+) &
+    Booleans;
+
+export type MessageWithBooleans = RawMessageWithBooleans | LocalMessageWithBooleans;
 
 export type MessageCleanReaction = {
     class: string;
@@ -139,8 +152,8 @@ export type MessageCleanReaction = {
 };
 
 export type Message = (
-    | Omit<MessageWithBooleans & {type: "private"}, "reactions">
-    | Omit<MessageWithBooleans & {type: "stream"}, "reactions" | "subject">
+    | Omit<RawMessageWithBooleans & {type: "private"}, "reactions">
+    | Omit<RawMessageWithBooleans & {type: "stream"}, "reactions" | "subject">
 ) & {
     clean_reactions: Map<string, MessageCleanReaction>;
 
@@ -214,7 +227,9 @@ export function get(message_id: number): Message | undefined {
     return stored_messages.get(message_id);
 }
 
-export function get_pm_emails(message: Message | MessageWithBooleans): string {
+export function get_pm_emails(
+    message: Message | MessageWithBooleans | LocalMessageWithBooleans,
+): string {
     const user_ids = people.pm_with_user_ids(message) ?? [];
     const emails = user_ids
         .map((user_id) => {
@@ -238,10 +253,16 @@ export function get_pm_full_names(user_ids: number[]): string {
     return sorted_names.join(", ");
 }
 
-export function convert_raw_message_to_message_with_booleans(
-    message: RawMessage,
-): MessageWithBooleans {
-    const flags = message.flags ?? [];
+export function convert_raw_message_to_message_with_booleans(opts: NewMessage):
+    | {
+          type: "server_message";
+          message: RawMessageWithBooleans;
+      }
+    | {
+          type: "local_message";
+          message: LocalMessageWithBooleans;
+      } {
+    const flags = opts.raw_message.flags ?? [];
 
     function convert_flag(flag_name: string): boolean {
         return flags.includes(flag_name);
@@ -268,15 +289,39 @@ export function convert_raw_message_to_message_with_booleans(
 
     // We have to return these separately because of how the `MessageWithBooleans`
     // type is set up.
-    if (message.type === "private") {
+    if (opts.type === "local_message") {
+        if (opts.raw_message.type === "private") {
+            return {
+                type: "local_message",
+                message: {
+                    ..._.omit(opts.raw_message, "flags"),
+                    ...converted_flags,
+                },
+            };
+        }
         return {
-            ..._.omit(message, "flags"),
-            ...converted_flags,
+            type: "local_message",
+            message: {
+                ..._.omit(opts.raw_message, "flags"),
+                ...converted_flags,
+            },
+        };
+    }
+    if (opts.raw_message.type === "private") {
+        return {
+            type: "server_message",
+            message: {
+                ..._.omit(opts.raw_message, "flags"),
+                ...converted_flags,
+            },
         };
     }
     return {
-        ..._.omit(message, "flags"),
-        ...converted_flags,
+        type: "server_message",
+        message: {
+            ..._.omit(opts.raw_message, "flags"),
+            ...converted_flags,
+        },
     };
 }
 
