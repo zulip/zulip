@@ -5,6 +5,8 @@ import type * as tippy from "tippy.js";
 import render_settings_user_list_row from "../templates/settings/settings_user_list_row.hbs";
 
 import {compute_active_status, post_presence_response_schema} from "./activity.ts";
+import * as bot_data from "./bot_data.ts";
+import type {Bot} from "./bot_data.ts";
 import * as browser_history from "./browser_history.ts";
 import * as channel from "./channel.ts";
 import * as dialog_widget from "./dialog_widget.ts";
@@ -29,8 +31,12 @@ import * as user_profile from "./user_profile.ts";
 import * as user_sort from "./user_sort.ts";
 import * as util from "./util.ts";
 
+const OUTGOING_WEBHOOK_BOT_TYPE_INT = 3;
+
 export const active_user_list_dropdown_widget_name = "active_user_list_select_user_role";
 export const deactivated_user_list_dropdown_widget_name = "deactivated_user_list_select_user_role";
+export const all_bots_list_dropdown_widget_name = "all_bots_list_select_bot_status";
+export const your_bots_list_dropdown_widget_name = "your_bots_list_select_bot_status";
 
 let should_redraw_active_users_list = false;
 let should_redraw_deactivated_users_list = false;
@@ -47,6 +53,17 @@ type UserSettingsSection = {
     handle_events: () => void;
     create_table: (active_users: number[]) => void;
     list_widget: ListWidgetType<number, User> | undefined;
+};
+
+type BotSettingsSection = {
+    dropdown_widget_name: string;
+    filters: {
+        text_search: string;
+        status_code: number;
+    };
+    handle_events: () => void;
+    create_table: () => void;
+    list_widget: ListWidgetType<number, BotInfo> | undefined;
 };
 
 const active_section: UserSettingsSection = {
@@ -73,9 +90,27 @@ const deactivated_section: UserSettingsSection = {
     list_widget: undefined,
 };
 
-const bots_section = {
-    handle_events: bots_handle_events,
-    create_table: bots_create_table,
+const all_bots_section: BotSettingsSection = {
+    dropdown_widget_name: all_bots_list_dropdown_widget_name,
+    filters: {
+        text_search: "",
+        // 0 status_code signifies Active status for our filter.
+        status_code: 0,
+    },
+    handle_events: all_bots_handle_events,
+    create_table: create_all_bots_table,
+    list_widget: undefined,
+};
+
+const your_bots_section: BotSettingsSection = {
+    dropdown_widget_name: your_bots_list_dropdown_widget_name,
+    filters: {
+        text_search: "",
+        status_code: 0,
+    },
+    handle_events: your_bots_handle_events,
+    create_table: create_your_bots_table,
+    list_widget: undefined,
 };
 
 function sort_bot_email(a: BotInfo, b: BotInfo): number {
@@ -188,16 +223,21 @@ export function update_view_on_reactivate(user_id: number, is_bot: boolean): voi
 }
 
 function add_value_to_filters(
-    section: UserSettingsSection,
-    key: "role_code" | "text_search",
+    section: UserSettingsSection | BotSettingsSection,
+    key: "role_code" | "status_code" | "text_search",
     value: number | string,
 ): void {
     if (key === "role_code") {
+        assert("role_code" in section.filters);
         assert(typeof value === "number");
-        section.filters[key] = value;
+        section.filters.role_code = value;
+    } else if (key === "status_code") {
+        assert("status_code" in section.filters);
+        assert(typeof value === "number");
+        section.filters.status_code = value;
     } else {
         assert(typeof value === "string");
-        section.filters[key] = value;
+        section.filters.text_search = value;
     }
     // This hard_redraw will rerun the relevant predicate function
     // and in turn apply the new filters.
@@ -206,12 +246,18 @@ function add_value_to_filters(
 }
 
 function are_filters_active(
-    filters: UserSettingsSection["filters"],
+    filters: {text_search: string; role_code?: number; status_code?: number},
     $search_input: JQuery,
 ): boolean {
     const search_value = String($search_input.val()).trim();
-    const selected_role = filters.role_code;
-    return Boolean(search_value) || selected_role !== 0;
+    const has_search = Boolean(search_value);
+
+    // Check for role_code or status_code not equal to 0
+    const has_filter =
+        (filters.role_code !== undefined && filters.role_code !== 0) ||
+        (filters.status_code !== undefined && filters.status_code !== 0);
+
+    return has_search || has_filter;
 }
 
 function role_selected_handler(
@@ -229,6 +275,24 @@ function role_selected_handler(
         add_value_to_filters(deactivated_section, "role_code", role_code);
     }
 
+    dropdown.hide();
+    widget.render();
+}
+
+function status_selected_handler(
+    event: JQuery.ClickEvent,
+    dropdown: tippy.Instance,
+    widget: dropdown_widget.DropdownWidget,
+): void {
+    event.preventDefault();
+    event.stopPropagation();
+
+    const status_code = Number($(event.currentTarget).attr("data-unique-id"));
+    if (widget.widget_name === all_bots_section.dropdown_widget_name) {
+        add_value_to_filters(all_bots_section, "status_code", status_code);
+    } else if (widget.widget_name === your_bots_section.dropdown_widget_name) {
+        add_value_to_filters(your_bots_section, "status_code", status_code);
+    }
     dropdown.hide();
     widget.render();
 }
@@ -314,6 +378,31 @@ function initialize_user_sections(active_user_ids: number[], deactivated_user_id
     deactivated_users_role_dropdown.setup();
 }
 
+function get_bot_status(): {unique_id: number; name: string}[] {
+    return [
+        {unique_id: 0, name: $t({defaultMessage: "Active"})},
+        {unique_id: 1, name: $t({defaultMessage: "Deactivated"})},
+    ];
+}
+
+function create_status_filter_dropdown(
+    $events_container: JQuery,
+    section: BotSettingsSection,
+): void {
+    new dropdown_widget.DropdownWidget({
+        widget_name: section.dropdown_widget_name,
+        unique_id_type: "number",
+        get_options: get_bot_status,
+        $events_container,
+        item_click_callback: status_selected_handler,
+        default_id: section.filters.status_code,
+        hide_search_box: true,
+        tippy_props: {
+            offset: [0, 0],
+        },
+    }).setup();
+}
+
 function populate_users(): void {
     const active_user_ids = people.get_realm_active_human_user_ids();
     const deactivated_user_ids = people.get_non_active_human_ids();
@@ -353,6 +442,7 @@ function bot_owner_full_name(owner_id: number | null): string | undefined {
 type BotInfo = {
     is_bot: boolean;
     role: number;
+    status_code: number;
     is_active: boolean;
     user_id: number;
     full_name: string;
@@ -384,10 +474,15 @@ function bot_info(bot_user_id: number): BotInfo {
     const owner_id = bot_user.bot_owner_id;
     const owner_full_name = bot_owner_full_name(owner_id);
 
+    const is_admin = current_user.is_admin;
+    const is_bot_owner = owner_id === current_user.user_id;
+    const can_modify_bot = is_admin || is_bot_owner;
+
     return {
         is_bot: true,
         role: bot_user.role,
         is_active: people.is_person_active(bot_user.user_id),
+        status_code: people.is_person_active(bot_user.user_id) ? 0 : 1,
         user_id: bot_user.user_id,
         full_name: bot_user.full_name,
         user_role_text: people.get_user_type(bot_user_id),
@@ -397,9 +492,9 @@ function bot_info(bot_user_id: number): BotInfo {
         bot_owner_full_name: owner_full_name ?? $t({defaultMessage: "No owner"}),
         no_owner: !owner_full_name,
         is_current_user: false,
-        can_modify: current_user.is_admin,
-        cannot_deactivate: bot_user.is_system_bot ?? false,
-        cannot_edit: bot_user.is_system_bot ?? false,
+        can_modify: can_modify_bot,
+        cannot_deactivate: (bot_user.is_system_bot ?? false) || !can_modify_bot,
+        cannot_edit: (bot_user.is_system_bot ?? false) || !can_modify_bot,
         // It's always safe to show the real email addresses for bot users
         display_email: bot_user.email,
         ...(owner_id
@@ -470,35 +565,46 @@ function human_info(person: User): {
 }
 
 function set_text_search_value($table: JQuery, value: string): void {
-    $table.closest(".user-settings-section").find(".search").val(value);
+    $table.closest(".settings-section-table").find(".search").val(value);
 }
 
-let bot_list_widget: ListWidgetType<number, BotInfo>;
+function predicate_for_bot_filtering(item: BotInfo, section: BotSettingsSection): boolean {
+    if (!item) {
+        return false;
+    }
+    const search_query = section.filters.text_search.toLowerCase();
+    const filter_searches =
+        item.full_name.toLowerCase().includes(search_query) ||
+        item.display_email.toLowerCase().includes(search_query);
 
-function bots_create_table(): void {
+    const filter_status = item.status_code === section.filters.status_code;
+    return filter_searches && filter_status;
+}
+
+function create_all_bots_table(): void {
     loading.make_indicator($("#admin_page_bots_loading_indicator"), {
         text: $t({defaultMessage: "Loading…"}),
     });
-    const $bots_table = $("#admin_bots_table");
-    $bots_table.hide();
+    const $all_bots_table = $("#admin-all-bots-table");
+    $all_bots_table.hide();
     const bot_user_ids = people.get_bot_ids();
 
-    bot_list_widget = ListWidget.create($bots_table, bot_user_ids, {
-        name: "admin_bot_list",
+    all_bots_section.list_widget = ListWidget.create($all_bots_table, bot_user_ids, {
+        name: "admin_all_bot_list",
         get_item: bot_info,
         modifier_html: render_settings_user_list_row,
         html_selector: (item) => $(`tr[data-user-id='${CSS.escape(item.user_id.toString())}']`),
         filter: {
-            $element: $bots_table.closest(".settings-section").find(".search"),
-            predicate(item, value) {
-                return (
-                    item.full_name.toLowerCase().includes(value) ||
-                    item.display_email.toLowerCase().includes(value)
-                );
+            predicate(item) {
+                return predicate_for_bot_filtering(item, all_bots_section);
             },
-            onupdate: reset_scrollbar($bots_table),
+            is_active() {
+                const $search_input = $("#admin-all-bots-list .search");
+                return are_filters_active(all_bots_section.filters, $search_input);
+            },
+            onupdate: reset_scrollbar($all_bots_table),
         },
-        $parent_container: $("#admin-bot-list").expectOne(),
+        $parent_container: $("#admin-all-bots-list").expectOne(),
         init_sort: "full_name_alphabetic",
         sort_fields: {
             email: sort_bot_email,
@@ -506,11 +612,50 @@ function bots_create_table(): void {
             role: user_sort.sort_role,
             ...ListWidget.generic_sort_functions("alphabetic", ["full_name", "bot_type"]),
         },
-        $simplebar_container: $("#admin-bot-list .progressive-table-wrapper"),
+        $simplebar_container: $("#admin-all-bots-list .progressive-table-wrapper"),
     });
+    set_text_search_value($all_bots_table, all_bots_section.filters.text_search);
 
     loading.destroy_indicator($("#admin_page_bots_loading_indicator"));
-    $bots_table.show();
+    $all_bots_table.show();
+}
+
+function create_your_bots_table(): void {
+    loading.make_indicator($("#admin_page_bots_loading_indicator"), {
+        text: $t({defaultMessage: "Loading…"}),
+    });
+    const $your_bots_table = $("#admin-your-bots-table");
+    $your_bots_table.hide();
+    const bot_user_ids = bot_data.get_all_bots_ids_for_current_user();
+    your_bots_section.list_widget = ListWidget.create($your_bots_table, bot_user_ids, {
+        name: "admin_your_bot_list",
+        get_item: bot_info,
+        modifier_html: render_settings_user_list_row,
+        html_selector: (item) => $(`tr[data-user-id='${CSS.escape(item.user_id.toString())}']`),
+        filter: {
+            predicate(item) {
+                return predicate_for_bot_filtering(item, your_bots_section);
+            },
+            is_active() {
+                const $search_input = $("#admin-your-bots-list .search");
+                return are_filters_active(your_bots_section.filters, $search_input);
+            },
+            onupdate: reset_scrollbar($your_bots_table),
+        },
+        $parent_container: $("#admin-your-bots-list").expectOne(),
+        init_sort: "full_name_alphabetic",
+        sort_fields: {
+            email: sort_bot_email,
+            bot_owner: sort_bot_owner,
+            role: user_sort.sort_role,
+            ...ListWidget.generic_sort_functions("alphabetic", ["full_name", "bot_type"]),
+        },
+        $simplebar_container: $("#admin-your-bots-list .progressive-table-wrapper"),
+    });
+    set_text_search_value($your_bots_table, your_bots_section.filters.text_search);
+
+    loading.destroy_indicator($("#admin_page_bots_loading_indicator"));
+    $your_bots_table.show();
 }
 
 function active_create_table(active_users: number[]): void {
@@ -552,6 +697,17 @@ function active_create_table(active_users: number[]): void {
 
 function handle_clear_button_for_users($tbody: JQuery): void {
     const $container = $tbody.closest(".user-settings-section");
+    $container.on("click", ".clear-filter", (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        const $filter = $container.find(".search");
+        set_text_search_value($tbody, "");
+        $filter.trigger("input");
+    });
+}
+
+function handle_clear_button_for_bots($tbody: JQuery): void {
+    const $container = $tbody.closest(".bot-settings-section");
     $container.on("click", ".clear-filter", (e) => {
         e.stopPropagation();
         e.preventDefault();
@@ -604,12 +760,22 @@ function deactivated_create_table(deactivated_users: number[]): void {
     $("#admin_deactivated_users_table").show();
 }
 
+export function toggle_bot_config_download_container(): void {
+    const bots = bot_data.get_all_bots_for_current_user().filter((elem: Bot) => {
+        const is_active = people.is_person_active(elem.user_id);
+        return elem.bot_type === OUTGOING_WEBHOOK_BOT_TYPE_INT && is_active;
+    });
+    $("#botserverrc-text-container").toggle(bots.length > 0);
+}
+
 export function update_bot_data(bot_user_id: number): void {
-    if (!bot_list_widget) {
+    if (!all_bots_section.list_widget && !your_bots_section.list_widget) {
         return;
     }
 
-    bot_list_widget.render_item(bot_info(bot_user_id));
+    all_bots_section.list_widget?.render_item(bot_info(bot_user_id));
+    your_bots_section.list_widget?.render_item(bot_info(bot_user_id));
+    toggle_bot_config_download_container();
 }
 
 export function update_user_data(
@@ -635,24 +801,31 @@ export function update_user_data(
     }
 }
 
-export function redraw_bots_list(): void {
-    if (!bot_list_widget) {
+function redraw_people_list(
+    section: UserSettingsSection | BotSettingsSection,
+    list: number[],
+): void {
+    if (!section.list_widget) {
         return;
     }
-
-    // In order to properly redraw after a user may have been added,
-    // we need to update the bot_list_widget with the new set of bot
-    // user IDs to display.
-    const bot_user_ids = people.get_bot_ids();
-    bot_list_widget.replace_list_data(bot_user_ids);
+    section.list_widget.replace_list_data(list);
+    section.list_widget.hard_redraw();
 }
 
-function redraw_users_list(user_section: UserSettingsSection, user_list: number[]): void {
-    if (!user_section.list_widget) {
-        return;
-    }
+export function redraw_all_bots_list(): void {
+    // In order to properly redraw after a user may have been added,
+    // we need to update the all_bots_list_widget with the new set of bot
+    // user IDs to display.
+    const bot_user_ids = people.get_bot_ids();
+    redraw_people_list(all_bots_section, bot_user_ids);
+}
 
-    user_section.list_widget.replace_list_data(user_list);
+export function redraw_your_bots_list(): void {
+    // In order to properly redraw after a user may have been added,
+    // we need to update the your_bots_list_widget with the new set of bot
+    // user IDs to display.
+    const bot_user_ids_for_current_owner = bot_data.get_all_bots_ids_for_current_user();
+    redraw_people_list(your_bots_section, bot_user_ids_for_current_owner);
 }
 
 export function redraw_deactivated_users_list(): void {
@@ -660,7 +833,7 @@ export function redraw_deactivated_users_list(): void {
         return;
     }
     const deactivated_user_ids = people.get_non_active_human_ids();
-    redraw_users_list(deactivated_section, deactivated_user_ids);
+    redraw_people_list(deactivated_section, deactivated_user_ids);
     should_redraw_deactivated_users_list = false;
 }
 
@@ -669,8 +842,14 @@ export function redraw_active_users_list(): void {
         return;
     }
     const active_user_ids = people.get_realm_active_human_user_ids();
-    redraw_users_list(active_section, active_user_ids);
+    redraw_people_list(active_section, active_user_ids);
     should_redraw_active_users_list = false;
+}
+
+export function rerender_bot_section(bot_user_id: number): void {
+    redraw_all_bots_list();
+    redraw_your_bots_list();
+    update_bot_data(bot_user_id);
 }
 
 function start_data_load(): void {
@@ -777,13 +956,15 @@ function handle_edit_form($tbody: JQuery): void {
     });
 }
 
-function handle_filter_change($tbody: JQuery, section: UserSettingsSection): void {
+function handle_filter_change(
+    $section: JQuery,
+    section: UserSettingsSection | BotSettingsSection,
+): void {
     // This duplicates the built-in search filter live-update logic in
     // ListWidget for the input.list_widget_filter event type, but we
     // can't use that, because we're also filtering on Role with our
     // custom predicate.
-    $tbody
-        .closest(".user-settings-section")
+    $section
         .find<HTMLInputElement>(".search")
         .on("input.list_widget_filter", function (this: HTMLInputElement) {
             add_value_to_filters(section, "text_search", this.value.toLocaleLowerCase());
@@ -792,30 +973,46 @@ function handle_filter_change($tbody: JQuery, section: UserSettingsSection): voi
 
 function active_handle_events(): void {
     const $tbody = $("#admin_users_table").expectOne();
+    const $section = $tbody.closest(".user-settings-section");
 
-    handle_filter_change($tbody, active_section);
+    handle_filter_change($section, active_section);
     handle_deactivation($tbody);
     handle_reactivation($tbody);
     handle_edit_form($tbody);
-    handle_clear_button_for_users($tbody);
+    handle_clear_button_for_users($section);
 }
 
 function deactivated_handle_events(): void {
     const $tbody = $("#admin_deactivated_users_table").expectOne();
+    const $section = $tbody.closest(".user-settings-section");
 
-    handle_filter_change($tbody, deactivated_section);
+    handle_filter_change($section, deactivated_section);
     handle_deactivation($tbody);
     handle_reactivation($tbody);
     handle_edit_form($tbody);
-    handle_clear_button_for_users($tbody);
+    handle_clear_button_for_users($section);
 }
 
-function bots_handle_events(): void {
-    const $tbody = $("#admin_bots_table").expectOne();
+function all_bots_handle_events(): void {
+    const $tbody = $("#admin-all-bots-table").expectOne();
+    const $section = $tbody.closest(".bot-settings-section");
 
+    handle_filter_change($section, all_bots_section);
     handle_bot_deactivation($tbody);
     handle_reactivation($tbody);
     handle_edit_form($tbody);
+    handle_clear_button_for_bots($section);
+}
+
+function your_bots_handle_events(): void {
+    const $tbody = $("#admin-your-bots-table").expectOne();
+    const $section = $tbody.closest(".bot-settings-section");
+
+    handle_filter_change($section, your_bots_section);
+    handle_bot_deactivation($tbody);
+    handle_reactivation($tbody);
+    handle_edit_form($tbody);
+    handle_clear_button_for_bots($section);
 }
 
 export function set_up_humans(): void {
@@ -826,14 +1023,44 @@ export function set_up_humans(): void {
 }
 
 export function set_up_bots(): void {
-    bots_section.handle_events();
-    bots_section.create_table();
+    all_bots_section.handle_events();
+    your_bots_section.handle_events();
+    all_bots_section.create_table();
+    your_bots_section.create_table();
 
     $("#admin-bot-list .add-a-new-bot").on("click", (e) => {
         e.preventDefault();
         e.stopPropagation();
         settings_bots.add_a_new_bot();
     });
+    create_status_filter_dropdown($("#admin-all-bots-list"), all_bots_section);
+    create_status_filter_dropdown($("#admin-your-bots-list"), your_bots_section);
+
+    $("#download-botserverrc-file").on("click", () => {
+        let content = "";
+
+        for (const bot of bot_data.get_all_bots_for_current_user()) {
+            if (bot.is_active && bot.bot_type === OUTGOING_WEBHOOK_BOT_TYPE_INT) {
+                const services = bot_data.get_services(bot.user_id);
+                assert(services !== undefined);
+                const service = services[0];
+                assert(service && "token" in service);
+                const bot_token = service.token;
+                content += settings_bots.generate_botserverrc_content(
+                    bot.email,
+                    bot.api_key,
+                    bot_token,
+                );
+            }
+        }
+
+        $("#hidden-botserverrc-download").attr(
+            "href",
+            "data:application/octet-stream;charset=utf-8," + encodeURIComponent(content),
+        );
+        $("#hidden-botserverrc-download")[0]?.click();
+    });
+    toggle_bot_config_download_container();
 }
 
 type FetchPresenceUserSettingParams = {
