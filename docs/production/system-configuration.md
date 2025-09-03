@@ -404,6 +404,12 @@ its requests through Smokescreen is generally not necessary. Set to
 true or false to override the default, which uses the proxy only if
 it is not the default of Smokescreen on a local host.
 
+#### `allow_addresses`, `allow_ranges`, `deny_addresses`, `deny_ranges`
+
+Comma-separated lists of IP addresses or CIDR range rules. All
+private IP addresses (e.g., 127.0.0.0/8, 192.168.0.0/16) are denied by
+default; allow rules override deny rules.
+
 ### `[sentry]`
 
 #### `organization`
