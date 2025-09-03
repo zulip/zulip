@@ -208,6 +208,13 @@ export function update_buttons_for_non_specific_views(): void {
     set_standard_text_for_reply_button();
 }
 
+export function maybe_update_buttons_for_dm_recipient(): void {
+    const filter = narrow_state.filter();
+    if (filter?.contains_only_private_messages()) {
+        update_buttons_for_private();
+    }
+}
+
 function set_reply_button_label(label: string): void {
     $("#left_bar_compose_reply_button_big").text(label);
 }
