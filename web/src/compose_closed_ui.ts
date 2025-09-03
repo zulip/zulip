@@ -184,7 +184,8 @@ function should_disable_compose_reply_button_for_stream(): boolean {
     return false;
 }
 
-function should_disable_compose_reply_button_for_direct_message(): boolean {
+// Exported for tests
+export function should_disable_compose_reply_button_for_direct_message(): boolean {
     const pm_ids_string = narrow_state.pm_ids_string();
     // If we can identify a direct message recipient, and the user can't
     // reply to that recipient, then we disable the compose_reply_button.
@@ -194,30 +195,34 @@ function should_disable_compose_reply_button_for_direct_message(): boolean {
     return false;
 }
 
-function update_buttons(disable_reply?: boolean): void {
-    update_reply_button_state(disable_reply);
-}
+export function update_buttons(update_type?: string): void {
+    let disable_reply_button;
+    if (update_type === "direct") {
+        // Based on whether there's a direct message recipient for
+        // the current narrow_state.
+        disable_reply_button = should_disable_compose_reply_button_for_direct_message();
+    } else {
+        // Based on whether there's a selected channel message in
+        // the current message list.
+        disable_reply_button = should_disable_compose_reply_button_for_stream();
+    }
 
-export function update_buttons_for_private(): void {
-    update_new_conversation_button("direct");
-    update_buttons(should_disable_compose_reply_button_for_direct_message());
-}
+    if (update_type === "direct" || update_type === "stream") {
+        update_new_conversation_button(update_type);
+        update_reply_button_state(disable_reply_button);
+        return;
+    }
 
-export function update_buttons_for_stream_views(): void {
-    update_new_conversation_button("stream");
-    update_buttons(should_disable_compose_reply_button_for_stream());
-}
-
-export function update_buttons_for_non_specific_views(): void {
+    // Default case for most views.
     update_new_conversation_button("non-specific");
-    update_buttons(should_disable_compose_reply_button_for_stream());
+    update_reply_button_state(disable_reply_button);
     set_standard_text_for_reply_button();
 }
 
 export function maybe_update_buttons_for_dm_recipient(): void {
     const filter = narrow_state.filter();
     if (filter?.contains_only_private_messages()) {
-        update_buttons_for_private();
+        update_buttons("direct");
     }
 }
 
