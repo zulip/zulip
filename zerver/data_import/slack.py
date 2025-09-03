@@ -309,7 +309,9 @@ def users_to_zerver_userprofile(
         email = get_user_email(user, domain_name)
         if email.lower() in user_merge_mapping:
             # logging line must come before replacement
-            logging.info("%s: %s MAPPED as %s", slack_user_id, email, user_merge_mapping[email.lower()])
+            logging.info(
+                "%s: %s MAPPED as %s", slack_user_id, email, user_merge_mapping[email.lower()]
+            )
             # For Zulip user assignment merger purposes only, treat the remapped email as their email.
             # This has no effect unless a custom user_mapping.json is provided.
             # Note, this change should *not* be made in get_user_email, as doing so breaks other parts of the import.
@@ -386,7 +388,9 @@ def users_to_zerver_userprofile(
         if not user.get("is_primary_owner", False):
             user_id_count += 1
 
-        logging.info("%s (%s): %s -> %s", slack_user_id, user_id, user["name"], userprofile_dict["email"])
+        logging.info(
+            "%s (%s): %s -> %s", slack_user_id, user_id, user["name"], userprofile_dict["email"]
+        )
 
     validate_user_emails_for_import(list(found_emails))
     process_customprofilefields(zerver_customprofilefield, zerver_customprofilefield_values)
