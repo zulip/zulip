@@ -88,7 +88,7 @@ run_test("update_messages", ({override, override_rewire}) => {
     const original_message = message_helper.process_new_message({
         type: "server_message",
         raw_message,
-    });
+    }).message;
 
     assert.equal(original_message.mentioned, true);
     assert.equal(original_message.unread, true);

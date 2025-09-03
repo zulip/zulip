@@ -105,6 +105,6 @@ run_test("unread", () => {
         raw_message: in_message,
     });
 
-    unread.process_loaded_messages([in_message]);
+    unread.process_loaded_messages([in_message.message]);
     assert.equal(unread.num_unread_for_topic(stream_id, topic_name), 1);
 });

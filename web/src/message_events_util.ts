@@ -67,14 +67,15 @@ export function maybe_add_narrowed_messages(
             // we hear back from the server and can echo the new
             // message.
             new_messages = new_messages.map((new_msg) => {
-                const cached_msg = message_store.get_cached_message(new_msg.id);
-                if (cached_msg !== undefined) {
+                const cached_msg_data = message_store.get_cached_message(new_msg.id);
+                if (cached_msg_data !== undefined) {
+                    const cached_message = cached_msg_data.message;
                     // Copy the match topic and content over from the new_msg to
                     // cached_msg. Also unlike message_helper.process_new_message, we
                     // are not checking if new_msg has match_topic, the upstream code
                     // ensure that.
-                    util.set_match_data(cached_msg, new_msg);
-                    return cached_msg;
+                    util.set_match_data(cached_message, new_msg);
+                    return cached_message;
                 }
 
                 return new_msg;
