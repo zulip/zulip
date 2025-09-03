@@ -100,6 +100,7 @@ run_test("insert_message", ({override}) => {
         content: "example content",
         topic: "Foo",
         type: "stream",
+        reactions: [],
     };
 
     assert.equal(message_store.get(new_message.id), undefined);
