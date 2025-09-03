@@ -349,7 +349,7 @@ export function show(filter?: Filter): void {
                 pm_list.handle_narrow_activated(filter);
             },
             $view: $("#inbox-view"),
-            update_compose: compose_closed_ui.update_buttons_for_non_specific_views,
+            update_compose: compose_closed_ui.update_buttons,
             // We already did a check above for that.
             is_visible: () => false,
             set_visible: inbox_util.set_visible,
@@ -367,7 +367,7 @@ export function show(filter?: Filter): void {
             );
         },
         $view: $("#inbox-view"),
-        update_compose: compose_closed_ui.update_buttons_for_non_specific_views,
+        update_compose: compose_closed_ui.update_buttons,
         is_visible: () => normal_inbox_view_is_visible,
         set_visible: inbox_util.set_visible,
         complete_rerender,
