@@ -170,7 +170,10 @@ people.add_active_user(me);
 people.add_active_user(test_user);
 people.initialize_current_user(me.user_id);
 
-message_store.update_message_cache(test_message);
+message_store.update_message_cache({
+    type: "server_message",
+    message: test_message,
+});
 
 const realm_emoji = {};
 const emoji_codes = zrequire("../../static/generated/emoji/emoji_codes.json");

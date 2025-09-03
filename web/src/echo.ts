@@ -16,6 +16,7 @@ import * as local_message from "./local_message.ts";
 import * as markdown from "./markdown.ts";
 import type {InsertNewMessagesOpts} from "./message_events.ts";
 import * as message_events_util from "./message_events_util.ts";
+import type {LocalMessage} from "./message_helper.ts";
 import * as message_list_data_cache from "./message_list_data_cache.ts";
 import * as message_lists from "./message_lists.ts";
 import * as message_live_update from "./message_live_update.ts";
@@ -31,6 +32,7 @@ import {current_user} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import * as stream_list from "./stream_list.ts";
 import * as stream_topic_history from "./stream_topic_history.ts";
+import type * as transmit from "./transmit.ts";
 import type {TopicLink} from "./types.ts";
 import * as util from "./util.ts";
 
@@ -81,7 +83,7 @@ type LocalEditRequest = Partial<{
     mentioned_me_directly: boolean;
 }>;
 
-export type LocalMessage = MessageRequestObject & {
+export type RawLocalMessage = MessageRequestObject & {
     raw_content: string;
     flags: string[];
     is_me_message: boolean;
@@ -151,18 +153,14 @@ function failed_message_success(message_id: number): void {
 }
 
 function resend_message(
-    message: Message,
+    message: LocalMessage,
     $row: JQuery,
     {
         on_send_message_success,
         send_message,
     }: {
         on_send_message_success: (request: Message, data: PostMessageAPIData) => void;
-        send_message: (
-            request: Message,
-            on_success: (raw_data: unknown) => void,
-            error: (response: string, _server_error_code: string) => void,
-        ) => void;
+        send_message: typeof transmit.send_message;
     },
 ): void {
     message.content = message.raw_content!;
@@ -196,7 +194,7 @@ function resend_message(
     send_message(message, on_success, on_error);
 }
 
-export function build_display_recipient(message: LocalMessage): DisplayRecipientUser[] | string {
+export function build_display_recipient(message: RawLocalMessage): DisplayRecipientUser[] | string {
     if (message.type === "stream") {
         return stream_data.get_stream_name_from_id(message.stream_id);
     }
@@ -245,7 +243,7 @@ export function build_display_recipient(message: LocalMessage): DisplayRecipient
     return display_recipient;
 }
 
-export function track_local_message(message: Message): void {
+export function track_local_message(message: LocalMessage): void {
     assert(message.local_id !== undefined);
     echo_state.set_message_waiting_for_id(message.local_id, message);
     echo_state.set_message_waiting_for_ack(message.local_id, message);
@@ -262,7 +260,7 @@ export function insert_local_message(
     const raw_content = message_request.content;
     const topic = message_request.topic;
 
-    const local_message: LocalMessage = {
+    const raw_local_message: RawLocalMessage = {
         ...message_request,
         ...markdown.render(raw_content),
         raw_content,
@@ -280,11 +278,11 @@ export function insert_local_message(
         reactions: [],
     };
 
-    local_message.display_recipient = build_display_recipient(local_message);
+    raw_local_message.display_recipient = build_display_recipient(raw_local_message);
 
     const [message] = insert_new_messages({
         type: "local_message",
-        raw_messages: [local_message],
+        raw_messages: [raw_local_message],
         sent_by_this_client: true,
     });
     assert(message !== undefined);
@@ -659,27 +657,19 @@ export function initialize({
     send_message,
 }: {
     on_send_message_success: (request: Message, data: PostMessageAPIData) => void;
-    send_message: (
-        request: Message,
-        on_success: (raw_data: unknown) => void,
-        error: (response: string, _server_error_code: string) => void,
-    ) => void;
+    send_message: typeof transmit.send_message;
 }): void {
     function on_failed_action(
         selector: string,
         callback: (
-            message: Message,
+            message: LocalMessage,
             $row: JQuery,
             {
                 on_send_message_success,
                 send_message,
             }: {
                 on_send_message_success: (request: Message, data: PostMessageAPIData) => void;
-                send_message: (
-                    request: Message,
-                    on_success: (raw_data: unknown) => void,
-                    error: (response: string, _server_error_code: string) => void,
-                ) => void;
+                send_message: typeof transmit.send_message;
             },
         ) => void,
     ): void {
