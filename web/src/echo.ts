@@ -84,7 +84,7 @@ type LocalMessage = MessageRequestObject & {
     raw_content: string;
     flags: string[];
     is_me_message: boolean;
-    content_type: string;
+    content_type: "text/html";
     sender_email: string;
     sender_full_name: string;
     avatar_url?: string | null | undefined;
