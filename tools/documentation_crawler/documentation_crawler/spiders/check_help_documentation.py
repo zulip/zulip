@@ -48,6 +48,10 @@ class HelpDocumentationSpider(BaseDocumentationSpider):
     deny_domains: list[str] = []
     deny = ["/policies/privacy"]
 
+    @override
+    def _is_external_url(self, url: str) -> bool:
+        return not f"{url}/".startswith("http://localhost:9981/help/") or self._has_extension(url)
+
 
 class APIDocumentationSpider(UnusedImagesLinterSpider):
     name = "api_documentation_crawler"
