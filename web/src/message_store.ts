@@ -2,14 +2,14 @@ import _ from "lodash";
 import * as z from "zod/mini";
 
 import * as blueslip from "./blueslip.ts";
-import type {LocalMessage} from "./echo.ts";
-import type {NewMessage} from "./message_helper.ts";
+import type {RawLocalMessage} from "./echo.ts";
+import type {NewMessage, ProcessedMessage} from "./message_helper.ts";
 import * as people from "./people.ts";
 import {topic_link_schema} from "./types.ts";
 import type {UserStatusEmojiInfo} from "./user_status.ts";
 import * as util from "./util.ts";
 
-const stored_messages = new Map<number, Message>();
+const stored_messages = new Map<number, ProcessedMessage>();
 
 const matched_message_schema = z.object({
     match_content: z.optional(z.string()),
@@ -130,8 +130,8 @@ type RawMessageWithBooleans = (
     Booleans;
 
 type LocalMessageWithBooleans = (
-    | Omit<LocalMessage & {type: "private"}, "flags">
-    | Omit<LocalMessage & {type: "stream"}, "flags">
+    | Omit<RawLocalMessage & {type: "private"}, "flags">
+    | Omit<RawLocalMessage & {type: "stream"}, "flags">
 ) &
     Booleans;
 
@@ -208,12 +208,12 @@ export type Message = (
           }
     );
 
-export function update_message_cache(message: Message): void {
+export function update_message_cache(message_data: ProcessedMessage): void {
     // You should only call this from message_helper (or in tests).
-    stored_messages.set(message.id, message);
+    stored_messages.set(message_data.message.id, message_data);
 }
 
-export function get_cached_message(message_id: number): Message | undefined {
+export function get_cached_message(message_id: number): ProcessedMessage | undefined {
     // You should only call this from message_helper.
     // Use the get() wrapper below for most other use cases.
     return stored_messages.get(message_id);
@@ -223,8 +223,13 @@ export function clear_for_testing(): void {
     stored_messages.clear();
 }
 
+// This can return a LocalMessage, but unless anything needs that,
+// it's easier to type it as just returning a Message.
+// TODO: If we finish converting to typescript and find that
+// nothing needs LocalMessage, explicitly remove its extra fields
+// here before returning the Message.
 export function get(message_id: number): Message | undefined {
-    return stored_messages.get(message_id);
+    return stored_messages.get(message_id)?.message;
 }
 
 export function get_pm_emails(
@@ -344,25 +349,28 @@ export function update_booleans(message: Message, flags: string[]): void {
 }
 
 export function update_sender_full_name(user_id: number, new_name: string): void {
-    for (const msg of stored_messages.values()) {
-        if (msg.sender_id && msg.sender_id === user_id) {
-            msg.sender_full_name = new_name;
+    for (const message_data of stored_messages.values()) {
+        const message = message_data.message;
+        if (message.sender_id && message.sender_id === user_id) {
+            message.sender_full_name = new_name;
         }
     }
 }
 
 export function update_small_avatar_url(user_id: number, new_url: string | null): void {
-    for (const msg of stored_messages.values()) {
-        if (msg.sender_id && msg.sender_id === user_id) {
-            msg.small_avatar_url = new_url;
+    for (const message_data of stored_messages.values()) {
+        const message = message_data.message;
+        if (message.sender_id && message.sender_id === user_id) {
+            message.small_avatar_url = new_url;
         }
     }
 }
 
 export function update_stream_name(stream_id: number, new_name: string): void {
-    for (const msg of stored_messages.values()) {
-        if (msg.type === "stream" && msg.stream_id === stream_id) {
-            msg.display_recipient = new_name;
+    for (const message_data of stored_messages.values()) {
+        const message = message_data.message;
+        if (message.type === "stream" && message.stream_id === stream_id) {
+            message.display_recipient = new_name;
         }
     }
 }
@@ -371,19 +379,20 @@ export function update_status_emoji_info(
     user_id: number,
     new_info: UserStatusEmojiInfo | undefined,
 ): void {
-    for (const msg of stored_messages.values()) {
-        if (msg.sender_id && msg.sender_id === user_id) {
-            msg.status_emoji_info = new_info;
+    for (const message_data of stored_messages.values()) {
+        const message = message_data.message;
+        if (message.sender_id && message.sender_id === user_id) {
+            message.status_emoji_info = new_info;
         }
     }
 }
 
 export function reify_message_id({old_id, new_id}: {old_id: number; new_id: number}): void {
-    const message = stored_messages.get(old_id);
-    if (message !== undefined) {
-        message.id = new_id;
-        message.locally_echoed = false;
-        stored_messages.set(new_id, message);
+    const message_data = stored_messages.get(old_id);
+    if (message_data !== undefined) {
+        message_data.message.id = new_id;
+        message_data.message.locally_echoed = false;
+        stored_messages.set(new_id, message_data);
         stored_messages.delete(old_id);
     }
 }
@@ -396,6 +405,10 @@ export function remove(message_ids: number[]): void {
 
 export function get_message_ids_in_stream(stream_id: number): number[] {
     return [...stored_messages.values()]
-        .filter((message) => message.type === "stream" && message.stream_id === stream_id)
-        .map((message) => message.id);
+        .filter(
+            (message_data) =>
+                message_data.message.type === "stream" &&
+                message_data.message.stream_id === stream_id,
+        )
+        .map((message_data) => message_data.message.id);
 }
