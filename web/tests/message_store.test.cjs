@@ -110,9 +110,9 @@ test("process_new_message", () => {
         avatar_url: "/some/path/to/avatar",
     };
     message = message_helper.process_new_message({
-        type: "local_message",
+        type: "server_message",
         raw_message: message,
-    });
+    }).message;
 
     assert.deepEqual(message_user_ids.user_ids().sort(), [me.user_id, bob.user_id, cindy.user_id]);
 
@@ -138,7 +138,7 @@ test("process_new_message", () => {
     message = message_helper.process_new_message({
         type: "server_message",
         raw_message: message,
-    });
+    }).message;
 
     assert.equal(message.reply_to, "bob@example.com,cindy@example.com");
     assert.equal(message.to_user_ids, "103,104");
@@ -159,9 +159,9 @@ test("process_new_message", () => {
     };
 
     message = message_helper.process_new_message({
-        type: "local_message",
+        type: "server_message",
         raw_message: message,
-    });
+    }).message;
     assert.equal(message.reply_to, "denise@example.com");
     assert.deepEqual(message.flags, undefined);
     assert.equal(message.alerted, false);
@@ -269,12 +269,15 @@ test("errors", ({disallow_rewire}) => {
 test("reify_message_id", () => {
     const message = {type: "private", id: 500};
 
-    message_store.update_message_cache(message);
-    assert.equal(message_store.get_cached_message(500), message);
+    message_store.update_message_cache({
+        type: "server_message",
+        message,
+    });
+    assert.equal(message_store.get_cached_message(500).message, message);
 
     message_store.reify_message_id({old_id: 500, new_id: 501});
     assert.equal(message_store.get_cached_message(500), undefined);
-    assert.equal(message_store.get_cached_message(501), message);
+    assert.equal(message_store.get_cached_message(501).message, message);
 });
 
 test("update_booleans", () => {
@@ -341,6 +344,7 @@ test("update_property", () => {
         id: 100,
         reactions: [],
         avatar_url: "/some/path/to/avatar",
+        draft_id: 1,
     };
     let message2 = {
         type: "stream",
@@ -353,15 +357,16 @@ test("update_property", () => {
         id: 101,
         reactions: [],
         avatar_url: "/some/path/to/avatar",
+        draft_id: 2,
     };
     message1 = message_helper.process_new_message({
         type: "local_message",
         raw_message: message1,
-    });
+    }).message;
     message2 = message_helper.process_new_message({
         type: "local_message",
         raw_message: message2,
-    });
+    }).message;
 
     assert.equal(message1.sender_full_name, alice.full_name);
     assert.equal(message2.sender_full_name, bob.full_name);
@@ -398,6 +403,7 @@ test("remove", () => {
         id: 100,
         reactions: [],
         avatar_url: "/some/path/to/avatar",
+        draft_id: 1,
     };
     const message2 = {
         type: "stream",
@@ -410,6 +416,7 @@ test("remove", () => {
         id: 101,
         reactions: [],
         avatar_url: "/some/path/to/avatar",
+        draft_id: 2,
     };
     const message3 = {
         type: "stream",
@@ -422,6 +429,7 @@ test("remove", () => {
         id: 102,
         reactions: [],
         avatar_url: "/some/path/to/avatar",
+        draft_id: 3,
     };
     for (const message of [message1, message2]) {
         message_helper.process_new_message({
@@ -449,6 +457,7 @@ test("get_message_ids_in_stream", () => {
         id: 100,
         reactions: [],
         avatar_url: "/some/path/to/avatar",
+        draft_id: 1,
     };
     const message2 = {
         sender_email: "me@example.com",
@@ -460,6 +469,7 @@ test("get_message_ids_in_stream", () => {
         id: 101,
         reactions: [],
         avatar_url: "/some/path/to/avatar",
+        draft_id: 2,
     };
     const message3 = {
         type: "stream",
@@ -472,6 +482,7 @@ test("get_message_ids_in_stream", () => {
         id: 102,
         reactions: [],
         avatar_url: "/some/path/to/avatar",
+        draft_id: 3,
     };
     const message4 = {
         type: "stream",
@@ -484,6 +495,7 @@ test("get_message_ids_in_stream", () => {
         id: 103,
         reactions: [],
         avatar_url: "/some/path/to/avatar",
+        draft_id: 4,
     };
 
     for (const message of [message1, message2, message3, message4]) {
