@@ -6,6 +6,7 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Any
 
+import werkzeug
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse, HttpResponseNotFound
 from django.template import loader
@@ -102,20 +103,15 @@ class MarkdownDirectoryView(ApiURLView):
         self._post_render_callbacks.append(callback)
 
     def get_path(self, article: str) -> DocumentationArticle:
+        # We don't want to allow relative pathnames in `article`
+        # as they could introduce security vulnerabilities.
+        article = werkzeug.utils.secure_filename(article)
+
         http_status = 200
         if article == "":
             article = "index"
         elif article == "api-doc-template":
             # This markdown template shouldn't be accessed directly.
-            article = "missing"
-            http_status = 404
-        # This was earlier checked when we we were using path for the
-        # /help view. If we later add some view like /policies that
-        # incorrectly uses a path section rather than a slug in
-        # urls.py, removing this layer of defense against / being
-        # present in article could turn that from being an irrelevant
-        # mistake into a security vulnerability.
-        elif "/" in article:  # nocoverage
             article = "missing"
             http_status = 404
         elif len(article) > 100 or not re.match(r"^[0-9a-zA-Z_-]+$", article):
