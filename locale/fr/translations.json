@@ -1,11 +1,11 @@
 {
   "%'{file}' exceeds the maximum file size for attachments ({variable} MB).": "%'{file}' dépasse la taille de fichier maximale pour les pièces jointes ({variable} Mo).",
   "(attached file)": "(fichier joint)",
-  "(default)": "",
+  "(default)": "(par défaut)",
   "(forever)": "(pour toujours)",
   "(hidden)": "(caché)",
   "(link to channel)": "(lien vers le canal)",
-  "(no highlighting)": "",
+  "(no highlighting)": "(non surligné)",
   "(or <key-html></key-html>)": "(ou <key-html></key-html>)",
   "(to you and {other_participant_names})": "(à vous et {other_participant_names})",
   "(to you and {participants_count} more)": "(à vous et {participants_count} more)",
