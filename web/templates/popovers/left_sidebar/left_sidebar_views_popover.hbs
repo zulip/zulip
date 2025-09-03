@@ -3,6 +3,7 @@
         {{#each views}}
             {{> left_sidebar_view_popover_item .}}
         {{/each}}
+        {{#unless is_home_view_active}}
         <li role="separator" class="popover-menu-separator"></li>
         {{#if unread_messages_present}}
         <li role="none" class="link-item popover-menu-list-item">
@@ -23,5 +24,6 @@
                 {{/if}}
             </a>
         </li>
+        {{/unless}}
     </ul>
 </div>
