@@ -79,6 +79,17 @@ class SlackWebhookTests(WebhookTestCase):
             content_type="application/json",
         )
 
+    def test_url_options_map_to_topics(self) -> None:
+        self.url = self.build_webhook_url(map_to_topics="true")
+        expected_message = EXPECTED_MESSAGE.format(user=USER, message=MESSAGE_WITH_NORMAL_TEXT)
+        expected_topic_name = TOPIC_WITH_CHANNEL.format(channel=CHANNEL)
+        self.check_webhook(
+            "message_with_normal_text",
+            expected_topic_name,
+            expected_message,
+            content_type="application/json",
+        )
+
     def test_slack_channels_map_to_topics_true_and_user_specified_topic(self) -> None:
         expected_topic_name = "test"
         self.url = self.build_webhook_url(topic=expected_topic_name, channels_map_to_topics="1")
@@ -90,9 +101,32 @@ class SlackWebhookTests(WebhookTestCase):
             content_type="application/json",
         )
 
+    def test_url_options_map_to_topics_and_user_specified_topic(self) -> None:
+        # In theory this webhook URL isn't something user would want to build.
+        expected_topic_name = "test"
+        self.url = self.build_webhook_url(map_to_topics="true", topic=expected_topic_name)
+        expected_message = EXPECTED_MESSAGE.format(user=USER, message=MESSAGE_WITH_NORMAL_TEXT)
+        self.check_webhook(
+            "message_with_normal_text",
+            expected_topic_name,
+            expected_message,
+            content_type="application/json",
+        )
+
     def test_slack_channels_map_to_topics_false(self) -> None:
         self.CHANNEL_NAME = CHANNEL
         self.url = self.build_webhook_url(channels_map_to_topics="0")
+        expected_message = EXPECTED_MESSAGE.format(user=USER, message=MESSAGE_WITH_NORMAL_TEXT)
+        self.check_webhook(
+            "message_with_normal_text",
+            EXPECTED_TOPIC,
+            expected_message,
+            content_type="application/json",
+        )
+
+    def test_url_options_channels_mapping_true(self) -> None:
+        self.CHANNEL_NAME = CHANNEL
+        self.url = self.build_webhook_url(mapping="channels")
         expected_message = EXPECTED_MESSAGE.format(user=USER, message=MESSAGE_WITH_NORMAL_TEXT)
         self.check_webhook(
             "message_with_normal_text",
@@ -113,11 +147,29 @@ class SlackWebhookTests(WebhookTestCase):
             content_type="application/json",
         )
 
+    def test_url_options_map_to_channels_and_user_specified_topic(self) -> None:
+        self.CHANNEL_NAME = CHANNEL
+        expected_topic_name = "test"
+        self.url = self.build_webhook_url(topic=expected_topic_name, mapping="channels")
+        expected_message = EXPECTED_MESSAGE.format(user=USER, message=MESSAGE_WITH_NORMAL_TEXT)
+        self.check_webhook(
+            "message_with_normal_text",
+            expected_topic_name,
+            expected_message,
+            content_type="application/json",
+        )
+
     def test_invalid_channels_map_to_topics(self) -> None:
         payload = self.get_body("message_with_normal_text")
         url = self.build_webhook_url(channels_map_to_topics="abc")
         result = self.client_post(url, payload, content_type="application/json")
         self.assert_json_error(result, "Error: channels_map_to_topics parameter other than 0 or 1")
+
+    def test_invalid_url_options_mapping_variation(self) -> None:
+        payload = self.get_body("message_with_normal_text")
+        url = self.build_webhook_url(mapping="abc")
+        result = self.client_post(url, payload, content_type="application/json")
+        self.assert_json_error(result, "Invalid mapping option: abc.")
 
     def test_challenge_handshake_payload(self) -> None:
         url = self.build_webhook_url(channels_map_to_topics="1")
