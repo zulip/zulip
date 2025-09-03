@@ -25,22 +25,57 @@ export type NewMessage =
           raw_message: LocalMessage;
       };
 
-export function process_new_message(opts: NewMessage): Message {
+export type ProcessedLocalMessage = Message & {
+    queue_id: string | null;
+    to: string;
+    local_id: string;
+    topic: string;
+    draft_id: string;
+};
+
+export type ProcessedMessage =
+    | {
+          type: "server_message";
+          message: Message;
+      }
+    | {
+          type: "local_message";
+          message: ProcessedLocalMessage;
+      };
+
+export function process_new_server_message(raw_message: RawMessage): Message {
+    return process_new_message({
+        type: "server_message",
+        raw_message,
+    }).message;
+}
+
+export function process_new_local_message(raw_message: LocalMessage): ProcessedLocalMessage {
+    const data = process_new_message({
+        type: "local_message",
+        raw_message,
+    });
+    assert(data.type === "local_message");
+    return data.message;
+}
+
+export function process_new_message(opts: NewMessage): ProcessedMessage {
     // Call this function when processing a new message.  After
     // a message is processed and inserted into the message store
     // cache, most modules use message_store.get to look at
     // messages.
-    const cached_msg = message_store.get_cached_message(opts.raw_message.id);
-    if (cached_msg !== undefined) {
+    const cached_msg_data = message_store.get_cached_message(opts.raw_message.id);
+    if (cached_msg_data !== undefined) {
         // Copy the match topic and content over if they exist on
         // the new message
         if (
             opts.type === "server_message" &&
             util.get_match_topic(opts.raw_message) !== undefined
         ) {
-            util.set_match_data(cached_msg, opts.raw_message);
+            assert(cached_msg_data.type === "server_message");
+            util.set_match_data(cached_msg_data.message, opts.raw_message);
         }
-        return cached_msg;
+        return cached_msg_data;
     }
 
     const message_with_booleans = message_store.convert_raw_message_to_message_with_booleans(opts);
@@ -64,7 +99,7 @@ export function process_new_message(opts: NewMessage): Message {
     // properly.
     const clean_reactions = reactions.generate_clean_reactions(opts.raw_message);
 
-    let message: Message;
+    let processed_message: ProcessedMessage;
     if (message_with_booleans.message.type === "stream") {
         let topic;
         if (message_with_booleans.type === "local_message") {
@@ -94,7 +129,7 @@ export function process_new_message(opts: NewMessage): Message {
 
         if (message_with_booleans.type === "server_message") {
             const {reactions, subject, ...rest} = message_with_booleans.message;
-            message = {
+            const message: Message = {
                 ...rest,
                 sent_by_me,
                 status_emoji_info,
@@ -108,13 +143,17 @@ export function process_new_message(opts: NewMessage): Message {
                 clean_reactions,
                 display_reply_to: undefined,
             };
+            processed_message = {type: "server_message", message};
+            message_user_ids.add_user_id(message.sender_id);
         } else {
             const {reactions, ...rest} = message_with_booleans.message;
             // TODO: Ideally display_recipient would be not optional in LocalMessage
             // ideally by refactoring the use of `build_display_recipient`, but that
             // seemed complicated to type.
             assert(rest.display_recipient !== undefined);
-            message = {
+            // TODO: Make `draft_id` not optional in `LocalMessage` (upcoming commit)
+            assert(rest.draft_id !== undefined);
+            const processed_local_message: ProcessedLocalMessage = {
                 ...rest,
                 sent_by_me,
                 status_emoji_info,
@@ -131,10 +170,12 @@ export function process_new_message(opts: NewMessage): Message {
                 // TODO(evy): set "website" or "ZulipDesktop" as the client depending
                 // whether we are the web app or desktop app
                 client: "",
+                draft_id: rest.draft_id,
                 submessages: [],
             };
+            message_user_ids.add_user_id(processed_local_message.sender_id);
+            processed_message = {type: "local_message", message: processed_local_message};
         }
-        message_user_ids.add_user_id(message.sender_id);
     } else {
         const pm_with_user_ids = people.pm_with_user_ids(message_with_booleans.message);
         assert(pm_with_user_ids !== undefined);
@@ -143,7 +184,7 @@ export function process_new_message(opts: NewMessage): Message {
         const to_user_ids = people.pm_reply_user_string(message_with_booleans.message);
         assert(to_user_ids !== undefined);
         if (message_with_booleans.type === "server_message") {
-            message = {
+            const message: Message = {
                 ..._.omit(message_with_booleans.message, "reactions"),
                 sent_by_me,
                 status_emoji_info,
@@ -157,13 +198,16 @@ export function process_new_message(opts: NewMessage): Message {
                 to_user_ids,
                 clean_reactions,
             };
+            processed_message = {type: "server_message", message};
         } else {
             const {reactions, topic_links, ...rest} = message_with_booleans.message;
             // TODO: Ideally display_recipient would be not optional in LocalMessage
             // ideally by refactoring the use of `build_display_recipient`, but that
             // seemed complicated to type.
             assert(rest.display_recipient !== undefined);
-            message = {
+            // TODO: Make `draft_id` not optional in `LocalMessage` (upcoming commit)
+            assert(rest.draft_id !== undefined);
+            const processed_local_message: ProcessedLocalMessage = {
                 ...rest,
                 sent_by_me,
                 status_emoji_info,
@@ -177,15 +221,18 @@ export function process_new_message(opts: NewMessage): Message {
                 to_user_ids,
                 clean_reactions,
                 display_recipient: rest.display_recipient,
+                draft_id: rest.draft_id,
                 submessages: [],
                 // TODO(evy): set "website" or "ZulipDesktop" as the client depending
                 // whether we are the web app or desktop app
                 client: "",
             };
+            processed_message = {type: "local_message", message: processed_local_message};
         }
 
-        pm_conversations.process_message(message);
+        const message = processed_message.message;
 
+        pm_conversations.process_message(message);
         recent_senders.process_private_message({
             to_user_ids,
             sender_id: message.sender_id,
@@ -199,7 +246,7 @@ export function process_new_message(opts: NewMessage): Message {
         }
     }
 
-    alert_words.process_message(message);
-    message_store.update_message_cache(message);
-    return message;
+    alert_words.process_message(processed_message.message);
+    message_store.update_message_cache(processed_message);
+    return processed_message;
 }
