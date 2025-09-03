@@ -1469,6 +1469,13 @@ li.active-sub-filter {
     }
 }
 
+#left-sidebar-navigation-area:has(.selected-home-view.top-left-active-filter)
+    .top_left_condensed_unread_marker {
+    /* Hide the condensed unread marker when the home view is active,
+       since the home view row already shows the unread count. */
+    display: none;
+}
+
 #views-label-container {
     margin-right: var(--left-sidebar-right-margin);
     grid-template-columns:
@@ -1525,18 +1532,6 @@ li.active-sub-filter {
                 /* In the absence of auto rows in the condensed state,
                    we set an explicit height on the active filter. */
                 height: var(--line-height-sidebar-row);
-            }
-        }
-
-        /* When unread counts display in the condensed-view
-           row for users who do not prefer to mask their unread
-           counts, we suppress the count on the highlighted
-           home-view row. */
-        &:not(:has(.hide-unread-messages-count)) {
-            + #left-sidebar-navigation-list {
-                .selected-home-view .unread_count {
-                    display: none;
-                }
             }
         }
     }
