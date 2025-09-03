@@ -75,14 +75,7 @@ with (
     ),
 ):
     ret_help_doc = subprocess.call(
-        [
-            "scrapy",
-            "crawl_with_status",
-            *extra_args,
-            "-a",
-            "skip_check_fragment=set",
-            "help_documentation_crawler",
-        ],
+        ["scrapy", "crawl_with_status", *extra_args, "help_documentation_crawler"],
         cwd="tools/documentation_crawler",
     )
     extra_args += ["-a", "validate_html=set"]
