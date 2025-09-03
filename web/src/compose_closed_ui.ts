@@ -178,25 +178,23 @@ function should_disable_compose_reply_button_for_stream(): boolean {
     return false;
 }
 
+function should_disable_compose_reply_button_for_direct_message(): boolean {
+    const pm_ids_string = narrow_state.pm_ids_string();
+    // If we can identify a direct message recipient, and the user can't
+    // reply to that recipient, then we disable the compose_reply_button.
+    if (pm_ids_string && !message_util.user_can_send_direct_message(pm_ids_string)) {
+        return true;
+    }
+    return false;
+}
+
 function update_buttons(disable_reply?: boolean): void {
     update_reply_button_state(disable_reply);
 }
 
 export function update_buttons_for_private(): void {
-    const pm_ids_string = narrow_state.pm_ids_string();
-
-    let disable_reply;
-
-    if (!pm_ids_string || message_util.user_can_send_direct_message(pm_ids_string)) {
-        disable_reply = false;
-    } else {
-        // disable the [Message X] button when in a private narrow
-        // if the user cannot dm the current recipient
-        disable_reply = true;
-    }
-
     $("#new_conversation_button").attr("data-conversation-type", "direct");
-    update_buttons(disable_reply);
+    update_buttons(should_disable_compose_reply_button_for_direct_message());
 }
 
 export function update_buttons_for_stream_views(): void {
