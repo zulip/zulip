@@ -39,7 +39,7 @@ function settings_button_for_sub(sub: StreamSubscription): JQuery {
 }
 
 export let show_subscribed = true;
-export let show_not_subscribed = false;
+export let show_available = false;
 
 export function is_subscribed_stream_tab_active(): boolean {
     // Returns true if "Subscribed" tab in stream settings is open
@@ -47,18 +47,18 @@ export function is_subscribed_stream_tab_active(): boolean {
     return show_subscribed;
 }
 
-export function is_not_subscribed_stream_tab_active(): boolean {
-    // Returns true if "not-subscribed" tab in stream settings is open
+export function is_available_stream_tab_active(): boolean {
+    // Returns true if "available" tab in stream settings is open
     // otherwise false.
-    return show_not_subscribed;
+    return show_available;
 }
 
 export function set_show_subscribed(value: boolean): void {
     show_subscribed = value;
 }
 
-export function set_show_not_subscribed(value: boolean): void {
-    show_not_subscribed = value;
+export function set_show_available(value: boolean): void {
+    show_available = value;
 }
 
 export function update_web_public_stream_privacy_option_state($container: JQuery): void {
@@ -483,15 +483,17 @@ export function update_stream_row_in_settings_tab(sub: StreamSubscription): void
     // This function display/hide stream row in stream settings tab,
     // used to display immediate effect of add/removal subscription event.
     // If user is subscribed or unsubscribed to stream, it will show sub or unsub
-    // row under "Subscribed" or "Not subscribed" (only if the stream is public) tab, otherwise
+    // row under "Subscribed" or "Available" (only if the stream is public) tab, otherwise
     // if stream is not public hide stream row under tab.
 
-    if (is_subscribed_stream_tab_active() || is_not_subscribed_stream_tab_active()) {
+    if (is_subscribed_stream_tab_active() || is_available_stream_tab_active()) {
         const $row = row_for_stream_id(sub.stream_id);
 
         if (
             (is_subscribed_stream_tab_active() && sub.subscribed) ||
-            (is_not_subscribed_stream_tab_active() && !sub.subscribed)
+            (is_available_stream_tab_active() &&
+                !sub.subscribed &&
+                stream_data.can_toggle_subscription(sub))
         ) {
             if (stream_settings_components.filter_includes_channel(sub)) {
                 $row.removeClass("notdisplayed");

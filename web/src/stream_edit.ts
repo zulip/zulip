@@ -89,8 +89,8 @@ export function setup_subscriptions_tab_hash(tab_key_value: string): void {
             browser_history.update("#channels/subscribed");
             break;
         }
-        case "not-subscribed": {
-            browser_history.update("#channels/notsubscribed");
+        case "available": {
+            browser_history.update("#channels/available");
             break;
         }
         default: {
