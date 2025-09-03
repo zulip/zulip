@@ -21,8 +21,8 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-07-30 13:46+0000\n"
-"PO-Revision-Date: 2025-08-07 16:28+0000\n"
-"Last-Translator: Alex Vandiver <alexmv@zulip.com>\n"
+"PO-Revision-Date: 2025-08-27 15:58+0000\n"
+"Last-Translator: r mhs <rmhs81vmon@gmail.com>\n"
 "Language-Team: Japanese <https://hosted.weblate.org/projects/zulip/django/ja/"
 ">\n"
 "Language: ja\n"
@@ -30,7 +30,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.13-dev\n"
+"X-Generator: Weblate 5.13\n"
 
 #: analytics/views/stats.py:109 zerver/decorator.py:682 zerver/decorator.py:700
 msgid "Not allowed for guest users"
@@ -6415,7 +6415,7 @@ msgstr "外部アカウント"
 
 #: zerver/models/custom_profile_fields.py:127
 msgid "Pronouns"
-msgstr ""
+msgstr "代名詞"
 
 #: zerver/models/groups.py:22 zerver/models/users.py:314
 msgid "Nobody"
@@ -6474,7 +6474,7 @@ msgstr "絵文字名に不正な文字"
 
 #: zerver/models/realm_playgrounds.py:36 zerver/views/realm_playgrounds.py:27
 msgid "Invalid characters in pygments language"
-msgstr "pygments言語に不正な文字があります。"
+msgstr "pygments言語に不正な文字があります"
 
 #: zerver/models/realm_playgrounds.py:68
 msgid "Missing the required variable \"code\" in the URL template"
@@ -6494,7 +6494,7 @@ msgstr ""
 
 #: zerver/models/realms.py:440
 msgid "channel events"
-msgstr ""
+msgstr "チャンネルイベント"
 
 #: zerver/models/realms.py:442
 msgid "Spam"
@@ -7180,31 +7180,27 @@ msgid "new channels"
 msgstr "新しいチャンネル"
 
 #: zerver/views/streams.py:1024
-#, fuzzy, python-brace-format
-#| msgid "**{policy}** channel created by {user_name}. **Description:**"
+#, python-brace-format
 msgid "**Web-public** channel created by {user_name}. **Description:**"
-msgstr "{user_name}が**{policy}**チャンネルを作成しました。 **説明:**"
+msgstr "{user_name}が**Webパブリック**チャンネルを作成しました。 **説明:**"
 
 #: zerver/views/streams.py:1028
-#, fuzzy, python-brace-format
-#| msgid "**{policy}** channel created by {user_name}. **Description:**"
+#, python-brace-format
 msgid "**Public** channel created by {user_name}. **Description:**"
-msgstr "{user_name}が**{policy}**チャンネルを作成しました。 **説明:**"
+msgstr "{user_name}が**パブリック**チャンネルを作成しました。 **説明:**"
 
 #: zerver/views/streams.py:1032
-#, fuzzy, python-brace-format
-#| msgid "**{policy}** channel created by {user_name}. **Description:**"
+#, python-brace-format
 msgid ""
 "**Private, shared history** channel created by {user_name}. **Description:**"
-msgstr "{user_name}が**{policy}**チャンネルを作成しました。 **説明:**"
+msgstr "{user_name}が**プライベート（履歴共有）**チャンネルを作成しました。 **説明:**"
 
 #: zerver/views/streams.py:1036
-#, fuzzy, python-brace-format
-#| msgid "**{policy}** channel created by {user_name}. **Description:**"
+#, python-brace-format
 msgid ""
 "**Private, protected history** channel created by {user_name}. **Description:"
 "**"
-msgstr "{user_name}が**{policy}**チャンネルを作成しました。 **説明:**"
+msgstr "{user_name}が**プライベート（履歴保護）**チャンネルを作成しました。 **説明:**"
 
 #: zerver/views/streams.py:1271
 #, python-brace-format

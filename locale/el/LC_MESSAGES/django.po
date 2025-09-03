@@ -9,15 +9,15 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-07-30 13:46+0000\n"
-"PO-Revision-Date: 2025-08-07 23:52+0000\n"
-"Last-Translator: Alex Vandiver <alexmv@zulip.com>\n"
+"PO-Revision-Date: 2025-08-18 15:40+0000\n"
+"Last-Translator: Pavlos M <pavlos.mrls@gmail.com>\n"
 "Language-Team: Greek <https://hosted.weblate.org/projects/zulip/django/el/>\n"
 "Language: el\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.13-dev\n"
+"X-Generator: Weblate 5.13\n"
 
 #: analytics/views/stats.py:109 zerver/decorator.py:682 zerver/decorator.py:700
 msgid "Not allowed for guest users"
@@ -41,7 +41,7 @@ msgstr "Προσωπικά μηνύματα"
 
 #: analytics/views/stats.py:394
 msgid "Group direct messages"
-msgstr "Ομαδοποίηση προσωπικών μηνυμάτων"
+msgstr "Προσωπικά μηνύματα ομάδων"
 
 #: analytics/views/stats.py:417
 #, python-brace-format
@@ -123,7 +123,7 @@ msgstr "Η εγγραφή είναι απενεργοποιημένη"
 
 #: corporate/lib/remote_billing_util.py:166
 msgid "Invalid remote server."
-msgstr ""
+msgstr "Μη έγκυρος απομακρυσμένος διακομιστής."
 
 #: corporate/lib/stripe.py:219
 #, python-brace-format
@@ -151,16 +151,16 @@ msgstr ""
 #: corporate/lib/stripe.py:373
 #, python-brace-format
 msgid "Unknown payment method. Please contact {email}."
-msgstr ""
+msgstr "Άγνωστη μέθοδος πληρωμής. Παρακαλώ επικοινωνήστε με {email}."
 
 #: corporate/lib/stripe.py:403
 #, python-brace-format
 msgid "Something went wrong. Please contact {email}."
-msgstr "Κάτι πήγε λάθος. Παρακαλούμε επικοινωνήστε με το {email}."
+msgstr "Κάτι πήγε λάθος. Παρακαλούμε επικοινωνήστε με {email}."
 
 #: corporate/lib/stripe.py:404
 msgid "Something went wrong. Please reload the page."
-msgstr "Κάτι πήγε λάθος. Παρακαλούμε ανανεώστε τη σελίδα."
+msgstr "Κάτι πήγε λάθος. Παρακαλούμε επαναφορτώστε τη σελίδα."
 
 #: corporate/lib/stripe.py:500
 msgid "Something went wrong. Please wait a few seconds and try again."
@@ -171,6 +171,7 @@ msgstr ""
 #: corporate/lib/stripe.py:1884
 msgid "Please add a credit card before starting your free trial."
 msgstr ""
+"Παρακαλούμε προσθέστε μια πιστωτική κάρτα πριν εκκινήσετε τη δωρεάν δοκιμή."
 
 #: corporate/lib/stripe.py:1907
 msgid "Please add a credit card to schedule upgrade."
@@ -1650,10 +1651,8 @@ msgid ""
 msgstr ""
 
 #: templates/zerver/deactivated.html:49
-#, fuzzy
-#| msgid "Registration is deactivated"
 msgid "This organization has been deactivated."
-msgstr "Η εγγραφή είναι απενεργοποιημένη"
+msgstr "Αυτός ο οργανισμός έχει απενεργοποιηθεί."
 
 #: templates/zerver/deactivated.html:51
 #, python-format
@@ -2164,10 +2163,9 @@ msgid ""
 msgstr ""
 
 #: templates/zerver/emails/digest.txt:32
-#, fuzzy, python-format
-#| msgid "Organization: %(organization_url)s"
+#, python-format
 msgid "Log in to Zulip to catch up: %(organization_url)s."
-msgstr "Οργανισμός: %(organization_url)s"
+msgstr "Εισέλθετε στο Zulip για να ενημερωθείτε: %(organization_url)s."
 
 #: templates/zerver/emails/digest.txt:35
 #: templates/zerver/emails/missed_message.txt:60
@@ -3682,10 +3680,8 @@ msgid ""
 msgstr ""
 
 #: templates/zerver/realm_creation_form.html:104
-#, fuzzy
-#| msgid "Private, shared history"
 msgid "Import chat history?"
-msgstr "Ιδιωτικό, διαμοιρασμένο ιστορικό"
+msgstr "Εισαγωγή ιστορικού συνομιλιών;"
 
 #: templates/zerver/realm_import_post_process.html:5
 #, fuzzy
@@ -6883,10 +6879,8 @@ msgid "Converting Slack data… This may take a while."
 msgstr ""
 
 #: zerver/views/registration.py:1091
-#, fuzzy
-#| msgid "Direct messages"
 msgid "Importing messages…"
-msgstr "Προσωπικά μηνύματα"
+msgstr "Εισαγωγή μηνυμάτων…"
 
 #: zerver/views/registration.py:1094
 msgid "Importing attachment data…"
