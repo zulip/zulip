@@ -6,6 +6,7 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Any
 
+import werkzeug
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse, HttpResponseNotFound
 from django.template import loader
@@ -103,6 +104,7 @@ class MarkdownDirectoryView(ApiURLView):
         self._post_render_callbacks.append(callback)
 
     def get_path(self, article: str) -> DocumentationArticle:
+        article = werkzeug.utils.secure_filename(article)
         http_status = 200
         if article == "":
             article = "index"
