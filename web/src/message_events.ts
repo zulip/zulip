@@ -23,6 +23,7 @@ import * as message_edit from "./message_edit.ts";
 import * as message_edit_history from "./message_edit_history.ts";
 import * as message_events_util from "./message_events_util.ts";
 import * as message_helper from "./message_helper.ts";
+import type {ProcessedLocalMessage} from "./message_helper.ts";
 import * as message_list_data_cache from "./message_list_data_cache.ts";
 import * as message_lists from "./message_lists.ts";
 import * as message_notifications from "./message_notifications.ts";
@@ -208,11 +209,7 @@ export let update_views_filtered_on_message_property = (
                         messages_to_remove.delete(raw_message.id);
                         const message = message_store.get(raw_message.id);
                         messages_to_add.push(
-                            message ??
-                                message_helper.process_new_message({
-                                    type: "server_message",
-                                    raw_message,
-                                }),
+                            message ?? message_helper.process_new_server_message(raw_message),
                         );
                     }
                     msg_list.data.remove([...messages_to_remove]);
@@ -243,10 +240,7 @@ export let update_views_filtered_on_message_property = (
                     // we reach here but `message_helper.process_new_message`
                     // already handles that case.
                     for (const raw_message of parsed_data.messages) {
-                        message_helper.process_new_message({
-                            type: "server_message",
-                            raw_message,
-                        });
+                        message_helper.process_new_server_message(raw_message);
                     }
                     update_views_filtered_on_message_property(
                         message_ids,
@@ -311,20 +305,18 @@ export type InsertNewMessagesOpts = {
 export function insert_new_messages(opts: InsertNewMessagesOpts): Message[] {
     const deliver_locally = opts.type === "local_message";
     let messages: Message[] = [];
+    let local_messages: ProcessedLocalMessage[] | undefined = [];
     if (opts.type === "server_message") {
         messages = opts.raw_messages.map((raw_message) =>
-            message_helper.process_new_message({
-                type: opts.type,
-                raw_message,
-            }),
+            message_helper.process_new_server_message(raw_message),
         );
     } else {
-        messages = opts.raw_messages.map((raw_message) =>
-            message_helper.process_new_message({
-                type: opts.type,
-                raw_message,
-            }),
+        local_messages = opts.raw_messages.map((raw_message) =>
+            message_helper.process_new_local_message(raw_message),
         );
+        // Local messages have extra data on them that we need to access in
+        // a few places, but otherwise we can treat them like regular messages.
+        messages = local_messages;
     }
 
     const any_untracked_unread_messages = unread.process_loaded_messages(messages, false);
@@ -397,7 +389,7 @@ export function insert_new_messages(opts: InsertNewMessagesOpts): Message[] {
     // tracking before we update the stream sidebar, to take advantage
     // of how stream_topic_history uses the echo data structures.
     if (deliver_locally) {
-        for (const message of messages) {
+        for (const message of local_messages) {
             echo.track_local_message(message);
         }
     }
