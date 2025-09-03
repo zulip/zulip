@@ -585,6 +585,7 @@ ul.popover-group-menu-member-list {
             justify-content: space-between;
             align-items: baseline;
             padding-top: 2px;
+            gap: 10px;
         }
 
         .dropdown_widget_value {
