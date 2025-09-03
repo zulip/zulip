@@ -423,10 +423,13 @@ not_ send any requests to Zulip which came in unencrypted.
 
 ### `[http_proxy]`
 
+See "[Customizing the outgoing HTTP
+proxy](deployment.md#customizing-the-outgoing-http-proxy)" for general
+instructions on the outgoing proxy.
+
 #### `host`
 
-The hostname or IP address of an [outgoing HTTP `CONNECT`
-proxy](deployment.md#customizing-the-outgoing-http-proxy). Defaults to
+The hostname or IP address of an outgoing HTTP `CONNECT`. Defaults to
 `localhost` if unspecified.
 
 #### `port`
@@ -445,6 +448,12 @@ Because Camo includes logic to deny access to private subnets, routing
 its requests through Smokescreen is generally not necessary. Set to
 true or false to override the default, which uses the proxy only if
 it is not the default of Smokescreen on a local host.
+
+#### `allow_addresses`, `allow_ranges`, `deny_addresses`, `deny_ranges`
+
+Comma-separated lists of IP addresses or CIDR range rules. All
+private IP addresses (e.g., 127.0.0.0/8, 192.168.0.0/16) are denied by
+default; allow rules override deny rules.
 
 ### `[sentry]`
 
