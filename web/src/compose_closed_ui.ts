@@ -156,6 +156,12 @@ export function rewire_update_reply_button_state(value: typeof update_reply_butt
     update_reply_button_state = value;
 }
 
+function update_new_conversation_button(
+    data_attribute_string: "direct" | "stream" | "non-specific",
+): void {
+    $("#new_conversation_button").attr("data-conversation-type", data_attribute_string);
+}
+
 function maybe_get_selected_message_stream_id(): number | undefined {
     if (message_lists.current?.visibly_empty()) {
         return undefined;
@@ -193,17 +199,17 @@ function update_buttons(disable_reply?: boolean): void {
 }
 
 export function update_buttons_for_private(): void {
-    $("#new_conversation_button").attr("data-conversation-type", "direct");
+    update_new_conversation_button("direct");
     update_buttons(should_disable_compose_reply_button_for_direct_message());
 }
 
 export function update_buttons_for_stream_views(): void {
-    $("#new_conversation_button").attr("data-conversation-type", "stream");
+    update_new_conversation_button("stream");
     update_buttons(should_disable_compose_reply_button_for_stream());
 }
 
 export function update_buttons_for_non_specific_views(): void {
-    $("#new_conversation_button").attr("data-conversation-type", "non-specific");
+    update_new_conversation_button("non-specific");
     update_buttons(should_disable_compose_reply_button_for_stream());
     set_standard_text_for_reply_button();
 }
