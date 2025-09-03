@@ -594,7 +594,9 @@ export function initialize() {
 
     $("#compose_recipient_box").on("click", "#recipient_box_clear_topic_button", () => {
         const $input = $("input#stream_message_recipient_topic");
-        $input.val("");
+        compose_actions.start({trigger: "clear topic button", message_type: "stream"});
+        // We need to manually trigger focus so as to reliably
+        // tap into the focus-event logic below.
         $input.trigger("focus");
         compose_validate.validate_and_update_send_button_status();
     });
