@@ -308,12 +308,14 @@ export function initialize(): void {
             const unread_count = unread.get_counts();
             const unread_messages_present = unread_count.home_unread_messages > 0;
             const show_unread_count = user_settings.web_left_sidebar_unreads_count_summary;
+            const is_home_view_active = window.location.hash === "#" + user_settings.web_home_view;
 
             popovers.hide_all();
             instance.setContent(
                 ui_util.parse_html(
                     render_left_sidebar_views_popover({
                         views: built_in_popover_condensed_views,
+                        is_home_view_active,
                         unread_messages_present,
                         show_unread_count,
                     }),
