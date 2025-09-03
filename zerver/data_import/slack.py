@@ -287,6 +287,10 @@ def users_to_zerver_userprofile(
     primary_owner_id = user_id_count
     user_id_count += 1
 
+    # This is a custom JSON file not provided by Slack, but which a power user can provide.
+    # It should have just a simple hash like { "bob@gmail.com": "bob@our.org", "bob@foo.com": "bob@our.org" }.
+    # The email in the value must be the Slack email for at least one user.
+    # All users with the key emails will be merged into the same user as the user with the value email.
     if os.path.exists(slack_data_dir + "/user_mapping.json"):
         print(get_data_file(slack_data_dir + "/user_mapping.json"))
         user_merge_mapping = get_data_file(slack_data_dir + "/user_mapping.json")
@@ -306,6 +310,9 @@ def users_to_zerver_userprofile(
         if email.lower() in user_merge_mapping:
             # logging line must come before replacement
             logging.info("%s: %s MAPPED as %s", slack_user_id, email, user_merge_mapping[email.lower()])
+            # For Zulip user assignment merger purposes only, treat the remapped email as their email.
+            # This has no effect unless a custom user_mapping.json is provided.
+            # Note, this change should *not* be made in get_user_email, as doing so breaks other parts of the import.
             email = user_merge_mapping[email.lower()]
 
         if email.lower() in found_emails:
