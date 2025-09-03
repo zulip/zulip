@@ -36,5 +36,3 @@ our Services:
   cloud infrastructure and services.
 * [Mailgun Technologies, Inc.](https://www.mailgun.com/gdpr) for email processing.
 * [Stripe, Inc.](https://stripe.com/guides/general-data-protection-regulation) for payment processing.
-* [The Rocket Science Group LLC d/b/a Mailchimp](https://kb.mailchimp.com/accounts/management/about-the-general-data-protection-regulation)
-  for email processing.
