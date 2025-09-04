@@ -101,7 +101,7 @@ export function update_private_messages(is_left_sidebar_search_active = false): 
     if (zoomed) {
         const $filter = $<HTMLInputElement>(".direct-messages-list-filter").expectOne();
         search_term = $filter.val()!;
-    } else {
+    } else if (is_left_sidebar_search_active) {
         search_term = ui_util.get_left_sidebar_search_term();
     }
     const conversations = pm_list_data.get_conversations(search_term);
