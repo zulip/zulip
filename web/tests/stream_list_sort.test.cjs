@@ -370,6 +370,17 @@ test("basics", ({override}) => {
         // despite being order 1.
         expect_demoted_folder.id.toString(),
     ]);
+
+    // Only show other channels
+    sorted_sections = sort_groups("other").sections;
+    assert.deepEqual(sorted_sections.length, 2);
+    assert.deepEqual(sorted_sections[0].id, "pinned-streams");
+    assert.deepEqual(sorted_sections[0].streams, []);
+    assert.deepEqual(sorted_sections[0].inactive_streams, []);
+    assert.deepEqual(sorted_sections[1].section_title, "translated: OTHER");
+    assert.deepEqual(sorted_sections[1].streams, [clarinet.stream_id]);
+    assert.deepEqual(sorted_sections[1].muted_streams, []);
+    assert.deepEqual(sorted_sections[1].inactive_streams, []);
 });
 
 test("current_section_id_for_stream", ({override}) => {
