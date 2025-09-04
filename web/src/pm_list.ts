@@ -1,5 +1,6 @@
 import $ from "jquery";
 import _ from "lodash";
+import assert from "minimalistic-assert";
 import * as z from "zod/mini";
 
 import type {Filter} from "./filter.ts";
@@ -12,6 +13,7 @@ import * as resize from "./resize.ts";
 import * as scroll_util from "./scroll_util.ts";
 import * as ui_util from "./ui_util.ts";
 import type {FullUnreadCountsData} from "./unread.ts";
+import * as util from "./util.ts";
 import * as vdom from "./vdom.ts";
 
 let prior_dom: vdom.Tag<PMNode> | undefined;
@@ -86,7 +88,10 @@ function set_dom_to(new_dom: vdom.Tag<PMNode>): void {
     prior_dom = new_dom;
 }
 
-export function update_private_messages(is_left_sidebar_search_active = false): void {
+export function update_private_messages(
+    is_left_sidebar_search_active = false,
+    header_text?: string,
+): void {
     const is_dm_section_expanded = is_left_sidebar_search_active || !private_messages_collapsed;
     $("#toggle-direct-messages-section-icon").toggleClass(
         "rotate-icon-down",
@@ -102,8 +107,14 @@ export function update_private_messages(is_left_sidebar_search_active = false): 
         const $filter = $<HTMLInputElement>(".direct-messages-list-filter").expectOne();
         search_term = $filter.val()!;
     } else if (is_left_sidebar_search_active) {
+        assert(header_text !== undefined);
         search_term = ui_util.get_left_sidebar_search_term();
+        if (util.prefix_match({value: header_text, search_term})) {
+            // Show all DMs if the search term matches the header text.
+            search_term = "";
+        }
     }
+
     const conversations = pm_list_data.get_conversations(search_term);
     const pm_list_info = pm_list_data.get_list_info(zoomed, search_term);
     const conversations_to_be_shown = pm_list_info.conversations_to_be_shown;
