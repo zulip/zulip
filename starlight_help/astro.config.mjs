@@ -91,7 +91,7 @@ export default defineConfig({
                     slug: "index",
                 },
                 {
-                    label: "Guides",
+                    label: "Guides for getting started",
                     items: [
                         "getting-started-with-zulip",
                         {
@@ -111,7 +111,6 @@ export default defineConfig({
                         "moderating-open-organizations",
                         "setting-up-zulip-for-a-class",
                         "using-zulip-for-a-class",
-                        "using-zulip-via-email",
                     ],
                 },
                 {
@@ -176,6 +175,20 @@ export default defineConfig({
                         "configure-home-view",
                         "enable-full-width-display",
                         "manage-your-uploaded-files",
+                    ],
+                },
+                {
+                    label: "Guides for mastering Zulip",
+                    items: [
+                        "keyboard-shortcuts",
+                        "reading-strategies",
+                        "mastering-the-compose-box",
+                        "format-your-message-using-markdown",
+                        {
+                            label: "Search filters",
+                            link: "/search-for-messages/#search-filters",
+                        },
+                        "using-zulip-via-email",
                     ],
                 },
                 {
