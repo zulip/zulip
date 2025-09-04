@@ -13188,11 +13188,19 @@ paths:
                         description: |
                           A typical failed JSON response for when the APNs token is invalid:
     delete:
+      deprecated: true
       operationId: remove-apns-token
       summary: Remove an APNs device token
       tags: ["users"]
       description: |
         This endpoint removes an APNs device token for iOS push notifications.
+
+        **Changes**: Deprecated in Zulip 11.0 (feature level 406) and will be
+        removed in a future release. Clients connecting to newer servers and
+        with E2EE push notifications support should delete the account record
+        in their local accounts table that corresponds to the `push_account_id`
+        supplied when registering via the [Register E2EE push device](/api/register-push-device)
+        endpoint, to stop displaying notifications for that registration.
       requestBody:
         required: true
         content:
@@ -13284,11 +13292,19 @@ paths:
                         "code": "BAD_REQUEST",
                       }
     delete:
+      deprecated: true
       operationId: remove-fcm-token
       summary: Remove an FCM registration token
       tags: ["users"]
       description: |
         This endpoint removes an FCM registration token for push notifications.
+
+        **Changes**: Deprecated in Zulip 11.0 (feature level 406) and will be
+        removed in a future release. Clients connecting to newer servers and
+        with E2EE push notifications support should delete the account record
+        in their local accounts table that corresponds to the `push_account_id`
+        supplied when registering via the [Register E2EE push device](/api/register-push-device)
+        endpoint, to stop displaying notifications for that registration.
       requestBody:
         required: true
         content:
