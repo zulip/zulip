@@ -23,7 +23,6 @@ import * as popovers from "./popovers.ts";
 import * as resize from "./resize.ts";
 import * as scheduled_messages from "./scheduled_messages.ts";
 import * as scroll_util from "./scroll_util.ts";
-import * as search_util from "./search_util.ts";
 import * as settings_config from "./settings_config.ts";
 import * as settings_data from "./settings_data.ts";
 import * as settings_preferences from "./settings_preferences.ts";
@@ -32,6 +31,7 @@ import {current_user} from "./state_data.ts";
 import * as stream_list from "./stream_list.ts";
 import * as ui_util from "./ui_util.ts";
 import {user_settings} from "./user_settings.ts";
+import * as util from "./util.ts";
 
 const LEFT_SIDEBAR_NAVIGATION_AREA_TITLE = $t({defaultMessage: "VIEWS"});
 const LEFT_SIDEBAR_DIRECT_MESSAGES_TITLE = $t({defaultMessage: "DIRECT MESSAGES"});
@@ -295,8 +295,8 @@ export function initialize(): void {
     );
 }
 
-export function update_expanded_views_for_search(search_value: string): void {
-    if (!search_value) {
+export function update_expanded_views_for_search(search_term: string): void {
+    if (!search_term) {
         // Show all the views if there is no search term.
         $("#left-sidebar-navigation-area, #left-sidebar-navigation-list .top_left_row").removeClass(
             "hidden-by-filters",
@@ -309,9 +309,9 @@ export function update_expanded_views_for_search(search_value: string): void {
     let any_view_visible = false;
     const expanded_views = left_sidebar_navigation_area.get_built_in_views();
     for (const view of expanded_views) {
-        let show_view = search_util.vanilla_match({
-            val: view.name,
-            search_terms: search_util.get_search_terms(search_value),
+        let show_view = util.prefix_match({
+            value: view.name,
+            search_term,
         });
         const $view = $(`.top_left_${view.css_class_suffix}`);
 
