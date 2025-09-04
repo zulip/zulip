@@ -36,11 +36,11 @@ Each bot has a **name**, **profile picture**, **email**, **bot type** and **API 
 
 The **bot type** determines what the bot can do.
 
-Bot type | Permissions | Common uses
----|---|---
-Generic | Like a normal user account | Automating tasks, bots that listen to all messages on a channel
-Incoming webhook | Limited to only sending messages into Zulip | Automated notifications into Zulip
-Outgoing webhook | Generic bot that also receives new messages via HTTP post requests | Third party integrations, most custom bots
+| Bot type         | Permissions                                                        | Common uses                                                     |
+| ---------------- | ------------------------------------------------------------------ | --------------------------------------------------------------- |
+| Generic          | Like a normal user account                                         | Automating tasks, bots that listen to all messages on a channel |
+| Incoming webhook | Limited to only sending messages into Zulip                        | Automated notifications into Zulip                              |
+| Outgoing webhook | Generic bot that also receives new messages via HTTP post requests | Third party integrations, most custom bots                      |
 
 It's generally best to pick the most restricted bot type that is sufficient
 to do the task at hand. Anyone with the bot's API key can do anything the
