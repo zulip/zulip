@@ -435,7 +435,7 @@ ul.popover-group-menu-member-list {
     }
 
     .name {
-        color: hsl(0deg 0% 20%);
+        color: var(--color-user-profile-field-name);
         font-weight: 600;
         margin-right: 10px;
         overflow-wrap: break-word;
@@ -511,11 +511,6 @@ ul.popover-group-menu-member-list {
     #content {
         .field-section {
             margin-bottom: 10px;
-
-            .name {
-                color: hsl(0deg 0% 20%);
-                font-weight: 600;
-            }
 
             &[data-type="2"] .value {
                 overflow-wrap: break-word;

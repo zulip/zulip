@@ -1434,6 +1434,13 @@
         hsl(0deg 0% 80%),
         hsl(0deg 0% 0% / 60%)
     );
+
+    /* User Profile Modal */
+    --color-user-profile-field-name: light-dark(
+        hsl(0deg 0% 20%),
+        hsl(236deg 33% 90%)
+    );
+
     /* Link colors */
     --color-text-link: light-dark(hsl(210deg 94% 42%), hsl(200deg 100% 50%));
     --color-text-link-decoration: light-dark(
