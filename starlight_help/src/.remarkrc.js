@@ -10,6 +10,7 @@
  */
 
 import remarkFrontmatter from "remark-frontmatter";
+import remarkGfm from "remark-gfm";
 import remarkLintFencedCodeFlag from "remark-lint-fenced-code-flag";
 import remarkLintFileExtension from "remark-lint-file-extension";
 import remarkLintFinalDefinition from "remark-lint-final-definition";
@@ -24,6 +25,7 @@ import remarkLintNoFileNameIrregularCharacters from "remark-lint-no-file-name-ir
 import remarkLintNoFileNameMixedCase from "remark-lint-no-file-name-mixed-case";
 import remarkLintNoUnusedDefinitions from "remark-lint-no-unused-definitions";
 import remarkLintUnorderedListMarkerStyle from "remark-lint-unordered-list-marker-style";
+import remarkMdx from "remark-mdx";
 import remarkPresentLintMarkdownStyleGuide from "remark-preset-lint-markdown-style-guide";
 import remarkLintRulesLintRecommended from "remark-preset-lint-recommended";
 import remarkStringify from "remark-stringify";
@@ -52,6 +54,8 @@ const remarkLintRules = {
 /** @type {Preset} */
 const config = {
     plugins: [
+        remarkGfm,
+        remarkMdx,
         [remarkFrontmatter, ["yaml"]],
         remarkLintRules,
         // The format step was converting our ordered list items to have
