@@ -82,7 +82,7 @@ used to link to issues or tickets in third party issue trackers, like GitHub,
 Salesforce, Zendesk, and others.
 
 * Pattern: `#(?P<id>[0-9]+)`
-* URL template: `https://github.com/zulip/zulip/issues/\{id\}`
+* URL template: `https://github.com/zulip/zulip/issues/{id}`
 * Original text: `#2468`
 * Automatically links to: `https://github.com/zulip/zulip/issues/2468`
 
@@ -96,7 +96,7 @@ variants. For example, the Zulip development community
 `#D2468` and issue in the desktop app repository, etc.
 
 * Pattern: `#F(?P<id>[0-9]+)`
-* URL template: `https://github.com/zulip/zulip-flutter/issues/\{id\}`
+* URL template: `https://github.com/zulip/zulip-flutter/issues/{id}`
 * Original text: `#F245`
 * Automatically links to: `https://github.com/zulip/zulip-flutter/issues/245`
 
@@ -106,7 +106,7 @@ For organizations that commonly link to multiple GitHub repositories, this
 linkfier pattern turns `org/repo#ID` into an issue or pull request link.
 
 * Pattern: `(?P<org>[a-zA-Z0-9_-]+)/(?P<repo>[a-zA-Z0-9_-]+)#(?P<id>[0-9]+)`
-* URL template: `https://github.com/\{org\}/\{repo\}/issues/\{id\}`
+* URL template: `https://github.com/{org}/{repo}/issues/{id}`
 * Original text: `zulip/zulip#2468`
 * Automatically links to: `https://github.com/zulip/zulip/issues/2468`
 
@@ -115,8 +115,8 @@ linkfier pattern turns `org/repo#ID` into an issue or pull request link.
 The following pattern linkfies a string of hexadecimal digits between 7 and 40
 characters long, such as a Git commit ID.
 
-* Pattern: `(?P<id>[0-9a-f]\{7,40\})`
-* URL template: `https://github.com/zulip/zulip/commit/\{id\}`
+* Pattern: `(?P<id>[0-9a-f]{7,40})`
+* URL template: `https://github.com/zulip/zulip/commit/{id}`
 * Original text: `abdc123`
 * Automatically links to: `https://github.com/zulip/zulip/commit/abcd123`
 
@@ -129,15 +129,15 @@ engine.
 
 Linkifiers use [RFC 6570](https://www.rfc-editor.org/rfc/rfc6570.html) compliant
 URL templates to describe how links should be generated. These templates support
-several expression types. The default expression type (`\{var\}`) will URL-encode
+several expression types. The default expression type (`{var}`) will URL-encode
 special characters like `/` and `&`; this behavior is desired for the vast
 majority of linkifiers. Fancier URL template expression types can allow you to
 get the exact behavior you want in corner cases like optional URL query
 parameters. For example:
 
-* Use `\{+var\}` when you want URL delimiter characters to not be URL-encoded.
-* Use `\{?var\}` and `\{&var\}` for variables in URL query parameters.
-* Use <code>\{#var}</code> when generating `#` fragments in URLs.
+* Use `{+var}` when you want URL delimiter characters to not be URL-encoded.
+* Use `{?var}` and `{&var}` for variables in URL query parameters.
+* Use `{#var}` when generating `#` fragments in URLs.
 
 The URL template specification has [brief
 examples](https://www.rfc-editor.org/rfc/rfc6570.html#section-1.2) and [detailed
@@ -150,13 +150,13 @@ This example pattern is a shorthand for linking to pages on Zulip's ReadTheDocs
 site.
 
 * Pattern: `RTD/(?P<article>[a-zA-Z0-9_/.#-]+)`
-* URL template: `https://zulip.readthedocs.io/en/latest/\{+article\}`
+* URL template: `https://zulip.readthedocs.io/en/latest/{+article}`
 * Original text: `RTD/overview/changelog.html`
 * Automatically links to: `https://zulip.readthedocs.io/en/latest/overview/changelog.html`
 
 <ZulipTip>
-  This pattern uses the `\{+var\}` expression type. With the
-  default expression type (`\{article\}`), the `/` between `overview` and
+  This pattern uses the `{+var}` expression type. With the
+  default expression type (`{article}`), the `/` between `overview` and
   `changelog` would incorrectly be URL-encoded.
 </ZulipTip>
 
@@ -165,13 +165,13 @@ site.
 This example pattern allows linking to Google searches.
 
 * Pattern: `google:(?P<q>\w+)?`
-* URL template: `https://google.com/search\{?q\}`
+* URL template: `https://google.com/search{?q}`
 * Original text: `google:foo` or `google:`
 * Automatically links to: `https://google.com/search?q=foo` or `https://google.com/search`
 
 <ZulipTip>
-  This pattern uses the `\{?var\}` expression type. With the default expression
-  type (`\{q\}`), there would be no way to only include the `?` in the URL
+  This pattern uses the `{?var}` expression type. With the default expression
+  type (`{q}`), there would be no way to only include the `?` in the URL
   if the optional `q` is present.
 </ZulipTip>
 
@@ -185,10 +185,10 @@ interest (`django/django`) that is in a different organization.
 
 * Specific linkifier (ordered before the general linkifier)
   * Pattern: `django#(?P<id>[0-9]+)`
-  * URL template: `https://github.com/django/django/pull/\{id\}`
+  * URL template: `https://github.com/django/django/pull/{id}`
 * General linkifier
   * Pattern: `(?P<repo>[a-zA-Z0-9_-]+)#(?P<id>[0-9]+)`
-  * URL template: `https://github.com/zulip/\{repo\}/pull/\{id\}`
+  * URL template: `https://github.com/zulip/{repo}/pull/{id}`
 * Example matching both linkifiers; specific linkifier takes precedence:
   * Original text: `django#123`
   * Automatically links to: `https://github.com/django/django/pull/123`

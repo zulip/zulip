@@ -110,7 +110,7 @@ providers.
          * **Reply URL (Assertion Consumer Service URL)**: `https://auth.zulipchat.com/complete/saml/`
       1. If you want to set up IdP-initiated sign on, in the **Basic SAML
          Configuration** section, also specify:
-         * **RelayState**: `\{"subdomain": "<your organization's zulipchat.com subdomain>"\}`
+         * **RelayState**: `{"subdomain": "<your organization's zulipchat.com subdomain>"}`
       1. Check the **User Attributes & Claims** configuration, which should already be
          set to the following. If the configuration is different, please
          indicate this when contacting [support@zulip.com](mailto:support@zulip.com)
@@ -183,15 +183,15 @@ providers.
          `https://auth.zulipchat.com/complete/saml/`.
       1. Edit the **Settings** section to match:
          ```
-         \{
+         {
            "audience": "https://zulipchat.com",
-           "mappings": \{
+           "mappings": {
              "email": "email",
              "given_name": "first_name",
              "family_name": "last_name"
-           \},
+           },
            "binding": "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect"
-         \}
+         }
          ```
       1. <SendUsInfo />
          * Your organization's URL
