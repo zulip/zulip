@@ -49,4 +49,4 @@ API_FEATURE_LEVEL = 425
 #   historical commits sharing the same major version, in which case a
 #   minor version bump suffices.
 
-PROVISION_VERSION = (346, 1)  # bumped 2025-09-04 to add remark-cli and friends
+PROVISION_VERSION = (346, 2)  # bumped 2025-09-04 to upgrade Node.js
