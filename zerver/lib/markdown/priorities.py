@@ -9,7 +9,6 @@ PREPROCESSOR_PRIORITIES = {
     "generate_code_example": 525,
     "generate_return_values": 510,
     "generate_api_arguments": 505,
-    "help_relative_links": 475,
     "setting": 450,
     # "normalize_whitespace": 30,
     "fenced_code_block": 25,
