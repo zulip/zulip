@@ -38,11 +38,11 @@ header
 <p>
   <div class="tabbed-section has-tabs" markdown="1">
     <ul class="nav">
-      <li data-tab-key="ios" tabindex="0">iOS</li>
-      <li data-tab-key="desktop-web" tabindex="0">Desktop/Web</li>
+      <li class="active" data-tab-key="ios" tabindex="0">iOS</li>
+      <li class="" data-tab-key="desktop-web" tabindex="0">Desktop/Web</li>
     </ul>
     <div class="blocks">
-      <div class="tab-content" data-tab-key="ios" markdown="1"></p>
+      <div class="tab-content active" data-tab-key="ios" markdown="1"></p>
         <p>iOS instructions</p>
       <p></div>
       <div class="tab-content" data-tab-key="desktop-web" markdown="1"></p>
@@ -56,11 +56,11 @@ header
 <p>
   <div class="tabbed-section has-tabs" markdown="1">
     <ul class="nav">
-      <li data-tab-key="desktop-web" tabindex="0">Desktop/Web</li>
-      <li data-tab-key="android" tabindex="0">Android</li>
+      <li class="active" data-tab-key="desktop-web" tabindex="0">Desktop/Web</li>
+      <li class="" data-tab-key="android" tabindex="0">Android</li>
     </ul>
     <div class="blocks">
-      <div class="tab-content" data-tab-key="desktop-web" markdown="1"></p>
+      <div class="tab-content active" data-tab-key="desktop-web" markdown="1"></p>
         <p>Desktop/browser instructions</p>
       <p></div>
       <div class="tab-content" data-tab-key="android" markdown="1"></p>
@@ -74,10 +74,10 @@ header
 <p>
   <div class="tabbed-section no-tabs" markdown="1">
     <ul class="nav">
-      <li data-tab-key="instructions-for-all-platforms" tabindex="0">Instructions for all platforms</li>
+      <li class="active" data-tab-key="instructions-for-all-platforms" tabindex="0">Instructions for all platforms</li>
     </ul>
     <div class="blocks">
-      <div class="tab-content" data-tab-key="instructions-for-all-platforms" markdown="1"></p>
+      <div class="tab-content active" data-tab-key="instructions-for-all-platforms" markdown="1"></p>
         <p>Instructions for all platforms</p>
       <p></div>
     </div>
