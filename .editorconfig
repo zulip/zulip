@@ -12,7 +12,7 @@ trim_trailing_whitespace = true
 binary_next_line = true
 switch_case_indent = true
 
-[{*.{cjs,cts,js,json,mjs,mts,ts},check-openapi}]
+[*.{cjs,cts,js,json,mjs,mts,ts}]
 max_line_length = 100
 
 [*.{py,pyi}]

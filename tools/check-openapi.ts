@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+import assert from "node:assert/strict";
 import * as fs from "node:fs";
 import {parseArgs} from "node:util";
 
@@ -9,7 +10,7 @@ import ExampleValidator from "openapi-examples-validator";
 import {format as prettierFormat} from "prettier";
 import {CST, Composer, LineCounter, Parser, Scalar, YAMLMap, YAMLSeq, visit} from "yaml";
 
-const usage = "Usage: check-openapi [--fix] <file>...";
+const usage = "Usage: check-openapi.ts [--fix] <file>...";
 const {
     values: {fix, help},
     positionals: files,
@@ -20,7 +21,7 @@ if (help) {
     process.exit(0);
 }
 
-async function checkFile(file) {
+async function checkFile(file: string): Promise<void> {
     const yaml = await fs.promises.readFile(file, "utf8");
     const lineCounter = new LineCounter();
     const tokens = [...new Parser(lineCounter.addNewLine).parse(yaml)];
@@ -29,6 +30,7 @@ async function checkFile(file) {
         return;
     }
     const [doc] = docs;
+    assert.ok(doc !== undefined);
     if (doc.errors.length > 0) {
         for (const error of doc.errors) {
             console.error("%s: %s", file, error.message);
@@ -43,12 +45,16 @@ async function checkFile(file) {
     }
 
     let ok = true;
-    const reformats = new Map();
-    const promises = [];
+    const reformats = new Map<
+        number,
+        {value: string; context: Parameters<typeof CST.setScalarValue>[2]}
+    >();
+    const promises: Promise<void>[] = [];
 
     visit(doc, {
         Map(_key, node) {
             if (node.has("$ref") && node.items.length !== 1) {
+                assert.ok(node.range);
                 const {line, col} = lineCounter.linePos(node.range[0]);
                 console.error("%s:%d:%d: Siblings of $ref have no effect", file, line, col);
                 ok = false;
@@ -58,6 +64,7 @@ async function checkFile(file) {
                 node.has(combinator),
             );
             if (node.has("nullable") && combinator !== undefined) {
+                assert.ok(node.range);
                 const {line, col} = lineCounter.linePos(node.range[0]);
                 console.error(
                     `%s:%d:%d: nullable has no effect as a sibling of ${combinator}`,
@@ -78,6 +85,7 @@ async function checkFile(file) {
                     (subschema) => !(subschema instanceof YAMLMap && subschema.has("$ref")),
                 ).length > 1
             ) {
+                assert.ok(node.value.range);
                 const {line, col} = lineCounter.linePos(node.value.range[0]);
                 console.error("%s:%d:%d: Too many inline allOf subschemas", file, line, col);
                 ok = false;
@@ -89,25 +97,29 @@ async function checkFile(file) {
                 node.value instanceof Scalar &&
                 typeof node.value.value === "string"
             ) {
+                const value = node.value;
+                const description = node.value.value;
                 promises.push(
                     (async () => {
-                        let formatted = await prettierFormat(node.value.value, {
+                        let formatted = await prettierFormat(description, {
                             parser: "markdown",
                         });
                         if (
-                            ![Scalar.BLOCK_FOLDED, Scalar.BLOCK_LITERAL].includes(node.value.type)
+                            value.type !== Scalar.BLOCK_FOLDED &&
+                            value.type !== Scalar.BLOCK_LITERAL
                         ) {
                             formatted = formatted.replace(/\n$/, "");
                         }
-                        if (formatted !== node.value.value) {
+                        if (formatted !== description) {
+                            assert.ok(value.range);
                             if (fix) {
-                                reformats.set(node.value.range[0], {
+                                reformats.set(value.range[0], {
                                     value: formatted,
                                     context: {afterKey: true},
                                 });
                             } else {
                                 ok = false;
-                                const {line, col} = lineCounter.linePos(node.value.range[0]);
+                                const {line, col} = lineCounter.linePos(value.range[0]);
                                 console.error(
                                     "%s:%d:%d: Format description with Prettier:",
                                     file,
@@ -115,7 +127,7 @@ async function checkFile(file) {
                                     col,
                                 );
                                 let diff = "";
-                                for (const part of Diff.diffLines(node.value.value, formatted)) {
+                                for (const part of Diff.diffLines(description, formatted)) {
                                     const prefix = part.added
                                         ? "\u001B[32m+"
                                         : part.removed
@@ -144,12 +156,17 @@ async function checkFile(file) {
     if (reformats.size > 0) {
         console.log("%s: Fixing problems", file);
         for (const token of tokens) {
-            CST.visit(token, ({value}) => {
-                if (CST.isScalar(value) && reformats.has(value.offset)) {
-                    const reformat = reformats.get(value.offset);
-                    CST.setScalarValue(value, reformat.value, reformat.context);
-                }
-            });
+            if (token.type === "document") {
+                CST.visit(token, ({value}) => {
+                    let reformat;
+                    if (
+                        CST.isScalar(value) &&
+                        (reformat = reformats.get(value.offset)) !== undefined
+                    ) {
+                        CST.setScalarValue(value, reformat.value, reformat.context);
+                    }
+                });
+            }
         }
         await fs.promises.writeFile(file, tokens.map((token) => CST.stringify(token)).join(""));
     }
