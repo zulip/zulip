@@ -25,14 +25,14 @@ import remarkLintNoFileNameMixedCase from "remark-lint-no-file-name-mixed-case";
 import remarkLintNoUnusedDefinitions from "remark-lint-no-unused-definitions";
 import remarkLintUnorderedListMarkerStyle from "remark-lint-unordered-list-marker-style";
 import remarkMdx from "remark-mdx";
-import remarkPresentLintMarkdownStyleGuide from "remark-preset-lint-markdown-style-guide";
-import remarkLintRulesLintRecommended from "remark-preset-lint-recommended";
+import remarkPresetLintMarkdownStyleGuide from "remark-preset-lint-markdown-style-guide";
+import remarkPresetLintRecommended from "remark-preset-lint-recommended";
 import remarkStringify from "remark-stringify";
 
 const remarkLintRules = {
     plugins: [
-        remarkLintRulesLintRecommended,
-        remarkPresentLintMarkdownStyleGuide,
+        remarkPresetLintMarkdownStyleGuide,
+        remarkPresetLintRecommended,
         [remarkLintFinalDefinition, false],
         [remarkLintListItemSpacing, false],
         [remarkLintFileExtension, ["mdx"]],
