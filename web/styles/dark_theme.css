@@ -358,14 +358,6 @@
         }
     }
 
-    #user-profile-modal {
-        .manage-profile-tab-footer {
-            &.modal__footer_wrapper {
-                border-top: 1px solid hsl(0deg 0% 100% / 20%);
-            }
-        }
-    }
-
     .top-messages-logo {
         opacity: 0.7;
     }
