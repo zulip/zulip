@@ -1444,6 +1444,10 @@
         hsl(0deg 0% 87%),
         hsl(0deg 0% 0% / 40%)
     );
+    --color-border-manage-profile-footer: light-dark(
+        hsl(0deg 0% 87%),
+        hsl(0deg 0% 100% / 20%)
+    );
 
     /* Link colors */
     --color-text-link: light-dark(hsl(210deg 94% 42%), hsl(200deg 100% 50%));
