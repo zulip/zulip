@@ -57,6 +57,12 @@ location /help/_astro/ {
     add_header Cache-Control "public, max-age=31536000, immutable";
 }
 
+# These files are hashed and thus immutable; cache them aggressively.
+location ~ ^/help/(pagefind/.*\.(?:pf_fragment|pf_index|pf_meta))$ {
+    alias $help_alias$1;
+    add_header Cache-Control "public, max-age=31536000, immutable";
+}
+
 # Send longpoll requests to Tornado
 location /json/events {
     if ($request_method = 'OPTIONS') {
