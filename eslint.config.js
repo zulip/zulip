@@ -209,7 +209,6 @@ export default tseslint.config(
             "comma-spacing": "error",
             "import/extensions": "off",
             "import/unambiguous": "off",
-            "object-curly-spacing": "error",
             quotes: "error",
         },
     },

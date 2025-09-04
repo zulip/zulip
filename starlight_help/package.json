@@ -8,8 +8,8 @@
     "build": "astro check && astro build",
     "preview": "astro preview",
     "astro": "astro",
-    "format": "remark --ext mdx --frail --output --quiet --use remark-mdx -- .",
-    "format-silent": "remark --ext mdx --output --silent --use remark-mdx -- ."
+    "format": "remark --ext mdx --frail --output --quiet -- .",
+    "format-silent": "remark --ext mdx --output --silent -- ."
   },
   "dependencies": {
     "@astrojs/check": "^0.9.3",
@@ -26,12 +26,12 @@
     "sharp": "^0.34.1",
     "typescript": "^5.4.5",
     "unist-util-visit": "^5.0.0",
-    "unplugin-icons": "^22.1.0",
-    "@types/mdast": "^4.0.4"
+    "unplugin-icons": "^22.1.0"
   },
   "devDependencies": {
     "remark-cli": "^12.0.1",
     "remark-frontmatter": "^5.0.0",
+    "remark-gfm": "^4.0.1",
     "remark-lint-fenced-code-flag": "^4.2.0",
     "remark-lint-file-extension": "^3.0.1",
     "remark-lint-final-definition": "^4.0.2",
