@@ -131,15 +131,19 @@ export function sort_groups(
         inactive_streams: [],
     };
 
+    const show_all_channels = util.prefix_match({value: normal_section.section_title, search_term});
+
     const stream_id_to_name = (stream_id: number): string => sub_store.get(stream_id)!.name;
     // Use -, _, : and / as word separators apart from the default space character
     const word_separator_regex = /[\s/:_-]/;
-    let matching_stream_ids = util.filter_by_word_prefix_match(
-        all_subscribed_stream_ids,
-        search_term,
-        stream_id_to_name,
-        word_separator_regex,
-    );
+    let matching_stream_ids = show_all_channels
+        ? all_subscribed_stream_ids
+        : util.filter_by_word_prefix_match(
+              all_subscribed_stream_ids,
+              search_term,
+              stream_id_to_name,
+              word_separator_regex,
+          );
 
     const current_channel_id = narrow_state.stream_id(narrow_state.filter(), true);
     if (
