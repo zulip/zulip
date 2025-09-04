@@ -19,7 +19,6 @@ import remarkLintListItemIndent from "remark-lint-list-item-indent";
 import remarkLintListItemSpacing from "remark-lint-list-item-spacing";
 import remarkLintMaximumHeadingLength from "remark-lint-maximum-heading-length";
 import remarkLintMaximumLineLength from "remark-lint-maximum-line-length";
-import remarkLintNoDuplicateDefinitions from "remark-lint-no-duplicate-definitions";
 import remarkLintNoDuplicateHeadings from "remark-lint-no-duplicate-headings";
 import remarkLintNoFileNameIrregularCharacters from "remark-lint-no-file-name-irregular-characters";
 import remarkLintNoFileNameMixedCase from "remark-lint-no-file-name-mixed-case";
@@ -46,7 +45,6 @@ const remarkLintRules = {
         [remarkLintMaximumHeadingLength, false],
         [remarkLintNoDuplicateHeadings, false],
         [remarkLintHeadingIncrement, false],
-        [remarkLintNoDuplicateDefinitions, false],
         [remarkLintUnorderedListMarkerStyle, "*"],
     ],
 };

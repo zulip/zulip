@@ -603,9 +603,6 @@ importers:
       remark-lint-maximum-line-length:
         specifier: ^4.1.1
         version: 4.1.1
-      remark-lint-no-duplicate-definitions:
-        specifier: ^4.0.1
-        version: 4.0.1
       remark-lint-no-duplicate-headings:
         specifier: ^4.0.1
         version: 4.0.1

@@ -40,7 +40,6 @@
     "remark-lint-list-item-spacing": "^5.0.1",
     "remark-lint-maximum-heading-length": "^4.1.1",
     "remark-lint-maximum-line-length": "^4.1.1",
-    "remark-lint-no-duplicate-definitions": "^4.0.1",
     "remark-lint-no-duplicate-headings": "^4.0.1",
     "remark-lint-no-file-name-irregular-characters": "^3.0.1",
     "remark-lint-no-file-name-mixed-case": "^3.0.1",
