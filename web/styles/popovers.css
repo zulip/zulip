@@ -673,7 +673,7 @@ ul.popover-group-menu-member-list {
         height: 0;
 
         &.modal__footer_wrapper {
-            border-top: 1px solid hsl(0deg 0% 87%);
+            border-top: 1px solid var(--color-border-manage-profile-footer);
             display: flex;
             justify-content: flex-end;
             align-items: center;
