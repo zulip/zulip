@@ -29,11 +29,11 @@ NAV_BAR_TEMPLATE = """
 """.strip()
 
 NAV_LIST_ITEM_TEMPLATE = """
-<li data-tab-key="{data_tab_key}" tabindex="0">{label}</li>
+<li class="{class_}" data-tab-key="{data_tab_key}" tabindex="0">{label}</li>
 """.strip()
 
 DIV_TAB_CONTENT_TEMPLATE = """
-<div class="tab-content" data-tab-key="{data_tab_key}" markdown="1">
+<div class="tab-content {class_}" data-tab-key="{data_tab_key}" markdown="1">
 {content}
 </div>
 """.strip()
@@ -177,6 +177,7 @@ def generate_content_blocks(
 
         content = "\n".join(lines[start_index:end_index]).strip()
         tab_content_block = tab_content_template.format(
+            class_="active" if index == 0 else "",
             data_tab_key=tab["tab_key"],
             # This attribute is not used directly in this file here,
             # we need this for the current conversion script in for
@@ -223,15 +224,16 @@ class TabbedSectionsPreprocessor(Preprocessor):
 
     def generate_nav_bar(self, tab_section: dict[str, Any]) -> str:
         li_elements = []
-        for tab in tab_section["tabs"]:
+        for index, tab in enumerate(tab_section["tabs"]):
             tab_key = tab.get("tab_key")
             tab_label = TAB_SECTION_LABELS.get(tab_key)
             if tab_label is None:
                 raise ValueError(
                     f"Tab '{tab_key}' is not present in TAB_SECTION_LABELS in zerver/lib/markdown/tabbed_sections.py"
                 )
+            class_ = "active" if index == 0 else ""
 
-            li = NAV_LIST_ITEM_TEMPLATE.format(data_tab_key=tab_key, label=tab_label)
+            li = NAV_LIST_ITEM_TEMPLATE.format(class_=class_, data_tab_key=tab_key, label=tab_label)
             li_elements.append(li)
 
         return NAV_BAR_TEMPLATE.format(tabs="\n".join(li_elements))
