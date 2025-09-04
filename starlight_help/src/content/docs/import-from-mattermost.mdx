@@ -44,27 +44,29 @@ Replace `<username>` and `<server_ip>` with the appropriate values below.
   <TabItem label="Default installation">
     <Steps>
       1. SSH into your Mattermost production server.
-         ```
+         ```bash "<username>" "<server_ip>"
          ssh <username>@<server_ip>
          ```
       1. Navigate to the directory which contains the Mattermost executable.
          On a default install of Mattermost, the directory is `/opt/mattermost/bin`.
-         ```
+         ```bash
          cd /opt/mattermost/bin
          ```
       1. Create an export of all your Mattermost teams, as a tar file.
-         ```
+         ```bash
          sudo ./mattermost export bulk export.json --all-teams --attachments
          mkdir -p exported_emoji
          tar --transform 's|^|mattermost/|' -czf export.tar.gz \
              data/ exported_emoji/ export.json
          ```
       1. Exit your shell on the Mattermost server.
-         `exit`
+         ```bash
+         exit
+         ```
       1. Finally, copy the exported tar file from the server to your local
          computer.  You may need to replace `/opt/mattermost/bin/` with the
          path to your Mattermost installation.
-         ```
+         ```bash "<username>" "<server_ip>"
          scp <username>@<server_ip>:/opt/mattermost/bin/export.tar.gz .
          ```
     </Steps>
@@ -75,21 +77,21 @@ Replace `<username>` and `<server_ip>` with the appropriate values below.
       1. Make sure you have [mmctl](https://github.com/mattermost/mmctl) installed - these
          instructions assume your version is `7.5.1` or higher.
       1. Log into your Mattermost Cloud instance using your administrator credentials.
-         ```
+         ```bash "yourdomain"
          mmctl auth login https://yourdomain.cloud.mattermost.com
          ```
       1. Create a full export of the server, including attached files.
-         ```
+         ```bash
          mmctl export create
          ```
       1. List all of the exports on the server, and copy the name of the
          latest one to your clipboard.
-         ```
+         ```bash
          mmctl export list
          ```
       1. Download the export to your local computer, replacing
          `latest_export` with the actual file name from the previous step.
-         ```
+         ```bash
          mmctl export download latest_export.zip
          ```
     </Steps>
@@ -98,16 +100,16 @@ Replace `<username>` and `<server_ip>` with the appropriate values below.
   <TabItem label="Docker">
     <Steps>
       1. SSH into the server hosting your Mattermost docker container.
-         ```
+         ```bash "<username>" "<server_ip>"
          ssh <username>@<server_ip>
          ```
       1. Navigate to the Mattermost docker directory. On most installs, the
          directory should be `mattermost-docker`.
-         ```
+         ```bash
          cd mattermost-docker/
          ```
       1. Create an export of all your Mattermost teams, as a tar file.
-         ```
+         ```bash
          docker exec -it mattermost-docker_app_1 mattermost \
              export bulk data/export.json --all-teams --attachments
          cd volumes/app/mattermost/data/
@@ -116,11 +118,13 @@ Replace `<username>` and `<server_ip>` with the appropriate values below.
              data/ exported_emoji/ export.json
          ```
       1. Exit your shell on the Mattermost server.
-         `exit`
+         ```bash
+         exit
+         ```
       1. Finally, copy the exported tar file from the server to your local
          computer. You may need to replace `mattermost-docker` with the
          appropriate path for your installation.
-         ```
+         ```bash "<username>" "<server_ip>"
          scp <username>@<server_ip>:mattermost-docker/volumes/app/mattermost/data/export.tar.gz .
          ```
     </Steps>
@@ -129,8 +133,11 @@ Replace `<username>` and `<server_ip>` with the appropriate values below.
   <TabItem label="GitLab Omnibus">
     <Steps>
       1. SSH into your GitLab Omnibus server.
-      1. Create an export of all your Mattermost teams, as a tar file.
+         ```bash "<username>" "<server_ip>"
+         ssh <username>@<server_ip>
          ```
+      1. Create an export of all your Mattermost teams, as a tar file.
+         ```bash
          cd /opt/gitlab/embedded/service/mattermost
          sudo -u \
              mattermost /opt/gitlab/embedded/bin/mattermost \
@@ -141,9 +148,11 @@ Replace `<username>` and `<server_ip>` with the appropriate values below.
              data/ exported_emoji/ export.json
          ```
       1. Exit your shell on the GitLab Omnibus server.
-         `exit`
-      1. Finally, copy the exported tar file from GitLab Omnibus to your local computer.
+         ```bash
+         exit
          ```
+      1. Finally, copy the exported tar file from GitLab Omnibus to your local computer.
+         ```bash "<username>" "<server_ip>"
          scp <username>@<server_ip>:/opt/gitlab/embedded/bin/mattermost/export.tar.gz .
          ```
     </Steps>
@@ -171,7 +180,7 @@ Replace `<username>` and `<server_ip>` with the appropriate values below.
          (`EXTERNAL_HOST`) of the Zulip installation, run the following commands,
          replacing `<team-name>` with the name of the Mattermost team you want to import.
          <ImportSelfHostedServerTips />
-         ```
+         ```bash "<team-name>"
          cd /tmp
          tar -xf mattermost_data.tar.gz
          cd /home/zulip/deployments/current
@@ -181,7 +190,7 @@ Replace `<username>` and `<server_ip>` with the appropriate values below.
          ./scripts/start-server
          ```
          Alternatively, to import into a custom subdomain, run:
-         ```
+         ```bash "<team-name>" "<subdomain>"
          cd /tmp
          tar -xf mattermost_data.tar.gz
          cd /home/zulip/deployments/current
@@ -206,7 +215,7 @@ Replace `<username>` and `<server_ip>` with the appropriate values below.
          (`EXTERNAL_HOST`) of the Zulip installation, run the following commands,
          replacing `<team-name>` with the name of the Mattermost team you want to import.
          <ImportSelfHostedServerTips />
-         ```
+         ```bash "<team-name>"
          unzip latest_export.zip -d /tmp/my_mattermost_export
          mv /tmp/my_mattermost_export/import.jsonl /tmp/my_mattermost_export/export.json
          cd /home/zulip/deployments/current
@@ -216,7 +225,7 @@ Replace `<username>` and `<server_ip>` with the appropriate values below.
          ./scripts/start-server
          ```
          Alternatively, to import into a custom subdomain, run:
-         ```
+         ```bash "<team-name>" "<subdomain>"
          unzip latest_export.zip -d /tmp/my_mattermost_export
          mv /tmp/my_mattermost_export/import.jsonl /tmp/my_mattermost_export/export.json
          cd /home/zulip/deployments/current

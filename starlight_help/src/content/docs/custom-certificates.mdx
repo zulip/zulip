@@ -75,7 +75,7 @@ certificate store, like your web browser.
     once the `nss` tools are installed, the command to trust the
     certificate is:
 
-    ```
+    ```bash "path/to/certificate.pem"
     certutil -d sql:$HOME/.pki/nssdb -A -t "P,," -n zulip \
       -i path/to/certificate.pem
     ```

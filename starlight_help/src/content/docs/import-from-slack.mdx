@@ -119,7 +119,7 @@ in order to export direct message data.
          (`EXTERNAL_HOST`) of the Zulip installation, run the following
          commands, replacing `<token>` with your Slack **Bot User OAuth Token**.
          <ImportSelfHostedServerTips />
-         ```
+         ```bash "<token>"
          cd /home/zulip/deployments/current
          ./scripts/stop-server
          ./manage.py convert_slack_data /tmp/slack_data.zip --token <token> --output /tmp/converted_slack_data
@@ -127,7 +127,7 @@ in order to export direct message data.
          ./scripts/start-server
          ```
          Alternatively, to import into a custom subdomain, run:
-         ```
+         ```bash "<token>" "<subdomain>"
          cd /home/zulip/deployments/current
          ./scripts/stop-server
          ./manage.py convert_slack_data /tmp/slack_data.zip --token <token> --output /tmp/converted_slack_data
