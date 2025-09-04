@@ -1440,6 +1440,10 @@
         hsl(0deg 0% 20%),
         hsl(236deg 33% 90%)
     );
+    --color-border-user-profile-table: light-dark(
+        hsl(0deg 0% 87%),
+        hsl(0deg 0% 0% / 40%)
+    );
 
     /* Link colors */
     --color-text-link: light-dark(hsl(210deg 94% 42%), hsl(200deg 100% 50%));
