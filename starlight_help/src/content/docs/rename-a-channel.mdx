@@ -2,14 +2,17 @@
 title: Rename a channel
 ---
 
-import NavigationSteps from "../../components/NavigationSteps.astro"
-import EditIcon from "~icons/zulip-icon/edit"
-import FlattenedSteps from '../../components/FlattenedSteps.astro';
-import AutomatedNoticeChannelEvent from "./include/_AutomatedNoticeChannelEvent.mdx"
-import SaveChanges from "./include/_SaveChanges.mdx"
-import ChannelSettingsGeneralTabTip from "./include/_ChannelSettingsGeneralTabTip.mdx"
-import SelectChannelViewGeneral from "./include/_SelectChannelViewGeneral.mdx"
-import { Tabs, TabItem } from '@astrojs/starlight/components'
+import {TabItem, Tabs} from "@astrojs/starlight/components";
+
+import FlattenedSteps from "../../components/FlattenedSteps.astro";
+import NavigationSteps from "../../components/NavigationSteps.astro";
+
+import AutomatedNoticeChannelEvent from "./include/_AutomatedNoticeChannelEvent.mdx";
+import ChannelSettingsGeneralTabTip from "./include/_ChannelSettingsGeneralTabTip.mdx";
+import SaveChanges from "./include/_SaveChanges.mdx";
+import SelectChannelViewGeneral from "./include/_SelectChannelViewGeneral.mdx";
+
+import EditIcon from "~icons/zulip-icon/edit";
 
 A channel's name can be in any language, and can include spaces, punctuation,
 and Unicode emoji.

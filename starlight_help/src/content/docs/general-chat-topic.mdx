@@ -2,12 +2,15 @@
 title: “General chat” topic
 ---
 
-import FlattenedSteps from '../../components/FlattenedSteps.astro';
-import KeyboardTip from '../../components/KeyboardTip.astro';
-import GeneralChatIntro from "./include/_GeneralChatIntro.mdx"
-import ComposeAndSendMessage from "./include/_ComposeAndSendMessage.mdx"
-import SquarePlusIcon from "~icons/zulip-icon/square-plus"
-import { Tabs, TabItem } from '@astrojs/starlight/components'
+import {TabItem, Tabs} from "@astrojs/starlight/components";
+
+import FlattenedSteps from "../../components/FlattenedSteps.astro";
+import KeyboardTip from "../../components/KeyboardTip.astro";
+
+import ComposeAndSendMessage from "./include/_ComposeAndSendMessage.mdx";
+import GeneralChatIntro from "./include/_GeneralChatIntro.mdx";
+
+import SquarePlusIcon from "~icons/zulip-icon/square-plus";
 
 Zulip's [topics](/help/introduction-to-topics) help you keep conversations
 organized, but you may sometimes want to send a message without a topic. For

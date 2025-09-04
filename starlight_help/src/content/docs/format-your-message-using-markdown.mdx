@@ -2,53 +2,56 @@
 title: Message formatting
 ---
 
-import BulletedListsExamples from "./include/_BulletedListsExamples.mdx"
-import TimeIcon from "~icons/zulip-icon/time"
-import ZulipTip from '../../components/ZulipTip.astro';
-import MathIcon from "~icons/zulip-icon/math"
-import PollsIntro from "./include/_PollsIntro.mdx"
-import UnorderedListIcon from "~icons/zulip-icon/unordered-list"
-import LinksIntro from "./include/_LinksIntro.mdx"
-import GlobalTimesIntro from "./include/_GlobalTimesIntro.mdx"
-import SpoilerIcon from "~icons/zulip-icon/spoiler"
-import ParagraphsAndSectionsIntro from "./include/_ParagraphsAndSectionsIntro.mdx"
-import TodoListIcon from "~icons/zulip-icon/todo-list"
-import NavigationSteps from "../../components/NavigationSteps.astro"
-import ToDoListsIntro from "./include/_ToDoListsIntro.mdx"
-import NumberedListsIntro from "./include/_NumberedListsIntro.mdx"
-import MeActionMessagesExamples from "./include/_MeActionMessagesExamples.mdx"
-import PollIcon from "~icons/zulip-icon/poll"
-import QuoteIcon from "~icons/zulip-icon/quote"
-import MeActionMessagesIntro from "./include/_MeActionMessagesIntro.mdx"
-import OrderedListIcon from "~icons/zulip-icon/ordered-list"
-import LinkIcon from "~icons/zulip-icon/link"
-import MentionsIntro from "./include/_MentionsIntro.mdx"
-import EmojiAndEmoticonsIntro from "./include/_EmojiAndEmoticonsIntro.mdx"
-import { Tabs, TabItem } from '@astrojs/starlight/components'
-import TablesExamples from "./include/_TablesExamples.mdx"
-import ToDoListsExamples from "./include/_ToDoListsExamples.mdx"
-import TablesIntro from "./include/_TablesIntro.mdx"
-import NumberedListsExamples from "./include/_NumberedListsExamples.mdx"
-import QuestionIcon from "~icons/zulip-icon/question"
-import CodeBlocksIntro from "./include/_CodeBlocksIntro.mdx"
-import FlattenedSteps from '../../components/FlattenedSteps.astro';
-import PollsExamples from "./include/_PollsExamples.mdx"
-import EmphasisExamples from "./include/_EmphasisExamples.mdx"
-import ParagraphsAndSectionsExamples from "./include/_ParagraphsAndSectionsExamples.mdx"
-import MentionsExamples from "./include/_MentionsExamples.mdx"
-import QuotesExamples from "./include/_QuotesExamples.mdx"
-import BulletedListsIntro from "./include/_BulletedListsIntro.mdx"
-import SpoilersExamples from "./include/_SpoilersExamples.mdx"
-import GlobalTimesExamples from "./include/_GlobalTimesExamples.mdx"
-import SpoilersIntro from "./include/_SpoilersIntro.mdx"
-import LinksExamples from "./include/_LinksExamples.mdx"
-import QuotesIntro from "./include/_QuotesIntro.mdx"
-import EmojiAndEmoticonsExamples from "./include/_EmojiAndEmoticonsExamples.mdx"
-import LatexExamples from "./include/_LatexExamples.mdx"
-import CodeBlocksExamples from "./include/_CodeBlocksExamples.mdx"
-import EmphasisIntro from "./include/_EmphasisIntro.mdx"
-import LatexIntro from "./include/_LatexIntro.mdx"
-import CodeIcon from "~icons/zulip-icon/code"
+import {TabItem, Tabs} from "@astrojs/starlight/components";
+
+import FlattenedSteps from "../../components/FlattenedSteps.astro";
+import NavigationSteps from "../../components/NavigationSteps.astro";
+import ZulipTip from "../../components/ZulipTip.astro";
+
+import BulletedListsExamples from "./include/_BulletedListsExamples.mdx";
+import BulletedListsIntro from "./include/_BulletedListsIntro.mdx";
+import CodeBlocksExamples from "./include/_CodeBlocksExamples.mdx";
+import CodeBlocksIntro from "./include/_CodeBlocksIntro.mdx";
+import EmojiAndEmoticonsExamples from "./include/_EmojiAndEmoticonsExamples.mdx";
+import EmojiAndEmoticonsIntro from "./include/_EmojiAndEmoticonsIntro.mdx";
+import EmphasisExamples from "./include/_EmphasisExamples.mdx";
+import EmphasisIntro from "./include/_EmphasisIntro.mdx";
+import GlobalTimesExamples from "./include/_GlobalTimesExamples.mdx";
+import GlobalTimesIntro from "./include/_GlobalTimesIntro.mdx";
+import LatexExamples from "./include/_LatexExamples.mdx";
+import LatexIntro from "./include/_LatexIntro.mdx";
+import LinksExamples from "./include/_LinksExamples.mdx";
+import LinksIntro from "./include/_LinksIntro.mdx";
+import MeActionMessagesExamples from "./include/_MeActionMessagesExamples.mdx";
+import MeActionMessagesIntro from "./include/_MeActionMessagesIntro.mdx";
+import MentionsExamples from "./include/_MentionsExamples.mdx";
+import MentionsIntro from "./include/_MentionsIntro.mdx";
+import NumberedListsExamples from "./include/_NumberedListsExamples.mdx";
+import NumberedListsIntro from "./include/_NumberedListsIntro.mdx";
+import ParagraphsAndSectionsExamples from "./include/_ParagraphsAndSectionsExamples.mdx";
+import ParagraphsAndSectionsIntro from "./include/_ParagraphsAndSectionsIntro.mdx";
+import PollsExamples from "./include/_PollsExamples.mdx";
+import PollsIntro from "./include/_PollsIntro.mdx";
+import QuotesExamples from "./include/_QuotesExamples.mdx";
+import QuotesIntro from "./include/_QuotesIntro.mdx";
+import SpoilersExamples from "./include/_SpoilersExamples.mdx";
+import SpoilersIntro from "./include/_SpoilersIntro.mdx";
+import TablesExamples from "./include/_TablesExamples.mdx";
+import TablesIntro from "./include/_TablesIntro.mdx";
+import ToDoListsExamples from "./include/_ToDoListsExamples.mdx";
+import ToDoListsIntro from "./include/_ToDoListsIntro.mdx";
+
+import CodeIcon from "~icons/zulip-icon/code";
+import LinkIcon from "~icons/zulip-icon/link";
+import MathIcon from "~icons/zulip-icon/math";
+import OrderedListIcon from "~icons/zulip-icon/ordered-list";
+import PollIcon from "~icons/zulip-icon/poll";
+import QuestionIcon from "~icons/zulip-icon/question";
+import QuoteIcon from "~icons/zulip-icon/quote";
+import SpoilerIcon from "~icons/zulip-icon/spoiler";
+import TimeIcon from "~icons/zulip-icon/time";
+import TodoListIcon from "~icons/zulip-icon/todo-list";
+import UnorderedListIcon from "~icons/zulip-icon/unordered-list";
 
 {/*
   - All screenshots here require line-height: 22px and font-size: 16px in .message-content.

@@ -1,13 +1,14 @@
-import NavigationSteps from "../../../components/NavigationSteps.astro"
-import { Steps } from '@astrojs/starlight/components';
-import DependsOnPermissions from "./_DependsOnPermissions.mdx"
-import AutomatedDmChannelSubscription from "./_AutomatedDmChannelSubscription.mdx"
-import SelectChannelViewSubscribers from "./_SelectChannelViewSubscribers.mdx"
-import ZulipTip from '../../../components/ZulipTip.astro';
-import FlattenedSteps from '../../../components/FlattenedSteps.astro';
-import { Tabs, TabItem } from '@astrojs/starlight/components'
-import ChannelMenuSubscribersTabTip from "./_ChannelMenuSubscribersTabTip.mdx"
-import RightSidebarViewProfile from "./_RightSidebarViewProfile.mdx"
+import {Steps, TabItem, Tabs} from "@astrojs/starlight/components";
+
+import FlattenedSteps from "../../../components/FlattenedSteps.astro";
+import NavigationSteps from "../../../components/NavigationSteps.astro";
+import ZulipTip from "../../../components/ZulipTip.astro";
+
+import AutomatedDmChannelSubscription from "./_AutomatedDmChannelSubscription.mdx";
+import ChannelMenuSubscribersTabTip from "./_ChannelMenuSubscribersTabTip.mdx";
+import DependsOnPermissions from "./_DependsOnPermissions.mdx";
+import RightSidebarViewProfile from "./_RightSidebarViewProfile.mdx";
+import SelectChannelViewSubscribers from "./_SelectChannelViewSubscribers.mdx";
 
 <DependsOnPermissions />
 

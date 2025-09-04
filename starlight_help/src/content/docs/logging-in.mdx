@@ -2,16 +2,18 @@
 title: Logging in
 ---
 
-import ZulipNote from '../../components/ZulipNote.astro';
-import GearIcon from "~icons/zulip-icon/gear"
-import FlattenedSteps from '../../components/FlattenedSteps.astro';
-import { Steps } from '@astrojs/starlight/components';
-import DesktopToggleSidebarTip from "./include/_DesktopToggleSidebarTip.mdx"
-import PlusIcon from "~icons/fa/plus"
-import { Tabs, TabItem } from '@astrojs/starlight/components'
-import ChangePasswordViaEmailConfirmation from "./include/_ChangePasswordViaEmailConfirmation.mdx"
-import SwitchingBetweenOrganizations from "./include/_SwitchingBetweenOrganizations.mdx"
-import MobileSwitchAccount from "./include/_MobileSwitchAccount.mdx"
+import {Steps, TabItem, Tabs} from "@astrojs/starlight/components";
+
+import FlattenedSteps from "../../components/FlattenedSteps.astro";
+import ZulipNote from "../../components/ZulipNote.astro";
+
+import ChangePasswordViaEmailConfirmation from "./include/_ChangePasswordViaEmailConfirmation.mdx";
+import DesktopToggleSidebarTip from "./include/_DesktopToggleSidebarTip.mdx";
+import MobileSwitchAccount from "./include/_MobileSwitchAccount.mdx";
+import SwitchingBetweenOrganizations from "./include/_SwitchingBetweenOrganizations.mdx";
+
+import PlusIcon from "~icons/fa/plus";
+import GearIcon from "~icons/zulip-icon/gear";
 
 By default, Zulip allows logging in via email/password as well as
 various social authentication providers like Google, GitHub, GitLab,

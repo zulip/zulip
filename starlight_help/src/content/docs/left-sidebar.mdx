@@ -2,21 +2,23 @@
 title: Left sidebar
 ---
 
-import ZulipTip from '../../components/ZulipTip.astro';
-import FlattenedSteps from '../../components/FlattenedSteps.astro';
-import FilterResolvedLeftSidebar from "./include/_FilterResolvedLeftSidebar.mdx"
-import FilterChannels from "./include/_FilterChannels.mdx"
-import StartTopicViaLeftSidebar from "./include/_StartTopicViaLeftSidebar.mdx"
-import KeyboardTip from '../../components/KeyboardTip.astro';
-import { Steps } from '@astrojs/starlight/components';
-import ViewDmsLeftSidebar from "./include/_ViewDmsLeftSidebar.mdx"
-import ConfigureChannelLinks from "./include/_ConfigureChannelLinks.mdx"
-import FindDmConversationLeftSidebar from "./include/_FindDmConversationLeftSidebar.mdx"
-import PanelLeftDashedIcon from "~icons/zulip-icon/panel-left-dashed"
-import ComposeAndSendMessage from "./include/_ComposeAndSendMessage.mdx"
-import PanelLeftIcon from "~icons/zulip-icon/panel-left"
-import SquarePlusIcon from "~icons/zulip-icon/square-plus"
-import { Tabs, TabItem } from '@astrojs/starlight/components'
+import {Steps, TabItem, Tabs} from "@astrojs/starlight/components";
+
+import FlattenedSteps from "../../components/FlattenedSteps.astro";
+import KeyboardTip from "../../components/KeyboardTip.astro";
+import ZulipTip from "../../components/ZulipTip.astro";
+
+import ComposeAndSendMessage from "./include/_ComposeAndSendMessage.mdx";
+import ConfigureChannelLinks from "./include/_ConfigureChannelLinks.mdx";
+import FilterChannels from "./include/_FilterChannels.mdx";
+import FilterResolvedLeftSidebar from "./include/_FilterResolvedLeftSidebar.mdx";
+import FindDmConversationLeftSidebar from "./include/_FindDmConversationLeftSidebar.mdx";
+import StartTopicViaLeftSidebar from "./include/_StartTopicViaLeftSidebar.mdx";
+import ViewDmsLeftSidebar from "./include/_ViewDmsLeftSidebar.mdx";
+
+import PanelLeftIcon from "~icons/zulip-icon/panel-left";
+import PanelLeftDashedIcon from "~icons/zulip-icon/panel-left-dashed";
+import SquarePlusIcon from "~icons/zulip-icon/square-plus";
 
 The left sidebar in the Zulip web and desktop apps helps you navigate your
 conversations, and [start new

@@ -2,14 +2,16 @@
 title: Font size
 ---
 
-import ZulipTip from '../../components/ZulipTip.astro';
-import FlattenedSteps from '../../components/FlattenedSteps.astro';
-import { Steps } from '@astrojs/starlight/components';
-import TypeBigIcon from "~icons/zulip-icon/type-big"
-import PlusIcon from "~icons/zulip-icon/plus"
-import PersonalMenu from "./include/_PersonalMenu.mdx"
-import { Tabs, TabItem } from '@astrojs/starlight/components'
-import MinusIcon from "~icons/zulip-icon/minus"
+import {Steps, TabItem, Tabs} from "@astrojs/starlight/components";
+
+import FlattenedSteps from "../../components/FlattenedSteps.astro";
+import ZulipTip from "../../components/ZulipTip.astro";
+
+import PersonalMenu from "./include/_PersonalMenu.mdx";
+
+import MinusIcon from "~icons/zulip-icon/minus";
+import PlusIcon from "~icons/zulip-icon/plus";
+import TypeBigIcon from "~icons/zulip-icon/type-big";
 
 Zulip offers a range of font size options, from 12 to 20, to make the UI
 feel comfortable on any screen.

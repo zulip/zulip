@@ -2,13 +2,14 @@
 title: Desktop notifications
 ---
 
-import NavigationSteps from "../../components/NavigationSteps.astro"
-import ZulipNote from '../../components/ZulipNote.astro';
-import ZulipTip from '../../components/ZulipTip.astro';
-import FlattenedSteps from '../../components/FlattenedSteps.astro';
-import PlayCircleIcon from "~icons/fa/play-circle"
-import { Steps } from '@astrojs/starlight/components';
-import { Tabs, TabItem } from '@astrojs/starlight/components'
+import {Steps, TabItem, Tabs} from "@astrojs/starlight/components";
+
+import FlattenedSteps from "../../components/FlattenedSteps.astro";
+import NavigationSteps from "../../components/NavigationSteps.astro";
+import ZulipNote from "../../components/ZulipNote.astro";
+import ZulipTip from "../../components/ZulipTip.astro";
+
+import PlayCircleIcon from "~icons/fa/play-circle";
 
 Zulip can be configured to send visual and audible desktop notifications for
 [DMs, mentions, and alerts](/help/dm-mention-alert-notifications), as well as

@@ -2,13 +2,14 @@
 title: User list
 ---
 
-import NavigationSteps from "../../components/NavigationSteps.astro"
-import MoreVerticalIcon from "~icons/zulip-icon/more-vertical"
-import FlattenedSteps from '../../components/FlattenedSteps.astro';
-import UserListIcon from "~icons/zulip-icon/user-list"
-import { Steps } from '@astrojs/starlight/components';
-import KeyboardTip from '../../components/KeyboardTip.astro';
-import { Tabs, TabItem } from '@astrojs/starlight/components'
+import {Steps, TabItem, Tabs} from "@astrojs/starlight/components";
+
+import FlattenedSteps from "../../components/FlattenedSteps.astro";
+import KeyboardTip from "../../components/KeyboardTip.astro";
+import NavigationSteps from "../../components/NavigationSteps.astro";
+
+import MoreVerticalIcon from "~icons/zulip-icon/more-vertical";
+import UserListIcon from "~icons/zulip-icon/user-list";
 
 In the Zulip web and desktop app, the right sidebar shows a list of users in
 your organization. The user list has up to three section:

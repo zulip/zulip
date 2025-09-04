@@ -2,15 +2,17 @@
 title: Read receipts
 ---
 
-import NavigationSteps from "../../components/NavigationSteps.astro"
-import ZulipTip from '../../components/ZulipTip.astro';
-import FlattenedSteps from '../../components/FlattenedSteps.astro';
-import SaveChanges from "./include/_SaveChanges.mdx"
-import MessageLongPressMenu from "./include/_MessageLongPressMenu.mdx"
-import KeyboardTip from '../../components/KeyboardTip.astro';
-import MessageActionsMenu from "./include/_MessageActionsMenu.mdx"
-import { Tabs, TabItem } from '@astrojs/starlight/components'
-import AdminOnly from "./include/_AdminOnly.mdx"
+import {TabItem, Tabs} from "@astrojs/starlight/components";
+
+import FlattenedSteps from "../../components/FlattenedSteps.astro";
+import KeyboardTip from "../../components/KeyboardTip.astro";
+import NavigationSteps from "../../components/NavigationSteps.astro";
+import ZulipTip from "../../components/ZulipTip.astro";
+
+import AdminOnly from "./include/_AdminOnly.mdx";
+import MessageActionsMenu from "./include/_MessageActionsMenu.mdx";
+import MessageLongPressMenu from "./include/_MessageLongPressMenu.mdx";
+import SaveChanges from "./include/_SaveChanges.mdx";
 
 Read receipts let you check who has read a message. You can see read receipts
 for any message, including both [channel messages](/help/introduction-to-channels)

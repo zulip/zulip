@@ -2,14 +2,16 @@
 title: Start a call
 ---
 
-import ZulipNote from '../../components/ZulipNote.astro';
-import ZulipTip from '../../components/ZulipTip.astro';
-import FlattenedSteps from '../../components/FlattenedSteps.astro';
-import { Steps } from '@astrojs/starlight/components';
-import VideoCallIcon from "~icons/zulip-icon/video-call"
-import StartComposing from "./include/_StartComposing.mdx"
-import { Tabs, TabItem } from '@astrojs/starlight/components'
-import VoiceCallIcon from "~icons/zulip-icon/voice-call"
+import {Steps, TabItem, Tabs} from "@astrojs/starlight/components";
+
+import FlattenedSteps from "../../components/FlattenedSteps.astro";
+import ZulipNote from "../../components/ZulipNote.astro";
+import ZulipTip from "../../components/ZulipTip.astro";
+
+import StartComposing from "./include/_StartComposing.mdx";
+
+import VideoCallIcon from "~icons/zulip-icon/video-call";
+import VoiceCallIcon from "~icons/zulip-icon/voice-call";
 
 Zulip makes it convenient to add a video or voice call link to any message,
 using the call provider (Jitsi, Zoom, etc.)

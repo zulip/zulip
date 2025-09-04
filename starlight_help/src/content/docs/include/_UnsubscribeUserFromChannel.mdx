@@ -1,11 +1,14 @@
-import NavigationSteps from "../../../components/NavigationSteps.astro"
-import CloseIcon from "~icons/zulip-icon/close"
-import DependsOnPermissions from "./_DependsOnPermissions.mdx"
-import SelectChannelViewSubscribers from "./_SelectChannelViewSubscribers.mdx"
-import FlattenedSteps from '../../../components/FlattenedSteps.astro';
-import { Tabs, TabItem } from '@astrojs/starlight/components'
-import ChannelMenuSubscribersTabTip from "./_ChannelMenuSubscribersTabTip.mdx"
-import RightSidebarViewProfile from "./_RightSidebarViewProfile.mdx"
+import {TabItem, Tabs} from "@astrojs/starlight/components";
+
+import FlattenedSteps from "../../../components/FlattenedSteps.astro";
+import NavigationSteps from "../../../components/NavigationSteps.astro";
+
+import ChannelMenuSubscribersTabTip from "./_ChannelMenuSubscribersTabTip.mdx";
+import DependsOnPermissions from "./_DependsOnPermissions.mdx";
+import RightSidebarViewProfile from "./_RightSidebarViewProfile.mdx";
+import SelectChannelViewSubscribers from "./_SelectChannelViewSubscribers.mdx";
+
+import CloseIcon from "~icons/zulip-icon/close";
 
 <DependsOnPermissions />
 

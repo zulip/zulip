@@ -2,18 +2,20 @@
 title: Direct messages
 ---
 
-import DmFeedInstructions from "./include/_DmFeedInstructions.mdx"
-import MobileDirectMessages from "./include/_MobileDirectMessages.mdx"
-import SendDm from "./include/_SendDm.mdx"
-import ZulipTip from '../../components/ZulipTip.astro';
-import FlattenedSteps from '../../components/FlattenedSteps.astro';
-import UserListIcon from "~icons/zulip-icon/user-list"
-import { Steps } from '@astrojs/starlight/components';
-import ViewDmsLeftSidebar from "./include/_ViewDmsLeftSidebar.mdx"
-import FindDmConversationLeftSidebar from "./include/_FindDmConversationLeftSidebar.mdx"
-import SearchIcon from "~icons/zulip-icon/search"
-import { Tabs, TabItem } from '@astrojs/starlight/components'
-import ChevronRightIcon from "~icons/zulip-icon/chevron-right"
+import {Steps, TabItem, Tabs} from "@astrojs/starlight/components";
+
+import FlattenedSteps from "../../components/FlattenedSteps.astro";
+import ZulipTip from "../../components/ZulipTip.astro";
+
+import DmFeedInstructions from "./include/_DmFeedInstructions.mdx";
+import FindDmConversationLeftSidebar from "./include/_FindDmConversationLeftSidebar.mdx";
+import MobileDirectMessages from "./include/_MobileDirectMessages.mdx";
+import SendDm from "./include/_SendDm.mdx";
+import ViewDmsLeftSidebar from "./include/_ViewDmsLeftSidebar.mdx";
+
+import ChevronRightIcon from "~icons/zulip-icon/chevron-right";
+import SearchIcon from "~icons/zulip-icon/search";
+import UserListIcon from "~icons/zulip-icon/user-list";
 
 **Direct messages (DMs)** are conversations with other users that happen outside
 of a [channel](/help/introduction-to-channels). They are convenient for 1:1 and
