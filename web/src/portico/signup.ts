@@ -1,8 +1,8 @@
 import {Uppy} from "@uppy/core";
 import DragDrop from "@uppy/drag-drop";
 import Tus from "@uppy/tus";
-import "@uppy/core/dist/style.min.css";
-import "@uppy/drag-drop/dist/style.min.css";
+import "@uppy/core/css/style.min.css";
+import "@uppy/drag-drop/css/style.min.css";
 import $ from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";

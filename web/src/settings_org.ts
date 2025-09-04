@@ -188,7 +188,7 @@ export function get_org_type_dropdown_options(): DefinedOrgTypeValues | AllOrgTy
     return settings_config.all_org_type_values;
 }
 
-const simple_dropdown_properties = z.keyof(simple_dropdown_realm_settings_schema).def.values;
+const simple_dropdown_properties = z.keyof(simple_dropdown_realm_settings_schema).options;
 
 function set_realm_waiting_period_setting(): void {
     const setting_value = realm.realm_waiting_period_threshold;
