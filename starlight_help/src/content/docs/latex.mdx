@@ -20,11 +20,11 @@ import MathIcon from "~icons/zulip-icon/math";
 Zulip's compose box has a smart **Math (LaTeX)** (<MathIcon />) button, which inserts contextually appropriate LaTeX
 formatting:
 
-* If no text is selected, the button inserts displayed LaTeX (<code>```math</code>) formatting.
+* If no text is selected, the button inserts displayed LaTeX (` ```math `) formatting.
 * If selected text is on one line, the button inserts inline LaTeX (`$$`)
   formatting.
 * If selected text is on multiple lines, the button inserts displayed LaTeX
-  (<code>```math</code>) formatting.
+  (` ```math `) formatting.
 
 <Tabs>
   <TabItem label="Via compose box button">
@@ -47,12 +47,13 @@ formatting:
       <StartComposing />
 
       1. To use inline LaTeX, use double dollar signs (`$$`) around the text:
+
          ```
          $$O(n^2)$$
          ```
 
          To use displayed LaTeX, use triple backticks and the word math
-         (<code>```math</code>) followed by some text and triple backticks at the end:
+         (` ```math `) followed by some text and triple backticks at the end:
 
          ````
          ```math
