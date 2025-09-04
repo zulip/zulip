@@ -66,16 +66,14 @@ parser.add_argument(
     help="Start app server in HTTPS mode, using reverse proxy",
 )
 parser.add_argument(
-    "--help-center", action="store_true", help="Build and host help center with search"
-)
-parser.add_argument(
-    "--help-center-dev-server",
+    "--help-center-static-build",
     action="store_true",
-    help="Run dev server for help center. Hot reload will work for this mode, but search will not work in the generated website.",
+    help="Build and host help center with search. "
+    "By default, astro dev server will run on run-dev, which supports hot reloading but does not support search.",
 )
 add_provision_check_override_param(parser)
 options = parser.parse_args()
-help_center_dev_server_enabled = options.help_center_dev_server and not options.help_center
+help_center_dev_server_enabled = not options.help_center_static_build
 
 assert_provisioning_status_ok(options.skip_provision_check)
 
@@ -325,7 +323,7 @@ async def help_center_middleware(
 
 
 middlewares = []
-if options.help_center:
+if options.help_center_static_build:
     middlewares.append(help_center_middleware)
 
 app = web.Application(middlewares=middlewares)
@@ -378,7 +376,12 @@ def print_listeners(external_host_url: str) -> None:
         ports.append((webpack_port, "webpack"))
 
     if help_center_dev_server_enabled:
-        ports.append((help_center_port, "Help center - Astro dev server"))
+        ports.append(
+            (
+                help_center_port,
+                "Help center - Astro dev server (Refer /devtools on how to enable search)",
+            )
+        )
 
     if not options.streamlined:
         ports.append((tusd_port, "tusd"))
@@ -439,7 +442,7 @@ async def serve() -> None:
     if help_center_dev_server_enabled:
         children.append(run_help_center_dev_server(external_host_url))
 
-    setup_routes(options.help_center, options.help_center_dev_server)
+    setup_routes(options.help_center_static_build, help_center_dev_server_enabled)
 
     children.extend(subprocess.Popen(cmd) for cmd in server_processes())
 
