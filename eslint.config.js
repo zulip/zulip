@@ -5,6 +5,7 @@ import prettier from "eslint-config-prettier";
 import {configs as astroConfigs} from "eslint-plugin-astro";
 import formatjs from "eslint-plugin-formatjs";
 import importPlugin from "eslint-plugin-import";
+import * as mdx from "eslint-plugin-mdx";
 import noJquery from "eslint-plugin-no-jquery";
 import unicorn from "eslint-plugin-unicorn";
 import globals from "globals";
@@ -36,6 +37,7 @@ export default tseslint.config(
     prettier,
     tseslint.configs.strictTypeChecked,
     tseslint.configs.stylisticTypeChecked,
+    mdx.flat,
     {
         files: ["**/*.cts", "**/*.mts", "**/*.ts"],
         extends: [importPlugin.flatConfigs.typescript],
@@ -185,6 +187,7 @@ export default tseslint.config(
         ignores: ["**/*.cts", "**/*.mts", "**/*.ts"],
         extends: [tseslint.configs.disableTypeChecked],
         rules: {
+            "@typescript-eslint/consistent-type-imports": "off",
             "@typescript-eslint/explicit-function-return-type": "off",
             "@typescript-eslint/no-require-imports": "off",
             "consistent-return": "error",
@@ -197,6 +200,17 @@ export default tseslint.config(
         files: ["**/*.cjs"],
         languageOptions: {
             sourceType: "commonjs",
+        },
+    },
+    {
+        files: ["**/*.mdx"],
+        rules: {
+            "@typescript-eslint/no-unused-vars": "off",
+            "comma-spacing": "error",
+            "import/extensions": "off",
+            "import/unambiguous": "off",
+            "object-curly-spacing": "error",
+            quotes: "error",
         },
     },
     {
