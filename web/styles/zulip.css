@@ -2465,7 +2465,7 @@ body:not(.spectator-view) {
 }
 
 .dropdown-list-item-common-styles .dropdown-list-text-selected {
-    font-weight: 700;
+    font-weight: 600;
 }
 
 #scheduled_messages_overlay .error-icon-message-recipient {
