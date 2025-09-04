@@ -2,14 +2,16 @@
 title: Schedule a reminder
 ---
 
-import MoreVerticalIcon from "~icons/zulip-icon/more-vertical"
-import FlattenedSteps from '../../components/FlattenedSteps.astro';
-import { Steps } from '@astrojs/starlight/components';
-import KeyboardTip from '../../components/KeyboardTip.astro';
-import TrashIcon from "~icons/zulip-icon/trash"
-import MessageActions from "./include/_MessageActions.mdx"
-import { Tabs, TabItem } from '@astrojs/starlight/components'
-import GoToReminders from "./include/_GoToReminders.mdx"
+import {Steps, TabItem, Tabs} from "@astrojs/starlight/components";
+
+import FlattenedSteps from "../../components/FlattenedSteps.astro";
+import KeyboardTip from "../../components/KeyboardTip.astro";
+
+import GoToReminders from "./include/_GoToReminders.mdx";
+import MessageActions from "./include/_MessageActions.mdx";
+
+import MoreVerticalIcon from "~icons/zulip-icon/more-vertical";
+import TrashIcon from "~icons/zulip-icon/trash";
 
 Zulip allows you to schedule a reminder for a message at a later time. The
 reminder is delivered to you as a [direct message](/help/direct-messages) by

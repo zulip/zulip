@@ -2,15 +2,17 @@
 title: Share and upload files
 ---
 
-import MobileCameraIcon from "~icons/zulip-icon/mobile-camera"
-import ModifyLinkText from "./include/_ModifyLinkText.mdx"
-import ZulipTip from '../../components/ZulipTip.astro';
-import FlattenedSteps from '../../components/FlattenedSteps.astro';
-import MobileImageIcon from "~icons/zulip-icon/mobile-image"
-import AttachmentIcon from "~icons/zulip-icon/attachment"
-import { Steps } from '@astrojs/starlight/components';
-import StartComposing from "./include/_StartComposing.mdx"
-import { Tabs, TabItem } from '@astrojs/starlight/components'
+import {Steps, TabItem, Tabs} from "@astrojs/starlight/components";
+
+import FlattenedSteps from "../../components/FlattenedSteps.astro";
+import ZulipTip from "../../components/ZulipTip.astro";
+
+import ModifyLinkText from "./include/_ModifyLinkText.mdx";
+import StartComposing from "./include/_StartComposing.mdx";
+
+import AttachmentIcon from "~icons/zulip-icon/attachment";
+import MobileCameraIcon from "~icons/zulip-icon/mobile-camera";
+import MobileImageIcon from "~icons/zulip-icon/mobile-image";
 
 Zulip supports attaching multiple files to messages, including images,
 documents, sound, and video. You can edit the names of the files others see

@@ -2,13 +2,16 @@
 title: Generate URL for an integration
 ---
 
-import NavigationSteps from "../../components/NavigationSteps.astro"
-import ZulipTip from '../../components/ZulipTip.astro';
-import FlattenedSteps from '../../components/FlattenedSteps.astro';
-import UserCogIcon from "~icons/zulip-icon/user-cog"
-import LinkIcon from "~icons/fa/link"
-import { Tabs, TabItem } from '@astrojs/starlight/components'
-import AdminOnly from "./include/_AdminOnly.mdx"
+import {TabItem, Tabs} from "@astrojs/starlight/components";
+
+import FlattenedSteps from "../../components/FlattenedSteps.astro";
+import NavigationSteps from "../../components/NavigationSteps.astro";
+import ZulipTip from "../../components/ZulipTip.astro";
+
+import AdminOnly from "./include/_AdminOnly.mdx";
+
+import LinkIcon from "~icons/fa/link";
+import UserCogIcon from "~icons/zulip-icon/user-cog";
 
 Many [Zulip integrations](/integrations/) are webhooks. An incoming webhook
 integration allows a third-party service, such as an [issue

@@ -2,11 +2,13 @@
 title: Add a bot or integration
 ---
 
-import NavigationSteps from "../../components/NavigationSteps.astro"
-import ZulipNote from '../../components/ZulipNote.astro';
-import FlattenedSteps from '../../components/FlattenedSteps.astro';
-import DownloadIcon from "~icons/fa/download"
-import { Tabs, TabItem } from '@astrojs/starlight/components'
+import {TabItem, Tabs} from "@astrojs/starlight/components";
+
+import FlattenedSteps from "../../components/FlattenedSteps.astro";
+import NavigationSteps from "../../components/NavigationSteps.astro";
+import ZulipNote from "../../components/ZulipNote.astro";
+
+import DownloadIcon from "~icons/fa/download";
 
 By default, anyone other than guests can add a bot to a Zulip organization.
 A bot that sends content to or from another product is often called an

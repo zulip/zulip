@@ -2,20 +2,22 @@
 title: Follow a topic
 ---
 
-import TopicLongPressMenu from "./include/_TopicLongPressMenu.mdx"
-import ManageConfiguredTopicsDesktopWeb from "./include/_ManageConfiguredTopicsDesktopWeb.mdx"
-import ConfigureTopicNotificationsDesktopWeb from "./include/_ConfigureTopicNotificationsDesktopWeb.mdx"
-import ZulipTip from '../../components/ZulipTip.astro';
-import FlattenedSteps from '../../components/FlattenedSteps.astro';
-import ConfigureNotificationsForFollowedTopics from "./include/_ConfigureNotificationsForFollowedTopics.mdx"
-import KeyboardTip from '../../components/KeyboardTip.astro';
-import FollowedTopicWorkflows from "./include/_FollowedTopicWorkflows.mdx"
-import { Steps } from '@astrojs/starlight/components';
-import SearchIcon from "~icons/zulip-icon/search"
-import GoToInbox from "./include/_GoToInbox.mdx"
-import { Tabs, TabItem } from '@astrojs/starlight/components'
-import ManageConfiguredTopicsMobile from "./include/_ManageConfiguredTopicsMobile.mdx"
-import AutomaticallyFollowTopics from "./include/_AutomaticallyFollowTopics.mdx"
+import {Steps, TabItem, Tabs} from "@astrojs/starlight/components";
+
+import FlattenedSteps from "../../components/FlattenedSteps.astro";
+import KeyboardTip from "../../components/KeyboardTip.astro";
+import ZulipTip from "../../components/ZulipTip.astro";
+
+import AutomaticallyFollowTopics from "./include/_AutomaticallyFollowTopics.mdx";
+import ConfigureNotificationsForFollowedTopics from "./include/_ConfigureNotificationsForFollowedTopics.mdx";
+import ConfigureTopicNotificationsDesktopWeb from "./include/_ConfigureTopicNotificationsDesktopWeb.mdx";
+import FollowedTopicWorkflows from "./include/_FollowedTopicWorkflows.mdx";
+import GoToInbox from "./include/_GoToInbox.mdx";
+import ManageConfiguredTopicsDesktopWeb from "./include/_ManageConfiguredTopicsDesktopWeb.mdx";
+import ManageConfiguredTopicsMobile from "./include/_ManageConfiguredTopicsMobile.mdx";
+import TopicLongPressMenu from "./include/_TopicLongPressMenu.mdx";
+
+import SearchIcon from "~icons/zulip-icon/search";
 
 Zulip lets you follow topics you are interested in. You can follow or unfollow
 any topic. You can also configure Zulip to automatically follow topics you start

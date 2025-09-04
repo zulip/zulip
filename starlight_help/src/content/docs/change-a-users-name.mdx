@@ -2,14 +2,17 @@
 title: Change a user's name
 ---
 
-import NavigationSteps from "../../components/NavigationSteps.astro"
-import FlattenedSteps from '../../components/FlattenedSteps.astro';
-import SaveChanges from "./include/_SaveChanges.mdx"
-import ManageUserTabTip from "./include/_ManageUserTabTip.mdx"
-import ManageThisUser from "./include/_ManageThisUser.mdx"
-import UserCogIcon from "~icons/zulip-icon/user-cog"
-import { Tabs, TabItem } from '@astrojs/starlight/components'
-import AdminOnly from "./include/_AdminOnly.mdx"
+import {TabItem, Tabs} from "@astrojs/starlight/components";
+
+import FlattenedSteps from "../../components/FlattenedSteps.astro";
+import NavigationSteps from "../../components/NavigationSteps.astro";
+
+import AdminOnly from "./include/_AdminOnly.mdx";
+import ManageThisUser from "./include/_ManageThisUser.mdx";
+import ManageUserTabTip from "./include/_ManageUserTabTip.mdx";
+import SaveChanges from "./include/_SaveChanges.mdx";
+
+import UserCogIcon from "~icons/zulip-icon/user-cog";
 
 <AdminOnly />
 

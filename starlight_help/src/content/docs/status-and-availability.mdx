@@ -2,19 +2,21 @@
 title: Status and availability
 ---
 
-import SelfUserCard from "./include/_SelfUserCard.mdx"
-import NavigationSteps from "../../components/NavigationSteps.astro"
-import UserCircleActiveIcon from "~icons/zulip-icon/user-circle-active"
-import ZulipTip from '../../components/ZulipTip.astro';
-import FlattenedSteps from '../../components/FlattenedSteps.astro';
-import UserCircleOfflineIcon from "~icons/zulip-icon/user-circle-offline"
-import ClearStatus from "./include/_ClearStatus.mdx"
-import { Steps } from '@astrojs/starlight/components';
-import MobileMenu from "./include/_MobileMenu.mdx"
-import SetStatus from "./include/_SetStatus.mdx"
-import PersonalMenu from "./include/_PersonalMenu.mdx"
-import { Tabs, TabItem } from '@astrojs/starlight/components'
-import UserCircleIdleIcon from "~icons/zulip-icon/user-circle-idle"
+import {Steps, TabItem, Tabs} from "@astrojs/starlight/components";
+
+import FlattenedSteps from "../../components/FlattenedSteps.astro";
+import NavigationSteps from "../../components/NavigationSteps.astro";
+import ZulipTip from "../../components/ZulipTip.astro";
+
+import ClearStatus from "./include/_ClearStatus.mdx";
+import MobileMenu from "./include/_MobileMenu.mdx";
+import PersonalMenu from "./include/_PersonalMenu.mdx";
+import SelfUserCard from "./include/_SelfUserCard.mdx";
+import SetStatus from "./include/_SetStatus.mdx";
+
+import UserCircleActiveIcon from "~icons/zulip-icon/user-circle-active";
+import UserCircleIdleIcon from "~icons/zulip-icon/user-circle-idle";
+import UserCircleOfflineIcon from "~icons/zulip-icon/user-circle-offline";
 
 Status and availability let everyone know roughly how quickly you'll be
 responding to messages.

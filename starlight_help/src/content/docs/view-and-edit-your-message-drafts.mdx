@@ -2,16 +2,19 @@
 title: Draft messages
 ---
 
-import ZulipNote from '../../components/ZulipNote.astro';
-import CloseIcon from "~icons/zulip-icon/close"
-import MoreVerticalIcon from "~icons/zulip-icon/more-vertical"
-import FlattenedSteps from '../../components/FlattenedSteps.astro';
-import GoToDraftMessages from "./include/_GoToDraftMessages.mdx"
-import KeyboardTip from '../../components/KeyboardTip.astro';
-import TrashIcon from "~icons/zulip-icon/trash"
-import StartComposing from "./include/_StartComposing.mdx"
-import SendIcon from "~icons/zulip-icon/send"
-import { Tabs, TabItem } from '@astrojs/starlight/components'
+import {TabItem, Tabs} from "@astrojs/starlight/components";
+
+import FlattenedSteps from "../../components/FlattenedSteps.astro";
+import KeyboardTip from "../../components/KeyboardTip.astro";
+import ZulipNote from "../../components/ZulipNote.astro";
+
+import GoToDraftMessages from "./include/_GoToDraftMessages.mdx";
+import StartComposing from "./include/_StartComposing.mdx";
+
+import CloseIcon from "~icons/zulip-icon/close";
+import MoreVerticalIcon from "~icons/zulip-icon/more-vertical";
+import SendIcon from "~icons/zulip-icon/send";
+import TrashIcon from "~icons/zulip-icon/trash";
 
 Zulip automatically saves the content of your message as a draft when you close
 the compose box, ensuring that you never lose your work. When you start

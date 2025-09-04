@@ -2,14 +2,17 @@
 title: Archive a channel
 ---
 
-import NavigationSteps from "../../components/NavigationSteps.astro"
-import MoreVerticalIcon from "~icons/zulip-icon/more-vertical"
-import ArchiveIcon from "~icons/zulip-icon/archive"
-import ZulipTip from '../../components/ZulipTip.astro';
-import FlattenedSteps from '../../components/FlattenedSteps.astro';
-import UnarchiveIcon from "~icons/zulip-icon/unarchive"
-import SelectChannelViewGeneral from "./include/_SelectChannelViewGeneral.mdx"
-import { Tabs, TabItem } from '@astrojs/starlight/components'
+import {TabItem, Tabs} from "@astrojs/starlight/components";
+
+import FlattenedSteps from "../../components/FlattenedSteps.astro";
+import NavigationSteps from "../../components/NavigationSteps.astro";
+import ZulipTip from "../../components/ZulipTip.astro";
+
+import SelectChannelViewGeneral from "./include/_SelectChannelViewGeneral.mdx";
+
+import ArchiveIcon from "~icons/zulip-icon/archive";
+import MoreVerticalIcon from "~icons/zulip-icon/more-vertical";
+import UnarchiveIcon from "~icons/zulip-icon/unarchive";
 
 You can archive channels you no longer plan to use. Archiving a channel:
 
