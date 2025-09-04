@@ -77,6 +77,7 @@ type SearchFilter =
     | "channels:web-public"
     | "channels:archived"
     | "channels:all"
+    | "channels:subscribed"
     | "is:resolved"
     | "-is:resolved"
     | "is:dm"
@@ -101,6 +102,7 @@ const incompatible_patterns: Record<SearchFilter, TermPattern[]> = {
         {operator: "channels", operand: "archived"},
     ],
     "channels:all": channel_incompatible_patterns,
+    "channels:subscribed": channel_incompatible_patterns,
     topic: [
         {operator: "dm"},
         {operator: "is", operand: "dm"},
@@ -749,6 +751,7 @@ function get_channels_filter_suggestions(
     const web_public_channels_search_string = "channels:web-public";
     const archived_channels_search_string = "channels:archived";
     const all_accessible_channels_search_string = "channels:all";
+    const subscribed_channels_search_string = "channels:subscribed";
     const suggestions: Suggestion[] = [];
 
     if (!page_params.is_spectator || stream_data.realm_has_web_public_streams()) {
@@ -758,7 +761,12 @@ function get_channels_filter_suggestions(
     }
 
     if (!page_params.is_spectator) {
-        suggestions.push(...filter_suggestions_by_criteria(terms, [public_channels_search_string]));
+        suggestions.push(
+            ...filter_suggestions_by_criteria(terms, [
+                public_channels_search_string,
+                subscribed_channels_search_string,
+            ]),
+        );
     }
 
     if (stream_data.realm_has_web_public_streams()) {

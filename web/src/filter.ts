@@ -66,7 +66,7 @@ type Part =
           is_empty_string_topic?: boolean;
       };
 
-const channels_operands = new Set(["archived", "public", "web-public", "all"]);
+const channels_operands = new Set(["archived", "public", "web-public", "all", "subscribed"]);
 
 function message_in_home(message: Message): boolean {
     // The home view contains messages not sent to muted channels,
@@ -187,6 +187,9 @@ function build_term_predicate(term: NarrowCanonicalTerm): ((message: Message) =>
                         const policy = stream_data.get_stream_privacy_policy(message.stream_id);
                         return ["public", "web-public", "invite-only"].includes(policy);
                     };
+                case "subscribed":
+                    return (message) =>
+                        message.type === "stream" && stream_data.is_subscribed(message.stream_id);
                 default:
                     return () => false;
             }
@@ -751,6 +754,7 @@ export class Filter {
             "channels-public",
             "channels-archived",
             "not-channels-archived",
+            "channels-subscribed",
             "channels-web-public",
             "channel",
             "topic",
@@ -982,6 +986,8 @@ export class Filter {
                 return possible_prefix + "archived channels";
             case "all":
                 return possible_prefix + "all channels that you can view";
+            case "subscribed":
+                return possible_prefix + "all subscribed channels";
             default:
                 return possible_prefix + "all public channels";
         }
@@ -1255,6 +1261,8 @@ export class Filter {
             "not-channels-public",
             "channels-archived",
             "not-channels-archived",
+            "channels-subscribed",
+            "not-channels-subscribed",
             "channels-web-public",
             "not-channels-web-public",
             "near",
@@ -1379,6 +1387,9 @@ export class Filter {
         if (_.isEqual(term_types, ["channels-public"])) {
             return true;
         }
+        if (_.isEqual(term_types, ["channels-subscribed"])) {
+            return true;
+        }
         if (_.isEqual(term_types, ["channels-web-public"])) {
             return true;
         }
@@ -1469,6 +1480,8 @@ export class Filter {
                     return "/#narrow/channels/archived";
                 case "not-channels-archived":
                     return "/#narrow/-channels/archived";
+                case "channels-subscribed":
+                    return "/#narrow/channels/subscribed";
                 case "channels-web-public":
                     return "/#narrow/channels/web-public";
                 case "dm":
@@ -1667,6 +1680,8 @@ export class Filter {
                     return $t({defaultMessage: "Messages not in archived channels"});
                 case "channels-web-public":
                     return $t({defaultMessage: "Messages in all web-public channels"});
+                case "channels-subscribed":
+                    return $t({defaultMessage: "Messages in all subscribed channels"});
                 case "is-starred":
                     return $t({defaultMessage: "Starred messages"});
                 case "is-mentioned":
@@ -2085,6 +2100,8 @@ export class Filter {
             "not-channels-archived",
             "channels-web-public",
             "not-channels-web-public",
+            "channels-subscribed",
+            "not-channels-subscribed",
             "is-muted",
             "not-is-muted",
             "in-home",
