@@ -50,7 +50,7 @@ def add_api_url_context(
     context.update(zulip_default_context(request))
 
     if is_zilencer_endpoint:
-        context["api_url"] = settings.ZULIP_SERVICES_URL + "/api"
+        context["api_url"] = (settings.ZULIP_SERVICES_URL or "https://push.zulipchat.com") + "/api"
         return
 
     subdomain = get_subdomain(request)

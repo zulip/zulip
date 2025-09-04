@@ -231,7 +231,7 @@ PASSWORD_MIN_GUESSES = 10000
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 SESSION_COOKIE_AGE = 60 * 60 * 24 * 7 * 2  # 2 weeks
 
-ZULIP_SERVICES_URL = "https://push.zulipchat.com"
+ZULIP_SERVICES_URL: str | None = "https://push.zulipchat.com"
 ZULIP_SERVICE_PUSH_NOTIFICATIONS = False
 
 # For this setting, we need to have None as the default value, so
