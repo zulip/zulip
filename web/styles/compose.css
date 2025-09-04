@@ -337,7 +337,6 @@
     grid-template-areas: "message-content composebox-buttons";
     border-radius: 4px;
     border: 1px solid var(--color-message-content-container-border);
-    transition: border-color 0.2s ease;
 
     &:has(.new_message_textarea:focus) {
         border-color: var(--color-message-content-container-border-focus);
@@ -1089,7 +1088,6 @@ textarea.new_message_textarea {
     flex: 1 1 0;
     border: 1px solid var(--color-compose-recipient-box-border-color);
     border-radius: 4px;
-    transition: border-color 0.2s ease;
     background: var(--color-compose-recipient-box-background-color);
 
     &:hover {
