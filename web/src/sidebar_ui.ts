@@ -8,6 +8,7 @@ import render_right_sidebar from "../templates/right_sidebar.hbs";
 import {buddy_list} from "./buddy_list.ts";
 import * as channel from "./channel.ts";
 import * as compose_ui from "./compose_ui.ts";
+import {$t} from "./i18n.ts";
 import * as keydown_util from "./keydown_util.ts";
 import * as left_sidebar_navigation_area from "./left_sidebar_navigation_area.ts";
 import {ListCursor} from "./list_cursor.ts";
@@ -31,6 +32,9 @@ import {current_user} from "./state_data.ts";
 import * as stream_list from "./stream_list.ts";
 import * as ui_util from "./ui_util.ts";
 import {user_settings} from "./user_settings.ts";
+
+const LEFT_SIDEBAR_NAVIGATION_AREA_TITLE = $t({defaultMessage: "VIEWS"});
+const LEFT_SIDEBAR_DIRECT_MESSAGES_TITLE = $t({defaultMessage: "DIRECT MESSAGES"});
 
 export let left_sidebar_cursor: ListCursor<JQuery>;
 
@@ -342,6 +346,8 @@ export function initialize_left_sidebar(): void {
         is_spectator: page_params.is_spectator,
         primary_condensed_views,
         expanded_views,
+        LEFT_SIDEBAR_NAVIGATION_AREA_TITLE,
+        LEFT_SIDEBAR_DIRECT_MESSAGES_TITLE,
     });
 
     $("#left-sidebar-container").html(rendered_sidebar);
