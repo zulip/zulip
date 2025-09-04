@@ -221,9 +221,11 @@ def run() -> None:
         description="Check docs/THIRDPARTY copyright file syntax",
     )
     linter_config.external_linter(
-        "format-mdx",
-        ["tools/format-mdx"],
+        "remark",
+        ["node_modules/.bin/remark", "--frail", "--quiet", "--no-stdout"],
         ["mdx"],
+        check_arg=['--setting="checkReformatting": true', "--"],
+        fix_arg=["--output", "--"],
         description="Lint and format MDX files",
     )
 
