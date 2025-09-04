@@ -308,8 +308,12 @@ export function update_expanded_views_for_search(search_term: string): void {
 
     let any_view_visible = false;
     const expanded_views = left_sidebar_navigation_area.get_built_in_views();
+    const show_all_views = util.prefix_match({
+        value: LEFT_SIDEBAR_NAVIGATION_AREA_TITLE,
+        search_term,
+    });
     for (const view of expanded_views) {
-        let show_view = util.prefix_match({
+        let show_view = show_all_views || util.prefix_match({
             value: view.name,
             search_term,
         });
