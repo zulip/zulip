@@ -1235,6 +1235,13 @@ textarea.new_message_textarea {
     width: 100%;
 }
 
+#compose-direct-recipient .pill-container .pill {
+    /* This is necessary to avoid an otherwise unstyled
+       flash of outline around pills when focus shifts out
+       of the recipient row and transitions are in effect. */
+    outline-color: transparent;
+}
+
 /* We want transitions to run only on user interactions with
    the mouse, once the compose box is open. Any keyboard
    interactions (e.g., Shift-Tabbing from the compose textarea
