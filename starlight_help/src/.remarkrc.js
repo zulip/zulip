@@ -9,6 +9,7 @@
  * @import {Preset} from 'unified'
  */
 
+import {toMarkdown} from "mdast-util-to-markdown";
 import remarkFrontmatter from "remark-frontmatter";
 import remarkGfm from "remark-gfm";
 import remarkLintFencedCodeFlag from "remark-lint-fenced-code-flag";
@@ -27,6 +28,32 @@ import remarkMdx from "remark-mdx";
 import remarkPresetLintMarkdownStyleGuide from "remark-preset-lint-markdown-style-guide";
 import remarkPresetLintRecommended from "remark-preset-lint-recommended";
 import remarkStringify from "remark-stringify";
+import {lintRule} from "unified-lint-rule";
+
+const stringifyOptions = {
+    // Number all list items as 1, for compatibility with
+    // remark-lint-ordered-list-marker-value.
+    incrementListMarker: false,
+};
+
+// Make sure the linter fails if files need to be reformatted.  (The other rules
+// catch some but not all formatting issues, so this is needed to be sure we
+// don't silently ignore changes that would be made with --fix.)
+function remarkLintNeedsReformatting(...args) {
+    if (!this.data("settings").checkReformatting) {
+        return undefined;
+    }
+    return lintRule("needs-reformatting", async (tree, file) => {
+        const formatted = toMarkdown(tree, {
+            ...this.data("settings"),
+            ...stringifyOptions,
+            extensions: this.data("toMarkdownExtensions") || [],
+        });
+        if (formatted !== file.value) {
+            file.message("Would be reformatted");
+        }
+    })(...args);
+}
 
 const remarkLintRules = {
     plugins: [
@@ -44,6 +71,7 @@ const remarkLintRules = {
         [remarkLintNoDuplicateHeadings, false],
         [remarkLintHeadingIncrement, false],
         [remarkLintUnorderedListMarkerStyle, "*"],
+        remarkLintNeedsReformatting,
     ],
 };
 
@@ -54,13 +82,7 @@ const config = {
         remarkMdx,
         [remarkFrontmatter, ["yaml"]],
         remarkLintRules,
-        // The format step was converting our ordered list items to have
-        // incremental numbering instead of using 1. for every list item. This
-        // was not because of any remark-lint rule, but because of
-        // remark-stringify which auto increments any lists it processes. We
-        // followed the recommended fix from
-        // https://github.com/remarkjs/remark-lint/blob/ae2f941d88551d0a1103e586495dec0f55469720/packages/remark-lint-ordered-list-marker-value/readme.md?plain=1#L185
-        [remarkStringify, {incrementListMarker: false}],
+        [remarkStringify, stringifyOptions],
     ],
 };
 

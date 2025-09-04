@@ -482,6 +482,9 @@ importers:
       puppeteer:
         specifier: ^24.1.1
         version: 24.16.2(typescript@5.9.2)
+      remark-cli:
+        specifier: ^12.0.1
+        version: 12.0.1
       source-map:
         specifier: npm:source-map-js@^1.2.1
         version: source-map-js@1.2.1
@@ -570,9 +573,9 @@ importers:
         specifier: ^22.1.0
         version: 22.2.0
     devDependencies:
-      remark-cli:
-        specifier: ^12.0.1
-        version: 12.0.1
+      mdast-util-to-markdown:
+        specifier: ^2.1.2
+        version: 2.1.2
       remark-frontmatter:
         specifier: ^5.0.0
         version: 5.0.0
@@ -627,6 +630,9 @@ importers:
       unified:
         specifier: ^11.0.5
         version: 11.0.5
+      unified-lint-rule:
+        specifier: ^3.0.1
+        version: 3.0.1
 
 packages:
 
