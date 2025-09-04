@@ -132,6 +132,8 @@ export function sort_groups(
     };
 
     const show_all_channels = util.prefix_match({value: normal_section.section_title, search_term});
+    const include_all_pinned_channels =
+        show_all_channels || util.prefix_match({value: pinned_section.section_title, search_term});
 
     const stream_id_to_name = (stream_id: number): string => sub_store.get(stream_id)!.name;
     // Use -, _, : and / as word separators apart from the default space character
@@ -174,6 +176,15 @@ export function sort_groups(
     }
 
     const folder_sections = new Map<number, StreamListSection>();
+
+    if (!show_all_channels && include_all_pinned_channels) {
+        matching_stream_ids = [
+            ...matching_stream_ids,
+            ...all_subscribed_stream_ids.filter(
+                (stream_id) => sub_store.get(stream_id)!.pin_to_top,
+            ),
+        ];
+    }
 
     for (const stream_id of matching_stream_ids) {
         const sub = sub_store.get(stream_id);

@@ -316,6 +316,16 @@ test("basics", ({override}) => {
     assert.deepEqual(sorted_sections[1].streams, [stream_hyphen_underscore_slash_colon.stream_id]);
     assert.deepEqual(sorted_sections[1].inactive_streams, []);
 
+    // Only show pinned channels
+    sorted_sections = sort_groups("pinned").sections;
+    assert.deepEqual(sorted_sections.length, 2);
+    assert.deepEqual(sorted_sections[0].id, "pinned-streams");
+    assert.deepEqual(sorted_sections[0].streams, [scalene.stream_id]);
+    assert.deepEqual(sorted_sections[0].inactive_streams, []);
+    assert.deepEqual(sorted_sections[1].id, "normal-streams");
+    assert.deepEqual(sorted_sections[1].inactive_streams, []);
+    assert.deepEqual(sorted_sections[1].streams, []);
+
     override(user_settings, "web_left_sidebar_show_channel_folders", true);
     sorted_sections = sort_groups("").sections;
     assert.deepEqual(sorted_sections.length, 5);
