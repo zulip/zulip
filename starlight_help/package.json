@@ -36,7 +36,6 @@
     "remark-lint-file-extension": "^3.0.1",
     "remark-lint-final-definition": "^4.0.2",
     "remark-lint-heading-increment": "^4.0.1",
-    "remark-lint-list-item-indent": "^4.0.1",
     "remark-lint-list-item-spacing": "^5.0.1",
     "remark-lint-maximum-heading-length": "^4.1.1",
     "remark-lint-maximum-line-length": "^4.1.1",

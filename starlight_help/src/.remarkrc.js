@@ -15,7 +15,6 @@ import remarkLintFencedCodeFlag from "remark-lint-fenced-code-flag";
 import remarkLintFileExtension from "remark-lint-file-extension";
 import remarkLintFinalDefinition from "remark-lint-final-definition";
 import remarkLintHeadingIncrement from "remark-lint-heading-increment";
-import remarkLintListItemIndent from "remark-lint-list-item-indent";
 import remarkLintListItemSpacing from "remark-lint-list-item-spacing";
 import remarkLintMaximumHeadingLength from "remark-lint-maximum-heading-length";
 import remarkLintMaximumLineLength from "remark-lint-maximum-line-length";
@@ -38,7 +37,6 @@ const remarkLintRules = {
         [remarkLintFileExtension, ["mdx"]],
         [remarkLintNoUnusedDefinitions, false],
         [remarkLintMaximumLineLength, false],
-        [remarkLintListItemIndent, false],
         [remarkLintFencedCodeFlag, false],
         [remarkLintNoFileNameIrregularCharacters, false],
         [remarkLintNoFileNameMixedCase, false],

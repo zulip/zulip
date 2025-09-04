@@ -591,9 +591,6 @@ importers:
       remark-lint-heading-increment:
         specifier: ^4.0.1
         version: 4.0.1
-      remark-lint-list-item-indent:
-        specifier: ^4.0.1
-        version: 4.0.1
       remark-lint-list-item-spacing:
         specifier: ^5.0.1
         version: 5.0.1
