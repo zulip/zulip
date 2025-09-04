@@ -77,7 +77,7 @@ type ValidOrInvalidUser =
     | {valid_user: true; user_pill_context: UserPillItem}
     | {valid_user: false; operand: string};
 
-const channels_operands = new Set(["public", "web-public", "all"]);
+const channels_operands = new Set(["public", "web-public", "all", "subscribed"]);
 
 function zephyr_stream_name_match(
     message: Message & {type: "stream"},
@@ -227,6 +227,7 @@ function message_matches_search_term(message: Message, operator: string, operand
                 case "web-public":
                     return stream_privacy_policy === "web-public";
                 case "all":
+                case "subscribed":
                     return [
                         "public",
                         "web-public",
@@ -668,6 +669,7 @@ export class Filter {
             "in",
             "channels-all",
             "channels-public",
+            "channels-subscribed",
             "channels-web-public",
             "channel",
             "topic",
@@ -908,6 +910,8 @@ export class Filter {
                 return possible_prefix + "all web-public channels";
             case "all":
                 return possible_prefix + "all channels that you can view";
+            case "subscribed":
+                return possible_prefix + "all subscribed channels";
             default:
                 return possible_prefix + "all public channels";
         }
@@ -1176,6 +1180,8 @@ export class Filter {
             "not-channels-all",
             "channels-public",
             "not-channels-public",
+            "channels-subscribed",
+            "not-channels-subscribed",
             "channels-web-public",
             "not-channels-web-public",
             "near",
@@ -1287,6 +1293,9 @@ export class Filter {
         if (_.isEqual(term_types, ["channels-public"])) {
             return true;
         }
+        if (_.isEqual(term_types, ["channels-subscribed"])) {
+            return true;
+        }
         if (_.isEqual(term_types, ["channels-web-public"])) {
             return true;
         }
@@ -1364,6 +1373,8 @@ export class Filter {
                     return "/#narrow/channels/all";
                 case "channels-public":
                     return "/#narrow/channels/public";
+                case "channels-subscribed":
+                    return "/#narrow/channels/subscribed";
                 case "channels-web-public":
                     return "/#narrow/channels/web-public";
                 case "dm":
@@ -1543,6 +1554,8 @@ export class Filter {
                     return $t({defaultMessage: "Messages in all public channels"});
                 case "channels-web-public":
                     return $t({defaultMessage: "Messages in all web-public channels"});
+                case "channels-subscribed":
+                    return $t({defaultMessage: "Messages in all subscribed channels"});
                 case "is-starred":
                     return $t({defaultMessage: "Starred messages"});
                 case "is-mentioned":
@@ -1939,6 +1952,8 @@ export class Filter {
             "not-channels-public",
             "channels-web-public",
             "not-channels-web-public",
+            "channels-subscribed",
+            "not-channels-subscribed",
             "is-muted",
             "not-is-muted",
             "in-home",

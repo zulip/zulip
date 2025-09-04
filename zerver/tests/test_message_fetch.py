@@ -306,6 +306,91 @@ class NarrowBuilderTest(ZulipTestCase):
             "WHERE NOT (recipient_id IN (__[POSTCOMPILE_recipient_id_1]) OR message_id IN (__[POSTCOMPILE_message_id_1]))",
         )
 
+    def test_add_term_using_channels_operator_and_subscribed_operand(self) -> None:
+        hamlet = self.user_profile
+        term = NarrowParameter(operator="channels", operand="subscribed")
+        self._do_add_term_test(
+            term,
+            "WHERE recipient_id IN (__[POSTCOMPILE_recipient_id_1]) OR id IN (__[POSTCOMPILE_id_1])",
+        )
+        realm = get_realm("zulip")
+        hamlet_group = check_add_user_group(
+            realm,
+            "hamlet_group",
+            [hamlet],
+            acting_user=hamlet,
+        )
+        # Add new channels
+        channel_dicts: list[StreamDict] = [
+            {
+                "name": "private-channel",
+                "description": "Private channel with non-public history",
+                "invite_only": True,
+            },
+            {
+                "name": "private-channel-with-history",
+                "description": "Private channel with public history",
+                "invite_only": True,
+                "history_public_to_subscribers": True,
+                "can_add_subscribers_group": hamlet_group,
+            },
+        ]
+        created, existing = create_streams_if_needed(realm, channel_dicts)
+
+        self.assert_length(created, 2)
+        self.assert_length(existing, 0)
+        self.subscribe(hamlet, "private-channel")
+        # Number of recipient ids will increase by 1 and not 2
+        self._do_add_term_test(
+            term,
+            "WHERE recipient_id IN (__[POSTCOMPILE_recipient_id_1]) OR id IN (__[POSTCOMPILE_id_1])",
+        )
+
+        self.subscribe(self.user_profile, "private_channel")
+        self.send_stream_message(self.user_profile, "private_channel")
+
+    def test_add_term_using_channels_operator_and_subscribed_operand_negated(self) -> None:
+        hamlet = self.user_profile
+        term = NarrowParameter(operator="channels", operand="subscribed", negated=True)
+        self.builder = NarrowBuilder(self.user_profile, column("message_id", Integer), self.realm)
+        self._do_add_term_test(
+            term,
+            "WHERE NOT (recipient_id IN (__[POSTCOMPILE_recipient_id_1]) OR message_id IN (__[POSTCOMPILE_message_id_1]))",
+        )
+        realm = get_realm("zulip")
+        hamlet_group = check_add_user_group(
+            realm,
+            "hamlet_group",
+            [hamlet],
+            acting_user=hamlet,
+        )
+        # Add new channels
+        channel_dicts: list[StreamDict] = [
+            {
+                "name": "private-channel",
+                "description": "Private channel with non-public history",
+                "invite_only": True,
+            },
+            {
+                "name": "private-channel-with-history",
+                "description": "Private channel with public history",
+                "invite_only": True,
+                "history_public_to_subscribers": True,
+                "can_add_subscribers_group": hamlet_group,
+            },
+        ]
+        created, existing = create_streams_if_needed(realm, channel_dicts)
+
+        self.assert_length(created, 2)
+        self.assert_length(existing, 0)
+
+        self.subscribe(hamlet, "private-channel")
+        # Number of recipient ids will increase by 1 and not 2
+        self._do_add_term_test(
+            term,
+            "WHERE NOT (recipient_id IN (__[POSTCOMPILE_recipient_id_1]) OR message_id IN (__[POSTCOMPILE_message_id_1]))",
+        )
+
     def test_add_term_using_is_operator_and_dm_operand(self) -> None:
         term = NarrowParameter(operator="is", operand="dm")
         self._do_add_term_test(term, "WHERE (flags & %(flags_1)s) != %(param_1)s")
@@ -477,6 +562,11 @@ class NarrowBuilderTest(ZulipTestCase):
             self._build_query(channels_term)
         self.assertEqual(expected_error_message, str(error.exception))
 
+        channels_term = NarrowParameter(operator="channels", operand="subscribed")
+        with self.assertRaises(BadNarrowOperatorError) as error:
+            self._build_query(channels_term)
+        self.assertEqual(expected_error_message, str(error.exception))
+
     def test_combined_channel_with_negated_is_dm(self) -> None:
         dm_term = NarrowParameter(operator="is", operand="dm", negated=True)
         self._build_query(dm_term)
@@ -487,6 +577,9 @@ class NarrowBuilderTest(ZulipTestCase):
         channel_term = NarrowParameter(operator="channels", operand="all")
         self._build_query(channel_term)
 
+        channel_term = NarrowParameter(operator="channels", operand="subscribed")
+        self._build_query(channel_term)
+
     def test_combined_negated_channel_with_is_dm(self) -> None:
         dm_term = NarrowParameter(operator="is", operand="dm")
         self._build_query(dm_term)
@@ -495,6 +588,9 @@ class NarrowBuilderTest(ZulipTestCase):
         self._build_query(channel_term)
 
         channel_term = NarrowParameter(operator="channels", operand="all", negated=True)
+        self._build_query(channel_term)
+
+        channel_term = NarrowParameter(operator="channels", operand="subscribed", negated=True)
         self._build_query(channel_term)
 
     def test_add_term_using_dm_operator_not_the_same_user_as_operand_and_negated(
@@ -875,6 +971,21 @@ class NarrowBuilderTest(ZulipTestCase):
             "WHERE NOT (recipient_id IN (__[POSTCOMPILE_recipient_id_1]) OR message_id IN (__[POSTCOMPILE_message_id_1]))",
         )
 
+    def test_add_term_using_streams_operator_and_subscribed_operand(self) -> None:
+        term = NarrowParameter(operator="streams", operand="subscribed")
+        self._do_add_term_test(
+            term,
+            "WHERE recipient_id IN (__[POSTCOMPILE_recipient_id_1]) OR id IN (__[POSTCOMPILE_id_1])",
+        )
+
+    def test_add_term_using_streams_operator_and_subscribed_operand_negated(self) -> None:
+        term = NarrowParameter(operator="streams", operand="subscribed", negated=True)
+        self.builder = NarrowBuilder(self.user_profile, column("message_id", Integer), self.realm)
+        self._do_add_term_test(
+            term,
+            "WHERE NOT (recipient_id IN (__[POSTCOMPILE_recipient_id_1]) OR message_id IN (__[POSTCOMPILE_message_id_1]))",
+        )
+
     def _do_add_term_test(
         self, term: NarrowParameter, where_clause: str, params: dict[str, Any] | None = None
     ) -> None:
@@ -1221,6 +1332,9 @@ class NarrowLibraryTest(ZulipTestCase):
         self.assertTrue(
             is_spectator_compatible([NarrowParameter(operator="channels", operand="all")])
         )
+        self.assertFalse(
+            is_spectator_compatible([NarrowParameter(operator="channels", operand="subscribed")])
+        )
 
         # "is:private" is a legacy alias for "is:dm".
         self.assertFalse(
@@ -1257,6 +1371,9 @@ class NarrowLibraryTest(ZulipTestCase):
         self.assertTrue(
             is_spectator_compatible([NarrowParameter(operator="streams", operand="all")])
         )
+        self.assertFalse(
+            is_spectator_compatible([NarrowParameter(operator="streams", operand="subscribed")])
+        )
 
 
 class IncludeHistoryTest(ZulipTestCase):
@@ -1291,6 +1408,18 @@ class IncludeHistoryTest(ZulipTestCase):
         # Negated -channels:all searches should not include history.
         narrow = [
             NarrowParameter(operator="channels", operand="all", negated=True),
+        ]
+        self.assertFalse(ok_to_include_history(narrow, user_profile, False))
+
+        # channels:subscribed searches should include history for non-guest members.
+        narrow = [
+            NarrowParameter(operator="channels", operand="subscribed"),
+        ]
+        self.assertTrue(ok_to_include_history(narrow, user_profile, False))
+
+        # Negated -channels:subscribed searches should not include history.
+        narrow = [
+            NarrowParameter(operator="channels", operand="subscribed", negated=True),
         ]
         self.assertFalse(ok_to_include_history(narrow, user_profile, False))
 
@@ -1417,6 +1546,12 @@ class IncludeHistoryTest(ZulipTestCase):
         # channels:all searches should not include history for guest members.
         narrow = [
             NarrowParameter(operator="channels", operand="all"),
+        ]
+        self.assertFalse(ok_to_include_history(narrow, guest_user_profile, False))
+
+        # channels:subscribed searches should not include history for guest members.
+        narrow = [
+            NarrowParameter(operator="channels", operand="subscribed"),
         ]
         self.assertFalse(ok_to_include_history(narrow, guest_user_profile, False))
 
@@ -3989,6 +4124,86 @@ class GetOldMessagesTest(ZulipTestCase):
         self.assertEqual(result["messages"][0]["display_recipient"], "public-channel")
         self.assertEqual(result["messages"][1]["display_recipient"], "private-channel-with-history")
         self.assertEqual(result["messages"][2]["display_recipient"], "private-channel")
+
+    def test_get_messages_using_narrow_channels_subscribed(self) -> None:
+        realm = get_realm("zulip")
+
+        # Add new channels
+        channel_dicts: list[StreamDict] = [
+            {
+                "name": "public-channel",
+                "description": "Public channel with public history",
+                "is_web_public": False,
+            },
+            {
+                "name": "private-channel",
+                "description": "Private channel with non-public history",
+                "invite_only": True,
+            },
+            {
+                "name": "private-channel-with-history",
+                "description": "Private channel with public history",
+                "invite_only": True,
+                "history_public_to_subscribers": True,
+            },
+        ]
+        create_streams_if_needed(realm, channel_dicts)
+
+        iago = self.example_user("iago")
+        self.login("iago")
+        message_ids = []
+        for stream_name in ["public-channel", "private-channel", "private-channel-with-history"]:
+            self.subscribe(iago, stream_name)
+            message_ids.append(self.send_stream_message(iago, stream_name))
+        self.logout()
+
+        polonius = self.example_user("polonius")
+        # Polonius is subscribed to "Verona" by default, so we unsubscribe
+        # it so that it becomes easier to test the `channels:subscribed` filter.
+        self.unsubscribe(polonius, "Verona")
+
+        self.login("polonius")
+        polonius_group = check_add_user_group(
+            realm,
+            "polonius_group",
+            [polonius],
+            acting_user=polonius,
+        )
+        for stream_name in ["private-channel", "private-channel-with-history"]:
+            do_change_stream_group_based_setting(
+                get_stream(stream_name, realm),
+                "can_add_subscribers_group",
+                polonius_group,
+                acting_user=iago,
+            )
+
+        narrow = [dict(operator="channels", operand="subscribed")]
+
+        # Only the messages from the subscribed channels should be included.
+        result = self.get_and_check_messages(
+            dict(
+                narrow=orjson.dumps(narrow).decode(),
+                anchor=message_ids[0],
+                num_before=0,
+                num_after=3,
+            )
+        )
+        self.assert_length(result["messages"], 0)
+
+        self.subscribe(polonius, "private-channel")
+
+        self.send_stream_message(polonius, "private-channel")
+        result = self.get_and_check_messages(
+            dict(
+                narrow=orjson.dumps(narrow).decode(),
+                anchor=message_ids[0],
+                num_before=0,
+                num_after=3,
+            )
+        )
+
+        self.assert_length(result["messages"], 1)
+        self.assertEqual(result["messages"][0]["display_recipient"], "private-channel")
 
     def test_get_visible_messages_with_anchor(self) -> None:
         def messages_matches_ids(messages: list[dict[str, Any]], message_ids: list[int]) -> None:

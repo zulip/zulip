@@ -620,6 +620,7 @@ function get_channels_filter_suggestions(last: NarrowTerm, terms: NarrowTerm[]):
     const public_channels_search_string = "channels:public";
     const web_public_channels_search_string = "channels:web-public";
     const all_accessible_channels_search_string = "channels:all";
+    const subscribed_channels_search_string = "channels:subscribed";
     const suggestions: SuggestionAndIncompatiblePatterns[] = [];
 
     if (!page_params.is_spectator || stream_data.realm_has_web_public_streams()) {
@@ -631,11 +632,18 @@ function get_channels_filter_suggestions(last: NarrowTerm, terms: NarrowTerm[]):
     }
 
     if (!page_params.is_spectator) {
-        suggestions.push({
-            search_string: public_channels_search_string,
-            description_html: "all public channels",
-            incompatible_patterns: incompatible_patterns.channels!,
-        });
+        suggestions.push(
+            {
+                search_string: public_channels_search_string,
+                description_html: "all public channels",
+                incompatible_patterns: incompatible_patterns.channels!,
+            },
+            {
+                search_string: subscribed_channels_search_string,
+                description_html: "all subscribed channels",
+                incompatible_patterns: incompatible_patterns.channels!,
+            },
+        );
     }
 
     if (stream_data.realm_has_web_public_streams()) {
