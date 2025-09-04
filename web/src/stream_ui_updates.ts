@@ -480,11 +480,11 @@ export function update_notification_setting_checkbox(
 
 export function update_stream_row_in_settings_tab(sub: StreamSubscription): void {
     // This is in the left panel.
-    // This function display/hide stream row in stream settings tab,
-    // used to display immediate effect of add/removal subscription event.
-    // If user is subscribed or unsubscribed to stream, it will show sub or unsub
-    // row under "Subscribed" or "Available" (only if the stream is public) tab, otherwise
-    // if stream is not public hide stream row under tab.
+    // This function is used to display immediate effect of add/removal subscription
+    // event.
+    // If user is subscribed or unsubscribed to stream, the stream row is kept in
+    // the tab view if user can toggle the state again, otherwise the stream row
+    // is removed.
 
     if (is_subscribed_stream_tab_active() || is_available_stream_tab_active()) {
         const $row = row_for_stream_id(sub.stream_id);
@@ -498,7 +498,7 @@ export function update_stream_row_in_settings_tab(sub: StreamSubscription): void
             if (stream_settings_components.filter_includes_channel(sub)) {
                 $row.removeClass("notdisplayed");
             }
-        } else if (sub.invite_only || current_user.is_guest) {
+        } else if (current_user.is_guest || !stream_data.can_toggle_subscription(sub)) {
             $row.addClass("notdisplayed");
         }
     }
