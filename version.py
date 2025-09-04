@@ -49,4 +49,4 @@ API_FEATURE_LEVEL = 425
 #   historical commits sharing the same major version, in which case a
 #   minor version bump suffices.
 
-PROVISION_VERSION = (345, 0)  # bumped 2025-09-04 to remove remark-lint-no-duplicate-definitions
+PROVISION_VERSION = (346, 0)  # bumped 2025-09-04 to remove remark-lint-list-item-indent
