@@ -72,7 +72,6 @@ not_yet_fully_covered = [
     # Markdown sub-libs should have full coverage too; a lot are really close
     "zerver/lib/markdown/api_arguments_table_generator.py",
     "zerver/lib/markdown/fenced_code.py",
-    "zerver/lib/markdown/help_relative_links.py",
     "zerver/lib/markdown/nested_code_blocks.py",
     # Workers should get full coverage; many have it already
     "zerver/worker/deferred_work.py",
