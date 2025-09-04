@@ -1112,6 +1112,20 @@ function toggle_submit_button($edit_form: JQuery): void {
     $submit_button.prop("disabled", false);
 }
 
+export function disable_user_role_dropdown_if_needed(user: User): void {
+    if (user.is_owner && people.is_current_user_only_owner()) {
+        ui_util.disable_element_and_add_tooltip(
+            $("#user-role-select"),
+            "Because you are the only organization owner, you cannot change your role.",
+        );
+        return;
+    }
+
+    if (user.is_owner && !current_user.is_owner) {
+        $("#user-role-select").prop("disabled", true);
+    }
+}
+
 export function show_edit_user_info_modal(user_id: number, $container: JQuery): void {
     const person = people.maybe_get_user_by_id(user_id);
     const is_active = people.is_person_active(user_id);
@@ -1127,7 +1141,6 @@ export function show_edit_user_info_modal(user_id: number, $container: JQuery): 
         email: person.delivery_email,
         full_name: person.full_name,
         user_role_values: settings_config.user_role_values,
-        disable_role_dropdown: person.is_owner && !current_user.is_owner,
         is_active,
         hide_deactivate_button,
         max_user_name_length: people.MAX_USER_NAME_LENGTH,
@@ -1143,6 +1156,7 @@ export function show_edit_user_info_modal(user_id: number, $container: JQuery): 
             )
             .hide();
     }
+    disable_user_role_dropdown_if_needed(person);
 
     const custom_profile_field_form_selector = "#edit-user-form .custom-profile-field-form";
     $(custom_profile_field_form_selector).empty();
