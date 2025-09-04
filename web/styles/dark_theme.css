@@ -359,22 +359,6 @@
     }
 
     #user-profile-modal {
-        #default-section {
-            .default-field {
-                .name {
-                    color: hsl(236deg 33% 90%);
-                }
-            }
-        }
-
-        #content {
-            .field-section {
-                .name {
-                    color: hsl(236deg 33% 90%);
-                }
-            }
-        }
-
         .subscription-group-list,
         .subscription-stream-list,
         .subscription-stream-list .user-stream-list tr,
