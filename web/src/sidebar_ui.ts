@@ -313,10 +313,12 @@ export function update_expanded_views_for_search(search_term: string): void {
         search_term,
     });
     for (const view of expanded_views) {
-        let show_view = show_all_views || util.prefix_match({
-            value: view.name,
-            search_term,
-        });
+        let show_view =
+            show_all_views ||
+            util.prefix_match({
+                value: view.name,
+                search_term,
+            });
         const $view = $(`.top_left_${view.css_class_suffix}`);
 
         if (show_view && $view.hasClass("top_left_scheduled_messages")) {
@@ -603,7 +605,10 @@ function actually_update_left_sidebar_for_search(): void {
     }
 
     // Update left sidebar DM list.
-    pm_list.update_private_messages(is_left_sidebar_search_active);
+    pm_list.update_private_messages(
+        is_left_sidebar_search_active,
+        LEFT_SIDEBAR_DIRECT_MESSAGES_TITLE,
+    );
 
     // Update left sidebar channel list.
     stream_list.update_streams_sidebar();
