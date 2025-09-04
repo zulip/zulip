@@ -82,7 +82,7 @@ be your **exported data** file in the instructions below.
          (`EXTERNAL_HOST`) of the Zulip installation, run the following
          commands.
          <ImportSelfHostedServerTips />
-         ```
+         ```bash
          cd /home/zulip/deployments/current
          ./scripts/stop-server
          ./manage.py convert_rocketchat_data /tmp/rocketchat_data --output /tmp/converted_rocketchat_data
@@ -90,7 +90,7 @@ be your **exported data** file in the instructions below.
          ./scripts/start-server
          ```
          Alternatively, to import into a custom subdomain, run:
-         ```
+         ```bash "<subdomain>"
          cd /home/zulip/deployments/current
          ./scripts/stop-server
          ./manage.py convert_rocketchat_data /tmp/rocketchat_data --output /tmp/converted_rocketchat_data
