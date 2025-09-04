@@ -114,6 +114,23 @@ export function sort_groups(
     all_subscribed_stream_ids: number[],
     search_term: string,
 ): StreamListSortResult {
+    const pinned_section: StreamListSection = {
+        id: "pinned-streams",
+        folder_id: null,
+        section_title: $t({defaultMessage: "PINNED CHANNELS"}),
+        streams: [],
+        muted_streams: [],
+        inactive_streams: [],
+    };
+    const normal_section: StreamListSection = {
+        id: "normal-streams",
+        folder_id: null,
+        section_title: $t({defaultMessage: "CHANNELS"}),
+        streams: [],
+        muted_streams: [],
+        inactive_streams: [],
+    };
+
     const stream_id_to_name = (stream_id: number): string => sub_store.get(stream_id)!.name;
     // Use -, _, : and / as word separators apart from the default space character
     const word_separator_regex = /[\s/:_-]/;
@@ -151,23 +168,6 @@ export function sort_groups(
             ]),
         ];
     }
-
-    const pinned_section: StreamListSection = {
-        id: "pinned-streams",
-        folder_id: null,
-        section_title: $t({defaultMessage: "PINNED CHANNELS"}),
-        streams: [],
-        muted_streams: [],
-        inactive_streams: [],
-    };
-    const normal_section: StreamListSection = {
-        id: "normal-streams",
-        folder_id: null,
-        section_title: $t({defaultMessage: "CHANNELS"}),
-        streams: [],
-        muted_streams: [],
-        inactive_streams: [],
-    };
 
     const folder_sections = new Map<number, StreamListSection>();
 
