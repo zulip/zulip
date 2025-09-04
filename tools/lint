@@ -110,7 +110,7 @@ def run() -> None:
     )
     linter_config.external_linter(
         "openapi",
-        ["node", "tools/check-openapi"],
+        ["node", "tools/check-openapi.ts"],
         ["yaml"],
         description="Validates our OpenAPI/Swagger API documentation (zerver/openapi/zulip.yaml) ",
         fix_arg="--fix",

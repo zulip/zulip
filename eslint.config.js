@@ -15,9 +15,6 @@ const compat = new FlatCompat({baseDirectory: import.meta.dirname});
 
 export default tseslint.config(
     {
-        files: ["tools/check-openapi"],
-    },
-    {
         // This is intended for generated files and vendored third-party files.
         // For our source code, instead of adding files here, consider using
         // specific eslint-disable comments in the files themselves.
