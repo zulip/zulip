@@ -174,7 +174,6 @@ class MessageFieldForEventDirectMessage(BaseModel):
     is_me_message: bool
     reactions: list[dict[str, object]]
     recipient_id: int
-    sender_realm_str: str
     sender_email: str
     sender_full_name: str
     sender_id: int
@@ -245,7 +244,6 @@ class MessageFieldForEventMessage(BaseModel):
     is_me_message: bool
     reactions: list[dict[str, object]]
     recipient_id: int
-    sender_realm_str: str
     sender_email: str
     sender_full_name: str
     sender_id: int

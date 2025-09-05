@@ -78,7 +78,6 @@ for msg in result["messages"]:
         "recipient_id",
         "content_type",
         "client",
-        "sender_realm_str",
         "id",
         "type",
     ]:

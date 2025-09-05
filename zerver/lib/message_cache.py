@@ -508,7 +508,6 @@ class MessageDict:
             obj["sender_full_name"] = user_row["full_name"]
             obj["sender_email"] = user_row["email"]
             obj["sender_delivery_email"] = user_row["delivery_email"]
-            obj["sender_realm_str"] = user_row["realm__string_id"]
             obj["sender_avatar_source"] = user_row["avatar_source"]
             obj["sender_avatar_version"] = user_row["avatar_version"]
             obj["sender_is_mirror_dummy"] = user_row["is_mirror_dummy"]
