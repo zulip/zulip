@@ -14,6 +14,7 @@
     "@astrojs/starlight": "^0.35.1",
     "@iconify-json/fa": "^1.2.1",
     "astro": "^5.1.2",
+    "astro-compressor": "^1.1.2",
     "hast-util-from-html": "^2.0.3",
     "hast-util-to-html": "^9.0.5",
     "mdast-util-to-string": "^4.0.0",

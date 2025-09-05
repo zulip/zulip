@@ -549,6 +549,9 @@ importers:
       astro:
         specifier: ^5.1.2
         version: 5.13.5(@types/node@22.18.1)(encoding@0.1.13)(jiti@2.5.1)(rollup@4.50.0)(terser@5.44.0)(typescript@5.9.2)(yaml@2.8.1)
+      astro-compressor:
+        specifier: ^1.1.2
+        version: 1.1.2
       hast-util-from-html:
         specifier: ^2.0.3
         version: 2.0.3
@@ -3264,6 +3267,10 @@ packages:
   astring@1.9.0:
     resolution: {integrity: sha512-LElXdjswlqjWrPpJFg1Fx4wpkOCxj1TDHlSV4PlaRxHGWko024xICaa97ZkMfs6DRKlCguiAI+rbXv5GWwXIkg==}
     hasBin: true
+
+  astro-compressor@1.1.2:
+    resolution: {integrity: sha512-BsX6ypOkRff2g7e5vA47Vlpq9MfVxAo4pXzfkJvXTSzzrSYvf8m3e0lbyGK6eReSzWcAPXymOTIoooqDX1BTlA==}
+    engines: {node: '>=22.15.0 <23.0.0 || >=23.8.0'}
 
   astro-eslint-parser@1.2.2:
     resolution: {integrity: sha512-JepyLROIad6f44uyqMF6HKE2QbunNzp3mYKRcPoDGt0QkxXmH222FAFC64WTyQu2Kg8NNEXHTN/sWuUId9sSxw==}
@@ -12947,6 +12954,8 @@ snapshots:
   astral-regex@2.0.0: {}
 
   astring@1.9.0: {}
+
+  astro-compressor@1.1.2: {}
 
   astro-eslint-parser@1.2.2:
     dependencies:

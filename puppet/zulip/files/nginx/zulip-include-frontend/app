@@ -36,10 +36,7 @@ location ~ ^(/help(?:/[^/]+)*)/+$ {
 location /help {
     alias $help_alias;
 
-    gzip on;
-    gzip_min_length 1000;
-    gzip_proxied expired no-cache no-store private auth;
-    gzip_types text/plain text/css application/json application/javascript application/x-javascript text/xml application/xml application/xml+rss text/javascript;
+    gzip_static on;
     include /etc/nginx/zulip-include/headers;
     add_header Access-Control-Allow-Origin *;
     add_header Timing-Allow-Origin *;
