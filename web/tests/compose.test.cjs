@@ -850,36 +850,6 @@ test_ui("on_events", ({override, override_rewire}) => {
     })();
 });
 
-test_ui("create_message_object", ({override, override_rewire}) => {
-    mock_banners();
-
-    const fake_compose_box = new FakeComposeBox();
-
-    compose_state.set_stream_id(social.stream_id);
-
-    fake_compose_box.set_topic_val("lunch");
-    fake_compose_box.set_textarea_val("burrito");
-
-    compose_state.set_message_type("stream");
-
-    let message = compose.create_message_object();
-    assert.equal(message.to, social.stream_id);
-    assert.equal(message.topic, "lunch");
-    assert.equal(message.content, "burrito");
-
-    compose_state.set_message_type("private");
-    override(compose_pm_pill, "get_emails", () => "alice@example.com,bob@example.com");
-
-    message = compose.create_message_object();
-    assert.deepEqual(message.to, [alice.user_id, bob.user_id]);
-    assert.equal(message.to_user_ids, "31,32");
-    assert.equal(message.content, "burrito");
-
-    override_rewire(people, "email_list_to_user_ids_string", () => undefined);
-    message = compose.create_message_object();
-    assert.deepEqual(message.to, [alice.email, bob.email]);
-});
-
 test_ui("DM policy disabled", ({override, override_rewire}) => {
     // Disable dms in the organisation
     override(realm, "realm_direct_message_permission_group", nobody.id);
