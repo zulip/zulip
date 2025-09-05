@@ -20,12 +20,14 @@
     <div class="progressive-table-wrapper" data-simplebar data-simplebar-tab-index="-1">
         <table class="table table-striped wrapped-table">
             <thead class="table-sticky-headers">
-                <th class="active" data-sort="alphabetic" data-sort-prop="name">{{t "Name" }}
-                    <i class="table-sortable-arrow zulip-icon zulip-icon-sort-arrow-down"></i>
-                </th>
-                {{#if is_admin}}
-                <th class="actions"></th>
-                {{/if}}
+                <tr>
+                    <th class="active" data-sort="alphabetic" data-sort-prop="name">{{t "Name" }}
+                        <i class="table-sortable-arrow zulip-icon zulip-icon-sort-arrow-down"></i>
+                    </th>
+                    {{#if is_admin}}
+                    <th class="actions"></th>
+                    {{/if}}
+                </tr>
             </thead>
             <tbody data-empty="{{t 'There are no default channels.' }}" data-search-results-empty="{{t 'No default channels match your current filter.' }}"
               id="admin_default_streams_table" class="admin_default_stream_table"></tbody>
