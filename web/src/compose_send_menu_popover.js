@@ -7,6 +7,7 @@ import render_send_later_popover from "../templates/popovers/send_later_popover.
 import * as blueslip from "./blueslip.ts";
 import * as channel from "./channel.ts";
 import * as compose from "./compose.js";
+import * as compose_split_messages from "./compose_split_messages.ts";
 import * as compose_state from "./compose_state.ts";
 import * as compose_validate from "./compose_validate.ts";
 import * as drafts from "./drafts.ts";
@@ -213,6 +214,7 @@ export function initialize() {
                         enter_sends_true: user_settings.enter_sends,
                         formatted_send_later_time,
                         show_compose_new_message,
+                        split_messages_enabled: compose_split_messages.is_split_messages_enabled(),
                     }),
                 ),
             );
@@ -269,6 +271,13 @@ export function initialize() {
                 compose.clear_compose_box();
                 compose.clear_preview_area();
                 popover_menus.hide_current_popover_if_visible(instance);
+            });
+            // Handle split messages clicks.
+            $popper.one("click", "#split_messages_checkbox", () => {
+                compose.toggle_split_messages();
+                setTimeout(() => {
+                    popover_menus.hide_current_popover_if_visible(instance);
+                }, ENTER_SENDS_SELECTION_DELAY);
             });
         },
         onHidden(instance) {
