@@ -641,9 +641,17 @@
 .inbox-folder-components {
     border-radius: 5px;
     border: 0.5px solid hsl(0deg 0% 0% / 13%);
-    /* 8px at 16px / 1em */
-    margin-bottom: 0.5em;
     overflow: hidden;
+}
+
+.inbox-folder-components
+    .inbox-folder-channel:last-child
+    .inbox-topic-container,
+#inbox-direct-messages-container {
+    .inbox-row:last-child {
+        /* 8px at 16px / 1em */
+        margin-bottom: 0.5em;
+    }
 }
 
 .inbox-folder.inbox-collapsed-state,
