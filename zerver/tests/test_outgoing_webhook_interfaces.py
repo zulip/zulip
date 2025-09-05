@@ -81,7 +81,6 @@ class TestGenericOutgoingWebhookService(ZulipTestCase):
 
         expected_message_data = {
             "avatar_url": gravatar_url,
-            "client": "test suite",
             "content": "@**test**",
             "content_type": "text/x-markdown",
             "display_recipient": "Denmark",
@@ -93,7 +92,6 @@ class TestGenericOutgoingWebhookService(ZulipTestCase):
             "sender_email": othello.email,
             "sender_full_name": "Othello, the Moor of Venice",
             "sender_id": othello.id,
-            "sender_realm_str": "zulip",
             "stream_id": stream.id,
             TOPIC_NAME: "test",
             "submessages": [],
@@ -169,7 +167,6 @@ class TestSlackOutgoingWebhookService(ZulipTestCase):
             "message": {
                 "content": "test_content",
                 "type": "stream",
-                "sender_realm_str": "zulip",
                 "sender_email": "sampleuser@zulip.com",
                 "stream_id": "123",
                 "display_recipient": "integrations",
@@ -186,7 +183,6 @@ class TestSlackOutgoingWebhookService(ZulipTestCase):
             "trigger": NotificationTriggers.DIRECT_MESSAGE,
             "message": {
                 "sender_id": 3,
-                "sender_realm_str": "zulip",
                 "timestamp": 1529821610,
                 "sender_email": "cordelia@zulip.com",
                 "type": "private",

@@ -41,7 +41,6 @@ const submessage_schema = z.array(
 export const server_message_schema = z.intersection(
     z.object({
         avatar_url: z.nullish(z.string()),
-        client: z.string(),
         content: z.string(),
         content_type: z.enum(["text/html", "text/x-markdown"]),
         display_recipient: z.union([z.string(), z.array(display_recipient_users_schema)]),
@@ -55,7 +54,6 @@ export const server_message_schema = z.intersection(
         sender_email: z.string(),
         sender_full_name: z.string(),
         sender_id: z.number(),
-        sender_realm_str: z.string(),
         submessages: submessage_schema,
         timestamp: z.number(),
     }),

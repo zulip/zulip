@@ -167,14 +167,12 @@ class DirectMessageDisplayRecipient(BaseModel):
 
 class MessageFieldForEventDirectMessage(BaseModel):
     avatar_url: str | None
-    client: str
     content: str
     content_type: Literal["text/html"]
     id: int
     is_me_message: bool
     reactions: list[dict[str, object]]
     recipient_id: int
-    sender_realm_str: str
     sender_email: str
     sender_full_name: str
     sender_id: int
@@ -238,14 +236,12 @@ class EventInvitesChanged(BaseEvent):
 
 class MessageFieldForEventMessage(BaseModel):
     avatar_url: str | None
-    client: str
     content: str
     content_type: Literal["text/html"]
     id: int
     is_me_message: bool
     reactions: list[dict[str, object]]
     recipient_id: int
-    sender_realm_str: str
     sender_email: str
     sender_full_name: str
     sender_id: int

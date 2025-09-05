@@ -66,7 +66,6 @@ export const raw_message_schema = z.intersection(
     z.intersection(
         z.object({
             avatar_url: z.nullable(z.string()),
-            client: z.string(),
             content: z.string(),
             content_type: z.literal("text/html"),
             display_recipient: display_recipient_schema,
@@ -80,7 +79,6 @@ export const raw_message_schema = z.intersection(
             sender_email: z.string(),
             sender_full_name: z.string(),
             sender_id: z.number(),
-            sender_realm_str: z.string(),
             submessages: z.array(submessage_schema),
             timestamp: z.number(),
             flags: z.array(z.string()),

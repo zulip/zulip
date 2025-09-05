@@ -58,7 +58,6 @@ class DoRestCallTests(ZulipTestCase):
                 "sender_recipient_id": bot_user.recipient_id,
                 "sender_email": bot_user.email,
                 "sender_realm_id": bot_user.realm.id,
-                "sender_realm_str": bot_user.realm.string_id,
                 "sender_delivery_email": bot_user.delivery_email,
                 "sender_full_name": bot_user.full_name,
                 "sender_avatar_source": UserProfile.AVATAR_FROM_GRAVATAR,
