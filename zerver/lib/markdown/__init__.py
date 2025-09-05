@@ -2147,6 +2147,7 @@ class ZulipMarkdown(markdown.Markdown):
     image_preview_enabled: bool
     url_embed_preview_enabled: bool
     url_embed_data: dict[str, UrlEmbedData | None] | None
+    default_code_block_language: str
 
     def __init__(
         self,
@@ -2553,6 +2554,7 @@ def privacy_clean_markdown(content: str) -> str:
 
 def do_convert(
     content: str,
+    default_code_block_language: str,
     realm_alert_words_automaton: ahocorasick.Automaton | None = None,
     message: Message | None = None,
     message_realm: Realm | None = None,
@@ -2666,6 +2668,9 @@ def do_convert(
             translate_emoticons=translate_emoticons,
             user_upload_previews=user_upload_previews,
         )
+        if default_code_block_language == "" and message_realm is not None:
+            default_code_block_language = message_realm.default_code_block_language
+        _md_engine.default_code_block_language = default_code_block_language
 
     try:
         # Spend at most 5 seconds rendering; this protects the backend
@@ -2737,6 +2742,7 @@ def markdown_stats_finish() -> None:
 
 def markdown_convert(
     content: str,
+    default_code_block_language: str = "",
     realm_alert_words_automaton: ahocorasick.Automaton | None = None,
     message: Message | None = None,
     message_realm: Realm | None = None,
@@ -2751,6 +2757,7 @@ def markdown_convert(
     markdown_stats_start()
     ret = do_convert(
         content,
+        default_code_block_language,
         realm_alert_words_automaton,
         message,
         message_realm,
@@ -2770,6 +2777,7 @@ def render_message_markdown(
     message: Message,
     content: str,
     realm: Realm | None = None,
+    default_code_block_language: str = "",
     realm_alert_words_automaton: ahocorasick.Automaton | None = None,
     url_embed_data: dict[str, UrlEmbedData | None] | None = None,
     mention_data: MentionData | None = None,
@@ -2800,6 +2808,7 @@ def render_message_markdown(
         email_gateway=email_gateway,
         no_previews=no_previews,
         acting_user=acting_user,
+        default_code_block_language=default_code_block_language,
     )
 
     return rendering_result

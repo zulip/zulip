@@ -473,6 +473,7 @@ def send_subscription_add_events(
                 can_subscribe_group=stream_dict["can_subscribe_group"],
                 creator_id=stream_dict["creator_id"],
                 date_created=stream_dict["date_created"],
+                default_code_block_language=stream_dict["default_code_block_language"],
                 description=stream_dict["description"],
                 first_message_id=stream_dict["first_message_id"],
                 folder_id=stream_dict["folder_id"],
@@ -1956,6 +1957,36 @@ def do_change_stream_folder(
         type="stream",
         property="folder_id",
         value=stream.folder_id,
+        stream_id=stream.id,
+        name=stream.name,
+    )
+    send_event_on_commit(stream.realm, event, can_access_stream_metadata_user_ids(stream))
+
+
+@transaction.atomic(durable=True)
+def do_change_default_code_block_language(
+    stream: Stream, new_default_code_block_language: str, *, acting_user: UserProfile
+) -> None:
+    old_default_code_block_language = stream.default_code_block_language
+    stream.default_code_block_language = new_default_code_block_language
+    stream.save(update_fields=["default_code_block_language"])
+    RealmAuditLog.objects.create(
+        realm=stream.realm,
+        acting_user=acting_user,
+        modified_stream=stream,
+        event_type=AuditLogEventType.CHANNEL_PROPERTY_CHANGED,
+        event_time=timezone_now(),
+        extra_data={
+            RealmAuditLog.OLD_VALUE: old_default_code_block_language,
+            RealmAuditLog.NEW_VALUE: new_default_code_block_language,
+            "property": "default_code_block_language",
+        },
+    )
+    event = dict(
+        op="update",
+        type="stream",
+        property="default_code_block_language",
+        value=new_default_code_block_language,
         stream_id=stream.id,
         name=stream.name,
     )
