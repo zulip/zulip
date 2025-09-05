@@ -21,7 +21,7 @@ import {user_settings} from "./user_settings.ts";
 
 const waiting_for_server_request_ids = new Set<string>();
 
-type ReactionEvent = {
+export type ReactionEvent = {
     message_id: number;
     user_id: number;
     reaction_type: "zulip_extra_emoji" | "realm_emoji" | "unicode_emoji";
