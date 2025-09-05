@@ -48,6 +48,7 @@ const messages = {
         type: "stream",
         flags: ["has_alert_word"],
         subject: "copenhagen",
+        reactions: [],
         // note we don't have every field that a "real" message
         // would have, and that can be fine
     },
