@@ -55,6 +55,11 @@ class zulip::app_frontend_once {
     minute => '0',
     manage => 'enqueue_digest_emails',
   }
+  zulip::cron { 'update_subscriber_counts':
+    hour   => '6',
+    minute => '0',
+    manage => 'update_subscriber_counts --since 25'
+  }
   zulip::cron { 'clearsessions':
     hour   => '22',
     minute => '22',
