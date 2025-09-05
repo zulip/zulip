@@ -83,7 +83,10 @@ from zerver.lib.topic_link_util import get_stream_topic_link_syntax
 from zerver.lib.types import DirectMessageEditRequest, EditHistoryEvent, StreamMessageEditRequest
 from zerver.lib.url_encoding import stream_message_url
 from zerver.lib.user_message import bulk_insert_all_ums
-from zerver.lib.user_topics import get_users_with_user_topic_visibility_policy
+from zerver.lib.user_topics import (
+    get_moved_messages_senders_to_follow_target_topic,
+    get_users_with_user_topic_visibility_policy,
+)
 from zerver.lib.widget import is_widget_message
 from zerver.models import (
     ArchivedAttachment,
@@ -600,21 +603,19 @@ def update_message_content(
     )
 
 
-def apply_automatic_unmute_follow_topics_policy(
+def automatic_unmute_follow_topics_policy(
     user_profile: UserProfile,
     target_stream: Stream,
     target_topic_name: str,
-) -> None:
+) -> tuple[bool, bool]:
+    user_follow_target_topic = False
+    user_unmute_target_topic = False
+
     if (
         user_profile.automatically_follow_topics_policy
         == UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_INITIATION
     ):
-        bulk_do_set_user_topic_visibility_policy(
-            [user_profile],
-            target_stream,
-            target_topic_name,
-            visibility_policy=UserTopic.VisibilityPolicy.FOLLOWED,
-        )
+        user_follow_target_topic = True
     elif (
         user_profile.automatically_unmute_topics_in_muted_streams_policy
         == UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_INITIATION
@@ -627,12 +628,9 @@ def apply_automatic_unmute_follow_topics_policy(
         ).first()
 
         if subscription is not None and subscription.is_muted:
-            bulk_do_set_user_topic_visibility_policy(
-                [user_profile],
-                target_stream,
-                target_topic_name,
-                visibility_policy=UserTopic.VisibilityPolicy.UNMUTED,
-            )
+            user_unmute_target_topic = True
+
+    return user_follow_target_topic, user_unmute_target_topic
 
 
 # This must be called already in a transaction, with a write lock on
@@ -1234,8 +1232,51 @@ def do_update_message(
         ):
             is_target_message_first = True
 
+        sender_automatic_follow_target_topic = False
+        sender_automatic_unmute_target_topic = False
+
         if not sender.is_bot and sender not in users_losing_access and is_target_message_first:
-            apply_automatic_unmute_follow_topics_policy(sender, target_stream, target_topic)
+            sender_automatic_follow_target_topic, sender_automatic_unmute_target_topic = (
+                automatic_unmute_follow_topics_policy(sender, target_stream, target_topic)
+            )
+
+        user_ids_losing_access = {user.id for user in users_losing_access}
+
+        changed_messages_sender_ids = [
+            sender_id
+            for sender_id in changed_messages.values_list("sender", flat=True)
+            if sender_id not in user_ids_losing_access
+        ]
+
+        users_to_follow_target_topic = [
+            user_topic.user_profile
+            for user_topic in get_moved_messages_senders_to_follow_target_topic(
+                stream_being_edited.id,
+                orig_topic_name,
+                target_stream.id,
+                target_topic,
+                changed_messages_sender_ids,
+            )
+        ]
+
+        if sender_automatic_follow_target_topic and sender not in users_to_follow_target_topic:
+            users_to_follow_target_topic.append(sender)
+
+        if users_to_follow_target_topic:
+            bulk_do_set_user_topic_visibility_policy(
+                users_to_follow_target_topic,
+                target_stream,
+                target_topic,
+                visibility_policy=UserTopic.VisibilityPolicy.FOLLOWED,
+            )
+
+        if sender_automatic_unmute_target_topic:
+            bulk_do_set_user_topic_visibility_policy(
+                [sender],
+                target_stream,
+                target_topic,
+                visibility_policy=UserTopic.VisibilityPolicy.UNMUTED,
+            )
 
     send_event_on_commit(user_profile.realm, event, users_to_be_notified)
 
