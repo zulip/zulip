@@ -93,7 +93,10 @@ export default defineConfig({
                 {
                     label: "Guides for getting started",
                     items: [
-                        "getting-started-with-zulip",
+                        {
+                            label: "Getting started",
+                            link: "/getting-started-with-zulip",
+                        },
                         {
                             label: "Choosing a team chat app",
                             link: "https://blog.zulip.com/2024/11/04/choosing-a-team-chat-app/",
