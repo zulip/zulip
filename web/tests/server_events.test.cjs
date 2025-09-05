@@ -55,7 +55,6 @@ const message = {
     content: "hello",
     recipient_id: 3,
     timestamp: 100000000,
-    client: "website",
     subject: "server_test",
     topic_links: [],
     is_me_message: false,
