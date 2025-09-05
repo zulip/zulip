@@ -1839,7 +1839,7 @@
     /* Input pills */
     --color-background-input-pill: light-dark(
         hsl(237deg 68% 94%),
-        hsl(240deg 65% 60% / 22%)
+        hsl(240deg 65% 60% / 38%)
     );
     /* Tuned pill for the search bar in dark mode. */
     --color-background-input-pill-search: light-dark(
