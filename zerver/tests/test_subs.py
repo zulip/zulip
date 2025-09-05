@@ -5119,9 +5119,10 @@ class SubscriptionAPITest(ZulipTestCase):
         )
         self.assertEqual(announcement_channel_message.count(), 0)
 
-        # When subscribing to an already existing channel, if the number of new
-        # subscriptions exceeds the limit, no DMs are sent, but an announcement
-        # message and new channel message should be sent.
+        # The max number of new subscriptions limit only impacts
+        # DM notifications, so for a newly created channel, we
+        # still expect an announcement message and new channel
+        # message (and no DM notifications).
         now = timezone_now()
         with self.settings(MAX_BULK_NEW_SUBSCRIPTION_MESSAGES=5):
             response = self.subscribe_via_post(
