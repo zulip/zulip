@@ -4,7 +4,7 @@ from zerver.actions.alert_words import do_add_alert_words, do_remove_alert_words
 from zerver.lib.alert_words import alert_words_in_realm, user_alert_words
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import most_recent_message, most_recent_usermessage
-from zerver.models import AlertWord, UserProfile
+from zerver.models import AlertWord, AlertWordRemoval, UserProfile
 
 
 class AlertWordTests(ZulipTestCase):
@@ -243,3 +243,36 @@ class AlertWordTests(ZulipTestCase):
         user_message = most_recent_usermessage(user)
         self.assertEqual(user_message.message.content, "sorry false alarm")
         self.assertNotIn("has_alert_word", user_message.flags_list())
+
+
+class AlertWordsRemovalTests(ZulipTestCase):
+    def test_removed_words_recorded_and_exposed(self) -> None:
+        user = self.example_user("iago")
+        AlertWord.objects.filter(user_profile=user).delete()
+        self.login_user(user)
+
+        # Add two alert words (payload must be JSON-encoded)
+        result = self.client_post(
+            "/json/users/me/alert_words",
+            {"alert_words": orjson.dumps(["meeting", "study"]).decode()},
+        )
+        self.assert_json_success(result)
+        self.assertCountEqual(user_alert_words(user), ["meeting", "study"])
+
+        # Remove one (case-insensitive)
+        result = self.client_delete(
+            "/json/users/me/alert_words",
+            {"alert_words": orjson.dumps(["MEETING"]).decode()},
+        )
+        self.assert_json_success(result)
+        self.assertCountEqual(user_alert_words(user), ["study"])
+
+        # Tombstone exists (case preserved)
+        self.assertTrue(AlertWordRemoval.objects.filter(user_profile=user, word="meeting").exists())
+
+        # GET returns recently_removed_alert_words with removed_at
+        result = self.client_get("/json/users/me/alert_words")
+        data = self.assert_json_success(result)
+        removed = data["recently_removed_alert_words"]
+        self.assertIn("meeting", [r["word"] for r in removed])
+        self.assertTrue(all("removed_at" in r for r in removed))
