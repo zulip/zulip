@@ -45,6 +45,7 @@ def make_set(files: list[str]) -> set[str]:
 EXEMPT_FILES = make_set(
     [
         "web/shared/src/poll_data.ts",
+        "web/shared/src/typeahead.ts",
         "web/src/about_zulip.ts",
         "web/src/add_group_members_pill.ts",
         "web/src/add_stream_options_popover.ts",
@@ -191,6 +192,7 @@ EXEMPT_FILES = make_set(
         "web/src/popover_menus_data.ts",
         "web/src/popovers.ts",
         "web/src/popup_banners.ts",
+        "web/src/reactions.ts",
         "web/src/read_receipts.ts",
         "web/src/realm_icon.ts",
         "web/src/realm_logo.ts",
