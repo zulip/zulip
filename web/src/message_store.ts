@@ -79,7 +79,8 @@ export const raw_message_schema = z.intersection(
             sender_email: z.string(),
             sender_full_name: z.string(),
             sender_id: z.number(),
-            sender_realm_str: z.string(),
+            // The web app doesn't use sender_realm_str; ignore.
+            // sender_realm_str: z.string(),
             submessages: z.array(submessage_schema),
             timestamp: z.number(),
             flags: z.array(z.string()),

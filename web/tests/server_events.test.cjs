@@ -75,7 +75,6 @@ const message = {
     submessages: [],
     sender_full_name: "user1",
     sender_email: "user2@foo.com",
-    sender_realm_str: "foo",
     display_recipient: "test",
     type: "stream",
     stream_id: 1,
