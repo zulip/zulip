@@ -2348,6 +2348,7 @@ class RecipientInfoTest(ZulipTestCase):
             all_bot_user_ids=set(),
             topic_participant_user_ids=set(),
             sender_muted_stream=False,
+            push_device_registered_user_ids=set(),
         )
 
         self.assertEqual(info, expected_info)

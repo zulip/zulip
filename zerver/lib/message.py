@@ -149,6 +149,7 @@ class SendMessageRequest:
     default_bot_user_ids: set[int]
     service_bot_tuples: list[tuple[int, int]]
     all_bot_user_ids: set[int]
+    push_device_registered_user_ids: set[int]
     # IDs of topic participants who should be notified of topic wildcard mention.
     # The 'user_allows_notifications_in_StreamTopic' with 'wildcard_mentions_notify'
     # setting ON should return True.
