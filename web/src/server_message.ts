@@ -55,7 +55,6 @@ export const server_message_schema = z.intersection(
         sender_email: z.string(),
         sender_full_name: z.string(),
         sender_id: z.number(),
-        sender_realm_str: z.string(),
         submessages: submessage_schema,
         timestamp: z.number(),
     }),
