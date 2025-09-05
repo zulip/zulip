@@ -459,6 +459,12 @@
         text-overflow: ellipsis;
         opacity: 0.75;
         font-size: 90%;
+        transform: translateX(-4px);
+
+        .status-emoji {
+            position: relative;
+            top: -1px;
+        }
     }
 
     & span.status-text:not(:empty) {
