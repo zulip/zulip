@@ -366,6 +366,7 @@ class TestNotificationData(ZulipTestCase):
                 followed_topic_push_user_ids=set(),
                 topic_wildcard_mention_in_followed_topic_user_ids=set(),
                 stream_wildcard_mention_in_followed_topic_user_ids=set(),
+                push_device_registered_user_ids=set(),
             )
             self.assertEqual(user_data.is_notifiable(acting_user_id=1000, idle=True), notifiable)
 

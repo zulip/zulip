@@ -47,6 +47,8 @@ from zerver.lib.users import get_inaccessible_user_ids
 from zerver.models import (
     Message,
     NamedUserGroup,
+    PushDevice,
+    PushDeviceToken,
     Realm,
     Recipient,
     Stream,
@@ -149,6 +151,7 @@ class SendMessageRequest:
     default_bot_user_ids: set[int]
     service_bot_tuples: list[tuple[int, int]]
     all_bot_user_ids: set[int]
+    push_device_registered_user_ids: set[int]
     # IDs of topic participants who should be notified of topic wildcard mention.
     # The 'user_allows_notifications_in_StreamTopic' with 'wildcard_mentions_notify'
     # setting ON should return True.
@@ -1758,3 +1761,18 @@ def is_message_to_self(message: Message) -> bool:
         return message.recipient == message.sender.recipient
 
     return False
+
+
+def get_push_device_registered_user_ids(user_profile_ids: set[int]) -> set[int]:
+    """Users having any device registered to receive push notifications."""
+    legacy_registration_user_ids = set(
+        PushDeviceToken.objects.filter(user_id__in=user_profile_ids).values_list(
+            "user_id", flat=True
+        )
+    )
+    registration_user_ids = set(
+        PushDevice.objects.filter(
+            user_id__in=user_profile_ids, bouncer_device_id__isnull=False
+        ).values_list("user_id", flat=True)
+    )
+    return legacy_registration_user_ids | registration_user_ids

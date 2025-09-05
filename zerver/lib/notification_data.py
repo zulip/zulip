@@ -31,6 +31,7 @@ class UserMessageNotificationsData:
     stream_wildcard_mention_in_followed_topic_email_notify: bool
     sender_is_muted: bool
     disable_external_notifications: bool
+    push_device_registered: bool
 
     def __post_init__(self) -> None:
         # Check that there's no dubious data.
@@ -71,6 +72,7 @@ class UserMessageNotificationsData:
         stream_wildcard_mention_in_followed_topic_user_ids: set[int],
         muted_sender_user_ids: set[int],
         all_bot_user_ids: set[int],
+        push_device_registered_user_ids: set[int],
     ) -> "UserMessageNotificationsData":
         if user_id in all_bot_user_ids:
             # Don't send any notifications to bots
@@ -95,6 +97,7 @@ class UserMessageNotificationsData:
                 stream_wildcard_mention_in_followed_topic_email_notify=False,
                 sender_is_muted=False,
                 disable_external_notifications=False,
+                push_device_registered=False,
             )
 
         # `stream_wildcard_mention_user_ids`, `topic_wildcard_mention_user_ids`,
@@ -171,6 +174,7 @@ class UserMessageNotificationsData:
             stream_wildcard_mention_in_followed_topic_email_notify=stream_wildcard_mention_in_followed_topic_email_notify,
             sender_is_muted=user_id in muted_sender_user_ids,
             disable_external_notifications=disable_external_notifications,
+            push_device_registered=user_id in push_device_registered_user_ids,
         )
 
     # For these functions, acting_user_id is the user sent a message
@@ -205,6 +209,9 @@ class UserMessageNotificationsData:
             return None
 
         if self.trivially_should_not_notify(acting_user_id):
+            return None
+
+        if not self.push_device_registered:
             return None
 
         # The order here is important. If, for example, both

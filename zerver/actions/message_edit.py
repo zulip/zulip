@@ -570,6 +570,7 @@ def update_message_content(
     event["prior_mention_user_ids"] = list(prior_mention_user_ids)
     event["presence_idle_user_ids"] = filter_presence_idle_user_ids(info.active_user_ids)
     event["all_bot_user_ids"] = list(info.all_bot_user_ids)
+    event["push_device_registered_user_ids"] = list(info.push_device_registered_user_ids)
     if rendering_result.mentions_stream_wildcard:
         event["stream_wildcard_mention_user_ids"] = list(info.stream_wildcard_mention_user_ids)
         event["stream_wildcard_mention_in_followed_topic_user_ids"] = list(
