@@ -1472,6 +1472,37 @@
         hsl(0deg 0% 93%),
         hsl(0deg 0% 0% / 20%)
     );
+    /* Poll Widget */
+    --color-poll-vote: light-dark(hsl(156deg 41% 40%), hsl(185deg 35% 65%));
+    --color-poll-vote-hover: light-dark(
+        hsl(156deg 41% 40%),
+        hsl(185deg 50% 70%)
+    );
+    --color-poll-vote-focus: light-dark(
+        hsl(156deg 41% 40%),
+        hsl(185deg 50% 65%)
+    );
+    --color-border-poll-vote: light-dark(
+        hsl(156deg 28% 70%),
+        hsl(185deg 35% 35%)
+    );
+    --color-border-poll-vote-hover: light-dark(
+        hsl(156deg 30% 50%),
+        hsl(185deg 40% 40%)
+    );
+    --color-border-poll-vote-focus: light-dark(
+        hsl(156deg 30% 50%),
+        hsl(185deg 40% 50%)
+    );
+    --color-background-poll-vote-hover: light-dark(
+        var(--color-background-widget-button),
+        hsl(185deg 20% 20%)
+    );
+    --color-background-poll-vote-focus: light-dark(
+        hsl(156deg 41% 90%),
+        hsl(185deg 40% 35%)
+    );
+    --color-poll-names: light-dark(hsl(0deg 0% 45%), hsl(236deg 15% 70%));
 
     /* KBD colors */
     --color-kbd-background: light-dark(hsl(0deg 0% 98%), hsl(211deg 29% 14%));

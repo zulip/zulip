@@ -438,30 +438,6 @@
         }
     }
 
-    /* Widgets: Poll */
-    .poll-widget {
-        .poll-vote {
-            color: hsl(185deg 35% 65%);
-            border-color: hsl(185deg 35% 35%);
-
-            &:hover {
-                color: hsl(185deg 50% 70%);
-                border-color: hsl(185deg 40% 40%);
-                background-color: hsl(185deg 20% 20%);
-            }
-
-            &:focus {
-                color: hsl(185deg 50% 65%);
-                border-color: hsl(185deg 40% 50%);
-                background-color: hsl(185deg 40% 35%);
-            }
-        }
-
-        .poll-names {
-            color: hsl(236deg 15% 70%);
-        }
-    }
-
     /* Widgets: Todo */
     .todo-widget {
         & label.checkbox {
