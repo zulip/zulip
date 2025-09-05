@@ -385,7 +385,6 @@ class MessageDict:
             rendered_content_version=row["rendered_content_version"],
             sender_id=row["sender_id"],
             sender_realm_id=row["sender__realm_id"],
-            sending_client_name=row["sending_client__name"],
             rendering_realm_id=row.get("rendering_realm_id", row["sender__realm_id"]),
             recipient_id=row["recipient_id"],
             recipient_type=row["recipient__type"],
@@ -406,7 +405,6 @@ class MessageDict:
         rendered_content_version: int | None,
         sender_id: int,
         sender_realm_id: int,
-        sending_client_name: str,
         rendering_realm_id: int,
         recipient_id: int,
         recipient_type: int,
@@ -422,7 +420,6 @@ class MessageDict:
             recipient_type=recipient_type,
             recipient_id=recipient_id,
             timestamp=datetime_to_timestamp(date_sent),
-            client=sending_client_name,
         )
 
         obj[TOPIC_NAME] = topic_name

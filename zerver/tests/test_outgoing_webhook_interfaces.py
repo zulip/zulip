@@ -81,7 +81,6 @@ class TestGenericOutgoingWebhookService(ZulipTestCase):
 
         expected_message_data = {
             "avatar_url": gravatar_url,
-            "client": "test suite",
             "content": "@**test**",
             "content_type": "text/x-markdown",
             "display_recipient": "Denmark",

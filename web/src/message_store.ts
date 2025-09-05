@@ -66,7 +66,6 @@ export const raw_message_schema = z.intersection(
     z.intersection(
         z.object({
             avatar_url: z.nullable(z.string()),
-            client: z.string(),
             content: z.string(),
             content_type: z.literal("text/html"),
             display_recipient: display_recipient_schema,

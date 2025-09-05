@@ -167,7 +167,6 @@ class DirectMessageDisplayRecipient(BaseModel):
 
 class MessageFieldForEventDirectMessage(BaseModel):
     avatar_url: str | None
-    client: str
     content: str
     content_type: Literal["text/html"]
     id: int
@@ -237,7 +236,6 @@ class EventInvitesChanged(BaseEvent):
 
 class MessageFieldForEventMessage(BaseModel):
     avatar_url: str | None
-    client: str
     content: str
     content_type: Literal["text/html"]
     id: int
