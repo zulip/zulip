@@ -431,12 +431,14 @@ class PermissionTest(ZulipTestCase):
         result = self.client_patch("/json/users/{}".format(self.example_user("hamlet").id), req)
         self.assert_json_error(result, "Name too long!")
 
-    def test_admin_cannot_set_short_full_name(self) -> None:
-        new_name = "a"
+    def test_admin_cannot_set_empty_full_name(self) -> None:
         self.login("iago")
-        req = dict(full_name=new_name)
+        req = dict(full_name="")
+        # Empty name is treated as a no-op
         result = self.client_patch("/json/users/{}".format(self.example_user("hamlet").id), req)
-        self.assert_json_error(result, "Name too short!")
+        self.assert_json_success(result)
+        iago = self.example_user("iago")
+        self.assertEqual(iago.full_name, "Iago")
 
     def test_not_allowed_format(self) -> None:
         # Name of format "Alice|999" breaks in Markdown
