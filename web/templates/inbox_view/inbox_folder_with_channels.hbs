@@ -11,7 +11,7 @@
     {{#each topics_dict as |key_value_list _index|}}
         {{#each ../streams_dict as |stream_key_value _stream_index|}}
             {{#if (and (eq stream_key_value.[1].folder_id ../../id) (eq stream_key_value.[0] key_value_list.[0]))}}
-            <div id="{{key_value_list.[0]}}">
+            <div id="{{key_value_list.[0]}}" class="inbox-folder-channel">
                 {{> inbox_row stream_key_value.[1]}}
                 <div class="inbox-topic-container">
                     {{#each key_value_list.[1]}}
