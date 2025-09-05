@@ -191,10 +191,14 @@ export function postprocess_content(html: string): string {
                 title = url.toString();
                 legacy_title = href;
             }
-            elt.setAttribute(
-                "title",
-                ["", legacy_title].includes(elt.title) ? title : `${title}\n${elt.title}`,
-            );
+
+            // We set tooltip for stream links using tippy.
+            if (!elt.classList.contains("stream")) {
+                elt.setAttribute(
+                    "title",
+                    ["", legacy_title].includes(elt.title) ? title : `${title}\n${elt.title}`,
+                );
+            }
         }
     }
 
