@@ -71,6 +71,7 @@ class UserMessageNotificationsData:
         stream_wildcard_mention_in_followed_topic_user_ids: set[int],
         muted_sender_user_ids: set[int],
         all_bot_user_ids: set[int],
+        push_device_registered_user_ids: set[int],
     ) -> "UserMessageNotificationsData":
         if user_id in all_bot_user_ids:
             # Don't send any notifications to bots
@@ -126,29 +127,45 @@ class UserMessageNotificationsData:
             and "stream_wildcard_mentioned" in flags
         )
 
-        dm_push_notify = user_id not in dm_mention_push_disabled_user_ids and private_message
+        push_device_registered = user_id in push_device_registered_user_ids
+        dm_push_notify = (
+            push_device_registered
+            and user_id not in dm_mention_push_disabled_user_ids
+            and private_message
+        )
         mention_push_notify = (
-            user_id not in dm_mention_push_disabled_user_ids and "mentioned" in flags
+            push_device_registered
+            and user_id not in dm_mention_push_disabled_user_ids
+            and "mentioned" in flags
         )
         topic_wildcard_mention_push_notify = (
-            user_id in topic_wildcard_mention_user_ids
+            push_device_registered
+            and user_id in topic_wildcard_mention_user_ids
             and user_id not in dm_mention_push_disabled_user_ids
             and "topic_wildcard_mentioned" in flags
         )
         stream_wildcard_mention_push_notify = (
-            user_id in stream_wildcard_mention_user_ids
+            push_device_registered
+            and user_id in stream_wildcard_mention_user_ids
             and user_id not in dm_mention_push_disabled_user_ids
             and "stream_wildcard_mentioned" in flags
         )
         topic_wildcard_mention_in_followed_topic_push_notify = (
-            user_id in topic_wildcard_mention_in_followed_topic_user_ids
+            push_device_registered
+            and user_id in topic_wildcard_mention_in_followed_topic_user_ids
             and user_id not in dm_mention_push_disabled_user_ids
             and "topic_wildcard_mentioned" in flags
         )
         stream_wildcard_mention_in_followed_topic_push_notify = (
-            user_id in stream_wildcard_mention_in_followed_topic_user_ids
+            push_device_registered
+            and user_id in stream_wildcard_mention_in_followed_topic_user_ids
             and user_id not in dm_mention_push_disabled_user_ids
             and "stream_wildcard_mentioned" in flags
+        )
+        online_push_enabled = push_device_registered and user_id in online_push_user_ids
+        stream_push_notify = push_device_registered and user_id in stream_push_user_ids
+        followed_topic_push_notify = (
+            push_device_registered and user_id in followed_topic_push_user_ids
         )
         return cls(
             user_id=user_id,
@@ -160,10 +177,10 @@ class UserMessageNotificationsData:
             mention_push_notify=mention_push_notify,
             topic_wildcard_mention_push_notify=topic_wildcard_mention_push_notify,
             stream_wildcard_mention_push_notify=stream_wildcard_mention_push_notify,
-            online_push_enabled=user_id in online_push_user_ids,
-            stream_push_notify=user_id in stream_push_user_ids,
+            online_push_enabled=online_push_enabled,
+            stream_push_notify=stream_push_notify,
             stream_email_notify=user_id in stream_email_user_ids,
-            followed_topic_push_notify=user_id in followed_topic_push_user_ids,
+            followed_topic_push_notify=followed_topic_push_notify,
             followed_topic_email_notify=user_id in followed_topic_email_user_ids,
             topic_wildcard_mention_in_followed_topic_push_notify=topic_wildcard_mention_in_followed_topic_push_notify,
             topic_wildcard_mention_in_followed_topic_email_notify=topic_wildcard_mention_in_followed_topic_email_notify,

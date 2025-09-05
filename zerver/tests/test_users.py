@@ -998,7 +998,7 @@ class QueryCountTest(ZulipTestCase):
         prereg_user = PreregistrationUser.objects.get(email="fred@zulip.com")
 
         with (
-            self.assert_database_query_count(88),
+            self.assert_database_query_count(90),
             self.assert_memcached_count(23),
             self.capture_send_event_calls(expected_num_events=11) as events,
         ):
@@ -2346,6 +2346,7 @@ class RecipientInfoTest(ZulipTestCase):
             all_bot_user_ids=set(),
             topic_participant_user_ids=set(),
             sender_muted_stream=False,
+            push_device_registered_user_ids=set(),
         )
 
         self.assertEqual(info, expected_info)
