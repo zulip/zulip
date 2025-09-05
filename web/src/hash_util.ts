@@ -253,7 +253,7 @@ export function channels_settings_edit_url(
 }
 
 export function channels_settings_section_url(section = "subscribed"): string {
-    const valid_section_values = new Set(["new", "subscribed", "all", "notsubscribed"]);
+    const valid_section_values = new Set(["new", "subscribed", "all", "available"]);
     if (!valid_section_values.has(section)) {
         blueslip.warn("invalid section for channels settings: " + section);
         return "#channels/subscribed";
