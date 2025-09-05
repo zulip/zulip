@@ -253,3 +253,99 @@ to find. A few things to keep in mind:
   the text is referring to that is difficult to locate.
 - Screenshots should never include the entirety of a third-party website’s page.
 - Each screenshot should come after the step that refers to it.
+
+## Markdown features
+
+Zulip's Markdown processor allows you to include several special features in
+your documentation to help improve its readability:
+
+- Since raw HTML is supported in Markdown, you can include arbitrary
+  HTML/CSS in your documentation as needed.
+
+- Code blocks allow you to highlight syntax, similar to
+  [Zulip's own Markdown](https://zulip.com/help/format-your-message-using-markdown).
+
+- Anchor tags can be used to link to headers in other documents.
+
+- Inline [icons](#icons) are used to refer to features in the Zulip UI.
+
+- Utilize [macros](#markdown-macros) to limit repeated content in the documentation.
+
+- Create special highlight warning blocks using
+  [tips and warnings](#tips-and-warnings).
+
+- Format instructions with tabs using
+  [Markdown tab switcher](#tab-switcher).
+
+### Icons
+
+See [icons documentation](../subsystems/icons.md). Icons should always be
+referred to with their in-app tooltip or a brief action name, _not_ the
+name of the icon in the code.
+
+### Tips and warnings
+
+A **tip** is any suggestion for the user that is not part of the main set of
+instructions. For instance, it may address a common problem users may
+encounter while following the instructions, or point to an option for power
+users.
+
+```md
+!!! tip ""
+
+    If you want notifications for issues, as well as events, you can
+    scroll down to **Webhooks** on the same page, and toggle the
+    **issue** checkbox.
+```
+
+A **keyboard tip** is a note for users to let them know that the same action
+can also be accomplished via a [keyboard shortcut](https://zulip.com/help/keyboard-shortcuts).
+
+```md
+!!! keyboard_tip ""
+
+    Use <kbd>D</kbd> to bring up your list of drafts.
+```
+
+A **warning** is a note on what happens when there is some kind of problem.
+Tips are more common than warnings.
+
+```md
+!!! warn ""
+
+    **Note**: Zulip also supports configuring this integration as a
+    webhook in Sentry.
+```
+
+All tips/warnings should appear inside tip/warning blocks. There
+should be only one tip/warning inside each block, and they usually
+should be formatted as a continuation of a numbered step.
+
+### Tab switcher
+
+Our Markdown processor supports easily creating a tab switcher widget
+design to easily show the instructions for different languages in API
+docs, etc. To create a tab switcher, write:
+
+```md
+{start_tabs}
+{tab|python}
+# First tab's content
+{tab|js}
+# Second tab's content
+{tab|curl}
+# Third tab's content
+{end_tabs}
+```
+
+The tab identifiers (e.g., `python` above) and their mappings to
+the tabs' labels are declared in
+[zerver/lib/markdown/tabbed_sections.py][tabbed-sections-code].
+
+This widget can also be used just to create a nice box around a set of
+instructions
+([example](https://zulip.com/help/deactivate-your-account)) by
+only declaring a single tab, which is often used for the main set of
+instructions for setting up an integration.
+
+[tabbed-sections-code]: https://github.com/zulip/zulip/blob/main/zerver/lib/markdown/tabbed_sections.py
