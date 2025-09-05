@@ -1,7 +1,7 @@
 [project]
 name = "zulip-server"
 version = "0.1.0"
-requires-python = ">=3.10"
+requires-python = ">=3.10, <3.14"
 
 [dependency-groups]
 prod = [
@@ -23,7 +23,7 @@ prod = [
   "regex",
 
   # Needed for manage.py
-  "ipython",
+  "ipython<9",  # 9.0.0 requires Python ≥ 3.11
 
   # Needed for image processing and thumbnailing
   "pyvips",
@@ -213,7 +213,7 @@ prod = [
 ]
 docs = [
   # Needed to build RTD docs
-  "sphinx",
+  "sphinx<8.2",  # 8.2.0 requires Python ≥ 3.11
   "sphinx-rtd-theme",
   "sphinx-design",
 
