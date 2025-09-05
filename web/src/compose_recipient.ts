@@ -447,9 +447,6 @@ export function update_topic_displayed_text(topic_name = "", has_topic_focus = f
     // Otherwise, we have some adjustments to make to display:
     // * a placeholder with the default topic name stylized
     // * the empty string topic stylized
-    function update_placeholder_visibility(): void {
-        $topic_not_mandatory_placeholder.toggleClass("visible", $input.val() === "");
-    }
 
     const is_empty_string_topic = compose_state.topic() === "";
     if (
@@ -461,8 +458,14 @@ export function update_topic_displayed_text(topic_name = "", has_topic_focus = f
     } else {
         $topic_not_mandatory_placeholder.show();
         update_placeholder_visibility();
-        $input.on("input", update_placeholder_visibility);
     }
+}
+
+export function update_placeholder_visibility(): void {
+    const $input = $("input#stream_message_recipient_topic");
+    const $topic_not_mandatory_placeholder = $("#topic-not-mandatory-placeholder");
+
+    $topic_not_mandatory_placeholder.toggleClass("visible", $input.val() === "");
 }
 
 export let update_compose_area_placeholder_text = (): void => {
