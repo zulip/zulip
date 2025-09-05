@@ -7,7 +7,7 @@
             </div>
             <div class="todo-task">
                 {{#if completed}}
-                <strike><strong>{{ task }}</strong>{{#if desc }}: {{ desc }}{{/if}}</strike>
+                <s><strong>{{ task }}</strong>{{#if desc }}: {{ desc }}{{/if}}</s>
                 {{else}}
                 <strong>{{ task }}</strong>{{#if desc }}: {{ desc }}{{/if}}
                 {{/if}}
