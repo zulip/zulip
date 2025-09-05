@@ -1128,10 +1128,18 @@ class TestMessageNotificationEmails(ZulipTestCase):
         self._resolved_topic_missed_stream_messages_thread_friendly()
 
     @override_settings(EMAIL_GATEWAY_PATTERN="")
-    def test_reply_warning_in_missed_personal_messages(self) -> None:
+    def test_reply_warning_in_missed_personal_messages_with_direct_message_group(self) -> None:
         self._reply_warning_in_missed_personal_messages()
 
-    def test_extra_context_in_missed_personal_messages(self) -> None:
+    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=False, EMAIL_GATEWAY_PATTERN="")
+    def test_reply_warning_in_missed_personal_messages_using_personal_recipients(self) -> None:
+        self._reply_warning_in_missed_personal_messages()
+
+    def test_extra_context_in_missed_personal_messages_with_direct_message_group(self) -> None:
+        self._extra_context_in_missed_personal_messages()
+
+    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=False)
+    def test_extra_context_in_missed_personal_messages_using_personal_recipients(self) -> None:
         self._extra_context_in_missed_personal_messages()
 
     def test_extra_context_in_missed_group_direct_messages_two_others(self) -> None:

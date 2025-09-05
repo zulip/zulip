@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.test import override_settings
 from typing_extensions import Any, override
 
 from zerver.actions.realm_settings import do_set_realm_moderation_request_channel
@@ -187,7 +188,8 @@ class ReportMessageTest(ZulipTestCase):
         assert len(reports) == 1
         self.assertIn(expected_message_link_syntax, reports[0]["content"])
 
-    def test_dm_report(self) -> None:
+    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=False)
+    def test_dm_report_using_personal_recipients(self) -> None:
         # Send a DM to be reported
         reported_dm_id = self.send_personal_message(
             self.reported_user,

@@ -1243,12 +1243,17 @@ class TestStreamEmailMessagesEmptyBody(ZulipTestCase):
 
 
 class TestMissedMessageEmailMessages(ZulipTestCase):
+    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=False)
     def test_receive_missed_personal_message_email_messages(self) -> None:
         # Build dummy messages for message notification email reply.
         # Have Hamlet send Othello a direct message. Othello will
         # reply via email Hamlet will receive the message.
-        self.login("hamlet")
+        hamlet = self.example_user("hamlet")
         othello = self.example_user("othello")
+
+        self.create_personal_recipient(hamlet, othello)
+
+        self.login("hamlet")
         result = self.client_post(
             "/json/messages",
             {
@@ -1259,31 +1264,29 @@ class TestMissedMessageEmailMessages(ZulipTestCase):
         )
         self.assert_json_success(result)
 
-        user_profile = self.example_user("othello")
-        usermessage = most_recent_usermessage(user_profile)
+        usermessage = most_recent_usermessage(othello)
 
         # we don't want to send actual emails but we do need to create and store the
         # token for looking up who did reply.
-        mm_address = create_missed_message_address(user_profile, usermessage.message)
+        mm_address = create_missed_message_address(othello, usermessage.message)
 
         incoming_valid_message = EmailMessage()
         incoming_valid_message.set_content("TestMissedMessageEmailMessages body")
 
         incoming_valid_message["Subject"] = "TestMissedMessageEmailMessages subject"
-        incoming_valid_message["From"] = self.example_email("othello")
+        incoming_valid_message["From"] = othello
         incoming_valid_message["To"] = mm_address
-        incoming_valid_message["Reply-to"] = self.example_email("othello")
+        incoming_valid_message["Reply-to"] = othello
 
-        with self.assert_database_query_count(18):
+        with self.assert_database_query_count(17):
             process_message(incoming_valid_message)
 
         # confirm that Hamlet got the message
-        user_profile = self.example_user("hamlet")
-        message = most_recent_message(user_profile)
+        message = most_recent_message(hamlet)
 
         self.assertEqual(message.content, "TestMissedMessageEmailMessages body")
-        self.assertEqual(message.sender, self.example_user("othello"))
-        self.assertEqual(message.recipient.type_id, user_profile.id)
+        self.assertEqual(message.sender, othello)
+        self.assertEqual(message.recipient.type_id, hamlet.id)
         self.assertEqual(message.recipient.type, Recipient.PERSONAL)
 
     def test_receive_missed_group_direct_message_email_messages(self) -> None:

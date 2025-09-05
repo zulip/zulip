@@ -2,6 +2,7 @@ import re
 from datetime import datetime
 from email.headerregistry import Address
 
+from django.conf import settings
 from django.contrib.auth.models import UserManager
 from django.utils.timezone import now as timezone_now
 
@@ -250,7 +251,7 @@ def create_user(
         user_profile.email = get_display_email_address(user_profile)
         user_profile.save(update_fields=["email"])
 
-    if not create_personal_recipient:
+    if not create_personal_recipient or settings.PREFER_DIRECT_MESSAGE_GROUP:
         return user_profile
 
     recipient = Recipient.objects.create(type_id=user_profile.id, type=Recipient.PERSONAL)
