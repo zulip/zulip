@@ -406,7 +406,7 @@ def do_rest_call(
         request_retry(event, failure_message=failure_message)
         return None
 
-    except requests.exceptions.ConnectionError:
+    except (requests.exceptions.ConnectionError, requests.exceptions.ChunkedEncodingError):
         logging.info(
             "Trigger event %s on %s resulted in a connection error. Retrying",
             event["command"],
