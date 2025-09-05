@@ -50,6 +50,19 @@ let pm_recipient_count_dict: Map<number, number>;
 let duplicate_full_name_data: FoldDict<Set<number>>;
 let my_user_id: number;
 let valid_user_ids: Set<number>;
+let fetch_users_storage: {
+    pending_user_ids: Set<number>;
+    in_transit_user_ids: Set<number>;
+    promise_for_pending: Promise<void> | undefined;
+    promise_resolver_for_pending: (() => void) | undefined;
+    promise_for_in_transit: Map<
+        Set<number>,
+        {
+            promise: Promise<void>;
+            resolver: () => void;
+        }
+    >;
+};
 
 export let INACCESSIBLE_USER_NAME: string;
 export let WELCOME_BOT: User;
@@ -81,6 +94,14 @@ export function init(): void {
     duplicate_full_name_data = new FoldDict();
 
     INACCESSIBLE_USER_NAME = $t({defaultMessage: "Unknown user"});
+
+    fetch_users_storage = {
+        pending_user_ids: new Set(),
+        in_transit_user_ids: new Set(),
+        promise_for_pending: undefined,
+        promise_resolver_for_pending: undefined,
+        promise_for_in_transit: new Map(),
+    };
 }
 
 // WE INITIALIZE DATA STRUCTURES HERE!
@@ -1951,6 +1972,111 @@ export function populate_valid_user_ids(params: StateData["user_groups"]): void 
     }
 }
 
+function get_combined_promise_for_user_ids(user_ids: Set<number>): {
+    promise_for_user_ids_in_transit: Promise<unknown>;
+    user_ids_pending_fetch: Set<number>;
+} {
+    const promises: Promise<void>[] = [];
+    let user_ids_pending_fetch = new Set<number>(user_ids);
+    for (const [user_ids_set, promise_data] of fetch_users_storage.promise_for_in_transit) {
+        if (user_ids_set.intersection(user_ids).size > 0) {
+            user_ids_pending_fetch = user_ids_pending_fetch.difference(user_ids_set);
+            promises.push(promise_data.promise);
+        }
+    }
+    return {promise_for_user_ids_in_transit: Promise.all(promises), user_ids_pending_fetch};
+}
+
+function start_fetch_for_requested_users(): void {
+    const user_ids_to_fetch = fetch_users_storage.pending_user_ids;
+    fetch_users_storage.pending_user_ids = new Set();
+    fetch_users_storage.in_transit_user_ids =
+        fetch_users_storage.in_transit_user_ids.union(user_ids_to_fetch);
+
+    const {promise_for_user_ids_in_transit, user_ids_pending_fetch} =
+        get_combined_promise_for_user_ids(user_ids_to_fetch);
+    fetch_users_storage.promise_for_in_transit.set(user_ids_pending_fetch, {
+        promise: fetch_users_storage.promise_for_pending!,
+        resolver: fetch_users_storage.promise_resolver_for_pending!,
+    });
+    fetch_users_storage.promise_for_pending = undefined;
+    fetch_users_storage.promise_resolver_for_pending = undefined;
+
+    void fetch_users(user_ids_pending_fetch).then(async (fetched_users) => {
+        for (const user of fetched_users) {
+            if (user.is_active) {
+                add_active_user(user);
+            } else {
+                non_active_user_dict.set(user.user_id, user);
+                _add_user(user);
+            }
+        }
+
+        await promise_for_user_ids_in_transit;
+        // Resolve promises waiting on this fetch after updating the data locally.
+        fetch_users_storage.promise_for_in_transit.get(user_ids_pending_fetch)!.resolver();
+        // Clean up in transit promise for this fetch.
+        fetch_users_storage.promise_for_in_transit.delete(user_ids_pending_fetch);
+        // Remove fetched users from in transit user ids.
+        fetch_users_storage.in_transit_user_ids =
+            fetch_users_storage.in_transit_user_ids.difference(user_ids_pending_fetch);
+    });
+}
+
+export async function fetch_users_from_ids_internal(user_ids: number[]): Promise<unknown> {
+    // NOTE: NEVER USE THIS FUNCTION DIRECTLY.
+    // Call get_or_fetch_users_from_ids instead.
+    const unknown_user_ids = new Set(
+        user_ids.filter((user_id) => !people_by_user_id_dict.has(user_id)),
+    );
+
+    // We already have data for all requested users.
+    if (unknown_user_ids.size === 0) {
+        return undefined;
+    }
+
+    // If we have a fetch in progress which contains the unknown user_ids,
+    // return a promise that resolves when that fetch completes.
+    if (
+        unknown_user_ids.intersection(fetch_users_storage.in_transit_user_ids).size ===
+        unknown_user_ids.size
+    ) {
+        // Await for all the fetches in progress for the unknown user IDs.
+        const {promise_for_user_ids_in_transit, user_ids_pending_fetch} =
+            get_combined_promise_for_user_ids(unknown_user_ids);
+        assert(user_ids_pending_fetch.size === 0);
+        return promise_for_user_ids_in_transit;
+    }
+
+    // Add users to be fetched in the next fetch attempt.
+    fetch_users_storage.pending_user_ids =
+        fetch_users_storage.pending_user_ids.union(unknown_user_ids);
+
+    // Return promise for pending fetch if it exists.
+    if (fetch_users_storage.promise_for_pending !== undefined) {
+        return fetch_users_storage.promise_for_pending;
+    }
+
+    // Create promise for a next fetch attempt.
+    const promise = new Promise<void>((resolve) => {
+        fetch_users_storage.promise_resolver_for_pending = resolve;
+    });
+    fetch_users_storage.promise_for_pending = promise;
+    // To club multiple fetch requests together,
+    // we queue the fetch after current call stack.
+    setTimeout(() => {
+        if (fetch_users_storage.pending_user_ids.size > 0) {
+            start_fetch_for_requested_users();
+        }
+    }, 0);
+    return promise;
+}
+
+export async function get_or_fetch_users_from_ids(user_ids: number[]): Promise<User[]> {
+    await fetch_users_from_ids_internal(user_ids);
+    return get_users_from_ids(user_ids);
+}
+
 export function fetch_users_from_server(opts: FetchUserDataParams): void {
     const params = {
         user_ids: opts.user_ids,
@@ -2043,14 +2169,5 @@ export async function initialize(
     // Fetch all the missing users. This code path is temporary: We
     // plan to move to a model where the web app expects to have an
     // incomplete users dataset in large organizations.
-    await fetch_users(user_ids_to_fetch).then((users) => {
-        for (const user of users) {
-            if (user.is_active) {
-                add_active_user(user);
-            } else {
-                non_active_user_dict.set(user.user_id, user);
-                _add_user(user);
-            }
-        }
-    });
+    await get_or_fetch_users_from_ids([...user_ids_to_fetch]);
 }
