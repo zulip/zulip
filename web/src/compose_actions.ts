@@ -16,6 +16,8 @@ import * as compose_ui from "./compose_ui.ts";
 import type {ComposeTriggeredOptions} from "./compose_ui.ts";
 import * as compose_validate from "./compose_validate.ts";
 import * as drafts from "./drafts.ts";
+import * as feedback_widget from "./feedback_widget.ts";
+import {$t} from "./i18n.ts";
 import * as message_lists from "./message_lists.ts";
 import type {Message} from "./message_store.ts";
 import * as message_util from "./message_util.ts";
@@ -310,6 +312,24 @@ function same_recipient_as_before(opts: ComposeActionsOpts): boolean {
     );
 }
 
+function hide_compose_box_and_maybe_display_missing_permissions_toast(trigger: string): void {
+    hide_box();
+    if (trigger === "hotkey") {
+        feedback_widget.show({
+            title_text: $t({defaultMessage: "Reply not allowed"}),
+            populate($container) {
+                const message = $t({
+                    defaultMessage: "You don't have permission to reply to this conversation.",
+                });
+                $container.text(message);
+            },
+        });
+    }
+    // This is done to avoid a faded group of messages on clicking a message
+    // to which we cannot reply when it is part of a mixed narrow.
+    compose_fade.start_compose("stream");
+}
+
 export let start = (raw_opts: ComposeActionsStartOpts): void => {
     if (page_params.is_spectator) {
         spectators.login_to_access();
@@ -375,13 +395,11 @@ export let start = (raw_opts: ComposeActionsStartOpts): void => {
     } else if (opts.stream_id && opts.topic) {
         const stream = stream_data.get_sub_by_id(opts.stream_id);
         compose_state.topic(opts.topic);
-        if (stream && stream_data.can_post_messages_in_stream(stream)) {
-            compose_state.set_stream_id(opts.stream_id);
-            compose_recipient.on_compose_select_recipient_update();
-        } else {
-            opts.stream_id = undefined;
-            compose_state.set_stream_id("");
-            compose_recipient.toggle_compose_recipient_dropdown();
+        compose_state.set_stream_id(opts.stream_id);
+        compose_recipient.on_compose_select_recipient_update();
+        if (!(stream && stream_data.can_post_messages_in_stream(stream))) {
+            hide_compose_box_and_maybe_display_missing_permissions_toast(opts.trigger);
+            return;
         }
     } else if (opts.stream_id) {
         const stream = stream_data.get_sub_by_id(opts.stream_id);
