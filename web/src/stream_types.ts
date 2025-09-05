@@ -63,7 +63,7 @@ export const stream_schema = z.object({
     // Generally, this should not be accessed directly, since it can
     // have small inaccuracies in the event of rare races. See
     // the comments on peer_data.get_subscriber_count.
-    subscriber_count: z.number(),
+    subscriber_count: z.optional(z.number()),
     topics_policy: stream_topics_policy_schema,
 });
 

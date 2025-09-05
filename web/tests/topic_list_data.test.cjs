@@ -47,7 +47,7 @@ const general = {
     name: "general",
 };
 
-stream_data.add_sub(general);
+stream_data.add_sub_for_tests(general);
 
 function get_list_info(zoom, search) {
     const stream_id = general.stream_id;

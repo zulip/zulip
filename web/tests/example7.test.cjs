@@ -80,7 +80,7 @@ run_test("unread_ops", ({override}) => {
         return "block";
     };
     stream_data.clear_subscriptions();
-    stream_data.add_sub(denmark_stream);
+    stream_data.add_sub_for_tests(denmark_stream);
     message_store.clear_for_testing();
     unread.declare_bankruptcy();
 

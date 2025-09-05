@@ -52,7 +52,7 @@ const devel = {
     color: "blue",
     subscribed: true,
 };
-stream_data.add_sub(devel);
+stream_data.add_sub_for_tests(devel);
 
 run_test("terms_round_trip", () => {
     let terms;
@@ -91,7 +91,7 @@ run_test("terms_round_trip", () => {
         name: "Florida, USA",
         stream_id: florida_id,
     };
-    stream_data.add_sub(florida_stream);
+    stream_data.add_sub_for_tests(florida_stream);
     terms = [{operator: "stream", operand: florida_id.toString()}];
     hash = hash_util.search_terms_to_hash(terms);
     assert.equal(hash, "#narrow/channel/987-Florida.2C-USA");
@@ -134,7 +134,7 @@ run_test("stream_to_channel_rename", () => {
         name: "decode",
         stream_id: test_stream_id,
     };
-    stream_data.add_sub(test_channel);
+    stream_data.add_sub_for_tests(test_channel);
     hash = "#narrow/channel/34-decode";
     narrow = hash_util.parse_narrow(hash.split("/"));
     assert.deepEqual(narrow, [
@@ -298,7 +298,7 @@ run_test("hash_interactions", ({override, override_rewire}) => {
     assert.equal(window.location.hash, "#recent");
 
     const denmark_id = 1;
-    stream_data.add_sub({
+    stream_data.add_sub_for_tests({
         subscribed: true,
         name: "Denmark",
         stream_id: denmark_id,

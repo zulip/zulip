@@ -64,7 +64,7 @@ test("stream", () => {
 
     // Stream exists and user has access to the stream.
     const test_stream = {name: "Test", stream_id: test_stream_id};
-    stream_data.add_sub(test_stream);
+    stream_data.add_sub_for_tests(test_stream);
     set_filter([
         ["stream", test_stream_id.toString()],
         ["topic", "Bar"],
@@ -98,7 +98,7 @@ test("narrowed", () => {
     assert.ok(!narrow_state.narrowed_by_stream_reply());
     assert.equal(narrow_state.stream_sub(), undefined);
 
-    stream_data.add_sub(foo_stream);
+    stream_data.add_sub_for_tests(foo_stream);
 
     set_filter([["stream", "Foo"]]);
     assert.ok(!narrow_state.narrowed_to_pms());
@@ -218,7 +218,7 @@ test("set_compose_defaults", () => {
     assert.equal(stream_and_topic.stream_id, undefined);
     assert.equal(stream_and_topic.topic, "Bar");
 
-    stream_data.add_sub(foo_stream);
+    stream_data.add_sub_for_tests(foo_stream);
     stream_and_topic = narrow_state.set_compose_defaults();
     assert.equal(stream_and_topic.stream_id, foo_stream_id);
     assert.equal(stream_and_topic.topic, "Bar");
@@ -252,7 +252,7 @@ test("set_compose_defaults", () => {
     assert.deepEqual(narrow_state.set_compose_defaults(), {});
 
     const rome_id = 99;
-    stream_data.add_sub({name: "ROME", stream_id: rome_id});
+    stream_data.add_sub_for_tests({name: "ROME", stream_id: rome_id});
     set_filter([["stream", rome_id.toString()]]);
 
     const stream_test = narrow_state.set_compose_defaults();
@@ -318,7 +318,7 @@ test("stream_sub", () => {
     assert.equal(narrow_state.stream_sub(), undefined);
 
     const sub = {name: "Foo", stream_id: 55};
-    stream_data.add_sub(sub);
+    stream_data.add_sub_for_tests(sub);
     assert.equal(narrow_state.stream_name(), "Foo");
     assert.deepEqual(narrow_state.stream_sub(), sub);
 

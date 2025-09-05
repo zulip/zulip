@@ -19,7 +19,7 @@ const frontend = {
     stream_id: 101,
     name: "frontend",
 };
-stream_data.add_sub(frontend);
+stream_data.add_sub_for_tests(frontend);
 
 run_test("settings", ({override, override_rewire}) => {
     user_topics.update_user_topics(
