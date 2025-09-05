@@ -616,6 +616,7 @@ export function initialize() {
     });
 
     $("input#stream_message_recipient_topic").on("input", () => {
+        compose_recipient.update_placeholder_visibility();
         compose_recipient.update_compose_area_placeholder_text();
     });
 
