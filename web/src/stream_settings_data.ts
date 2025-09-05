@@ -29,10 +29,15 @@ export type SettingsSubscription = StreamSubscription & {
     subscriber_count: number;
 };
 
-export const FILTERS = {
+export const ARCHIVED_STATUS_FILTERS = {
     ALL_CHANNELS: "all_channels",
     NON_ARCHIVED_CHANNELS: "non_archived_channels",
     ARCHIVED_CHANNELS: "archived_channels",
+};
+
+export const FOLDER_FILTERS = {
+    UNCATEGORIZED_DROPDOWN_OPTION: -1,
+    ANY_FOLDER_DROPDOWN_OPTION: -2,
 };
 
 export function get_sub_for_settings(sub: StreamSubscription): SettingsSubscription {
