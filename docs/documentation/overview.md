@@ -12,11 +12,11 @@ Zulip has three major documentation systems:
   might look at when deciding whether to use Zulip. We don't expect
   to ever have more than about 10 pages written using this system.
 
-- **User-facing documentation**: Our scalable system for documenting
-  Zulip's huge collection of specific features without a lot of
-  overhead or duplicated code/syntax, written in Markdown. We have
-  several hundred pages written using this system. There are 3
-  branches of this documentation:
+- **User-facing documentation**: Zulip uses a scalable system for
+  documenting Zulip's integrations and REST API, without a lot of
+  overhead or duplicated code/syntax, written in Markdown. Zulip's
+  help center uses [@astro/starlight](https://starlight.astro.build/),
+  with most of the content written in MDX.
   - [Help center documentation](#help-center-documentation)
     (with a target audience of individual Zulip users)
   - [Integrations documentation](#integrations-documentation)
@@ -90,10 +90,15 @@ important elements of the product clearly.
 
 ## User-facing documentation
 
-All of these systems use a common Markdown-based framework with
-various extensions for macros and variable interpolation,
+Zulip's API and integrations documentation use a common Markdown-based
+framework with various extensions for macros and variable interpolation,
 (`render_markdown_path` in the code), designed to make it convenient
 to do the things one does a lot in each type of documentation.
+
+Zulip's help center is built with [@astro/starlight](https://starlight.astro.build/).
+Starlight is a full-featured documentation theme built on top of the
+[Astro](https://astro.build/) framework. Astro is a web framework designed
+for content driven websites.
 
 ### Help center documentation
 
