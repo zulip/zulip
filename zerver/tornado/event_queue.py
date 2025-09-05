@@ -923,6 +923,7 @@ def missedmessage_hook(
             disable_external_notifications=internal_data.get(
                 "disable_external_notifications", False
             ),
+            push_device_registered=internal_data.get("push_device_registered", False),
         )
 
         mentioned_user_group_id = internal_data.get("mentioned_user_group_id")
@@ -1122,6 +1123,7 @@ def process_message_event(
     )
     muted_sender_user_ids = set(event_template.get("muted_sender_user_ids", []))
     all_bot_user_ids = set(event_template.get("all_bot_user_ids", []))
+    push_device_registered_user_ids = set(event_template.get("push_device_registered_user_ids", []))
     disable_external_notifications = event_template.get("disable_external_notifications", False)
     user_ids_without_access_to_sender = set(
         event_template.get("user_ids_without_access_to_sender", [])
@@ -1192,6 +1194,7 @@ def process_message_event(
             stream_wildcard_mention_in_followed_topic_user_ids=stream_wildcard_mention_in_followed_topic_user_ids,
             muted_sender_user_ids=muted_sender_user_ids,
             all_bot_user_ids=all_bot_user_ids,
+            push_device_registered_user_ids=push_device_registered_user_ids,
         )
 
         # Calling asdict would be slow, as it does a deep copy; pull
@@ -1401,6 +1404,7 @@ def process_message_update_event(
     )
     muted_sender_user_ids = set(event_template.pop("muted_sender_user_ids", []))
     all_bot_user_ids = set(event_template.pop("all_bot_user_ids", []))
+    push_device_registered_user_ids = set(event_template.pop("push_device_registered_user_ids", []))
     disable_external_notifications = event_template.pop("disable_external_notifications", False)
     online_push_user_ids = set(event_template.pop("online_push_user_ids", []))
     stream_name = event_template.get("stream_name")
@@ -1445,6 +1449,7 @@ def process_message_update_event(
                 stream_wildcard_mention_in_followed_topic_user_ids=stream_wildcard_mention_in_followed_topic_user_ids,
                 muted_sender_user_ids=muted_sender_user_ids,
                 all_bot_user_ids=all_bot_user_ids,
+                push_device_registered_user_ids=push_device_registered_user_ids,
             )
 
             maybe_enqueue_notifications_for_message_update(

@@ -1957,6 +1957,7 @@ Output:
             ),
             sender_is_muted=kwargs.get("sender_is_muted", False),
             disable_external_notifications=kwargs.get("disable_external_notifications", False),
+            push_device_registered=kwargs.get("push_device_registered", True),
         )
 
     def get_maybe_enqueue_notifications_parameters(

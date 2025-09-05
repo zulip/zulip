@@ -45,6 +45,7 @@ from zerver.lib.mention import MentionBackend, MentionData
 from zerver.lib.message import (
     SendMessageRequest,
     check_user_group_mention_allowed,
+    get_push_device_registered_user_ids,
     normalize_body,
     set_visibility_policy_possible,
     stream_wildcard_mention_allowed,
@@ -209,6 +210,7 @@ class RecipientInfoResult:
     all_bot_user_ids: set[int]
     topic_participant_user_ids: set[int]
     sender_muted_stream: bool | None
+    push_device_registered_user_ids: set[int]
 
 
 class ActiveUserDict(TypedDict):
@@ -488,6 +490,9 @@ def get_recipient_info(
     # where we determine notifiability of the message for users.
     all_bot_user_ids = {row["id"] for row in rows if row["is_bot"]}
 
+    # TODO: Add comment.
+    push_device_registered_user_ids = get_push_device_registered_user_ids(active_user_ids)
+
     return RecipientInfoResult(
         active_user_ids=active_user_ids,
         online_push_user_ids=online_push_user_ids,
@@ -509,6 +514,7 @@ def get_recipient_info(
         all_bot_user_ids=all_bot_user_ids,
         topic_participant_user_ids=topic_participant_user_ids,
         sender_muted_stream=sender_muted_stream,
+        push_device_registered_user_ids=push_device_registered_user_ids,
     )
 
 
@@ -713,6 +719,7 @@ def build_message_send_dict(
         default_bot_user_ids=info.default_bot_user_ids,
         service_bot_tuples=info.service_bot_tuples,
         all_bot_user_ids=info.all_bot_user_ids,
+        push_device_registered_user_ids=info.push_device_registered_user_ids,
         topic_wildcard_mention_user_ids=topic_wildcard_mention_user_ids,
         stream_wildcard_mention_user_ids=stream_wildcard_mention_user_ids,
         topic_wildcard_mention_in_followed_topic_user_ids=topic_wildcard_mention_in_followed_topic_user_ids,
@@ -1125,6 +1132,7 @@ def do_send_messages(
                 stream_wildcard_mention_in_followed_topic_user_ids=send_request.stream_wildcard_mention_in_followed_topic_user_ids,
                 muted_sender_user_ids=send_request.muted_sender_user_ids,
                 all_bot_user_ids=send_request.all_bot_user_ids,
+                push_device_registered_user_ids=send_request.push_device_registered_user_ids,
             )
             for user_id in send_request.active_user_ids
         ]
