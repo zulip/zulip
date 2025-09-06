@@ -379,6 +379,19 @@ function make_people_getter(last: NarrowCanonicalTermSuggestion): () => User[] {
 
         persons = people.get_people_for_search_bar(query);
         persons.sort(typeahead_helper.compare_by_pms);
+
+        // Sort by active status: active users first
+        persons.sort((a, b) => {
+            const active_a = people.is_person_active(a.user_id);
+            const active_b = people.is_person_active(b.user_id);
+
+            if (active_a !== active_b) {
+                return active_a ? -1 : 1;
+            }
+
+            return 0; // preserve original order otherwise
+        });
+
         return persons;
     };
 }
@@ -387,7 +400,7 @@ function get_person_suggestions(
     people_getter: () => User[],
     last: NarrowCanonicalTermSuggestion,
     terms: NarrowCanonicalTerm[],
-    autocomplete_operator: "dm" | "sender" | "dm-including",
+    autocomplete_operator: "dm" | "sender" | "dm-including" | "from",
 ): Suggestion[] {
     if (last.operator === "is" && last.operand === "dm") {
         last = {operator: "dm", operand: "", negated: false};
@@ -395,9 +408,19 @@ function get_person_suggestions(
 
     const valid = ["search", autocomplete_operator];
 
-    if (
-        !check_validity(last.operator, terms, valid, incompatible_patterns[autocomplete_operator])
-    ) {
+    // "from" is a legacy operator that canonicalizes to "sender", so use "sender" patterns
+    let pattern_key: SearchFilter;
+    switch (autocomplete_operator) {
+        case "from":
+            pattern_key = "sender";
+            break;
+        case "dm":
+        case "sender":
+        case "dm-including":
+            pattern_key = autocomplete_operator;
+            break;
+    }
+    if (!check_validity(last.operator, terms, valid, incompatible_patterns[pattern_key])) {
         return [];
     }
 
@@ -415,6 +438,7 @@ function get_person_suggestions(
                 });
                 break;
             case "sender":
+            case "from":
                 terms.push({
                     operator: "sender",
                     operand: person.user_id,
@@ -1124,15 +1148,27 @@ export let get_suggestions = function (
     // only make one people_getter to avoid duplicate work
     const people_getter = make_people_getter(last);
 
-    function get_people(
-        flavor: "dm" | "sender" | "dm-including",
-    ): (last: NarrowCanonicalTermSuggestion, base_terms: NarrowCanonicalTerm[]) => Suggestion[] {
-        return function (
-            last: NarrowCanonicalTermSuggestion,
-            base_terms: NarrowCanonicalTerm[],
-        ): Suggestion[] {
-            return get_person_suggestions(people_getter, last, base_terms, flavor);
-        };
+    function get_people_suggestions(
+        last: NarrowCanonicalTermSuggestion,
+        base_terms: NarrowCanonicalTerm[],
+    ): Suggestion[] {
+        let person_operators: ("dm" | "sender" | "dm-including" | "from")[] = [
+            "dm",
+            "sender",
+            "dm-including",
+            "from",
+        ];
+        if (page_params.is_spectator) {
+            person_operators = ["sender", "from"];
+        }
+        const all_person_suggestions: Suggestion[] = [];
+
+        for (const operator of person_operators) {
+            const suggestions = get_person_suggestions(people_getter, last, base_terms, operator);
+            all_person_suggestions.push(...suggestions);
+        }
+
+        return all_person_suggestions;
     }
 
     // Remember to update the spectator list when changing this.
@@ -1148,9 +1184,7 @@ export let get_suggestions = function (
         get_is_filter_suggestions,
         get_sent_by_me_suggestions,
         get_channel_suggestions,
-        get_people("dm"),
-        get_people("sender"),
-        get_people("dm-including"),
+        get_people_suggestions,
         get_topic_suggestions,
         get_has_filter_suggestions,
     ];
@@ -1161,7 +1195,7 @@ export let get_suggestions = function (
             get_operator_suggestions,
             get_is_filter_suggestions,
             get_channel_suggestions,
-            get_people("sender"),
+            get_people_suggestions,
             get_topic_suggestions,
             get_has_filter_suggestions,
         ];
