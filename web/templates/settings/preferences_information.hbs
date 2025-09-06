@@ -9,39 +9,39 @@
         <div class="user_list_style_values grey-box prop-element" id="{{prefix}}user_list_style" data-setting-widget-type="radio-group" data-setting-choice-type="number">
             {{#each user_list_style_values}}
                 <label class="preferences-radio-choice-label">
-                    <div class="radio-choice-controls">
+                    <span class="radio-choice-controls">
                         <input type="radio" class="setting_user_list_style_choice" name="user_list_style" value="{{this.code}}"/>
                         <span class="preferences-radio-choice-text">{{this.description}}</span>
-                    </div>
+                    </span>
                     <span class="right preview">
                         {{#if (eq this.code 1)}}
-                        <div class="user-name-and-status-emoji">
+                        <span class="user-name-and-status-emoji">
                             <span class="user-name">{{../full_name}}</span>
                             {{> ../status_emoji emoji_name="house" emoji_code="1f3e0"}}
-                        </div>
+                        </span>
                         {{/if}}
                         {{#if (eq this.code 2)}}
-                        <div class="user-name-and-status-text">
-                            <div class="user-name-and-status-emoji">
+                        <span class="user-name-and-status-text">
+                            <span class="user-name-and-status-emoji">
                                 <span class="user-name">{{../full_name}}</span>
                                 {{> ../status_emoji emoji_name="house" emoji_code="1f3e0"}}
-                            </div>
+                            </span>
                             <span class="status-text">{{t "Working remotely" }}</span>
-                        </div>
+                        </span>
                         {{/if}}
                         {{#if (eq this.code 3)}}
-                        <div class="profile-with-avatar">
-                            <div class="user-profile-picture">
+                        <span class="profile-with-avatar">
+                            <span class="user-profile-picture">
                                 <img src="{{../profile_picture}}"/>
-                            </div>
-                            <div class="user-name-and-status-wrapper">
-                                <div class="user-name-and-status-emoji">
+                            </span>
+                            <span class="user-name-and-status-wrapper">
+                                <span class="user-name-and-status-emoji">
                                     <span class="user-name">{{../full_name}}</span>
                                     {{> ../status_emoji emoji_name="house" emoji_code="1f3e0"}}
-                                </div>
+                                </span>
                                 <span class="status-text">{{t "Working remotely" }}</span>
-                            </div>
-                        </div>
+                            </span>
+                        </span>
                         {{/if}}
                     </span>
                 </label>
