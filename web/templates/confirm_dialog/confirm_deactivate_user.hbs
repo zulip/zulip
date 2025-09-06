@@ -11,15 +11,17 @@
             <strong>{username}</strong> has {number_of_invites_by_user, plural, one {# unexpired invitation} other {# unexpired invitations}}.
         {{/tr}}
     {{/if}}
-    {{#if bots_owned_by_user}}
-        {{t "They administer the following bots:"}}
-        <ul>
-            {{#each bots_owned_by_user}}
-                <li>{{this.full_name}}</li>
-            {{/each}}
-        </ul>
-    {{/if}}
 </p>
+{{#if bots_owned_by_user}}
+    <p>
+        {{t "They administer the following bots:"}}
+    </p>
+    <ul>
+        {{#each bots_owned_by_user}}
+            <li>{{this.full_name}}</li>
+        {{/each}}
+    </ul>
+{{/if}}
 <label class="checkbox">
     <input type="checkbox" class="send_email" />
     <span class="rendered-checkbox"></span>

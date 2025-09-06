@@ -212,7 +212,7 @@ Last task`,
                             <span class="rendered-checkbox"></span>
                         </div>
                         <div>
-                            <strike><strong>Task 1:</strong> This is the first task.</strike>
+                            <s><strong>Task 1:</strong> This is the first task.</s>
                         </div>
                     </label>
                 </li>
