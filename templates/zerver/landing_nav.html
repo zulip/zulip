@@ -157,16 +157,16 @@
                             <li class="top-menu-submenu-list-item">
                                 <a href="/">Go to app</a>
                             </li>
-                            <div class="hidden">
-                                <form id="logout_form" action="/accounts/logout/" method="POST">{{ csrf_input }}
-                                </form>
-                            </div>
                             <li class="top-menu-submenu-list-item">
                                 <a class="logout_button">
                                 Log out
                                 </a>
                             </li>
                         </ul>
+                        <div class="hidden">
+                            <form id="logout_form" action="/accounts/logout/" method="POST">{{ csrf_input }}
+                            </form>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -311,16 +311,16 @@
                     <li class="top-menu-submenu-list-item">
                         <a href="/">Go to app</a>
                     </li>
-                    <div class="hidden">
-                        <form id="logout_form" action="/accounts/logout/" method="POST">{{ csrf_input }}
-                        </form>
-                    </div>
                     <li class="top-menu-submenu-list-item">
                         <a class="logout_button">
                         Log out
                         </a>
                     </li>
                 </ul>
+                <div class="hidden">
+                    <form id="logout_form" action="/accounts/logout/" method="POST">{{ csrf_input }}
+                    </form>
+                </div>
             </div>
         </details>
         {% else %}
