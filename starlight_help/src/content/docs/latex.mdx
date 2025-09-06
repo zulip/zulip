@@ -20,11 +20,11 @@ import MathIcon from "~icons/zulip-icon/math";
 Zulip's compose box has a smart **Math (LaTeX)** (<MathIcon />) button, which inserts contextually appropriate LaTeX
 formatting:
 
-* If no text is selected, the button inserts displayed LaTeX (` ```math `) formatting.
+* If no text is selected, the button inserts displayed LaTeX (<code>\`\`\`math</code>) formatting.
 * If selected text is on one line, the button inserts inline LaTeX (`$$`)
   formatting.
 * If selected text is on multiple lines, the button inserts displayed LaTeX
-  (` ```math `) formatting.
+  (<code>\`\`\`math</code>) formatting.
 
 <Tabs>
   <TabItem label="Via compose box button">
@@ -53,7 +53,11 @@ formatting:
          ```
 
          To use displayed LaTeX, use triple backticks and the word math
+<<<<<<< HEAD
          (` ```math `) followed by some text and triple backticks at the end:
+=======
+         (<code>\`\`\`math</code>) followed by some text and triple backticks at the end:
+>>>>>>> 6d517f3eeb (settings: Add default language picker and update related tests)
 
          ````
          ```math

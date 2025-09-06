@@ -13,7 +13,7 @@ import * as information_density from "./information_density.ts";
 import * as popover_menus from "./popover_menus.ts";
 import * as popover_menus_data from "./popover_menus_data.ts";
 import * as popovers from "./popovers.ts";
-import * as settings_preferences from "./settings_preferences.ts";
+// import * as settings_preferences from "./settings_preferences.ts";
 import * as theme from "./theme.ts";
 import {parse_html} from "./ui_util.ts";
 import {user_settings} from "./user_settings.ts";
@@ -186,7 +186,7 @@ export function initialize(): void {
                 popover_menus.hide_current_popover_if_visible(instance);
                 e.preventDefault();
                 e.stopPropagation();
-                settings_preferences.launch_default_language_setting_modal();
+                // settings_preferences.launch_default_language_setting_modal();
             });
 
             $popper.on("change", "input[name='theme-select']", (e) => {
