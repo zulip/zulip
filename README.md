@@ -78,5 +78,5 @@ You may also be interested in reading our [blog](https://blog.zulip.org/), and
 following us on [Twitter](https://twitter.com/zulip) and
 [LinkedIn](https://www.linkedin.com/company/zulip-project/).
 
-Zulip is distributed under the
+Zulip is distributed under the:
 [Apache 2.0](https://github.com/zulip/zulip/blob/main/LICENSE) license.
