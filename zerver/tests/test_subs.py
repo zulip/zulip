@@ -753,6 +753,135 @@ class StreamAdminTest(ZulipTestCase):
         }
         self.assertEqual(realm_audit_log.extra_data, expected_extra_data)
 
+    def test_change_protected_history_for_can_create_topic_group(self) -> None:
+        user_profile = self.example_user("iago")
+        self.login_user(user_profile)
+        realm = user_profile.realm
+        everyone_system_group = NamedUserGroup.objects.get(
+            name="role:everyone", realm=realm, is_system_group=True
+        )
+        moderators_system_group = NamedUserGroup.objects.get(
+            name="role:moderators", realm=realm, is_system_group=True
+        )
+        hamletcharacters_group = NamedUserGroup.objects.get(name="hamletcharacters", realm=realm)
+
+        can_create_topic_group_error_msg = "Unsupported parameter combination: history_public_to_subscribers, can_create_topic_group"
+
+        def check_stream_property_update(
+            property_name: str,
+            raw_value: Any,
+            expect_fail: bool = False,
+            delete_stream: bool = False,
+            error_msg: str = can_create_topic_group_error_msg,
+        ) -> None:
+            subscriptions = [{"name": "stream"}]
+            extra_post_data = {
+                "history_public_to_subscribers": orjson.dumps(True).decode(),
+            }
+
+            result = self.subscribe_via_post(
+                user_profile,
+                subscriptions,
+                extra_post_data,
+                invite_only=True,
+                subdomain="zulip",
+            )
+            stream = get_stream("stream", realm)
+            self.assert_json_success(result)
+
+            params = {property_name: orjson.dumps(raw_value).decode()}
+            if property_name == "can_create_topic_group":
+                params = {property_name: orjson.dumps({"new": raw_value}).decode()}
+
+            result = self.client_patch(f"/json/streams/{stream.id}", params)
+            stream = get_stream("stream", realm)
+
+            if expect_fail:
+                self.assert_json_error(result, error_msg)
+            else:
+                self.assert_json_success(result)
+                if property_name == "can_create_topic_group":
+                    if isinstance(raw_value, dict):
+                        self.assertEqual(
+                            list(stream.can_create_topic_group.direct_members.all()), [user_profile]
+                        )
+                        self.assertEqual(
+                            list(stream.can_create_topic_group.direct_subgroups.all()),
+                            [moderators_system_group],
+                        )
+                    else:
+                        self.assertEqual(getattr(stream, property_name).id, raw_value)
+                else:
+                    self.assertEqual(getattr(stream, property_name), raw_value)
+
+            if delete_stream:
+                stream.delete()
+
+        # In order to turn on protected history, everyone should be allowed to create new topics.
+        # Testing for everyone group.
+        check_stream_property_update("can_create_topic_group", everyone_system_group.id)
+        check_stream_property_update("history_public_to_subscribers", False, delete_stream=True)
+
+        # Testing for a system group.
+        check_stream_property_update("can_create_topic_group", moderators_system_group.id)
+        check_stream_property_update(
+            "history_public_to_subscribers", False, expect_fail=True, delete_stream=True
+        )
+
+        # Testing for a user defined group.
+        check_stream_property_update("can_create_topic_group", hamletcharacters_group.id)
+        check_stream_property_update(
+            "history_public_to_subscribers", False, expect_fail=True, delete_stream=True
+        )
+
+        # Testing for an anonymous group.
+        raw_value = {
+            "direct_members": [user_profile.id],
+            "direct_subgroups": [moderators_system_group.id],
+        }
+        check_stream_property_update("can_create_topic_group", raw_value)
+        check_stream_property_update(
+            "history_public_to_subscribers",
+            False,
+            expect_fail=True,
+            delete_stream=True,
+        )
+
+        # If a channel has protected history, can_create_topic_group must be an everyone_system_group.
+        # Testing for everyone group.
+        check_stream_property_update("history_public_to_subscribers", False)
+        check_stream_property_update(
+            "can_create_topic_group", everyone_system_group.id, delete_stream=True
+        )
+
+        # Testing for a system group.
+        check_stream_property_update("history_public_to_subscribers", False)
+        check_stream_property_update(
+            "can_create_topic_group",
+            moderators_system_group.id,
+            expect_fail=True,
+            delete_stream=True,
+        )
+
+        # Testing for a user defined group.
+        check_stream_property_update("history_public_to_subscribers", False)
+        check_stream_property_update(
+            "can_create_topic_group",
+            hamletcharacters_group.id,
+            expect_fail=True,
+            delete_stream=True,
+        )
+
+        # Testing for an anonymous group.
+        check_stream_property_update("history_public_to_subscribers", False)
+        raw_value = {
+            "direct_members": [user_profile.id],
+            "direct_subgroups": [moderators_system_group.id],
+        }
+        check_stream_property_update(
+            "can_create_topic_group", raw_value, expect_fail=True, delete_stream=True
+        )
+
     def test_stream_permission_changes_updates_updates_attachments(self) -> None:
         self.login("desdemona")
         fp = StringIO("zulip!")

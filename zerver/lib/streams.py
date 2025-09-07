@@ -1584,6 +1584,19 @@ def list_to_streams(
                 is_web_public=stream_dict["is_web_public"],
                 message_retention_days=stream_dict.get("message_retention_days", None),
             )
+            is_history_protected = not stream_dict.get("history_public_to_subscribers", True)
+            can_create_topic_group = stream_dict.get("can_create_topic_group", None)
+            if (
+                is_history_protected
+                and can_create_topic_group is not None
+                and (
+                    not hasattr(can_create_topic_group, "named_user_group")
+                    or can_create_topic_group.named_user_group.name != SystemGroups.EVERYONE
+                )
+            ):
+                raise IncompatibleParametersError(
+                    ["history_public_to_subscribers", "can_create_topic_group"]
+                )
 
         # We already filtered out existing streams, so dup_streams
         # will normally be an empty list below, but we protect against somebody
