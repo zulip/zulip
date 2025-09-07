@@ -875,7 +875,7 @@ export function rewire_can_post_messages_in_stream(
     can_post_messages_in_stream = value;
 }
 
-export const can_create_new_topics_in_stream = function (stream_id: number | undefined): boolean {
+export let can_create_new_topics_in_stream = function (stream_id: number | undefined): boolean {
     if (stream_id === undefined) {
         return false;
     }
@@ -898,6 +898,12 @@ export const can_create_new_topics_in_stream = function (stream_id: number | und
         "stream",
     );
 };
+
+export function rewire_can_create_new_topics_in_stream(
+    value: typeof can_create_new_topics_in_stream,
+): void {
+    can_create_new_topics_in_stream = value;
+}
 
 export function user_can_move_messages_out_of_channel(stream: StreamSubscription): boolean {
     if (page_params.is_spectator) {
