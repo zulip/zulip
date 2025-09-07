@@ -661,16 +661,6 @@ export function get_person_suggestions(
             persons = all_persons;
         }
 
-        const user = people.get_from_unique_full_name(query);
-        if (user !== undefined) {
-            return [
-                {
-                    type: "user",
-                    user,
-                },
-            ];
-        }
-
         // Exclude muted users from typeaheads.
         persons = muted_users.filter_muted_users(persons);
         let person_items: UserOrMentionPillData[] = persons.map((person) => ({
@@ -734,6 +724,26 @@ export function get_person_suggestions(
     const filtered_groups = group_pill_data.filter((item) =>
         typeahead_helper.query_matches_group_name(query, item),
     );
+
+    const user = people.get_from_unique_full_name(query);
+    if (user !== undefined) {
+        const person: UserOrMentionPillData[] = [
+            {
+                type: "user",
+                user,
+            },
+        ];
+
+        // We have found an exact user match for the query and return early
+        return typeahead_helper.sort_recipients({
+            users: person,
+            query,
+            current_stream_id: opts.stream_id,
+            current_topic: opts.topic,
+            groups: filtered_groups,
+            max_num_items,
+        });
+    }
 
     /*
         Let's say you're on a big realm and type
