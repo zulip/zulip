@@ -645,45 +645,45 @@ type PersonSuggestionOpts = {
     filter_groups_for_mention?: boolean;
 };
 
+function filter_persons<T>(
+    all_persons: User[],
+    filter_pills: boolean,
+    want_broadcast: boolean,
+    filterer: (person_items: UserPillData[], broadcast_items: UserOrMentionPillData[]) => T[],
+): T[] {
+    let persons;
+
+    if (filter_pills) {
+        persons = compose_pm_pill.filter_taken_users(all_persons);
+    } else {
+        persons = all_persons;
+    }
+
+    // Exclude muted users from typeaheads.
+    persons = muted_users.filter_muted_users(persons);
+    const person_items: UserPillData[] = persons.map((person) => ({
+        type: "user",
+        user: person,
+    }));
+
+    let broadcast_items: UserOrMentionPillData[] = [];
+
+    if (want_broadcast) {
+        broadcast_items = broadcast_mentions().map((mention) => ({
+            type: "broadcast" as const,
+            user: mention,
+        }));
+    }
+
+    return filterer(person_items, broadcast_items);
+}
+
 export function get_person_suggestions(
     query: string,
     opts: PersonSuggestionOpts,
     exclude_non_welcome_bots = false,
 ): (UserOrMentionPillData | UserGroupPillData)[] {
     query = typeahead.clean_query_lowercase(query);
-
-    function filter_persons(all_persons: User[]): UserOrMentionPillData[] {
-        let persons;
-
-        if (opts.filter_pills) {
-            persons = compose_pm_pill.filter_taken_users(all_persons);
-        } else {
-            persons = all_persons;
-        }
-
-        // Exclude muted users from typeaheads.
-        persons = muted_users.filter_muted_users(persons);
-        let person_items: UserOrMentionPillData[] = persons.map((person) => ({
-            type: "user",
-            user: person,
-        }));
-
-        if (opts.want_broadcast) {
-            person_items = [
-                ...person_items,
-                ...broadcast_mentions().map((mention) => ({
-                    type: "broadcast" as const,
-                    user: mention,
-                })),
-            ];
-        }
-        const should_remove_diacritics = people.should_remove_diacritics_for_query(
-            query.toLowerCase(),
-        );
-        return person_items.filter((item) =>
-            typeahead_helper.query_matches_person(query, item, should_remove_diacritics),
-        );
-    }
 
     let groups: UserGroup[];
     if (opts.filter_groups_for_mention) {
@@ -769,7 +769,26 @@ export function get_person_suggestions(
     */
     const cutoff_length = max_num_items;
 
-    const filtered_message_persons = filter_persons(people.get_active_message_people());
+    const filterer = function (
+        person_items: UserPillData[],
+        broadcast_items: UserOrMentionPillData[],
+    ): UserOrMentionPillData[] {
+        const suggestion_items: UserOrMentionPillData[] = [...person_items, ...broadcast_items];
+        const should_remove_diacritics = people.should_remove_diacritics_for_query(
+            query.toLowerCase(),
+        );
+
+        return suggestion_items.filter((item) =>
+            typeahead_helper.query_matches_person(query, item, should_remove_diacritics),
+        );
+    };
+
+    const filtered_message_persons = filter_persons(
+        people.get_active_message_people(),
+        opts.filter_pills,
+        opts.want_broadcast,
+        filterer,
+    );
 
     let filtered_persons: UserOrMentionPillData[];
 
@@ -777,9 +796,19 @@ export function get_person_suggestions(
         filtered_persons = filtered_message_persons;
     } else {
         if (exclude_non_welcome_bots) {
-            filtered_persons = filter_persons(people.get_realm_users_and_welcome_bot());
+            filtered_persons = filter_persons(
+                people.get_realm_users_and_welcome_bot(),
+                opts.filter_pills,
+                opts.want_broadcast,
+                filterer,
+            );
         } else {
-            filtered_persons = filter_persons(people.get_realm_users_and_system_bots());
+            filtered_persons = filter_persons(
+                people.get_realm_users_and_system_bots(),
+                opts.filter_pills,
+                opts.want_broadcast,
+                filterer,
+            );
         }
     }
 
