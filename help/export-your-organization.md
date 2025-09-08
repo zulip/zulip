@@ -88,6 +88,9 @@ Standard][plans] and [Zulip Cloud Plus][plans] customers:
 
 {end_tabs}
 
+If you self-host Zulip, a full export without member consent can be performed
+[by your server's administrator][export-and-import].
+
 ## Compliance export
 
 {!owner-only.md!}
@@ -127,6 +130,9 @@ importing the export into a new Zulip organization.
 
 {end_tabs}
 
+If you self-host Zulip, a compliance export can be performed [by your
+server's administrator][compliance-exports-self-hosted].
+
 ## Configure whether administrators can export your private data
 
 {start_tabs}
@@ -142,6 +148,7 @@ importing the export into a new Zulip organization.
 * [Change organization URL](/help/change-organization-url)
 * [Deactivate your organization](/help/deactivate-your-organization)
 * [Import organization into a self-hosted Zulip server][import-only]
+* [Data export for self-hosted organizations][export-and-import]
 * [Compliance exports for self-hosted organizations][compliance-exports-self-hosted]
 
 [production-backups]: https://zulip.readthedocs.io/en/stable/production/export-and-import.html#backups
