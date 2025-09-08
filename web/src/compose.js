@@ -16,7 +16,6 @@ import * as drafts from "./drafts.ts";
 import * as echo from "./echo.ts";
 import * as message_events from "./message_events.ts";
 import * as onboarding_steps from "./onboarding_steps.ts";
-import * as people from "./people.ts";
 import * as scheduled_messages from "./scheduled_messages.ts";
 import * as sent_messages from "./sent_messages.ts";
 import * as server_events_state from "./server_events_state.ts";
@@ -150,26 +149,18 @@ export let send_message = () => {
 
     let message_data;
     if (message_type === "private") {
-        // TODO: this should be collapsed with the code in composebox_typeahead.ts
-        const recipient = compose_state.private_message_recipient_emails();
-        const emails = util.extract_pm_recipients(recipient);
-        const to_user_ids = people.email_list_to_user_ids_string(emails);
-        // Note: The `undefined` case is for situations like
-        // the is_zephyr_mirror_realm case where users may
-        // be automatically created when you try to send a
-        // direct message to their email address.
-        const request_to =
-            to_user_ids !== undefined ? people.user_ids_string_to_ids_array(to_user_ids) : emails;
+        const recipient_emails = compose_state.private_message_recipient_emails();
+        const recipient_ids = compose_state.private_message_recipient_ids();
         message_data = {
             type: message_type,
             content: compose_state.message_content(),
             sender_id: current_user.user_id,
             queue_id: server_events_state.queue_id,
             topic: "",
-            to: JSON.stringify(request_to),
-            reply_to: recipient,
-            private_message_recipient: recipient,
-            to_user_ids: people.email_list_to_user_ids_string(emails),
+            to: JSON.stringify(recipient_ids),
+            reply_to: recipient_emails,
+            private_message_recipient: recipient_emails,
+            to_user_ids: util.sorted_ids(recipient_ids).join(","),
             draft_id,
             stream_id: undefined,
         };
@@ -361,17 +352,7 @@ function schedule_message_to_custom_date() {
 
     let message_to;
     if (message_type === "private") {
-        const recipient = compose_state.private_message_recipient_emails();
-        const emails = util.extract_pm_recipients(recipient);
-        const to_user_ids = people.email_list_to_user_ids_string(emails);
-        message_to = util.extract_pm_recipients(recipient);
-        // Note: The `undefined` case is for situations like
-        // the is_zephyr_mirror_realm case where users may
-        // be automatically created when you try to send a
-        // direct message to their email address.
-        if (to_user_ids !== undefined) {
-            message_to = people.user_ids_string_to_ids_array(to_user_ids);
-        }
+        message_to = compose_state.private_message_recipient_ids();
     } else {
         message_to = compose_state.stream_id();
     }
