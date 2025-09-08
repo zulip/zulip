@@ -64,16 +64,8 @@ export function compute_narrow_title(filter?: Filter): string {
 
     if (filter.has_operator("sender")) {
         const user = people.get_by_email(filter.operands("sender")[0]!);
-        if (user) {
-            if (people.is_my_user_id(user.user_id)) {
-                return $t({defaultMessage: "Messages sent by you"});
-            }
-            return $t(
-                {defaultMessage: "Messages sent by {sender}"},
-                {
-                    sender: user.full_name,
-                },
-            );
+        if (user !== undefined) {
+            return filter_title;
         }
         return $t({defaultMessage: "Invalid user"});
     }
