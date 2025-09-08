@@ -427,6 +427,8 @@ class StreamAdminTest(ZulipTestCase):
             )
         ]
 
+        request_settings_dict = dict.fromkeys(Stream.stream_permission_group_settings)
+
         self.assertFalse(user_profile.can_create_web_public_streams())
         self.assertTrue(owner.can_create_web_public_streams())
         # As per can_create_web_public_channel_group, only owners
@@ -436,6 +438,7 @@ class StreamAdminTest(ZulipTestCase):
                 streams_raw,
                 user_profile,
                 autocreate=True,
+                request_settings_dict=request_settings_dict,
             )
 
         with self.settings(WEB_PUBLIC_STREAMS_ENABLED=False):
@@ -446,12 +449,14 @@ class StreamAdminTest(ZulipTestCase):
                     streams_raw,
                     owner,
                     autocreate=True,
+                    request_settings_dict=request_settings_dict,
                 )
 
         existing_streams, new_streams = list_to_streams(
             streams_raw,
             owner,
             autocreate=True,
+            request_settings_dict=request_settings_dict,
         )
 
         self.assert_length(new_streams, 3)
@@ -3845,7 +3850,7 @@ class SubscriptionAPITest(ZulipTestCase):
         # Now add ourselves
         with (
             self.capture_send_event_calls(expected_num_events=2) as events,
-            self.assert_database_query_count(20),
+            self.assert_database_query_count(17),
         ):
             self.subscribe_via_post(
                 self.test_user,
@@ -4333,7 +4338,7 @@ class SubscriptionAPITest(ZulipTestCase):
         # Verify that peer_event events are never sent in Zephyr
         # realm. This does generate stream creation events from
         # send_stream_creation_events_for_previously_inaccessible_streams.
-        with self.assert_database_query_count(num_streams + 19):
+        with self.assert_database_query_count(num_streams + 16):
             with self.capture_send_event_calls(expected_num_events=num_streams + 1) as events:
                 self.subscribe_via_post(
                     mit_user,
@@ -4414,7 +4419,7 @@ class SubscriptionAPITest(ZulipTestCase):
         test_user_ids = [user.id for user in test_users]
 
         with (
-            self.assert_database_query_count(23),
+            self.assert_database_query_count(20),
             self.assert_memcached_count(11),
             mock.patch("zerver.views.streams.send_user_subscribed_and_new_channel_notifications"),
         ):
