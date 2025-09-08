@@ -20,6 +20,11 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 12.0
 
+**Feature level 426**
+
+* [`POST /register`](/api/register-queue): Removed the
+  `realm_is_zephyr_mirror_realm` property from the response.
+
 Feature levels 421-424 reserved for future use in 11.x maintenance
 releases.
 
