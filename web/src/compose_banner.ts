@@ -2,10 +2,12 @@ import $ from "jquery";
 
 import render_cannot_send_direct_message_error from "../templates/compose_banner/cannot_send_direct_message_error.hbs";
 import render_compose_banner from "../templates/compose_banner/compose_banner.hbs";
+import render_split_message_banner from "../templates/compose_banner/split_message_banner.hbs";
 import render_stream_does_not_exist_error from "../templates/compose_banner/stream_does_not_exist_error.hbs";
 import render_topics_required_error_banner from "../templates/compose_banner/topics_required_error_banner.hbs";
 import render_unknown_zoom_user_error from "../templates/compose_banner/unknown_zoom_user_error.hbs";
 
+import * as compose_split_messages from "./compose_split_messages.ts";
 import {$t} from "./i18n.ts";
 import * as scroll_util from "./scroll_util.ts";
 import * as stream_data from "./stream_data.ts";
@@ -67,6 +69,7 @@ export const CLASSNAMES = {
     generic_compose_error: "generic_compose_error",
     user_not_subscribed: "user_not_subscribed",
     unknown_zoom_user: "unknown_zoom_user",
+    split_messages: "split_messages",
 };
 
 export function get_compose_banner_container($textarea: JQuery): JQuery {
@@ -311,4 +314,32 @@ export function show_convert_pasted_text_to_file_banner(cb: () => void): JQuery 
     $new_row.on("click", ".main-view-banner-action-button", cb);
     append_compose_banner_to_banner_list($new_row, $("#compose_banners"));
     return $new_row;
+}
+
+export function update_split_messages_info_banner(): void {
+    if (compose_split_messages.will_split_into_multiple_messages()) {
+        update_or_append_banner(
+            $(split_messages_info_banner_content()),
+            CLASSNAMES.split_messages,
+            $("#compose_banners"),
+        );
+    } else {
+        clear_split_messages_info_banner();
+    }
+}
+
+function split_messages_info_banner_content(): string {
+    const context = {
+        banner_type: INFO,
+        button_text: $t({
+            defaultMessage: "Send as a single message",
+        }),
+        message_count: compose_split_messages.count_message_content_split_parts(),
+        classname: CLASSNAMES.split_messages,
+    };
+    return render_split_message_banner(context);
+}
+
+export function clear_split_messages_info_banner(): void {
+    $(`#compose_banners .${CSS.escape(CLASSNAMES.split_messages)}`).remove();
 }

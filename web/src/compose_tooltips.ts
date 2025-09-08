@@ -240,13 +240,26 @@ export function initialize(): void {
         trigger: "mouseenter",
         appendTo: () => document.body,
         onShow(instance) {
-            instance.setContent(
+            const $indicator = $(instance.reference);
+            const $container = $(instance.popper).find(".tooltip-container");
+            $container.find(".max-length-indicator").text(
                 $t(
-                    {defaultMessage: `Maximum message length: {max_length} characters`},
-                    {max_length: realm.max_message_length},
+                    {
+                        defaultMessage: "Maximum message length: {max_message_length} characters.",
+                    },
+                    {
+                        max_message_length: realm.max_message_length,
+                    },
                 ),
             );
+            $container
+                .find(".exceeding-position")
+                .text($indicator.attr("data-additional-text") ?? "");
         },
+        // Prevent tooltip from hiding on mouseout
+        interactive: true,
+        // Optionally, set duration to 0 to avoid fade-out delay
+        duration: 0,
     });
 
     tippy.delegate("body", {

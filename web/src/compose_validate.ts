@@ -17,6 +17,7 @@ import render_topics_required_error_message from "../templates/topics_required_e
 import * as blueslip from "./blueslip.ts";
 import * as compose_banner from "./compose_banner.ts";
 import * as compose_pm_pill from "./compose_pm_pill.ts";
+import * as compose_split_messages from "./compose_split_messages.ts";
 import * as compose_state from "./compose_state.ts";
 import * as compose_ui from "./compose_ui.ts";
 import * as hash_util from "./hash_util.ts";
@@ -1008,37 +1009,85 @@ export function check_overflow_text($container: JQuery): number {
     // Match the behavior of compose_state.message_content of trimming trailing whitespace
     const text = $textarea.val()!.trimEnd();
     const max_length = realm.max_message_length;
-    const remaining_characters = max_length - text.length;
     const $indicator = $container.find(".message-limit-indicator");
     const is_edit_container = $textarea.closest(".message_row").length > 0;
 
     const old_no_message_content = no_message_content;
     const old_message_too_long = message_too_long;
 
-    if (text.length > max_length) {
+    let over_limit_idx;
+    let approaching_limit_idx;
+    // In general, messages are well within the limit, so we optimize for
+    // that case and avoid the more expensive splitting operation.
+    if (text.length <= max_length) {
+        // Each individual part is within the limit.
+        over_limit_idx = -1;
+    }
+    if (max_length - text.length > 900) {
+        // No individual part is approaching the limit.
+        approaching_limit_idx = -1;
+    }
+    let split_parts: string[] = [];
+    if (over_limit_idx !== -1 || approaching_limit_idx !== -1) {
+        // We now do the more expensive splitting operation.
+        split_parts = compose_split_messages.get_all_split_parts(text);
+        over_limit_idx = split_parts.findIndex((part) => part.length > max_length);
+        approaching_limit_idx = split_parts.findIndex(
+            (part) => max_length - part.length <= 900 && part.length <= max_length,
+        );
+    }
+
+    if (over_limit_idx !== -1) {
+        set_message_too_long_for_compose(true);
         $indicator.removeClass("textarea-approaching-limit");
         $textarea.removeClass("textarea-approaching-limit");
         $indicator.addClass("textarea-over-limit");
         $textarea.addClass("textarea-over-limit");
+        const split_part_length = split_parts[over_limit_idx]?.length ?? 0;
         $indicator.html(
             render_compose_limit_indicator({
-                remaining_characters,
+                remaining_characters: max_length - split_part_length,
             }),
+        );
+        $indicator.attr(
+            "data-additional-text",
+            $t(
+                {
+                    defaultMessage:
+                        "The {n, selectordinal, one {#st} two {#nd} few {#rd} other {#th}} message is longer.",
+                },
+                {
+                    n: over_limit_idx + 1,
+                },
+            ),
         );
         if (is_edit_container) {
             set_message_too_long_for_edit(true, $container);
         } else {
             set_message_too_long_for_compose(true);
         }
-    } else if (remaining_characters <= 900) {
+    } else if (approaching_limit_idx !== -1) {
         $indicator.removeClass("textarea-over-limit");
         $textarea.removeClass("textarea-over-limit");
         $indicator.addClass("textarea-approaching-limit");
         $textarea.addClass("textarea-approaching-limit");
+        const split_part_length = split_parts[approaching_limit_idx]?.length ?? 0;
         $indicator.html(
             render_compose_limit_indicator({
-                remaining_characters,
+                remaining_characters: max_length - split_part_length,
             }),
+        );
+        $indicator.attr(
+            "data-additional-text",
+            $t(
+                {
+                    defaultMessage:
+                        "The {n, selectordinal, one {#st} two {#nd} few {#rd} other {#th}} message is approaching the limit.",
+                },
+                {
+                    n: approaching_limit_idx + 1,
+                },
+            ),
         );
         if (is_edit_container) {
             set_message_too_long_for_edit(false, $container);
@@ -1098,7 +1147,10 @@ export function validate_message_length($container: JQuery, trigger_flash = true
     // Match the behavior of compose_state.message_content of trimming trailing whitespace
     const text = $textarea.val()!.trimEnd();
 
-    const message_too_long_for_compose = text.length > realm.max_message_length;
+    const message_too_long_for_compose = compose_split_messages
+        .get_all_split_parts(text)
+        .some((part) => part.length > realm.max_message_length);
+
     // Usually, check_overflow_text maintains this, but since we just
     // did the check, make sure it's up to date.
     set_message_too_long_for_compose(message_too_long_for_compose);
