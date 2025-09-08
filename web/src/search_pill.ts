@@ -125,7 +125,11 @@ export function generate_pills_html(suggestion: Suggestion, text_query: string):
     const search_terms = Filter.parse(suggestion.search_string);
 
     const pill_render_data = search_terms.map((term, index) => {
-        if (user_pill_operators.has(term.operator) && term.operand !== "") {
+        if (
+            user_pill_operators.has(term.operator) &&
+            term.operand !== "" &&
+            Filter.is_valid_search_term(term)
+        ) {
             return search_user_pill_data_from_term(term);
         }
         const search_pill: SearchPill = {
