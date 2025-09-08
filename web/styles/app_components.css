@@ -390,6 +390,20 @@ div.overlay {
     }
 }
 
+div.overlay .flex.overlay-content > .overlay-container,
+#settings_page,
+.informational-overlays .overlay-content {
+    box-shadow: 0 0 30px var(--color-box-shadow-overlay);
+}
+
+#draft_overlay,
+#scheduled_messages_overlay_container,
+#message-edit-history-overlay-container {
+    .flex.overlay-content > .overlay-container {
+        box-shadow: 0 0 30px var(--color-box-shadow-overlay-black);
+    }
+}
+
 .input-append {
     font-size: 90%;
     letter-spacing: -0.3em;

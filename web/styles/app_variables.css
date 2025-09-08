@@ -802,6 +802,11 @@
         hsl(0deg 0% 13% / 80%),
         hsl(212deg 28% 8% / 75%)
     );
+    --color-box-shadow-overlay: light-dark(transparent, hsl(212deg 32% 7%));
+    --color-box-shadow-overlay-black: light-dark(
+        transparent,
+        hsl(213deg 31% 0%)
+    );
     --color-background-non-empty-overlay-indicator: light-dark(
         hsl(0deg 0% 100% / 90%),
         hsl(212deg 28% 8% / 75%)
