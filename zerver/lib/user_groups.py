@@ -194,6 +194,49 @@ def access_user_group_for_update(
     raise JsonableError(_("Insufficient permission"))
 
 
+def check_unused_anonymous_user_groups(realm: Realm) -> set[int]:
+    anonymous_group_ids = UserGroup.objects.filter(realm=realm, named_user_group=None).values_list(
+        "id", flat=True
+    )
+
+    realm_setting_group_ids = [
+        getattr(realm, setting_name + "_id")
+        for setting_name in Realm.REALM_PERMISSION_GROUP_SETTINGS
+    ]
+
+    stream_settings_list = [
+        setting_name + "_id" for setting_name in Stream.stream_permission_group_settings
+    ]
+    streams = Stream.objects.filter(realm=realm).values(*stream_settings_list)
+    stream_group_setting_ids = []
+    for stream in streams:
+        stream_group_setting_ids.extend(
+            [
+                stream[setting_name + "_id"]
+                for setting_name in Stream.stream_permission_group_settings
+            ]
+        )
+
+    group_settings_list = [
+        setting_name + "_id" for setting_name in NamedUserGroup.GROUP_PERMISSION_SETTINGS
+    ]
+    groups = NamedUserGroup.objects.filter(realm_for_sharding=realm).values(*group_settings_list)
+    group_setting_ids = []
+    for group in groups:
+        group_setting_ids.extend(
+            [
+                group[setting_name + "_id"]
+                for setting_name in NamedUserGroup.GROUP_PERMISSION_SETTINGS
+            ]
+        )
+
+    used_group_ids = (
+        set(realm_setting_group_ids) | set(stream_group_setting_ids) | set(group_setting_ids)
+    )
+
+    return set(anonymous_group_ids) - used_group_ids
+
+
 def check_user_group_can_be_deactivated(user_group: NamedUserGroup) -> list[dict[str, Any]]:
     objections: list[dict[str, Any]] = []
     supergroup_ids = (
