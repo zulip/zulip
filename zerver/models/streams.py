@@ -108,16 +108,6 @@ class Stream(models.Model):
         SystemGroups.MODERATORS: STREAM_POST_POLICY_MODERATORS,
     }
 
-    # The unique thing about Zephyr public streams is that we never list their
-    # users.  We may try to generalize this concept later, but for now
-    # we just use a concrete field.  (Zephyr public streams aren't exactly like
-    # invite-only streams--while both are private in terms of listing users,
-    # for Zephyr we don't even list users to stream members, yet membership
-    # is more public in the sense that you don't need a Zulip invite to join.
-    # This field is populated directly from UserProfile.is_zephyr_mirror_realm,
-    # and the reason for denormalizing field is performance.
-    is_in_zephyr_realm = models.BooleanField(default=False)
-
     # For old messages being automatically deleted.
     # Value NULL means "use retention policy of the realm".
     # Value -1 means "disable retention policy for this stream unconditionally".
@@ -263,7 +253,6 @@ class Stream(models.Model):
     # Stream fields included whenever a Stream object is provided to
     # Zulip clients via the API.  A few details worth noting:
     # * "id" is represented as "stream_id" in most API interfaces.
-    # * is_in_zephyr_realm is a backend-only optimization.
     # * "deactivated" streams are filtered from the API entirely.
     # * "realm" and "recipient" are not exposed to clients via the API.
     API_FIELDS = [
