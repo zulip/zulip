@@ -62,14 +62,6 @@ export function compute_narrow_title(filter?: Filter): string {
         return $t({defaultMessage: "Invalid user"});
     }
 
-    if (filter.has_operator("sender")) {
-        const user = people.get_by_email(filter.operands("sender")[0]!);
-        if (user !== undefined) {
-            return filter_title;
-        }
-        return $t({defaultMessage: "Invalid user"});
-    }
-
     return filter_title;
 }
 

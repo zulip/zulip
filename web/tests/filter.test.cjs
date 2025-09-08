@@ -2375,6 +2375,7 @@ test("navbar_helpers", ({override}) => {
 
     const sender = [{operator: "sender", operand: joe.email}];
     const guest_sender = [{operator: "sender", operand: alice.email}];
+    const invalid_sender = [{operator: "sender", operand: "sally@doesnotexist.co"}];
     const in_home = [{operator: "in", operand: "home"}];
     const in_all = [{operator: "in", operand: "all"}];
     const is_starred = [{operator: "is", operand: "starred"}];
@@ -2471,6 +2472,13 @@ test("navbar_helpers", ({override}) => {
             icon: undefined,
             title: "translated: Messages sent by translated: alice (guest)",
             redirect_url_with_search: "/#narrow/sender/" + alice.user_id + "-alice",
+        },
+        {
+            terms: invalid_sender,
+            is_common_narrow: true,
+            icon: undefined,
+            title: "translated: Invalid user",
+            redirect_url_with_search: "/#narrow/sender/undefined",
         },
         {
             terms: is_starred,
