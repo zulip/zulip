@@ -102,28 +102,32 @@ export function clear_compose_box() {
     $(".needs-empty-compose").removeClass("disabled-on-hover");
 }
 
-export function send_message_success(request, data) {
-    if (!request.locally_echoed) {
+export function send_message_success(sent_message, data) {
+    if (!sent_message.locally_echoed) {
         clear_compose_box();
     }
 
-    echo.reify_message_id(request.local_id, data.id);
-    drafts.draft_model.deleteDrafts([request.draft_id]);
+    echo.reify_message_id(sent_message.local_id, data.id);
+    drafts.draft_model.deleteDrafts([sent_message.draft_id]);
 
-    if (request.type === "stream") {
+    if (sent_message.type === "stream") {
         if (data.automatic_new_visibility_policy) {
             if (!onboarding_steps.ONE_TIME_NOTICES_TO_DISPLAY.has("visibility_policy_banner")) {
                 return;
             }
             // topic has been automatically unmuted or followed. No need to
             // suggest the user to unmute. Show the banner and return.
-            compose_notifications.notify_automatic_new_visibility_policy(request, data);
+            compose_notifications.notify_automatic_new_visibility_policy(sent_message, data);
             return;
         }
 
-        const muted_narrow = compose_notifications.get_muted_narrow(request);
+        const muted_narrow = compose_notifications.get_muted_narrow(sent_message);
         if (muted_narrow) {
-            compose_notifications.notify_unmute(muted_narrow, request.stream_id, request.topic);
+            compose_notifications.notify_unmute(
+                muted_narrow,
+                sent_message.stream_id,
+                sent_message.topic,
+            );
         }
     }
 }
