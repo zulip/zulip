@@ -2353,7 +2353,9 @@ body:not(.spectator-view) {
 
 .inbox-filter-dropdown-list-container,
 .recent-view-filter-dropdown-list-container,
-.folder-filter-dropdown-list-container {
+.folder-filter-dropdown-list-container,
+.stream_settings_filter-dropdown-list-container,
+.user_group_visibility_settings-dropdown-list-container {
     overflow: visible;
 
     .list-item {
