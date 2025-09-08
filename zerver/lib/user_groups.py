@@ -1,3 +1,4 @@
+from collections import defaultdict
 from collections.abc import Collection, Iterable, Iterator, Mapping
 from contextlib import contextmanager
 from dataclasses import asdict, dataclass
@@ -194,6 +195,120 @@ def access_user_group_for_update(
     raise JsonableError(_("Insufficient permission"))
 
 
+def check_groups_used_for_settings_or_subgroups(
+    groups: list[NamedUserGroup | UserGroup],
+    realm: Realm,
+    exclude_deactivated_objects: bool = False,
+) -> dict[int, list[dict[str, Any]]]:
+    named_group_ids = []
+    all_group_ids = []
+    result: dict[int, list[dict[str, Any]]] = {}
+    for group in groups:
+        if isinstance(group, NamedUserGroup):
+            named_group_ids.append(group.id)
+        all_group_ids.append(group.id)
+        result[group.id] = []
+
+    supergroups_dict = defaultdict(list)
+    named_groups_used_as_subgroups_dict = defaultdict(list)
+    anonymous_group_ids_with_named_groups_as_subgroups = set()
+
+    if named_group_ids:
+        group_memberships = GroupGroupMembership.objects.filter(
+            subgroup_id__in=named_group_ids
+        ).exclude(supergroup__named_user_group=None)
+        if exclude_deactivated_objects:
+            group_memberships = group_memberships.exclude(
+                supergroup__named_user_group__deactivated=True
+            )
+
+        for subgroup_id, supergroup_id in group_memberships.values_list(
+            "subgroup_id", "supergroup_id"
+        ):
+            supergroups_dict[subgroup_id].append(supergroup_id)
+
+        for subgroup_id, supergroup_ids in supergroups_dict.items():
+            result[subgroup_id].append(dict(type="subgroup", supergroup_ids=list(supergroup_ids)))
+
+        # Named groups can also be used for a setting by being a subgroup of
+        # an anonymous group that is being used for settings. This is used
+        # to create an object which contains data about the anonymous groups
+        # which use passed named groups as subgroups.
+        anonymous_group_membership = GroupGroupMembership.objects.filter(
+            subgroup_id__in=named_group_ids, supergroup__named_user_group=None
+        ).values_list("subgroup_id", "supergroup_id")
+        for subgroup_id, supergroup_id in anonymous_group_membership:
+            named_groups_used_as_subgroups_dict[supergroup_id].append(subgroup_id)
+            anonymous_group_ids_with_named_groups_as_subgroups.add(supergroup_id)
+
+    realm_objection_settings_dict = defaultdict(list)
+
+    for setting_name in Realm.REALM_PERMISSION_GROUP_SETTINGS:
+        setting_group_id = getattr(realm, setting_name + "_id")
+        if setting_group_id in all_group_ids:
+            realm_objection_settings_dict[setting_group_id].append(setting_name)
+        elif setting_group_id in anonymous_group_ids_with_named_groups_as_subgroups:
+            for subgroup_id in named_groups_used_as_subgroups_dict[setting_group_id]:
+                realm_objection_settings_dict[subgroup_id].append(setting_name)
+
+    for group_id, setting_names in realm_objection_settings_dict.items():
+        result[group_id].append(dict(type="realm", settings=setting_names))
+
+    group_ids_to_check_for_settings = {
+        *set(anonymous_group_ids_with_named_groups_as_subgroups),
+        *set(all_group_ids),
+    }
+    stream_setting_query = Q()
+    for setting_name in Stream.stream_permission_group_settings:
+        stream_setting_query |= Q(**{f"{setting_name}__in": group_ids_to_check_for_settings})
+
+    streams_query = Stream.objects.filter(realm=realm).filter(stream_setting_query)
+    if exclude_deactivated_objects:
+        streams_query = streams_query.exclude(deactivated=True)
+
+    for stream in streams_query:
+        group_id_setting_names_dict = defaultdict(list)
+        for setting_name in Stream.stream_permission_group_settings:
+            setting_group_id = getattr(stream, setting_name + "_id")
+            if setting_group_id in all_group_ids:
+                group_id_setting_names_dict[setting_group_id].append(setting_name)
+            elif setting_group_id in named_groups_used_as_subgroups_dict:
+                for subgroup_id in named_groups_used_as_subgroups_dict[setting_group_id]:
+                    group_id_setting_names_dict[subgroup_id].append(setting_name)
+
+        for group_id, setting_names in group_id_setting_names_dict.items():
+            result[group_id].append(
+                dict(type="channel", channel_id=stream.id, settings=setting_names)
+            )
+
+    group_setting_query = Q()
+    for setting_name in NamedUserGroup.GROUP_PERMISSION_SETTINGS:
+        group_setting_query |= Q(**{f"{setting_name}__in": group_ids_to_check_for_settings})
+
+    user_groups_query = NamedUserGroup.objects.filter(realm_for_sharding=realm).filter(
+        group_setting_query
+    )
+    if exclude_deactivated_objects:
+        user_groups_query = user_groups_query.exclude(deactivated=True)
+
+    for user_group in user_groups_query:
+        group_id_setting_names_dict = defaultdict(list)
+        for setting_name in NamedUserGroup.GROUP_PERMISSION_SETTINGS:
+            setting_group_id = getattr(user_group, setting_name + "_id")
+            if setting_group_id in all_group_ids:
+                group_id_setting_names_dict[setting_group_id].append(setting_name)
+            elif setting_group_id in named_groups_used_as_subgroups_dict:
+                for subgroup_id in named_groups_used_as_subgroups_dict[setting_group_id]:
+                    group_id_setting_names_dict[subgroup_id].append(setting_name)
+
+        for group_id, setting_names in group_id_setting_names_dict.items():
+            result[group_id].append(
+                dict(type="user_group", group_id=user_group.id, settings=setting_names)
+            )
+
+    return result
+
+
 def check_unused_anonymous_user_groups(realm: Realm) -> set[int]:
     anonymous_group_ids = UserGroup.objects.filter(realm=realm, named_user_group=None).values_list(
         "id", flat=True
@@ -237,82 +352,6 @@ def check_unused_anonymous_user_groups(realm: Realm) -> set[int]:
     return set(anonymous_group_ids) - used_group_ids
 
 
-def check_user_group_can_be_deactivated(user_group: NamedUserGroup) -> list[dict[str, Any]]:
-    objections: list[dict[str, Any]] = []
-    supergroup_ids = (
-        user_group.direct_supergroups.exclude(named_user_group=None)
-        .filter(named_user_group__deactivated=False)
-        .values_list("id", flat=True)
-    )
-    if supergroup_ids:
-        objections.append(dict(type="subgroup", supergroup_ids=list(supergroup_ids)))
-
-    anonymous_supergroup_ids = user_group.direct_supergroups.filter(
-        named_user_group=None
-    ).values_list("id", flat=True)
-
-    # We check both the cases - whether the group is being directly used
-    # as the value of a setting or as a subgroup of an anonymous group
-    # used for a setting.
-    setting_group_ids_using_deactivating_user_group = {
-        *set(anonymous_supergroup_ids),
-        user_group.id,
-    }
-
-    stream_setting_query = Q()
-    for setting_name in Stream.stream_permission_group_settings:
-        stream_setting_query |= Q(
-            **{f"{setting_name}__in": setting_group_ids_using_deactivating_user_group}
-        )
-
-    for stream in Stream.objects.filter(realm_id=user_group.realm_id, deactivated=False).filter(
-        stream_setting_query
-    ):
-        objection_settings = [
-            setting_name
-            for setting_name in Stream.stream_permission_group_settings
-            if getattr(stream, setting_name + "_id")
-            in setting_group_ids_using_deactivating_user_group
-        ]
-        if len(objection_settings) > 0:
-            objections.append(
-                dict(type="channel", channel_id=stream.id, settings=objection_settings)
-            )
-
-    group_setting_query = Q()
-    for setting_name in NamedUserGroup.GROUP_PERMISSION_SETTINGS:
-        group_setting_query |= Q(
-            **{f"{setting_name}__in": setting_group_ids_using_deactivating_user_group}
-        )
-
-    for group in NamedUserGroup.objects.filter(
-        realm_for_sharding_id=user_group.realm_id, deactivated=False
-    ).filter(group_setting_query):
-        objection_settings = []
-        for setting_name in NamedUserGroup.GROUP_PERMISSION_SETTINGS:
-            if (
-                getattr(group, setting_name + "_id")
-                in setting_group_ids_using_deactivating_user_group
-            ):
-                objection_settings.append(setting_name)
-
-        if len(objection_settings) > 0:
-            objections.append(
-                dict(type="user_group", group_id=group.id, settings=objection_settings)
-            )
-
-    objection_settings = []
-    realm = user_group.realm
-    for setting_name in Realm.REALM_PERMISSION_GROUP_SETTINGS:
-        if getattr(realm, setting_name + "_id") in setting_group_ids_using_deactivating_user_group:
-            objection_settings.append(setting_name)
-
-    if objection_settings:
-        objections.append(dict(type="realm", settings=objection_settings))
-
-    return objections
-
-
 def access_user_group_for_deactivation(
     user_group_id: int, user_profile: UserProfile
 ) -> NamedUserGroup:
@@ -323,7 +362,9 @@ def access_user_group_for_deactivation(
     user_group = access_user_group_for_update(
         user_group_id, user_profile, permission_setting="can_manage_group"
     )
-    objections = check_user_group_can_be_deactivated(user_group)
+    objections = check_groups_used_for_settings_or_subgroups(
+        [user_group], user_profile.realm, exclude_deactivated_objects=True
+    )[user_group.id]
     if len(objections) > 0:
         raise CannotDeactivateGroupInUseError(objections)
     return user_group
