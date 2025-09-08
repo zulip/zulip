@@ -19,7 +19,7 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-07-30 13:46+0000\n"
-"PO-Revision-Date: 2025-07-31 02:23+0000\n"
+"PO-Revision-Date: 2025-09-03 07:46+0000\n"
 "Last-Translator: Eddie Su <eddiesu.sheico@gmail.com>\n"
 "Language-Team: Chinese (Traditional Han script) <https://hosted.weblate.org/"
 "projects/zulip/django/zh_Hant/>\n"
@@ -28,7 +28,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.13-dev\n"
+"X-Generator: Weblate 5.13.1-dev\n"
 
 #: analytics/views/stats.py:109 zerver/decorator.py:682 zerver/decorator.py:700
 msgid "Not allowed for guest users"
@@ -1805,11 +1805,11 @@ msgstr "匿名使用者"
 
 #: templates/zerver/development/dev_login.html:32 zerver/models/groups.py:23
 msgid "Owners"
-msgstr "所有者"
+msgstr "組織擁有者"
 
 #: templates/zerver/development/dev_login.html:49 zerver/models/groups.py:24
 msgid "Administrators"
-msgstr "管理者"
+msgstr "組織管理員"
 
 #: templates/zerver/development/dev_login.html:60 zerver/models/groups.py:25
 msgid "Moderators"
@@ -5201,7 +5201,7 @@ msgstr "不支援的參數組合：{parameters}"
 
 #: zerver/lib/exceptions.py:221
 msgid "organization owner"
-msgstr "組織所有者"
+msgstr "組織擁有者"
 
 #: zerver/lib/exceptions.py:221
 msgid "user"
@@ -5236,7 +5236,7 @@ msgstr "必須是組織管理者"
 
 #: zerver/lib/exceptions.py:314
 msgid "Must be an organization owner"
-msgstr "必須是組織所有者"
+msgstr "必須是組織擁有者"
 
 #: zerver/lib/exceptions.py:328
 msgid "Your username or password is incorrect"

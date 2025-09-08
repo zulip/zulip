@@ -18,8 +18,8 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-07-30 13:46+0000\n"
-"PO-Revision-Date: 2025-08-07 23:52+0000\n"
-"Last-Translator: Alex Vandiver <alexmv@zulip.com>\n"
+"PO-Revision-Date: 2025-08-18 10:43+0000\n"
+"Last-Translator: Flammie A Pirinen <flammie@iki.fi>\n"
 "Language-Team: Finnish <https://hosted.weblate.org/projects/zulip/django/fi/>"
 "\n"
 "Language: fi\n"
@@ -27,7 +27,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.13-dev\n"
+"X-Generator: Weblate 5.13\n"
 
 #: analytics/views/stats.py:109 zerver/decorator.py:682 zerver/decorator.py:700
 msgid "Not allowed for guest users"
@@ -5616,6 +5616,9 @@ msgid ""
 "To enable this configuration, all messages in this channel must be in the "
 "{empty_topic_display_name} topic. Consider renaming or deleting other topics."
 msgstr ""
+"Kaikkien kanavan viestien pitää olla aiheessa {empty_topic_display_name}, "
+"jotta tämä asetus voidaan ottaa käyttöön. Uudelleennimeä tai poista muut "
+"aiheet."
 
 #: zerver/lib/exceptions.py:584
 msgid "Direct messages are disabled in this organization."
@@ -5701,15 +5704,15 @@ msgstr "Ajastetun lähetyksen ajan pitää olla tulevaisuudessa."
 
 #: zerver/lib/exceptions.py:844
 msgid "Invalid bouncer_public_key"
-msgstr ""
+msgstr "Virheellinen bouncer_public_key"
 
 #: zerver/lib/exceptions.py:856
 msgid "Request expired"
-msgstr ""
+msgstr "Pyyntö vanhentunut"
 
 #: zerver/lib/exceptions.py:866
 msgid "Invalid encrypted_push_registration"
-msgstr ""
+msgstr "Virheellinen encrypted_push_registration"
 
 #: zerver/lib/exceptions.py:878
 #, fuzzy
@@ -5806,6 +5809,7 @@ msgstr "Sinulla ei ole lupaa mainita käyttäjäryhmää {user_group_name}."
 #, python-brace-format
 msgid "{reporting_user_mention} reported a DM sent by {reported_user_mention}."
 msgstr ""
+"{reporting_user_mention} ilmoitti YV:n jonka lähetti {reported_user_mention}."
 
 #: zerver/lib/message_report.py:54
 #, python-brace-format
@@ -5813,6 +5817,8 @@ msgid ""
 "{reporting_user_mention} reported a DM sent by {reported_user_mention} to "
 "{recipient_mentions}, and {last_user_mention}."
 msgstr ""
+"{reporting_user_mention} ilmoitti YV:t jotka lähetti {reported_user_mention} "
+"käyttäjille {recipient_mentions}, ja {last_user_mention}."
 
 #: zerver/lib/message_report.py:73
 #, python-brace-format
@@ -5820,6 +5826,8 @@ msgid ""
 "{reporting_user_mention} reported {channel_message_link} sent by "
 "{reported_user_mention}."
 msgstr ""
+"{reporting_user_mention} ilmoitti {channel_message_link} jotka lähetti "
+"{reported_user_mention}."
 
 #: zerver/lib/message_report.py:83
 #, python-brace-format
@@ -5828,11 +5836,14 @@ msgid ""
 "- Reason: **{report_type}**\n"
 "- Notes:\n"
 msgstr ""
+"\n"
+"- Syy: **{report_type}**\n"
+"- Tietoja:\n"
 
 #: zerver/lib/message_report.py:91
 #, python-brace-format
 msgid "**Message sent by {reported_user_mention}**"
-msgstr ""
+msgstr "**Viestit lähettänyt {reported_user_mention}**"
 
 #: zerver/lib/message_report.py:108
 #, fuzzy, python-brace-format
@@ -5909,6 +5920,8 @@ msgid ""
 "We also have a guide for [setting up Zulip for a class]"
 "({organization_setup_url}).\n"
 msgstr ""
+"\n"
+"Meillä on myös ohje [Zulipin käytöstäa luokassa]({organization_setup_url}).\n"
 
 #: zerver/lib/onboarding.py:72
 #, python-brace-format
@@ -6033,6 +6046,12 @@ msgid ""
 "\n"
 "[Browse and subscribe to channels]({settings_link}).\n"
 msgstr ""
+"\n"
+"Kanavilla organisoidaan keskusteluja sen mukaan ketkä voivat nähdä niitä. "
+"Esimerkiksi,\n"
+"on tavallista että jokaisella tiimillä on oma kanavansa organisaatiossa.\n"
+"\n"
+"[Etsi ja tilaa kanavia]({settings_link})\n"
 
 #: zerver/lib/onboarding.py:171
 msgid ""
@@ -6070,6 +6089,11 @@ msgid ""
 "\n"
 "Press `?` any time to see a [cheat sheet](#keyboard-shortcuts).\n"
 msgstr ""
+"\n"
+"Zulipin [näppäimistöoikopolut](#keyboard-shortcuts) helpottavat navigointia\n"
+"sovelluksessa.\n"
+"\n"
+"Painamalla näppäintä `?` saat [ohjesivun](#keyboard-shortcuts).\n"
 
 #: zerver/lib/onboarding.py:190
 msgid ""
@@ -6082,6 +6106,13 @@ msgid ""
 "global\n"
 "times, and more.\n"
 msgstr ""
+"\n"
+"`Viestejä` voi **muotoilla** käyttämällä nappeja tai\n"
+"kirjoittamalla suoraan Markdownia.\n"
+"\n"
+"[Ohjesivuilla](#message-formatting) on lisätietoja spoilereista, globaalista "
+"ajasta\n"
+"ja niin edelleen.\n"
 
 #: zerver/lib/onboarding.py:198
 #, python-brace-format
@@ -6092,6 +6123,11 @@ msgid ""
 "Check out our [Getting started guide](/help/getting-started-with-zulip),\n"
 "or browse the [Help center](/help/) to learn more!\n"
 msgstr ""
+"\n"
+"Tässä on muutama komento; {bot_commands}\n"
+"\n"
+"Lisätietoja [Aloitusohjeessa](/help/getting-started-with-zulip) tai\n"
+"[Ohjekeskuksessa](/help).\n"
 
 #: zerver/lib/onboarding.py:205
 #, python-brace-format
@@ -6100,6 +6136,9 @@ msgid ""
 "You can chat with me as much as you like! To\n"
 "get help, try one of the following messages: {bot_commands}\n"
 msgstr ""
+"\n"
+"Voit keskustella kanssani. Jos\n"
+"tarvitset ohjeita, kokeile seuraavia viestejä: {bot_commands}\n"
 
 #: zerver/lib/onboarding.py:297
 #, python-brace-format
@@ -6112,12 +6151,21 @@ msgid ""
 "or even move a topic [to a different channel]"
 "({move_content_another_channel_help_url}).\n"
 msgstr ""
+"\n"
+"Jos jotain on väärässä paikassa, [viestejä voi siirtää]"
+"({move_content_another_topic_help_url}),\n"
+"[uudelleennimetä]({rename_topic_help_url}) tai [halkoa]"
+"({move_content_another_topic_help_url}) aiheisiin,\n"
+"tai jopa [siirtää aiheen uudelle kanavalle]"
+"({move_content_another_channel_help_url}).\n"
 
 #: zerver/lib/onboarding.py:308
 msgid ""
 "\n"
 ":point_right: Try moving this message to another topic and back.\n"
 msgstr ""
+"\n"
+":point_right: kokeile siirtää tätä viestiä toiseen aiheeseen ja takaisin.\n"
 
 #: zerver/lib/onboarding.py:312
 #, python-brace-format
@@ -6132,6 +6180,13 @@ msgid ""
 "sidebar\n"
 "and above.\n"
 msgstr ""
+"\n"
+"Zulip on järjestelty tehostamaan kommunikaatiota. Keksustelut\n"
+"on järjestelty aiheisiin, jotka kertovat mistä on kyse.\n"
+"\n"
+"Esimerkiksi aihe \"{topic_name}\"\n"
+"kanavalla #**{zulip_discussion_channel_name}** joka näkyy\n"
+"sivulistauksessa vasemmassa sivupalkissa ja ylhäällä.\n"
 
 #: zerver/lib/onboarding.py:321 zerver/lib/onboarding.py:373
 #: zerver/lib/onboarding.py:464
@@ -6156,6 +6211,9 @@ msgid ""
 ":point_right: When you're ready, check out your [Inbox](/#inbox) for other\n"
 "conversations with unread messages.\n"
 msgstr ""
+"\n"
+":point_right: Lisää keksusteluja ja lukemattomia viestejä\n"
+"löytyy [saapuneista](/#inbox).\n"
 
 #: zerver/lib/onboarding.py:334
 msgid ""
@@ -6218,6 +6276,21 @@ msgid ""
 "\n"
 "```\n"
 msgstr ""
+"\n"
+"```spoiler haluatko esimerkkejä?\n"
+"\n"
+"````python\n"
+"\n"
+"print(\"koodilohkoja\")\n"
+"\n"
+"````\n"
+"\n"
+"- ranskalaisia\n"
+"- viivoja\n"
+"\n"
+"Linkkejä keskusteluihin: #**{zulip_discussion_channel_name}>{topic_name}*\n"
+"\n"
+"```\n"
 
 #: zerver/lib/onboarding.py:376
 msgid ""
@@ -6225,6 +6298,8 @@ msgid ""
 "This **greetings** topic is a great place to say “hi” :wave: to your "
 "teammates.\n"
 msgstr ""
+"\n"
+"Tämä **Tervehdys**-aihe on hyvä paikka sanoa \"hei\" :wave: tiimille.\n"
 
 #: zerver/lib/onboarding.py:380
 msgid ""
@@ -6232,6 +6307,9 @@ msgid ""
 ":point_right: Click on this message to start a new message in the same "
 "conversation.\n"
 msgstr ""
+"\n"
+":point_right: Klikkaa tätä viestiä aloittaaksesi uuden viestin tässä "
+"aiheessa.\n"
 
 #: zerver/lib/onboarding.py:400
 msgid "moving messages"
@@ -6305,7 +6383,7 @@ msgstr "Testi-ilmoitus"
 #: zerver/lib/push_notifications.py:1721
 #, python-brace-format
 msgid "This is a test notification from {realm_name} ({realm_url})."
-msgstr ""
+msgstr "Tämä on testi-ilmoitus kohteesta {realm_name} ({realm_url})."
 
 #: zerver/lib/push_notifications.py:1773
 msgid "Device not recognized"
@@ -6338,26 +6416,26 @@ msgstr "Et voi lähettää suoria viestejä organisaatiosi ulkopuolelle."
 #: zerver/lib/reminders.py:23
 #, python-brace-format
 msgid "You requested a reminder for {message_pretty_link}."
-msgstr ""
+msgstr "Pyysit muistutusta {message_pretty_link}."
 
 #: zerver/lib/reminders.py:32
 msgid "You requested a reminder for the following direct message."
-msgstr ""
+msgstr "Pyysit muistutusta yksityisviestistsä."
 
 #: zerver/lib/reminders.py:39
 #, python-brace-format
 msgid "{user_silent_mention} [sent]({conversation_url}) a poll."
-msgstr ""
+msgstr "{user_silent_mention} [lähetti]({conversation_url}) kyselyn."
 
 #: zerver/lib/reminders.py:44
 #, python-brace-format
 msgid "{user_silent_mention} [sent]({conversation_url}) a todo list."
-msgstr ""
+msgstr "{user_silent_mention} [lähetti]({conversation_url}) todo-listan."
 
 #: zerver/lib/reminders.py:49
 #, python-brace-format
 msgid "{user_silent_mention} [said]({conversation_url}):"
-msgstr ""
+msgstr "{user_silent_mention} [sanoi]({conversation_url}):"
 
 #: zerver/lib/reminders.py:73
 #, fuzzy
