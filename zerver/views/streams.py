@@ -69,6 +69,7 @@ from zerver.lib.stream_traffic import get_streams_traffic
 from zerver.lib.streams import (
     StreamDict,
     access_default_stream_group_by_id,
+    access_requested_group_permissions,
     access_stream_by_id,
     access_stream_by_name,
     access_stream_for_delete_or_update_requiring_metadata_access,
@@ -80,7 +81,6 @@ from zerver.lib.streams import (
     do_get_streams,
     filter_stream_authorization_for_adding_subscribers,
     get_anonymous_group_membership_dict_for_streams,
-    get_stream_permission_default_group,
     get_stream_permission_policy_key,
     list_to_streams,
     stream_to_dict,
@@ -102,9 +102,7 @@ from zerver.lib.user_groups import (
     GroupSettingChangeRequest,
     UserGroupMembershipDetails,
     access_user_group_api_value_for_setting,
-    access_user_group_for_setting,
     get_group_setting_value_for_api,
-    get_role_based_system_groups_dict,
     get_system_user_group_by_name,
     parse_group_setting_value,
     validate_group_setting_value_change,
@@ -112,15 +110,7 @@ from zerver.lib.user_groups import (
 from zerver.lib.user_topics import get_users_with_user_topic_visibility_policy
 from zerver.lib.users import access_bot_by_id, bulk_access_users_by_email, bulk_access_users_by_id
 from zerver.lib.utils import assert_is_not_none
-from zerver.models import (
-    ChannelFolder,
-    Realm,
-    Stream,
-    UserGroup,
-    UserMessage,
-    UserProfile,
-    UserTopic,
-)
+from zerver.models import ChannelFolder, Stream, UserMessage, UserProfile, UserTopic
 from zerver.models.groups import SystemGroups
 from zerver.models.streams import StreamTopicsPolicyEnum
 from zerver.models.users import get_system_bot
@@ -659,50 +649,6 @@ def you_were_just_subscribed_message(
 RETENTION_DEFAULT: str | int = "realm_default"
 
 
-def access_requested_group_permissions(
-    user_profile: UserProfile,
-    realm: Realm,
-    request_settings_dict: dict[str, Any],
-) -> tuple[dict[str, UserGroup], dict[int, UserGroupMembersData]]:
-    anonymous_group_membership = {}
-    group_settings_map = {}
-    system_groups_name_dict = get_role_based_system_groups_dict(realm)
-    for setting_name, permission_configuration in Stream.stream_permission_group_settings.items():
-        assert setting_name in request_settings_dict
-        if request_settings_dict[setting_name] is not None:
-            setting_request_value = request_settings_dict[setting_name]
-            setting_value = parse_group_setting_value(
-                setting_request_value, system_groups_name_dict[SystemGroups.NOBODY]
-            )
-            group_settings_map[setting_name] = access_user_group_for_setting(
-                setting_value,
-                user_profile,
-                setting_name=setting_name,
-                permission_configuration=permission_configuration,
-            )
-            if (
-                setting_name in ["can_delete_any_message_group", "can_delete_own_message_group"]
-                and group_settings_map[setting_name].id
-                != system_groups_name_dict[SystemGroups.NOBODY].id
-                and not user_profile.can_set_delete_message_policy()
-            ):
-                raise JsonableError(_("Insufficient permission"))
-
-            if not isinstance(setting_value, int):
-                anonymous_group_membership[group_settings_map[setting_name].id] = setting_value
-        else:
-            group_settings_map[setting_name] = get_stream_permission_default_group(
-                setting_name, system_groups_name_dict, creator=user_profile
-            )
-            if permission_configuration.default_group_name == "channel_creator":
-                # Default for some settings like "can_administer_channel_group"
-                # is anonymous group with stream creator.
-                anonymous_group_membership[group_settings_map[setting_name].id] = (
-                    UserGroupMembersData(direct_subgroups=[], direct_members=[user_profile.id])
-                )
-    return group_settings_map, anonymous_group_membership
-
-
 @transaction.atomic(savepoint=False)
 @require_non_guest_user
 @typed_endpoint
@@ -868,11 +814,6 @@ def add_subscriptions_backend(
         principals = []
 
     request_settings_dict = locals()
-    group_settings_map, anonymous_group_membership = access_requested_group_permissions(
-        user_profile,
-        realm,
-        request_settings_dict,
-    )
 
     folder: ChannelFolder | None = None
     if folder_id is not None:
@@ -899,32 +840,6 @@ def add_subscriptions_backend(
         validated_topics_policy = validate_topics_policy(topics_policy, user_profile)
         if validated_topics_policy is not None:
             stream_dict_copy["topics_policy"] = validated_topics_policy.value
-        stream_dict_copy["can_add_subscribers_group"] = group_settings_map[
-            "can_add_subscribers_group"
-        ]
-        stream_dict_copy["can_administer_channel_group"] = group_settings_map[
-            "can_administer_channel_group"
-        ]
-        stream_dict_copy["can_delete_any_message_group"] = group_settings_map[
-            "can_delete_any_message_group"
-        ]
-        stream_dict_copy["can_delete_own_message_group"] = group_settings_map[
-            "can_delete_own_message_group"
-        ]
-        stream_dict_copy["can_move_messages_out_of_channel_group"] = group_settings_map[
-            "can_move_messages_out_of_channel_group"
-        ]
-        stream_dict_copy["can_move_messages_within_channel_group"] = group_settings_map[
-            "can_move_messages_within_channel_group"
-        ]
-        stream_dict_copy["can_send_message_group"] = group_settings_map["can_send_message_group"]
-        stream_dict_copy["can_remove_subscribers_group"] = group_settings_map[
-            "can_remove_subscribers_group"
-        ]
-        stream_dict_copy["can_resolve_topics_group"] = group_settings_map[
-            "can_resolve_topics_group"
-        ]
-        stream_dict_copy["can_subscribe_group"] = group_settings_map["can_subscribe_group"]
         stream_dict_copy["folder"] = folder
 
         stream_dicts.append(stream_dict_copy)
@@ -941,7 +856,7 @@ def add_subscriptions_backend(
         user_profile,
         autocreate=True,
         is_default_stream=is_default_stream,
-        anonymous_group_membership=anonymous_group_membership,
+        request_settings_dict=request_settings_dict,
     )
 
     streams_categorized_by_permissions = filter_stream_authorization_for_adding_subscribers(

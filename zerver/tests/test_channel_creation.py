@@ -1056,8 +1056,13 @@ class TestCreateStreams(ZulipTestCase):
                 "is_web_public": False,
             }
         ]
+
+        request_settings_dict = dict.fromkeys(Stream.stream_permission_group_settings)
+
         with self.assertRaisesRegex(JsonableError, "Must be an organization owner"):
-            list_to_streams(streams_raw, admin, autocreate=True)
+            list_to_streams(
+                streams_raw, admin, autocreate=True, request_settings_dict=request_settings_dict
+            )
 
         streams_raw = [
             {
@@ -1067,7 +1072,9 @@ class TestCreateStreams(ZulipTestCase):
             }
         ]
         with self.assertRaisesRegex(JsonableError, "Must be an organization owner"):
-            list_to_streams(streams_raw, admin, autocreate=True)
+            list_to_streams(
+                streams_raw, admin, autocreate=True, request_settings_dict=request_settings_dict
+            )
 
         streams_raw = [
             {
@@ -1076,7 +1083,9 @@ class TestCreateStreams(ZulipTestCase):
                 "is_web_public": False,
             }
         ]
-        result = list_to_streams(streams_raw, admin, autocreate=True)
+        result = list_to_streams(
+            streams_raw, admin, autocreate=True, request_settings_dict=request_settings_dict
+        )
         self.assert_length(result[0], 0)
         self.assert_length(result[1], 1)
         self.assertEqual(result[1][0].name, "new_stream")
@@ -1105,10 +1114,14 @@ class TestCreateStreams(ZulipTestCase):
         with self.assertRaisesRegex(
             JsonableError, "Available on Zulip Cloud Standard. Upgrade to access."
         ):
-            list_to_streams(streams_raw, owner, autocreate=True)
+            list_to_streams(
+                streams_raw, owner, autocreate=True, request_settings_dict=request_settings_dict
+            )
 
         do_change_realm_plan_type(realm, Realm.PLAN_TYPE_SELF_HOSTED, acting_user=admin)
-        result = list_to_streams(streams_raw, owner, autocreate=True)
+        result = list_to_streams(
+            streams_raw, owner, autocreate=True, request_settings_dict=request_settings_dict
+        )
         self.assert_length(result[0], 0)
         self.assert_length(result[1], 3)
         self.assertEqual(result[1][0].name, "new_stream1")
