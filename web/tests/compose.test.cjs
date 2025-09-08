@@ -309,6 +309,7 @@ test_ui("send_message", ({override, override_rewire, mock_template}) => {
         compose_state.set_message_type("private");
         override(current_user, "user_id", new_user.user_id);
         override(compose_pm_pill, "get_emails", () => "alice@example.com");
+        override(compose_pm_pill, "get_user_ids", () => [alice.user_id]);
 
         const server_message_id = 127;
         override(markdown, "render", noop);
