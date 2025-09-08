@@ -5172,9 +5172,12 @@ class SubscriptionAPITest(ZulipTestCase):
             "```` quote\n*No description.*\n````",
         )
 
+        # When send_new_subscription_messages is false, confirm that the
+        # response doesn't include new_subscription_messages_sent boolean
+        # field.
         response = self.subscribe_via_post(
             desdemona,
-            ["Test stream 3"],
+            ["test E"],
             dict(
                 principals=orjson.dumps(user_ids).decode(),
                 send_new_subscription_messages=orjson.dumps(False).decode(),
