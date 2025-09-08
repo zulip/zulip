@@ -2,6 +2,7 @@ import $ from "jquery";
 import assert from "minimalistic-assert";
 import * as z from "zod/mini";
 
+import timezones from "../generated/timezones.json";
 import render_change_email_modal from "../templates/change_email_modal.hbs";
 import render_demo_organization_add_email_modal from "../templates/demo_organization_add_email_modal.hbs";
 import render_dialog_change_password from "../templates/dialog_change_password.hbs";
@@ -15,6 +16,7 @@ import {csrf_token} from "./csrf.ts";
 import * as custom_profile_fields_ui from "./custom_profile_fields_ui.ts";
 import type {CustomProfileFieldData, PillUpdateField} from "./custom_profile_fields_ui.ts";
 import * as dialog_widget from "./dialog_widget.ts";
+import * as dropdown_widget from "./dropdown_widget.ts";
 import {$t_html} from "./i18n.ts";
 import * as keydown_util from "./keydown_util.ts";
 import * as modals from "./modals.ts";
@@ -40,6 +42,7 @@ let password_quality:
     | ((password: string, $bar: JQuery | undefined, $password_field: JQuery) => boolean)
     | undefined; // Loaded asynchronously
 let user_avatar_widget_created = false;
+let user_timezone_dropdown_widget: dropdown_widget.DropdownWidget | undefined;
 
 export function update_email(new_email: string): void {
     const $email_input = $("#email_field_container");
@@ -663,6 +666,47 @@ export function set_up(): void {
         );
     }
 
+    function render_user_timezone_dropdown_widget(selected_timezone?: string): void {
+        const timezone_items = timezones.timezones.map(
+            (tz: {name: string; utc_offset: string}) => ({
+                name: `${tz.name} (${tz.utc_offset})`,
+                unique_id: tz.name,
+            }),
+        );
+
+        const opts: dropdown_widget.DropdownWidgetOptions = {
+            widget_name: "user_timezone",
+            get_options: () => timezone_items,
+            item_click_callback(event, dropdown) {
+                dropdown.hide();
+                event.preventDefault();
+                event.stopPropagation();
+                if (user_timezone_dropdown_widget) {
+                    const selected = user_timezone_dropdown_widget.value();
+                    if (selected) {
+                        settings_ui.do_settings_change(
+                            channel.patch,
+                            "/json/settings",
+                            {timezone: selected},
+                            $(".timezone-setting-status").expectOne(),
+                            {
+                                success_continuation() {
+                                    render_user_timezone_dropdown_widget(selected.toString());
+                                },
+                            },
+                        );
+                    }
+                }
+            },
+            $events_container: $("#profile-settings"),
+            default_id: selected_timezone ?? user_settings.timezone,
+            unique_id_type: "string",
+        };
+
+        user_timezone_dropdown_widget = new dropdown_widget.DropdownWidget(opts);
+        user_timezone_dropdown_widget.setup();
+    }
+
     $("#demo_organization_add_email_button").on("click", (e) => {
         e.preventDefault();
         e.stopPropagation();
@@ -830,21 +874,7 @@ export function set_up(): void {
         user_avatar_widget_created = true;
     }
 
-    $("#user_timezone").val(user_settings.timezone);
-
-    $<HTMLSelectElement>("select#user_timezone").on("change", function (e) {
-        e.preventDefault();
-        e.stopPropagation();
-
-        const data = {timezone: this.value};
-
-        settings_ui.do_settings_change(
-            channel.patch,
-            "/json/settings",
-            data,
-            $(".timezone-setting-status").expectOne(),
-        );
-    });
+    render_user_timezone_dropdown_widget();
 
     $<HTMLInputElement>("#automatically_offer_update_time_zone").on("change", function (e) {
         e.preventDefault();
