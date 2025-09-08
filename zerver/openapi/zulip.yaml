@@ -19951,12 +19951,6 @@ paths:
 
                           Relevant for administrative settings UI that can change the digest
                           email settings.
-                      realm_is_zephyr_mirror_realm:
-                        type: boolean
-                        description: |
-                          Present if `realm` is present in `fetch_event_types`.
-
-                          Whether the organization is a Zephyr mirror realm.
                       realm_email_auth_enabled:
                         type: boolean
                         description: |
