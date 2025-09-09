@@ -1889,6 +1889,7 @@
   "You can <z-link>manage</z-link> your own bots.": "Puoi <z-link>gestire</z-link> i tuoi bot.",
   "You can add members by name or email address. Enter a <z-user-roles-link>user role</z-user-roles-link>, <z-user-groups-link>user group</z-user-groups-link>, or <z-channel-link>#channel</z-channel-link> to add multiple users at once.": "",
   "You can also make <z-link>tables</z-link> with this <z-link>Markdown-ish table syntax</z-link>.": "Puoi fare anche delle <z-link>tabelle</z-link> con questa <z-link>tabella di sintassi Markdown-ish</z-link>.",
+  "You can always reactivate this group later.": "",
   "You can combine search filters as needed.": "Puoi combinare i filtri di ricerca secondo necessità.",
   "You can create bots that can only send messages.": "È possibile creare bot che possono solo inviare messaggi.",
   "You can fully access this community and participate in conversations by creating a Zulip account in this organization.": "Puoi accedere completamente a questa community e partecipare alle conversazioni creando un account Zulip in questa organizzazione.",

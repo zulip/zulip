@@ -16,7 +16,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-09-08 15:53+0000\n"
+"POT-Creation-Date: 2025-09-09 13:36+0000\n"
 "PO-Revision-Date: 2025-08-07 23:52+0000\n"
 "Last-Translator: Alex Vandiver <alexmv@zulip.com>\n"
 "Language-Team: Czech <https://hosted.weblate.org/projects/zulip/django/cs/>\n"
@@ -205,7 +205,7 @@ msgstr "Před zahájením bezplatné zkušební verze přidejte kreditní kartu.
 msgid "Please add a credit card to schedule upgrade."
 msgstr "Pro naplánování aktualizace přidejte prosím kreditní kartu."
 
-#: corporate/lib/stripe.py:2978
+#: corporate/lib/stripe.py:2988
 msgid ""
 "Unable to update the plan. The plan has been expired and replaced with a new "
 "plan."
@@ -213,18 +213,18 @@ msgstr ""
 "Aktualizace platebního plánu se nezdařila. Plán již vypršel a byl nahrazen "
 "novým."
 
-#: corporate/lib/stripe.py:2983
+#: corporate/lib/stripe.py:2993
 msgid "Unable to update the plan. The plan has ended."
 msgstr "Aktualizace platebního plánu se nezdařila. Plán již byl ukončen."
 
-#: corporate/lib/stripe.py:3051
+#: corporate/lib/stripe.py:3061
 msgid ""
 "Cannot update licenses in the current billing period for free trial plan."
 msgstr ""
 "Nelze aktualizovat licence v aktuálním zúčtovacím období pro bezplatný "
 "zkušební plán."
 
-#: corporate/lib/stripe.py:3056 corporate/lib/stripe.py:3084
+#: corporate/lib/stripe.py:3066 corporate/lib/stripe.py:3094
 msgid ""
 "Unable to update licenses manually. Your plan is on automatic license "
 "management."
@@ -232,7 +232,7 @@ msgstr ""
 "Ruční aktualizace licencí se nezdařila. Váš platební plán má nastavenu "
 "automatickou správu licencí."
 
-#: corporate/lib/stripe.py:3062
+#: corporate/lib/stripe.py:3072
 #, python-brace-format
 msgid ""
 "Your plan is already on {licenses} licenses in the current billing period."
@@ -240,18 +240,18 @@ msgstr ""
 "Váš aktuální platební plán již využívá {licenses} licencí v aktuálním "
 "zúčtovacím období."
 
-#: corporate/lib/stripe.py:3067
+#: corporate/lib/stripe.py:3077
 msgid "You cannot decrease the licenses in the current billing period."
 msgstr "Nelze snížit počet licencí v aktuálním zúčtovacím období."
 
-#: corporate/lib/stripe.py:3093
+#: corporate/lib/stripe.py:3103
 msgid ""
 "Cannot change the licenses for next billing cycle for a plan that is being "
 "downgraded."
 msgstr ""
 "Nelze změnit licence pro příští zúčtovací cyklus u plánu, který je ponižován."
 
-#: corporate/lib/stripe.py:3099
+#: corporate/lib/stripe.py:3109
 #, python-brace-format
 msgid ""
 "Your plan is already scheduled to renew with {licenses_at_next_renewal} "
@@ -260,7 +260,7 @@ msgstr ""
 "Váš platební plán je již nastaven aby v dalším zúčtovacím období obnovil "
 "{licenses_at_next_renewal} licencí."
 
-#: corporate/lib/stripe.py:3123
+#: corporate/lib/stripe.py:3133
 #, python-brace-format
 msgid ""
 "You’ve already purchased {licenses_at_next_renewal} licenses for the next "
@@ -269,19 +269,19 @@ msgstr ""
 "Na další zúčtovací období jste již zakoupili licence "
 "{licenses_at_next_renewal}."
 
-#: corporate/lib/stripe.py:3145
+#: corporate/lib/stripe.py:3155
 msgid "Nothing to change."
 msgstr "Není co měnit."
 
-#: corporate/lib/stripe.py:3430
+#: corporate/lib/stripe.py:3440
 msgid "No customer for this organization!"
 msgstr "Pro tuto organizaci neexistuje žádný zákazník!"
 
-#: corporate/lib/stripe.py:3439
+#: corporate/lib/stripe.py:3449
 msgid "Session not found"
 msgstr "Relace nebyla nalezena"
 
-#: corporate/lib/stripe.py:3445 zerver/decorator.py:218 zerver/decorator.py:723
+#: corporate/lib/stripe.py:3455 zerver/decorator.py:218 zerver/decorator.py:723
 #: zerver/lib/streams.py:142 zerver/lib/streams.py:216
 #: zerver/lib/streams.py:218 zerver/lib/streams.py:220
 #: zerver/lib/streams.py:229 zerver/lib/streams.py:1552
@@ -297,15 +297,15 @@ msgstr "Relace nebyla nalezena"
 msgid "Insufficient permission"
 msgstr "Nedostatečná oprávnění"
 
-#: corporate/lib/stripe.py:3456
+#: corporate/lib/stripe.py:3466
 msgid "Payment intent not found"
 msgstr "Záměr platby nenalezen"
 
-#: corporate/lib/stripe.py:3459
+#: corporate/lib/stripe.py:3469
 msgid "Pass stripe_session_id or stripe_invoice_id"
 msgstr "Vložte stripe_session_id nebo stripe_invoice_id"
 
-#: corporate/lib/stripe.py:4205
+#: corporate/lib/stripe.py:4215
 #, python-brace-format
 msgid ""
 "Your organization's request for sponsored hosting has been approved! You "
@@ -6325,8 +6325,10 @@ msgid "Name too long!"
 msgstr "Název je příliš dlouhý!"
 
 #: zerver/lib/users.py:62
-msgid "Name too short!"
-msgstr "Název je příliš krátký!"
+#, fuzzy
+#| msgid "Message must not be empty"
+msgid "Name must not be empty!"
+msgstr "Zpráva nesmí být prázdná"
 
 #: zerver/lib/users.py:66
 msgid "Invalid characters in name!"
@@ -6741,27 +6743,27 @@ msgstr "Správci a moderátoři"
 msgid "Admins only"
 msgstr "Pouze správci"
 
-#: zerver/models/users.py:519
+#: zerver/models/users.py:518
 msgid "Unknown user"
 msgstr "Neznámý uživatel"
 
-#: zerver/models/users.py:685
+#: zerver/models/users.py:684
 msgid "Organization owner"
 msgstr "Vlastník organizace"
 
-#: zerver/models/users.py:686
+#: zerver/models/users.py:685
 msgid "Organization administrator"
 msgstr "Správce organizace"
 
-#: zerver/models/users.py:687
+#: zerver/models/users.py:686
 msgid "Moderator"
 msgstr "Moderátor"
 
-#: zerver/models/users.py:688
+#: zerver/models/users.py:687
 msgid "Member"
 msgstr "Člen"
 
-#: zerver/models/users.py:689
+#: zerver/models/users.py:688
 msgid "Guest"
 msgstr "Host"
 
@@ -7843,6 +7845,9 @@ msgstr "Neplatný OTP"
 #: zproject/backends.py:3548
 msgid "Can't use both mobile_flow_otp and desktop_flow_otp together."
 msgstr "Dohromady nelze použít jak mobile_flow_otp tak desktop_flow_otp."
+
+#~ msgid "Name too short!"
+#~ msgstr "Název je příliš krátký!"
 
 #~ msgid "Convert demo organization before upgrading."
 #~ msgstr "Před povýšením převeďte ukázkovou organizaci."

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-09-08 15:53+0000\n"
+"POT-Creation-Date: 2025-09-09 13:36+0000\n"
 "PO-Revision-Date: 2025-09-09 12:42+0000\n"
 "Last-Translator: BobTB <jf@kfm.si>\n"
 "Language-Team: Slovenian <https://hosted.weblate.org/projects/zulip/django/"
@@ -204,25 +204,25 @@ msgstr ""
 msgid "Please add a credit card to schedule upgrade."
 msgstr "Prosimo, dodajte kreditno kartico za načrtovanje nadgradnje."
 
-#: corporate/lib/stripe.py:2978
+#: corporate/lib/stripe.py:2988
 msgid ""
 "Unable to update the plan. The plan has been expired and replaced with a new "
 "plan."
 msgstr ""
 "Načrta ni bilo mogoče posodobiti. Načrt je potekel in bil zamenjan z novim."
 
-#: corporate/lib/stripe.py:2983
+#: corporate/lib/stripe.py:2993
 msgid "Unable to update the plan. The plan has ended."
 msgstr "Načrta ni bilo mogoče posodobiti. Načrt se je zaključil."
 
-#: corporate/lib/stripe.py:3051
+#: corporate/lib/stripe.py:3061
 msgid ""
 "Cannot update licenses in the current billing period for free trial plan."
 msgstr ""
 "V trenutnem obračunskem obdobju ni mogoče posodobiti licenc za načrt "
 "brezplačnega preskusnega obdobja."
 
-#: corporate/lib/stripe.py:3056 corporate/lib/stripe.py:3084
+#: corporate/lib/stripe.py:3066 corporate/lib/stripe.py:3094
 msgid ""
 "Unable to update licenses manually. Your plan is on automatic license "
 "management."
@@ -230,17 +230,17 @@ msgstr ""
 "Licenc ni mogoče ročno posodobiti. Vaš načrt uporablja samodejno upravljanje "
 "licenc."
 
-#: corporate/lib/stripe.py:3062
+#: corporate/lib/stripe.py:3072
 #, python-brace-format
 msgid ""
 "Your plan is already on {licenses} licenses in the current billing period."
 msgstr "Vaš načrt že ima {licenses} licenc v trenutnem obračunskem obdobju."
 
-#: corporate/lib/stripe.py:3067
+#: corporate/lib/stripe.py:3077
 msgid "You cannot decrease the licenses in the current billing period."
 msgstr "V trenutnem obračunskem obdobju ne morete zmanjšati števila licenc."
 
-#: corporate/lib/stripe.py:3093
+#: corporate/lib/stripe.py:3103
 msgid ""
 "Cannot change the licenses for next billing cycle for a plan that is being "
 "downgraded."
@@ -248,7 +248,7 @@ msgstr ""
 "Ni mogoče spremeniti licenc za naslednji obračunski cikel za načrt, ki se "
 "ponižuje."
 
-#: corporate/lib/stripe.py:3099
+#: corporate/lib/stripe.py:3109
 #, python-brace-format
 msgid ""
 "Your plan is already scheduled to renew with {licenses_at_next_renewal} "
@@ -257,7 +257,7 @@ msgstr ""
 "Vaš načrt je že načrtovan za podaljšanje z {licenses_at_next_renewal} "
 "licencami."
 
-#: corporate/lib/stripe.py:3123
+#: corporate/lib/stripe.py:3133
 #, python-brace-format
 msgid ""
 "You’ve already purchased {licenses_at_next_renewal} licenses for the next "
@@ -266,19 +266,19 @@ msgstr ""
 "Za naslednje obračunsko obdobje ste že kupili {licenses_at_next_renewal} "
 "licenc."
 
-#: corporate/lib/stripe.py:3145
+#: corporate/lib/stripe.py:3155
 msgid "Nothing to change."
 msgstr "Ničesar ni treba spremeniti."
 
-#: corporate/lib/stripe.py:3430
+#: corporate/lib/stripe.py:3440
 msgid "No customer for this organization!"
 msgstr "Ni stranke za to organizacijo!"
 
-#: corporate/lib/stripe.py:3439
+#: corporate/lib/stripe.py:3449
 msgid "Session not found"
 msgstr "Seja ni bila najdena"
 
-#: corporate/lib/stripe.py:3445 zerver/decorator.py:218 zerver/decorator.py:723
+#: corporate/lib/stripe.py:3455 zerver/decorator.py:218 zerver/decorator.py:723
 #: zerver/lib/streams.py:142 zerver/lib/streams.py:216
 #: zerver/lib/streams.py:218 zerver/lib/streams.py:220
 #: zerver/lib/streams.py:229 zerver/lib/streams.py:1552
@@ -294,15 +294,15 @@ msgstr "Seja ni bila najdena"
 msgid "Insufficient permission"
 msgstr "Nezadostno dovoljenje"
 
-#: corporate/lib/stripe.py:3456
+#: corporate/lib/stripe.py:3466
 msgid "Payment intent not found"
 msgstr "Namen plačila ni bil najden"
 
-#: corporate/lib/stripe.py:3459
+#: corporate/lib/stripe.py:3469
 msgid "Pass stripe_session_id or stripe_invoice_id"
 msgstr "Posredujte stripe_session_id ali stripe_invoice_id"
 
-#: corporate/lib/stripe.py:4205
+#: corporate/lib/stripe.py:4215
 #, python-brace-format
 msgid ""
 "Your organization's request for sponsored hosting has been approved! You "
@@ -6747,8 +6747,10 @@ msgid "Name too long!"
 msgstr "Ime je predolgo!"
 
 #: zerver/lib/users.py:62
-msgid "Name too short!"
-msgstr "Ime je prekratko!"
+#, fuzzy
+#| msgid "Message must not be empty"
+msgid "Name must not be empty!"
+msgstr "Sporočilo ne sme biti prazno"
 
 #: zerver/lib/users.py:66
 msgid "Invalid characters in name!"
@@ -7166,27 +7168,27 @@ msgstr "Skrbniki in moderatorji"
 msgid "Admins only"
 msgstr "Samo skrbniki"
 
-#: zerver/models/users.py:519
+#: zerver/models/users.py:518
 msgid "Unknown user"
 msgstr "Neznan uporabnik"
 
-#: zerver/models/users.py:685
+#: zerver/models/users.py:684
 msgid "Organization owner"
 msgstr "Lastnik organizacije"
 
-#: zerver/models/users.py:686
+#: zerver/models/users.py:685
 msgid "Organization administrator"
 msgstr "Skrbnik organizacije"
 
-#: zerver/models/users.py:687
+#: zerver/models/users.py:686
 msgid "Moderator"
 msgstr "Moderator"
 
-#: zerver/models/users.py:688
+#: zerver/models/users.py:687
 msgid "Member"
 msgstr "Član"
 
-#: zerver/models/users.py:689
+#: zerver/models/users.py:688
 msgid "Guest"
 msgstr "Gost"
 
@@ -8294,6 +8296,9 @@ msgstr "Neveljaven OTP"
 #: zproject/backends.py:3548
 msgid "Can't use both mobile_flow_otp and desktop_flow_otp together."
 msgstr "Ni mogoče hkrati uporabljati mobile_flow_otp in desktop_flow_otp."
+
+#~ msgid "Name too short!"
+#~ msgstr "Ime je prekratko!"
 
 #~ msgid "Channel name is already in use."
 #~ msgstr "Ime kanala je že v uporabi."

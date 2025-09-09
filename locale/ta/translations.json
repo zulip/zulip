@@ -1889,6 +1889,7 @@
   "You can <z-link>manage</z-link> your own bots.": "நீங்கள் <z-link>நிர்வகி</z-link> உங்கள் சொந்த போட்களை செய்யலாம்.",
   "You can add members by name or email address. Enter a <z-user-roles-link>user role</z-user-roles-link>, <z-user-groups-link>user group</z-user-groups-link>, or <z-channel-link>#channel</z-channel-link> to add multiple users at once.": "நீங்கள் உறுப்பினர்களை பெயர் அல்லது மின்னஞ்சல் முகவரி மூலம் சேர்க்கலாம். ஒரே நேரத்தில் பல பயனர்களைச் சேர்க்க <z-user-roles-link>பயனர் பங்கு</z-user-roles-link>, <z-user-groups-link>பயனர் குழு</z-user-groups-link>, அல்லது <z-channel-link>#சேனல் </z-channel-link> உள்ளிடவும்.",
   "You can also make <z-link>tables</z-link> with this <z-link>Markdown-ish table syntax</z-link>.": "இந்த <z-link>மார்க் டவுன்-இச் அட்டவணை தொடரியல்</z-link> உடன் <z-link> அட்டவணைகள்</z-link> ஐ நீங்கள் செய்யலாம்.",
+  "You can always reactivate this group later.": "",
   "You can combine search filters as needed.": "தேடல் வடிப்பான்களை தேவைக்கேற்ப இணைக்கலாம்.",
   "You can create bots that can only send messages.": "செய்திகளை மட்டுமே அனுப்பக்கூடிய போட்களை நீங்கள் உருவாக்கலாம்.",
   "You can fully access this community and participate in conversations by creating a Zulip account in this organization.": "இந்த நிறுவனத்தில் ஒரு சூலிப் கணக்கை உருவாக்குவதன் மூலம் நீங்கள் இந்த சமூகத்தை முழுமையாக அணுகலாம் மற்றும் உரையாடல்களில் பங்கேற்கலாம்.",
