@@ -283,6 +283,9 @@
 .display_only_pill {
     /* Ensure middle alignment in table contexts. */
     vertical-align: middle;
+    /* Resetting these values to prevent unintended inheritance from .pill-container styles. */
+    padding: 0;
+    border: 0;
 }
 
 /* These pill are similar to .not-editable, but are meant to show
