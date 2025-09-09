@@ -1433,19 +1433,18 @@ export class Filter {
         if (term_types.length === 1 && _.isEqual(term_types, ["sender"])) {
             const email = this.operands("sender")[0]!;
             const user = people.get_by_email(email);
-            let sender = email;
-            if (user) {
-                if (people.is_my_user_id(user.user_id)) {
-                    return $t({defaultMessage: "Messages sent by you"});
-                }
-
-                if (people.should_add_guest_user_indicator(user.user_id)) {
-                    sender = $t({defaultMessage: "{name} (guest)"}, {name: user.full_name});
-                } else {
-                    sender = user.full_name;
-                }
+            if (user === undefined) {
+                return $t({defaultMessage: "Messages sent by unknown user"});
             }
-
+            if (people.is_my_user_id(user.user_id)) {
+                return $t({defaultMessage: "Messages sent by you"});
+            }
+            let sender: string;
+            if (people.should_add_guest_user_indicator(user.user_id)) {
+                sender = $t({defaultMessage: "{name} (guest)"}, {name: user.full_name});
+            } else {
+                sender = user.full_name;
+            }
             return $t(
                 {defaultMessage: "Messages sent by {sender}"},
                 {
