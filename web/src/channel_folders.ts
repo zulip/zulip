@@ -57,8 +57,6 @@ export function get_active_folder_ids(): Set<number> {
     return active_channel_folder_ids;
 }
 
-/* TODO/channel-folders: Remove when tests are restored */
-/* istanbul ignore next */
 export function get_all_folder_ids(): Set<number> {
     return new Set(channel_folder_by_id_dict.keys());
 }

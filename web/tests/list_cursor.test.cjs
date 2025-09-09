@@ -148,6 +148,12 @@ run_test("multiple item list", ({override}) => {
     assert.ok(!list_items[2].hasClass("highlight"));
     assert.ok(!list_items[3].hasClass("highlight"));
 
+    override(conf.list, "find_li", () => list_items[1]);
+    cursor.redraw();
+    assert.ok(list_items[1].hasClass("highlight"));
+    assert.ok(!list_items[2].hasClass("highlight"));
+    assert.ok(!list_items[3].hasClass("highlight"));
+
     cursor.clear();
     assert.equal(cursor.get_key(), undefined);
     cursor.redraw();

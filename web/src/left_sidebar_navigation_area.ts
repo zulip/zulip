@@ -65,7 +65,7 @@ export function update_reminders_row(): void {
     ui_util.update_unread_count_in_dom($reminders_li, count);
 }
 
-export function update_dom_with_unread_counts(
+export let update_dom_with_unread_counts = function (
     counts: unread.FullUnreadCountsData,
     skip_animations: boolean,
 ): void {
@@ -85,6 +85,12 @@ export function update_dom_with_unread_counts(
     if (!skip_animations) {
         animate_mention_changes($mentioned_li, counts.mentioned_message_count);
     }
+};
+
+export function rewire_update_dom_with_unread_counts(
+    value: typeof update_dom_with_unread_counts,
+): void {
+    update_dom_with_unread_counts = value;
 }
 
 export let select_top_left_corner_item = function (narrow_to_activate: string): void {

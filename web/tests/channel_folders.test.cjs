@@ -66,6 +66,11 @@ run_test("basics", () => {
         devops_folder,
     ]);
 
+    assert.deepEqual(
+        channel_folders.get_all_folder_ids(),
+        new Set([frontend_folder.id, backend_folder.id, devops_folder.id]),
+    );
+
     assert.ok(channel_folders.is_valid_folder_id(frontend_folder.id));
     assert.ok(!channel_folders.is_valid_folder_id(999));
 
