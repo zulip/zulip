@@ -85,6 +85,11 @@ export default defineConfig({
                 {
                     label: "Zulip homepage",
                     link: "https://zulip.com",
+                    attrs: {
+                        class: "external-icon-sidebar",
+                        target: "_blank",
+                        rel: "noopener noreferrer",
+                    },
                 },
                 {
                     label: "Help center home",
@@ -100,10 +105,20 @@ export default defineConfig({
                         {
                             label: "Choosing a team chat app",
                             link: "https://blog.zulip.com/2024/11/04/choosing-a-team-chat-app/",
+                            attrs: {
+                                class: "external-icon-sidebar",
+                                target: "_blank",
+                                rel: "noopener noreferrer",
+                            },
                         },
                         {
                             label: "Why Zulip",
                             link: "https://zulip.com/why-zulip/",
+                            attrs: {
+                                class: "external-icon-sidebar",
+                                target: "_blank",
+                                rel: "noopener noreferrer",
+                            },
                         },
                         "trying-out-zulip",
                         {
@@ -361,6 +376,11 @@ export default defineConfig({
                         {
                             label: "Download apps for every platform",
                             link: "https://zulip.com/apps/",
+                            attrs: {
+                                class: "external-icon-sidebar",
+                                target: "_blank",
+                                rel: "noopener noreferrer",
+                            },
                         },
                         {
                             label: "Mobile app installation guides",
