@@ -253,3 +253,18 @@
 footer {
     font-size: 0.85em;
 }
+
+.external-icon-sidebar {
+    display: inline-flex;
+    align-items: center;
+}
+
+.external-icon-sidebar::after {
+    content: "";
+    width: 1em;
+    height: 1em;
+    margin-left: 0.4em;
+    background: currentcolor;
+    mask: url("../../../web/shared/icons/external-link.svg") no-repeat center /
+        contain;
+}
