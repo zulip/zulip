@@ -1,3 +1,5 @@
+// @ts-check
+
 import * as fs from "node:fs";
 
 import starlight from "@astrojs/starlight";
