@@ -235,6 +235,13 @@
     }
 }
 
+.display_only_pill,
+.person_picker {
+    .pill:hover {
+        background-color: var(--color-background-text-hover-direct-mention);
+    }
+}
+
 #compose-direct-recipient .pill-container {
     border: 1px solid var(--color-compose-recipient-box-border-color);
 
