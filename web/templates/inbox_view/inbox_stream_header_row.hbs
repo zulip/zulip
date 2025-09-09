@@ -1,4 +1,4 @@
-<div id="inbox-stream-header-{{stream_id}}" class="inbox-header {{#if is_hidden}}hidden_by_filters{{/if}} {{#if is_collapsed}}inbox-collapsed-state{{/if}}" data-col-index="{{ column_indexes.FULL_ROW }}" tabindex="0" data-stream-id="{{stream_id}}" style="background: {{stream_header_color}};">
+<div id="inbox-stream-header-{{stream_id}}" class="inbox-header {{#if is_hidden}}hidden_by_filters{{/if}} {{#if is_collapsed}}inbox-collapsed-state{{/if}}" data-col-index="{{ column_indexes.FULL_ROW }}" tabindex="0" data-stream-id="{{stream_id}}" style="background: linear-gradient(to bottom, color-mix(in oklch, {{ stream_header_color }} 80%, var(--color-background-inbox-row)), color-mix(in oklch, {{ stream_header_color }} 24%, var(--color-background-inbox-row)) 3%, var(--color-background-inbox-row));">
     <div class="inbox-focus-border">
         <div class="inbox-left-part-wrapper">
             <div class="inbox-left-part">
