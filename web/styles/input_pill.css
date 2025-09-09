@@ -291,7 +291,6 @@
    profile cards when clicked. */
 .panel_user_list > .pill-container,
 .creator_details > .display_only_pill {
-    background-color: hsl(0deg 0% 0% / 7%);
     gap: 2px;
     flex-wrap: nowrap;
 
@@ -305,7 +304,6 @@
     }
 
     > .pill {
-        background-color: transparent;
         border: none;
         text-decoration: none;
 
