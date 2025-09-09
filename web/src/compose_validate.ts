@@ -1063,7 +1063,7 @@ export function check_overflow_text($container: JQuery): number {
     return text.length;
 }
 
-export let check_posting_policy_for_compose_box = (): void => {
+export let update_posting_policy_banner_post_validation = (): void => {
     const banner_text = get_posting_policy_error_message();
     if (banner_text === "") {
         compose_banner.clear_errors();
@@ -1079,10 +1079,10 @@ export let check_posting_policy_for_compose_box = (): void => {
     }
 };
 
-export function rewire_check_posting_policy_for_compose_box(
-    value: typeof check_posting_policy_for_compose_box,
+export function rewire_update_posting_policy_banner_post_validation(
+    value: typeof update_posting_policy_banner_post_validation,
 ): void {
-    check_posting_policy_for_compose_box = value;
+    update_posting_policy_banner_post_validation = value;
 }
 
 export let validate_and_update_send_button_status = function (): void {
@@ -1096,7 +1096,7 @@ export let validate_and_update_send_button_status = function (): void {
         send_button_element._tippy.hide();
         send_button_element._tippy.show();
     }
-    check_posting_policy_for_compose_box();
+    update_posting_policy_banner_post_validation();
 };
 
 export function rewire_validate_and_update_send_button_status(
