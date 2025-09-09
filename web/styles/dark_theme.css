@@ -509,17 +509,6 @@
         }
     }
 
-    #read_receipts_modal .read_receipts_list li {
-        &:hover {
-            background-color: hsl(0deg 0% 100% / 5%);
-        }
-
-        &:active,
-        &:focus {
-            background-color: hsl(0deg 0% 100% / 10%);
-        }
-    }
-
     .help_link_widget:hover {
         color: inherit;
     }
