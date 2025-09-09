@@ -166,6 +166,7 @@ run_test("update_messages", ({override, override_rewire}) => {
             status_emoji_info: undefined,
             stream_id: denmark.stream_id,
             stream: "Denmark",
+            submessages: [],
             topic: "lunch",
             type: "stream",
             unread: true,
