@@ -94,6 +94,7 @@ export function process_new_message(raw_message: RawMessage, deliver_locally = f
             clean_reactions,
             display_reply_to: undefined,
         };
+        message.submessages ??= [];
         message_user_ids.add_user_id(message.sender_id);
     } else {
         const pm_with_user_ids = people.pm_with_user_ids(message_with_booleans);
@@ -114,6 +115,7 @@ export function process_new_message(raw_message: RawMessage, deliver_locally = f
             to_user_ids,
             clean_reactions,
         };
+        message.submessages ??= [];
 
         pm_conversations.process_message(message);
 
