@@ -447,7 +447,10 @@ export function pick_empty_narrow_banner(current_filter: Filter): NarrowBannerDa
                 };
             }
             return {
-                title: $t({defaultMessage: "This user does not exist!"}),
+                title: $t({
+                    defaultMessage:
+                        "This user doesn't exist, or you are not allowed to view any of their messages.",
+                }),
             };
         }
         case "dm-including": {

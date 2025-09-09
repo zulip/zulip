@@ -555,7 +555,9 @@ run_test("show_empty_narrow_message", ({mock_template, override}) => {
     narrow_banner.show_empty_narrow_message(current_filter);
     assert.equal(
         $(".empty_feed_notice_main").html(),
-        empty_narrow_html("translated: This user does not exist!"),
+        empty_narrow_html(
+            "translated: This user doesn't exist, or you are not allowed to view any of their messages.",
+        ),
     );
 
     current_filter = set_filter([
