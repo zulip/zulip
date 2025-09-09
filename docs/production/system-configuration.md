@@ -361,6 +361,48 @@ Set to a true value to enable object size reporting in memcached. This incurs a
 small overhead for every store or delete operation, but allows a
 memcached_exporter to report precise item size distribution.
 
+### `[tornado_sharding]`
+
+Keys in this section are used to configure how many Tornado instances
+are started, and which users are mapped to which of those instances.
+Each Tornado instance listens on a separate port, starting at 9800 and
+proceeding upwards from there. A single Tornado instance can usually
+handle 1000-1500 concurrent active users, depending on message sending
+volume.
+
+Individual organizations may be assigned to ports, either via their
+subdomain names, or their fully-qualified hostname (for [organizations
+using `REALM_HOSTS`][multiple-organizations.md#other-hostnames]):
+
+```ini
+[tornado_sharding]
+9800 = realm-a realm-b
+9801 = realm-c
+9802 = realm-host.example.net
+```
+
+Organizations can also be assigned to ports via regex over their
+fully-qualified hostname:
+
+```ini
+[tornado_sharding]
+9800_regex = ^realm-(a|b)\.example\.com$
+9801_regex = ^other(-option)?\.example.com$
+```
+
+Extremely large organizations can be distributed across multiple
+Tornado shards by joining the ports in the key with `_`:
+
+```ini
+[tornado_sharding]
+9800 = small-realm
+9801_9802 = very-large-realm
+```
+
+After running `scripts/zulip-puppet-apply`, a separate step to run
+`scripts/refresh-sharding-and-restart` is required for any sharding
+changes to take effect.
+
 ### `[loadbalancer]`
 
 #### `ips`
