@@ -463,7 +463,6 @@ export let start = (raw_opts: ComposeActionsStartOpts): void => {
         compose_validate.warn_if_in_search_view();
     }
 
-    compose_recipient.check_posting_policy_for_compose_box();
     drafts.update_compose_draft_count();
 
     // Reset the `max-height` property of `compose-textarea` so that the

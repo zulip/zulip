@@ -5,7 +5,7 @@ import {all_messages_data} from "./all_messages_data.ts";
 import * as blueslip from "./blueslip.ts";
 import * as channel from "./channel.ts";
 import * as compose_closed_ui from "./compose_closed_ui.ts";
-import * as compose_recipient from "./compose_recipient.ts";
+import * as compose_validate from "./compose_validate.ts";
 import * as direct_message_group_data from "./direct_message_group_data.ts";
 import {Filter} from "./filter.ts";
 import * as message_feed_loading from "./message_feed_loading.ts";
@@ -129,7 +129,7 @@ export function fetch_more_if_required_for_current_msg_list(
         narrow_banner.show_empty_narrow_message(message_lists.current.data.filter);
         message_lists.current.update_trailing_bookend();
         compose_closed_ui.maybe_update_buttons_for_dm_recipient();
-        compose_recipient.check_posting_policy_for_compose_box();
+        compose_validate.validate_and_update_send_button_status();
     }
 
     if (looking_for_old_msgs && !has_found_oldest) {

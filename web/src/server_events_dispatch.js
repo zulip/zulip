@@ -409,7 +409,7 @@ export function dispatch_normal_event(event) {
                                 ) {
                                     settings_org.check_disable_direct_message_initiator_group_widget();
                                     compose_closed_ui.maybe_update_buttons_for_dm_recipient();
-                                    compose_recipient.check_posting_policy_for_compose_box();
+                                    compose_validate.validate_and_update_send_button_status();
                                 }
 
                                 if (
