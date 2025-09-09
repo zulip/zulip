@@ -241,6 +241,7 @@ test("upload_files", async ({mock_template, override, override_rewire}) => {
         return "<banner-stub>";
     });
     override_rewire(compose_validate, "validate", () => false);
+    override_rewire(compose_validate, "check_posting_policy_for_compose_box", noop);
     await upload.upload_files(uppy, config, files);
     assert.ok($("#compose-send-button").hasClass("disabled-message-send-controls"));
     assert.ok(banner_shown);
