@@ -398,14 +398,6 @@
         background-color: hsl(0deg 0% 0% / 20%);
     }
 
-    #feedback_container {
-        border-color: hsl(0deg 0% 0% / 50%);
-
-        & a:hover {
-            color: hsl(0deg 0% 100%);
-        }
-    }
-
     /* Search highlight used in both topics and rendered_markdown */
     .highlight {
         background-color: hsl(51deg 100% 23%);
