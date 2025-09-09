@@ -93,12 +93,8 @@ export class ListCursor<Key> {
         const row = this.get_row(this.curr_key);
 
         if (row === undefined) {
-            /* TODO/channel-folders: Remove when tests are restored */
-            /* istanbul ignore next */
             return;
         }
-        /* TODO/channel-folders: Remove when tests are restored */
-        /* istanbul ignore next */
         row.highlight();
     }
 
