@@ -158,34 +158,11 @@ export function update_on_recipient_change(): void {
     update_narrow_to_recipient_visibility();
     compose_validate.warn_if_guest_in_dm_recipient();
     drafts.update_compose_draft_count();
-    check_posting_policy_for_compose_box();
     compose_validate.validate_and_update_send_button_status();
 
     // Clear the topic moved banner when the recipient
     // is changed or compose box is closed.
     compose_validate.clear_topic_moved_info();
-}
-
-export let check_posting_policy_for_compose_box = (): void => {
-    const banner_text = compose_validate.get_posting_policy_error_message();
-    if (banner_text === "") {
-        compose_banner.clear_errors();
-        return;
-    }
-
-    let banner_classname = compose_banner.CLASSNAMES.no_post_permissions;
-    if (compose_state.selected_recipient_id === "direct") {
-        banner_classname = compose_banner.CLASSNAMES.cannot_send_direct_message;
-        compose_banner.cannot_send_direct_message_error(banner_text);
-    } else {
-        compose_banner.show_error_message(banner_text, banner_classname, $("#compose_banners"));
-    }
-};
-
-export function rewire_check_posting_policy_for_compose_box(
-    value: typeof check_posting_policy_for_compose_box,
-): void {
-    check_posting_policy_for_compose_box = value;
 }
 
 function switch_message_type(message_type: MessageType): void {
