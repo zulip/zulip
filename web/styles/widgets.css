@@ -70,7 +70,7 @@
                 font-weight: 300;
                 line-height: 0.8;
                 text-align: center;
-                border: 2px solid hsl(156deg 28% 70%);
+                border: 2px solid var(--color-border-todo-checkbox);
 
                 border-radius: 4px;
                 filter: brightness(1);
@@ -83,8 +83,8 @@
                 background-size: 75%;
                 background-position: 50% 50%;
                 background-repeat: no-repeat;
-                background-color: hsl(156deg 41% 40%);
-                border: 2px solid hsl(156deg 41% 40%);
+                background-color: var(--color-background-todo-checkbox-checked);
+                border-color: var(--color-border-todo-checkbox-checked);
             }
 
             &:disabled ~ .custom-checkbox {
@@ -93,7 +93,13 @@
             }
 
             &:hover ~ .custom-checkbox {
-                border-color: hsl(156deg 30% 50%);
+                border-color: var(--color-border-todo-checkbox-hover);
+            }
+
+            &:not(:checked):hover ~ .custom-checkbox {
+                /* We only change the background color on hover,
+                   when the checkbox is not checked. */
+                background-color: var(--color-background-todo-checkbox-hover);
             }
 
             &:focus ~ .custom-checkbox {
