@@ -282,6 +282,8 @@
 .display_only_pill {
     /* Ensure middle alignment in table contexts. */
     vertical-align: middle;
+    padding: 0;
+    border: 0;
 }
 
 /* These pill are similar to .not-editable, but are meant to show
