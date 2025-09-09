@@ -290,12 +290,18 @@
             line-height: 1.625em; /* 26px at 16px font-size at 14px em */
 
             &:hover {
-                background-color: hsl(0deg 0% 0% / 5%);
+                background-color: light-dark(
+                    hsl(0deg 0% 0% / 5%),
+                    hsl(0deg 0% 100% / 5%)
+                );
             }
 
             &:active,
             &:focus {
-                background-color: hsl(0deg 0% 0% / 10%);
+                background-color: light-dark(
+                    hsl(0deg 0% 0% / 10%),
+                    hsl(0deg 0% 100% / 10%)
+                );
                 outline: none;
             }
         }
