@@ -614,7 +614,7 @@ export async function initialize_everything(state_data) {
     compose_pm_pill.initialize({
         on_pill_create_or_remove() {
             compose_recipient.update_compose_area_placeholder_text();
-            compose_recipient.check_posting_policy_for_compose_box();
+            compose_validate.validate_and_update_send_button_status();
         },
     });
     compose_closed_ui.initialize();
