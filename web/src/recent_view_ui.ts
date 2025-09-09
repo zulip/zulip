@@ -615,7 +615,6 @@ type ConversationContext = {
           is_private: true;
           user_ids_string: string;
           rendered_pm_with_html: string;
-          recipient_id: number;
           pm_url: string;
           is_group: boolean;
           is_bot: boolean;
@@ -725,7 +724,6 @@ function format_conversation(conversation_data: ConversationData): ConversationC
                 }),
             )
             .sort();
-        const recipient_id = last_msg.recipient_id;
         const pm_url = last_msg.pm_with_url;
         const is_group = last_msg.display_recipient.length > 2;
         const has_unread_mention =
@@ -764,7 +762,6 @@ function format_conversation(conversation_data: ConversationData): ConversationC
                 "long",
                 "conjunction",
             ),
-            recipient_id,
             pm_url,
             is_group,
             is_bot,
