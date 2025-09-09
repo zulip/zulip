@@ -594,8 +594,14 @@ export function initialize() {
 
     $("#compose_recipient_box").on("click", "#recipient_box_clear_topic_button", () => {
         const $input = $("input#stream_message_recipient_topic");
+        // This should work similar to just manually deleting the
+        // topic
         $input.val("");
         $input.trigger("focus");
+        // However, we should take care to update the conversation
+        // arrow, which would otherwise go missing when *general
+        // chat* is permitted.
+        compose_recipient.update_narrow_to_recipient_visibility();
         compose_validate.validate_and_update_send_button_status();
     });
 
