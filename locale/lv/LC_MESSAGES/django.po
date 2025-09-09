@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-09-08 15:53+0000\n"
+"POT-Creation-Date: 2025-09-09 13:56+0000\n"
 "PO-Revision-Date: 2025-07-17 06:37+0000\n"
 "Last-Translator: Anonymous <noreply@weblate.org>\n"
 "Language-Team: Latvian <https://hosted.weblate.org/projects/zulip/django/lv/"
@@ -174,70 +174,70 @@ msgstr ""
 msgid "Please add a credit card to schedule upgrade."
 msgstr ""
 
-#: corporate/lib/stripe.py:2978
+#: corporate/lib/stripe.py:2988
 msgid ""
 "Unable to update the plan. The plan has been expired and replaced with a new "
 "plan."
 msgstr ""
 
-#: corporate/lib/stripe.py:2983
+#: corporate/lib/stripe.py:2993
 msgid "Unable to update the plan. The plan has ended."
 msgstr ""
 
-#: corporate/lib/stripe.py:3051
+#: corporate/lib/stripe.py:3061
 msgid ""
 "Cannot update licenses in the current billing period for free trial plan."
 msgstr ""
 
-#: corporate/lib/stripe.py:3056 corporate/lib/stripe.py:3084
+#: corporate/lib/stripe.py:3066 corporate/lib/stripe.py:3094
 msgid ""
 "Unable to update licenses manually. Your plan is on automatic license "
 "management."
 msgstr ""
 
-#: corporate/lib/stripe.py:3062
+#: corporate/lib/stripe.py:3072
 #, python-brace-format
 msgid ""
 "Your plan is already on {licenses} licenses in the current billing period."
 msgstr ""
 
-#: corporate/lib/stripe.py:3067
+#: corporate/lib/stripe.py:3077
 msgid "You cannot decrease the licenses in the current billing period."
 msgstr ""
 
-#: corporate/lib/stripe.py:3093
+#: corporate/lib/stripe.py:3103
 msgid ""
 "Cannot change the licenses for next billing cycle for a plan that is being "
 "downgraded."
 msgstr ""
 
-#: corporate/lib/stripe.py:3099
+#: corporate/lib/stripe.py:3109
 #, python-brace-format
 msgid ""
 "Your plan is already scheduled to renew with {licenses_at_next_renewal} "
 "licenses."
 msgstr ""
 
-#: corporate/lib/stripe.py:3123
+#: corporate/lib/stripe.py:3133
 #, python-brace-format
 msgid ""
 "You’ve already purchased {licenses_at_next_renewal} licenses for the next "
 "billing period."
 msgstr ""
 
-#: corporate/lib/stripe.py:3145
+#: corporate/lib/stripe.py:3155
 msgid "Nothing to change."
 msgstr ""
 
-#: corporate/lib/stripe.py:3430
+#: corporate/lib/stripe.py:3440
 msgid "No customer for this organization!"
 msgstr ""
 
-#: corporate/lib/stripe.py:3439
+#: corporate/lib/stripe.py:3449
 msgid "Session not found"
 msgstr ""
 
-#: corporate/lib/stripe.py:3445 zerver/decorator.py:218 zerver/decorator.py:723
+#: corporate/lib/stripe.py:3455 zerver/decorator.py:218 zerver/decorator.py:723
 #: zerver/lib/streams.py:142 zerver/lib/streams.py:216
 #: zerver/lib/streams.py:218 zerver/lib/streams.py:220
 #: zerver/lib/streams.py:229 zerver/lib/streams.py:1552
@@ -253,15 +253,15 @@ msgstr ""
 msgid "Insufficient permission"
 msgstr ""
 
-#: corporate/lib/stripe.py:3456
+#: corporate/lib/stripe.py:3466
 msgid "Payment intent not found"
 msgstr ""
 
-#: corporate/lib/stripe.py:3459
+#: corporate/lib/stripe.py:3469
 msgid "Pass stripe_session_id or stripe_invoice_id"
 msgstr ""
 
-#: corporate/lib/stripe.py:4205
+#: corporate/lib/stripe.py:4215
 #, python-brace-format
 msgid ""
 "Your organization's request for sponsored hosting has been approved! You "
@@ -6023,7 +6023,7 @@ msgid "Name too long!"
 msgstr ""
 
 #: zerver/lib/users.py:62
-msgid "Name too short!"
+msgid "Name must not be empty!"
 msgstr ""
 
 #: zerver/lib/users.py:66
@@ -6439,27 +6439,27 @@ msgstr ""
 msgid "Admins only"
 msgstr ""
 
-#: zerver/models/users.py:519
+#: zerver/models/users.py:518
 msgid "Unknown user"
 msgstr ""
 
-#: zerver/models/users.py:685
+#: zerver/models/users.py:684
 msgid "Organization owner"
 msgstr ""
 
-#: zerver/models/users.py:686
+#: zerver/models/users.py:685
 msgid "Organization administrator"
 msgstr ""
 
-#: zerver/models/users.py:687
+#: zerver/models/users.py:686
 msgid "Moderator"
 msgstr ""
 
-#: zerver/models/users.py:688
+#: zerver/models/users.py:687
 msgid "Member"
 msgstr "Dalībnieks"
 
-#: zerver/models/users.py:689
+#: zerver/models/users.py:688
 msgid "Guest"
 msgstr "Viesis"
 

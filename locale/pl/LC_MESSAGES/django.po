@@ -24,18 +24,18 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-09-08 15:53+0000\n"
+"POT-Creation-Date: 2025-09-09 13:56+0000\n"
 "PO-Revision-Date: 2025-09-09 12:42+0000\n"
-"Last-Translator: Sylwester Cyba <pl-en-"
-"silver@users.noreply.hosted.weblate.org>\n"
-"Language-Team: Polish <https://hosted.weblate.org/projects/zulip/django/pl/>"
-"\n"
+"Last-Translator: Sylwester Cyba <pl-en-silver@users.noreply.hosted.weblate."
+"org>\n"
+"Language-Team: Polish <https://hosted.weblate.org/projects/zulip/django/pl/"
+">\n"
 "Language: pl\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=4; plural=(n==1 ? 0 : (n%10>=2 && n%10<=4) && ("
-"n%100<12 || n%100>14) ? 1 : n!=1 && (n%10>=0 && n%10<=1) || (n%10>=5 && "
+"Plural-Forms: nplurals=4; plural=(n==1 ? 0 : (n%10>=2 && n%10<=4) && "
+"(n%100<12 || n%100>14) ? 1 : n!=1 && (n%10>=0 && n%10<=1) || (n%10>=5 && "
 "n%10<=9) || (n%100>=12 && n%100<=14) ? 2 : 3);\n"
 "X-Generator: Weblate 5.14-dev\n"
 
@@ -228,25 +228,25 @@ msgstr ""
 msgid "Please add a credit card to schedule upgrade."
 msgstr "Dodaj kartę kredytową, aby zaplanować aktualizację."
 
-#: corporate/lib/stripe.py:2978
+#: corporate/lib/stripe.py:2988
 msgid ""
 "Unable to update the plan. The plan has been expired and replaced with a new "
 "plan."
 msgstr ""
 "Nie można zaktualizować planu. Plan wygasł i został zastąpiony nowym planem."
 
-#: corporate/lib/stripe.py:2983
+#: corporate/lib/stripe.py:2993
 msgid "Unable to update the plan. The plan has ended."
 msgstr "Nie dało rady zmienić oferty. Oferta wygasła."
 
-#: corporate/lib/stripe.py:3051
+#: corporate/lib/stripe.py:3061
 msgid ""
 "Cannot update licenses in the current billing period for free trial plan."
 msgstr ""
 "Nie można zaktualizować licencji w bieżącym okresie rozliczeniowym dla "
 "bezpłatnego planu próbnego."
 
-#: corporate/lib/stripe.py:3056 corporate/lib/stripe.py:3084
+#: corporate/lib/stripe.py:3066 corporate/lib/stripe.py:3094
 msgid ""
 "Unable to update licenses manually. Your plan is on automatic license "
 "management."
@@ -254,7 +254,7 @@ msgstr ""
 "Nie można ręcznie zaktualizować licencji. Twój plan zakłada automatyczne "
 "zarządzanie licencjami."
 
-#: corporate/lib/stripe.py:3062
+#: corporate/lib/stripe.py:3072
 #, python-brace-format
 msgid ""
 "Your plan is already on {licenses} licenses in the current billing period."
@@ -262,12 +262,12 @@ msgstr ""
 "Twój plan jest już objęty {licenses} licencji w bieżącym okresie "
 "rozliczeniowym."
 
-#: corporate/lib/stripe.py:3067
+#: corporate/lib/stripe.py:3077
 msgid "You cannot decrease the licenses in the current billing period."
 msgstr ""
 "Nie można zmniejszyć liczby licencji w bieżącym okresie rozliczeniowym."
 
-#: corporate/lib/stripe.py:3093
+#: corporate/lib/stripe.py:3103
 msgid ""
 "Cannot change the licenses for next billing cycle for a plan that is being "
 "downgraded."
@@ -275,7 +275,7 @@ msgstr ""
 "Nie można zmienić licencji na następny cykl rozliczeniowy dla planu, który "
 "został obniżony."
 
-#: corporate/lib/stripe.py:3099
+#: corporate/lib/stripe.py:3109
 #, python-brace-format
 msgid ""
 "Your plan is already scheduled to renew with {licenses_at_next_renewal} "
@@ -284,7 +284,7 @@ msgstr ""
 "Plan jest już zaplanowany do odnowienia z licencjami "
 "{licenses_at_next_renewal}."
 
-#: corporate/lib/stripe.py:3123
+#: corporate/lib/stripe.py:3133
 #, python-brace-format
 msgid ""
 "You’ve already purchased {licenses_at_next_renewal} licenses for the next "
@@ -293,19 +293,19 @@ msgstr ""
 "Zakupiono już licencje {licenses_at_next_renewal} na następny okres "
 "rozliczeniowy."
 
-#: corporate/lib/stripe.py:3145
+#: corporate/lib/stripe.py:3155
 msgid "Nothing to change."
 msgstr "Nic do zmiany."
 
-#: corporate/lib/stripe.py:3430
+#: corporate/lib/stripe.py:3440
 msgid "No customer for this organization!"
 msgstr "Brak konsumenta dla tej organizacji!"
 
-#: corporate/lib/stripe.py:3439
+#: corporate/lib/stripe.py:3449
 msgid "Session not found"
 msgstr "Nie odnaleziono sesji"
 
-#: corporate/lib/stripe.py:3445 zerver/decorator.py:218 zerver/decorator.py:723
+#: corporate/lib/stripe.py:3455 zerver/decorator.py:218 zerver/decorator.py:723
 #: zerver/lib/streams.py:142 zerver/lib/streams.py:216
 #: zerver/lib/streams.py:218 zerver/lib/streams.py:220
 #: zerver/lib/streams.py:229 zerver/lib/streams.py:1552
@@ -321,15 +321,15 @@ msgstr "Nie odnaleziono sesji"
 msgid "Insufficient permission"
 msgstr "Niewystarczające pozwolenie"
 
-#: corporate/lib/stripe.py:3456
+#: corporate/lib/stripe.py:3466
 msgid "Payment intent not found"
 msgstr "Nie odnaleziono powodu płatności"
 
-#: corporate/lib/stripe.py:3459
+#: corporate/lib/stripe.py:3469
 msgid "Pass stripe_session_id or stripe_invoice_id"
 msgstr "Przekaż stripe_session_id lub stripe_invoice_id"
 
-#: corporate/lib/stripe.py:4205
+#: corporate/lib/stripe.py:4215
 #, python-brace-format
 msgid ""
 "Your organization's request for sponsored hosting has been approved! You "
@@ -6372,7 +6372,8 @@ msgstr "Błąd sieci przy próbie połączenia z usługą powiadomień push Zuli
 
 #: zerver/lib/push_notifications.py:1954
 msgid "Internal server error on Zulip push notification service, retry later."
-msgstr "Wewnętrzny błąd serwera usługi powiadomień push Zulip, spróbuj później."
+msgstr ""
+"Wewnętrzny błąd serwera usługi powiadomień push Zulip, spróbuj później."
 
 #: zerver/lib/push_notifications.py:1968
 msgid ""
@@ -6772,8 +6773,10 @@ msgid "Name too long!"
 msgstr "Nazwa jest zbyt długa!"
 
 #: zerver/lib/users.py:62
-msgid "Name too short!"
-msgstr "Nazwa jest zbyt krótka!"
+#, fuzzy
+#| msgid "Message must not be empty"
+msgid "Name must not be empty!"
+msgstr "Wiadomość musi mieć treść"
 
 #: zerver/lib/users.py:66
 msgid "Invalid characters in name!"
@@ -7191,27 +7194,27 @@ msgstr "Administratorzy i moderatorzy"
 msgid "Admins only"
 msgstr "Tylko administratorzy"
 
-#: zerver/models/users.py:519
+#: zerver/models/users.py:518
 msgid "Unknown user"
 msgstr "Nieznany użytkownik"
 
-#: zerver/models/users.py:685
+#: zerver/models/users.py:684
 msgid "Organization owner"
 msgstr "Właściciel organizacji"
 
-#: zerver/models/users.py:686
+#: zerver/models/users.py:685
 msgid "Organization administrator"
 msgstr "Administrator organizacji"
 
-#: zerver/models/users.py:687
+#: zerver/models/users.py:686
 msgid "Moderator"
 msgstr "Moderator"
 
-#: zerver/models/users.py:688
+#: zerver/models/users.py:687
 msgid "Member"
 msgstr "Członek"
 
-#: zerver/models/users.py:689
+#: zerver/models/users.py:688
 msgid "Guest"
 msgstr "Gość"
 
@@ -8324,6 +8327,9 @@ msgstr "Nieprawidłowy OTP"
 #: zproject/backends.py:3548
 msgid "Can't use both mobile_flow_otp and desktop_flow_otp together."
 msgstr "Nie można użyć mobile_flow_otp i desktop_flow_otp za jednym razem."
+
+#~ msgid "Name too short!"
+#~ msgstr "Nazwa jest zbyt krótka!"
 
 #~ msgid "Channel name is already in use."
 #~ msgstr "Nazwa kanału już w użyciu."

@@ -1889,6 +1889,7 @@
   "You can <z-link>manage</z-link> your own bots.": "",
   "You can add members by name or email address. Enter a <z-user-roles-link>user role</z-user-roles-link>, <z-user-groups-link>user group</z-user-groups-link>, or <z-channel-link>#channel</z-channel-link> to add multiple users at once.": "",
   "You can also make <z-link>tables</z-link> with this <z-link>Markdown-ish table syntax</z-link>.": "당신은 또한 <z-link>테이블들</z-link>을 <z-link>마크다운된 테이블 구문</z-link>과 만들 수 있다.",
+  "You can always reactivate this group later.": "",
   "You can combine search filters as needed.": "",
   "You can create bots that can only send messages.": "",
   "You can fully access this community and participate in conversations by creating a Zulip account in this organization.": "",

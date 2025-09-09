@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-09-08 15:53+0000\n"
+"POT-Creation-Date: 2025-09-09 13:56+0000\n"
 "PO-Revision-Date: 2025-08-07 23:52+0000\n"
 "Last-Translator: Alex Vandiver <alexmv@zulip.com>\n"
 "Language-Team: Tagalog <https://hosted.weblate.org/projects/zulip/django/tl/"
@@ -176,70 +176,70 @@ msgstr ""
 msgid "Please add a credit card to schedule upgrade."
 msgstr ""
 
-#: corporate/lib/stripe.py:2978
+#: corporate/lib/stripe.py:2988
 msgid ""
 "Unable to update the plan. The plan has been expired and replaced with a new "
 "plan."
 msgstr ""
 
-#: corporate/lib/stripe.py:2983
+#: corporate/lib/stripe.py:2993
 msgid "Unable to update the plan. The plan has ended."
 msgstr ""
 
-#: corporate/lib/stripe.py:3051
+#: corporate/lib/stripe.py:3061
 msgid ""
 "Cannot update licenses in the current billing period for free trial plan."
 msgstr ""
 
-#: corporate/lib/stripe.py:3056 corporate/lib/stripe.py:3084
+#: corporate/lib/stripe.py:3066 corporate/lib/stripe.py:3094
 msgid ""
 "Unable to update licenses manually. Your plan is on automatic license "
 "management."
 msgstr ""
 
-#: corporate/lib/stripe.py:3062
+#: corporate/lib/stripe.py:3072
 #, python-brace-format
 msgid ""
 "Your plan is already on {licenses} licenses in the current billing period."
 msgstr ""
 
-#: corporate/lib/stripe.py:3067
+#: corporate/lib/stripe.py:3077
 msgid "You cannot decrease the licenses in the current billing period."
 msgstr ""
 
-#: corporate/lib/stripe.py:3093
+#: corporate/lib/stripe.py:3103
 msgid ""
 "Cannot change the licenses for next billing cycle for a plan that is being "
 "downgraded."
 msgstr ""
 
-#: corporate/lib/stripe.py:3099
+#: corporate/lib/stripe.py:3109
 #, python-brace-format
 msgid ""
 "Your plan is already scheduled to renew with {licenses_at_next_renewal} "
 "licenses."
 msgstr ""
 
-#: corporate/lib/stripe.py:3123
+#: corporate/lib/stripe.py:3133
 #, python-brace-format
 msgid ""
 "You’ve already purchased {licenses_at_next_renewal} licenses for the next "
 "billing period."
 msgstr ""
 
-#: corporate/lib/stripe.py:3145
+#: corporate/lib/stripe.py:3155
 msgid "Nothing to change."
 msgstr "Walang dapat baguhin."
 
-#: corporate/lib/stripe.py:3430
+#: corporate/lib/stripe.py:3440
 msgid "No customer for this organization!"
 msgstr "Walang mamimili para sa kapisanan!"
 
-#: corporate/lib/stripe.py:3439
+#: corporate/lib/stripe.py:3449
 msgid "Session not found"
 msgstr ""
 
-#: corporate/lib/stripe.py:3445 zerver/decorator.py:218 zerver/decorator.py:723
+#: corporate/lib/stripe.py:3455 zerver/decorator.py:218 zerver/decorator.py:723
 #: zerver/lib/streams.py:142 zerver/lib/streams.py:216
 #: zerver/lib/streams.py:218 zerver/lib/streams.py:220
 #: zerver/lib/streams.py:229 zerver/lib/streams.py:1552
@@ -255,15 +255,15 @@ msgstr ""
 msgid "Insufficient permission"
 msgstr "Walang sapat na pahintulot"
 
-#: corporate/lib/stripe.py:3456
+#: corporate/lib/stripe.py:3466
 msgid "Payment intent not found"
 msgstr ""
 
-#: corporate/lib/stripe.py:3459
+#: corporate/lib/stripe.py:3469
 msgid "Pass stripe_session_id or stripe_invoice_id"
 msgstr ""
 
-#: corporate/lib/stripe.py:4205
+#: corporate/lib/stripe.py:4215
 #, python-brace-format
 msgid ""
 "Your organization's request for sponsored hosting has been approved! You "
@@ -6045,8 +6045,10 @@ msgid "Name too long!"
 msgstr "Ang pangalan ay napakahaba!"
 
 #: zerver/lib/users.py:62
-msgid "Name too short!"
-msgstr ""
+#, fuzzy
+#| msgid "Content can't be empty"
+msgid "Name must not be empty!"
+msgstr "Ang nilalalaman ay dapat may laman"
 
 #: zerver/lib/users.py:66
 msgid "Invalid characters in name!"
@@ -6461,27 +6463,27 @@ msgstr "Mga Tagapamahala at Mga Pangulo ng Talakayan"
 msgid "Admins only"
 msgstr "Tanging Mga Tagapamahala lamang"
 
-#: zerver/models/users.py:519
+#: zerver/models/users.py:518
 msgid "Unknown user"
 msgstr ""
 
-#: zerver/models/users.py:685
+#: zerver/models/users.py:684
 msgid "Organization owner"
 msgstr ""
 
-#: zerver/models/users.py:686
+#: zerver/models/users.py:685
 msgid "Organization administrator"
 msgstr ""
 
-#: zerver/models/users.py:687
+#: zerver/models/users.py:686
 msgid "Moderator"
 msgstr "Pangulo ng Talakayan"
 
-#: zerver/models/users.py:688
+#: zerver/models/users.py:687
 msgid "Member"
 msgstr "Miyembro"
 
-#: zerver/models/users.py:689
+#: zerver/models/users.py:688
 msgid "Guest"
 msgstr ""
 

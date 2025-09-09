@@ -15,7 +15,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-09-08 15:53+0000\n"
+"POT-Creation-Date: 2025-09-09 13:56+0000\n"
 "PO-Revision-Date: 2025-08-07 16:28+0000\n"
 "Last-Translator: Alex Vandiver <alexmv@zulip.com>\n"
 "Language-Team: Romanian <https://hosted.weblate.org/projects/zulip/django/ro/"
@@ -209,7 +209,7 @@ msgstr ""
 msgid "Please add a credit card to schedule upgrade."
 msgstr "Vă rugăm să adăugați un card de credit pentru a programa upgrade-ul."
 
-#: corporate/lib/stripe.py:2978
+#: corporate/lib/stripe.py:2988
 msgid ""
 "Unable to update the plan. The plan has been expired and replaced with a new "
 "plan."
@@ -217,18 +217,18 @@ msgstr ""
 "Nu se poate actualiza planul. Planul a fost expirat și înlocuit cu un nou "
 "plan."
 
-#: corporate/lib/stripe.py:2983
+#: corporate/lib/stripe.py:2993
 msgid "Unable to update the plan. The plan has ended."
 msgstr "Nu se poate actualiza planul. Planul s-a încheiat."
 
-#: corporate/lib/stripe.py:3051
+#: corporate/lib/stripe.py:3061
 msgid ""
 "Cannot update licenses in the current billing period for free trial plan."
 msgstr ""
 "Nu se pot actualiza licențele în perioada de facturare curentă pentru planul "
 "de testare gratuită."
 
-#: corporate/lib/stripe.py:3056 corporate/lib/stripe.py:3084
+#: corporate/lib/stripe.py:3066 corporate/lib/stripe.py:3094
 msgid ""
 "Unable to update licenses manually. Your plan is on automatic license "
 "management."
@@ -236,18 +236,18 @@ msgstr ""
 "Nu se pot actualiza manual licențele. Planul dvs. este de gestionare "
 "automată a licențelor."
 
-#: corporate/lib/stripe.py:3062
+#: corporate/lib/stripe.py:3072
 #, python-brace-format
 msgid ""
 "Your plan is already on {licenses} licenses in the current billing period."
 msgstr ""
 "Planul dvs. este deja pe licențe {licenses} în perioada de facturare curentă."
 
-#: corporate/lib/stripe.py:3067
+#: corporate/lib/stripe.py:3077
 msgid "You cannot decrease the licenses in the current billing period."
 msgstr "Nu puteți reduce licențele în perioada curentă de facturare."
 
-#: corporate/lib/stripe.py:3093
+#: corporate/lib/stripe.py:3103
 msgid ""
 "Cannot change the licenses for next billing cycle for a plan that is being "
 "downgraded."
@@ -255,7 +255,7 @@ msgstr ""
 "Nu se pot modifica licențele pentru următorul ciclu de facturare pentru un "
 "plan care este retrogradat."
 
-#: corporate/lib/stripe.py:3099
+#: corporate/lib/stripe.py:3109
 #, python-brace-format
 msgid ""
 "Your plan is already scheduled to renew with {licenses_at_next_renewal} "
@@ -264,26 +264,26 @@ msgstr ""
 "Planul dvs. este deja programat să fie reînnoit cu licențe "
 "{licenses_at_next_renewal}."
 
-#: corporate/lib/stripe.py:3123
+#: corporate/lib/stripe.py:3133
 #, python-brace-format
 msgid ""
 "You’ve already purchased {licenses_at_next_renewal} licenses for the next "
 "billing period."
 msgstr ""
 
-#: corporate/lib/stripe.py:3145
+#: corporate/lib/stripe.py:3155
 msgid "Nothing to change."
 msgstr "Nimic de schimbat."
 
-#: corporate/lib/stripe.py:3430
+#: corporate/lib/stripe.py:3440
 msgid "No customer for this organization!"
 msgstr "Niciun client pentru această organizație!"
 
-#: corporate/lib/stripe.py:3439
+#: corporate/lib/stripe.py:3449
 msgid "Session not found"
 msgstr "Sesiune nu a fost găsită"
 
-#: corporate/lib/stripe.py:3445 zerver/decorator.py:218 zerver/decorator.py:723
+#: corporate/lib/stripe.py:3455 zerver/decorator.py:218 zerver/decorator.py:723
 #: zerver/lib/streams.py:142 zerver/lib/streams.py:216
 #: zerver/lib/streams.py:218 zerver/lib/streams.py:220
 #: zerver/lib/streams.py:229 zerver/lib/streams.py:1552
@@ -299,15 +299,15 @@ msgstr "Sesiune nu a fost găsită"
 msgid "Insufficient permission"
 msgstr "Permisiune insuficientă"
 
-#: corporate/lib/stripe.py:3456
+#: corporate/lib/stripe.py:3466
 msgid "Payment intent not found"
 msgstr "Intenția de plată nu a fost găsită"
 
-#: corporate/lib/stripe.py:3459
+#: corporate/lib/stripe.py:3469
 msgid "Pass stripe_session_id or stripe_invoice_id"
 msgstr ""
 
-#: corporate/lib/stripe.py:4205
+#: corporate/lib/stripe.py:4215
 #, python-brace-format
 msgid ""
 "Your organization's request for sponsored hosting has been approved! You "
@@ -6423,8 +6423,10 @@ msgid "Name too long!"
 msgstr "Nume prea lung!"
 
 #: zerver/lib/users.py:62
-msgid "Name too short!"
-msgstr "Nume prea scurt!"
+#, fuzzy
+#| msgid "Message must not be empty"
+msgid "Name must not be empty!"
+msgstr "Mesajul nu trebuie să fie gol"
 
 #: zerver/lib/users.py:66
 msgid "Invalid characters in name!"
@@ -6844,27 +6846,27 @@ msgstr "Administratori și moderatori"
 msgid "Admins only"
 msgstr "Administratori doar"
 
-#: zerver/models/users.py:519
+#: zerver/models/users.py:518
 msgid "Unknown user"
 msgstr "Utilizator necunoscut"
 
-#: zerver/models/users.py:685
+#: zerver/models/users.py:684
 msgid "Organization owner"
 msgstr "Proprietarul organizaţiei"
 
-#: zerver/models/users.py:686
+#: zerver/models/users.py:685
 msgid "Organization administrator"
 msgstr "Administratorul organizației"
 
-#: zerver/models/users.py:687
+#: zerver/models/users.py:686
 msgid "Moderator"
 msgstr "Moderator"
 
-#: zerver/models/users.py:688
+#: zerver/models/users.py:687
 msgid "Member"
 msgstr "Membru"
 
-#: zerver/models/users.py:689
+#: zerver/models/users.py:688
 msgid "Guest"
 msgstr "Vizitator"
 
@@ -7964,6 +7966,9 @@ msgstr "OTP nevalid"
 #: zproject/backends.py:3548
 msgid "Can't use both mobile_flow_otp and desktop_flow_otp together."
 msgstr "Nu pot folosi mobile_flow_otp și desktop_flow_otp împreună."
+
+#~ msgid "Name too short!"
+#~ msgstr "Nume prea scurt!"
 
 #~ msgid "Convert demo organization before upgrading."
 #~ msgstr "Convertiți organizația demo înainte de a face upgrade."

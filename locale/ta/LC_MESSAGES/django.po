@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-09-08 15:53+0000\n"
+"POT-Creation-Date: 2025-09-09 13:56+0000\n"
 "PO-Revision-Date: 2025-09-08 15:49+0000\n"
 "Last-Translator: Alex Vandiver <alexmv@zulip.com>\n"
 "Language-Team: Tamil <https://hosted.weblate.org/projects/zulip/django/ta/>\n"
@@ -197,7 +197,7 @@ msgstr "உங்கள் இலவச சோதனையைத் தொடங
 msgid "Please add a credit card to schedule upgrade."
 msgstr "மேம்படுத்தலை திட்டமிட கடன் கார்டைச் சேர்க்கவும்."
 
-#: corporate/lib/stripe.py:2978
+#: corporate/lib/stripe.py:2988
 msgid ""
 "Unable to update the plan. The plan has been expired and replaced with a new "
 "plan."
@@ -205,17 +205,17 @@ msgstr ""
 "திட்டத்தை புதுப்பிக்க முடியவில்லை. திட்டம் காலாவதியானது மற்றும் புதிய திட்டத்துடன் "
 "மாற்றப்பட்டுள்ளது."
 
-#: corporate/lib/stripe.py:2983
+#: corporate/lib/stripe.py:2993
 msgid "Unable to update the plan. The plan has ended."
 msgstr "திட்டத்தை புதுப்பிக்க முடியவில்லை. திட்டம் முடிந்தது."
 
-#: corporate/lib/stripe.py:3051
+#: corporate/lib/stripe.py:3061
 msgid ""
 "Cannot update licenses in the current billing period for free trial plan."
 msgstr ""
 "இலவச சோதனை திட்டத்திற்கான தற்போதைய பட்டியலிடல் காலத்தில் உரிமங்களை புதுப்பிக்க முடியாது."
 
-#: corporate/lib/stripe.py:3056 corporate/lib/stripe.py:3084
+#: corporate/lib/stripe.py:3066 corporate/lib/stripe.py:3094
 msgid ""
 "Unable to update licenses manually. Your plan is on automatic license "
 "management."
@@ -223,18 +223,18 @@ msgstr ""
 "உரிமங்களை கைமுறையாக புதுப்பிக்க முடியவில்லை. உங்கள் திட்டம் தானியங்கி உரிம நிர்வாகத்தில் "
 "உள்ளது."
 
-#: corporate/lib/stripe.py:3062
+#: corporate/lib/stripe.py:3072
 #, python-brace-format
 msgid ""
 "Your plan is already on {licenses} licenses in the current billing period."
 msgstr ""
 "உங்கள் திட்டம் ஏற்கனவே தற்போதைய பட்டியலிடல் காலத்தில் {licenses} உரிமங்களில் உள்ளது."
 
-#: corporate/lib/stripe.py:3067
+#: corporate/lib/stripe.py:3077
 msgid "You cannot decrease the licenses in the current billing period."
 msgstr "தற்போதைய பட்டியலிடல் காலத்தில் நீங்கள் உரிமங்களைக் குறைக்க முடியாது."
 
-#: corporate/lib/stripe.py:3093
+#: corporate/lib/stripe.py:3103
 msgid ""
 "Cannot change the licenses for next billing cycle for a plan that is being "
 "downgraded."
@@ -242,7 +242,7 @@ msgstr ""
 "தரமிறக்கப்படும் ஒரு திட்டத்திற்கான அடுத்த பட்டியலிடல் சுழற்சிக்கான உரிமங்களை மாற்ற "
 "முடியாது."
 
-#: corporate/lib/stripe.py:3099
+#: corporate/lib/stripe.py:3109
 #, python-brace-format
 msgid ""
 "Your plan is already scheduled to renew with {licenses_at_next_renewal} "
@@ -251,7 +251,7 @@ msgstr ""
 "உங்கள் திட்டம் ஏற்கனவே {licenses_at_next_renewal} உரிமத்துடன் புதுப்பிக்க "
 "திட்டமிடப்பட்டுள்ளது."
 
-#: corporate/lib/stripe.py:3123
+#: corporate/lib/stripe.py:3133
 #, python-brace-format
 msgid ""
 "You’ve already purchased {licenses_at_next_renewal} licenses for the next "
@@ -260,19 +260,19 @@ msgstr ""
 "அடுத்த பட்டியலிடல் காலத்திற்கு நீங்கள் ஏற்கனவே {licenses_at_next_renewal} உரிமங்களை "
 "வாங்கியுள்ளீர்கள்."
 
-#: corporate/lib/stripe.py:3145
+#: corporate/lib/stripe.py:3155
 msgid "Nothing to change."
 msgstr "மாற்ற எதுவும் இல்லை."
 
-#: corporate/lib/stripe.py:3430
+#: corporate/lib/stripe.py:3440
 msgid "No customer for this organization!"
 msgstr ""
 
-#: corporate/lib/stripe.py:3439
+#: corporate/lib/stripe.py:3449
 msgid "Session not found"
 msgstr "அமர்வு காணப்படவில்லை"
 
-#: corporate/lib/stripe.py:3445 zerver/decorator.py:218 zerver/decorator.py:723
+#: corporate/lib/stripe.py:3455 zerver/decorator.py:218 zerver/decorator.py:723
 #: zerver/lib/streams.py:142 zerver/lib/streams.py:216
 #: zerver/lib/streams.py:218 zerver/lib/streams.py:220
 #: zerver/lib/streams.py:229 zerver/lib/streams.py:1552
@@ -288,15 +288,15 @@ msgstr "அமர்வு காணப்படவில்லை"
 msgid "Insufficient permission"
 msgstr "போதிய இசைவு"
 
-#: corporate/lib/stripe.py:3456
+#: corporate/lib/stripe.py:3466
 msgid "Payment intent not found"
 msgstr "கட்டண நோக்கம் கிடைக்கவில்லை"
 
-#: corporate/lib/stripe.py:3459
+#: corporate/lib/stripe.py:3469
 msgid "Pass stripe_session_id or stripe_invoice_id"
 msgstr "Bass stripe_session_id அல்லது stripe_invoice_id"
 
-#: corporate/lib/stripe.py:4205
+#: corporate/lib/stripe.py:4215
 #, fuzzy, python-brace-format
 msgid ""
 "Your organization's request for sponsored hosting has been approved! You "
@@ -6512,8 +6512,10 @@ msgid "Name too long!"
 msgstr "பெயர் மிக நீண்டது!"
 
 #: zerver/lib/users.py:62
-msgid "Name too short!"
-msgstr "பெயர் மிகக் குறுகிய!"
+#, fuzzy
+#| msgid "Message must not be empty"
+msgid "Name must not be empty!"
+msgstr "செய்தி காலியாக இருக்கக்கூடாது"
 
 #: zerver/lib/users.py:66
 msgid "Invalid characters in name!"
@@ -6930,27 +6932,27 @@ msgstr "நிர்வாகிகள் மற்றும் மதிப்�
 msgid "Admins only"
 msgstr "நிர்வாகிகள் மட்டுமே"
 
-#: zerver/models/users.py:519
+#: zerver/models/users.py:518
 msgid "Unknown user"
 msgstr "தெரியாத பயனர்"
 
-#: zerver/models/users.py:685
+#: zerver/models/users.py:684
 msgid "Organization owner"
 msgstr ""
 
-#: zerver/models/users.py:686
+#: zerver/models/users.py:685
 msgid "Organization administrator"
 msgstr ""
 
-#: zerver/models/users.py:687
+#: zerver/models/users.py:686
 msgid "Moderator"
 msgstr "மதிப்பீட்டாளர்"
 
-#: zerver/models/users.py:688
+#: zerver/models/users.py:687
 msgid "Member"
 msgstr "உறுப்பினர்"
 
-#: zerver/models/users.py:689
+#: zerver/models/users.py:688
 msgid "Guest"
 msgstr "விருந்தினர்"
 
@@ -8041,6 +8043,9 @@ msgstr "தவறான OTP"
 msgid "Can't use both mobile_flow_otp and desktop_flow_otp together."
 msgstr ""
 "மொபைல்_ஃப்ளோ_ஓடிபி மற்றும் டெச்க்டாப்_ஃப்ளோ_ஓடிபி இரண்டையும் ஒன்றாகப் பயன்படுத்த முடியாது."
+
+#~ msgid "Name too short!"
+#~ msgstr "பெயர் மிகக் குறுகிய!"
 
 #~ msgid "Channel name is already in use."
 #~ msgstr "சேனல் பெயர் ஏற்கனவே பயன்பாட்டில் உள்ளது."

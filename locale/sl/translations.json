@@ -1889,6 +1889,7 @@
   "You can <z-link>manage</z-link> your own bots.": "Lahko <z-link>upravljate</z-link> svoje bote.",
   "You can add members by name or email address. Enter a <z-user-roles-link>user role</z-user-roles-link>, <z-user-groups-link>user group</z-user-groups-link>, or <z-channel-link>#channel</z-channel-link> to add multiple users at once.": "Člane lahko dodate po imenu ali e-poštnem naslovu. Vnesite <z-user-roles-link>vlogo uporabnika</z-user-roles-link>, <z-user-groups-link>skupino uporabnikov</z-user-groups-link> ali <z-channel-link>#kanal</z-channel-link>, da dodate več uporabnikov hkrati.",
   "You can also make <z-link>tables</z-link> with this <z-link>Markdown-ish table syntax</z-link>.": "Lahko ustvarite tudi <z-link>tabele</z-link> s to <z-link>sintakso tabele, podobno Markdownu</z-link>.",
+  "You can always reactivate this group later.": "",
   "You can combine search filters as needed.": "Filtre iskanja lahko po potrebi kombinirate.",
   "You can create bots that can only send messages.": "Ustvarite lahko bote, ki lahko samo pošiljajo sporočila.",
   "You can fully access this community and participate in conversations by creating a Zulip account in this organization.": "Do te skupnosti lahko v celoti dostopate in sodelujete v pogovorih z ustvarjanjem računa Zulip v tej organizaciji.",
