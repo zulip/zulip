@@ -49,4 +49,4 @@ API_FEATURE_LEVEL = 425
 #   historical commits sharing the same major version, in which case a
 #   minor version bump suffices.
 
-PROVISION_VERSION = (347, 3)  # bumped 2025-09-09 to add @types/eslint-config-prettier
+PROVISION_VERSION = (347, 4)  # bumped 2025-09-09 to add @types/babel__core, @types/babel__preset-env
