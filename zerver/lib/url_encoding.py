@@ -12,6 +12,7 @@ from zerver.lib.topic import get_topic_from_message_info
 from zerver.lib.types import UserDisplayRecipient
 from zerver.models import Realm, Stream, UserProfile
 
+
 hash_replacements = {
     "%": ".",
     "(": ".28",
