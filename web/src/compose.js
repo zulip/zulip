@@ -17,6 +17,7 @@ import * as echo from "./echo.ts";
 import * as message_events from "./message_events.ts";
 import * as onboarding_steps from "./onboarding_steps.ts";
 import * as people from "./people.ts";
+import * as reload from "./reload.ts";
 import * as scheduled_messages from "./scheduled_messages.ts";
 import * as sent_messages from "./sent_messages.ts";
 import * as server_events_state from "./server_events_state.ts";
@@ -344,6 +345,7 @@ export function do_post_send_tasks() {
     // TODO: Do we want to fire the event even if the send failed due
     // to a server-side error?
     $(document).trigger("compose_finished.zulip");
+    reload.maybe_reload_after_compose_end();
 }
 
 function schedule_message_to_custom_date() {
