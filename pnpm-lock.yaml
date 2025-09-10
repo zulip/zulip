@@ -524,21 +524,12 @@ importers:
 
   starlight_help:
     dependencies:
-      '@astrojs/check':
-        specifier: ^0.9.3
-        version: 0.9.4(prettier-plugin-astro@0.14.1)(prettier@3.5.3)(typescript@5.9.2)
       '@astrojs/starlight':
         specifier: ^0.35.1
         version: 0.35.2(astro@5.13.5(@types/node@22.18.1)(encoding@0.1.13)(jiti@2.5.1)(rollup@4.50.0)(terser@5.44.0)(typescript@5.9.2)(yaml@2.8.1))
       '@iconify-json/fa':
         specifier: ^1.2.1
         version: 1.2.2
-      '@types/hast':
-        specifier: ^3.0.4
-        version: 3.0.4
-      '@types/mdast':
-        specifier: ^4.0.4
-        version: 4.0.4
       astro:
         specifier: ^5.1.2
         version: 5.13.5(@types/node@22.18.1)(encoding@0.1.13)(jiti@2.5.1)(rollup@4.50.0)(terser@5.44.0)(typescript@5.9.2)(yaml@2.8.1)
@@ -560,9 +551,6 @@ importers:
       sharp:
         specifier: ^0.34.1
         version: 0.34.3
-      typescript:
-        specifier: ^5.4.5
-        version: 5.9.2
       unist-util-visit:
         specifier: ^5.0.0
         version: 5.0.0
@@ -570,6 +558,15 @@ importers:
         specifier: ^22.1.0
         version: 22.2.0
     devDependencies:
+      '@astrojs/check':
+        specifier: ^0.9.3
+        version: 0.9.4(prettier-plugin-astro@0.14.1)(prettier@3.5.3)(typescript@5.9.2)
+      '@types/hast':
+        specifier: ^3.0.4
+        version: 3.0.4
+      '@types/mdast':
+        specifier: ^4.0.4
+        version: 4.0.4
       mdast-util-to-markdown:
         specifier: ^2.1.2
         version: 2.1.2
@@ -624,6 +621,9 @@ importers:
       remark-stringify:
         specifier: ^11.0.0
         version: 11.0.0
+      typescript:
+        specifier: ^5.4.5
+        version: 5.9.2
       unified:
         specifier: ^11.0.5
         version: 11.0.5
