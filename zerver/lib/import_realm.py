@@ -2260,7 +2260,7 @@ def add_users_to_system_user_groups(
 ) -> None:
     full_members_system_group = NamedUserGroup.objects.get(
         name=SystemGroups.FULL_MEMBERS,
-        realm=realm,
+        realm_for_sharding=realm,
         is_system_group=True,
     )
 
