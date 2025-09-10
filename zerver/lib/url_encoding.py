@@ -1,9 +1,13 @@
+# Standard library
 import urllib.parse
 from typing import Any
 from urllib.parse import urlsplit
 
+# Third-party imports
 import re2
+from django.conf import settings
 
+# Local project imports
 from zerver.lib.topic import get_topic_from_message_info
 from zerver.lib.types import UserDisplayRecipient
 from zerver.models import Realm, Stream, UserProfile
@@ -14,7 +18,7 @@ hash_replacements = {
     ")": ".29",
     ".": ".2E",
 }
-from django.conf import settings
+
 
 def get_realm_url_with_port(realm: Realm) -> str:
     """
