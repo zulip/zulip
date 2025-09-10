@@ -124,6 +124,7 @@ class TestFullStack(ZulipTestCase):
             content["user"],
             dict(
                 avatar_url=content["user"]["avatar_url"],
+                avatar_source="G",
                 avatar_version=1,
                 date_joined=content["user"]["date_joined"],
                 delivery_email=None,

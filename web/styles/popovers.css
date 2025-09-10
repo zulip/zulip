@@ -473,8 +473,8 @@ ul.popover-group-menu-member-list {
 
     #avatar {
         display: inline-block;
-        height: 180px;
-        width: 180px;
+        height: 165px;
+        width: 165px;
         background-size: cover;
         background-position: center;
         border-radius: 5px;

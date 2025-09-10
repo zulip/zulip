@@ -1666,6 +1666,25 @@ label.preferences-radio-choice-label {
 
 #profile-settings,
 #edit-user-form {
+    margin: 1px 5px 0;
+
+    .name-setting {
+        display: flex;
+        flex-wrap: wrap-reverse;
+        justify-content: space-between;
+
+        .user-avatar-section {
+            margin: 0;
+        }
+
+        #user-avatar-upload-widget {
+            .image-block {
+                width: 165px;
+                height: 165px;
+            }
+        }
+    }
+
     .custom_user_field {
         padding-bottom: 20px;
 
