@@ -929,12 +929,12 @@ class TestSCIMGroup(SCIMTestCase):
 
         expected_response_schema = {
             "schemas": ["urn:ietf:params:scim:api:messages:2.0:ListResponse"],
-            "totalResults": NamedUserGroup.objects.filter(realm=realm).count(),
+            "totalResults": NamedUserGroup.objects.filter(realm_for_sharding=realm).count(),
             "itemsPerPage": 50,
             "startIndex": 1,
             "Resources": [
                 self.generate_group_schema(group)
-                for group in NamedUserGroup.objects.filter(realm=realm).order_by("id")
+                for group in NamedUserGroup.objects.filter(realm_for_sharding=realm).order_by("id")
             ],
         }
 
@@ -1437,7 +1437,7 @@ class TestSCIMGroup(SCIMTestCase):
         Verifies that system groups are not allowed to be managed by SCIM requests.
         """
         realm = get_realm("zulip")
-        system_group = NamedUserGroup.objects.get(realm=realm, name="role:owners")
+        system_group = NamedUserGroup.objects.get(realm_for_sharding=realm, name="role:owners")
 
         payload = {
             "schemas": ["urn:ietf:params:scim:api:messages:2.0:PatchOp"],
@@ -1469,7 +1469,9 @@ class TestSCIMGroup(SCIMTestCase):
                 "status": 400,
             },
         )
-        self.assertTrue(NamedUserGroup.objects.filter(realm=realm, name="role:owners").exists())
+        self.assertTrue(
+            NamedUserGroup.objects.filter(realm_for_sharding=realm, name="role:owners").exists()
+        )
 
         payload = {
             "schemas": ["urn:ietf:params:scim:schemas:core:2.0:Group"],
