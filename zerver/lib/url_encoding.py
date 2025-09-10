@@ -3,6 +3,7 @@ from typing import Any
 from urllib.parse import urlsplit
 
 import re2
+from django.conf import settings
 
 from zerver.lib.topic import get_topic_from_message_info
 from zerver.lib.types import UserDisplayRecipient
@@ -14,6 +15,20 @@ hash_replacements = {
     ")": ".29",
     ".": ".2E",
 }
+
+
+def get_realm_url_with_port(realm: Realm) -> str:
+    """
+    Return realm.url, but ensure that it includes the port if
+    application_server.nginx_listen_port is configured to a
+    non-standard value.
+    """
+    url = realm.url.rstrip("/")
+    port = getattr(settings, "APPLICATION_SERVER_CONFIG", {}).get("nginx_listen_port", 443)
+
+    if port not in (80, 443) and f":{port}" not in url:
+        return f"{url}:{port}"
+    return url
 
 
 def encode_hash_component(s: str) -> str:
@@ -95,7 +110,7 @@ def encode_user_full_name_and_id(full_name: str, user_id: int, with_operator: bo
 
 
 def personal_narrow_url(*, realm: Realm, sender_id: int, sender_full_name: str) -> str:
-    base_url = f"{realm.url}/#narrow/dm/"
+    base_url = f"{get_realm_url_with_port(realm)}/#narrow/dm/"
     direct_message_slug = encode_user_full_name_and_id(sender_full_name, sender_id)
     return base_url + direct_message_slug
 
@@ -117,17 +132,17 @@ def direct_message_group_narrow_url(
     # For group DMs with more than 2 users, we use other user IDs to create a slug.
     other_user_ids = [r["id"] for r in display_recipient if r["id"] != user.id]
     direct_message_slug = encode_user_ids(other_user_ids)
-    base_url = f"{realm.url}/#narrow/dm/"
+    base_url = f"{get_realm_url_with_port(realm)}/#narrow/dm/"
     return base_url + direct_message_slug
 
 
 def stream_narrow_url(realm: Realm, stream: Stream) -> str:
-    base_url = f"{realm.url}/#narrow/channel/"
+    base_url = f"{get_realm_url_with_port(realm)}/#narrow/channel/"
     return base_url + encode_channel(stream.id, stream.name)
 
 
 def topic_narrow_url(*, realm: Realm, stream: Stream, topic_name: str) -> str:
-    base_url = f"{realm.url}/#narrow/channel/"
+    base_url = f"{get_realm_url_with_port(realm)}/#narrow/channel/"
     return f"{base_url}{encode_channel(stream.id, stream.name)}/topic/{encode_hash_component(topic_name)}"
 
 
@@ -165,7 +180,7 @@ def stream_message_url(
     encoded_stream = encode_channel(stream_id, stream_name)
 
     parts = [
-        realm.url,
+        get_realm_url_with_port(realm),
         "#narrow",
         "channel",
         encoded_stream,
@@ -192,7 +207,7 @@ def pm_message_url(
     direct_message_slug = encode_user_ids(user_ids)
 
     parts = [
-        realm.url,
+        get_realm_url_with_port(realm),
         "#narrow",
         "dm",
         direct_message_slug,
