@@ -2096,7 +2096,7 @@ Output:
         self.send_personal_message(shiva, polonius)
         self.send_group_direct_message(aaron, [polonius, zoe])
 
-        members_group = NamedUserGroup.objects.get(name="role:members", realm=realm)
+        members_group = NamedUserGroup.objects.get(name="role:members", realm_for_sharding=realm)
         do_change_realm_permission_group_setting(
             realm, "can_access_all_users_group", members_group, acting_user=None
         )

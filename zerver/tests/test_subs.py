@@ -299,7 +299,7 @@ class StreamAdminTest(ZulipTestCase):
         stream = self.subscribe(user_profile, "private_stream_3", invite_only=True)
         do_change_user_role(user_profile, UserProfile.ROLE_REALM_OWNER, acting_user=None)
         nobody_group = NamedUserGroup.objects.get(
-            name=SystemGroups.NOBODY, realm=realm, is_system_group=True
+            name=SystemGroups.NOBODY, realm_for_sharding=realm, is_system_group=True
         )
         do_change_realm_permission_group_setting(
             realm,
@@ -388,7 +388,7 @@ class StreamAdminTest(ZulipTestCase):
         stream = self.subscribe(user_profile, "public_stream_3")
         do_change_user_role(user_profile, UserProfile.ROLE_REALM_OWNER, acting_user=None)
         nobody_group = NamedUserGroup.objects.get(
-            name=SystemGroups.NOBODY, realm=realm, is_system_group=True
+            name=SystemGroups.NOBODY, realm_for_sharding=realm, is_system_group=True
         )
         do_change_realm_permission_group_setting(
             realm,
@@ -569,7 +569,7 @@ class StreamAdminTest(ZulipTestCase):
             "history_public_to_subscribers": orjson.dumps(True).decode(),
         }
         owners_group = NamedUserGroup.objects.get(
-            name=SystemGroups.OWNERS, realm=realm, is_system_group=True
+            name=SystemGroups.OWNERS, realm_for_sharding=realm, is_system_group=True
         )
         do_change_realm_permission_group_setting(
             realm,
@@ -582,7 +582,7 @@ class StreamAdminTest(ZulipTestCase):
         self.assert_json_error(result, "Insufficient permission")
 
         nobody_group = NamedUserGroup.objects.get(
-            name=SystemGroups.NOBODY, realm=realm, is_system_group=True
+            name=SystemGroups.NOBODY, realm_for_sharding=realm, is_system_group=True
         )
         do_change_realm_permission_group_setting(
             realm,
@@ -903,7 +903,7 @@ class StreamAdminTest(ZulipTestCase):
             attachment.refresh_from_db()
             self.assertFalse(attachment.is_realm_public)
             nobody_group = NamedUserGroup.objects.get(
-                name="role:nobody", is_system_group=True, realm=realm
+                name="role:nobody", is_system_group=True, realm_for_sharding=realm
             )
             do_change_stream_group_based_setting(
                 private_stream_public_history, setting_name, nobody_group, acting_user=cordelia
@@ -953,7 +953,7 @@ class StreamAdminTest(ZulipTestCase):
             attachment.refresh_from_db()
 
             nobody_group = NamedUserGroup.objects.get(
-                name="role:nobody", is_system_group=True, realm=realm
+                name="role:nobody", is_system_group=True, realm_for_sharding=realm
             )
             do_change_stream_group_based_setting(
                 private_stream_protected_history, setting_name, nobody_group, acting_user=cordelia
@@ -982,7 +982,7 @@ class StreamAdminTest(ZulipTestCase):
             attachment.refresh_from_db()
             self.assertFalse(attachment.is_realm_public)
             nobody_group = NamedUserGroup.objects.get(
-                name="role:nobody", is_system_group=True, realm=realm
+                name="role:nobody", is_system_group=True, realm_for_sharding=realm
             )
             do_change_stream_group_based_setting(
                 private_stream_protected_history, setting_name, nobody_group, acting_user=cordelia
@@ -1126,7 +1126,7 @@ class StreamAdminTest(ZulipTestCase):
         desdemona = self.example_user("desdemona")
         channel = get_stream("Denmark", desdemona.realm)
         moderators_group = NamedUserGroup.objects.get(
-            name=SystemGroups.MODERATORS, realm=channel.realm, is_system_group=True
+            name=SystemGroups.MODERATORS, realm_for_sharding=channel.realm, is_system_group=True
         )
         self.login_user(desdemona)
         do_deactivate_stream(channel, acting_user=desdemona)
@@ -1465,7 +1465,7 @@ class StreamAdminTest(ZulipTestCase):
         self.assertIn(self.example_user("prospero").id, notified_user_ids)
         self.assertNotIn(self.example_user("polonius").id, notified_user_ids)
         nobody_group = NamedUserGroup.objects.get(
-            name="role:nobody", is_system_group=True, realm=realm
+            name="role:nobody", is_system_group=True, realm_for_sharding=realm
         )
         do_change_stream_group_based_setting(
             stream_name_1,
@@ -1635,7 +1635,7 @@ class StreamAdminTest(ZulipTestCase):
         iago = self.example_user("iago")
         hamlet = self.example_user("hamlet")
         nobody_group = NamedUserGroup.objects.get(
-            name="role:nobody", is_system_group=True, realm=hamlet.realm
+            name="role:nobody", is_system_group=True, realm_for_sharding=hamlet.realm
         )
 
         self.login_user(hamlet)
@@ -2028,10 +2028,10 @@ class StreamAdminTest(ZulipTestCase):
         permission_config = Stream.stream_permission_group_settings[setting_name]
 
         nobody_group = NamedUserGroup.objects.get(
-            name="role:nobody", is_system_group=True, realm=realm
+            name="role:nobody", is_system_group=True, realm_for_sharding=realm
         )
         moderators_system_group = NamedUserGroup.objects.get(
-            name="role:moderators", realm=realm, is_system_group=True
+            name="role:moderators", realm_for_sharding=realm, is_system_group=True
         )
         params = {}
 
@@ -2045,7 +2045,9 @@ class StreamAdminTest(ZulipTestCase):
         stream = get_stream("stream_name1", realm)
         self.assertEqual(getattr(stream, setting_name).id, moderators_system_group.id)
 
-        hamletcharacters_group = NamedUserGroup.objects.get(name="hamletcharacters", realm=realm)
+        hamletcharacters_group = NamedUserGroup.objects.get(
+            name="hamletcharacters", realm_for_sharding=realm
+        )
         params[setting_name] = orjson.dumps({"new": hamletcharacters_group.id}).decode()
         result = self.client_patch(
             f"/json/streams/{stream.id}",
@@ -2096,7 +2098,7 @@ class StreamAdminTest(ZulipTestCase):
         )
 
         owners_group = NamedUserGroup.objects.get(
-            name="role:owners", is_system_group=True, realm=realm
+            name="role:owners", is_system_group=True, realm_for_sharding=realm
         )
         params[setting_name] = orjson.dumps({"new": owners_group.id}).decode()
         result = self.client_patch(f"/json/streams/{stream.id}", params)
@@ -2114,7 +2116,7 @@ class StreamAdminTest(ZulipTestCase):
         self.assertEqual(getattr(stream, setting_name).id, nobody_group.id)
 
         everyone_group = NamedUserGroup.objects.get(
-            name="role:everyone", is_system_group=True, realm=realm
+            name="role:everyone", is_system_group=True, realm_for_sharding=realm
         )
         params[setting_name] = orjson.dumps({"new": everyone_group.id}).decode()
         result = self.client_patch(
@@ -2132,7 +2134,7 @@ class StreamAdminTest(ZulipTestCase):
             )
 
         internet_group = NamedUserGroup.objects.get(
-            name="role:internet", is_system_group=True, realm=realm
+            name="role:internet", is_system_group=True, realm_for_sharding=realm
         )
         params[setting_name] = orjson.dumps({"new": internet_group.id}).decode()
         result = self.client_patch(
@@ -2263,7 +2265,7 @@ class StreamAdminTest(ZulipTestCase):
         realm = user.realm
         self.login_user(user)
         owners_system_group = NamedUserGroup.objects.get(
-            realm=realm, name=SystemGroups.OWNERS, is_system_group=True
+            realm_for_sharding=realm, name=SystemGroups.OWNERS, is_system_group=True
         )
         do_change_realm_permission_group_setting(
             realm,
@@ -2309,10 +2311,10 @@ class StreamAdminTest(ZulipTestCase):
         stream = self.subscribe(desdemona, "stream_name1")
 
         everyone_group = NamedUserGroup.objects.get(
-            name=SystemGroups.EVERYONE, realm=realm, is_system_group=True
+            name=SystemGroups.EVERYONE, realm_for_sharding=realm, is_system_group=True
         )
         moderators_group = NamedUserGroup.objects.get(
-            name=SystemGroups.MODERATORS, realm=realm, is_system_group=True
+            name=SystemGroups.MODERATORS, realm_for_sharding=realm, is_system_group=True
         )
         self.login("desdemona")
         result = self.client_patch(
@@ -2333,7 +2335,7 @@ class StreamAdminTest(ZulipTestCase):
         self.assertEqual(messages[-1].content, expected_notification)
 
         owners_group = NamedUserGroup.objects.get(
-            name=SystemGroups.OWNERS, realm=realm, is_system_group=True
+            name=SystemGroups.OWNERS, realm_for_sharding=realm, is_system_group=True
         )
         hamlet = self.example_user("hamlet")
         result = self.client_patch(
@@ -2366,7 +2368,9 @@ class StreamAdminTest(ZulipTestCase):
         )
         self.assertEqual(messages[-1].content, expected_notification)
 
-        hamletcharacters_group = NamedUserGroup.objects.get(name="hamletcharacters", realm=realm)
+        hamletcharacters_group = NamedUserGroup.objects.get(
+            name="hamletcharacters", realm_for_sharding=realm
+        )
         result = self.client_patch(
             f"/json/streams/{stream.id}",
             {
@@ -2397,7 +2401,7 @@ class StreamAdminTest(ZulipTestCase):
         self.assertEqual(messages[-1].content, expected_notification)
 
         nobody_group = NamedUserGroup.objects.get(
-            name=SystemGroups.NOBODY, realm=realm, is_system_group=True
+            name=SystemGroups.NOBODY, realm_for_sharding=realm, is_system_group=True
         )
         result = self.client_patch(
             f"/json/streams/{stream.id}",
@@ -3485,7 +3489,7 @@ class SubscriptionAPITest(ZulipTestCase):
         user.save()
 
         members_group = NamedUserGroup.objects.get(
-            name=SystemGroups.MEMBERS, realm=realm, is_system_group=True
+            name=SystemGroups.MEMBERS, realm_for_sharding=realm, is_system_group=True
         )
         bulk_add_members_to_user_groups([members_group], [user.id], acting_user=None)
         self.subscribe_via_post(
@@ -3585,7 +3589,7 @@ class SubscriptionAPITest(ZulipTestCase):
         realm = cordelia.realm
 
         admins_group = NamedUserGroup.objects.get(
-            name=SystemGroups.ADMINISTRATORS, realm=realm, is_system_group=True
+            name=SystemGroups.ADMINISTRATORS, realm_for_sharding=realm, is_system_group=True
         )
         do_change_realm_permission_group_setting(
             realm, stream_policy, admins_group.usergroup_ptr, acting_user=None
@@ -3602,7 +3606,7 @@ class SubscriptionAPITest(ZulipTestCase):
         self.subscribe_via_post(iago, ["new_stream1"], invite_only=invite_only)
 
         full_members_group = NamedUserGroup.objects.get(
-            name=SystemGroups.FULL_MEMBERS, realm=realm, is_system_group=True
+            name=SystemGroups.FULL_MEMBERS, realm_for_sharding=realm, is_system_group=True
         )
         do_change_realm_permission_group_setting(
             realm, stream_policy, full_members_group, acting_user=None
@@ -3931,7 +3935,7 @@ class SubscriptionAPITest(ZulipTestCase):
 
         iago = self.example_user("iago")
         admins_group = NamedUserGroup.objects.get(
-            name=SystemGroups.ADMINISTRATORS, realm=realm, is_system_group=True
+            name=SystemGroups.ADMINISTRATORS, realm_for_sharding=realm, is_system_group=True
         )
         do_change_stream_group_based_setting(
             stream, "can_send_message_group", admins_group, acting_user=iago
@@ -3945,7 +3949,7 @@ class SubscriptionAPITest(ZulipTestCase):
         self.assertEqual(json["already_subscribed"], {})
 
         moderators_group = NamedUserGroup.objects.get(
-            name=SystemGroups.MODERATORS, realm=realm, is_system_group=True
+            name=SystemGroups.MODERATORS, realm_for_sharding=realm, is_system_group=True
         )
         setting_group_member_dict = UserGroupMembersData(
             direct_members=[self.example_user("cordelia").id],
@@ -4647,7 +4651,7 @@ class SubscriptionAPITest(ZulipTestCase):
         realm_name = "no_othello_allowed"
         realm = do_create_realm(realm_name, "Everyone but Othello is allowed")
         nobody_group = NamedUserGroup.objects.get(
-            name="role:nobody", is_system_group=True, realm=realm
+            name="role:nobody", is_system_group=True, realm_for_sharding=realm
         )
         stream_dict = {
             "name": "publicstream",

@@ -309,7 +309,7 @@ class MessagePOSTTest(ZulipTestCase):
         stream = get_stream(stream_name, realm)
 
         nobody_group = NamedUserGroup.objects.get(
-            name=SystemGroups.NOBODY, realm=realm, is_system_group=True
+            name=SystemGroups.NOBODY, realm_for_sharding=realm, is_system_group=True
         )
         do_change_stream_group_based_setting(
             stream, "can_send_message_group", nobody_group, acting_user=iago
@@ -332,7 +332,7 @@ class MessagePOSTTest(ZulipTestCase):
         self.assertEqual(self.get_last_message().content, "Test message by notification bot")
 
         owners_group = NamedUserGroup.objects.get(
-            name=SystemGroups.OWNERS, realm=realm, is_system_group=True
+            name=SystemGroups.OWNERS, realm_for_sharding=realm, is_system_group=True
         )
         do_change_stream_group_based_setting(
             stream, "can_send_message_group", owners_group, acting_user=iago
@@ -357,7 +357,9 @@ class MessagePOSTTest(ZulipTestCase):
         )
         self.assertEqual(self.get_last_message().content, "Test message by notification bot")
 
-        hamletcharacters_group = NamedUserGroup.objects.get(name="hamletcharacters", realm=realm)
+        hamletcharacters_group = NamedUserGroup.objects.get(
+            name="hamletcharacters", realm_for_sharding=realm
+        )
         do_change_stream_group_based_setting(
             stream, "can_send_message_group", hamletcharacters_group, acting_user=iago
         )
@@ -426,7 +428,7 @@ class MessagePOSTTest(ZulipTestCase):
         self.assertEqual(self.get_last_message().content, "Test message by notification bot")
 
         everyone_group = NamedUserGroup.objects.get(
-            name=SystemGroups.EVERYONE, realm=realm, is_system_group=True
+            name=SystemGroups.EVERYONE, realm_for_sharding=realm, is_system_group=True
         )
         do_change_stream_group_based_setting(
             stream, "can_send_message_group", everyone_group, acting_user=iago
@@ -1675,7 +1677,7 @@ class StreamMessagesTest(ZulipTestCase):
         # set to something other than "Everyone" group.
         stream = get_stream(stream_name, realm)
         members_group = NamedUserGroup.objects.get(
-            name=SystemGroups.MEMBERS, realm=realm, is_system_group=True
+            name=SystemGroups.MEMBERS, realm_for_sharding=realm, is_system_group=True
         )
         do_change_stream_group_based_setting(
             stream,
@@ -1889,19 +1891,19 @@ class StreamMessagesTest(ZulipTestCase):
         self.subscribe(hamlet, stream_name)
 
         administrators_system_group = NamedUserGroup.objects.get(
-            name=SystemGroups.ADMINISTRATORS, realm=realm, is_system_group=True
+            name=SystemGroups.ADMINISTRATORS, realm_for_sharding=realm, is_system_group=True
         )
         moderators_system_group = NamedUserGroup.objects.get(
-            name=SystemGroups.MODERATORS, realm=realm, is_system_group=True
+            name=SystemGroups.MODERATORS, realm_for_sharding=realm, is_system_group=True
         )
         members_system_group = NamedUserGroup.objects.get(
-            name=SystemGroups.MEMBERS, realm=realm, is_system_group=True
+            name=SystemGroups.MEMBERS, realm_for_sharding=realm, is_system_group=True
         )
         everyone_system_group = NamedUserGroup.objects.get(
-            name=SystemGroups.EVERYONE, realm=realm, is_system_group=True
+            name=SystemGroups.EVERYONE, realm_for_sharding=realm, is_system_group=True
         )
         nobody_system_group = NamedUserGroup.objects.get(
-            name=SystemGroups.NOBODY, realm=realm, is_system_group=True
+            name=SystemGroups.NOBODY, realm_for_sharding=realm, is_system_group=True
         )
 
         do_change_realm_permission_group_setting(
@@ -2023,19 +2025,19 @@ class StreamMessagesTest(ZulipTestCase):
         self.subscribe(hamlet, stream_name)
 
         administrators_system_group = NamedUserGroup.objects.get(
-            name=SystemGroups.ADMINISTRATORS, realm=realm, is_system_group=True
+            name=SystemGroups.ADMINISTRATORS, realm_for_sharding=realm, is_system_group=True
         )
         moderators_system_group = NamedUserGroup.objects.get(
-            name=SystemGroups.MODERATORS, realm=realm, is_system_group=True
+            name=SystemGroups.MODERATORS, realm_for_sharding=realm, is_system_group=True
         )
         members_system_group = NamedUserGroup.objects.get(
-            name=SystemGroups.MEMBERS, realm=realm, is_system_group=True
+            name=SystemGroups.MEMBERS, realm_for_sharding=realm, is_system_group=True
         )
         everyone_system_group = NamedUserGroup.objects.get(
-            name=SystemGroups.EVERYONE, realm=realm, is_system_group=True
+            name=SystemGroups.EVERYONE, realm_for_sharding=realm, is_system_group=True
         )
         nobody_system_group = NamedUserGroup.objects.get(
-            name=SystemGroups.NOBODY, realm=realm, is_system_group=True
+            name=SystemGroups.NOBODY, realm_for_sharding=realm, is_system_group=True
         )
 
         do_change_realm_permission_group_setting(
@@ -2204,7 +2206,7 @@ class StreamMessagesTest(ZulipTestCase):
         support = check_add_user_group(othello.realm, "support", [othello], acting_user=othello)
 
         moderators_system_group = NamedUserGroup.objects.get(
-            realm=iago.realm, name=SystemGroups.MODERATORS, is_system_group=True
+            realm_for_sharding=iago.realm, name=SystemGroups.MODERATORS, is_system_group=True
         )
 
         content = "Test mentioning user group @*leadership*"
@@ -2275,7 +2277,7 @@ class StreamMessagesTest(ZulipTestCase):
         # Test system bots.
         content = "Test mentioning user group @*support*"
         members_group = NamedUserGroup.objects.get(
-            name=SystemGroups.MEMBERS, realm=iago.realm, is_system_group=True
+            name=SystemGroups.MEMBERS, realm_for_sharding=iago.realm, is_system_group=True
         )
         support.can_mention_group = members_group
         support.save()
@@ -2289,7 +2291,7 @@ class StreamMessagesTest(ZulipTestCase):
             self.send_stream_message(system_bot, "test_stream", content, recipient_realm=iago.realm)
 
         everyone_group = NamedUserGroup.objects.get(
-            name=SystemGroups.EVERYONE, realm=iago.realm, is_system_group=True
+            name=SystemGroups.EVERYONE, realm_for_sharding=iago.realm, is_system_group=True
         )
         support.can_mention_group = everyone_group
         support.save()
@@ -2590,7 +2592,7 @@ class PersonalMessageSendTest(ZulipTestCase):
         direct_message_group_1 = [user_profile, admin, polonius]
         direct_message_group_2 = [user_profile, admin, polonius, cordelia]
         administrators_system_group = NamedUserGroup.objects.get(
-            name=SystemGroups.ADMINISTRATORS, realm=realm, is_system_group=True
+            name=SystemGroups.ADMINISTRATORS, realm_for_sharding=realm, is_system_group=True
         )
         self.login_user(user_profile)
         self.send_personal_message(user_profile, polonius)
@@ -2659,7 +2661,7 @@ class PersonalMessageSendTest(ZulipTestCase):
 
         # Test that query count decreases if setting is set to a system group.
         members_group = NamedUserGroup.objects.get(
-            name=SystemGroups.MEMBERS, realm=realm, is_system_group=True
+            name=SystemGroups.MEMBERS, realm_for_sharding=realm, is_system_group=True
         )
         do_change_realm_permission_group_setting(
             realm,
@@ -2683,10 +2685,10 @@ class PersonalMessageSendTest(ZulipTestCase):
         direct_message_group = [user_profile, cordelia, admin]
         direct_message_group_without_admin = [user_profile, cordelia, polonius]
         administrators_system_group = NamedUserGroup.objects.get(
-            name=SystemGroups.ADMINISTRATORS, realm=realm, is_system_group=True
+            name=SystemGroups.ADMINISTRATORS, realm_for_sharding=realm, is_system_group=True
         )
         nobody_system_group = NamedUserGroup.objects.get(
-            name=SystemGroups.NOBODY, realm=realm, is_system_group=True
+            name=SystemGroups.NOBODY, realm_for_sharding=realm, is_system_group=True
         )
         self.login_user(user_profile)
         do_change_realm_permission_group_setting(
@@ -2751,7 +2753,7 @@ class PersonalMessageSendTest(ZulipTestCase):
 
         # Test that query count decreases if setting is set to a system group.
         members_group = NamedUserGroup.objects.get(
-            name=SystemGroups.MEMBERS, realm=realm, is_system_group=True
+            name=SystemGroups.MEMBERS, realm_for_sharding=realm, is_system_group=True
         )
         do_change_realm_permission_group_setting(
             realm,
@@ -3021,7 +3023,7 @@ class InternalPrepTest(ZulipTestCase):
         """
         sender = self.example_user("hamlet")
         nobody_system_group = NamedUserGroup.objects.get(
-            name=SystemGroups.NOBODY, realm=sender.realm, is_system_group=True
+            name=SystemGroups.NOBODY, realm_for_sharding=sender.realm, is_system_group=True
         )
         do_change_realm_permission_group_setting(
             sender.realm,

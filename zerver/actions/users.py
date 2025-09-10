@@ -354,9 +354,9 @@ def send_update_events_for_anonymous_group_settings(
         group_setting_query |= Q(**{f"{setting_name}__in": setting_group_ids})
 
     named_groups_using_setting_groups_dict = {}
-    named_groups_using_setting_groups = NamedUserGroup.objects.filter(realm=realm).filter(
-        group_setting_query
-    )
+    named_groups_using_setting_groups = NamedUserGroup.objects.filter(
+        realm_for_sharding=realm
+    ).filter(group_setting_query)
     for group in named_groups_using_setting_groups:
         for setting_name in NamedUserGroup.GROUP_PERMISSION_SETTINGS:
             setting_value_id = getattr(group, setting_name + "_id")

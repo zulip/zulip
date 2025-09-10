@@ -91,7 +91,7 @@ class TestCreateStreams(ZulipTestCase):
         self.assertEqual(events[0]["event"]["streams"][0]["stream_weekly_traffic"], None)
 
         moderators_system_group = NamedUserGroup.objects.get(
-            name="role:moderators", realm=realm, is_system_group=True
+            name="role:moderators", realm_for_sharding=realm, is_system_group=True
         )
         new_streams, existing_streams = create_streams_if_needed(
             realm,
@@ -279,7 +279,7 @@ class TestCreateStreams(ZulipTestCase):
 
         cordelia = self.example_user("cordelia")
         nobody_group = NamedUserGroup.objects.get(
-            name=SystemGroups.NOBODY, realm=cordelia.realm, is_system_group=True
+            name=SystemGroups.NOBODY, realm_for_sharding=cordelia.realm, is_system_group=True
         )
 
         channel_folder = check_add_channel_folder(
@@ -416,7 +416,7 @@ class TestCreateStreams(ZulipTestCase):
 
         # topics policy
         owners = NamedUserGroup.objects.get(
-            name=SystemGroups.OWNERS, realm=cordelia.realm, is_system_group=True
+            name=SystemGroups.OWNERS, realm_for_sharding=cordelia.realm, is_system_group=True
         )
         do_change_realm_permission_group_setting(
             cordelia.realm, "can_set_topics_policy_group", owners, acting_user=None
@@ -479,7 +479,7 @@ class TestCreateStreams(ZulipTestCase):
 
         # System groups case
         nobody_group = NamedUserGroup.objects.get(
-            name=SystemGroups.NOBODY, realm=cordelia.realm, is_system_group=True
+            name=SystemGroups.NOBODY, realm_for_sharding=cordelia.realm, is_system_group=True
         )
         do_change_realm_permission_group_setting(
             cordelia.realm, stream_policy, nobody_group, acting_user=None
@@ -496,7 +496,7 @@ class TestCreateStreams(ZulipTestCase):
         )
 
         member_group = NamedUserGroup.objects.get(
-            name=SystemGroups.MEMBERS, realm=cordelia.realm, is_system_group=True
+            name=SystemGroups.MEMBERS, realm_for_sharding=cordelia.realm, is_system_group=True
         )
         do_change_realm_permission_group_setting(
             cordelia.realm, stream_policy, member_group, acting_user=None
@@ -509,7 +509,9 @@ class TestCreateStreams(ZulipTestCase):
         check_permission_to_create_channel(iago, "testing_channel_group_permission2")
 
         admin_group = NamedUserGroup.objects.get(
-            name=SystemGroups.ADMINISTRATORS, realm=cordelia.realm, is_system_group=True
+            name=SystemGroups.ADMINISTRATORS,
+            realm_for_sharding=cordelia.realm,
+            is_system_group=True,
         )
         do_change_realm_permission_group_setting(
             cordelia.realm, stream_policy, admin_group, acting_user=None
@@ -663,7 +665,7 @@ class TestCreateStreams(ZulipTestCase):
         realm = user.realm
         self.login_user(user)
         nobody_system_group = NamedUserGroup.objects.get(
-            name="role:nobody", realm=realm, is_system_group=True
+            name="role:nobody", realm_for_sharding=realm, is_system_group=True
         )
 
         stream, created = create_stream_if_needed(
@@ -681,7 +683,7 @@ class TestCreateStreams(ZulipTestCase):
         realm = user.realm
         self.login_user(user)
         moderators_system_group = NamedUserGroup.objects.get(
-            name="role:moderators", realm=realm, is_system_group=True
+            name="role:moderators", realm_for_sharding=realm, is_system_group=True
         )
 
         permission_config = Stream.stream_permission_group_settings[setting_name]
@@ -714,14 +716,18 @@ class TestCreateStreams(ZulipTestCase):
             )
         else:
             default_group = NamedUserGroup.objects.get(
-                name=permission_config.default_group_name, realm=realm, is_system_group=True
+                name=permission_config.default_group_name,
+                realm_for_sharding=realm,
+                is_system_group=True,
             )
             self.assertEqual(getattr(stream, setting_name).id, default_group.id)
         # Delete the created stream, so we can create a new one for
         # testing another setting value.
         stream.delete()
 
-        hamletcharacters_group = NamedUserGroup.objects.get(name="hamletcharacters", realm=realm)
+        hamletcharacters_group = NamedUserGroup.objects.get(
+            name="hamletcharacters", realm_for_sharding=realm
+        )
         subscriptions = [{"name": "new_stream", "description": "New stream"}]
         extra_post_data[setting_name] = orjson.dumps(hamletcharacters_group.id).decode()
         result = self.subscribe_via_post(
@@ -761,7 +767,7 @@ class TestCreateStreams(ZulipTestCase):
         stream.delete()
 
         nobody_group = NamedUserGroup.objects.get(
-            name="role:nobody", is_system_group=True, realm=realm
+            name="role:nobody", is_system_group=True, realm_for_sharding=realm
         )
 
         subscriptions = [{"name": "new_stream", "description": "New stream"}]
@@ -784,7 +790,7 @@ class TestCreateStreams(ZulipTestCase):
 
         subscriptions = [{"name": "new_stream", "description": "New stream"}]
         owners_group = NamedUserGroup.objects.get(
-            name="role:owners", is_system_group=True, realm=realm
+            name="role:owners", is_system_group=True, realm_for_sharding=realm
         )
         extra_post_data[setting_name] = orjson.dumps(owners_group.id).decode()
         result = self.subscribe_via_post(
@@ -819,7 +825,7 @@ class TestCreateStreams(ZulipTestCase):
 
         subscriptions = [{"name": "new_stream", "description": "New stream"}]
         everyone_group = NamedUserGroup.objects.get(
-            name="role:everyone", is_system_group=True, realm=realm
+            name="role:everyone", is_system_group=True, realm_for_sharding=realm
         )
         extra_post_data[setting_name] = orjson.dumps(everyone_group.id).decode()
         result = self.subscribe_via_post(
@@ -844,7 +850,7 @@ class TestCreateStreams(ZulipTestCase):
 
         subscriptions = [{"name": "new_stream", "description": "New stream"}]
         internet_group = NamedUserGroup.objects.get(
-            name="role:internet", is_system_group=True, realm=realm
+            name="role:internet", is_system_group=True, realm_for_sharding=realm
         )
         extra_post_data[setting_name] = orjson.dumps(internet_group.id).decode()
         result = self.subscribe_via_post(
@@ -862,7 +868,7 @@ class TestCreateStreams(ZulipTestCase):
     def test_permission_settings_on_stream_creation(self) -> None:
         realm = get_realm("zulip")
         members_system_group = NamedUserGroup.objects.get(
-            name=SystemGroups.MEMBERS, realm=realm, is_system_group=True
+            name=SystemGroups.MEMBERS, realm_for_sharding=realm, is_system_group=True
         )
         do_change_realm_permission_group_setting(
             realm,
@@ -888,13 +894,13 @@ class TestCreateStreams(ZulipTestCase):
         self.assert_json_success(result)
 
         nobody_group = NamedUserGroup.objects.get(
-            name=SystemGroups.NOBODY, realm=realm, is_system_group=True
+            name=SystemGroups.NOBODY, realm_for_sharding=realm, is_system_group=True
         )
         admins_group = NamedUserGroup.objects.get(
-            name=SystemGroups.ADMINISTRATORS, realm=realm, is_system_group=True
+            name=SystemGroups.ADMINISTRATORS, realm_for_sharding=realm, is_system_group=True
         )
         everyone_group = NamedUserGroup.objects.get(
-            name=SystemGroups.EVERYONE, realm=realm, is_system_group=True
+            name=SystemGroups.EVERYONE, realm_for_sharding=realm, is_system_group=True
         )
 
         stream = get_stream("new_stream", realm)

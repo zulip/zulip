@@ -1036,7 +1036,9 @@ class Command(ZulipBaseCommand):
                 raw_emojis = ["😎", "😂", "🐱‍👤"]
 
                 admins_system_group = NamedUserGroup.objects.get(
-                    name=SystemGroups.ADMINISTRATORS, realm=zulip_realm, is_system_group=True
+                    name=SystemGroups.ADMINISTRATORS,
+                    realm_for_sharding=zulip_realm,
+                    is_system_group=True,
                 )
 
                 engineering_channel_folder = check_add_channel_folder(

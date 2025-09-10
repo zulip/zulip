@@ -533,7 +533,9 @@ class ZulipSCIMGroup(SCIMGroup):
                 check_user_group_name(name_new_value)
             except JsonableError as e:
                 raise scim_exceptions.BadRequestError(e.msg)
-            if NamedUserGroup.objects.filter(name=name_new_value, realm=realm).exists():
+            if NamedUserGroup.objects.filter(
+                name=name_new_value, realm_for_sharding=realm
+            ).exists():
                 raise ConflictError("Group name already in use: " + name_new_value)
 
         # At most one of the three should be set for a .save() call. If the SCIM request has multiple operations

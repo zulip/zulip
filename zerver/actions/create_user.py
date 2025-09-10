@@ -603,7 +603,7 @@ def do_create_user(
     if user_profile.role == UserProfile.ROLE_MEMBER and not user_profile.is_provisional_member:
         full_members_system_group = NamedUserGroup.objects.get(
             name=SystemGroups.FULL_MEMBERS,
-            realm=user_profile.realm,
+            realm_for_sharding=user_profile.realm,
             is_system_group=True,
         )
         UserGroupMembership.objects.create(

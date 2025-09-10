@@ -129,7 +129,7 @@ class AccessStreamTest(ZulipTestCase):
             othello.realm, "user_profile_group", [othello, polonius], acting_user=othello
         )
         nobody_group = NamedUserGroup.objects.get(
-            name="role:nobody", is_system_group=True, realm=othello.realm
+            name="role:nobody", is_system_group=True, realm_for_sharding=othello.realm
         )
 
         do_change_stream_group_based_setting(
@@ -366,7 +366,7 @@ class AccessStreamTest(ZulipTestCase):
             True,
         )
         nobody_group = NamedUserGroup.objects.get(
-            name="role:nobody", realm=realm, is_system_group=True
+            name="role:nobody", realm_for_sharding=realm, is_system_group=True
         )
         do_change_stream_group_based_setting(
             private_stream,
@@ -396,7 +396,7 @@ class AccessStreamTest(ZulipTestCase):
             True,
         )
         nobody_group = NamedUserGroup.objects.get(
-            name="role:nobody", realm=realm, is_system_group=True
+            name="role:nobody", realm_for_sharding=realm, is_system_group=True
         )
         do_change_stream_group_based_setting(
             private_stream,
@@ -446,7 +446,7 @@ class AccessStreamTest(ZulipTestCase):
         realm = aaron.realm
         public_stream = self.make_stream("public_stream", realm, invite_only=False)
         nobody_system_group = NamedUserGroup.objects.get(
-            name="role:nobody", realm=realm, is_system_group=True
+            name="role:nobody", realm_for_sharding=realm, is_system_group=True
         )
 
         # Public stream with no subscribers.

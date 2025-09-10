@@ -568,10 +568,10 @@ class TestRealmAuditLog(ZulipTestCase):
         )
 
         administrators_system_group = NamedUserGroup.objects.get(
-            name=SystemGroups.ADMINISTRATORS, realm=realm, is_system_group=True
+            name=SystemGroups.ADMINISTRATORS, realm_for_sharding=realm, is_system_group=True
         )
         everyone_system_group = NamedUserGroup.objects.get(
-            name=SystemGroups.EVERYONE, realm=realm, is_system_group=True
+            name=SystemGroups.EVERYONE, realm_for_sharding=realm, is_system_group=True
         )
 
         value_expected = {
@@ -1229,7 +1229,7 @@ class TestRealmAuditLog(ZulipTestCase):
 
         system_user_group_ids = sorted(
             NamedUserGroup.objects.filter(
-                realm=realm,
+                realm_for_sharding=realm,
                 is_system_group=True,
             ).values_list("id", flat=True)
         )
@@ -1285,7 +1285,7 @@ class TestRealmAuditLog(ZulipTestCase):
         cordelia = self.example_user("cordelia")
         now = timezone_now()
         public_group = NamedUserGroup.objects.get(
-            name=SystemGroups.EVERYONE_ON_INTERNET, realm=hamlet.realm
+            name=SystemGroups.EVERYONE_ON_INTERNET, realm_for_sharding=hamlet.realm
         )
         user_group = check_add_user_group(
             hamlet.realm,
@@ -1450,7 +1450,7 @@ class TestRealmAuditLog(ZulipTestCase):
 
         old_group = user_group.can_mention_group
         new_group = NamedUserGroup.objects.get(
-            name=SystemGroups.EVERYONE_ON_INTERNET, realm=user_group.realm
+            name=SystemGroups.EVERYONE_ON_INTERNET, realm_for_sharding=user_group.realm
         ).usergroup_ptr
         self.assertNotEqual(old_group.id, new_group.id)
         do_change_user_group_permission_setting(
@@ -1476,7 +1476,7 @@ class TestRealmAuditLog(ZulipTestCase):
         )
 
         moderators_group = NamedUserGroup.objects.get(
-            name=SystemGroups.MODERATORS, realm=user_group.realm, is_system_group=True
+            name=SystemGroups.MODERATORS, realm_for_sharding=user_group.realm, is_system_group=True
         )
         old_group = user_group.can_mention_group
         new_group = self.create_or_update_anonymous_group_for_setting([hamlet], [moderators_group])
@@ -1547,7 +1547,7 @@ class TestRealmAuditLog(ZulipTestCase):
 
         old_setting_api_value = get_group_setting_value_for_api(user_group.can_mention_group)
         new_group = NamedUserGroup.objects.get(
-            name=SystemGroups.EVERYONE, realm=user_group.realm, is_system_group=True
+            name=SystemGroups.EVERYONE, realm_for_sharding=user_group.realm, is_system_group=True
         )
         now = timezone_now()
         do_change_user_group_permission_setting(

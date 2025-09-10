@@ -380,7 +380,9 @@ def get_mentioned_user_group(
     # all these messages.
     smallest_user_group_size = math.inf
     for user_group_id in mentioned_user_group_ids:
-        current_user_group = NamedUserGroup.objects.get(id=user_group_id, realm=user_profile.realm)
+        current_user_group = NamedUserGroup.objects.get(
+            id=user_group_id, realm_for_sharding=user_profile.realm
+        )
         current_mentioned_user_group = MentionedUserGroup(
             id=current_user_group.id,
             name=current_user_group.name,

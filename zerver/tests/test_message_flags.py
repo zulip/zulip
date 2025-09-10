@@ -1980,7 +1980,7 @@ class MessageAccessTests(ZulipTestCase):
         )
         self.assert_length(filtered_messages, 0)
         nobody_group = NamedUserGroup.objects.get(
-            name="role:nobody", is_system_group=True, realm=unsubscribed_user.realm
+            name="role:nobody", is_system_group=True, realm_for_sharding=unsubscribed_user.realm
         )
         do_change_stream_group_based_setting(
             stream,
