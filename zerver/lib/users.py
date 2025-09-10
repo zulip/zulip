@@ -567,6 +567,7 @@ class APIUserDict(TypedDict):
     email: str
     user_id: int
     avatar_version: int
+    avatar_source: str
     is_admin: bool
     is_owner: bool
     is_guest: bool
@@ -614,6 +615,7 @@ def format_user_row(
         email=row["email"],
         user_id=row["id"],
         avatar_version=row["avatar_version"],
+        avatar_source=row["avatar_source"],
         is_admin=is_admin,
         is_owner=is_owner,
         is_guest=is_guest,
@@ -1029,6 +1031,7 @@ def get_data_for_inaccessible_user(realm: Realm, user_id: int) -> APIUserDict:
         delivery_email=None,
         avatar_url=get_avatar_for_inaccessible_user(),
         profile_data={},
+        avatar_source="",
     )
     return user_dict
 
