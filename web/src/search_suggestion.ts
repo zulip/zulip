@@ -26,20 +26,33 @@ export type UserPillItem = {
 
 type TermPattern = Omit<NarrowTerm, "operand"> & Partial<Pick<NarrowTerm, "operand">>;
 
-const channel_incompatible_patterns = [
+const common_incompatible_patterns = [
     {operator: "is", operand: "dm"},
     {operator: "channel"},
     {operator: "dm-including"},
     {operator: "dm"},
     {operator: "in"},
-    {operator: "channels"},
+];
+
+const channel_incompatible_patterns = [...common_incompatible_patterns, {operator: "channels"}];
+
+const channels_incompatible_patterns = [
+    ...common_incompatible_patterns,
+    {operator: "channels", operand: "public"},
+    {operator: "channels", operand: "web-public"},
 ];
 
 const incompatible_patterns: Record<string, TermPattern[]> = {
     channel: channel_incompatible_patterns,
     stream: channel_incompatible_patterns,
-    streams: channel_incompatible_patterns,
-    channels: channel_incompatible_patterns,
+    streams: common_incompatible_patterns,
+    channels: common_incompatible_patterns,
+    "channels:public": channels_incompatible_patterns,
+    "channels:web-public": channels_incompatible_patterns,
+    "channels:archived": [
+        ...common_incompatible_patterns,
+        {operator: "channels", operand: "archived"},
+    ],
     topic: [
         {operator: "dm"},
         {operator: "is", operand: "dm"},
@@ -619,21 +632,29 @@ function get_channels_filter_suggestions(last: NarrowTerm, terms: NarrowTerm[]):
     }
     const public_channels_search_string = "channels:public";
     const web_public_channels_search_string = "channels:web-public";
+    const archived_channels_search_string = "channels:archived";
     const suggestions: SuggestionAndIncompatiblePatterns[] = [];
 
     if (!page_params.is_spectator) {
-        suggestions.push({
-            search_string: public_channels_search_string,
-            description_html: "all public channels",
-            incompatible_patterns: incompatible_patterns.channels!,
-        });
+        suggestions.push(
+            {
+                search_string: public_channels_search_string,
+                description_html: "all public channels",
+                incompatible_patterns: incompatible_patterns["channels:public"]!,
+            },
+            {
+                search_string: archived_channels_search_string,
+                description_html: "archived channels",
+                incompatible_patterns: incompatible_patterns["channels:archived"]!,
+            },
+        );
     }
 
     if (stream_data.realm_has_web_public_streams()) {
         suggestions.push({
             search_string: web_public_channels_search_string,
             description_html: "all web-public channels",
-            incompatible_patterns: incompatible_patterns.channels!,
+            incompatible_patterns: incompatible_patterns["channels:web-public"]!,
         });
     }
 
