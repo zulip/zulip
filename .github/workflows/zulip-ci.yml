@@ -155,6 +155,11 @@ jobs:
           PYTHONWARNINGS=ignore ./tools/check-capitalization --no-generate
           PYTHONWARNINGS=ignore ./tools/check-frontend-i18n --no-generate
 
+      - name: Run astro check
+        if: ${{ matrix.include_frontend_tests }}
+        run: |
+          pnpm run --filter=starlight_help check
+
       - name: Run puppeteer tests
         if: ${{ matrix.include_frontend_tests }}
         run: |
