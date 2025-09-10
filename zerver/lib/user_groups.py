@@ -939,9 +939,7 @@ def get_root_id_annotated_recursive_subgroups_for_groups(
 
 
 def get_role_based_system_groups_dict(realm: Realm) -> dict[str, NamedUserGroup]:
-    system_groups = NamedUserGroup.objects.filter(
-        realm_for_sharding=realm, is_system_group=True
-    ).select_related("usergroup_ptr")
+    system_groups = NamedUserGroup.objects.filter(realm_for_sharding=realm, is_system_group=True)
     system_groups_name_dict = {}
     for group in system_groups:
         system_groups_name_dict[group.name] = group
