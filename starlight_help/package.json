@@ -19,7 +19,7 @@
     "mdast-util-to-string": "^4.0.0",
     "remark": "^15.0.1",
     "remark-mdx": "^3.1.0",
-    "sharp": "^0.34.1",
+    "sharp": "^0.33.3",
     "unist-util-visit": "^5.0.0",
     "unplugin-icons": "^22.1.0"
   },
