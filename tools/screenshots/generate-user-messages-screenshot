@@ -211,7 +211,7 @@ def capture_streams_narrow_screenshot(
 
     narrow_uri = topic_narrow_url(realm=realm, stream=stream, topic_name=topic)
     narrow = f"{stream_name}/{topic}"
-    screenshot_script = os.path.join(SCREENSHOTS_DIR, "thread-screenshot.js")
+    screenshot_script = os.path.join(SCREENSHOTS_DIR, "thread-screenshot.ts")
     subprocess.check_call(
         ["node", screenshot_script, narrow_uri, narrow, str(unread_msg_id), image_path, realm.url]
     )
@@ -221,7 +221,7 @@ DESCRIPTION = """
 Generate screenshots of messages for corporate pages.
 
 This script takes a json file with conversation details, and runs
-tools/thread-screenshot.js to take cropped screenshots of the
+tools/thread-screenshot.ts to take cropped screenshots of the
 generated messages with puppeteer.
 
 Make sure you have the dev environment up and running in a separate
