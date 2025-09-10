@@ -133,10 +133,10 @@ def bulk_create_users(
     Subscription.objects.bulk_create(subscriptions_to_create)
 
     full_members_system_group = NamedUserGroup.objects.get(
-        name=SystemGroups.FULL_MEMBERS, realm=realm, is_system_group=True
+        name=SystemGroups.FULL_MEMBERS, realm_for_sharding=realm, is_system_group=True
     )
     members_system_group = NamedUserGroup.objects.get(
-        name=SystemGroups.MEMBERS, realm=realm, is_system_group=True
+        name=SystemGroups.MEMBERS, realm_for_sharding=realm, is_system_group=True
     )
     group_memberships_to_create: list[UserGroupMembership] = []
     for user_profile in profiles_to_create:

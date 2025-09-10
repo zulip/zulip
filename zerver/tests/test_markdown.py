@@ -302,7 +302,7 @@ class MarkdownMiscTest(ZulipTestCase):
         self.assertTrue(mention_data.message_has_topic_wildcards())
 
         content = "@*hamletcharacters*"
-        group = NamedUserGroup.objects.get(realm=realm, name="hamletcharacters")
+        group = NamedUserGroup.objects.get(realm_for_sharding=realm, name="hamletcharacters")
         mention_data = MentionData(mention_backend, content, message_sender=None)
         self.assertEqual(mention_data.get_group_members(group.id), {hamlet.id, cordelia.id})
 
@@ -368,7 +368,7 @@ class MarkdownMiscTest(ZulipTestCase):
         iago = self.example_user("iago")
         othello = self.example_user("othello")
 
-        hamlet_group = NamedUserGroup.objects.get(realm=realm, name="hamletcharacters")
+        hamlet_group = NamedUserGroup.objects.get(realm_for_sharding=realm, name="hamletcharacters")
         zulip_group = check_add_user_group(realm, "zulip_group", [iago, aaron], acting_user=othello)
         mention_backend = MentionBackend(realm.id)
 
@@ -3053,7 +3053,9 @@ class MarkdownMentionTest(ZulipTestCase):
         self.assertEqual(rendering_result.mentions_user_group_ids, set())
 
         admins_group = NamedUserGroup.objects.get(
-            name=SystemGroups.ADMINISTRATORS, realm=sender_user_profile.realm, is_system_group=True
+            name=SystemGroups.ADMINISTRATORS,
+            realm_for_sharding=sender_user_profile.realm,
+            is_system_group=True,
         )
         content = "Please contact @_*role:administrators*"
         rendering_result = render_message_markdown(msg, content)

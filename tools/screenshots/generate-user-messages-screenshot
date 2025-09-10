@@ -270,7 +270,7 @@ try:
                 if thread.get("user_groups") is not None:
                     for user_group in thread.get("user_groups"):
                         user_grp = NamedUserGroup.objects.filter(
-                            name=user_group["group_name"], realm=realm
+                            name=user_group["group_name"], realm_for_sharding=realm
                         ).first()
                         if user_grp is not None:
                             user_grp.delete()
