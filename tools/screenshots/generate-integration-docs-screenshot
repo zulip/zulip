@@ -234,7 +234,7 @@ def capture_last_message_screenshot(bot: UserProfile, image_path: str) -> None:
         print(f"No message found for {bot.full_name}")
         return
     message_id = str(message.id)
-    screenshot_script = os.path.join(SCREENSHOTS_DIR, "message-screenshot.js")
+    screenshot_script = os.path.join(SCREENSHOTS_DIR, "message-screenshot.ts")
     subprocess.check_call(["node", screenshot_script, message_id, image_path, realm.url])
 
 
