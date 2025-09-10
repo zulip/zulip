@@ -21,16 +21,35 @@ const user_status_event_schema = z.intersection(
     user_status_schema,
 );
 
+export type TimeKey =
+    | "never"
+    | "in_thirty_minutes"
+    | "in_one_hour"
+    | "today_five_pm"
+    | "tomorrow"
+    | "custom";
+
 export type UserStatusEvent = z.infer<typeof user_status_event_schema>;
 
 const user_info = new Map<number, string>();
 const user_status_emoji_info = new Map<number, UserStatusEmojiInfo>();
+
+let scheduled_end_time: number | undefined;
+
+export function set_scheduled_end_time(scheduled_time: number | undefined): void {
+    scheduled_end_time = scheduled_time;
+}
+
+export function get_scheduled_end_time(): number | undefined {
+    return scheduled_end_time;
+}
 
 export function server_update_status(opts: {
     status_text: string;
     emoji_name: string;
     emoji_code: string;
     reaction_type?: string;
+    scheduled_end_time: number | undefined;
     success?: () => void;
 }): void {
     void channel.post({
@@ -40,6 +59,7 @@ export function server_update_status(opts: {
             emoji_name: opts.emoji_name,
             emoji_code: opts.emoji_code,
             reaction_type: opts.reaction_type,
+            scheduled_end_time: opts.scheduled_end_time,
         },
         success() {
             if (opts.success) {
@@ -104,6 +124,31 @@ export function set_status_emoji(event: UserStatusEvent): void {
     });
 }
 
+export function compute_scheduled_end_time(
+    custom_time_selected?: number,
+): Record<TimeKey, number | undefined> {
+    const end_times: Record<string, number | undefined> = {};
+
+    const now = new Date();
+    now.setSeconds(0, 0);
+    const today = new Date(now);
+    const tomorrow = new Date(new Date(now).setDate(now.getDate() + 1));
+    // Since setHours returns a timestamp, it's safe to mutate the
+    // original date objects here.
+    end_times.never = undefined;
+    // 30 minutes from now
+    end_times.in_thirty_minutes = new Date(now).setMinutes(now.getMinutes() + 30);
+    // 1 hour from now
+    end_times.in_one_hour = new Date(now).setHours(now.getHours() + 1);
+    // today at 5pm
+    end_times.today_five_pm = today.setHours(17, 0, 0, 0);
+    // tomorrow at 12am
+    end_times.tomorrow = tomorrow.setHours(0, 0, 0, 0);
+    end_times.custom = custom_time_selected;
+
+    return end_times;
+}
+
 export function initialize(params: StateData["user_status"]): void {
     user_info.clear();
 
@@ -115,6 +160,8 @@ export function initialize(params: StateData["user_status"]): void {
         if (dct.status_text) {
             user_info.set(user_id, dct.status_text);
         }
+
+        set_scheduled_end_time(dct.scheduled_end_time);
 
         if (dct.emoji_name) {
             user_status_emoji_info.set(user_id, {
