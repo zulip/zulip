@@ -72,7 +72,7 @@ run_test("potentially_collapse_quotes", ({override_rewire}) => {
 
 run_test("replace_emoji_name_with_emoji_unicode", () => {
     const $emoji = $.create("span").attr("class", "emoji emoji-1f419");
-    $emoji.is = () => false;
+    $emoji.set_matches("img", false);
 
     const octopus_emoji = "🐙";
     assert.equal(octopus_emoji, ui_util.convert_emoji_element_to_unicode($emoji));
