@@ -33,7 +33,7 @@ import * as compose_paste from "./compose_paste.ts";
 import * as compose_pm_pill from "./compose_pm_pill.ts";
 import * as compose_recipient from "./compose_recipient.ts";
 import * as compose_reply from "./compose_reply.ts";
-import * as compose_send_menu_popover from "./compose_send_menu_popover.js";
+import * as compose_send_menu_popover from "./compose_send_menu_popover.ts";
 import * as compose_setup from "./compose_setup.js";
 import * as compose_textarea from "./compose_textarea.ts";
 import * as compose_tooltips from "./compose_tooltips.ts";
