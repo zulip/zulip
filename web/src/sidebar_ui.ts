@@ -657,7 +657,7 @@ export function set_event_handlers(): void {
         }
         // Don't trigger `input` which confuses the search input
         // for zoomed in topic search.
-        update_left_sidebar_for_search();
+        actually_update_left_sidebar_for_search();
         $search_input.trigger("blur");
     }
 
