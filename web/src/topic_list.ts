@@ -34,6 +34,10 @@ export let topic_state_typeahead: Typeahead<TopicFilterPill> | undefined;
 // We know whether we're zoomed or not.
 let zoomed = false;
 
+// Scroll position before user started searching.
+let pre_search_scroll_position = 0;
+let previous_search_term = "";
+
 export function update(): void {
     for (const widget of active_widgets.values()) {
         widget.build();
@@ -435,6 +439,8 @@ export function left_sidebar_scroll_zoomed_in_topic_into_view(): void {
 // handle hiding/showing the non-narrowed streams
 export function zoom_in(): void {
     zoomed = true;
+    previous_search_term = "";
+    pre_search_scroll_position = 0;
     ui_util.disable_left_sidebar_search();
 
     const stream_id = active_stream_id();
@@ -636,9 +642,20 @@ export function initialize({
     $("body").on("input", "#left-sidebar-filter-topic-input", (): void => {
         const stream_id = active_stream_id();
         assert(stream_id !== undefined);
-        active_widgets.get(stream_id)?.build();
 
-        if (get_left_sidebar_topic_search_term() === "") {
+        const search_term = get_left_sidebar_topic_search_term();
+        const is_previous_search_term_empty = previous_search_term === "";
+        previous_search_term = search_term;
+
+        const widget = active_widgets.get(stream_id)!;
+        const left_sidebar_scroll_container = scroll_util.get_left_sidebar_scroll_container();
+        if (search_term === "") {
+            requestAnimationFrame(() => {
+                widget.build();
+                // Restore previous scroll position.
+                left_sidebar_scroll_container.scrollTop(pre_search_scroll_position);
+            });
+
             // When the contenteditable div is empty, the browser
             // adds a <br> element to it, which interferes with
             // the ":empty" selector in the CSS. Hence, we detect
@@ -651,6 +668,16 @@ export function initialize({
             // doesn't work in this particular case.
             // See: https://stackoverflow.com/questions/14638887/br-is-inserted-into-contenteditable-html-element-if-left-empty
             $("#topic_filter_query").empty();
+        } else {
+            if (is_previous_search_term_empty) {
+                // Store original scroll position to be restored later.
+                pre_search_scroll_position = left_sidebar_scroll_container.scrollTop()!;
+            }
+            requestAnimationFrame(() => {
+                widget.build();
+                // Always scroll to top when there is a search term present.
+                left_sidebar_scroll_container.scrollTop(0);
+            });
         }
     });
 }
