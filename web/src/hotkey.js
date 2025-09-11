@@ -11,7 +11,7 @@ import * as compose_actions from "./compose_actions.ts";
 import * as compose_banner from "./compose_banner.ts";
 import * as compose_recipient from "./compose_recipient.ts";
 import * as compose_reply from "./compose_reply.ts";
-import * as compose_send_menu_popover from "./compose_send_menu_popover.js";
+import * as compose_send_menu_popover from "./compose_send_menu_popover.ts";
 import * as compose_state from "./compose_state.ts";
 import * as compose_textarea from "./compose_textarea.ts";
 import * as condense from "./condense.ts";
