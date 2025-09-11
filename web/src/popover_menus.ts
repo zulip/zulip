@@ -196,10 +196,6 @@ export const default_popover_props: Partial<tippy.Props> = {
     trigger: "click",
     interactive: true,
     hideOnClick: true,
-    /* The light-border TippyJS theme is a bit of a misnomer; it
-       is a popover styling similar to Bootstrap.  We've also customized
-       its CSS to support Zulip's dark theme. */
-    theme: "light-border",
     // The maxWidth has been set to "none" to avoid the default value of 300px.
     maxWidth: "none",
     touch: true,
