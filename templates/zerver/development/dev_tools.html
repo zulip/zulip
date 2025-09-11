@@ -137,51 +137,39 @@
                 </ul>
             </li>
         </ul>
-        <h2>Development instructions for help center (Beta)</h2>
+        <h2>Development instructions for help center</h2>
         <p>
-            These commands are to run the project for an ongoing migration for our help center docs to use
-            <a href="https://github.com/withastro/starlight">@astrojs/starlight</a>. You can track the
-            progress for the project at <a href="https://github.com/zulip/zulip/issues/30450">#30450</a>.
+            Running <code>./tools/run-dev</code> without any flags will not run the help center at all.
+            The development server for the help center takes significant resources to run and we don't
+            want to increase the minimum requirements to run Zulip for development.
         </p>
-        <ul>
-            <li>
-                <code>./tools/build-help-center</code> will convert the existing help center MD files to MDX,
-                and create a production build for the converted MDX files.
-                <ul>
-                    <li>
-                        You can run <code>./tools/convert-help-center-docs-to-mdx</code> to convert the help
-                        center MD files without the build step; see running a dev server that supports hot
-                        reload below.
-                    </li>
-                    <li>
-                        You can run <code>pnpm build</code> within the <code>starlight_help</code> directory to run
-                        the build step separately.
-                    </li>
-                </ul>
-            </li>
-            <li>
-                <code>./tools/run-dev --help-center</code> will host the generated build on
-                <code>/help</code>. Note that search will work in the beta help center docs with
-                this flag. For testing changes related to the migration of the help center docs, using the tool
-                to build the beta help center docs and running the dev server with this flag should be fine.
-            </li>
-            <li>
-                <code>./tools/run-dev --help-center-dev-server</code> will run a dev server at
-                <code>/help</code> that supports hot reload. Note that, with this flag, search will not work
-                in the beta help center docs. This mode is useful when you are editing a help center file, and
-                want to visualize the changes quickly in the beta help center documentation. You will need the
-                converted MDX files to be already generated through
-                <code>./tools/convert-help-center-docs-to-mdx</code> before you run the dev server with this flag.
-
-                <ul>
-                    <li>
-                        The dev server makes a bunch of request to base Zulip URL instead of scoping it to the astro/starlight
-                        base url. For this reason, we run the dev server on it's own port and redirect help center requests to
-                        the appropriate port (9995 by default).
-                    </li>
-                </ul>
-            </li>
-        </ul>
+        <h3> Dev server (supports hot reload but not search)</h3>
+        <p>
+            This mode is useful when you are editing a help center file, and want to visualize the changes
+            quickly in the help center documentation.
+        </p>
+        <p>
+            <code>./tools/run-dev --only-help-center</code> will run a dev server at
+            <code>/help</code> that supports hot reload. Note that, with this flag, search will not work
+            in the help center docs. In this mode, the Zulip web app and other related services will not run.
+            Since the dev server consumes a significant amount of memory, this is the recommended way to run
+            the dev server for the help center.
+        </p>
+        <p>
+            If you have a machine with resources significantly more than minimum requirements to run Zulip in
+            development, you can choose to run the dev server alongside Zulip using
+            <code>./tools/run-dev --help-center-dev-server</code>.
+            The dev server makes a bunch of request to base Zulip URL instead of scoping it to the astro/starlight
+            base url. For this reason, in this mode, we run the dev server on it's own port and redirect help center
+            requests to the appropriate port (9995 by default).
+        </p>
+        <h3> Serve static build (supports search but not hot reload)</h3>
+        <p>
+            Please run <code>./tools/build-help-center</code> to generate a static build of the help center.
+            <code>./tools/run-dev --help-center</code> will host the generated build on
+            <code>/help</code>. Note that you need to generate a build and pass the flag mentioned for the search
+            to work.
+        </p>
     </div>
 </div>
 

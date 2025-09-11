@@ -71,7 +71,12 @@ parser.add_argument(
 parser.add_argument(
     "--help-center-dev-server",
     action="store_true",
-    help="Run dev server for help center. Hot reload will work for this mode, but search will not work in the generated website.",
+    help="Run dev server for help center alongside the Zulip app. Hot reload will work for this mode, but search will not work in the generated website.",
+)
+parser.add_argument(
+    "--only-help-center",
+    action="store_true",
+    help="Run help center dev server on port 9991 without running the Zulip web app and related services",
 )
 add_provision_check_override_param(parser)
 options = parser.parse_args()
@@ -294,13 +299,15 @@ async def forward(upstream_port: int, request: web.Request) -> web.StreamRespons
     return response
 
 
-def run_help_center_dev_server(external_host: str) -> "subprocess.Popen[bytes]":
+def run_help_center_dev_server(
+    external_host: str, port: int = help_center_port
+) -> "subprocess.Popen[bytes]":
     return subprocess.Popen(
         [
             "/usr/local/bin/corepack",
             "pnpm",
             "dev",
-            f"--port={help_center_port}",
+            f"--port={port}",
             "--host",
             f"--allowed-hosts={urlsplit(external_host).hostname}",
         ],
@@ -368,6 +375,12 @@ build step and rerun `run-dev`.""")
 
 
 def print_listeners(external_host_url: str) -> None:
+    if options.only_help_center:
+        print(
+            f"\n{CYAN}Help center dev server running on:{ENDC} {external_host_url}/help\nZulip web app and other related services will not run in this mode."
+        )
+        return
+
     print(f"\nStarting Zulip on:\n\n\t{CYAN}{external_host_url}/{ENDC}\n\nInternal ports:")
     ports = [
         (proxy_port, "Development server proxy (connect here)"),
@@ -431,6 +444,11 @@ async def serve() -> None:
     external_host = os.getenv("EXTERNAL_HOST", f"{default_hostname}:{proxy_port}")
     http_protocol = "https" if options.behind_https_proxy else "http"
     external_host_url = f"{http_protocol}://{external_host}"
+
+    if options.only_help_center:
+        children.append(run_help_center_dev_server(external_host_url, proxy_port))
+        print_listeners(external_host_url)
+        return
 
     if options.test:
         do_one_time_webpack_compile()
