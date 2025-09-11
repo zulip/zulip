@@ -91,6 +91,7 @@ class FakeElementState {
     $jquery_parent = undefined;
     jquery_parents_results = new Map();
     jquery_prev_results = new Map();
+    match_results = new Map([["*", true]]);
     selector = undefined;
     shown = false;
 }
@@ -186,6 +187,15 @@ class FakeElement extends RejectMissing {
     }
     getAttributeNames() {
         return this.#attributes.keys();
+    }
+    matches(selector) {
+        const state = fake_element_state.get(this);
+        if (!state.match_results.has(selector)) {
+            throw new Error(
+                `You need to call $(${JSON.stringify(state.selector)}).set_matches(${JSON.stringify(selector)}, boolean)`,
+            );
+        }
+        return state.match_results.get(selector);
     }
     removeAttribute(name) {
         this.#attributes.delete(normalize_attribute(name));
@@ -500,7 +510,7 @@ exports.FakeJQuery = function (selector, opts) {
                     return this.is_focused();
                 /* istanbul ignore next */
                 default:
-                    throw new Error("zjquery does not support this is() call");
+                    return [...this].some((element) => element.matches(arg));
             }
         },
         is_focused() {
@@ -723,6 +733,10 @@ exports.FakeJQuery = function (selector, opts) {
                         typeof fake_height === "number" ? `${fake_height}px` : fake_height,
                     );
             }
+        },
+        set_matches(selector, value) {
+            assert.equal(this.length, 1);
+            fake_element_state.get(this[0]).match_results.set(selector, value);
         },
         set_next_results(selector, $result) {
             assert.equal(this.length, 1);

@@ -544,10 +544,7 @@ run_test("misc things", () => {
 
     const $stub = $.create("the-pill-container");
     $stub.set_find_results(".input", $pill_input);
-    $stub.is = (sel) => {
-        assert.equal(sel, ".pill-container");
-        return true;
-    };
+    $stub.set_matches(".pill-container", true);
 
     const this_ = {
         to_$: () => $stub,
