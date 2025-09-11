@@ -15,5 +15,6 @@
         "./src/reload_state.ts",
         "./src/channel.ts"
     ],
+    "dev-help": ["./src/bundles/portico.ts", "./styles/portico/dev_help.css"],
     "showroom": ["./src/bundles/showroom.ts"]
 }

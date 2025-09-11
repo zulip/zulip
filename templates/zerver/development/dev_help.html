@@ -1,0 +1,54 @@
+{% extends "zerver/portico.html" %}
+{% set entrypoint = "dev-help" %}
+
+{% block title %}
+<title>Help center server not running | Zulip Dev</title>
+{% endblock %}
+
+{% block portico_content %}
+
+<div class="dev-help-page flex">
+    <div class="white-box">
+        {% if mdx_file_exists %}
+            <h3 class="dev-help-header">Help center server is not running right now</h3>
+            <ul class="dev-help-list">
+                <li class="dev-help-list-item">
+                    <b>Quick reference</b>: If you aren't planning to modify the help center, you can
+                    <a target="_blank" rel="noopener noreferrer" href="https://zulip.com/help/{{ subpath }}">view it in production</a>.
+                </li>
+                <li class="dev-help-list-item">
+                    Please do note that the documentation on zulip.com will be slightly
+                    out of date with the current development version. You can view the raw MDX file for this path
+                    <a target="_blank" rel="noopener noreferrer" href="{{ raw_url }}">here</a>.
+                </li>
+                <li class="dev-help-list-item">
+                    If you've made changes to the help center files and want to test them,
+                    <code>./tools/run-dev --only-help-center</code> will run a dev server at /help that
+                    supports hot reload. Help center search and rest of the Zulip app will not work in this mode.
+                    If you want to test help center search or run help center alongside the Zulip app, please refer to the instructions at
+                    <a target="_blank" rel="noopener noreferrer" href="/devtools">/devtools</a>.
+                </li>
+                <li class="dev-help-list-item">
+                    Development server for the help center is resource intensive. Not running it by default keeps the
+                    minimum requirements to develop Zulip low.
+                </li>
+            </ul>
+        {% else %}
+            <p class="invalid-path-error">
+                This is not a valid help path and not a valid MDX file. Please re-check the URL subpath you have provided.
+            </p>
+        {% endif %}
+
+        <div class="dev-help-actions">
+            {% if mdx_file_exists %}
+                <a target="_blank" rel="noopener noreferrer" href="https://zulip.com/help/{{ subpath }}" class="dev-help-action-button">
+                    View on zulip.com
+                </a>
+                <a target="_blank" rel="noopener noreferrer" href="{{ raw_url }}" class="dev-help-action-button">
+                    View Source
+                </a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
