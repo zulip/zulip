@@ -138,38 +138,7 @@
             </li>
         </ul>
         <h2>Development instructions for help center</h2>
-        <p>
-            Running <code>./tools/run-dev</code> without any flags will not run the help center at all.
-            The development server for the help center takes significant resources to run and we don't
-            want to increase the minimum requirements to run Zulip for development.
-        </p>
-        <h3> Dev server (supports hot reload but not search)</h3>
-        <p>
-            This mode is useful when you are editing a help center file, and want to visualize the changes
-            quickly in the help center documentation.
-        </p>
-        <p>
-            <code>./tools/run-dev --only-help-center</code> will run a dev server at
-            <code>/help</code> that supports hot reload. Note that, with this flag, search will not work
-            in the help center docs. In this mode, the Zulip web app and other related services will not run.
-            Since the dev server consumes a significant amount of memory, this is the recommended way to run
-            the dev server for the help center.
-        </p>
-        <p>
-            If you have a machine with resources significantly more than minimum requirements to run Zulip in
-            development, you can choose to run the dev server alongside Zulip using
-            <code>./tools/run-dev --help-center-dev-server</code>.
-            The dev server makes a bunch of request to base Zulip URL instead of scoping it to the astro/starlight
-            base url. For this reason, in this mode, we run the dev server on it's own port and redirect help center
-            requests to the appropriate port (9995 by default).
-        </p>
-        <h3> Serve static build (supports search but not hot reload)</h3>
-        <p>
-            Please run <code>./tools/build-help-center</code> to generate a static build of the help center.
-            <code>./tools/run-dev --help-center-static-build</code> will host the generated build on
-            <code>/help</code>. Note that you need to generate a build and pass the flag mentioned for the search
-            to work.
-        </p>
+        {% include "zerver/development/help_center_instructions_macro.html" %}
     </div>
 </div>
 
