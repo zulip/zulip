@@ -154,7 +154,7 @@ export function initialize(): void {
 
             $popper.one(
                 "click",
-                "#mark_all_messages_as_read",
+                ".mark_all_messages_as_read",
                 {instance},
                 register_mark_all_read_handler,
             );
@@ -197,7 +197,7 @@ export function initialize(): void {
             const $popper = $(instance.popper);
             $popper.one(
                 "click",
-                "#mark_all_messages_as_read",
+                ".mark_all_messages_as_read",
                 {instance},
                 register_mark_all_read_handler,
             );
@@ -244,7 +244,7 @@ export function initialize(): void {
             const $popper = $(instance.popper);
             $popper.one(
                 "click",
-                "#mark_all_messages_as_read",
+                ".mark_all_messages_as_read",
                 {instance},
                 register_mark_all_read_handler,
             );
