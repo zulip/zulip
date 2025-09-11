@@ -66,7 +66,9 @@ parser.add_argument(
     help="Start app server in HTTPS mode, using reverse proxy",
 )
 parser.add_argument(
-    "--help-center", action="store_true", help="Build and host help center with search"
+    "--help-center-static-build",
+    action="store_true",
+    help="Host existing static build of help center with search",
 )
 parser.add_argument(
     "--help-center-dev-server",
@@ -80,7 +82,9 @@ parser.add_argument(
 )
 add_provision_check_override_param(parser)
 options = parser.parse_args()
-help_center_dev_server_enabled = options.help_center_dev_server and not options.help_center
+help_center_dev_server_enabled = (
+    options.help_center_dev_server and not options.help_center_static_build
+)
 
 assert_provisioning_status_ok(options.skip_provision_check)
 
@@ -333,7 +337,7 @@ async def help_center_middleware(
 
 
 middlewares = []
-if options.help_center:
+if options.help_center_static_build:
     middlewares.append(help_center_middleware)
 
 app = web.Application(middlewares=middlewares)
@@ -458,7 +462,7 @@ async def serve() -> None:
     if help_center_dev_server_enabled:
         children.append(run_help_center_dev_server(external_host_url))
 
-    setup_routes(options.help_center, options.help_center_dev_server)
+    setup_routes(options.help_center_static_build, options.help_center_dev_server)
 
     children.extend(subprocess.Popen(cmd) for cmd in server_processes())
 
