@@ -28,6 +28,10 @@ let private_messages_collapsed = false;
 // This keeps track of if we're zoomed in or not.
 let zoomed = false;
 
+// Scroll position before user started searching.
+let pre_search_scroll_position = 0;
+let previous_search_term = "";
+
 export function is_zoomed_in(): boolean {
     return zoomed;
 }
@@ -239,6 +243,8 @@ export function toggle_private_messages_section(): void {
 
 function zoom_in(): void {
     zoomed = true;
+    previous_search_term = "";
+    pre_search_scroll_position = 0;
     ui_util.disable_left_sidebar_search();
     update_private_messages();
     $(".direct-messages-container").removeClass("zoom-out").addClass("zoom-in");
@@ -276,7 +282,6 @@ export function initialize(): void {
         expand();
     }
 
-    const throttled_update_private_message = _.throttle(update_private_messages, 50);
     $(".direct-messages-container").on("click", "#show-more-direct-messages", (e) => {
         e.stopPropagation();
         e.preventDefault();
@@ -297,6 +302,32 @@ export function initialize(): void {
 
         zoom_out();
     });
+
+    const throttled_update_private_message = _.throttle(() => {
+        const $filter = $<HTMLInputElement>(".direct-messages-list-filter").expectOne();
+        const search_term = $filter.val()!;
+        const is_previous_search_term_empty = previous_search_term === "";
+        previous_search_term = search_term;
+
+        const left_sidebar_scroll_container = scroll_util.get_left_sidebar_scroll_container();
+        if (search_term === "") {
+            requestAnimationFrame(() => {
+                update_private_messages();
+                // Restore previous scroll position.
+                left_sidebar_scroll_container.scrollTop(pre_search_scroll_position);
+            });
+        } else {
+            if (is_previous_search_term_empty) {
+                // Store original scroll position to be restored later.
+                pre_search_scroll_position = left_sidebar_scroll_container.scrollTop()!;
+            }
+            requestAnimationFrame(() => {
+                update_private_messages();
+                // Always scroll to top when there is a search term present.
+                left_sidebar_scroll_container.scrollTop(0);
+            });
+        }
+    }, 50);
 
     $(".direct-messages-container").on("input", ".direct-messages-list-filter", (e) => {
         e.preventDefault();
