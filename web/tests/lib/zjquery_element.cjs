@@ -85,6 +85,7 @@ class FakeElementState {
     is_focused = false;
     jquery_children_results = new Map();
     jquery_closest_results = new Map();
+    $jquery_contents = undefined;
     jquery_data = new Map();
     jquery_find_results = new Map();
     jquery_next_results = new Map();
@@ -288,6 +289,16 @@ exports.FakeJQuery = function (selector, opts) {
                 );
             }
             return state.jquery_closest_results.get(closest_selector);
+        },
+        contents() {
+            assert.equal(this.length, 1);
+            const state = fake_element_state.get(this[0]);
+            if (state.$jquery_contents === undefined) {
+                throw new Error(
+                    `You need to call $(${JSON.stringify(state.selector)}).set_contents(...)`,
+                );
+            }
+            return state.$jquery_contents;
         },
         css(property, ...args) {
             if (args.length === 0 && typeof property === "string") {
@@ -714,6 +725,10 @@ exports.FakeJQuery = function (selector, opts) {
             fake_element_state
                 .get(this[0])
                 .jquery_closest_results.set(closest_selector, $jquery_object);
+        },
+        set_contents($contents) {
+            assert.equal(this.length, 1);
+            fake_element_state.get(this[0]).$jquery_contents = $contents;
         },
         set_find_results(find_selector, $jquery_object) {
             assert.equal(this.length, 1);

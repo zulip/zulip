@@ -52,7 +52,7 @@ run_test("adjust_mac_kbd_tags mac", ({override}) => {
     ]);
 
     override(navigator, "platform", "MacIntel");
-    $("<span>").contents = () => $("<contents-stub>");
+    $("<span>").set_contents($("<contents-stub>"));
 
     const test_items = [];
     let key_no = 1;
