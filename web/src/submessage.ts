@@ -12,20 +12,18 @@ import * as widgetize from "./widgetize.ts";
 
 export type Submessage = z.infer<typeof message_store.submessage_schema>;
 
-export const zform_widget_extra_data_schema = z.nullable(
-    z.object({
-        choices: z.array(
-            z.object({
-                type: z.string(),
-                long_name: z.string(),
-                reply: z.string(),
-                short_name: z.string(),
-            }),
-        ),
-        heading: z.string(),
-        type: z.literal("choices"),
-    }),
-);
+export const zform_widget_extra_data_schema = z.object({
+    choices: z.array(
+        z.object({
+            type: z.string(),
+            long_name: z.string(),
+            reply: z.string(),
+            short_name: z.string(),
+        }),
+    ),
+    heading: z.string(),
+    type: z.literal("choices"),
+});
 
 const poll_widget_extra_data_schema = z.nullable(
     z.object({
@@ -38,7 +36,10 @@ const widget_data_event_schema = z.object({
     sender_id: z.number(),
     data: z.discriminatedUnion("widget_type", [
         z.object({widget_type: z.literal("poll"), extra_data: poll_widget_extra_data_schema}),
-        z.object({widget_type: z.literal("zform"), extra_data: zform_widget_extra_data_schema}),
+        z.object({
+            widget_type: z.literal("zform"),
+            extra_data: z.nullable(zform_widget_extra_data_schema),
+        }),
         z.object({
             widget_type: z.literal("todo"),
             extra_data: todo_widget_extra_data_schema,
