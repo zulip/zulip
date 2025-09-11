@@ -119,7 +119,7 @@
 
 .modal__content {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     /* 2px 24px at 16px/1em */
     padding: 0.125em 1.5em;
     /* Prevent the appearance of a horizontal
@@ -468,6 +468,10 @@
             inset 0 1px 1px hsl(0deg 0% 0% / 7.5%),
             0 0 8px hsl(206deg 80% 62% / 60%);
     }
+}
+
+#change_stream_name{
+    width: 72%;
 }
 
 #add-realm-domain-widget {
