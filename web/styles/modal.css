@@ -119,7 +119,7 @@
 
 .modal__content {
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
     /* 2px 24px at 16px/1em */
     padding: 0.125em 1.5em;
     /* Prevent the appearance of a horizontal
