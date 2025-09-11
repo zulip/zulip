@@ -75,22 +75,6 @@
         border-color: hsl(0deg 0% 0% / 60%);
     }
 
-    input:not(.input-element) {
-        &[type="text"],
-        &[type="email"],
-        &[type="password"],
-        &[type="number"],
-        &[type="url"],
-        &[type="date"] {
-            background-color: hsl(0deg 0% 0% / 20%);
-            border-color: hsl(0deg 0% 0% / 60%);
-
-            &:focus {
-                border-color: hsl(0deg 0% 0% / 90%);
-            }
-        }
-    }
-
     .popover-filter-input-wrapper .popover-filter-input:focus {
         background-color: hsl(225deg 6% 7%);
         border: 1px solid hsl(0deg 0% 100% / 50%);

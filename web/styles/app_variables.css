@@ -2751,6 +2751,20 @@
     );
 
     /* Inputs */
+    /* Legacy input colors */
+    /* TODO: Remove these variables after migrating all the inputs to use the new input colors. */
+    --color-background-legacy-input: light-dark(
+        hsl(0deg 0% 100%),
+        hsl(0deg 0% 0% / 20%)
+    );
+    --color-border-legacy-input: light-dark(
+        hsl(0deg 0% 80%),
+        hsl(0deg 0% 0% / 60%)
+    );
+    --color-border-legacy-input-focus: light-dark(
+        hsl(206deg 80% 62% / 80%),
+        hsl(0deg 0% 0% / 90%)
+    );
     --color-text-input: light-dark(hsl(0deg 0% 14%), hsl(0deg 0% 95%));
     /* TODO: Light mode uses browser-default white
        backgrounds; we should extend the use of this
