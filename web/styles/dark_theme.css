@@ -27,17 +27,6 @@
         }
     }
 
-    /* Extend the 'light-border' TippyJS theme, which is intended for
-       popovers/menus that should use default background colors, to use
-       our dark theme colors in Zulip's dark theme.
-     */
-    .tippy-box[data-theme~="light-border"] {
-        .tippy-content a,
-        p {
-            color: hsl(236deg 33% 90%);
-        }
-    }
-
     .dropdown-list-delete {
         /* hsl(7deg 100% 74%) corresponds to var(--red-250) */
         color: color-mix(
