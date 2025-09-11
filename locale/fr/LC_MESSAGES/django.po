@@ -6119,7 +6119,7 @@ msgstr "Publique"
 
 #: zerver/models/streams.py:57
 msgid "Private, shared history"
-msgstr "Privé, historique protégé"
+msgstr "Privé, historique partagé"
 
 #: zerver/models/streams.py:63
 msgid "Private, protected history"
