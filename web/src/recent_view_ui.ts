@@ -1312,7 +1312,7 @@ function get_list_data_for_widget(): ConversationData[] {
     return [...recent_view_data.get_conversations().values()];
 }
 
-export function complete_rerender(): void {
+export function complete_rerender(coming_from_other_views = false): void {
     if (!recent_view_util.is_visible()) {
         return;
     }
@@ -1329,10 +1329,12 @@ export function complete_rerender(): void {
         return;
     }
 
-    // This is the first time we are rendering the Recent Conversations view.
-    // So, we always scroll to the top to avoid any scroll jumping in case
-    // user is returning from another view.
-    window.scrollTo(0, 0);
+    if (coming_from_other_views) {
+        // This is the first time we are rendering the Recent Conversations view.
+        // So, we always scroll to the top to avoid any scroll jumping in case
+        // user is returning from another view.
+        window.scrollTo(0, 0);
+    }
 
     const rendered_body = render_recent_view_body({
         search_val: $("#recent_view_search").val() ?? "",
