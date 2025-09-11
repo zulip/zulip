@@ -727,6 +727,15 @@ input:not(.input-element) {
     &[type="color"] {
         font-size: inherit;
         height: 1.4em;
+        background-color: light-dark(hsl(0deg 0% 100%), hsl(0deg 0% 0% / 20%));
+        border-color: light-dark(hsl(0deg 0% 80%), hsl(0deg 0% 0% / 60%));
+
+        &:focus {
+            border-color: light-dark(
+                hsl(206deg 80% 62% / 80%),
+                hsl(0deg 0% 0% / 90%)
+            );
+        }
     }
 }
 
