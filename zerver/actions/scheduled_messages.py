@@ -115,8 +115,17 @@ def do_schedule_messages(
         scheduled_message.recipient = send_request.message.recipient
         topic_name = send_request.message.topic_name()
         scheduled_message.set_topic_name(topic_name=topic_name)
+
+        if send_request.stream is not None and send_request.stream.default_code_block_language:
+            default_code_block_language = send_request.stream.default_code_block_language
+        else:
+            default_code_block_language = send_request.realm.default_code_block_language
+
         rendering_result = render_message_markdown(
-            send_request.message, send_request.message.content, send_request.realm
+            send_request.message,
+            send_request.message.content,
+            send_request.realm,
+            default_code_block_language,
         )
         scheduled_message.content = send_request.message.content
         scheduled_message.rendered_content = rendering_result.rendered_content
@@ -255,9 +264,17 @@ def edit_scheduled_message(
         scheduled_message_object.set_topic_name(topic_name=new_topic_name)
 
     if message_content is not None:
+        if send_request.stream is not None and send_request.stream.default_code_block_language:
+            default_code_block_language = send_request.stream.default_code_block_language
+        else:
+            default_code_block_language = realm.default_code_block_language
+
         # User has updated the scheduled messages's content.
         rendering_result = render_message_markdown(
-            send_request.message, send_request.message.content, send_request.realm
+            send_request.message,
+            send_request.message.content,
+            send_request.realm,
+            default_code_block_language,
         )
         scheduled_message_object.content = send_request.message.content
         scheduled_message_object.rendered_content = rendering_result.rendered_content

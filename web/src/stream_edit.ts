@@ -294,6 +294,7 @@ export function show_settings_for(node: HTMLElement): void {
     settings_org.set_message_retention_setting_dropdown(sub);
     stream_ui_updates.enable_or_disable_permission_settings_in_edit_panel(sub);
     setup_group_setting_widgets(slim_sub);
+    settings_components.set_up_default_code_block_language_widget(slim_sub);
     stream_ui_updates.update_can_subscribe_group_label($edit_container);
     stream_settings_components.set_up_folder_dropdown_widget(sub);
     stream_ui_updates.set_folder_dropdown_visibility($("#stream_settings"));
