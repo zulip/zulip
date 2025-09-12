@@ -736,6 +736,15 @@ class PersonFullName(BaseModel):
     full_name: str
 
 
+class PersonBotType(BaseModel):
+    user_id: int
+    bot_type: int
+
+
+class PersonIsBillingAdmin(BaseModel):
+    user_id: int
+
+
 class PersonRole(BaseModel):
     user_id: int
     role: Literal[100, 200, 300, 400, 600]
