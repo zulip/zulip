@@ -11,7 +11,10 @@ export function abort_video_callbacks(edit_message_id = ""): void {
     zoom_token_callbacks.delete(edit_message_id);
     const xhr = video_call_xhrs.get(edit_message_id);
     if (xhr !== undefined) {
-        xhr.abort();
+        // Safely call abort if it exists
+        if (xhr?.abort && typeof xhr.abort === "function") {
+            xhr.abort();
+        }
         video_call_xhrs.delete(edit_message_id);
     }
 }

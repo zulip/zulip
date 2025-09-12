@@ -46,4 +46,5 @@ as your call provider instead.
 - [How to start a call](/help/start-a-call)
 - [Jitsi Meet integration](/integrations/doc/jitsi)
 - [Zoom integration](/integrations/doc/zoom)
+- [Constructor Groups integration](/integrations/doc/constructor-groups)
 * [BigBlueButton server configuration](https://docs.bigbluebutton.org/administration/customize/#other-configuration-changes)
