@@ -3583,34 +3583,6 @@ class MarkdownStreamTopicMentionTests(ZulipTestCase):
         )
 
 
-class MarkdownMITTest(ZulipTestCase):
-    def test_mit_rendering(self) -> None:
-        """Test the Markdown configs for the MIT Zephyr mirroring system;
-        verifies almost all inline patterns are disabled, but
-        inline_interesting_links is still enabled"""
-        msg = "**test**"
-        realm = get_realm("zephyr")
-        client = get_client("zephyr_mirror")
-        message = Message(sending_client=client, sender=self.mit_user("sipbtest"))
-        converted = markdown_convert(msg, message_realm=realm, message=message)
-        self.assertEqual(
-            converted.rendered_content,
-            "<p>**test**</p>",
-        )
-        msg = "* test"
-        converted = markdown_convert(msg, message_realm=realm, message=message)
-        self.assertEqual(
-            converted.rendered_content,
-            "<p>* test</p>",
-        )
-        msg = "https://lists.debian.org/debian-ctte/2014/02/msg00173.html"
-        converted = markdown_convert(msg, message_realm=realm, message=message)
-        self.assertEqual(
-            converted.rendered_content,
-            '<p><a href="https://lists.debian.org/debian-ctte/2014/02/msg00173.html">https://lists.debian.org/debian-ctte/2014/02/msg00173.html</a></p>',
-        )
-
-
 class MarkdownHTMLTest(ZulipTestCase):
     def test_html_entity_conversion(self) -> None:
         msg = """\

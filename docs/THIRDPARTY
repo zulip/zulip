@@ -697,10 +697,6 @@ Files: zerver/decorator.py zerver/management/commands/runtornado.py scripts/setu
 Copyright: Django Software Foundation and individual contributors
 License: BSD-3-Clause
 
-Files: zerver/lib/ccache.py
-Copyright: 2013 David Benjamin and Alan Huang
-License: Expat
-
 Files: zerver/lib/markdown/fenced_code.py
 Copyright: 2006-2008 Waylan Limberg
 License: BSD-3-Clause

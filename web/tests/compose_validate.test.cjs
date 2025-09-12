@@ -281,32 +281,14 @@ test_ui("validate", ({mock_template, override}) => {
     assert.ok(!compose_validate.validate());
     assert.ok(deactivated_user_error_rendered);
 
-    override(realm, "realm_is_zephyr_mirror_realm", true);
-    assert.ok(compose_validate.validate());
-    override(realm, "realm_is_zephyr_mirror_realm", false);
-
     initialize_pm_pill(mock_template);
     add_content_to_compose_box();
     compose_state.private_message_recipient_emails("welcome-bot@example.com");
     $("#send_message_form").set_find_results(".message-textarea", $("textarea#compose-textarea"));
     assert.ok(compose_validate.validate());
 
-    let zephyr_error_rendered = false;
     // For this first block, we should fail due to empty compose.
     let expected_invalid_state = true;
-    mock_template("compose_banner/compose_banner.hbs", false, (data) => {
-        if (data.classname === compose_banner.CLASSNAMES.zephyr_not_running) {
-            assert.equal(
-                data.banner_text,
-                $t({
-                    defaultMessage:
-                        "You need to be running Zephyr mirroring in order to send messages!",
-                }),
-            );
-            zephyr_error_rendered = true;
-        }
-        return "<banner-stub>";
-    });
     initialize_pm_pill(mock_template);
     compose_state.private_message_recipient_emails("welcome-bot@example.com");
     $("textarea#compose-textarea").toggleClass = (classname, value) => {
@@ -317,13 +299,11 @@ test_ui("validate", ({mock_template, override}) => {
     assert.ok(!$("#compose-send-button .loader").visible());
     compose_validate.validate();
 
-    // Now add content to compose, and expect to see the banner.
+    // Now add content to compose.
     add_content_to_compose_box();
     expected_invalid_state = false;
-    $("#zephyr-mirror-error").addClass("show");
     $("#send_message_form").set_find_results(".message-textarea", $("textarea#compose-textarea"));
-    assert.ok(!compose_validate.validate());
-    assert.ok(zephyr_error_rendered);
+    assert.ok(compose_validate.validate());
 
     initialize_pm_pill(mock_template);
     add_content_to_compose_box();
@@ -689,23 +669,20 @@ test_ui("warn_if_mentioning_unsubscribed_user", async ({override, mock_template}
         return "<banner-stub>";
     });
 
-    async function test_noop_case(is_private, is_zephyr_mirror, type) {
+    async function test_noop_case(is_private, type) {
         new_banner_rendered = false;
         const msg_type = is_private ? "private" : "stream";
         compose_state.set_message_type(msg_type);
-        override(realm, "realm_is_zephyr_mirror_realm", is_zephyr_mirror);
         mentioned_details.type = type;
         await compose_validate.warn_if_mentioning_unsubscribed_user(mentioned_details, $textarea);
         assert.ok(!new_banner_rendered);
     }
 
-    await test_noop_case(true, false, "user");
-    await test_noop_case(false, true, "user");
-    await test_noop_case(false, false, "broadcast");
+    await test_noop_case(true, "user");
+    await test_noop_case(false, "broadcast");
 
     $("#compose_invite_users").hide();
     compose_state.set_message_type("stream");
-    override(realm, "realm_is_zephyr_mirror_realm", false);
 
     // Test with empty stream name in compose box. It should return noop.
     new_banner_rendered = false;

@@ -1182,16 +1182,8 @@ class Realm(models.Model):
         return settings.REALM_HOSTS.get(subdomain, default_host)
 
     @property
-    def is_zephyr_mirror_realm(self) -> bool:
-        return self.string_id == "zephyr"
-
-    @property
-    def webathena_enabled(self) -> bool:
-        return self.is_zephyr_mirror_realm
-
-    @property
     def presence_disabled(self) -> bool:
-        return self.is_zephyr_mirror_realm
+        return False
 
     def web_public_streams_enabled(self) -> bool:
         if not settings.WEB_PUBLIC_STREAMS_ENABLED:

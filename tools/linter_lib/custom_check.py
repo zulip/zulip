@@ -742,8 +742,6 @@ html_rules: list["Rule"] = [
             "templates/zerver/accounts_send_confirm.html",
             "templates/zerver/integrations/index.html",
             "templates/zerver/documentation_main.html",
-            "templates/corporate/zephyr.html",
-            "templates/corporate/zephyr-mirror.html",
         },
         "good_lines": ["#my-style {color: blue;}", 'style="display: none"', "style='display: none"],
         "bad_lines": ['<p style="color: blue;">Foo</p>', 'style = "color: blue;"'],

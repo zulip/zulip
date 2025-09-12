@@ -40,7 +40,6 @@ exports.make_stream = (opts = {}) => {
         pin_to_top: false,
         previously_subscribed: false,
         push_notifications: false,
-        render_subscribers: false,
         rendered_description: `<p>Description of ${name}</p>`,
         stream_id,
         /* STREAM_POST_POLICY_EVERYONE */

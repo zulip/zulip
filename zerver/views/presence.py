@@ -1,4 +1,3 @@
-from datetime import timedelta
 from typing import Annotated, Any
 
 from django.conf import settings
@@ -19,7 +18,7 @@ from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.typed_endpoint import ApiParamConfig, PathOnly, typed_endpoint
 from zerver.lib.user_status import get_user_status
 from zerver.lib.users import access_user_by_id, check_can_access_user
-from zerver.models import UserActivity, UserPresence, UserProfile, UserStatus
+from zerver.models import UserPresence, UserProfile, UserStatus
 from zerver.models.users import get_active_user, get_active_user_profile_by_id_in_realm
 
 
@@ -207,21 +206,6 @@ def update_active_status_backend(
             last_update_id_fetched_by_client=last_update_id,
             history_limit_days=history_limit_days,
         )
-
-    if user_profile.realm.is_zephyr_mirror_realm:
-        # In zephyr mirroring realms, users can't see the presence of other
-        # users, but each user **is** interested in whether their mirror bot
-        # (running as their user) has been active.
-        try:
-            activity = UserActivity.objects.get(
-                user_profile=user_profile, query="get_events", client__name="zephyr_mirror"
-            )
-
-            ret["zephyr_mirror_active"] = activity.last_visit > timezone_now() - timedelta(
-                minutes=5
-            )
-        except UserActivity.DoesNotExist:
-            ret["zephyr_mirror_active"] = False
 
     return json_success(request, data=ret)
 

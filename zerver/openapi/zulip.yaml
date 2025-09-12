@@ -11535,13 +11535,6 @@ paths:
                                 the specified Zulip API email.
                               additionalProperties:
                                 $ref: "#/components/schemas/LegacyPresenceFormat"
-                      zephyr_mirror_active:
-                        type: boolean
-                        deprecated: true
-                        description: |
-                          Legacy property for a part of the Zephyr mirroring system.
-
-                          **Deprecated**. Clients should ignore this field.
               examples:
                 modern-presence-format-example:
                   description: |
@@ -19958,12 +19951,6 @@ paths:
 
                           Relevant for administrative settings UI that can change the digest
                           email settings.
-                      realm_is_zephyr_mirror_realm:
-                        type: boolean
-                        description: |
-                          Present if `realm` is present in `fetch_event_types`.
-
-                          Whether the organization is a Zephyr mirror realm.
                       realm_email_auth_enabled:
                         type: boolean
                         description: |

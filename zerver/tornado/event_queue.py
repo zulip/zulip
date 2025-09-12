@@ -1245,7 +1245,7 @@ def process_message_event(
             is_incoming_1_to_1=wide_dict["recipient_id"] == client.user_recipient_id,
         )
 
-        # Make sure Zephyr mirroring bots know whether stream is invite-only
+        # Make sure mirroring bots know whether stream is invite-only
         if "mirror" in client.client_type_name and event_template.get("invite_only"):
             message_dict = message_dict.copy()
             message_dict["invite_only_stream"] = True
@@ -1262,7 +1262,7 @@ def process_message_event(
         if not client.accepts_event(user_event):
             continue
 
-        # The below prevents (Zephyr) mirroring loops.
+        # The below prevents mirroring loops.
         if "mirror" in sending_client and sending_client.lower() == client.client_type_name.lower():
             continue
 

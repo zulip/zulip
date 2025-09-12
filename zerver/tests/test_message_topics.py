@@ -17,24 +17,6 @@ from zerver.tornado.event_queue import allocate_client_descriptor
 
 
 class TopicHistoryTest(ZulipTestCase):
-    def test_topics_history_zephyr_mirror(self) -> None:
-        user_profile = self.mit_user("sipbtest")
-        stream_name = "new_stream"
-
-        # Send a message to this new stream from another user
-        self.subscribe(self.mit_user("starnine"), stream_name)
-        stream = get_stream(stream_name, user_profile.realm)
-        self.send_stream_message(self.mit_user("starnine"), stream_name, topic_name="secret topic")
-
-        # Now subscribe this MIT user to the new stream and verify
-        # that the new topic is not accessible
-        self.login_user(user_profile)
-        self.subscribe(user_profile, stream_name)
-        endpoint = f"/json/users/me/{stream.id}/topics"
-        result = self.client_get(endpoint, {}, subdomain="zephyr")
-        history = self.assert_json_success(result)["topics"]
-        self.assertEqual(history, [])
-
     def test_topics_history(self) -> None:
         # verified: int(UserMessage.flags.read) == 1
         user_profile = self.example_user("iago")

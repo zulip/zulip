@@ -448,23 +448,6 @@ class TestCreateStreams(ZulipTestCase):
         self.assertEqual(stream.name, "testing_channel4")
         self.assertEqual(stream.topics_policy, StreamTopicsPolicyEnum.disable_empty_topic.value)
 
-        realm = get_realm("zephyr")
-        starnine = self.mit_user("starnine")
-        espuser = self.mit_user("espuser")
-        result = self.create_channel_via_post(
-            starnine, [espuser.id], name="zephyr_channel", subdomain="zephyr"
-        )
-        self.assert_json_error(
-            result, "You can only invite other Zephyr mirroring users to private channels."
-        )
-
-        result = self.create_channel_via_post(
-            starnine, [espuser.id], name="zephyr_channel", invite_only=True, subdomain="zephyr"
-        )
-        self.assert_json_success(result)
-        stream = get_stream("zephyr_channel", realm)
-        self.assertEqual(stream.name, "zephyr_channel")
-
     def _test_group_based_settings_for_creating_channels(
         self,
         stream_policy: str,
@@ -592,19 +575,6 @@ class TestCreateStreams(ZulipTestCase):
             invite_only=False,
             is_web_public=True,
         )
-
-    def test_history_public_to_subscribers_zephyr_realm(self) -> None:
-        realm = get_realm("zephyr")
-
-        stream, created = create_stream_if_needed(realm, "private_stream", invite_only=True)
-        self.assertTrue(created)
-        self.assertTrue(stream.invite_only)
-        self.assertFalse(stream.history_public_to_subscribers)
-
-        stream, created = create_stream_if_needed(realm, "public_stream", invite_only=False)
-        self.assertTrue(created)
-        self.assertFalse(stream.invite_only)
-        self.assertFalse(stream.history_public_to_subscribers)
 
     def test_auto_mark_stream_created_message_as_read_for_stream_creator(self) -> None:
         # This test relies on email == delivery_email for
@@ -998,11 +968,6 @@ class TestCreateStreams(ZulipTestCase):
             channel_creator = self.example_user("desdemona")
             subdomain = "zulip"
 
-            if policy_key == "public_protected_history":
-                # This is a special channel policy only available in Zephyr realms.
-                channel_creator = self.mit_user("starnine")
-                subdomain = "zephyr"
-
             self.login_user(channel_creator)
             new_channel_name = f"New {policy_key} channel"
             result = self.api_post(
@@ -1023,10 +988,6 @@ class TestCreateStreams(ZulipTestCase):
             channel_events_messages = get_topic_messages(
                 channel_creator, new_channel, "channel events"
             )
-            if policy_key == "public_protected_history":
-                # These do not get channel creation notification.
-                self.assert_length(channel_events_messages, 0)
-                continue
 
             self.assert_length(channel_events_messages, 1)
             self.assertIn(policy_key_map[policy_key], channel_events_messages[0].content)

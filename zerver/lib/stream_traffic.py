@@ -9,10 +9,6 @@ from zerver.models import Realm
 
 
 def get_streams_traffic(stream_ids: set[int], realm: Realm) -> dict[int, int] | None:
-    if realm.is_zephyr_mirror_realm:
-        # We do not need traffic data for streams in zephyr mirroring realm.
-        return None
-
     stat = COUNT_STATS["messages_in_stream:is_bot:day"]
     traffic_from = timezone_now() - timedelta(days=28)
 

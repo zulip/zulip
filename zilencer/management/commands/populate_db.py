@@ -974,8 +974,7 @@ class Command(ZulipBaseCommand):
 
         if options["delete"]:
             if options["test_suite"]:
-                # Create test users; the MIT ones are needed to test
-                # the Zephyr mirroring codepaths.
+                # Create test users
                 event_time = timezone_now()
                 testsuite_mit_users = [
                     ("Fred Sipb (MIT)", "sipbtest@mit.edu"),
@@ -993,6 +992,7 @@ class Command(ZulipBaseCommand):
                         "core team": {
                             "description": "A private channel for core team members",
                             "invite_only": True,
+                            "history_public_to_subscribers": False,
                         }
                     },
                 )

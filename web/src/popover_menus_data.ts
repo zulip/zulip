@@ -131,7 +131,6 @@ type GearMenuContext = {
     show_billing: boolean;
     show_remote_billing: boolean;
     show_plans: boolean;
-    show_webathena: boolean;
     sponsorship_pending: boolean;
     user_has_billing_access: boolean;
     user_color_scheme: number;
@@ -416,7 +415,6 @@ export function get_gear_menu_content_context(): GearMenuContext {
         show_billing: billing_info.show_billing,
         show_remote_billing: billing_info.show_remote_billing,
         show_plans: billing_info.show_plans,
-        show_webathena: page_params.show_webathena,
         sponsorship_pending: realm_billing.has_pending_sponsorship_request,
         user_has_billing_access,
         // user color scheme
