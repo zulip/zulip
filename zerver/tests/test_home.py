@@ -42,8 +42,10 @@ logger_string = "zulip.soft_deactivation"
 class HomeTest(ZulipTestCase):
     # Keep this list sorted!!!
     expected_page_params_keys = [
+        "all_languages",
         "apps_page_url",
         "corporate_enabled",
+        "default_language",
         "development_environment",
         "embedded_bots_enabled",
         "furthest_read_time",
@@ -374,8 +376,10 @@ class HomeTest(ZulipTestCase):
         page_params = self._get_page_params(result)
         self.assertEqual(page_params["is_spectator"], True)
         expected_keys = [
+            "all_languages",
             "apps_page_url",
             "corporate_enabled",
+            "default_language",
             "development_environment",
             "embedded_bots_enabled",
             "furthest_read_time",

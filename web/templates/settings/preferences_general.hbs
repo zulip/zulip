@@ -5,12 +5,27 @@
         <h3>{{t "General" }}</h3>
         {{> settings_save_discard_widget section_name="general-settings" show_only_indicator=(not for_realm_settings) }}
     </div>
+
     {{#unless for_realm_settings}}
-        {{> language_selection_widget
-          section_name="default_language_name"
-          setting_value=default_language_name
-          section_title=settings_label.default_language_settings_label
-          language_code=default_language }}
+        <!-- Language setting -->
+
+        <div class="input-group">
+            <label for="default_language_widget" class="settings-field-label">
+                {{settings_label.default_language_settings_label}}
+                <a href="http://localhost:4321/help/change-your-language" target="_blank">?</a>
+            </label>
+            <select id="default_language_widget"
+              name="default_language"
+              class="prop-element settings_select bootstrap-focus-style"
+              data-setting-widget-type="string">
+                <option value="" selected disabled>Select a language...</option>
+                {{#each page_params.all_languages}}
+                    <option value="{{this.code}}">
+                        {{this.name}} ({{this.percent_translated}}%)
+                    </option>
+                {{/each}}
+            </select>
+        </div>
     {{/unless}}
 
     <div class="input-group">
@@ -21,6 +36,7 @@
             {{/each}}
         </select>
     </div>
+
     <div class="input-group">
         <label for="{{prefix}}color_scheme" class="settings-field-label">{{t "Theme" }}</label>
         <div id="{{prefix}}color_scheme" class="tab-picker prop-element" data-setting-widget-type="radio-group" data-setting-choice-type="number">
@@ -55,8 +71,7 @@
               property_value=settings_object.web_font_size_px
               display_value=settings_object.web_font_size_px
               for_settings_ui=true
-              prefix=prefix
-              }}
+              prefix=prefix}}
         </div>
         <div class="line-height-setting info-density-controls">
             <div class="title">{{t "Line spacing"}}</div>
@@ -66,8 +81,7 @@
               property_value=settings_object.web_line_height_percent
               display_value=web_line_height_percent_display_value
               for_settings_ui=true
-              prefix=prefix
-              }}
+              prefix=prefix}}
         </div>
     </div>
 </div>
