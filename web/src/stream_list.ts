@@ -445,11 +445,15 @@ export function rewire_update_stream_section_mention_indicators(
    channel, we show it too. If there's no highlighted topic within the
    channel, then we should treat this like an empty topic list and remove
    the left bracket. */
-export function maybe_hide_topic_bracket(section_id: string): void {
+export let maybe_hide_topic_bracket = function (section_id: string): void {
     const $container = $(`#stream-list-${section_id}-container`);
     const is_collapsed = collapsed_sections.has(section_id);
     const $highlighted_topic = $container.find(".topic-list-item.active-sub-filter");
     $container.toggleClass("hide-topic-bracket", is_collapsed && $highlighted_topic.length === 0);
+};
+
+export function rewire_maybe_hide_topic_bracket(value: typeof maybe_hide_topic_bracket): void {
+    maybe_hide_topic_bracket = value;
 }
 
 function toggle_section_collapse($container: JQuery): void {

@@ -257,8 +257,6 @@ EXEMPT_FILES = make_set(
         "web/src/stream_edit_subscribers.ts",
         "web/src/stream_edit_toggler.ts",
         "web/src/stream_list.ts",
-        # TODO/channel-folders: Remove when tests are restored.
-        "web/src/stream_list_sort.ts",
         "web/src/stream_muting.ts",
         "web/src/stream_popover.ts",
         "web/src/stream_settings_api.ts",
@@ -311,8 +309,6 @@ EXEMPT_FILES = make_set(
         "web/src/zcommand.ts",
         "web/src/zform.js",
         "web/src/zulip_test.ts",
-        # TODO/channel-folders: Remove when tests are restored.
-        "web/tests/left_sidebar_navigation_area.test.cjs",
         # Test library code isn't always fully used.
         "web/tests/lib/example_user.cjs",
         "web/tests/lib/mdiff.cjs",
@@ -322,8 +318,6 @@ EXEMPT_FILES = make_set(
         # There are some important functions which are not called right now but will
         # be reused when we add tests for dropdown widget so it doesn't make sense to remove them.
         "web/tests/recent_view.test.cjs",
-        # TODO/channel-folders: Remove when tests are restored.
-        "web/tests/stream_list.test.cjs",
     ]
 )
 

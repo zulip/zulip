@@ -675,3 +675,22 @@ run_test("user_can_summarize_topics", ({override}) => {
     override(realm, "server_can_summarize_topics", false);
     assert.ok(!settings_data.user_can_summarize_topics());
 });
+
+run_test("should_mask_unread_count", ({override}) => {
+    override(user_settings, "web_stream_unreads_count_display_policy", 3);
+    let sub_muted = false;
+    let unmuted_unread_count = 0;
+    assert.equal(settings_data.should_mask_unread_count(sub_muted, unmuted_unread_count), true);
+
+    override(user_settings, "web_stream_unreads_count_display_policy", 2);
+    assert.equal(settings_data.should_mask_unread_count(sub_muted, unmuted_unread_count), false);
+
+    sub_muted = true;
+    assert.equal(settings_data.should_mask_unread_count(sub_muted, unmuted_unread_count), true);
+
+    unmuted_unread_count = 2;
+    assert.equal(settings_data.should_mask_unread_count(sub_muted, unmuted_unread_count), false);
+
+    override(user_settings, "web_stream_unreads_count_display_policy", 1);
+    assert.equal(settings_data.should_mask_unread_count(sub_muted, unmuted_unread_count), false);
+});
