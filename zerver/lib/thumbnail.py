@@ -590,7 +590,18 @@ def rewrite_thumbnailed_images(
             # This was not a valid thumbnail target, for some reason.
             # Trim out the whole "message_inline_image" element, since
             # it's not going be renderable by clients either.
+            image_href = image_link["href"]
             inline_image_div.decompose()
+
+            if not parsed_message.text.strip():
+                # If for some reason (e.g. image has empty title []) the message renderd_content
+                # becomes empty, insert a non-image form.
+                soup = BeautifulSoup("", "html.parser")
+                a_tag = soup.new_tag("a", href=image_href)
+                p_tag = soup.new_tag("p")
+                a_tag.string = image_href
+                p_tag.append(a_tag)
+                parsed_message.append(p_tag)
             changed = True
             continue
 
