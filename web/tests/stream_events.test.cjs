@@ -538,7 +538,10 @@ test("marked_subscribed (emails)", ({override}) => {
 
     const user_ids = [15, 20, 25, me.user_id];
     stream_events.mark_subscribed(sub, user_ids, "");
-    assert.deepEqual(new Set(peer_data.get_subscribers(sub.stream_id)), new Set(user_ids));
+    assert.deepEqual(
+        new Set(peer_data.get_subscriber_ids_assert_loaded(sub.stream_id)),
+        new Set(user_ids),
+    );
     assert.ok(stream_data.is_subscribed(sub.stream_id));
 
     const args = subs_stub.get_args("sub");
@@ -602,11 +605,11 @@ test("remove_deactivated_user_from_all_streams", () => {
     stream_settings_ui.update_subscribers_ui = subs_stub.f;
 
     // assert starting state
-    assert.ok(!stream_data.is_user_subscribed(dev_help.stream_id, george.user_id));
+    assert.ok(!stream_data.is_user_loaded_and_subscribed(dev_help.stream_id, george.user_id));
 
     // verify that deactivating user should unsubscribe user from all streams
     peer_data.add_subscriber(dev_help.stream_id, george.user_id);
-    assert.ok(stream_data.is_user_subscribed(dev_help.stream_id, george.user_id));
+    assert.ok(stream_data.is_user_loaded_and_subscribed(dev_help.stream_id, george.user_id));
 
     stream_events.remove_deactivated_user_from_all_streams(george.user_id);
 
