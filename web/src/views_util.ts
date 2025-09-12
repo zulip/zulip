@@ -88,7 +88,7 @@ export function show(opts: {
     update_compose: () => void;
     is_visible: () => boolean;
     set_visible: (value: boolean) => void;
-    complete_rerender: () => void;
+    complete_rerender: (coming_from_other_views?: boolean) => void;
     is_recent_view?: boolean;
 }): void {
     if (opts.is_visible()) {
@@ -112,7 +112,7 @@ export function show(opts: {
     narrow_title.update_narrow_title(narrow_state.filter());
     message_view_header.render_title_area();
     compose_recipient.handle_middle_pane_transition();
-    opts.complete_rerender();
+    opts.complete_rerender(true);
     compose_actions.on_show_navigation_view();
 
     // This has to happen after resetting the current narrow filter, so
