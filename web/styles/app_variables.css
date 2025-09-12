@@ -1913,6 +1913,11 @@
         hsl(237deg 68% 94%),
         hsl(240deg 65% 60% / 30%)
     );
+    /* Tuned pill for the search bar in dark mode. */
+    --color-background-input-pill-search: light-dark(
+        hsl(237deg 68% 94%),
+        hsl(240deg 65% 60% / 30%)
+    );
     --color-background-input-pill-hover: light-dark(
         hsl(240deg 70% 70% / 30%),
         hsl(240deg 52% 60% / 45%)
