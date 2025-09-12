@@ -76,8 +76,6 @@ for msg in result["messages"]:
         "topic_links",
         "avatar_url",
         "content_type",
-        "client",
-        "sender_realm_str",
         "id",
         "type",
     ]:
