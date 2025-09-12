@@ -10,7 +10,7 @@
 
     /* Affects all tippy tooltips not using any theme. */
     .tippy-box:not([data-theme]) {
-        background: hsl(0deg 0% 20%);
+        background: var(--color-background-tippy-box);
         border-radius: 5px;
         /* 14px at 14px/1em */
         font-size: var(--base-font-size-px);
@@ -47,19 +47,19 @@
         }
 
         &[data-placement^="top"] > .tippy-arrow::before {
-            border-top-color: hsl(0deg 0% 20%);
+            border-top-color: var(--color-background-tippy-box);
         }
 
         &[data-placement^="bottom"] > .tippy-arrow::before {
-            border-bottom-color: hsl(0deg 0% 20%);
+            border-bottom-color: var(--color-background-tippy-box);
         }
 
         &[data-placement^="left"] > .tippy-arrow::before {
-            border-left-color: hsl(0deg 0% 20%);
+            border-left-color: var(--color-background-tippy-box);
         }
 
         &[data-placement^="right"] > .tippy-arrow::before {
-            border-right-color: hsl(0deg 0% 20%);
+            border-right-color: var(--color-background-tippy-box);
         }
     }
 
