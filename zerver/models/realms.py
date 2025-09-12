@@ -754,6 +754,10 @@ class Realm(models.Model):
             # Note that user_can_access_all_other_users in the web
             # app is relying on members always have access.
             allowed_system_groups=[SystemGroups.EVERYONE, SystemGroups.MEMBERS],
+            # This setting can only be set to system groups, so the situation
+            # where the group that's the value of the setting gets deactivated
+            # is impossible.
+            replacement_group_name=None,
         ),
         can_add_subscribers_group=GroupPermissionSetting(
             allow_nobody_group=True,
@@ -796,6 +800,9 @@ class Realm(models.Model):
                 SystemGroups.OWNERS,
                 SystemGroups.NOBODY,
             ],
+            # System groups can't be deactivated, so this replacement_group_name
+            # is not needed.
+            replacement_group_name=None,
         ),
         can_create_write_only_bots_group=GroupPermissionSetting(
             allow_nobody_group=True,
@@ -821,11 +828,15 @@ class Realm(models.Model):
             allow_nobody_group=False,
             allow_everyone_group=False,
             default_group_name=SystemGroups.OWNERS,
+            # This setting can't be set to NOBODY without making the realm dysfunctional.
+            replacement_group_name=SystemGroups.OWNERS,
         ),
         can_manage_billing_group=GroupPermissionSetting(
             allow_nobody_group=False,
             allow_everyone_group=False,
             default_group_name=SystemGroups.ADMINISTRATORS,
+            # This setting can't be set to NOBODY without making the realm dysfunctional.
+            replacement_group_name=SystemGroups.OWNERS,
         ),
         can_mention_many_users_group=GroupPermissionSetting(
             allow_nobody_group=True,
