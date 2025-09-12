@@ -2,6 +2,7 @@
     <a data-user-id="{{user_id}}" class="view_user_profile pill" tabindex="0">
         {{#if img_src}}
         <img class="pill-image" src="{{img_src}}" />
+        <span class="pill-image-border"></span>
         {{/if}}
         <span class="pill-label {{#if strikethrough}} strikethrough {{/if}}" >
             <span class="pill-value">{{display_value}}</span>
