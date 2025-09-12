@@ -60,13 +60,11 @@
     /* 2px right margin here to match the new topic margin-right */
     margin: 2px 1px 2px 0;
     border-radius: 3px;
-    color: var(--color-left-sidebar-heads-up-icon);
+    color: var(--color-sidebar-action);
 
     &:hover {
-        color: var(--color-left-sidebar-heads-up-icon-hover);
-        background-color: var(
-            --background-color-left-sidebar-heads-up-icon-hover
-        );
+        color: var(--color-sidebar-action-hover);
+        background-color: var(--color-background-sidebar-action-hover);
         cursor: pointer;
     }
 
@@ -309,7 +307,7 @@
 
     #compose-new-direct-message,
     #show-all-direct-messages {
-        color: var(--color-left-sidebar-heads-up-icon);
+        color: var(--color-sidebar-action);
         display: none;
         align-items: center;
         justify-content: center;
@@ -319,10 +317,8 @@
         grid-row: 1 / 1;
 
         &:hover {
-            color: var(--color-left-sidebar-heads-up-icon-hover);
-            background-color: var(
-                --background-color-left-sidebar-heads-up-icon-hover
-            );
+            color: var(--color-sidebar-action-hover);
+            background-color: var(--color-background-sidebar-action-hover);
         }
 
         @media (hover: none) {
@@ -1870,15 +1866,13 @@ li.active-sub-filter {
     display: none;
     align-items: center;
     justify-content: center;
-    color: var(--color-left-sidebar-heads-up-icon);
+    color: var(--color-sidebar-action);
     margin: 2px 0;
     border-radius: 3px;
 
     &:hover {
-        color: var(--color-left-sidebar-heads-up-icon-hover);
-        background-color: var(
-            --background-color-left-sidebar-heads-up-icon-hover
-        );
+        color: var(--color-sidebar-action-hover);
+        background-color: var(--color-background-sidebar-action-hover);
     }
 }
 
