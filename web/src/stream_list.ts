@@ -18,6 +18,7 @@ import * as compose_actions from "./compose_actions.ts";
 import type {Filter} from "./filter.ts";
 import * as hash_util from "./hash_util.ts";
 import * as left_sidebar_navigation_area from "./left_sidebar_navigation_area.ts";
+import {localstorage} from "./localstorage.ts";
 import * as narrow_state from "./narrow_state.ts";
 import * as pm_list from "./pm_list.ts";
 import * as popovers from "./popovers.ts";
@@ -52,6 +53,10 @@ let has_scrolled = false;
 
 const collapsed_sections = new Set<string>();
 const sections_showing_inactive_or_muted = new Set<string>();
+
+// Persistence for collapsed sections state
+const collapsed_sections_ls_key = "left_sidebar_collapsed_stream_sections";
+const ls = localstorage();
 
 export function is_zoomed_in(): boolean {
     return zoomed_in;
@@ -467,6 +472,31 @@ function toggle_section_collapse($container: JQuery): void {
         collapsed_sections.delete(section_id);
     }
     maybe_hide_topic_bracket(section_id);
+    save_collapsed_sections_state();
+}
+
+function save_collapsed_sections_state(): void {
+    const collapsed_array = [...collapsed_sections];
+    ls.set(collapsed_sections_ls_key, JSON.stringify(collapsed_array));
+}
+
+function restore_collapsed_sections_state(): void {
+    const stored_state = ls.get(collapsed_sections_ls_key);
+    if (stored_state && typeof stored_state === "string") {
+        try {
+            const collapsed_array: unknown = JSON.parse(stored_state);
+            if (Array.isArray(collapsed_array)) {
+                collapsed_sections.clear();
+                for (const section_id of collapsed_array) {
+                    if (typeof section_id === "string") {
+                        collapsed_sections.add(section_id);
+                    }
+                }
+            }
+        } catch {
+            // Ignore parsing errors and use default state
+        }
+    }
 }
 
 function set_sections_states(): void {
@@ -1060,6 +1090,7 @@ export function initialize({
     update_inbox_channel_view: (channel_id: number) => void;
 }): void {
     update_inbox_channel_view_callback = update_inbox_channel_view;
+    restore_collapsed_sections_state();
     create_initial_sidebar_rows();
 
     // We build the stream_list now.  It may get re-built again very shortly
@@ -1415,4 +1446,24 @@ export function get_current_stream_li(): JQuery | undefined {
     }
 
     return $stream_li;
+}
+
+export function expand_all_stream_sections(): void {
+    $(".stream-list-section-container.collapsed").each(function () {
+        const $container = $(this);
+        const section_id = $container.attr("data-section-id")!;
+        if (collapsed_sections.has(section_id)) {
+            toggle_section_collapse($container);
+        }
+    });
+}
+
+export function collapse_all_stream_sections(): void {
+    $(".stream-list-section-container:not(.collapsed)").each(function () {
+        const $container = $(this);
+        const section_id = $container.attr("data-section-id")!;
+        if (!collapsed_sections.has(section_id)) {
+            toggle_section_collapse($container);
+        }
+    });
 }
