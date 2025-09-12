@@ -13,6 +13,9 @@ const ms = 320; // Mobile small
 // Breakpoints for middle column
 const mc = 849; // Middle column as wide as it appears after the `sm` breakpoint
 
+// Breakpoint for hiding message action buttons
+const message_actions_hide_width = 730;
+
 // Base em unit for container_breakpoints conversion
 const base_em_px = 16;
 
@@ -33,6 +36,7 @@ export const media_breakpoints = {
     mm_min: mm + "px",
     ms_min: ms + "px",
     short_navbar_cutoff_height: "600px",
+    message_actions_hide_width_min: message_actions_hide_width + "px",
     settings_overlay_sidebar_collapse_breakpoint:
         settings_overlay_sidebar_collapse_breakpoint / 14 + "em",
 };
@@ -45,6 +49,7 @@ export const container_breakpoints = {
     cq_ml_min: ml / base_em_px + "em",
     cq_sm_min: sm / base_em_px + "em",
     cq_mm_min: mm / base_em_px + "em",
+    cq_message_actions_hide_width_min: message_actions_hide_width / base_em_px + "em",
 };
 
 export const media_breakpoints_num = {
@@ -58,4 +63,5 @@ export const media_breakpoints_num = {
     mm,
     ms,
     settings_overlay_sidebar_collapse_breakpoint,
+    message_actions_hide_width,
 };
