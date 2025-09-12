@@ -21,6 +21,7 @@ import * as popover_menus from "./popover_menus.ts";
 import * as popovers from "./popovers.ts";
 import * as resize from "./resize.ts";
 import * as scheduled_messages from "./scheduled_messages.ts";
+import * as scroll_util from "./scroll_util.ts";
 import * as search_util from "./search_util.ts";
 import * as settings_config from "./settings_config.ts";
 import * as settings_data from "./settings_data.ts";
@@ -605,7 +606,34 @@ function actually_update_left_sidebar_for_search(): void {
     );
 }
 
-const update_left_sidebar_for_search = _.throttle(actually_update_left_sidebar_for_search, 50);
+// Scroll position before user started searching.
+let pre_search_scroll_position = 0;
+let previous_search_term = "";
+
+const update_left_sidebar_for_search = _.throttle(() => {
+    const search_term = ui_util.get_left_sidebar_search_term();
+    const is_previous_search_term_empty = previous_search_term === "";
+    previous_search_term = search_term;
+
+    const left_sidebar_scroll_container = scroll_util.get_left_sidebar_scroll_container();
+    if (search_term === "") {
+        requestAnimationFrame(() => {
+            actually_update_left_sidebar_for_search();
+            // Restore previous scroll position.
+            left_sidebar_scroll_container.scrollTop(pre_search_scroll_position);
+        });
+    } else {
+        if (is_previous_search_term_empty) {
+            // Store original scroll position to be restored later.
+            pre_search_scroll_position = left_sidebar_scroll_container.scrollTop()!;
+        }
+        requestAnimationFrame(() => {
+            actually_update_left_sidebar_for_search();
+            // Always scroll to top when there is a search term present.
+            left_sidebar_scroll_container.scrollTop(0);
+        });
+    }
+}, 50);
 
 function focus_left_sidebar_filter(e: JQuery.ClickEvent): void {
     left_sidebar_cursor.reset();
@@ -657,7 +685,7 @@ export function set_event_handlers(): void {
         }
         // Don't trigger `input` which confuses the search input
         // for zoomed in topic search.
-        update_left_sidebar_for_search();
+        actually_update_left_sidebar_for_search();
         $search_input.trigger("blur");
     }
 
