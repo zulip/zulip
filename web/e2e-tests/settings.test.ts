@@ -35,6 +35,7 @@ async function open_settings(page: Page): Promise<void> {
 
 async function close_settings_and_date_picker(page: Page): Promise<void> {
     const date_picker_selector = ".date-field-alt-input";
+    await page.waitForSelector(date_picker_selector, {visible: true});
     await page.click(date_picker_selector);
 
     await page.waitForSelector(".flatpickr-calendar", {visible: true});
@@ -51,6 +52,7 @@ async function test_change_full_name(page: Page): Promise<void> {
     const full_name_input_selector = 'input[name="full_name"]';
     await common.clear_and_type(page, full_name_input_selector, "New name");
 
+    await page.waitForSelector("#settings_content .profile-settings-form", {visible: true});
     await page.click("#settings_content .profile-settings-form");
     await page.waitForSelector(".full-name-change-container .alert-success", {visible: true});
     await page.waitForFunction(
@@ -59,6 +61,7 @@ async function test_change_full_name(page: Page): Promise<void> {
 }
 
 async function test_change_password(page: Page): Promise<void> {
+    await page.waitForSelector("#change_password", {visible: true});
     await page.click("#change_password");
 
     const change_password_button_selector = "#change_password_modal .dialog_submit_button";
@@ -75,8 +78,10 @@ async function test_change_password(page: Page): Promise<void> {
 }
 
 async function test_get_api_key(page: Page): Promise<void> {
+    await page.waitForSelector('[data-section="account-and-privacy"]', {visible: true});
     await page.click('[data-section="account-and-privacy"]');
     const show_change_api_key_selector = "#api_key_button";
+    await page.waitForSelector(show_change_api_key_selector, {visible: true});
     await page.click(show_change_api_key_selector);
 
     const get_api_key_button_selector = "#get_api_key_button";
