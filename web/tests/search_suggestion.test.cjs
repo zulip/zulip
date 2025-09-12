@@ -387,13 +387,13 @@ test("empty_query_suggestions", () => {
         "is:muted",
         "is:resolved",
         "-is:resolved",
-        "sender:myself@zulip.com",
         `channel:${devel_id}`,
         `channel:${office_id}`,
         "has:link",
         "has:image",
         "has:attachment",
         "has:reaction",
+        "sender:myself@zulip.com",
     ];
 
     assert.deepEqual(suggestions.strings, expected);
@@ -490,10 +490,10 @@ test("check_is_suggestions", ({override, mock_template}) => {
         "is:unread",
         "is:muted",
         "is:resolved",
+        "has:image",
         "dm:alice@zulip.com",
         "sender:alice@zulip.com",
         "dm-including:alice@zulip.com",
-        "has:image",
     ];
     assert.deepEqual(suggestions.strings, expected);
 
@@ -676,11 +676,11 @@ test("topic_suggestions", ({override, mock_template}) => {
     suggestions = get_suggestions("te");
     expected = [
         "te",
+        `channel:${office_id} topic:team`,
+        `channel:${office_id} topic:test`,
         "dm:ted@zulip.com",
         "sender:ted@zulip.com",
         "dm-including:ted@zulip.com",
-        `channel:${office_id} topic:team`,
-        `channel:${office_id} topic:test`,
     ];
     assert.deepEqual(suggestions.strings, expected);
 

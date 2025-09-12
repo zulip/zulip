@@ -1092,7 +1092,43 @@ export function get_search_result(
         }
     }
 
-    return attacher.get_result().slice(0, max_items);
+    const final_result = attacher.get_result().slice(0, max_items);
+    const person_operators = ["dm:", "sender:", "dm-including:"];
+
+    const person_suggestions = [];
+    const non_person_suggestions = [];
+
+    for (const suggestion of final_result) {
+        const is_person_suggestion = person_operators.some((op) =>
+            suggestion.search_string.startsWith(op),
+        );
+        if (is_person_suggestion) {
+            person_suggestions.push(suggestion);
+        } else {
+            non_person_suggestions.push(suggestion);
+        }
+    }
+
+    person_suggestions.sort((a, b) => {
+        const email_a = Filter.parse(a.search_string)[0]?.operand;
+        const email_b = Filter.parse(b.search_string)[0]?.operand;
+
+        if (email_a && email_b) {
+            const user_a = people.get_by_email(email_a);
+            const user_b = people.get_by_email(email_b);
+
+            if (user_a && user_b) {
+                const active_a = people.is_person_active(user_a.user_id);
+                const active_b = people.is_person_active(user_b.user_id);
+
+                if (active_a !== active_b) {
+                    return active_a ? -1 : 1;
+                }
+            }
+        }
+        return 0;
+    });
+    return [...non_person_suggestions, ...person_suggestions];
 }
 
 export let get_suggestions = function (
