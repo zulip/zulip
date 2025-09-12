@@ -166,3 +166,16 @@ export function reorder(order: number[]): void {
         channel_folder.order = index;
     }
 }
+
+export function get_folders_with_accessible_channels(): ChannelFolder[] {
+    const all_subs = stream_data.get_unsorted_subs();
+
+    const channel_folder_ids = new Set<number>([]);
+    for (const sub of all_subs) {
+        if (sub.folder_id !== null) {
+            channel_folder_ids.add(sub.folder_id);
+        }
+    }
+
+    return get_channel_folders().filter((folder) => channel_folder_ids.has(folder.id));
+}

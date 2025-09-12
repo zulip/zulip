@@ -1,7 +1,7 @@
 import $ from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
-import type * as tippy from "tippy.js";
+import * as tippy from "tippy.js";
 
 import render_stream_creation_confirmation_banner from "../templates/modal_banner/stream_creation_confirmation_banner.hbs";
 import render_browse_streams_list from "../templates/stream_settings/browse_streams_list.hbs";
@@ -11,6 +11,7 @@ import render_stream_settings_overlay from "../templates/stream_settings/stream_
 import type {Banner} from "./banners.ts";
 import * as blueslip from "./blueslip.ts";
 import * as browser_history from "./browser_history.ts";
+import * as channel_folders from "./channel_folders.ts";
 import * as components from "./components.ts";
 import type {Toggle} from "./components.ts";
 import * as compose_banner from "./compose_banner.ts";
@@ -50,6 +51,7 @@ import type {StreamPermissionGroupSetting, StreamTopicsPolicy} from "./stream_ty
 import * as stream_ui_updates from "./stream_ui_updates.ts";
 import * as sub_store from "./sub_store.ts";
 import type {StreamSubscription} from "./sub_store.ts";
+import {LONG_HOVER_DELAY} from "./tippyjs.ts";
 import * as util from "./util.ts";
 import * as views_util from "./views_util.ts";
 
@@ -356,7 +358,10 @@ export function add_sub_to_table(sub: StreamSubscription): void {
     const html = render_browse_streams_list_item(setting_sub);
     const $new_row = $(html);
 
-    if (stream_settings_components.filter_includes_channel(sub)) {
+    if (
+        stream_settings_components.archived_status_filter_includes_channel(sub) &&
+        stream_settings_components.folder_filter_includes_channel(sub)
+    ) {
         if (stream_create.get_name() === sub.name) {
             scroll_util.get_content_element($(".streams-list")).prepend($new_row);
             scroll_util.reset_scrollbar($(".streams-list"));
@@ -466,8 +471,8 @@ export function update_settings_for_archived_and_unarchived(slim_sub: StreamSubs
         $(".stream_settings_filter_container").removeClass("hide_filter");
     } else {
         $(".stream_settings_filter_container").addClass("hide_filter");
-        stream_settings_components.set_filter_dropdown_value(
-            stream_settings_data.FILTERS.NON_ARCHIVED_CHANNELS,
+        stream_settings_components.set_archived_status_filter_dropdown_value(
+            stream_settings_data.ARCHIVED_STATUS_FILTERS.NON_ARCHIVED_CHANNELS,
         );
     }
     redraw_left_panel();
@@ -519,21 +524,35 @@ export function update_settings_for_unsubscribed(slim_sub: StreamSubscription): 
 }
 
 function triage_stream(left_panel_params: LeftPanelParams, sub: StreamSubscription): string {
-    const current_channel_visibility_filter =
-        stream_settings_components.get_filter_dropdown_value();
-    const channel_visibility_filters = stream_settings_data.FILTERS;
+    const archived_status_filters = stream_settings_data.ARCHIVED_STATUS_FILTERS;
+    const folder_filters = stream_settings_data.FOLDER_FILTERS;
     if (
-        current_channel_visibility_filter === channel_visibility_filters.NON_ARCHIVED_CHANNELS &&
+        left_panel_params.archived_status_filter_value ===
+            archived_status_filters.NON_ARCHIVED_CHANNELS &&
         sub.is_archived
     ) {
         return "rejected";
     }
     if (
-        current_channel_visibility_filter === channel_visibility_filters.ARCHIVED_CHANNELS &&
+        left_panel_params.archived_status_filter_value ===
+            archived_status_filters.ARCHIVED_CHANNELS &&
         !sub.is_archived
     ) {
         return "rejected";
     }
+
+    if (left_panel_params.folder_filter_value !== folder_filters.ANY_FOLDER_DROPDOWN_OPTION) {
+        if (
+            left_panel_params.folder_filter_value === folder_filters.UNCATEGORIZED_DROPDOWN_OPTION
+        ) {
+            if (sub.folder_id !== null) {
+                return "rejected";
+            }
+        } else if (sub.folder_id !== left_panel_params.folder_filter_value) {
+            return "rejected";
+        }
+    }
+
     if (left_panel_params.show_subscribed && !sub.subscribed) {
         // reject non-subscribed streams
         return "rejected";
@@ -640,8 +659,8 @@ export function update_empty_left_panel_message(): void {
     const has_search_query =
         $<HTMLInputElement>("#stream_filter input[type='text']").val()!.trim() !== "";
     const has_filter =
-        stream_settings_components.get_filter_dropdown_value() !==
-        stream_settings_data.FILTERS.ALL_CHANNELS;
+        stream_settings_components.get_archived_status_filter_dropdown_value() !==
+        stream_settings_data.ARCHIVED_STATUS_FILTERS.ALL_CHANNELS;
 
     // Both search queries and filters can lead to all channels being hidden.
     if (all_channels_hidden && (has_search_query || (has_filter && has_streams))) {
@@ -663,6 +682,25 @@ export function update_empty_left_panel_message(): void {
         $(".all_streams_tab_empty_text").show();
     }
     $(".no-streams-to-show").show();
+}
+
+function update_folder_filter_button(left_panel_params: LeftPanelParams): void {
+    if (
+        left_panel_params.folder_filter_value ===
+        stream_settings_data.FOLDER_FILTERS.ANY_FOLDER_DROPDOWN_OPTION
+    ) {
+        $("#folder_filter_button").addClass("icon-button-neutral");
+        $("#folder_filter_button").removeClass("icon-button-brand");
+        $("#folder_filter_button .zulip-icon")
+            .removeClass("zulip-icon-folder-search")
+            .addClass("zulip-icon-folder-chevron");
+    } else {
+        $("#folder_filter_button").removeClass("icon-button-neutral");
+        $("#folder_filter_button").addClass("icon-button-brand");
+        $("#folder_filter_button .zulip-icon")
+            .removeClass("zulip-icon-folder-chevron")
+            .addClass("zulip-icon-folder-search");
+    }
 }
 
 // LeftPanelParams { input: String, show_subscribed: Boolean, sort_order: String }
@@ -720,6 +758,8 @@ export function redraw_left_panel(left_panel_params = get_left_panel_params()): 
     }
     update_empty_left_panel_message();
 
+    update_folder_filter_button(left_panel_params);
+
     // return this for test convenience
     return [...buckets.name, ...buckets.desc];
 }
@@ -731,16 +771,23 @@ type LeftPanelParams = {
     show_subscribed: boolean;
     show_not_subscribed: boolean;
     sort_order: string;
+    archived_status_filter_value: string;
+    folder_filter_value: number;
 };
 
 export function get_left_panel_params(): LeftPanelParams {
     const $search_box = $<HTMLInputElement>("#stream_filter input[type='text']");
     const input = $search_box.expectOne().val()!.trim();
+    const archived_status_filter_value =
+        stream_settings_components.get_archived_status_filter_dropdown_value();
+    const folder_filter_value = stream_settings_components.get_folder_filter_dropdown_value();
     return {
         input,
         show_subscribed: stream_ui_updates.show_subscribed,
         show_not_subscribed: stream_ui_updates.show_not_subscribed,
         sort_order,
+        archived_status_filter_value,
+        folder_filter_value,
     };
 }
 
@@ -798,21 +845,23 @@ function filters_dropdown_options(
 ): dropdown_widget.Option[] {
     return [
         {
-            unique_id: stream_settings_data.FILTERS.ARCHIVED_CHANNELS,
+            unique_id: stream_settings_data.ARCHIVED_STATUS_FILTERS.ARCHIVED_CHANNELS,
             name: $t({defaultMessage: "Archived channels"}),
             bold_current_selection:
-                current_value === stream_settings_data.FILTERS.ARCHIVED_CHANNELS,
+                current_value === stream_settings_data.ARCHIVED_STATUS_FILTERS.ARCHIVED_CHANNELS,
         },
         {
-            unique_id: stream_settings_data.FILTERS.NON_ARCHIVED_CHANNELS,
+            unique_id: stream_settings_data.ARCHIVED_STATUS_FILTERS.NON_ARCHIVED_CHANNELS,
             name: $t({defaultMessage: "Non-archived channels"}),
             bold_current_selection:
-                current_value === stream_settings_data.FILTERS.NON_ARCHIVED_CHANNELS,
+                current_value ===
+                stream_settings_data.ARCHIVED_STATUS_FILTERS.NON_ARCHIVED_CHANNELS,
         },
         {
-            unique_id: stream_settings_data.FILTERS.ALL_CHANNELS,
+            unique_id: stream_settings_data.ARCHIVED_STATUS_FILTERS.ALL_CHANNELS,
             name: $t({defaultMessage: "Archived and non-archived"}),
-            bold_current_selection: current_value === stream_settings_data.FILTERS.ALL_CHANNELS,
+            bold_current_selection:
+                current_value === stream_settings_data.ARCHIVED_STATUS_FILTERS.ALL_CHANNELS,
         },
     ];
 }
@@ -839,10 +888,105 @@ function set_up_dropdown_widget(): void {
         widget_name: "stream_settings_filter",
         item_click_callback: filter_click_handler,
         $events_container: $("#stream_filter"),
-        default_id: stream_settings_data.FILTERS.NON_ARCHIVED_CHANNELS,
+        default_id: stream_settings_data.ARCHIVED_STATUS_FILTERS.NON_ARCHIVED_CHANNELS,
     });
     widget.setup();
-    stream_settings_components.set_filter_dropdown_widget(widget);
+    stream_settings_components.set_archived_status_filter_dropdown_widget(widget);
+}
+
+function set_up_folder_filter_dropdown_widget(): void {
+    const folder_filters = stream_settings_data.FOLDER_FILTERS;
+
+    const folder_options = (
+        current_value: string | number | undefined,
+    ): dropdown_widget.Option[] => {
+        const folders = channel_folders.get_folders_with_accessible_channels();
+        const options: dropdown_widget.Option[] = folders.map((folder) => ({
+            name: folder.name,
+            unique_id: folder.id,
+            bold_current_selection: current_value === folder.id,
+        }));
+
+        // Show "Uncategorized" option only if user can access at least
+        // one channel that is uncategorized.
+        const show_uncategorized_option = stream_data
+            .get_unsorted_subs()
+            .some((sub) => sub.folder_id === null);
+        if (show_uncategorized_option) {
+            const uncategorized_option = {
+                is_setting_disabled: true,
+                show_disabled_icon: false,
+                show_disabled_option_name: true,
+                unique_id: folder_filters.UNCATEGORIZED_DROPDOWN_OPTION,
+                name: $t({defaultMessage: "Uncategorized"}),
+                bold_current_selection:
+                    current_value === folder_filters.UNCATEGORIZED_DROPDOWN_OPTION,
+            };
+            options.unshift(uncategorized_option);
+        }
+
+        const any_folder_option = {
+            is_setting_disabled: true,
+            show_disabled_icon: false,
+            show_disabled_option_name: true,
+            unique_id: folder_filters.ANY_FOLDER_DROPDOWN_OPTION,
+            name: $t({defaultMessage: "Any folder"}),
+            bold_current_selection: current_value === folder_filters.ANY_FOLDER_DROPDOWN_OPTION,
+        };
+        options.unshift(any_folder_option);
+
+        return options;
+    };
+
+    const widget = new dropdown_widget.DropdownWidget({
+        widget_name: "folder-filter",
+        widget_selector: ".filter-folders-dropdown-widget-button",
+        get_options: folder_options,
+        item_click_callback(
+            event: JQuery.TriggeredEvent,
+            dropdown: tippy.Instance,
+            widget: dropdown_widget.DropdownWidget,
+        ) {
+            filter_click_handler(event, dropdown, widget);
+            update_tooltip_for_folder_filter();
+        },
+        $events_container: $("#stream_filter"),
+        unique_id_type: "number",
+        default_id: folder_filters.ANY_FOLDER_DROPDOWN_OPTION,
+    });
+    widget.setup();
+    stream_settings_components.set_folder_filter_dropdown_widget(widget);
+    update_tooltip_for_folder_filter();
+}
+
+export function update_tooltip_for_folder_filter(): void {
+    // Destroy the previous tooltip instance.
+    $<tippy.PopperElement>("#folder_filter_container")[0]!._tippy?.destroy();
+
+    const folder_filters = stream_settings_data.FOLDER_FILTERS;
+    const filter_value = stream_settings_components.get_folder_filter_dropdown_value();
+
+    let content;
+    if (filter_value === folder_filters.ANY_FOLDER_DROPDOWN_OPTION) {
+        content = $t({defaultMessage: "Filter by folder"});
+    } else if (filter_value === folder_filters.UNCATEGORIZED_DROPDOWN_OPTION) {
+        content = $t({defaultMessage: "Viewing uncategorized channels"});
+    } else {
+        const folder = channel_folders.get_channel_folder_by_id(filter_value);
+        content = $t(
+            {defaultMessage: "Viewing channels in {folder_name}"},
+            {folder_name: folder.name},
+        );
+    }
+
+    tippy.default(util.the($("#folder_filter_container")), {
+        animation: false,
+        hideOnClick: false,
+        placement: "bottom",
+        appendTo: () => document.body,
+        delay: LONG_HOVER_DELAY,
+        content,
+    });
 }
 
 function setup_page(callback: () => void): void {
@@ -966,6 +1110,7 @@ function setup_page(callback: () => void): void {
         $("#channels_overlay_container").append($(rendered));
 
         set_up_dropdown_widget();
+        set_up_folder_filter_dropdown_widget();
         render_left_panel_superset();
         initialize_components();
         redraw_left_panel();
@@ -1089,15 +1234,25 @@ export function change_state(
         switch_to_stream_row(stream_id);
 
         const sub = stream_data.get_sub_by_id(stream_id);
-        if (sub && !stream_settings_components.filter_includes_channel(sub)) {
-            const FILTERS = stream_settings_data.FILTERS;
+        if (sub && !stream_settings_components.archived_status_filter_includes_channel(sub)) {
+            const FILTERS = stream_settings_data.ARCHIVED_STATUS_FILTERS;
             let selected_filter;
             if (sub.is_archived) {
                 selected_filter = FILTERS.ARCHIVED_CHANNELS;
             } else {
                 selected_filter = FILTERS.NON_ARCHIVED_CHANNELS;
             }
-            stream_settings_components.set_filter_dropdown_value(selected_filter);
+            stream_settings_components.set_archived_status_filter_dropdown_value(selected_filter);
+        }
+        if (sub && !stream_settings_components.folder_filter_includes_channel(sub)) {
+            const folder_filters = stream_settings_data.FOLDER_FILTERS;
+            let selected_filter;
+            if (sub.folder_id === null) {
+                selected_filter = folder_filters.UNCATEGORIZED_DROPDOWN_OPTION;
+            } else {
+                selected_filter = sub.folder_id;
+            }
+            stream_settings_components.set_folder_filter_dropdown_value(selected_filter);
         }
         return;
     }

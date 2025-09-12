@@ -150,4 +150,15 @@ run_test("basics", () => {
     );
 
     assert.deepEqual(channel_folders.user_has_folders(), true);
+
+    // Unarchive the folder for further tests.
+    devops_folder.is_archived = false;
+    assert.deepEqual(channel_folders.get_folders_with_accessible_channels(), [
+        devops_folder,
+        frontend_folder,
+    ]);
+
+    // Remove a stream to test case of an inaccessible stream.
+    stream_data.delete_sub(stream_3.stream_id);
+    assert.deepEqual(channel_folders.get_folders_with_accessible_channels(), [frontend_folder]);
 });

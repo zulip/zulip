@@ -618,6 +618,14 @@
        See 1c6bed55e4e800b5bad7150f6bdd274cd7f6504e for more context. */
     --width-dropdown-widget-button: 206px;
 
+    /* Height of the button for filter dropdown in stream settings UI.
+    It is set equal to the height of the search input, i.e. 1.4em (input
+    height with font size set to 90%) + 8px (top and bottom paddings)
+    + 2px (top and bottom borders). */
+    --folder-filter-dropdown-widget-button-height: calc(
+        1.4 * 0.9 * var(--base-font-size-px) + 8px + 2px
+    );
+
     /*
     Maximum height of the compose box when it is not in maximised state. This
     is equal to the height of `#bottom_whitespace`. We expect resize.ts to
