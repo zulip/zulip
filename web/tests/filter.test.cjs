@@ -1888,7 +1888,7 @@ test("describe", ({mock_template, override}) => {
     assert.equal(Filter.search_description_as_html(narrow, false), string);
 
     narrow = [{operator: "topic", operand: ""}];
-    string = "topic ";
+    string = "topic";
     assert.equal(Filter.search_description_as_html(narrow, true), string);
 });
 
