@@ -74,6 +74,7 @@ from zerver.actions.custom_profile_fields import do_update_user_custom_profile_d
 from zerver.actions.user_groups import (
     bulk_add_members_to_user_groups,
     bulk_remove_members_from_user_groups,
+    create_user_group_in_database,
 )
 from zerver.actions.user_settings import do_change_user_delivery_email, do_regenerate_api_key
 from zerver.actions.users import do_change_user_role, do_deactivate_user
@@ -89,6 +90,7 @@ from zerver.lib.request import RequestNotes
 from zerver.lib.sessions import delete_user_sessions
 from zerver.lib.subdomains import get_subdomain
 from zerver.lib.types import ProfileDataElementUpdateDict
+from zerver.lib.user_groups import get_role_based_system_groups_dict
 from zerver.lib.users import check_full_name, validate_user_custom_profile_field
 from zerver.models import (
     CustomProfileField,
@@ -1027,6 +1029,9 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
                 intended_group_names=intended_group_names,
                 user_profile=user_profile,
                 logger=ldap_logger,
+                # TODO: should we make this True? False is the backward compat way.
+                # But True seems like the actual behavior that makes much more sense.
+                create_missing_groups=False,
             )
         except Exception as e:
             raise ZulipLDAPError(str(e)) from e
@@ -1814,7 +1819,9 @@ def redirect_deactivated_user_to_login(realm: Realm, email: str) -> HttpResponse
 
 @transaction.atomic(savepoint=False)
 def sync_groups_for_prereg_user(
-    prereg_user: PreregistrationUser, group_memberships_sync_map: dict[str, bool]
+    prereg_user: PreregistrationUser,
+    group_memberships_sync_map: dict[str, bool],
+    create_missing_groups: bool,
 ) -> None:
     assert prereg_user.realm is not None
     realm = prereg_user.realm
@@ -1829,6 +1836,17 @@ def sync_groups_for_prereg_user(
     groups_to_ensure_member = list(
         NamedUserGroup.objects.filter(realm=realm, name__in=group_names_to_ensure_member)
     )
+    if create_missing_groups and len(groups_to_ensure_member) < len(group_names_to_ensure_member):
+        missing_group_names = set(group_names_to_ensure_member) - {
+            group.name for group in groups_to_ensure_member
+        }
+        logging.info(
+            "PreregistrationUser %s should be added to groups %s, but they don't exist. Creating them first.",
+            prereg_user.id,
+            missing_group_names,
+        )
+        groups_to_ensure_member += ensure_missing_groups(missing_group_names, realm)
+
     groups_to_ensure_not_member = list(
         NamedUserGroup.objects.filter(realm=realm, name__in=group_names_to_ensure_not_member)
     )
@@ -1853,6 +1871,7 @@ def sync_groups(
     intended_group_names: set[str],
     user_profile: UserProfile,
     logger: logging.Logger,
+    create_missing_groups: bool = True,
 ) -> None:
     """
     Ensure that for this user:
@@ -1860,6 +1879,9 @@ def sync_groups(
       - They are not in any NamedUserGroup in all_group_names minus intended_names.
     The idea is that intended_group_names is the set of names of groups to which
     the user should belong, within the universe specified by all_group_names.
+
+    If create_missing_groups is enabled, if a user is meant to be added to a group
+    which doesn't yet exist, we create it. Otherwise, such groups are ignored.
     """
     for system_group_name in SystemGroups.GROUP_DISPLAY_NAME_MAP:
         # system groups are not allowed to be synced.
@@ -1891,6 +1913,16 @@ def sync_groups(
     if to_add:
         logger.debug("Adding user %s to groups %s", user_id, to_add)
         add_groups = list(NamedUserGroup.objects.filter(name__in=to_add, realm=realm))
+
+        if create_missing_groups and len(add_groups) < len(to_add):
+            missing_group_names = to_add - {group.name for group in add_groups}
+            logger.info(
+                "User %s should be added to groups %s, but they don't exist. Creating them first.",
+                user_id,
+                missing_group_names,
+            )
+            add_groups += ensure_missing_groups(missing_group_names, realm)
+
         bulk_add_members_to_user_groups(add_groups, [user_id], acting_user=None)
 
     if to_remove:
@@ -1901,10 +1933,122 @@ def sync_groups(
     logger.debug("Finished group sync for user %s", user_id)
 
 
+def ensure_missing_groups(missing_group_names: set[str], realm: Realm) -> list[NamedUserGroup]:
+    system_groups_name_dict = get_role_based_system_groups_dict(realm)
+    group_owners = system_groups_name_dict[SystemGroups.OWNERS].usergroup_ptr
+    group_settings_map = dict(
+        can_add_members_group=group_owners,
+        can_manage_group=group_owners,
+    )
+    return [
+        create_user_group_in_database(
+            group_name, [], realm, acting_user=None, group_settings_map=group_settings_map
+        )
+        for group_name in missing_group_names
+    ]
+
+
 @dataclass
 class SocialAuthSyncNewUserInfo:
     role: int | None
     group_memberships_sync_map: dict[str, bool]
+
+
+@dataclass
+class SocialAuthGroupInfo:
+    syncable_group_names: set[str]
+    intended_group_names: set[str]
+
+
+def process_social_auth_group_sync_info(
+    backend: Any,
+    realm: Realm,
+    user_profile: UserProfile | None,
+    attrs_config: dict[str, Any],
+    extra_attrs: dict[str, Any],
+) -> SocialAuthGroupInfo | None:
+    # pop zulip_groups from extra_attrs, so that only user attribute sync
+    # values remain there.
+    # zulip_groups being absent should be treated as if no group memberships
+    # are desired. That's because Okta doesn't send the SAML attribute at all
+    # if the user has no group memberships. Thus we treat this absence as
+    # an empty list.
+    all_received_group_names = extra_attrs.pop("zulip_groups", [])
+
+    external_group_name_to_zulip_group_name: dict[str, str] = {}
+    groups_config = cast(str | list[str | tuple[str, str]], attrs_config.get("groups", []))
+    match groups_config:
+        case []:
+            return None
+        case list():
+            for group_name in groups_config:
+                match group_name:
+                    # the objects in the config are either straight-forward group names
+                    # or tuples (<saml group name>, <zulip group name>) indicating the
+                    # obvious mapping.
+                    case str():
+                        external_group_name_to_zulip_group_name[group_name] = group_name
+                    case (saml_group_name, zulip_group_name):
+                        external_group_name_to_zulip_group_name[saml_group_name] = zulip_group_name
+                    case _:
+                        raise AssertionError(
+                            f"Unsupported item in group sync config list: {group_name}"
+                        )
+        case "*":
+            # TODO: explain sync-all-groups mode.
+            all_realm_groups = NamedUserGroup.objects.filter(
+                realm=realm, deactivated=False, is_system_group=False
+            )
+            external_group_name_to_zulip_group_name = (
+                {g.name: g.name for g in all_realm_groups}
+                # If a group name is included in the user's zulip_groups, in sync-all-groups mode
+                # we want the user to be added to it - even if the group doesn't yet exist in Zulip.
+                # Thus we need to create an entry. TODO: finish this comment
+                | {n: n for n in all_received_group_names}
+            )
+        case str():
+            raise AssertionError(f'unsupported groups config string: {groups_config}; expected "*"')
+
+    # Group sync is only supported for SAML for the foreseeable time.
+    assert backend.name == "saml"
+
+    syncable_group_names = set(external_group_name_to_zulip_group_name.values())
+
+    external_group_names = [
+        name
+        for name in all_received_group_names
+        # Ignore group names which aren't configured.
+        if name in external_group_name_to_zulip_group_name
+    ]
+    intended_group_names = {
+        external_group_name_to_zulip_group_name[external_name]
+        for external_name in external_group_names
+    }
+
+    # It's important to log the information about what we received in the request and what Zulip groups
+    # that was translated to based on the configuration - otherwise debugging a misconfiguration would be
+    # a very painful process.
+    #
+    # Notably, it's generally expected for the list of received groups to be shorter than the "translated"
+    # list of intended Zulip groups. The expected way for admins to configure what is sent in zulip_groups
+    # is to send *all* the groups the user belongs to in their user directory. That is very likely to contain
+    # some groups that are irrelevant to their Zulip setup and thus shouldn't be translated into any
+    # Zulip group memberships.
+    # For example, Okta sends the Everyone group, which is just a built-in group inside of Okta described
+    # in their documentation as
+    # "catch-all group where every single user in the Okta instance automatically lands".
+    # That obviously will be irrelevant to Zulip group memberships in almost all configurations.
+    user_string = f"<user:{user_profile.id}>" if user_profile is not None else "<new user signup>"
+    backend.logger.info(
+        "social_auth_sync_user_attributes:%s: received group names: %s|intended Zulip groups: %s. group mapping used: %s",
+        user_string,
+        sorted(all_received_group_names),
+        sorted(intended_group_names),
+        external_group_name_to_zulip_group_name,
+    )
+    return SocialAuthGroupInfo(
+        syncable_group_names=syncable_group_names, intended_group_names=intended_group_names
+    )
 
 
 def social_auth_sync_user_attributes(
@@ -1931,72 +2075,15 @@ def social_auth_sync_user_attributes(
 
     attrs_by_backend = settings.SOCIAL_AUTH_SYNC_ATTRS_DICT.get(realm.subdomain, {})
     attrs_config = attrs_by_backend.get(backend.name, {})
-    external_group_name_to_zulip_group_name: dict[str, str] = {}
-    groups_config_list = cast(list[str | tuple[str, str]], attrs_config.get("groups", []))
-    if groups_config_list:
-        # Group sync is only supported for SAML for the foreseeable time.
-        assert backend.name == "saml"
-
-        for group_name in groups_config_list:
-            # the objects in the config are either straight-forward group names
-            # or tuples (<saml group name>, <zulip group name>) indicating the
-            # obvious mapping.
-            if isinstance(group_name, str):
-                external_group_name_to_zulip_group_name[group_name] = group_name
-            else:
-                saml_group_name, zulip_group_name = group_name
-                external_group_name_to_zulip_group_name[saml_group_name] = zulip_group_name
-
-    should_sync_groups = bool(external_group_name_to_zulip_group_name)
 
     profile_field_name_to_attr_name = cast(
         dict[str, str], {key: value for key, value in attrs_config.items() if key != "groups"}
     )
 
-    if should_sync_groups:
-        syncable_group_names = set(external_group_name_to_zulip_group_name.values())
-
-        # pop zulip_groups from extra_attrs, so that only user attribute sync
-        # values remain there.
-        # zulip_groups being absent should be treated as if no group memberships
-        # are desired. That's because Okta doesn't send the SAML attribute at all
-        # if the user has no group memberships. Thus we treat this absence as
-        # an empty list.
-        all_received_group_names = extra_attrs.pop("zulip_groups", [])
-        external_group_names = [
-            name
-            for name in all_received_group_names
-            # Ignore group names which aren't configured.
-            if name in external_group_name_to_zulip_group_name
-        ]
-        intended_group_names = {
-            external_group_name_to_zulip_group_name[external_name]
-            for external_name in external_group_names
-        }
-
-        # It's important to log the information about what we received in the request and what Zulip groups
-        # that was translated to based on the configuration - otherwise debugging a misconfiguration would be
-        # a very painful process.
-        #
-        # Notably, it's generally expected for the list of received groups to be shorter than the "translated"
-        # list of intended Zulip groups. The expected way for admins to configure what is sent in zulip_groups
-        # is to send *all* the groups the user belongs to in their user directory. That is very likely to contain
-        # some groups that are irrelevant to their Zulip setup and thus shouldn't be translated into any
-        # Zulip group memberships.
-        # For example, Okta sends the Everyone group, which is just a built-in group inside of Okta described
-        # in their documentation as
-        # "catch-all group where every single user in the Okta instance automatically lands".
-        # That obviously will be irrelevant to Zulip group memberships in almost all configurations.
-        user_string = (
-            f"<user:{user_profile.id}>" if user_profile is not None else "<new user signup>"
-        )
-        backend.logger.info(
-            "social_auth_sync_user_attributes:%s: received group names: %s|intended Zulip groups: %s. group mapping used: %s",
-            user_string,
-            sorted(all_received_group_names),
-            sorted(intended_group_names),
-            external_group_name_to_zulip_group_name,
-        )
+    group_sync_config = process_social_auth_group_sync_info(
+        backend, realm, user_profile, attrs_config, extra_attrs
+    )
+    should_sync_groups = group_sync_config is not None
 
     should_sync_user_attrs = extra_attrs and profile_field_name_to_attr_name
     if not (should_sync_user_attrs or should_sync_groups):
@@ -2039,10 +2126,10 @@ def social_auth_sync_user_attributes(
             backend.logger.info(
                 "Returning role %s for user creation", UserProfile.ROLE_ID_TO_API_NAME[new_role]
             )
-        if should_sync_groups:
+        if group_sync_config is not None:
             group_memberships_sync_map = {
-                group_name: (group_name in intended_group_names)
-                for group_name in syncable_group_names
+                group_name: (group_name in group_sync_config.intended_group_names)
+                for group_name in group_sync_config.syncable_group_names
             }
         else:
             group_memberships_sync_map = {}
@@ -2068,12 +2155,13 @@ def social_auth_sync_user_attributes(
             str(e),
         )
 
-    if should_sync_groups:
+    if group_sync_config is not None:
         sync_groups(
-            all_group_names=syncable_group_names,
-            intended_group_names=intended_group_names,
+            all_group_names=group_sync_config.syncable_group_names,
+            intended_group_names=group_sync_config.intended_group_names,
             user_profile=user_profile,
             logger=backend.logger,
+            create_missing_groups=True,
         )
 
     return None
