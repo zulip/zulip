@@ -55,7 +55,12 @@ from zerver.lib.integrations import EMBEDDED_BOTS
 from zerver.lib.rate_limiter import rate_limit_spectator_attachment_access_by_file
 from zerver.lib.response import json_success
 from zerver.lib.send_email import FromAddress, send_email
-from zerver.lib.streams import access_stream_by_id, access_stream_by_name, subscribed_to_stream
+from zerver.lib.streams import (
+    access_stream_by_id,
+    access_stream_by_name,
+    get_streams_for_user,
+    subscribed_to_stream,
+)
 from zerver.lib.typed_endpoint import (
     ApiParamConfig,
     PathOnly,
@@ -908,6 +913,25 @@ def get_subscription_backend(
     subscription_status = {"is_subscribed": subscribed_to_stream(target_user, stream_id)}
 
     return json_success(request, data=subscription_status)
+
+
+@typed_endpoint
+def get_subscriptions_backend(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    *,
+    user_id: PathOnly[Json[int]],
+) -> HttpResponse:
+    target_user = access_user_by_id(user_profile, user_id, for_admin=False)
+    streams = get_streams_for_user(
+        target_user,
+        include_all=True,
+    )
+    subscriptions = [
+        stream.id for stream in streams if subscribed_to_stream(target_user, stream.id)
+    ]
+
+    return json_success(request, data={"subscribed_stream_ids": subscriptions})
 
 
 @typed_endpoint

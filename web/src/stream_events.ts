@@ -320,7 +320,7 @@ export function mark_subscribed(
 
     stream_list.add_sidebar_row(sub);
     stream_list.update_subscribe_to_more_streams_link();
-    user_profile.update_user_profile_streams_list_for_users([people.my_current_user_id()]);
+    void user_profile.update_user_profile_streams_list_for_users([people.my_current_user_id()]);
 }
 
 export function mark_unsubscribed(sub: StreamSubscription): void {
@@ -355,7 +355,7 @@ export function mark_unsubscribed(sub: StreamSubscription): void {
 
     stream_list.remove_sidebar_row(sub.stream_id);
     stream_list.update_subscribe_to_more_streams_link();
-    user_profile.update_user_profile_streams_list_for_users([people.my_current_user_id()]);
+    void user_profile.update_user_profile_streams_list_for_users([people.my_current_user_id()]);
 }
 
 export function remove_deactivated_user_from_all_streams(user_id: number): void {
@@ -375,7 +375,7 @@ export function process_subscriber_update(user_ids: number[], stream_ids: number
         assert(sub !== undefined);
         stream_settings_ui.update_subscribers_ui(sub);
     }
-    user_profile.update_user_profile_streams_list_for_users(user_ids);
+    void user_profile.update_user_profile_streams_list_for_users(user_ids);
     const narrow_stream_id = narrow_state.stream_id();
     if (narrow_stream_id && stream_ids.includes(narrow_stream_id)) {
         activity_ui.build_user_sidebar();
