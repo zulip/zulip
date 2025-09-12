@@ -1462,7 +1462,7 @@ class SlackImporter(ZulipTestCase):
                 "ts": "1440869295.000008",
                 # A reply to thread 4!
                 "parent_user_id": "U061A5N1G",
-                "thread_ts": "1434139200.000002",
+                "thread_ts": "1437139200.000002",
                 "channel_name": "random",
             },
             {
@@ -1511,6 +1511,15 @@ class SlackImporter(ZulipTestCase):
                 "thread_ts": "1547139200.000002",
                 "channel_name": "random",
             },
+            {
+                "text": "a reply to this message got deleted",
+                "user": "U061A5N1G",
+                "ts": "1637139200.000002",
+                # Start of thread 7! It doesn't have any replies
+                # on purpose.
+                "thread_ts": "1637139200.000002",
+                "channel_name": "random",
+            },
         ]
 
         slack_recipient_name_to_zulip_recipient_id = {
@@ -1546,7 +1555,7 @@ class SlackImporter(ZulipTestCase):
         # functioning already tested in helper function
         self.assertEqual(zerver_usermessage, [])
         # subtype: channel_join is filtered
-        self.assert_length(zerver_message, 13)
+        self.assert_length(zerver_message, 14)
 
         self.assert_length(uploads, 1)
         self.assert_length(attachment, 1)
@@ -1557,13 +1566,16 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(
             zerver_message[1]["recipient"], slack_recipient_name_to_zulip_recipient_id["random"]
         )
+        main_import_topic = "imported from Slack"
 
         ### THREAD 1 CONVERSATION ###
         # Test thread topic name contains message snippet
-        expected_thread_1_message_1_content = "message body text"
         expected_thread_1_topic_name = "2015-06-12 message body text"
+        expected_thread_1_message_1_content = (
+            f"message body text\n\n*1 reply in #**random>{expected_thread_1_topic_name}***"
+        )
         self.assertEqual(zerver_message[1]["content"], expected_thread_1_message_1_content)
-        self.assertEqual(zerver_message[1][EXPORT_TOPIC_NAME], expected_thread_1_topic_name)
+        self.assertEqual(zerver_message[1][EXPORT_TOPIC_NAME], main_import_topic)
 
         # Thread reply is in the correct thread topic
         self.assertEqual(zerver_message[2]["content"], "random")
@@ -1571,54 +1583,69 @@ class SlackImporter(ZulipTestCase):
 
         ### THREAD 2 CONVERSATION ###
         # Test thread topic name cut off
-        expected_thread_2_message_1_content = (
-            "random message but it's too long for the thread topic name"
-        )
         expected_thread_2_topic_name = (
             "2015-08-18 random message but it's too long for the thread …"
         )
+        expected_thread_2_message_1_content = f"random message but it's too long for the thread topic name\n\n*1 reply in #**random>{expected_thread_2_topic_name}***"
         self.assertEqual(zerver_message[3]["content"], expected_thread_2_message_1_content)
-        self.assertEqual(zerver_message[3][EXPORT_TOPIC_NAME], expected_thread_2_topic_name)
-        # Record that truncation should use the full maximum topic length.
-        self.assert_length(zerver_message[3][EXPORT_TOPIC_NAME], 60)
+        self.assertEqual(zerver_message[3][EXPORT_TOPIC_NAME], main_import_topic)
 
-        expected_thread_2_reply_1_message = "replying to the second thread :)"
-        self.assertEqual(zerver_message[4]["content"], expected_thread_2_reply_1_message)
+        expected_thread_2_message_2_content = "replying to the second thread :)"
+        self.assertEqual(zerver_message[4]["content"], expected_thread_2_message_2_content)
         self.assertEqual(zerver_message[4][EXPORT_TOPIC_NAME], expected_thread_2_topic_name)
+        # Record that truncation should use the full maximum topic length.
+        self.assert_length(zerver_message[4][EXPORT_TOPIC_NAME], 60)
 
         ### THREAD 3 CONVERSATION ###
         # Test thread topic name collision
-        expected_thread_3_message_1_content = "message body text"
         expected_thread_3_topic_name = "2015-06-12 message body text (2)"
+        expected_thread_3_message_1_content = (
+            f"message body text\n\n*1 reply in #**random>{expected_thread_3_topic_name}***"
+        )
         self.assertEqual(zerver_message[5]["content"], expected_thread_3_message_1_content)
-        self.assertEqual(zerver_message[5][EXPORT_TOPIC_NAME], expected_thread_3_topic_name)
+        self.assertEqual(zerver_message[5][EXPORT_TOPIC_NAME], main_import_topic)
+        self.assertEqual(zerver_message[6][EXPORT_TOPIC_NAME], expected_thread_3_topic_name)
 
         ### THREAD 4 CONVERSATION ###
         # Test mention syntax in thread topic name
-        expected_thread_4_message_1_content = "@**Jon** please reply to this message"
         expected_thread_4_topic_name = "2015-07-17 @**Jon** please reply to this message"
-        self.assertEqual(zerver_message[7]["content"], expected_thread_4_message_1_content)
-        self.assertEqual(zerver_message[7][EXPORT_TOPIC_NAME], expected_thread_4_topic_name)
+        expected_thread_4_message_1_content = "@**Jon** please reply to this message\n\n*1 reply in [#random > 2015-07-17 @&#42;&#42;Jon&#42;&#42; please reply to this message](#narrow/channel"
+        self.assertTrue(
+            zerver_message[7]["content"].startswith(expected_thread_4_message_1_content)
+        )
+        self.assertEqual(zerver_message[7][EXPORT_TOPIC_NAME], main_import_topic)
+        self.assertEqual(zerver_message[8][EXPORT_TOPIC_NAME], expected_thread_4_topic_name)
 
         ### THREAD 5 CONVERSATION ###
         # Test file link in thread topic name
-        expected_thread_4_message_1_content = "Look!\n[Apple](/user_uploads/"
-        expected_thread_4_topic_name = "2018-09-16 Look!\n[Apple](/user_uploads/"
+        expected_thread_5_message_1_content = "Look!\n[Apple](/user_uploads/"
+        expected_thread_5_topic_name = "2018-09-16 Look!\n[Apple](/user_uploads/"
         self.assertTrue(
-            zerver_message[9]["content"].startswith(expected_thread_4_message_1_content)
+            zerver_message[9]["content"].startswith(expected_thread_5_message_1_content)
         )
+        self.assertEqual(zerver_message[9][EXPORT_TOPIC_NAME], main_import_topic)
         self.assertTrue(
-            zerver_message[9][EXPORT_TOPIC_NAME].startswith(expected_thread_4_topic_name)
+            zerver_message[10][EXPORT_TOPIC_NAME].startswith(expected_thread_5_topic_name)
         )
 
         ### THREAD 6 CONVERSATION ###
         # Test various formatting syntaxes in thread topic name
-        expected_thread_4_message_1_content = "**foo** *bar* ~~baz~~ [qux](https://chat.zulip.org)"
-        expected_thread_4_topic_name = (
+        expected_thread_6_message_1_content = "**foo** *bar* ~~baz~~ [qux](https://chat.zulip.org)\n\n*1 reply in [#random > 2019-01-10 &#42;&#42;foo&#42;&#42; &#42;bar&#42; ~~baz~~ &#91;qux&#93;"
+        expected_thread_6_topic_name = (
             "2019-01-10 **foo** *bar* ~~baz~~ [qux](https://chat.zulip.o…"
         )
-        self.assertEqual(zerver_message[11]["content"], expected_thread_4_message_1_content)
-        self.assertEqual(zerver_message[11][EXPORT_TOPIC_NAME], expected_thread_4_topic_name)
+        self.assertTrue(
+            zerver_message[11]["content"].startswith(expected_thread_6_message_1_content)
+        )
+        self.assertEqual(zerver_message[11][EXPORT_TOPIC_NAME], main_import_topic)
+        self.assertEqual(zerver_message[12][EXPORT_TOPIC_NAME], expected_thread_6_topic_name)
+
+        ### THREAD 7 CONVERSATION ###
+        # Test thread cross-linking message is not present in
+        # thread with only one message.
+        expected_thread_7_message_1_content = "a reply to this message got deleted"
+        self.assertEqual(zerver_message[13]["content"], expected_thread_7_message_1_content)
+        self.assertEqual(zerver_message[13][EXPORT_TOPIC_NAME], main_import_topic)
 
     @mock.patch("zerver.data_import.slack.build_usermessages", return_value=(2, 4))
     def test_channel_message_to_zerver_message_with_integration_bots(
