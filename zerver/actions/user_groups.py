@@ -110,10 +110,10 @@ def update_users_in_full_members_system_group(
     realm: Realm, affected_user_ids: Sequence[int] = [], *, acting_user: UserProfile | None
 ) -> None:
     full_members_system_group = NamedUserGroup.objects.get(
-        realm=realm, name=SystemGroups.FULL_MEMBERS, is_system_group=True
+        realm_for_sharding=realm, name=SystemGroups.FULL_MEMBERS, is_system_group=True
     )
     members_system_group = NamedUserGroup.objects.get(
-        realm=realm, name=SystemGroups.MEMBERS, is_system_group=True
+        realm_for_sharding=realm, name=SystemGroups.MEMBERS, is_system_group=True
     )
 
     full_member_group_users: list[MemberGroupUserDict] = list()

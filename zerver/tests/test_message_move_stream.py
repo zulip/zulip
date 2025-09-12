@@ -168,7 +168,7 @@ class MessageMoveStreamTest(ZulipTestCase):
         self.send_stream_message(user_profile, "Denmark", topic_name="topic1")
 
         members_system_group = NamedUserGroup.objects.get(
-            name=SystemGroups.MEMBERS, realm=realm, is_system_group=True
+            name=SystemGroups.MEMBERS, realm_for_sharding=realm, is_system_group=True
         )
 
         do_change_realm_permission_group_setting(
@@ -877,19 +877,19 @@ class MessageMoveStreamTest(ZulipTestCase):
                 self.assert_length(messages, 4)
 
         administrators_system_group = NamedUserGroup.objects.get(
-            name=SystemGroups.ADMINISTRATORS, realm=realm, is_system_group=True
+            name=SystemGroups.ADMINISTRATORS, realm_for_sharding=realm, is_system_group=True
         )
         full_members_system_group = NamedUserGroup.objects.get(
-            name=SystemGroups.FULL_MEMBERS, realm=realm, is_system_group=True
+            name=SystemGroups.FULL_MEMBERS, realm_for_sharding=realm, is_system_group=True
         )
         members_system_group = NamedUserGroup.objects.get(
-            name=SystemGroups.MEMBERS, realm=realm, is_system_group=True
+            name=SystemGroups.MEMBERS, realm_for_sharding=realm, is_system_group=True
         )
         moderators_system_group = NamedUserGroup.objects.get(
-            name=SystemGroups.MODERATORS, realm=realm, is_system_group=True
+            name=SystemGroups.MODERATORS, realm_for_sharding=realm, is_system_group=True
         )
         nobody_system_group = NamedUserGroup.objects.get(
-            name=SystemGroups.NOBODY, realm=realm, is_system_group=True
+            name=SystemGroups.NOBODY, realm_for_sharding=realm, is_system_group=True
         )
 
         # Check sending messages when nobody is allowed to move messages.
@@ -1007,7 +1007,7 @@ class MessageMoveStreamTest(ZulipTestCase):
         self.send_stream_message(cordelia, test_stream_1.name, topic_name="test", content="third")
 
         members_system_group = NamedUserGroup.objects.get(
-            name=SystemGroups.MEMBERS, realm=realm, is_system_group=True
+            name=SystemGroups.MEMBERS, realm_for_sharding=realm, is_system_group=True
         )
 
         do_change_realm_permission_group_setting(
@@ -1081,7 +1081,7 @@ class MessageMoveStreamTest(ZulipTestCase):
         realm = user_profile.realm
 
         members_system_group = NamedUserGroup.objects.get(
-            name=SystemGroups.MEMBERS, realm=realm, is_system_group=True
+            name=SystemGroups.MEMBERS, realm_for_sharding=realm, is_system_group=True
         )
 
         do_change_realm_permission_group_setting(
@@ -1125,7 +1125,7 @@ class MessageMoveStreamTest(ZulipTestCase):
                 self.assert_length(messages, 4)
 
         nobody_group = NamedUserGroup.objects.get(
-            name=SystemGroups.NOBODY, realm=realm, is_system_group=True
+            name=SystemGroups.NOBODY, realm_for_sharding=realm, is_system_group=True
         )
         do_change_stream_group_based_setting(
             new_stream, "can_send_message_group", nobody_group, acting_user=desdemona
@@ -1135,7 +1135,7 @@ class MessageMoveStreamTest(ZulipTestCase):
         check_move_message_to_stream(iago, expect_fail=True)
 
         owners_group = NamedUserGroup.objects.get(
-            name=SystemGroups.OWNERS, realm=realm, is_system_group=True
+            name=SystemGroups.OWNERS, realm_for_sharding=realm, is_system_group=True
         )
         do_change_stream_group_based_setting(
             new_stream, "can_send_message_group", owners_group, acting_user=desdemona
@@ -1148,7 +1148,9 @@ class MessageMoveStreamTest(ZulipTestCase):
             "othello", "old_stream", "new_stream", "test"
         )
 
-        hamletcharacters_group = NamedUserGroup.objects.get(name="hamletcharacters", realm=realm)
+        hamletcharacters_group = NamedUserGroup.objects.get(
+            name="hamletcharacters", realm_for_sharding=realm
+        )
         do_change_stream_group_based_setting(
             new_stream, "can_send_message_group", hamletcharacters_group, acting_user=desdemona
         )
@@ -1181,7 +1183,7 @@ class MessageMoveStreamTest(ZulipTestCase):
             "polonius", "old_stream", "new_stream", "test"
         )
         everyone_group = NamedUserGroup.objects.get(
-            name=SystemGroups.EVERYONE, realm=realm, is_system_group=True
+            name=SystemGroups.EVERYONE, realm_for_sharding=realm, is_system_group=True
         )
         do_change_stream_group_based_setting(
             new_stream, "can_send_message_group", everyone_group, acting_user=desdemona
@@ -1198,10 +1200,10 @@ class MessageMoveStreamTest(ZulipTestCase):
         realm = hamlet.realm
 
         members_system_group = NamedUserGroup.objects.get(
-            name=SystemGroups.MEMBERS, realm=realm, is_system_group=True
+            name=SystemGroups.MEMBERS, realm_for_sharding=realm, is_system_group=True
         )
         nobody_system_group = NamedUserGroup.objects.get(
-            name=SystemGroups.NOBODY, realm=realm, is_system_group=True
+            name=SystemGroups.NOBODY, realm_for_sharding=realm, is_system_group=True
         )
 
         expected_error = "You don't have permission to move this message"
@@ -1289,7 +1291,7 @@ class MessageMoveStreamTest(ZulipTestCase):
         realm = desdemona.realm
 
         members_system_group = NamedUserGroup.objects.get(
-            name=SystemGroups.MEMBERS, realm=realm, is_system_group=True
+            name=SystemGroups.MEMBERS, realm_for_sharding=realm, is_system_group=True
         )
 
         do_change_realm_permission_group_setting(
@@ -1358,7 +1360,7 @@ class MessageMoveStreamTest(ZulipTestCase):
         realm = user_profile.realm
 
         administrators_system_group = NamedUserGroup.objects.get(
-            name=SystemGroups.ADMINISTRATORS, realm=realm, is_system_group=True
+            name=SystemGroups.ADMINISTRATORS, realm_for_sharding=realm, is_system_group=True
         )
 
         do_change_realm_permission_group_setting(
@@ -1371,7 +1373,7 @@ class MessageMoveStreamTest(ZulipTestCase):
         self.login("cordelia")
 
         members_system_group = NamedUserGroup.objects.get(
-            name=SystemGroups.MEMBERS, realm=realm, is_system_group=True
+            name=SystemGroups.MEMBERS, realm_for_sharding=realm, is_system_group=True
         )
 
         do_change_realm_permission_group_setting(
@@ -1784,7 +1786,7 @@ class MessageMoveStreamTest(ZulipTestCase):
         new_stream = second_stream
 
         nobody_system_group = NamedUserGroup.objects.get(
-            name=SystemGroups.NOBODY, realm=realm, is_system_group=True
+            name=SystemGroups.NOBODY, realm_for_sharding=realm, is_system_group=True
         )
 
         do_change_realm_permission_group_setting(

@@ -670,7 +670,7 @@ class TestChannelEmailMessagesPermissions(ZulipTestCase):
 
         do_change_user_role(hamlet, UserProfile.ROLE_MODERATOR, acting_user=None)
         moderators_group = NamedUserGroup.objects.get(
-            name=SystemGroups.MODERATORS, realm=realm, is_system_group=True
+            name=SystemGroups.MODERATORS, realm_for_sharding=realm, is_system_group=True
         )
         do_change_stream_group_based_setting(
             channel, "can_send_message_group", moderators_group, acting_user=hamlet
@@ -742,7 +742,7 @@ class TestChannelEmailMessagesPermissions(ZulipTestCase):
 
         do_change_user_role(hamlet, UserProfile.ROLE_MODERATOR, acting_user=None)
         admins_group = NamedUserGroup.objects.get(
-            name=SystemGroups.ADMINISTRATORS, realm=realm, is_system_group=True
+            name=SystemGroups.ADMINISTRATORS, realm_for_sharding=realm, is_system_group=True
         )
         do_change_stream_group_based_setting(
             channel, "can_send_message_group", admins_group, acting_user=hamlet
@@ -1400,7 +1400,9 @@ class TestMissedMessageEmailMessages(ZulipTestCase):
 
         stream = get_stream("announce", user_profile.realm)
         admins_group = NamedUserGroup.objects.get(
-            name=SystemGroups.ADMINISTRATORS, realm=user_profile.realm, is_system_group=True
+            name=SystemGroups.ADMINISTRATORS,
+            realm_for_sharding=user_profile.realm,
+            is_system_group=True,
         )
         do_change_stream_group_based_setting(
             stream, "can_send_message_group", admins_group, acting_user=user_profile

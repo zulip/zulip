@@ -41,7 +41,7 @@ class ChannelSubscriptionPermissionTest(ZulipTestCase):
         realm = user_profile.realm
 
         admins_group = NamedUserGroup.objects.get(
-            name=SystemGroups.ADMINISTRATORS, realm=realm, is_system_group=True
+            name=SystemGroups.ADMINISTRATORS, realm_for_sharding=realm, is_system_group=True
         )
         do_change_realm_permission_group_setting(
             realm, "can_add_subscribers_group", admins_group, acting_user=None
@@ -74,7 +74,7 @@ class ChannelSubscriptionPermissionTest(ZulipTestCase):
         self.assert_json_error(result, "Insufficient permission")
 
         nobody_group = NamedUserGroup.objects.get(
-            name=SystemGroups.NOBODY, realm=realm, is_system_group=True
+            name=SystemGroups.NOBODY, realm_for_sharding=realm, is_system_group=True
         )
         do_change_realm_permission_group_setting(
             realm, "can_add_subscribers_group", nobody_group, acting_user=None
@@ -94,7 +94,7 @@ class ChannelSubscriptionPermissionTest(ZulipTestCase):
         )
 
         moderators_group = NamedUserGroup.objects.get(
-            name=SystemGroups.MODERATORS, realm=realm, is_system_group=True
+            name=SystemGroups.MODERATORS, realm_for_sharding=realm, is_system_group=True
         )
         do_change_realm_permission_group_setting(
             realm, "can_add_subscribers_group", moderators_group, acting_user=None
@@ -124,7 +124,7 @@ class ChannelSubscriptionPermissionTest(ZulipTestCase):
         self.unsubscribe(user_profile, "stream2")
 
         members_group = NamedUserGroup.objects.get(
-            name=SystemGroups.MEMBERS, realm=realm, is_system_group=True
+            name=SystemGroups.MEMBERS, realm_for_sharding=realm, is_system_group=True
         )
         do_change_realm_permission_group_setting(
             realm, "can_add_subscribers_group", members_group, acting_user=None
@@ -147,7 +147,7 @@ class ChannelSubscriptionPermissionTest(ZulipTestCase):
         self.unsubscribe(user_profile, "stream2")
 
         full_members_group = NamedUserGroup.objects.get(
-            name=SystemGroups.FULL_MEMBERS, realm=realm, is_system_group=True
+            name=SystemGroups.FULL_MEMBERS, realm_for_sharding=realm, is_system_group=True
         )
         do_change_realm_permission_group_setting(
             realm, "can_add_subscribers_group", full_members_group, acting_user=None
@@ -213,7 +213,7 @@ class ChannelSubscriptionPermissionTest(ZulipTestCase):
         realm = user_profile.realm
 
         nobody_group = NamedUserGroup.objects.get(
-            name=SystemGroups.NOBODY, realm=realm, is_system_group=True
+            name=SystemGroups.NOBODY, realm_for_sharding=realm, is_system_group=True
         )
         do_change_realm_permission_group_setting(
             realm, "can_add_subscribers_group", nobody_group, acting_user=None
@@ -257,7 +257,7 @@ class ChannelSubscriptionPermissionTest(ZulipTestCase):
         # existing stream.
         stream2 = self.make_stream("stream2")
         moderators_group = NamedUserGroup.objects.get(
-            name=SystemGroups.MODERATORS, realm=realm, is_system_group=True
+            name=SystemGroups.MODERATORS, realm_for_sharding=realm, is_system_group=True
         )
         do_change_stream_group_based_setting(
             stream2, "can_add_subscribers_group", moderators_group, acting_user=user_profile
@@ -277,7 +277,7 @@ class ChannelSubscriptionPermissionTest(ZulipTestCase):
         self.unsubscribe(user_profile, "stream2")
 
         members_group = NamedUserGroup.objects.get(
-            name=SystemGroups.MEMBERS, realm=realm, is_system_group=True
+            name=SystemGroups.MEMBERS, realm_for_sharding=realm, is_system_group=True
         )
         do_change_stream_group_based_setting(
             stream2, "can_add_subscribers_group", members_group, acting_user=user_profile
@@ -318,7 +318,7 @@ class ChannelSubscriptionPermissionTest(ZulipTestCase):
         )
 
         full_members_group = NamedUserGroup.objects.get(
-            name=SystemGroups.FULL_MEMBERS, realm=realm, is_system_group=True
+            name=SystemGroups.FULL_MEMBERS, realm_for_sharding=realm, is_system_group=True
         )
         do_change_stream_group_based_setting(
             stream2, "can_add_subscribers_group", full_members_group, acting_user=user_profile
@@ -405,7 +405,7 @@ class ChannelSubscriptionPermissionTest(ZulipTestCase):
         stream = self.make_stream("public_stream")
 
         nobody_group = NamedUserGroup.objects.get(
-            name=SystemGroups.NOBODY, realm=realm, is_system_group=True
+            name=SystemGroups.NOBODY, realm_for_sharding=realm, is_system_group=True
         )
 
         def check_user_can_subscribe(user: UserProfile, error_msg: str | None = None) -> None:
@@ -485,7 +485,7 @@ class ChannelSubscriptionPermissionTest(ZulipTestCase):
         check_user_can_subscribe(othello, f"Unable to access channel ({stream.name}).")
 
         owners_group = NamedUserGroup.objects.get(
-            name=SystemGroups.OWNERS, realm=realm, is_system_group=True
+            name=SystemGroups.OWNERS, realm_for_sharding=realm, is_system_group=True
         )
         do_change_stream_group_based_setting(
             stream, "can_subscribe_group", owners_group, acting_user=othello
@@ -496,7 +496,9 @@ class ChannelSubscriptionPermissionTest(ZulipTestCase):
         check_user_can_subscribe(othello, f"Unable to access channel ({stream.name}).")
         check_user_can_subscribe(desdemona)
 
-        hamletcharacters_group = NamedUserGroup.objects.get(name="hamletcharacters", realm=realm)
+        hamletcharacters_group = NamedUserGroup.objects.get(
+            name="hamletcharacters", realm_for_sharding=realm
+        )
         do_change_stream_group_based_setting(
             stream, "can_subscribe_group", hamletcharacters_group, acting_user=othello
         )
@@ -772,16 +774,16 @@ class ChannelAdministerPermissionTest(ZulipTestCase):
         self.guest = self.example_user("polonius")
 
         self.hamletcharacters_group = NamedUserGroup.objects.get(
-            name="hamletcharacters", realm=self.realm
+            name="hamletcharacters", realm_for_sharding=self.realm
         )
         self.moderators_group = NamedUserGroup.objects.get(
-            name=SystemGroups.MODERATORS, realm=self.realm, is_system_group=True
+            name=SystemGroups.MODERATORS, realm_for_sharding=self.realm, is_system_group=True
         )
         self.nobody_group = NamedUserGroup.objects.get(
-            name=SystemGroups.NOBODY, realm=self.realm, is_system_group=True
+            name=SystemGroups.NOBODY, realm_for_sharding=self.realm, is_system_group=True
         )
         self.members_group = NamedUserGroup.objects.get(
-            name=SystemGroups.MEMBERS, realm=self.realm, is_system_group=True
+            name=SystemGroups.MEMBERS, realm_for_sharding=self.realm, is_system_group=True
         )
 
     def do_test_updating_channel(
@@ -1347,13 +1349,13 @@ class ChannelAdministerPermissionTest(ZulipTestCase):
         realm = user.realm
         stream = get_stream("Verona", realm)
         owners_system_group = NamedUserGroup.objects.get(
-            realm=realm, name=SystemGroups.OWNERS, is_system_group=True
+            realm_for_sharding=realm, name=SystemGroups.OWNERS, is_system_group=True
         )
         moderators_system_group = NamedUserGroup.objects.get(
-            realm=realm, name=SystemGroups.MODERATORS, is_system_group=True
+            realm_for_sharding=realm, name=SystemGroups.MODERATORS, is_system_group=True
         )
         members_system_group = NamedUserGroup.objects.get(
-            realm=realm, name=SystemGroups.MEMBERS, is_system_group=True
+            realm_for_sharding=realm, name=SystemGroups.MEMBERS, is_system_group=True
         )
         do_change_realm_permission_group_setting(
             realm,
