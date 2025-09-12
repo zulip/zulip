@@ -78,14 +78,6 @@ class Stream(models.Model):
             "is_web_public": False,
             "policy_name": gettext_lazy("Private, protected history"),
         },
-        # Public streams with protected history are currently only
-        # available in Zephyr realms
-        "public_protected_history": {
-            "invite_only": False,
-            "history_public_to_subscribers": False,
-            "is_web_public": False,
-            "policy_name": gettext_lazy("Public, protected history"),
-        },
     }
     invite_only = models.BooleanField(default=False)
     history_public_to_subscribers = models.BooleanField(default=True)
@@ -260,8 +252,7 @@ class Stream(models.Model):
         return self.name
 
     def is_public(self) -> bool:
-        # All streams are private in Zephyr mirroring realms.
-        return not self.invite_only and not self.is_in_zephyr_realm
+        return not self.invite_only
 
     def is_history_realm_public(self) -> bool:
         return self.is_public()

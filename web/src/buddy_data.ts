@@ -9,7 +9,6 @@ import {page_params} from "./page_params.ts";
 import * as peer_data from "./peer_data.ts";
 import * as people from "./people.ts";
 import * as presence from "./presence.ts";
-import {realm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import * as timerender from "./timerender.ts";
 import * as unread from "./unread.ts";
@@ -176,10 +175,7 @@ export function user_last_seen_time_status(
     }
 
     const last_active_date = presence.last_active_date(user_id);
-    if (realm.realm_is_zephyr_mirror_realm) {
-        // We don't send presence data to clients in Zephyr mirroring realms
-        return $t({defaultMessage: "Activity unknown"});
-    } else if (last_active_date === undefined) {
+    if (last_active_date === undefined) {
         // There are situations where the client has incomplete presence
         // history on a user. This can happen when users are deactivated,
         // or when the user's last activity is older than what we fetch.

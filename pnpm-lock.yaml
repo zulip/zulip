@@ -296,9 +296,6 @@ importers:
       webpack-cli:
         specifier: ^6.0.1
         version: 6.0.1(webpack-dev-server@5.2.2)(webpack@5.101.3)
-      winchan:
-        specifier: ^0.2.1
-        version: 0.2.2
       zod:
         specifier: ^4.1.5
         version: 4.1.5
@@ -396,9 +393,6 @@ importers:
       '@types/turndown':
         specifier: ^5.0.1
         version: 5.0.5
-      '@types/winchan':
-        specifier: ^0.2.0
-        version: 0.2.0
       '@typescript-eslint/eslint-plugin':
         specifier: ^8.2.0
         version: 8.42.0(@typescript-eslint/parser@8.42.0(eslint@9.34.0(jiti@2.5.1))(typescript@5.9.2))(eslint@9.34.0(jiti@2.5.1))(typescript@5.9.2)
@@ -2821,9 +2815,6 @@ packages:
 
   '@types/unist@3.0.3':
     resolution: {integrity: sha512-ko/gIFJRv177XgZsZcBwnqJN5x/Gien8qNOn0D5bQU/zAzVf9Zt3BlcUiLqhV9y4ARk0GbT3tnUiPNgnTXzc/Q==}
-
-  '@types/winchan@0.2.0':
-    resolution: {integrity: sha512-1NyyjFkmpFf9T5hpyB1KgS4kljPwy45nxaq/I6CndEU2kw6BpxzFIAa0SXs620EtnEsvkFljquX+yRdlLxqDkA==}
 
   '@types/ws@8.18.1':
     resolution: {integrity: sha512-ThVF6DCVhA8kUGy+aazFQ4kXQ7E1Ty7A3ypFOe0IcJV8O/M511G99AW24irKrW56Wt44yG9+ij8FaqoBGkuBXg==}
@@ -9737,9 +9728,6 @@ packages:
   wildcard@2.0.1:
     resolution: {integrity: sha512-CC1bOL87PIWSBhDcTrdeLo6eGT7mCFtrg0uIJtqJUFyK+eJnzl8A1niH56uu7KMa5XFrtiV+AQuHO3n7DsHnLQ==}
 
-  winchan@0.2.2:
-    resolution: {integrity: sha512-pvN+IFAbRP74n/6mc6phNyCH8oVkzXsto4KCHPJ2AScniAnA1AmeLI03I2BzjePpaClGSI4GUMowzsD3qz5PRQ==}
-
   winston-transport@4.9.0:
     resolution: {integrity: sha512-8drMJ4rkgaPo1Me4zD/3WLfI/zPdA9o2IipKODunnGDcuqbHwjsbB79ylv04LCGGzU0xQ6vTznOMpQGaLhhm6A==}
     engines: {node: '>= 12.0.0'}
@@ -12414,8 +12402,6 @@ snapshots:
   '@types/unist@2.0.11': {}
 
   '@types/unist@3.0.3': {}
-
-  '@types/winchan@0.2.0': {}
 
   '@types/ws@8.18.1':
     dependencies:
@@ -21363,8 +21349,6 @@ snapshots:
   wildcard@1.1.2: {}
 
   wildcard@2.0.1: {}
-
-  winchan@0.2.2: {}
 
   winston-transport@4.9.0:
     dependencies:

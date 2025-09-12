@@ -1558,8 +1558,8 @@ export function _add_user(person: User): void {
         // We eventually want to lock this down completely
         // and report an error and not update other the data
         // structures here, but we have a lot of edge cases
-        // with cross-realm bots, zephyr users, etc., deactivated
-        // users, where we are probably fine for now not to
+        // with cross-realm bots, deactivated users, etc.,
+        // where we are probably fine for now not to
         // find them via user_id lookups.
         blueslip.warn("No user_id provided", {email: person.email});
     }

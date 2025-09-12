@@ -212,7 +212,6 @@ function test(label, f) {
         peer_data.clear_for_testing();
         people.clear_recipient_counts_for_testing();
         helpers.override(current_user, "is_admin", false);
-        helpers.override(realm, "realm_is_zephyr_mirror_realm", false);
 
         f(helpers);
     });

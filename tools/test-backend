@@ -94,10 +94,8 @@ not_yet_fully_covered = [
     "zerver/lib/queue.py",
     "zerver/lib/sqlalchemy_utils.py",
     "zerver/lib/storage.py",
-    "zerver/lib/zephyr.py",
     "zerver/lib/templates.py",
     # Low priority for coverage
-    "zerver/lib/ccache.py",
     "zerver/lib/generate_test_data.py",
     "zerver/lib/server_initialization.py",
     "zerver/lib/test_fixtures.py",

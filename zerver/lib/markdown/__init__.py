@@ -2136,7 +2136,6 @@ def get_sub_registry(r: markdown.util.Registry[T], keys: list[str]) -> markdown.
 # These are used as keys ("linkifiers_keys") to md_engines and the respective
 # linkifier caches
 DEFAULT_MARKDOWN_KEY = -1
-ZEPHYR_MIRROR_MARKDOWN_KEY = -2
 
 
 class ZulipMarkdown(markdown.Markdown):
@@ -2184,7 +2183,6 @@ class ZulipMarkdown(markdown.Markdown):
         self.inlinePatterns = self.build_inlinepatterns()
         self.treeprocessors = self.build_treeprocessors()
         self.postprocessors = self.build_postprocessors()
-        self.handle_zephyr_mirror()
         return self
 
     def build_preprocessors(self) -> markdown.util.Registry[markdown.preprocessors.Preprocessor]:
@@ -2346,26 +2344,6 @@ class ZulipMarkdown(markdown.Markdown):
             markdown.postprocessors.AndSubstitutePostprocessor(), "amp_substitute", 15
         )
         return postprocessors
-
-    def handle_zephyr_mirror(self) -> None:
-        if self.linkifiers_key == ZEPHYR_MIRROR_MARKDOWN_KEY:
-            # Disable almost all inline patterns for zephyr mirror
-            # users' traffic that is mirrored.  Note that
-            # inline_interesting_links is a treeprocessor and thus is
-            # not removed
-            self.inlinePatterns = get_sub_registry(self.inlinePatterns, ["autolink"])
-            self.treeprocessors = get_sub_registry(
-                self.treeprocessors, ["inline_interesting_links", "rewrite_images_proxy"]
-            )
-            # insert new 'inline' processor because we have changed self.inlinePatterns
-            # but InlineProcessor copies md as self.md in __init__.
-            self.treeprocessors.register(
-                markdown.treeprocessors.InlineProcessor(self), "inline", 25
-            )
-            self.preprocessors = get_sub_registry(self.preprocessors, ["custom_text_notifications"])
-            self.parser.blockprocessors = get_sub_registry(
-                self.parser.blockprocessors, ["paragraph"]
-            )
 
 
 md_engines: dict[tuple[int, bool], ZulipMarkdown] = {}
@@ -2580,16 +2558,6 @@ def do_convert(
         logging_message_id = "id# " + str(message.id)
     else:
         logging_message_id = "unknown"
-
-    if (
-        message is not None
-        and message_realm is not None
-        and message_realm.is_zephyr_mirror_realm
-        and message.sending_client.name == "zephyr_mirror"
-    ):
-        # Use slightly customized Markdown processor for content
-        # delivered via zephyr_mirror
-        linkifiers_key = ZEPHYR_MIRROR_MARKDOWN_KEY
 
     maybe_update_markdown_engines(linkifiers_key, email_gateway)
     md_engine_key = (linkifiers_key, email_gateway)

@@ -37,7 +37,6 @@ from zerver.lib.exceptions import (
     StreamWithIDDoesNotExistError,
     TopicsNotAllowedError,
     TopicWildcardMentionNotAllowedError,
-    ZephyrMessageAlreadySentError,
 )
 from zerver.lib.markdown import MessageRenderingResult, render_message_markdown
 from zerver.lib.markdown import version as markdown_version
@@ -844,7 +843,7 @@ def get_active_presence_idle_user_ids(
           UserPresence table.
     """
 
-    if realm.presence_disabled:
+    if realm.presence_disabled:  # nocoverage
         return []
 
     user_ids = set()
@@ -1269,35 +1268,6 @@ def do_send_messages(
     return sent_message_results
 
 
-def already_sent_mirrored_message_id(message: Message) -> int | None:
-    if message.recipient.type == Recipient.DIRECT_MESSAGE_GROUP:
-        # For group direct messages, we use a 10-second window because
-        # the timestamps aren't guaranteed to actually match between
-        # two copies of the same message.
-        time_window = timedelta(seconds=10)
-    else:
-        time_window = timedelta(seconds=0)
-
-    messages = Message.objects.filter(
-        # Uses index: zerver_message_realm_recipient_subject for
-        # channel messages or zerver_message_realm_sender_recipient for
-        # DMs
-        realm_id=message.realm_id,
-        sender=message.sender,
-        recipient=message.recipient,
-        subject=message.topic_name(),
-        is_channel_message=message.is_channel_message,
-        content=message.content,
-        sending_client=message.sending_client,
-        date_sent__gte=message.date_sent - time_window,
-        date_sent__lte=message.date_sent + time_window,
-    )
-
-    if messages.exists():
-        return messages[0].id
-    return None
-
-
 def extract_stream_indicator(s: str) -> str | int:
     # Users can pass stream name as either an id or a name,
     # and if they choose to pass a name, they may JSON encode
@@ -1440,23 +1410,20 @@ def check_send_message(
     read_by_sender: bool = False,
 ) -> SentMessageResult:
     addressee = Addressee.legacy_build(sender, recipient_type_name, message_to, topic_name)
-    try:
-        message = check_message(
-            sender,
-            client,
-            addressee,
-            message_content,
-            realm,
-            forged,
-            forged_timestamp,
-            forwarder_user_profile,
-            local_id,
-            sender_queue_id,
-            widget_content,
-            skip_stream_access_check=skip_stream_access_check,
-        )
-    except ZephyrMessageAlreadySentError as e:
-        return SentMessageResult(message_id=e.message_id)
+    message = check_message(
+        sender,
+        client,
+        addressee,
+        message_content,
+        realm,
+        forged,
+        forged_timestamp,
+        forwarder_user_profile,
+        local_id,
+        sender_queue_id,
+        widget_content,
+        skip_stream_access_check=skip_stream_access_check,
+    )
     return do_send_messages([message], mark_as_read=[sender.id] if read_by_sender else [])[0]
 
 
@@ -1467,7 +1434,7 @@ def send_rate_limited_pm_notification_to_bot_owner(
     Sends a direct message error notification to a bot's owner if one
     hasn't already been sent in the last 5 minutes.
     """
-    if sender.realm.is_zephyr_mirror_realm or sender.realm.deactivated:
+    if sender.realm.deactivated:
         return
 
     if not sender.is_bot or sender.bot_owner is None:
@@ -1799,7 +1766,6 @@ def check_message(
     elif addressee.is_private():
         user_profiles = addressee.user_profiles()
         mirror_message = client.name in [
-            "zephyr_mirror",
             "irc_mirror",
             "jabber_mirror",
             "JabberMirror",
@@ -1850,11 +1816,6 @@ def check_message(
 
     # We render messages later in the process.
     assert message.rendered_content is None
-
-    if client.name == "zephyr_mirror":
-        id = already_sent_mirrored_message_id(message)
-        if id is not None:
-            raise ZephyrMessageAlreadySentError(id)
 
     widget_content_dict = None
     if widget_content is not None:

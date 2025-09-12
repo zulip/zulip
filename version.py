@@ -49,4 +49,4 @@ API_FEATURE_LEVEL = 425
 #   historical commits sharing the same major version, in which case a
 #   minor version bump suffices.
 
-PROVISION_VERSION = (348, 1)  # bumped 2025-09-10 to add astro-compressor.
+PROVISION_VERSION = (349, 0)  # bumped 2025-09-12 to remove winchan

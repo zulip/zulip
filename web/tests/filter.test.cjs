@@ -1434,48 +1434,6 @@ test("negated_predicates", () => {
     assert.ok(predicate({}));
 });
 
-function test_mit_exceptions() {
-    const foo_stream_id = new_stream_id();
-    make_sub("Foo", foo_stream_id);
-    let predicate = get_predicate([
-        ["channel", foo_stream_id.toString()],
-        ["topic", "personal"],
-    ]);
-    assert.ok(predicate({type: stream_message, stream_id: foo_stream_id, topic: "personal"}));
-    assert.ok(predicate({type: stream_message, stream_id: foo_stream_id, topic: ""}));
-    // 9999 doesn't correspond to any channel
-    assert.ok(!predicate({type: stream_message, stream_id: 9999}));
-    assert.ok(!predicate({type: stream_message, stream_id: foo_stream_id, topic: "whatever"}));
-    assert.ok(!predicate({type: direct_message}));
-
-    predicate = get_predicate([
-        ["channel", foo_stream_id.toString()],
-        ["topic", "bar"],
-    ]);
-    assert.ok(predicate({type: stream_message, stream_id: foo_stream_id, topic: "bar.d"}));
-
-    // Try to get the MIT regex to explode for an empty channel.
-    let terms = [
-        {operator: "channel", operand: ""},
-        {operator: "topic", operand: "bar"},
-    ];
-    predicate = new Filter(terms).predicate();
-    assert.ok(!predicate({type: stream_message, stream_id: foo_stream_id, topic: "bar"}));
-
-    // Try to get the MIT regex to explode for an empty topic.
-    terms = [
-        {operator: "channel", operand: foo_stream_id.toString()},
-        {operator: "topic", operand: ""},
-    ];
-    predicate = new Filter(terms).predicate();
-    assert.ok(!predicate({type: stream_message, stream_id: foo_stream_id, topic: "bar"}));
-}
-
-test("mit_exceptions", ({override}) => {
-    override(realm, "realm_is_zephyr_mirror_realm", true);
-    test_mit_exceptions();
-});
-
 test("predicate_edge_cases", () => {
     let predicate;
     // The code supports undefined as an operator to Filter, which results

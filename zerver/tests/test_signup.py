@@ -59,7 +59,6 @@ from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import (
     HostRequestMock,
     avatar_disk_path,
-    dns_txt_answer,
     find_key_by_email,
     get_test_image_file,
     load_subdomain_token,
@@ -4359,14 +4358,7 @@ class UserSignUpTest(ZulipTestCase):
         mirror_dummy.refresh_from_db()
         self.assertEqual(mirror_dummy.role, UserProfile.ROLE_GUEST)
 
-    @patch(
-        "dns.resolver.resolve",
-        return_value=dns_txt_answer(
-            "sipbtest.passwd.ns.athena.mit.edu.",
-            "sipbtest:*:20922:101:Fred Sipb,,,:/mit/sipbtest:/bin/athena/tcsh",
-        ),
-    )
-    def test_registration_of_mirror_dummy_user(self, ignored: Any) -> None:
+    def test_registration_of_mirror_dummy_user(self) -> None:
         password = "test"
         subdomain = "zephyr"
         user_profile = self.mit_user("sipbtest")
@@ -4443,14 +4435,7 @@ class UserSignUpTest(ZulipTestCase):
         self.assertEqual(result.status_code, 302)
         self.assert_logged_in_user_id(user_profile.id)
 
-    @patch(
-        "dns.resolver.resolve",
-        return_value=dns_txt_answer(
-            "sipbtest.passwd.ns.athena.mit.edu.",
-            "sipbtest:*:20922:101:Fred Sipb,,,:/mit/sipbtest:/bin/athena/tcsh",
-        ),
-    )
-    def test_registration_of_active_mirror_dummy_user(self, ignored: Any) -> None:
+    def test_registration_of_active_mirror_dummy_user(self) -> None:
         """
         Trying to activate an already-active mirror dummy user should
         raise an AssertionError.
