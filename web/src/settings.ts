@@ -85,7 +85,10 @@ export function build_page(): void {
         ...settings_config.notification_settings_labels,
         ...settings_config.preferences_settings_labels,
     };
-
+    const timezone_items = timezones.timezones.map((tz: {name: string; utc_offset: string}) => ({
+        value: tz.name,
+        label: `${tz.name} (${tz.utc_offset})`,
+    }));
     const rendered_settings_tab = render_settings_tab({
         full_name: people.my_full_name(),
         profile_picture: people.small_avatar_url_for_person(
@@ -99,7 +102,7 @@ export function build_page(): void {
             user_settings.enable_sounds || user_settings.enable_stream_audible_notifications,
         zuliprc: "zuliprc",
         botserverrc: "botserverrc",
-        timezones: timezones.timezones,
+        timezone_items,
         can_create_new_bots: settings_bots.can_create_incoming_webhooks(),
         settings_label,
         demote_inactive_streams_values: settings_config.demote_inactive_streams_values,
