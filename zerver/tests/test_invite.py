@@ -636,7 +636,7 @@ class InviteUserTest(InviteUserBase):
         """
         A mirror dummy account is a temporary account
         that we keep in our system if we are mirroring
-        data from something like Zephyr or IRC.
+        data from something like IRC.
 
         We want users to eventually just sign up or
         register for Zulip, in which case we will just

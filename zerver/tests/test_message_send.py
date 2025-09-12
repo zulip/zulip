@@ -54,7 +54,6 @@ from zerver.lib.stream_subscription import create_stream_subscription
 from zerver.lib.streams import create_stream_if_needed
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import (
-    dns_txt_answer,
     get_user_messages,
     make_client,
     message_stream_count,
@@ -499,19 +498,6 @@ class MessagePOSTTest(ZulipTestCase):
         )
         do_change_stream_group_based_setting(
             stream, "can_send_message_group", guest_user_group_member_dict, acting_user=othello
-        )
-        do_change_stream_permission(
-            stream,
-            invite_only=False,
-            history_public_to_subscribers=False,
-            is_web_public=False,
-            acting_user=othello,
-        )
-        self._send_and_verify_message(
-            guest_user,
-            stream_name,
-            "Not authorized to send to channel 'private_stream",
-            allow_unsubscribed_sender=True,
         )
 
         do_change_stream_permission(
@@ -1000,7 +986,7 @@ class MessagePOSTTest(ZulipTestCase):
                 "type": "direct",
                 "sender": self.mit_email("sipbtest"),
                 "content": "Test message",
-                "client": "zephyr_mirror",
+                "client": "irc_mirror",
                 "to": orjson.dumps(
                     [self.mit_email("starnine"), self.mit_email("espuser")]
                 ).decode(),
@@ -1020,7 +1006,7 @@ class MessagePOSTTest(ZulipTestCase):
                 "type": "direct",
                 "sender": self.mit_email("sipbtest"),
                 "content": "Test message",
-                "client": "zephyr_mirror",
+                "client": "irc_mirror",
                 "to": orjson.dumps([self.mit_email("starnine")]).decode(),
             },
             subdomain="zephyr",
@@ -1039,7 +1025,7 @@ class MessagePOSTTest(ZulipTestCase):
                 "type": "direct",
                 "sender": self.mit_email("sipbtest"),
                 "content": "Test message",
-                "client": "zephyr_mirror",
+                "client": "irc_mirror",
                 "to": self.mit_email("starnine"),
             },
             subdomain="zephyr",
@@ -1057,50 +1043,12 @@ class MessagePOSTTest(ZulipTestCase):
                 "type": "direct",
                 "sender": self.mit_email("sipbtest"),
                 "content": "Test message",
-                "client": "zephyr_mirror",
+                "client": "irc_mirror",
                 "to": self.mit_email("espuser"),
             },
             subdomain="zephyr",
         )
         self.assert_json_error(result, "User not authorized for this query")
-
-    def test_duplicated_mirrored_direct_message_group(self) -> None:
-        """
-        Sending two mirrored direct message groups in the row return the same ID
-        """
-        msg = {
-            "type": "direct",
-            "sender": self.mit_email("sipbtest"),
-            "content": "Test message",
-            "client": "zephyr_mirror",
-            "to": orjson.dumps([self.mit_email("espuser"), self.mit_email("starnine")]).decode(),
-        }
-
-        with mock.patch(
-            "dns.resolver.resolve",
-            return_value=dns_txt_answer(
-                "starnine.passwd.ns.athena.mit.edu.",
-                "starnine:*:84233:101:Athena Consulting Exchange User,,,:/mit/starnine:/bin/bash",
-            ),
-        ):
-            result1 = self.api_post(
-                self.mit_user("starnine"), "/api/v1/messages", msg, subdomain="zephyr"
-            )
-            self.assert_json_success(result1)
-
-        with mock.patch(
-            "dns.resolver.resolve",
-            return_value=dns_txt_answer(
-                ("espuser.passwd.ns.athena.mit.edu."),
-                "espuser:*:95494:101:Esp Classroom,,,:/mit/espuser:/bin/athena/bash",
-            ),
-        ):
-            result2 = self.api_post(
-                self.mit_user("espuser"), "/api/v1/messages", msg, subdomain="zephyr"
-            )
-            self.assert_json_success(result2)
-
-        self.assertEqual(orjson.loads(result1.content)["id"], orjson.loads(result2.content)["id"])
 
     def test_message_with_null_bytes(self) -> None:
         """
@@ -1209,7 +1157,7 @@ class MessagePOSTTest(ZulipTestCase):
             {
                 "type": "direct",
                 "content": "Test message",
-                "client": "zephyr_mirror",
+                "client": "irc_mirror",
                 "to": self.mit_email("starnine"),
             },
             subdomain="zephyr",
@@ -1224,7 +1172,7 @@ class MessagePOSTTest(ZulipTestCase):
                 "type": "channel",
                 "sender": self.mit_email("sipbtest"),
                 "content": "Test message",
-                "client": "zephyr_mirror",
+                "client": "irc_mirror",
                 "to": self.mit_email("starnine"),
             },
             subdomain="zephyr",
@@ -1243,7 +1191,7 @@ class MessagePOSTTest(ZulipTestCase):
                 "type": "direct",
                 "sender": self.mit_email("sipbtest"),
                 "content": "Test message",
-                "client": "zephyr_mirror",
+                "client": "irc_mirror",
                 "to": self.mit_email("starnine"),
             },
             subdomain="zephyr",
@@ -1251,29 +1199,7 @@ class MessagePOSTTest(ZulipTestCase):
         self.assert_json_error(result, "Invalid mirrored message")
 
     @mock.patch("zerver.views.message_send.create_mirrored_message_users")
-    def test_send_message_when_client_is_zephyr_mirror_but_string_id_is_not_zephyr(
-        self, create_mirrored_message_users_mock: Any
-    ) -> None:
-        create_mirrored_message_users_mock.return_value = mock.Mock()
-        user = self.mit_user("starnine")
-        user.realm.string_id = "notzephyr"
-        user.realm.save()
-        result = self.api_post(
-            user,
-            "/api/v1/messages",
-            {
-                "type": "direct",
-                "sender": self.mit_email("sipbtest"),
-                "content": "Test message",
-                "client": "zephyr_mirror",
-                "to": user.email,
-            },
-            subdomain="notzephyr",
-        )
-        self.assert_json_error(result, "Zephyr mirroring is not allowed in this organization")
-
-    @mock.patch("zerver.views.message_send.create_mirrored_message_users")
-    def test_send_message_when_client_is_zephyr_mirror_but_recipient_is_user_id(
+    def test_send_message_when_client_is_mirror_but_recipient_is_user_id(
         self, create_mirrored_message_users_mock: Any
     ) -> None:
         create_mirrored_message_users_mock.return_value = mock.Mock()
@@ -1286,7 +1212,7 @@ class MessagePOSTTest(ZulipTestCase):
                 "type": "direct",
                 "sender": self.mit_email("sipbtest"),
                 "content": "Test message",
-                "client": "zephyr_mirror",
+                "client": "irc_mirror",
                 "to": orjson.dumps([user.id]).decode(),
             },
             subdomain="zephyr",
@@ -2442,7 +2368,7 @@ class StreamMessagesTest(ZulipTestCase):
                 "type": "channel",
                 "to": orjson.dumps("Verona").decode(),
                 "sender": self.mit_email("sipbtest"),
-                "client": "zephyr_mirror",
+                "client": "irc_mirror",
                 "topic": "announcement",
                 "content": "Everyone knows Iago rules",
                 "forged": "true",
@@ -2459,7 +2385,7 @@ class StreamMessagesTest(ZulipTestCase):
                 "type": "channel",
                 "to": "Verona",
                 "sender": self.mit_email("sipbtest"),
-                "client": "zephyr_mirror",
+                "client": "irc_mirror",
                 "topic": "announcement",
                 "content": "Everyone knows Iago rules",
                 "forged": "true",

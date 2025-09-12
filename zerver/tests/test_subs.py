@@ -239,7 +239,6 @@ class StreamAdminTest(ZulipTestCase):
         self.assert_json_error(result, "Channel content access is required.")
 
         stream = self.subscribe(user_profile, "private_stream_1")
-        self.assertFalse(stream.is_in_zephyr_realm)
 
         do_change_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
         params = {
@@ -463,44 +462,6 @@ class StreamAdminTest(ZulipTestCase):
         self.assertEqual(actual_stream_descriptions, set(stream_descriptions))
         for stream in new_streams:
             self.assertTrue(stream.is_web_public)
-
-    def test_make_stream_public_zephyr_mirror(self) -> None:
-        user_profile = self.mit_user("starnine")
-        self.login_user(user_profile)
-        realm = user_profile.realm
-        self.make_stream("target_stream", realm=realm, invite_only=True)
-        self.subscribe(user_profile, "target_stream")
-
-        do_change_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
-        params = {
-            "is_private": orjson.dumps(False).decode(),
-        }
-        stream_id = get_stream("target_stream", realm).id
-        result = self.client_patch(f"/json/streams/{stream_id}", params, subdomain="zephyr")
-        self.assert_json_success(result)
-        stream = get_stream("target_stream", realm)
-        self.assertFalse(stream.invite_only)
-        self.assertFalse(stream.history_public_to_subscribers)
-
-        messages = get_topic_messages(user_profile, stream, "channel events")
-        self.assert_length(messages, 1)
-        expected_notification = (
-            f"@_**{user_profile.full_name}|{user_profile.id}** changed the [access permissions](/help/channel-permissions) "
-            "for this channel from **Private, protected history** to **Public, protected history**."
-        )
-        self.assertEqual(messages[0].content, expected_notification)
-
-        realm_audit_log = RealmAuditLog.objects.filter(
-            event_type=AuditLogEventType.CHANNEL_PROPERTY_CHANGED,
-            modified_stream=stream,
-        ).last()
-        assert realm_audit_log is not None
-        expected_extra_data = {
-            RealmAuditLog.OLD_VALUE: True,
-            RealmAuditLog.NEW_VALUE: False,
-            "property": "invite_only",
-        }
-        self.assertEqual(realm_audit_log.extra_data, expected_extra_data)
 
     def test_make_stream_private_with_public_history(self) -> None:
         # Convert a public stream to a private stream with shared history
@@ -1023,11 +984,9 @@ class StreamAdminTest(ZulipTestCase):
             )
 
     def test_try_make_stream_public_with_private_history(self) -> None:
-        # We only support public streams with private history if
-        # is_zephyr_mirror_realm, and don't allow changing stream
-        # permissions in such realms.  So changing the
-        # history_public_to_subscribers property of a public stream is
-        # not possible in Zulip today
+        # We don't support public streams with private history, so
+        # changing the history_public_to_subscribers property of a
+        # public stream is not possible in Zulip today
         user_profile = self.example_user("hamlet")
         self.login_user(user_profile)
         realm = user_profile.realm
@@ -4317,70 +4276,6 @@ class SubscriptionAPITest(ZulipTestCase):
 
             self.assert_length(event_stream_objects, 1)
             self.assertEqual(event_stream_objects[0]["stream_id"], private.id)
-
-    def test_bulk_subscribe_MIT(self) -> None:
-        mit_user = self.mit_user("starnine")
-        num_streams = 15
-
-        realm = get_realm("zephyr")
-        stream_names = [f"stream_{i}" for i in range(num_streams)]
-        streams = [self.make_stream(stream_name, realm=realm) for stream_name in stream_names]
-
-        for stream in streams:
-            stream.is_in_zephyr_realm = True
-            stream.save(update_fields=["is_in_zephyr_realm"])
-
-        # Verify that peer_event events are never sent in Zephyr
-        # realm. This does generate stream creation events from
-        # send_stream_creation_events_for_previously_inaccessible_streams.
-        with self.assert_database_query_count(num_streams + 19):
-            with self.capture_send_event_calls(expected_num_events=num_streams + 1) as events:
-                self.subscribe_via_post(
-                    mit_user,
-                    stream_names,
-                    dict(principals=orjson.dumps([mit_user.id]).decode()),
-                    subdomain="zephyr",
-                )
-            # num_streams stream creation events:
-            self.assertEqual(
-                {(event["event"]["type"], event["event"]["op"]) for event in events[0:num_streams]},
-                {("stream", "create")},
-            )
-            # Followed by one subscription event:
-            self.assertEqual(events[num_streams]["event"]["type"], "subscription")
-
-        with self.capture_send_event_calls(expected_num_events=2):
-            bulk_remove_subscriptions(
-                realm,
-                users=[mit_user],
-                streams=streams,
-                acting_user=None,
-            )
-
-    def test_subscribe_others_to_public_stream_in_zephyr_realm(self) -> None:
-        """
-        Users cannot be subscribed to public streams by other users in zephyr realm.
-        """
-        starnine = self.mit_user("starnine")
-        espuser = self.mit_user("espuser")
-
-        realm = get_realm("zephyr")
-        stream = self.make_stream("stream_1", realm=realm)
-        stream.is_in_zephyr_realm = True
-        stream.save(update_fields=["is_in_zephyr_realm"])
-
-        result = self.subscribe_via_post(
-            starnine,
-            ["stream_1"],
-            dict(principals=orjson.dumps([starnine.id, espuser.id]).decode()),
-            subdomain="zephyr",
-            allow_fail=True,
-        )
-        self.assert_json_error(
-            result,
-            "You can only invite other Zephyr mirroring users to private channels.",
-            status_code=400,
-        )
 
     def test_bulk_subscribe_many(self) -> None:
         # Create a whole bunch of streams

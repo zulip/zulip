@@ -32,8 +32,6 @@ class SlowQueryTest(ZulipTestCase):
         self.assertFalse(is_slow_query(2, "/activity"))
         self.assertFalse(is_slow_query(2, "/realm_activity/whatever"))
         self.assertFalse(is_slow_query(2, "/user_activity/whatever"))
-        self.assertFalse(is_slow_query(9, "/accounts/webathena_kerberos_login/"))
-        self.assertTrue(is_slow_query(11, "/accounts/webathena_kerberos_login/"))
 
     def test_slow_query_log(self) -> None:
         self.log_data["time_started"] = time.time() - self.SLOW_QUERY_TIME

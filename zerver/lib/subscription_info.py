@@ -196,7 +196,7 @@ def build_stream_api_dict(
         stream_weekly_traffic = get_average_weekly_stream_traffic(
             raw_stream_dict["id"], raw_stream_dict["date_created"], recent_traffic
         )
-    else:
+    else:  # nocoverage
         stream_weekly_traffic = None
 
     # Backwards-compatibility for clients that haven't been
@@ -388,7 +388,7 @@ def build_stream_dict_for_never_sub(
         stream_weekly_traffic = get_average_weekly_stream_traffic(
             raw_stream_dict["id"], raw_stream_dict["date_created"], recent_traffic
         )
-    else:
+    else:  # nocoverage
         stream_weekly_traffic = None
 
     can_add_subscribers_group_value = get_group_setting_value_for_register_api(

@@ -569,12 +569,6 @@ test("user_last_seen_time_status", ({override}) => {
 
     assert.equal(buddy_data.user_last_seen_time_status(selma.user_id), "translated: Active now");
 
-    override(realm, "realm_is_zephyr_mirror_realm", true);
-    assert.equal(
-        buddy_data.user_last_seen_time_status(old_user.user_id),
-        "translated: Activity unknown",
-    );
-    override(realm, "realm_is_zephyr_mirror_realm", false);
     assert.equal(
         buddy_data.user_last_seen_time_status(old_user.user_id),
         "translated: Not active in the last year",

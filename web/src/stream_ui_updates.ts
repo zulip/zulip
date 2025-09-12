@@ -512,7 +512,7 @@ export function update_add_subscriptions_elements(sub: SettingsSubscription): vo
     // We are only concerned with the Subscribers tab for editing streams.
     const $add_subscribers_container = $(".edit_subscribers_for_stream .subscriber_list_settings");
 
-    if (current_user.is_guest || realm.realm_is_zephyr_mirror_realm) {
+    if (current_user.is_guest) {
         // For guest users, we just hide the add_subscribers feature.
         $add_subscribers_container.hide();
         return;

@@ -518,11 +518,6 @@ class InvalidSubdomainError(JsonableError):
         return _("Invalid subdomain")
 
 
-class ZephyrMessageAlreadySentError(Exception):
-    def __init__(self, message_id: int) -> None:
-        self.message_id = message_id
-
-
 class InvitationError(JsonableError):
     code = ErrorCode.INVITATION_FAILED
     data_fields = [

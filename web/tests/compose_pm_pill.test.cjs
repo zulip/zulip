@@ -192,7 +192,7 @@ run_test("has_unconverted_data", ({override}) => {
 
     override(compose_pm_pill.widget, "items", () => [{user_id: 99}, {email: "random@mit.edu"}]);
 
-    // One of our items only knows email (as in a bridge-with-zephyr
+    // One of our items only knows email (as in a bridge
     // scenario where we might not have registered the user yet), so
     // we have some unconverted data.
     assert.equal(compose_pm_pill.has_unconverted_data(), true);

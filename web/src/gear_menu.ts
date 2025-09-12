@@ -1,13 +1,9 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
 import type * as tippy from "tippy.js";
-import WinChan from "winchan";
-import * as z from "zod/mini";
 
 import render_navbar_gear_menu_popover from "../templates/popovers/navbar/navbar_gear_menu_popover.hbs";
 
-import * as blueslip from "./blueslip.ts";
-import * as channel from "./channel.ts";
 import * as demo_organizations_ui from "./demo_organizations_ui.ts";
 import * as information_density from "./information_density.ts";
 import * as popover_menus from "./popover_menus.ts";
@@ -117,63 +113,6 @@ export function initialize(): void {
         onMount(instance) {
             const $popper = $(instance.popper);
             popover_menus.popover_instances.gear_menu = instance;
-            $popper.on("click", ".webathena_login", (e) => {
-                $("#zephyr-mirror-error").removeClass("show");
-                const principal = ["zephyr", "zephyr"];
-                WinChan.open(
-                    {
-                        url: "https://webathena.mit.edu/#!request_ticket_v1",
-                        relay_url: "https://webathena.mit.edu/relay.html",
-                        params: {
-                            realm: "ATHENA.MIT.EDU",
-                            principal,
-                        },
-                    },
-                    (err, raw_response) => {
-                        if (err !== null) {
-                            blueslip.warn(err);
-                            return;
-                        }
-
-                        // https://github.com/davidben/webathena/blob/0be20d9b1d62c19b4f94f77e621bd8721e504446/app/scripts-src/request_ticket.js
-                        const response_schema = z.discriminatedUnion("status", [
-                            z.object({
-                                status: z.literal("OK"),
-                                session: z.unknown(),
-                            }),
-                            z.object({
-                                status: z.literal("ERROR"),
-                                code: z.string(),
-                                message: z.string(),
-                            }),
-                            z.object({
-                                status: z.literal("DENIED"),
-                                code: z.string(),
-                                message: z.string(),
-                            }),
-                        ]);
-                        const r = response_schema.parse(raw_response);
-                        if (r.status !== "OK") {
-                            blueslip.warn(`Webathena: ${r.status}: ${r.message}`);
-                            return;
-                        }
-
-                        channel.post({
-                            url: "/accounts/webathena_kerberos_login/",
-                            data: {cred: JSON.stringify(r.session)},
-                            success() {
-                                $("#zephyr-mirror-error").removeClass("show");
-                            },
-                            error() {
-                                $("#zephyr-mirror-error").addClass("show");
-                            },
-                        });
-                    },
-                );
-                popover_menus.hide_current_popover_if_visible(instance);
-                e.preventDefault();
-                e.stopPropagation();
-            });
 
             $popper.on("click", ".convert-demo-organization", (e) => {
                 popover_menus.hide_current_popover_if_visible(instance);

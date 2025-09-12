@@ -125,10 +125,6 @@ function selectText(element: Node): void {
     sel.addRange(range);
 }
 
-function should_list_all_streams(): boolean {
-    return !realm.realm_is_zephyr_mirror_realm;
-}
-
 export function toggle_pin_to_top_stream(sub: StreamSubscription): void {
     stream_settings_api.set_stream_property(sub, {property: "pin_to_top", value: !sub.pin_to_top});
 }
@@ -911,10 +907,8 @@ function setup_page(callback: () => void): void {
             },
         });
 
-        if (should_list_all_streams()) {
-            const $toggler_elem = toggler.get();
-            $("#channels_overlay_container .list-toggler-container").prepend($toggler_elem);
-        }
+        const $toggler_elem = toggler.get();
+        $("#channels_overlay_container .list-toggler-container").prepend($toggler_elem);
         if (current_user.is_guest) {
             toggler.disable_tab("all-streams");
             toggler.disable_tab("available");
@@ -943,7 +937,7 @@ function setup_page(callback: () => void): void {
                 settings_data.user_can_create_private_streams() ||
                 settings_data.user_can_create_public_streams() ||
                 settings_data.user_can_create_web_public_streams(),
-            can_view_all_streams: !current_user.is_guest && should_list_all_streams(),
+            can_view_all_streams: !current_user.is_guest,
             max_stream_name_length: realm.max_stream_name_length,
             max_stream_description_length: realm.max_stream_description_length,
             is_owner: current_user.is_owner,
@@ -992,8 +986,7 @@ function setup_page(callback: () => void): void {
         // When hitting Enter in the stream creation box, we open the
         // "create stream" UI with the stream name prepopulated.  This
         // is only useful if the user has permission to create
-        // streams, either explicitly via user_can_create_streams, or
-        // implicitly because realm.realm_is_zephyr_mirror_realm.
+        // streams via user_can_create_streams.
         $("#stream_filter input[type='text']").on("keydown", (e) => {
             if (!keydown_util.is_enter_event(e)) {
                 return;
@@ -1002,8 +995,7 @@ function setup_page(callback: () => void): void {
             if (
                 settings_data.user_can_create_private_streams() ||
                 settings_data.user_can_create_public_streams() ||
-                settings_data.user_can_create_web_public_streams() ||
-                realm.realm_is_zephyr_mirror_realm
+                settings_data.user_can_create_web_public_streams()
             ) {
                 open_create_stream();
                 e.preventDefault();
@@ -1021,10 +1013,6 @@ function setup_page(callback: () => void): void {
     }
 
     populate_and_fill();
-
-    if (!should_list_all_streams()) {
-        $(".create_stream_button").val($t({defaultMessage: "Subscribe"}));
-    }
 }
 
 export function switch_to_stream_row(stream_id: number): void {
@@ -1232,14 +1220,6 @@ export function do_open_create_stream(folder_id?: number): void {
     // Prefer open_create_stream().
 
     const stream = $<HTMLInputElement>("input#search_stream_name").val()!;
-
-    if (!should_list_all_streams()) {
-        // Realms that don't allow listing streams should simply be subscribed to.
-        stream_create.set_name(stream.trim());
-        stream_settings_components.ajaxSubscribe(stream);
-        return;
-    }
-
     stream_create.new_stream_clicked(stream.trim(), folder_id);
 }
 

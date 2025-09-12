@@ -1353,51 +1353,6 @@ class GetSubscribersTest(ZulipTestCase):
         self.assertEqual(unsubscribed_streams[0]["is_web_public"], True)
         self.assert_length(unsubscribed_streams[0]["subscribers"], 1)
 
-    def test_gather_subscriptions_mit(self) -> None:
-        """
-        gather_subscriptions returns correct results with only 3 queries
-        """
-        # Subscribe only ourself because invites are disabled on mit.edu
-        mit_user_profile = self.mit_user("starnine")
-        user_id = mit_user_profile.id
-        users_to_subscribe = [user_id, self.mit_user("espuser").id]
-        for email in users_to_subscribe:
-            stream = self.subscribe(mit_user_profile, "mit_stream")
-            self.assertTrue(stream.is_in_zephyr_realm)
-
-        self.subscribe_via_post(
-            mit_user_profile,
-            ["mit_invite_only"],
-            dict(principals=orjson.dumps(users_to_subscribe).decode()),
-            invite_only=True,
-            subdomain="zephyr",
-        )
-
-        with self.assert_database_query_count(8):
-            subscribed_streams, _ = gather_subscriptions(mit_user_profile, include_subscribers=True)
-
-        self.assertGreaterEqual(len(subscribed_streams), 2)
-        for sub in subscribed_streams:
-            if not sub["name"].startswith("mit_"):
-                raise AssertionError("Unexpected stream!")
-            if sub["name"] == "mit_invite_only":
-                self.assert_length(sub["subscribers"], len(users_to_subscribe))
-            else:
-                self.assert_length(sub["subscribers"], 0)
-            self.assertIsNone(sub["stream_weekly_traffic"])
-
-        # Create a web-public stream to test never_subscried data.
-        self.make_stream("mit_stream_2", realm=mit_user_profile.realm, is_web_public=True)
-        self.make_stream("mit_stream_3", realm=mit_user_profile.realm)
-
-        sub_info = gather_subscriptions_helper(mit_user_profile, include_subscribers=True)
-        never_subscribed_streams = sub_info.never_subscribed
-        # Users in zephyr mirror realm can only access web-public never subscribed streams.
-        self.assert_length(never_subscribed_streams, 1)
-        self.assertEqual(never_subscribed_streams[0]["name"], "mit_stream_2")
-        self.assertTrue(never_subscribed_streams[0]["is_web_public"])
-        self.assertIsNone(never_subscribed_streams[0]["stream_weekly_traffic"])
-
     def test_nonsubscriber(self) -> None:
         """
         Even a non-subscriber to a public stream can query a stream's membership

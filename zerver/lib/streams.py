@@ -169,11 +169,6 @@ def get_default_value_for_history_public_to_subscribers(
         # history, we can remove this code path.
         history_public_to_subscribers = True
 
-    if realm.is_zephyr_mirror_realm:
-        # In the Zephyr mirroring model, history is unconditionally
-        # not public to subscribers, even for public streams.
-        history_public_to_subscribers = False
-
     return history_public_to_subscribers
 
 
@@ -400,7 +395,6 @@ def create_stream_if_needed(
             invite_only=invite_only,
             is_web_public=is_web_public,
             history_public_to_subscribers=history_public_to_subscribers,
-            is_in_zephyr_realm=realm.is_zephyr_mirror_realm,
             message_retention_days=message_retention_days,
             folder=folder,
             topics_policy=topics_policy,
@@ -729,7 +723,6 @@ def user_has_content_access(
     user_group_membership_details: UserGroupMembershipDetails,
     *,
     is_subscribed: bool,
-    exclude_zephyr_realms_from_public_check: bool = False,
 ) -> bool:
     if stream.is_web_public:
         return True
@@ -739,9 +732,6 @@ def user_has_content_access(
 
     if user_profile.is_guest:
         return False
-
-    if exclude_zephyr_realms_from_public_check and not stream.invite_only:
-        return True
 
     if stream.is_public():
         return True
@@ -996,15 +986,6 @@ def check_stream_name_available(realm: Realm, name: str) -> None:
         raise ChannelExistsError(name)
     except Stream.DoesNotExist:
         pass
-
-
-def check_zephyr_realm_invite_conditions(
-    is_subscribing_other_users: bool, realm: Realm, invite_only: bool
-) -> None:
-    if is_subscribing_other_users and realm.is_zephyr_mirror_realm and not invite_only:
-        raise JsonableError(
-            _("You can only invite other Zephyr mirroring users to private channels.")
-        )
 
 
 def access_stream_by_name(
@@ -1430,8 +1411,6 @@ def get_content_access_streams(
     user_profile: UserProfile,
     streams: Collection[Stream],
     user_group_membership_details: UserGroupMembershipDetails,
-    *,
-    exclude_zephyr_realms_from_public_check: bool = False,
 ) -> list[Stream]:
     if len(streams) == 0:
         return []
@@ -1452,7 +1431,6 @@ def get_content_access_streams(
             stream,
             user_group_membership_details,
             is_subscribed=is_subscribed,
-            exclude_zephyr_realms_from_public_check=exclude_zephyr_realms_from_public_check,
         ):
             content_access_streams.append(stream)
 
@@ -1469,14 +1447,11 @@ def filter_stream_authorization_for_adding_subscribers(
             streams_to_which_user_cannot_add_subscribers=[],
         )
 
-    # For adding subscribers, we consider streams in zephyr realm
-    # public.
     user_group_membership_details = UserGroupMembershipDetails(user_recursive_group_ids=None)
     content_access_streams = get_content_access_streams(
         user_profile,
         streams,
         user_group_membership_details,
-        exclude_zephyr_realms_from_public_check=True,
     )
     content_access_stream_ids = {stream.id for stream in content_access_streams}
 
@@ -1776,8 +1751,7 @@ def get_streams_for_user(
                 *Stream.API_FIELDS,
                 "can_send_message_group",
                 "can_send_message_group__named_user_group",
-                # Both of these fields are need for get_content_access_streams.
-                "is_in_zephyr_realm",
+                # This field is needed for get_content_access_streams.
                 "recipient_id",
             )
         )
@@ -1803,8 +1777,7 @@ def get_streams_for_user(
                     *Stream.API_FIELDS,
                     "can_send_message_group",
                     "can_send_message_group__named_user_group",
-                    # Both of these fields are need for get_content_access_streams.
-                    "is_in_zephyr_realm",
+                    # This field is needed for get_content_access_streams.
                     "recipient_id",
                 )
             )

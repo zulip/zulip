@@ -245,9 +245,8 @@ class Message(AbstractMessage):
                 condition=Q(is_channel_message=True),
             ),
             models.Index(
-                # Used by already_sent_mirrored_message_id, and when
-                # determining recent topics (we post-process to merge
-                # and show the most recent case)
+                # Used when determining recent topics (we post-process
+                # to merge and show the most recent case)
                 "realm_id",
                 "recipient_id",
                 "subject",
