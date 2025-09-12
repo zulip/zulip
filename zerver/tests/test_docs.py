@@ -48,6 +48,7 @@ class DocPageTest(ZulipTestCase):
             "/devtools/",
             "/emails/",
             "/errors/",
+            "/help",
             "/integrations/",
         ]:
             if url.startswith(prefix):
@@ -69,6 +70,11 @@ class DocPageTest(ZulipTestCase):
 
         if url.startswith("/attribution/"):
             allow_robots = False
+
+        # When a raw MDX file is being fetched, the meta tag to
+        # disallow robots will be absent.
+        if url in ["/help/status-and-availability?raw", "/help/?raw", "/help?raw"]:
+            allow_robots = True
 
         result = self.get_doc(url, subdomain=subdomain)
         self.print_msg_if_error(url, result)
@@ -242,6 +248,49 @@ class DocPageTest(ZulipTestCase):
         self._test("/devlogin/", ["Normal users"])
         self._test("/devtools/", ["Useful development URLs"])
         self._test("/emails/", ["Manually generate most emails"])
+
+    def test_dev_help_default_page_endpoints(self) -> None:
+        # View on Zulip.com and View source URLs should be visible.
+        self._test(
+            "/help/status-and-availability",
+            [
+                'href="https://zulip.com/help/status-and-availability"',
+                'href="/help/status-and-availability?raw"',
+            ],
+        )
+
+        # Raw MDX file should be shown when `?raw` is present.
+        self._test(
+            "/help/status-and-availability?raw",
+            ["---", "title: Status and availability", "### Set a status"],
+        )
+
+        self._test(
+            "/help/nonexistent-page-that-does-not-exist",
+            ["This is not a valid help path and not a valid MDX file"],
+        )
+
+        # `?raw` should have no effect when the page does not exist
+        self._test(
+            "/help/nonexistent-page-that-does-not-exist?raw",
+            ["This is not a valid help path and not a valid MDX file"],
+        )
+
+        # Root /help and /help/ is a special case without subpath.
+        self._test("/help/?raw", ["---", "title: Zulip help center"])
+        self._test("/help?raw", ["---", "title: Zulip help center"])
+
+        with (
+            mock.patch("builtins.open", side_effect=OSError("File read error")),
+            self.assertLogs("django.request", level="ERROR") as m,
+        ):
+            result = self.client_get("/help/status-and-availability?raw")
+            self.assertEqual(result.status_code, 500)
+            self.assertIn("Error reading MDX file", result.content.decode())
+            self.assertEqual(
+                m.output,
+                ["ERROR:django.request:Internal Server Error: /help/status-and-availability"],
+            )
 
     def test_error_endpoints(self) -> None:
         self._test("/errors/404/", ["Page not found"])

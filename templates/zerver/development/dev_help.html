@@ -1,0 +1,65 @@
+{% extends "zerver/portico.html" %}
+{% set entrypoint = "dev-help" %}
+
+{% block title %}
+<title>Help center server not running | Zulip Dev</title>
+{% endblock %}
+
+{% block portico_content %}
+
+<div class="dev-help-page flex">
+    <div class="white-box">
+        {% if mdx_file_exists %}
+            <h3 class="dev-help-header">Help center server not running</h3>
+            <p>Development server for the help center is resource intensive. Not
+            running it by default keeps the minimum requirements to develop
+            Zulip low. You can run the server, or view the page you're trying to
+            access in other ways.</p>
+            <ul class="dev-help-list">
+                <li class="dev-help-list-item">
+                    <b>Quick reference</b>: If you aren't planning to modify the help center, you can
+                    <a target="_blank" rel="noopener noreferrer"
+                    href="https://zulip.com/help/{{ subpath }}">view it on
+                    zulip.com</a>. Pages may be slightly behind the version
+                    currently in <code>main</code>.
+                </li>
+                <li class="dev-help-list-item">
+                    <b>Up-to-date reference</b>: You can
+                    <a target="_blank" rel="noopener noreferrer" href="{{
+                    raw_url }}">view the current raw MDX file</a>, which is recommended for documentation
+                    that touches brand new or recently modified features.
+                </li>
+                <li class="dev-help-list-item">
+                    <b>Modifying the help center</b>: If you're making changes to
+                    the help center files, be sure to test them and provide
+                    screenshots in your pull request description.
+                    <ul>
+                        <li><code>./tools/run-dev --only-help-center</code> will run a dev server at /help that
+                        supports hot reload. Help center search will not work in
+                        this mode, and the rest of the Zulip app won't be running.</li>
+                        <li><code>./tools/run-dev --help-center-dev-server</code> will run a dev server
+                        alongside the Zulip app, which is more resource-heavy.</li>
+                        <li>(I can't understand the devtools instructions for
+                        testing search, but those should go here.)</li>
+                    </ul>
+                </li>
+            </ul>
+        {% else %}
+            <p class="invalid-path-error">
+                This is not a valid help path and not a valid MDX file. Please re-check the URL subpath you have provided.
+            </p>
+        {% endif %}
+
+        <div class="dev-help-actions">
+            {% if mdx_file_exists %}
+                <a target="_blank" rel="noopener noreferrer" href="https://zulip.com/help/{{ subpath }}" class="dev-help-action-button">
+                    View page on zulip.com
+                </a>
+                <a target="_blank" rel="noopener noreferrer" href="{{ raw_url }}" class="dev-help-action-button">
+                    View page source
+                </a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
