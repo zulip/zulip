@@ -1,0 +1,217 @@
+---
+import {CORPORATE_ENABLED, SHOW_RELATIVE_LINKS} from "astro:env/client";
+
+/* eslint-disable import/extensions */
+import BarChartIcon from "~icons/zulip-icon/bar-chart";
+import BuildingIcon from "~icons/zulip-icon/building";
+import CreditCardIcon from "~icons/zulip-icon/credit-card";
+import EditIcon from "~icons/zulip-icon/edit";
+import GearIcon from "~icons/zulip-icon/gear";
+import GitPullRequestIcon from "~icons/zulip-icon/git-pull-request";
+import HashIcon from "~icons/zulip-icon/hash";
+import HelpIcon from "~icons/zulip-icon/help";
+import InfoIcon from "~icons/zulip-icon/info";
+import KeyboardIcon from "~icons/zulip-icon/keyboard";
+import ManageSearchIcon from "~icons/zulip-icon/manage-search";
+import RocketIcon from "~icons/zulip-icon/rocket";
+import ToolIcon from "~icons/zulip-icon/tool";
+import UserGroupCogIcon from "~icons/zulip-icon/user-group-cog";
+/* eslint-enable import/extensions */
+
+type Props = {
+    link_type: string;
+    key: string;
+};
+
+const SHOW_BILLING_HELP_LINKS = CORPORATE_ENABLED;
+
+type RelativeLinkInfo = {
+    label: string;
+    relative_link: string;
+    icon?: unknown;
+};
+
+type RelativeLinkMapping = Record<
+    string,
+    {
+        data: Record<string, RelativeLinkInfo>;
+        template: (item: unknown) => unknown;
+        is_link_relative: () => boolean;
+    }
+>;
+
+const {link_type, key} = Astro.props;
+---
+
+{
+    (() => {
+        const default_template_for_relative_links = (item: unknown) => (
+            <ol>
+                <li>
+                    Click on the <strong>gear</strong> (<GearIcon />) icon in the upper right corner
+                    of the web or desktop app.
+                </li>
+                <li class="navigation-step-relative-type">Select {item}.</li>
+            </ol>
+        );
+
+        const relative_link_mapping: RelativeLinkMapping = {
+            gear: {
+                data: {
+                    "channel-settings": {
+                        label: "Channel settings",
+                        relative_link: "/#channels/subscribed",
+                        icon: <HashIcon />,
+                    },
+                    settings: {
+                        label: "Personal Settings",
+                        relative_link: "/#settings/profile",
+                        icon: <ToolIcon />,
+                    },
+                    "organization-settings": {
+                        label: "Organization settings",
+                        relative_link: "/#organization/organization-profile",
+                        icon: <BuildingIcon />,
+                    },
+                    "group-settings": {
+                        label: "Group settings",
+                        relative_link: "/#groups/your",
+                        icon: <UserGroupCogIcon />,
+                    },
+                    stats: {
+                        label: "Usage statistics",
+                        relative_link: "/stats",
+                        icon: <BarChartIcon />,
+                    },
+                    integrations: {
+                        label: "Integrations",
+                        relative_link: "/integrations/",
+                        icon: <GitPullRequestIcon />,
+                    },
+                    "about-zulip": {
+                        label: "About Zulip",
+                        relative_link: "/#about-zulip",
+                    },
+                },
+                template: default_template_for_relative_links,
+                is_link_relative: () => SHOW_RELATIVE_LINKS,
+            },
+            "gear-billing": {
+                data: {
+                    plans: {
+                        label: "Plans and pricing",
+                        relative_link: "/plans/",
+                        icon: <RocketIcon />,
+                    },
+                    billing: {
+                        label: "Billing",
+                        relative_link: "/billing/",
+                        icon: <CreditCardIcon />,
+                    },
+                },
+                template: default_template_for_relative_links,
+                is_link_relative: () => SHOW_RELATIVE_LINKS && SHOW_BILLING_HELP_LINKS,
+            },
+            help: {
+                data: {
+                    "keyboard-shortcuts": {
+                        label: "Keyboard shortcuts",
+                        relative_link: "/#keyboard-shortcuts",
+                        icon: <KeyboardIcon />,
+                    },
+                    "message-formatting": {
+                        label: "Message formatting",
+                        relative_link: "/#message-formatting",
+                        icon: <EditIcon />,
+                    },
+                    "search-filters": {
+                        label: "Search filters",
+                        relative_link: "/#search-operators",
+                        icon: <ManageSearchIcon />,
+                    },
+                    "about-zulip": {
+                        label: "About Zulip",
+                        relative_link: "/#about-zulip",
+                        icon: <InfoIcon />,
+                    },
+                },
+                template: (item: unknown) => (
+                    <ol>
+                        <li>
+                            Click on the <strong>help menu</strong> (<HelpIcon />) icon in the upper
+                            right corner of the app.
+                        </li>
+                        <li class="navigation-step-relative-type">Select {item}.</li>
+                    </ol>
+                ),
+                is_link_relative: () => SHOW_RELATIVE_LINKS,
+            },
+            channel: {
+                data: {
+                    all: {
+                        label: "All",
+                        relative_link: "/#channels/all",
+                    },
+                    available: {
+                        label: "Available",
+                        relative_link: "/#channels/available",
+                    },
+                },
+                template: (item: unknown) => (
+                    <ol>
+                        <li>
+                            Click on the <strong>gear</strong> (<GearIcon />) icon in the upper
+                            right corner of the web or desktop app.
+                        </li>
+                        <li>
+                            Select <HashIcon /> <strong>Channel settings</strong>.
+                        </li>
+                        <li>Click {item} in the upper left.</li>
+                    </ol>
+                ),
+                is_link_relative: () => SHOW_RELATIVE_LINKS,
+            },
+            group: {
+                data: {
+                    all: {
+                        label: "All groups",
+                        relative_link: "/#groups/all",
+                    },
+                    roles: {
+                        label: "Roles",
+                        relative_link: "/#groups/roles",
+                    },
+                },
+                template: (item: unknown) => (
+                    <ol>
+                        <li>
+                            Click on the <strong>gear</strong> (<GearIcon />) icon in the upper
+                            right corner of the web or desktop app.
+                        </li>
+                        <li>
+                            Select <UserGroupCogIcon /> <strong>Group settings</strong>.
+                        </li>
+                        <li>Click {item} in the upper left.</li>
+                    </ol>
+                ),
+                is_link_relative: () => SHOW_RELATIVE_LINKS,
+            },
+        };
+
+        const {data, template, is_link_relative} = relative_link_mapping[link_type]!;
+
+        const {label, relative_link, icon} = data[key]!;
+        const formattedItem = is_link_relative() ? (
+            <a href={relative_link}>
+                {icon}
+                {label}
+            </a>
+        ) : (
+            <strong>
+                {icon}
+                {label}
+            </strong>
+        );
+        return template(formattedItem);
+    })()
+}
