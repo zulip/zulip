@@ -1135,3 +1135,69 @@ class TestCreateStreams(ZulipTestCase):
         self.assertEqual(result[1][1].message_retention_days, -1)
         self.assertEqual(result[1][2].name, "new_stream3")
         self.assertEqual(result[1][2].message_retention_days, None)
+
+    def test_permission_settings_when_creating_multiple_streams(self) -> None:
+        """
+        Check that different anonymous group is used for each setting when creating
+        multiple streams in a single request.
+        """
+        realm = get_realm("zulip")
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+
+        moderators_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MODERATORS, realm_for_sharding=realm, is_system_group=True
+        )
+
+        subscriptions = [
+            {"name": "new_stream", "description": "New stream"},
+            {"name": "new_stream_2", "description": "New stream 2"},
+        ]
+        extra_post_data = {
+            "can_add_subscribers_group": orjson.dumps(
+                {
+                    "direct_members": [cordelia.id],
+                    "direct_subgroups": [moderators_group.id],
+                }
+            ).decode(),
+        }
+
+        result = self.subscribe_via_post(
+            hamlet,
+            subscriptions,
+            extra_post_data,
+        )
+        self.assert_json_success(result)
+
+        stream_1 = get_stream("new_stream", realm)
+        stream_2 = get_stream("new_stream_2", realm)
+
+        # Check value of can_administer_channel_group setting which is set to its default
+        # of an anonymous group with creator as the only member.
+        self.assertFalse(hasattr(stream_1.can_administer_channel_group, "named_user_group"))
+        self.assertFalse(hasattr(stream_2.can_administer_channel_group, "named_user_group"))
+        self.assertEqual(list(stream_1.can_administer_channel_group.direct_members.all()), [hamlet])
+        self.assertEqual(list(stream_2.can_administer_channel_group.direct_members.all()), [hamlet])
+        self.assertEqual(list(stream_1.can_administer_channel_group.direct_subgroups.all()), [])
+        self.assertEqual(list(stream_2.can_administer_channel_group.direct_subgroups.all()), [])
+
+        # Check value of can_add_subscribers_group setting which is set to an anonymous
+        # group as request.
+        self.assertFalse(hasattr(stream_1.can_add_subscribers_group, "named_user_group"))
+        self.assertFalse(hasattr(stream_2.can_add_subscribers_group, "named_user_group"))
+        self.assertEqual(list(stream_1.can_add_subscribers_group.direct_members.all()), [cordelia])
+        self.assertEqual(list(stream_2.can_add_subscribers_group.direct_members.all()), [cordelia])
+        self.assertEqual(
+            list(stream_1.can_add_subscribers_group.direct_subgroups.all()), [moderators_group]
+        )
+        self.assertEqual(
+            list(stream_2.can_add_subscribers_group.direct_subgroups.all()), [moderators_group]
+        )
+
+        # Check that for each stream, different anonymous group is used.
+        self.assertNotEqual(
+            stream_1.can_administer_channel_group_id, stream_2.can_administer_channel_group_id
+        )
+        self.assertNotEqual(
+            stream_1.can_add_subscribers_group_id, stream_2.can_add_subscribers_group_id
+        )
