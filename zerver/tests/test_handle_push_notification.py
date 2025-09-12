@@ -875,6 +875,7 @@ class HandlePushNotificationTest(PushNotificationTestCase):
         othello = self.example_user("othello")
         cordelia = self.example_user("cordelia")
         zulip_realm = get_realm("zulip")
+        self.register_push_device_token(self.user_profile.id)
 
         # user groups having upto 'MAX_GROUP_SIZE_FOR_MENTION_REACTIVATION'
         # members are small user groups.

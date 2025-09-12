@@ -1408,9 +1408,13 @@ class TestAPNs(PushNotificationTestCase):
                 logger.output,
             )
 
+    @mock.patch("zerver.lib.push_notifications.send_push_notifications_legacy")
     @mock.patch("zerver.lib.push_notifications.push_notifications_configured", return_value=True)
-    def test_apns_badge_count(self, mock_push_notifications: mock.MagicMock) -> None:
+    def test_apns_badge_count(
+        self, mock_push_notifications: mock.MagicMock, mock_send_push_notifications: mock.MagicMock
+    ) -> None:
         user_profile = self.example_user("othello")
+        self.register_push_device_token(user_profile.id)
         # Test APNs badge count for personal messages.
         message_ids = [
             self.send_personal_message(self.sender, user_profile, "Content of message")
@@ -1439,6 +1443,7 @@ class TestAPNs(PushNotificationTestCase):
             self.assertEqual(get_apns_badge_count_future(user_profile), num_messages - i - 1)
 
         mock_push_notifications.assert_called()
+        mock_send_push_notifications.assert_called()
 
 
 class TestGetAPNsPayload(PushNotificationTestCase):
@@ -1516,11 +1521,15 @@ class TestGetAPNsPayload(PushNotificationTestCase):
         }
         self.assertDictEqual(payload, expected)
 
+    @mock.patch("zerver.lib.push_notifications.send_push_notifications_legacy")
     @mock.patch("zerver.lib.push_notifications.push_notifications_configured", return_value=True)
     def test_get_message_payload_apns_group_direct_message(
-        self, mock_push_notifications: mock.MagicMock
+        self,
+        mock_push_notifications: mock.MagicMock,
+        mock_send_push_notifications: mock.MagicMock,
     ) -> None:
         user_profile = self.example_user("othello")
+        self.register_push_device_token(user_profile.id)
         message_id = self.send_group_direct_message(
             self.sender, [self.example_user("othello"), self.example_user("cordelia")]
         )
@@ -1558,6 +1567,7 @@ class TestGetAPNsPayload(PushNotificationTestCase):
         }
         self.assertDictEqual(payload, expected)
         mock_push_notifications.assert_called()
+        mock_send_push_notifications.assert_called()
 
     def _test_get_message_payload_apns_stream_message(
         self, trigger: str, empty_string_topic: bool = False
