@@ -1848,6 +1848,17 @@ li.active-sub-filter {
     align-self: baseline;
 }
 
+.disable-channel-new-topic-button {
+    .channel-new-topic-button {
+        cursor: not-allowed;
+
+        &:hover {
+            color: var(--color-left-sidebar-heads-up-icon);
+            background-color: unset;
+        }
+    }
+}
+
 .channel-new-topic-button {
     /* display: flex; is set on visible channels and
        channel-row hovers. */

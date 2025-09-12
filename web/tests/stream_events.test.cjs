@@ -50,6 +50,7 @@ mock_esm("../src/user_settings", {
     },
 });
 
+const stream_ui_updates = mock_esm("../src/stream_ui_updates");
 const user_group_edit = mock_esm("../src/user_group_edit");
 const user_profile = mock_esm("../src/user_profile");
 
@@ -312,8 +313,15 @@ test("update_property", ({override}) => {
             can_add_subscribers: false,
             ...sub,
         }));
+        const update_add_subscriptions_elements_stub = make_stub();
+        override(
+            stream_ui_updates,
+            "update_add_subscriptions_elements",
+            update_add_subscriptions_elements_stub.f,
+        );
         stream_events.update_property(stream_id, "can_administer_channel_group", 3);
         assert.equal(stub.num_calls, 1);
+        assert.equal(update_add_subscriptions_elements_stub.num_calls, 1);
         const args = stub.get_args("setting_name", "sub", "val");
         assert.equal(args.setting_name, "can_administer_channel_group");
         assert.equal(args.sub.stream_id, stream_id);
@@ -331,6 +339,21 @@ test("update_property", ({override}) => {
         assert.equal(args.setting_name, "can_resolve_topics_group");
         assert.equal(args.sub.stream_id, stream_id);
         assert.equal(args.val, 3);
+    }
+
+    // Test stream can_create_topic_group change event
+    {
+        const stub = make_stub();
+        override(stream_settings_ui, "update_stream_permission_group_setting", stub.f);
+        const update_private_stream_privacy_option_state_stub = make_stub();
+        override(
+            stream_ui_updates,
+            "update_private_stream_privacy_option_state",
+            update_private_stream_privacy_option_state_stub.f,
+        );
+        stream_events.update_property(stream_id, "can_create_topic_group", 3);
+        assert.equal(stub.num_calls, 1);
+        assert.equal(update_private_stream_privacy_option_state_stub.num_calls, 1);
     }
 
     // Test stream can_subscribe_group change event
