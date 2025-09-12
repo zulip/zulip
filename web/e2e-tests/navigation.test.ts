@@ -35,7 +35,7 @@ async function navigate_to_settings(page: Page): Promise<void> {
 
     await page.click("#settings_page .content-wrapper .exit");
     // Wait until the overlay is completely closed.
-    await page.waitForSelector("#settings_overlay_container", {hidden: true});
+    await page.waitForSelector("#settings_overlay_container .overlay", {hidden: true});
 }
 
 async function navigate_to_subscriptions(page: Page): Promise<void> {
