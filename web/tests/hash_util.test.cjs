@@ -27,7 +27,7 @@ const frontend = {
     name: "frontend",
 };
 
-stream_data.add_sub(frontend);
+stream_data.add_sub_for_tests(frontend);
 
 run_test("hash_util", () => {
     // Test encode_operand and decode_operand
