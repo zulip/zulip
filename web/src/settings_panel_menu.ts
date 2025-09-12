@@ -9,6 +9,7 @@ import {$t, $t_html} from "./i18n.ts";
 import * as keydown_util from "./keydown_util.ts";
 import * as popovers from "./popovers.ts";
 import * as scroll_util from "./scroll_util.ts";
+import {resize_settings_textarea} from "./settings_org.ts";
 import * as settings_sections from "./settings_sections.ts";
 import {redraw_active_users_list, redraw_deactivated_users_list} from "./settings_users.ts";
 import * as util from "./util.ts";
@@ -243,6 +244,12 @@ export class SettingsPanelMenu {
         }
 
         set_settings_header(section);
+
+        if (section === "organization-settings") {
+            resize_settings_textarea("id_realm_welcome_message_custom_text");
+        } else if (section === "organization-profile") {
+            resize_settings_textarea("id_realm_description");
+        }
     }
 
     get_panel(): JQuery {

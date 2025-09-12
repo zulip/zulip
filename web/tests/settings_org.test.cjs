@@ -573,6 +573,8 @@ test("set_up", ({override, override_rewire}) => {
     $("#id_realm_welcome_message_custom_text").set_parent(
         $.create("<stub welcome message custom text>"),
     );
+    $("#id_realm_welcome_message_custom_text").css = noop;
+    $("#id_realm_description").css = noop;
 
     // Make our plan not limited so we don't have to stub all the
     // elements involved in disabling the can_create_groups input.
