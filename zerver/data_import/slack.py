@@ -912,18 +912,58 @@ def get_messages_iterator(
         yield from sorted(messages_for_one_day, key=get_timestamp_from_message)
 
 
+# This is cached globally so that thread parent lookup works across multiple calls to
+# channel_message_to_zerver_message, and across multiple message JSON files (e.g.
+# for responses posted on a date after the thread root was created).
+# The keys for this map are thread_ts values (timestamps) - as that's what appears to
+# be the most sensible "thread identifier" for our purposes; Slack doesn't provide
+# a thread ID.
+thread_parent_map: dict[str, str] = {}
+
+
 def get_parent_user_id_from_thread_message(thread_message: ZerverFieldsT, subtype: str) -> str:
     """
     This retrieves the user id of the sender of the original thread
     message.
     """
-    if subtype == "thread_broadcast":
-        return thread_message["root"]["user"]
-    elif thread_message["thread_ts"] == thread_message["ts"]:
-        # This is the original thread message
-        return thread_message["user"]
-    else:
-        return thread_message["parent_user_id"]
+
+    # Some messages posted by bots don't have a user key, but only a bot_id (namely, ones with
+    # subtype bot_message). For those, use bot_id as fallback when the user field doesn't exist.
+    try:
+        if subtype == "thread_broadcast":
+            try:
+                return thread_message["root"]["user"]
+            except KeyError:
+                return thread_message["root"]["bot_id"]
+        elif thread_message["thread_ts"] == thread_message["ts"]:
+            # This is the original thread message. We're following the logic recommended
+            # in Slack's documentation here:
+            # https://docs.slack.dev/messaging/retrieving-messages/#finding_threads
+            # - Identify parent messages by comparing the thread_ts and ts values. If they are equal,
+            #   the message is a parent message.
+            # - Threaded replies are also identified by comparing the thread_ts and ts values.
+            #   If they are different, the message is a reply.
+            try:
+                ret = thread_message["user"]
+            except KeyError:
+                ret = thread_message["bot_id"]
+            # Cache the thread parent's user/bot ID for later use. This will allow us to determine
+            # the parent user id for thread replies.
+            thread_parent_map[thread_message["thread_ts"]] = ret
+            return ret
+        else:
+            try:
+                return thread_message["parent_user_id"]
+            except KeyError:
+                return thread_message["bot_id"]
+    except KeyError:
+        # If Slack doesn't specify the parent user/bot ID in this message, use the cached one.
+        #
+        # TODO: Our caching strategy works under the assumption that we visit thread messages
+        # in the order of oldest-to-newest - so that we see the thread's parent message before
+        # thread replies. If messages are unsorted, we might process a
+        # reply before its parent, resulting in KeyError because the parent’s user ID hasn’t been cached yet.
+        return thread_parent_map[thread_message["thread_ts"]]
 
 
 def get_zulip_thread_topic_name(
