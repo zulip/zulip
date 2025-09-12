@@ -39,10 +39,6 @@ accurate; this command is run as a daily cron job to ensure the number is accura
     def handle(self, *args: Any, **options: Any) -> None:
         realm = self.get_realm(options)
         streams = Stream.objects.all()
-        if realm := self.get_realm(options):
-            stream_ids: QuerySet[Any, int] = streams.filter(realm=realm).values_list(
-                "id", flat=True
-            )
         if options["since"]:
             since_time = timezone_now() - timedelta(hours=options["since"])
             # Two ways the count can change -- via a subscription
@@ -88,11 +84,15 @@ accurate; this command is run as a daily cron job to ensure the number is accura
             if realm:
                 streams_from_users = streams_from_users.filter(realm=realm)
 
-            stream_ids = (
+            stream_ids: QuerySet[Any, int] = (
                 changed_subs.values_list("modified_stream_id", flat=True)
                 .distinct()
                 .order_by("modified_stream_id")
             ).union(streams_from_users.values_list("id", flat=True))
+        elif realm := self.get_realm(options):
+            stream_ids = streams.filter(realm=realm).values_list("id", flat=True)
+        else:
+            stream_ids = streams.all().values_list("id", flat=True)
 
         for stream_id in stream_ids.iterator():
             with transaction.atomic(durable=True):
