@@ -84,12 +84,15 @@ export function get_pygments_typeahead_list_for_settings(query: string): Map<str
 
     const playground_pygment_langs = [...map_language_to_playground_info.keys()];
     for (const lang of playground_pygment_langs) {
-        language_labels.set(lang, $t({defaultMessage: "Custom language: {query}"}, {query: lang}));
+        language_labels.set(
+            lang,
+            $t({defaultMessage: "Custom language: {query}"}, {query: lang.toLowerCase()}),
+        );
     }
 
     for (const [key, values] of map_pygments_pretty_name_to_aliases) {
         const formatted_string = util.format_array_as_list_with_conjunction(values, "narrow");
-        language_labels.set(key, key + " (" + formatted_string + ")");
+        language_labels.set(key.toLowerCase(), key.toLowerCase() + " (" + formatted_string + ")");
     }
 
     return language_labels;
