@@ -476,6 +476,10 @@
     }
 }
 
+#change_stream_name {
+    width: 72%;
+}
+
 #add-realm-domain-widget {
     .modal_text_input {
         width: 14.7143em; /* 206px at 14px em */
