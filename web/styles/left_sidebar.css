@@ -60,20 +60,7 @@
     /* 2px right margin here to match the new topic margin-right */
     margin: 2px 1px 2px 0;
     border-radius: 3px;
-
-    .add_stream_icon {
-        /* We display as flex to center the icon while
-           keeping the entire highlighted area clickable. */
-        display: flex;
-        place-items: center center;
-        color: var(--color-left-sidebar-heads-up-icon);
-
-        &::before {
-            /* To horizontally center the icon within the
-               flex, though, we need this margin adjustment. */
-            margin: 0 auto;
-        }
-    }
+    color: var(--color-left-sidebar-heads-up-icon);
 
     &:hover {
         color: var(--color-left-sidebar-heads-up-icon-hover);
@@ -81,6 +68,19 @@
             --background-color-left-sidebar-heads-up-icon-hover
         );
         cursor: pointer;
+    }
+
+    .add_stream_icon {
+        /* We display as flex to center the icon while
+           keeping the entire highlighted area clickable. */
+        display: flex;
+        place-items: center center;
+
+        &::before {
+            /* To horizontally center the icon within the
+               flex, though, we need this margin adjustment. */
+            margin: 0 auto;
+        }
     }
 }
 
