@@ -128,7 +128,7 @@ export function fetch_more_if_required_for_current_msg_list(
         // no messages to display in this narrow.
         narrow_banner.show_empty_narrow_message(message_lists.current.data.filter);
         message_lists.current.update_trailing_bookend();
-        compose_closed_ui.update_buttons_for_private();
+        compose_closed_ui.maybe_update_buttons_for_dm_recipient();
         compose_recipient.check_posting_policy_for_compose_box();
     }
 

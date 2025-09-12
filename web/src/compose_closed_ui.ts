@@ -156,6 +156,12 @@ export function rewire_update_reply_button_state(value: typeof update_reply_butt
     update_reply_button_state = value;
 }
 
+function update_new_conversation_button(
+    data_attribute_string: "direct" | "stream" | "non-specific",
+): void {
+    $("#new_conversation_button").attr("data-conversation-type", data_attribute_string);
+}
+
 function maybe_get_selected_message_stream_id(): number | undefined {
     if (message_lists.current?.visibly_empty()) {
         return undefined;
@@ -178,36 +184,46 @@ function should_disable_compose_reply_button_for_stream(): boolean {
     return false;
 }
 
-function update_buttons(disable_reply?: boolean): void {
-    update_reply_button_state(disable_reply);
+// Exported for tests
+export function should_disable_compose_reply_button_for_direct_message(): boolean {
+    const pm_ids_string = narrow_state.pm_ids_string();
+    // If we can identify a direct message recipient, and the user can't
+    // reply to that recipient, then we disable the compose_reply_button.
+    if (pm_ids_string && !message_util.user_can_send_direct_message(pm_ids_string)) {
+        return true;
+    }
+    return false;
 }
 
-export function update_buttons_for_private(): void {
-    const pm_ids_string = narrow_state.pm_ids_string();
-
-    let disable_reply;
-
-    if (!pm_ids_string || message_util.user_can_send_direct_message(pm_ids_string)) {
-        disable_reply = false;
+export function update_buttons(update_type?: string): void {
+    let disable_reply_button;
+    if (update_type === "direct") {
+        // Based on whether there's a direct message recipient for
+        // the current narrow_state.
+        disable_reply_button = should_disable_compose_reply_button_for_direct_message();
     } else {
-        // disable the [Message X] button when in a private narrow
-        // if the user cannot dm the current recipient
-        disable_reply = true;
+        // Based on whether there's a selected channel message in
+        // the current message list.
+        disable_reply_button = should_disable_compose_reply_button_for_stream();
     }
 
-    $("#new_conversation_button").attr("data-conversation-type", "direct");
-    update_buttons(disable_reply);
-}
+    if (update_type === "direct" || update_type === "stream") {
+        update_new_conversation_button(update_type);
+        update_reply_button_state(disable_reply_button);
+        return;
+    }
 
-export function update_buttons_for_stream_views(): void {
-    $("#new_conversation_button").attr("data-conversation-type", "stream");
-    update_buttons(should_disable_compose_reply_button_for_stream());
-}
-
-export function update_buttons_for_non_specific_views(): void {
-    $("#new_conversation_button").attr("data-conversation-type", "non-specific");
-    update_buttons(should_disable_compose_reply_button_for_stream());
+    // Default case for most views.
+    update_new_conversation_button("non-specific");
+    update_reply_button_state(disable_reply_button);
     set_standard_text_for_reply_button();
+}
+
+export function maybe_update_buttons_for_dm_recipient(): void {
+    const filter = narrow_state.filter();
+    if (filter?.contains_only_private_messages()) {
+        update_buttons("direct");
+    }
 }
 
 function set_reply_button_label(label: string): void {
