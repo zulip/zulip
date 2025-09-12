@@ -362,7 +362,9 @@ div.overlay {
     transition-property: opacity, visibility;
     overflow: hidden;
 
-    .overlay-content {
+    .overlay-container {
+        background-color: var(--color-background-modal);
+        box-shadow: 0 0 30px var(--color-box-shadow-overlay);
         transform: translateY(20px);
         transition: transform 0.2s ease-in;
         z-index: 102;
@@ -374,7 +376,7 @@ div.overlay {
         visibility: visible;
         transition: opacity 0.2s ease-out;
 
-        .overlay-content {
+        .overlay-container {
             transform: translateY(0);
             transition-timing-function: ease-out;
         }
@@ -384,9 +386,13 @@ div.overlay {
         max-height: 60vh;
         padding: 15px;
     }
+}
 
+#draft_overlay,
+#scheduled_messages_overlay_container,
+#message-edit-history-overlay-container {
     .overlay-container {
-        background-color: var(--color-background-modal);
+        box-shadow: 0 0 30px var(--color-box-shadow-overlay-black);
     }
 }
 
