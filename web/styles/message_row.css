@@ -2,6 +2,10 @@
     #message-lists-container {
         container: message-lists / inline-size;
     }
+
+    .messagebox-content {
+        container: muted-message-notice-container / inline-size;
+    }
 }
 
 .message_row {
@@ -52,6 +56,16 @@
                 var(--color-background-group-mention),
                 transparent 100%
             );
+        }
+    }
+
+    &.muted-message-sender {
+        .sender_info_hover {
+            pointer-events: none;
+        }
+
+        .inline-profile-picture-wrapper {
+            pointer-events: none;
         }
     }
 
@@ -188,6 +202,11 @@
             min-height: 0;
             overflow: hidden;
         }
+    }
+
+    .muted-message-notice {
+        opacity: 0.5;
+        user-select: none;
     }
 
     .message_reactions {
@@ -382,6 +401,10 @@
                    grid. */
                 margin-top: var(--message-box-vertical-margin);
             }
+
+            .muted-sender-avatar {
+                opacity: 0.5;
+            }
         }
 
         .status-message {
@@ -463,6 +486,12 @@
                     .user-name {
                         overflow: hidden;
                         text-overflow: ellipsis;
+                    }
+
+                    .muted {
+                        opacity: 0.5;
+                        user-select: none;
+                        cursor: default;
                     }
                 }
             }
@@ -1153,4 +1182,27 @@ of the base style defined for a read-only textarea in dark mode. */
 .date_row .timerender-content::before {
     right: 0.25em;
     margin-left: -50%;
+}
+
+@container muted-message-notice-container (width < $cq_mm_min) {
+    .muted-message-notice {
+        display: none;
+    }
+
+    .muted-sender-avatar {
+        margin-bottom: 4px;
+    }
+}
+
+/* Fallback for hiding the muted message notice. */
+@media (width < $ml_min) {
+    .without-container-query-support {
+        .muted-message-notice {
+            display: none;
+        }
+
+        .muted-sender-avatar {
+            margin-bottom: 4px;
+        }
+    }
 }
