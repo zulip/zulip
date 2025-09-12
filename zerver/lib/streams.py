@@ -1488,48 +1488,55 @@ def filter_stream_authorization_for_adding_subscribers(
     )
 
 
-def access_requested_group_permissions(
+def access_requested_group_permissions_for_streams(
+    stream_names: list[str],
     user_profile: UserProfile,
     realm: Realm,
     request_settings_dict: dict[str, Any],
-) -> tuple[dict[str, UserGroup], dict[int, UserGroupMembersData]]:
+) -> tuple[dict[str, dict[str, UserGroup]], dict[int, UserGroupMembersData]]:
     anonymous_group_membership = {}
-    group_settings_map = {}
+    stream_group_settings_map = {}
     system_groups_name_dict = get_role_based_system_groups_dict(realm)
-    for setting_name, permission_configuration in Stream.stream_permission_group_settings.items():
-        assert setting_name in request_settings_dict
-        if request_settings_dict[setting_name] is not None:
-            setting_request_value = request_settings_dict[setting_name]
-            setting_value = parse_group_setting_value(
-                setting_request_value, system_groups_name_dict[SystemGroups.NOBODY]
-            )
-            group_settings_map[setting_name] = access_user_group_for_setting(
-                setting_value,
-                user_profile,
-                setting_name=setting_name,
-                permission_configuration=permission_configuration,
-            )
-            if (
-                setting_name in ["can_delete_any_message_group", "can_delete_own_message_group"]
-                and group_settings_map[setting_name].id
-                != system_groups_name_dict[SystemGroups.NOBODY].id
-                and not user_profile.can_set_delete_message_policy()
-            ):
-                raise JsonableError(_("Insufficient permission"))
-
-            if not isinstance(setting_value, int):
-                anonymous_group_membership[group_settings_map[setting_name].id] = setting_value
-        else:
-            group_settings_map[setting_name] = get_stream_permission_default_group(
-                setting_name, system_groups_name_dict, creator=user_profile
-            )
-            if permission_configuration.default_group_name == "channel_creator":
-                # Default for some settings like "can_administer_channel_group"
-                # is anonymous group with stream creator.
-                anonymous_group_membership[group_settings_map[setting_name].id] = (
-                    UserGroupMembersData(direct_subgroups=[], direct_members=[user_profile.id])
+    for stream_name in stream_names:
+        group_settings_map = {}
+        for (
+            setting_name,
+            permission_configuration,
+        ) in Stream.stream_permission_group_settings.items():
+            assert setting_name in request_settings_dict
+            if request_settings_dict[setting_name] is not None:
+                setting_request_value = request_settings_dict[setting_name]
+                setting_value = parse_group_setting_value(
+                    setting_request_value, system_groups_name_dict[SystemGroups.NOBODY]
                 )
-    return group_settings_map, anonymous_group_membership
+                group_settings_map[setting_name] = access_user_group_for_setting(
+                    setting_value,
+                    user_profile,
+                    setting_name=setting_name,
+                    permission_configuration=permission_configuration,
+                )
+                if (
+                    setting_name in ["can_delete_any_message_group", "can_delete_own_message_group"]
+                    and group_settings_map[setting_name].id
+                    != system_groups_name_dict[SystemGroups.NOBODY].id
+                    and not user_profile.can_set_delete_message_policy()
+                ):
+                    raise JsonableError(_("Insufficient permission"))
+
+                if not isinstance(setting_value, int):
+                    anonymous_group_membership[group_settings_map[setting_name].id] = setting_value
+            else:
+                group_settings_map[setting_name] = get_stream_permission_default_group(
+                    setting_name, system_groups_name_dict, creator=user_profile
+                )
+                if permission_configuration.default_group_name == "channel_creator":
+                    # Default for some settings like "can_administer_channel_group"
+                    # is anonymous group with stream creator.
+                    anonymous_group_membership[group_settings_map[setting_name].id] = (
+                        UserGroupMembersData(direct_subgroups=[], direct_members=[user_profile.id])
+                    )
+        stream_group_settings_map[stream_name] = group_settings_map
+    return stream_group_settings_map, anonymous_group_membership
 
 
 def list_to_streams(
@@ -1595,14 +1602,19 @@ def list_to_streams(
             )
 
         assert request_settings_dict is not None
-        group_settings_map, anonymous_group_membership = access_requested_group_permissions(
-            user_profile,
-            user_profile.realm,
-            request_settings_dict,
+        stream_names = [stream_dict["name"] for stream_dict in missing_stream_dicts]
+        stream_group_settings_map, anonymous_group_membership = (
+            access_requested_group_permissions_for_streams(
+                stream_names,
+                user_profile,
+                user_profile.realm,
+                request_settings_dict,
+            )
         )
 
         # autocreate=True path starts here
         for stream_dict in missing_stream_dicts:
+            group_settings_map = stream_group_settings_map[stream_dict["name"]]
             check_channel_creation_permissions(
                 user_profile,
                 is_default_stream=is_default_stream,

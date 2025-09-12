@@ -69,7 +69,7 @@ from zerver.lib.stream_traffic import get_streams_traffic
 from zerver.lib.streams import (
     StreamDict,
     access_default_stream_group_by_id,
-    access_requested_group_permissions,
+    access_requested_group_permissions_for_streams,
     access_stream_by_id,
     access_stream_by_name,
     access_stream_for_delete_or_update_requiring_metadata_access,
@@ -711,12 +711,16 @@ def create_channel(
         message_retention_days=parsed_message_retention_days,
     )
 
-    group_settings_map, anonymous_group_membership = access_requested_group_permissions(
-        user_profile,
-        realm,
-        request_settings_dict,
+    stream_group_settings_map, anonymous_group_membership = (
+        access_requested_group_permissions_for_streams(
+            [name],
+            user_profile,
+            realm,
+            request_settings_dict,
+        )
     )
 
+    group_settings_map = stream_group_settings_map[name]
     new_channel, created = create_stream_if_needed(
         realm,
         name,
