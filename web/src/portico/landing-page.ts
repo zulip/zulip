@@ -242,6 +242,13 @@ $(document).on("click", ".markdown h1, .markdown h2, .markdown h3", function () 
     window.location.hash = $(this).attr("id")!;
 });
 
+$(document).on("click", ".nav-zulip-logo", (e) => {
+    if (document.querySelector(".portico-hello-page")) {
+        e.preventDefault();
+        window.scrollTo({top: 0, behavior: "smooth"});
+    }
+});
+
 $(document).on("click", ".pricing-tab", function () {
     const id = $(this).attr("id")!;
     const $pricing_wrapper = $(".portico-pricing");
