@@ -105,6 +105,7 @@ export function clear_compose_box() {
 
 export function send_message_success(request, data) {
     if (!request.locally_echoed) {
+        do_post_send_tasks();
         clear_compose_box();
     }
 
@@ -239,6 +240,7 @@ export let send_message = () => {
             // (Restoring this state is handled by clear_compose_box
             // for locally echoed messages.)
             compose_ui.hide_compose_spinner();
+            do_post_send_tasks();
             return;
         }
 
@@ -259,6 +261,7 @@ export let send_message = () => {
     );
 
     if (locally_echoed) {
+        do_post_send_tasks();
         clear_compose_box();
         // Schedule a timer to display a spinner when the message is
         // taking a longtime to send.
@@ -322,7 +325,6 @@ export let finish = (scheduling_message = false) => {
     } else {
         send_message();
     }
-    do_post_send_tasks();
     return true;
 };
 
@@ -374,6 +376,7 @@ function schedule_message_to_custom_date() {
     const $banner_container = $("#compose_banners");
     const success = function (data) {
         drafts.draft_model.deleteDrafts([draft_id]);
+        do_post_send_tasks();
         clear_compose_box();
         const new_row_html = render_success_message_scheduled_banner({
             scheduled_message_id: data.scheduled_message_id,
@@ -389,6 +392,7 @@ function schedule_message_to_custom_date() {
 
     const error = function (xhr) {
         const response = channel.xhr_error_message("Error sending message", xhr);
+        do_post_send_tasks();
         compose_ui.hide_compose_spinner();
         compose_banner.show_error_message(
             response,
