@@ -142,6 +142,20 @@ class DirectMessageGroup(models.Model):
 
     group_size = models.IntegerField()
 
+    total_messages = models.IntegerField(default=0)
+    first_message = models.OneToOneField(
+        "zerver.Message",
+        null=True,
+        on_delete=models.SET_NULL,
+        related_name="direct_message_group_first",
+    )
+    last_message = models.OneToOneField(
+        "zerver.Message",
+        null=True,
+        on_delete=models.SET_NULL,
+        related_name="direct_message_group_last",
+    )
+
     # TODO: The model still uses the old "zerver_huddle" database table.
     # As a part of the migration of "Huddle" to "DirectMessageGroup"
     # it needs to be renamed to "zerver_directmessagegroup".
