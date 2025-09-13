@@ -362,22 +362,21 @@ def register_remote_user(request: HttpRequest, result: ExternalAuthResult) -> Ht
     kwargs: dict[str, Any] = dict(result.data_dict)
     # maybe_send_to_registration doesn't take these arguments, so delete them.
 
-    # These are the kwargs taken by maybe_send_to_registration. Remove anything
-    # else from the dict.
-    kwargs_to_pass = [
-        "email",
-        "full_name",
-        "role",
-        "group_memberships_sync_map",
-        "mobile_flow_otp",
-        "desktop_flow_otp",
-        "is_signup",
-        "multiuse_object_key",
-        "full_name_validated",
-        "params_to_store_in_authenticated_session",
-    ]
-    for key in dict(kwargs):
-        if key not in kwargs_to_pass:
+    for key in result.data_dict.keys():
+        if key not in {
+            # These are the kwargs taken by maybe_send_to_registration. Remove anything
+            # else from the dict.
+            "email",
+            "full_name",
+            "role",
+            "group_memberships_sync_map",
+            "mobile_flow_otp",
+            "desktop_flow_otp",
+            "is_signup",
+            "multiuse_object_key",
+            "full_name_validated",
+            "params_to_store_in_authenticated_session",
+        }:
             kwargs.pop(key, None)
 
     return maybe_send_to_registration(request, **kwargs)
