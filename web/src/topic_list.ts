@@ -57,6 +57,7 @@ export function clear(): void {
     }
 
     active_widgets.clear();
+    topic_filter_pill_widget?.clear(true);
 }
 
 export function close(): void {
