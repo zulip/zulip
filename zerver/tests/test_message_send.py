@@ -2628,7 +2628,7 @@ class PersonalMessageSendTest(ZulipTestCase):
         # Have the administrator send a message to the direct message group, and verify
         # that allows the user to reply.
         self.send_group_direct_message(admin, direct_message_group_1)
-        with self.assert_database_query_count(20):
+        with self.assert_database_query_count(22):
             self.send_group_direct_message(user_profile, direct_message_group_1)
 
         # We cannot sent to `direct_message_group_2` as no message has been sent to this group yet.
@@ -2714,7 +2714,7 @@ class PersonalMessageSendTest(ZulipTestCase):
 
         # We can send to this direct message group as it has administrator as one of the
         # recipient.
-        with self.assert_database_query_count(24):
+        with self.assert_database_query_count(26):
             self.send_group_direct_message(user_profile, direct_message_group)
         self.send_group_direct_message(admin, direct_message_group)
 
@@ -2785,6 +2785,23 @@ class PersonalMessageSendTest(ZulipTestCase):
             receiver=self.example_user("othello"),
             content="hümbüǵ",
         )
+
+    def test_direct_message_group_stats(self) -> None:
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+        polonius = self.example_user("polonius")
+
+        first_message_id = self.send_group_direct_message(hamlet, [cordelia, polonius])
+        self.send_group_direct_message(hamlet, [cordelia, polonius])
+        self.send_group_direct_message(hamlet, [cordelia, polonius])
+        last_message_id = self.send_group_direct_message(hamlet, [cordelia, polonius])
+
+        direct_message_group = get_or_create_direct_message_group(
+            id_list=[hamlet.id, polonius.id, cordelia.id]
+        )
+        self.assertEqual(direct_message_group.total_messages, 4)
+        self.assertEqual(direct_message_group.first_message_id, first_message_id)
+        self.assertEqual(direct_message_group.last_message_id, last_message_id)
 
 
 class ExtractTest(ZulipTestCase):
