@@ -363,7 +363,8 @@ def register_remote_user(request: HttpRequest, result: ExternalAuthResult) -> Ht
     kwargs: dict[str, Any] = {
         key: value
         for key, value in result.data_dict.items()
-        if key in {
+        if key
+        in {
             # These are the kwargs taken by maybe_send_to_registration. Remove anything
             # else from the dict.
             "email",
