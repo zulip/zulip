@@ -1965,7 +1965,7 @@
         hsl(0deg 0% 93%),
         hsl(0deg 0% 0% / 20%)
     );
-    --color-background-pill-container-user:light-dark(
+    --color-background-pill-container-user: light-dark(
         hsl(240deg 70% 70% / 20%),
         hsl(240deg 52% 60% / 25%)
     );

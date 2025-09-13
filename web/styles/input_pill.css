@@ -300,18 +300,17 @@
     &:hover {
         background-color: var(--color-background-pill-container-user-hover);
     }
+
     &:focus {
         color: inherit;
         outline: none;
-        box-shadow: 0 0 0 1px var(--color-focus-outline-input-pill) inset;       
+        box-shadow: 0 0 0 1px var(--color-focus-outline-input-pill) inset;
     }
 
     > .pill {
         background-color: transparent;
         border: none;
         text-decoration: none;
-
-       
 
         > .pill-label {
             margin: 0;
