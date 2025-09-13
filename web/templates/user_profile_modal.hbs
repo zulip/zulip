@@ -5,13 +5,13 @@
                 <h1 class="modal__title user-profile-name-heading" id="name">
                     {{#unless is_bot}}
                         {{#if is_active}}
-                            <div class="tippy-zulip-tooltip user-status-icon-wrapper" data-tippy-content="{{last_seen}}">
+                            <span class="tippy-zulip-tooltip user-status-icon-wrapper" data-tippy-content="{{last_seen}}">
                                 <span class="zulip-icon zulip-icon-{{user_circle_class}} {{user_circle_class}} user-circle user_profile_presence" data-presence-indicator-user-id="{{user_id}}"></span>
-                            </div>
+                            </span>
                         {{else}}
-                            <div>
+                            <span>
                                 <i class="fa fa-ban deactivated-user-icon tippy-zulip-tooltip" data-tippy-content="Deactivated user"></i>
-                            </div>
+                            </span>
                         {{/if}}
                     {{/unless}}
                     {{#if is_bot}}
@@ -173,7 +173,7 @@
                     <button type="button" class="modal__button dialog_exit_button" aria-label="{{t 'Close this dialog window' }}" data-micromodal-close>{{t "Cancel" }}</button>
                     <button type="button" class="modal__button dialog_submit_button">
                         <span class="submit-button-text">{{t "Save changes"}}</span>
-                        <div class="modal__spinner"></div>
+                        <span class="modal__spinner"></span>
                     </button>
                 </footer>
             </div>

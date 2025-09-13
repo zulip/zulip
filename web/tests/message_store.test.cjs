@@ -110,6 +110,7 @@ test("process_new_message", () => {
         flags: ["has_alert_word"],
         is_me_message: false,
         id: 2067,
+        reactions: [],
     };
     message = message_helper.process_new_message(message);
 
@@ -130,6 +131,7 @@ test("process_new_message", () => {
         id: 2067,
         match_subject: "topic foo",
         match_content: "bar content",
+        reactions: [],
     };
     message = message_helper.process_new_message(message);
 
@@ -147,6 +149,7 @@ test("process_new_message", () => {
         topic: "cool thing",
         subject: "the_subject",
         id: 2068,
+        reactions: [],
     };
 
     message = message_helper.process_new_message(message);
@@ -160,6 +163,18 @@ test("process_new_message", () => {
         cindy.user_id,
         denise.user_id,
     ]);
+
+    message = {
+        sender_email: denise.email,
+        sender_id: denise.user_id,
+        type: "stream",
+        display_recipient: "Zoolippy",
+        topic: "cool thing",
+        subject: "the_subject",
+        id: 2069,
+    };
+    blueslip.expect("error", "expected raw_message to have reactions", 1);
+    message_helper.process_new_message(message);
 });
 
 test("message_booleans_parity", () => {
@@ -324,6 +339,7 @@ test("update_property", () => {
         topic: "",
         display_recipient: devel.name,
         id: 100,
+        reactions: [],
     };
     let message2 = {
         type: "stream",
@@ -334,6 +350,7 @@ test("update_property", () => {
         topic: "",
         display_recipient: denmark.name,
         id: 101,
+        reactions: [],
     };
     message1 = message_helper.process_new_message(message1);
     message2 = message_helper.process_new_message(message2);
@@ -371,6 +388,7 @@ test("remove", () => {
         display_recipient: devel.name,
         topic: "test",
         id: 100,
+        reactions: [],
     };
     const message2 = {
         type: "stream",
@@ -381,6 +399,7 @@ test("remove", () => {
         display_recipient: denmark.name,
         topic: "test",
         id: 101,
+        reactions: [],
     };
     const message3 = {
         type: "stream",
@@ -391,6 +410,7 @@ test("remove", () => {
         display_recipient: denmark.name,
         topic: "test",
         id: 102,
+        reactions: [],
     };
     for (const message of [message1, message2]) {
         message_helper.process_new_message(message);
@@ -413,6 +433,7 @@ test("get_message_ids_in_stream", () => {
         display_recipient: devel.name,
         topic: "test",
         id: 100,
+        reactions: [],
     };
     const message2 = {
         sender_email: "me@example.com",
@@ -422,6 +443,7 @@ test("get_message_ids_in_stream", () => {
         flags: ["has_alert_word"],
         is_me_message: false,
         id: 101,
+        reactions: [],
     };
     const message3 = {
         type: "stream",
@@ -432,6 +454,7 @@ test("get_message_ids_in_stream", () => {
         display_recipient: denmark.name,
         topic: "test",
         id: 102,
+        reactions: [],
     };
     const message4 = {
         type: "stream",
@@ -442,6 +465,7 @@ test("get_message_ids_in_stream", () => {
         display_recipient: devel.name,
         topic: "test",
         id: 103,
+        reactions: [],
     };
 
     for (const message of [message1, message2, message3, message4]) {

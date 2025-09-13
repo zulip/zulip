@@ -65,10 +65,6 @@ export function get_message_events(message: Message): SubmessageEvents | undefin
         return undefined;
     }
 
-    if (!message.submessages) {
-        return undefined;
-    }
-
     if (message.submessages.length === 0) {
         return undefined;
     }
@@ -162,8 +158,6 @@ export function update_message(submsg: Submessage): void {
         // track that.
         return;
     }
-
-    message.submessages ??= [];
 
     const existing = message.submessages.find((sm) => sm.id === submsg.id);
 

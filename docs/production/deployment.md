@@ -246,15 +246,32 @@ behind reverse proxies.
 
 ## Customizing the outgoing HTTP proxy
 
-To protect against [SSRF][ssrf], Zulip 4.8 and above default to
-routing all outgoing HTTP and HTTPS traffic through
-[Smokescreen][smokescreen], an HTTP `CONNECT` proxy; this includes
-outgoing webhooks, website previews, and mobile push notifications.
-By default, the Camo image proxy will be automatically configured to
-use a custom outgoing proxy, but does not use Smokescreen by default
-because Camo includes similar logic to deny access to private
-subnets. You can [override][proxy.enable_for_camo] this default
-configuration if desired.
+To protect against [SSRF][ssrf], Zulip routes all outgoing HTTP and
+HTTPS traffic through [Smokescreen][smokescreen], an HTTP `CONNECT`
+proxy; this includes outgoing webhooks, website previews, and mobile
+push notifications.
+
+### IP address rules
+
+By default, Smokescreen denies access to all [non-public IP
+addresses](https://en.wikipedia.org/wiki/Private_network), including
+127.0.0.1, but allows traffic to all public Internet hosts. You can
+[adjust those rules][smokescreen-acls]. For instance, if you have an
+outgoing webhook at `http://10.17.17.17:80/`, you would need to:
+
+1. Add the following block to `/etc/zulip/zulip.com`, substituting
+   your internal host's IP address:
+
+   ```ini
+   [http_proxy]
+   allow_addresses = 10.17.17.17
+   ```
+
+1. As root, run
+   `/home/zulip/deployments/current/scripts/zulip-puppet-apply`. This
+   will reconfigure and restart Zulip.
+
+### Using a different outgoing proxy
 
 To use a custom outgoing proxy:
 
@@ -271,29 +288,31 @@ To use a custom outgoing proxy:
    `/home/zulip/deployments/current/scripts/zulip-puppet-apply`. This
    will reconfigure and restart Zulip.
 
+If you wish to disable the outgoing proxy entirely, follow the above
+steps, configuring an empty `host` value. **This is not
+recommended**, as it allows attackers to leverage the Zulip server to
+access internal resources.
+
+### Routing Camo requests through an outgoing proxy
+
+By default, the Camo image proxy will use a custom outgoing proxy if
+one is configured, but will not use the default Smokescreen proxy
+(because Camo includes similar logic to deny access to private
+subnets). You can [override][proxy.enable_for_camo] this logic in
+either direction, if desired.
+
+### Installing Smokescreen on a separate host
+
 If you have a deployment with multiple frontend servers, or wish to
 install Smokescreen on a separate host, you can apply the
 `zulip::profile::smokescreen` Puppet class on that host, and follow
 the above steps, setting the `[http_proxy]` block to point to that
 host.
 
-If you wish to disable the outgoing proxy entirely, follow the above
-steps, configuring an empty `host` value.
-
-Optionally, you can also configure the [Smokescreen ACL
-list][smokescreen-acls]. By default, Smokescreen denies access to all
-[non-public IP
-addresses](https://en.wikipedia.org/wiki/Private_network), including
-127.0.0.1, but allows traffic to all public Internet hosts.
-
-In Zulip 4.7 and older, to enable SSRF protection via Smokescreen, you
-will need to explicitly add the `zulip::profile::smokescreen` Puppet
-class, and configure the `[http_proxy]` block as above.
-
-[proxy.enable_for_camo]: system-configuration.md#enable_for_camo
-[smokescreen]: https://github.com/stripe/smokescreen
-[smokescreen-acls]: https://github.com/stripe/smokescreen#acls
 [ssrf]: https://owasp.org/www-community/attacks/Server_Side_Request_Forgery
+[smokescreen]: https://github.com/stripe/smokescreen
+[proxy.enable_for_camo]: system-configuration.md#enable_for_camo
+[smokescreen-acls]: system-configuration.md#allow_addresses-allow_ranges-deny_addresses-deny_ranges
 
 ### S3 file storage requests and outgoing proxies
 

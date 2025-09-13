@@ -203,6 +203,7 @@ test("my_message_all_actions", ({override}) => {
             unread: false,
             collapsed: false,
             not_spectator: true,
+            submessages: [],
             edit_history: [
                 {
                     prev_content: "Previous content",

@@ -1,13 +1,12 @@
 <p>
     {{#tr}}Archiving this channel will:{{/tr}}
 </p>
-<p>
-    <ul>
-        <li>{{#tr}}Remove it from the left sidebar for all users.{{/tr}}</li>
-        <li>{{#tr}}Prevent new messages from being sent to this channel.{{/tr}}</li>
-        <li>{{#tr}}Prevent messages in this channel from being edited, deleted, or moved.{{/tr}}</li>
-        {{#if is_announcement_stream}}
-        <li>{{#tr}}Disable announcements that are currently sent to this channel:{{/tr}}</li>
+<ul>
+    <li>{{#tr}}Remove it from the left sidebar for all users.{{/tr}}</li>
+    <li>{{#tr}}Prevent new messages from being sent to this channel.{{/tr}}</li>
+    <li>{{#tr}}Prevent messages in this channel from being edited, deleted, or moved.{{/tr}}</li>
+    {{#if is_announcement_stream}}
+    <li>{{#tr}}Disable announcements that are currently sent to this channel:{{/tr}}
         <ul>
             {{#if is_new_stream_announcements_stream}}
                 <li>{{#tr}}New channel announcements{{/tr}}</li>
@@ -19,8 +18,10 @@
                 <li>{{#tr}}Zulip update announcements{{/tr}}</li>
             {{/if}}
         </ul>
-        {{/if}}
-    </ul>
+    </li>
+    {{/if}}
+</ul>
+<p>
     {{#tr}}
         Users can still search for messages in archived channels.
         You can always unarchive this channel.

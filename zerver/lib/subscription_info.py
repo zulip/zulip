@@ -603,32 +603,54 @@ def bulk_get_subscriber_user_ids(
     20k+ total subscribers.  (For large realms with lots of default
     streams, this function deals with LOTS of data, so it is important
     to optimize.)
+
+    One optimization is to use two branches for creating this query,
+    to avoid joining on zerver_userprofile when we're not sending
+    partial users.
     """
 
-    query = SQL(
-        """
-        SELECT
-            zerver_subscription.recipient_id,
-            zerver_subscription.user_profile_id
-        FROM
-            zerver_subscription
-        JOIN zerver_userprofile on zerver_userprofile.id = zerver_subscription.user_profile_id
-        WHERE
-            zerver_subscription.active AND
-            zerver_subscription.is_user_active AND
-            (
-                zerver_subscription.recipient_id = ANY (%(full_fetch_recipient_ids)s)
-                OR
+    if partial_fetch_recipient_ids:
+        query = SQL(
+            """
+            SELECT
+                zerver_subscription.recipient_id,
+                zerver_subscription.user_profile_id
+            FROM
+                zerver_subscription
+            JOIN zerver_userprofile on zerver_userprofile.id = zerver_subscription.user_profile_id
+            WHERE
+                zerver_subscription.active AND
+                zerver_subscription.is_user_active AND
                 (
-                    zerver_subscription.recipient_id = ANY (%(partial_fetch_recipient_ids)s) AND
-                    (zerver_userprofile.is_bot OR (NOT zerver_userprofile.long_term_idle))
+                    zerver_subscription.recipient_id = ANY (%(full_fetch_recipient_ids)s)
+                    OR
+                    (
+                        zerver_subscription.recipient_id = ANY (%(partial_fetch_recipient_ids)s) AND
+                        (zerver_userprofile.is_bot OR (NOT zerver_userprofile.long_term_idle))
+                    )
                 )
-            )
-        ORDER BY
-            zerver_subscription.recipient_id,
-            zerver_subscription.user_profile_id
-        """
-    )
+            ORDER BY
+                zerver_subscription.recipient_id,
+                zerver_subscription.user_profile_id
+            """
+        )
+    else:
+        query = SQL(
+            """
+            SELECT
+                zerver_subscription.recipient_id,
+                zerver_subscription.user_profile_id
+            FROM
+                zerver_subscription
+            WHERE
+                zerver_subscription.active AND
+                zerver_subscription.is_user_active AND
+                zerver_subscription.recipient_id = ANY (%(full_fetch_recipient_ids)s)
+            ORDER BY
+                zerver_subscription.recipient_id,
+                zerver_subscription.user_profile_id
+            """
+        )
 
     cursor = connection.cursor()
     cursor.execute(

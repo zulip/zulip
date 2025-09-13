@@ -200,18 +200,26 @@ class TornadoInMemoryRateLimiterBackendTest(RateLimiterBackendBase):
 
     def test_used_in_tornado(self) -> None:
         user_profile = self.example_user("hamlet")
-        ip_addr = "192.168.0.123"
+        ipv4_addr = "192.168.0.123"
+        ipv6_addr = "2002:DB8::21f:5bff:febf:ce22:1111"
+
         with self.settings(RUNNING_INSIDE_TORNADO=True):
             user_obj = RateLimitedUser(user_profile, domain="api_by_user")
-            ip_obj = RateLimitedIPAddr(ip_addr, domain="api_by_ip")
+            ipv4_obj = RateLimitedIPAddr(ipv4_addr, domain="api_by_ip")
+            ipv6_obj = RateLimitedIPAddr(ipv6_addr, domain="api_by_ip")
+
         self.assertEqual(user_obj.backend, TornadoInMemoryRateLimiterBackend)
-        self.assertEqual(ip_obj.backend, TornadoInMemoryRateLimiterBackend)
+        self.assertEqual(ipv4_obj.backend, TornadoInMemoryRateLimiterBackend)
+        self.assertEqual(ipv6_obj.backend, TornadoInMemoryRateLimiterBackend)
 
         with self.settings(RUNNING_INSIDE_TORNADO=True):
             user_obj = RateLimitedUser(user_profile, domain="some_domain")
-            ip_obj = RateLimitedIPAddr(ip_addr, domain="some_domain")
+            ipv4_obj = RateLimitedIPAddr(ipv4_addr, domain="some_domain")
+            ipv6_obj = RateLimitedIPAddr(ipv6_addr, domain="some_domain")
+
         self.assertEqual(user_obj.backend, RedisRateLimiterBackend)
-        self.assertEqual(ip_obj.backend, RedisRateLimiterBackend)
+        self.assertEqual(ipv4_obj.backend, RedisRateLimiterBackend)
+        self.assertEqual(ipv6_obj.backend, RedisRateLimiterBackend)
 
     def test_block_access(self) -> None:
         obj = self.create_object("test", [(2, 5)])
@@ -248,6 +256,89 @@ class RateLimitedObjectsTest(ZulipTestCase):
     def test_empty_rules_edge_case(self) -> None:
         obj = RateLimitedTestObject("test", rules=[], backend=RedisRateLimiterBackend)
         self.assertEqual(obj.get_rules(), [(1, 9999)])
+
+    def test_ip_bucket_key(self) -> None:
+        ipv6 = "2001:0db8::ce1:12:8a2e:0370"
+        ipv4 = "192.168.0.123"
+        domain = "api_by_ip"
+
+        self.assertEqual(
+            RateLimitedIPAddr(ipv4, domain=domain).key(), f"RateLimitedIPAddr:<{ipv4}>:{domain}"
+        )
+
+        # Here we check that each bucket key, given a different network prefix,
+        # is as expected.
+        # Although /64 is the only used prefix, we still test other prefixes
+        # to ensure correctness and also in case we decide to use smaller prefixes
+        # in future.
+
+        # Note that the leading zero in :0db8: is omitted
+        self.assertEqual(
+            RateLimitedIPAddr(ipv6, domain=domain, ipv6_network_prefix=64).key(),
+            "RateLimitedIPAddr:<2001:db8::/64>:api_by_ip",
+        )
+        self.assertEqual(
+            RateLimitedIPAddr(ipv6, domain=domain, ipv6_network_prefix=56).key(),
+            "RateLimitedIPAddr:<2001:db8::/56>:api_by_ip",
+        )
+        self.assertEqual(
+            RateLimitedIPAddr(ipv6, domain=domain, ipv6_network_prefix=48).key(),
+            "RateLimitedIPAddr:<2001:db8::/48>:api_by_ip",
+        )
+
+        # Two IPv6 with the SAME network portion (identified by the prefix)
+        # should belong to the SAME bucket.
+        self.assertEqual(
+            RateLimitedIPAddr(
+                "2001:0db8:ce1:12::8a2e:0370", domain=domain, ipv6_network_prefix=64
+            ).key(),
+            RateLimitedIPAddr(
+                "2001:0db8:ce1:12::8a2e:045f", domain=domain, ipv6_network_prefix=64
+            ).key(),
+        )
+        self.assertEqual(
+            RateLimitedIPAddr(
+                "2001:0db8:7a2e:ccd1::0370", domain=domain, ipv6_network_prefix=56
+            ).key(),
+            RateLimitedIPAddr(
+                "2001:0db8:7a2e:ccf2::045f", domain=domain, ipv6_network_prefix=56
+            ).key(),
+        )
+        self.assertEqual(
+            RateLimitedIPAddr(
+                "2001:0db8:ce1:12::8a2e:0370", domain=domain, ipv6_network_prefix=48
+            ).key(),
+            RateLimitedIPAddr(
+                "2001:0db8:ce1:13::8a2e:045f", domain=domain, ipv6_network_prefix=48
+            ).key(),
+        )
+
+        # Two IPv6 with DIFFERENT network portions (identified by the prefix)
+        # should belong to DIFFERENT buckets.
+        self.assertNotEqual(
+            RateLimitedIPAddr(
+                "2001:0db8:ce1:12::8a2e:0370", domain=domain, ipv6_network_prefix=64
+            ).key(),
+            RateLimitedIPAddr(
+                "2001:0db8:ce1:13::8a2e:045f", domain=domain, ipv6_network_prefix=64
+            ).key(),
+        )
+        self.assertNotEqual(
+            RateLimitedIPAddr(
+                "2001:0db8:7a2e:ccd1::0370", domain=domain, ipv6_network_prefix=56
+            ).key(),
+            RateLimitedIPAddr(
+                "2001:0db8:7a2e:c1f2::045f", domain=domain, ipv6_network_prefix=56
+            ).key(),
+        )
+        self.assertNotEqual(
+            RateLimitedIPAddr(
+                "2001:0db8:12::8a2e:0370", domain=domain, ipv6_network_prefix=48
+            ).key(),
+            RateLimitedIPAddr(
+                "2001:0db8:13::8a2e:045f", domain=domain, ipv6_network_prefix=48
+            ).key(),
+        )
 
 
 # Don't load the base class as a test: https://bugs.python.org/issue17519.

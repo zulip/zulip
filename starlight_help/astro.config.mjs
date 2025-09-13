@@ -1,12 +1,16 @@
+// @ts-check
+
 import * as fs from "node:fs";
 
 import starlight from "@astrojs/starlight";
 import {defineConfig, envField} from "astro/config";
+import compressor from "astro-compressor";
 import Icons from "unplugin-icons/vite";
 
 // https://astro.build/config
 export default defineConfig({
     base: "help",
+    trailingSlash: "never",
     vite: {
         plugins: [
             // eslint-disable-next-line new-cap
@@ -71,6 +75,11 @@ export default defineConfig({
         },
     },
     integrations: [
+        compressor({
+            gzip: true,
+            brotli: false,
+            zstd: false,
+        }),
         starlight({
             title: "Zulip help center",
             favicon: "../static/images/favicon.svg",
@@ -93,7 +102,10 @@ export default defineConfig({
                 {
                     label: "Guides for getting started",
                     items: [
-                        "getting-started-with-zulip",
+                        {
+                            label: "Getting started",
+                            link: "/getting-started-with-zulip",
+                        },
                         {
                             label: "Choosing a team chat app",
                             link: "https://blog.zulip.com/2024/11/04/choosing-a-team-chat-app/",

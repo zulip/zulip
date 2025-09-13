@@ -23,6 +23,9 @@
         /* Emit */
         "noEmit": true,
 
+        /* JavaScript support */
+        "allowJs": true,
+
         /* Interop Constraints */
         "erasableSyntaxOnly": true,
         "esModuleInterop": true,

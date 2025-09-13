@@ -12823,7 +12823,7 @@ paths:
                     The UUID of the realm to which the push device
                     being registered belongs.
                   type: string
-                  example: "realm-uuid"
+                  example: "9aa61d0b-8ce5-488d-8e9e-fedc346e6836"
                 push_account_id:
                   description: |
                     The `push_account_id` value provided by the mobile client

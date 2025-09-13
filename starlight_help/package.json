@@ -5,28 +5,29 @@
   "scripts": {
     "dev": "astro dev",
     "start": "astro dev",
-    "build": "astro check && astro build",
+    "check": "astro check",
+    "build": "astro build",
     "preview": "astro preview",
     "astro": "astro"
   },
   "dependencies": {
-    "@astrojs/check": "^0.9.3",
     "@astrojs/starlight": "^0.35.1",
     "@iconify-json/fa": "^1.2.1",
-    "@types/hast": "^3.0.4",
-    "@types/mdast": "^4.0.4",
     "astro": "^5.1.2",
+    "astro-compressor": "^1.1.2",
     "hast-util-from-html": "^2.0.3",
     "hast-util-to-html": "^9.0.5",
     "mdast-util-to-string": "^4.0.0",
     "remark": "^15.0.1",
     "remark-mdx": "^3.1.0",
-    "sharp": "^0.34.1",
-    "typescript": "^5.4.5",
+    "sharp": "^0.33.3",
     "unist-util-visit": "^5.0.0",
     "unplugin-icons": "^22.1.0"
   },
   "devDependencies": {
+    "@astrojs/check": "^0.9.3",
+    "@types/hast": "^3.0.4",
+    "@types/mdast": "^4.0.4",
     "mdast-util-to-markdown": "^2.1.2",
     "remark-frontmatter": "^5.0.0",
     "remark-gfm": "^4.0.1",
@@ -45,6 +46,7 @@
     "remark-preset-lint-markdown-style-guide": "^6.0.1",
     "remark-preset-lint-recommended": "^7.0.1",
     "remark-stringify": "^11.0.0",
+    "typescript": "^5.4.5",
     "unified": "^11.0.5",
     "unified-lint-rule": "^3.0.1"
   }

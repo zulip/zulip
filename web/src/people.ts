@@ -426,7 +426,7 @@ export function emails_string_to_user_ids(emails_string: string): number[] {
     return user_ids_string ? user_ids_string_to_ids_array(user_ids_string) : [];
 }
 
-export let email_list_to_user_ids_string = (emails: string[]): string | undefined => {
+export function email_list_to_user_ids_string(emails: string[]): string | undefined {
     let user_ids = util.try_parse_as_truthy(
         emails.map((email) => {
             const person = get_by_email(email);
@@ -442,12 +442,6 @@ export let email_list_to_user_ids_string = (emails: string[]): string | undefine
     user_ids = util.sorted_ids(user_ids);
 
     return user_ids.join(",");
-};
-
-export function rewire_email_list_to_user_ids_string(
-    value: typeof email_list_to_user_ids_string,
-): void {
-    email_list_to_user_ids_string = value;
 }
 
 export function get_full_names_for_poll_option(user_ids: number[]): string {
