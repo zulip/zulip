@@ -56,6 +56,7 @@ from zerver.actions.default_streams import (
 )
 from zerver.actions.invites import (
     do_create_multiuse_invite_link,
+    do_edit_multiuse_invite_link,
     do_invite_users,
     do_revoke_multi_use_invite,
     do_revoke_user_invite,
@@ -4348,6 +4349,73 @@ class NormalActionsTest(BaseAction):
                 acting_user=self.user_profile,
             )
         check_user_settings_update("events[0]", events[0])
+
+    def test_multiuse_invite_edit_event(self) -> None:
+        self.user_profile = self.example_user("iago")
+        self.login("iago")
+
+        # Create initial multiuse invite
+        initial_invited_as = PreregistrationUser.INVITE_AS["REALM_ADMIN"]
+        initial_streams = [get_stream("Denmark", self.user_profile.realm)]
+        initial_groups = [
+            NamedUserGroup.objects.get(realm=self.user_profile.realm, name="hamletcharacters")
+        ]
+        invite_expires_in_minutes = 2 * 24 * 60
+        do_create_multiuse_invite_link(
+            self.user_profile,
+            initial_invited_as,
+            invite_expires_in_minutes,
+            include_realm_default_subscriptions=False,
+            streams=initial_streams,
+            user_groups=initial_groups,
+        )
+
+        initial_multiuse_object = MultiuseInvite.objects.get()
+
+        # Change only the `invite_as` field
+        modified_invited_as = PreregistrationUser.INVITE_AS["MODERATOR"]
+        with self.verify_action(state_change_expected=False, num_events=1) as events:
+            do_edit_multiuse_invite_link(initial_multiuse_object, invited_as=modified_invited_as)
+        check_invites_changed("events[0]", events[0])
+
+        # Change only the `stream_ids` field
+        modified_streams = [get_stream("Verona", self.user_profile.realm)]
+        with self.verify_action(state_change_expected=False, num_events=1) as events:
+            do_edit_multiuse_invite_link(initial_multiuse_object, streams=modified_streams)
+        check_invites_changed("events[0]", events[0])
+
+        # Change only the `group_ids` field
+        core_team_group = check_add_user_group(
+            self.user_profile.realm,
+            "core team",
+            [self.example_user("hamlet")],
+            "Core team group",
+            acting_user=self.user_profile,
+        )
+        modified_groups = [
+            NamedUserGroup.objects.get(realm=self.user_profile.realm, name=core_team_group)
+        ]
+        with self.verify_action(state_change_expected=False) as events:
+            do_edit_multiuse_invite_link(
+                initial_multiuse_object,
+                user_groups=modified_groups,
+            )
+        check_invites_changed("events[0]", events[0])
+
+        # Change only the `include_realm_default_subscriptions` field
+        with self.verify_action(state_change_expected=False, num_events=1) as events:
+            do_edit_multiuse_invite_link(
+                initial_multiuse_object, include_realm_default_subscriptions=True
+            )
+        check_invites_changed("events[0]", events[0])
+
+        # Change only the `welcome_message_custom_text` field
+        with self.verify_action(state_change_expected=False, num_events=1) as events:
+            do_edit_multiuse_invite_link(
+                initial_multiuse_object,
+                welcome_message_custom_text="Welcome to our organization!",
+            )
+        check_invites_changed("events[0]", events[0])
 
 
 class RealmPropertyActionTest(BaseAction):

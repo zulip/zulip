@@ -7,10 +7,13 @@ from django.http import HttpRequest, HttpResponse
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from pydantic import Json, StringConstraints
+from pydantic_partials.sentinels import Missing, MissingType
 
 from confirmation import settings as confirmation_settings
+from confirmation.models import Confirmation
 from zerver.actions.invites import (
     do_create_multiuse_invite_link,
+    do_edit_multiuse_invite_link,
     do_get_invites_controlled_by_user,
     do_invite_users,
     do_revoke_multi_use_invite,
@@ -246,6 +249,91 @@ def resend_user_invite_email(
 ) -> HttpResponse:
     prereg_user = access_invite_by_id(user_profile, invite_id)
     do_send_user_invite_email(prereg_user, event_time=timezone_now())
+    return json_success(request)
+
+
+@require_member_or_admin
+@typed_endpoint
+def edit_multiuse_invite(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    *,
+    invite_id: PathOnly[int],
+    stream_ids: Json[list[int]] | None = None,
+    group_ids: Json[list[int]] | None = None,
+    invite_as: Annotated[
+        Json[int] | None,
+        check_int_in_validator(list(PreregistrationUser.INVITE_AS.values())),
+    ] = None,
+    include_realm_default_subscriptions: Json[bool] | None = None,
+    welcome_message_custom_text: Annotated[
+        str | None | MissingType,
+        StringConstraints(
+            max_length=Realm.MAX_REALM_WELCOME_MESSAGE_CUSTOM_TEXT_LENGTH,
+        ),
+    ] = Missing,
+) -> HttpResponse:
+    if not user_profile.can_create_multiuse_invite_to_realm():
+        raise JsonableError(_("Insufficient permission"))
+
+    invite = access_multiuse_invite_by_id(user_profile, invite_id)
+
+    confirmation_objects = Confirmation.objects.filter(
+        type=Confirmation.MULTIUSE_INVITE,
+        object_id=invite_id,
+    )
+    assert len(confirmation_objects) == 1, (
+        f"Expected exactly one confirmation for multiuse invite {invite_id}, found {len(confirmation_objects)}"
+    )
+    invite_expiry_date = confirmation_objects[0].expiry_date
+
+    if invite_expiry_date is not None and timezone_now() > invite_expiry_date:
+        raise JsonableError(_("The invitation link has expired or been deactivated."))
+
+    user_groups = (
+        access_user_groups_for_invite(group_ids, user_profile) if group_ids is not None else None
+    )
+
+    if invite_as is not None:
+        # Check if the user has permission to set the requested
+        # invite_as value.
+        require_admin = invite_as in [
+            PreregistrationUser.INVITE_AS["REALM_OWNER"],
+            PreregistrationUser.INVITE_AS["REALM_ADMIN"],
+            PreregistrationUser.INVITE_AS["MODERATOR"],
+        ]
+        check_role_based_permissions(invite_as, user_profile, require_admin=require_admin)
+
+        if user_profile != invite.referred_by:
+            # Check if the user who originally created the invite
+            # also has the permission to set the requested
+            # invite_as value.
+            try:
+                check_role_based_permissions(
+                    invite_as, invite.referred_by, require_admin=require_admin
+                )
+            except JsonableError:
+                raise JsonableError(
+                    _(
+                        "This invitation is owned by a user without permission to give other users this role."
+                    )
+                )
+
+    if not isinstance(welcome_message_custom_text, MissingType) and not user_profile.is_realm_admin:
+        raise JsonableError(_("Must be an organization administrator"))
+
+    streams = (
+        access_streams_for_invite(stream_ids, user_profile) if stream_ids is not None else None
+    )
+
+    do_edit_multiuse_invite_link(
+        invite,
+        invited_as=invite_as,
+        streams=streams,
+        user_groups=user_groups,
+        include_realm_default_subscriptions=include_realm_default_subscriptions,
+        welcome_message_custom_text=welcome_message_custom_text,
+    )
     return json_success(request)
 
 
