@@ -362,7 +362,7 @@ def register_remote_user(request: HttpRequest, result: ExternalAuthResult) -> Ht
     kwargs: dict[str, Any] = dict(result.data_dict)
     # maybe_send_to_registration doesn't take these arguments, so delete them.
 
-    for key in result.data_dict.keys():
+    for key in result.data_dict:
         if key not in {
             # These are the kwargs taken by maybe_send_to_registration. Remove anything
             # else from the dict.
