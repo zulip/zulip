@@ -116,7 +116,7 @@ from zerver.models import (
 )
 from zerver.models.clients import get_client
 from zerver.models.groups import SystemGroups, get_realm_system_groups_name_dict
-from zerver.models.recipients import get_direct_message_group_user_ids
+from zerver.models.recipients import DirectMessageGroup, get_direct_message_group_user_ids
 from zerver.models.scheduled_jobs import NotificationTriggers
 from zerver.models.streams import (
     StreamTopicsPolicyEnum,
@@ -635,6 +635,7 @@ def build_message_send_dict(
     recipients_for_user_creation_events: dict[UserProfile, set[int]] | None = None,
     acting_user: UserProfile | None = None,
     no_previews: bool = False,
+    direct_message_group: DirectMessageGroup | None = None,
 ) -> SendMessageRequest:
     """Returns a dictionary that can be passed into do_send_messages.  In
     production, this is always called by check_message, but some
@@ -767,6 +768,7 @@ def build_message_send_dict(
         disable_external_notifications=disable_external_notifications,
         topic_participant_user_ids=topic_participant_user_ids,
         recipients_for_user_creation_events=recipients_for_user_creation_events,
+        direct_message_group=direct_message_group,
     )
 
     return message_send_dict
@@ -997,6 +999,8 @@ def do_send_messages(
         )
 
     bulk_insert_ums(ums)
+
+    update_direct_message_group_stats(send_message_requests)
 
     for send_request in send_message_requests:
         do_widget_post_save_actions(send_request)
@@ -1313,6 +1317,39 @@ def do_send_messages(
         for send_request in send_message_requests
     ]
     return sent_message_results
+
+
+def update_direct_message_group_stats(send_message_requests: Sequence[SendMessageRequest]) -> None:
+    """Update first_message, last_message, and total_messages for DirectMessageGroups."""
+    # Sort send_requests by message ID to ensure correct ordering when
+    # multiple messages are sent to the same DM group
+    dm_group_send_requests = [
+        send_request
+        for send_request in send_message_requests
+        if send_request.message.recipient.type == Recipient.DIRECT_MESSAGE_GROUP
+        and send_request.direct_message_group is not None
+    ]
+    dm_group_send_requests.sort(key=lambda req: req.message.id)
+
+    if not dm_group_send_requests:
+        return
+
+    direct_message_group_map = {}
+    for send_request in dm_group_send_requests:
+        dmg = send_request.direct_message_group
+        if dmg.id not in direct_message_group_map:
+            direct_message_group_map[dmg.id] = dmg
+
+    for send_request in dm_group_send_requests:
+        direct_message_group = direct_message_group_map[send_request.direct_message_group.id]
+        if direct_message_group.first_message_id is None:
+            direct_message_group.first_message_id = send_request.message.id
+        direct_message_group.last_message_id = send_request.message.id
+        direct_message_group.total_messages += 1
+
+    DirectMessageGroup.objects.bulk_update(
+        direct_message_group_map.values(), ["first_message_id", "last_message_id", "total_messages"]
+    )
 
 
 def extract_stream_indicator(s: str) -> str | int:
@@ -1754,6 +1791,7 @@ def check_message(
     for high-level documentation on this subsystem.
     """
     stream = None
+    direct_message_group = None
 
     message_content = normalize_body(message_content_raw)
 
@@ -1844,7 +1882,7 @@ def check_message(
         # `forwarded_mirror_message` security check in that case.
         forwarded_mirror_message = mirror_message and not forged
         try:
-            recipient = recipient_for_user_profiles(
+            recipient, direct_message_group = recipient_for_user_profiles(
                 user_profiles, forwarded_mirror_message, forwarder_user_profile, sender
             )
         except ValidationError as e:
@@ -1908,6 +1946,7 @@ def check_message(
         recipients_for_user_creation_events=recipients_for_user_creation_events,
         acting_user=acting_user,
         no_previews=no_previews,
+        direct_message_group=direct_message_group,
     )
 
     if (

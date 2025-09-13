@@ -19,7 +19,7 @@ def get_recipient_from_user_profiles(
     forwarder_user_profile: UserProfile | None,
     sender: UserProfile,
     create: bool = True,
-) -> Recipient:
+) -> tuple[Recipient, DirectMessageGroup | None]:
     # Avoid mutating the passed in list of recipient_profiles.
     recipient_profiles_map = {user_profile.id: user_profile for user_profile in recipient_profiles}
 
@@ -56,7 +56,7 @@ def get_recipient_from_user_profiles(
                     id=direct_message_group.recipient_id,
                     type=Recipient.DIRECT_MESSAGE_GROUP,
                     type_id=direct_message_group.id,
-                )
+                ), direct_message_group
 
         # Making sure we have personal recipients for all users,
         # otherwise, fall back to the direct message group.
@@ -74,7 +74,7 @@ def get_recipient_from_user_profiles(
                 id=recipient_user_profile.recipient_id,
                 type=Recipient.PERSONAL,
                 type_id=recipient_user_profile.id,
-            )
+            ), None
     if create:
         direct_message_group = get_or_create_direct_message_group(user_ids)
     else:
@@ -88,7 +88,7 @@ def get_recipient_from_user_profiles(
         id=direct_message_group.recipient_id,
         type=Recipient.DIRECT_MESSAGE_GROUP,
         type_id=direct_message_group.id,
-    )
+    ), direct_message_group
 
 
 def validate_recipient_user_profiles(
@@ -129,7 +129,7 @@ def recipient_for_user_profiles(
     *,
     allow_deactivated: bool = False,
     create: bool = True,
-) -> Recipient:
+) -> tuple[Recipient, DirectMessageGroup | None]:
     recipient_profiles = validate_recipient_user_profiles(
         user_profiles, sender, allow_deactivated=allow_deactivated
     )
