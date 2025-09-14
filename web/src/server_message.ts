@@ -51,7 +51,6 @@ export const server_message_schema = z.intersection(
         last_edit_timestamp: z.optional(z.number()),
         last_moved_timestamp: z.optional(z.number()),
         reactions: message_reaction_schema,
-        recipient_id: z.number(),
         sender_email: z.string(),
         sender_full_name: z.string(),
         sender_id: z.number(),

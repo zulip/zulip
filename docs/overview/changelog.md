@@ -19,6 +19,51 @@ _Unreleased_
 
 ## Zulip Server 11.x series
 
+### Zulip Server 11.1
+
+_Released 2025-09-11_
+
+- Added upgrade instructions for Debian 12 → 13.
+- Fixed subscriber counts after data import being incorrect in the
+  database, which could cause removing channel subscribers to crash
+  after a data import. Also added a daily refresh to cached
+  subscriber counts, in case of race conditions.
+- Improved the label for channels not in a folder when channel folders
+  are in use.
+- Improved visual spacing and alignment in the web app left and right
+  sidebars.
+- Improved keyboard navigation in web app left and right sidebars.
+- Improved error handling for a SAML configuration error.
+- Improved dark theme colors for search suggestion pills.
+- Fixed a bug that could hide the left sidebar top search widget until
+  browser reload.
+- Fixed the compose box incorrectly closing when clicking links in the
+  message feed.
+- Fixed multiple annoying bugs where clicking/selecting didn’t work
+  properly.
+- Fixed a performance regression when loading the web app.
+- Fixed internals of message reminder body construction.
+- Fixed multiple minor issues generating Zulip internal links.
+- Fixed a buggy interaction with Smokescreen preventing client reload
+  requests from being sent.
+- Fixed broken deep links when serving redirects for a moved realm.
+- Fixed a broken lightbox keyboard shortcut.
+- Fixed hooks failing when upgrading the OS without having previously
+  upgraded Zulip.
+- Fixed the copy keyboard shortcut not working for logged-out access.
+- Fixed a bug introduced in 11.0 that could cause Notification Bot to
+  fail to notify about newly created channels (in the announcement
+  channel, as well as the new channel) when subscribing more than 100
+  users at once.
+- Fixed a bug resulting in useless extra suggestions in the search
+  typeahead.
+- Optimized performance for processing deleted messages slightly.
+- Backported several improvements to Help Center and API
+  documentation.
+- Added configuration options to allow webhooks to access to specific
+  local-network IP addresses.
+- Updated translations.
+
 ### Zulip Server 11.0
 
 _Released 2025-08-13_

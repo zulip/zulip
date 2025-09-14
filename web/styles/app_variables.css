@@ -1434,6 +1434,21 @@
         hsl(0deg 0% 80%),
         hsl(0deg 0% 0% / 60%)
     );
+
+    /* User Profile Modal */
+    --color-user-profile-field-name: light-dark(
+        hsl(0deg 0% 20%),
+        hsl(236deg 33% 90%)
+    );
+    --color-border-user-profile-table: light-dark(
+        hsl(0deg 0% 87%),
+        hsl(0deg 0% 0% / 40%)
+    );
+    --color-border-manage-profile-footer: light-dark(
+        hsl(0deg 0% 87%),
+        hsl(0deg 0% 100% / 20%)
+    );
+
     /* Link colors */
     --color-text-link: light-dark(hsl(210deg 94% 42%), hsl(200deg 100% 50%));
     --color-text-link-decoration: light-dark(
@@ -1471,6 +1486,58 @@
     --color-background-disabled-dropdown-widget-button: light-dark(
         hsl(0deg 0% 93%),
         hsl(0deg 0% 0% / 20%)
+    );
+    /* Poll Widget */
+    --color-poll-vote: light-dark(hsl(156deg 41% 40%), hsl(185deg 35% 65%));
+    --color-poll-vote-hover: light-dark(
+        hsl(156deg 41% 40%),
+        hsl(185deg 50% 70%)
+    );
+    --color-poll-vote-focus: light-dark(
+        hsl(156deg 41% 40%),
+        hsl(185deg 50% 65%)
+    );
+    --color-border-poll-vote: light-dark(
+        hsl(156deg 28% 70%),
+        hsl(185deg 35% 35%)
+    );
+    --color-border-poll-vote-hover: light-dark(
+        hsl(156deg 30% 50%),
+        hsl(185deg 40% 40%)
+    );
+    --color-border-poll-vote-focus: light-dark(
+        hsl(156deg 30% 50%),
+        hsl(185deg 40% 50%)
+    );
+    --color-background-poll-vote-hover: light-dark(
+        var(--color-background-widget-button),
+        hsl(185deg 20% 20%)
+    );
+    --color-background-poll-vote-focus: light-dark(
+        hsl(156deg 41% 90%),
+        hsl(185deg 40% 35%)
+    );
+    --color-poll-names: light-dark(hsl(0deg 0% 45%), hsl(236deg 15% 70%));
+    /* TODO Widget */
+    --color-border-todo-checkbox: light-dark(
+        hsl(156deg 28% 70%),
+        color-mix(in oklch, hsl(185deg 40% 45%) 70%, transparent)
+    );
+    --color-border-todo-checkbox-hover: light-dark(
+        hsl(156deg 30% 50%),
+        hsl(185deg 40% 35%)
+    );
+    --color-border-todo-checkbox-checked: light-dark(
+        hsl(156deg 41% 40%),
+        hsl(185deg 40% 45%)
+    );
+    --color-background-todo-checkbox-hover: light-dark(
+        transparent,
+        hsl(185deg 20% 20%)
+    );
+    --color-background-todo-checkbox-checked: light-dark(
+        hsl(156deg 41% 40%),
+        hsl(185deg 40% 45%)
     );
 
     /* KBD colors */
@@ -1839,7 +1906,7 @@
     /* Input pills */
     --color-background-input-pill: light-dark(
         hsl(237deg 68% 94%),
-        hsl(240deg 65% 60% / 22%)
+        hsl(240deg 65% 60% / 38%)
     );
     /* Tuned pill for the search bar in dark mode. */
     --color-background-input-pill-search: light-dark(

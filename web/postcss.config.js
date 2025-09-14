@@ -1,3 +1,5 @@
+// @ts-check
+
 import path from "node:path";
 
 import postcssExtendRule from "postcss-extend-rule";
@@ -8,9 +10,19 @@ import postcssSimpleVars from "postcss-simple-vars";
 
 import {container_breakpoints, media_breakpoints} from "./src/css_variables.ts";
 
-const config = ({file}) => ({
+/**
+ * @param {object} ctx
+ * @returns {import("postcss-load-config").Config}
+ * @satisfies {import("postcss-load-config").ConfigFn & import("postcss-loader/dist/config").PostCSSLoaderOptions}
+ */
+const config = (ctx) => ({
     plugins: [
-        (file.basename ?? path.basename(file)) === "dark_theme.css" &&
+        "file" in ctx &&
+            (typeof ctx.file === "string"
+                ? path.basename(ctx.file)
+                : typeof ctx.file === "object" && ctx.file !== null && "basename" in ctx.file
+                  ? ctx.file.basename
+                  : undefined) === "dark_theme.css" &&
             // Add postcss-import plugin with postcss-prefixwrap to handle
             // the flatpickr dark theme. We do this because flatpickr themes
             // are not scoped. See https://github.com/flatpickr/flatpickr/issues/2168.

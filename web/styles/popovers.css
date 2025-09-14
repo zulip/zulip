@@ -435,7 +435,7 @@ ul.popover-group-menu-member-list {
     }
 
     .name {
-        color: hsl(0deg 0% 20%);
+        color: var(--color-user-profile-field-name);
         font-weight: 600;
         margin-right: 10px;
         overflow-wrap: break-word;
@@ -511,11 +511,6 @@ ul.popover-group-menu-member-list {
     #content {
         .field-section {
             margin-bottom: 10px;
-
-            .name {
-                color: hsl(0deg 0% 20%);
-                font-weight: 600;
-            }
 
             &[data-type="2"] .value {
                 overflow-wrap: break-word;
@@ -622,7 +617,7 @@ ul.popover-group-menu-member-list {
 
     .subscription-group-list,
     .subscription-stream-list {
-        border: 1px solid hsl(0deg 0% 83%);
+        border: 1px solid var(--color-border-user-profile-table);
         border-radius: 4px;
         overflow: auto;
         text-align: left;
@@ -637,7 +632,7 @@ ul.popover-group-menu-member-list {
             border-collapse: collapse;
 
             & tr {
-                border-bottom: 1px solid hsl(0deg 0% 87%);
+                border-bottom: 1px solid var(--color-border-user-profile-table);
                 /* Ensure equal height for rows with a remove-subscription-button and
                    those without one. */
                 height: 34px;
@@ -678,7 +673,7 @@ ul.popover-group-menu-member-list {
         height: 0;
 
         &.modal__footer_wrapper {
-            border-top: 1px solid hsl(0deg 0% 87%);
+            border-top: 1px solid var(--color-border-manage-profile-footer);
             display: flex;
             justify-content: flex-end;
             align-items: center;

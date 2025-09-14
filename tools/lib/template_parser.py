@@ -2,6 +2,8 @@ from collections.abc import Callable
 
 from typing_extensions import override
 
+from .html_elements import FOREIGN_CONTEXTS, VALID_HTML_CONTEXTS, html_context_fallbacks
+
 
 class FormattedError(Exception):
     pass
@@ -277,25 +279,6 @@ def tokenize(text: str, template_format: str | None = None) -> list[Token]:
     return tokens
 
 
-HTML_VOID_TAGS = {
-    "area",
-    "base",
-    "br",
-    "col",
-    "command",
-    "embed",
-    "hr",
-    "img",
-    "input",
-    "keygen",
-    "link",
-    "meta",
-    "param",
-    "source",
-    "track",
-    "wbr",
-}
-
 # The following excludes some obscure tags that are never used
 # in Zulip code.
 HTML_INLINE_TAGS = {
@@ -396,8 +379,8 @@ def validate(
     class State:
         def __init__(self, func: Callable[[Token | None], None]) -> None:
             self.depth = 0
-            self.foreign = False
             self.matcher = func
+            self.html_context = "unknown"
 
     def no_start_tag(token: Token | None) -> None:
         assert token
@@ -420,10 +403,7 @@ def validate(
         start_col = start_token.col
 
         old_matcher = state.matcher
-        old_foreign = state.foreign
-
-        if start_tag in ["math", "svg"]:
-            state.foreign = True
+        old_html_context = state.html_context
 
         def f(end_token: Token | None) -> None:
             if end_token is None:
@@ -478,7 +458,7 @@ def validate(
 
             if not is_else_tag:
                 state.matcher = old_matcher
-                state.foreign = old_foreign
+                state.html_context = old_html_context
                 state.depth -= 1
 
             # TODO: refine this for the else/elif use cases
@@ -491,21 +471,47 @@ def validate(
         kind = token.kind
         tag = token.tag
 
-        if not state.foreign:
-            if kind == "html_start" and tag in HTML_VOID_TAGS:
-                raise TemplateParserError(
-                    f"Tag must be self-closing: {tag} at {fn} line {token.line}, col {token.col}"
-                )
-            elif kind == "html_singleton" and tag not in HTML_VOID_TAGS:
-                raise TemplateParserError(
-                    f"Tag must not be self-closing: {tag} at {fn} line {token.line}, col {token.col}"
-                )
-
         flavor = tag_flavor(token)
         if flavor == "start":
             start_tag_matcher(token)
         elif flavor == "end":
             state.matcher(token)
+
+        if kind in ("html_start", "html_singleton"):
+            for context in html_context_fallbacks(state.html_context):
+                if (tag, context) in VALID_HTML_CONTEXTS:
+                    new_context = VALID_HTML_CONTEXTS[tag, context]
+                    if new_context == "transparent":
+                        new_context = state.html_context
+                    break
+            else:
+                if "-" in tag and "phrasing" in html_context_fallbacks(state.html_context):
+                    new_context = state.html_context  # custom elements
+                elif state.html_context in FOREIGN_CONTEXTS:
+                    new_context = state.html_context  # unchecked foreign elements
+                else:
+                    raise TemplateParserError(
+                        f"<{tag}> is not valid in {state.html_context} context"
+                        + (
+                            ' (consider growing HTML_CONTEXT_FALLBACKS["unknown"]?)'
+                            if state.html_context == "unknown"
+                            else ""
+                        )
+                        + " at {fn} line {token.line}, col {token.col}"
+                    )
+
+            if new_context not in FOREIGN_CONTEXTS:
+                if kind == "html_start" and new_context == "void":
+                    raise TemplateParserError(
+                        f"Tag must be self-closing: {tag} at {fn} line {token.line}, col {token.col}"
+                    )
+                elif kind == "html_singleton" and new_context != "void":
+                    raise TemplateParserError(
+                        f"Tag must not be self-closing: {tag} at {fn} line {token.line}, col {token.col}"
+                    )
+
+            if kind == "html_start":
+                state.html_context = new_context
 
     if state.depth != 0:
         state.matcher(None)

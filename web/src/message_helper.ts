@@ -2,6 +2,7 @@ import _ from "lodash";
 import assert from "minimalistic-assert";
 
 import * as alert_words from "./alert_words.ts";
+import * as blueslip from "./blueslip.ts";
 import * as message_store from "./message_store.ts";
 import type {Message, RawMessage} from "./message_store.ts";
 import * as message_user_ids from "./message_user_ids.ts";
@@ -44,9 +45,13 @@ export function process_new_message(raw_message: RawMessage, deliver_locally = f
         status_emoji_info = user_status.get_status_emoji(message_with_booleans.sender_id);
     }
 
+    // TODO: Remove this once we've converted more message code to typescript
+    // and also have confirmed we don't see this error for some period of time.
     if (!raw_message.reactions) {
+        blueslip.error("expected raw_message to have reactions");
         raw_message.reactions = [];
     }
+
     // TODO: Rather than adding this field to the message object, it
     // might be cleaner to create an independent map from message_id
     // => clean_reactions data for the message, with care being taken
@@ -89,6 +94,7 @@ export function process_new_message(raw_message: RawMessage, deliver_locally = f
             clean_reactions,
             display_reply_to: undefined,
         };
+        message.submessages ??= [];
         message_user_ids.add_user_id(message.sender_id);
     } else {
         const pm_with_user_ids = people.pm_with_user_ids(message_with_booleans);
@@ -109,6 +115,7 @@ export function process_new_message(raw_message: RawMessage, deliver_locally = f
             to_user_ids,
             clean_reactions,
         };
+        message.submessages ??= [];
 
         pm_conversations.process_message(message);
 

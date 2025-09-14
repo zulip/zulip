@@ -69,7 +69,17 @@ def update_cached_cache_key_prefixes() -> list[str]:
             continue
         with open(filename) as f:
             found_prefixes.add(f.readline().removesuffix("\n"))
-    caches["default"].set("cache_key_prefixes", list(found_prefixes), timeout=60 * 60 * 24)  # 24h
+
+    # We reach into the bmemcached client directly to do this set
+    # *without* compression, so that changes in our choice of
+    # bmemcached compression algorithm are always
+    # backwards-compatible.
+    caches["default"]._cache.set(  # type: ignore[attr-defined] # not in stubs
+        caches["default"].make_key("cache_key_prefixes"),
+        list(found_prefixes),
+        60 * 60 * 24,  # 24h
+        compress_level=0,
+    )
     return list(found_prefixes)
 
 

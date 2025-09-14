@@ -110,7 +110,7 @@ aware of the [community guidelines](https://zulip.com/development-community/)
 and this Code of Conduct, and that we maintain a positive and respectful
 atmosphere.
 
-Here are some guidelines for you how can help:
+Here are some guidelines for how you can help:
 
 - Be friendly! Welcoming folks, thanking them for their feedback, ideas and effort,
   and just trying to keep the atmosphere warm make the whole community function
