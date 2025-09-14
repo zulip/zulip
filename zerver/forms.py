@@ -126,6 +126,7 @@ class RealmDetailsForm(forms.Form):
     )
     realm_default_language = forms.ChoiceField(choices=[])
     realm_name = forms.CharField(max_length=Realm.MAX_REALM_NAME_LENGTH)
+    create_demo = forms.BooleanField(required=False)
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         # Since the superclass doesn't accept random extra kwargs, we
@@ -157,7 +158,6 @@ class RegistrationForm(RealmDetailsForm):
     # The required-ness of the password field gets overridden if it isn't
     # actually required for a realm
     password = forms.CharField(widget=forms.PasswordInput, max_length=MAX_PASSWORD_LENGTH)
-    is_demo_organization = forms.BooleanField(required=False)
     enable_marketing_emails = forms.BooleanField(required=False)
     email_address_visibility = forms.TypedChoiceField(
         required=False,
