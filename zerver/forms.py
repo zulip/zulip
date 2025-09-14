@@ -139,16 +139,39 @@ class RealmDetailsForm(forms.Form):
             choices=[(lang["code"], lang["name"]) for lang in get_language_list()],
         )
 
+    @override
+    def clean(self) -> None:
+        super().clean()
+        if not self.realm_creation:
+            # This form is used both for creating new realms and for
+            # registering new users in existing realms. The validation
+            # below only needs to happen when we are creating a new
+            # realm as part of the registration process.
+            return
+
+        # Checking for an available subdomain depends on the value of
+        # the cleaned `create_demo` field. If the user is creating a
+        # demo organization, then there is no subdomain to validate
+        # from user input during the registration process. Otherwise,
+        # we need to check the user input for `realm_subdomain` for
+        # any errors and to confirm it's not currently in use.
+        create_demo = self.cleaned_data.get("create_demo", False)
+        subdomain = self.cleaned_data.get("realm_subdomain", "")
+        if not create_demo:
+            try:
+                check_subdomain_available(subdomain)
+            except ValidationError as e:
+                self.add_error("realm_subdomain", e)
+
     def clean_realm_subdomain(self) -> str:
         if not self.realm_creation:
-            # This field is only used if realm_creation
+            # This field is only used for realm creation.
             return ""
 
         subdomain = self.cleaned_data["realm_subdomain"]
         if "realm_in_root_domain" in self.data:
             subdomain = Realm.SUBDOMAIN_FOR_ROOT_DOMAIN
 
-        check_subdomain_available(subdomain)
         return subdomain
 
 

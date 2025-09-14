@@ -1,5 +1,3 @@
-import random
-import string
 from typing import TYPE_CHECKING, Any, cast
 
 from django.conf import settings
@@ -28,13 +26,6 @@ def modify_postdata(request: HttpRequest, **kwargs: Any) -> None:
         new_post[key] = value
     new_post._mutable = False
     request.POST = cast("_ImmutableQueryDict", new_post)
-
-
-def generate_demo_realm_name() -> str:
-    letters = "".join(random.SystemRandom().choice(string.ascii_lowercase) for _ in range(4))
-    digits = "".join(random.SystemRandom().choice(string.digits) for _ in range(4))
-    demo_realm_name = f"demo-{letters}{digits}"
-    return demo_realm_name
 
 
 @csrf_exempt
@@ -98,9 +89,9 @@ def register_demo_development_realm(request: HttpRequest) -> HttpResponse:
     name = "Your name"
     email = ""
     realm_default_language = "en"
-    realm_name = generate_demo_realm_name()
+    realm_name = "Demo organization"
     realm_type = Realm.ORG_TYPES["unspecified"]["id"]
-    realm_subdomain = realm_name
+    realm_subdomain = ""
     email_address_visibility = UserProfile.EMAIL_ADDRESS_VISIBILITY_NOBODY
     prereg_realm = create_preregistration_realm(
         email,
