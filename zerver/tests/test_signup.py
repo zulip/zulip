@@ -1800,31 +1800,37 @@ class RealmCreationTest(ZulipTestCase):
 
     @override_settings(OPEN_REALM_CREATION=True)
     def test_create_education_demo_organization_welcome_bot_direct_message(self) -> None:
+        # TODO: Update test for realistic demo organization form data,
+        # e.g., no subdomain/string_id, no email address for owner.
         password = "test"
         string_id = "custom-test"
         email = "user1@test.com"
         realm_name = "Test"
 
-        # Create new realm with the email.
+        # Make sure the realm does not exist.
+        with self.assertRaises(Realm.DoesNotExist):
+            get_realm(string_id)
+
+        # Create new demo organization.
         result = self.submit_realm_creation_form(
             email,
             realm_subdomain=string_id,
             realm_name=realm_name,
             realm_type=Realm.ORG_TYPES["education"]["id"],
+            create_demo=True,
         )
         self.assertEqual(result.status_code, 302)
-        self.assertTrue(
-            result["Location"].endswith(
-                f"/accounts/new/send_confirm/?email={quote(email)}&realm_name={quote_plus(realm_name)}&realm_type=35&realm_default_language=en&realm_subdomain={string_id}"
-            )
-        )
-        result = self.client_get(result["Location"])
-        self.assert_in_response("check your email", result)
+        self.assertTrue(re.search(r"/accounts/do_confirm/\w+$", result["Location"]))
 
-        # Visit the confirmation link.
-        confirmation_url = self.get_confirmation_url_from_outbox(email)
-        result = self.client_get(confirmation_url)
-        self.assertEqual(result.status_code, 200)
+        # Bypass sending email confirmation because demo organization
+        # owners will not set an email address, and go straight to the
+        # user registration form.
+        # TODO: Update test for realistic demo organization owner
+        # registration information, e.g., no password or marketing
+        # emails toggle.
+        key = result["Location"].split("/")[-1]
+        result = self.client_get(result["Location"])
+        self.assert_in_response('action="/realm/register/"', result)
 
         result = self.submit_reg_form_for_user(
             email,
@@ -1833,13 +1839,21 @@ class RealmCreationTest(ZulipTestCase):
             realm_name=realm_name,
             enable_marketing_emails=False,
             realm_type=Realm.ORG_TYPES["education"]["id"],
-            is_demo_organization=True,
+            key=key,
+            create_demo=True,
         )
         self.assertEqual(result.status_code, 302)
 
+        # Confirm new realm is a demo organization.
+        realm = get_realm(string_id)
+        expected_deletion_date = realm.date_created + timedelta(
+            days=settings.DEMO_ORG_DEADLINE_DAYS
+        )
+        self.assertEqual(realm.demo_organization_scheduled_deletion_date, expected_deletion_date)
+
         # Make sure the correct Welcome Bot direct message is sent.
         welcome_msg = Message.objects.filter(
-            realm_id=get_realm(string_id).id,
+            realm_id=realm.id,
             sender__email="welcome-bot@zulip.com",
             recipient__type=Recipient.PERSONAL,
         ).latest("id")

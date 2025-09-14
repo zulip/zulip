@@ -264,7 +264,6 @@ def registration_helper(
     *,
     cancel_import: Json[bool] = False,
     form_full_name: Annotated[str | None, ApiParamConfig("full_name")] = None,
-    form_is_demo_organization: Annotated[str | None, ApiParamConfig("is_demo_organization")] = None,
     from_confirmation: str | None = None,
     key: str = "",
     slack_access_token: str | None = None,
@@ -280,9 +279,11 @@ def registration_helper(
     email = prereg_object.email
     prereg_realm = None
     prereg_user = None
+    create_demo = False
     if realm_creation:
         assert isinstance(prereg_object, PreregistrationRealm)
         prereg_realm = prereg_object
+        create_demo = prereg_realm.demo_organization
 
         if cancel_import:
             if prereg_realm.created_realm or prereg_realm.data_import_metadata.get(
@@ -408,19 +409,11 @@ def registration_helper(
         password_required = prereg_object.password_required
         role = prereg_object.invited_as
 
-    if form_is_demo_organization is None:
-        demo_organization_creation = False
-    else:
-        # Check the explicit strings that return false
-        # in django.forms.BooleanField.to_python.
-        false_strings = ("false", "0")
-        demo_organization_creation = form_is_demo_organization.strip().lower() not in false_strings
-
     if email == "":
         # Do not attempt to validate email for users without an email address.
         # The assertions here are to help document the only circumstance under which
         # this condition should be possible.
-        assert realm_creation and demo_organization_creation
+        assert realm_creation and create_demo
         # TODO: Remove settings.DEVELOPMENT when demo organization feature ready
         # to be fully implemented.
         assert settings.DEVELOPMENT
@@ -545,6 +538,7 @@ def registration_helper(
                 "realm_type": prereg_realm.org_type,
                 "realm_default_language": prereg_realm.default_language,
                 "realm_subdomain": prereg_realm.string_id,
+                "create_demo": prereg_realm.demo_organization,
             }
 
         if ldap_full_name:
@@ -602,7 +596,7 @@ def registration_helper(
                 pass
         form = RegistrationForm(postdata, realm_creation=realm_creation, realm=realm)
 
-    if realm_creation and demo_organization_creation:
+    if realm_creation and create_demo:
         # TODO: Remove settings.DEVELOPMENT when demo organization feature ready
         # to be fully implemented.
         assert settings.DEVELOPMENT
@@ -627,7 +621,7 @@ def registration_helper(
             realm_name = form.cleaned_data["realm_name"]
             realm_type = form.cleaned_data["realm_type"]
             realm_default_language = form.cleaned_data["realm_default_language"]
-            is_demo_organization = form.cleaned_data["is_demo_organization"]
+            is_demo_organization = create_demo
             how_realm_creator_found_zulip = RealmAuditLog.HOW_REALM_CREATOR_FOUND_ZULIP_OPTIONS[
                 form.cleaned_data["how_realm_creator_found_zulip"]
             ]
@@ -978,6 +972,7 @@ def prepare_realm_activation_url(
     org_type: int,
     default_language: str,
     import_form: str,
+    create_demo: bool,
 ) -> str:
     prereg_realm = create_preregistration_realm(
         email,
@@ -986,6 +981,7 @@ def prepare_realm_activation_url(
         org_type,
         default_language,
         import_form,
+        create_demo,
     )
     activation_url = create_confirmation_link(
         prereg_realm, Confirmation.NEW_REALM_USER_REGISTRATION, no_associated_realm_object=True
@@ -1283,6 +1279,17 @@ def create_realm(request: HttpRequest, confirmation_key: str | None = None) -> H
             form: RealmCreationForm = CaptchaRealmCreationForm(data=request.POST, request=request)
         else:
             form = RealmCreationForm(request.POST)
+
+        # TODO: Remove settings.DEVELOPMENT when demo organization feature ready
+        # to be fully implemented.
+        if not settings.DEVELOPMENT:  # nocoverage
+            # These fields are required for non-demo organization creation. This
+            # should already be enforced on the frontend UI, but we ensure that
+            # form validation for these fields happens on the backend here as
+            # well.
+            form["email"].field.required = True
+            form["realm_subdomain"].field.required = True
+
         if form.is_valid():
             try:
                 rate_limit_request_by_ip(request, domain="sends_email_by_ip")
@@ -1295,6 +1302,12 @@ def create_realm(request: HttpRequest, confirmation_key: str | None = None) -> H
                     status=429,
                 )
 
+            # TODO: Remove settings.DEVELOPMENT when demo organization feature ready
+            # to be fully implemented.
+            if not settings.DEVELOPMENT:  # nocoverage
+                create_demo = False
+            else:
+                create_demo = form.cleaned_data["create_demo"]
             email = form.cleaned_data["email"]
             realm_name = form.cleaned_data["realm_name"]
             realm_type = form.cleaned_data["realm_type"]
@@ -1309,6 +1322,7 @@ def create_realm(request: HttpRequest, confirmation_key: str | None = None) -> H
                 realm_type,
                 realm_default_language,
                 import_from,
+                create_demo,
             )
             if realm_creation_obj is not None and realm_creation_obj.presume_email_valid:
                 # The user has a token created from the server command line;
@@ -1317,6 +1331,11 @@ def create_realm(request: HttpRequest, confirmation_key: str | None = None) -> H
                 # to configure outbound email up front, or it isn't working yet.
                 realm_creation_obj.status = getattr(settings, "STATUS_USED", 1)
                 realm_creation_obj.save(update_fields=["status"])
+                return HttpResponseRedirect(activation_url)
+            if create_demo:
+                # There is no initial email validation for demo organization
+                # owners, so we go straight to the realm activation step of
+                # accepting TOS and creating the demo.
                 return HttpResponseRedirect(activation_url)
 
             try:
