@@ -948,10 +948,10 @@ Output:
         self,
         email: str,
         *,
-        realm_subdomain: str,
         realm_name: str,
         realm_type: int = Realm.ORG_TYPES["business"]["id"],
         realm_default_language: str = "en",
+        realm_subdomain: str | None = None,
         realm_in_root_domain: str | None = None,
         captcha: str | None = None,
         import_from: str = "none",
@@ -962,10 +962,11 @@ Output:
             "realm_name": realm_name,
             "realm_type": realm_type,
             "realm_default_language": realm_default_language,
-            "realm_subdomain": realm_subdomain,
             "import_from": import_from,
             "create_demo": create_demo,
         }
+        if realm_subdomain is not None:
+            payload["realm_subdomain"] = realm_subdomain
         if captcha is not None:
             payload["captcha"] = captcha
         if realm_in_root_domain is not None:

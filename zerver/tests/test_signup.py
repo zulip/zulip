@@ -1801,19 +1801,13 @@ class RealmCreationTest(ZulipTestCase):
     @override_settings(OPEN_REALM_CREATION=True)
     def test_create_education_demo_organization_welcome_bot_direct_message(self) -> None:
         # TODO: Update test for realistic demo organization form data,
-        # e.g., no subdomain/string_id, no email address for owner.
-        string_id = "custom-test"
+        # e.g., no email address for owner.
         email = "user1@test.com"
-        realm_name = "Test"
-
-        # Make sure the realm does not exist.
-        with self.assertRaises(Realm.DoesNotExist):
-            get_realm(string_id)
+        realm_name = "demo education test"
 
         # Create new demo organization.
         result = self.submit_realm_creation_form(
             email,
-            realm_subdomain=string_id,
             realm_name=realm_name,
             realm_type=Realm.ORG_TYPES["education"]["id"],
             create_demo=True,
@@ -1830,10 +1824,16 @@ class RealmCreationTest(ZulipTestCase):
         result = self.client_get(result["Location"])
         self.assert_in_response('action="/realm/register/"', result)
 
+        prereg_realm = PreregistrationRealm.objects.last()
+        assert prereg_realm is not None
+        self.assertEqual(prereg_realm.string_id, "")
+        self.assertTrue(prereg_realm.demo_organization)
+        self.assertEqual(prereg_realm.name, realm_name)
+
         result = self.submit_reg_form_for_user(
             email,
             password=None,
-            realm_subdomain=string_id,
+            realm_subdomain="",
             realm_name=realm_name,
             enable_marketing_emails=False,
             realm_type=Realm.ORG_TYPES["education"]["id"],
@@ -1843,7 +1843,9 @@ class RealmCreationTest(ZulipTestCase):
         self.assertEqual(result.status_code, 302)
 
         # Confirm new realm is a demo organization.
-        realm = get_realm(string_id)
+        realm = Realm.objects.latest("date_created")
+        self.assertEqual(realm.name, realm_name)
+        self.assertTrue(realm.string_id.startswith("demo-"))
         expected_deletion_date = realm.date_created + timedelta(
             days=settings.DEMO_ORG_DEADLINE_DAYS
         )
@@ -4516,6 +4518,8 @@ class UserSignUpTest(ZulipTestCase):
         self.assertEqual(result.status_code, 302)
 
         realm = Realm.objects.latest("date_created")
+        self.assertEqual(realm.name, "Demo organization")
+        self.assertTrue(realm.string_id.startswith("demo-"))
         self.assertTrue(
             result["Location"].startswith(
                 f"http://{realm.string_id}.testserver/accounts/login/subdomain"

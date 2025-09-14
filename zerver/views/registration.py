@@ -1,4 +1,6 @@
 import logging
+import random
+import string
 from collections.abc import Iterable
 from contextlib import suppress
 from typing import Annotated, Any, cast
@@ -56,6 +58,7 @@ from zerver.forms import (
     RealmCreationForm,
     RealmRedirectForm,
     RegistrationForm,
+    check_subdomain_available,
 )
 from zerver.lib.email_validation import email_allowed_for_realm, validate_email_not_already_in_realm
 from zerver.lib.exceptions import JsonableError, RateLimitedError
@@ -240,6 +243,21 @@ def get_selected_realm_default_language_name(
         return None
 
     return get_language_name(prereg_realm.default_language)
+
+
+def generate_demo_realm_subdomain() -> str:
+    available_subdomain = False
+    demo_subdomain = ""
+    while not available_subdomain:
+        letters = "".join(random.SystemRandom().choice(string.ascii_lowercase) for _ in range(4))
+        digits = "".join(random.SystemRandom().choice(string.digits) for _ in range(4))
+        demo_subdomain = f"demo-{letters}{digits}"
+        try:
+            check_subdomain_available(demo_subdomain)
+            available_subdomain = True
+        except ValidationError:  # nocoverage
+            continue
+    return demo_subdomain
 
 
 @add_google_analytics
@@ -617,7 +635,13 @@ def registration_helper(
             password = None
 
         if realm_creation:
-            string_id = form.cleaned_data["realm_subdomain"]
+            if create_demo:
+                # We set an available subdomain for demo organizations
+                # at this point so that there are no form errors during
+                # the registration process for the user.
+                string_id = generate_demo_realm_subdomain()
+            else:
+                string_id = form.cleaned_data["realm_subdomain"]
             realm_name = form.cleaned_data["realm_name"]
             realm_type = form.cleaned_data["realm_type"]
             realm_default_language = form.cleaned_data["realm_default_language"]
