@@ -340,7 +340,9 @@ class ImportRealmOwnerSelectionForm(forms.Form):
 
 class RealmCreationForm(RealmDetailsForm):
     # This form determines whether users can create a new realm.
-    email = forms.EmailField(validators=[email_not_system_bot, email_is_not_disposable])
+    email = forms.EmailField(
+        validators=[email_not_system_bot, email_is_not_disposable], required=False
+    )
     import_from = forms.ChoiceField(
         choices=PreregistrationRealm.IMPORT_FROM_CHOICES,
         required=False,
@@ -349,6 +351,31 @@ class RealmCreationForm(RealmDetailsForm):
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         kwargs["realm_creation"] = True
         super().__init__(*args, **kwargs)
+
+    @override
+    def clean(self) -> None:
+        super().clean()
+
+        # Valid cleaned values for `email` depend on the value of the
+        # the cleaned `create_demo` field. We expect neither case
+        # below to be possible in the registration UI.
+        create_demo = self.cleaned_data.get("create_demo", False)
+        email = self.cleaned_data.get("email")
+        if create_demo:
+            # TODO: Remove settings.DEVELOPMENT when demo organization feature ready
+            # to be fully implemented.
+            assert settings.DEVELOPMENT
+            # If the user is creating a demo organization, then the
+            # cleaned `email` value should be an empty string.
+            if email != "":
+                raise ValidationError(_("Email address not required for demo organizations."))
+        else:
+            # When creating a permanent organization, if the cleaned
+            # `email` value is None or an empty string, then an error
+            # should have been raised when validating the field. If
+            # not, then we add an error string to the `email` field.
+            if (email == "" or email is None) and not self.has_error("email"):  # nocoverage
+                self.add_error("email", (_("Enter a valid email address.")))
 
     def clean_import_from(self) -> str:
         # Convert "" to "none".

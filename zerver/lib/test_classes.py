@@ -880,7 +880,7 @@ Output:
 
     def submit_reg_form_for_user(
         self,
-        email: str,
+        email: str | None,
         password: str | None,
         realm_name: str = "Zulip Test",
         realm_subdomain: str = "zuliptest",
@@ -907,14 +907,18 @@ Output:
         You can pass the HTTP_HOST variable for subdomains via extra.
         """
         if full_name is None:
+            assert email is not None
             full_name = email.replace("@", "_")
+        if key is None:
+            assert email is not None
+            key = find_key_by_email(email)
         payload = {
             "full_name": full_name,
             "realm_name": realm_name,
             "realm_subdomain": realm_subdomain,
             "realm_type": realm_type,
             "realm_default_language": realm_default_language,
-            "key": key if key is not None else find_key_by_email(email),
+            "key": key,
             "timezone": timezone,
             "terms": True,
             "from_confirmation": from_confirmation,
@@ -946,7 +950,7 @@ Output:
 
     def submit_realm_creation_form(
         self,
-        email: str,
+        email: str | None,
         *,
         realm_name: str,
         realm_type: int = Realm.ORG_TYPES["business"]["id"],
@@ -958,13 +962,15 @@ Output:
         create_demo: bool = False,
     ) -> "TestHttpResponse":
         payload = {
-            "email": email,
             "realm_name": realm_name,
             "realm_type": realm_type,
             "realm_default_language": realm_default_language,
             "import_from": import_from,
             "create_demo": create_demo,
         }
+        if not create_demo:
+            assert email is not None
+            payload["email"] = email
         if realm_subdomain is not None:
             payload["realm_subdomain"] = realm_subdomain
         if captcha is not None:

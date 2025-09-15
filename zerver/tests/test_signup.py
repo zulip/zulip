@@ -1800,14 +1800,11 @@ class RealmCreationTest(ZulipTestCase):
 
     @override_settings(OPEN_REALM_CREATION=True)
     def test_create_education_demo_organization_welcome_bot_direct_message(self) -> None:
-        # TODO: Update test for realistic demo organization form data,
-        # e.g., no email address for owner.
-        email = "user1@test.com"
         realm_name = "demo education test"
 
         # Create new demo organization.
         result = self.submit_realm_creation_form(
-            email,
+            email=None,
             realm_name=realm_name,
             realm_type=Realm.ORG_TYPES["education"]["id"],
             create_demo=True,
@@ -1831,8 +1828,9 @@ class RealmCreationTest(ZulipTestCase):
         self.assertEqual(prereg_realm.name, realm_name)
 
         result = self.submit_reg_form_for_user(
-            email,
+            email=None,
             password=None,
+            full_name="Your name",
             realm_subdomain="",
             realm_name=realm_name,
             enable_marketing_emails=False,
@@ -2075,6 +2073,12 @@ class RealmCreationTest(ZulipTestCase):
 
         # The remaining PreregistrationRealm should have been used up:
         self.assertEqual(PreregistrationRealm.objects.filter(email=email, status=0).count(), 0)
+
+    def test_register_demo_organization_with_email(self) -> None:
+        result = self.client_post("/new/", {"email": "name@example.com", "create_demo": "true"})
+
+        self.assertEqual(result.status_code, 200)
+        self.assertContains(result, "Email address not required for demo organizations.")
 
     @override_settings(OPEN_REALM_CREATION=True)
     def test_invalid_email_signup(self) -> None:
