@@ -1475,7 +1475,6 @@ export let scroll_stream_into_view = function ($stream_li: JQuery): void {
         blueslip.error("Invalid stream_li was passed in");
         return;
     }
-    const stream_filter_height = $("#left-sidebar-search").outerHeight()!;
     const header_height = $stream_li
         .closest(".stream-list-section-container")
         .children(".stream-list-subsection-header")
@@ -1483,7 +1482,7 @@ export let scroll_stream_into_view = function ($stream_li: JQuery): void {
     scroll_util.scroll_element_into_container(
         $stream_li,
         $container,
-        stream_filter_height + header_height,
+        header_height,
     );
     // Note: If the stream is in a collapsed folder, we don't uncollapse
     // the folder. We do uncollapse when the user clicks on the channel,
