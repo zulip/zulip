@@ -99,7 +99,7 @@ export type LocalMessage = MessageRequestObject & {
     id: number;
     topic_links: TopicLink[];
     reactions: MessageReaction[];
-    draft_id: string | undefined;
+    draft_id: string;
 } & (StreamMessageObject | PrivateMessageObject);
 
 export type PostMessageAPIData = z.output<typeof send_message_api_response_schema>;
