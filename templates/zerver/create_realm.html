@@ -19,6 +19,11 @@
                 <form class="form-inline" id="create_realm" name="email_form"
                   action="{{ current_url() }}" method="post">
                     {{ csrf_input }}
+                    {% if form.non_field_errors() %}
+                    {% for error in form.non_field_errors() %}
+                        <div class="alert alert-error">{{ error }}</div>
+                    {% endfor %}
+                    {% endif %}
 
                     {% include 'zerver/realm_creation_form.html' %}
 
