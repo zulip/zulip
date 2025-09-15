@@ -966,13 +966,14 @@ def get_service_dicts_for_bots(
                 }
                 for service in services
             ]
-        elif bot_type == UserProfile.EMBEDDED_BOT and bot_profile_id in embedded_bot_configs:
+        elif bot_type == UserProfile.EMBEDDED_BOT:
             bot_config = embedded_bot_configs[bot_profile_id]
             service_dicts = [
                 {
                     "config_data": bot_config,
-                    "service_name": services[0].name,
+                    "service_name": service.name,
                 }
+                for service in services
             ]
         service_dicts_by_uid[bot_profile_id] = service_dicts
     return service_dicts_by_uid
