@@ -12,6 +12,7 @@ const people = zrequire("people");
 const {set_current_user, set_realm} = zrequire("state_data");
 
 set_global("document", "document-stub");
+set_global("requestAnimationFrame", (func) => func());
 
 page_params.realm_users = [];
 const current_user = {};
@@ -21,7 +22,9 @@ set_current_user(current_user);
 let unread_unmuted_count;
 let stream_has_any_unread_mentions;
 
-const topic_list = mock_esm("../src/topic_list");
+const topic_list = mock_esm("../src/topic_list", {
+    left_sidebar_scroll_zoomed_in_topic_into_view: noop,
+});
 mock_esm("../src/unread", {
     unread_count_info_for_stream: () => ({
         unmuted_count: unread_unmuted_count,
