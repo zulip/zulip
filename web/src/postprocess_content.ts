@@ -55,21 +55,18 @@ export function postprocess_content(html: string): string {
         if (elt.querySelector("img") || elt.querySelector("video")) {
             // We want a class to refer to media links
             elt.classList.add("media-anchor-element");
-            // Add a class to the video, if it exists
+            // Add a class to the video, if it exists, including
+            // the .media-image-element class for properly treating
+            // video thumbnails
             if (elt.querySelector("video")) {
-                elt.querySelector("video")?.classList.add("media-video-element");
+                elt
+                    .querySelector("video")
+                    ?.classList.add("media-video-element", "media-image-element");
             }
             // Add a class to the image, if it exists
             if (elt.querySelector("img")) {
                 elt.querySelector("img")?.classList.add("media-image-element");
             }
-        }
-
-        if (elt.querySelector("video")) {
-            // We want a class to refer to media links
-            elt.classList.add("media-anchor-element");
-            // And likewise a class to refer to image elements
-            elt.querySelector("video")?.classList.add("media-image-element");
         }
 
         // Update older, smaller default.jpg YouTube preview images
