@@ -151,8 +151,6 @@ export function process_new_message(opts: NewMessage): ProcessedMessage {
             // ideally by refactoring the use of `build_display_recipient`, but that
             // seemed complicated to type.
             assert(rest.display_recipient !== undefined);
-            // TODO: Make `draft_id` not optional in `LocalMessage` (upcoming commit)
-            assert(rest.draft_id !== undefined);
             const processed_local_message: ProcessedLocalMessage = {
                 ...rest,
                 sent_by_me,
@@ -170,7 +168,6 @@ export function process_new_message(opts: NewMessage): ProcessedMessage {
                 // TODO(evy): set "website" or "ZulipDesktop" as the client depending
                 // whether we are the web app or desktop app
                 client: "",
-                draft_id: rest.draft_id,
                 submessages: [],
             };
             message_user_ids.add_user_id(processed_local_message.sender_id);
@@ -205,8 +202,6 @@ export function process_new_message(opts: NewMessage): ProcessedMessage {
             // ideally by refactoring the use of `build_display_recipient`, but that
             // seemed complicated to type.
             assert(rest.display_recipient !== undefined);
-            // TODO: Make `draft_id` not optional in `LocalMessage` (upcoming commit)
-            assert(rest.draft_id !== undefined);
             const processed_local_message: ProcessedLocalMessage = {
                 ...rest,
                 sent_by_me,
@@ -221,7 +216,6 @@ export function process_new_message(opts: NewMessage): ProcessedMessage {
                 to_user_ids,
                 clean_reactions,
                 display_recipient: rest.display_recipient,
-                draft_id: rest.draft_id,
                 submessages: [],
                 // TODO(evy): set "website" or "ZulipDesktop" as the client depending
                 // whether we are the web app or desktop app
