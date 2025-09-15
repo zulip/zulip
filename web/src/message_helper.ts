@@ -155,8 +155,6 @@ export function process_new_message(opts: NewMessage): ProcessedMessage {
             // When we have a new format for `display_recipient` in message objects in
             // the API itself, we'll naturally clean this up.
             assert(rest.display_recipient !== undefined);
-            // TODO: Make `draft_id` not optional in `LocalMessage` (upcoming commit)
-            assert(rest.draft_id !== undefined);
             const local_message: LocalMessage = {
                 ...rest,
                 sent_by_me,
@@ -172,7 +170,6 @@ export function process_new_message(opts: NewMessage): ProcessedMessage {
                 display_reply_to: undefined,
                 display_recipient: rest.display_recipient,
                 client: electron_bridge === undefined ? "website" : "ZulipElectron",
-                draft_id: rest.draft_id,
                 submessages: [],
             };
             message_user_ids.add_user_id(local_message.sender_id);
@@ -209,8 +206,6 @@ export function process_new_message(opts: NewMessage): ProcessedMessage {
             // When we have a new format for `display_recipient` in message objects in
             // the API itself, we'll naturally clean this up.
             assert(rest.display_recipient !== undefined);
-            // TODO: Make `draft_id` not optional in `LocalMessage` (upcoming commit)
-            assert(rest.draft_id !== undefined);
             const local_message: LocalMessage = {
                 ...rest,
                 sent_by_me,
@@ -225,7 +220,6 @@ export function process_new_message(opts: NewMessage): ProcessedMessage {
                 to_user_ids,
                 clean_reactions,
                 display_recipient: rest.display_recipient,
-                draft_id: rest.draft_id,
                 submessages: [],
                 client: electron_bridge === undefined ? "website" : "ZulipElectron",
             };
