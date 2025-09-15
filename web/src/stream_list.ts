@@ -1471,15 +1471,16 @@ export let scroll_stream_into_view = function ($stream_li: JQuery): void {
         blueslip.error("Invalid stream_li was passed in");
         return;
     }
-    const header_height = $stream_li
-        .closest(".stream-list-section-container")
-        .children(".stream-list-subsection-header")
-        .outerHeight()!;
-    scroll_util.scroll_element_into_container(
-        $stream_li,
-        $container,
-        header_height,
-    );
+
+    // Get the element with the channel name which we want to
+    // be visible.
+    const $stream_header = $stream_li.find(".subscription_block");
+    const header_height =
+        $stream_li
+            .closest(".stream-list-section-container")
+            .children(".stream-list-subsection-header")
+            .outerHeight()! + 2; // + 2px for top border
+    scroll_util.scroll_element_into_container($stream_header, $container, header_height);
     // Note: If the stream is in a collapsed folder, we don't uncollapse
     // the folder. We do uncollapse when the user clicks on the channel,
     // but that's handled elsewhere.
