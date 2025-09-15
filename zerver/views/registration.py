@@ -692,11 +692,13 @@ def registration_helper(
         assert realm is not None
 
         if realm_creation and create_demo:
+            # Defaults for initial owner of demo organizations.
             full_name = "Your name"
+            email_address_visibility = RealmUserDefault.EMAIL_ADDRESS_VISIBILITY_NOBODY
         else:
             full_name = form.cleaned_data["full_name"]
+            email_address_visibility = form.cleaned_data["email_address_visibility"]
         enable_marketing_emails = form.cleaned_data["enable_marketing_emails"]
-        email_address_visibility = form.cleaned_data["email_address_visibility"]
         default_stream_group_names = request.POST.getlist("default_stream_group")
         default_stream_groups = lookup_default_stream_groups(default_stream_group_names, realm)
 

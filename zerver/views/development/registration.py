@@ -91,7 +91,6 @@ def register_demo_development_realm(request: HttpRequest) -> HttpResponse:
     realm_name = "Demo organization"
     realm_type = Realm.ORG_TYPES["unspecified"]["id"]
     realm_subdomain = ""
-    email_address_visibility = UserProfile.EMAIL_ADDRESS_VISIBILITY_NOBODY
     prereg_realm = create_preregistration_realm(
         email,
         realm_name,
@@ -111,7 +110,6 @@ def register_demo_development_realm(request: HttpRequest) -> HttpResponse:
         realm_name=realm_name,
         realm_type=realm_type,
         realm_default_language=realm_default_language,
-        email_address_visibility=email_address_visibility,
         realm_subdomain=realm_subdomain,
         terms="true",
         how_realm_creator_found_zulip="existing_user",
