@@ -1802,7 +1802,6 @@ class RealmCreationTest(ZulipTestCase):
     def test_create_education_demo_organization_welcome_bot_direct_message(self) -> None:
         # TODO: Update test for realistic demo organization form data,
         # e.g., no subdomain/string_id, no email address for owner.
-        password = "test"
         string_id = "custom-test"
         email = "user1@test.com"
         realm_name = "Test"
@@ -1826,15 +1825,14 @@ class RealmCreationTest(ZulipTestCase):
         # owners will not set an email address, and go straight to the
         # user registration form.
         # TODO: Update test for realistic demo organization owner
-        # registration information, e.g., no password or marketing
-        # emails toggle.
+        # registration information, e.g., no marketing emails toggle.
         key = result["Location"].split("/")[-1]
         result = self.client_get(result["Location"])
         self.assert_in_response('action="/realm/register/"', result)
 
         result = self.submit_reg_form_for_user(
             email,
-            password,
+            password=None,
             realm_subdomain=string_id,
             realm_name=realm_name,
             enable_marketing_emails=False,
