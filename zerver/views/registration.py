@@ -898,7 +898,7 @@ def registration_helper(
         "require_ldap_password": require_ldap_password,
         "password_auth_enabled": password_auth_enabled(realm),
         "default_stream_groups": [] if realm is None else get_default_stream_groups(realm),
-        "accounts": get_accounts_for_email(email),
+        "accounts": get_accounts_for_email(email) if not create_demo else [],
         "MAX_NAME_LENGTH": str(UserProfile.MAX_NAME_LENGTH),
         "MAX_PASSWORD_LENGTH": str(form.MAX_PASSWORD_LENGTH),
         "corporate_enabled": settings.CORPORATE_ENABLED,
