@@ -1830,7 +1830,6 @@ class RealmCreationTest(ZulipTestCase):
         result = self.submit_reg_form_for_user(
             email=None,
             password=None,
-            full_name="Your name",
             realm_subdomain="",
             realm_name=realm_name,
             enable_marketing_emails=False,
