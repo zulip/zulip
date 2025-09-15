@@ -160,6 +160,8 @@ from zerver.actions.user_topics import do_set_user_topic_visibility_policy
 from zerver.actions.users import (
     do_change_is_imported_stub,
     do_deactivate_user,
+    do_update_bot_type,
+    do_update_embedded_bot_service,
     do_update_outgoing_webhook_service,
 )
 from zerver.actions.video_calls import do_set_zoom_token
@@ -3586,6 +3588,46 @@ class NormalActionsTest(BaseAction):
                 bot,
                 interface=2,
                 base_url="http://hostname.domain2.com",
+                acting_user=self.user_profile,
+            )
+
+    def test_do_update_embedded_bot_service(self) -> None:
+        self.user_profile = self.example_user("iago")
+        bot = self.create_test_bot(
+            "test",
+            self.user_profile,
+            full_name="Test Bot",
+            bot_type=UserProfile.EMBEDDED_BOT,
+            service_name="converter",
+        )
+        with self.verify_action() as events:
+            do_update_embedded_bot_service(
+                bot,
+                name="encrypt",
+                acting_user=self.user_profile,
+            )
+
+        check_realm_bot_update("events[0]", events[0], "services")
+
+        # Check the updated Service data we send as event on commit.
+        bot_service = get_bot_services(bot.id)[0]
+        event_data_service = events[0]["bot"]["services"][0]
+        self.assertEqual(
+            {
+                "config_data": {},
+                "service_name": bot_service.name,
+            },
+            event_data_service,
+        )
+
+        with self.verify_action(num_events=0, state_change_expected=False) as events:
+            do_update_embedded_bot_service(bot, acting_user=self.user_profile)
+
+        # Trying to update with the same value as existing value results in no op.
+        with self.verify_action(num_events=0, state_change_expected=False) as events:
+            do_update_embedded_bot_service(
+                bot,
+                name="encrypt",
                 acting_user=self.user_profile,
             )
 
