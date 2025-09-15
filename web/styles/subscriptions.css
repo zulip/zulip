@@ -747,29 +747,39 @@ h4.user_group_setting_subsection_title {
         background-repeat: no-repeat;
         background-position: center center;
         display: flex;
+        justify-content: center;
 
-        & svg {
-            fill: hsl(0deg 0% 72%);
-            width: 70%;
-            margin: 0% 15%;
+        & .sub-unsub-icon {
+            display: flex;
+            height: 100%;
+            align-items: center;
+            /* This color is used in .subscriber-check-icon of the help
+               center to make the icon color same as the web app. Do change
+               the color there when changing the color here */
+            color: hsl(0deg 0% 72%);
+            font-size: 1.0938em; /* 70% of 1.5625em */
+
+            &.hide {
+                display: none;
+            }
         }
 
-        &.checked:hover svg {
-            fill: hsl(240deg 41% 50%);
+        &.checked:hover .sub-unsub-icon {
+            color: hsl(240deg 41% 50%);
         }
 
         &.not-direct-member {
-            svg {
+            .sub-unsub-icon {
                 cursor: default;
             }
         }
 
         &.disabled {
-            &:not(.checked) svg {
-                fill: hsl(0deg 0% 87%);
+            &:not(.checked) .sub-unsub-icon {
+                color: hsl(0deg 0% 87%);
             }
 
-            svg {
+            .sub-unsub-icon {
                 cursor: not-allowed;
             }
         }
@@ -792,8 +802,11 @@ h4.user_group_setting_subsection_title {
         }
     }
 
-    .checked svg {
-        fill: hsl(240deg 96% 68%);
+    .checked .sub-unsub-icon {
+        /* This color is used in .subscriber-check-icon of the help
+           center to make the icon color same as the web app. Do change
+           the color there when changing the color here */
+        color: hsl(240deg 96% 68%);
     }
 
     .icon {
@@ -881,9 +894,9 @@ h4.user_group_setting_subsection_title {
         background-color: var(--color-active-row-modal);
     }
 
-    .check:not(.checked, .disabled):hover svg,
-    &.active .check:not(.checked, .disabled):hover svg {
-        fill: hsl(0deg 0% 27%);
+    .check:not(.checked, .disabled):hover .sub-unsub-icon,
+    &.active .check:not(.checked, .disabled):hover .sub-unsub-icon {
+        color: hsl(0deg 0% 27%);
     }
 
     &::selection,
