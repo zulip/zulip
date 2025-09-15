@@ -86,7 +86,6 @@ def register_development_realm(request: HttpRequest) -> HttpResponse:
 @csrf_exempt
 def register_demo_development_realm(request: HttpRequest) -> HttpResponse:
     # Demo organization owners are not required to provide a name or email.
-    name = "Your name"
     email = ""
     realm_default_language = "en"
     realm_name = "Demo organization"
@@ -113,11 +112,11 @@ def register_demo_development_realm(request: HttpRequest) -> HttpResponse:
         realm_type=realm_type,
         realm_default_language=realm_default_language,
         email_address_visibility=email_address_visibility,
-        full_name=name,
         realm_subdomain=realm_subdomain,
         terms="true",
         how_realm_creator_found_zulip="existing_user",
         how_realm_creator_found_zulip_extra_context="test",
+        create_demo=True,
     )
 
     return accounts_register(request)

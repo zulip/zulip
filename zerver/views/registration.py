@@ -691,7 +691,10 @@ def registration_helper(
             )
         assert realm is not None
 
-        full_name = form.cleaned_data["full_name"]
+        if realm_creation and create_demo:
+            full_name = "Your name"
+        else:
+            full_name = form.cleaned_data["full_name"]
         enable_marketing_emails = form.cleaned_data["enable_marketing_emails"]
         email_address_visibility = form.cleaned_data["email_address_visibility"]
         default_stream_group_names = request.POST.getlist("default_stream_group")

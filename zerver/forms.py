@@ -177,7 +177,7 @@ class RealmDetailsForm(forms.Form):
 
 class RegistrationForm(RealmDetailsForm):
     MAX_PASSWORD_LENGTH = 100
-    full_name = forms.CharField(max_length=UserProfile.MAX_NAME_LENGTH)
+    full_name = forms.CharField(max_length=UserProfile.MAX_NAME_LENGTH, required=False)
     # The required-ness of the password field gets overridden if it isn't
     # actually required for a realm
     password = forms.CharField(widget=forms.PasswordInput, max_length=MAX_PASSWORD_LENGTH)
@@ -226,13 +226,24 @@ class RegistrationForm(RealmDetailsForm):
             max_length=100, required=False
         )
 
-    def clean_full_name(self) -> str:
-        try:
-            return check_full_name(
-                full_name_raw=self.cleaned_data["full_name"], user_profile=None, realm=self.realm
-            )
-        except JsonableError as e:
-            raise ValidationError(e.msg)
+    @override
+    def clean(self) -> None:
+        super().clean()
+
+        # Checking for a valid user full name depends on the value of
+        # the cleaned `create_demo` field. If the user is creating a
+        # demo organization, then there is no full name to validate
+        # from user input during the registration process. Otherwise,
+        # we need to check the user input for `full_name` for any
+        # errors.
+        create_demo = self.cleaned_data.get("create_demo", False)
+        full_name = self.cleaned_data.get("full_name", "")
+        if not create_demo:
+            try:
+                check_full_name(full_name_raw=full_name, user_profile=None, realm=self.realm)
+            except JsonableError as e:
+                self.add_error("full_name", e.msg)
+                raise ValidationError(e.msg)
 
     def clean_password(self) -> str:
         password = self.cleaned_data["password"]
