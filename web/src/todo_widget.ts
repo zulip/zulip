@@ -17,12 +17,12 @@ import type {Event} from "./poll_widget.ts";
 // to a todo list. We arbitrarily pick this value.
 const MAX_IDX = 1000;
 
-export const todo_widget_extra_data_schema = z.nullable(
-    z.object({
-        task_list_title: z.optional(z.string()),
-        tasks: z.optional(z.array(z.object({task: z.string(), desc: z.string()}))),
-    }),
-);
+export const todo_widget_extra_data_schema = z.object({
+    task_list_title: z.optional(z.string()),
+    tasks: z.optional(z.array(z.object({task: z.string(), desc: z.string()}))),
+});
+
+export type TodoWidgetExtraData = z.infer<typeof todo_widget_extra_data_schema>;
 
 const todo_widget_inbound_data = z.intersection(
     z.object({
@@ -324,7 +324,7 @@ export function activate({
     extra_data: unknown;
     message: Message;
 }): (events: Event[]) => void {
-    const parse_result = todo_widget_extra_data_schema.safeParse(extra_data);
+    const parse_result = z.nullable(todo_widget_extra_data_schema).safeParse(extra_data);
     if (!parse_result.success) {
         blueslip.warn("invalid todo extra data", {issues: parse_result.error.issues});
         return () => {
