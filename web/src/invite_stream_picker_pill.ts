@@ -35,14 +35,21 @@ function set_up_pill_typeahead({pill_widget, $pill_container}: SetUpPillTypeahea
     set_up_stream($pill_container.find(".input"), pill_widget, opts);
 }
 
-export function add_default_stream_pills(pill_widget: stream_pill.StreamPillWidget): void {
-    const default_stream_ids = stream_data.get_default_stream_ids();
-    for (const stream_id of default_stream_ids) {
+function add_specific_stream_pills(
+    pill_widget: stream_pill.StreamPillWidget,
+    stream_ids: number[],
+): void {
+    for (const stream_id of stream_ids) {
         const sub = stream_data.get_sub_by_id(stream_id);
         if (sub) {
             stream_pill.append_stream(sub, pill_widget, false);
         }
     }
+}
+
+export function add_default_stream_pills(pill_widget: stream_pill.StreamPillWidget): void {
+    const default_stream_ids = stream_data.get_default_stream_ids();
+    add_specific_stream_pills(pill_widget, default_stream_ids);
 }
 
 export function create($stream_pill_container: JQuery): stream_pill.StreamPillWidget {
@@ -53,7 +60,8 @@ export function create($stream_pill_container: JQuery): stream_pill.StreamPillWi
         generate_pill_html: stream_pill.generate_pill_html,
         get_display_value_from_item: stream_pill.get_display_value_from_item,
     });
-    add_default_stream_pills(pill_widget);
+    const stream_ids_to_add = stream_data.get_default_stream_ids();
+    add_specific_stream_pills(pill_widget, stream_ids_to_add);
     set_up_pill_typeahead({pill_widget, $pill_container: $stream_pill_container});
     return pill_widget;
 }
