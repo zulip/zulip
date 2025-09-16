@@ -158,14 +158,33 @@ test("test_basics", () => {
     (function test_embedded_bot_update() {
         bot_data.add(test_embedded_bot);
         const bot_id = 143;
-        const services = bot_data.get_services(bot_id);
+        let services = bot_data.get_services(bot_id);
         assert.equal("12345678", services[0].config_data.key);
         bot_data.update(bot_id, {
             ...test_embedded_bot,
             services: [{config_data: {key: "87654321"}, service_name: "embedded bot service"}],
         });
+        services = bot_data.get_services(bot_id);
         assert.equal("87654321", services[0].config_data.key);
         assert.equal("embedded bot service", services[0].service_name);
+    })();
+
+    (function test_update_bot_type_to_outgoing_webhook_bot() {
+        const bot_id = 42;
+        let bot = bot_data.get(bot_id);
+        bot_data.update(bot_id, {
+            ...bot,
+            bot_type: 2,
+            services: [{interface: 1, base_url: "http://foo.bar.com", token: "zxcvbnm1234567890"}],
+        });
+
+        bot = bot_data.get(bot_id);
+        const services = bot_data.get_services(bot_id);
+        assert.notEqual(0, services.length);
+        assert.equal(2, bot.bot_type);
+        assert.equal(1, services[0].interface);
+        assert.equal("http://foo.bar.com", services[0].base_url);
+        assert.equal("zxcvbnm1234567890", services[0].token);
     })();
 
     (function test_all_user_ids() {

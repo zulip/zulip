@@ -6,6 +6,17 @@
             <input type="text" autocomplete="off" name="full_name" id="edit_bot_full_name" class="modal_text_input" value="{{ full_name }}" maxlength="{{max_bot_name_length}}" />
         </div>
         <input type="hidden" name="is_full_name" value="true" />
+        <div class="input-group">
+            <label for="edit_bot_type" class="modal-field-label">
+                {{t "Bot type" }}
+                {{> ../help_link_widget link="/help/bots-overview#bot-type" }}
+            </label>
+            <select name="edit_bot_type" id="edit_bot_type" class="modal_select bootstrap-focus-style">
+                {{#each bot_types}}
+                    <option value="{{this.type_id}}">{{this.name}}</option>
+                {{/each}}
+            </select>
+        </div>
         <div class="input-group email_change_container">
             <label for="email" class="modal-field-label">{{t "Email" }}</label>
             <input type="text" autocomplete="off" name="email" class="modal_text_input" value="{{ email }}" readonly/>
