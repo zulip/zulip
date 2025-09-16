@@ -78,9 +78,22 @@ function generate_pill_html(item: UserGroupPill): string {
     });
 }
 
+function add_specific_group_pills(
+    pill_widget: user_group_pill.UserGroupPillWidget,
+    group_ids: number[],
+): void {
+    for (const group_id of group_ids) {
+        const group = user_groups.get_user_group_from_id(group_id);
+        if (group) {
+            user_group_pill.append_user_group(group, pill_widget, false);
+        }
+    }
+}
+
 export function create(
     $user_group_pill_container: JQuery,
     user_id?: number,
+    group_ids?: number[],
 ): user_group_pill.UserGroupPillWidget {
     const pill_config = user_id ? {user_id} : undefined;
 
@@ -96,6 +109,10 @@ export function create(
     set_up_pill_typeahead({pill_widget, $pill_container: $user_group_pill_container}, user_id);
     if (user_id) {
         set_up_handlers_for_add_button_state(pill_widget, $user_group_pill_container);
+    }
+
+    if (group_ids) {
+        add_specific_group_pills(pill_widget, group_ids);
     }
     return pill_widget;
 }
