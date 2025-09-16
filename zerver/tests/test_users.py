@@ -3365,7 +3365,7 @@ class DeleteUserTest(ZulipTestCase):
         ).count()
         self.assertGreater(original_messages_from_hamlet_count, 0)
 
-        do_delete_user_preserving_messages(hamlet)
+        do_delete_user_preserving_messages(hamlet, acting_user=None)
 
         replacement_dummy_user = UserProfile.objects.get(id=hamlet_user_id, realm=realm)
 
