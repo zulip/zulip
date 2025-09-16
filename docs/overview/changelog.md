@@ -19,6 +19,15 @@ _Unreleased_
 
 ## Zulip Server 11.x series
 
+### Zulip Server 11.2
+
+_Released 2025-09-16_
+
+- Fixed a crash with the nightly cron job added in 11.1 to catch race
+  conditions in subscriber counts.
+- Updated dependency for the new help center, to prevent potential
+  crashes when building.
+
 ### Zulip Server 11.1
 
 _Released 2025-09-11_
