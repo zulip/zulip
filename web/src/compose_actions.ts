@@ -385,7 +385,11 @@ export let start = (raw_opts: ComposeActionsStartOpts): void => {
         }
     } else if (opts.stream_id) {
         const stream = stream_data.get_sub_by_id(opts.stream_id);
-        if (stream && stream_data.can_post_messages_in_stream(stream)) {
+        if (
+            stream &&
+            stream_data.can_post_messages_in_stream(stream) &&
+            stream_data.can_create_new_topics_in_stream(opts.stream_id)
+        ) {
             compose_state.set_stream_id(opts.stream_id);
             compose_recipient.on_compose_select_recipient_update();
         } else {

@@ -120,6 +120,15 @@ class MessageMoveStreamTest(ZulipTestCase):
 
         return (user_profile, stream, stream_to, msg_id, msg_id_lt)
 
+    def prepare_move_topics_send_stream_message(
+        self,
+    ) -> tuple[UserProfile, Stream, Stream, int, int]:
+        (user_profile, old_stream, new_stream, msg_id, msg_id_later) = self.prepare_move_topics(
+            "iago", "old_stream", "new_stream", "test topic"
+        )
+        self.send_stream_message(user_profile, new_stream.name, topic_name="existing topic")
+        return (user_profile, old_stream, new_stream, msg_id, msg_id_later)
+
     def test_move_message_cant_move_private_message(self) -> None:
         hamlet = self.example_user("hamlet")
         self.login("hamlet")
@@ -1404,12 +1413,73 @@ class MessageMoveStreamTest(ZulipTestCase):
         messages = get_topic_messages(user_profile, new_stream, "test")
         self.assert_length(messages, 4)
 
+    def test_move_message_to_stream_based_on_can_create_create_topic_group(self) -> None:
+        (user_profile, old_stream, new_stream, msg_id, msg_id_later) = (
+            self.prepare_move_topics_send_stream_message()
+        )
+
+        realm = user_profile.realm
+        desdemona = self.example_user("desdemona")
+        iago = self.example_user("iago")
+
+        def check_move_message_to_stream(
+            user: UserProfile,
+            expect_fail: bool = False,
+            topic_name: str = "test topic",
+            error_msg: str = "You do not have permission to create new topics in this channel.",
+        ) -> None:
+            result = self.api_patch(
+                user,
+                "/api/v1/messages/" + str(msg_id),
+                {
+                    "stream_id": new_stream.id,
+                    "propagate_mode": "change_all",
+                    "topic": topic_name,
+                },
+            )
+
+            if expect_fail:
+                self.assert_json_error(result, error_msg)
+            else:
+                self.assert_json_success(result)
+
+        nobody_group = NamedUserGroup.objects.get(
+            name=SystemGroups.NOBODY, realm=realm, is_system_group=True
+        )
+        do_change_stream_group_based_setting(
+            new_stream, "can_create_topic_group", nobody_group, acting_user=desdemona
+        )
+        # Sending message to a new topic is not allowed.
+        check_move_message_to_stream(desdemona, expect_fail=True)
+        check_move_message_to_stream(iago, expect_fail=True)
+
+        # Sending message to an existing topic is allowed.
+        check_move_message_to_stream(desdemona, expect_fail=False, topic_name="existing topic")
+        (user_profile, old_stream, new_stream, msg_id, msg_id_later) = (
+            self.prepare_move_topics_send_stream_message()
+        )
+
+        owners_group = NamedUserGroup.objects.get(
+            name=SystemGroups.OWNERS, realm=realm, is_system_group=True
+        )
+        do_change_stream_group_based_setting(
+            new_stream, "can_create_topic_group", owners_group, acting_user=desdemona
+        )
+
+        # Sending message to a new topic is not allowed, except for owners_group.
+        check_move_message_to_stream(iago, expect_fail=True)
+        check_move_message_to_stream(desdemona, expect_fail=False)
+        (user_profile, old_stream, new_stream, msg_id, msg_id_later) = (
+            self.prepare_move_topics_send_stream_message()
+        )
+        # Sending message to an existing topic is allowed.
+        check_move_message_to_stream(iago, expect_fail=False, topic_name="existing topic")
+
     def test_move_message_to_stream_and_topic(self) -> None:
         (user_profile, old_stream, new_stream, msg_id, msg_id_later) = self.prepare_move_topics(
             "iago", "test move stream", "new stream", "test"
         )
-
-        with self.assert_database_query_count(59), self.assert_memcached_count(14):
+        with self.assert_database_query_count(63), self.assert_memcached_count(15):
             result = self.client_patch(
                 f"/json/messages/{msg_id}",
                 {

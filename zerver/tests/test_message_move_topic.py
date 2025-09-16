@@ -420,7 +420,7 @@ class MessageMoveTopicTest(ZulipTestCase):
         # state + 1/user with a UserTopic row for the events data)
         # beyond what is typical were there not UserTopic records to
         # update. Ideally, we'd eliminate the per-user component.
-        with self.assert_database_query_count(27):
+        with self.assert_database_query_count(29):
             check_update_message(
                 user_profile=hamlet,
                 message_id=message_id,
@@ -517,7 +517,7 @@ class MessageMoveTopicTest(ZulipTestCase):
         set_topic_visibility_policy(desdemona, muted_topics, UserTopic.VisibilityPolicy.MUTED)
         set_topic_visibility_policy(cordelia, muted_topics, UserTopic.VisibilityPolicy.MUTED)
 
-        with self.assert_database_query_count(29):
+        with self.assert_database_query_count(31):
             check_update_message(
                 user_profile=desdemona,
                 message_id=message_id,
@@ -547,7 +547,7 @@ class MessageMoveTopicTest(ZulipTestCase):
         ]
         set_topic_visibility_policy(desdemona, muted_topics, UserTopic.VisibilityPolicy.MUTED)
         set_topic_visibility_policy(cordelia, muted_topics, UserTopic.VisibilityPolicy.MUTED)
-        with self.assert_database_query_count(35):
+        with self.assert_database_query_count(37):
             check_update_message(
                 user_profile=desdemona,
                 message_id=message_id,
@@ -580,7 +580,7 @@ class MessageMoveTopicTest(ZulipTestCase):
         set_topic_visibility_policy(desdemona, muted_topics, UserTopic.VisibilityPolicy.MUTED)
         set_topic_visibility_policy(cordelia, muted_topics, UserTopic.VisibilityPolicy.MUTED)
 
-        with self.assert_database_query_count(31):
+        with self.assert_database_query_count(33):
             check_update_message(
                 user_profile=desdemona,
                 message_id=message_id,
@@ -603,7 +603,7 @@ class MessageMoveTopicTest(ZulipTestCase):
         second_message_id = self.send_stream_message(
             hamlet, stream_name, topic_name="changed topic name", content="Second message"
         )
-        with self.assert_database_query_count(25):
+        with self.assert_database_query_count(27):
             check_update_message(
                 user_profile=desdemona,
                 message_id=second_message_id,
@@ -682,7 +682,7 @@ class MessageMoveTopicTest(ZulipTestCase):
             users_to_be_notified_via_muted_topics_event.append(user_topic.user_profile_id)
 
         change_all_topic_name = "Topic 1 edited"
-        with self.assert_database_query_count(32):
+        with self.assert_database_query_count(34):
             check_update_message(
                 user_profile=hamlet,
                 message_id=message_id,
@@ -2863,3 +2863,93 @@ class MessageMoveTopicTest(ZulipTestCase):
             topic_name="new topic",
             expected_error="Only the general chat topic is allowed in this channel.",
         )
+
+    def test_can_move_messages_can_create_topic_group(self) -> None:
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+        iago = self.example_user("iago")
+        realm = hamlet.realm
+
+        hamletcharacters_group = NamedUserGroup.objects.get(name="hamletcharacters", realm=realm)
+        nobody_system_group = NamedUserGroup.objects.get(
+            name=SystemGroups.NOBODY, realm=realm, is_system_group=True
+        )
+
+        can_create_topic_group_error = (
+            "You do not have permission to create new topics in this channel."
+        )
+
+        stream = get_stream("Denmark", realm)
+        self.send_stream_message(hamlet, stream.name, topic_name="existing topic 1")
+        self.send_stream_message(hamlet, stream.name, topic_name="existing topic 2")
+
+        def check_move_message(
+            user_profile: UserProfile,
+            stream: Stream,
+            move_to_new_topic: bool = True,
+            expected_error: str = can_create_topic_group_error,
+            expect_fail: bool = False,
+        ) -> None:
+            if move_to_new_topic:
+                topic_name = "new topic"
+            else:
+                topic_name = "existing topic 2"
+            params = {
+                "stream_id": stream.id,
+                "topic": topic_name,
+            }
+
+            self.subscribe(user_profile, stream.name)
+            msg_id = self.send_stream_message(
+                user_profile, stream.name, topic_name="existing topic 1"
+            )
+
+            result = self.api_patch(
+                user_profile,
+                "/api/v1/messages/" + str(msg_id),
+                params,
+            )
+            if expect_fail:
+                self.assert_json_error(result, expected_error)
+            else:
+                self.assert_json_success(result)
+                if move_to_new_topic:
+                    # Delete this topic, as it contains messages and is no longer new.
+                    self.login("iago")
+                    result = self.client_post(
+                        "/json/streams/" + str(stream.id) + "/delete_topic",
+                        {
+                            "topic_name": topic_name,
+                        },
+                    )
+                    self.assert_json_success(result)
+
+        # When nobody is allowed to move messages to new topics.
+        do_change_stream_group_based_setting(
+            stream, "can_create_topic_group", nobody_system_group, acting_user=iago
+        )
+
+        check_move_message(hamlet, stream, move_to_new_topic=True, expect_fail=True)
+        check_move_message(iago, stream, move_to_new_topic=True, expect_fail=True)
+        check_move_message(cordelia, stream, move_to_new_topic=True, expect_fail=True)
+
+        # However moving messages to existing topics is allowed.
+        check_move_message(hamlet, stream, move_to_new_topic=False)
+        check_move_message(iago, stream, move_to_new_topic=False)
+        check_move_message(cordelia, stream, move_to_new_topic=False)
+
+        # For a user defined group, its members can move messages to a new topic.
+        do_change_stream_group_based_setting(
+            stream,
+            "can_create_topic_group",
+            hamletcharacters_group,
+            acting_user=iago,
+        )
+        check_move_message(hamlet, stream, move_to_new_topic=True)
+        check_move_message(iago, stream, move_to_new_topic=True, expect_fail=True)
+        check_move_message(cordelia, stream, move_to_new_topic=True)
+
+        # However moving messages to existing topics is allowed.
+        check_move_message(hamlet, stream, move_to_new_topic=False)
+        check_move_message(iago, stream, move_to_new_topic=False)
+        check_move_message(cordelia, stream, move_to_new_topic=False)

@@ -92,10 +92,14 @@ class MessagePOSTTest(ZulipTestCase):
         error_msg: str | None = None,
         *,
         allow_unsubscribed_sender: bool = False,
+        topic_name: str = "test",
     ) -> None:
         if error_msg is None:
             msg_id = self.send_stream_message(
-                user, stream_name, allow_unsubscribed_sender=allow_unsubscribed_sender
+                user,
+                stream_name,
+                allow_unsubscribed_sender=allow_unsubscribed_sender,
+                topic_name=topic_name,
             )
             result = self.api_get(user, "/api/v1/messages/" + str(msg_id))
             self.assert_json_success(result)
@@ -543,6 +547,264 @@ class MessagePOSTTest(ZulipTestCase):
             "Not authorized to send to channel 'private_stream",
             allow_unsubscribed_sender=True,
         )
+
+    def test_can_create_topic_group_permission(self) -> None:
+        realm = get_realm("zulip")
+
+        desdemona = self.example_user("desdemona")
+        iago = self.example_user("iago")
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+        othello = self.example_user("othello")
+        polonius = self.example_user("polonius")
+
+        desdemona_owned_bot = self.create_test_bot(
+            short_name="whatever1",
+            full_name="whatever1",
+            user_profile=desdemona,
+        )
+        iago_owned_bot = self.create_test_bot(
+            short_name="whatever2",
+            full_name="whatever2",
+            user_profile=iago,
+        )
+        cordelia_owned_bot = self.create_test_bot(
+            short_name="whatever3",
+            full_name="whatever3",
+            user_profile=cordelia,
+        )
+        othello_owned_bot = self.create_test_bot(
+            short_name="whatever4",
+            full_name="whatever4",
+            user_profile=othello,
+        )
+        notification_bot = get_system_bot("notification-bot@zulip.com", realm.id)
+
+        bot_without_owner = do_create_user(
+            email="free-bot@zulip.testserver",
+            password="",
+            realm=realm,
+            full_name="freebot",
+            bot_type=UserProfile.DEFAULT_BOT,
+            acting_user=None,
+        )
+        can_create_topic_error_msg = (
+            "You do not have permission to create new topics in this channel."
+        )
+
+        stream_name = "Verona"
+        stream = get_stream(stream_name, realm)
+        self._send_and_verify_message(desdemona, stream_name, topic_name="existing topic")
+
+        nobody_group = NamedUserGroup.objects.get(
+            name=SystemGroups.NOBODY, realm=realm, is_system_group=True
+        )
+        do_change_stream_group_based_setting(
+            stream, "can_create_topic_group", nobody_group, acting_user=iago
+        )
+
+        self._send_and_verify_message(
+            desdemona,
+            stream_name,
+            can_create_topic_error_msg,
+            topic_name="new topic: a",
+        )
+        self._send_and_verify_message(
+            desdemona_owned_bot,
+            stream_name,
+            can_create_topic_error_msg,
+            topic_name="new topic: a",
+        )
+        self._send_and_verify_message(
+            bot_without_owner,
+            stream_name,
+            can_create_topic_error_msg,
+            topic_name="new topic: a",
+        )
+
+        # Cross realm bots should be allowed
+        internal_send_stream_message(notification_bot, stream, "new topic1", "second message")
+        self.assertEqual(self.get_last_message().content, "second message")
+
+        # Sending message to an existing topic should be allowed.
+        self._send_and_verify_message(desdemona, stream_name, topic_name="existing topic")
+        self._send_and_verify_message(desdemona_owned_bot, stream_name, topic_name="existing topic")
+        self._send_and_verify_message(bot_without_owner, stream_name, topic_name="existing topic")
+
+        owners_group = NamedUserGroup.objects.get(
+            name=SystemGroups.OWNERS, realm=realm, is_system_group=True
+        )
+        do_change_stream_group_based_setting(
+            stream, "can_create_topic_group", owners_group, acting_user=iago
+        )
+
+        self._send_and_verify_message(
+            iago,
+            stream_name,
+            can_create_topic_error_msg,
+            topic_name="new topic: b",
+        )
+        self._send_and_verify_message(
+            iago_owned_bot,
+            stream_name,
+            can_create_topic_error_msg,
+            topic_name="new topic: b",
+        )
+        self._send_and_verify_message(
+            bot_without_owner,
+            stream_name,
+            can_create_topic_error_msg,
+            topic_name="new topic: b",
+        )
+
+        self._send_and_verify_message(desdemona, stream_name, topic_name="new topic: c")
+        self._send_and_verify_message(desdemona_owned_bot, stream_name, topic_name="new topic: d")
+
+        # Cross realm bots should be allowed
+        internal_send_stream_message(
+            notification_bot, stream, "new topic2", "Test message by notification bot"
+        )
+        self.assertEqual(self.get_last_message().content, "Test message by notification bot")
+
+        # Sending message to an existing topic should be allowed.
+        self._send_and_verify_message(iago, stream_name, topic_name="existing topic")
+        self._send_and_verify_message(iago_owned_bot, stream_name, topic_name="existing topic")
+        self._send_and_verify_message(bot_without_owner, stream_name, topic_name="existing topic")
+
+        hamletcharacters_group = NamedUserGroup.objects.get(name="hamletcharacters", realm=realm)
+        do_change_stream_group_based_setting(
+            stream, "can_create_topic_group", hamletcharacters_group, acting_user=iago
+        )
+
+        self._send_and_verify_message(
+            desdemona,
+            stream_name,
+            can_create_topic_error_msg,
+            topic_name="new topic: e",
+        )
+        self._send_and_verify_message(
+            desdemona_owned_bot,
+            stream_name,
+            can_create_topic_error_msg,
+            topic_name="new topic: f",
+        )
+        self._send_and_verify_message(
+            iago,
+            stream_name,
+            can_create_topic_error_msg,
+            topic_name="new topic: g",
+        )
+        self._send_and_verify_message(
+            iago_owned_bot,
+            stream_name,
+            can_create_topic_error_msg,
+            topic_name="new topic: h",
+        )
+        self._send_and_verify_message(
+            bot_without_owner,
+            stream_name,
+            can_create_topic_error_msg,
+            topic_name="new topic: i",
+        )
+
+        self._send_and_verify_message(hamlet, stream_name, topic_name="new topic: j")
+        self._send_and_verify_message(cordelia, stream_name, topic_name="new topic: k")
+        self._send_and_verify_message(cordelia_owned_bot, stream_name, topic_name="new topic: l")
+
+        # Cross realm bots should be allowed
+        internal_send_stream_message(
+            notification_bot, stream, "new topic3", "Test message by notification bot"
+        )
+        self.assertEqual(self.get_last_message().content, "Test message by notification bot")
+
+        # Sending message to an existing topic should be allowed.
+        self._send_and_verify_message(desdemona, stream_name, topic_name="existing topic")
+        self._send_and_verify_message(desdemona_owned_bot, stream_name, topic_name="existing topic")
+        self._send_and_verify_message(iago, stream_name, topic_name="existing topic")
+        self._send_and_verify_message(iago_owned_bot, stream_name, topic_name="existing topic")
+        self._send_and_verify_message(bot_without_owner, stream_name, topic_name="existing topic")
+
+        setting_group_member_dict = UserGroupMembersData(
+            direct_members=[othello.id], direct_subgroups=[owners_group.id]
+        )
+        do_change_stream_group_based_setting(
+            stream, "can_create_topic_group", setting_group_member_dict, acting_user=iago
+        )
+
+        self._send_and_verify_message(
+            iago,
+            stream_name,
+            can_create_topic_error_msg,
+            topic_name="new topic: m",
+        )
+        self._send_and_verify_message(
+            iago_owned_bot,
+            stream_name,
+            can_create_topic_error_msg,
+            topic_name="new topic: n",
+        )
+        self._send_and_verify_message(
+            hamlet,
+            stream_name,
+            can_create_topic_error_msg,
+            topic_name="new topic: o",
+        )
+        self._send_and_verify_message(
+            cordelia,
+            stream_name,
+            can_create_topic_error_msg,
+            topic_name="new topic: p",
+        )
+        self._send_and_verify_message(
+            cordelia_owned_bot,
+            stream_name,
+            can_create_topic_error_msg,
+            topic_name="new topic: q",
+        )
+        self._send_and_verify_message(
+            bot_without_owner,
+            stream_name,
+            can_create_topic_error_msg,
+            topic_name="new topic: r",
+        )
+
+        self._send_and_verify_message(desdemona, stream_name, topic_name="new topic: s")
+        self._send_and_verify_message(desdemona_owned_bot, stream_name, topic_name="new topic: t")
+        self._send_and_verify_message(othello, stream_name, topic_name="new topic: u")
+        self._send_and_verify_message(othello_owned_bot, stream_name, topic_name="new topic: v")
+
+        # Cross realm bots should be allowed
+        internal_send_stream_message(
+            notification_bot, stream, "new topic4", "Test message by notification bot"
+        )
+        self.assertEqual(self.get_last_message().content, "Test message by notification bot")
+
+        # Sending message to an existing topic should be allowed.
+        self._send_and_verify_message(iago, stream_name, topic_name="existing topic")
+        self._send_and_verify_message(iago_owned_bot, stream_name, topic_name="existing topic")
+        self._send_and_verify_message(hamlet, stream_name, topic_name="existing topic")
+        self._send_and_verify_message(cordelia, stream_name, topic_name="existing topic")
+        self._send_and_verify_message(cordelia_owned_bot, stream_name, topic_name="existing topic")
+        self._send_and_verify_message(bot_without_owner, stream_name, topic_name="existing topic")
+
+        everyone_group = NamedUserGroup.objects.get(
+            name=SystemGroups.EVERYONE, realm=realm, is_system_group=True
+        )
+        do_change_stream_group_based_setting(
+            stream, "can_create_topic_group", everyone_group, acting_user=iago
+        )
+        self._send_and_verify_message(othello, stream_name, topic_name="new topic: w")
+        self._send_and_verify_message(othello_owned_bot, stream_name, topic_name="new topic: x")
+        self._send_and_verify_message(iago, stream_name, topic_name="new topic: y")
+        self._send_and_verify_message(iago_owned_bot, stream_name, topic_name="new topic: z")
+        self._send_and_verify_message(polonius, stream_name, topic_name="new topic: aa")
+        self._send_and_verify_message(bot_without_owner, stream_name, topic_name="new topic: ab")
+
+        # Cross realm bots should be allowed
+        internal_send_stream_message(
+            notification_bot, stream, "Test topic", "Test message by notification bot"
+        )
+        self.assertEqual(self.get_last_message().content, "Test message by notification bot")
 
     def test_api_message_with_default_to(self) -> None:
         """
@@ -1630,6 +1892,10 @@ class StreamMessagesTest(ZulipTestCase):
         # filled, we will get a lower count. Caches are not supposed to be
         # persistent, so our test can also fail if cache is invalidated
         # during the course of the unit test.
+
+        # When sending a message to a new topic we do 2 queries.
+        # 1 to check if the topic exists + 1 to check permissions for creating a new topic.
+        # Hence, whenever sending message to an existing topic the query count is reduced by 1.
         flush_per_request_caches()
         do_change_user_setting(
             user_profile=sender,
@@ -1637,7 +1903,7 @@ class StreamMessagesTest(ZulipTestCase):
             setting_value=UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_NEVER,
             acting_user=None,
         )
-        with self.assert_database_query_count(14):
+        with self.assert_database_query_count(15):
             check_send_stream_message(
                 sender=sender,
                 client=sending_client,
@@ -1657,7 +1923,7 @@ class StreamMessagesTest(ZulipTestCase):
         # 5 queries: 1 to check if it is the first message in the topic +
         # 1 to check if the topic is already followed + 3 to follow the topic.
         flush_per_request_caches()
-        with self.assert_database_query_count(19):
+        with self.assert_database_query_count(20):
             check_send_stream_message(
                 sender=sender,
                 client=sending_client,
@@ -1676,8 +1942,10 @@ class StreamMessagesTest(ZulipTestCase):
         # There will be an increase in the query count of 4 while sending
         # a message to a topic with visibility policy other than FOLLOWED.
         # 1 to check if the topic is already followed + 3 queries to follow the topic.
+        # Since, sending message to an existing topic, the query count also decreases
+        # by 1, similar for the test cases below.
         flush_per_request_caches()
-        with self.assert_database_query_count(18):
+        with self.assert_database_query_count(19):
             check_send_stream_message(
                 sender=sender,
                 client=sending_client,
@@ -1688,7 +1956,7 @@ class StreamMessagesTest(ZulipTestCase):
         # If the topic is already FOLLOWED, there will be an increase in the query
         # count of 1 to check if the topic is already followed.
         flush_per_request_caches()
-        with self.assert_database_query_count(15):
+        with self.assert_database_query_count(16):
             check_send_stream_message(
                 sender=sender,
                 client=sending_client,
@@ -1713,7 +1981,7 @@ class StreamMessagesTest(ZulipTestCase):
         # 1 to get the user_id of the mentioned user + 1 to check if the topic
         # is already followed + 3 queries to follow the topic.
         flush_per_request_caches()
-        with self.assert_database_query_count(23):
+        with self.assert_database_query_count(24):
             check_send_stream_message(
                 sender=sender,
                 client=sending_client,
@@ -1726,7 +1994,7 @@ class StreamMessagesTest(ZulipTestCase):
         # 1 to get the user_id of the mentioned user + 1 to check if the topic is
         # already followed.
         flush_per_request_caches()
-        with self.assert_database_query_count(20):
+        with self.assert_database_query_count(21):
             check_send_stream_message(
                 sender=sender,
                 client=sending_client,
@@ -1736,7 +2004,7 @@ class StreamMessagesTest(ZulipTestCase):
             )
 
         flush_per_request_caches()
-        with self.assert_database_query_count(17):
+        with self.assert_database_query_count(18):
             check_send_stream_message(
                 sender=sender,
                 client=sending_client,
@@ -1759,7 +2027,7 @@ class StreamMessagesTest(ZulipTestCase):
         )
         flush_per_request_caches()
 
-        with self.assert_database_query_count(18):
+        with self.assert_database_query_count(19):
             check_send_stream_message(
                 sender=sender,
                 client=sending_client,
