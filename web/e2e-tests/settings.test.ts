@@ -30,7 +30,7 @@ async function open_settings(page: Page): Promise<void> {
         `Page url: ${page_url} does not contain /#settings/`,
     );
     // Wait for settings overlay to open.
-    await page.waitForSelector("#settings_overlay_container", {visible: true});
+    await page.waitForSelector("#settings_overlay_container .overlay", {visible: true});
 }
 
 async function close_settings_and_date_picker(page: Page): Promise<void> {
@@ -41,7 +41,7 @@ async function close_settings_and_date_picker(page: Page): Promise<void> {
 
     await page.keyboard.press("Escape");
     await page.waitForSelector(".flatpickr-calendar", {hidden: true});
-    await page.waitForSelector("#settings_overlay_container", {hidden: true});
+    await page.waitForSelector("#settings_overlay_container .overlay", {hidden: true});
 }
 
 async function test_change_full_name(page: Page): Promise<void> {

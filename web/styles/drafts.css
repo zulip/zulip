@@ -76,3 +76,9 @@
         width: 15px;
     }
 }
+
+#draft_overlay.overlay {
+    .overlay-container {
+        margin: 2.5vh auto;
+    }
+}
