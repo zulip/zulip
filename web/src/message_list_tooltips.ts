@@ -3,7 +3,7 @@ import assert from "minimalistic-assert";
 import * as tippy from "tippy.js";
 
 import render_message_edit_notice_tooltip from "../templates/message_edit_notice_tooltip.hbs";
-import render_message_inline_image_tooltip from "../templates/message_inline_image_tooltip.hbs";
+import render_message_media_preview_tooltip from "../templates/message_media_preview_tooltip.hbs";
 import render_narrow_tooltip from "../templates/narrow_tooltip.hbs";
 
 import * as compose_validate from "./compose_validate.ts";
@@ -351,7 +351,7 @@ export function initialize(): void {
             const title =
                 $(instance.reference).parent().attr("aria-label") ??
                 $(instance.reference).parent().attr("href");
-            instance.setContent(parse_html(render_message_inline_image_tooltip({title})));
+            instance.setContent(parse_html(render_message_media_preview_tooltip({title})));
         },
         onHidden(instance) {
             instance.destroy();
