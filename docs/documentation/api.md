@@ -370,7 +370,7 @@ it? There's several major benefits to this system:
   version, with the key variables (like the Zulip server URL) already
   pre-substituted for the user.
 - We're able to share implementation language and visual styling with
-  our Help Center, which is especially useful for the extensive
+  our help center, which is especially useful for the extensive
   non-REST API documentation pages (e.g., our bot framework).
 
 Using the standard OpenAPI format gives us flexibility, though; if we

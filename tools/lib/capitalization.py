@@ -22,7 +22,6 @@ IGNORED_PHRASES = [
     r"GCM",
     r"GitHub",
     r"Gravatar",
-    r"Help Center",
     r"HTTP",
     r"ID",
     r"IDs",
