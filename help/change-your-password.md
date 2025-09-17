@@ -19,3 +19,9 @@ account.
 1. Enter your old password and your new password, and click **Change**.
 
 {end_tabs}
+
+
+## Related articles
+
+* [Logging in](/help/logging-in)
+* [Logging out](/help/logging-out)
