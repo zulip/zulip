@@ -1966,8 +1966,8 @@ _Released 2023-01-23_
   [Rocket.Chat imports](https://zulip.com/help/import-from-rocketchat).
 - Updated the Intercom integration to return success on `HEAD`
   requests, which it uses to verify its configuration.
-- Documented how each
-  [rate limit](../production/security-model.md#rate-limiting)
+- Documented how each [rate
+  limit](../production/security-model.md#6-understand-zulips-rate-limiting-system)
   category is used.
 - Documented the `reset_authentication_attempt_count` command for when users
   lock themselves out.
