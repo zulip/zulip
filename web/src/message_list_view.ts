@@ -1038,9 +1038,9 @@ export class MessageListView {
         if (page_params.is_spectator) {
             // For images that fail to load due to being rate limited or being denied access
             // by server in general, we tell user to login to be able to view the image.
-            $message_rows.find(".message_inline_image img").on("error", (e) => {
+            $message_rows.find(".media-image-element").on("error", (e) => {
                 $(e.target)
-                    .closest(".message_inline_image")
+                    .closest(".message-media-preview-image")
                     .replaceWith($(render_login_to_view_image_button()));
             });
         }

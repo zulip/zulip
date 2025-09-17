@@ -341,13 +341,13 @@ export function initialize(): void {
         },
     });
 
-    message_list_tooltip(".message_inline_image > a > img", {
+    message_list_tooltip(".media-image-element", {
         // Add a short delay so the user can mouseover several inline images without
         // tooltips showing and hiding rapidly
         delay: [300, 20],
         onShow(instance) {
-            // Some message_inline_images aren't actually images with a title,
-            // for example youtube videos, so we default to the actual href
+            // Some message images do not include a title, such as YouTube
+            // video previews, so we fall back to displaying the href value
             const title =
                 $(instance.reference).parent().attr("aria-label") ??
                 $(instance.reference).parent().attr("href");

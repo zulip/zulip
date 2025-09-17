@@ -120,13 +120,13 @@ export function initialize(): void {
 
     $("#main_div").on(
         "mouseover",
-        '.message-list div.message_inline_image img[data-animated="true"]',
+        '.message-list .message-media-preview-image img[data-animated="true"]',
         function (this: HTMLElement) {
             if (user_settings.web_animate_image_previews !== "on_hover") {
                 return;
             }
             const $img = $(this);
-            $img.closest(".message_inline_image").removeClass(
+            $img.closest(".message-media-preview-image").removeClass(
                 "message_inline_animated_image_still",
             );
             $img.attr(
@@ -138,13 +138,15 @@ export function initialize(): void {
 
     $("#main_div").on(
         "mouseout",
-        '.message-list div.message_inline_image img[data-animated="true"]',
+        '.message-list .message-media-preview-image img[data-animated="true"]',
         function (this: HTMLElement) {
             if (user_settings.web_animate_image_previews !== "on_hover") {
                 return;
             }
             const $img = $(this);
-            $img.closest(".message_inline_image").addClass("message_inline_animated_image_still");
+            $img.closest(".message-media-preview-image").addClass(
+                "message_inline_animated_image_still",
+            );
             $img.attr(
                 "src",
                 $img.attr("src")!.replace(/\/[^/]+$/, "/" + thumbnail.preferred_format.name),
