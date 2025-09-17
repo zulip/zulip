@@ -92,7 +92,9 @@ function empty_search_query_banner(current_filter: Filter): NarrowBannerData {
 
     // Gather information about each query word
     for (const query_word of query_words) {
-        if (realm.stop_words.includes(query_word)) {
+        // Remove all double quotes
+        const cleaned_query_word = query_word.replaceAll(/["']/g, "");
+        if (realm.stop_words.includes(cleaned_query_word)) {
             search_string_result.has_stop_word = true;
             search_string_result.query_words.push({
                 query_word,
