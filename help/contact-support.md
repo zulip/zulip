@@ -69,6 +69,12 @@ for your organization.
 [community-norms]: https://zulip.com/development-community/#community-norms
 [development-community-channels]: https://zulip.com/development-community/#channels-for-zulip-users-and-administrators
 
+## Security
+
+If you believe you've identified a security issue, please report it to Zulip's
+security team at [security@zulip.com](mailto:security@zulip.com) as soon as
+possible, so that we can address it and make a responsible disclosure.
+
 ## Related articles
 
 * [Zulip Cloud billing](/help/zulip-cloud-billing)
