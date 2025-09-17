@@ -591,7 +591,7 @@ def get_service_bot_events(
         # So even though this is implied by the logic below, we filter
         # these not-actually-mentioned users here, to help keep this
         # function future-proof.
-        if user_profile_id not in mentioned_user_ids and user_profile_id not in active_user_ids:
+        if user_profile_id not in (mentioned_user_ids | active_user_ids):
             return
 
         # Mention triggers, for stream messages
