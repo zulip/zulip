@@ -6,7 +6,7 @@
             {{t "Common words were excluded from your search:" }} <br/>
             {{#each search_data.query_words}}
                 {{#if is_stop_word}}
-                <del>{{query_word}}</del>
+                {{prefix}}<del>{{query_word}}</del>{{suffix}}
                 {{else}}
                 <span class="search-query-word">{{query_word}}</span>
                 {{/if}}
