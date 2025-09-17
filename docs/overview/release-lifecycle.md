@@ -50,8 +50,10 @@ industry-standard [CVE advisory process](https://cve.mitre.org/).
 When new security releases are published, we simultaneously publish the fixes to
 the `main` branch and the release branch for the current major release series.
 
-See also our [security model][securing-your-zulip-server] documentation.
+See also our [security overview][security-overview], and our [guide on securing
+your Zulip server][securing-your-zulip-server].
 
+[security-overview]: https://zulip.com/security/
 [securing-your-zulip-server]: ../production/securing-your-zulip-server.md
 
 ### Git versions
