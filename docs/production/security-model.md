@@ -9,7 +9,7 @@ Here are some best practices for keeping your Zulip server secure:
 1. [Limit shell access to a small set of trusted individuals.](#1-limit-shell-access-to-a-small-set-of-trusted-individuals)
 2. [Consider requiring authentication with single sign-on (SSO).](#2-consider-requiring-authentication-with-single-sign-on-sso)
 3. [Teach users how to protect their account.](#3-teach-users-how-to-protect-their-account)
-4. [Become familiar with Zulip's access management model.](#4-become-familiar-with-zulips-access-management-model))
+4. [Become familiar with Zulip's access management model.](#4-become-familiar-with-zulips-access-management-model)
 5. [Understand security for user-uploaded content and user-generated requests.](#5-understand-security-for-user-uploaded-content-and-user-generated-requests)
 6. [Understand Zulip's rate-limiting system.](#6-understand-zulips-rate-limiting-system)
 
