@@ -42,31 +42,32 @@ The **bot type** determines what the bot can do.
 | Incoming webhook | Limited to only sending messages into Zulip                        | Automated notifications into Zulip                              |
 | Outgoing webhook | Generic bot that also receives new messages via HTTP post requests | Third party integrations, most custom bots                      |
 
-It's generally best to pick the most restricted bot type that is sufficient
-to do the task at hand. Anyone with the bot's API key can do anything the
-bot can.
+A **generic** bot acts like a normal Zulip user that can only access Zulip via
+the API. There's a handful of actions bots can't take, including creating other
+bots.
 
-A few more details:
+An **outgoing webhook** bot can read direct messages where the bot
+is a participant, and channel messages where the bot is
+[mentioned](/help/mention-a-user-or-group). When the bot is DM'd or
+mentioned, it POSTs the message content to a URL of your choice. The
+POST request format can be in a Zulip format or a Slack-compatible
+format. This is the preferred bot type for interactive bots built on
+top of Zulip Botserver.
 
-* Bots can send messages to any channel that their owner can,
-  inheriting their owner's [sending permissions](/help/channel-posting-policy).
-* Bots can be subscribed to channels, and their role can be modified if
-  they need to have permission to do administrative actions.
-* [Channel permissions](/help/channel-permissions) are the same for bots
-  as for other users. Therefore, for private channels with protected
-  history, a bot can only access messages sent after it was subscribed
-  to the channel.
-* **Generic**: A generic bot is like a normal Zulip user account that
-  cannot log in via a browser.  Note that if you truly want to
-  impersonate yourself (e.g., write messages that come from your Zulip
-  account), you'll need to use your **personal API key**.
-* **Outgoing webhook**: The bot can read direct messages where the bot
-  is a participant, and channel messages where the bot is
-  [mentioned](/help/mention-a-user-or-group). When the bot is DM'd or
-  mentioned, it POSTs the message content to a URL of your choice. The
-  POST request format can be in a Zulip format or a Slack-compatible
-  format. This is the preferred bot type for interactive bots built on
-  top of Zulip Botserver.
+Use the most limited bot type that supports your integration. Anyone with the
+bot's API key can do anything the bot can, so giving bots unnecessary
+permissions can expose your organization to unnecessary risk.
+
+## Channel permissions for bots
+
+Bots can be subscribed to channels, and assigned [channel
+permissions](/help/channel-permissions) just like human users. In private
+channels with protected history, a bot can only access messages sent after it
+was subscribed to the channel.
+
+Bots can send messages to any channel that their owner can, inheriting their
+owner's [sending permissions](/help/channel-posting-policy). You can give a bot
+channel management permissions, just like you would for a human user.
 
 ## Adding bots
 
@@ -74,6 +75,20 @@ By default, anyone other than guests can [add a bot](/help/add-a-bot-or-integrat
 Zulip organization, but administrators can
 [restrict bot creation](/help/restrict-bot-creation). Any bot that is added
 is visible and available for anyone to use.
+
+## Integrations that act on behalf of users
+
+If you want an integration to impersonate you (e.g., write messages that come
+from your Zulip account), use your [personal API key](/api/api-keys), rather
+than a bot's API key. You won't need to create a bot.
+
+If you need a bot to send messages on behalf of multiple users, ask [Zulip
+support](mailto:support@zulip.com) or your server administrator to run the
+`manage.py change_user_role can_forge_sender` command to give a bot
+permission to send messages as users in your organization. Bots with the
+`can_forge_sender` permission can also see the names of all channels,
+including private channels. This is important for implementing integrations
+like the Jabber and IRC mirrors.
 
 ## Related articles
 
