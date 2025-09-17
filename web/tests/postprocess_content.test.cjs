@@ -16,7 +16,7 @@ initialize_user_settings({user_settings});
 // Care should be taken to present real-world cases here and
 // throughout, rather than contrived examples that serve
 // only to satisfy 100% test coverage.
-run_test("postprocess_content", () => {
+run_test("postprocess_basic_links", () => {
     assert.equal(
         postprocess_content(
             '<a href="http://example.com">good</a> ' +
@@ -24,8 +24,21 @@ run_test("postprocess_content", () => {
                 '<a href="http://localhost:NNNN">invalid</a> ' +
                 '<a href="javascript:alert(1)">unsafe</a> ' +
                 '<a href="/#fragment" target="_blank">fragment</a>' +
-                "<a>missing href</a>" +
-                '<div class="message_inline_image message_inline_video">' +
+                "<a>missing href</a>",
+        ),
+        '<a href="http://example.com" target="_blank" rel="noopener noreferrer" title="http://example.com/">good</a> ' +
+            '<a href="http://zulip.zulipdev.com/user_uploads/w/ha/tever/file.png" target="_blank" rel="noopener noreferrer" title="translated: Download file.png">upload</a> ' +
+            "<a>invalid</a> " +
+            "<a>unsafe</a> " +
+            '<a href="/#fragment" title="http://zulip.zulipdev.com/#fragment">fragment</a>' +
+            "<a>missing href</a>",
+    );
+});
+
+run_test("postprocess_media_and_embeds", () => {
+    assert.equal(
+        postprocess_content(
+            '<div class="message_inline_image message_inline_video">' +
                 '<a href="http://zulip.zulipdev.com/user_uploads/w/ha/tever/inline.mp4">' +
                 '<video src="http://zulip.zulipdev.com/user_uploads/w/ha/tever/inline.mp4"></video>' +
                 "</a>" +
@@ -45,13 +58,7 @@ run_test("postprocess_content", () => {
                 "</div>" +
                 "</div>",
         ),
-        '<a href="http://example.com" target="_blank" rel="noopener noreferrer" title="http://example.com/">good</a> ' +
-            '<a href="http://zulip.zulipdev.com/user_uploads/w/ha/tever/file.png" target="_blank" rel="noopener noreferrer" title="translated: Download file.png">upload</a> ' +
-            "<a>invalid</a> " +
-            "<a>unsafe</a> " +
-            '<a href="/#fragment" title="http://zulip.zulipdev.com/#fragment">fragment</a>' +
-            "<a>missing href</a>" +
-            '<div class="message-thumbnail-gallery">' +
+        '<div class="message-thumbnail-gallery">' +
             '<div class="message_inline_image message_inline_video">' +
             '<a href="http://zulip.zulipdev.com/user_uploads/w/ha/tever/inline.mp4" target="_blank" rel="noopener noreferrer" class="media-anchor-element">' +
             '<video src="http://zulip.zulipdev.com/user_uploads/w/ha/tever/inline.mp4" class="media-video-element media-image-element"></video>' +
