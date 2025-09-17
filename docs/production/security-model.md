@@ -43,10 +43,7 @@ announcement).
 
 ### Passwords
 
-Zulip stores user passwords using the standard Argon2 and PBKDF2
-algorithms. Argon2 is used for all new and changed passwords as of
-Zulip Server 1.6.0, but legacy PBKDF2 passwords that were last changed
-before the 1.6.0 upgrade are still supported.
+Zulip stores user passwords using the standard Argon2 algorithm.
 
 When the user is choosing a password, Zulip checks the password's
 strength using the popular [zxcvbn][zxcvbn] library. Weak passwords

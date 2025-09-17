@@ -580,7 +580,7 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
 ## into Zulip or to fetch users' API keys. The JWT secret key and
 ## algorithm must be configured here.
 ##
-## See https://zulip.readthedocs.io/en/latest/production/authentication-methods.html#jwt
+## See https://zulip.readthedocs.io/en/latest/production/authentication-methods.html#json-web-tokens-jwt
 # JWT_AUTH_KEYS = {
 #     # Subdomain for which this JWT configuration will apply.
 #     "zulip": {
