@@ -76,7 +76,6 @@ from zerver.lib.streams import (
     channel_events_topic_name,
     check_channel_creation_permissions,
     check_stream_name_available,
-    check_zephyr_realm_invite_conditions,
     create_stream_if_needed,
     do_get_streams,
     filter_stream_authorization_for_adding_subscribers,
@@ -347,11 +346,7 @@ def update_stream_backend(
         default_stream_ids = get_default_stream_ids_for_realm(stream.realm_id)
         proposed_is_default_stream = stream.id in default_stream_ids
 
-    if stream.realm.is_zephyr_mirror_realm:
-        # In the Zephyr mirroring model, history is unconditionally
-        # not public to subscribers, even for public streams.
-        proposed_history_public_to_subscribers = False
-    elif history_public_to_subscribers is not None:
+    if history_public_to_subscribers is not None:
         proposed_history_public_to_subscribers = history_public_to_subscribers
     elif is_private is not None:
         # By default, private streams have protected history while for
@@ -370,11 +365,7 @@ def update_stream_backend(
 
     # Public streams must be public to subscribers.
     if not proposed_is_private and not proposed_history_public_to_subscribers:
-        if stream.realm.is_zephyr_mirror_realm:
-            # All Zephyr realm streams violate this rule.
-            pass
-        else:
-            raise JsonableError(_("Invalid parameters"))
+        raise JsonableError(_("Invalid parameters"))
 
     # Ensure that a stream cannot be both a default stream for new users and private
     if proposed_is_private and proposed_is_default_stream:
@@ -766,8 +757,6 @@ def create_channel(
     if len(subscribers) > 0 and not all(user_id == user_profile.id for user_id in subscribers):
         is_subscribing_other_users = True
 
-    check_zephyr_realm_invite_conditions(is_subscribing_other_users, realm, invite_only)
-
     check_channel_creation_permissions(
         user_profile,
         is_default_stream=is_default_stream,
@@ -976,9 +965,6 @@ def add_subscriptions_backend(
     # Newly created streams are also authorized for the creator
     streams = authorized_streams + created_streams
 
-    for stream in streams:
-        check_zephyr_realm_invite_conditions(is_subscribing_other_users, realm, stream.invite_only)
-
     if is_subscribing_other_users:
         subscribers = bulk_principals_to_user_profiles(principals, user_profile)
     else:
@@ -1133,7 +1119,7 @@ def send_user_subscribed_and_new_channel_notifications(
             )
 
     # Send an initial "channel created" notification to newly created channel events topic.
-    if not user_profile.realm.is_zephyr_mirror_realm and len(created_streams) > 0:
+    if len(created_streams) > 0:
         sender = get_system_bot(settings.NOTIFICATION_BOT, user_profile.realm_id)
         for stream in created_streams:
             with override_language(stream.realm.default_language):
@@ -1149,8 +1135,6 @@ def send_user_subscribed_and_new_channel_notifications(
                 )
                 new_channel_message = None
 
-                # Policy `public_protected_history` is missing here as those channels don't get
-                # channel creation notification.
                 if policy_key == "web_public":
                     new_channel_message = _(
                         "**Web-public** channel created by {user_name}. **Description:**"

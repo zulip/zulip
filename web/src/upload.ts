@@ -1,7 +1,7 @@
 import type {Meta} from "@uppy/core";
 import {Uppy} from "@uppy/core";
 import Tus, {type TusBody} from "@uppy/tus";
-import {getSafeFileId} from "@uppy/utils/lib/generateFileID";
+import {getSafeFileId} from "@uppy/utils";
 import $ from "jquery";
 import assert from "minimalistic-assert";
 import * as z from "zod/mini";

@@ -6,6 +6,7 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Any
 
+import werkzeug
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse, HttpResponseNotFound
 from django.template import loader
@@ -49,7 +50,7 @@ def add_api_url_context(
     context.update(zulip_default_context(request))
 
     if is_zilencer_endpoint:
-        context["api_url"] = settings.ZULIP_SERVICES_URL + "/api"
+        context["api_url"] = (settings.ZULIP_SERVICES_URL or "https://push.zulipchat.com") + "/api"
         return
 
     subdomain = get_subdomain(request)
@@ -90,7 +91,6 @@ sidebar_links = XPath("//a[@href=$url]")
 class MarkdownDirectoryView(ApiURLView):
     path_template = ""
     policies_view = False
-    help_view = False
     api_doc_view = False
 
     def __init__(self, **kwargs: Any) -> None:
@@ -103,29 +103,20 @@ class MarkdownDirectoryView(ApiURLView):
         self._post_render_callbacks.append(callback)
 
     def get_path(self, article: str) -> DocumentationArticle:
+        # We don't want to allow relative pathnames in `article`
+        # as they could introduce security vulnerabilities.
+        article = werkzeug.utils.secure_filename(article)
+
         http_status = 200
         if article == "":
             article = "index"
-        # Only help center has this article nested inside an include,
-        # after switching to the new help center, we should remove this
-        # elif block.
-        elif article == "include/sidebar_index":  # nocoverage.
-            pass
         elif article == "api-doc-template":
             # This markdown template shouldn't be accessed directly.
             article = "missing"
             http_status = 404
-        # Only help center allows nested paths in urls.py, once we
-        # remove that help center url declaration in urls.py after
-        # switching to the new help center, we should remove this elif
-        # block altogether since api docs and policies only allow slugs
-        # which cannot have nested paths.
-        elif "/" in article:  # nocoverage
-            article = "missing"
-            http_status = 404
         elif len(article) > 100 or not re.match(r"^[0-9a-zA-Z_-]+$", article):
-            article = "missing"
-            http_status = 404
+            article = "missing"  # nocoverage
+            http_status = 404  # nocoverage
 
         path = self.path_template % (article,)
         endpoint_name = None
@@ -165,7 +156,7 @@ class MarkdownDirectoryView(ApiURLView):
                         endpoint_path=None,
                         endpoint_method=None,
                     )
-            elif self.help_view or self.policies_view:
+            elif self.policies_view:
                 article = "missing"
                 http_status = 404
                 path = self.path_template % (article,)
@@ -199,17 +190,7 @@ class MarkdownDirectoryView(ApiURLView):
                 settings.DEPLOY_ROOT, "templates", documentation_article.article_path
             )
 
-        # The nocoverage blocks here are very temporary since this
-        # whole block will be removed once we switch to the new help
-        # center.
-        if self.help_view:  # nocoverage
-            context["page_is_help_center"] = True
-            context["doc_root"] = "/help/"
-            context["doc_root_title"] = "Help center"
-            sidebar_article = self.get_path("include/sidebar_index")
-            sidebar_index = sidebar_article.article_path
-            title_base = "Zulip help center"
-        elif self.policies_view:
+        if self.policies_view:
             context["page_is_policy_center"] = True
             context["doc_root"] = "/policies/"
             context["doc_root_title"] = "Terms and policies"

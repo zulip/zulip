@@ -89,8 +89,8 @@ export function setup_subscriptions_tab_hash(tab_key_value: string): void {
             browser_history.update("#channels/subscribed");
             break;
         }
-        case "not-subscribed": {
-            browser_history.update("#channels/notsubscribed");
+        case "available": {
+            browser_history.update("#channels/available");
             break;
         }
         default: {
@@ -170,10 +170,6 @@ export function update_stream_description(sub: StreamSubscription): void {
 function show_subscription_settings(sub: SettingsSubscription): void {
     const $edit_container = stream_settings_containers.get_edit_container(sub);
     stream_ui_updates.update_add_subscriptions_elements(sub);
-
-    if (!sub.render_subscribers) {
-        return;
-    }
 
     if (!stream_data.can_toggle_subscription(sub)) {
         stream_ui_updates.initialize_cant_subscribe_popover();

@@ -113,6 +113,7 @@ else:
         "runtornado",
         "--autoreload",
         "--immediate-reloads",
+        "--automated",
     ]
 
 manage_args = [f"--settings={settings_module}"]
@@ -186,14 +187,14 @@ def server_processes() -> list[list[str]]:
         return main_cmds
 
     other_cmds = [
-        ["./manage.py", "process_queue", "--all", *manage_args],
+        ["./manage.py", "process_queue", "--all", *manage_args, "--automated"],
         [
             "env",
             "PGHOST=127.0.0.1",  # Force password authentication using .pgpass
             "./puppet/zulip/files/postgresql/process_fts_updates",
             "--quiet",
         ],
-        ["./manage.py", "deliver_scheduled_messages"],
+        ["./manage.py", "deliver_scheduled_messages", "--automated"],
         [
             "./manage.py",
             "runtusd",
@@ -311,7 +312,7 @@ def run_help_center_dev_server(external_host: str) -> "subprocess.Popen[bytes]":
 async def help_center_middleware(
     request: web.Request, handler: Callable[[web.Request], Awaitable[web.StreamResponse]]
 ) -> web.StreamResponse:
-    if request.path.startswith("/starlight_help"):
+    if request.path.startswith("/help"):
         try:
             filename = request.match_info["filename"]
             name, ext = os.path.splitext(filename)
@@ -336,13 +337,13 @@ def setup_routes(
 ) -> None:
     if enable_help_center:
         # Order of adding the rules matters. aiohttp will stop at the first
-        # match, and we want `/starlight_help` to be matched before Django URIs.
+        # match, and we want `/help` to be matched before Django URIs.
         try:
-            app.router.add_static("/starlight_help", "starlight_help/dist")
+            app.router.add_static("/help", "starlight_help/dist")
         except ValueError:
             print("""Please run the build step for the help center before enabling it.
 The instructions for the build step can be found in the `./devtools`
-page. `/starlight_help` urls will give you an error until you complete the
+page. `/help` urls will give you an error until you complete the
 build step and rerun `run-dev`.""")
     elif enable_help_center_dev_server:
 
@@ -351,7 +352,7 @@ build step and rerun `run-dev`.""")
 
         app.add_routes(
             [
-                web.route(hdrs.METH_ANY, r"/{path:(starlight_help).*}", redirect_help),
+                web.route(hdrs.METH_ANY, r"/{path:(help).*}", redirect_help),
             ]
         )
     app.add_routes(

@@ -26,17 +26,27 @@ parser.add_argument(
     dest="show_relative_links",
     help="Disable relative links when using NavigationSteps component. Typically only set to true in case of the help center being hosted on zulip.com.",
 )
+
+parser.add_argument(
+    "--out-dir",
+    action="store",
+    dest="out_dir",
+    help="Output directory for the final build.",
+)
 args = parser.parse_args()
 
 
 def run() -> None:
-    subprocess.check_call(["./tools/convert-help-center-docs-to-mdx"])
     env = os.environ.copy()
     env["SUPPORT_EMAIL"] = parseaddr(settings.ZULIP_ADMINISTRATOR)[1]
     env["CORPORATE_ENABLED"] = str(settings.CORPORATE_ENABLED).lower()
     env["SHOW_RELATIVE_LINKS"] = str(args.show_relative_links).lower()
+    build_command = ["/usr/local/bin/corepack", "pnpm", "build"]
+    if args.out_dir:
+        build_command += ["--outDir", args.out_dir]
+
     subprocess.check_call(
-        ["/usr/local/bin/corepack", "pnpm", "build"],
+        build_command,
         cwd="starlight_help",
         env=env,
     )

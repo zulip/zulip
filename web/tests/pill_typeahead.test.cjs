@@ -135,7 +135,6 @@ const denmark = {
     stream_id: 1,
     name: "Denmark",
     subscribed: true,
-    render_subscribers: true,
 };
 const denmark_item = stream_item(denmark);
 

@@ -465,6 +465,17 @@ export function initialize_right_sidebar(): void {
     );
 }
 
+function get_header_rows_selectors(): string {
+    return (
+        // Views header.
+        "#left-sidebar-navigation-area:not(.hidden-by-filters) #views-label-container, " +
+        // DM Headers
+        "#direct-messages-section-header, " +
+        // All channel headers.
+        ".stream-list-section-container:not(.no-display) .stream-list-subsection-header"
+    );
+}
+
 function all_rows(): JQuery {
     // NOTE: This function is designed to be used for keyboard navigation purposes.
     // This function returns all the rows in the left sidebar.
@@ -474,12 +485,7 @@ function all_rows(): JQuery {
         ".top_left_row, " +
             // All DM and channel rows.
             ".bottom_left_row, " +
-            // Views header.
-            "#left-sidebar-navigation-area:not(.hidden-by-filters) #views-label-container, " +
-            // DM Headers
-            "#direct-messages-section-header, " +
-            // All channel headers.
-            ".stream-list-section-container:not(.no-display) .stream-list-subsection-header",
+            get_header_rows_selectors(),
     ).not(".hidden-by-filters");
     // Remove rows hidden due to being inactive or muted.
     const $inactive_or_muted_rows = $(
@@ -533,7 +539,8 @@ export function initialize_left_sidebar_cursor(): void {
                 if ($all_rows.length === 0) {
                     return undefined;
                 }
-                return $all_rows.first();
+                const $non_header_rows = $all_rows.not($(get_header_rows_selectors()));
+                return $non_header_rows.first();
             },
             next_key($key) {
                 const $all_rows = all_rows();
@@ -569,6 +576,7 @@ export function initialize_left_sidebar_cursor(): void {
 function actually_update_left_sidebar_for_search(): void {
     const search_value = ui_util.get_left_sidebar_search_term();
     const is_left_sidebar_search_active = search_value !== "";
+    left_sidebar_cursor.set_is_highlight_visible(is_left_sidebar_search_active);
 
     // Update left sidebar navigation area.
     update_expanded_views_for_search(search_value);

@@ -1,6 +1,7 @@
 import logging
 import time
 from abc import ABC, abstractmethod
+from ipaddress import IPv6Network, ip_network
 from typing import Optional, cast
 
 import orjson
@@ -138,8 +139,11 @@ class RateLimitedUser(RateLimitedObject):
 
 
 class RateLimitedIPAddr(RateLimitedObject):
-    def __init__(self, ip_addr: str, domain: str = "api_by_ip") -> None:
+    def __init__(
+        self, ip_addr: str, domain: str = "api_by_ip", ipv6_network_prefix: int = 64
+    ) -> None:
         self.ip_addr = ip_addr
+        self.ipv6_network_prefix = ipv6_network_prefix
         self.domain = domain
         if settings.RUNNING_INSIDE_TORNADO and domain in settings.RATE_LIMITING_DOMAINS_FOR_TORNADO:
             backend: type[RateLimiterBackend] | None = TornadoInMemoryRateLimiterBackend
@@ -149,8 +153,20 @@ class RateLimitedIPAddr(RateLimitedObject):
 
     @override
     def key(self) -> str:
-        # The angle brackets are important since IPv6 addresses contain :.
-        return f"{type(self).__name__}:<{self.ip_addr}>:{self.domain}"
+        if self.ip_addr != "tor-exit-node" and isinstance(
+            network := ip_network(self.ip_addr), IPv6Network
+        ):
+            # For IPv6 we use the network portion of that IPv6.
+            # This essentially tells us which bucket should this IPv6 belong to.
+            # For example:
+            # The network portion of 2001:0db8:ce1:12::8a2e:0370
+            # is 2001:db8:ce1:12::/64
+            ip_addr_key = str(network.supernet(new_prefix=self.ipv6_network_prefix))
+        else:
+            ip_addr_key = self.ip_addr
+
+        # The angle brackets are important since an IPv6 address contains :
+        return f"{type(self).__name__}:<{ip_addr_key}>:{self.domain}"
 
     @override
     def rules(self) -> list[tuple[int, int]]:

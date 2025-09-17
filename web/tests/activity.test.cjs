@@ -809,7 +809,6 @@ test("initialize", ({override, override_rewire}) => {
     activity.initialize();
     activity_ui.initialize({narrow_by_email() {}});
     payload.success({
-        zephyr_mirror_active: true,
         presences: {},
         msg: "",
         result: "success",
@@ -821,7 +820,6 @@ test("initialize", ({override, override_rewire}) => {
 
     assert.ok(scroll_handler_started);
     assert.ok(!activity.new_user_input);
-    assert.ok(!$("#zephyr-mirror-error").hasClass("show"));
     assert.equal(activity.compute_active_status(), "active");
 
     $(window).idle = (params) => {
@@ -834,7 +832,6 @@ test("initialize", ({override, override_rewire}) => {
     activity.initialize();
     activity_ui.initialize({narrow_by_email() {}});
     payload.success({
-        zephyr_mirror_active: false,
         presences: {},
         msg: "",
         result: "success",
@@ -842,7 +839,6 @@ test("initialize", ({override, override_rewire}) => {
         presence_last_update_id: -1,
     });
 
-    assert.ok($("#zephyr-mirror-error").hasClass("show"));
     assert.ok(!activity.new_user_input);
     assert.equal(activity.compute_active_status(), "idle");
 

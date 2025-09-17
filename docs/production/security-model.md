@@ -195,7 +195,7 @@ strength allowed is controlled by two settings in
   - Bots with the `can_forge_sender` permission can send messages that appear to have been sent by
     another user. They also have the ability to see the names of all
     channels, including private channels. This is important for implementing
-    integrations like the Jabber, IRC, and Zephyr mirrors.
+    integrations like the Jabber and IRC mirrors.
 
     These bots cannot be created by Zulip users, including
     organization owners. They can only be created on the command

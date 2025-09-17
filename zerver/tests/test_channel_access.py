@@ -85,17 +85,6 @@ class AccessStreamTest(ZulipTestCase):
         with self.assertRaisesRegex(JsonableError, "Invalid channel name 'new_private_stream'"):
             access_stream_by_name(sipbtest, stream.name)
 
-        # MIT realm users cannot access even public streams in their realm
-        with self.assertRaisesRegex(JsonableError, "Invalid channel ID"):
-            access_stream_by_id(sipbtest, mit_stream.id)
-        with self.assertRaisesRegex(JsonableError, "Invalid channel name 'mit_stream'"):
-            access_stream_by_name(sipbtest, mit_stream.name)
-
-        # But they can access streams they are subscribed to
-        self.subscribe_via_post(sipbtest, [mit_stream.name], subdomain="zephyr")
-        access_stream_by_id(sipbtest, mit_stream.id)
-        access_stream_by_name(sipbtest, mit_stream.name)
-
     def test_access_stream_allow_metadata_access_flag(self) -> None:
         """
         A comprehensive security test for the access_stream_by_* API functions.

@@ -1,0 +1,46 @@
+---
+title: Logging out
+---
+
+import {Steps, TabItem, Tabs} from "@astrojs/starlight/components";
+
+import FlattenedSteps from "../../components/FlattenedSteps.astro";
+import ZulipTip from "../../components/ZulipTip.astro";
+
+import MobileSwitchAccount from "./include/_MobileSwitchAccount.mdx";
+
+import GearIcon from "~icons/zulip-icon/gear";
+import MoreVerticalIcon from "~icons/zulip-icon/more-vertical";
+
+<Tabs>
+  <TabItem label="Desktop/Web">
+    <Steps>
+      1. Click the **gear** (<GearIcon />) icon in the top
+         right corner of the app.
+      1. Click **Log out**.
+    </Steps>
+  </TabItem>
+
+  <TabItem label="Mobile">
+    <FlattenedSteps>
+      <MobileSwitchAccount />
+
+      1. Tap the **ellipsis** (<MoreVerticalIcon />)
+         to the right of the Zulip organization you want to log out of.
+      1. Tap **Log out**.
+      1. Approve by tapping **Log out**.
+    </FlattenedSteps>
+  </TabItem>
+</Tabs>
+
+<ZulipTip>
+  Logging out doesn't affect any other organizations you may be logged in
+  to. To log out of all your Zulip organizations, repeat the steps above
+  for each one.
+</ZulipTip>
+
+## Related articles
+
+* [Logging in](/help/logging-in)
+* [Switching between organizations](/help/switching-between-organizations)
+* [Deactivate your account](/help/deactivate-your-account)

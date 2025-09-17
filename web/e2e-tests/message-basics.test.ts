@@ -329,10 +329,9 @@ async function test_stream_search_filters_stream_list(page: Page): Promise<void>
     // Enter the search box and test highlighted suggestion
     await page.click(".left-sidebar-search-input");
 
-    await page.waitForSelector("#views-label-container.highlighted_row", {visible: true});
-
+    // Selection is not highlighted until user wants to move the cursor.
+    await page.waitForSelector(".top_left_inbox.top_left_row.highlighted_row", {hidden: true});
     await arrow(page, "Down");
-
     await page.waitForSelector(".top_left_inbox.top_left_row.highlighted_row", {visible: true});
 
     await page.waitForSelector((await get_stream_li(page, "Verona")) + " .highlighted_row", {
@@ -416,6 +415,9 @@ async function test_users_search(page: Page): Promise<void> {
 
     // Enter the search box and test selected suggestion navigation
     await page.click(".user-list-filter");
+    // Selection is not highlighted until user wants to move the cursor.
+    await page.waitForSelector("#buddy-list-other-users .highlighted_user", {hidden: true});
+    await arrow(page, "Down");
     await page.waitForSelector("#buddy-list-other-users .highlighted_user", {visible: true});
     await assert_selected(page, "Desdemona");
     await assert_not_selected(page, "Cordelia, Lear's daughter");

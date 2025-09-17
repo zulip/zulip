@@ -170,24 +170,6 @@ https://bugzilla.mozilla.org/show_bug.cgi?id=1943053 -->
 
 <div id="alert-popup-container">
     <div id="popup_banners_wrapper" class="banner-wrapper alert-box">
-        <div class="alert alert_sidebar alert-error home-error-bar" id="zephyr-mirror-error">
-            <div class="exit"></div>
-            {# The below isn't tagged for translation
-            intentionally, because the feature is only used at
-            MIT. #}
-            <strong>Your Zephyr mirror is not working.</strong>
-            <span id="normal-zephyr-mirror-error-text">
-                We recommend that
-                you <a class="webathena_login">give Zulip the ability to mirror the messages for you via
-            Webathena</a>.  If you'd prefer, you can instead
-                <a href="/zephyr-mirror/" target="_blank" rel="noopener noreferrer">run the
-            Zephyr mirror script yourself</a> in a screen
-            session.
-            </span>
-            <span id="desktop-zephyr-mirror-error-text" class="notdisplayed">
-                To fix this, you'll need to use the web interface.
-            </span>
-        </div>
         <div class="alert alert_sidebar alert-error home-error-bar" id="home-error"></div>
         <div class="alert alert_sidebar" id="request-progress-status-banner">
             <div class="alert-zulip-logo">
@@ -239,7 +221,7 @@ https://bugzilla.mozilla.org/show_bug.cgi?id=1943053 -->
                     <div class="recent-view-load-more-container main-view-banner info notvisible">
                         <div class="last-fetched-message banner_content">{{ _('This view is still loading messages.') }}</div>
                         <button class="fetch-messages-button main-view-banner-action-button right_edge notvisible">
-                            <div class="loading-indicator"></div>
+                            <span class="loading-indicator"></span>
                             <span class="button-label">{{ _('Load more') }}</span>
                         </button>
                     </div>

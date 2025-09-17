@@ -86,7 +86,6 @@ from zerver.lib.typed_endpoint_validators import (
 from zerver.lib.upload import all_message_attachments
 from zerver.lib.url_encoding import append_url_query_string
 from zerver.lib.users import get_accounts_for_email
-from zerver.lib.zephyr import compute_mit_user_fullname
 from zerver.models import (
     Message,
     MultiuseInvite,
@@ -561,18 +560,6 @@ def registration_helper(
                 realm=realm,
             )
             request.session["authenticated_full_name"] = ldap_full_name
-            name_validated = True
-        elif realm is not None and realm.is_zephyr_mirror_realm:
-            # For MIT users, we can get an authoritative name from Hesiod.
-            # Technically we should check that this is actually an MIT
-            # realm, but we can cross that bridge if we ever get a non-MIT
-            # zephyr mirroring realm.
-            hesiod_name = compute_mit_user_fullname(email)
-            form = RegistrationForm(
-                initial={"full_name": hesiod_name if "@" not in hesiod_name else ""},
-                realm_creation=realm_creation,
-                realm=realm,
-            )
             name_validated = True
         elif prereg_user is not None and prereg_user.full_name:
             if prereg_user.full_name_validated:

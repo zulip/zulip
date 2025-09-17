@@ -7487,8 +7487,8 @@ class TestZulipLDAPUserPopulator(ZulipLDAPTestCase):
             self.perform_ldap_sync(self.example_user("hamlet"))
             fn.assert_not_called()
 
-    def test_too_short_name(self) -> None:
-        self.change_ldap_user_attr("hamlet", "cn", "a")
+    def test_empty_name(self) -> None:
+        self.change_ldap_user_attr("hamlet", "cn", "")
 
         with (
             self.assertRaises(ZulipLDAPError),
@@ -7496,7 +7496,7 @@ class TestZulipLDAPUserPopulator(ZulipLDAPTestCase):
         ):
             self.perform_ldap_sync(self.example_user("hamlet"))
         self.assertIn(
-            "DEBUG:django_auth_ldap:Failed to populate user hamlet: Name too short!",
+            "DEBUG:django_auth_ldap:Failed to populate user hamlet: Name must not be empty!",
             debug_log.output,
         )
 

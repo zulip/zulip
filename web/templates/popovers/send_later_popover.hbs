@@ -4,7 +4,7 @@
             <div role="group" class="enter_sends_choices" aria-label="{{t 'Enter to send choices' }}">
                 <label role="menuitemradio" class="enter_sends_choice" tabindex="0">
                     <input type="radio" class="enter_sends_choice_radio" name="enter_sends_choice" value="true"{{#if enter_sends_true }} checked{{/if}} />
-                    <div class="enter_sends_choice_text_container">
+                    <span class="enter_sends_choice_text_container">
                         <span class="enter_sends_major enter_sends_choice_text">
                             {{#tr}}
                                 Press <z-shortcut></z-shortcut> to send
@@ -17,11 +17,11 @@
                                 {{#*inline "z-shortcut"}}{{popover_hotkey_hints "Ctrl" "Enter"}}{{/inline}}
                             {{/tr}}
                         </span>
-                    </div>
+                    </span>
                 </label>
                 <label role="menuitemradio" class="enter_sends_choice" tabindex="0">
                     <input type="radio" class="enter_sends_choice_radio" name="enter_sends_choice" value="false"{{#unless enter_sends_true }} checked{{/unless}} />
-                    <div class="enter_sends_choice_text_container">
+                    <span class="enter_sends_choice_text_container">
                         <span class="enter_sends_major enter_sends_choice_text">
                             {{#tr}}
                                 Press <z-shortcut></z-shortcut> to send
@@ -34,7 +34,7 @@
                                 {{#*inline "z-shortcut"}}{{popover_hotkey_hints "Enter"}}{{/inline}}
                             {{/tr}}
                         </span>
-                    </div>
+                    </span>
                 </label>
             </div>
         </li>

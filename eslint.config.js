@@ -1,10 +1,14 @@
+// @ts-check
+
 import {FlatCompat} from "@eslint/eslintrc";
 import js from "@eslint/js";
 import confusingBrowserGlobals from "confusing-browser-globals";
+import {defineConfig} from "eslint/config";
 import prettier from "eslint-config-prettier";
 import {configs as astroConfigs} from "eslint-plugin-astro";
 import formatjs from "eslint-plugin-formatjs";
 import importPlugin from "eslint-plugin-import";
+import * as mdx from "eslint-plugin-mdx";
 import noJquery from "eslint-plugin-no-jquery";
 import unicorn from "eslint-plugin-unicorn";
 import globals from "globals";
@@ -12,10 +16,7 @@ import tseslint from "typescript-eslint";
 
 const compat = new FlatCompat({baseDirectory: import.meta.dirname});
 
-export default tseslint.config(
-    {
-        files: ["tools/check-openapi"],
-    },
+export default defineConfig(
     {
         // This is intended for generated files and vendored third-party files.
         // For our source code, instead of adding files here, consider using
@@ -31,11 +32,13 @@ export default tseslint.config(
     },
     js.configs.recommended,
     importPlugin.flatConfigs.recommended,
-    compat.extends("plugin:no-jquery/recommended", "plugin:no-jquery/deprecated"),
+    compat.config(noJquery.configs.recommended),
+    compat.config(noJquery.configs.deprecated),
     unicorn.configs.recommended,
     prettier,
     tseslint.configs.strictTypeChecked,
     tseslint.configs.stylisticTypeChecked,
+    mdx.flat,
     {
         files: ["**/*.cts", "**/*.mts", "**/*.ts"],
         extends: [importPlugin.flatConfigs.typescript],
@@ -185,6 +188,7 @@ export default tseslint.config(
         ignores: ["**/*.cts", "**/*.mts", "**/*.ts"],
         extends: [tseslint.configs.disableTypeChecked],
         rules: {
+            "@typescript-eslint/consistent-type-imports": "off",
             "@typescript-eslint/explicit-function-return-type": "off",
             "@typescript-eslint/no-require-imports": "off",
             "consistent-return": "error",
@@ -197,6 +201,16 @@ export default tseslint.config(
         files: ["**/*.cjs"],
         languageOptions: {
             sourceType: "commonjs",
+        },
+    },
+    {
+        files: ["**/*.mdx"],
+        rules: {
+            "@typescript-eslint/no-unused-vars": "off",
+            "comma-spacing": "error",
+            "import/extensions": "off",
+            "import/unambiguous": "off",
+            quotes: "error",
         },
     },
     {
@@ -308,7 +322,7 @@ export default tseslint.config(
             "unicorn/prefer-string-replace-all": "off",
         },
     },
-    ...astroConfigs.recommended,
+    astroConfigs.recommended,
     {
         files: ["starlight_help/src/components/ZulipNote.astro"],
         rules: {

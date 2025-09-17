@@ -337,7 +337,6 @@
     grid-template-areas: "message-content composebox-buttons";
     border-radius: 4px;
     border: 1px solid var(--color-message-content-container-border);
-    transition: border-color 0.2s ease;
 
     &:has(.new_message_textarea:focus) {
         border-color: var(--color-message-content-container-border-focus);
@@ -1089,7 +1088,6 @@ textarea.new_message_textarea {
     flex: 1 1 0;
     border: 1px solid var(--color-compose-recipient-box-border-color);
     border-radius: 4px;
-    transition: border-color 0.2s ease;
     background: var(--color-compose-recipient-box-background-color);
 
     &:hover {
@@ -1237,13 +1235,22 @@ textarea.new_message_textarea {
     width: 100%;
 }
 
+#compose-direct-recipient .pill-container .pill {
+    /* This is necessary to avoid an otherwise unstyled
+       flash of outline around pills when focus shifts out
+       of the recipient row and transitions are in effect. */
+    outline-color: transparent;
+}
+
 /* We want transitions to run only on user interactions with
    the mouse, once the compose box is open. Any keyboard
    interactions (e.g., Shift-Tabbing from the compose textarea
    to the topic box) show instant changes, so we don't need to
-   accommodate them here. */
-#compose.compose-box-open:hover {
-    .low-attention-recipient-row {
+   accommodate them here, which we prevent by applying the
+   transitions only when focus isn't within the recipient row,
+   or hasn't recently been within the topic box. */
+#compose.compose-box-open {
+    .low-attention-recipient-row:not(.recently-focused, :focus-within) {
         #compose_select_recipient_widget,
         #compose_recipient_box,
         #compose-direct-recipient .pill-container {
@@ -1310,6 +1317,11 @@ textarea.new_message_textarea {
            outline on them in the low-attention state. */
         .pill {
             outline: 1px solid var(--color-outline-low-attention-input-pill);
+            /* We offset the outline so that pills do not appear to touch,
+               especially in dark mode where the outline color is otherwise
+               the same as the pill color (the opacity makes it brighter
+               when so offset, too). */
+            outline-offset: -1px;
         }
 
         &:hover:not(.disabled) {

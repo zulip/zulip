@@ -55,6 +55,20 @@ class zulip::app_frontend_once {
     minute => '0',
     manage => 'enqueue_digest_emails',
   }
+  # Most deploys will re-run this for all streams, daily; large
+  # deploys may set this to a number >= 25 to only update streams with
+  # recent potential changes.
+  $update_subscriber_count_incremental = zulipconf('application_server', 'update_subscriber_count_incremental', '')
+  if $update_subscriber_count_incremental != '' {
+    $update_subscriber_count_arg = " --since ${update_subscriber_count_incremental}"
+  } else {
+    $update_subscriber_count_arg = ''
+  }
+  zulip::cron { 'update_subscriber_counts':
+    hour   => '6',
+    minute => '0',
+    manage => "update_subscriber_counts${update_subscriber_count_arg}"
+  }
   zulip::cron { 'clearsessions':
     hour   => '22',
     minute => '22',

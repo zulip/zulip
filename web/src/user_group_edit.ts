@@ -4,7 +4,7 @@ import assert from "minimalistic-assert";
 import type * as tippy from "tippy.js";
 import * as z from "zod/mini";
 
-import render_confirm_delete_user from "../templates/confirm_dialog/confirm_delete_user.hbs";
+import render_confirm_deactivate_user_group from "../templates/confirm_dialog/confirm_deactivate_user_group.hbs";
 import render_confirm_join_group_direct_member from "../templates/confirm_dialog/confirm_join_group_direct_member.hbs";
 import render_modal_banner from "../templates/modal_banner/modal_banner.hbs";
 import render_settings_checkbox from "../templates/settings/settings_checkbox.hbs";
@@ -157,7 +157,7 @@ function update_add_members_elements(group: UserGroup): void {
         ".edit_members_for_user_group .add_members_container",
     );
 
-    if (current_user.is_guest || realm.realm_is_zephyr_mirror_realm) {
+    if (current_user.is_guest) {
         // For guest users, we just hide the add_members feature.
         $add_members_container.hide();
         return;
@@ -2103,7 +2103,7 @@ export function initialize(): void {
             }
 
             const group_name = user_groups.get_display_group_name(user_group.name);
-            const html_body = render_confirm_delete_user({
+            const html_body = render_confirm_deactivate_user_group({
                 group_name,
             });
 

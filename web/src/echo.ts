@@ -19,7 +19,7 @@ import * as message_list_data_cache from "./message_list_data_cache.ts";
 import * as message_lists from "./message_lists.ts";
 import * as message_live_update from "./message_live_update.ts";
 import * as message_store from "./message_store.ts";
-import type {DisplayRecipientUser, Message, RawMessage} from "./message_store.ts";
+import type {DisplayRecipientUser, Message, MessageReaction, RawMessage} from "./message_store.ts";
 import * as message_util from "./message_util.ts";
 import * as people from "./people.ts";
 import * as pm_list from "./pm_list.ts";
@@ -84,7 +84,7 @@ type LocalMessage = MessageRequestObject & {
     raw_content: string;
     flags: string[];
     is_me_message: boolean;
-    content_type: string;
+    content_type: "text/html";
     sender_email: string;
     sender_full_name: string;
     avatar_url?: string | null | undefined;
@@ -94,6 +94,7 @@ type LocalMessage = MessageRequestObject & {
     resend: boolean;
     id: number;
     topic_links: TopicLink[];
+    reactions: MessageReaction[];
 } & (
         | (StreamMessageObject & {display_recipient?: string})
         | (PrivateMessageObject & {display_recipient?: DisplayRecipientUser[]})
@@ -260,7 +261,7 @@ export function insert_local_message(
 ): Message {
     // Shallow clone of message request object that is turned into something suitable
     // for zulip.js:add_message
-    // Keep this in sync with changes to compose.create_message_object
+    // Keep this in sync with changes to compose.send_message
     const raw_content = message_request.content;
     const topic = message_request.topic;
 
@@ -279,6 +280,7 @@ export function insert_local_message(
         resend: false,
         is_me_message: false,
         topic_links: topic ? markdown.get_topic_links(topic) : [],
+        reactions: [],
     };
 
     local_message.display_recipient = build_display_recipient(local_message);

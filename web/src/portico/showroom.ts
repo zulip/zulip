@@ -170,7 +170,7 @@ const alert_banners: Record<string, AlertBanner> = {
     "insecure-desktop-app": {
         process: "insecure-desktop-app",
         intent: "danger",
-        label: "Zulip desktop is not updating automatically. Please upgrade for security updates and other improvements.",
+        label: "Zulip Desktop is not updating automatically. Please upgrade for security updates and other improvements.",
         buttons: [
             {
                 attention: "quiet",
