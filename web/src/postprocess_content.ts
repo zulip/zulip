@@ -53,30 +53,30 @@ export function postprocess_content(html: string): string {
         }
 
         if (elt.querySelector("img") || elt.querySelector("video")) {
-            // Rewrite the legacy .message_inline_image class, whose name would add
-            // confusion when Zulip supports inline images via standard Markdown.
-            // We further adjust this class below for when the element contains a
-            // video.
-            elt.parentElement?.classList.replace(
-                "message_inline_image",
-                "message-media-preview-image",
-            );
             // We want a class to refer to media links
             elt.classList.add("media-anchor-element");
-            // Add a class to the video, if it exists, including
-            // the .media-image-element class for properly treating
-            // video thumbnails
+
+            // Replace the legacy .message_inline_image class, whose
+            // name would add confusion when Zulip supports inline
+            // images via standard Markdown, with dedicated classes
+            // for video and image previews.
             if (elt.querySelector("video")) {
-                // We use a different class name to distinguish videos from images
                 elt.parentElement?.classList.replace(
-                    "message-media-preview-image",
+                    "message_inline_image",
                     "message-media-preview-video",
                 );
                 elt
                     .querySelector("video")
                     ?.classList.add("media-video-element", "media-image-element");
+            } else {
+                elt.parentElement?.classList.replace(
+                    "message_inline_image",
+                    "message-media-preview-image",
+                );
             }
-            // Add a class to the image, if it exists
+
+            // This code path adds the media-image-element class to
+            // both image preview elements and video thumbnails.
             if (elt.querySelector("img")) {
                 elt.querySelector("img")?.classList.add("media-image-element");
             }
