@@ -13,6 +13,9 @@ const {initialize_user_settings} = zrequire("user_settings");
 const user_settings = {web_font_size_px: 16};
 initialize_user_settings({user_settings});
 
+// Care should be taken to present real-world cases here and
+// throughout, rather than contrived examples that serve
+// only to satisfy 100% test coverage.
 run_test("postprocess_content", () => {
     assert.equal(
         postprocess_content(
@@ -21,10 +24,7 @@ run_test("postprocess_content", () => {
                 '<a href="http://localhost:NNNN">invalid</a> ' +
                 '<a href="javascript:alert(1)">unsafe</a> ' +
                 '<a href="/#fragment" target="_blank">fragment</a>' +
-                '<div class="message_inline_image">' +
-                '<a href="http://zulip.zulipdev.com/user_uploads/w/ha/tever/inline.png" title="inline image">upload</a> ' +
-                '<a role="button">button</a> ' +
-                "</div>" +
+                "<a>missing href</a>" +
                 '<div class="message_inline_image message_inline_video">' +
                 '<a href="http://zulip.zulipdev.com/user_uploads/w/ha/tever/inline.mp4">' +
                 '<video src="http://zulip.zulipdev.com/user_uploads/w/ha/tever/inline.mp4"></video>' +
@@ -50,11 +50,8 @@ run_test("postprocess_content", () => {
             "<a>invalid</a> " +
             "<a>unsafe</a> " +
             '<a href="/#fragment" title="http://zulip.zulipdev.com/#fragment">fragment</a>' +
+            "<a>missing href</a>" +
             '<div class="message-thumbnail-gallery">' +
-            '<div class="message_inline_image">' +
-            '<a href="http://zulip.zulipdev.com/user_uploads/w/ha/tever/inline.png" target="_blank" rel="noopener noreferrer" aria-label="inline image">upload</a> ' +
-            '<a role="button">button</a> ' +
-            "</div>" +
             '<div class="message_inline_image message_inline_video">' +
             '<a href="http://zulip.zulipdev.com/user_uploads/w/ha/tever/inline.mp4" target="_blank" rel="noopener noreferrer" class="media-anchor-element">' +
             '<video src="http://zulip.zulipdev.com/user_uploads/w/ha/tever/inline.mp4" class="media-video-element media-image-element"></video>' +
