@@ -170,6 +170,7 @@ export default defineConfig({
                         "switching-between-organizations",
                         "import-your-settings",
                         "review-your-settings",
+                        "protect-your-account",
                         "deactivate-your-account",
                     ],
                 },
