@@ -103,7 +103,7 @@ Use commas in whole sentences where it is required. You can use these instructio
 - Filter - **Suodata**
 - Full member - **Täysivaltainen jäsen**
 - Host - **Isäntä**
-- Help Center - **Tukikeskus**
+- Help center - **Tukikeskus**
 - ID - **Tunnus**
 - Integraatio - **Integraatio**
 - Interactive - **Interaktiivinen**
