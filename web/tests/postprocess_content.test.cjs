@@ -45,8 +45,8 @@ run_test("postprocess_content", () => {
                 "</div>" +
                 "</div>",
         ),
-        '<a href="http://example.com" target="_blank" rel="noopener noreferrer" title="http://example.com/">good</a> ' +
-            '<a href="http://zulip.zulipdev.com/user_uploads/w/ha/tever/file.png" target="_blank" rel="noopener noreferrer" title="translated: Download file.png">upload</a> ' +
+        '<a href="http://example.com" target="_blank" rel="noopener noreferrer">good</a> ' +
+            '<a href="http://zulip.zulipdev.com/user_uploads/w/ha/tever/file.png" target="_blank" rel="noopener noreferrer">upload</a> ' +
             "<a>invalid</a> " +
             "<a>unsafe</a> " +
             '<a href="/#fragment" title="http://zulip.zulipdev.com/#fragment">fragment</a>' +
@@ -67,10 +67,10 @@ run_test("postprocess_content", () => {
             "</div>" +
             "</div>" +
             '<div class="message_embed">' +
-            '<a class="message_embed_image" href="https://example.com/about" style="background-image: url(&quot;https://example.com/preview.jpeg&quot;)" target="_blank" rel="noopener noreferrer" title="https://example.com/about"></a>' +
+            '<a class="message_embed_image" href="https://example.com/about" style="background-image: url(&quot;https://example.com/preview.jpeg&quot;)" target="_blank" rel="noopener noreferrer"></a>' +
             '<div class="data-container">' +
             '<div class="message_embed_title">' +
-            '<a href="https://example.com/about" target="_blank" rel="noopener noreferrer" class="message-embed-title-link" title="https://example.com/about">About us</a>' +
+            '<a href="https://example.com/about" target="_blank" rel="noopener noreferrer" class="message-embed-title-link">About us</a>' +
             "</div>" +
             '<div class="message_embed_description">All about us.</div>' +
             "</div>" +

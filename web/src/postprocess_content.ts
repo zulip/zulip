@@ -191,10 +191,12 @@ export function postprocess_content(html: string): string {
                 title = url.toString();
                 legacy_title = href;
             }
-            elt.setAttribute(
-                "title",
-                ["", legacy_title].includes(elt.title) ? title : `${title}\n${elt.title}`,
-            );
+            if (!elt.hasAttribute("target")) {
+                elt.setAttribute(
+                    "title",
+                    ["", legacy_title].includes(elt.title) ? title : `${title}\n${elt.title}`,
+                );
+            }
         }
     }
 
