@@ -142,7 +142,7 @@ class TutorialTests(ZulipTestCase):
                 "`apps`, `profile`, `theme`, "
                 "`channels`, `topics`, `message formatting`, `keyboard shortcuts`.\n\n"
                 "Check out our [Getting started guide](/help/getting-started-with-zulip), "
-                "or browse the [Help center](/help/) to learn more!"
+                "or browse the [help center](/help/) to learn more!"
             )
             self.assertEqual(most_recent_message(user).content, expected_response)
 
@@ -161,7 +161,7 @@ class TutorialTests(ZulipTestCase):
                 "`apps`, `profile`, `theme`, "
                 "`channels`, `topics`, `message formatting`, `keyboard shortcuts`.\n\n"
                 "Check out our [Getting started guide](/help/getting-started-with-zulip), "
-                "or browse the [Help center](/help/) to learn more!"
+                "or browse the [help center](/help/) to learn more!"
             )
             message = most_recent_message(user)
             self.assertEqual(message.content, expected_response)

@@ -680,7 +680,7 @@ html_rules: list["Rule"] = [
     },
     {
         "pattern": r"link=\"help/",
-        "description": "Relative links to Help Center should start with /help/",
+        "description": "Relative links to help center should start with /help/",
         "good_lines": ['link="/help/foo"'],
         "bad_lines": ['link="help/foo"'],
     },

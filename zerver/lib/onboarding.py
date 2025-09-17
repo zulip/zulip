@@ -263,7 +263,7 @@ times, and more.
 Here are a few messages I understand: {bot_commands}
 
 Check out our [Getting started guide](/help/getting-started-with-zulip),
-or browse the [Help center](/help/) to learn more!
+or browse the [help center](/help/) to learn more!
 """).format(bot_commands=bot_commands(no_help_command=True))
     else:
         return _("""
