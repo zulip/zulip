@@ -8579,7 +8579,7 @@ paths:
         Fetch the message edit history of a previously edited message.
 
         Note that edit history may be disabled in some organizations; see the
-        [Zulip Help Center documentation on editing messages][edit-settings].
+        [Zulip help center documentation on editing messages][edit-settings].
 
         [edit-settings]: /help/view-a-messages-edit-history
       parameters:
@@ -10079,7 +10079,7 @@ paths:
 
         This API corresponds to the
         [delete a message completely][delete-completely] feature documented in
-        the Zulip Help Center.
+        the Zulip help center.
 
         [delete-completely]: /help/delete-a-message#delete-a-message-completely
       x-requires-administrator: true

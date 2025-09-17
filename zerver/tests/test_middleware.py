@@ -100,7 +100,7 @@ class OpenGraphTest(ZulipTestCase):
     def test_nonexistent_page(self) -> None:
         self.check_title_and_description(
             "/api/not-a-real-page",
-            # Probably we should make this "Zulip Help Center"
+            # Probably we should make this "Zulip help center"
             "No such article. | Zulip API documentation",
             [
                 "No such article.",
