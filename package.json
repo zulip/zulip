@@ -74,6 +74,7 @@
     "postcss-preset-env": "^11.1.2",
     "postcss-simple-vars": "^7.0.0",
     "prom-client": "^15.1.0",
+    "re2js": "^2.8.0",
     "regenerator-runtime": "^0.14.0",
     "shebang-loader": "^0.0.1",
     "simplebar": "^6.2.7",

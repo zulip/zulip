@@ -48,4 +48,4 @@ API_FEATURE_LEVEL = 503
 #   historical commits sharing the same major version, in which case a
 #   minor version bump suffices.
 
-PROVISION_VERSION = (381, 1)  # bumped 2026-05-14 to upgrade pnpm
+PROVISION_VERSION = (381, 2)  # bumped 2026-05-18 to add re2js
