@@ -219,12 +219,15 @@ export function dispatch_normal_event(event) {
             switch (event.op) {
                 case "add":
                     navigation_views.add_navigation_view(event.navigation_view);
+                    left_sidebar_navigation_area.update_sidebar_for_navigation_views();
                     break;
                 case "update":
                     navigation_views.update_navigation_view(event.fragment, event.data);
+                    left_sidebar_navigation_area.update_sidebar_for_navigation_views();
                     break;
                 case "remove":
                     navigation_views.remove_navigation_view(event.fragment);
+                    left_sidebar_navigation_area.update_sidebar_for_navigation_views();
                     break;
             }
             break;
