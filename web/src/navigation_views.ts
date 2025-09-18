@@ -1,4 +1,5 @@
 import * as blueslip from "./blueslip.ts";
+import * as channel from "./channel.ts";
 import {$t} from "./i18n.ts";
 import type {StateData} from "./state_data.ts";
 import {user_settings} from "./user_settings.ts";
@@ -80,8 +81,8 @@ export const built_in_views_meta_data: Record<string, BuiltInViewBasicMetadata> 
         unread_count_type: "normal-count",
         supports_masked_unread: false,
         hidden_for_spectators: true,
-        menu_icon_class: "",
-        menu_aria_label: "",
+        menu_icon_class: "mentions-sidebar-menu-icon",
+        menu_aria_label: $t({defaultMessage: "Mentions options"}),
         home_view_code: "",
         prioritize_in_condensed_view: true,
     },
@@ -96,8 +97,8 @@ export const built_in_views_meta_data: Record<string, BuiltInViewBasicMetadata> 
         unread_count_type: "",
         supports_masked_unread: false,
         hidden_for_spectators: true,
-        menu_icon_class: "",
-        menu_aria_label: "",
+        menu_icon_class: "reactions-sidebar-menu-icon",
+        menu_aria_label: $t({defaultMessage: "Reactions options"}),
         home_view_code: "",
         prioritize_in_condensed_view: false,
     },
@@ -144,8 +145,8 @@ export const built_in_views_meta_data: Record<string, BuiltInViewBasicMetadata> 
         unread_count_type: "quiet-count",
         supports_masked_unread: false,
         hidden_for_spectators: true,
-        menu_icon_class: "",
-        menu_aria_label: "",
+        menu_icon_class: "scheduled-messages-sidebar-menu-icon",
+        menu_aria_label: $t({defaultMessage: "Scheduled messages options"}),
         home_view_code: "",
         prioritize_in_condensed_view: false,
     },
@@ -160,8 +161,8 @@ export const built_in_views_meta_data: Record<string, BuiltInViewBasicMetadata> 
         unread_count_type: "quiet-count",
         supports_masked_unread: false,
         hidden_for_spectators: true,
-        menu_icon_class: "",
-        menu_aria_label: "",
+        menu_icon_class: "reminders-sidebar-menu-icon",
+        menu_aria_label: $t({defaultMessage: "Reminders options"}),
         home_view_code: "",
         prioritize_in_condensed_view: false,
     },
@@ -195,8 +196,34 @@ export function remove_navigation_view(fragment: string): void {
     navigation_views_dict.delete(fragment);
 }
 
+export function delete_navigation_view(
+    fragment: string,
+    success_callback?: () => void,
+    error_callback?: () => void,
+): void {
+    void channel.del({
+        url: `/json/navigation_views/${encodeURIComponent(fragment)}`,
+        success() {
+            remove_navigation_view(fragment);
+            success_callback?.();
+        },
+        error() {
+            blueslip.error("Failed to delete navigation view", {fragment});
+            error_callback?.();
+        },
+    });
+}
+
 export function get_navigation_view_by_fragment(fragment: string): NavigationView | undefined {
     return navigation_views_dict.get(fragment);
+}
+
+export function is_view_pinned(fragment: string): boolean {
+    return (
+        get_navigation_view_by_fragment(fragment)?.is_pinned ??
+        Object.values(built_in_views_meta_data).find((v) => v.fragment === fragment)?.is_pinned ??
+        false
+    );
 }
 
 export type BuiltInViewMetadata = BuiltInViewBasicMetadata & {
@@ -229,8 +256,61 @@ export function get_all_navigation_views(): NavigationView[] {
     return [...built_in_views, ...custom_views];
 }
 
+export function set_view_pinned_status(
+    fragment: string,
+    is_pinned: boolean,
+    success_callback?: () => void,
+    error_callback?: () => void,
+): void {
+    const existing_view = get_navigation_view_by_fragment(fragment);
+
+    if (existing_view) {
+        void channel.patch({
+            url: `/json/navigation_views/${encodeURIComponent(fragment)}`,
+            data: {is_pinned},
+            success() {
+                existing_view.is_pinned = is_pinned;
+                update_navigation_view(fragment, {is_pinned});
+                success_callback?.();
+            },
+            error() {
+                blueslip.error("Failed to update navigation view", {fragment, is_pinned});
+                error_callback?.();
+            },
+        });
+    } else {
+        void channel.post({
+            url: "/json/navigation_views",
+            data: {
+                fragment,
+                is_pinned,
+            },
+            success() {
+                const new_view: NavigationView = {
+                    fragment,
+                    is_pinned,
+                    name: null,
+                };
+                add_navigation_view(new_view);
+                success_callback?.();
+            },
+            error() {
+                blueslip.error("Failed to create navigation view", {fragment, is_pinned});
+                error_callback?.();
+            },
+        });
+    }
+}
+
 export const initialize = (params: StateData["navigation_views"]): void => {
     navigation_views_dict = new Map<string, NavigationView>(
-        params.navigation_views.map((view) => [view.fragment, view]),
+        params.navigation_views.map((view) => [
+            view.fragment,
+            {
+                fragment: view.fragment,
+                is_pinned: view.is_pinned,
+                name: view.name ?? null,
+            },
+        ]),
     );
 };

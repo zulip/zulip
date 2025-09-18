@@ -1,6 +1,9 @@
 import $ from "jquery";
 import _ from "lodash";
 
+import render_left_sidebar_expanded_view_items_list from "../templates/left_sidebar_expanded_view_items_list.hbs";
+import render_left_sidebar_primary_condensed_view_item from "../templates/left_sidebar_primary_condensed_view_item.hbs";
+
 import * as drafts from "./drafts.ts";
 import type {Filter} from "./filter.ts";
 import {localstorage} from "./localstorage.ts";
@@ -17,11 +20,16 @@ import * as unread from "./unread.ts";
 let last_mention_count = 0;
 const ls_key = "left_sidebar_views_state";
 const ls = localstorage();
+export let current_active_fragment: string | undefined;
 
 const STATES = {
     EXPANDED: "expanded",
     CONDENSED: "condensed",
 };
+
+export function is_condensed(): boolean {
+    return ls.get(ls_key) === STATES.CONDENSED;
+}
 
 export function restore_views_state(): void {
     if (page_params.is_spectator) {
@@ -91,7 +99,20 @@ export let select_top_left_corner_item = function (narrow_to_activate: string): 
     $(".top-left-active-filter").removeClass("top-left-active-filter");
     if (narrow_to_activate !== "") {
         $(narrow_to_activate).addClass("top-left-active-filter");
+        const view_match_key = /\.top_left_(.+)/.exec(narrow_to_activate);
+
+        let fragment;
+        if (view_match_key?.[1]) {
+            const css_class_suffix = view_match_key[1];
+            if (css_class_suffix in navigation_views.built_in_views_meta_data) {
+                fragment = navigation_views.built_in_views_meta_data[css_class_suffix]!.fragment;
+            }
+        }
+        current_active_fragment = fragment;
+    } else {
+        current_active_fragment = undefined;
     }
+    update_sidebar_for_navigation_views();
 };
 
 export function rewire_select_top_left_corner_item(
@@ -248,6 +269,11 @@ export function handle_home_view_changed(new_home_view: string): void {
 
 export function get_built_in_primary_condensed_views(): navigation_views.BuiltInViewMetadata[] {
     function score(view: navigation_views.BuiltInViewMetadata): number {
+        // Show views that are both pinned and prioritized for condensed view
+        if (view.is_pinned && view.prioritize_in_condensed_view) {
+            return 2;
+        }
+        // Fallback to just prioritized views if not enough pinned+prioritized views
         if (view.prioritize_in_condensed_view) {
             return 1;
         }
@@ -293,6 +319,54 @@ export function get_built_in_popover_condensed_views(): navigation_views.BuiltIn
 
 export function get_built_in_views(): navigation_views.BuiltInViewMetadata[] {
     return navigation_views.get_built_in_views();
+}
+
+export function get_built_for_expanded_views(): navigation_views.BuiltInViewMetadata[] {
+    const all_views = get_built_in_views();
+    return all_views.filter((view) => {
+        if (view.fragment === "scheduled") {
+            const scheduled_message_count = scheduled_messages.get_count();
+            return scheduled_message_count > 0;
+        }
+        if (view.fragment === "reminders") {
+            const reminders_count = message_reminder.get_count();
+            return reminders_count > 0;
+        }
+        return true;
+    });
+}
+
+export function update_sidebar_for_navigation_views(): void {
+    const primary_condensed_views = get_built_in_primary_condensed_views();
+    const active_fragment = current_active_fragment;
+
+    const built_for_expanded_views = get_built_for_expanded_views();
+    const expanded_views = built_for_expanded_views.filter(
+        (view) => view.is_pinned || view.fragment === active_fragment,
+    );
+    const active_view = expanded_views.find((view) => view.fragment === active_fragment);
+    const has_unpinned_views = built_for_expanded_views.length > expanded_views.length;
+    const should_hide_menu = !is_condensed() && !has_unpinned_views;
+
+    const expanded_views_html = render_left_sidebar_expanded_view_items_list({
+        expanded_views,
+    });
+    $("#left-sidebar-navigation-list").html(expanded_views_html);
+
+    const condensed_views_html = primary_condensed_views
+        .map((view) => render_left_sidebar_primary_condensed_view_item(view))
+        .join("");
+    $("#left-sidebar-navigation-list-condensed").html(condensed_views_html);
+
+    $(".left-sidebar-navigation-menu-icon").toggleClass("hide", should_hide_menu);
+
+    if (active_fragment && active_view) {
+        $(".top-left-active-filter").removeClass("top-left-active-filter");
+
+        if (active_view) {
+            $(`.top_left_${active_view.css_class_suffix}`).addClass("top-left-active-filter");
+        }
+    }
 }
 
 export function initialize(): void {
