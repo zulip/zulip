@@ -198,6 +198,12 @@
     --search-pill-label-min-width: 2.5em; /* 35px at 14px/em */
 
     /*
+    This is the space for the searchbar's search icon, and the left padding
+    for the search suggestions so they match up with searchbar content.
+    */
+    --search-left-padding: 35px;
+
+    /*
     Since #navbar_alerts_wrapper can take variable height depending upon
     window width / language, we sync its height in navbar_alerts.js
     */
