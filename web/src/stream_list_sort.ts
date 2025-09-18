@@ -218,8 +218,19 @@ export function sort_groups(
         }
     }
 
-    const folder_sections_sorted = [...folder_sections.values()];
-    folder_sections_sorted.sort((section_a, section_b) => section_a.order! - section_b.order!);
+    function sort_by_order(folder_sections: StreamListSection[]): StreamListSection[] {
+        return folder_sections.toSorted(
+            (section_a, section_b) => section_a.order! - section_b.order!,
+        );
+    }
+
+    // Demote folders where all channels are muted or inactive.
+    const regular_folder_sections = sort_by_order(
+        [...folder_sections.values()].filter((section) => section.streams.length > 0),
+    );
+    const demoted_folder_sections = sort_by_order(
+        [...folder_sections.values()].filter((section) => section.streams.length === 0),
+    );
 
     if (
         pinned_section.streams.length > 0 ||
@@ -231,7 +242,12 @@ export function sort_groups(
     }
 
     // This needs to have the same ordering as the order they're displayed in the sidebar.
-    const new_sections = [pinned_section, ...folder_sections_sorted, normal_section];
+    const new_sections = [
+        pinned_section,
+        ...regular_folder_sections,
+        normal_section,
+        ...demoted_folder_sections,
+    ];
 
     for (const section of new_sections) {
         section.streams.sort(compare_function);
