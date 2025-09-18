@@ -706,7 +706,7 @@ class TestCreateStreams(ZulipTestCase):
         result = self.subscribe_via_post(user, subscriptions, subdomain="zulip")
         self.assert_json_success(result)
         stream = get_stream("new_stream", realm)
-        if permission_config.default_group_name == "stream_creator_or_nobody":
+        if permission_config.default_group_name == "channel_creator":
             self.assertEqual(list(getattr(stream, setting_name).direct_members.all()), [user])
             self.assertEqual(
                 list(getattr(stream, setting_name).direct_subgroups.all()),

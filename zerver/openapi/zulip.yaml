@@ -27977,7 +27977,7 @@ components:
           description: |
             Name of the default system group for the setting.
 
-            For some channel settings, this can also be `stream_creator_or_nobody`.
+            For some channel settings, this can also be `channel_creator`.
             In that case:
 
             - If the channel's [`creator_id`][channel-response] is not `null`, default for the
@@ -27985,6 +27985,9 @@ components:
               the only member.
             - If the channel's [`creator_id`][channel-response] is `null`, default for the setting
               is `role:nobody` system group.
+
+            **Changes**: In Zulip 12.0 (feature level 427), renamed
+            `stream_creator_or_nobody` value to `channel_creator`.
 
             [channel-response]: /api/get-stream-by-id#response
         default_for_system_groups:

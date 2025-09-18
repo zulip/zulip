@@ -694,7 +694,7 @@ def access_requested_group_permissions(
             group_settings_map[setting_name] = get_stream_permission_default_group(
                 setting_name, system_groups_name_dict, creator=user_profile
             )
-            if permission_configuration.default_group_name == "stream_creator_or_nobody":
+            if permission_configuration.default_group_name == "channel_creator":
                 # Default for some settings like "can_administer_channel_group"
                 # is anonymous group with stream creator.
                 anonymous_group_membership[group_settings_map[setting_name].id] = (

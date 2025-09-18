@@ -171,7 +171,7 @@ class Stream(models.Model):
         "can_administer_channel_group": GroupPermissionSetting(
             allow_nobody_group=True,
             allow_everyone_group=False,
-            default_group_name="stream_creator_or_nobody",
+            default_group_name="channel_creator",
         ),
         "can_delete_any_message_group": GroupPermissionSetting(
             allow_nobody_group=True,

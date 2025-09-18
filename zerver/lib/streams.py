@@ -234,7 +234,7 @@ def get_stream_permission_default_group(
     creator: UserProfile | None = None,
 ) -> UserGroup:
     setting_default_name = Stream.stream_permission_group_settings[setting_name].default_group_name
-    if setting_default_name == "stream_creator_or_nobody":
+    if setting_default_name == "channel_creator":
         if creator:
             default_group = UserGroup(
                 realm=creator.realm,

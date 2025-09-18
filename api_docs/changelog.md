@@ -20,6 +20,12 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 12.0
 
+**Feature level 427**
+
+* [`POST /register`](/api/register-queue): `stream_creator_or_nobody`
+  value for `default_group_name` field in `server_supported_permission_settings`
+  object is renamed to `channel_creator`.
+
 **Feature level 426**
 
 * [`POST /register`](/api/register-queue): Removed the
