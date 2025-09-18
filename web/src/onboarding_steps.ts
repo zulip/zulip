@@ -4,7 +4,6 @@ import type * as z from "zod/mini";
 
 import render_navigation_tour_video_modal from "../templates/navigation_tour_video_modal.hbs";
 
-import * as blueslip from "./blueslip.ts";
 import * as channel from "./channel.ts";
 import * as compose_recipient from "./compose_recipient.ts";
 import * as dialog_widget from "./dialog_widget.ts";
@@ -18,10 +17,17 @@ export type OnboardingStep = z.output<typeof onboarding_step_schema>;
 
 export const ONE_TIME_NOTICES_TO_DISPLAY = new Set<string>();
 
+const MAX_RETRIES = 5;
+
 export function post_onboarding_step_as_read(
     onboarding_step_name: string,
     schedule_navigation_tour_video_reminder_delay?: number,
+    attempt = 1,
 ): void {
+    if (attempt > MAX_RETRIES) {
+        return;
+    }
+
     const data: {onboarding_step: string; schedule_navigation_tour_video_reminder_delay?: number} =
         {
             onboarding_step: onboarding_step_name,
@@ -35,13 +41,14 @@ export function post_onboarding_step_as_read(
         url: "/json/users/me/onboarding_steps",
         data,
         error(err) {
-            if (err.readyState !== 0) {
-                blueslip.error(`Failed to mark ${onboarding_step_name} as read.`, {
-                    readyState: err.readyState,
-                    status: err.status,
-                    body: err.responseText,
-                });
-            }
+            const retry_delay_secs = util.get_retry_backoff_seconds(err, attempt);
+            setTimeout(() => {
+                post_onboarding_step_as_read(
+                    onboarding_step_name,
+                    schedule_navigation_tour_video_reminder_delay,
+                    attempt + 1,
+                );
+            }, retry_delay_secs * 1000);
         },
     });
 }
