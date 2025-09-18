@@ -133,7 +133,8 @@ of the failure, you can just rerun the script. For more information, see
 
 - `--self-signed-cert`: With this option, the Zulip installer
   generates a self-signed SSL certificate for the server. This isn't
-  suitable for production use, but may be convenient for testing.
+  suitable for production use (unless your server is [behind a reverse
+  proxy][reverse-proxy]), but may be convenient for testing.
 
 For advanced installer options, see our [deployment options][doc-deployment-options]
 documentation.
@@ -151,6 +152,7 @@ If you are importing data, stop here and return to the import instructions for
 [doc-ssl-manual]: ssl-certificates.md#manual-install
 [doc-deployment-options]: deployment.md#advanced-installer-options
 [zulip-backups]: export-and-import.md#backups
+[reverse-proxy]: reverse-proxies.md
 [slack-import]: https://zulip.com/help/import-from-slack
 [mattermost-import]: https://zulip.com/help/import-from-mattermost
 [rocketchat-import]: https://zulip.com/help/import-from-rocketchat
