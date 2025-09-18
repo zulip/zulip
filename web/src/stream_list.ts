@@ -379,6 +379,9 @@ export function build_stream_list(force_rerender: boolean): void {
                 section.id !== "pinned-streams",
             );
         }
+        if (!is_empty && section.streams.length === 0) {
+            collapsed_sections.add(section.id);
+        }
     }
 
     // Rerendering can moving channels between folders and change heading unread counts.
@@ -489,7 +492,7 @@ function toggle_section_collapse($container: JQuery): void {
     maybe_hide_topic_bracket(section_id);
 }
 
-function set_sections_states(): void {
+export let set_sections_states = function (): void {
     if (ui_util.get_left_sidebar_search_term() === "") {
         // Restore the collapsed state of sections.
         for (const section_id of collapsed_sections) {
@@ -504,6 +507,10 @@ function set_sections_states(): void {
     for (const section_id of sections_showing_inactive_or_muted) {
         $(`#stream-list-${section_id}-container`).toggleClass("showing-inactive-or-muted", true);
     }
+};
+
+export function rewire_set_sections_states(value: typeof set_sections_states): void {
+    set_sections_states = value;
 }
 
 export function get_stream_li(stream_id: number): JQuery | undefined {
