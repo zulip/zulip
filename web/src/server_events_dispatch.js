@@ -219,12 +219,15 @@ export function dispatch_normal_event(event) {
             switch (event.op) {
                 case "add":
                     navigation_views.add_navigation_view(event.navigation_view);
+                    left_sidebar_navigation_area.update_sidebar_for_navigation_views();
                     break;
                 case "update":
-                    navigation_views.update_navigation_view(event.fragment, event.data);
+                    navigation_views.update_navigation_view_by_fragment(event.fragment, event.data);
+                    left_sidebar_navigation_area.update_sidebar_for_navigation_views();
                     break;
                 case "remove":
                     navigation_views.remove_navigation_view(event.fragment);
+                    left_sidebar_navigation_area.update_sidebar_for_navigation_views();
                     break;
             }
             break;
@@ -665,6 +668,7 @@ export function dispatch_normal_event(event) {
                     scheduled_messages_feed_ui.update_schedule_message_indicator();
                     scheduled_messages_overlay_ui.rerender();
                     left_sidebar_navigation_area.update_scheduled_messages_row();
+                    left_sidebar_navigation_area.update_sidebar_for_navigation_views();
                     break;
                 }
                 case "remove": {
@@ -677,12 +681,14 @@ export function dispatch_normal_event(event) {
                         event.scheduled_message_id,
                     );
                     left_sidebar_navigation_area.update_scheduled_messages_row();
+                    left_sidebar_navigation_area.update_sidebar_for_navigation_views();
                     break;
                 }
                 case "update": {
                     scheduled_messages.update_scheduled_message(event.scheduled_message);
                     scheduled_messages_overlay_ui.rerender();
                     left_sidebar_navigation_area.update_scheduled_messages_row();
+                    left_sidebar_navigation_area.update_sidebar_for_navigation_views();
                     break;
                 }
                 // No default
@@ -695,12 +701,14 @@ export function dispatch_normal_event(event) {
                     message_reminder.add_reminders(event.reminders);
                     reminders_overlay_ui.rerender();
                     left_sidebar_navigation_area.update_reminders_row();
+                    left_sidebar_navigation_area.update_sidebar_for_navigation_views();
                     break;
                 }
                 case "remove": {
                     message_reminder.remove_reminder(event.reminder_id);
                     reminders_overlay_ui.remove_reminder_id(event.reminder_id);
                     left_sidebar_navigation_area.update_reminders_row();
+                    left_sidebar_navigation_area.update_sidebar_for_navigation_views();
                     break;
                 }
                 // No default
