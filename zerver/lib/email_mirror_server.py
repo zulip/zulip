@@ -174,6 +174,12 @@ class PermissionDroppingUnthreadedController(UnthreadedController):  # nocoverag
         if os.geteuid() == 0:
             assert self.user_id is not None
             assert self.group_id is not None
+            # We may have a logfile owned by root, from before we
+            # fixed it to be owned by zulip; chown it if it exists, so
+            # we don't fail below.
+            if os.path.exists(settings.EMAIL_LOG_PATH):
+                os.chown(settings.EMAIL_MIRROR_LOG_PATH, self.user_id, self.group_id)
+
             logger.info("Dropping privileges to uid %d / gid %d", self.user_id, self.group_id)
             os.setgid(self.group_id)
             os.setuid(self.user_id)
