@@ -224,7 +224,7 @@
         border: none;
         grid-template:
             "search-icon search-pills search-close" var(--search-box-height)
-            ". search-pills ." auto / auto minmax(0, 1fr)
+            ". search-pills ." auto / var(--search-left-padding) minmax(0, 1fr)
             1.75em; /* 28px at 16px em */
         align-content: center;
         cursor: pointer;
@@ -232,8 +232,7 @@
         /* Override styles for .pill-container that aren't relevant for search. */
         &.pill-container {
             background: inherit;
-            /* Maintain only a column gap. */
-            gap: 0 0.3125em; /* 5px at 16px em */
+            gap: 0;
             /* Override padding. */
             padding: 0;
         }
@@ -382,7 +381,7 @@
     }
 
     .typeahead-menu .simplebar-content > li > a {
-        padding: 3px 40px;
+        padding: 3px var(--search-left-padding);
         /* Override white-space: nowrap from zulip.css */
         white-space: normal;
 
