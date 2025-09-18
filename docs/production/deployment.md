@@ -219,6 +219,12 @@ reliability, see our [dedicated PostgreSQL documentation][postgresql].
 [zulipchat-puppet]: https://github.com/zulip/zulip/tree/main/puppet/kandra/manifests
 [postgresql]: postgresql.md
 
+## Deploying behind a reverse proxy
+
+See our dedicated page on [reverse proxies][reverse-proxies].
+
+[reverse-proxies]: reverse-proxies.md
+
 ## Using an alternate port
 
 If you'd like your Zulip server to use an HTTPS port other than 443, you can
