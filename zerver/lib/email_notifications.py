@@ -57,7 +57,7 @@ def relative_to_full_url(fragment: lxml.html.HtmlElement, base_url: str) -> None
     # 2: We also need to update the title attribute in the narrow links which
     # is not possible with `make_links_absolute()`.
     for link_info in fragment.iterlinks():
-        elem, attrib, link, pos = link_info
+        elem, attrib, link, _pos = link_info
         match = re.match(r"/?#narrow/", link)
         if match is not None:
             link = re.sub(r"^/?#narrow/", base_url + "/#narrow/", link)

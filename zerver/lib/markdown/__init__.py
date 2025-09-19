@@ -586,7 +586,7 @@ class BacktickInlineProcessor(markdown.inlinepatterns.BacktickInlineProcessor):
         # just replace the text to not strip the group because it
         # makes it impossible to put leading/trailing whitespace in
         # an inline code span.
-        el, start, end = ret = super().handleMatch(m, data)
+        el, _start, _end = ret = super().handleMatch(m, data)
         if el is not None and m.group(3):
             assert isinstance(el, Element)
             # upstream's code here is: m.group(3).strip() rather than m.group(3).
@@ -966,7 +966,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         found_url: ResultWithFamily[tuple[str, str | None]],
     ) -> None:
         info = self.get_inlining_information(root, found_url)
-        (url, text) = found_url.result
+        (url, _text) = found_url.result
         actual_url = self.get_actual_image_url(url)
         self.add_a(
             info["parent"],
@@ -985,7 +985,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         yt_image: str,
     ) -> None:
         info = self.get_inlining_information(root, found_url)
-        (url, text) = found_url.result
+        (url, _text) = found_url.result
         yt_id = self.youtube_id(url)
         self.add_a(
             info["parent"],

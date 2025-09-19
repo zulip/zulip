@@ -72,10 +72,10 @@ class HandlePushNotificationTest(PushNotificationTestCase):
         }
         with (
             self.mock_fcm() as (
-                mock_fcm_app,
+                _mock_fcm_app,
                 mock_fcm_messaging,
             ),
-            self.mock_apns() as (apns_context, send_notification),
+            self.mock_apns() as (_apns_context, send_notification),
             mock.patch(
                 "corporate.lib.stripe.RemoteRealmBillingSession.current_count_for_billed_licenses",
                 return_value=10,
@@ -240,10 +240,10 @@ class HandlePushNotificationTest(PushNotificationTestCase):
         }
         with (
             self.mock_fcm() as (
-                mock_fcm_app,
+                _mock_fcm_app,
                 mock_fcm_messaging,
             ),
-            self.mock_apns() as (apns_context, send_notification),
+            self.mock_apns() as (_apns_context, send_notification),
             mock.patch(
                 "corporate.lib.stripe.RemoteRealmBillingSession.current_count_for_billed_licenses",
                 return_value=10,

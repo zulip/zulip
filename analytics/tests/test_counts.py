@@ -988,7 +988,7 @@ class TestCountStats(AnalyticsTestCase):
 
         realm = {"realm": self.second_realm}
         stream1, recipient_stream1 = self.create_stream_with_recipient()
-        stream2, recipient_stream2 = self.create_stream_with_recipient(**realm)
+        _stream2, recipient_stream2 = self.create_stream_with_recipient(**realm)
 
         # To be included
         self.create_message(human1, recipient_stream1)
@@ -1747,7 +1747,7 @@ class TestLoggingCountStats(AnalyticsTestCase):
 
         user1 = self.create_user()
         user2 = self.create_user()
-        stream, recipient = self.create_stream_with_recipient()
+        stream, _recipient = self.create_stream_with_recipient()
         self.subscribe(user1, stream.name)
         self.subscribe(user2, stream.name)
 

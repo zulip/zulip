@@ -1338,7 +1338,7 @@ class TestAPNs(PushNotificationTestCase):
     def test_success(self) -> None:
         self.setup_apns_tokens()
         with (
-            self.mock_apns() as (apns_context, send_notification),
+            self.mock_apns() as (_apns_context, send_notification),
             self.assertLogs("zerver.lib.push_notifications", level="INFO") as logger,
         ):
             send_notification.return_value.is_successful = True
@@ -1352,7 +1352,7 @@ class TestAPNs(PushNotificationTestCase):
     def test_http_retry_eventually_fails(self) -> None:
         self.setup_apns_tokens()
         with (
-            self.mock_apns() as (apns_context, send_notification),
+            self.mock_apns() as (_apns_context, send_notification),
             self.assertLogs("zerver.lib.push_notifications", level="INFO") as logger,
         ):
             send_notification.side_effect = aioapns.exceptions.ConnectionError()
@@ -1365,7 +1365,7 @@ class TestAPNs(PushNotificationTestCase):
     def test_other_exception(self) -> None:
         self.setup_apns_tokens()
         with (
-            self.mock_apns() as (apns_context, send_notification),
+            self.mock_apns() as (_apns_context, send_notification),
             self.assertLogs("zerver.lib.push_notifications", level="INFO") as logger,
         ):
             send_notification.side_effect = IOError
@@ -1378,7 +1378,7 @@ class TestAPNs(PushNotificationTestCase):
     def test_internal_server_error(self) -> None:
         self.setup_apns_tokens()
         with (
-            self.mock_apns() as (apns_context, send_notification),
+            self.mock_apns() as (_apns_context, send_notification),
             self.assertLogs("zerver.lib.push_notifications", level="INFO") as logger,
         ):
             send_notification.return_value.is_successful = False
@@ -1398,7 +1398,7 @@ class TestAPNs(PushNotificationTestCase):
             server=self.server,
         )
         with (
-            self.mock_apns() as (apns_context, send_notification),
+            self.mock_apns() as (_apns_context, send_notification),
             self.assertLogs("zerver.lib.push_notifications", level="INFO") as logger,
         ):
             send_notification.return_value.is_successful = True
