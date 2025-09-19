@@ -71,7 +71,7 @@ class UserMessageNotificationsData:
         stream_wildcard_mention_in_followed_topic_user_ids: set[int],
         muted_sender_user_ids: set[int],
         all_bot_user_ids: set[int],
-        push_device_registered_user_ids: set[int],
+        push_device_registered_user_ids: set[int] | None,
     ) -> "UserMessageNotificationsData":
         if user_id in all_bot_user_ids:
             # Don't send any notifications to bots
@@ -127,7 +127,17 @@ class UserMessageNotificationsData:
             and "stream_wildcard_mentioned" in flags
         )
 
-        push_device_registered = user_id in push_device_registered_user_ids
+        # TODO/compatibility: `push_device_registered_user_ids` is None when
+        # `process_message_event`/`process_message_update_event` handles events
+        # prior to the introduction of `push_device_registered_user_ids` field in the events.
+        # We hardcode `push_device_registered` to True as the check is meant for newer events.
+        #
+        # Remove the `if` block when one can no longer directly upgrade from 11.x to main.
+        if push_device_registered_user_ids is None:
+            push_device_registered = True
+        else:
+            push_device_registered = user_id in push_device_registered_user_ids
+
         dm_push_notify = (
             push_device_registered
             and user_id not in dm_mention_push_disabled_user_ids

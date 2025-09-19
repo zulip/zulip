@@ -1122,12 +1122,21 @@ def process_message_event(
     )
     muted_sender_user_ids = set(event_template.get("muted_sender_user_ids", []))
     all_bot_user_ids = set(event_template.get("all_bot_user_ids", []))
-    push_device_registered_user_ids = set(event_template.get("push_device_registered_user_ids", []))
     disable_external_notifications = event_template.get("disable_external_notifications", False)
     user_ids_without_access_to_sender = set(
         event_template.get("user_ids_without_access_to_sender", [])
     )
     realm_host = event_template.get("realm_host", "")
+
+    # TODO/compatibility: We need to set `push_device_registered_user_ids` to None
+    # for message events prior to the introduction of `push_device_registered_user_ids`
+    # field in the event.
+    #
+    # Simplify this block to `push_device_registered_user_ids = set(event_template.get("push_device_registered_user_ids", []))`
+    # when one can no longer directly upgrade from 11.x to main.
+    push_device_registered_user_ids = event_template.get("push_device_registered_user_ids", None)
+    if push_device_registered_user_ids is not None:
+        push_device_registered_user_ids = set(push_device_registered_user_ids)
 
     wide_dict: dict[str, Any] = event_template["message_dict"]
 
@@ -1403,12 +1412,21 @@ def process_message_update_event(
     )
     muted_sender_user_ids = set(event_template.pop("muted_sender_user_ids", []))
     all_bot_user_ids = set(event_template.pop("all_bot_user_ids", []))
-    push_device_registered_user_ids = set(event_template.pop("push_device_registered_user_ids", []))
     disable_external_notifications = event_template.pop("disable_external_notifications", False)
     online_push_user_ids = set(event_template.pop("online_push_user_ids", []))
     stream_name = event_template.get("stream_name")
     message_id = event_template["message_id"]
     rendering_only_update = event_template["rendering_only"]
+
+    # TODO/compatibility: We need to set `push_device_registered_user_ids` to None
+    # for update_message events prior to the introduction of `push_device_registered_user_ids`
+    # field in the event.
+    #
+    # Simplify this block to `push_device_registered_user_ids = set(event_template.pop("push_device_registered_user_ids", []))`
+    # when one can no longer directly upgrade from 11.x to main.
+    push_device_registered_user_ids = event_template.pop("push_device_registered_user_ids", None)
+    if push_device_registered_user_ids is not None:
+        push_device_registered_user_ids = set(push_device_registered_user_ids)
 
     for user_data in users:
         user_profile_id = user_data["id"]
