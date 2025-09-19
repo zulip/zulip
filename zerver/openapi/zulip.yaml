@@ -25702,8 +25702,8 @@ components:
             The ID of the user who created this channel.
 
             A `null` value means the channel has no recorded creator, which is often
-            because the channel is very old, or because it was created via a data
-            import tool or [management command][management-commands].
+            because the channel is very old, was created during realm creation or
+            because it was created via a data import tool or [management command][management-commands].
 
             **Changes**: New in Zulip 9.0 (feature level 254).
 
@@ -26755,8 +26755,8 @@ components:
             The ID of the user who created this channel.
 
             A `null` value means the channel has no recorded creator, which is often
-            because the channel is very old, or because it was created via a data
-            import tool or [management command][management-commands].
+            because the channel is very old, was created during realm creation or
+            because it was created via a data import tool or [management command][management-commands].
 
             **Changes**: New in Zulip 9.0 (feature level 254).
 
