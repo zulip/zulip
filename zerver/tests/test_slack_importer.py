@@ -1040,9 +1040,9 @@ class SlackImporter(ZulipTestCase):
             slack_recipient_name_to_zulip_recipient_id,
             added_channels,
             added_mpims,
-            dm_members,
+            _dm_members,
             avatar_list,
-            em,
+            _em,
         ) = slack_workspace_to_realm(
             "testdomain", realm_id, user_list, "test-realm", "./random_path", {}
         )
@@ -1528,7 +1528,7 @@ class SlackImporter(ZulipTestCase):
             zerver_usermessage,
             attachment,
             uploads,
-            reaction,
+            _reaction,
         ) = channel_message_to_zerver_message(
             1,
             user_data,
@@ -1749,7 +1749,7 @@ class SlackImporter(ZulipTestCase):
             zerver_usermessage,
             attachment,
             uploads,
-            reaction,
+            _reaction,
         ) = channel_message_to_zerver_message(
             1,
             user_data,
@@ -1841,7 +1841,7 @@ by Pieter
 
         with self.assertLogs(level="INFO"):
             # Hacky: We should include a zerver_userprofile, not the empty []
-            test_reactions, uploads, zerver_attachment = convert_slack_workspace_messages(
+            test_reactions, uploads, _zerver_attachment = convert_slack_workspace_messages(
                 "./random_path",
                 user_list,
                 2,

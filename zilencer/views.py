@@ -652,7 +652,7 @@ def unregister_remote_push_device(
 
     update_remote_realm_last_request_datetime_helper(request, server, realm_uuid, user_uuid)
 
-    (num_deleted, ignored) = (
+    (num_deleted, _deletions) = (
         get_remote_push_device_token(token=token, kind=token_kind, server=server)
         .filter(user_identity.filter_q())
         .delete()

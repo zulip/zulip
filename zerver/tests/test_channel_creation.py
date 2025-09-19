@@ -668,12 +668,12 @@ class TestCreateStreams(ZulipTestCase):
             name="role:nobody", realm_for_sharding=realm, is_system_group=True
         )
 
-        stream, created = create_stream_if_needed(
+        stream, _created = create_stream_if_needed(
             realm, "new stream without acting user", invite_only=True
         )
         self.assertEqual(stream.can_administer_channel_group.id, nobody_system_group.id)
 
-        stream, created = create_stream_if_needed(
+        stream, _created = create_stream_if_needed(
             realm, "new stream with acting user", acting_user=user
         )
         self.assertCountEqual(stream.can_administer_channel_group.direct_members.all(), [user])

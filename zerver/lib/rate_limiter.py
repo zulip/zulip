@@ -407,7 +407,7 @@ class RedisRateLimiterBackend(RateLimiterBackend):
     def is_ratelimited(cls, entity_key: str, rules: list[tuple[int, int]]) -> tuple[bool, float]:
         """Returns a tuple of (rate_limited, time_till_free)"""
         assert rules
-        list_key, set_key, blocking_key = cls.get_keys(entity_key)
+        list_key, _set_key, blocking_key = cls.get_keys(entity_key)
 
         # Go through the rules from shortest to longest,
         # seeing if this user has violated any of them. First

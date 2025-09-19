@@ -50,7 +50,7 @@ def get_email_gateway_message_string_from_address(address: str) -> str:
 
 
 def get_channel_email_token(stream: Stream, *, creator: UserProfile, sender: UserProfile) -> str:
-    channel_email_address, ignored = ChannelEmailAddress.objects.get_or_create(
+    channel_email_address, _created = ChannelEmailAddress.objects.get_or_create(
         realm=stream.realm,
         channel=stream,
         creator=creator,

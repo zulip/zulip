@@ -1241,7 +1241,6 @@ def do_update_message(
     send_event_on_commit(user_profile.realm, event, users_to_be_notified)
 
     resolved_topic_message_id = None
-    resolved_topic_message_deleted = False
     # We calculate the users for which the resolved-topic notification
     # should be marked as unread using the topic visibility policy and
     # the `resolved_topic_notice_auto_read_policy` user setting.
@@ -1258,7 +1257,7 @@ def do_update_message(
         and not message_edit_request.is_content_edited
         and not message_edit_request.is_stream_edited
     ):
-        resolved_topic_message_id, resolved_topic_message_deleted = (
+        resolved_topic_message_id, _resolved_topic_message_deleted = (
             maybe_send_resolve_topic_notifications(
                 user_profile=user_profile,
                 message_edit_request=message_edit_request,

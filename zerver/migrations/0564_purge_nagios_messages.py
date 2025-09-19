@@ -13,7 +13,7 @@ def purge_nagios_messages(apps: StateApps, schema_editor: BaseDatabaseSchemaEdit
 
     with connection.cursor() as cursor:
         cursor.execute("SELECT MIN(id), MAX(id) FROM zerver_message")
-        (min_id, max_id) = cursor.fetchone()
+        (min_id, _max_id) = cursor.fetchone()
         if min_id is None:
             return
 

@@ -276,16 +276,16 @@ class Command(ZulipBaseCommand):
             property=stat.property, end_time=last_end_time, state=FillState.DONE
         )
 
-        website, created = Client.objects.get_or_create(name="website")
-        old_desktop, created = Client.objects.get_or_create(name="desktop app Linux 0.3.7")
-        android, created = Client.objects.get_or_create(name="ZulipAndroid")
-        iOS, created = Client.objects.get_or_create(name="ZulipiOS")
-        react_native, created = Client.objects.get_or_create(name="ZulipMobile")
-        flutter, created = Client.objects.get_or_create(name="ZulipFlutter")
-        API, created = Client.objects.get_or_create(name="API: Python")
-        irc_mirror, created = Client.objects.get_or_create(name="irc_mirror")
-        unused, created = Client.objects.get_or_create(name="unused")
-        long_webhook, created = Client.objects.get_or_create(name="ZulipLooooooooooongNameWebhook")
+        website, _created = Client.objects.get_or_create(name="website")
+        old_desktop, _created = Client.objects.get_or_create(name="desktop app Linux 0.3.7")
+        android, _created = Client.objects.get_or_create(name="ZulipAndroid")
+        iOS, _created = Client.objects.get_or_create(name="ZulipiOS")
+        react_native, _created = Client.objects.get_or_create(name="ZulipMobile")
+        flutter, _created = Client.objects.get_or_create(name="ZulipFlutter")
+        API, _created = Client.objects.get_or_create(name="API: Python")
+        irc_mirror, _created = Client.objects.get_or_create(name="irc_mirror")
+        unused, _created = Client.objects.get_or_create(name="unused")
+        long_webhook, _created = Client.objects.get_or_create(name="ZulipLooooooooooongNameWebhook")
 
         stat = COUNT_STATS["messages_sent:client:day"]
         user_data = {

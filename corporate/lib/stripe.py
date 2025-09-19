@@ -4134,12 +4134,12 @@ class RealmBillingSession(BillingSession):
         if stripe_customer_id is not None:
             # Support requests do not set any stripe billing information.
             assert self.support_session is False
-            customer, created = Customer.objects.update_or_create(
+            customer, _created = Customer.objects.update_or_create(
                 realm=self.realm, defaults={"stripe_customer_id": stripe_customer_id}
             )
             return customer
         else:
-            customer, created = Customer.objects.update_or_create(
+            customer, _created = Customer.objects.update_or_create(
                 realm=self.realm, defaults=defaults
             )
             return customer
