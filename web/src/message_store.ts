@@ -2,6 +2,7 @@ import _ from "lodash";
 import * as z from "zod/mini";
 
 import * as blueslip from "./blueslip.ts";
+import type {Reminder} from "./message_reminder.ts";
 import * as people from "./people.ts";
 import {topic_link_schema} from "./types.ts";
 import type {UserStatusEmojiInfo} from "./user_status.ts";
@@ -176,6 +177,7 @@ export type Message = (
     local_edit_timestamp?: number; // Used for edited messages
 
     notification_sent?: boolean; // Used in message_notifications
+    reminders?: Reminder[] | undefined; // Used in `message_list_view.ts`
 } & (
         | {
               type: "private";

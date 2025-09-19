@@ -109,7 +109,16 @@
         "edited message   controls . time"
         ".      message   .        . .   "
         ".      more      .        . .   "
-        ".      reactions .        . .   ";
+        ".      reactions .        . .   "
+        ".      reminders .        . .   ";
+
+    &:has(.message-reminders) {
+        .message_reactions {
+            margin-bottom: calc(
+                var(--message-box-markdown-aligned-vertical-space) / 2
+            );
+        }
+    }
 
     &.content_edit_mode {
         cursor: default;
@@ -203,6 +212,16 @@
         gap: 4px;
     }
 
+    .message-reminders {
+        grid-area: reminders;
+        font-style: italic;
+        color: hsl(0deg 0% 53%);
+
+        .message-reminder {
+            margin-bottom: 0.1875em; /* 3px at 16px/1em */
+        }
+    }
+
     .message_edit {
         grid-area: message;
         /* Align self to start, rather than baseline, so the baseline
@@ -274,7 +293,8 @@
             "avatar sender    controls . time"
             "avatar message   .        . .   "
             ".      more      .        . .   "
-            ".      reactions .        . .   ";
+            ".      reactions .        . .   "
+            ".      reminders .        . .   ";
 
         .message_edit {
             /* No top margin when there's a sender row */
@@ -287,7 +307,8 @@
                 "avatar sender    controls . time"
                 "avatar sender    .        . .   "
                 ".      more      .        . .   "
-                ".      reactions .        . .   ";
+                ".      reactions .        . .   "
+                ".      reminders .        . .   ";
             grid-template-rows:
                 var(--message-box-vertical-margin) var(
                     --message-box-avatar-height
