@@ -529,6 +529,100 @@ and other things
             expected_body="Hello! Here is a message I am forwarding to this list.\nI hope you enjoy reading it!\n-Glen",
         )
 
+    def test_receive_stream_email_long_subject_success(self) -> None:
+        user_profile = self.example_user("hamlet")
+        self.login_user(user_profile)
+        self.subscribe(user_profile, "Denmark")
+        stream = get_stream("Denmark", user_profile.realm)
+
+        email_token = get_channel_email_token(stream, creator=user_profile, sender=user_profile)
+        stream_to_address = encode_email_address(stream.name, email_token)
+
+        long_subject = "This is a very long email subject that exceeds the sixty character limit for Zulip topics"
+        self.assertGreater(len(long_subject), 60)
+
+        incoming_valid_message = EmailMessage()
+        incoming_valid_message.set_content("TestStreamEmailMessages body")
+        incoming_valid_message["Subject"] = long_subject
+        incoming_valid_message["From"] = self.example_email("hamlet")
+        incoming_valid_message["To"] = stream_to_address
+        incoming_valid_message["Reply-to"] = self.example_email("othello")
+
+        process_message(incoming_valid_message)
+
+        # Hamlet is subscribed to this stream so should see the email message from Othello.
+        message = most_recent_message(user_profile)
+
+        self.assertEqual(len(message.topic_name()), 60)
+        self.assertTrue(message.topic_name().endswith("..."))
+        expected_content = f"Subject: {long_subject}\nTestStreamEmailMessages body"
+        self.assertEqual(message.content, expected_content)
+
+    def test_receive_stream_email_long_subject_with_show_sender_success(self) -> None:
+        user_profile = self.example_user("hamlet")
+        self.login_user(user_profile)
+        self.subscribe(user_profile, "Denmark")
+        stream = get_stream("Denmark", user_profile.realm)
+
+        email_token = get_channel_email_token(stream, creator=user_profile, sender=user_profile)
+        address = Address(addr_spec=encode_email_address(stream.name, email_token))
+        email_username = address.username + "+show-sender"
+        stream_to_address = Address(username=email_username, domain=address.domain).addr_spec
+
+        long_subject = "Another very long email subject that exceeds the sixty character limit for Zulip topics"
+        self.assertGreater(len(long_subject), 60)
+
+        incoming_valid_message = EmailMessage()
+        incoming_valid_message.set_content("TestStreamEmailMessages body")
+        incoming_valid_message["Subject"] = long_subject
+        incoming_valid_message["From"] = self.example_email("hamlet")
+        incoming_valid_message["To"] = stream_to_address
+        incoming_valid_message["Reply-to"] = self.example_email("othello")
+
+        process_message(incoming_valid_message)
+
+        # Hamlet is subscribed to this stream so should see the email message from Othello.
+        message = most_recent_message(user_profile)
+
+        self.assertEqual(len(message.topic_name()), 60)
+        self.assertTrue(message.topic_name().endswith("..."))
+        expected_content = f"From: {self.example_email('hamlet')}\nSubject: {long_subject}\nTestStreamEmailMessages body"
+        self.assertEqual(message.content, expected_content)
+
+    def test_receive_stream_email_short_subject_no_inclusion(self) -> None:
+        # Test that when the subject is short enough (60 chars or less), 
+        # we DON'T add it to the message body since it fits in the topic
+        user_profile = self.example_user("hamlet")
+        self.login_user(user_profile)
+        self.subscribe(user_profile, "Denmark")
+        stream = get_stream("Denmark", user_profile.realm)
+
+        email_token = get_channel_email_token(stream, creator=user_profile, sender=user_profile)
+        stream_to_address = encode_email_address(stream.name, email_token)
+
+        # Create a subject that's exactly 60 characters
+        short_subject = "This subject is exactly sixty characters long - no more!"
+        self.assertEqual(len(short_subject), 60)
+
+        incoming_valid_message = EmailMessage()
+        incoming_valid_message.set_content("TestStreamEmailMessages body")
+        incoming_valid_message["Subject"] = short_subject
+        incoming_valid_message["From"] = self.example_email("hamlet")
+        incoming_valid_message["To"] = stream_to_address
+        incoming_valid_message["Reply-to"] = self.example_email("othello")
+
+        process_message(incoming_valid_message)
+
+        # Hamlet is subscribed to this stream so should see the email message
+        message = most_recent_message(user_profile)
+
+        # The topic should be the full subject (not truncated)
+        self.assertEqual(message.topic_name(), short_subject)
+        
+        # The message content should NOT include the subject line
+        self.assertEqual(message.content, "TestStreamEmailMessages body")
+        self.assertNotIn("Subject:", message.content)
+
     def test_receive_stream_email_show_sender_utf8_encoded_sender(self) -> None:
         user_profile = self.example_user("hamlet")
         self.login_user(user_profile)
