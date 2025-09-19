@@ -772,9 +772,6 @@ $(() => {
     }
 
     if (page_params.is_spectator) {
-        if (page_params.show_try_zulip_modal) {
-            show_try_zulip_modal();
-        }
         const data = {
             apply_markdown: true,
             client_capabilities: JSON.stringify({
@@ -794,6 +791,9 @@ $(() => {
             success(response_data) {
                 const state_data = state_data_schema.parse(response_data);
                 initialize_everything(state_data);
+                if (page_params.show_try_zulip_modal) {
+                    show_try_zulip_modal();
+                }
             },
             error() {
                 $("#app-loading-middle-content").hide();
