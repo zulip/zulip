@@ -903,7 +903,7 @@ class EventStreamUpdateCore(BaseEvent):
     type: Literal["stream"]
     op: Literal["update"]
     property: str
-    value: bool | int | str | UserGroupMembersDict | Literal[None]
+    value: bool | int | str | UserGroupMembersDict | None
     name: str
     stream_id: int
 
