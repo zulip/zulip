@@ -75,7 +75,7 @@ export function show_flatpickr(
                 assert(target !== undefined);
                 target.focus();
             } else {
-                // Prevent keypresses from propagating to our general hotkey.js
+                // Prevent keypresses from propagating to our general hotkey.ts
                 // logic. Without this, `Up` will navigate both in the
                 // flatpickr instance and in the message feed behind
                 // it.

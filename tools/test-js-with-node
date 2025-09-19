@@ -121,7 +121,7 @@ EXEMPT_FILES = make_set(
         "web/src/hash_util.ts",
         "web/src/hashchange.ts",
         "web/src/hbs.d.ts",
-        "web/src/hotkey.js",
+        "web/src/hotkey.ts",
         "web/src/inbox_ui.ts",
         "web/src/inbox_util.ts",
         "web/src/info_overlay.ts",
