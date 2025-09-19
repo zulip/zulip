@@ -1207,7 +1207,7 @@ def get_message_payload_gcm(
 
     assert message.rendered_content is not None
     with override_language(user_profile.default_language):
-        content, unused = truncate_content(get_mobile_push_content(message.rendered_content))
+        content, _truncated = truncate_content(get_mobile_push_content(message.rendered_content))
         data.update(
             time=datetime_to_timestamp(message.date_sent),
             content=content,
@@ -1225,7 +1225,7 @@ def get_payload_data_to_encrypt(
     mentioned_user_group_name: str | None = None,
     can_access_sender: bool = True,
 ) -> dict[str, Any]:
-    payload_data_to_encrypt, unused = get_message_payload_gcm(
+    payload_data_to_encrypt, _gcm_options = get_message_payload_gcm(
         user_profile,
         message,
         mentioned_user_group_id,
@@ -1273,7 +1273,7 @@ def get_remove_payload_data_to_encrypt(
     user_profile: UserProfile,
     message_ids: list[int],
 ) -> dict[str, Any]:
-    payload_data_to_encrypt, unused = get_remove_payload_gcm(
+    payload_data_to_encrypt, _gcm_options = get_remove_payload_gcm(
         user_profile, message_ids, for_legacy_clients=False
     )
     return payload_data_to_encrypt

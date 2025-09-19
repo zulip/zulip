@@ -315,7 +315,7 @@ async def help_center_middleware(
     if request.path.startswith("/starlight_help"):
         try:
             filename = request.match_info["filename"]
-            name, ext = os.path.splitext(filename)
+            _name, ext = os.path.splitext(filename)
             if not ext:
                 filename = os.path.join(filename, "index.html")
             request.match_info["filename"] = filename

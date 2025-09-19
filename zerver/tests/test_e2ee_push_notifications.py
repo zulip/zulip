@@ -205,7 +205,9 @@ class SendPushNotificationTest(E2EEPushNotificationTestCase):
         hamlet = self.example_user("hamlet")
         aaron = self.example_user("aaron")
 
-        unused, registered_device_android = self.register_push_devices_for_notification()
+        _registered_device_apple, registered_device_android = (
+            self.register_push_devices_for_notification()
+        )
         message_id = self.send_personal_message(
             from_user=aaron, to_user=hamlet, skip_capture_on_commit_callbacks=True
         )
@@ -892,7 +894,9 @@ class RequireE2EEPushNotificationsSettingTest(E2EEPushNotificationTestCase):
 class SendTestPushNotificationTest(E2EEPushNotificationTestCase):
     def test_success_cloud(self) -> None:
         hamlet = self.example_user("hamlet")
-        unused, registered_device_android = self.register_push_devices_for_notification()
+        _registered_device_apple, registered_device_android = (
+            self.register_push_devices_for_notification()
+        )
 
         with (
             self.mock_fcm() as mock_fcm_messaging,

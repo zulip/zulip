@@ -29,10 +29,10 @@ def mute_topic(
     date_muted: datetime,
 ) -> None:
     if stream_name is not None:
-        (stream, sub) = access_stream_by_name(user_profile, stream_name)
+        (stream, _sub) = access_stream_by_name(user_profile, stream_name)
     else:
         assert stream_id is not None
-        (stream, sub) = access_stream_by_id(user_profile, stream_id)
+        (stream, _sub) = access_stream_by_id(user_profile, stream_id)
 
     do_set_user_topic_visibility_policy(
         user_profile,
@@ -107,7 +107,7 @@ def update_user_topic(
         error = _("Invalid channel ID")
         stream = access_stream_to_remove_visibility_policy_by_id(user_profile, stream_id, error)
     else:
-        (stream, sub) = access_stream_by_id(user_profile, stream_id)
+        (stream, _sub) = access_stream_by_id(user_profile, stream_id)
 
     do_set_user_topic_visibility_policy(
         user_profile, stream, topic, visibility_policy=visibility_policy

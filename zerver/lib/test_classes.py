@@ -1567,7 +1567,7 @@ Output:
         try:
             stream = get_stream(stream_name, user_profile.realm)
         except Stream.DoesNotExist:
-            stream, from_stream_creation = create_stream_if_needed(
+            stream, _from_stream_creation = create_stream_if_needed(
                 realm,
                 stream_name,
                 invite_only=invite_only,

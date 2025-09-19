@@ -138,7 +138,7 @@ class MessageMoveStreamTest(ZulipTestCase):
         self.assert_json_error(result, "Direct messages cannot be moved to channels.")
 
     def test_move_message_to_stream_with_content(self) -> None:
-        (user_profile, old_stream, new_stream, msg_id, msg_id_later) = self.prepare_move_topics(
+        (user_profile, old_stream, new_stream, msg_id, _msg_id_later) = self.prepare_move_topics(
             "iago", "test move stream", "new stream", "test"
         )
 
@@ -360,7 +360,7 @@ class MessageMoveStreamTest(ZulipTestCase):
         self.assert_length(messages, 5)
 
     def test_move_message_to_stream(self) -> None:
-        (user_profile, old_stream, new_stream, msg_id, msg_id_lt) = self.prepare_move_topics(
+        (user_profile, old_stream, new_stream, msg_id, _msg_id_lt) = self.prepare_move_topics(
             "iago",
             "test move stream",
             "new stream",
@@ -397,7 +397,7 @@ class MessageMoveStreamTest(ZulipTestCase):
         )
 
     def test_move_message_to_preexisting_topic(self) -> None:
-        (user_profile, old_stream, new_stream, msg_id, msg_id_lt) = self.prepare_move_topics(
+        (user_profile, old_stream, new_stream, msg_id, _msg_id_lt) = self.prepare_move_topics(
             "iago",
             "test move stream",
             "new stream",
@@ -628,7 +628,7 @@ class MessageMoveStreamTest(ZulipTestCase):
         )
 
     def test_move_message_to_stream_change_later_all_moved(self) -> None:
-        (user_profile, old_stream, new_stream, msg_id, msg_id_later) = self.prepare_move_topics(
+        (user_profile, old_stream, new_stream, msg_id, _msg_id_later) = self.prepare_move_topics(
             "iago", "test move stream", "new stream", "test"
         )
 
@@ -658,7 +658,7 @@ class MessageMoveStreamTest(ZulipTestCase):
         )
 
     def test_move_message_to_preexisting_topic_change_later_all_moved(self) -> None:
-        (user_profile, old_stream, new_stream, msg_id, msg_id_later) = self.prepare_move_topics(
+        (user_profile, old_stream, new_stream, msg_id, _msg_id_later) = self.prepare_move_topics(
             "iago", "test move stream", "new stream", "test"
         )
 
@@ -852,8 +852,8 @@ class MessageMoveStreamTest(ZulipTestCase):
         def check_move_message_according_to_permission(
             username: str, expect_fail: bool = False
         ) -> None:
-            (user_profile, old_stream, new_stream, msg_id, msg_id_later) = self.prepare_move_topics(
-                username, "old_stream", "new_stream", "test"
+            (user_profile, old_stream, new_stream, msg_id, _msg_id_later) = (
+                self.prepare_move_topics(username, "old_stream", "new_stream", "test")
             )
             result = self.client_patch(
                 "/json/messages/" + str(msg_id),
@@ -1075,7 +1075,7 @@ class MessageMoveStreamTest(ZulipTestCase):
         )
 
     def test_move_message_to_stream_based_on_can_send_message_group(self) -> None:
-        (user_profile, old_stream, new_stream, msg_id, msg_id_later) = self.prepare_move_topics(
+        (user_profile, old_stream, new_stream, msg_id, _msg_id_later) = self.prepare_move_topics(
             "othello", "old_stream", "new_stream", "test"
         )
         realm = user_profile.realm
@@ -1144,7 +1144,7 @@ class MessageMoveStreamTest(ZulipTestCase):
         check_move_message_to_stream(iago, expect_fail=True)
         check_move_message_to_stream(desdemona)
 
-        (user_profile, old_stream, new_stream, msg_id, msg_id_later) = self.prepare_move_topics(
+        (user_profile, old_stream, new_stream, msg_id, _msg_id_later) = self.prepare_move_topics(
             "othello", "old_stream", "new_stream", "test"
         )
 
@@ -1159,7 +1159,7 @@ class MessageMoveStreamTest(ZulipTestCase):
         check_move_message_to_stream(iago, expect_fail=True)
         check_move_message_to_stream(hamlet)
 
-        (user_profile, old_stream, new_stream, msg_id, msg_id_later) = self.prepare_move_topics(
+        (user_profile, old_stream, new_stream, msg_id, _msg_id_later) = self.prepare_move_topics(
             "othello", "old_stream", "new_stream", "test"
         )
 
@@ -1174,12 +1174,12 @@ class MessageMoveStreamTest(ZulipTestCase):
         check_move_message_to_stream(hamlet, expect_fail=True)
         check_move_message_to_stream(desdemona)
 
-        (user_profile, old_stream, new_stream, msg_id, msg_id_later) = self.prepare_move_topics(
+        (user_profile, old_stream, new_stream, msg_id, _msg_id_later) = self.prepare_move_topics(
             "othello", "old_stream", "new_stream", "test"
         )
         check_move_message_to_stream(othello)
 
-        (user_profile, old_stream, new_stream, msg_id, msg_id_later) = self.prepare_move_topics(
+        (user_profile, old_stream, new_stream, msg_id, _msg_id_later) = self.prepare_move_topics(
             "polonius", "old_stream", "new_stream", "test"
         )
         everyone_group = NamedUserGroup.objects.get(
@@ -1354,7 +1354,7 @@ class MessageMoveStreamTest(ZulipTestCase):
         self.assert_move_message("desdemona", stream_1, stream_id=stream_2.id, topic_name="")
 
     def test_move_message_to_stream_with_topic_editing_not_allowed(self) -> None:
-        (user_profile, old_stream, new_stream, msg_id, msg_id_later) = self.prepare_move_topics(
+        (user_profile, old_stream, new_stream, msg_id, _msg_id_later) = self.prepare_move_topics(
             "othello", "old_stream_1", "new_stream_1", "test"
         )
         realm = user_profile.realm
@@ -1407,7 +1407,7 @@ class MessageMoveStreamTest(ZulipTestCase):
         self.assert_length(messages, 4)
 
     def test_move_message_to_stream_and_topic(self) -> None:
-        (user_profile, old_stream, new_stream, msg_id, msg_id_later) = self.prepare_move_topics(
+        (user_profile, old_stream, new_stream, msg_id, _msg_id_later) = self.prepare_move_topics(
             "iago", "test move stream", "new stream", "test"
         )
 
@@ -1438,7 +1438,7 @@ class MessageMoveStreamTest(ZulipTestCase):
         self.assert_json_success(result)
 
     def test_move_many_messages_to_stream_and_topic(self) -> None:
-        (user_profile, old_stream, new_stream, msg_id, msg_id_later) = self.prepare_move_topics(
+        (user_profile, _old_stream, new_stream, msg_id, _msg_id_later) = self.prepare_move_topics(
             "iago", "first origin stream", "first destination stream", "first topic"
         )
 
@@ -1456,7 +1456,7 @@ class MessageMoveStreamTest(ZulipTestCase):
 
         # Adding more messages should not increase the number of
         # queries
-        (user_profile, old_stream, new_stream, msg_id, msg_id_later) = self.prepare_move_topics(
+        (user_profile, _old_stream, new_stream, msg_id, _msg_id_later) = self.prepare_move_topics(
             "iago", "second origin stream", "second destination stream", "second topic"
         )
         for i in range(1, 5):
@@ -1480,7 +1480,7 @@ class MessageMoveStreamTest(ZulipTestCase):
 
     def test_inaccessible_msg_after_stream_change(self) -> None:
         """Simulates the case where message is moved to a stream where user is not a subscribed"""
-        (user_profile, old_stream, new_stream, msg_id, msg_id_lt) = self.prepare_move_topics(
+        (user_profile, old_stream, new_stream, msg_id, _msg_id_lt) = self.prepare_move_topics(
             "iago", "test move stream", "new stream", "test"
         )
 
@@ -1562,7 +1562,7 @@ class MessageMoveStreamTest(ZulipTestCase):
             )
 
     def test_no_notify_move_message_to_stream(self) -> None:
-        (user_profile, old_stream, new_stream, msg_id, msg_id_lt) = self.prepare_move_topics(
+        (user_profile, old_stream, new_stream, msg_id, _msg_id_lt) = self.prepare_move_topics(
             "iago", "test move stream", "new stream", "test"
         )
 
@@ -1585,7 +1585,7 @@ class MessageMoveStreamTest(ZulipTestCase):
         self.assert_length(messages, 3)
 
     def test_notify_new_thread_move_message_to_stream(self) -> None:
-        (user_profile, old_stream, new_stream, msg_id, msg_id_lt) = self.prepare_move_topics(
+        (user_profile, old_stream, new_stream, msg_id, _msg_id_lt) = self.prepare_move_topics(
             "iago", "test move stream", "new stream", "test"
         )
 
@@ -1612,7 +1612,7 @@ class MessageMoveStreamTest(ZulipTestCase):
         )
 
     def test_notify_old_thread_move_message_to_stream(self) -> None:
-        (user_profile, old_stream, new_stream, msg_id, msg_id_lt) = self.prepare_move_topics(
+        (user_profile, old_stream, new_stream, msg_id, _msg_id_lt) = self.prepare_move_topics(
             "iago", "test move stream", "new stream", "test"
         )
 
@@ -1734,7 +1734,7 @@ class MessageMoveStreamTest(ZulipTestCase):
             first_stream,
             second_stream,
             msg_id,
-            msg_id_later,
+            _msg_id_later,
         ) = self.prepare_move_topics("shiva", "first stream", "second stream", "test")
 
         # 'prepare_move_topics' sends 3 messages in the first_stream
@@ -2210,7 +2210,7 @@ class MessageMoveStreamTest(ZulipTestCase):
         )
 
     def test_move_message_update_stream_active_status(self) -> None:
-        (user_profile, old_stream, new_stream, msg_id, msg_id_later) = self.prepare_move_topics(
+        (user_profile, _old_stream, new_stream, _msg_id, msg_id_later) = self.prepare_move_topics(
             "iago", "test move stream", "new stream", "test"
         )
 
@@ -2256,7 +2256,7 @@ class MessageMoveStreamTest(ZulipTestCase):
 
     def test_move_message_update_private_stream_active_status(self) -> None:
         # Goal is to test that we only send the stream status update to subscribers.
-        (user_profile, old_stream, new_stream, msg_id, msg_id_later) = self.prepare_move_topics(
+        (user_profile, _old_stream, new_stream, _msg_id, msg_id_later) = self.prepare_move_topics(
             "iago", "test move stream", "new stream", "test"
         )
 
