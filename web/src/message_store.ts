@@ -4,6 +4,7 @@ import * as z from "zod/mini";
 import * as blueslip from "./blueslip.ts";
 import type {RawLocalMessage} from "./echo.ts";
 import type {NewMessage, ProcessedMessage} from "./message_helper.ts";
+import type {TimeFormattedReminder} from "./message_reminder.ts";
 import * as people from "./people.ts";
 import {topic_link_schema} from "./types.ts";
 import type {UserStatusEmojiInfo} from "./user_status.ts";
@@ -197,6 +198,10 @@ export type Message = (
     // Used in message_notifications to track if a notification has already
     // been sent for this message.
     notification_sent?: boolean;
+
+    // Added during message rendering in message_list_view.ts. Should
+    // never be accessed outside rendering, as the value may be stale.
+    reminders?: TimeFormattedReminder[] | undefined;
 } & (
         | {
               type: "private";
