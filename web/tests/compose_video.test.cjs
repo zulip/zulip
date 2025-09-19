@@ -113,9 +113,6 @@ test("videos", ({override}) => {
         const ev = {
             preventDefault() {},
             stopPropagation() {},
-            target: {
-                to_$: () => $textarea,
-            },
         };
 
         override(compose_ui, "insert_syntax_and_focus", (syntax) => {
@@ -139,7 +136,7 @@ test("videos", ({override}) => {
 
         override(realm, "realm_jitsi_server_url", null);
         override(realm, "server_jitsi_server_url", "https://server.example.com");
-        handler(ev);
+        handler.call($textarea, ev);
         // video link ids consist of 15 random digits
         let video_link_regex =
             /\[translated: Join video call\.]\(https:\/\/server.example.com\/\d{15}#config.startWithVideoMuted=false\)/;
@@ -148,7 +145,7 @@ test("videos", ({override}) => {
 
         override(realm, "realm_jitsi_server_url", "https://realm.example.com");
         override(realm, "server_jitsi_server_url", null);
-        handler(ev);
+        handler.call($textarea, ev);
         video_link_regex =
             /\[translated: Join video call\.]\(https:\/\/realm.example.com\/\d{15}#config.startWithVideoMuted=false\)/;
         assert.ok(called);
@@ -156,7 +153,7 @@ test("videos", ({override}) => {
 
         override(realm, "realm_jitsi_server_url", "https://realm.example.com");
         override(realm, "server_jitsi_server_url", "https://server.example.com");
-        handler(ev);
+        handler.call($textarea, ev);
         video_link_regex =
             /\[translated: Join video call\.]\(https:\/\/realm.example.com\/\d{15}#config.startWithVideoMuted=false\)/;
         assert.ok(called);
@@ -173,9 +170,6 @@ test("videos", ({override}) => {
         const ev = {
             preventDefault() {},
             stopPropagation() {},
-            target: {
-                to_$: () => $textarea,
-            },
         };
 
         override(compose_ui, "insert_syntax_and_focus", (syntax) => {
@@ -206,14 +200,14 @@ test("videos", ({override}) => {
 
         $("textarea#compose-textarea").val("");
         const video_handler = $("body").get_on_handler("click", ".video_link");
-        video_handler(ev);
+        video_handler.call($textarea, ev);
         const video_link_regex = /\[translated: Join video call\.]\(example\.zoom\.com\)/;
         assert.ok(called);
         assert.match(syntax_to_insert, video_link_regex);
 
         $("textarea#compose-textarea").val("");
         const audio_handler = $("body").get_on_handler("click", ".audio_link");
-        audio_handler(ev);
+        audio_handler.call($textarea, ev);
         const audio_link_regex = /\[translated: Join voice call\.]\(example\.zoom\.com\)/;
         assert.ok(called);
         assert.match(syntax_to_insert, audio_link_regex);
@@ -229,9 +223,6 @@ test("videos", ({override}) => {
         const ev = {
             preventDefault() {},
             stopPropagation() {},
-            target: {
-                to_$: () => $textarea,
-            },
         };
 
         override(compose_ui, "insert_syntax_and_focus", (syntax) => {
@@ -265,14 +256,14 @@ test("videos", ({override}) => {
         $("textarea#compose-textarea").val("");
 
         const video_handler = $("body").get_on_handler("click", ".video_link");
-        video_handler(ev);
+        video_handler.call($textarea, ev);
         const video_link_regex =
             /\[translated: Join video call\.]\(\/calls\/bigbluebutton\/join\?meeting_id=%22zulip-1%22&moderator=%22AAAAAAAAAA%22&lock_settings_disable_cam=false&checksum=%2232702220bff2a22a44aee72e96cfdb4c4091752e%22\)/;
         assert.ok(called);
         assert.match(syntax_to_insert, video_link_regex);
 
         const audio_handler = $("body").get_on_handler("click", ".audio_link");
-        audio_handler(ev);
+        audio_handler.call($textarea, ev);
         const audio_link_regex =
             /\[translated: Join voice call\.]\(\/calls\/bigbluebutton\/join\?meeting_id=%22zulip-1%22&moderator=%22AAAAAAAAAA%22&lock_settings_disable_cam=true&checksum=%2232702220bff2a22a44aee72e96cfdb4c4091752e%22\)/;
         assert.ok(called);
