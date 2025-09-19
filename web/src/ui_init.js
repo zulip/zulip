@@ -55,7 +55,7 @@ import * as giphy from "./giphy.ts";
 import * as giphy_state from "./giphy_state.ts";
 import * as group_permission_settings from "./group_permission_settings.ts";
 import * as hashchange from "./hashchange.ts";
-import * as hotkey from "./hotkey.js";
+import * as hotkey from "./hotkey.ts";
 import * as i18n from "./i18n.ts";
 import * as inbox_ui from "./inbox_ui.ts";
 import * as information_density from "./information_density.ts";
