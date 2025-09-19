@@ -679,7 +679,7 @@ export function update_messages(events: UpdateMessageEvent[]): void {
                 // Code further down takes care of the actual rerendering of
                 // messages within a narrow.
                 selection_changed_topic &&
-                current_filter?.has_topic(old_stream_id, orig_topic)
+                current_filter?.has_topic(String(old_stream_id), orig_topic)
             ) {
                 let new_filter = current_filter;
                 if (new_filter && stream_changed) {
