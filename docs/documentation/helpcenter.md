@@ -24,7 +24,7 @@ Starlight is a full-featured documentation theme built on top of the
 for content driven websites. The content for the help center articles are
 [MDX](https://mdxjs.com/) files, which live at `starlight_help/src/content/docs`
 in the [main Zulip server repository](https://github.com/zulip/zulip).
-Images are usually linked from `static/images/help/`.
+Images are usually linked from `starlight_help/src/images`.
 
 Zulip help center documentation is available under `/help/` on any Zulip server;
 (e.g., <https://zulip.com/help/> or `http://localhost:9991/help/` in
@@ -284,7 +284,7 @@ Zulip browser window in a screenshot; instead, it should only show
 relevant parts of the app. In addition, the screenshot should always
 come _after_ the text that describes it, never before.
 
-Images used in the help center can be found at `static/images/help`.
+Images used in the help center can be found at `starlight_help/src/images`.
 
 ## MDX features and custom Zulip components
 
