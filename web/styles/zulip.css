@@ -270,7 +270,8 @@ p.n-margin {
 .top-messages-logo {
     /* Since padding under message header is not transparent
        we need to position it below the padding. */
-    padding-top: var(--header-padding-bottom);
+    padding-top: 7px;
+    padding-left: 1px;
 }
 
 /* See https://web.dev/animations-guide/#triggers before adding any funny animation properties here. */
