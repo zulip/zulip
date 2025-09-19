@@ -149,7 +149,7 @@ def mark_all_as_read(request: HttpRequest, user_profile: UserProfile) -> HttpRes
 def mark_stream_as_read(
     request: HttpRequest, user_profile: UserProfile, *, stream_id: Json[int]
 ) -> HttpResponse:
-    stream, sub = access_stream_by_id(user_profile, stream_id)
+    stream, _sub = access_stream_by_id(user_profile, stream_id)
     assert stream.recipient_id is not None
     count = do_mark_stream_messages_as_read(user_profile, stream.recipient_id)
 
@@ -169,7 +169,7 @@ def mark_topic_as_read(
     topic_name: str,
     stream_id: Json[int],
 ) -> HttpResponse:
-    stream, sub = access_stream_by_id(user_profile, stream_id)
+    stream, _sub = access_stream_by_id(user_profile, stream_id)
     assert stream.recipient_id is not None
 
     if topic_name:

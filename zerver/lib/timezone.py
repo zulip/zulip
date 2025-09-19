@@ -10,7 +10,7 @@ def get_canonical_timezone_map() -> dict[str, str]:
         for line in f:
             fields = line.split()
             if fields and "link".startswith(fields[0].lower()):  # zic(8) accepts any prefix of Link
-                code, name, alias = fields
+                _code, name, alias = fields
                 canonical[alias] = name
     return canonical
 

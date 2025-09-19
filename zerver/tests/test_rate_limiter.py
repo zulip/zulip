@@ -61,7 +61,7 @@ class RateLimiterBackendBase(ZulipTestCase, ABC):
         if key not in self.requests_record:
             self.requests_record[key] = []
 
-        ratelimited, secs_to_freedom = obj.rate_limit()
+        ratelimited, _secs_to_freedom = obj.rate_limit()
         if not ratelimited:
             self.requests_record[key].append(time.time())
 

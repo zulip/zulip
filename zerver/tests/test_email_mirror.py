@@ -189,10 +189,10 @@ class TestEncodeDecode(ZulipTestCase):
         address_prefer_text = f"Denmark.{email_token}.prefer-text@testserver"
         address_prefer_html = f"Denmark.{email_token}.prefer-html@testserver"
 
-        token, options = decode_email_address(address_prefer_text)
+        _token, options = decode_email_address(address_prefer_text)
         self._assert_options(options, prefer_text=True)
 
-        token, options = decode_email_address(address_prefer_html)
+        _token, options = decode_email_address(address_prefer_html)
         self._assert_options(options, prefer_text=False)
 
 

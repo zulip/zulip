@@ -79,7 +79,7 @@ class SlackMessageConversion(ZulipTestCase):
         ]
         channel_map = {"general": ("C5Z73A7RA", 137)}
         message = "Hi <@U08RGD1RD|john>: How are you? <#C5Z73A7RA|general>"
-        text, mentioned_users, has_link = convert_to_zulip_markdown(
+        text, mentioned_users, _has_link = convert_to_zulip_markdown(
             message, users, channel_map, slack_user_map
         )
         full_name = get_user_full_name(users[1])
@@ -91,7 +91,7 @@ class SlackMessageConversion(ZulipTestCase):
 
         # multiple mentioning
         message = "Hi <@U08RGD1RD|john>: How are you?<@U0CBK5KAT> asked."
-        text, mentioned_users, has_link = convert_to_zulip_markdown(
+        text, mentioned_users, _has_link = convert_to_zulip_markdown(
             message, users, channel_map, slack_user_map
         )
         self.assertEqual(text, "Hi @**John Doe**: How are you?@**aaron.anzalone** asked.")
@@ -99,7 +99,7 @@ class SlackMessageConversion(ZulipTestCase):
 
         # Check wrong mentioning
         message = "Hi <@U08RGD1RD|jon>: How are you?"
-        text, mentioned_users, has_link = convert_to_zulip_markdown(
+        text, mentioned_users, _has_link = convert_to_zulip_markdown(
             message, users, channel_map, slack_user_map
         )
         self.assertEqual(text, message)
@@ -109,20 +109,28 @@ class SlackMessageConversion(ZulipTestCase):
         slack_user_map: dict[str, int] = {}
 
         message = "<http://journals.plos.org/plosone/article>"
-        text, mentioned_users, has_link = convert_to_zulip_markdown(message, [], {}, slack_user_map)
+        text, _mentioned_users, has_link = convert_to_zulip_markdown(
+            message, [], {}, slack_user_map
+        )
         self.assertEqual(text, "http://journals.plos.org/plosone/article")
         self.assertEqual(has_link, True)
 
         message = "<http://chat.zulip.org/help/logging-in|Help logging in to CZO>"
-        text, mentioned_users, has_link = convert_to_zulip_markdown(message, [], {}, slack_user_map)
+        text, _mentioned_users, has_link = convert_to_zulip_markdown(
+            message, [], {}, slack_user_map
+        )
         self.assertEqual(text, "[Help logging in to CZO](http://chat.zulip.org/help/logging-in)")
         self.assertEqual(has_link, True)
 
         message = "<mailto:foo@foo.com>"
-        text, mentioned_users, has_link = convert_to_zulip_markdown(message, [], {}, slack_user_map)
+        text, _mentioned_users, has_link = convert_to_zulip_markdown(
+            message, [], {}, slack_user_map
+        )
         self.assertEqual(text, "mailto:foo@foo.com")
         self.assertEqual(has_link, True)
 
         message = "random message"
-        text, mentioned_users, has_link = convert_to_zulip_markdown(message, [], {}, slack_user_map)
+        text, _mentioned_users, has_link = convert_to_zulip_markdown(
+            message, [], {}, slack_user_map
+        )
         self.assertEqual(has_link, False)
