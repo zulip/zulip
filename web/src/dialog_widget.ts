@@ -73,7 +73,7 @@ export type DialogWidgetConfig = {
     id?: string;
     single_footer_button?: boolean;
     form_id?: string;
-    validate_input?: (e: unknown) => boolean;
+    validate_input?: (e: JQuery.ClickEvent) => boolean;
     on_show?: () => void;
     on_shown?: () => void;
     on_hide?: () => void;
@@ -247,7 +247,7 @@ export function launch(conf: DialogWidgetConfig): string {
     }
 
     // Set up handlers.
-    $submit_button.on("click", (e) => {
+    $submit_button.on("click", (e: JQuery.ClickEvent) => {
         e.preventDefault();
 
         if (conf.validate_input && !conf.validate_input(e)) {
