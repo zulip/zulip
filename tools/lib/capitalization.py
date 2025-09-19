@@ -58,6 +58,7 @@ IGNORED_PHRASES = [
     r"BigBlueButton",
     # Code things
     r"\.zuliprc",
+    r"<z-link></z-link> scheduled for ",
     # BeautifulSoup will remove <z-user> which is horribly confusing,
     # so we need more of the sentence.
     r"<z-user></z-user> will have the same role",
