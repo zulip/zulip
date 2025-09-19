@@ -54,12 +54,12 @@ function preserve_state(send_after_reload: boolean, save_compose: boolean): void
         return;
     }
 
-    let url = "#reload:send_after_reload=" + Number(send_after_reload);
+    let url = "#reload:send_after_reload=" + (send_after_reload ? "1" : "0");
     assert(csrf_token !== undefined);
     url += "+csrf_token=" + encodeURIComponent(csrf_token);
 
-    if (save_compose) {
-        const msg_type = compose_state.get_message_type();
+    const msg_type = compose_state.get_message_type();
+    if (save_compose && msg_type) {
         if (msg_type === "stream") {
             const stream_id = compose_state.stream_id();
             url += "+msg_type=stream";
@@ -74,12 +74,10 @@ function preserve_state(send_after_reload: boolean, save_compose: boolean): void
                 encodeURIComponent(compose_state.private_message_recipient_emails());
         }
 
-        if (msg_type) {
-            url += "+msg=" + encodeURIComponent(compose_state.message_content());
-            const draft_id = drafts.update_draft();
-            if (draft_id) {
-                url += "+draft_id=" + encodeURIComponent(draft_id);
-            }
+        url += "+msg=" + encodeURIComponent(compose_state.message_content());
+        const draft_id = drafts.update_draft();
+        if (draft_id) {
+            url += "+draft_id=" + encodeURIComponent(draft_id);
         }
     }
 
