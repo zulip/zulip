@@ -467,6 +467,18 @@ export class MessageList {
         const subscribed = stream_data.is_subscribed(stream_id);
         const invite_only = sub?.invite_only;
         const is_web_public = sub?.is_web_public;
+
+        if (
+            sub !== undefined &&
+            invite_only === true &&
+            stream_data.has_metadata_access(sub) &&
+            !stream_data.has_content_access(sub)
+        ) {
+            // The user can manage metadata for this private channel but does not
+            // have permission to view its messages. Skip rendering a trailing
+            // bookend, since we cannot offer actions like subscribing.
+            return;
+        }
         if (sub === undefined || sub.is_archived) {
             deactivated = true;
         } else if (!subscribed && !this.last_message_historical && !this.empty()) {
