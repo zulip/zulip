@@ -361,9 +361,12 @@ run_test("bookend", ({override}) => {
 
     let is_subscribed = true;
     let invite_only = false;
+    let has_content_access = true;
 
     override(stream_data, "is_subscribed", () => is_subscribed);
     override(stream_data, "get_sub_by_id", () => ({invite_only, name: "IceCream"}));
+    override(stream_data, "has_content_access", () => has_content_access);
+    override(stream_data, "has_metadata_access", () => true);
 
     {
         const stub = make_stub();
@@ -450,6 +453,18 @@ run_test("bookend", ({override}) => {
         assert.equal(bookend.deactivated, false);
         assert.equal(bookend.just_unsubscribed, true);
     }
+
+    has_content_access = false;
+    list.empty = () => true;
+
+    {
+        const stub = make_stub();
+        list.view.render_trailing_bookend = stub.f;
+        list.update_trailing_bookend();
+        assert.equal(stub.num_calls, 0);
+    }
+
+    has_content_access = true;
 
     list.last_message_historical = true;
 

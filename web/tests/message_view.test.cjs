@@ -238,7 +238,7 @@ run_test("urls", () => {
     assert.equal(emails, "me@example.com");
 });
 
-run_test("show_empty_narrow_message", ({mock_template, override}) => {
+run_test("show_empty_narrow_message", ({mock_template, override, override_rewire}) => {
     override(realm, "stop_words", []);
 
     mock_template("empty_feed_notice.hbs", true, (_data, html) => html);
@@ -274,6 +274,28 @@ run_test("show_empty_narrow_message", ({mock_template, override}) => {
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
             "translated: This channel doesn't exist, or you are not allowed to view it.",
+        ),
+    );
+
+    const metadata_only_stream_id = 5012;
+    stream_data.add_sub({
+        name: "Metadata only private stream",
+        stream_id: metadata_only_stream_id,
+        invite_only: true,
+    });
+    const original_has_content_access = stream_data.has_content_access;
+    override_rewire(stream_data, "has_content_access", (sub) => {
+        if (sub.stream_id === metadata_only_stream_id) {
+            return false;
+        }
+        return original_has_content_access(sub);
+    });
+    current_filter = set_filter([["stream", metadata_only_stream_id.toString()]]);
+    narrow_banner.show_empty_narrow_message(current_filter);
+    assert.equal(
+        $(".empty_feed_notice_main").html(),
+        empty_narrow_html(
+            "translated: You are not allowed to view messages in this private channel.",
         ),
     );
 

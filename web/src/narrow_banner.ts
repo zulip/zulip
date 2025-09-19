@@ -317,6 +317,19 @@ export function pick_empty_narrow_banner(current_filter: Filter): NarrowBannerDa
                 if (stream_sub && stream_data.can_toggle_subscription(stream_sub)) {
                     return default_banner;
                 }
+                if (
+                    stream_sub &&
+                    stream_sub.invite_only &&
+                    stream_data.has_metadata_access(stream_sub) &&
+                    !stream_data.has_content_access(stream_sub)
+                ) {
+                    return {
+                        title: $t({
+                            defaultMessage:
+                                "You are not allowed to view messages in this private channel.",
+                        }),
+                    };
+                }
                 return {
                     title: $t({
                         defaultMessage:
