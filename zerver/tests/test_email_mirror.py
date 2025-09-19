@@ -553,7 +553,7 @@ and other things
         # Hamlet is subscribed to this stream so should see the email message from Othello.
         message = most_recent_message(user_profile)
 
-        self.assertEqual(len(message.topic_name()), 60)
+        self.assert_length(message.topic_name(), 60)
         self.assertTrue(message.topic_name().endswith("..."))
         expected_content = f"Subject: {long_subject}\nTestStreamEmailMessages body"
         self.assertEqual(message.content, expected_content)
@@ -584,13 +584,13 @@ and other things
         # Hamlet is subscribed to this stream so should see the email message from Othello.
         message = most_recent_message(user_profile)
 
-        self.assertEqual(len(message.topic_name()), 60)
+        self.assert_length(message.topic_name(), 60)
         self.assertTrue(message.topic_name().endswith("..."))
         expected_content = f"From: {self.example_email('hamlet')}\nSubject: {long_subject}\nTestStreamEmailMessages body"
         self.assertEqual(message.content, expected_content)
 
     def test_receive_stream_email_short_subject_no_inclusion(self) -> None:
-        # Test that when the subject is short enough (60 chars or less), 
+        # Test that when the subject is short enough (60 chars or less),
         # we DON'T add it to the message body since it fits in the topic
         user_profile = self.example_user("hamlet")
         self.login_user(user_profile)
@@ -602,7 +602,7 @@ and other things
 
         # Create a subject that's exactly 60 characters
         short_subject = "This subject is exactly sixty characters long - no more!"
-        self.assertEqual(len(short_subject), 60)
+        self.assert_length(short_subject, 60)
 
         incoming_valid_message = EmailMessage()
         incoming_valid_message.set_content("TestStreamEmailMessages body")
@@ -618,7 +618,7 @@ and other things
 
         # The topic should be the full subject (not truncated)
         self.assertEqual(message.topic_name(), short_subject)
-        
+
         # The message content should NOT include the subject line
         self.assertEqual(message.content, "TestStreamEmailMessages body")
         self.assertNotIn("Subject:", message.content)
