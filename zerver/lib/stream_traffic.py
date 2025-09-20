@@ -20,10 +20,10 @@ def get_streams_traffic(stream_ids: set[int], realm: Realm) -> dict[int, int] | 
         end_time__gt=traffic_from,
     )
 
-    traffic_list = query.values("stream_id").annotate(value=Sum("value"))
+    traffic_list = query.values("stream_id").annotate(sum_value=Sum("value"))
     traffic_dict = {}
     for traffic in traffic_list:
-        traffic_dict[traffic["stream_id"]] = traffic["value"]
+        traffic_dict[traffic["stream_id"]] = traffic["sum_value"]
 
     return traffic_dict
 

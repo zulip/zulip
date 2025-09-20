@@ -344,13 +344,13 @@ def get_users_for_soft_deactivation(
             **filter_kwargs,
         )
         .values("user_profile_id")
-        .annotate(last_visit=Max("last_visit"))
+        .annotate(max_last_visit=Max("last_visit"))
     )
     today = timezone_now()
     user_ids_to_deactivate = [
         user_activity["user_profile_id"]
         for user_activity in users_activity
-        if (today - user_activity["last_visit"]).days > inactive_for_days
+        if (today - user_activity["max_last_visit"]).days > inactive_for_days
     ]
     users_to_deactivate = list(UserProfile.objects.filter(id__in=user_ids_to_deactivate))
     return users_to_deactivate
