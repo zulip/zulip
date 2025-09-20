@@ -14,6 +14,7 @@ const {page_params} = require("./lib/zpage_params.cjs");
 const message_store = mock_esm("../src/message_store");
 const user_topics = mock_esm("../src/user_topics");
 
+const timerender = zrequire("timerender");
 const resolved_topic = zrequire("../shared/src/resolved_topic");
 const stream_data = zrequire("stream_data");
 const people = zrequire("people");
@@ -491,6 +492,16 @@ test("basics", () => {
     filter = new Filter(terms);
     assert.ok(filter.has_operator("dm-including"));
     assert.ok(!filter.has_operator("group-pm-with"));
+    assert.ok(!filter.is_channel_view());
+    assert.ok(!filter.has_exactly_channel_topic_operators());
+
+    terms = [{operator: "date", operand: "2025-09-20"}];
+    filter = new Filter(terms);
+    assert.ok(!filter.contains_only_private_messages());
+    assert.ok(filter.has_operator("date"));
+    assert.ok(filter.can_apply_locally());
+    assert.ok(!filter.is_conversation_view());
+    assert.ok(filter.may_contain_multiple_conversations());
     assert.ok(!filter.is_channel_view());
     assert.ok(!filter.has_exactly_channel_topic_operators());
 
@@ -992,6 +1003,10 @@ test("canonicalization", () => {
     assert.equal(term.operator, "dm-including");
     assert.equal(term.operand, "joe@example.com");
 
+    term = Filter.canonicalize_term({operator: "date", operand: "2025-09-20"});
+    assert.equal(term.operator, "date");
+    assert.equal(term.operand, "2025-09-20");
+
     term = Filter.canonicalize_term({operator: "search", operand: "foo"});
     assert.equal(term.operator, "search");
     assert.equal(term.operand, "foo");
@@ -1235,6 +1250,10 @@ test("predicate_basics", ({override}) => {
         assert.ok(!predicate({stream_id: muted_stream.stream_id, topic: "bar"}));
     });
 
+    // The date should be in ISO format.
+    predicate = get_predicate([["date", "2025-09-18"]]);
+    assert.ok(predicate({}));
+
     predicate = get_predicate([["near", "5"]]);
     assert.ok(predicate({}));
 
@@ -1436,6 +1455,10 @@ test("negated_predicates", () => {
     narrow = [{operator: "channels", operand: "public", negated: true}];
     predicate = new Filter(narrow).predicate();
     assert.ok(predicate({}));
+
+    narrow = [{operator: "date", operand: "2025-09-09", negated: true}];
+    predicate = new Filter(narrow).predicate();
+    assert.ok(!predicate({}));
 });
 
 test("predicate_edge_cases", () => {
@@ -1455,6 +1478,10 @@ test("predicate_edge_cases", () => {
     assert.ok(predicate({}));
 
     predicate = get_predicate([["is", "bogus"]]);
+    assert.ok(!predicate({}));
+
+    // The date should be in ISO 8601 format.
+    predicate = get_predicate([["date", "2025-19-18"]]);
     assert.ok(!predicate({}));
 
     // Exercise caching feature.
@@ -1537,6 +1564,14 @@ test("parse", () => {
         {operator: "search", operand: "text"},
         {operator: "channel", operand: foo_stream_id.toString()},
         {operator: "search", operand: "more text"},
+    ];
+    _test();
+
+    string = `text channel:${foo_stream_id} date:2025-09-09`;
+    terms = [
+        {operator: "search", operand: "text"},
+        {operator: "channel", operand: foo_stream_id.toString()},
+        {operator: "date", operand: "2025-09-09"},
     ];
     _test();
 
@@ -1697,6 +1732,23 @@ test("describe", ({mock_template, override}) => {
     string = "exclude all web-public channels";
     assert.equal(Filter.search_description_as_html(narrow, false), string);
     page_params.is_spectator = false;
+
+    narrow = [
+        {operator: "date", operand: "2025-09-09"},
+        {operator: "is", operand: "starred"},
+    ];
+    string = "messages near 2025-09-09, starred messages";
+    assert.equal(Filter.search_description_as_html(narrow, false), string);
+
+    const dates = timerender.get_dates_for_date_operator();
+
+    narrow = [{operator: "date", operand: `${dates.get("today")}`}];
+    string = "messages near today";
+    assert.equal(Filter.search_description_as_html(narrow, false), string);
+
+    narrow = [{operator: "date", operand: `${dates.get("yesterday")}`}];
+    string = "messages near yesterday";
+    assert.equal(Filter.search_description_as_html(narrow, false), string);
 
     const devel_id = new_stream_id();
     make_sub("devel", devel_id);
@@ -1961,6 +2013,7 @@ test("term_type", () => {
 
     assert_term_type(term("channels", "public"), "channels-public");
     assert_term_type(term("channel", "whatever"), "channel");
+    assert_term_type(term("date", "2025-09-09"), "date");
     assert_term_type(term("dm", "whomever"), "dm");
     assert_term_type(term("dm", "whomever", true), "not-dm");
     assert_term_type(term("is", "dm"), "is-dm");
@@ -2057,6 +2110,10 @@ test("is_valid_search_term", () => {
         ["in:nowhere", false],
         ["id:4", true],
         ["near:home", false],
+        ["date:2025-09-09", true],
+        ["-date:2025-09-09", false],
+        ["date:2025-29-109", false],
+        ["date:jesse", false],
         ["channel:" + denmark.stream_id, true],
         [`channel:${invalid_sub_id}`, false],
         ["channels:public", true],
@@ -2815,6 +2872,7 @@ run_test("is_spectator_compatible", () => {
     assert.ok(
         Filter.is_spectator_compatible([{operator: "is", operand: "resolved", negated: true}]),
     );
+    assert.ok(Filter.is_spectator_compatible([{operator: "date", operand: "2025-09-09"}]));
     assert.ok(Filter.is_spectator_compatible([{operator: "has", operand: "attachment"}]));
     assert.ok(Filter.is_spectator_compatible([{operator: "has", operand: "image"}]));
     assert.ok(Filter.is_spectator_compatible([{operator: "search", operand: "magic"}]));

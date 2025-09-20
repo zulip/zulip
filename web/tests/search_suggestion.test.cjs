@@ -14,6 +14,7 @@ const direct_message_group_data = zrequire("direct_message_group_data");
 
 const {Filter} = zrequire("filter");
 const stream_data = zrequire("stream_data");
+const timerender = zrequire("timerender");
 const stream_topic_history = zrequire("stream_topic_history");
 const people = zrequire("people");
 const search = zrequire("search_suggestion");
@@ -109,12 +110,15 @@ test("basic_get_suggestions_for_spectator", () => {
     stream_data.add_sub(sub);
 
     let query = "";
+    const dates = timerender.get_dates_for_date_operator();
     let suggestions = get_suggestions(query);
     assert.deepEqual(suggestions.strings, [
         "channels:",
         "channel:",
         "is:resolved",
         "-is:resolved",
+        `date:${dates.get("today")}`,
+        `date:${dates.get("yesterday")}`,
         "has:link",
         "has:image",
         "has:attachment",
@@ -372,7 +376,7 @@ test("empty_query_suggestions", () => {
         is_web_public: true,
     });
     stream_data.add_sub({stream_id: office_id, name: "office", subscribed: true});
-
+    const dates = timerender.get_dates_for_date_operator();
     const suggestions = get_suggestions(query);
 
     const expected = [
@@ -390,6 +394,8 @@ test("empty_query_suggestions", () => {
         "sender:myself@zulip.com",
         `channel:${devel_id}`,
         `channel:${office_id}`,
+        `date:${dates.get("today")}`,
+        `date:${dates.get("yesterday")}`,
         "has:link",
         "has:image",
         "has:attachment",

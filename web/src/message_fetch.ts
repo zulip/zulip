@@ -44,6 +44,7 @@ type MessageFetchResponse = z.infer<typeof response_schema>;
 
 type MessageFetchOptions = {
     anchor: string | number;
+    anchor_date?: string | undefined;
     num_before: number;
     num_after: number;
     cont: (data: MessageFetchResponse, args: MessageFetchOptions) => void;
@@ -60,6 +61,7 @@ type MessageFetchAPIParams = {
     client_gravatar: boolean;
     narrow?: string;
     allow_empty_topic_name: boolean;
+    anchor_date?: string | undefined;
 };
 
 let first_messages_fetch = true;
@@ -121,6 +123,8 @@ export function fetch_more_if_required_for_current_msg_list(
     has_found_newest: boolean,
     looking_for_new_msgs: boolean,
     looking_for_old_msgs: boolean,
+    anchor_date?: string,
+    anchor?: number,
 ): void {
     assert(message_lists.current !== undefined);
     if (has_found_oldest && has_found_newest && message_lists.current.visibly_empty()) {
@@ -136,6 +140,8 @@ export function fetch_more_if_required_for_current_msg_list(
         maybe_load_older_messages({
             msg_list: message_lists.current,
             msg_list_data: message_lists.current.data,
+            anchor_date,
+            anchor,
         });
     }
     if (looking_for_new_msgs && !has_found_newest) {
@@ -192,6 +198,8 @@ function process_result(data: MessageFetchResponse, opts: MessageFetchOptions): 
             has_found_newest,
             looking_for_new_msgs,
             looking_for_old_msgs,
+            opts.anchor_date,
+            data.anchor,
         );
     }
 
@@ -358,6 +366,7 @@ export function get_parameters_for_message_fetch_api(
         num_after: opts.num_after,
         client_gravatar: true,
         allow_empty_topic_name: true,
+        anchor_date: opts.anchor_date,
     };
     const msg_list_data = opts.msg_list_data;
 
@@ -470,8 +479,9 @@ export function load_messages(opts: MessageFetchOptions, attempt = 1): void {
 export function load_messages_for_narrow(opts: {
     anchor: string | number;
     msg_list: MessageList;
-    cont: () => void;
+    cont: (data: MessageFetchResponse) => void;
     validate_filter_topic_post_fetch?: boolean | undefined;
+    anchor_date?: string | undefined;
 }): void {
     load_messages({
         anchor: opts.anchor,
@@ -481,10 +491,18 @@ export function load_messages_for_narrow(opts: {
         msg_list_data: opts.msg_list.data,
         cont: opts.cont,
         validate_filter_topic_post_fetch: opts.validate_filter_topic_post_fetch,
+        anchor_date: opts.anchor_date,
     });
 }
 
-export function get_backfill_anchor(msg_list_data: MessageListData): string | number {
+export function get_backfill_anchor(
+    msg_list_data: MessageListData,
+    anchor_date?: string,
+    anchor?: number,
+): string | number {
+    if (anchor_date !== undefined && anchor !== undefined) {
+        return anchor;
+    }
     const oldest_msg = msg_list_data.first_including_muted();
     if (oldest_msg) {
         return oldest_msg.id;
@@ -532,6 +550,8 @@ export function maybe_load_older_messages(opts: {
     cont?: () => void;
     msg_list?: MessageList | undefined;
     msg_list_data: MessageListData;
+    anchor_date?: string | undefined;
+    anchor?: number | undefined;
 }): void {
     // This function gets called when you scroll to the top
     // of your window, and you want to get messages older
@@ -597,6 +617,8 @@ export function maybe_load_older_messages(opts: {
         num_before: opts.recent_view
             ? consts.recent_view_fetch_more_batch_size
             : consts.narrowed_view_backward_batch_size,
+        anchor_date: opts.anchor_date,
+        anchor: opts.anchor,
     });
 }
 
@@ -605,10 +627,11 @@ export function do_backfill(opts: {
     cont?: () => void;
     msg_list_data: MessageListData;
     msg_list?: MessageList | undefined;
+    anchor_date?: string | undefined;
+    anchor?: number | undefined;
 }): void {
     const msg_list_data = opts.msg_list_data;
-    const anchor = get_backfill_anchor(msg_list_data);
-
+    const anchor = get_backfill_anchor(msg_list_data, opts.anchor_date, opts.anchor);
     // `load_messages` behaves differently for `msg_list` and `msg_list_data` as
     // parameters as which one is passed affects the behavior of the function.
     // So, we need to need them as they were provided to us.
@@ -618,6 +641,7 @@ export function do_backfill(opts: {
         num_after: 0,
         msg_list: opts.msg_list,
         msg_list_data,
+        anchor_date: opts.anchor_date,
         cont() {
             if (opts.cont) {
                 opts.cont();

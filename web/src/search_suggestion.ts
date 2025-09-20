@@ -13,6 +13,7 @@ import {type NarrowTerm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import * as stream_topic_history from "./stream_topic_history.ts";
 import * as stream_topic_history_util from "./stream_topic_history_util.ts";
+import * as timerender from "./timerender.ts";
 import * as typeahead_helper from "./typeahead_helper.ts";
 import * as util from "./util.ts";
 
@@ -99,6 +100,7 @@ const incompatible_patterns: Record<string, TermPattern[]> = {
     "has:image": [{operator: "has", operand: "image"}],
     "has:attachment": [{operator: "has", operand: "attachment"}],
     "has:reaction": [{operator: "has", operand: "reaction"}],
+    date: [{operator: "date"}],
 };
 
 export type Suggestion = {
@@ -216,6 +218,36 @@ function get_channel_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggest
         const search_string = Filter.unparse([term]);
         return {description_html, search_string};
     });
+}
+
+function get_date_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggestion[] {
+    const negated =
+        last.negated === true || (last.operator === "search" && last.operand.startsWith("-"));
+    if (negated) {
+        return [];
+    }
+    const valid = ["date", "search", ""];
+    if (!check_validity(last, terms, valid, incompatible_patterns.date!)) {
+        return [];
+    }
+
+    const dates = timerender.get_dates_for_date_operator();
+    const today = dates.get("today");
+    const yesterday = dates.get("yesterday");
+    const suggestions: SuggestionAndIncompatiblePatterns[] = [
+        {
+            search_string: `date:${today}`,
+            description_html: "messages from today",
+            incompatible_patterns: incompatible_patterns.date!,
+        },
+        {
+            search_string: `date:${yesterday}`,
+            description_html: "messages from yesterday",
+            incompatible_patterns: incompatible_patterns.date!,
+        },
+    ];
+
+    return get_special_filter_suggestions(last, terms, suggestions);
 }
 
 function get_group_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggestion[] {
@@ -801,6 +833,7 @@ function get_operator_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Sugges
         choices = [
             "channels",
             "channel",
+            "date",
             "topic",
             "dm",
             "dm-including",
@@ -819,7 +852,8 @@ function get_operator_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Sugges
         (choice) =>
             common.phrase_match(last_operand, choice) &&
             (!incompatible_patterns[choice] ||
-                !match_criteria(terms, incompatible_patterns[choice])),
+                !match_criteria(terms, incompatible_patterns[choice])) &&
+            !(choice === "date" && negated),
     );
 
     return choices.map((choice) => {
@@ -1062,6 +1096,7 @@ export function get_search_result(
         get_is_filter_suggestions,
         get_sent_by_me_suggestions,
         get_channel_suggestions,
+        get_date_suggestions,
         get_people("dm"),
         get_people("sender"),
         get_people("dm-including"),
@@ -1076,6 +1111,7 @@ export function get_search_result(
             get_operator_suggestions,
             get_is_filter_suggestions,
             get_channel_suggestions,
+            get_date_suggestions,
             get_people("sender"),
             get_people("from"),
             get_topic_suggestions,

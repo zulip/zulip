@@ -1,3 +1,4 @@
+import {isValid, parseISO} from "date-fns";
 import _ from "lodash";
 import assert from "minimalistic-assert";
 
@@ -20,6 +21,7 @@ import {current_user} from "./state_data.ts";
 import type {NarrowTerm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import * as sub_store from "./sub_store.ts";
+import * as timerender from "./timerender.ts";
 import * as user_topics from "./user_topics.ts";
 import * as util from "./util.ts";
 
@@ -186,6 +188,12 @@ function message_matches_search_term(message: Message, operator: string, operand
             operand = operand.toLowerCase();
             return message.topic.toLowerCase() === operand;
 
+        case "date":
+            if (!isValid(parseISO(operand))) {
+                return false;
+            }
+            return true;
+
         case "sender":
             return people.id_matches_email_operand(message.sender_id, operand);
 
@@ -329,6 +337,8 @@ export class Filter {
                 // curly quotes with regular quotes when doing a search.  This is
                 // unlikely to cause any problems and is probably what the user wants.
                 operand = operand.replaceAll(/[\u201C\u201D]/g, '"');
+                break;
+            case "date":
                 break;
             default:
                 operand = operand.toLowerCase();
@@ -537,6 +547,14 @@ export class Filter {
                 return channels_operands.has(term.operand);
             case "topic":
                 return true;
+            case "date":
+                if (term.negated) {
+                    return false;
+                }
+                if (!isValid(parseISO(term.operand))) {
+                    return false;
+                }
+                return true;
             case "sender":
             case "from":
             case "dm":
@@ -607,6 +625,7 @@ export class Filter {
             "channels-web-public",
             "channel",
             "topic",
+            "date",
             "dm",
             "dm-including",
             "with",
@@ -688,6 +707,9 @@ export class Filter {
             // Note: We hack around using this in "describe" below.
             case "is":
                 return verb + "messages that are";
+
+            case "date":
+                return "messages near a specific date";
         }
         return "";
     }
@@ -817,6 +839,29 @@ export class Filter {
                         prefix_for_operator,
                         operand: util.get_final_topic_display_name(operand),
                         is_empty_string_topic: operand === "",
+                    };
+                }
+                if (canonicalized_operator === "date") {
+                    const dates = timerender.get_dates_for_date_operator();
+                    const today = dates.get("today");
+                    const yesterday = dates.get("yesterday");
+                    if (operand === today) {
+                        return {
+                            type: "prefix_for_operator",
+                            prefix_for_operator: "messages near",
+                            operand: "today",
+                        };
+                    } else if (operand === yesterday) {
+                        return {
+                            type: "prefix_for_operator",
+                            prefix_for_operator: "messages near",
+                            operand: "yesterday",
+                        };
+                    }
+                    return {
+                        type: "prefix_for_operator",
+                        prefix_for_operator: "messages near",
+                        operand,
                     };
                 }
                 return {
@@ -1112,6 +1157,7 @@ export class Filter {
             "not-channels-web-public",
             "near",
             "with",
+            "date",
         ]);
 
         for (const term of term_types) {
