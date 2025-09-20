@@ -95,6 +95,7 @@ def do_summarize_narrow(
         realm=user_profile.realm,
         is_web_public_query=False,
         anchor=LARGER_THAN_MAX_MESSAGE_ID,
+        anchor_date=None,
         include_anchor=True,
         num_before=MAX_MESSAGES_SUMMARIZED,
         num_after=0,
