@@ -606,23 +606,24 @@ def get_members_and_subgroups_of_groups(
         .exclude(user_profile__is_active=False)
         .annotate(
             member_type=Value("user"),
+            group_id=F("user_group_id"),
+            member_id=F("user_profile_id"),
         )
-        .values_list("member_type", "user_group_id", "user_profile_id")
     )
 
-    group_subgroups = (
-        GroupGroupMembership.objects.filter(supergroup_id__in=group_ids)
-        .annotate(
-            member_type=Value("group"),
-        )
-        .values_list("member_type", "supergroup_id", "subgroup_id")
+    group_subgroups = GroupGroupMembership.objects.filter(supergroup_id__in=group_ids).annotate(
+        member_type=Value("group"),
+        group_id=F("supergroup_id"),
+        member_id=F("subgroup_id"),
     )
 
     group_members_dict: dict[int, UserGroupMembersData] = dict()
     for group_id in group_ids:
         group_members_dict[group_id] = UserGroupMembersData(direct_members=[], direct_subgroups=[])
 
-    all_members = user_members.union(group_subgroups)
+    all_members = user_members.union(group_subgroups).values_list(
+        "member_type", "group_id", "member_id"
+    )
     for member_type, group_id, member_id in all_members:
         members_dict = group_members_dict[group_id]
         if member_type == "user":
