@@ -38,7 +38,7 @@ def do_mark_all_as_read(user_profile: UserProfile, *, timeout: float | None = No
 
     # First, we clear mobile push notifications.  This is safer in the
     # event that the below logic times out and we're killed.
-    all_push_message_ids = (
+    all_push_message_ids = list(
         UserMessage.objects.filter(
             user_profile=user_profile,
         )
