@@ -24,7 +24,6 @@ import * as people from "./people.ts";
 import * as popup_banners from "./popup_banners.ts";
 import * as recent_view_ui from "./recent_view_ui.ts";
 import type {NarrowTerm} from "./state_data.ts";
-import {narrow_term_schema} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import * as stream_list from "./stream_list.ts";
 import * as util from "./util.ts";
@@ -261,7 +260,14 @@ function handle_operators_supporting_id_based_api(narrow_parameter: string): str
     // operators, such as "pm-with" and "stream", are not included here.
     const operators_supporting_ids = new Set(["dm"]);
     const operators_supporting_id = new Set(["id", "channel", "sender", "dm-including"]);
-    const parsed_narrow_data = z.array(narrow_term_schema).parse(JSON.parse(narrow_parameter));
+    const raw_narrow_term_array_schema = z.array(
+        z.object({
+            negated: z.optional(z.boolean()),
+            operator: z.string(),
+            operand: z.string(),
+        }),
+    );
+    const parsed_narrow_data = raw_narrow_term_array_schema.parse(JSON.parse(narrow_parameter));
 
     const narrow_terms: {
         operator: string;
@@ -269,6 +275,10 @@ function handle_operators_supporting_id_based_api(narrow_parameter: string): str
         negated?: boolean | undefined;
     }[] = [];
     for (const raw_term of parsed_narrow_data) {
+        // NOTE: `narrow_term` should be of type `NarrowTerm` but
+        // before we enforce that we need to add type support for
+        // different `operand` types in `NarrowTerm` which will eventually
+        // lead to most of the type conversion below becoming unnecessary.
         const narrow_term: {
             operator: string;
             operand: number[] | number | string;

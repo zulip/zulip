@@ -821,7 +821,7 @@ export let show = (raw_terms: NarrowTerm[], show_opts: ShowMessageViewOpts): voi
                     ) {
                         // We convert the current narrow into a `near` narrow so that
                         // user doesn't accidentally mark msgs read which they haven't seen.
-                        let terms = [
+                        let terms: NarrowTerm[] = [
                             ...msg_list.data.filter.terms(),
                             {
                                 operator: "near",
@@ -1253,7 +1253,7 @@ export function render_message_list_with_selected_message(opts: {
 
 function activate_stream_for_cycle_hotkey(stream_id: number): void {
     // This is the common code for A/D hotkeys.
-    const filter_expr = [{operator: "channel", operand: stream_id.toString()}];
+    const filter_expr: NarrowTerm[] = [{operator: "channel", operand: stream_id.toString()}];
     show(filter_expr, {});
 }
 
@@ -1323,7 +1323,7 @@ export function narrow_to_next_topic(opts: {trigger: string; only_followed_topic
         return;
     }
 
-    const filter_expr = [
+    const filter_expr: NarrowTerm[] = [
         {operator: "channel", operand: next_narrow.stream_id.toString()},
         {operator: "topic", operand: next_narrow.topic},
     ];
@@ -1350,7 +1350,7 @@ export function narrow_to_next_pm_string(opts = {}): void {
     const direct_message = people.user_ids_string_to_emails_string(next_direct_message);
     assert(direct_message !== undefined);
 
-    const filter_expr = [{operator: "dm", operand: direct_message}];
+    const filter_expr: NarrowTerm[] = [{operator: "dm", operand: direct_message}];
 
     // force_close parameter is true to not auto open compose_box
     const updated_opts = {
@@ -1388,7 +1388,7 @@ export function narrow_by_topic(
         unread_ops.notify_server_message_read(original);
     }
 
-    const search_terms = [
+    const search_terms: NarrowTerm[] = [
         {operator: "channel", operand: original.stream_id.toString()},
         {operator: "topic", operand: original.topic},
     ];
@@ -1465,7 +1465,7 @@ export function to_compose_target(): void {
         }
         // If we are composing to a new topic, we narrow to the stream but
         // grey-out the message view instead of narrowing to an empty view.
-        const terms = [{operator: "channel", operand: stream_id.toString()}];
+        const terms: NarrowTerm[] = [{operator: "channel", operand: stream_id.toString()}];
         const topic = compose_state.topic();
         if (topic !== "" || stream_data.can_use_empty_topic(stream_id)) {
             terms.push({operator: "topic", operand: topic});
