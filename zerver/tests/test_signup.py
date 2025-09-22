@@ -2068,11 +2068,14 @@ class RealmCreationTest(ZulipTestCase):
             email="<foo", realm_subdomain="custom-test", realm_name="Zulip test"
         )
         self.assert_in_response("Please use your real email address.", result)
+        self.assert_in_response("Enter a valid email address.", result)
 
         result = self.submit_realm_creation_form(
             email="foo\x00bar", realm_subdomain="custom-test", realm_name="Zulip test"
         )
         self.assert_in_response("Please use your real email address.", result)
+        self.assert_in_response("Null characters are not allowed.", result)
+        self.assert_in_response("Enter a valid email address.", result)
 
     @override_settings(OPEN_REALM_CREATION=True)
     def test_mailinator_signup(self) -> None:
