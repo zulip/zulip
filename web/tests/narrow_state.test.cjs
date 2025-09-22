@@ -376,7 +376,7 @@ test("inbox_view_visible", () => {
     const filter = new Filter([
         {
             operator: "channel",
-            operand: 10,
+            operand: "10",
         },
     ]);
     inbox_util.set_filter(filter);

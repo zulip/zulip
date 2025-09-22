@@ -630,6 +630,11 @@ test("basics", () => {
     terms = [{operator: "channel", operand: "foo", negated: false}];
     filter = new Filter(terms);
     assert.ok(filter.is_channel_view());
+
+    // Throw error on invalid operator.
+    assert.throws(() => get_predicate([["bogus", "33"]]), {
+        name: "$ZodError",
+    });
 });
 
 function assert_not_mark_read_with_has_operands(additional_terms_to_test) {
@@ -736,7 +741,9 @@ test("can_mark_messages_read", () => {
     assert_not_mark_read_with_is_operands(channel_term);
     assert_not_mark_read_when_searching(channel_term);
 
-    const channel_negated_operator = [{operator: "channel", operand: foo_stream_id, negated: true}];
+    const channel_negated_operator = [
+        {operator: "channel", operand: foo_stream_id.toString(), negated: true},
+    ];
     filter = new Filter(channel_negated_operator);
     assert.ok(!filter.can_mark_messages_read());
 
@@ -917,13 +924,13 @@ test("public_terms", ({override, override_rewire}) => {
     stream_data.clear_subscriptions();
     const some_channel_id = new_stream_id();
     let terms = [
-        {operator: "channel", operand: some_channel_id},
+        {operator: "channel", operand: some_channel_id.toString()},
         {operator: "in", operand: "all"},
         {operator: "topic", operand: "bar"},
     ];
     let filter = new Filter(terms);
     const expected_terms = [
-        {operator: "channel", operand: some_channel_id},
+        {operator: "channel", operand: some_channel_id.toString()},
         {operator: "in", operand: "all"},
         {operator: "topic", operand: "bar"},
     ];
@@ -938,7 +945,7 @@ test("public_terms", ({override, override_rewire}) => {
     assert_same_terms(filter.public_terms(), expected_terms);
     assert.ok(filter.can_bucket_by("channel"));
 
-    terms = [{operator: "channel", operand: some_channel_id}];
+    terms = [{operator: "channel", operand: some_channel_id.toString()}];
     filter = new Filter(terms);
     override(page_params, "narrow_stream", "default");
     assert_same_terms(filter.public_terms(), []);
@@ -1450,9 +1457,6 @@ test("predicate_edge_cases", () => {
     // return a function that accepts all messages.
     predicate = get_predicate([["in", "bogus"]]);
     assert.ok(!predicate({}));
-
-    predicate = get_predicate([["bogus", "33"]]);
-    assert.ok(predicate({}));
 
     predicate = get_predicate([["is", "bogus"]]);
     assert.ok(!predicate({}));

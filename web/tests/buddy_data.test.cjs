@@ -412,7 +412,7 @@ test("show offline channel subscribers for small channels", ({override_rewire}) 
     ]);
 
     const filter_terms = [
-        {operator: "channel", operand: sub.stream_id},
+        {operator: "channel", operand: String(sub.stream_id)},
         {operator: "topic", operand: "Foo"},
     ];
     message_lists.set_current(make_message_list(filter_terms));
@@ -437,7 +437,7 @@ test("get_conversation_participants", () => {
     peer_data.set_subscribers(rome_sub.stream_id, [selma.user_id, me.user_id]);
 
     const filter_terms = [
-        {operator: "channel", operand: rome_sub.stream_id},
+        {operator: "channel", operand: String(rome_sub.stream_id)},
         {operator: "topic", operand: "Foo"},
     ];
     message_lists.set_current(
