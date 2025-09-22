@@ -471,7 +471,7 @@ run_test("update_hash_to_match_filter", ({override, override_rewire}) => {
     helper.assert_events([[message_viewport, "stop_auto_scrolling"]]);
     assert.equal(url_pushed, "http://zulip.zulipdev.com/#narrow/is/starred");
 
-    terms = [{operator: "-is", operand: "starred"}];
+    terms = [{operator: "is", operand: "starred", negated: true}];
 
     helper.clear_events();
     message_view.update_hash_to_match_filter(new Filter(terms));
