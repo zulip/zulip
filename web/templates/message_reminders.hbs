@@ -4,7 +4,7 @@
             {{#tr}}
                 <z-link></z-link> scheduled for {formatted_delivery_time}.
                 {{#*inline "z-link"~}}
-                    <a href="#reminders">Reminder</a>
+                    <a href="#reminders" class="message-reminder-overlay-link" data-reminder-id="{{ this/reminder_id }}">Reminder</a>
                 {{~/inline}}
             {{/tr}}
         </p>
