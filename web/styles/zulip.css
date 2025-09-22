@@ -298,16 +298,23 @@ p.n-margin {
     }
 }
 
-#feedback_container {
-    display: none;
+#feedback-container-content-wrapper {
     position: fixed;
+    left: 50%;
+    transform: translateX(-50%);
     width: 400px;
-    top: 0;
-    left: calc(50vw - 220px);
+    max-width: calc(100% - 20px);
     padding: 15px;
     background-color: var(--color-background-modal);
     border-radius: 5px;
     box-shadow: 0 0 30px hsl(0deg 0% 0% / 25%);
+    box-sizing: border-box;
+}
+
+#feedback_container {
+    display: none;
+    position: fixed;
+    width: 100%;
     z-index: 110;
 
     @container app (width < $cq_md_min) {
