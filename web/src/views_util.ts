@@ -156,7 +156,7 @@ export function is_in_focus(): boolean {
         !sidebar_ui.any_sidebar_expanded_as_overlay() &&
         !overlays.any_active() &&
         !modals.any_active_or_animating() &&
-        !$(".input-element").is(":focus") &&
+        !$(".input-element:not(#recent_view_search):not(#inbox-search)").is(":focus") &&
         !$("#search_query").is(":focus") &&
         !$(".navbar-item").is(":focus")
     );
