@@ -8,22 +8,17 @@ import type {Message} from "./message_store.ts";
 import type {Event} from "./poll_widget.ts";
 import {zform_widget_extra_data_schema} from "./submessage.ts";
 import * as transmit from "./transmit.ts";
+import type {WidgetExtraData} from "./widgetize.ts";
 
 export type ZFormExtraData = z.infer<typeof zform_widget_extra_data_schema>;
 
 export function activate(opts: {
     $elem: JQuery;
-    extra_data: unknown;
+    extra_data: WidgetExtraData;
     message: Message;
-}): {handle_events: (events: Event[]) => void} | undefined {
+}): (events: Event[]) => void {
     const $outer_elem = opts.$elem;
-    const parse_result = zform_widget_extra_data_schema.safeParse(opts.extra_data);
-
-    if (!parse_result.success) {
-        blueslip.warn("invalid zform extra data", {issues: parse_result.error.issues});
-        return undefined;
-    }
-    const {data} = parse_result;
+    const data = zform_widget_extra_data_schema.parse(opts.extra_data);
 
     function make_choices(data: ZFormExtraData): JQuery {
         // Assign idx values to each of our choices so that
@@ -68,5 +63,5 @@ export function activate(opts: {
 
     render();
 
-    return {handle_events};
+    return handle_events;
 }
