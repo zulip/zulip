@@ -19,7 +19,7 @@ import {user_settings} from "./user_settings.ts";
 
     Also, I want the unit tests for Markdown to
     be able to reuse this code easily (and therefore
-    didn't just put this in ui_init.js).
+    didn't just put this in ui_init.ts).
 
     Once the first steps of making Markdown be a
     shared library are complete, we may tweak
