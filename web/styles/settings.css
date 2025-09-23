@@ -310,6 +310,18 @@ h3,
     }
 }
 
+/* Stream creation error messages */
+#archived_stream_rename {
+    color: hsl(200deg 100% 40%);
+    cursor: pointer;
+    text-decoration: underline;
+    display: inline;
+}
+
+#archived_stream_rename:hover {
+    color: hsl(200deg 100% 30%);
+}
+
 /* Make this one less wide because it's indented, so that the right
    edge lines up with other dropdown menus. Usual 33px plus 23px extra
    margin. */

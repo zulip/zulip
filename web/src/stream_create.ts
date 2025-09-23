@@ -106,6 +106,11 @@ class StreamNameError {
         $("#stream_name_error").show();
     }
 
+    report_already_exists_with_links(rendered_error_html: string): void {
+        $("#stream_name_error").html(rendered_error_html);
+        $("#stream_name_error").show();
+    }
+
     clear_errors(): void {
         $("#stream_name_error").hide();
         $("#archived_stream_rename").hide();
@@ -121,9 +126,13 @@ class StreamNameError {
     }
 
     rename_archived_stream(stream_id: number): void {
-        $("#archived_stream_rename").text($t({defaultMessage: "Rename archived channel"}));
+        $("#archived_stream_rename").text($t({defaultMessage: "Rename it"}));
         $("#archived_stream_rename").attr("data-stream-id", stream_id);
         $("#archived_stream_rename").show();
+    }
+
+    create_channel_link(stream_id: number, text: string): string {
+        return `<a href="#channels/${stream_id}/general" class="stream-settings-link">${text}</a>`;
     }
 
     pre_validate(stream_name: string): void {
@@ -136,14 +145,21 @@ class StreamNameError {
         // realize the stream already exists, I may want to cancel.)
         const stream = stream_data.get_sub(stream_name);
         if (stream_name && stream) {
-            let error;
             if (stream.is_archived) {
-                error = $t({defaultMessage: "An archived channel with this name already exists."});
+                const channel_link = this.create_channel_link(stream.stream_id, "Archived channel");
+                let error_html = "An " + channel_link + " with this name already exists.";
                 if (stream_settings_data.get_sub_for_settings(stream).can_change_name_description) {
-                    this.rename_archived_stream(stream.stream_id);
+                    error_html +=
+                        ' <span id="archived_stream_rename" data-stream-id="' +
+                        stream.stream_id +
+                        '">Rename it</span>';
                 }
+                this.report_already_exists_with_links(error_html);
+            } else {
+                const channel_link = this.create_channel_link(stream.stream_id, "channel");
+                const error_html = "A " + channel_link + " with this name already exists.";
+                this.report_already_exists_with_links(error_html);
             }
-            this.report_already_exists(error);
             return;
         }
 
@@ -159,11 +175,21 @@ class StreamNameError {
 
         const stream = stream_data.get_sub(stream_name);
         if (stream) {
-            let error;
             if (stream.is_archived) {
-                error = $t({defaultMessage: "An archived channel with this name already exists."});
+                const channel_link = this.create_channel_link(stream.stream_id, "Archived channel");
+                let error_html = "An " + channel_link + " with this name already exists.";
+                if (stream_settings_data.get_sub_for_settings(stream).can_change_name_description) {
+                    error_html +=
+                        ' <span id="archived_stream_rename" class="rename-link" data-stream-id="' +
+                        stream.stream_id +
+                        '">Rename it</span>';
+                }
+                this.report_already_exists_with_links(error_html);
+            } else {
+                const channel_link = this.create_channel_link(stream.stream_id, "channel");
+                const error_html = "A " + channel_link + " with this name already exists.";
+                this.report_already_exists_with_links(error_html);
             }
-            this.report_already_exists(error);
             this.select();
             return false;
         }
