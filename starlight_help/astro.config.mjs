@@ -7,6 +7,51 @@ import {defineConfig, envField} from "astro/config";
 import compressor from "astro-compressor";
 import Icons from "unplugin-icons/vite";
 
+/**
+ * @returns {import("vite").PluginOption}
+ */
+function createRedirectPlugin() {
+    // Astro and starlight middlewares run after astro's vite middleware,
+    // which gives error before our logic here could run, so the only option
+    // left with us was to use a vite plugin.
+    return {
+        name: "redirect-plugin",
+        enforce: "post",
+        /**
+         * @param {import("vite").ViteDevServer} server
+         */
+        configureServer(server) {
+            return () => {
+                // The method exposed by the connect app at server.middlewares is `use`.
+                // But `use` appends our middleware at the end of the stack, before which
+                // the trailingSlashMiddleware of astro runs and gives an error before it
+                // can reach our middleware. `stack.unshift` ensures our middleware runs
+                // first.
+                server.middlewares.stack.unshift({
+                    route: "",
+                    /**
+                     * @param {import("http").IncomingMessage} req
+                     * @param {import("http").ServerResponse} _res
+                     * @param {Function} next
+                     */
+                    handle(req, _res, next) {
+                        // Canonical URL for the root of the help center is /help/,
+                        // but for all other help URLs, there should be no trailingSlash.
+                        // We have set trailingSlash to never in astro. Setting it to ignore
+                        // will make our /help/ work, but it causes sidebar and other
+                        // components to generate links with a trailingSlash at the end. So
+                        // we manually handle this case.
+                        if (req.url === "/help/") {
+                            req.url = "/help";
+                        }
+                        next();
+                    },
+                });
+            };
+        },
+    };
+}
+
 // https://astro.build/config
 export default defineConfig({
     base: "help",
@@ -47,6 +92,7 @@ export default defineConfig({
                     }
                 },
             }),
+            createRedirectPlugin(),
         ],
         ssr: {
             noExternal: ["zod"],

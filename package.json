@@ -165,6 +165,7 @@
     "svgo": "^4.0.0",
     "typescript": "^5.0.2",
     "typescript-eslint": "^8.13.0",
+    "vite": "^6.3.5",
     "vnu-jar": "^24.10.17",
     "webpack-dev-server": "^5.0.2",
     "xvfb": "^0.4.0",
