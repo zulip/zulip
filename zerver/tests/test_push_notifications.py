@@ -733,6 +733,9 @@ class PushBouncerNotificationTest(BouncerTestCase):
 
     def test_send_notification_endpoint_on_free_plans(self) -> None:
         hamlet = self.example_user("hamlet")
+        othello = self.example_user("othello")
+        recipient = get_or_create_direct_message_group(id_list=[hamlet.id, othello.id]).recipient
+
         remote_server = self.server
         RemotePushDeviceToken.objects.create(
             kind=RemotePushDeviceToken.FCM,
@@ -744,7 +747,7 @@ class PushBouncerNotificationTest(BouncerTestCase):
         current_time = now()
         message = Message(
             sender=hamlet,
-            recipient=self.example_user("othello").recipient,
+            recipient=recipient,
             realm_id=hamlet.realm_id,
             content="This is test content",
             rendered_content="This is test content",
@@ -773,12 +776,12 @@ class PushBouncerNotificationTest(BouncerTestCase):
                     "realm_id": hamlet.realm.id,
                     "realm_uri": hamlet.realm.url,
                     "realm_url": hamlet.realm.url,
-                    "user_id": self.example_user("othello").id,
+                    "user_id": othello.id,
                 }
             },
         }
         old_gcm_payload = {
-            "user_id": self.example_user("othello").id,
+            "user_id": othello.id,
             "event": "message",
             "alert": "New private message from King Hamlet",
             "zulip_message_id": message.id,

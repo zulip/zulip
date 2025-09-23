@@ -34,8 +34,9 @@ class TestEmbeddedBotMessaging(ZulipTestCase):
         self.assertEqual(last_message.sender_id, self.bot_profile.id)
         display_recipient = get_display_recipient(last_message.recipient)
         assert isinstance(display_recipient, list)
-        self.assert_length(display_recipient, 1)
+        self.assert_length(display_recipient, 2)
         self.assertEqual(display_recipient[0]["email"], self.user_profile.email)
+        self.assertEqual(display_recipient[1]["email"], self.bot_profile.email)
 
     def test_stream_message_to_embedded_bot(self) -> None:
         assert self.bot_profile is not None

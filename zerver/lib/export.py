@@ -19,7 +19,6 @@ from collections.abc import Callable, Iterable, Mapping
 from contextlib import suppress
 from datetime import datetime
 from email.headerregistry import Address
-from functools import cache
 from typing import TYPE_CHECKING, Any, Optional, TypeAlias, TypedDict, cast
 from urllib.parse import urlsplit
 
@@ -38,6 +37,7 @@ from analytics.models import RealmCount, StreamCount, UserCount
 from scripts.lib.zulip_tools import overwrite_symlink
 from version import ZULIP_VERSION
 from zerver.lib.avatar_hash import user_avatar_base_path_from_ids
+from zerver.lib.display_recipient import get_display_recipient
 from zerver.lib.migration_status import MigrationStatusJson, parse_migration_status
 from zerver.lib.pysa import mark_sanitized
 from zerver.lib.stream_color import STREAM_ASSIGNMENT_COLORS
@@ -1380,7 +1380,11 @@ def custom_fetch_user_profile_cross_realm(response: TableData, context: Context)
         bot_default_email = bot_name_to_default_email[bot_name]
         bot_user_id = get_system_bot(bot_email, internal_realm.id).id
 
-        recipient_id = Recipient.objects.get(type_id=bot_user_id, type=Recipient.PERSONAL).id
+        try:
+            recipient_id = Recipient.objects.get(type_id=bot_user_id, type=Recipient.PERSONAL).id
+        except Recipient.DoesNotExist:
+            recipient_id = None
+
         response["zerver_userprofile_crossrealm"].append(
             dict(
                 email=bot_default_email,
@@ -1458,7 +1462,10 @@ def custom_fetch_direct_message_groups(response: TableData, context: Context) ->
         consented_user_ids = set()
 
     user_profile_ids = {
-        r["id"] for r in response["zerver_userprofile"] + response["zerver_userprofile_mirrordummy"]
+        r["id"]
+        for r in response["zerver_userprofile"]
+        + response["zerver_userprofile_mirrordummy"]
+        + response["zerver_userprofile_crossrealm"]
     }
 
     recipient_filter = Q()
@@ -1495,7 +1502,7 @@ def custom_fetch_direct_message_groups(response: TableData, context: Context) ->
     for sub in Subscription.objects.select_related("user_profile").filter(
         recipient__in=realm_direct_message_group_recipient_ids
     ):
-        if sub.user_profile.realm_id != realm.id:
+        if sub.user_profile.realm_id != realm.id and not sub.user_profile.is_bot:
             # In almost every case the other realm will be zulip.com
             unsafe_direct_message_group_recipient_ids.add(sub.recipient_id)
 
@@ -2748,22 +2755,18 @@ def chunkify(lst: list[int], chunk_size: int) -> list[list[int]]:
 def export_messages_single_user(
     user_profile: UserProfile, *, output_dir: Path, reaction_message_ids: set[int]
 ) -> None:
-    @cache
-    def get_recipient(recipient_id: int) -> str:
-        recipient = Recipient.objects.get(id=recipient_id)
-
+    def get_recipient(recipient: Recipient, sender: UserProfile) -> str:
         if recipient.type == Recipient.STREAM:
             stream = Stream.objects.values("name").get(id=recipient.type_id)
             return stream["name"]
 
-        user_names = (
-            UserProfile.objects.filter(
-                subscription__recipient_id=recipient.id,
-            )
-            .order_by("full_name")
-            .values_list("full_name", flat=True)
-        )
+        display_recipients = get_display_recipient(recipient)
 
+        if len(display_recipients) == 2:
+            other_user = next(user for user in display_recipients if user["id"] != sender.id)
+            return other_user["full_name"]
+
+        user_names = [user["full_name"] for user in display_recipients]
         return ", ".join(user_names)
 
     messages_from_me = Message.objects.filter(
@@ -2808,7 +2811,9 @@ def export_messages_single_user(
             item["flags_mask"] = user_message.flags.mask
             # Add a few nice, human-readable details
             item["sending_client_name"] = user_message.message.sending_client.name
-            item["recipient_name"] = get_recipient(user_message.message.recipient_id)
+            item["recipient_name"] = get_recipient(
+                user_message.message.recipient, user_message.message.sender
+            )
             message_chunk.append(item)
 
         message_filename = os.path.join(output_dir, f"messages-{dump_file_id:06}.json")

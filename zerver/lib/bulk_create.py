@@ -1,6 +1,7 @@
 from collections.abc import Collection, Iterable
 from typing import Any
 
+from django.conf import settings
 from django.db.models import Model, QuerySet
 from django.utils.timezone import now as timezone_now
 
@@ -95,8 +96,6 @@ def bulk_create_users(
             user_profile.email = get_display_email_address(user_profile)
         UserProfile.objects.bulk_update(profiles_to_create, ["email"])
 
-    user_ids = {user.id for user in profiles_to_create}
-
     RealmAuditLog.objects.bulk_create(
         RealmAuditLog(
             realm=realm,
@@ -107,30 +106,33 @@ def bulk_create_users(
         for profile_ in profiles_to_create
     )
 
-    recipients_to_create = [
-        Recipient(type_id=user_id, type=Recipient.PERSONAL) for user_id in user_ids
-    ]
+    if not settings.PREFER_DIRECT_MESSAGE_GROUP:
+        user_ids = {user.id for user in profiles_to_create}
 
-    Recipient.objects.bulk_create(recipients_to_create)
+        recipients_to_create = [
+            Recipient(type_id=user_id, type=Recipient.PERSONAL) for user_id in user_ids
+        ]
 
-    bulk_set_users_or_streams_recipient_fields(
-        UserProfile, profiles_to_create, recipients_to_create
-    )
+        Recipient.objects.bulk_create(recipients_to_create)
 
-    recipients_by_user_id: dict[int, Recipient] = {}
-    for recipient in recipients_to_create:
-        recipients_by_user_id[recipient.type_id] = recipient
-
-    subscriptions_to_create = [
-        Subscription(
-            user_profile_id=user_profile.id,
-            recipient=recipients_by_user_id[user_profile.id],
-            is_user_active=user_profile.is_active,
+        bulk_set_users_or_streams_recipient_fields(
+            UserProfile, profiles_to_create, recipients_to_create
         )
-        for user_profile in profiles_to_create
-    ]
 
-    Subscription.objects.bulk_create(subscriptions_to_create)
+        recipients_by_user_id: dict[int, Recipient] = {}
+        for recipient in recipients_to_create:
+            recipients_by_user_id[recipient.type_id] = recipient
+
+        subscriptions_to_create = [
+            Subscription(
+                user_profile_id=user_profile.id,
+                recipient=recipients_by_user_id[user_profile.id],
+                is_user_active=user_profile.is_active,
+            )
+            for user_profile in profiles_to_create
+        ]
+
+        Subscription.objects.bulk_create(subscriptions_to_create)
 
     full_members_system_group = NamedUserGroup.objects.get(
         name=SystemGroups.FULL_MEMBERS, realm=realm, is_system_group=True
