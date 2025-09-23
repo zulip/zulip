@@ -1,0 +1,21 @@
+<div class="stream-name-error">
+    {{!-- Error message --}}
+    {{#if message_html}}
+        {{{message_html}}}
+    {{else if message_text}}
+        <span class="error-text">{{message_text}}</span>
+    {{/if}}
+
+    {{!-- Optional "rename archived channel" link --}}
+    {{#if show_rename_archived}}
+        <a
+          id="archived_stream_rename"
+          class="rename-archived-link"
+          role="button"
+          tabindex="0"
+          data-stream-id="{{stream_id}}"
+          >
+            {{rename_label}}
+        </a>
+    {{/if}}
+</div>

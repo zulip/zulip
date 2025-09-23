@@ -151,7 +151,6 @@ export function open_edit_panel_empty(): void {
 export function update_stream_name(sub: StreamSubscription, new_name: string): void {
     const $edit_container = stream_settings_containers.get_edit_container(sub);
     $edit_container.find(".sub-stream-name").text(new_name);
-
     const active_data = stream_settings_components.get_active_data();
     if (active_data.id === sub.stream_id) {
         stream_settings_components.set_right_panel_title(sub);
