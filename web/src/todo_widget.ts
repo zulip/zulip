@@ -322,7 +322,7 @@ export function activate({
     message,
 }: {
     $elem: JQuery;
-    callback: (data: TodoWidgetOutboundData | undefined) => void;
+    callback: (data: TodoWidgetOutboundData) => void;
     extra_data: unknown;
     message: Message;
 }): (events: Event[]) => void {
@@ -401,7 +401,9 @@ export function activate({
 
         // Broadcast the new task list title to our peers.
         const data = task_data.handle.new_task_list_title.outbound(new_task_list_title);
-        callback(data);
+        if (data) {
+            callback(data);
+        }
     }
 
     function add_task(): void {
@@ -423,7 +425,9 @@ export function activate({
         }
 
         const data = task_data.handle.new_task.outbound(task, desc);
-        callback(data);
+        if (data) {
+            callback(data);
+        }
     }
 
     function build_widget(): void {

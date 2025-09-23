@@ -7,7 +7,7 @@ import type {Event, PollWidgetExtraData, PollWidgetOutboundData} from "./poll_wi
 import type {TodoWidgetExtraData, TodoWidgetOutboundData} from "./todo_widget.ts";
 import type {ZFormExtraData} from "./zform.ts";
 
-type WidgetExtraData = PollWidgetExtraData | TodoWidgetExtraData | ZFormExtraData | null;
+export type WidgetExtraData = PollWidgetExtraData | TodoWidgetExtraData | ZFormExtraData | null;
 
 type WidgetOptions = {
     widget_type: string;
@@ -21,7 +21,7 @@ type WidgetOptions = {
     }) => void;
 };
 
-type WidgetValue = Record<string, unknown> & {
+export type WidgetValue = Record<string, unknown> & {
     activate: (data: {
         $elem: JQuery;
         callback: (data: string | PollWidgetOutboundData | TodoWidgetOutboundData) => void;
