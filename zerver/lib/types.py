@@ -366,8 +366,28 @@ class GroupPermissionSetting:
     allow_nobody_group: bool
     allow_everyone_group: bool
     default_group_name: str
+
+    # These settings have a default value, because it's unusual for
+    # them to be different from the default.
     require_system_group: bool = False
     allow_internet_group: bool = False
+
+    # When the group that is the current value of a permission setting
+    # is deactivated by an automated job (say, SAML sync of group
+    # membership), this field specifies the group to use.
+    #
+    # Typically, this will be the default of SystemGroups.NOBODY. But
+    # for rare settings where it being empty would violate an
+    # invariant, the group to use can be specified here.
+    #
+    # A value of None is used with require_system_group=True to assert
+    # the only valid values for this setting are groups that cannot be
+    # deactivated.
+    #
+    # TODO: Move this class to a new file that also defines `class
+    # SystemGroups` so we can use SystemGroups.NOBODY here.
+    replacement_group_name: str | None = "role:nobody"
+
     default_for_system_groups: str | None = None
     allowed_system_groups: list[str] = field(default_factory=list)
 

@@ -1455,27 +1455,39 @@ def send_stream_posting_permission_update_notification(
     *,
     old_setting_value: int | UserGroupMembersData,
     new_setting_value: int | UserGroupMembersData,
-    acting_user: UserProfile,
+    acting_user: UserProfile | None,
 ) -> None:
-    sender = get_system_bot(settings.NOTIFICATION_BOT, acting_user.realm_id)
-    user_mention = silent_mention_syntax_for_user(acting_user)
+    sender = get_system_bot(settings.NOTIFICATION_BOT, stream.realm_id)
 
     old_setting_description = get_users_string_with_permission(old_setting_value)
     new_setting_description = get_users_string_with_permission(new_setting_value)
 
     with override_language(stream.realm.default_language):
-        notification_string = _(
-            "{user} changed the [posting permissions]({help_link}) "
-            "for this channel:\n\n"
-            "* **Old**: {old_setting_description}\n"
-            "* **New**: {new_setting_description}\n"
-        )
-        notification_string = notification_string.format(
-            user=user_mention,
-            help_link="/help/channel-posting-policy",
-            old_setting_description=old_setting_description,
-            new_setting_description=new_setting_description,
-        )
+        if acting_user is not None:
+            user_mention = silent_mention_syntax_for_user(acting_user)
+            template = _(
+                "{user} changed the [posting permissions]({help_link}) for this channel:\n\n"
+                "* **Old** : {old_setting_description}\n"
+                "* **New** : {new_setting_description}\n"
+            )
+            notification_string = template.format(
+                user=user_mention,
+                help_link="/help/channel-posting-policy",
+                old_setting_description=old_setting_description,
+                new_setting_description=new_setting_description,
+            )
+        else:
+            template = _(
+                "The [posting permissions]({help_link}) for this channel were changed:\n\n"
+                "* **Old** : {old_setting_description}\n"
+                "* **New** : {new_setting_description}\n"
+            )
+            notification_string = template.format(
+                help_link="/help/channel-posting-policy",
+                old_setting_description=old_setting_description,
+                new_setting_description=new_setting_description,
+            )
+
         internal_send_stream_message(
             sender,
             stream,
@@ -1781,10 +1793,10 @@ def do_set_stream_property(stream: Stream, name: str, value: Any, acting_user: U
 def do_change_stream_group_based_setting(
     stream: Stream,
     setting_name: str,
-    new_setting_value: NamedUserGroup | UserGroupMembersData,
+    new_setting_value: int | NamedUserGroup | UserGroupMembersData,
     *,
     old_setting_api_value: int | UserGroupMembersData | None = None,
-    acting_user: UserProfile,
+    acting_user: UserProfile | None,
 ) -> None:
     old_user_group = getattr(stream, setting_name)
 
@@ -1799,11 +1811,14 @@ def do_change_stream_group_based_setting(
     if setting_name in Stream.stream_permission_group_settings_granting_metadata_access:
         old_user_ids_with_metadata_access = can_access_stream_metadata_user_ids(stream)
 
-    if isinstance(new_setting_value, NamedUserGroup):
-        user_group: UserGroup = new_setting_value
+    if isinstance(new_setting_value, int):
+        user_group = UserGroup.objects.get(id=new_setting_value)
+    elif isinstance(new_setting_value, NamedUserGroup):
+        user_group = new_setting_value
     else:
         user_group = update_or_create_user_group_for_setting(
             acting_user,
+            stream.realm,
             new_setting_value.direct_members,
             new_setting_value.direct_subgroups,
             old_user_group,
@@ -1910,7 +1925,6 @@ def do_change_stream_group_based_setting(
             )
             send_event_on_commit(stream.realm, event, current_user_ids_with_metadata_access)
 
-        assert acting_user is not None
         send_stream_posting_permission_update_notification(
             stream,
             old_setting_value=old_setting_api_value,
