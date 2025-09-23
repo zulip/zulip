@@ -30,6 +30,8 @@ Form is validated both client-side using jquery-validation (see signup.js) and s
 
         <form method="post" class="white-box" id="registration" action="{{ url('accounts_register') }}">
             {{ csrf_input }}
+            <input type='hidden' name='key' value='{{ key }}' />
+            <input type='hidden' name='timezone' id='timezone'/>
 
             <fieldset class="org-registration">
                 {% if creating_new_realm %}
@@ -79,8 +81,6 @@ Form is validated both client-side using jquery-validation (see signup.js) and s
                 {% endif %}
 
                 <div class="input-box">
-                    <input type='hidden' name='key' value='{{ key }}' />
-                    <input type='hidden' name='timezone' id='timezone'/>
                     <label for="id_email" class="inline-block label-title">{{ _('Email') }}</label>
                     <div id="id_email">{{ email }}</div>
                     {% if not creating_new_realm %}
