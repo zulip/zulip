@@ -11,6 +11,7 @@ import Icons from "unplugin-icons/vite";
  * @returns {import("vite").PluginOption}
  */
 function createRedirectPlugin() {
+    const proxyPort = process.env.ZULIP_WEB_APP_PROXY_PORT || "9991";
     // Astro and starlight middlewares run after astro's vite middleware,
     // which gives error before our logic here could run, so the only option
     // left with us was to use a vite plugin.
@@ -31,10 +32,10 @@ function createRedirectPlugin() {
                     route: "",
                     /**
                      * @param {import("http").IncomingMessage} req
-                     * @param {import("http").ServerResponse} _res
+                     * @param {import("http").ServerResponse} res
                      * @param {Function} next
                      */
-                    handle(req, _res, next) {
+                    handle(req, res, next) {
                         // Canonical URL for the root of the help center is /help/,
                         // but for all other help URLs, there should be no trailingSlash.
                         // We have set trailingSlash to never in astro. Setting it to ignore
@@ -44,6 +45,20 @@ function createRedirectPlugin() {
                         if (req.url === "/help/") {
                             req.url = "/help";
                         }
+
+                        // Help center dev server always runs on a port different than
+                        // the web app. We have relative URLs pointing to the web app
+                        // in the help center, but they are not on the port help center
+                        // is running on. We redirect here to our web app proxy port.
+                        if (req.url && !req.url.startsWith("/help")) {
+                            const host = req.headers.host || "localhost";
+                            const redirectUrl = new URL(req.url, `http://${host}`);
+                            redirectUrl.port = proxyPort;
+                            res.writeHead(302, {Location: redirectUrl.toString()});
+                            res.end();
+                            return;
+                        }
+
                         next();
                     },
                 });
