@@ -1,4 +1,5 @@
 import $ from "jquery";
+import * as z from "zod/mini";
 
 import render_message_hidden_dialog from "../templates/message_hidden_dialog.hbs";
 import render_widgets_poll_widget from "../templates/widgets/poll_widget.hbs";
@@ -17,13 +18,16 @@ import type {
     VoteOutboundData,
 } from "./poll_data.ts";
 import {PollData} from "./poll_data.ts";
+import type {WidgetExtraData} from "./widgetize.ts";
 
 export type Event = {sender_id: number; data: InboundData};
 
-export type PollWidgetExtraData = {
-    question?: string | undefined;
-    options?: string[] | undefined;
-};
+export const poll_widget_extra_data_schema = z.object({
+    question: z.optional(z.string()),
+    options: z.optional(z.array(z.string())),
+});
+
+export type PollWidgetExtraData = z.infer<typeof poll_widget_extra_data_schema>;
 
 export type PollWidgetOutboundData =
     | NewOptionOutboundData
@@ -33,21 +37,30 @@ export type PollWidgetOutboundData =
 export function activate({
     $elem,
     callback,
-    extra_data: {question = "", options = []} = {},
+    extra_data,
     message,
 }: {
     $elem: JQuery;
-    callback: (data: PollWidgetOutboundData | undefined) => void;
-    extra_data: PollWidgetExtraData;
+    callback: (data: PollWidgetOutboundData) => void;
+    extra_data: WidgetExtraData;
     message: Message;
 }): (events: Event[]) => void {
     const is_my_poll = people.is_my_user_id(message.sender_id);
+    const parse_result = poll_widget_extra_data_schema.safeParse(extra_data);
+    if (!parse_result.success) {
+        blueslip.error("invalid poll widget extra data", {issues: parse_result.error.issues});
+        return (_events: Event[]): void => {
+            /* noop */
+        };
+    }
+    const parsed_extra_data = parse_result.data;
+
     const poll_data = new PollData({
         message_sender_id: message.sender_id,
         current_user_id: people.my_current_user_id(),
         is_my_poll,
-        question,
-        options,
+        question: parsed_extra_data.question ?? "",
+        options: parsed_extra_data.options ?? [],
         comma_separated_names: people.get_full_names_for_poll_option,
         report_error_function: blueslip.warn,
     });
@@ -113,7 +126,9 @@ export function activate({
 
         // Broadcast the new question to our peers.
         const data = poll_data.handle.question.outbound(new_question);
-        callback(data);
+        if (data) {
+            callback(data);
+        }
     }
 
     function submit_option(): void {
