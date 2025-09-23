@@ -1,6 +1,6 @@
 {
   "private": true,
-  "packageManager": "pnpm@10.15.1+sha512.34e538c329b5553014ca8e8f4535997f96180a1d0f614339357449935350d924e22f8614682191264ec33d1462ac21561aff97f6bb18065351c162c7e8f6de67",
+  "packageManager": "pnpm@10.17.1+sha512.17c560fca4867ae9473a3899ad84a88334914f379be46d455cbf92e5cf4b39d34985d452d2583baf19967fa76cb5c17bc9e245529d0b98745721aa7200ecaf7a",
   "type": "module",
   "dependencies": {
     "@babel/core": "^7.5.5",
@@ -117,7 +117,7 @@
     "@types/lodash": "^4.14.172",
     "@types/micromodal": "^0.3.3",
     "@types/minimalistic-assert": "^1.0.1",
-    "@types/node": "^22.9.0",
+    "@types/node": "^22.18.1",
     "@types/plotly.js": "^3.0.0",
     "@types/sortablejs": "^1.15.1",
     "@types/textarea-caret": "^3.0.3",
@@ -163,7 +163,8 @@
     "stylelint-config-standard": "^39.0.0",
     "stylelint-high-performance-animation": "^1.10.0",
     "svgo": "^4.0.0",
-    "typescript": "^5.0.2",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.2",
     "typescript-eslint": "^8.13.0",
     "vnu-jar": "^24.10.17",
     "webpack-dev-server": "^5.0.2",

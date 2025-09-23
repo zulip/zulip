@@ -4,11 +4,13 @@ import * as z from "zod/mini";
 
 import render_subscription_invites_warning_modal from "../templates/confirm_dialog/confirm_subscription_invites_warning.hbs";
 import render_change_stream_info_modal from "../templates/stream_settings/change_stream_info_modal.hbs";
+import stream_already_exists from "../templates/stream_settings/stream_already_exists.hbs";
 
 import * as channel from "./channel.ts";
 import * as confirm_dialog from "./confirm_dialog.ts";
 import * as dialog_widget from "./dialog_widget.ts";
 import type {DropdownWidget} from "./dropdown_widget.ts";
+import * as hash_util from "./hash_util.ts";
 import {$t, $t_html} from "./i18n.ts";
 import * as keydown_util from "./keydown_util.ts";
 import * as loading from "./loading.ts";
@@ -27,6 +29,7 @@ import type {GroupSettingPillContainer} from "./typeahead_helper.ts";
 import type {HTMLSelectOneElement} from "./types.ts";
 import * as ui_report from "./ui_report.ts";
 import * as util from "./util.ts";
+// import {stream_id} from "./compose_state.ts";
 
 let created_stream: string | undefined;
 // Default is true since the current user is added to
@@ -99,11 +102,30 @@ class StreamSubscriptionError {
 const stream_subscription_error = new StreamSubscriptionError();
 
 class StreamNameError {
-    report_already_exists(error?: string): void {
+    report_already_exists(
+        error?: string,
+        stream?: number | ReturnType<typeof stream_data.get_sub_by_id>,
+    ): void {
+        let url: string | undefined;
+
+        if (typeof stream === "number") {
+            const sub = stream_data.get_sub_by_id(stream);
+            url = sub
+                ? hash_util.channels_settings_edit_url(sub, "general")
+                : `#streams/${stream}/general`;
+        } else if (stream) {
+            url = hash_util.channels_settings_edit_url(stream, "general");
+        }
+
+        if (url) {
+            const html = stream_already_exists({url});
+            $("#stream_name_error").html(html).show();
+            return;
+        }
+
         const error_message =
             error ?? $t({defaultMessage: "A channel with this name already exists."});
-        $("#stream_name_error").text(error_message);
-        $("#stream_name_error").show();
+        $("#stream_name_error").text(error_message).show();
     }
 
     clear_errors(): void {
@@ -143,7 +165,7 @@ class StreamNameError {
                     this.rename_archived_stream(stream.stream_id);
                 }
             }
-            this.report_already_exists(error);
+            this.report_already_exists(error, stream);
             return;
         }
 
@@ -156,14 +178,13 @@ class StreamNameError {
             this.select();
             return false;
         }
-
         const stream = stream_data.get_sub(stream_name);
         if (stream) {
             let error;
             if (stream.is_archived) {
                 error = $t({defaultMessage: "An archived channel with this name already exists."});
             }
-            this.report_already_exists(error);
+            this.report_already_exists(error, stream.stream_id);
             this.select();
             return false;
         }
