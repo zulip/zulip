@@ -62,4 +62,4 @@ import "../../styles/inbox.css";
 import "../../styles/color_picker.css";
 
 // This should be last.
-import "../ui_init.js";
+import "../ui_init.ts";
