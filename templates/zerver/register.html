@@ -17,15 +17,20 @@ Form is validated both client-side using jquery-validation (see signup.js) and s
     <div class="center-block new-style" id="create-account">
 
         <div class="pitch">
-            {% if creating_new_realm %}
+            {% if demo_organizations_enabled and creating_demo %}
+            <h1>{{ _('Create your demo organization') }}</h1>
+            {% elif creating_new_realm %}
             <h1>{{ _('Create your organization') }}</h1>
             {% else %}
             <h1>{{ _('Create your account') }}</h1>
             {% endif %}
 
+            {% if demo_organizations_enabled and creating_demo %}
+            {% else %}
             {% trans %}
             <p>Enter your account details to complete registration.</p>
             {% endtrans %}
+            {% endif %}
         </div>
 
         <form method="post" class="white-box" id="registration" action="{{ url('accounts_register') }}">
@@ -33,6 +38,12 @@ Form is validated both client-side using jquery-validation (see signup.js) and s
             <input type='hidden' name='key' value='{{ key }}' />
             <input type='hidden' name='timezone' id='timezone'/>
 
+            {% if demo_organizations_enabled and creating_demo %}
+            <input type='hidden' name='create_demo' value='{{ form.initial["create_demo"] }}' />
+            <input type='hidden' name='realm_name' value='{{ form.initial["realm_name"] }}' />
+            <input type='hidden' name='realm_type' value='{{ form.initial["realm_type"] }}' />
+            <input type='hidden' name='realm_default_language' value='{{ form.initial["realm_default_language"] }}' />
+            {% else %}
             <fieldset class="org-registration">
                 {% if creating_new_realm %}
                 <legend>{{ _('Your organization') }}
@@ -196,7 +207,7 @@ Form is validated both client-side using jquery-validation (see signup.js) and s
             </div>
             <hr />
             {% endif %}
-
+            {% endif %}
             {% if creating_new_realm %}
             <div class="input-group input-box" id="how-realm-creator-found-zulip">
                 <label for="how_realm_creator_found_zulip">
@@ -242,7 +253,8 @@ Form is validated both client-side using jquery-validation (see signup.js) and s
                     {% endif %}
                 </div>
                 {% endif %}
-                {% if corporate_enabled %}
+                {% if demo_organizations_enabled and creating_demo %}
+                {% elif corporate_enabled %}
                 <div class="input-group">
                     <label for="id_enable_marketing_emails" class="inline-block checkbox marketing_emails_checkbox">
                         <input id="id_enable_marketing_emails" type="checkbox" name="enable_marketing_emails"

@@ -896,6 +896,7 @@ def registration_helper(
         # but for the registration form, there is no logged in user yet, so
         # we have to set it here.
         "creating_new_realm": realm_creation,
+        "creating_demo": create_demo if realm_creation else False,
         "password_required": password_auth_enabled(realm) and password_required,
         "require_ldap_password": require_ldap_password,
         "password_auth_enabled": password_auth_enabled(realm),
