@@ -1,5 +1,5 @@
 <div class="realm-creation-editable-inputs {% if user_registration_form and not form.realm_subdomain.errors %}hide{% endif %}">
-    <div class="permanent-realm-fields">
+    <div class="permanent-realm-fields {% if not user_registration_form and demo_organizations_enabled %}hide{% endif %}">
         <div class="input-box">
             <label class="static org-url">
                 {{ _('Organization URL') }}
@@ -18,11 +18,11 @@
                 <div class="or"><span>{{ _('OR') }}</span></div>
                 <div class="inline-block relative">
                     <input id="id_team_subdomain"
-                      class="{% if root_domain_landing_page %}required{% endif %} subdomain" type="text"
+                      class="{% if root_domain_landing_page and not demo_organizations_enabled %}required{% endif %} subdomain" type="text"
                       placeholder="acme"
                       value="{% if form.realm_subdomain.value() %}{{ form.realm_subdomain.value() }}{% endif %}"
                       name="realm_subdomain" maxlength="{{ MAX_REALM_SUBDOMAIN_LENGTH }}"
-                      {% if root_domain_landing_page %}required{% endif %} />
+                      {% if root_domain_landing_page and not demo_organizations_enabled %}required{% endif %} />
                     <label for="id_team_subdomain" class="realm_subdomain_label">.{{ external_host }}</label>
                     <p id="id_team_subdomain_error_client" class="error help-inline text-error"></p>
                 </div>

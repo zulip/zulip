@@ -319,6 +319,46 @@ $(() => {
         $("#new-user-email-address-visibility .current-selected-option").text(selected_option_text);
     });
 
+    $("#create_realm").on("click keydown", "#demo-organization", (e) => {
+        if (e.type === "keydown" && e.key !== "Enter") {
+            return;
+        }
+        // Submit the form to create a demo organization with
+        // the base fields: organization name, type and language.
+        $("input#create_demo").val("true");
+        $("#create_realm").trigger("submit");
+    });
+
+    $("#create_realm").on("click keydown", "#permanent-organization", (e) => {
+        if (e.type === "keydown" && e.key !== "Enter") {
+            return;
+        }
+        $("input#create_demo").val("false");
+
+        // Set email and realm_subdomain to required for validation.
+        const $email_input = $("#email");
+        $email_input.prop("required", true);
+        $email_input.addClass("required");
+        const $subdomain_input = $("#id_team_subdomain");
+        $subdomain_input.prop("required", true);
+        $subdomain_input.addClass("required");
+
+        // Show hidden form inputs for email, import chat history
+        // and subdomain, and show final form submit button.
+        $(".permanent-realm-fields").removeClass("hide");
+        $(".new-organization-button").removeClass("hide");
+
+        // Hide/disable buttons and hint for choosing between a demo
+        // or permanent organization.
+        const $demo_button = $("#demo-organization");
+        $demo_button.prop("disabled", true);
+        $demo_button.addClass("hide");
+        const $permanent_button = $("#permanent-organization");
+        $permanent_button.prop("disabled", true);
+        $permanent_button.addClass("hide");
+        $(".hint-for-demos").addClass("hide");
+    });
+
     $("#registration").on("click keydown", ".edit-realm-details", (e) => {
         if (e.type === "keydown" && e.key !== "Enter") {
             return;
@@ -381,15 +421,23 @@ $(() => {
     if (altcha) {
         altcha.configure({
             auto: "onload",
+            floatinganchor: ".altcha-floating-anchor",
             async customfetch(url: string, init?: RequestInit) {
                 return fetch(url, {...init, credentials: "include"});
             },
         });
         const $submit = $(altcha).closest("form").find("button[type=submit]");
+        // Disable all buttons until state changes to verified.
+        const $demo_button = $("#demo-organization");
+        const $permanent_button = $("#permanent-organization");
+        $demo_button.prop("disabled", true);
+        $permanent_button.prop("disabled", true);
         $submit.prop("disabled", true);
         // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
         altcha.addEventListener("statechange", ((ev: AltchaStateChangeEvent) => {
             if (ev.detail.state === "verified") {
+                $demo_button.prop("disabled", false);
+                $permanent_button.prop("disabled", false);
                 $submit.prop("disabled", false);
             }
         }) as EventListener);

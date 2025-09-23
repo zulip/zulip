@@ -324,7 +324,11 @@ html {
 
     .new-organization-button {
         margin-top: 25px;
+    }
 
+    .new-organization-button,
+    #demo-organization,
+    #permanent-organization {
         &[disabled] {
             cursor: default;
             opacity: 0.6;
@@ -1027,6 +1031,16 @@ button#register_auth_button_gitlab {
         margin: 25px auto 30px;
         width: 330px;
         border-radius: 4px;
+    }
+
+    .register-button#demo-organization {
+        margin-bottom: 5px;
+        margin-top: 10px;
+    }
+
+    .register-button#permanent-organization {
+        margin-bottom: 10px;
+        margin-top: 5px;
     }
 
     .support-submit-button,

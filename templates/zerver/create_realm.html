@@ -26,12 +26,20 @@
                     {% endif %}
 
                     {% include 'zerver/realm_creation_base_form_fields.html' %}
+                    {% if demo_organizations_enabled %}
+                    <div class="input-box {% if demo_organizations_enabled %}altcha-floating-anchor{% endif %}">
+                        <input id="create_demo" type="hidden" name="create_demo" value="false"/>
+                        <button type="button" id="demo-organization" class="register-button">{{ _("Create demo organization") }}</button>
+                        <p class="registration-form-hint hint-for-demos">{{ _('You can convert it to a regular organization later.') }}</p>
+                        <button type="button" id="permanent-organization" class="register-button">{{ _("Choose URL") }}</button>
+                    </div>
+                    {% endif %}
                     {% include 'zerver/realm_creation_nondemo_form_fields.html' %}
 
                     <div class="input-box horizontal">
-                        <div class="inline-block relative">
-                            <input type="text" class="email required" placeholder="{{ _("Enter your email address") }}"
-                              id="email" name="email" required />
+                        <div class="inline-block relative permanent-realm-fields {% if demo_organizations_enabled %}hide{% endif %}">
+                            <input type="text" class="email {% if not demo_organizations_enabled %}required{% endif %}" placeholder="{{ _("Enter your email address") }}"
+                              id="email" name="email" {%if not demo_organizations_enabled %}required{% endif %} />
                             <label for="email">{{ _('Your email') }}</label>
                         </div>
                         {% if form.email.errors %}
@@ -41,7 +49,7 @@
                         {% endif %}
                     </div>
                     <div class="input-box">
-                        <button type="submit" class="new-organization-button register-button">{{ _("Create organization") }}</button>
+                        <button type="submit" class="new-organization-button register-button {% if not demo_organizations_enabled %}altcha-floating-anchor{% endif %} {% if demo_organizations_enabled %}hide{% endif %} ">{{ _("Create organization") }}</button>
                         {% if has_captcha %}
                             {% if form.captcha.errors %}
                                 {% for error in form.captcha.errors %}
