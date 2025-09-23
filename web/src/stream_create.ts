@@ -9,6 +9,7 @@ import * as channel from "./channel.ts";
 import * as confirm_dialog from "./confirm_dialog.ts";
 import * as dialog_widget from "./dialog_widget.ts";
 import type {DropdownWidget} from "./dropdown_widget.ts";
+import * as hash_util from "./hash_util.ts";
 import {$t, $t_html} from "./i18n.ts";
 import * as keydown_util from "./keydown_util.ts";
 import * as loading from "./loading.ts";
@@ -27,6 +28,7 @@ import type {GroupSettingPillContainer} from "./typeahead_helper.ts";
 import type {HTMLSelectOneElement} from "./types.ts";
 import * as ui_report from "./ui_report.ts";
 import * as util from "./util.ts";
+// import {stream_id} from "./compose_state.ts";
 
 let created_stream: string | undefined;
 // Default is true since the current user is added to
@@ -99,11 +101,46 @@ class StreamSubscriptionError {
 const stream_subscription_error = new StreamSubscriptionError();
 
 class StreamNameError {
-    report_already_exists(error?: string): void {
+    report_already_exists(
+        error?: string,
+        stream?: number | ReturnType<typeof stream_data.get_sub_by_id>,
+    ): void {
+        let url: string | undefined;
+        if (typeof stream === "number") {
+            const sub = stream_data.get_sub_by_id(stream);
+            url = sub
+                ? hash_util.channels_settings_edit_url(sub, "general")
+                : `#streams/${stream}/general`;
+        } else if (stream) {
+            url = hash_util.channels_settings_edit_url(stream, "general");
+        }
+        if (url) {
+            // Static template with a token we replace using DOM nodes.
+            const template = $t({
+                defaultMessage: "A __CHANNEL_LINK__ with this name already exists.",
+            });
+            const parts = template.split("__CHANNEL_LINK__");
+            const before = parts[0] ?? "";
+            const after = parts[1] ?? "";
+            const msg = document.createElement("span");
+            msg.append(document.createTextNode(before));
+            const a = document.createElement("a");
+            a.className = "stream-link";
+            a.href = url;
+            a.textContent = $t({defaultMessage: "channel"});
+            msg.append(a);
+            msg.append(document.createTextNode(after));
+            const container = document.querySelector("#stream_name_error");
+            if (container) {
+                container.textContent = ""; // clear existing
+                container.append(msg);
+            }
+            $("#stream_name_error").show();
+            return;
+        }
         const error_message =
             error ?? $t({defaultMessage: "A channel with this name already exists."});
-        $("#stream_name_error").text(error_message);
-        $("#stream_name_error").show();
+        $("#stream_name_error").text(error_message).show();
     }
 
     clear_errors(): void {
@@ -143,7 +180,7 @@ class StreamNameError {
                     this.rename_archived_stream(stream.stream_id);
                 }
             }
-            this.report_already_exists(error);
+            this.report_already_exists(error, stream);
             return;
         }
 
@@ -156,14 +193,13 @@ class StreamNameError {
             this.select();
             return false;
         }
-
         const stream = stream_data.get_sub(stream_name);
         if (stream) {
             let error;
             if (stream.is_archived) {
                 error = $t({defaultMessage: "An archived channel with this name already exists."});
             }
-            this.report_already_exists(error);
+            this.report_already_exists(error, stream.stream_id);
             this.select();
             return false;
         }
