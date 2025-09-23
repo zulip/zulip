@@ -41,6 +41,7 @@ Form is validated both client-side using jquery-validation (see signup.js) and s
                 {% with %}
                     {% set user_registration_form = "true" %}
                     {% include 'zerver/realm_creation_base_form_fields.html' %}
+                    {% include 'zerver/realm_creation_nondemo_form_fields.html' %}
                 {% endwith %}
                 {% if not form.realm_subdomain.errors %}
                 <div class="not-editable-realm-details">
