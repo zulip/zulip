@@ -7,7 +7,7 @@ import type {Event, PollWidgetExtraData, PollWidgetOutboundData} from "./poll_wi
 import type {TodoWidgetExtraData, TodoWidgetOutboundData} from "./todo_widget.ts";
 import type {ZFormExtraData} from "./zform.ts";
 
-type WidgetExtraData = PollWidgetExtraData | TodoWidgetExtraData | ZFormExtraData | null;
+export type WidgetExtraData = PollWidgetExtraData | TodoWidgetExtraData | ZFormExtraData | null;
 
 type WidgetOptions = {
     widget_type: string;
@@ -17,14 +17,16 @@ type WidgetOptions = {
     message: Message;
     post_to_server: (data: {
         msg_type: string;
-        data: string | PollWidgetOutboundData | TodoWidgetOutboundData;
+        data: string | PollWidgetOutboundData | TodoWidgetOutboundData | undefined;
     }) => void;
 };
 
-type WidgetValue = Record<string, unknown> & {
+export type WidgetValue = Record<string, unknown> & {
     activate: (data: {
         $elem: JQuery;
-        callback: (data: string | PollWidgetOutboundData | TodoWidgetOutboundData) => void;
+        callback: (
+            data: string | PollWidgetOutboundData | TodoWidgetOutboundData | undefined,
+        ) => void;
         message: Message;
         extra_data: WidgetExtraData;
     }) => (events: Event[]) => void;
@@ -59,7 +61,7 @@ export function activate(in_opts: WidgetOptions): void {
     }
 
     const callback = function (
-        data: string | PollWidgetOutboundData | TodoWidgetOutboundData,
+        data: string | PollWidgetOutboundData | TodoWidgetOutboundData | undefined,
     ): void {
         post_to_server({
             msg_type: "widget",
