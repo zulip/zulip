@@ -877,7 +877,7 @@ function suggestions_for_empty_search_query(): SuggestionLine[] {
             get_default_suggestion_line(narrow_state.search_terms()),
         ];
     }
-    if (narrow_state.pm_emails_string()) {
+    if (narrow_state.narrowed_by_pm_reply()) {
         return [
             get_default_suggestion_line([
                 {
