@@ -1,0 +1,152 @@
+---
+title: Import from Microsoft Teams
+---
+
+import {Steps, TabItem, Tabs} from "@astrojs/starlight/components";
+
+import FlattenedSteps from "../../components/FlattenedSteps.astro";
+import ZulipNote from "../../components/ZulipNote.astro";
+import ZulipTip from "../../components/ZulipTip.astro";
+import ImportGetYourOrganizationStarted from "../include/_ImportGetYourOrganizationStarted.mdx";
+import ImportHowUsersWillLogIn from "../include/_ImportHowUsersWillLogIn.mdx";
+import ImportIntoASelfHostedServerDescription from "../include/_ImportIntoASelfHostedServerDescription.mdx";
+import ImportIntoASelfHostedServerInstructions from "../include/_ImportIntoASelfHostedServerInstructions.mdx";
+import ImportIntoAZulipCloudOrganization from "../include/_ImportIntoAZulipCloudOrganization.mdx";
+import ImportSelfHostedServerTips from "../include/_ImportSelfHostedServerTips.mdx";
+import ImportWorkspaceToZulip from "../include/_ImportWorkspaceToZulip.mdx";
+import ImportYourDataIntoZulip from "../include/_ImportYourDataIntoZulip.mdx";
+import ImportZulipCloudOrganizationWarning from "../include/_ImportZulipCloudOrganizationWarning.mdx";
+
+<ImportWorkspaceToZulip />
+
+## Import process overview
+
+To import your Microsoft Teams organization into Zulip, you will need to take the
+following steps, which are described in more detail below:
+
+<Steps>
+  1. [Export your Microsoft Teams data](#export-your-slack-data).
+  1. [Get your Microsoft Graph API token](#get-your-microsoft-graph-api-token)
+  1. [Import your Microsoft Teams data into Zulip](#import-your-data-into-zulip).
+  1. [Clean up](#clean-up-after-the-slack-export) after the Microsoft Teams export.
+  1. [Get your organization started with Zulip](#get-your-organization-started-with-zulip)!
+</Steps>
+
+## Import your organization from Microsoft Teams into Zulip
+
+{/* Update link in slack_import.html when changing title below. */}
+
+### Export your Microsoft Teams data
+
+### Get your Microsoft Graph API token
+
+#### Required permissions
+
+### Import your data into Zulip
+
+<ImportYourDataIntoZulip />
+
+<Tabs>
+  <TabItem label="Zulip Cloud">
+    <ImportIntoAZulipCloudOrganization />
+
+    <Steps>
+      1. Your Microsoft Teams **Bot User OAuth Token**, which will be a long
+         string of numbers and characters starting with `xoxb-`.
+    </Steps>
+
+    <ImportZulipCloudOrganizationWarning />
+  </TabItem>
+
+  <TabItem label="Self hosting">
+    <ImportIntoASelfHostedServerDescription />
+
+    <FlattenedSteps>
+      <ImportIntoASelfHostedServerInstructions />
+
+      1. To import into an organization hosted on the root domain
+         (`EXTERNAL_HOST`) of the Zulip installation, run the following
+         commands, replacing `<token>` with your Microsoft Teams **Bot User OAuth Token**.
+         <ImportSelfHostedServerTips />
+         ```bash "<token>"
+         cd /home/zulip/deployments/current
+         ./scripts/stop-server
+         ./manage.py convert_slack_data /tmp/slack_data.zip --token <token> --output /tmp/converted_slack_data
+         ./manage.py import '' /tmp/converted_slack_data
+         ./scripts/start-server
+         ```
+         Alternatively, to import into a custom subdomain, run:
+         ```bash "<token>" "<subdomain>"
+         cd /home/zulip/deployments/current
+         ./scripts/stop-server
+         ./manage.py convert_slack_data /tmp/slack_data.zip --token <token> --output /tmp/converted_slack_data
+         ./manage.py import <subdomain> /tmp/converted_slack_data
+         ./scripts/start-server
+         ```
+      1. Follow [step 4](https://zulip.readthedocs.io/en/stable/production/install.html#step-4-configure-and-use)
+         of the guide for [installing a new Zulip
+         server](https://zulip.readthedocs.io/en/stable/production/install.html).
+    </FlattenedSteps>
+  </TabItem>
+</Tabs>
+
+#### Import details
+
+Whether you are using Zulip Cloud or self-hosting Zulip, here are few notes to keep
+in mind about the import process:
+
+* Microsoft Teams does not export workspace settings, so you will need to [configure
+  the settings for your Zulip organization](/help/customize-organization-settings).
+  This includes settings like [email
+  visibility](/help/configure-email-visibility),
+  [message editing permissions](/help/restrict-message-editing-and-deletion),
+  and [how users can join your organization](/help/restrict-account-creation).
+* Microsoft Teams does not export user settings, so users in your organization may want to
+  [customize their account settings](/help/getting-started-with-zulip).
+* Microsoft Teams's user roles are mapped to Zulip's [user
+  roles](/help/user-roles) in the following way:
+  | Microsoft Teams role              | Zulip role    |
+  | ----------------------- | ------------- |
+  | Workspace Primary Owner | Owner         |
+  | Workspace Owner         | Owner         |
+  | Workspace Admin         | Administrator |
+  | Member                  | Member        |
+  | Single Channel Guest    | Guest         |
+  | Multi Channel Guest     | Guest         |
+  | Channel creator         | none          |
+* Microsoft Teams threads are imported as topics with names that include snippets of the
+  original message, such as "2023-05-30 Hi, can anyone reply if you're o…".
+* Message edit history and `@user joined #channel_name` messages are not imported.
+
+## Clean up after the Microsoft Teams export
+
+Once your organization has been successfully imported in to Zulip, you should
+delete [the Microsoft Teams app](https://api.slack.com/apps) that you created in order to
+[export your Microsoft Teams data](#export-your-slack-data).  This will prevent the OAuth
+token from being used to access your Microsoft Teams workspace in the future.
+
+## Get your organization started with Zulip
+
+<ImportGetYourOrganizationStarted />
+
+<ZulipTip>
+  Zulip's [Microsoft Teams-compatible incoming webhook](/integrations/doc/slack_incoming)
+  makes it easy to migrate integrations.
+</ZulipTip>
+
+## Decide how users will log in
+
+<ImportHowUsersWillLogIn>
+  ### Allow users to log in with non-password authentication
+
+  ### Send password reset emails to all users
+
+  ### Manual password resets
+</ImportHowUsersWillLogIn>
+
+## Related articles
+
+* [Choosing between Zulip Cloud and self-hosting](/help/zulip-cloud-or-self-hosting)
+* [Moving to Zulip](/help/moving-to-zulip)
+* [Microsoft Teams-compatible incoming webhook](/integrations/doc/slack_incoming)
+* [Getting started with Zulip](/help/getting-started-with-zulip)
