@@ -637,6 +637,7 @@ def registration_helper(
                 "ad": "how_realm_creator_found_zulip_where_ad",
                 "existing_user": "how_realm_creator_found_zulip_which_organization",
                 "review_site": "how_realm_creator_found_zulip_review_site",
+                "ai_chatbot": "how_realm_creator_found_zulip_which_ai_chatbot",
             }
             for option, field_name in extra_context_options.items():
                 if (
