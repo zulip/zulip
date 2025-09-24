@@ -150,6 +150,51 @@ export function postprocess_content(html: string): string {
                 "message-media-preview-image",
             );
             message_media_image.classList.add("media-image-element");
+            message_media_image.setAttribute("loading", "lazy");
+
+            // We can't just check whether `inline_image.src` starts with
+            // `/user_uploads/thumbnail`, even though that's what the
+            // server writes in the markup, because Firefox will have
+            // already prepended the origin to the source of an image.
+            let image_url;
+            try {
+                image_url = new URL(message_media_image.src, window.location.origin);
+            } catch {
+                // If the image source URL can't be parsed, likely due to
+                // some historical bug in the Markdown processor, just
+                // drop the invalid image element.
+                message_media_image.closest(".message-media-preview-image")!.remove();
+                continue;
+            }
+
+            if (
+                image_url.origin === window.location.origin &&
+                image_url.pathname.startsWith("/user_uploads/thumbnail/")
+            ) {
+                let thumbnail_name = thumbnail.preferred_format.name;
+                if (message_media_image.dataset.animated === "true") {
+                    if (
+                        user_settings.web_animate_image_previews === "always" ||
+                        // Treat on_hover as "always" on mobile web, where
+                        // hovering is impossible and there's much less on
+                        // the screen.
+                        (user_settings.web_animate_image_previews === "on_hover" &&
+                            util.is_mobile())
+                    ) {
+                        thumbnail_name = thumbnail.animated_format.name;
+                    } else {
+                        // If we're showing a still thumbnail, show a play
+                        // button so that users that it can be played.
+                        message_media_image
+                            .closest(".message-media-preview-image")!
+                            .classList.add("message_inline_animated_image_still");
+                    }
+                }
+                message_media_image.src = message_media_image.src.replace(
+                    /\/[^/]+$/,
+                    "/" + thumbnail_name,
+                );
+            }
         }
 
         // To prevent layout shifts and flexibly size image previews,
@@ -214,51 +259,6 @@ export function postprocess_content(html: string): string {
             } else {
                 message_media_image.classList.add("landscape-thumbnail");
             }
-        }
-    }
-
-    for (const inline_img of template.content.querySelectorAll<HTMLImageElement>(
-        ".message-media-preview-image img",
-    )) {
-        inline_img.setAttribute("loading", "lazy");
-        // We can't just check whether `inline_image.src` starts with
-        // `/user_uploads/thumbnail`, even though that's what the
-        // server writes in the markup, because Firefox will have
-        // already prepended the origin to the source of an image.
-        let image_url;
-        try {
-            image_url = new URL(inline_img.src, window.location.origin);
-        } catch {
-            // If the image source URL can't be parsed, likely due to
-            // some historical bug in the Markdown processor, just
-            // drop the invalid image element.
-            inline_img.closest(".message-media-preview-image")!.remove();
-            continue;
-        }
-
-        if (
-            image_url.origin === window.location.origin &&
-            image_url.pathname.startsWith("/user_uploads/thumbnail/")
-        ) {
-            let thumbnail_name = thumbnail.preferred_format.name;
-            if (inline_img.dataset.animated === "true") {
-                if (
-                    user_settings.web_animate_image_previews === "always" ||
-                    // Treat on_hover as "always" on mobile web, where
-                    // hovering is impossible and there's much less on
-                    // the screen.
-                    (user_settings.web_animate_image_previews === "on_hover" && util.is_mobile())
-                ) {
-                    thumbnail_name = thumbnail.animated_format.name;
-                } else {
-                    // If we're showing a still thumbnail, show a play
-                    // button so that users that it can be played.
-                    inline_img
-                        .closest(".message-media-preview-image")!
-                        .classList.add("message_inline_animated_image_still");
-                }
-            }
-            inline_img.src = inline_img.src.replace(/\/[^/]+$/, "/" + thumbnail_name);
         }
     }
 
