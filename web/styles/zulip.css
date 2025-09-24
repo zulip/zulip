@@ -2460,7 +2460,8 @@ body:not(.spectator-view) {
 
 .default-language-display,
 .empty-topic-display,
-.empty-topic-placeholder-display::placeholder {
+.empty-topic-placeholder-display::placeholder,
+.drafts-unknown-msg-header-field {
     font-style: italic;
 }
 
