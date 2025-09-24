@@ -98,36 +98,6 @@ export function postprocess_content(html: string): string {
             );
         }
 
-        if (elt.querySelector("img") || elt.querySelector("video")) {
-            // We want a class to refer to media links
-            elt.classList.add("media-anchor-element");
-
-            // Replace the legacy .message_inline_image class, whose
-            // name would add confusion when Zulip supports inline
-            // images via standard Markdown, with dedicated classes
-            // for video and image previews.
-            if (elt.querySelector("video")) {
-                elt.parentElement?.classList.replace(
-                    "message_inline_image",
-                    "message-media-preview-video",
-                );
-                elt
-                    .querySelector("video")
-                    ?.classList.add("media-video-element", "media-image-element");
-            } else {
-                elt.parentElement?.classList.replace(
-                    "message_inline_image",
-                    "message-media-preview-image",
-                );
-            }
-
-            // This code path adds the media-image-element class to
-            // both image preview elements and video thumbnails.
-            if (elt.querySelector("img")) {
-                elt.querySelector("img")?.classList.add("media-image-element");
-            }
-        }
-
         // Update older, smaller default.jpg YouTube preview images
         // with higher-quality preview images (320px wide)
         if (elt.parentElement?.classList.contains("youtube-video")) {
@@ -144,86 +114,105 @@ export function postprocess_content(html: string): string {
         if (elt.parentElement?.classList.contains("message_embed_title")) {
             elt.classList.add("message-embed-title-link");
         }
+    }
 
-        if (
-            elt.parentElement?.classList.contains("message-media-preview-image") ||
-            elt.parentElement?.classList.contains("message-media-preview-video")
-        ) {
-            // For inline images we want to handle the tooltips explicitly, and disable
-            // the browser's built in handling of the title attribute.
-            const title = elt.getAttribute("title");
-            if (title !== null) {
-                elt.setAttribute("aria-label", title);
-                elt.removeAttribute("title");
+    for (const message_media_wrapper of template.content.querySelectorAll(
+        ".message_inline_image",
+    )) {
+        const message_media_link = message_media_wrapper.querySelector("a");
+        const message_media_image = message_media_wrapper.querySelector("img");
+        const message_media_video = message_media_wrapper.querySelector("video");
+
+        // We want a class to refer to media links
+        message_media_link?.classList.add("media-anchor-element");
+
+        // For inline media, we want to handle the tooltips explicitly and
+        // disable the browser's built in handling of the title attribute.
+        const title = message_media_link?.getAttribute("title");
+        if (typeof title === "string") {
+            message_media_link?.setAttribute("aria-label", title);
+            message_media_link?.removeAttribute("title");
+        }
+
+        // Replace the legacy .message_inline_image class, whose
+        // name would add confusion when Zulip supports inline
+        // images via standard Markdown, with dedicated classes
+        // for video and image previews.
+        if (message_media_video) {
+            message_media_wrapper.classList.replace(
+                "message_inline_image",
+                "message-media-preview-video",
+            );
+            message_media_video.classList.add("media-video-element", "media-image-element");
+        } else if (message_media_image) {
+            message_media_wrapper.classList.replace(
+                "message_inline_image",
+                "message-media-preview-image",
+            );
+            message_media_image.classList.add("media-image-element");
+        }
+
+        // To prevent layout shifts and flexibly size image previews,
+        // we read the image's original dimensions, when present, and
+        // set those values as `height` and `width` attributes on the
+        // image source.
+        if (message_media_image?.hasAttribute("data-original-dimensions")) {
+            const original_dimensions_attribute = message_media_image.dataset.originalDimensions;
+            assert(original_dimensions_attribute);
+            const original_dimensions: string[] = original_dimensions_attribute.split("x");
+            assert(
+                original_dimensions.length === 2 &&
+                    typeof original_dimensions[0] === "string" &&
+                    typeof original_dimensions[1] === "string",
+            );
+
+            const original_width = Number(original_dimensions[0]);
+            const original_height = Number(original_dimensions[1]);
+            const font_size_in_use = user_settings.web_font_size_px;
+            // At 20px/1em, image boxes are 200px by 80px in either
+            // horizontal or vertical orientation; 80 / 200 = 0.4
+            // We need to show more of the background color behind
+            // these extremely tall or extremely wide images, and
+            // use a subtler background color than on other images
+            const image_min_aspect_ratio = 0.4;
+            // "Dinky" images are those that are shorter than the
+            // 10em height reserved for thumbnails
+            const image_box_em = 10;
+            const is_dinky_image = original_height / font_size_in_use <= image_box_em;
+            const has_extreme_aspect_ratio =
+                original_width / original_height <= image_min_aspect_ratio ||
+                original_height / original_width <= image_min_aspect_ratio;
+            const is_portrait_image = original_width <= original_height;
+
+            message_media_image.setAttribute("width", `${original_width}`);
+            message_media_image.setAttribute("height", `${original_height}`);
+
+            // Despite setting `width` and `height` values above, the
+            // flexbox gallery collapses until images have loaded. We
+            // therefore have to avoid the layout shift that would
+            // otherwise cause by setting the only the width attribute
+            // here. And by setting this value in ems, we ensure that
+            // images scale as users adjust the information-density
+            // settings.
+            message_media_image.style.setProperty(
+                "width",
+                `${(image_box_em * font_size_in_use * original_width) / original_height / font_size_in_use}em`,
+            );
+
+            if (is_dinky_image) {
+                message_media_image.classList.add("dinky-thumbnail");
+                // For dinky images, we just set the original width
+                message_media_image.style.setProperty("width", `${original_width}px`);
             }
-            // To prevent layout shifts and flexibly size image previews,
-            // we read the image's original dimensions, when present, and
-            // set those values as `height` and `width` attributes on the
-            // image source.
-            const inline_image = elt.querySelector("img");
-            if (inline_image?.hasAttribute("data-original-dimensions")) {
-                // TODO: Modify eslint config, if we wish to avoid dataset
-                //
-                /* eslint unicorn/prefer-dom-node-dataset: "off" */
-                const original_dimensions_attribute = inline_image.getAttribute(
-                    "data-original-dimensions",
-                );
-                assert(original_dimensions_attribute);
-                const original_dimensions: string[] = original_dimensions_attribute.split("x");
-                assert(
-                    original_dimensions.length === 2 &&
-                        typeof original_dimensions[0] === "string" &&
-                        typeof original_dimensions[1] === "string",
-                );
 
-                const original_width = Number(original_dimensions[0]);
-                const original_height = Number(original_dimensions[1]);
-                const font_size_in_use = user_settings.web_font_size_px;
-                // At 20px/1em, image boxes are 200px by 80px in either
-                // horizontal or vertical orientation; 80 / 200 = 0.4
-                // We need to show more of the background color behind
-                // these extremely tall or extremely wide images, and
-                // use a subtler background color than on other images
-                const image_min_aspect_ratio = 0.4;
-                // "Dinky" images are those that are shorter than the
-                // 10em height reserved for thumbnails
-                const image_box_em = 10;
-                const is_dinky_image = original_height / font_size_in_use <= image_box_em;
-                const has_extreme_aspect_ratio =
-                    original_width / original_height <= image_min_aspect_ratio ||
-                    original_height / original_width <= image_min_aspect_ratio;
-                const is_portrait_image = original_width <= original_height;
+            if (has_extreme_aspect_ratio) {
+                message_media_image.classList.add("extreme-aspect-ratio");
+            }
 
-                inline_image.setAttribute("width", `${original_width}`);
-                inline_image.setAttribute("height", `${original_height}`);
-
-                // Despite setting `width` and `height` values above, the
-                // flexbox gallery collapses until images have loaded. We
-                // therefore have to avoid the layout shift that would
-                // otherwise cause by setting the only the width attribute
-                // here. And by setting this value in ems, we ensure that
-                // images scale as users adjust the information-density
-                // settings.
-                inline_image.style.setProperty(
-                    "width",
-                    `${(image_box_em * font_size_in_use * original_width) / original_height / font_size_in_use}em`,
-                );
-
-                if (is_dinky_image) {
-                    inline_image.classList.add("dinky-thumbnail");
-                    // For dinky images, we just set the original width
-                    inline_image.style.setProperty("width", `${original_width}px`);
-                }
-
-                if (has_extreme_aspect_ratio) {
-                    inline_image.classList.add("extreme-aspect-ratio");
-                }
-
-                if (is_portrait_image) {
-                    inline_image.classList.add("portrait-thumbnail");
-                } else {
-                    inline_image.classList.add("landscape-thumbnail");
-                }
+            if (is_portrait_image) {
+                message_media_image.classList.add("portrait-thumbnail");
+            } else {
+                message_media_image.classList.add("landscape-thumbnail");
             }
         }
     }
