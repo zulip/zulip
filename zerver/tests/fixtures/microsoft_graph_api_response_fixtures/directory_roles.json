@@ -1,0 +1,68 @@
+{
+    "@odata.context": "https://graph.microsoft.com/v1.0/$metadata#directoryRoles",
+    "value": [
+        {
+            "id": "240d3723-f4d5-4e70-aa3b-2e574c4f6ea3",
+            "deletedDateTime": null,
+            "description": "Can manage all aspects of Microsoft Entra ID and Microsoft services that use Microsoft Entra identities.",
+            "displayName": "Global Administrator",
+            "roleTemplateId": "62e90394-69f5-4237-9190-012177145e10"
+        },
+        {
+            "id": "28356285-b6a8-4c23-ada1-f68dc07a826b",
+            "deletedDateTime": null,
+            "description": "Can manage all aspects of the Exchange product.",
+            "displayName": "Exchange Administrator",
+            "roleTemplateId": "29232cdf-9323-42fd-ade2-1d097af3e4de"
+        },
+        {
+            "id": "4574a009-f705-49c5-bab1-b1f14682c631",
+            "deletedDateTime": null,
+            "description": "Can manage all aspects of the SharePoint service.",
+            "displayName": "SharePoint Administrator",
+            "roleTemplateId": "f28a1f50-f6e7-4571-818b-6a12f2af6b6c"
+        },
+        {
+            "id": "68c4bac3-df9b-4dd7-ba8e-380fb5c065b7",
+            "deletedDateTime": null,
+            "description": "Can perform common billing related tasks like updating payment information.",
+            "displayName": "Billing Administrator",
+            "roleTemplateId": "b0f54661-2d74-4c50-afa3-1ec803f12efe"
+        },
+        {
+            "id": "82bb9c5f-0911-40c1-ab29-944262f9835e",
+            "deletedDateTime": null,
+            "description": "Can manage the Microsoft Teams service.",
+            "displayName": "Teams Administrator",
+            "roleTemplateId": "69091246-20e8-4a56-aa4d-066075b2a7a8"
+        },
+        {
+            "id": "b2dfd9f5-106f-4410-a400-a1be2a43741e",
+            "deletedDateTime": null,
+            "description": "Can manage all aspects of users and groups, including resetting passwords for limited admins.",
+            "displayName": "User Administrator",
+            "roleTemplateId": "fe930be7-5e62-47db-91af-98c3a49a38b1"
+        },
+        {
+            "id": "bf811cd7-8f47-450a-8dfb-70af1e523829",
+            "deletedDateTime": null,
+            "description": "Can read service health information and manage support tickets.",
+            "displayName": "Service Support Administrator",
+            "roleTemplateId": "f023fd81-a637-4b56-95fd-791ac0226033"
+        },
+        {
+            "id": "d94becae-0962-4437-b10a-6fd56dd822af",
+            "deletedDateTime": null,
+            "description": "Can reset passwords for non-administrators and Helpdesk Administrators.",
+            "displayName": "Helpdesk Administrator",
+            "roleTemplateId": "729827e3-9c14-49f7-bb1b-9608f156bbb8"
+        },
+        {
+            "id": "f65976b3-a936-4ed4-88b2-ec5987bbe19f",
+            "deletedDateTime": null,
+            "description": "Can read everything that a Global Administrator can, but not update anything.",
+            "displayName": "Global Reader",
+            "roleTemplateId": "f2ef992c-3afb-46b9-b7cf-a126ee74c451"
+        }
+    ]
+}
