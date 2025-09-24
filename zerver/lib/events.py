@@ -38,7 +38,6 @@ from zerver.lib.message import (
     apply_unread_message_event,
     extract_unread_data_from_um_rows,
     get_raw_unread_data,
-    get_recent_conversations_recipient_id,
     get_recent_private_conversations,
     get_starred_message_ids,
     remove_message_id_from_unread_mgs,
@@ -1004,9 +1003,7 @@ def apply_event(
             if "raw_recent_private_conversations" in state:
                 # Handle maintaining the recent_private_conversations data structure.
                 conversations = state["raw_recent_private_conversations"]
-                recipient_id = get_recent_conversations_recipient_id(
-                    user_profile, event["message"]["recipient_id"], event["message"]["sender_id"]
-                )
+                recipient_id = event["message"]["recipient_id"]
 
                 if recipient_id not in conversations:
                     conversations[recipient_id] = dict(

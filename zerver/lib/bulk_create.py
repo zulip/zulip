@@ -1,8 +1,7 @@
 from collections.abc import Collection, Iterable
 from typing import Any
 
-from django.conf import settings
-from django.db.models import Model, QuerySet
+from django.db.models import QuerySet
 from django.utils.timezone import now as timezone_now
 
 from zerver.lib.create_user import create_user_profile, get_display_email_address
@@ -18,7 +17,6 @@ from zerver.models import (
     RealmUserDefault,
     Recipient,
     Stream,
-    Subscription,
     UserGroupMembership,
     UserProfile,
 )
@@ -106,34 +104,6 @@ def bulk_create_users(
         for profile_ in profiles_to_create
     )
 
-    if not settings.PREFER_DIRECT_MESSAGE_GROUP:
-        user_ids = {user.id for user in profiles_to_create}
-
-        recipients_to_create = [
-            Recipient(type_id=user_id, type=Recipient.PERSONAL) for user_id in user_ids
-        ]
-
-        Recipient.objects.bulk_create(recipients_to_create)
-
-        bulk_set_users_or_streams_recipient_fields(
-            UserProfile, profiles_to_create, recipients_to_create
-        )
-
-        recipients_by_user_id: dict[int, Recipient] = {}
-        for recipient in recipients_to_create:
-            recipients_by_user_id[recipient.type_id] = recipient
-
-        subscriptions_to_create = [
-            Subscription(
-                user_profile_id=user_profile.id,
-                recipient=recipients_by_user_id[user_profile.id],
-                is_user_active=user_profile.is_active,
-            )
-            for user_profile in profiles_to_create
-        ]
-
-        Subscription.objects.bulk_create(subscriptions_to_create)
-
     full_members_system_group = NamedUserGroup.objects.get(
         name=SystemGroups.FULL_MEMBERS, realm=realm, is_system_group=True
     )
@@ -168,37 +138,25 @@ def bulk_create_users(
     )
 
 
-def bulk_set_users_or_streams_recipient_fields(
-    model: type[Model],
-    objects: Collection[UserProfile]
-    | QuerySet[UserProfile]
-    | Collection[Stream]
-    | QuerySet[Stream],
+def bulk_set_streams_recipient_fields(
+    objects: Collection[Stream] | QuerySet[Stream],
     recipients: Iterable[Recipient] | None = None,
 ) -> None:
-    assert model in [UserProfile, Stream]
-    for obj in objects:
-        assert isinstance(obj, model)
-
-    if model == UserProfile:
-        recipient_type = Recipient.PERSONAL
-    elif model == Stream:
-        recipient_type = Recipient.STREAM
-
     if recipients is None:
         object_ids = [obj.id for obj in objects]
-        recipients = Recipient.objects.filter(type=recipient_type, type_id__in=object_ids)
+        recipients = Recipient.objects.filter(type=Recipient.STREAM, type_id__in=object_ids)
 
     objects_dict = {obj.id: obj for obj in objects}
 
     objects_to_update = set()
     for recipient in recipients:
-        assert recipient.type == recipient_type
+        assert recipient.type == Recipient.STREAM
         result = objects_dict.get(recipient.type_id)
         if result is not None:
             result.recipient = recipient
             objects_to_update.add(result)
-    model._default_manager.bulk_update(objects_to_update, ["recipient"])
+
+    Stream.objects.bulk_update(objects_to_update, ["recipient"])
 
 
 # This is only sed in populate_db, so doesn't really need tests
@@ -245,7 +203,7 @@ def bulk_create_streams(realm: Realm, stream_dict: dict[str, dict[str, Any]]) ->
     ]
     Recipient.objects.bulk_create(recipients_to_create)
 
-    bulk_set_users_or_streams_recipient_fields(Stream, streams_to_create, recipients_to_create)
+    bulk_set_streams_recipient_fields(streams_to_create, recipients_to_create)
 
 
 def create_users(

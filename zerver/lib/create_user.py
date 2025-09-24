@@ -2,7 +2,6 @@ import re
 from datetime import datetime
 from email.headerregistry import Address
 
-from django.conf import settings
 from django.contrib.auth.models import UserManager
 from django.utils.timezone import now as timezone_now
 
@@ -10,15 +9,7 @@ from zerver.lib.i18n import get_default_language_for_new_user
 from zerver.lib.onboarding_steps import copy_onboarding_steps
 from zerver.lib.timezone import canonicalize_timezone
 from zerver.lib.upload import copy_avatar
-from zerver.models import (
-    Realm,
-    RealmUserDefault,
-    Recipient,
-    Stream,
-    Subscription,
-    UserBaseSettings,
-    UserProfile,
-)
+from zerver.models import Realm, RealmUserDefault, Stream, UserBaseSettings, UserProfile
 from zerver.models.realms import get_fake_email_domain
 
 
@@ -178,7 +169,6 @@ def create_user(
     source_profile: UserProfile | None = None,
     force_id: int | None = None,
     force_date_joined: datetime | None = None,
-    create_personal_recipient: bool = True,
     enable_marketing_emails: bool | None = None,
     email_address_visibility: int | None = None,
 ) -> UserProfile:
@@ -251,14 +241,4 @@ def create_user(
         user_profile.email = get_display_email_address(user_profile)
         user_profile.save(update_fields=["email"])
 
-    if not create_personal_recipient or settings.PREFER_DIRECT_MESSAGE_GROUP:
-        return user_profile
-
-    recipient = Recipient.objects.create(type_id=user_profile.id, type=Recipient.PERSONAL)
-    user_profile.recipient = recipient
-    user_profile.save(update_fields=["recipient"])
-
-    Subscription.objects.create(
-        user_profile=user_profile, recipient=recipient, is_user_active=user_profile.is_active
-    )
     return user_profile

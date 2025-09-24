@@ -14,7 +14,6 @@ from django.core.exceptions import ValidationError
 from django.core.management.base import CommandError
 from django.db.models import Q, QuerySet
 from django.forms.models import model_to_dict
-from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 from typing_extensions import override
 
@@ -2986,16 +2985,11 @@ class SingleUserExportTest(ExportFile):
             ],
         )
 
-    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
-    def test_1_to_1_message_data_using_direct_message_group(self) -> None:
+    def test_1_to_1_message_data(self) -> None:
         hamlet = self.example_user("hamlet")
         cordelia = self.example_user("cordelia")
         othello = self.example_user("othello")
         bot = self.create_test_bot("test-bot", hamlet)
-
-        get_or_create_direct_message_group([hamlet.id, cordelia.id])
-        get_or_create_direct_message_group([hamlet.id, bot.id])
-        get_or_create_direct_message_group([hamlet.id])
 
         hi_hamlet_message_id = self.send_personal_message(othello, hamlet, "hi hamlet")
         hi_cordelia_message_id = self.send_personal_message(hamlet, cordelia, "hi cordelia")

@@ -2201,9 +2201,6 @@ class ZulipTestCase(ZulipTestCaseMixin, TestCase):
         'self.captureOnCommitCallbacks' for 'send_event_on_commit' or/and
         'queue_event_on_commit' to work.
         """
-        if not settings.PREFER_DIRECT_MESSAGE_GROUP:
-            self.create_personal_recipient(from_user, to_user)
-
         if skip_capture_on_commit_callbacks:
             message_id = super().send_personal_message(
                 from_user,
@@ -2350,21 +2347,6 @@ class ZulipTestCase(ZulipTestCaseMixin, TestCase):
         )
         assert direct_group_message.recipient is not None
         return direct_group_message.recipient
-
-    def create_personal_recipient(self, *user_profiles: UserProfile) -> None:
-        for user_profile in user_profiles:
-            if user_profile.recipient:
-                continue
-
-            recipient = Recipient.objects.create(type_id=user_profile.id, type=Recipient.PERSONAL)
-            user_profile.recipient = recipient
-            user_profile.save(update_fields=["recipient"])
-
-            Subscription.objects.create(
-                user_profile=user_profile,
-                recipient=recipient,
-                is_user_active=user_profile.is_active,
-            )
 
 
 def get_row_pks_in_all_tables() -> Iterator[tuple[str, set[int]]]:
@@ -2802,7 +2784,9 @@ class PushNotificationTestCase(BouncerTestCase):
         self.user_profile = self.example_user("hamlet")
         self.sending_client = get_client("test")
         self.sender = self.example_user("hamlet")
-        self.personal_recipient_user = self.example_user("othello")
+        self.dm_group = get_or_create_direct_message_group(
+            id_list=[self.sender.id, self.example_user("othello").id]
+        )
 
     def get_message(self, type: int, type_id: int, realm_id: int) -> Message:
         recipient, _ = Recipient.objects.get_or_create(

@@ -11,7 +11,7 @@ import orjson
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError, transaction
-from django.db.models import Exists, F, OuterRef, Q, QuerySet
+from django.db.models import Exists, F, OuterRef, QuerySet
 from django.utils.html import escape
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
@@ -257,13 +257,7 @@ def get_recipient_info(
     topic_participant_user_ids: set[int] = set()
     sender_muted_stream: bool | None = None
 
-    if recipient.type == Recipient.PERSONAL:
-        # The sender and recipient may be the same id, so
-        # de-duplicate using a set.
-        message_to_user_id_set = {recipient.type_id, sender_id}
-        assert len(message_to_user_id_set) in [1, 2]
-
-    elif recipient.type == Recipient.STREAM:
+    if recipient.type == Recipient.STREAM:
         # Anybody calling us w/r/t a stream message needs to supply
         # stream_topic.  We may eventually want to have different versions
         # of this function for different message types.
@@ -787,7 +781,7 @@ def create_user_messages(
     base_flags = 0
     if rendering_result.mentions_stream_wildcard:
         base_flags |= UserMessage.flags.stream_wildcard_mentioned
-    if message.recipient.type in [Recipient.DIRECT_MESSAGE_GROUP, Recipient.PERSONAL]:
+    if message.recipient.type == Recipient.DIRECT_MESSAGE_GROUP:
         base_flags |= UserMessage.flags.is_private
 
     # For long_term_idle (aka soft-deactivated) users, we are allowed
@@ -1628,25 +1622,11 @@ def check_can_send_direct_message(
     # on the Huddle object whether the conversation already exists, likely in the
     # form of a `first_message_id` field, and be able to save doing this check in the
     # common case that this is not the first message in a conversation.
-    if recipient.type == Recipient.PERSONAL:
-        recipient_user_profile = recipient_users[0]
-        previous_messages_exist = (
-            Message.objects.filter(
-                realm=realm,
-                recipient__type=Recipient.PERSONAL,
-            )
-            .filter(
-                Q(sender=sender, recipient=recipient)
-                | Q(sender=recipient_user_profile, recipient_id=sender.recipient_id)
-            )
-            .exists()
-        )
-    else:
-        assert recipient.type == Recipient.DIRECT_MESSAGE_GROUP
-        previous_messages_exist = Message.objects.filter(
-            realm=realm,
-            recipient=recipient,
-        ).exists()
+    assert recipient.type == Recipient.DIRECT_MESSAGE_GROUP
+    previous_messages_exist = Message.objects.filter(
+        realm=realm,
+        recipient=recipient,
+    ).exists()
     if not previous_messages_exist:
         raise DirectMessageInitiationError
 

@@ -652,7 +652,6 @@ def use_db_models(
         RealmEmoji = apps.get_model("zerver", "RealmEmoji")
         RealmFilter = apps.get_model("zerver", "RealmFilter")
         Recipient = apps.get_model("zerver", "Recipient")
-        Recipient.PERSONAL = 1
         Recipient.STREAM = 2
         Recipient.DIRECT_MESSAGE_GROUP = 3
         ScheduledEmail = apps.get_model("zerver", "ScheduledEmail")

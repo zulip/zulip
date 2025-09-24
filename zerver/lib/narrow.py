@@ -558,51 +558,9 @@ class NarrowBuilder:
             # Group DM where direct message group doesn't exist
             return query.where(maybe_negate(false()))
 
-        # Group direct message
-        if recipient.type == Recipient.DIRECT_MESSAGE_GROUP:
-            cond = column("recipient_id", Integer) == recipient.id
-            return query.where(maybe_negate(cond))
+        assert recipient.type == Recipient.DIRECT_MESSAGE_GROUP
 
-        # 1:1 direct message
-        other_participant = None
-
-        # Find if another person is in direct message
-        for user in user_profiles:
-            if user.id != self.user_profile.id:
-                other_participant = user
-
-        # Direct message with another person
-        if other_participant:
-            # We need bidirectional direct messages with another person.
-            # But Recipient.PERSONAL objects only encode the person who
-            # received the message, and not the other participant in
-            # the thread (the sender), we need to do a somewhat
-            # complex query to get messages between these two users
-            # with either of them as the sender.
-            self_recipient_id = self.user_profile.recipient_id
-            cond = and_(
-                column("flags", Integer).op("&")(UserMessage.flags.is_private.mask) != 0,
-                column("realm_id", Integer) == self.realm.id,
-                or_(
-                    and_(
-                        column("sender_id", Integer) == other_participant.id,
-                        column("recipient_id", Integer) == self_recipient_id,
-                    ),
-                    and_(
-                        column("sender_id", Integer) == self.user_profile.id,
-                        column("recipient_id", Integer) == recipient.id,
-                    ),
-                ),
-            )
-            return query.where(maybe_negate(cond))
-
-        # Direct message with self
-        cond = and_(
-            column("flags", Integer).op("&")(UserMessage.flags.is_private.mask) != 0,
-            column("realm_id", Integer) == self.realm.id,
-            column("sender_id", Integer) == self.user_profile.id,
-            column("recipient_id", Integer) == recipient.id,
-        )
+        cond = column("recipient_id", Integer) == recipient.id
         return query.where(maybe_negate(cond))
 
     def _get_direct_message_group_recipients(self, other_user: UserProfile) -> set[int]:
@@ -654,32 +612,11 @@ class NarrowBuilder:
             narrow_user_profile
         )
 
-        private_flag = column("flags", Integer).op("&")(UserMessage.flags.is_private.mask) != 0
-        realm_match = column("realm_id", Integer) == self.realm.id
-        direct_message_group_cond = column("recipient_id", Integer).in_(
-            direct_message_group_recipient_ids
+        cond = and_(
+            column("flags", Integer).op("&")(UserMessage.flags.is_private.mask) != 0,
+            column("realm_id", Integer) == self.realm.id,
+            column("recipient_id", Integer).in_(direct_message_group_recipient_ids),
         )
-
-        self_recipient_id = self.user_profile.recipient_id
-        if self_recipient_id is not None and narrow_user_profile.recipient_id is not None:
-            # See note above in `by_dm` about needing bidirectional messages
-            # for direct messages with another person.
-            dm_conditions = or_(
-                and_(
-                    column("sender_id", Integer) == narrow_user_profile.id,
-                    column("recipient_id", Integer) == self_recipient_id,
-                ),
-                and_(
-                    column("sender_id", Integer) == self.user_profile.id,
-                    column("recipient_id", Integer) == narrow_user_profile.recipient_id,
-                ),
-                direct_message_group_cond,
-            )
-            cond = and_(private_flag, realm_match, dm_conditions)
-        else:
-            # If the user does not have a recipient_id, then they only rely on
-            # direct group message for their conversations.
-            cond = and_(private_flag, realm_match, direct_message_group_cond)
         return query.where(maybe_negate(cond))
 
     def by_group_pm_with(
@@ -942,12 +879,6 @@ def update_narrow_terms_containing_with_operator(
             NarrowParameter(operator="topic", operand=topic),
         ]
         return channel_conversation_terms + filtered_terms
-
-    elif message.recipient.type == Recipient.PERSONAL:
-        dm_conversation_terms = [
-            NarrowParameter(operator="dm", operand=[message.recipient.type_id])
-        ]
-        return dm_conversation_terms + filtered_terms
 
     elif message.recipient.type == Recipient.DIRECT_MESSAGE_GROUP:
         huddle_user_ids = list(get_direct_message_group_user_ids(message.recipient))

@@ -17,7 +17,6 @@ from unittest import mock
 import orjson
 import time_machine
 from dateutil.parser import parse as dateparser
-from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 from typing_extensions import override
 
@@ -655,8 +654,7 @@ class NormalActionsTest(BaseAction):
                     skip_capture_on_commit_callbacks=True,
                 )
 
-    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=False)
-    def test_pm_send_message_events_using_personal_recipients(self) -> None:
+    def test_pm_send_message_events(self) -> None:
         with self.verify_action() as events:
             self.send_personal_message(
                 self.example_user("cordelia"),
@@ -706,18 +704,6 @@ class NormalActionsTest(BaseAction):
             has_new_stream_id=False,
             is_embedded_update_only=False,
         )
-
-    def test_pm_send_message_events_via_direct_message_group(self) -> None:
-        hamlet = self.example_user("hamlet")
-        cordelia = self.example_user("cordelia")
-
-        with self.verify_action():
-            self.send_group_direct_message(
-                from_user=hamlet,
-                to_users=[hamlet, cordelia],
-                content="hola",
-                skip_capture_on_commit_callbacks=True,
-            )
 
     def test_direct_message_group_send_message_events(self) -> None:
         direct_message_group = [

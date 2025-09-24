@@ -99,8 +99,7 @@ def do_delete_user(user_profile: UserProfile, *, acting_user: UserProfile | None
         # Recipient objects don't get deleted through CASCADE, so we need to handle
         # the user's personal recipient manually. This will also delete all Messages pointing
         # to this recipient (all direct messages sent to the user).
-        if personal_recipient is not None:
-            personal_recipient.delete()
+        assert personal_recipient is None
         replacement_user = create_user(
             force_id=user_id,
             email=Address(
@@ -216,7 +215,6 @@ def do_delete_user_preserving_messages(user_profile: UserProfile) -> None:
             active=False,
             is_mirror_dummy=True,
             force_date_joined=date_joined,
-            create_personal_recipient=False,
         )
         # Uses index: zerver_message_realm_sender_recipient (prefix)
         Message.objects.filter(realm_id=realm.id, sender=user_profile).update(
@@ -238,7 +236,6 @@ def do_delete_user_preserving_messages(user_profile: UserProfile) -> None:
             active=False,
             is_mirror_dummy=True,
             force_date_joined=date_joined,
-            create_personal_recipient=False,
         )
         # We don't delete the personal recipient to preserve  personal messages!
         # Now, the personal recipient belong to replacement_user, because

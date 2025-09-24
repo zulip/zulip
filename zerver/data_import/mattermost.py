@@ -25,7 +25,6 @@ from zerver.data_import.import_util import (
     build_direct_message_group,
     build_direct_message_group_subscriptions,
     build_message,
-    build_personal_subscriptions,
     build_realm,
     build_realm_emoji,
     build_recipients,
@@ -240,34 +239,28 @@ def convert_channel_data(
 
 def convert_direct_message_group_data(
     direct_message_group_data: list[ZerverFieldsT],
-    user_data_map: dict[str, dict[str, Any]],
     subscriber_handler: SubscriberHandler,
     direct_message_group_id_mapper: IdMapper[frozenset[str]],
     user_id_mapper: IdMapper[str],
-    realm_id: int,
-    team_name: str,
 ) -> list[ZerverFieldsT]:
     zerver_direct_message_group = []
     for direct_message_group in direct_message_group_data:
-        if len(direct_message_group["members"]) > 2 or settings.PREFER_DIRECT_MESSAGE_GROUP:
-            direct_message_group_members = frozenset(direct_message_group["members"])
-            if direct_message_group_id_mapper.has(direct_message_group_members):
-                logging.info("Duplicate direct message group found in the export data. Skipping.")
-                continue
-            direct_message_group_id = direct_message_group_id_mapper.get(
-                direct_message_group_members
-            )
-            direct_message_group_dict = build_direct_message_group(
-                direct_message_group_id, len(direct_message_group_members)
-            )
-            direct_message_group_user_ids = {
-                user_id_mapper.get(username) for username in direct_message_group["members"]
-            }
-            subscriber_handler.set_info(
-                users=direct_message_group_user_ids,
-                direct_message_group_id=direct_message_group_id,
-            )
-            zerver_direct_message_group.append(direct_message_group_dict)
+        direct_message_group_members = frozenset(direct_message_group["members"])
+        if direct_message_group_id_mapper.has(direct_message_group_members):
+            logging.info("Duplicate direct message group found in the export data. Skipping.")
+            continue
+        direct_message_group_id = direct_message_group_id_mapper.get(direct_message_group_members)
+        direct_message_group_dict = build_direct_message_group(
+            direct_message_group_id, len(direct_message_group_members)
+        )
+        direct_message_group_user_ids = {
+            user_id_mapper.get(username) for username in direct_message_group["members"]
+        }
+        subscriber_handler.set_info(
+            users=direct_message_group_user_ids,
+            direct_message_group_id=direct_message_group_id,
+        )
+        zerver_direct_message_group.append(direct_message_group_dict)
     return zerver_direct_message_group
 
 
@@ -417,7 +410,6 @@ def process_raw_message_batch(
     user_handler: UserHandler,
     get_recipient_id_from_channel_name: Callable[[str], int],
     get_recipient_id_from_direct_message_group_members: Callable[[frozenset[str]], int],
-    get_recipient_id_from_username: Callable[[str], int],
     is_pm_data: bool,
     output_dir: str,
     zerver_realmemoji: list[dict[str, Any]],
@@ -442,8 +434,6 @@ def process_raw_message_batch(
 
     mention_map: dict[int, set[int]] = {}
     zerver_message = []
-
-    pm_members = {}
 
     for raw_message in raw_messages:
         message_id = NEXT_ID("message")
@@ -471,15 +461,6 @@ def process_raw_message_batch(
             recipient_id = get_recipient_id_from_direct_message_group_members(
                 raw_message["direct_message_group_members"]
             )
-        elif "pm_members" in raw_message:
-            is_direct_message_type = True
-            members = raw_message["pm_members"]
-            member_ids = {user_id_mapper.get(member) for member in members}
-            pm_members[message_id] = member_ids
-            if sender_user_id == user_id_mapper.get(members[0]):
-                recipient_id = get_recipient_id_from_username(members[1])
-            else:
-                recipient_id = get_recipient_id_from_username(members[0])
         else:
             raise AssertionError(
                 "raw_message without channel_name, direct_message_group_members or pm_members key"
@@ -559,7 +540,6 @@ def process_posts(
     post_data: list[dict[str, Any]],
     get_recipient_id_from_channel_name: Callable[[str], int],
     get_recipient_id_from_direct_message_group_members: Callable[[frozenset[str]], int],
-    get_recipient_id_from_username: Callable[[str], int],
     subscriber_map: dict[int, set[int]],
     output_dir: str,
     is_pm_data: bool,
@@ -612,10 +592,8 @@ def process_posts(
             # groups not channels. Direct messages and direct message groups are known
             # as direct_channels in Slack and hence the name channel_members.
             channel_members = post_dict["channel_members"]
-            if len(channel_members) > 2 or settings.PREFER_DIRECT_MESSAGE_GROUP:
+            if len(channel_members) >= 2:
                 message_dict["direct_message_group_members"] = frozenset(channel_members)
-            elif len(channel_members) == 2:
-                message_dict["pm_members"] = channel_members
         else:
             raise AssertionError("Post without channel or channel_members key.")
 
@@ -647,7 +625,6 @@ def process_posts(
             user_handler=user_handler,
             get_recipient_id_from_channel_name=get_recipient_id_from_channel_name,
             get_recipient_id_from_direct_message_group_members=get_recipient_id_from_direct_message_group_members,
-            get_recipient_id_from_username=get_recipient_id_from_username,
             is_pm_data=is_pm_data,
             output_dir=output_dir,
             zerver_realmemoji=zerver_realmemoji,
@@ -687,15 +664,12 @@ def write_message_data(
 ) -> None:
     stream_id_to_recipient_id = {}
     direct_message_group_id_to_recipient_id = {}
-    user_id_to_recipient_id = {}
 
     for d in zerver_recipient:
         if d["type"] == Recipient.STREAM:
             stream_id_to_recipient_id[d["type_id"]] = d["id"]
         elif d["type"] == Recipient.DIRECT_MESSAGE_GROUP:
             direct_message_group_id_to_recipient_id[d["type_id"]] = d["id"]
-        if d["type"] == Recipient.PERSONAL:
-            user_id_to_recipient_id[d["type_id"]] = d["id"]
 
     def get_recipient_id_from_channel_name(channel_name: str) -> int:
         receiver_id = stream_id_mapper.get(channel_name)
@@ -706,10 +680,6 @@ def write_message_data(
     ) -> int:
         receiver_id = direct_message_group_id_mapper.get(direct_message_group_members)
         return direct_message_group_id_to_recipient_id[receiver_id]
-
-    def get_recipient_id_from_username(username: str) -> int:
-        receiver_id = user_id_mapper.get(username)
-        return user_id_to_recipient_id[receiver_id]
 
     if num_teams == 1:
         post_types = ["channel_post", "direct_post"]
@@ -727,7 +697,6 @@ def write_message_data(
             post_data=post_data[post_type],
             get_recipient_id_from_channel_name=get_recipient_id_from_channel_name,
             get_recipient_id_from_direct_message_group_members=get_recipient_id_from_direct_message_group_members,
-            get_recipient_id_from_username=get_recipient_id_from_username,
             subscriber_map=subscriber_map,
             output_dir=output_dir,
             is_pm_data=post_type == "direct_post",
@@ -949,19 +918,13 @@ def do_convert_data(mattermost_data_dir: str, output_dir: str, masking_content: 
         if len(mattermost_data["team"]) == 1:
             zerver_direct_message_group = convert_direct_message_group_data(
                 direct_message_group_data=mattermost_data["direct_channel"],
-                user_data_map=username_to_user,
                 subscriber_handler=subscriber_handler,
                 direct_message_group_id_mapper=direct_message_group_id_mapper,
                 user_id_mapper=user_id_mapper,
-                realm_id=realm_id,
-                team_name=team_name,
             )
             realm["zerver_huddle"] = zerver_direct_message_group
 
-        all_users = user_handler.get_all_users()
-
         zerver_recipient = build_recipients(
-            zerver_userprofile=all_users,
             zerver_stream=zerver_stream,
             zerver_direct_message_group=zerver_direct_message_group,
         )
@@ -979,15 +942,9 @@ def do_convert_data(mattermost_data_dir: str, output_dir: str, masking_content: 
             zerver_direct_message_group=zerver_direct_message_group,
         )
 
-        personal_subscriptions = build_personal_subscriptions(
-            zerver_recipient=zerver_recipient,
-        )
-
         # Mattermost currently supports only exporting messages from channels.
-        # Personal and Group Direct messages are not exported.
-        zerver_subscription = (
-            personal_subscriptions + stream_subscriptions + direct_message_group_subscriptions
-        )
+        # Group Direct messages are not exported.
+        zerver_subscription = stream_subscriptions + direct_message_group_subscriptions
         realm["zerver_subscription"] = zerver_subscription
 
         zerver_realmemoji = write_emoticon_data(

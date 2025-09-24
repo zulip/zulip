@@ -1,5 +1,4 @@
 from django.conf import settings
-from django.test import override_settings
 from typing_extensions import Any, override
 
 from zerver.actions.realm_settings import do_set_realm_moderation_request_channel
@@ -188,55 +187,7 @@ class ReportMessageTest(ZulipTestCase):
         assert len(reports) == 1
         self.assertIn(expected_message_link_syntax, reports[0]["content"])
 
-    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=False)
-    def test_dm_report_using_personal_recipients(self) -> None:
-        # Send a DM to be reported
-        reported_dm_id = self.send_personal_message(
-            self.reported_user,
-            self.hamlet,
-            content="I dip fries in ice cream",
-        )
-        reported_dm = self.get_last_message()
-        assert reported_dm.id == reported_dm_id
-
-        reporting_user = self.example_user("hamlet")
-        report_type = "harassment"
-        description = "this is crime against food"
-        reporting_user_mention = silent_mention_syntax_for_user(reporting_user)
-        reported_user_mention = silent_mention_syntax_for_user(self.reported_user)
-
-        message_sent_to = f"{reporting_user_mention} reported a DM sent by {reported_user_mention}."
-        expected_message = """
-{message_sent_to}
-- Reason: **{report_type}**
-- Notes:
-```quote
-{description}
-```
-{fence} spoiler **Message sent by {reported_user}**
-{reported_message}
-{fence}
-""".format(
-            report_type=report_type,
-            description=description,
-            reported_user=reported_user_mention,
-            message_sent_to=message_sent_to,
-            reported_message=reported_dm.content,
-            fence=get_unused_fence(reported_dm.content),
-        )
-
-        result = self.report_message(reporting_user, reported_dm_id, report_type, description)
-        self.assert_json_success(result)
-        reports = self.get_submitted_moderation_requests()
-        assert len(reports) == 1
-        self.assertEqual(reports[0]["content"], expected_message.strip())
-
-        # User can't report DM they're not a part of.
-        ZOE = self.example_user("ZOE")
-        result = self.report_message(ZOE, reported_dm_id, report_type, description)
-        self.assert_json_error(result, msg="Invalid message(s)")
-
-    def test_personal_message_report_using_direct_message_group(self) -> None:
+    def test_personal_message_report(self) -> None:
         direct_message_group = get_or_create_direct_message_group(
             id_list=[self.hamlet.id, self.reported_user.id],
         )

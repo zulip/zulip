@@ -7,7 +7,6 @@ from unittest import mock
 
 import orjson
 import time_machine
-from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 
 from zerver.actions.scheduled_messages import (
@@ -20,8 +19,6 @@ from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import most_recent_message
 from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.models import Attachment, Message, Recipient, ScheduledMessage, UserMessage
-from zerver.models.realms import get_realm
-from zerver.models.recipients import get_or_create_direct_message_group
 
 if TYPE_CHECKING:
     from django.test.client import _MonkeyPatchedWSGIResponse as TestHttpResponse
@@ -165,16 +162,12 @@ class ScheduledMessageTest(ZulipTestCase):
         recipient = Recipient.objects.get(type=Recipient.STREAM, type_id=stream_id)
         self.assert_scheduled_message_delivered(scheduled_message, recipient)
 
-    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=False)
     def test_successful_deliver_direct_scheduled_message_to_other(self) -> None:
         # No scheduled message
         self.assertFalse(try_deliver_one_scheduled_message())
 
+        sender = self.example_user("hamlet")
         othello = self.example_user("othello")
-        hamlet = self.example_user("hamlet")
-
-        # manually creating personal recipients since we have stopped creating them by default
-        self.create_personal_recipient(othello, hamlet)
 
         content = "Test message"
         scheduled_delivery_datetime = timezone_now() + timedelta(minutes=5)
@@ -185,7 +178,9 @@ class ScheduledMessageTest(ZulipTestCase):
         self.assert_json_success(response)
         scheduled_message = self.last_scheduled_message()
 
-        self.assert_scheduled_message_delivered(scheduled_message, recipient=othello.recipient)
+        self.assert_scheduled_message_delivered(
+            scheduled_message, recipient=self.get_dm_group_recipient(othello, sender)
+        )
 
         # Check error is sent if an edit happens after the scheduled
         # message is successfully sent.
@@ -201,7 +196,6 @@ class ScheduledMessageTest(ZulipTestCase):
         )
         self.assert_json_error(updated_response, "Scheduled message was already sent")
 
-    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=False)
     def test_successful_deliver_direct_scheduled_message_to_self(self) -> None:
         # No scheduled message
         self.assertFalse(try_deliver_one_scheduled_message())
@@ -210,28 +204,6 @@ class ScheduledMessageTest(ZulipTestCase):
         scheduled_delivery_datetime = timezone_now() + timedelta(minutes=5)
         scheduled_delivery_timestamp = int(scheduled_delivery_datetime.timestamp())
         sender = self.example_user("hamlet")
-        self.create_personal_recipient(sender)
-        response = self.do_schedule_message(
-            "direct", [sender.id], content, scheduled_delivery_timestamp
-        )
-        self.assert_json_success(response)
-        scheduled_message = self.last_scheduled_message()
-
-        self.assert_scheduled_message_delivered(scheduled_message, recipient=sender.recipient)
-
-    def test_successful_deliver_direct_scheduled_message_to_self_using_direct_message_group(
-        self,
-    ) -> None:
-        # No scheduled message
-        self.assertFalse(try_deliver_one_scheduled_message())
-
-        content = "Test message to self"
-        scheduled_delivery_datetime = timezone_now() + timedelta(minutes=5)
-        scheduled_delivery_timestamp = int(scheduled_delivery_datetime.timestamp())
-        sender = self.example_user("hamlet")
-
-        # Create a direct message group for the sender.
-        direct_message_group = get_or_create_direct_message_group(id_list=[sender.id])
 
         response = self.do_schedule_message(
             "direct", [sender.id], content, scheduled_delivery_timestamp
@@ -240,7 +212,7 @@ class ScheduledMessageTest(ZulipTestCase):
         scheduled_message = self.last_scheduled_message()
 
         self.assert_scheduled_message_delivered(
-            scheduled_message, recipient=direct_message_group.recipient
+            scheduled_message, recipient=self.get_dm_group_recipient(sender)
         )
 
     def verify_deliver_scheduled_message_failure(
@@ -337,11 +309,7 @@ class ScheduledMessageTest(ZulipTestCase):
         self.assertEqual(message_after_deactivation.content, message_before_deactivation.content)
         self.assertNotIn(expected_failure_message, message_after_deactivation.content)
 
-    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=False)
     def test_failed_to_deliver_scheduled_message_unknown_exception(self) -> None:
-        self.create_personal_recipient(self.example_user("hamlet"))
-        self.create_personal_recipient(self.notification_bot(realm=get_realm("zulip")))
-
         self.create_scheduled_message()
         scheduled_message = self.last_scheduled_message()
 
@@ -377,7 +345,7 @@ class ScheduledMessageTest(ZulipTestCase):
         realm = scheduled_message.realm
         msg = most_recent_message(scheduled_message.sender)
 
-        self.assertEqual(msg.recipient.type, msg.recipient.PERSONAL)
+        self.assertEqual(msg.recipient.type, msg.recipient.DIRECT_MESSAGE_GROUP)
         self.assertEqual(msg.sender_id, self.notification_bot(realm).id)
         self.assertIn("Internal server error", msg.content)
 
@@ -433,11 +401,7 @@ class ScheduledMessageTest(ZulipTestCase):
         )
         self.assert_json_error(result, "Scheduled delivery time must be in the future.")
 
-    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=False)
     def test_edit_schedule_message(self) -> None:
-        self.create_personal_recipient(self.example_user("hamlet"))
-        self.create_personal_recipient(self.example_user("othello"))
-
         content = "Original test message"
         scheduled_delivery_timestamp = int(time.time() + 86400)
         verona_stream_id = self.get_stream_id("Verona")
@@ -500,7 +464,7 @@ class ScheduledMessageTest(ZulipTestCase):
 
         scheduled_message = self.get_scheduled_message(str(scheduled_message_id))
         self.assertNotEqual(scheduled_message.recipient.type, Recipient.STREAM)
-        self.assertEqual(scheduled_message.recipient.type, Recipient.PERSONAL)
+        self.assertEqual(scheduled_message.recipient.type, Recipient.DIRECT_MESSAGE_GROUP)
         scheduled_message = self.get_scheduled_message(str(scheduled_message_id))
         self.assertEqual(scheduled_message.topic_name(), Message.DM_TOPIC)
 

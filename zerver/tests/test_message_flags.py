@@ -3,7 +3,6 @@ from unittest import mock
 
 import orjson
 from django.db import connection
-from django.test import override_settings
 from typing_extensions import override
 
 from zerver.actions.message_flags import do_update_message_flags
@@ -39,7 +38,6 @@ from zerver.models import (
 )
 from zerver.models.groups import NamedUserGroup
 from zerver.models.realms import get_realm
-from zerver.models.recipients import get_or_create_direct_message_group
 from zerver.models.streams import get_stream
 
 if TYPE_CHECKING:
@@ -1128,36 +1126,12 @@ class GetUnreadMsgsTest(ZulipTestCase):
             dict(user_ids_string=direct_message_group_string),
         )
 
-    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=False)
-    def test_raw_unread_personal_using_personal_recipients(self) -> None:
-        cordelia = self.example_user("cordelia")
-        othello = self.example_user("othello")
-        hamlet = self.example_user("hamlet")
-
-        cordelia_pm_message_ids = [self.send_personal_message(cordelia, hamlet) for i in range(3)]
-        othello_pm_message_ids = [self.send_personal_message(othello, hamlet) for i in range(3)]
-
-        raw_unread_data = get_raw_unread_data(user_profile=hamlet)
-
-        pm_dict = raw_unread_data["pm_dict"]
-
-        self.assertEqual(
-            set(pm_dict.keys()),
-            set(cordelia_pm_message_ids) | set(othello_pm_message_ids),
-        )
-
-        self.assertEqual(
-            pm_dict[cordelia_pm_message_ids[0]],
-            dict(other_user_id=cordelia.id),
-        )
-
     def test_raw_unread_personal(self) -> None:
         cordelia = self.example_user("cordelia")
         othello = self.example_user("othello")
         hamlet = self.example_user("hamlet")
 
         cordelia_pm_message_ids = [self.send_personal_message(cordelia, hamlet) for i in range(3)]
-
         othello_pm_message_ids = [self.send_personal_message(othello, hamlet) for i in range(3)]
 
         raw_unread_data = get_raw_unread_data(
@@ -1176,38 +1150,6 @@ class GetUnreadMsgsTest(ZulipTestCase):
             dict(other_user_id=cordelia.id),
         )
 
-    def test_raw_unread_personal_using_direct_message_group(self) -> None:
-        cordelia = self.example_user("cordelia")
-        othello = self.example_user("othello")
-        hamlet = self.example_user("hamlet")
-
-        # creating direct message group for 1:1 messages
-        get_or_create_direct_message_group(id_list=[cordelia.id, hamlet.id])
-        get_or_create_direct_message_group(id_list=[othello.id, hamlet.id])
-
-        cordelia_pm_message_ids = [self.send_personal_message(cordelia, hamlet) for i in range(3)]
-        othello_pm_message_ids = [self.send_personal_message(othello, hamlet) for i in range(3)]
-
-        raw_unread_data = get_raw_unread_data(
-            user_profile=hamlet,
-        )
-        pm_dict = raw_unread_data["pm_dict"]
-
-        self.assertEqual(
-            set(pm_dict.keys()),
-            set(cordelia_pm_message_ids) | set(othello_pm_message_ids),
-        )
-
-        self.assertEqual(
-            pm_dict[cordelia_pm_message_ids[0]],
-            dict(other_user_id=cordelia.id),
-        )
-        self.assertEqual(
-            pm_dict[othello_pm_message_ids[0]],
-            dict(other_user_id=othello.id),
-        )
-
-    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=False)
     def test_raw_unread_personal_from_self(self) -> None:
         hamlet = self.example_user("hamlet")
 
@@ -1299,39 +1241,6 @@ class GetUnreadMsgsTest(ZulipTestCase):
 
         self.assertEqual(
             pm_dict[hamlet_msg.id],
-            dict(other_user_id=hamlet.id),
-        )
-
-    def test_raw_unread_personal_from_self_using_direct_message_group(self) -> None:
-        hamlet = self.example_user("hamlet")
-
-        # creating direct message group for self messages
-        get_or_create_direct_message_group(id_list=[hamlet.id])
-
-        # Send a message to ourself.
-        message_id = self.send_personal_message(
-            from_user=hamlet,
-            to_user=hamlet,
-            read_by_sender=False,
-        )
-
-        um = UserMessage.objects.get(
-            user_profile_id=hamlet.id,
-            message_id=message_id,
-        )
-        self.assertFalse(um.flags.read)
-
-        raw_unread_data = get_raw_unread_data(
-            user_profile=hamlet,
-        )
-        pm_dict = raw_unread_data["pm_dict"]
-
-        self.assertEqual(
-            set(pm_dict.keys()),
-            {message_id},
-        )
-        self.assertEqual(
-            pm_dict[message_id],
             dict(other_user_id=hamlet.id),
         )
 

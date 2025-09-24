@@ -1875,12 +1875,12 @@ class TestGetGCMPayload(PushNotificationTestCase):
         self._test_get_message_payload_gcm_stream_message(empty_string_topic=True)
 
     def test_get_message_payload_gcm_direct_message(self) -> None:
-        message = self.get_message(
-            Recipient.PERSONAL,
-            type_id=self.personal_recipient_user.id,
-            realm_id=self.personal_recipient_user.realm_id,
-        )
         hamlet = self.example_user("hamlet")
+        message = self.get_message(
+            Recipient.DIRECT_MESSAGE_GROUP,
+            type_id=self.dm_group.id,
+            realm_id=hamlet.realm_id,
+        )
         payload, gcm_options = get_message_payload_gcm(hamlet, message)
         self.assertDictEqual(
             payload,

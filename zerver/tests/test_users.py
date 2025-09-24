@@ -2,7 +2,7 @@ from collections.abc import Iterable
 from datetime import timedelta
 from email.headerregistry import Address
 from typing import Any, TypeVar
-from unittest import mock
+from unittest import mock, skip
 
 import orjson
 from django.conf import settings
@@ -18,10 +18,7 @@ from zerver.actions.create_user import do_create_user, do_reactivate_user
 from zerver.actions.invites import do_create_multiuse_invite_link, do_invite_users
 from zerver.actions.message_send import RecipientInfoResult, get_recipient_info
 from zerver.actions.muted_users import do_mute_user
-from zerver.actions.realm_settings import (
-    do_change_realm_permission_group_setting,
-    do_set_realm_property,
-)
+from zerver.actions.realm_settings import do_set_realm_property
 from zerver.actions.user_settings import bulk_regenerate_api_keys, do_change_user_setting
 from zerver.actions.user_topics import do_set_user_topic_visibility_policy
 from zerver.actions.users import (
@@ -81,7 +78,7 @@ from zerver.models import (
 )
 from zerver.models.clients import get_client
 from zerver.models.custom_profile_fields import check_valid_user_ids
-from zerver.models.groups import NamedUserGroup, SystemGroups
+from zerver.models.groups import SystemGroups
 from zerver.models.prereg_users import filter_to_valid_prereg_users
 from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.realms import InvalidFakeEmailDomainError, get_fake_email_domain, get_realm
@@ -522,10 +519,8 @@ class PermissionTest(ZulipTestCase):
         result = self.client_patch("/json/users/{}".format(self.example_user("hamlet").id), req)
         self.assert_json_error(result, "Invalid characters in name!")
 
-    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=False)
-    def test_access_user_by_id_when_personal_recipient_exists(self) -> None:
+    def test_access_user_by_id(self) -> None:
         iago = self.example_user("iago")
-        self.create_personal_recipient(iago)
         internal_realm = get_realm(settings.SYSTEM_BOT_REALM)
 
         # Must be a valid user ID in the realm
@@ -542,7 +537,6 @@ class PermissionTest(ZulipTestCase):
 
         # Can only access bot users if allow_bots is passed
         bot = self.example_user("default_bot")
-        self.create_personal_recipient(bot)
         access_user_by_id(iago, bot.id, allow_bots=True, for_admin=True)
         access_user_by_id_including_cross_realm(iago, bot.id, allow_bots=True, for_admin=True)
         with self.assertRaises(JsonableError):
@@ -552,7 +546,6 @@ class PermissionTest(ZulipTestCase):
 
         # Only the including_cross_realm variant works for system bots.
         system_bot = get_system_bot(settings.WELCOME_BOT, internal_realm.id)
-        self.create_personal_recipient(system_bot)
         with self.assertRaises(JsonableError):
             access_user_by_id(iago, system_bot.id, allow_bots=True, for_admin=False)
         access_user_by_id_including_cross_realm(
@@ -566,7 +559,6 @@ class PermissionTest(ZulipTestCase):
 
         # Can only access deactivated users if allow_deactivated is passed
         hamlet = self.example_user("hamlet")
-        self.create_personal_recipient(hamlet)
         do_deactivate_user(hamlet, acting_user=None)
         with self.assertRaises(JsonableError):
             access_user_by_id(iago, hamlet.id, for_admin=False)
@@ -586,8 +578,6 @@ class PermissionTest(ZulipTestCase):
         cordelia = self.example_user("cordelia")
         aaron = self.example_user("aaron")
 
-        self.create_personal_recipient(cordelia, aaron)
-
         with self.assertRaises(JsonableError):
             access_user_by_id(cordelia, aaron.id, for_admin=True)
         with self.assertRaises(JsonableError):
@@ -596,26 +586,6 @@ class PermissionTest(ZulipTestCase):
         # But does have read-only access to it.
         access_user_by_id(cordelia, aaron.id, for_admin=False)
         access_user_by_id_including_cross_realm(cordelia, aaron.id, for_admin=False)
-
-    def test_access_user_by_id_when_personal_recipient_is_none(self) -> None:
-        self.set_up_db_for_testing_user_access()
-        polonius = self.example_user("polonius")
-        self.assertIsNone(polonius.recipient)
-
-        # Restricting the "Members" system group to not allow access to all users.
-        realm = get_realm("zulip")
-        members_system_group = NamedUserGroup.objects.get(name=SystemGroups.MEMBERS, realm=realm)
-        do_change_realm_permission_group_setting(
-            realm, "can_access_all_users_group", members_system_group, acting_user=None
-        )
-
-        aaron = self.example_user("aaron")
-        target_user = access_user_by_id(polonius, aaron.id, for_admin=False)
-        self.assertEqual(target_user, aaron)
-
-        othello = self.example_user("othello")
-        with self.assertRaises(JsonableError):
-            access_user_by_id(polonius, othello.id, for_admin=False)
 
     def check_property_for_role(self, user_profile: UserProfile, role: int) -> bool:
         if role == UserProfile.ROLE_REALM_ADMINISTRATOR:
@@ -1066,8 +1036,7 @@ class QueryCountTest(ZulipTestCase):
 
 
 class BulkCreateUserTest(ZulipTestCase):
-    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=False)
-    def test_create_users_with_personal_recipient(self) -> None:
+    def test_create_users(self) -> None:
         realm = get_realm("zulip")
         realm_user_default = RealmUserDefault.objects.get(realm=realm)
         realm_user_default.email_address_visibility = (
@@ -1138,28 +1107,6 @@ class BulkCreateUserTest(ZulipTestCase):
         self.assertSetEqual(
             user_group_names,
             expected_user_group_names,
-        )
-
-    def test_create_users_without_personal_recipient(self) -> None:
-        realm = get_realm("zulip")
-
-        name_list = [
-            ("Fred Flintstone", "fred@zulip.com"),
-            ("Lisa Simpson", "lisa@zulip.com"),
-        ]
-
-        create_users(realm, name_list)
-
-        fred = get_user_by_delivery_email("fred@zulip.com", realm)
-        self.assertIsNone(fred.recipient)
-
-        lisa = get_user_by_delivery_email("lisa@zulip.com", realm)
-        self.assertIsNone(lisa.recipient)
-
-        self.assertFalse(
-            Subscription.objects.filter(
-                user_profile__in=[fred, lisa], recipient__type=Recipient.PERSONAL
-            ).exists()
         )
 
 
@@ -1271,8 +1218,7 @@ class AdminChangeUserEmailTest(ZulipTestCase):
 
 
 class AdminCreateUserTest(ZulipTestCase):
-    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=False)
-    def test_create_user_backend_with_personal_recipient(self) -> None:
+    def test_create_user_backend(self) -> None:
         # This test should give us complete coverage on
         # create_user_backend.  It mostly exercises error
         # conditions, and it also does a basic test of the success
@@ -1373,12 +1319,7 @@ class AdminCreateUserTest(ZulipTestCase):
         self.assertEqual(new_user.tos_version, UserProfile.TOS_VERSION_BEFORE_FIRST_LOGIN)
         # Make sure the new user got the realm's default language
         self.assertEqual(new_user.default_language, "ja")
-
-        # Make sure the recipient field is set correctly.
-        self.assertEqual(
-            new_user.recipient,
-            Recipient.objects.get(type=Recipient.PERSONAL, type_id=new_user.id),
-        )
+        self.assertIsNone(new_user.recipient)
 
         # we can't create the same user twice.
         result = self.client_post("/json/users", valid_params)
@@ -1412,24 +1353,6 @@ class AdminCreateUserTest(ZulipTestCase):
         valid_params["email"] = "iago+label@zulip.com"
         result = self.client_post("/json/users", valid_params)
         self.assert_json_success(result)
-
-    def test_create_user_without_personal_recipient(self) -> None:
-        realm = get_realm("zulip")
-
-        user = do_create_user(
-            email="test-user@zulip.com",
-            password="password",
-            realm=realm,
-            full_name="Without Personal Recipient",
-            acting_user=None,
-        )
-
-        self.assertIsNone(user.recipient)
-        self.assertFalse(
-            Subscription.objects.filter(
-                user_profile=user, recipient__type=Recipient.PERSONAL
-            ).exists()
-        )
 
 
 class UserProfileTest(ZulipTestCase):
@@ -3062,7 +2985,6 @@ class GetProfileTest(ZulipTestCase):
         self.assertEqual(result["user"].get("delivery_email"), hamlet.delivery_email)
         self.assertEqual(result["user"].get("email"), hamlet.delivery_email)
 
-    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=False)
     def test_restricted_access_to_users(self) -> None:
         othello = self.example_user("othello")
         cordelia = self.example_user("cordelia")
@@ -3078,7 +3000,7 @@ class GetProfileTest(ZulipTestCase):
         self.set_up_db_for_testing_user_access()
 
         self.login("polonius")
-        with self.assert_database_query_count(9):
+        with self.assert_database_query_count(8):
             result = orjson.loads(self.client_get("/json/users").content)
         accessible_users = [
             user
@@ -3250,7 +3172,6 @@ class GetProfileTest(ZulipTestCase):
             UserProfile.objects.filter(realm=hamlet.realm, is_bot=True).count() + 1,
         )
 
-    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=False)
     def test_get_inaccessible_user_ids(self) -> None:
         polonius = self.example_user("polonius")
         bot = self.example_user("default_bot")
@@ -3281,29 +3202,7 @@ class GetProfileTest(ZulipTestCase):
         )
         self.assertEqual(inaccessible_user_ids, {othello.id})
 
-    def test_get_inaccessible_user_ids_when_personal_recipient_is_none(self) -> None:
-        polonius = self.example_user("polonius")
-        self.assertIsNone(polonius.recipient)
-
-        bot = self.example_user("default_bot")
-        hamlet = self.example_user("hamlet")
-        othello = self.example_user("othello")
-
-        inaccessible_user_ids = get_inaccessible_user_ids([bot.id, hamlet.id, othello.id], polonius)
-        self.assert_length(inaccessible_user_ids, 0)
-
-        self.set_up_db_for_testing_user_access()
-        polonius = self.example_user("polonius")
-
-        inaccessible_user_ids = get_inaccessible_user_ids([bot.id, hamlet.id, othello.id], polonius)
-        self.assertEqual(inaccessible_user_ids, {othello.id})
-
-    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=False)
-    def test_check_can_access_user_with_personal_message_history(self) -> None:
-        self.create_personal_recipient(self.example_user("polonius"))
-        self.create_personal_recipient(self.example_user("prospero"))
-        self.create_personal_recipient(self.example_user("desdemona"))
-
+    def test_check_can_access_user(self) -> None:
         self.set_up_db_for_testing_user_access()
 
         # We need to fetch users after setting up the user access,
@@ -3318,7 +3217,7 @@ class GetProfileTest(ZulipTestCase):
         # no personal messages history between desdemona and polonius
         self.assertFalse(check_can_access_user(desdemona, polonius))
 
-    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=False)
+    @skip("Skipped because of of PERSONAL recipient removal")
     def test_get_users_involved_in_dms_excludes_deactivated_users(self) -> None:
         hamlet = self.example_user("hamlet")
         othello = self.example_user("othello")
@@ -3548,25 +3447,6 @@ class DeleteUserTest(ZulipTestCase):
                     user_profile=replacement_dummy_user, recipient_id=recipient_id
                 ).exists()
             )
-
-    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=False)
-    def test_do_delete_user_with_personal_recipient(self) -> None:
-        realm = get_realm("zulip")
-        cordelia = self.example_user("cordelia")
-        hamlet = self.example_user("hamlet")
-
-        self.send_personal_message(cordelia, hamlet)
-        self.send_personal_message(hamlet, cordelia)
-
-        personal_message_ids_to_hamlet = Message.objects.filter(
-            realm_id=realm.id, recipient=hamlet.recipient
-        ).values_list("id", flat=True)
-        self.assertGreater(len(personal_message_ids_to_hamlet), 0)
-        self.assertTrue(Message.objects.filter(realm_id=realm.id, sender=hamlet).exists())
-
-        do_delete_user(hamlet, acting_user=None)
-
-        self.assertEqual(Message.objects.filter(id__in=personal_message_ids_to_hamlet).count(), 0)
 
 
 class FakeEmailDomainTest(ZulipTestCase):

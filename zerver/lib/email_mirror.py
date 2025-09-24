@@ -41,7 +41,7 @@ from zerver.models import (
 )
 from zerver.models.clients import get_client
 from zerver.models.streams import get_stream_by_id_in_realm
-from zerver.models.users import get_system_bot, get_user_profile_by_id
+from zerver.models.users import get_system_bot
 from zproject.backends import is_user_active
 
 logger = logging.getLogger(__name__)
@@ -472,12 +472,7 @@ def process_missed_message(to: str, message: EmailMessage) -> None:
 
     user_profile = mm_address.user_profile
     topic_name = mm_address.message.topic_name()
-
-    if mm_address.message.recipient.type == Recipient.PERSONAL:
-        # We need to reply to the sender so look up their personal recipient_id
-        recipient = mm_address.message.sender.recipient
-    else:
-        recipient = mm_address.message.recipient
+    recipient = mm_address.message.recipient
 
     if not is_user_active(user_profile):
         logger.warning("Sending user is not active. Ignoring this message notification email.")
@@ -490,11 +485,6 @@ def process_missed_message(to: str, message: EmailMessage) -> None:
         stream = get_stream_by_id_in_realm(recipient.type_id, user_profile.realm)
         send_mm_reply_to_stream(user_profile, stream, topic_name, body)
         recipient_str = stream.name
-    elif recipient.type == Recipient.PERSONAL:
-        recipient_user_id = recipient.type_id
-        recipient_user = get_user_profile_by_id(recipient_user_id)
-        recipient_str = recipient_user.email
-        internal_send_private_message(user_profile, recipient_user, body)
     elif recipient.type == Recipient.DIRECT_MESSAGE_GROUP:
         display_recipient = get_display_recipient(recipient)
         emails = [user_dict["email"] for user_dict in display_recipient]

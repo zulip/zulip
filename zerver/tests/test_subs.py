@@ -11,7 +11,6 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.http import HttpResponse
-from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 from typing_extensions import override
 
@@ -4879,7 +4878,6 @@ class SubscriptionAPITest(ZulipTestCase):
             expected_difference=0,
         )
 
-    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=False)
     def test_notification_bot_dm_on_subscription(self) -> None:
         desdemona = self.example_user("desdemona")
         realm = desdemona.realm
@@ -4894,8 +4892,6 @@ class SubscriptionAPITest(ZulipTestCase):
         othello = self.example_user("othello")
         iago = self.example_user("iago")
         prospero = self.example_user("prospero")
-
-        self.create_personal_recipient(bot, desdemona, cordelia, hamlet, othello, iago, prospero)
 
         user_ids = [
             desdemona.id,
@@ -4923,15 +4919,22 @@ class SubscriptionAPITest(ZulipTestCase):
         notification_bot_dms = Message.objects.filter(
             realm_id=realm.id,
             sender=bot.id,
-            recipient__type=Recipient.PERSONAL,
+            recipient__type=Recipient.DIRECT_MESSAGE_GROUP,
             date_sent__gt=now,
         )
         self.assert_length(notification_bot_dms, 5)
         notif_bot_dm_recipients = [
-            dm["recipient__type_id"] for dm in notification_bot_dms.values("recipient__type_id")
+            dm["recipient_id"] for dm in notification_bot_dms.values("recipient_id")
         ]
         self.assertSetEqual(
-            {id for id in user_ids if id != desdemona.id}, set(notif_bot_dm_recipients)
+            {
+                self.get_dm_group_recipient(bot, cordelia).id,
+                self.get_dm_group_recipient(bot, hamlet).id,
+                self.get_dm_group_recipient(bot, othello).id,
+                self.get_dm_group_recipient(bot, iago).id,
+                self.get_dm_group_recipient(bot, prospero).id,
+            },
+            set(notif_bot_dm_recipients),
         )
 
         announcement_channel_message = Message.objects.filter(
@@ -4958,7 +4961,7 @@ class SubscriptionAPITest(ZulipTestCase):
         notification_bot_dms = Message.objects.filter(
             realm_id=realm.id,
             sender=bot.id,
-            recipient__type=Recipient.PERSONAL,
+            recipient__type=Recipient.DIRECT_MESSAGE_GROUP,
             date_sent__gt=now,
         )
         self.assertEqual(notification_bot_dms.count(), 0)
@@ -5011,7 +5014,7 @@ class SubscriptionAPITest(ZulipTestCase):
         notification_bot_dms = Message.objects.filter(
             realm_id=realm.id,
             sender=bot.id,
-            recipient__type=Recipient.PERSONAL,
+            recipient__type=Recipient.DIRECT_MESSAGE_GROUP,
             date_sent__gt=now,
         )
         self.assertEqual(notification_bot_dms.count(), 0)
@@ -5042,7 +5045,7 @@ class SubscriptionAPITest(ZulipTestCase):
         notification_bot_dms = Message.objects.filter(
             realm_id=realm.id,
             sender=bot.id,
-            recipient__type=Recipient.PERSONAL,
+            recipient__type=Recipient.DIRECT_MESSAGE_GROUP,
             date_sent__gt=now,
         )
         self.assertEqual(notification_bot_dms.count(), 0)

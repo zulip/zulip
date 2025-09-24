@@ -57,9 +57,9 @@ class HandlePushNotificationTest(PushNotificationTestCase):
         self.setup_fcm_tokens()
 
         message = self.get_message(
-            Recipient.PERSONAL,
-            type_id=self.personal_recipient_user.id,
-            realm_id=self.personal_recipient_user.realm_id,
+            Recipient.DIRECT_MESSAGE_GROUP,
+            type_id=self.dm_group.id,
+            realm_id=self.user_profile.realm_id,
         )
         UserMessage.objects.create(
             user_profile=self.user_profile,
@@ -158,9 +158,9 @@ class HandlePushNotificationTest(PushNotificationTestCase):
         realm.save()
 
         message = self.get_message(
-            Recipient.PERSONAL,
-            type_id=self.personal_recipient_user.id,
-            realm_id=self.personal_recipient_user.realm_id,
+            Recipient.DIRECT_MESSAGE_GROUP,
+            type_id=self.dm_group.id,
+            realm_id=self.user_profile.realm_id,
         )
         UserMessage.objects.create(
             user_profile=self.user_profile,
@@ -225,9 +225,9 @@ class HandlePushNotificationTest(PushNotificationTestCase):
         self.setup_fcm_tokens()
 
         message = self.get_message(
-            Recipient.PERSONAL,
-            type_id=self.personal_recipient_user.id,
-            realm_id=self.personal_recipient_user.realm_id,
+            Recipient.DIRECT_MESSAGE_GROUP,
+            type_id=self.dm_group.id,
+            realm_id=self.user_profile.realm_id,
         )
         UserMessage.objects.create(
             user_profile=self.user_profile,
@@ -328,9 +328,9 @@ class HandlePushNotificationTest(PushNotificationTestCase):
         self.setup_fcm_tokens()
 
         message = self.get_message(
-            Recipient.PERSONAL,
-            type_id=self.personal_recipient_user.id,
-            realm_id=self.personal_recipient_user.realm_id,
+            Recipient.DIRECT_MESSAGE_GROUP,
+            type_id=self.dm_group.id,
+            realm_id=self.user_profile.realm_id,
         )
         UserMessage.objects.create(
             user_profile=self.user_profile,
@@ -356,9 +356,9 @@ class HandlePushNotificationTest(PushNotificationTestCase):
 
         user_profile = self.example_user("hamlet")
         message = self.get_message(
-            Recipient.PERSONAL,
-            type_id=self.personal_recipient_user.id,
-            realm_id=self.personal_recipient_user.realm_id,
+            Recipient.DIRECT_MESSAGE_GROUP,
+            type_id=self.dm_group.id,
+            realm_id=self.user_profile.realm_id,
         )
 
         usermessage = UserMessage.objects.create(
@@ -403,9 +403,9 @@ class HandlePushNotificationTest(PushNotificationTestCase):
         """Simulates the race where message is deleted before handling push notifications"""
         user_profile = self.example_user("hamlet")
         message = self.get_message(
-            Recipient.PERSONAL,
-            type_id=self.personal_recipient_user.id,
-            realm_id=self.personal_recipient_user.realm_id,
+            Recipient.DIRECT_MESSAGE_GROUP,
+            type_id=self.dm_group.id,
+            realm_id=self.user_profile.realm_id,
         )
         UserMessage.objects.create(
             user_profile=user_profile,
@@ -438,9 +438,9 @@ class HandlePushNotificationTest(PushNotificationTestCase):
         """Simulates the race where message is missing when handling push notifications"""
         user_profile = self.example_user("hamlet")
         message = self.get_message(
-            Recipient.PERSONAL,
-            type_id=self.personal_recipient_user.id,
-            realm_id=self.personal_recipient_user.realm_id,
+            Recipient.DIRECT_MESSAGE_GROUP,
+            type_id=self.dm_group.id,
+            realm_id=self.user_profile.realm_id,
         )
         UserMessage.objects.create(
             user_profile=user_profile,
@@ -479,9 +479,9 @@ class HandlePushNotificationTest(PushNotificationTestCase):
 
         user_profile = self.user_profile
         message = self.get_message(
-            Recipient.PERSONAL,
-            type_id=self.personal_recipient_user.id,
-            realm_id=self.personal_recipient_user.realm_id,
+            Recipient.DIRECT_MESSAGE_GROUP,
+            type_id=self.dm_group.id,
+            realm_id=self.user_profile.realm_id,
         )
         UserMessage.objects.create(
             user_profile=user_profile,
@@ -550,9 +550,9 @@ class HandlePushNotificationTest(PushNotificationTestCase):
         self.setup_apns_tokens()
         self.setup_fcm_tokens()
         message = self.get_message(
-            Recipient.PERSONAL,
-            type_id=self.personal_recipient_user.id,
-            realm_id=self.personal_recipient_user.realm_id,
+            Recipient.DIRECT_MESSAGE_GROUP,
+            type_id=self.dm_group.id,
+            realm_id=self.user_profile.realm_id,
         )
         UserMessage.objects.create(
             user_profile=self.user_profile,
@@ -616,9 +616,9 @@ class HandlePushNotificationTest(PushNotificationTestCase):
 
         user_profile = self.user_profile
         message = self.get_message(
-            Recipient.PERSONAL,
-            type_id=self.personal_recipient_user.id,
-            realm_id=self.personal_recipient_user.realm_id,
+            Recipient.DIRECT_MESSAGE_GROUP,
+            type_id=self.dm_group.id,
+            realm_id=self.user_profile.realm_id,
         )
         UserMessage.objects.create(
             user_profile=user_profile,
@@ -675,9 +675,9 @@ class HandlePushNotificationTest(PushNotificationTestCase):
         self.setup_apns_tokens()
         self.setup_fcm_tokens()
         message = self.get_message(
-            Recipient.PERSONAL,
-            type_id=self.personal_recipient_user.id,
-            realm_id=self.personal_recipient_user.realm_id,
+            Recipient.DIRECT_MESSAGE_GROUP,
+            type_id=self.dm_group.id,
+            realm_id=self.user_profile.realm_id,
         )
         UserMessage.objects.create(
             user_profile=self.user_profile,
@@ -1026,10 +1026,11 @@ class HandlePushNotificationTest(PushNotificationTestCase):
         self, mock_push_notifications: mock.MagicMock, mock_info: mock.MagicMock
     ) -> None:
         user_profile = self.example_user("hamlet")
+
         message = self.get_message(
-            Recipient.PERSONAL,
-            type_id=self.personal_recipient_user.id,
-            realm_id=self.personal_recipient_user.realm_id,
+            Recipient.DIRECT_MESSAGE_GROUP,
+            type_id=self.dm_group.id,
+            realm_id=self.user_profile.realm_id,
         )
         UserMessage.objects.create(
             user_profile=user_profile,

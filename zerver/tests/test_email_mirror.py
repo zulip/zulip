@@ -1243,15 +1243,12 @@ class TestStreamEmailMessagesEmptyBody(ZulipTestCase):
 
 
 class TestMissedMessageEmailMessages(ZulipTestCase):
-    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=False)
     def test_receive_missed_personal_message_email_messages(self) -> None:
         # Build dummy messages for message notification email reply.
         # Have Hamlet send Othello a direct message. Othello will
         # reply via email Hamlet will receive the message.
         hamlet = self.example_user("hamlet")
         othello = self.example_user("othello")
-
-        self.create_personal_recipient(hamlet, othello)
 
         self.login("hamlet")
         result = self.client_post(
@@ -1278,7 +1275,7 @@ class TestMissedMessageEmailMessages(ZulipTestCase):
         incoming_valid_message["To"] = mm_address
         incoming_valid_message["Reply-to"] = othello
 
-        with self.assert_database_query_count(17):
+        with self.assert_database_query_count(22):
             process_message(incoming_valid_message)
 
         # confirm that Hamlet got the message
@@ -1286,8 +1283,8 @@ class TestMissedMessageEmailMessages(ZulipTestCase):
 
         self.assertEqual(message.content, "TestMissedMessageEmailMessages body")
         self.assertEqual(message.sender, othello)
-        self.assertEqual(message.recipient.type_id, hamlet.id)
-        self.assertEqual(message.recipient.type, Recipient.PERSONAL)
+        self.assertEqual(message.recipient, self.get_dm_group_recipient(hamlet, othello))
+        self.assertEqual(message.recipient.type, Recipient.DIRECT_MESSAGE_GROUP)
 
     def test_receive_missed_group_direct_message_email_messages(self) -> None:
         # Build dummy messages for message notification email reply.

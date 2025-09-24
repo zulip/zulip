@@ -84,7 +84,6 @@ class MessageDictTest(ZulipTestCase):
                 allow_empty_topic_name=True,
                 can_access_sender=True,
                 realm_host=get_realm("zulip").host,
-                is_incoming_1_to_1=False,
             )
             return narrow_dict
 
@@ -373,7 +372,7 @@ class MessageHydrationTest(ZulipTestCase):
         ]
 
         obj = dict(
-            recipient_type=Recipient.PERSONAL,
+            recipient_type=Recipient.DIRECT_MESSAGE_GROUP,
             recipient_type_id=None,
             sender_is_mirror_dummy=False,
             sender_email=cordelia.email,

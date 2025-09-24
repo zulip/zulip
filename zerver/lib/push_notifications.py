@@ -1032,7 +1032,9 @@ def get_message_payload(
             data["channel_id"] = channel_id
 
         data["topic"] = get_topic_display_name(message.topic_name(), user_profile.default_language)
-    elif message.recipient.type == Recipient.DIRECT_MESSAGE_GROUP:
+    else:
+        assert message.recipient.type == Recipient.DIRECT_MESSAGE_GROUP
+
         data["recipient_type"] = "private" if for_legacy_clients else "direct"
         # For group DMs, we need to fetch the users for the pm_users field.
         # Note that this doesn't do a separate database query, because both
@@ -1040,8 +1042,6 @@ def get_message_payload(
         recipients = get_display_recipient(message.recipient)
         if len(recipients) > 2:
             data["pm_users"] = direct_message_group_users(message.recipient.id)
-    else:  # Recipient.PERSONAL
-        data["recipient_type"] = "private" if for_legacy_clients else "direct"
 
     return data
 
@@ -1095,8 +1095,6 @@ def get_apns_alert_subtitle(
         NotificationTriggers.STREAM_WILDCARD_MENTION,
     ):
         return _("{full_name} mentioned everyone:").format(full_name=sender_name)
-    elif message.recipient.type == Recipient.PERSONAL:
-        return ""
     elif message.recipient.type == Recipient.DIRECT_MESSAGE_GROUP:
         recipients = get_display_recipient(message.recipient)
         if len(recipients) <= 2:

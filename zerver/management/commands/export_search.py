@@ -12,7 +12,6 @@ from threading import Lock, Thread
 from typing import Any, NoReturn, Union
 
 import orjson
-from django.conf import settings
 from django.core.management.base import CommandError
 from django.db.models import Q
 from typing_extensions import override
@@ -215,15 +214,10 @@ This is most often used for legal compliance.
                 usermessage_joined = True
             elif len(user_profiles) == 2:
                 user_a, user_b = user_profiles
-                if settings.PREFER_DIRECT_MESSAGE_GROUP:
-                    direct_message_group = get_or_create_direct_message_group(
-                        id_list=[user_a.id, user_b.id]
-                    )
-                    limits &= Q(recipient=direct_message_group.recipient)
-                else:
-                    limits &= Q(recipient=user_a.recipient, sender=user_b) | Q(
-                        recipient=user_b.recipient, sender=user_a
-                    )
+                direct_message_group = get_or_create_direct_message_group(
+                    id_list=[user_a.id, user_b.id]
+                )
+                limits &= Q(recipient=direct_message_group.recipient)
             else:
                 direct_message_group = get_or_create_direct_message_group(
                     [user.id for user in user_profiles]

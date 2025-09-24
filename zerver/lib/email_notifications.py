@@ -37,7 +37,6 @@ from zerver.lib.topic import get_topic_display_name, get_topic_resolution_and_ba
 from zerver.lib.url_encoding import (
     direct_message_group_narrow_url,
     message_link_url,
-    personal_narrow_url,
     stream_narrow_url,
     topic_narrow_url,
 )
@@ -271,19 +270,8 @@ def build_message_list(
         return {"sender": sender, "content": [build_message_payload(message, sender)]}
 
     def message_header(message: Message) -> dict[str, Any]:
-        if message.recipient.type == Recipient.PERSONAL:
-            grouping: dict[str, Any] = {"user": message.sender_id}
-            narrow_link = personal_narrow_url(
-                realm=user.realm,
-                sender_id=message.sender.id,
-                sender_full_name=message.sender.full_name,
-            )
-            header = f"You and {message.sender.full_name}"
-            header_html = Markup(
-                "<a style='color: #ffffff;' href='{narrow_link}'>{header}</a>"
-            ).format(narrow_link=narrow_link, header=header)
-        elif message.recipient.type == Recipient.DIRECT_MESSAGE_GROUP:
-            grouping = {"huddle": message.recipient_id}
+        if message.recipient.type == Recipient.DIRECT_MESSAGE_GROUP:
+            grouping: dict[str, Any] = {"huddle": message.recipient_id}
             display_recipient = get_display_recipient(message.recipient)
             narrow_link = direct_message_group_narrow_url(
                 user=user,
@@ -528,13 +516,6 @@ def do_send_missedmessage_events_reply_in_zulip(
                 ", ".join(other_recipients[:2]), len(other_recipients) - 2
             )
             context.update(group_pm=True, direct_message_group_display_name=group_display_name)
-    elif message.recipient.type == Recipient.PERSONAL:
-        narrow_url = personal_narrow_url(
-            realm=user_profile.realm,
-            sender_id=message.sender.id,
-            sender_full_name=message.sender.full_name,
-        )
-        context.update(narrow_url=narrow_url, private_message=True)
     elif (
         context["mention"]
         or context["stream_email_notify"]
@@ -673,7 +654,7 @@ def handle_missedmessage_emails(
     # For direct messages it's recipient id and sender.
     messages_by_bucket: dict[tuple[int, int | str], list[Message]] = defaultdict(list)
     for msg in messages:
-        if msg.recipient.type == Recipient.PERSONAL:
+        if msg.recipient.type == Recipient.DIRECT_MESSAGE_GROUP:
             # For direct messages group using (recipient, sender).
             messages_by_bucket[(msg.recipient_id, msg.sender_id)].append(msg)
         else:

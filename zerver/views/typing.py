@@ -105,10 +105,8 @@ def send_message_edit_notification_backend(
         if not user_profile.send_private_typing_notifications:
             raise JsonableError(_("User has disabled typing notifications for direct messages"))
 
-        if recipient.type == Recipient.PERSONAL:
-            recipient_ids = [user_profile.id, recipient.type_id]
-        else:
-            recipient_ids = list(get_direct_message_group_user_ids(recipient))
+        assert recipient.type == Recipient.DIRECT_MESSAGE_GROUP
+        recipient_ids = list(get_direct_message_group_user_ids(recipient))
 
         do_send_direct_message_edit_typing_notification(
             user_profile, recipient_ids, message_id, operator

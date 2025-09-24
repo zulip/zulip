@@ -49,7 +49,7 @@ class Recipient(models.Model):
     PERSONAL = 1
     # The type for stream messages.
     STREAM = 2
-    # The type group direct messages.
+    # The type group direct messages for 1:1 and group dms.
     DIRECT_MESSAGE_GROUP = 3
 
     class Meta:
@@ -57,7 +57,6 @@ class Recipient(models.Model):
 
     # N.B. If we used Django's choice=... we would get this for free (kinda)
     _type_names = {
-        PERSONAL: "personal",
         STREAM: "stream",
         DIRECT_MESSAGE_GROUP: "direct_message_group",
     }
