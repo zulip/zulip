@@ -1,6 +1,6 @@
 <div class="header portico-header">
     <div class="header-main" id="top_navbar">
-        {% if page_is_help_center or page_is_api_center %}
+        {% if page_is_api_center %}
         <a id="skip-navigation" href="#main-content">{{ _('Skip to main content') }}</a>
         {% endif %}
         <div class="float-left">
@@ -14,9 +14,6 @@
                     </svg>
                 </a>
 
-                {% if page_is_help_center %}
-                <span class="light portico-header-text"> | <a href="{{ root_domain_url }}/help/">{{ doc_root_title }}</a></span>
-                {% endif %}
                 {% if page_is_api_center %}
                 <span class="light portico-header-text"> | <a href="{{ root_domain_url }}/api/">{{ doc_root_title }}</a></span>
                 {% endif %}

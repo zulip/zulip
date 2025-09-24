@@ -89,6 +89,7 @@ for port in get_tornado_ports(config_file):
                 f"http://127.0.0.1:{port}/api/internal/web_reload_clients",
                 data={"client_count": reload_rate * SECONDS_PER_BATCH, "secret": shared_secret},
                 timeout=5,
+                proxies={"http": ""},  # Make sure we don't go through Smokescreen
             )
             resp.raise_for_status()
             shard_total += resp.json()["sent_events"]

@@ -138,7 +138,7 @@ class MessagesSummaryTestCase(ZulipTestCase):
 
         realm = get_realm("zulip")
         moderators_group = NamedUserGroup.objects.get(
-            name=SystemGroups.MODERATORS, realm=realm, is_system_group=True
+            name=SystemGroups.MODERATORS, realm_for_sharding=realm, is_system_group=True
         )
 
         do_change_realm_permission_group_setting(
@@ -172,7 +172,7 @@ class MessagesSummaryTestCase(ZulipTestCase):
         check_message_summary_permission("shiva")
 
         nobody_group = NamedUserGroup.objects.get(
-            name=SystemGroups.NOBODY, realm=realm, is_system_group=True
+            name=SystemGroups.NOBODY, realm_for_sharding=realm, is_system_group=True
         )
         do_change_realm_permission_group_setting(
             realm,
@@ -183,7 +183,9 @@ class MessagesSummaryTestCase(ZulipTestCase):
 
         check_message_summary_permission("desdemona", expect_fail=True)
 
-        hamletcharacters_group = NamedUserGroup.objects.get(name="hamletcharacters", realm=realm)
+        hamletcharacters_group = NamedUserGroup.objects.get(
+            name="hamletcharacters", realm_for_sharding=realm
+        )
         do_change_realm_permission_group_setting(
             realm,
             "can_summarize_topics_group",

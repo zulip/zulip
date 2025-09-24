@@ -1,12 +1,15 @@
 import csv
 import os
+import queue
 import shutil
 from argparse import ArgumentParser
+from collections.abc import Iterator
 from datetime import datetime, timezone
 from email.headerregistry import Address
 from functools import lru_cache, reduce
 from operator import or_
-from typing import Any
+from threading import Lock, Thread
+from typing import Any, NoReturn, Union
 
 import orjson
 from django.core.management.base import CommandError
@@ -16,18 +19,39 @@ from typing_extensions import override
 from zerver.lib.management import ZulipBaseCommand
 from zerver.lib.soft_deactivation import reactivate_user_if_soft_deactivated
 from zerver.lib.upload import save_attachment_contents
-from zerver.models import AbstractUserMessage, Attachment, Message, Recipient, Stream, UserProfile
+from zerver.models import AbstractUserMessage, Message, Recipient, Stream, UserProfile
 from zerver.models.recipients import get_direct_message_group, get_or_create_direct_message_group
 from zerver.models.streams import get_stream
 from zerver.models.users import get_user_by_delivery_email
 
+check_lock = Lock()
+download_queue: queue.Queue[str] = queue.Queue()
+BATCH_SIZE = 1000
 
-def write_attachment(base_path: str, attachment: Attachment) -> None:
-    dir_path_id = os.path.dirname(attachment.path_id)
+
+def write_attachment(base_path: str, path_id: str, file_lock: Union["Lock", None] = None) -> None:
+    dir_path_id = os.path.dirname(path_id)
     assert "../" not in dir_path_id
     os.makedirs(base_path + "/" + dir_path_id, exist_ok=True)
-    with open(base_path + "/" + attachment.path_id, "wb") as attachment_file:
-        save_attachment_contents(attachment.path_id, attachment_file)
+    with open(base_path + "/" + path_id, "wb") as attachment_file:
+        if file_lock:
+            file_lock.release()
+        save_attachment_contents(path_id, attachment_file)
+
+
+def download_worker(base_path: str) -> NoReturn:
+    while True:
+        path_id = download_queue.get()
+
+        check_lock.acquire()
+        if os.path.exists(base_path + "/" + path_id):
+            check_lock.release()
+            download_queue.task_done()
+            continue
+
+        print(f"({download_queue.qsize()} Downloading {path_id}")
+        write_attachment(base_path, path_id, check_lock)
+        download_queue.task_done()
 
 
 class Command(ZulipBaseCommand):
@@ -54,6 +78,7 @@ This is most often used for legal compliance.
         parser.add_argument(
             "--force", action="store_true", help="Overwrite the output file if it exists already"
         )
+        parser.add_argument("--threads", default=5, type=int)
 
         parser.add_argument(
             "--file",
@@ -143,6 +168,8 @@ This is most often used for legal compliance.
 
         realm = self.get_realm(options)
         assert realm is not None
+        need_distinct = False
+        usermessage_joined = False
         limits = Q()
 
         limits = reduce(
@@ -168,6 +195,8 @@ This is most often used for legal compliance.
             limits &= Q(
                 usermessage__user_profile_id__in=[user_profile.id for user_profile in user_profiles]
             )
+            need_distinct = len(user_profiles) > 1
+            usermessage_joined = True
         elif options["sender"]:
             limits &= reduce(
                 or_,
@@ -182,6 +211,7 @@ This is most often used for legal compliance.
                     usermessage__user_profile_id=user_profiles[0].id,
                     usermessage__flags__andnz=AbstractUserMessage.flags.is_private.mask,
                 )
+                usermessage_joined = True
             elif len(user_profiles) == 2:
                 user_a, user_b = user_profiles
                 direct_message_group = get_direct_message_group(id_list=[user_a.id, user_b.id])
@@ -200,9 +230,30 @@ This is most often used for legal compliance.
             channels = [get_stream(n.lstrip("#"), realm) for n in options["channel"]]
             limits &= Q(recipient__in=[s.recipient_id for s in channels])
 
-        attachments_written: set[str] = set()
-        messages_query = Message.objects.filter(limits, realm=realm).order_by("date_sent")
-        print(f"Exporting {len(messages_query)} messages...")
+        messages_query = (
+            Message.objects.filter(limits, realm=realm)
+            .select_related("sender")
+            .only(
+                "id",
+                "date_sent",
+                "sender__full_name",
+                "sender__delivery_email",
+                "recipient_id",
+                "subject",
+                "content",
+                "edit_history",
+                "has_attachment",
+            )
+            .order_by("id")
+        )
+        if need_distinct:
+            messages_query = messages_query.distinct("id")
+
+        if options["write_attachments"]:
+            for i in range(options["threads"]):
+                Thread(
+                    target=download_worker, daemon=True, args=(options["write_attachments"],)
+                ).start()
 
         @lru_cache(maxsize=1000)
         def format_sender(full_name: str, delivery_email: str) -> str:
@@ -248,22 +299,42 @@ This is most often used for legal compliance.
                     attachments = message.attachment_set.all()
                     row["attachments"] = " ".join(a.path_id for a in attachments)
                     for attachment in attachments:
-                        if attachment.path_id in attachments_written:
-                            continue
-                        write_attachment(options["write_attachments"], attachment)
-                        attachments_written.add(attachment.path_id)
+                        download_queue.put(attachment.path_id)
                 else:
                     row["attachments"] = ""
             return row
 
+        def chunked_results() -> Iterator[list[dict[str, str]]]:
+            min_id = 0
+            while True:
+                batch_query = messages_query.filter(id__gt=min_id)
+                if usermessage_joined:
+                    batch_query = batch_query.extra(
+                        where=["zerver_usermessage.message_id > %s"], params=[min_id]
+                    )
+                batch = [transform_message(m) for m in batch_query[:BATCH_SIZE]]
+                if len(batch) == 0:
+                    break
+                min_id = int(batch[-1]["id"])
+                yield batch
+
+        print("Exporting messages...")
         if options["output"].endswith(".json"):
             with open(options["output"], "wb") as json_file:
-                json_file.write(
-                    # orjson doesn't support dumping from a generator
-                    orjson.dumps(
-                        [transform_message(m) for m in messages_query], option=orjson.OPT_INDENT_2
-                    )
-                )
+                first_chunk = True
+                for batch in chunked_results():
+                    print(".")
+                    if not first_chunk:
+                        json_file.write(b",\n")
+                    chunk = orjson.dumps(batch, option=orjson.OPT_INDENT_2)
+                    if not first_chunk:
+                        assert chunk.startswith(b"[\n")
+                        chunk = chunk[2:]
+                    assert chunk.endswith(b"\n]")
+                    chunk = chunk[:-2]
+                    json_file.write(chunk)
+                    first_chunk = False
+                json_file.write(b"\n]")
         elif options["output"].endswith(".csv"):
             with open(options["output"], "w") as csv_file:
                 columns = [
@@ -279,4 +350,7 @@ This is most often used for legal compliance.
                     columns += ["attachments"]
                 csvwriter = csv.DictWriter(csv_file, columns)
                 csvwriter.writeheader()
-                csvwriter.writerows(transform_message(m) for m in messages_query)
+                for batch in chunked_results():
+                    print(".")
+                    csvwriter.writerows(batch)
+        download_queue.join()

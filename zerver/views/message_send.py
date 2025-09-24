@@ -27,7 +27,6 @@ from zerver.lib.typed_endpoint import (
     typed_endpoint,
 )
 from zerver.lib.zcommand import process_zcommands
-from zerver.lib.zephyr import compute_mit_user_fullname
 from zerver.models import Client, Message, RealmDomain, UserProfile
 from zerver.models.users import get_user_including_cross_realm
 
@@ -48,10 +47,7 @@ def create_mirrored_message_users(
     if recipient_type_name == "private":
         referenced_users.update(email.lower() for email in recipients)
 
-    if client.name == "zephyr_mirror":
-        user_check = same_realm_zephyr_user
-        fullname_function = compute_mit_user_fullname
-    elif client.name == "irc_mirror":
+    if client.name == "irc_mirror":
         user_check = same_realm_irc_user
         fullname_function = compute_irc_user_fullname
     elif client.name in ("jabber_mirror", "JabberMirror"):
@@ -71,28 +67,6 @@ def create_mirrored_message_users(
 
     sender_user_profile = get_user_including_cross_realm(sender_email, user_profile.realm)
     return sender_user_profile
-
-
-def same_realm_zephyr_user(user_profile: UserProfile, email: str) -> bool:
-    #
-    # Are the sender and recipient both addresses in the same Zephyr
-    # mirroring realm?  We have to handle this specially, inferring
-    # the domain from the e-mail address, because the recipient may
-    # not existing in Zulip and we may need to make a stub Zephyr
-    # mirroring user on the fly.
-    try:
-        validators.validate_email(email)
-    except ValidationError:
-        return False
-
-    domain = Address(addr_spec=email).domain.lower()
-
-    # Assumes allow_subdomains=False for all RealmDomain's corresponding to
-    # these realms.
-    return (
-        user_profile.realm.is_zephyr_mirror_realm
-        and RealmDomain.objects.filter(realm=user_profile.realm, domain=domain).exists()
-    )
 
 
 def same_realm_irc_user(user_profile: UserProfile, email: str) -> bool:
@@ -197,7 +171,7 @@ def send_message_backend(
 
     realm = user_profile.realm
 
-    if client.name in ["zephyr_mirror", "irc_mirror", "jabber_mirror", "JabberMirror"]:
+    if client.name in ["irc_mirror", "jabber_mirror", "JabberMirror"]:
         # Here's how security works for mirroring:
         #
         # For direct messages, the message must be (1) both sent and
@@ -233,8 +207,6 @@ def send_message_backend(
         except InvalidMirrorInputError:
             raise JsonableError(_("Invalid mirrored message"))
 
-        if client.name == "zephyr_mirror" and not user_profile.realm.is_zephyr_mirror_realm:
-            raise JsonableError(_("Zephyr mirroring is not allowed in this organization"))
         sender = mirror_sender
     else:
         if req_sender is not None:

@@ -14,12 +14,7 @@ os.chdir(os.path.join(os.path.dirname(__file__), "../web"))
 from scripts.lib.zulip_tools import get_config, get_config_file
 from version import ZULIP_VERSION
 
-webpack_command = [
-    "node",
-    "--experimental-strip-types",
-    "--no-warnings=ExperimentalWarning",
-    "../node_modules/webpack-cli/bin/cli.js",
-]
+webpack_command = ["node", "../node_modules/webpack-cli/bin/cli.js"]
 
 
 def build_for_prod_or_puppeteer(quiet: bool, config_name: str | None = None) -> NoReturn:
@@ -31,6 +26,7 @@ def build_for_prod_or_puppeteer(quiet: bool, config_name: str | None = None) -> 
     webpack_args = [
         *webpack_command,
         "build",
+        "--disable-interpret",
         "--mode=production",
         f"--env=ZULIP_VERSION={ZULIP_VERSION}",
     ]
@@ -61,6 +57,7 @@ def build_for_dev_server(host: str, port: str, minify: bool, disable_host_check:
     webpack_args = [
         *webpack_command,
         "serve",
+        "--disable-interpret",
         # webpack-cli has a bug where it ignores --watch-poll with
         # multi-config, and we don't need the katex part anyway.
         "--config-name=frontend",

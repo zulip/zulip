@@ -149,6 +149,7 @@ class SendMessageRequest:
     default_bot_user_ids: set[int]
     service_bot_tuples: list[tuple[int, int]]
     all_bot_user_ids: set[int]
+    push_device_registered_user_ids: set[int]
     # IDs of topic participants who should be notified of topic wildcard mention.
     # The 'user_allows_notifications_in_StreamTopic' with 'wildcard_mentions_notify'
     # setting ON should return True.
@@ -294,6 +295,7 @@ def messages_for_ids(
         cache_transformer=lambda obj: obj,
         extractor=extract_message_dict,
         setter=stringify_message_dict,
+        pickled_tupled=False,
     )
 
     message_list: list[dict[str, Any]] = []
@@ -465,7 +467,7 @@ def access_web_public_message(
     except Message.DoesNotExist:
         raise MissingAuthenticationError
 
-    if not message.is_stream_message():
+    if not message.is_channel_message:
         raise MissingAuthenticationError
 
     queryset = get_web_public_streams_queryset(realm)
@@ -615,7 +617,7 @@ def event_recipient_ids_for_action_on_messages(
         return set(usermessages.values_list("user_profile_id", flat=True))
 
     sample_message = messages[0]
-    if not sample_message.is_stream_message():
+    if not sample_message.is_channel_message:
         # For DM, event is sent to users who actually received the message.
         return get_user_ids_having_usermessage_row_for_messages(message_ids)
 
@@ -652,9 +654,7 @@ def event_recipient_ids_for_action_on_messages(
     #    * Users who were initially subscribed and later unsubscribed
     #      (usermessages exist for messages they received while subscribed).
     usermessage_rows = UserMessage.objects.filter(message_id__in=message_ids).exclude(
-        # Excluding guests here implements can_access_public_channels,
-        # since we already know realm.is_zephyr_mirror_realm is false,
-        # based on the value of is_history_public_to_subscribers.
+        # Excluding guests here implements can_access_public_channels.
         user_profile__role=UserProfile.ROLE_GUEST
     )
     if exclude_long_term_idle_users:
@@ -1720,7 +1720,7 @@ def should_change_visibility_policy(
 
 def set_visibility_policy_possible(user_profile: UserProfile, message: Message) -> bool:
     """If the user can set a visibility policy."""
-    if not message.is_stream_message():
+    if not message.is_channel_message:
         return False
 
     if user_profile.is_bot:

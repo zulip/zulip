@@ -135,11 +135,11 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         self.login("hamlet")
         self.assert_num_bots_equal(0)
         bot_info = dict(
-            full_name="a",
+            full_name="",
             short_name="bot",
         )
         result = self.client_post("/json/bots", bot_info)
-        self.assert_json_error(result, "Name too short!")
+        self.assert_json_error(result, "Name must not be empty!")
         self.assert_num_bots_equal(0)
 
     def test_json_users_with_bots(self) -> None:
@@ -844,13 +844,13 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         cordelia = self.example_user("cordelia")
 
         administrators_system_group = NamedUserGroup.objects.get(
-            name=SystemGroups.ADMINISTRATORS, realm=realm, is_system_group=True
+            name=SystemGroups.ADMINISTRATORS, realm_for_sharding=realm, is_system_group=True
         )
         moderators_system_group = NamedUserGroup.objects.get(
-            name=SystemGroups.MODERATORS, realm=realm, is_system_group=True
+            name=SystemGroups.MODERATORS, realm_for_sharding=realm, is_system_group=True
         )
         members_system_group = NamedUserGroup.objects.get(
-            name=SystemGroups.MEMBERS, realm=realm, is_system_group=True
+            name=SystemGroups.MEMBERS, realm_for_sharding=realm, is_system_group=True
         )
 
         do_change_realm_permission_group_setting(
@@ -969,13 +969,13 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         cordelia = self.example_user("cordelia")
 
         administrators_system_group = NamedUserGroup.objects.get(
-            name=SystemGroups.ADMINISTRATORS, realm=realm, is_system_group=True
+            name=SystemGroups.ADMINISTRATORS, realm_for_sharding=realm, is_system_group=True
         )
         moderators_system_group = NamedUserGroup.objects.get(
-            name=SystemGroups.MODERATORS, realm=realm, is_system_group=True
+            name=SystemGroups.MODERATORS, realm_for_sharding=realm, is_system_group=True
         )
         members_system_group = NamedUserGroup.objects.get(
-            name=SystemGroups.MEMBERS, realm=realm, is_system_group=True
+            name=SystemGroups.MEMBERS, realm_for_sharding=realm, is_system_group=True
         )
 
         do_change_realm_permission_group_setting(

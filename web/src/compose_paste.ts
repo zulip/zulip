@@ -414,9 +414,13 @@ export function paste_handler_converter(
 
     turndownService.addRule("zulipImagePreview", {
         filter(node) {
-            // select image previews in Zulip messages
+            // select image previews in Zulip messages; we continue to check for
+            // message_inline_image to handle content pasted in from older
+            // versions of Zulip
             return (
-                node.classList.contains("message_inline_image") && node.firstChild?.nodeName === "A"
+                (node.classList.contains("message_inline_image") ||
+                    node.classList.contains("message-media-preview-image")) &&
+                node.firstChild?.nodeName === "A"
             );
         },
 
@@ -425,16 +429,17 @@ export function paste_handler_converter(
             // present, always comes before the preview in the copied html) is also there.
 
             // If the 1st element with the same image link in the copied html
-            // does not have the `message_inline_image` class, it means it is the generating
-            // link, and not the preview, meaning the generating link is copied as well.
+            // does not have a `message-media-preview-image` or `message_inline_image`
+            // class, it means it is the generating link, and not the preview, meaning
+            // the generating link is copied as well.
             const copied_html = new DOMParser().parseFromString(paste_html, "text/html");
-            let href;
+            const href = node.firstElementChild?.getAttribute("href") ?? "";
+            const anchor_element = copied_html.querySelector("a[href='" + CSS.escape(href) + "']");
             if (
                 node.firstElementChild === null ||
-                (href = node.firstElementChild.getAttribute("href")) === null ||
-                !copied_html
-                    .querySelector("a[href='" + CSS.escape(href) + "']")
-                    ?.parentElement?.classList.contains("message_inline_image")
+                href === "" ||
+                !anchor_element?.parentElement?.classList.contains("message_inline_image") ||
+                !anchor_element?.parentElement?.classList.contains("message-media-preview-image")
             ) {
                 // We skip previews which have their generating link copied too, to avoid
                 // double pasting the same link.

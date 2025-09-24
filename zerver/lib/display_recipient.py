@@ -34,6 +34,9 @@ def get_display_recipient_cache_key(
     return display_recipient_cache_key(recipient_id)
 
 
+# Note that the _same_ cache key is used for streams, which contain a
+# string, not a list[UserDisplayRecipient]!  This works because the
+# recipient space is distinct between the two.
 @cache_with_key(get_display_recipient_cache_key, timeout=3600 * 24 * 7)
 def get_display_recipient_remote_cache(
     recipient_id: int, recipient_type: int, recipient_type_id: int | None
@@ -121,6 +124,7 @@ def bulk_fetch_stream_names(
         cache_transformer=get_name,
         setter=lambda obj: obj,
         extractor=lambda obj: obj,
+        pickled_tupled=False,
     )
 
     return stream_display_recipients
@@ -245,8 +249,9 @@ def get_recipient_ids(
             to = [recipient.type_id]
         else:
             to = []
-            for r in get_display_recipient(recipient):
+            recipients = get_display_recipient(recipient)
+            for r in recipients:
                 assert not isinstance(r, str)  # It will only be a string for streams
-                if r["id"] != user_profile_id:
+                if r["id"] != user_profile_id or len(recipients) == 1:
                     to.append(r["id"])
     return to, recipient_type_str

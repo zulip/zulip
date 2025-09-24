@@ -150,8 +150,13 @@
     }
 
     #recent_view_filter_buttons {
-        padding: 12px 10px 0;
+        /* This padding-top value aligns the recents filters
+           with the filters in the left and right sidebars.
+           TODO: As part of the recents redesign, these filters
+           should match the height of the sidebar filters. */
+        padding: 10px 10px 0;
         display: flex;
+        gap: var(--recent-topics-filters-gap);
         /* Search box has no height without this in safari. */
         flex: 0 0 auto;
         flex-wrap: wrap;
@@ -159,9 +164,15 @@
         background: var(--color-background);
     }
 
+    #recent_filters_group {
+        display: flex;
+        flex-flow: row wrap;
+        gap: var(--recent-topics-filters-gap);
+    }
+
     #recent-view-search-wrapper {
         flex-grow: 1;
-        margin-bottom: 0.7142em; /* Legacy 10px at 14px/1em. */
+        margin-bottom: var(--recent-topics-filters-gap);
     }
 
     .button-recent-filters {
@@ -169,12 +180,14 @@
         background-color: var(--color-background-zulip-button);
         border: 1px solid var(--color-border-zulip-button);
         border-radius: 40px;
-        /* Legacy 5px 10px at 14px/1em. */
-        margin: 0 0.3571em 0.7142em 0;
-        /* 5px at 16px/1em and legacy 12px at 14px/1em. */
-        padding: 0.3125em 0.8571em;
-        line-height: 100%;
-        display: inline-flex;
+        /* Matching to the height of the filter search box. */
+        height: var(--recent-topics-filters-height);
+        /* Legacy 12px at 14px/1em. */
+        padding: 0 0.8571em;
+
+        flex: 0 0 auto;
+        display: flex;
+        align-items: center;
 
         &:hover {
             background-color: var(--color-background-zulip-button-hover);
@@ -605,17 +618,26 @@
 #recent-view-filter_widget {
     display: inline-flex;
     width: 10.7142em; /* 150px at 14px em */
-    /* Legacy 5px 10px at 14px/1em. */
-    margin: 0 0.3571em 0.7142em 0;
     /* 1.5px 6px at 16px/1em */
-    padding: 0.0937em 0.375em;
+    padding: 0 0.375em;
+    /* Matching to the height of the filter search box. */
+    height: var(--recent-topics-filters-height);
+    /* Matching to the input styles otherwise defined on
+       .input-element in inputs.css */
+    color: var(--color-text-input);
+    background: var(--color-background-input);
+    border: none;
+    outline: 1px solid var(--color-outline-input);
+    outline-offset: -1px;
 
     &:hover {
-        background-color: var(--color-background-inbox-search-hover);
+        outline-color: var(--color-outline-input-hover);
     }
 
     &:focus {
-        outline: 2px solid var(--color-outline-focus);
+        background-color: var(--color-background-input-focus);
+        outline-color: var(--color-outline-input-focus);
+        box-shadow: 0 0 5px var(--color-box-shadow-input-focus);
     }
 }
 

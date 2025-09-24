@@ -402,7 +402,7 @@
         white-space: initial;
         padding: 0 4px;
         background-color: hsl(0deg 0% 93%);
-        word-wrap: break-word;
+        overflow-wrap: break-word;
     }
 
     .codehilite {

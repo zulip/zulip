@@ -4,19 +4,13 @@ import * as blueslip from "./blueslip.ts";
 import * as message_lists from "./message_lists.ts";
 import type {Message} from "./message_store.ts";
 import type {Event, PollWidgetExtraData, PollWidgetOutboundData} from "./poll_widget.ts";
-import type {TodoWidgetOutboundData} from "./todo_widget.ts";
+import type {TodoWidgetExtraData, TodoWidgetOutboundData} from "./todo_widget.ts";
 
 // TODO: This ZFormExtraData type should be moved to web/src/zform.js when it will be migrated
 type ZFormExtraData = {
     type: string;
     heading: string;
     choices: {type: string; reply: string; long_name: string; short_name: string}[];
-};
-
-// TODO: This TodoWidgetExtraData type should be moved to web/src/todo_widget.js when it will be migrated
-type TodoWidgetExtraData = {
-    task_list_title?: string | undefined;
-    tasks?: {task: string; desc: string}[] | undefined;
 };
 
 type WidgetExtraData = PollWidgetExtraData | TodoWidgetExtraData | ZFormExtraData | null;

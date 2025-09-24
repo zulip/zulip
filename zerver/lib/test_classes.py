@@ -1917,6 +1917,23 @@ Output:
             realm, licenses, licenses_at_next_renewal, CustomerPlan.BILLING_SCHEDULE_MONTHLY
         )
 
+    def register_push_device(self, user_profile_id: int) -> None:
+        PushDevice.objects.create(
+            user_id=user_profile_id,
+            push_account_id=10,
+            bouncer_device_id=1,
+            token_kind=PushDevice.TokenKind.FCM,
+            push_public_key="n4WTVqj8KH6u0vScRycR4TqRaHhFeJ0POvMb8LCu8iI=",
+        )
+
+    def register_push_device_token(self, user_profile_id: int) -> None:
+        PushDeviceToken.objects.create(
+            user_id=user_profile_id,
+            kind=PushDeviceToken.APNS,
+            token="test-token",
+            ios_app_id="com.zulip.flutter",
+        )
+
     def create_user_notifications_data_object(
         self, *, user_id: int, **kwargs: Any
     ) -> UserMessageNotificationsData:
@@ -2079,7 +2096,7 @@ Output:
         self.send_personal_message(shiva, polonius)
         self.send_group_direct_message(aaron, [polonius, zoe])
 
-        members_group = NamedUserGroup.objects.get(name="role:members", realm=realm)
+        members_group = NamedUserGroup.objects.get(name="role:members", realm_for_sharding=realm)
         do_change_realm_permission_group_setting(
             realm, "can_access_all_users_group", members_group, acting_user=None
         )
@@ -2775,6 +2792,7 @@ class PushNotificationTestCase(BouncerTestCase):
             rendered_content="This is test content",
             date_sent=timezone_now(),
             sending_client=self.sending_client,
+            is_channel_message=type == Recipient.STREAM,
         )
         message.set_topic_name("Test topic")
         message.save()

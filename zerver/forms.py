@@ -1,10 +1,8 @@
 import base64
 import logging
 import re
-from email.headerregistry import Address
 from typing import Any
 
-import dns.resolver
 import orjson
 from altcha import verify_solution
 from django import forms
@@ -69,19 +67,6 @@ DEACTIVATED_ACCOUNT_ERROR = gettext_lazy(
     " Please contact your organization administrator to reactivate it."
 )
 PASSWORD_TOO_WEAK_ERROR = gettext_lazy("The password is too weak.")
-
-
-def email_is_not_mit_mailing_list(email: str) -> None:
-    """Prevent MIT mailing lists from signing up for Zulip"""
-    address = Address(addr_spec=email)
-    if address.domain == "mit.edu":
-        # Check whether the user exists and can get mail.
-        try:
-            dns.resolver.resolve(f"{address.username}.pobox.ns.athena.mit.edu", "TXT")
-        except dns.resolver.NXDOMAIN:
-            # This error is Markup only because 1. it needs to render HTML
-            # 2. It's not formatted with any user input.
-            raise ValidationError(MIT_VALIDATION_ERROR)
 
 
 class OverridableValidationError(ValidationError):
@@ -306,9 +291,6 @@ class HomepageForm(forms.Form):
             raise ValidationError(
                 _("Email addresses containing + are not allowed in this organization.")
             )
-
-        if realm.is_zephyr_mirror_realm:
-            email_is_not_mit_mailing_list(email)
 
         if settings.BILLING_ENABLED:
             from corporate.lib.registration import (

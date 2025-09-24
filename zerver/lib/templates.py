@@ -18,8 +18,6 @@ from markupsafe import Markup
 import zerver.lib.markdown.api_arguments_table_generator
 import zerver.lib.markdown.api_return_values_table_generator
 import zerver.lib.markdown.fenced_code
-import zerver.lib.markdown.help_emoticon_translations_table
-import zerver.lib.markdown.help_relative_links
 import zerver.lib.markdown.help_settings_links
 import zerver.lib.markdown.include
 import zerver.lib.markdown.nested_code_blocks
@@ -117,10 +115,6 @@ def render_markdown_path(
 
     relative_links = bool(context is not None and context.get("html_settings_links"))
     set_relative_settings_links(relative_links)
-    from zerver.lib.markdown.help_relative_links import set_relative_help_links
-
-    billing_relative_links = bool(context is not None and context.get("corporate_enabled"))
-    set_relative_help_links(relative_links, billing_relative_links)
 
     global md_extensions, md_macro_extension
     if md_extensions is None:
@@ -142,8 +136,6 @@ def render_markdown_path(
             zerver.lib.markdown.nested_code_blocks.makeExtension(),
             zerver.lib.markdown.tabbed_sections.makeExtension(),
             zerver.lib.markdown.help_settings_links.makeExtension(),
-            zerver.lib.markdown.help_relative_links.makeExtension(),
-            zerver.lib.markdown.help_emoticon_translations_table.makeExtension(),
             zerver.lib.markdown.static.makeExtension(),
         ]
     if context is not None and "api_url" in context:

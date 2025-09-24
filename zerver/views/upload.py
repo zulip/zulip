@@ -81,8 +81,34 @@ def internal_nginx_redirect(internal_path: str, content_type: str | None = None)
 
 
 def serve_s3(
-    request: HttpRequest, path_id: str, filename: str, force_download: bool = False
+    request: HttpRequest,
+    path_id: str,
+    attachment: Attachment,
+    *,
+    filename: str | None = None,
+    force_download: bool = False,
 ) -> HttpResponse:
+    if filename is None:
+        filename = attachment.file_name
+
+    # Save going to S3 for 0-byte files -- in part for performance, to
+    # save a round-trip to S3, but also because S3 can erroneously
+    # return HTTP 416 errors when a `Range: 0-5242879` header is sent
+    # (as nginx does by default with the `slice` directive) for a
+    # 0-byte file.
+    if attachment.size == 0:
+        content_type = maybe_add_charset(
+            attachment.content_type or guess_type(filename)[0] or "application/octet-stream",
+            attachment_source(path_id),
+        )
+        download = force_download or bare_content_type(content_type) not in INLINE_MIME_TYPES
+
+        response = HttpResponse("", content_type=content_type)
+        response.headers["Content-Length"] = "0"
+        patch_cache_control(response, private=True, immutable=True)
+        patch_disposition_header(response, filename, download)
+        return response
+
     url = get_signed_upload_url(path_id, filename, force_download=force_download)
     assert url.startswith("https://")
 
@@ -344,7 +370,13 @@ def serve_file(
             content_type=content_type,
         )
     else:
-        return serve_s3(request, path_id, served_filename, force_download=force_download)
+        return serve_s3(
+            request,
+            path_id,
+            attachment,
+            filename=served_filename,
+            force_download=force_download,
+        )
 
 
 USER_UPLOADS_ACCESS_TOKEN_SALT = "user_uploads_"
@@ -392,7 +424,7 @@ def serve_file_unauthed_from_token(
             content_type=attachment.content_type,
         )
     else:
-        return serve_s3(request, path_id, attachment.file_name)
+        return serve_s3(request, path_id, attachment)
 
 
 def serve_local_avatar_unauthed(request: HttpRequest, path: str) -> HttpResponseBase:

@@ -126,7 +126,7 @@ export function reset_compose_message_max_height(bottom_whitespace_height?: numb
 
 export function resize_bottom_whitespace(): void {
     const bottom_whitespace_height = get_bottom_whitespace_height();
-    $("html").css("--max-unmaximized-compose-height", `${bottom_whitespace_height}px`);
+    $(":root").css("--max-unmaximized-compose-height", `${bottom_whitespace_height}px`);
     // The height of the compose box is tied to that of
     // bottom_whitespace, so update it if necessary.
     //
@@ -174,7 +174,7 @@ export function resize_stream_subscribers_list(): void {
         total_height_of_classes_above_subscribers_list -
         subscribers_list_header_height -
         margin_between_tab_switcher_and_add_subscribers_title;
-    $("html").css("--stream-subscriber-list-max-height", `${subscribers_list_height}px`);
+    $(":root").css("--stream-subscriber-list-max-height", `${subscribers_list_height}px`);
 }
 
 export function resize_stream_filters_container(): void {
@@ -191,8 +191,6 @@ export function resize_sidebars(): void {
 
 export function update_recent_view(): void {
     const $recent_view_filter_container = $("#recent_view_filter_buttons");
-    const recent_view_filters_height = $recent_view_filter_container.outerHeight(true) ?? 0;
-    $("html").css("--recent-topics-filters-height", `${recent_view_filters_height}px`);
 
     // Update max avatars to prevent participant avatars from overflowing.
     // These numbers are just based on speculation.
@@ -203,9 +201,9 @@ export function update_recent_view(): void {
     const num_avatars_narrow_window = 2;
     const num_avatars_max = 4;
     if (recent_view_filters_width < media_breakpoints_num.md) {
-        $("html").css("--recent-view-max-avatars", num_avatars_narrow_window);
+        $(":root").css("--recent-view-max-avatars", num_avatars_narrow_window);
     } else {
-        $("html").css("--recent-view-max-avatars", num_avatars_max);
+        $(":root").css("--recent-view-max-avatars", num_avatars_max);
     }
 }
 

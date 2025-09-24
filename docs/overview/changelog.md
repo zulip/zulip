@@ -1,27 +1,81 @@
 # Version history
 
-This page contains the release history for the Zulip server. See also the
-[Zulip release lifecycle](../overview/release-lifecycle.md).
+This page contains the release history for the Zulip server. See also
+the [Zulip release lifecycle](../overview/release-lifecycle.md).
 
-## Zulip Server 11.x series (development)
+## Zulip Server 12.x series (development)
 
 This section is an incomplete draft of the release notes for the next
 major release, and is only updated occasionally. See the [commit
 log][commit-log] for an up-to-date list of all changes.
 
-### Zulip Server 11.0
+## Zulip Server 12.0
 
 _Unreleased_
 
-This section details some features planned for version 11.0 that are
-not present in 11.0-beta2.
+### Upgrade notes for 12.0
 
-- (Unfinished) Rebuilt the Zulip Help Center documentation in
-  Starlight, adding a modern design and delightful search.
+- None yet.
 
-### Zulip Server 11.0-beta2
+## Zulip Server 11.x series
 
-_Released 2025-07-29_
+### Zulip Server 11.2
+
+_Released 2025-09-16_
+
+- Fixed a crash with the nightly cron job added in 11.1 to catch race
+  conditions in subscriber counts.
+- Updated dependency for the new help center, to prevent potential
+  crashes when building.
+
+### Zulip Server 11.1
+
+_Released 2025-09-11_
+
+- Added upgrade instructions for Debian 12 → 13.
+- Fixed subscriber counts after data import being incorrect in the
+  database, which could cause removing channel subscribers to crash
+  after a data import. Also added a daily refresh to cached
+  subscriber counts, in case of race conditions.
+- Improved the label for channels not in a folder when channel folders
+  are in use.
+- Improved visual spacing and alignment in the web app left and right
+  sidebars.
+- Improved keyboard navigation in web app left and right sidebars.
+- Improved error handling for a SAML configuration error.
+- Improved dark theme colors for search suggestion pills.
+- Fixed a bug that could hide the left sidebar top search widget until
+  browser reload.
+- Fixed the compose box incorrectly closing when clicking links in the
+  message feed.
+- Fixed multiple annoying bugs where clicking/selecting didn’t work
+  properly.
+- Fixed a performance regression when loading the web app.
+- Fixed internals of message reminder body construction.
+- Fixed multiple minor issues generating Zulip internal links.
+- Fixed a buggy interaction with Smokescreen preventing client reload
+  requests from being sent.
+- Fixed broken deep links when serving redirects for a moved realm.
+- Fixed a broken lightbox keyboard shortcut.
+- Fixed hooks failing when upgrading the OS without having previously
+  upgraded Zulip.
+- Fixed the copy keyboard shortcut not working for logged-out access.
+- Fixed a bug introduced in 11.0 that could cause Notification Bot to
+  fail to notify about newly created channels (in the announcement
+  channel, as well as the new channel) when subscribing more than 100
+  users at once.
+- Fixed a bug resulting in useless extra suggestions in the search
+  typeahead.
+- Optimized performance for processing deleted messages slightly.
+- Backported several improvements to help center and API
+  documentation.
+- Added configuration options to allow webhooks to access to specific
+  local-network IP addresses.
+- Updated translations.
+
+### Zulip Server 11.0
+
+_Released 2025-08-13_
 
 #### Highlights
 
@@ -31,12 +85,19 @@ _Released 2025-07-29_
   prevent sending message content in push notifications to mobile app
   versions not using the E2EE protocol.
 - Added channel folders, which organize the channels within an
-  organization in the left sidebar and inbox views. Permission
-  settings for channel folders will be introduced in a future release.
-- Added support for scheduling message reminders.
+  organization in the left sidebar and inbox views. Added a new
+  organization settings panel to manage channel folders. A setting
+  allows users who prefer channels be alphabetized by name to not
+  organize channels by folder in the left sidebar. Permission settings
+  for channel folders will be introduced in a future release.
+- Added support for scheduling message reminders, with a custom
+  Markdown note field.
 - Added support for per-channel configuration of whether _general
   chat_ is available. In particular, channels without topics are now
   supported.
+- Redesigned the left sidebar filtering experience with a new
+  top-of-view filter widget. Improved keyboard navigation and its
+  interaction with filtering in both the left and right sidebars.
 - Redesigned the compose recipient area with modernized icons, to be
   more compact and not draw as much attention when not being actively
   edited.
@@ -61,8 +122,10 @@ _Released 2025-07-29_
 - Reworked Keyboard shortcuts to better support non-Latin keyboard
   locales. Now, keyboard shortcuts are entirely based on the key
   pressed, not what character it is mapped to.
+- Added SCIM support for syncing group membership.
 - The LDAP integration now supports automatically handling changes in
   user email addresses, when provided with a unique ID for each user.
+- Added support for Debian 13 "trixie".
 - Migrated translation platform from Transifex to Weblate.
 
 #### Full feature changelog
@@ -72,11 +135,14 @@ _Released 2025-07-29_
 - Policies for automatically following topics they initiate are now
   applied when someone moves a message they sent to be the first
   message of a new topic.
+- Notices generated by moving messages are now always marked as read
+  for the acting user.
 - Email notifications and Notification Bot now use topic permalinks.
   Topic permalinks now consistently prefer the latest message in a
   topic for anchoring; previously, the oldest message was sometimes
   used.
-- Added new options for marking all muted messages as read.
+- Added new organization setting for customizing Welcome Bot.
+- Added new options for bulk-marking all muted messages as read.
 - Added new web app setting for controlling whether grand total unread
   counts are displayed in the left sidebar.
 - Added support for unarchiving previously archived channels.
@@ -99,12 +165,18 @@ _Released 2025-07-29_
 - Added new webhook integration for OpenProject and
   OpenSearch. Improved the GitHub, GitLab, and Jotform integrations.
 - Added an administrator API endpoint for updating user status.
+- Added a simplified API endpoint for creating a new channel.
+- Added Markdown syntax for audio player previews.
 - Slack import now gives imported Slack threads better names.
 - Users imported from third-party chat tools now receive Welcome Bot
   messages.
 - Redesigned most filter/search inputs across the UI.
 - Redesigned dozens of buttons with legacy styling to consistently use
   Zulip's current generation button designs.
+- Redesigned most settings banners with a more modern visual design.
+- Redesigned how unreads are displayed with collapsed VIEWS.
+- Redesigned animation for new unread mentions.
+- Redesigned slightly the user status picker modal.
 - Reworked channel settings UI for adding groups. It's now convenient
   to copy membership of a group (previously, it was only easy to add
   subgroups). Direct message notices about new channel subscriptions
@@ -117,6 +189,8 @@ _Released 2025-07-29_
   reset-to-default button, and support for configuring channels that
   previously had default settings.
 - Improved settings table sorting UI design.
+- Improved organization of settings Preferences panel, extracting a
+  "left sidebar" section.
 - Improved drafts and scheduled messages overlays, including a new
   undo banner in case of accidental draft deletion.
 - Improved UI for scheduling messages to require less mouse travel.
@@ -129,9 +203,10 @@ _Released 2025-07-29_
 - Improved performance tuning of default Postgres configuration, and
   added support for overriding those defaults. Improved postgres
   upgrade tool.
-- Improved performance of maintaining full-text search greatly.
+- Improved performance of the job that maintains full-text search indexes.
 - Improved keyboard/mouse focus interactions in filterable dropdown
   widgets like the channel picker.
+- Improved selecting and copying text from the left sidebar.
 - Improved empty feed banner for channels with all topics muted.
 - Improved error banners for very old browser and desktop versions.
 - Improved error pages for deactivated users and realms.
@@ -155,6 +230,7 @@ _Released 2025-07-29_
 - Fixed several issues with markup translation in both Slack import
   and handling Slack-compatible webhook events.
 - Fixed several subtle issues with compose box tooltips.
+- Fixed drafts to automatically save when defocusing the Zulip window.
 - Fixed several issues with URL previews with variant font sizes.
 - Fixed several bugs in handling of Dropbox links.
 - Fixed several subtle bugs in the core message feed experience.
@@ -176,8 +252,10 @@ _Released 2025-07-29_
   containing large numbers of direct messages.
 - Fixed some performance bugs with fetching direct messages.
 - Fixed subtle performance issues involving prefetching permissions.
+- Fixed the local-to-S3 transfer tool not properly handling thumbnails.
 - Fixed a subtle bug where "show all topics" would incorrectly not be
   offered.
+- Fixed problems with 0-byte files with the S3 file upload backend.
 - Fixed buggy highlighting when searching for a keyword including `'`.
 - Fixed RealmAuditLog not storing email addresses properly.
 - Fixed message content visibility not applying to digest emails.
@@ -186,8 +264,9 @@ _Released 2025-07-29_
 - Fixed some message feed bugs affecting right-to-left languages.
 - Fixed display of imported messages in analytics.
 - Fixed several issues with 500 error pages.
-- Migrated translation platform from Transifex to Weblate.
 - Updated dependencies, including Django 5.2.
+- Migrated translation platform from Transifex to Weblate.
+- Updated translations.
 
 #### Upgrade notes for 11.0
 
@@ -219,6 +298,15 @@ _Released 2025-07-29_
   It was deprecated in favor of `SOCIAL_AUTH_SYNC_ATTRS_DICT` in 10.0.
 - The obscure `REALM_CREATION_LINK_VALIDITY_DAYS` setting was renamed to
   `CAN_CREATE_REALM_LINK_VALIDITY_DAYS`.
+- Installations that previously upgraded to `11.0-beta2` can run
+  ```console
+  ./manage.py send_zulip_update_announcements --reset-level 19
+  ```
+  to get the latest version of a [Zulip
+  updates notice](https://zulip.com/help/configure-automated-notices#zulip-update-announcements)
+  that was [expanded][edited-zulip-update-notice-20] after 11.0-beta2.
+
+[edited-zulip-update-notice-20]: https://chat.zulip.org/#narrow/channel/1-announce/topic/Zulip.20updates/near/2242634
 
 ## Zulip Server 10.x series
 
@@ -692,6 +780,10 @@ _Released 2025-03-20_
   allocated to your Zulip instance and the policy question of how you
   want to encourage your users to share videos or other very large
   files.
+- Installations using S3-compatible block storage services to store
+  Zulip's file uploads may require the new `S3_SKIP_CHECKSUM` setting,
+  added in Zulip Server 10.2. See [the
+  documentation](../production/upload-backends.md) for details.
 - The `SOCIAL_AUTH_SYNC_CUSTOM_ATTRS_DICT` setting is deprecated in favor of the
   more general `SOCIAL_AUTH_SYNC_ATTRS_DICT` setting structure, but still works in
   this release for a smooth upgrade experience. The new setting supports
@@ -964,7 +1056,7 @@ _Released 2024-07-25_
 - Improved how desktop and mobile push notifications display quoted
   content to focus on the reply over the quoted content.
 - Improved filtering options for the GitHub integration.
-- Improved dozens of Help Center articles.
+- Improved dozens of help center articles.
 - Improved wording in various automated notices.
 - Improved new-organization defaults for various permissions settings.
 - Improved how users are displayed in settings to use clickable user
@@ -1642,7 +1734,7 @@ _Released 2023-05-31_
 - New compose box features: Scheduling a message to be sent later, a
   nicer stream picker, and the ability to switch between stream and
   private messages.
-- Numerous improvements to the Help Center, including documentation
+- Numerous improvements to the help center, including documentation
   for how to complete many common tasks in the Zulip mobile apps.
 - Redesigned the interface and permissions model for moving topics to
   be independent from message content editing, providing a cleaner
@@ -1874,8 +1966,8 @@ _Released 2023-01-23_
   [Rocket.Chat imports](https://zulip.com/help/import-from-rocketchat).
 - Updated the Intercom integration to return success on `HEAD`
   requests, which it uses to verify its configuration.
-- Documented how each
-  [rate limit](../production/security-model.md#rate-limiting)
+- Documented how each [rate
+  limit](../production/security-model.md#6-understand-zulips-rate-limiting-system)
   category is used.
 - Documented the `reset_authentication_attempt_count` command for when users
   lock themselves out.
@@ -2377,8 +2469,8 @@ _Released 2022-03-29_
 - Redesigned hover behavior for timestamps and time mentions.
 - Messages sent by muted users can now be rehidden after being
   revealed. One can also now mute deactivated users.
-- Rewrote Help Center guides for new organizations and users, and made
-  hundreds of other improvements to Help Center content and organization.
+- Rewrote help center guides for new organizations and users, and made
+  hundreds of other improvements to help center content and organization.
 - Reimplemented the image lightbox's pan/zoom functionality to be
   nicer, allowing us to enable it be default.
 - Added styled loading page for the web application.
@@ -3557,7 +3649,7 @@ _Released 2019-12-12_
   bot's owner.
 - Restructured "private messages" widget to have a cleaner design.
 - Significantly improved performance of the backend Markdown processor.
-- Significantly improved Help Center documentation of dozens of features.
+- Significantly improved help center documentation of dozens of features.
 - Simplified and internationalized some notification bot messages.
 - The compose box placeholder now shows users active status.
 - Clicking the "EDITED" text on a message now pops message edit history.
@@ -3811,7 +3903,7 @@ _Released 2019-03-01_
 - Expanded production documentation for more unusual deployment options.
 - Expanded set of characters allowed in custom linkifiers.
 - Optimized development provisioning; now takes 2s in the no-op case.
-- Zulip's Help Center now has nicely generated open graph tags.
+- Zulip's help center now has nicely generated open graph tags.
 - Fixed missing API authentication headers for mobile file access.
 - Fixed various select and copy-paste issues.
 - Fixed various back button bugs in settings UI.
@@ -3966,7 +4058,7 @@ _Released 2018-11-07_
 - Updated numerous pages within the /help/ site.
 - We no longer require re-authing to sign up after trying to log in with
   an OAuth authentication backend (GitHub or Google).
-- Made major improvements to the Help Center.
+- Made major improvements to the help center.
 - Improved system for configuring the S3 file uploads backend.
 - Improved emoji typeahead sorting.
 - Improved Zulip's layout for windows with a width around 1024px.
@@ -4962,7 +5054,8 @@ _Released 2015-10-19_
 This section links to the upgrade notes from past releases, so you can
 easily read them all when upgrading across multiple releases.
 
-- [Draft upgrade notes for 11.0](#upgrade-notes-for-110)
+- [Draft upgrade notes for 12.0](#upgrade-notes-for-120)
+- [Upgrade notes for 11.0](#upgrade-notes-for-110)
 - [Upgrade notes for 10.0](#upgrade-notes-for-100)
 - [Upgrade notes for 9.0](#upgrade-notes-for-90)
 - [Upgrade notes for 8.0](#upgrade-notes-for-80)

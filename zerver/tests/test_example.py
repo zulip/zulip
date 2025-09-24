@@ -449,7 +449,7 @@ class TestMocking(ZulipTestCase):
         # mentions to a stream. If a stream has too many
         # subscribers, we won't allow any users to spam the stream.
         nobody_system_group = NamedUserGroup.objects.get(
-            name=SystemGroups.NOBODY, realm=realm, is_system_group=True
+            name=SystemGroups.NOBODY, realm_for_sharding=realm, is_system_group=True
         )
 
         do_change_realm_permission_group_setting(

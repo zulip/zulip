@@ -133,10 +133,10 @@ def bulk_create_users(
     Subscription.objects.bulk_create(subscriptions_to_create)
 
     full_members_system_group = NamedUserGroup.objects.get(
-        name=SystemGroups.FULL_MEMBERS, realm=realm, is_system_group=True
+        name=SystemGroups.FULL_MEMBERS, realm_for_sharding=realm, is_system_group=True
     )
     members_system_group = NamedUserGroup.objects.get(
-        name=SystemGroups.MEMBERS, realm=realm, is_system_group=True
+        name=SystemGroups.MEMBERS, realm_for_sharding=realm, is_system_group=True
     )
     group_memberships_to_create: list[UserGroupMembership] = []
     for user_profile in profiles_to_create:
@@ -206,10 +206,6 @@ def bulk_create_streams(realm: Realm, stream_dict: dict[str, dict[str, Any]]) ->
     }
     streams_to_create: list[Stream] = []
     for name, options in stream_dict.items():
-        if "history_public_to_subscribers" not in options:
-            options["history_public_to_subscribers"] = (
-                not options.get("invite_only", False) and not realm.is_zephyr_mirror_realm
-            )
         creator = options.get("creator", None)
         if name.lower() not in existing_streams:
             stream = Stream(
@@ -218,9 +214,8 @@ def bulk_create_streams(realm: Realm, stream_dict: dict[str, dict[str, Any]]) ->
                 description=options["description"],
                 rendered_description=render_stream_description(options["description"], realm),
                 invite_only=options.get("invite_only", False),
-                history_public_to_subscribers=options["history_public_to_subscribers"],
+                history_public_to_subscribers=options.get("history_public_to_subscribers", True),
                 is_web_public=options.get("is_web_public", False),
-                is_in_zephyr_realm=realm.is_zephyr_mirror_realm,
                 creator=options.get("creator", None),
                 folder_id=options.get("folder_id", None),
                 topics_policy=options.get("topics_policy", StreamTopicsPolicyEnum.inherit.value),

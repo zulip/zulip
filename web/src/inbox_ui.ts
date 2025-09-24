@@ -36,6 +36,7 @@ import * as pm_list from "./pm_list.ts";
 import * as stream_color from "./stream_color.ts";
 import * as stream_data from "./stream_data.ts";
 import * as stream_list from "./stream_list.ts";
+import * as stream_settings_api from "./stream_settings_api.ts";
 import * as stream_topic_history from "./stream_topic_history.ts";
 import * as stream_topic_history_util from "./stream_topic_history_util.ts";
 import * as sub_store from "./sub_store.ts";
@@ -348,7 +349,7 @@ export function show(filter?: Filter): void {
                 pm_list.handle_narrow_activated(filter);
             },
             $view: $("#inbox-view"),
-            update_compose: compose_closed_ui.update_buttons_for_non_specific_views,
+            update_compose: compose_closed_ui.update_buttons,
             // We already did a check above for that.
             is_visible: () => false,
             set_visible: inbox_util.set_visible,
@@ -366,7 +367,7 @@ export function show(filter?: Filter): void {
             );
         },
         $view: $("#inbox-view"),
-        update_compose: compose_closed_ui.update_buttons_for_non_specific_views,
+        update_compose: compose_closed_ui.update_buttons,
         is_visible: () => normal_inbox_view_is_visible,
         set_visible: inbox_util.set_visible,
         complete_rerender,
@@ -468,8 +469,6 @@ function format_dm(
         recipient_ids.push(people.my_current_user_id());
     }
 
-    const reply_to = people.user_ids_string_to_emails_string(user_ids_string);
-    assert(reply_to !== undefined);
     const rendered_dm_with_html = recipient_ids
         .map((recipient_id) => ({
             name: people.get_display_full_name(recipient_id),
@@ -500,7 +499,7 @@ function format_dm(
         is_group: recipient_ids.length > 1,
         user_circle_class,
         is_bot,
-        dm_url: hash_util.pm_with_url(reply_to),
+        dm_url: hash_util.pm_with_url(user_ids_string),
         user_ids_string,
         unread_count,
         is_hidden: filter_should_hide_dm_row({dm_key: user_ids_string}),
@@ -859,7 +858,7 @@ function get_folder_name_from_id(folder_id: number): string {
     }
 
     if (folder_id === OTHER_CHANNELS_FOLDER_ID) {
-        return $t({defaultMessage: "CHANNELS"});
+        return $t({defaultMessage: "OTHER CHANNELS"});
     }
 
     return channel_folders.get_channel_folder_by_id(folder_id).name;
@@ -1113,7 +1112,7 @@ class InboxTopicListWidget extends TopicListWidget {
                 );
                 return render_inbox_row(topic_context);
             },
-            $simplebar_container: $("html"),
+            $simplebar_container: $(":root"),
             is_scroll_position_for_render: views_util.is_scroll_position_for_render,
             get_min_load_count,
         });
@@ -1172,7 +1171,7 @@ function inbox_view_dropdown_options(
     return views_util.filters_dropdown_options(current_value, inbox_util.is_channel_view());
 }
 
-export function complete_rerender(): void {
+export function complete_rerender(coming_from_other_views = false): void {
     if (!inbox_util.is_visible()) {
         return;
     }
@@ -1223,15 +1222,17 @@ export function complete_rerender(): void {
             first_filter = filters.values().next();
         }
 
-        // If the focus is not on the inbox rows, the inbox view scrolls
-        // down when moving from other views to the inbox view. To avoid
-        // this, we scroll to top before restoring focus via revive_current_focus.
-        if (!is_list_focused()) {
-            window.scrollTo(0, 0);
-        } else if (last_scroll_offset !== undefined) {
-            // It is important to restore the scroll position as soon
-            // as the rendering is complete to avoid scroll jumping.
-            window.scrollTo(0, last_scroll_offset);
+        if (coming_from_other_views) {
+            if (last_scroll_offset !== undefined) {
+                // It is important to restore the scroll position as soon
+                // as the rendering is complete to avoid scroll jumping.
+                window.scrollTo(0, last_scroll_offset);
+            } else {
+                // If the focus is not on the inbox rows, the inbox view scrolls
+                // down when moving from other views to the inbox view. To avoid
+                // this, we scroll to top before restoring focus via revive_current_focus.
+                window.scrollTo(0, 0);
+            }
         }
 
         revive_current_focus();
@@ -2354,6 +2355,40 @@ export function initialize({hide_other_views}: {hide_other_views: () => void}): 
     $("body").on("click", "#inbox-search", () => {
         current_focus_id = INBOX_SEARCH_ID;
         compose_closed_ui.set_standard_text_for_reply_button();
+    });
+
+    $("body").on(
+        "click",
+        "#inbox-list .toggle-channel-visibility",
+        function (this: HTMLElement, e) {
+            e.stopPropagation();
+            const $elt = $(this);
+            focus_clicked_list_element($elt);
+            const stream_id = Number($elt.attr("data-stream-id"));
+            if (stream_id) {
+                const sub = sub_store.get(stream_id);
+                if (sub) {
+                    stream_settings_api.set_stream_property(sub, {
+                        property: "is_muted",
+                        value: false,
+                    });
+                }
+            }
+        },
+    );
+
+    $("body").on("keydown", "#inbox-list .toggle-channel-visibility", (e) => {
+        if (e.metaKey || e.ctrlKey) {
+            return;
+        }
+
+        if (keydown_util.is_enter_event(e)) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            const $elt = $(e.currentTarget);
+            $elt.trigger("click");
+        }
     });
 
     $(document).on("compose_canceled.zulip", () => {

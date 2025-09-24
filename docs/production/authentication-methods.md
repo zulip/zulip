@@ -21,6 +21,58 @@ email and password.
 When first setting up your Zulip server, this method must be used for
 creating the initial realm and user. You can disable it after that.
 
+### Passwords
+
+Zulip stores user passwords using the standard Argon2 and PBKDF2
+algorithms. Argon2 is used for all new and changed passwords as of
+Zulip Server 1.6.0, but legacy PBKDF2 passwords that were last changed
+before the 1.6.0 upgrade are still supported.
+
+When the user is choosing a password, Zulip checks the password's
+strength using the popular [zxcvbn][zxcvbn] library. Weak passwords
+are rejected, and strong passwords encouraged. The minimum password
+strength allowed is controlled by two settings in
+`/etc/zulip/settings.py`:
+
+- `PASSWORD_MIN_LENGTH`: The minimum acceptable length, in characters.
+  Shorter passwords are rejected even if they pass the `zxcvbn` test
+  controlled by `PASSWORD_MIN_GUESSES`.
+
+- `PASSWORD_MIN_GUESSES`: The minimum acceptable strength of the
+  password, in terms of the estimated number of passwords an attacker
+  is likely to guess before trying this one. If the user attempts to
+  set a password that `zxcvbn` estimates to be guessable in less than
+  `PASSWORD_MIN_GUESSES`, then Zulip rejects the password.
+
+  By default, `PASSWORD_MIN_GUESSES` is 10000. This provides
+  significant protection against online attacks, while limiting the
+  burden imposed on users choosing a password. See
+  [password strength](password-strength.md) for an extended
+  discussion on how we chose this value.
+
+  Estimating the guessability of a password is a complex problem and
+  impossible to efficiently do perfectly. For background or when
+  considering an alternate value for this setting, the article
+  ["Passwords and the Evolution of Imperfect Authentication"][bhos15]
+  is recommended. The [2016 zxcvbn paper][zxcvbn-paper] adds useful
+  information about the performance of zxcvbn, and [a large 2012 study
+  of Yahoo users][bon12] is informative about the strength of the
+  passwords users choose.
+
+<!---
+  If the BHOS15 link ever goes dead: it's reference 30 of the zxcvbn
+  paper, aka https://dl.acm.org/citation.cfm?id=2699390 , in the
+  _Communications of the ACM_ aka CACM.  (But the ACM has it paywalled.)
+  .
+  Hooray for USENIX and IEEE: the other papers' canonical links are
+  not paywalled.  The Yahoo study is reference 5 in BHOS15.
+-->
+
+[zxcvbn]: https://github.com/dropbox/zxcvbn
+[bhos15]: http://www.cl.cam.ac.uk/~fms27/papers/2015-BonneauHerOorSta-passwords.pdf
+[zxcvbn-paper]: https://www.usenix.org/system/files/conference/usenixsecurity16/sec16_paper_wheeler.pdf
+[bon12]: http://ieeexplore.ieee.org/document/6234435/
+
 ## Plug-and-play SSO (Google, GitHub, GitLab)
 
 With just a few lines of configuration, your Zulip server can

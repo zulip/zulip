@@ -295,7 +295,9 @@ if not TORNADO_PORTS:
     TORNADO_PORTS = get_tornado_ports(config_file)
 TORNADO_PROCESSES = len(TORNADO_PORTS)
 
-RUNNING_INSIDE_TORNADO = False
+RUNNING_INSIDE_TORNADO = (
+    len(sys.argv) > 1 and "manage.py" in sys.argv[0] and sys.argv[1] == "runtornado"
+)
 
 SILENCED_SYSTEM_CHECKS = [
     # auth.W004 checks that the UserProfile field named by USERNAME_FIELD has
@@ -420,15 +422,15 @@ CACHES: dict[str, dict[str, object]] = {
             "socket_timeout": 3600,
             "username": MEMCACHED_USERNAME,
             "password": MEMCACHED_PASSWORD,
-            "pickle_protocol": 4,
+            "pickle_protocol": 5,
         },
     },
     "database": {
         "BACKEND": "django.core.cache.backends.db.DatabaseCache",
         "LOCATION": "third_party_api_results",
-        # This cache shouldn't timeout; we're really just using the
-        # cache API to store the results of requests to third-party
-        # APIs like the Twitter API permanently.
+        # This is currently unused; it was previously used to cache
+        # API responses from third-party APIs like the Twitter API
+        # permanently.
         "TIMEOUT": None,
         "OPTIONS": {
             "MAX_ENTRIES": 100000000,
@@ -1206,6 +1208,9 @@ for idp_name, idp_dict in SOCIAL_AUTH_SAML_ENABLED_IDPS.items():
     else:
         path = f"/etc/zulip/saml/idps/{idp_name}.crt"
     idp_dict["x509cert"] = get_from_file_if_exists(path)
+
+    if "zulip_groups" in idp_dict.get("extra_attrs", []):
+        raise AssertionError("zulip_groups can't be listed in extra_attrs in the IdP config.")
 
 
 def ensure_dict_path(d: dict[str, Any], keys: list[str]) -> None:

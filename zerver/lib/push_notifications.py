@@ -4,11 +4,12 @@ import asyncio
 import copy
 import logging
 import re
-from collections.abc import Iterable, Mapping, Sequence
+import time
+from collections.abc import Mapping, Sequence
 from dataclasses import asdict, dataclass, field
 from email.headerregistry import Address
 from functools import cache
-from typing import TYPE_CHECKING, Any, Final, Literal, Optional, TypeAlias, Union
+from typing import TYPE_CHECKING, Any, Final, Literal, Optional, TypeAlias, Union, cast
 
 import lxml.html
 import orjson
@@ -28,7 +29,8 @@ from firebase_admin import messaging as firebase_messaging
 from firebase_admin.messaging import UnregisteredError as FCMUnregisteredError
 from nacl.encoding import Base64Encoder
 from nacl.public import PublicKey, SealedBox
-from typing_extensions import NotRequired, TypedDict, override
+from pydantic import TypeAdapter
+from typing_extensions import TypedDict, override
 
 from analytics.lib.counts import COUNT_STATS, do_increment_logging_stat
 from zerver.actions.realm_settings import (
@@ -331,28 +333,24 @@ def send_apple_push_notification(
     if have_missing_app_id:
         devices = [device for device in devices if device.ios_app_id is not None]
 
-    async def send_all_notifications() -> Iterable[
-        tuple[DeviceToken, aioapns.common.NotificationResult | BaseException]
-    ]:
-        requests = [
-            aioapns.NotificationRequest(
-                apns_topic=device.ios_app_id,
-                device_token=device.token,
-                message=message,
-                time_to_live=24 * 3600,
-            )
-            for device in devices
-        ]
-        results = await asyncio.gather(
-            *(apns_context.apns.send_notification(request) for request in requests),
-            return_exceptions=True,
+    results: dict[DeviceToken, NotificationResult | BaseException] = {}
+    for device in devices:
+        # TODO obviously this should be made to actually use the async
+        request = aioapns.NotificationRequest(
+            apns_topic=device.ios_app_id,
+            device_token=device.token,
+            message=message,
+            time_to_live=24 * 3600,
         )
-        return zip(devices, results, strict=False)
-
-    results = apns_context.loop.run_until_complete(send_all_notifications())
+        try:
+            results[device] = apns_context.loop.run_until_complete(
+                apns_context.apns.send_notification(request)
+            )
+        except BaseException as e:
+            results[device] = e
 
     successfully_sent_count = 0
-    for device, result in results:
+    for device, result in results.items():
         log_context = f"for user {user_identity} to device {device.token}"
         result_info = get_info_from_apns_result(result, device, log_context)
 
@@ -1057,7 +1055,7 @@ def get_apns_alert_title(message: Message, language: str) -> str:
         assert isinstance(recipients, list)
         if len(recipients) > 2:
             return ", ".join(sorted(r["full_name"] for r in recipients))
-    elif message.is_stream_message():
+    elif message.is_channel_message:
         stream_name = get_message_stream_name_from_database(message)
         topic_display_name = get_topic_display_name(message.topic_name(), language)
         return f"#{stream_name} > {topic_display_name}"
@@ -1415,7 +1413,13 @@ class SendNotificationResponseData(TypedDict):
     android_successfully_sent_count: int
     apple_successfully_sent_count: int
     delete_device_ids: list[int]
-    realm_push_status: NotRequired[RealmPushStatusDict]
+
+
+class SendNotificationRemoteResponseData(SendNotificationResponseData):
+    realm_push_status: RealmPushStatusDict
+
+
+send_notification_remote_response_data_adapter = TypeAdapter(SendNotificationRemoteResponseData)
 
 
 FCMPriority: TypeAlias = Literal["high", "normal"]
@@ -1525,10 +1529,12 @@ def send_push_notifications(
 
     # Send push notification
     try:
+        start_time = time.perf_counter()
+        response_data: SendNotificationResponseData | SendNotificationRemoteResponseData
         if settings.ZILENCER_ENABLED:
             from zilencer.lib.push_notifications import send_e2ee_push_notifications
 
-            response_data: SendNotificationResponseData = send_e2ee_push_notifications(
+            response_data = send_e2ee_push_notifications(
                 push_requests,
                 realm=user_profile.realm,
             )
@@ -1538,16 +1544,8 @@ def send_push_notifications(
                 "push_requests": [asdict(push_request) for push_request in push_requests],
             }
             result = send_json_to_push_bouncer("POST", "push/e2ee/notify", post_data)
-            assert isinstance(result["android_successfully_sent_count"], int)  # for mypy
-            assert isinstance(result["apple_successfully_sent_count"], int)  # for mypy
-            assert isinstance(result["delete_device_ids"], list)  # for mypy
-            assert isinstance(result["realm_push_status"], dict)  # for mypy
-            response_data = {
-                "android_successfully_sent_count": result["android_successfully_sent_count"],
-                "apple_successfully_sent_count": result["apple_successfully_sent_count"],
-                "delete_device_ids": result["delete_device_ids"],
-                "realm_push_status": result["realm_push_status"],  # type: ignore[typeddict-item] # TODO: Can't use isinstance() with TypedDict type
-            }
+            response_data = send_notification_remote_response_data_adapter.validate_python(result)
+        send_push_notifications_latency = time.perf_counter() - start_time
     except (MissingRemoteRealmError, PushNotificationsDisallowedByBouncerError) as e:
         reason = e.reason if isinstance(e, PushNotificationsDisallowedByBouncerError) else e.msg
         logger.warning("Bouncer refused to send E2EE push notification: %s", reason)
@@ -1591,14 +1589,18 @@ def send_push_notifications(
     )
 
     logger.info(
-        "Sent E2EE mobile push notifications for user %s: %s via FCM, %s via APNs",
+        "Sent E2EE mobile push notifications for user %s: %s via FCM, %s via APNs in %.3fs",
         user_profile.id,
         android_successfully_sent_count,
         apple_successfully_sent_count,
+        send_push_notifications_latency,
     )
 
-    realm_push_status_dict = response_data.get("realm_push_status")
-    if realm_push_status_dict is not None:
+    if "realm_push_status" in response_data:
+        # Cannot use `isinstance` with `TypedDict`s to make mypy know
+        # which of the `TypedDict`s in the Union this is - so just cast it.
+        response_data = cast(SendNotificationRemoteResponseData, response_data)
+        realm_push_status_dict = response_data["realm_push_status"]
         can_push = realm_push_status_dict["can_push"]
         do_set_realm_property(
             user_profile.realm,
@@ -1716,7 +1718,7 @@ def handle_push_notification(user_profile_id: int, missed_message: dict[str, Any
         user_profile, {trigger}, mentioned_user_group_members_count
     )
 
-    if message.is_stream_message():
+    if message.is_channel_message:
         # This will almost always be True. The corner case where you
         # can be receiving a message from a user you cannot access
         # involves your being a guest user whose access is restricted

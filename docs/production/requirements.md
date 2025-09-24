@@ -7,6 +7,7 @@ To run a Zulip server, you will need:
   - Ubuntu 22.04
   - Ubuntu 24.04
   - Debian 12
+  - Debian 13
 - A supported CPU architecture:
   - x86-64
   - aarch64
@@ -37,7 +38,7 @@ on issues you'll encounter](install-existing-server.md).
 
 #### Operating system
 
-Ubuntu 22.04, Ubuntu 24.04, and Debian 12
+Ubuntu 22.04, Ubuntu 24.04, Debian 12, and Debian 13
 are supported for running Zulip in production. You can also
 run Zulip on other platforms that support Docker using
 [docker-zulip][docker-zulip-homepage].
@@ -229,9 +230,10 @@ installing Zulip with a dedicated database server.
   backend][s3-uploads].
 
 - **Sharding:** For servers with several thousand daily active users,
-  Zulip supports sharding its real-time-push Tornado service, both by
-  realm/organization (for hosting many organizations) and by user ID
-  (for hosting single very large organizations)
+  Zulip supports [sharding its real-time-push Tornado
+  service][tornado-sharding], both by realm/organization (for hosting many
+  organizations) and by user ID (for hosting single very large
+  organizations).
 
   Care must be taken when dividing traffic for a single Zulip realm
   between multiple Zulip application servers, which is why we
@@ -249,3 +251,4 @@ document](../subsystems/performance.md) may also be of interest.
 [s3-uploads]: upload-backends.md#s3-backend-configuration
 [streaming-replication]: postgresql.md#postgresql-warm-standby
 [contact-support]: https://zulip.com/help/contact-support
+[tornado-sharding]: system-configuration.md#tornado_sharding

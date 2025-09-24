@@ -113,13 +113,13 @@ class RealmTest(ZulipTestCase):
         )
 
         admins_group = NamedUserGroup.objects.get(
-            name=SystemGroups.ADMINISTRATORS, realm=realm, is_system_group=True
+            name=SystemGroups.ADMINISTRATORS, realm_for_sharding=realm, is_system_group=True
         )
         self.assertEqual(realm.can_create_public_channel_group_id, admins_group.id)
 
         realm = get_realm("test_education_non_profit")
         moderators_group = NamedUserGroup.objects.get(
-            name=SystemGroups.MODERATORS, realm=realm, is_system_group=True
+            name=SystemGroups.MODERATORS, realm_for_sharding=realm, is_system_group=True
         )
         self.assertEqual(realm.can_add_subscribers_group.id, moderators_group.id)
         self.assertEqual(realm.can_create_groups.id, moderators_group.id)
@@ -134,13 +134,13 @@ class RealmTest(ZulipTestCase):
         )
 
         admins_group = NamedUserGroup.objects.get(
-            name=SystemGroups.ADMINISTRATORS, realm=realm, is_system_group=True
+            name=SystemGroups.ADMINISTRATORS, realm_for_sharding=realm, is_system_group=True
         )
         self.assertEqual(realm.can_create_public_channel_group_id, admins_group.id)
 
         realm = get_realm("test_education_for_profit")
         moderators_group = NamedUserGroup.objects.get(
-            name=SystemGroups.MODERATORS, realm=realm, is_system_group=True
+            name=SystemGroups.MODERATORS, realm_for_sharding=realm, is_system_group=True
         )
         self.assertEqual(realm.can_add_subscribers_group.id, moderators_group.id)
         self.assertEqual(realm.can_create_groups.id, moderators_group.id)
@@ -1521,7 +1521,9 @@ class RealmTest(ZulipTestCase):
         self.assertEqual(realm.message_visibility_limit, None)
         self.assertEqual(realm.upload_quota_gb, None)
 
-        members_system_group = NamedUserGroup.objects.get(name=SystemGroups.MEMBERS, realm=realm)
+        members_system_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MEMBERS, realm_for_sharding=realm
+        )
         do_change_realm_permission_group_setting(
             realm, "can_access_all_users_group", members_system_group, acting_user=None
         )
@@ -1545,7 +1547,9 @@ class RealmTest(ZulipTestCase):
         self.assertEqual(
             realm.upload_quota_gb, get_seat_count(realm) * settings.UPLOAD_QUOTA_PER_USER_GB
         )
-        everyone_system_group = NamedUserGroup.objects.get(name=SystemGroups.EVERYONE, realm=realm)
+        everyone_system_group = NamedUserGroup.objects.get(
+            name=SystemGroups.EVERYONE, realm_for_sharding=realm
+        )
         self.assertEqual(realm.can_access_all_users_group_id, everyone_system_group.id)
 
         do_set_realm_property(realm, "enable_spectator_access", True, acting_user=None)
@@ -1842,7 +1846,9 @@ class RealmTest(ZulipTestCase):
 
     def test_creating_realm_creates_system_groups(self) -> None:
         realm = do_create_realm("realm_string_id", "realm name")
-        system_user_groups = NamedUserGroup.objects.filter(realm=realm, is_system_group=True)
+        system_user_groups = NamedUserGroup.objects.filter(
+            realm_for_sharding=realm, is_system_group=True
+        )
 
         self.assert_length(system_user_groups, 8)
         user_group_names = [group.name for group in system_user_groups]
@@ -1897,10 +1903,10 @@ class RealmTest(ZulipTestCase):
     def test_changing_waiting_period_updates_system_groups(self) -> None:
         realm = get_realm("zulip")
         members_system_group = NamedUserGroup.objects.get(
-            realm=realm, name=SystemGroups.MEMBERS, is_system_group=True
+            realm_for_sharding=realm, name=SystemGroups.MEMBERS, is_system_group=True
         )
         full_members_system_group = NamedUserGroup.objects.get(
-            realm=realm, name=SystemGroups.FULL_MEMBERS, is_system_group=True
+            realm_for_sharding=realm, name=SystemGroups.FULL_MEMBERS, is_system_group=True
         )
 
         self.assert_length(UserGroupMembership.objects.filter(user_group=members_system_group), 9)
@@ -2106,7 +2112,7 @@ class RealmAPITest(ZulipTestCase):
         realm = get_realm("zulip")
 
         all_system_user_groups = NamedUserGroup.objects.filter(
-            realm=realm,
+            realm_for_sharding=realm,
             is_system_group=True,
         )
 
@@ -2153,7 +2159,9 @@ class RealmAPITest(ZulipTestCase):
             self.assertEqual(getattr(realm, setting_name), user_group.usergroup_ptr)
 
         if setting_permission_configuration.require_system_group:
-            leadership_group = NamedUserGroup.objects.get(name="leadership", realm=realm)
+            leadership_group = NamedUserGroup.objects.get(
+                name="leadership", realm_for_sharding=realm
+            )
 
             value = orjson.dumps(
                 {
@@ -2164,8 +2172,12 @@ class RealmAPITest(ZulipTestCase):
             result = self.client_patch("/json/realm", {setting_name: value})
             self.assert_json_error(result, f"'{setting_name}' must be a system user group.")
 
-            admins_group = NamedUserGroup.objects.get(name=SystemGroups.ADMINISTRATORS, realm=realm)
-            moderators_group = NamedUserGroup.objects.get(name=SystemGroups.MODERATORS, realm=realm)
+            admins_group = NamedUserGroup.objects.get(
+                name=SystemGroups.ADMINISTRATORS, realm_for_sharding=realm
+            )
+            moderators_group = NamedUserGroup.objects.get(
+                name=SystemGroups.MODERATORS, realm_for_sharding=realm
+            )
             value = orjson.dumps(
                 {
                     "new": {
@@ -2191,7 +2203,8 @@ class RealmAPITest(ZulipTestCase):
             group = admins_group
             if setting_permission_configuration.allowed_system_groups:
                 group = NamedUserGroup.objects.get(
-                    name=setting_permission_configuration.allowed_system_groups[0], realm=realm
+                    name=setting_permission_configuration.allowed_system_groups[0],
+                    realm_for_sharding=realm,
                 )
 
             value = orjson.dumps(
@@ -2211,10 +2224,10 @@ class RealmAPITest(ZulipTestCase):
         realm = get_realm("zulip")
         othello = self.example_user("othello")
         hamlet = self.example_user("hamlet")
-        leadership_group = NamedUserGroup.objects.get(name="leadership", realm=realm)
+        leadership_group = NamedUserGroup.objects.get(name="leadership", realm_for_sharding=realm)
 
         moderators_group = NamedUserGroup.objects.get(
-            name=SystemGroups.MODERATORS, realm=realm, is_system_group=True
+            name=SystemGroups.MODERATORS, realm_for_sharding=realm, is_system_group=True
         )
 
         result = self.client_patch(
@@ -2226,7 +2239,7 @@ class RealmAPITest(ZulipTestCase):
 
         # Try passing the old value as well.
         admins_group = NamedUserGroup.objects.get(
-            name=SystemGroups.ADMINISTRATORS, realm=realm, is_system_group=True
+            name=SystemGroups.ADMINISTRATORS, realm_for_sharding=realm, is_system_group=True
         )
         result = self.client_patch(
             "/json/realm",
@@ -2387,7 +2400,7 @@ class RealmAPITest(ZulipTestCase):
 
         permission_configuration = Realm.REALM_PERMISSION_GROUP_SETTINGS[setting_name]
         nobody_group = NamedUserGroup.objects.get(
-            name=SystemGroups.NOBODY, realm=realm, is_system_group=True
+            name=SystemGroups.NOBODY, realm_for_sharding=realm, is_system_group=True
         )
         result = self.client_patch(
             "/json/realm",
@@ -2682,7 +2695,7 @@ class RealmAPITest(ZulipTestCase):
     def do_test_changing_groups_setting_by_owners_only(self, setting_name: str) -> None:
         realm = get_realm("zulip")
         admins_group = NamedUserGroup.objects.get(
-            name=SystemGroups.ADMINISTRATORS, realm=realm, is_system_group=True
+            name=SystemGroups.ADMINISTRATORS, realm_for_sharding=realm, is_system_group=True
         )
 
         self.login("iago")
@@ -2723,7 +2736,7 @@ class RealmAPITest(ZulipTestCase):
         realm = get_realm("zulip")
         do_change_realm_plan_type(realm, Realm.PLAN_TYPE_LIMITED, acting_user=None)
 
-        members_group = NamedUserGroup.objects.get(name="role:members", realm=realm)
+        members_group = NamedUserGroup.objects.get(name="role:members", realm_for_sharding=realm)
         req = {"can_create_groups": orjson.dumps({"new": members_group.id}).decode()}
         result = self.client_patch("/json/realm", req)
         self.assert_json_error(result, "Available on Zulip Cloud Standard. Upgrade to access.")
@@ -2733,7 +2746,7 @@ class RealmAPITest(ZulipTestCase):
         do_change_realm_plan_type(realm, Realm.PLAN_TYPE_LIMITED, acting_user=None)
         self.login("iago")
 
-        members_group = NamedUserGroup.objects.get(name="role:members", realm=realm)
+        members_group = NamedUserGroup.objects.get(name="role:members", realm_for_sharding=realm)
         req = {"can_access_all_users_group": orjson.dumps({"new": members_group.id}).decode()}
         result = self.client_patch("/json/realm", req)
         self.assert_json_error(result, "Available on Zulip Cloud Plus. Upgrade to access.")

@@ -63,7 +63,6 @@ export const CLASSNAMES = {
     invalid_recipients: "invalid_recipients",
     deactivated_user: "deactivated_user",
     topic_missing: "topic_missing",
-    zephyr_not_running: "zephyr_not_running",
     generic_compose_error: "generic_compose_error",
     user_not_subscribed: "user_not_subscribed",
     unknown_zoom_user: "unknown_zoom_user",

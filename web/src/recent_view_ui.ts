@@ -334,7 +334,7 @@ function set_table_focus(row: number, col: number, using_keyboard = false): bool
     $current_focus_elem = "table";
 
     if (using_keyboard) {
-        const scroll_element = util.the($("html"));
+        const scroll_element = util.the($(":root"));
         const half_height_of_visible_area = scroll_element.offsetHeight / 2;
         const topic_offset = topic_offset_to_visible_area($topic_row);
 
@@ -615,7 +615,6 @@ type ConversationContext = {
           is_private: true;
           user_ids_string: string;
           rendered_pm_with_html: string;
-          recipient_id: number;
           pm_url: string;
           is_group: boolean;
           is_bot: boolean;
@@ -725,7 +724,6 @@ function format_conversation(conversation_data: ConversationData): ConversationC
                 }),
             )
             .sort();
-        const recipient_id = last_msg.recipient_id;
         const pm_url = last_msg.pm_with_url;
         const is_group = last_msg.display_recipient.length > 2;
         const has_unread_mention =
@@ -764,7 +762,6 @@ function format_conversation(conversation_data: ConversationData): ConversationC
                 "long",
                 "conjunction",
             ),
-            recipient_id,
             pm_url,
             is_group,
             is_bot,
@@ -904,10 +901,11 @@ export function filters_should_hide_row(topic_data: ConversationData): boolean {
     if (dropdown_filters.has(views_util.FILTERS.UNMUTED_TOPICS) && msg.type === "stream") {
         // We want to show the unmuted or followed topics within muted
         // streams in Recent Conversations.
-        const topic_unmuted_or_followed = Boolean(
-            user_topics.is_topic_unmuted_or_followed(msg.stream_id, msg.topic),
+        const topic_unmuted_or_followed = user_topics.is_topic_unmuted_or_followed(
+            msg.stream_id,
+            msg.topic,
         );
-        const topic_muted = Boolean(user_topics.is_topic_muted(msg.stream_id, msg.topic));
+        const topic_muted = user_topics.is_topic_muted(msg.stream_id, msg.topic);
         const stream_muted = stream_data.is_muted(msg.stream_id);
         if (topic_muted || (stream_muted && !topic_unmuted_or_followed)) {
             return true;
@@ -1312,13 +1310,13 @@ function get_list_data_for_widget(): ConversationData[] {
     return [...recent_view_data.get_conversations().values()];
 }
 
-export function complete_rerender(): void {
+export function complete_rerender(coming_from_other_views = false): void {
     if (!recent_view_util.is_visible()) {
         return;
     }
 
     if (!page_params.is_node_test) {
-        max_avatars = Number.parseInt($("html").css("--recent-view-max-avatars"), 10);
+        max_avatars = Number.parseInt($(":root").css("--recent-view-max-avatars"), 10);
     }
 
     // Show topics list
@@ -1329,10 +1327,12 @@ export function complete_rerender(): void {
         return;
     }
 
-    // This is the first time we are rendering the Recent Conversations view.
-    // So, we always scroll to the top to avoid any scroll jumping in case
-    // user is returning from another view.
-    window.scrollTo(0, 0);
+    if (coming_from_other_views) {
+        // This is the first time we are rendering the Recent Conversations view.
+        // So, we always scroll to the top to avoid any scroll jumping in case
+        // user is returning from another view.
+        window.scrollTo(0, 0);
+    }
 
     const rendered_body = render_recent_view_body({
         search_val: $("#recent_view_search").val() ?? "",
@@ -1369,7 +1369,7 @@ export function complete_rerender(): void {
             ...list_widget.generic_sort_functions("numeric", ["last_msg_id"]),
         },
         html_selector: get_topic_row,
-        $simplebar_container: $("html"),
+        $simplebar_container: $(":root"),
         callback_after_render,
         is_scroll_position_for_render: views_util.is_scroll_position_for_render,
         post_scroll__pre_render_callback() {
@@ -1422,7 +1422,7 @@ export function show(): void {
         // We want to show `new stream message` instead of
         // `new topic`, which we are already doing in this
         // function. So, we reuse it here.
-        update_compose: compose_closed_ui.update_buttons_for_non_specific_views,
+        update_compose: compose_closed_ui.update_buttons,
         is_recent_view: true,
         is_visible: recent_view_util.is_visible,
         set_visible: recent_view_util.set_visible,

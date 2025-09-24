@@ -2,6 +2,8 @@ from collections.abc import Callable
 
 from typing_extensions import override
 
+from .html_elements import FOREIGN_CONTEXTS, VALID_HTML_CONTEXTS, html_context_fallbacks
+
 
 class FormattedError(Exception):
     pass
@@ -80,6 +82,9 @@ def tokenize(text: str, template_format: str | None = None) -> list[Token]:
 
     def looking_at_handlebars_partial_block() -> bool:
         return template_format == "handlebars" and looking_at("{{#>")
+
+    def looking_at_handlebars_triple_stache() -> bool:
+        return template_format == "handlebars" and (looking_at("{{{") or looking_at("{{~{"))
 
     def looking_at_html_start() -> bool:
         return looking_at("<") and not looking_at("</")
@@ -184,6 +189,19 @@ def tokenize(text: str, template_format: str | None = None) -> list[Token]:
                 s = get_handlebars_tag(text, state.i)
                 tag = "else"
                 kind = "handlebars_else"
+            elif looking_at_handlebars_triple_stache():
+                s = get_handlebars_triple_stache_tag(text, state.i)
+                start_offset = end_offset = 3
+                if s.startswith("{{~{"):
+                    start_offset += 1
+                if s.endswith("}~}}"):
+                    end_offset += 1
+                tag = s[start_offset:-end_offset].strip()
+                if not tag.endswith("_html"):
+                    raise TemplateParserError(
+                        "Unescaped variables in triple staches {{{ }}} must be suffixed with `_html`"
+                    )
+                kind = "handlebars_triple_stache"
             elif looking_at_handlebars_start():
                 s = get_handlebars_tag(text, state.i)
                 tag = s[3:-2].split()[0].strip("#").removeprefix("*")
@@ -261,25 +279,6 @@ def tokenize(text: str, template_format: str | None = None) -> list[Token]:
     return tokens
 
 
-HTML_VOID_TAGS = {
-    "area",
-    "base",
-    "br",
-    "col",
-    "command",
-    "embed",
-    "hr",
-    "img",
-    "input",
-    "keygen",
-    "link",
-    "meta",
-    "param",
-    "source",
-    "track",
-    "wbr",
-}
-
 # The following excludes some obscure tags that are never used
 # in Zulip code.
 HTML_INLINE_TAGS = {
@@ -321,6 +320,7 @@ def tag_flavor(token: Token) -> str | None:
         "template_var",
         "text",
         "whitespace",
+        "handlebars_triple_stache",
     ):
         return None
 
@@ -379,8 +379,8 @@ def validate(
     class State:
         def __init__(self, func: Callable[[Token | None], None]) -> None:
             self.depth = 0
-            self.foreign = False
             self.matcher = func
+            self.html_context = "unknown"
 
     def no_start_tag(token: Token | None) -> None:
         assert token
@@ -403,10 +403,7 @@ def validate(
         start_col = start_token.col
 
         old_matcher = state.matcher
-        old_foreign = state.foreign
-
-        if start_tag in ["math", "svg"]:
-            state.foreign = True
+        old_html_context = state.html_context
 
         def f(end_token: Token | None) -> None:
             if end_token is None:
@@ -461,7 +458,7 @@ def validate(
 
             if not is_else_tag:
                 state.matcher = old_matcher
-                state.foreign = old_foreign
+                state.html_context = old_html_context
                 state.depth -= 1
 
             # TODO: refine this for the else/elif use cases
@@ -474,21 +471,47 @@ def validate(
         kind = token.kind
         tag = token.tag
 
-        if not state.foreign:
-            if kind == "html_start" and tag in HTML_VOID_TAGS:
-                raise TemplateParserError(
-                    f"Tag must be self-closing: {tag} at {fn} line {token.line}, col {token.col}"
-                )
-            elif kind == "html_singleton" and tag not in HTML_VOID_TAGS:
-                raise TemplateParserError(
-                    f"Tag must not be self-closing: {tag} at {fn} line {token.line}, col {token.col}"
-                )
-
         flavor = tag_flavor(token)
         if flavor == "start":
             start_tag_matcher(token)
         elif flavor == "end":
             state.matcher(token)
+
+        if kind in ("html_start", "html_singleton"):
+            for context in html_context_fallbacks(state.html_context):
+                if (tag, context) in VALID_HTML_CONTEXTS:
+                    new_context = VALID_HTML_CONTEXTS[tag, context]
+                    if new_context == "transparent":
+                        new_context = state.html_context
+                    break
+            else:
+                if "-" in tag and "phrasing" in html_context_fallbacks(state.html_context):
+                    new_context = state.html_context  # custom elements
+                elif state.html_context in FOREIGN_CONTEXTS:
+                    new_context = state.html_context  # unchecked foreign elements
+                else:
+                    raise TemplateParserError(
+                        f"<{tag}> is not valid in {state.html_context} context"
+                        + (
+                            ' (consider growing HTML_CONTEXT_FALLBACKS["unknown"]?)'
+                            if state.html_context == "unknown"
+                            else ""
+                        )
+                        + " at {fn} line {token.line}, col {token.col}"
+                    )
+
+            if new_context not in FOREIGN_CONTEXTS:
+                if kind == "html_start" and new_context == "void":
+                    raise TemplateParserError(
+                        f"Tag must be self-closing: {tag} at {fn} line {token.line}, col {token.col}"
+                    )
+                elif kind == "html_singleton" and new_context != "void":
+                    raise TemplateParserError(
+                        f"Tag must not be self-closing: {tag} at {fn} line {token.line}, col {token.col}"
+                    )
+
+            if kind == "html_start":
+                state.html_context = new_context
 
     if state.depth != 0:
         state.matcher(None)
@@ -624,12 +647,24 @@ def is_django_block_tag(tag: str) -> bool:
 
 def get_handlebars_tag(text: str, i: int) -> str:
     end = i + 2
-    while end < len(text) - 1 and text[end] != "}":
+    while end < len(text) - 2 and text[end] != "}":
         end += 1
     if text[end] != "}" or text[end + 1] != "}":
         raise TokenizationError('Tag missing "}}"', text[i : end + 2])
     s = text[i : end + 2]
     return s
+
+
+def get_handlebars_triple_stache_tag(text: str, i: int) -> str:
+    end = i + 3
+    while end < len(text) - 3 and text[end] != "}":
+        end += 1
+    if text[end : end + 3] == "}}}":
+        return text[i : end + 3]
+    elif end + 4 <= len(text) and text[end : end + 4] == "}~}}":
+        return text[i : end + 4]
+    else:
+        raise TokenizationError('Tag missing "}}}"', text[i : end + 3])
 
 
 def get_spaces(text: str, i: int) -> str:

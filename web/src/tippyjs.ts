@@ -443,7 +443,7 @@ export function initialize(): void {
 
     tippy.delegate("body", {
         target: [
-            "[data-tab-key='not-subscribed'].disabled",
+            "[data-tab-key='available'].disabled",
             "[data-tab-key='all-streams'].disabled",
         ].join(","),
         content: $t({
@@ -527,7 +527,6 @@ export function initialize(): void {
                 );
                 return undefined;
             }
-            instance.destroy();
             return false;
         },
         appendTo: () => document.body,
@@ -884,7 +883,6 @@ export function initialize(): void {
                 instance.setContent(content);
                 return undefined;
             }
-            instance.destroy();
             return false;
         },
         appendTo: () => document.body,
@@ -903,7 +901,6 @@ export function initialize(): void {
                 instance.setContent(ui_util.parse_html(error_message));
                 return undefined;
             }
-            instance.destroy();
             return false;
         },
         appendTo: () => document.body,
@@ -949,7 +946,6 @@ export function initialize(): void {
                 $(instance.popper).find(".tippy-content").css("display", "block");
                 return undefined;
             }
-            instance.destroy();
             return false;
         },
         appendTo: () => document.body,

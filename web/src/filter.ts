@@ -1,6 +1,7 @@
 import _ from "lodash";
 import assert from "minimalistic-assert";
 
+import * as internal_url from "../shared/src/internal_url.ts";
 import * as resolved_topic from "../shared/src/resolved_topic.ts";
 import render_search_description from "../templates/search_description.hbs";
 
@@ -15,9 +16,10 @@ import {page_params} from "./page_params.ts";
 import type {User} from "./people.ts";
 import * as people from "./people.ts";
 import type {UserPillItem} from "./search_suggestion.ts";
-import {current_user, realm} from "./state_data.ts";
+import {current_user} from "./state_data.ts";
 import type {NarrowTerm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
+import * as sub_store from "./sub_store.ts";
 import * as user_topics from "./user_topics.ts";
 import * as util from "./util.ts";
 
@@ -76,54 +78,6 @@ type ValidOrInvalidUser =
     | {valid_user: false; operand: string};
 
 const channels_operands = new Set(["public", "web-public"]);
-
-function zephyr_stream_name_match(
-    message: Message & {type: "stream"},
-    stream_name: string,
-): boolean {
-    // Zephyr users expect narrowing to "social" to also show messages to /^(un)*social(.d)*$/
-    // (unsocial, ununsocial, social.d, etc)
-    // TODO: hoist the regex compiling out of the closure
-    const m = /^(?:un)*(.+?)(?:\.d)*$/i.exec(stream_name);
-    let base_stream_name = stream_name;
-    if (m?.[1] !== undefined) {
-        base_stream_name = m[1];
-    }
-    const related_regexp = new RegExp(
-        /^(un)*/.source + _.escapeRegExp(base_stream_name) + /(\.d)*$/.source,
-        "i",
-    );
-    const message_stream_name = stream_data.get_stream_name_from_id(message.stream_id);
-    return related_regexp.test(message_stream_name);
-}
-
-function zephyr_topic_name_match(message: Message & {type: "stream"}, operand: string): boolean {
-    // Zephyr users expect narrowing to topic "foo" to also show messages to /^foo(.d)*$/
-    // (foo, foo.d, foo.d.d, etc)
-    // TODO: hoist the regex compiling out of the closure
-    const m = /^(.*?)(?:\.d)*$/i.exec(operand);
-    // m should never be null because any string matches that regex.
-    assert(m !== null);
-    const base_topic = m[1]!;
-    let related_regexp;
-
-    // Additionally, Zephyr users expect the empty instance and
-    // instance "personal" to be the same.
-    if (
-        base_topic === "" ||
-        base_topic.toLowerCase() === "personal" ||
-        base_topic.toLowerCase() === '(instance "")'
-    ) {
-        related_regexp = /^(|personal|\(instance ""\))(\.d)*$/i;
-    } else {
-        related_regexp = new RegExp(
-            /^/.source + _.escapeRegExp(base_topic) + /(\.d)*$/.source,
-            "i",
-        );
-    }
-
-    return related_regexp.test(message.topic);
-}
 
 function message_in_home(message: Message): boolean {
     // The home view contains messages not sent to muted channels,
@@ -206,11 +160,6 @@ function message_matches_search_term(message: Message, operator: string, operand
                 return false;
             }
 
-            if (realm.realm_is_zephyr_mirror_realm) {
-                const stream = stream_data.get_sub_by_id_string(operand);
-                return zephyr_stream_name_match(message, stream?.name ?? "");
-            }
-
             return message.stream_id.toString() === operand;
         }
 
@@ -235,9 +184,6 @@ function message_matches_search_term(message: Message, operator: string, operand
             }
 
             operand = operand.toLowerCase();
-            if (realm.realm_is_zephyr_mirror_realm) {
-                return zephyr_topic_name_match(message, operand);
-            }
             return message.topic.toLowerCase() === operand;
 
         case "sender":
@@ -368,13 +314,13 @@ export class Filter {
                 break;
             case "sender":
             case "dm":
-                operand = operand.toString().toLowerCase();
+                operand = operand.toLowerCase();
                 if (operand === "me") {
                     operand = people.my_current_email();
                 }
                 break;
             case "dm-including":
-                operand = operand.toString().toLowerCase();
+                operand = operand.toLowerCase();
                 break;
             case "search":
                 // The mac app automatically substitutes regular quotes with curly
@@ -382,10 +328,10 @@ export class Filter {
                 // phrase search behavior, however.  So, we replace all instances of
                 // curly quotes with regular quotes when doing a search.  This is
                 // unlikely to cause any problems and is probably what the user wants.
-                operand = operand.toString().replaceAll(/[\u201C\u201D]/g, '"');
+                operand = operand.replaceAll(/[\u201C\u201D]/g, '"');
                 break;
             default:
-                operand = operand.toString().toLowerCase();
+                operand = operand.toLowerCase();
         }
 
         // We may want to consider allowing mixed-case operators at some point
@@ -530,11 +476,7 @@ export class Filter {
                     }
                 }
 
-                if (
-                    for_pills &&
-                    operator === "sender" &&
-                    operand.toString().toLowerCase() === "me"
-                ) {
+                if (for_pills && operator === "sender" && operand.toLowerCase() === "me") {
                     operand = people.my_current_email();
                 }
 
@@ -637,9 +579,7 @@ export class Filter {
                 return term.operand;
             }
             const operator = Filter.canonicalize_operator(term.operator);
-            return (
-                sign + operator + ":" + Filter.encodeOperand(term.operand.toString(), term.operator)
-            );
+            return sign + operator + ":" + Filter.encodeOperand(term.operand, term.operator);
         });
         return term_strings.join(" ");
     }
@@ -1317,12 +1257,12 @@ export class Filter {
             if (!sub) {
                 return "#";
             }
-            return (
-                "/#narrow/channel/" +
-                stream_data.id_to_slug(sub.stream_id) +
-                "/topic/" +
-                this.operands("topic")[0]
-            );
+
+            return `/${internal_url.by_stream_topic_url(
+                sub.stream_id,
+                this.operands("topic")[0]!,
+                sub_store.maybe_get_stream_name,
+            )}`;
         }
 
         // eliminate "complex filters"
@@ -1338,7 +1278,10 @@ export class Filter {
                     if (!sub) {
                         return "#";
                     }
-                    return "/#narrow/channel/" + stream_data.id_to_slug(sub.stream_id);
+                    return `/${internal_url.by_stream_url(
+                        sub.stream_id,
+                        sub_store.maybe_get_stream_name,
+                    )}`;
                 }
                 case "is-dm":
                     return "/#narrow/is/dm";

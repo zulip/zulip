@@ -32,7 +32,7 @@ def get_reminder_formatted_content(
     if note:
         note = normalize_note_text(note)
 
-    if message.is_stream_message():
+    if message.is_channel_message:
         # We don't need to check access here since we already have the message
         # whose access has already been checked by the caller.
         stream = Stream.objects.get(
@@ -88,11 +88,12 @@ def get_reminder_formatted_content(
         content += "\n"
         fence = get_unused_fence(content)
         quoted_message = "{fence}quote\n{msg_content}\n{fence}"
-        content += quoted_message
-        length_without_message_content = len(content.format(fence=fence, msg_content=""))
+        length_without_message_content = len(
+            content + quoted_message.format(fence=fence, msg_content="")
+        )
         max_length = settings.MAX_MESSAGE_LENGTH - length_without_message_content
         msg_content = truncate_content(message.content, max_length, "\n[message truncated]")
-        content = content.format(
+        content += quoted_message.format(
             fence=fence,
             msg_content=msg_content,
         )

@@ -23,7 +23,6 @@ export const stream_subscription_schema = z.object({
         subscribers: true,
     }).shape,
     // These properties are added in `stream_data` when hydrating the streams and are not present in the data we get from the server.
-    render_subscribers: z.boolean(),
     newly_subscribed: z.boolean(),
     subscribed: z.boolean(),
     previously_subscribed: z.boolean(),

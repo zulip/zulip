@@ -18,7 +18,27 @@ clients should check the `zulip_feature_level` field, present in the
 /register`](/api/register-queue) responses, to determine the API
 format used by the Zulip server that they are interacting with.
 
+## Changes in Zulip 12.0
+
+**Feature level 427**
+
+* [`POST /register`](/api/register-queue): `stream_creator_or_nobody`
+  value for `default_group_name` field in `server_supported_permission_settings`
+  object is renamed to `channel_creator`.
+
+**Feature level 426**
+
+* [`POST /register`](/api/register-queue): Removed the
+  `realm_is_zephyr_mirror_realm` property from the response.
+
+Feature levels 421-424 reserved for future use in 11.x maintenance
+releases.
+
 ## Changes in Zulip 11.0
+
+**Feature level 421**
+
+No changes; API feature level used for the Zulip 11.0 release.
 
 **Feature level 420**
 
@@ -161,6 +181,9 @@ format used by the Zulip server that they are interacting with.
   `can_delete_own_message_group` parameter to support setting and
   changing the user group whose members can delete the messages they have sent
   in the channel.
+- [`POST /users/{user_id}/status`](/api/update-status-for-user): Added
+  new API endpoint for an administrator to update the status for
+  another user.
 
 **Feature level 406**
 
@@ -2963,7 +2986,7 @@ No changes; feature level used for Zulip 5.0 release.
 * [`GET /events`](/api/get-events): Updated `update_message` event type
   to always include `edit_timestamp` and `user_id` fields. If the event
   only updates the rendering of the message, then the `user_id` field
-  will be present, but with a value of null as the update was not the
+  will be present, but with a value of `null`, as the update was not the
   result of a user interaction.
 
 **Feature level 113**
@@ -2971,7 +2994,7 @@ No changes; feature level used for Zulip 5.0 release.
 * `GET /realm/emoji`, `POST /realm/emoji/{emoji_name}`, [`GET
   /events`](/api/get-events), [`POST /register`](/api/register-queue):
   The `still_url` field for custom emoji objects is now always
-  present, with a value of null for non-animated emoji. Previously, it
+  present, with a value of `null` for non-animated emoji. Previously, it
   only was present for animated emoji.
 
 **Feature level 112**
@@ -3896,9 +3919,9 @@ No changes; feature level used for Zulip 3.0 release.
   subscriber data.
 * [`GET /users/me/subscriptions`](/api/get-subscriptions):
   Stream-level notification settings like `push_notifications` were
-  changed to be nullable boolean fields (true/false/null), with `null`
-  meaning that the stream inherits the organization-level default.
-  Previously, the only values were true/false.  A client communicates
+  changed to be nullable boolean fields (`true`/`false`/`null`), with
+  `null` meaning that the stream inherits the organization-level default.
+  Previously, the only values were `true` or `false`. A client communicates
   support for this feature using `client_capabilities`.
 * [`GET /users/me/subscriptions`](/api/get-subscriptions): Added
   `wildcard_mentions_notify` notification setting, with the same

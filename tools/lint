@@ -84,7 +84,7 @@ def run() -> None:
     linter_config.external_linter(
         "eslint",
         ["node_modules/.bin/eslint", "--max-warnings=0", "--cache"],
-        ["astro", "cjs", "cts", "js", "mjs", "mts", "ts"],
+        ["astro", "cjs", "cts", "js", "mdx", "mjs", "mts", "ts"],
         fix_arg="--fix",
         description="Standard JavaScript style and formatting linter (config: eslint.config.js).",
     )
@@ -110,7 +110,7 @@ def run() -> None:
     )
     linter_config.external_linter(
         "openapi",
-        ["node", "tools/check-openapi"],
+        ["node", "tools/check-openapi.ts"],
         ["yaml"],
         description="Validates our OpenAPI/Swagger API documentation (zerver/openapi/zulip.yaml) ",
         fix_arg="--fix",
@@ -221,9 +221,11 @@ def run() -> None:
         description="Check docs/THIRDPARTY copyright file syntax",
     )
     linter_config.external_linter(
-        "format-mdx",
-        ["tools/format-mdx"],
+        "remark",
+        ["node_modules/.bin/remark", "--frail", "--quiet", "--no-stdout"],
         ["mdx"],
+        check_arg=['--setting="checkReformatting": true', "--"],
+        fix_arg=["--output", "--"],
         description="Lint and format MDX files",
     )
 

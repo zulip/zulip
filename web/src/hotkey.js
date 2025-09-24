@@ -1314,6 +1314,7 @@ export function process_hotkey(e, hotkey) {
             "show_lightbox",
             "toggle_sender_info",
             "edit_message",
+            "copy_with_c",
         ].includes(event_name)
     ) {
         spectators.login_to_access();
@@ -1450,7 +1451,7 @@ export function process_hotkey(e, hotkey) {
                     message_view.show(
                         [
                             {operator: "dm", operand: msg.reply_to},
-                            {operator: "near", operand: msg.id},
+                            {operator: "near", operand: String(msg.id)},
                         ],
                         {trigger: "hotkey"},
                     );
@@ -1463,7 +1464,7 @@ export function process_hotkey(e, hotkey) {
                                 operand: msg.stream_id.toString(),
                             },
                             {operator: "topic", operand: msg.topic},
-                            {operator: "near", operand: msg.id},
+                            {operator: "near", operand: String(msg.id)},
                         ],
                         {trigger: "hotkey"},
                     );

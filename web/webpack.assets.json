@@ -49,8 +49,7 @@
         "./src/bundles/portico.ts",
         "simplebar/dist/simplebar.css",
         "simplebar",
-        "./src/portico/help.ts",
-        "./src/portico/tabbed-instructions.ts"
+        "./src/portico/help.ts"
     ],
     "landing-page": [
         "./src/bundles/portico.ts",

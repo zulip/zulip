@@ -268,8 +268,6 @@ def generate_curl_example(
     endpoint: str,
     method: str,
     api_url: str,
-    auth_email: str = DEFAULT_AUTH_EMAIL,
-    auth_api_key: str = DEFAULT_AUTH_API_KEY,
     exclude: list[str] | None = None,
     include: list[str] | None = None,
 ) -> list[str]:
@@ -321,6 +319,9 @@ def generate_curl_example(
         )
 
     if authentication_required:
+        is_zilencer_endpoint = endpoint.startswith("/remotes/")
+        auth_email = "ZULIP_ORG_ID" if is_zilencer_endpoint else DEFAULT_AUTH_EMAIL
+        auth_api_key = "ZULIP_ORG_KEY" if is_zilencer_endpoint else DEFAULT_AUTH_API_KEY
         lines.append("    -u " + shlex.quote(f"{auth_email}:{auth_api_key}"))
 
     for parameter in parameters:
@@ -359,14 +360,8 @@ def render_curl_example(
     admin_config: bool = False,
 ) -> list[str]:
     """A simple wrapper around generate_curl_example."""
-    parts = function.split(":")
-    endpoint = parts[0]
-    method = parts[1]
+    endpoint, method = function.split(":")
     kwargs: dict[str, Any] = {}
-    if len(parts) > 2:
-        kwargs["auth_email"] = parts[2]
-    if len(parts) > 3:
-        kwargs["auth_api_key"] = parts[3]
     kwargs["api_url"] = api_url
     rendered_example = []
     for element in get_curl_include_exclude(endpoint, method):

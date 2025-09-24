@@ -3,6 +3,7 @@
 const assert = require("node:assert/strict");
 
 const {make_user_group} = require("./lib/example_group.cjs");
+const {make_realm} = require("./lib/example_realm.cjs");
 const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 
@@ -31,7 +32,7 @@ mock_esm("../src/channel", {
 
 const current_user = {};
 set_current_user(current_user);
-const realm = {};
+const realm = make_realm();
 set_realm(realm);
 const user_settings = {};
 initialize_user_settings({user_settings});
@@ -211,7 +212,6 @@ function test(label, f) {
         peer_data.clear_for_testing();
         people.clear_recipient_counts_for_testing();
         helpers.override(current_user, "is_admin", false);
-        helpers.override(realm, "realm_is_zephyr_mirror_realm", false);
 
         f(helpers);
     });

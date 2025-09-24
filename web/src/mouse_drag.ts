@@ -18,7 +18,7 @@ export function is_drag(e: JQuery.ClickEvent): boolean {
     const drag_distance = Math.abs(e.pageX - start_x) + Math.abs(e.pageY - start_y);
 
     const sel = window.getSelection();
-    const has_selection = Boolean(sel?.type === "Range" && sel.toString().length > 0);
+    const has_selection = sel?.type === "Range" && sel.toString().length > 0;
 
     // A very low drag_distance cutoff (2) can prevent a click after
     // moving the mouse rapidly from registering.

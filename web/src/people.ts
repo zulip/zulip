@@ -426,7 +426,7 @@ export function emails_string_to_user_ids(emails_string: string): number[] {
     return user_ids_string ? user_ids_string_to_ids_array(user_ids_string) : [];
 }
 
-export let email_list_to_user_ids_string = (emails: string[]): string | undefined => {
+export function email_list_to_user_ids_string(emails: string[]): string | undefined {
     let user_ids = util.try_parse_as_truthy(
         emails.map((email) => {
             const person = get_by_email(email);
@@ -442,12 +442,6 @@ export let email_list_to_user_ids_string = (emails: string[]): string | undefine
     user_ids = util.sorted_ids(user_ids);
 
     return user_ids.join(",");
-};
-
-export function rewire_email_list_to_user_ids_string(
-    value: typeof email_list_to_user_ids_string,
-): void {
-    email_list_to_user_ids_string = value;
 }
 
 export function get_full_names_for_poll_option(user_ids: number[]): string {
@@ -653,6 +647,10 @@ export function pm_perma_link(message: Message): string | undefined {
     return url;
 }
 
+export function get_slug_from_full_name(full_name: string): string {
+    return full_name.replaceAll(/[ "%/<>`\p{C}]+/gu, "-");
+}
+
 export function pm_with_url(message: Message | MessageWithBooleans): string | undefined {
     const user_ids = pm_with_user_ids(message);
 
@@ -667,7 +665,7 @@ export function pm_with_url(message: Message | MessageWithBooleans): string | un
     } else {
         const person = maybe_get_user_by_id(user_ids[0]);
         if (person?.full_name) {
-            suffix = person.full_name.replaceAll(/[ "%/<>`\p{C}]+/gu, "-");
+            suffix = get_slug_from_full_name(person.full_name);
         } else {
             blueslip.error("Unknown people in message");
             suffix = "unk";
@@ -759,12 +757,25 @@ export function emails_to_slug(emails_string: string): string | undefined {
     if (emails.length === 1 && emails[0] !== undefined) {
         const person = get_by_email(emails[0]);
         assert(person !== undefined, "Unknown person in emails_to_slug");
-        const name = person.full_name;
-        slug += name.replaceAll(/[ "%/<>`\p{C}]+/gu, "-");
+        slug += get_slug_from_full_name(person.full_name);
     } else {
         slug += "group";
     }
 
+    return slug;
+}
+
+export function user_ids_string_to_slug(user_ids_string: string): string | undefined {
+    let slug = user_ids_string;
+    slug += "-";
+    const user_ids = user_ids_string_to_ids_array(user_ids_string);
+    if (user_ids.length === 1 && user_ids[0] !== undefined) {
+        const person = get_by_user_id(user_ids[0]);
+        assert(person !== undefined, "Unknown person in user_ids_string_to_slug");
+        slug += get_slug_from_full_name(person.full_name);
+    } else {
+        slug += "group";
+    }
     return slug;
 }
 
@@ -1547,8 +1558,8 @@ export function _add_user(person: User): void {
         // We eventually want to lock this down completely
         // and report an error and not update other the data
         // structures here, but we have a lot of edge cases
-        // with cross-realm bots, zephyr users, etc., deactivated
-        // users, where we are probably fine for now not to
+        // with cross-realm bots, deactivated users, etc.,
+        // where we are probably fine for now not to
         // find them via user_id lookups.
         blueslip.warn("No user_id provided", {email: person.email});
     }

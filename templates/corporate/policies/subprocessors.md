@@ -35,8 +35,4 @@ our Services:
 * [Google LLC](https://privacy.google.com/businesses/compliance/) for
   cloud infrastructure and services.
 * [Mailgun Technologies, Inc.](https://www.mailgun.com/gdpr) for email processing.
-* [Rackspace US, Inc.](https://www.rackspace.com/en-us/gdpr) for cloud
-  infrastructure for our Zephyr mirroring service.
 * [Stripe, Inc.](https://stripe.com/guides/general-data-protection-regulation) for payment processing.
-* [The Rocket Science Group LLC d/b/a Mailchimp](https://kb.mailchimp.com/accounts/management/about-the-general-data-protection-regulation)
-  for email processing.

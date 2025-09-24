@@ -72,7 +72,6 @@ not_yet_fully_covered = [
     # Markdown sub-libs should have full coverage too; a lot are really close
     "zerver/lib/markdown/api_arguments_table_generator.py",
     "zerver/lib/markdown/fenced_code.py",
-    "zerver/lib/markdown/help_relative_links.py",
     "zerver/lib/markdown/nested_code_blocks.py",
     # Workers should get full coverage; many have it already
     "zerver/worker/deferred_work.py",
@@ -95,15 +94,14 @@ not_yet_fully_covered = [
     "zerver/lib/queue.py",
     "zerver/lib/sqlalchemy_utils.py",
     "zerver/lib/storage.py",
-    "zerver/lib/zephyr.py",
     "zerver/lib/templates.py",
     # Low priority for coverage
-    "zerver/lib/ccache.py",
     "zerver/lib/generate_test_data.py",
     "zerver/lib/server_initialization.py",
     "zerver/lib/test_fixtures.py",
     "zerver/lib/test_runner.py",
     "zerver/lib/test_console_output.py",
+    "zerver/lib/zstd_level9.py",
     "zerver/openapi/curl_param_value_generators.py",
     "zerver/openapi/javascript_examples.py",
     "zerver/openapi/python_examples.py",

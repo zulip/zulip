@@ -452,7 +452,7 @@ class InvalidBillingScheduleError(Exception):
         super().__init__(self.message)
 
 
-class InvalidTierError(Exception):
+class InvalidTierError(JsonableError):
     def __init__(self, tier: int) -> None:
         self.message = f"Unknown tier: {tier}"
         super().__init__(self.message)
@@ -2319,6 +2319,16 @@ class BillingSession(ABC):
                             microsecond=0
                         )
                         last_renewal_ledger_entry.save(update_fields=["event_time"])
+                        # Since we are skipping over processing license ledger
+                        # entries / RealmAuditLogs that are after `last_renewal_ledger_entry`,
+                        # we need to update `licenses_at_next_renewal` to reflect the current value.
+                        # It is okay to skip over them here since they were in free trial.
+                        licenses_at_next_renewal = max(
+                            self.get_billable_licenses_for_customer(
+                                plan.customer, plan.tier, licenses_at_next_renewal
+                            ),
+                            licenses_at_next_renewal,
+                        )
                     else:
                         # We end the free trial since customer hasn't paid.
                         plan.status = CustomerPlan.DOWNGRADE_AT_END_OF_FREE_TRIAL
@@ -5484,6 +5494,7 @@ def maybe_send_stale_audit_log_data_email(
             "billing_entity": billing_session.billing_entity_display_name,
             "support_url": billing_session.support_url(),
             "last_audit_log_update": "Never uploaded",
+            "fixed_price_plan": plan.fixed_price is not None,
             "notice_reason": "stale_audit_log_data",
         }
         send_email(
@@ -5506,6 +5517,7 @@ def maybe_send_stale_audit_log_data_email(
         "billing_entity": billing_session.billing_entity_display_name,
         "support_url": billing_session.support_url(),
         "last_audit_log_update": last_audit_log_update.strftime("%Y-%m-%d"),
+        "fixed_price_plan": plan.fixed_price is not None,
         "notice_reason": "stale_audit_log_data",
     }
     send_email(
@@ -5531,6 +5543,32 @@ def check_remote_server_audit_log_data(
     next_invoice_date = plan.next_invoice_date
     last_audit_log_update = remote_server.last_audit_log_update
     if last_audit_log_update is None or next_invoice_date > last_audit_log_update:
+        # We still process fixed-price plans because the current license count
+        # won't change the amount due or the fact that we should downgrade the
+        # plan when it is scheduled to end.
+        if plan.fixed_price is not None:
+            # Send an internal billing notice so that admin can follow up in the
+            # case that the remote server is not regularly updating audit log data,
+            # but since the fixed-price plan will be invoiced, we don't set the
+            # stale_audit_log_data_email_sent field on the CustomerPlan.
+            context = {
+                "billing_entity": billing_session.billing_entity_display_name,
+                "support_url": billing_session.support_url(),
+                "fixed_price_plan": plan.fixed_price is not None,
+                "notice_reason": "stale_audit_log_data",
+            }
+            if last_audit_log_update is None:  # nocoverage
+                context["last_audit_log_update"] = "Never uploaded"
+            else:
+                context["last_audit_log_update"] = last_audit_log_update.strftime("%Y-%m-%d")
+            send_email(
+                "zerver/emails/internal_billing_notice",
+                to_emails=[BILLING_SUPPORT_EMAIL],
+                from_address=FromAddress.tokenized_no_reply_address(),
+                context=context,
+            )
+            return True
+
         if not plan.stale_audit_log_data_email_sent:
             maybe_send_stale_audit_log_data_email(
                 plan, billing_session, next_invoice_date, last_audit_log_update

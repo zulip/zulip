@@ -274,15 +274,11 @@ export async function warn_if_private_stream_is_linked(
     // Don't warn if subscribers list of current compose_stream is
     // a subset of linked_stream's subscribers list, because
     // everyone will be subscribed to the linked stream and so
-    // knows it exists.  (But always warn Zephyr users, since
-    // we may not know their stream's subscribers.)
+    // knows it exists.
     // Note: `is_subscriber_subset` can return `null` if we encounter
     // an error fetching subscriber data. In that case, we just show
     // the banner.
-    if (
-        (await peer_data.is_subscriber_subset(stream_id, linked_stream.stream_id)) &&
-        !realm.realm_is_zephyr_mirror_realm
-    ) {
+    if (await peer_data.is_subscriber_subset(stream_id, linked_stream.stream_id)) {
         return;
     }
 
@@ -321,11 +317,6 @@ export async function warn_if_mentioning_unsubscribed_user(
     mentioned: UserOrMention,
     $textarea: JQuery<HTMLTextAreaElement>,
 ): Promise<void> {
-    // Disable for Zephyr mirroring realms, since we never have subscriber lists there
-    if (realm.realm_is_zephyr_mirror_realm) {
-        return;
-    }
-
     if (mentioned.type === "broadcast") {
         return; // don't check if @all/@everyone/@stream
     }
@@ -959,9 +950,6 @@ export function validate_private_message(show_banner = true): boolean {
             disabled_send_tooltip_message_html = NO_PRIVATE_RECIPIENT_ERROR_MESSAGE;
         }
         return false;
-    } else if (realm.realm_is_zephyr_mirror_realm) {
-        // For Zephyr mirroring realms, the frontend doesn't know which users exist
-        return true;
     }
 
     const direct_message_error_string = check_dm_permissions_and_get_error_string(user_ids_string);
@@ -1173,22 +1161,6 @@ export let validate = (scheduling_message: boolean, show_banner = true): boolean
         $("textarea#compose-textarea").toggleClass("invalid", false);
     }
 
-    if ($("#zephyr-mirror-error").hasClass("show")) {
-        const error_message = $t({
-            defaultMessage: "You need to be running Zephyr mirroring in order to send messages!",
-        });
-        compose_banner.show_error_message(
-            error_message,
-            compose_banner.CLASSNAMES.zephyr_not_running,
-            $("#compose_banners"),
-        );
-        if (is_validating_compose_box) {
-            disabled_send_tooltip_message_html = error_message;
-        }
-        blueslip.debug("Invalid compose state: Zephyr mirroring not running");
-        is_validating_compose_box = false;
-        return false;
-    }
     // TODO: This doesn't actually show a banner, it triggers a flash
     const trigger_flash = show_banner;
     if (!validate_message_length($("#send_message_form"), trigger_flash)) {

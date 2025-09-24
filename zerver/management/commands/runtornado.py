@@ -12,7 +12,6 @@ from typing_extensions import override
 
 from zerver.lib.management import ZulipBaseCommand
 
-settings.RUNNING_INSIDE_TORNADO = True
 if settings.PRODUCTION:
     settings.SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 

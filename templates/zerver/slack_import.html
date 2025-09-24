@@ -83,7 +83,7 @@
                         <div class="not-editable-realm-field" id="slack-import-uploaded-file-name">{{ uploaded_import_file_name }}</div>
                     </div>
                     <div class="input-box">
-                        <button type="submit" class="register-button">
+                        <button type="submit" class="register-button"{% if invalid_file_error_message %} disabled{% endif %}>
                             {{ _("Start import") }}
                         </button>
                     </div>
@@ -100,7 +100,7 @@
             </form>
             <div class="bottom-text">
                 {% trans %}
-                Or <a href="#" id="cancel-slack-import">create organization</a> without importing data.
+                Or <span id="cancel-slack-import" tabindex="0">create organization</span> without importing data.
                 {% endtrans %}
             </div>
             {% endif %}

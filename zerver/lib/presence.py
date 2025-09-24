@@ -234,7 +234,7 @@ def get_presences_for_realm(
     history_limit_days: int | None,
     requesting_user_profile: UserProfile,
 ) -> tuple[dict[str, dict[str, dict[str, Any]]], int]:
-    if realm.presence_disabled:
+    if realm.presence_disabled:  # nocoverage
         # Return an empty dict if presence is disabled in this realm
         return defaultdict(dict), -1
 

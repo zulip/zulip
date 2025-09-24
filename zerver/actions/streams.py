@@ -261,7 +261,7 @@ def do_unarchive_stream(stream: Stream, new_name: str, *, acting_user: UserProfi
     ChannelEmailAddress.objects.filter(realm=realm, channel=stream).update(deactivated=False)
 
     # Update caches
-    cache_set(display_recipient_cache_key(stream.recipient_id), new_name)
+    cache_set(display_recipient_cache_key(stream.recipient_id), new_name, pickled_tupled=False)
     messages = Message.objects.filter(
         # Uses index: zerver_message_realm_recipient_id
         realm_id=realm.id,
@@ -422,10 +422,7 @@ def send_subscription_add_events(
     for sub_info in sub_info_list:
         stream = sub_info.stream
         if stream.id not in stream_subscribers_dict:
-            if stream.is_in_zephyr_realm and not stream.invite_only:
-                subscribers = []
-            else:
-                subscribers = list(subscriber_dict[stream.id])
+            subscribers = list(subscriber_dict[stream.id])
             stream_subscribers_dict[stream.id] = subscribers
 
     streams = [sub_info.stream for sub_info in sub_info_list]
@@ -602,9 +599,7 @@ def send_peer_subscriber_events(
         stream_id for stream_id in altered_user_dict if stream_dict[stream_id].invite_only
     ]
     public_stream_ids = [
-        stream_id
-        for stream_id in altered_user_dict
-        if not stream_dict[stream_id].invite_only and not stream_dict[stream_id].is_in_zephyr_realm
+        stream_id for stream_id in altered_user_dict if not stream_dict[stream_id].invite_only
     ]
     web_public_stream_ids = [
         stream_id for stream_id in public_stream_ids if stream_dict[stream_id].is_web_public
@@ -1516,7 +1511,7 @@ def do_rename_stream(stream: Stream, new_name: str, user_profile: UserProfile) -
         recipient_id=recipient_id,
     ).only("id")
 
-    cache_set(display_recipient_cache_key(recipient_id), stream.name)
+    cache_set(display_recipient_cache_key(recipient_id), stream.name, pickled_tupled=False)
 
     # Delete cache entries for everything else, which is cheaper and
     # clearer than trying to set them. display_recipient is the out of

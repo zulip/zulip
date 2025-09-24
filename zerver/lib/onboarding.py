@@ -19,6 +19,7 @@ from zerver.lib.emoji import get_emoji_data
 from zerver.lib.markdown.fenced_code import get_unused_fence
 from zerver.lib.message import SendMessageRequest, remove_single_newlines
 from zerver.models import Message, OnboardingUserMessage, Realm, UserProfile
+from zerver.models.groups import SystemGroups
 from zerver.models.recipients import Recipient
 from zerver.models.users import get_system_bot
 
@@ -50,10 +51,14 @@ def create_if_missing_realm_internal_bots() -> None:
             setup_realm_internal_bots(realm)
 
 
-def get_custom_welcome_message_string(welcome_message_custom_text: str) -> str:
+def get_custom_welcome_message_string(realm: Realm, welcome_message_custom_text: str) -> str:
+    # TODO: This could use silent_mention_syntax_for_user_group, but
+    # it's not worth doing a database query to get the NamedUserGroup,
+    # so some refactoring is required to do that.
+    mention_syntax = f"@_*{SystemGroups.ADMINISTRATORS}*"
     fence = get_unused_fence(welcome_message_custom_text)
-    welcome_bot_custom_message_intro_string = _(
-        "The administrators for this organization would also like to share the following information:"
+    welcome_bot_custom_message_intro_string = _("A note from {admin_group_syntax}:").format(
+        admin_group_syntax=mention_syntax
     )
 
     welcome_bot_custom_message_string = f"""
@@ -130,7 +135,7 @@ You can always come back to the [Welcome to Zulip video]({navigation_tour_video_
         # Add welcome bot custom message.
         if welcome_message_custom_text:
             welcome_bot_custom_message_string = get_custom_welcome_message_string(
-                welcome_message_custom_text
+                user.realm, welcome_message_custom_text
             )
 
         content = _("""
@@ -258,7 +263,7 @@ times, and more.
 Here are a few messages I understand: {bot_commands}
 
 Check out our [Getting started guide](/help/getting-started-with-zulip),
-or browse the [Help center](/help/) to learn more!
+or browse the [help center](/help/) to learn more!
 """).format(bot_commands=bot_commands(no_help_command=True))
     else:
         return _("""

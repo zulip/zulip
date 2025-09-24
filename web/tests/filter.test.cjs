@@ -4,6 +4,7 @@ const assert = require("node:assert/strict");
 
 const {parseOneAddress} = require("email-addresses");
 
+const {make_realm} = require("./lib/example_realm.cjs");
 const {mock_esm, with_overrides, zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 const blueslip = require("./lib/zblueslip.cjs");
@@ -21,7 +22,7 @@ const {set_current_user, set_realm} = zrequire("state_data");
 const {initialize_user_settings} = zrequire("user_settings");
 const muted_users = zrequire("muted_users");
 
-const realm = {};
+const realm = make_realm();
 set_realm(realm);
 const current_user = {};
 set_current_user(current_user);
@@ -226,7 +227,7 @@ test("basics", () => {
     terms = [
         {operator: "channel", operand: foo_stream_id.toString()},
         {operator: "topic", operand: "bar"},
-        {operator: "near", operand: 17},
+        {operator: "near", operand: "17"},
     ];
     filter = new Filter(terms);
 
@@ -417,7 +418,7 @@ test("basics", () => {
 
     terms = [
         {operator: "dm", operand: "joe@example.com"},
-        {operator: "near", operand: 17},
+        {operator: "near", operand: "17"},
     ];
     filter = new Filter(terms);
     assert.ok(filter.is_non_group_direct_message());
@@ -555,7 +556,7 @@ test("basics", () => {
     terms = [
         {operator: "channel", operand: foo_stream_id.toString()},
         {operator: "topic", operand: "bar"},
-        {operator: "with", operand: 17},
+        {operator: "with", operand: "17"},
     ];
     filter = new Filter(terms);
 
@@ -999,7 +1000,7 @@ test("canonicalization", () => {
     assert.equal(term.operator, "search");
     assert.equal(term.operand, "fOO");
 
-    term = Filter.canonicalize_term({operator: "search", operand: 123});
+    term = Filter.canonicalize_term({operator: "search", operand: "123"});
     assert.equal(term.operator, "search");
     assert.equal(term.operand, "123");
 
@@ -1234,15 +1235,15 @@ test("predicate_basics", ({override}) => {
         assert.ok(!predicate({stream_id: muted_stream.stream_id, topic: "bar"}));
     });
 
-    predicate = get_predicate([["near", 5]]);
+    predicate = get_predicate([["near", "5"]]);
     assert.ok(predicate({}));
 
-    predicate = get_predicate([["id", 5]]);
+    predicate = get_predicate([["id", "5"]]);
     assert.ok(predicate({id: 5}));
     assert.ok(!predicate({id: 6}));
 
     predicate = get_predicate([
-        ["id", 5],
+        ["id", "5"],
         ["topic", "lunch"],
     ]);
     assert.ok(predicate({type: stream_message, id: 5, topic: "lunch"}));
@@ -1329,7 +1330,7 @@ test("predicate_basics", ({override}) => {
 
     const img_msg = {
         content:
-            '<p><a href="/user_uploads/randompath/test.jpeg">test.jpeg</a></p><div class="message_inline_image"><a href="/user_uploads/randompath/test.jpeg" title="test.jpeg"><img src="/user_uploads/randompath/test.jpeg"></a></div>',
+            '<p><a href="/user_uploads/randompath/test.jpeg">test.jpeg</a></p><div class="message-media-preview-image"><a href="/user_uploads/randompath/test.jpeg" title="test.jpeg"><img src="/user_uploads/randompath/test.jpeg"></a></div>',
     };
 
     const link_msg = {
@@ -1402,13 +1403,17 @@ test("predicate_basics", ({override}) => {
     assert.ok(!has_attachment(no_has_filter_matching_msg));
 
     const has_image = get_predicate([["has", "image"]]);
-    set_find_results_for_msg_content(img_msg, ".message_inline_image", ["stub"]);
+    set_find_results_for_msg_content(img_msg, ".message-media-preview-image", ["stub"]);
     assert.ok(has_image(img_msg));
-    set_find_results_for_msg_content(non_img_attachment_msg, ".message_inline_image", false);
+    set_find_results_for_msg_content(non_img_attachment_msg, ".message-media-preview-image", false);
     assert.ok(!has_image(non_img_attachment_msg));
-    set_find_results_for_msg_content(link_msg, ".message_inline_image", false);
+    set_find_results_for_msg_content(link_msg, ".message-media-preview-image", false);
     assert.ok(!has_image(link_msg));
-    set_find_results_for_msg_content(no_has_filter_matching_msg, ".message_inline_image", false);
+    set_find_results_for_msg_content(
+        no_has_filter_matching_msg,
+        ".message-media-preview-image",
+        false,
+    );
     assert.ok(!has_image(no_has_filter_matching_msg));
 
     const has_reaction = get_predicate([["has", "reaction"]]);
@@ -1433,48 +1438,6 @@ test("negated_predicates", () => {
     assert.ok(predicate({}));
 });
 
-function test_mit_exceptions() {
-    const foo_stream_id = new_stream_id();
-    make_sub("Foo", foo_stream_id);
-    let predicate = get_predicate([
-        ["channel", foo_stream_id.toString()],
-        ["topic", "personal"],
-    ]);
-    assert.ok(predicate({type: stream_message, stream_id: foo_stream_id, topic: "personal"}));
-    assert.ok(predicate({type: stream_message, stream_id: foo_stream_id, topic: ""}));
-    // 9999 doesn't correspond to any channel
-    assert.ok(!predicate({type: stream_message, stream_id: 9999}));
-    assert.ok(!predicate({type: stream_message, stream_id: foo_stream_id, topic: "whatever"}));
-    assert.ok(!predicate({type: direct_message}));
-
-    predicate = get_predicate([
-        ["channel", foo_stream_id.toString()],
-        ["topic", "bar"],
-    ]);
-    assert.ok(predicate({type: stream_message, stream_id: foo_stream_id, topic: "bar.d"}));
-
-    // Try to get the MIT regex to explode for an empty channel.
-    let terms = [
-        {operator: "channel", operand: ""},
-        {operator: "topic", operand: "bar"},
-    ];
-    predicate = new Filter(terms).predicate();
-    assert.ok(!predicate({type: stream_message, stream_id: foo_stream_id, topic: "bar"}));
-
-    // Try to get the MIT regex to explode for an empty topic.
-    terms = [
-        {operator: "channel", operand: foo_stream_id.toString()},
-        {operator: "topic", operand: ""},
-    ];
-    predicate = new Filter(terms).predicate();
-    assert.ok(!predicate({type: stream_message, stream_id: foo_stream_id, topic: "bar"}));
-}
-
-test("mit_exceptions", ({override}) => {
-    override(realm, "realm_is_zephyr_mirror_realm", true);
-    test_mit_exceptions();
-});
-
 test("predicate_edge_cases", () => {
     let predicate;
     // The code supports undefined as an operator to Filter, which results
@@ -1488,7 +1451,7 @@ test("predicate_edge_cases", () => {
     predicate = get_predicate([["in", "bogus"]]);
     assert.ok(!predicate({}));
 
-    predicate = get_predicate([["bogus", 33]]);
+    predicate = get_predicate([["bogus", "33"]]);
     assert.ok(predicate({}));
 
     predicate = get_predicate([["is", "bogus"]]);
@@ -1670,11 +1633,11 @@ test("unparse", () => {
     string = "-channels:public";
     assert.deepEqual(Filter.unparse(terms), string);
 
-    terms = [{operator: "id", operand: 50}];
+    terms = [{operator: "id", operand: "50"}];
     string = "id:50";
     assert.deepEqual(Filter.unparse(terms), string);
 
-    terms = [{operator: "near", operand: 150}];
+    terms = [{operator: "near", operand: "150"}];
     string = "near:150";
     assert.deepEqual(Filter.unparse(terms), string);
 
@@ -2399,6 +2362,14 @@ test("navbar_helpers", ({override}) => {
         {operator: "channel", operand: invalid_channel_id.toString()},
         {operator: "topic", operand: "bar"},
     ];
+    // channel/topic name using special character for url encoding.
+    const special_sub_id = new_stream_id();
+    make_sub("Foo2.0", special_sub_id);
+    const char_channel_term = [{operator: "channel", operand: special_sub_id.toString()}];
+    const char_channel_topic_term = [
+        {operator: "channel", operand: special_sub_id.toString()},
+        {operator: "topic", operand: "bar2.0"},
+    ];
     const public_sub_id = new_stream_id();
     make_private_sub("psub", public_sub_id);
     const private_channel_term = [{operator: "channel", operand: public_sub_id.toString()}];
@@ -2524,6 +2495,20 @@ test("navbar_helpers", ({override}) => {
             zulip_icon: "hashtag",
             title: "Foo",
             redirect_url_with_search: `/#narrow/channel/${foo_stream_id}-Foo/topic/bar`,
+        },
+        {
+            terms: char_channel_term,
+            is_common_narrow: true,
+            zulip_icon: "hashtag",
+            title: "Foo2.0",
+            redirect_url_with_search: `/#narrow/channel/${special_sub_id}-Foo2.2E0`,
+        },
+        {
+            terms: char_channel_topic_term,
+            is_common_narrow: true,
+            zulip_icon: "hashtag",
+            title: "Foo2.0",
+            redirect_url_with_search: `/#narrow/channel/${special_sub_id}-Foo2.2E0/topic/bar2.2E0`,
         },
         {
             terms: invalid_channel_with_topic,

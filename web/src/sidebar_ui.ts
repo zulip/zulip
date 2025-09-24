@@ -465,14 +465,31 @@ export function initialize_right_sidebar(): void {
     );
 }
 
+function get_header_rows_selectors(): string {
+    return (
+        // Views header.
+        "#left-sidebar-navigation-area:not(.hidden-by-filters) #views-label-container, " +
+        // DM Headers
+        "#direct-messages-section-header, " +
+        // All channel headers.
+        ".stream-list-section-container:not(.no-display) .stream-list-subsection-header"
+    );
+}
+
 function all_rows(): JQuery {
     // NOTE: This function is designed to be used for keyboard navigation purposes.
     // This function returns all the rows in the left sidebar.
     // It is used to find the first key for the ListCursor.
-    const $all_rows = $(".top_left_row, .bottom_left_row").not(".hidden-by-filters");
+    const $all_rows = $(
+        // All left sidebar view rows.
+        ".top_left_row, " +
+            // All DM and channel rows.
+            ".bottom_left_row, " +
+            get_header_rows_selectors(),
+    ).not(".hidden-by-filters");
     // Remove rows hidden due to being inactive or muted.
     const $inactive_or_muted_rows = $(
-        "#streams_list .stream-list-section-container:not(.showing-inactive-or-muted)" +
+        "#streams_list:not(.is_searching) .stream-list-section-container:not(.showing-inactive-or-muted)" +
             " .inactive-or-muted-in-channel-folder .bottom_left_row:not(.hidden-by-filters)",
     );
     // Remove rows in collapsed sections / folders.
@@ -487,11 +504,17 @@ function all_rows(): JQuery {
         ".stream-list-section-container.collapsed .topic-list-item:not(.active-sub-filter).bottom_left_row",
     );
 
+    // Exclude toggle inactive / muted channels row from the list of rows if user is searching.
+    const $toggle_inactive_or_muted_channels_row = $(
+        "#streams_list.is_searching .stream-list-toggle-inactive-or-muted-channels.bottom_left_row",
+    );
+
     return $all_rows
         .not($inactive_or_muted_rows)
         .not($collapsed_views)
         .not($collapsed_channels)
-        .not($hidden_topic_rows);
+        .not($hidden_topic_rows)
+        .not($toggle_inactive_or_muted_channels_row);
 }
 
 class LeftSidebarListCursor extends ListCursor<JQuery> {
@@ -516,7 +539,8 @@ export function initialize_left_sidebar_cursor(): void {
                 if ($all_rows.length === 0) {
                     return undefined;
                 }
-                return $all_rows.first();
+                const $non_header_rows = $all_rows.not($(get_header_rows_selectors()));
+                return $non_header_rows.first();
             },
             next_key($key) {
                 const $all_rows = all_rows();
@@ -552,6 +576,7 @@ export function initialize_left_sidebar_cursor(): void {
 function actually_update_left_sidebar_for_search(): void {
     const search_value = ui_util.get_left_sidebar_search_term();
     const is_left_sidebar_search_active = search_value !== "";
+    left_sidebar_cursor.set_is_highlight_visible(is_left_sidebar_search_active);
 
     // Update left sidebar navigation area.
     update_expanded_views_for_search(search_value);
@@ -598,21 +623,30 @@ export function set_event_handlers(): void {
     const $search_input = $(".left-sidebar-search-input").expectOne();
 
     function keydown_enter_key(): void {
-        const row = left_sidebar_cursor.get_key();
+        const $row = left_sidebar_cursor.get_key();
 
-        if (row === undefined) {
+        if ($row === undefined) {
             // This can happen for empty searches, no need to warn.
             return;
         }
 
-        if ($(row).hasClass("stream-list-toggle-inactive-or-muted-channels")) {
-            $(row).trigger("click");
+        if ($row[0]!.id === "views-label-container") {
+            $row.find("#toggle-top-left-navigation-area-icon").trigger("click");
+            return;
+        }
+
+        if (
+            $row.hasClass("stream-list-toggle-inactive-or-muted-channels") ||
+            $row[0]!.id === "direct-messages-section-header" ||
+            $row.hasClass("stream-list-subsection-header")
+        ) {
+            $row.trigger("click");
             return;
         }
         // Clear search input so that there is no confusion
         // about which search input is active.
         $search_input.val("");
-        const $nearest_link = $(row).find("a").first();
+        const $nearest_link = $row.find("a").first();
         if ($nearest_link.length > 0) {
             // If the row has a link, we click it.
             $nearest_link[0]!.click();

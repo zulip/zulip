@@ -31,7 +31,9 @@
             top: var(--navbar-fixed-height);
             background: var(--color-background-inbox);
             display: flex;
-            padding: 15px 0 10px;
+            /* This padding-top value aligns the inbox filters
+               with the filters in the left and right sidebars. */
+            padding: 10px 0;
             z-index: 1;
         }
 
@@ -209,27 +211,14 @@
                 .inbox-topic-name {
                     grid-area: recipient_info;
                 }
+            }
 
-                .inbox-right-part-wrapper {
-                    flex-grow: 1;
-
-                    .inbox-right-part {
-                        display: flex;
-                        justify-content: space-between;
-                        flex-grow: 1;
-
-                        > .inbox-action-button:first-child {
-                            margin-left: auto;
-                        }
-                    }
-                }
-
-                .visibility-policy-indicator {
-                    display: flex;
-                    align-items: center;
-                    border-radius: 3px;
-                    margin-left: 3px;
-                }
+            .channel-visibility-policy-indicator,
+            .visibility-policy-indicator {
+                display: flex;
+                align-items: center;
+                border-radius: 3px;
+                margin-left: 3px;
             }
 
             .unread-count-focus-outline {
@@ -359,8 +348,17 @@
         }
 
         .inbox-right-part-wrapper {
-            display: flex;
-            align-items: center;
+            flex-grow: 1;
+
+            .inbox-right-part {
+                display: flex;
+                justify-content: space-between;
+                flex-grow: 1;
+
+                > .inbox-action-button:first-child {
+                    margin-left: auto;
+                }
+            }
         }
 
         .inbox-row,
@@ -643,9 +641,17 @@
 .inbox-folder-components {
     border-radius: 5px;
     border: 0.5px solid hsl(0deg 0% 0% / 13%);
-    /* 8px at 16px / 1em */
-    margin-bottom: 0.5em;
     overflow: hidden;
+}
+
+.inbox-folder-components
+    .inbox-folder-channel:last-child
+    .inbox-topic-container,
+#inbox-direct-messages-container {
+    .inbox-row:last-child {
+        /* 8px at 16px / 1em */
+        margin-bottom: 0.5em;
+    }
 }
 
 .inbox-folder.inbox-collapsed-state,
@@ -717,6 +723,7 @@
         }
     }
 
+    .channel-visibility-policy-indicator,
     .visibility-policy-indicator {
         &:focus-visible {
             outline: 2px solid var(--color-outline-focus);
@@ -741,6 +748,7 @@
             on the element or one of the elements within it. */
         &:focus-within:not(:focus),
         &:focus-visible {
+            .channel-visibility-policy-indicator,
             .inbox-row-visibility-policy-inherit,
             .inbox-action-button {
                 opacity: 1;

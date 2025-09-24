@@ -309,6 +309,31 @@ class S3Test(ZulipTestCase):
         self.send_stream_message(hamlet, "Denmark", body, "test")
 
     @use_s3_backend
+    def test_user_uploads_empty_file(self) -> None:
+        bucket = create_s3_buckets(settings.S3_AUTH_UPLOADS_BUCKET)[0]
+
+        self.login("hamlet")
+        fp = StringIO("")
+        fp.name = "empty-file.txt"
+
+        result = self.client_post("/json/user_uploads", {"file": fp})
+        response_dict = self.assert_json_success(result)
+        self.assertIn("url", response_dict)
+        url = response_dict["url"]
+
+        # Despite S3 being configured, we serve the 0-byte file directly
+        response = self.client_get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.headers["Content-Type"], "text/plain")
+        self.assertEqual(response.headers["Content-Length"], "0")
+        self.assertEqual(
+            response.headers["Content-Disposition"], 'inline; filename="empty-file.txt"'
+        )
+        self.assertEqual(response.headers["Cache-Control"], "private, immutable")
+        key = url.removeprefix("/user_uploads/")
+        self.assertEqual(b"", bucket.Object(key).get()["Body"].read())
+
+    @use_s3_backend
     def test_user_avatars_base(self) -> None:
         backend = zerver.lib.upload.upload_backend
         assert isinstance(backend, S3UploadBackend)

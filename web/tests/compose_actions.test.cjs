@@ -4,6 +4,7 @@ const assert = require("node:assert/strict");
 
 const {mock_banners} = require("./lib/compose_banner.cjs");
 const {make_user_group} = require("./lib/example_group.cjs");
+const {make_realm} = require("./lib/example_realm.cjs");
 const {make_stream} = require("./lib/example_stream.cjs");
 const {make_user} = require("./lib/example_user.cjs");
 const {mock_esm, set_global, zrequire} = require("./lib/namespace.cjs");
@@ -96,9 +97,9 @@ const stream_data = zrequire("stream_data");
 const compose_recipient = zrequire("compose_recipient");
 const {set_realm} = zrequire("state_data");
 
-const realm = {
+const realm = make_realm({
     realm_topics_policy: "disable_empty_topic",
-};
+});
 set_realm(realm);
 
 const start = compose_actions.start;

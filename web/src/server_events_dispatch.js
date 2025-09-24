@@ -124,6 +124,7 @@ export function dispatch_normal_event(event) {
                     channel_folders.add(event.channel_folder);
                     inbox_ui.complete_rerender();
                     settings_folders.populate_channel_folders();
+                    stream_ui_updates.update_folder_dropdown_visibility();
                     break;
                 }
                 case "update":
@@ -138,6 +139,7 @@ export function dispatch_normal_event(event) {
                         stream_settings_ui.reset_dropdown_set_to_archived_folder(
                             event.channel_folder_id,
                         );
+                        stream_ui_updates.update_folder_dropdown_visibility();
                     }
                     settings_folders.update_folder_row(event);
                     break;
@@ -228,7 +230,7 @@ export function dispatch_normal_event(event) {
             break;
 
         case "presence":
-            activity_ui.update_presence_info(event.user_id, event.presence, event.server_timestamp);
+            activity_ui.update_presence_info(event.presences);
             break;
 
         case "restart":
@@ -406,7 +408,7 @@ export function dispatch_normal_event(event) {
                                     key === "direct_message_permission_group"
                                 ) {
                                     settings_org.check_disable_direct_message_initiator_group_widget();
-                                    compose_closed_ui.update_buttons_for_private();
+                                    compose_closed_ui.maybe_update_buttons_for_dm_recipient();
                                     compose_recipient.check_posting_policy_for_compose_box();
                                 }
 

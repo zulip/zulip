@@ -2,6 +2,7 @@
 
 const assert = require("node:assert/strict");
 
+const {make_realm} = require("./lib/example_realm.cjs");
 const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 const $ = require("./lib/zjquery.cjs");
@@ -12,7 +13,7 @@ const people = zrequire("people");
 const compose_pm_pill = zrequire("compose_pm_pill");
 const {set_realm} = zrequire("state_data");
 
-set_realm({});
+set_realm(make_realm());
 
 let pills = {
     pill: {},
@@ -191,7 +192,7 @@ run_test("has_unconverted_data", ({override}) => {
 
     override(compose_pm_pill.widget, "items", () => [{user_id: 99}, {email: "random@mit.edu"}]);
 
-    // One of our items only knows email (as in a bridge-with-zephyr
+    // One of our items only knows email (as in a bridge
     // scenario where we might not have registered the user yet), so
     // we have some unconverted data.
     assert.equal(compose_pm_pill.has_unconverted_data(), true);

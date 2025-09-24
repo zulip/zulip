@@ -82,9 +82,6 @@ from zerver.tornado.django_api import send_event_on_commit
 
 
 def do_delete_user(user_profile: UserProfile, *, acting_user: UserProfile | None) -> None:
-    if user_profile.realm.is_zephyr_mirror_realm:
-        raise AssertionError("Deleting zephyr mirror users is not supported")
-
     do_deactivate_user(user_profile, acting_user=acting_user)
 
     to_resubscribe_recipient_ids = set(
@@ -187,9 +184,6 @@ def do_delete_user_preserving_messages(user_profile: UserProfile) -> None:
       space of user IDs that contain actual users.
 
     """
-    if user_profile.realm.is_zephyr_mirror_realm:
-        raise AssertionError("Deleting zephyr mirror users is not supported")
-
     do_deactivate_user(user_profile, acting_user=None)
 
     user_id = user_profile.id
@@ -360,9 +354,9 @@ def send_update_events_for_anonymous_group_settings(
         group_setting_query |= Q(**{f"{setting_name}__in": setting_group_ids})
 
     named_groups_using_setting_groups_dict = {}
-    named_groups_using_setting_groups = NamedUserGroup.objects.filter(realm=realm).filter(
-        group_setting_query
-    )
+    named_groups_using_setting_groups = NamedUserGroup.objects.filter(
+        realm_for_sharding=realm
+    ).filter(group_setting_query)
     for group in named_groups_using_setting_groups:
         for setting_name in NamedUserGroup.GROUP_PERMISSION_SETTINGS:
             setting_value_id = getattr(group, setting_name + "_id")
@@ -520,16 +514,6 @@ def do_deactivate_user(
             do_deactivate_user(profile, _cascade=False, acting_user=acting_user)
 
     with transaction.atomic(savepoint=False):
-        if user_profile.realm.is_zephyr_mirror_realm:  # nocoverage
-            # For zephyr mirror users, we need to make them a mirror dummy
-            # again; otherwise, other users won't get the correct behavior
-            # when trying to send messages to this person inside Zulip.
-            #
-            # Ideally, we need to also ensure their zephyr mirroring bot
-            # isn't running, but that's a separate issue.
-            user_profile.is_mirror_dummy = True
-            user_profile.save(update_fields=["is_mirror_dummy"])
-
         change_user_is_active(user_profile, False)
 
         clear_scheduled_emails([user_profile.id])

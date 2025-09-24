@@ -2,6 +2,7 @@
 
 const assert = require("node:assert/strict");
 
+const {make_realm} = require("./lib/example_realm.cjs");
 const {mock_esm, set_global, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
 
@@ -17,7 +18,7 @@ const stream_data = zrequire("stream_data");
 const stream_topic_history = zrequire("stream_topic_history");
 const stream_topic_history_util = zrequire("stream_topic_history_util");
 
-set_realm({});
+set_realm(make_realm());
 
 stream_topic_history.set_update_topic_last_message_id(noop);
 

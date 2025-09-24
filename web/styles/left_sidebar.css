@@ -112,6 +112,18 @@
         .unread_count.hide + .masked_unread_count {
             visibility: hidden;
         }
+
+        /* Suppress the unread-count dot and show
+           the unread count on hover. */
+        &:hover {
+            .masked_unread_count {
+                visibility: hidden;
+            }
+
+            .unread_count:not(:empty) {
+                visibility: visible;
+            }
+        }
     }
 }
 
@@ -338,11 +350,10 @@
         auto;
     position: sticky;
     top: 0;
-    /* Must be more than .stream-list-subsection-header */
-    z-index: 3;
     background: var(--color-background);
     /* Must be padding not margin so that the sticky headers don't show behind it */
-    padding: 0 var(--left-sidebar-right-margin) 3px 5px;
+    padding: 0 var(--left-sidebar-right-margin)
+        var(--sidebar-filter-bottom-spacing) 5px;
 
     .channel-folders-sidebar-menu-icon {
         grid-area: channel-folders-option;
@@ -551,7 +562,7 @@
     display: none;
 }
 
-.stream-list-section-container.collapsed {
+#streams_list .stream-list-section-container.collapsed {
     .narrow-filter:not(.stream-expanded),
     .stream-list-toggle-inactive-or-muted-channels,
     .topic-list-item:not(.active-sub-filter),
@@ -742,10 +753,15 @@
     }
 }
 
-.highlighted_row.top_left_row,
-.highlighted_row.bottom_left_row {
-    outline: 2px solid var(--color-outline-focus);
-    outline-offset: -2px;
+#views-label-container,
+#direct-messages-section-header,
+.stream-list-subsection-header,
+.top_left_row,
+.bottom_left_row {
+    &.highlighted_row {
+        outline: 2px solid var(--color-outline-focus);
+        outline-offset: -2px;
+    }
 }
 
 #stream_filters
@@ -1078,8 +1094,23 @@ li.active-sub-filter {
                    the icon width (15px/2) plus 2px. This keeps the
                    unread dot in correct proximity to the view icon,
                    no matter how the row flexes or what information-
-                   density values a user has set. 9.5px at 12px/1em. */
-                transform: translateX(0.7917em);
+                   density values a user has set. 9.5px at 12px/1em.
+
+                   We set this and its scaled counterpart as variables
+                   for use in the pulse-unread animation to maintain the
+                   dot's correct position relative to the view icon. */
+                --unread-dot-x-offset: 0.7917em;
+                /* To make sure the unread dot appears to scale from the
+                   offset dot's center in collapsed Views, we need to
+                   adjust the translateX offset by the same amount we
+                   scale. calc() does not play nicely with animations,
+                   so it's critical that we calculate this value here,
+                   well before its needed. */
+                --unread-dot-x-offset-scaled: calc(
+                    var(--unread-dot-x-offset) / var(--pulse-unread-scale-max)
+                );
+
+                transform: translateX(var(--unread-dot-x-offset));
                 width: 0.5em;
                 height: 0.5em;
                 padding: 0;
@@ -1122,8 +1153,9 @@ li.active-sub-filter {
 
     &.hide-unread-messages-count {
         /* Restore the unread dot when message counts
-           are hidden. */
-        .selected-home-view .unread_count {
+           are hidden, unless there are no unreads,
+           of course. */
+        .selected-home-view .unread_count:not(:empty) {
             display: block;
         }
         /* We suppress the entire unread area
@@ -1164,7 +1196,7 @@ li.active-sub-filter {
 }
 
 #left-sidebar-navigation-list {
-    margin-bottom: var(--left-sidebar-sections-vertical-gutter);
+    margin-bottom: 0;
     display: grid;
     line-height: var(--line-height-sidebar-row);
     /* Explicitly ensure parity with the line-height

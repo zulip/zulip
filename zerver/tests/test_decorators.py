@@ -1244,8 +1244,8 @@ class TestAuthenticatedJsonViewDecorator(ZulipTestCase):
         )
 
     def _do_test(self, user_email: str) -> "TestHttpResponse":
-        data = {"password": initial_password(user_email)}
-        return self.client_post(r"/accounts/webathena_kerberos_login/", data)
+        data = {"status_text": "working"}
+        return self.client_post(r"/json/users/me/status", data)
 
 
 class TestPublicJsonViewDecorator(ZulipTestCase):

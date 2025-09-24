@@ -6,16 +6,95 @@
 set -e
 set -x
 
-git fetch weblate
-git cherry-pick weblate/main ^upstream/main || true
+# Check we're on `main` or `\d+\.x`
+branch=$(git rev-parse --abbrev-ref HEAD)
+if [ "$branch" == "main" ]; then
+    suffix=""
+elif [[ "$branch" =~ ^[0-9]+\.x$ ]]; then
+    suffix="-${branch/./-}"
+else
+    echo "Unexpected branch name: $branch"
+    exit 1
+fi
 
-# Normalize to Unicode Normalization Form C.
-files="$(find locale -type f -name '*.json' -o -name '*.po')"
-mapfile -t files <<<"$files"
-for file in "${files[@]}"; do
-    uconv -x any-nfc "$file" | sponge -- "$file"
-done
+git fetch upstream
 
-./tools/i18n/update-for-legacy-translations
+local_branch="update-translations-$branch"
+if git rev-parse --verify --quiet "origin/$local_branch" >/dev/null; then
+    echo "Remote branch origin/$local_branch already exists -- delete it before continuing"
+    exit 1
+fi
+git checkout -b "$local_branch" "upstream/$branch"
 
-./manage.py compilemessages --ignore='*'
+wlc lock "zulip/frontend$suffix"
+wlc lock "zulip/django$suffix"
+trap 'wlc unlock "zulip/frontend$suffix" && wlc unlock "zulip/django$suffix"' EXIT
+
+wlc commit "zulip/frontend$suffix"
+wlc commit "zulip/django$suffix"
+
+git fetch "https://hosted.weblate.org/git/zulip/django$suffix/"
+if [ "$(git rev-list FETCH_HEAD "^upstream/$branch")" == "" ]; then
+    echo "No changes from Weblate to commit!"
+else
+    git cherry-pick FETCH_HEAD "^upstream/$branch"
+
+    git clean -dxf locale/
+
+    # Check that everything is normalized into NFC; if it isn't, we
+    # need to fix it in Weblate, or Weblate will fail to rebase the
+    # changes out after we push.
+    files="$(find locale -type f -name '*.json' -o -name '*.po')"
+    mapfile -t files <<<"$files"
+    for file in "${files[@]}"; do
+        uconv -x any-nfc "$file" | sponge -- "$file"
+    done
+
+    git add locale/
+    if ! git diff-index --quiet --cached HEAD locale/; then
+        echo "Non-NFC translations exist!  Fix them in Weblate first."
+        git diff --cached
+        exit 1
+    fi
+
+    # Update locale/*/legacy_stream_translations.json
+    ./tools/i18n/update-for-legacy-translations
+    git add locale/
+
+    # Double-check that they all compile
+    ./manage.py compilemessages --ignore='*'
+
+    git commit --amend -m 'i18n: Sync translations from Weblate.'
+fi
+
+./manage.py makemessages --all
+git add locale/
+
+if git diff-index --quiet --cached HEAD locale/; then
+    echo "No changes to PO files to commit!"
+else
+    git commit -m 'i18n: Updated .po files for new strings.'
+fi
+
+if [ "$(git rev-list HEAD "^upstream/$branch")" == "" ]; then
+    echo "No commits to push, aborting!"
+    git checkout "$branch"
+    git branch -D "$local_branch"
+else
+    git push origin "HEAD:$local_branch"
+
+    gh_username="$(gh api user --jq '.login')"
+    gh pr create --title "Updated translations for $branch from Weblate." --body "" --base "$branch" --head "$gh_username:$local_branch"
+    gh pr merge --rebase --auto "$gh_username:$local_branch"
+    commit=$(git rev-parse HEAD)
+
+    git checkout "$branch"
+    git branch -D "$local_branch"
+
+    echo "Waiting for PR to merge..."
+    while [ "$(gh pr list --search "$commit" --state all --json state --jq .[0].state)" == "OPEN" ]; do
+        sleep 30
+    done
+
+    git push origin --delete "$local_branch"
+fi

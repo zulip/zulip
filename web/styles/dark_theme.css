@@ -27,46 +27,6 @@
         }
     }
 
-    /* Extend the 'light-border' TippyJS theme, which is intended for
-       popovers/menus that should use default background colors, to use
-       our dark theme colors in Zulip's dark theme.
-     */
-    .tippy-box[data-theme~="light-border"] {
-        .tippy-content a,
-        p {
-            color: hsl(236deg 33% 90%);
-        }
-    }
-
-    .tippy-box:not([data-theme]) {
-        background: hsl(0deg 0% 0%);
-
-        &[data-placement^="top"] > .tippy-arrow::before {
-            border-top-color: hsl(0deg 0% 0%);
-        }
-
-        &[data-placement^="bottom"] > .tippy-arrow::before {
-            border-bottom-color: hsl(0deg 0% 0%);
-        }
-
-        &[data-placement^="left"] > .tippy-arrow::before {
-            border-left-color: hsl(0deg 0% 0%);
-        }
-
-        &[data-placement^="right"] > .tippy-arrow::before {
-            border-right-color: hsl(0deg 0% 0%);
-        }
-    }
-
-    .tippy-box[data-theme="dropdown-widget"] {
-        background-color: hsl(240deg 5% 16%);
-        border: 1px solid hsl(0deg 0% 0%);
-        box-shadow:
-            0 7px 13px hsl(0deg 0% 0% / 35%),
-            0 5px 8px hsl(0deg 0% 0% / 32%),
-            0 2px 4px hsl(0deg 0% 0% / 20%);
-    }
-
     .dropdown-list-delete {
         /* hsl(7deg 100% 74%) corresponds to var(--red-250) */
         color: color-mix(
@@ -358,37 +318,6 @@
         }
     }
 
-    #user-profile-modal {
-        #default-section {
-            .default-field {
-                .name {
-                    color: hsl(236deg 33% 90%);
-                }
-            }
-        }
-
-        #content {
-            .field-section {
-                .name {
-                    color: hsl(236deg 33% 90%);
-                }
-            }
-        }
-
-        .subscription-group-list,
-        .subscription-stream-list,
-        .subscription-stream-list .user-stream-list tr,
-        .subscription-group-list .user-group-list tr {
-            border-color: hsl(0deg 0% 0% / 40%);
-        }
-
-        .manage-profile-tab-footer {
-            &.modal__footer_wrapper {
-                border-top: 1px solid hsl(0deg 0% 100% / 20%);
-            }
-        }
-    }
-
     .top-messages-logo {
         opacity: 0.7;
     }
@@ -396,14 +325,6 @@
     .history-limited-box,
     .all-messages-search-caution {
         background-color: hsl(0deg 0% 0% / 20%);
-    }
-
-    #feedback_container {
-        border-color: hsl(0deg 0% 0% / 50%);
-
-        & a:hover {
-            color: hsl(0deg 0% 100%);
-        }
     }
 
     /* Search highlight used in both topics and rendered_markdown */
@@ -446,55 +367,6 @@
         }
     }
 
-    /* Widgets: Poll */
-    .poll-widget {
-        .poll-vote {
-            color: hsl(185deg 35% 65%);
-            border-color: hsl(185deg 35% 35%);
-
-            &:hover {
-                color: hsl(185deg 50% 70%);
-                border-color: hsl(185deg 40% 40%);
-                background-color: hsl(185deg 20% 20%);
-            }
-
-            &:focus {
-                color: hsl(185deg 50% 65%);
-                border-color: hsl(185deg 40% 50%);
-                background-color: hsl(185deg 40% 35%);
-            }
-        }
-
-        .poll-names {
-            color: hsl(236deg 15% 70%);
-        }
-    }
-
-    /* Widgets: Todo */
-    .todo-widget {
-        & label.checkbox {
-            & input[type="checkbox"] {
-                ~ .custom-checkbox {
-                    border-color: hsl(185deg 40% 45%);
-                    opacity: 0.7;
-                }
-
-                &:hover ~ .custom-checkbox {
-                    background-color: hsl(185deg 20% 20%);
-                    border-color: hsl(185deg 40% 35%);
-                }
-
-                &:checked ~ .custom-checkbox {
-                    background-color: hsl(185deg 40% 45%);
-                }
-
-                &:focus ~ .custom-checkbox {
-                    outline-color: hsl(0deg 0% 100% / 0%);
-                }
-            }
-        }
-    }
-
     .panel_user_list > .pill-container,
     .creator_details > .display_only_pill {
         &:hover {
@@ -506,17 +378,6 @@
             &:hover {
                 color: inherit;
             }
-        }
-    }
-
-    #read_receipts_modal .read_receipts_list li {
-        &:hover {
-            background-color: hsl(0deg 0% 100% / 5%);
-        }
-
-        &:active,
-        &:focus {
-            background-color: hsl(0deg 0% 100% / 10%);
         }
     }
 

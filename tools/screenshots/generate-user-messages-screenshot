@@ -62,7 +62,7 @@ message_thread_ids: list[int] = []
 
 USER_AVATARS_MAP = {
     "Ariella Drake": "tools/screenshots/user_avatars/AriellaDrake.png",
-    "Elena Garcia": "tools/screenshots/user_avatars/ElenaGarcia.jpg",
+    "Elena García": "tools/screenshots/user_avatars/ElenaGarcia.jpg",
     "Kevin Lin": "tools/screenshots/user_avatars/KevinLin.png",
     "Zoe Davis": "tools/screenshots/user_avatars/ZoeDavis.png",
     "Bo Williams": "tools/screenshots/user_avatars/BoWilliams.png",
@@ -86,7 +86,7 @@ class MessageThread(BaseModel):
 
 
 def create_user(full_name: str, avatar_filename: str | None) -> None:
-    email = f"{full_name.replace(' ', '')}@zulip.com"
+    email = f"{full_name.replace(' ', '').replace('í', 'i')}@zulip.com"
     try:
         user = UserProfile.objects.get(realm=realm, full_name=full_name)
     except UserProfile.DoesNotExist:
@@ -211,13 +211,36 @@ def capture_streams_narrow_screenshot(
 
     narrow_uri = topic_narrow_url(realm=realm, stream=stream, topic_name=topic)
     narrow = f"{stream_name}/{topic}"
-    screenshot_script = os.path.join(SCREENSHOTS_DIR, "thread-screenshot.js")
+    screenshot_script = os.path.join(SCREENSHOTS_DIR, "thread-screenshot.ts")
     subprocess.check_call(
         ["node", screenshot_script, narrow_uri, narrow, str(unread_msg_id), image_path, realm.url]
     )
 
 
-parser = argparse.ArgumentParser()
+DESCRIPTION = """
+Generate screenshots of messages for corporate pages.
+
+This script takes a json file with conversation details, and runs
+tools/thread-screenshot.ts to take cropped screenshots of the
+generated messages with puppeteer.
+
+Make sure you have the dev environment up and running in a separate
+terminal window when you run the script.
+
+Note that you will often want to update the content of existing
+json files (e.g., tools/screenshots/for-events.json) when you are
+taking updated screenshots. For example, updating any dates for
+the current year is recommended.
+
+Also, note that you may need to adjust the viewport width in the
+puppeteer code and/or update the channel or topic names in the json
+content so that message header bars don't have truncated (...)
+channel or topic names due to web app UI changes.
+"""
+
+parser = argparse.ArgumentParser(
+    description=DESCRIPTION, formatter_class=argparse.RawTextHelpFormatter
+)
 group = parser.add_mutually_exclusive_group(required=True)
 
 group.add_argument(
@@ -247,7 +270,7 @@ try:
                 if thread.get("user_groups") is not None:
                     for user_group in thread.get("user_groups"):
                         user_grp = NamedUserGroup.objects.filter(
-                            name=user_group["group_name"], realm=realm
+                            name=user_group["group_name"], realm_for_sharding=realm
                         ).first()
                         if user_grp is not None:
                             user_grp.delete()

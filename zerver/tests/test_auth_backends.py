@@ -7487,8 +7487,8 @@ class TestZulipLDAPUserPopulator(ZulipLDAPTestCase):
             self.perform_ldap_sync(self.example_user("hamlet"))
             fn.assert_not_called()
 
-    def test_too_short_name(self) -> None:
-        self.change_ldap_user_attr("hamlet", "cn", "a")
+    def test_empty_name(self) -> None:
+        self.change_ldap_user_attr("hamlet", "cn", "")
 
         with (
             self.assertRaises(ZulipLDAPError),
@@ -7496,7 +7496,7 @@ class TestZulipLDAPUserPopulator(ZulipLDAPTestCase):
         ):
             self.perform_ldap_sync(self.example_user("hamlet"))
         self.assertIn(
-            "DEBUG:django_auth_ldap:Failed to populate user hamlet: Name too short!",
+            "DEBUG:django_auth_ldap:Failed to populate user hamlet: Name must not be empty!",
             debug_log.output,
         )
 
@@ -8522,7 +8522,9 @@ class LDAPGroupSyncTest(ZulipTestCase):
             self.assertLogs("zulip.ldap", "DEBUG") as zulip_ldap_log,
         ):
             self.assertFalse(
-                NamedUserGroup.objects.filter(realm=realm, name="cool_test_group").exists()
+                NamedUserGroup.objects.filter(
+                    realm_for_sharding=realm, name="cool_test_group"
+                ).exists()
             )
 
             create_user_group_in_database(
@@ -8530,10 +8532,14 @@ class LDAPGroupSyncTest(ZulipTestCase):
             )
 
             self.assertTrue(
-                NamedUserGroup.objects.filter(realm=realm, name="cool_test_group").exists()
+                NamedUserGroup.objects.filter(
+                    realm_for_sharding=realm, name="cool_test_group"
+                ).exists()
             )
 
-            user_group = NamedUserGroup.objects.get(realm=realm, name="cool_test_group")
+            user_group = NamedUserGroup.objects.get(
+                realm_for_sharding=realm, name="cool_test_group"
+            )
 
             self.assertFalse(
                 is_user_in_group(
@@ -8564,7 +8570,7 @@ class LDAPGroupSyncTest(ZulipTestCase):
 
             self.assertTrue(
                 is_user_in_group(
-                    NamedUserGroup.objects.get(realm=realm, name="cool_test_group").id,
+                    NamedUserGroup.objects.get(realm_for_sharding=realm, name="cool_test_group").id,
                     cordelia,
                     direct_member_only=True,
                 )
@@ -8575,7 +8581,7 @@ class LDAPGroupSyncTest(ZulipTestCase):
 
             self.assertFalse(
                 is_user_in_group(
-                    NamedUserGroup.objects.get(realm=realm, name="cool_test_group").id,
+                    NamedUserGroup.objects.get(realm_for_sharding=realm, name="cool_test_group").id,
                     cordelia,
                     direct_member_only=True,
                 )

@@ -18,6 +18,7 @@
 * [Mark messages in a channel as read](/api/mark-stream-as-read)
 * [Mark messages in a topic as read](/api/mark-topic-as-read)
 * [Get a message's read receipts](/api/get-read-receipts)
+* [Get temporary URL for an uploaded file](/api/get-file-temporary-url)
 * [Report a message](/api/report-message)
 
 #### Scheduled messages
@@ -159,6 +160,7 @@
 * [Fetch an API key (development only)](/api/dev-fetch-api-key)
 * [Send an E2EE test notification to mobile device(s)](/api/e2ee-test-notify)
 * [Register E2EE push device](/api/register-push-device)
+* [Register E2EE push device to bouncer](/api/register-remote-push-device)
 * [Mobile notifications](/api/mobile-notifications)
 * [Send a test notification to mobile device(s)](/api/test-notify)
 * [Add an APNs device token](/api/add-apns-token)

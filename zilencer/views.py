@@ -156,7 +156,7 @@ def validate_hostname_or_raise_error(hostname: str) -> None:
         # We perform basic validation in two steps:
         # 1. urlsplit doesn't do any proper validation, but parses the string
         #    and ensures that there are no extra components (e.g., path, query, fragment).
-        # 2. Once we know that the string is a clean netloc, we pass that do Django's
+        # 2. Once we know that the string is a clean netloc, we pass that to Django's
         #    URLValidator for validation.
         parsed = urlsplit(f"http://{hostname}")
 
@@ -178,7 +178,7 @@ def validate_hostname_or_raise_error(hostname: str) -> None:
 def transfer_remote_server_registration(request: HttpRequest, *, hostname: str) -> HttpResponse:
     validate_hostname_or_raise_error(hostname)
 
-    if not RemoteZulipServer.objects.filter(hostname=hostname).exists():
+    if not RemoteZulipServer.objects.filter(hostname=hostname, deactivated=False).exists():
         raise JsonableError(_("{hostname} not yet registered").format(hostname=hostname))
 
     verification_secret = generate_registration_transfer_verification_secret(hostname)
@@ -271,7 +271,10 @@ def register_remote_server(
         if remote_server.deactivated:
             raise RemoteServerDeactivatedError
 
-    if remote_server is None and RemoteZulipServer.objects.filter(hostname=hostname).exists():
+    if (
+        remote_server is None
+        and RemoteZulipServer.objects.filter(hostname=hostname, deactivated=False).exists()
+    ):
         raise HostnameAlreadyInUseBouncerError(hostname)
 
     with transaction.atomic(durable=True):
@@ -357,7 +360,7 @@ def verify_registration_transfer_challenge_ack_endpoint(
         )
 
     try:
-        remote_server = RemoteZulipServer.objects.get(hostname=hostname)
+        remote_server = RemoteZulipServer.objects.get(hostname=hostname, deactivated=False)
     except RemoteZulipServer.DoesNotExist:
         raise JsonableError(_("Registration not found for this hostname"))
 

@@ -459,7 +459,6 @@ class RealmUserDefault(UserBaseSettings):
 class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
     USERNAME_FIELD = "email"
     MAX_NAME_LENGTH = 100
-    MIN_NAME_LENGTH = 2
     API_KEY_LENGTH = 32
     NAME_INVALID_CHARS = ["*", "`", "\\", ">", '"', "@"]
 
@@ -614,13 +613,14 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
     last_active_message_id = models.IntegerField(null=True)
 
     # Mirror dummies are fake (!is_active) users used to provide
-    # message senders in our cross-protocol Zephyr<->Zulip content
-    # mirroring integration, so that we can display mirrored content
-    # like native Zulip messages (with a name + avatar, etc.).
+    # message senders in cross-protocol mirroring integrations, so
+    # that we can display mirrored content like native Zulip messages
+    # (with a name + avatar, etc.).  We also abuse this for data
+    # imports and deleted users.
     is_mirror_dummy = models.BooleanField(default=False)
 
     # Users with this flag set are allowed to forge messages as sent by another
-    # user and to send to private streams; also used for Zephyr/Jabber mirroring.
+    # user and to send to private streams; also used for Jabber mirroring.
     can_forge_sender = models.BooleanField(default=False, db_index=True)
     # Users with this flag set can create other users via API.
     can_create_users = models.BooleanField(default=False, db_index=True)
@@ -937,7 +937,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
         return self.has_permission("can_summarize_topics_group")
 
     def can_access_public_streams(self) -> bool:
-        return not (self.is_guest or self.realm.is_zephyr_mirror_realm)
+        return not self.is_guest
 
     def major_tos_version(self) -> int:
         if self.tos_version is not None:

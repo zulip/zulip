@@ -218,7 +218,7 @@ class Message(AbstractMessage):
                 name="zerver_message_realm_sender_recipient",
             ),
             models.Index(
-                # For analytics queries
+                # For analytics and retention queries
                 "realm_id",
                 "date_sent",
                 name="zerver_message_realm_date_sent",
@@ -245,9 +245,8 @@ class Message(AbstractMessage):
                 condition=Q(is_channel_message=True),
             ),
             models.Index(
-                # Used by already_sent_mirrored_message_id, and when
-                # determining recent topics (we post-process to merge
-                # and show the most recent case)
+                # Used when determining recent topics (we post-process
+                # to merge and show the most recent case)
                 "realm_id",
                 "recipient_id",
                 "subject",
@@ -282,16 +281,6 @@ class Message(AbstractMessage):
 
     def set_topic_name(self, topic_name: str) -> None:
         self.subject = topic_name
-
-    def is_stream_message(self) -> bool:
-        """
-        Find out whether a message is a stream message by
-        looking up its recipient.type.  TODO: Make this
-        an easier operation by denormalizing the message
-        type onto Message, either explicitly (message.type)
-        or implicitly (message.stream_id is not None).
-        """
-        return self.recipient.type == Recipient.STREAM
 
     def get_realm(self) -> Realm:
         return self.realm

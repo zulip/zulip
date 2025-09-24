@@ -4,6 +4,7 @@ const assert = require("node:assert/strict");
 
 const events = require("./lib/events.cjs");
 const {make_user_group} = require("./lib/example_group.cjs");
+const {make_realm} = require("./lib/example_realm.cjs");
 const {mock_esm, set_global, with_overrides, zrequire} = require("./lib/namespace.cjs");
 const {make_stub} = require("./lib/stub.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
@@ -110,7 +111,7 @@ const {initialize: initialize_realm_user_settings_defaults} = zrequire(
 const {set_current_user, set_realm} = zrequire("state_data");
 const {initialize_user_settings} = zrequire("user_settings");
 
-const realm = {};
+const realm = make_realm();
 set_realm(realm);
 const current_user = {};
 set_current_user(current_user);
@@ -461,10 +462,8 @@ run_test("presence", ({override}) => {
     override(activity_ui, "update_presence_info", stub.f);
     dispatch(event);
     assert.equal(stub.num_calls, 1);
-    const args = stub.get_args("user_id", "presence", "server_time");
-    assert_same(args.user_id, event.user_id);
-    assert_same(args.presence, event.presence);
-    assert_same(args.server_time, event.server_timestamp);
+    const args = stub.get_args("presences");
+    assert_same(args.presences, event.presences);
 });
 
 run_test("reaction", ({override}) => {
@@ -555,8 +554,12 @@ run_test("channel_folders", ({override}) => {
 
     let event = event_fixtures.channel_folder__add;
     {
+        const stub = make_stub();
+        override(stream_ui_updates, "update_folder_dropdown_visibility", stub.f);
+
         dispatch(event);
 
+        assert.equal(stub.num_calls, 1);
         const folders = channel_folders.get_channel_folders();
         assert.equal(folders.length, 1);
         assert.equal(folders[0].id, event.channel_folder.id);
@@ -569,10 +572,17 @@ run_test("channel_folders", ({override}) => {
         override(stream_settings_ui, "update_channel_folder_name", stub.f);
         override(stream_list, "update_streams_sidebar", stub.f);
         override(stream_settings_ui, "reset_dropdown_set_to_archived_folder", stub.f);
+        const update_dropdown_visibility_stub = make_stub();
+        override(
+            stream_ui_updates,
+            "update_folder_dropdown_visibility",
+            update_dropdown_visibility_stub.f,
+        );
 
         dispatch(event);
 
         assert.equal(stub.num_calls, 3);
+        assert.equal(update_dropdown_visibility_stub.num_calls, 1);
         const folders = channel_folders.get_channel_folders(true);
         const args = stub.get_args("folder_id");
         assert_same(args.folder_id, event.channel_folder_id);

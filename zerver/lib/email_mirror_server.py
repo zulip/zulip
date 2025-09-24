@@ -31,8 +31,8 @@ from zerver.lib.exceptions import JsonableError, RateLimitedError
 from zerver.lib.logging_util import log_to_file
 from zerver.lib.queue import queue_json_publish_rollback_unsafe
 
+# We add a file handler to this later, once we've dropped privileges
 logger = logging.getLogger("zerver.lib.email_mirror")
-log_to_file(logger, settings.EMAIL_MIRROR_LOG_PATH)
 
 
 def send_to_postmaster(msg: email.message.Message) -> None:
@@ -174,9 +174,17 @@ class PermissionDroppingUnthreadedController(UnthreadedController):  # nocoverag
         if os.geteuid() == 0:
             assert self.user_id is not None
             assert self.group_id is not None
+            # We may have a logfile owned by root, from before we
+            # fixed it to be owned by zulip; chown it if it exists, so
+            # we don't fail below.
+            if os.path.exists(settings.EMAIL_LOG_PATH):
+                os.chown(settings.EMAIL_MIRROR_LOG_PATH, self.user_id, self.group_id)
+
             logger.info("Dropping privileges to uid %d / gid %d", self.user_id, self.group_id)
             os.setgid(self.group_id)
             os.setuid(self.user_id)
+
+        log_to_file(logger, settings.EMAIL_MIRROR_LOG_PATH)
 
         server = self.loop.create_server(
             self._factory_invoker,

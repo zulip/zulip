@@ -2,6 +2,7 @@
 
 const assert = require("node:assert/strict");
 
+const {make_realm} = require("./lib/example_realm.cjs");
 const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 
@@ -12,7 +13,7 @@ const is_content_editable = message_edit.is_content_editable;
 
 const stream_data = mock_esm("../src/stream_data");
 
-const realm = {};
+const realm = make_realm();
 set_realm(realm);
 const current_user = {};
 set_current_user(current_user);
@@ -52,6 +53,7 @@ run_test("is_content_editable", ({override}) => {
     // user, and that were successfully sent (i.e. no failed_request or local_id)
     const message = {
         sent_by_me: true,
+        submessages: [],
     };
 
     override(realm, "realm_allow_message_editing", false);
@@ -74,7 +76,7 @@ run_test("is_content_editable", ({override}) => {
     // Right now, we prevent users from editing widgets.
     message.submessages = ["/poll"];
     assert.equal(is_content_editable(message, 55), false);
-    delete message.submessages;
+    message.submessages = [];
     message.type = "private";
     assert.equal(is_content_editable(message, 45), false);
 

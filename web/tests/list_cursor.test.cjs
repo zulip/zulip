@@ -73,6 +73,7 @@ run_test("single item list", ({override}) => {
     override(conf.list, "find_li", () => $li_stub);
     override(cursor, "adjust_scroll", noop);
 
+    cursor.set_is_highlight_visible(true);
     cursor.go_to(valid_key);
 
     // Test prev/next, which should just silently do nothing.
@@ -106,6 +107,24 @@ run_test("multiple item list", ({override}) => {
     override(conf.list, "find_li", ({key}) => list_items[key]);
 
     cursor.go_to(2);
+    assert.equal(cursor.get_key(), 2);
+    assert.ok(!list_items[1].hasClass("highlight"));
+    // Selection is not highlighted until we want it to.
+    assert.ok(!list_items[2].hasClass("highlight"));
+    assert.ok(!list_items[3].hasClass("highlight"));
+
+    // Current selection is not highlighted until user wants
+    // to move the cursor.
+    // Also, cursor doesn't move if the selection was not
+    // previously highlighted.
+    cursor.next();
+    assert.equal(cursor.get_key(), 2);
+    assert.ok(!list_items[1].hasClass("highlight"));
+    assert.ok(list_items[2].hasClass("highlight"));
+    assert.ok(!list_items[3].hasClass("highlight"));
+    // Reset state
+    cursor.set_is_highlight_visible(false);
+    cursor.prev();
     assert.equal(cursor.get_key(), 2);
     assert.ok(!list_items[1].hasClass("highlight"));
     assert.ok(list_items[2].hasClass("highlight"));

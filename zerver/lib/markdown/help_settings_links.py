@@ -9,10 +9,6 @@ from typing_extensions import override
 
 from zerver.lib.markdown.priorities import PREPROCESSOR_PRIORITIES
 
-# There is a lot of duplicated code between this file and
-# help_relative_links.py. So if you're making a change here consider making
-# it there as well.
-
 REGEXP = re.compile(r"\{settings_tab\|(?P<setting_identifier>.*?)\}")
 
 
@@ -135,7 +131,7 @@ def getMarkdown(setting_type_name: str, setting_name: str, setting_link: str) ->
             return f"1. Navigate to the {relative_link} \
                     tab of the **{setting_type_name}** menu."
         return f"1. Go to {relative_link}."
-    return settings_markdown.format(
+    return settings_markdown.format(  # nocoverage
         setting_type_name=setting_type_name,
         setting_reference=f"**{setting_name}**",
     )

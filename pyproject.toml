@@ -1,7 +1,7 @@
 [project]
 name = "zulip-server"
 version = "0.1.0"
-requires-python = ">=3.10"
+requires-python = ">=3.10, <3.14"
 
 [dependency-groups]
 prod = [
@@ -23,7 +23,7 @@ prod = [
   "regex",
 
   # Needed for manage.py
-  "ipython",
+  "ipython<9",  # 9.0.0 requires Python ≥ 3.11
 
   # Needed for image processing and thumbnailing
   "pyvips",
@@ -206,11 +206,14 @@ prod = [
   "pynacl",
 
   # Character set detection for text/plain
-  "chardet>=5.1.0"
+  "chardet>=5.1.0",
+
+  # Better compression than zlib
+  "zstd",
 ]
 docs = [
   # Needed to build RTD docs
-  "sphinx",
+  "sphinx<8.2",  # 8.2.0 requires Python ≥ 3.11
   "sphinx-rtd-theme",
   "sphinx-design",
 
@@ -294,6 +297,7 @@ dev = [
   "types-requests",
   "types-requests-oauthlib",
   "types-uwsgi",
+  "types-zstd",
   "types-zxcvbn",
 
   # Needed for tools/check-thirdparty
@@ -316,10 +320,6 @@ dev = [
 no-binary-package = ["lxml", "xmlsec"]
 
 [tool.uv.sources]
-# https://github.com/typeddjango/django-stubs/pull/2738
-django-stubs = { url = "https://github.com/typeddjango/django-stubs/archive/9b2a9e83ee31dfd3de34a361e6098926014b599b.zip" }
-django-stubs-ext = { url = "https://github.com/typeddjango/django-stubs/archive/9b2a9e83ee31dfd3de34a361e6098926014b599b.zip", subdirectory = "ext" }
-
 # Forked to avoid pulling in scipy: https://github.com/mailgun/talon/pull/200
 # and chardet, cchardet: https://github.com/mailgun/talon/pull/239
 # and fix invalid escape sequences: https://github.com/mailgun/talon/pull/245
@@ -335,7 +335,7 @@ zulip = { url = "https://github.com/zulip/python-zulip-api/archive/9e131ac626976
 zulip-bots = { url = "https://github.com/zulip/python-zulip-api/archive/0.9.0.zip", subdirectory = "zulip_bots" }
 
 # zulip's linting framework - zulint
-zulint = { url = "https://github.com/zulip/zulint/archive/9be0a32bf75a9d8738b005f0b880567fff64e943.zip" }
+zulint = { url = "https://github.com/zulip/zulint/archive/448e36a1e50e79c82257ed3d65fcf5c8591cdb61.zip" }
 
 [tool.black]
 line-length = 100
@@ -366,12 +366,14 @@ warn_return_any = false
 # Enable optional errors.
 enable_error_code = [
     "redundant-self",
+    "deprecated",
     "redundant-expr",
     "truthy-bool",
     "truthy-iterable",
     "ignore-without-code",
     "unused-awaitable",
     "explicit-override",
+    "exhaustive-match",
 ]
 
 # Display the codes needed for # type: ignore[code] annotations.

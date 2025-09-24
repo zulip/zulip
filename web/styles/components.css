@@ -1,7 +1,7 @@
 /* Reusable, object-oriented CSS base components for all Zulip pages
    (both web app and portico). */
 
-& label.checkbox {
+label.checkbox {
     padding: 0;
     display: inline-block;
     position: relative;
@@ -10,7 +10,7 @@
 
     & input[type="checkbox"] {
         position: absolute;
-        clip: rect(0, 0, 0, 0);
+        clip-path: rect(0 0 0 0);
 
         ~ .rendered-checkbox {
             display: inline-block;

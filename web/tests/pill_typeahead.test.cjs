@@ -3,6 +3,7 @@
 const assert = require("node:assert/strict");
 
 const {make_user_group} = require("./lib/example_group.cjs");
+const {make_realm} = require("./lib/example_realm.cjs");
 const {zrequire, mock_esm} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 const blueslip = require("./lib/zblueslip.cjs");
@@ -24,11 +25,11 @@ const typeahead_helper = zrequire("typeahead_helper");
 
 const current_user = {};
 set_current_user(current_user);
-const realm = {
+const realm = make_realm({
     custom_profile_field_types: {
         PRONOUNS: {id: 8},
     },
-};
+});
 set_realm(realm);
 
 // set global test variables.
@@ -134,7 +135,6 @@ const denmark = {
     stream_id: 1,
     name: "Denmark",
     subscribed: true,
-    render_subscribers: true,
 };
 const denmark_item = stream_item(denmark);
 

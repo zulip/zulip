@@ -12,8 +12,6 @@ from unittest import mock
 from unittest.mock import patch
 
 import boto3.session
-import dns.rdtypes.ANY.TXT
-import dns.resolver
 import fakeldap
 import ldap
 import orjson
@@ -570,15 +568,6 @@ def write_instrumentation_reports(full_suite: bool, include_webhooks: bool) -> N
 
         untested_patterns -= exempt_patterns
 
-        # A lot of help/ URLs are part of the untested patterns, which
-        # is due to the switch to the new help center. We exempt them
-        # programmatically below.
-        untested_patterns = {
-            untested_pattern
-            for untested_pattern in untested_patterns
-            if not untested_pattern.startswith("help/")
-        }
-
         var_dir = "var"  # TODO make sure path is robust here
         fn = os.path.join(var_dir, "url_coverage.txt")
         with open(fn, "wb") as f:
@@ -587,7 +576,7 @@ def write_instrumentation_reports(full_suite: bool, include_webhooks: bool) -> N
         if full_suite:
             print(f"INFO: URL coverage report is in {fn}")
 
-        if full_suite and untested_patterns:  # nocoverage -- test suite error handling
+        if full_suite and len(untested_patterns):  # nocoverage -- test suite error handling
             print("\nERROR: Some URLs are untested!  Here's the list of untested URLs:")
             for untested_pattern in sorted(untested_patterns):
                 print(f"   {untested_pattern}")
@@ -805,16 +794,3 @@ def ratelimit_rule(
 def consume_response(response: HttpResponseBase) -> None:
     assert response.streaming
     collections.deque(response, maxlen=0)
-
-
-def dns_txt_answer(name_str: str, txt: str) -> dns.resolver.Answer:
-    name = dns.name.from_text(name_str)
-    rdclass = dns.rdataclass.IN
-    rdtype = dns.rdatatype.TXT
-    response = dns.message.make_query(
-        name, rdtype, rdclass, flags=dns.flags.QR | dns.flags.RA | dns.flags.RD
-    )
-    response.find_rrset(dns.message.ANSWER, name, rdclass, rdtype, create=True).add(
-        dns.rdtypes.ANY.TXT.TXT(rdclass, rdtype, txt)
-    )
-    return dns.resolver.Answer(name, rdtype, rdclass, response)

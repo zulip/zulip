@@ -1,9 +1,0 @@
-#!/usr/bin/env python3
-
-import subprocess
-
-subprocess.check_call(
-    ["/usr/local/bin/corepack", "pnpm", "run", "format"],
-    cwd="starlight_help",
-    stdout=subprocess.DEVNULL,
-)

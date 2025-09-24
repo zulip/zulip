@@ -77,7 +77,6 @@ from zerver.models import (
     UserProfile,
 )
 from zerver.models.recipients import get_direct_message_group_user_ids
-from zerver.models.streams import get_active_streams
 from zerver.models.users import (
     get_user_by_id_in_realm_including_cross_realm,
     get_user_including_cross_realm,
@@ -450,25 +449,6 @@ class NarrowBuilder:
 
     _alphanum = frozenset("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
 
-    def _pg_re_escape(self, pattern: str) -> str:
-        """
-        Escape user input to place in a regex
-
-        Python's re.escape escapes Unicode characters in a way which PostgreSQL
-        fails on, '\u03bb' to '\\\u03bb'. This function will correctly escape
-        them for PostgreSQL, '\u03bb' to '\\u03bb'.
-        """
-        s = list(pattern)
-        for i, c in enumerate(s):
-            if c not in self._alphanum:
-                if ord(c) >= 128:
-                    # convert the character to hex PostgreSQL regex will take
-                    # \uXXXX
-                    s[i] = f"\\u{ord(c):0>4x}"
-                else:
-                    s[i] = "\\" + c
-        return "".join(s)
-
     def by_channel(
         self, query: Select, operand: str | int, maybe_negate: ConditionTransform
     ) -> Select:
@@ -484,32 +464,6 @@ class NarrowBuilder:
                 raise BadNarrowOperatorError("unknown web-public channel " + str(operand))
         except Stream.DoesNotExist:
             raise BadNarrowOperatorError("unknown channel " + str(operand))
-
-        if self.realm.is_zephyr_mirror_realm:
-            # MIT users expect narrowing to "social" to also show messages to
-            # /^(un)*social(.d)*$/ (unsocial, ununsocial, social.d, ...).
-
-            # In `ok_to_include_history`, we assume that a non-negated
-            # `channel` term for a public channel will limit the query to
-            # that specific channel. So it would be a bug to hit this
-            # codepath after relying on this term there. But all channels in
-            # a Zephyr realm are private, so that doesn't happen.
-            assert not channel.is_public()
-
-            m = re.search(r"^(?:un)*(.+?)(?:\.d)*$", channel.name, re.IGNORECASE)
-            # Since the regex has a `.+` in it and "" is invalid as a
-            # channel name, this will always match
-            assert m is not None
-            base_channel_name = m.group(1)
-
-            matching_channels = get_active_streams(self.realm).filter(
-                name__iregex=rf"^(un)*{self._pg_re_escape(base_channel_name)}(\.d)*$"
-            )
-            recipient_ids = [
-                matching_channel.recipient_id for matching_channel in matching_channels
-            ]
-            cond = column("recipient_id", Integer).in_(recipient_ids)
-            return query.where(maybe_negate(cond))
 
         recipient_id = channel.recipient_id
         assert recipient_id is not None
@@ -534,47 +488,6 @@ class NarrowBuilder:
 
     def by_topic(self, query: Select, operand: str, maybe_negate: ConditionTransform) -> Select:
         self.check_not_both_channel_and_dm_narrow(maybe_negate, is_channel_narrow=True)
-
-        if self.realm.is_zephyr_mirror_realm:
-            # MIT users expect narrowing to topic "foo" to also show messages to /^foo(.d)*$/
-            # (foo, foo.d, foo.d.d, etc)
-            m = re.search(r"^(.*?)(?:\.d)*$", operand, re.IGNORECASE)
-            # Since the regex has a `.*` in it, this will always match
-            assert m is not None
-            base_topic = m.group(1)
-
-            # Additionally, MIT users expect the empty instance and
-            # instance "personal" to be the same.
-            if base_topic in ("", "personal", '(instance "")'):
-                cond: ClauseElement = or_(
-                    topic_match_sa(""),
-                    topic_match_sa(".d"),
-                    topic_match_sa(".d.d"),
-                    topic_match_sa(".d.d.d"),
-                    topic_match_sa(".d.d.d.d"),
-                    topic_match_sa("personal"),
-                    topic_match_sa("personal.d"),
-                    topic_match_sa("personal.d.d"),
-                    topic_match_sa("personal.d.d.d"),
-                    topic_match_sa("personal.d.d.d.d"),
-                    topic_match_sa('(instance "")'),
-                    topic_match_sa('(instance "").d'),
-                    topic_match_sa('(instance "").d.d'),
-                    topic_match_sa('(instance "").d.d.d'),
-                    topic_match_sa('(instance "").d.d.d.d'),
-                )
-            else:
-                # We limit `.d` counts, since PostgreSQL has much better
-                # query planning for this than they do for a regular
-                # expression (which would sometimes table scan).
-                cond = or_(
-                    topic_match_sa(base_topic),
-                    topic_match_sa(base_topic + ".d"),
-                    topic_match_sa(base_topic + ".d.d"),
-                    topic_match_sa(base_topic + ".d.d.d"),
-                    topic_match_sa(base_topic + ".d.d.d.d"),
-                )
-            return query.where(maybe_negate(cond))
 
         cond = topic_match_sa(operand)
         return query.where(maybe_negate(cond))
@@ -1128,7 +1041,6 @@ def get_base_query_for_search(
                     or_(
                         and_(
                             not_(literal_column("zerver_stream.invite_only", Boolean)),
-                            not_(literal_column("zerver_stream.is_in_zephyr_realm", Boolean)),
                             user_profile.can_access_public_streams(),
                         ),
                         literal_column("zerver_stream.can_subscribe_group_id").in_(

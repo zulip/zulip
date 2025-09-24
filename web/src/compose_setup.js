@@ -576,6 +576,12 @@ export function initialize() {
     });
 
     $("textarea#compose-textarea").on("focus", () => {
+        // To shortcut a delay otherwise introduced when the topic
+        // input is blurred, we immediately update the topic's
+        // displayed text and compose-area placeholder when the
+        // compose textarea is focused.
+        const $input = $("input#stream_message_recipient_topic");
+        compose_recipient.update_topic_displayed_text($input.val());
         compose_recipient.update_compose_area_placeholder_text();
         compose_fade.do_update_all();
         if (narrow_state.narrowed_by_reply()) {
@@ -594,40 +600,73 @@ export function initialize() {
 
     $("#compose_recipient_box").on("click", "#recipient_box_clear_topic_button", () => {
         const $input = $("input#stream_message_recipient_topic");
+        // This should work similar to just manually deleting the
+        // topic
         $input.val("");
         $input.trigger("focus");
+        // However, we should take care to update the conversation
+        // arrow, which would otherwise go missing when *general
+        // chat* is permitted.
+        compose_recipient.update_narrow_to_recipient_visibility();
         compose_validate.validate_and_update_send_button_status();
     });
 
+    // To track delayed effects originating from the "blur" event
+    // and its use of setTimeout, we need to set up a variable to
+    // reference the timeout's ID across events.
+    let recipient_focused_timeout;
     $("input#stream_message_recipient_topic").on("focus", () => {
+        // We don't want the `recently-focused` class removed via
+        // a setTimeout from the "blur" event, if we're suddenly
+        // focused again.
+        clearTimeout(recipient_focused_timeout);
+        const $compose_recipient = $("#compose-recipient");
         const $input = $("input#stream_message_recipient_topic");
         compose_recipient.update_topic_displayed_text($input.val(), true);
         compose_recipient.update_compose_area_placeholder_text();
         // When the topic input is focused, we no longer treat
         // the recipient row as low attention, as we assume the user
         // is doing something that requires keeping attention called
-        // to the recipient row
+        // to the recipient row.
         compose_recipient.set_high_attention_recipient_row();
-
-        $("input#stream_message_recipient_topic").one("blur", () => {
-            compose_recipient.update_topic_displayed_text($input.val());
-            compose_recipient.update_compose_area_placeholder_text();
-        });
+        $compose_recipient.addClass("recently-focused");
     });
 
     $("input#stream_message_recipient_topic").on("input", () => {
+        compose_recipient.update_placeholder_visibility();
         compose_recipient.update_compose_area_placeholder_text();
     });
 
     $("#private_message_recipient").on("focus", () => {
+        // We don't want the `.recently-focused` class removed via
+        // setTimeout from the "blur" event, if we're suddenly
+        // focused again.
+        clearTimeout(recipient_focused_timeout);
+        const $compose_recipient = $("#compose-recipient");
         // When the DM input is focused, we no longer treat
         // the recipient row as low attention, as we assume the user
         // is doing something that requires keeping attention called
         // to the recipient row
         compose_recipient.set_high_attention_recipient_row();
+        $compose_recipient.addClass("recently-focused");
     });
 
     $("input#stream_message_recipient_topic, #private_message_recipient").on("blur", () => {
+        const $compose_recipient = $("#compose-recipient");
+        const $input = $("input#stream_message_recipient_topic");
+        // To correct for an edge case when clearing the topic box
+        // via the left sidebar, we do the following actions after a
+        // delay; these will not have an effect for DMs, and so can
+        // safely be referenced here. Note, too, that if focus shifts
+        // immediately from the topic box to the compose textarea,
+        // we update these things immediately so that no delay is
+        // apparent on the topic's displayed text or the placeholder
+        // in the empty compose textarea.
+        recipient_focused_timeout = setTimeout(() => {
+            compose_recipient.update_topic_displayed_text($input.val());
+            compose_recipient.update_compose_area_placeholder_text();
+            $compose_recipient.removeClass("recently-focused");
+        }, 500);
         compose_recipient.update_recipient_row_attention_level();
     });
 

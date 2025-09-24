@@ -1,8 +1,8 @@
 import {Uppy} from "@uppy/core";
 import DragDrop from "@uppy/drag-drop";
 import Tus from "@uppy/tus";
-import "@uppy/core/dist/style.min.css";
-import "@uppy/drag-drop/dist/style.min.css";
+import "@uppy/core/css/style.min.css";
+import "@uppy/drag-drop/css/style.min.css";
 import $ from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
@@ -457,6 +457,7 @@ $(() => {
             $("#slack-import-start-upload-wrapper").removeClass("hidden");
             $("#slack-import-uploaded-file-name").text(file.name!);
             $("#slack-import-file-upload-error").text("");
+            $("#realm-creation-form-slack-import .register-button").prop("disabled", false);
         });
         // Reset uppy state to allow user replace existing uploaded file.
         uppy.on("complete", () => {
@@ -495,6 +496,19 @@ $(() => {
     });
 
     if ($("a#deactivated-org-auto-redirect").length > 0) {
+        // Update the href of the deactivated organization auto-redirect link
+        // to include the current URL hash, if it exists.
+        const $deactivated_org_auto_redirect = $("a#deactivated-org-auto-redirect");
+        let new_org_url = $deactivated_org_auto_redirect.attr("href")!;
+        const url_hash = window.location.hash;
+        if (url_hash.startsWith("#")) {
+            // Ensure we don't double-add hashes and handle query parameters properly
+            const url = new URL(new_org_url);
+            url.hash = url_hash;
+            new_org_url = url.toString();
+        }
+        $deactivated_org_auto_redirect.attr("href", new_org_url);
+
         // This is a special case for the deactivated organization page,
         // where we want to redirect to the login page after 5 seconds.
         const interval_id = setInterval(() => {
@@ -503,7 +517,8 @@ $(() => {
             if (current_countdown > 0) {
                 $countdown_elt.text((current_countdown - 1).toString());
             } else {
-                window.location.href = $("a#deactivated-org-auto-redirect").attr("href")!;
+                const new_org_url = $deactivated_org_auto_redirect.attr("href")!;
+                window.location.href = new_org_url;
                 clearInterval(interval_id);
             }
         }, 1000);

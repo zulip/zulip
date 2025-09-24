@@ -55,21 +55,31 @@ export function postprocess_content(html: string): string {
         if (elt.querySelector("img") || elt.querySelector("video")) {
             // We want a class to refer to media links
             elt.classList.add("media-anchor-element");
-            // Add a class to the video, if it exists
+
+            // Replace the legacy .message_inline_image class, whose
+            // name would add confusion when Zulip supports inline
+            // images via standard Markdown, with dedicated classes
+            // for video and image previews.
             if (elt.querySelector("video")) {
-                elt.querySelector("video")?.classList.add("media-video-element");
+                elt.parentElement?.classList.replace(
+                    "message_inline_image",
+                    "message-media-preview-video",
+                );
+                elt
+                    .querySelector("video")
+                    ?.classList.add("media-video-element", "media-image-element");
+            } else {
+                elt.parentElement?.classList.replace(
+                    "message_inline_image",
+                    "message-media-preview-image",
+                );
             }
-            // Add a class to the image, if it exists
+
+            // This code path adds the media-image-element class to
+            // both image preview elements and video thumbnails.
             if (elt.querySelector("img")) {
                 elt.querySelector("img")?.classList.add("media-image-element");
             }
-        }
-
-        if (elt.querySelector("video")) {
-            // We want a class to refer to media links
-            elt.classList.add("media-anchor-element");
-            // And likewise a class to refer to image elements
-            elt.querySelector("video")?.classList.add("media-image-element");
         }
 
         // Update older, smaller default.jpg YouTube preview images
@@ -89,7 +99,10 @@ export function postprocess_content(html: string): string {
             elt.classList.add("message-embed-title-link");
         }
 
-        if (elt.parentElement?.classList.contains("message_inline_image")) {
+        if (
+            elt.parentElement?.classList.contains("message-media-preview-image") ||
+            elt.parentElement?.classList.contains("message-media-preview-video")
+        ) {
             // For inline images we want to handle the tooltips explicitly, and disable
             // the browser's built in handling of the title attribute.
             const title = elt.getAttribute("title");
@@ -198,19 +211,6 @@ export function postprocess_content(html: string): string {
         }
     }
 
-    for (const audio of template.content.querySelectorAll("audio")) {
-        const audio_wrapper = inertDocument.createElement("span");
-        audio_wrapper.classList.add("media-audio-wrapper");
-        // We want a class to refer to audio elements
-        audio.classList.add("media-audio-element");
-        audio_wrapper.append(audio.cloneNode());
-        // Now we'll use a template to build additional DOM
-        // structures out of the original <audio> element
-        // const audio_html_string = audio.outerHTML;
-        // const rendered_audio_html = render_markdown_audio({audio_html: audio_html_string});
-        audio.replaceWith(audio_wrapper);
-    }
-
     for (const ol of template.content.querySelectorAll("ol")) {
         const list_start = Number(ol.getAttribute("start") ?? 1);
         // We don't count the first item in the list, as it
@@ -226,7 +226,7 @@ export function postprocess_content(html: string): string {
     }
 
     for (const inline_img of template.content.querySelectorAll<HTMLImageElement>(
-        "div.message_inline_image > a > img",
+        ".message-media-preview-image img",
     )) {
         inline_img.setAttribute("loading", "lazy");
         // We can't just check whether `inline_image.src` starts with
@@ -240,7 +240,7 @@ export function postprocess_content(html: string): string {
             // If the image source URL can't be parsed, likely due to
             // some historical bug in the Markdown processor, just
             // drop the invalid image element.
-            inline_img.closest("div.message_inline_image")!.remove();
+            inline_img.closest(".message-media-preview-image")!.remove();
             continue;
         }
 
@@ -262,7 +262,7 @@ export function postprocess_content(html: string): string {
                     // If we're showing a still thumbnail, show a play
                     // button so that users that it can be played.
                     inline_img
-                        .closest(".message_inline_image")!
+                        .closest(".message-media-preview-image")!
                         .classList.add("message_inline_animated_image_still");
                 }
             }
@@ -271,10 +271,10 @@ export function postprocess_content(html: string): string {
     }
 
     // After all other processing on images has been done, we look for
-    // adjacent images and tuck them structurally into galleries.
-    // This will also process uploaded video thumbnails, which likewise
-    // take the `.message_inline_image` class
-    for (const elt of template.content.querySelectorAll(".message_inline_image")) {
+    // adjacent images and videos, and tuck them structurally into galleries.
+    for (const elt of template.content.querySelectorAll(
+        ".message-media-preview-image, .message-media-preview-video",
+    )) {
         let gallery_element;
 
         const is_part_of_open_gallery = elt.previousElementSibling?.classList.contains(

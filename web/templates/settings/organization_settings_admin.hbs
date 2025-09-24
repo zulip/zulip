@@ -34,11 +34,6 @@
                   value_type="number"
                   custom_classes="decorated-stream-name-dropdown-widget"}}
 
-                {{> settings_checkbox
-                  setting_name="realm_send_welcome_emails"
-                  prefix="id_"
-                  is_checked=realm_send_welcome_emails
-                  label=admin_settings_label.realm_send_welcome_emails}}
                 {{#if settings_send_digest_emails }}
                 {{> settings_checkbox
                   setting_name="realm_digest_emails_enabled"
@@ -62,6 +57,15 @@
                     </select>
                 </div>
 
+            </div>
+        </div>
+
+        <div id="org-onboarding" class="settings-subsection-parent">
+            <div class="subsection-header">
+                <h3>{{t "Onboarding" }}</h3>
+                {{> settings_save_discard_widget section_name="onboarding" }}
+            </div>
+            <div class="inline-block organization-settings-parent">
                 {{> settings_checkbox
                   setting_name="realm_enable_welcome_message_custom_text"
                   prefix="id_"
@@ -80,6 +84,11 @@
                     </div>
                 </div>
 
+                {{> settings_checkbox
+                  setting_name="realm_send_welcome_emails"
+                  prefix="id_"
+                  is_checked=realm_send_welcome_emails
+                  label=admin_settings_label.realm_send_welcome_emails}}
             </div>
         </div>
 

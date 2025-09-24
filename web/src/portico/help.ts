@@ -9,8 +9,6 @@ import * as common from "../common.ts";
 import {show_copied_confirmation} from "../copied_tooltip.ts";
 import * as util from "../util.ts";
 
-import {activate_correct_tab} from "./tabbed-instructions.ts";
-
 function register_tabbed_section($tabbed_section: JQuery): void {
     const $li = $tabbed_section.find("ul.nav li");
     const $blocks = $tabbed_section.find(".blocks div");
@@ -33,7 +31,7 @@ function register_tabbed_section($tabbed_section: JQuery): void {
 }
 
 // Display the copy-to-clipboard button inside the .codehilite element
-// within the API and Help Center docs using clipboard.js
+// within the API and help center docs using clipboard.js
 function add_copy_to_clipboard_element($codehilite: JQuery): void {
     const $copy_button = $("<span>").addClass("copy-button copy-codeblock");
     $copy_button.html(zulip_copy_icon());
@@ -66,7 +64,6 @@ function add_copy_to_clipboard_element($codehilite: JQuery): void {
 
 function render_tabbed_sections(): void {
     $(".tabbed-section").each(function () {
-        activate_correct_tab($(this));
         register_tabbed_section($(this));
     });
 

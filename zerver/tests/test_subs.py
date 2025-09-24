@@ -239,7 +239,6 @@ class StreamAdminTest(ZulipTestCase):
         self.assert_json_error(result, "Channel content access is required.")
 
         stream = self.subscribe(user_profile, "private_stream_1")
-        self.assertFalse(stream.is_in_zephyr_realm)
 
         do_change_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
         params = {
@@ -300,7 +299,7 @@ class StreamAdminTest(ZulipTestCase):
         stream = self.subscribe(user_profile, "private_stream_3", invite_only=True)
         do_change_user_role(user_profile, UserProfile.ROLE_REALM_OWNER, acting_user=None)
         nobody_group = NamedUserGroup.objects.get(
-            name=SystemGroups.NOBODY, realm=realm, is_system_group=True
+            name=SystemGroups.NOBODY, realm_for_sharding=realm, is_system_group=True
         )
         do_change_realm_permission_group_setting(
             realm,
@@ -389,7 +388,7 @@ class StreamAdminTest(ZulipTestCase):
         stream = self.subscribe(user_profile, "public_stream_3")
         do_change_user_role(user_profile, UserProfile.ROLE_REALM_OWNER, acting_user=None)
         nobody_group = NamedUserGroup.objects.get(
-            name=SystemGroups.NOBODY, realm=realm, is_system_group=True
+            name=SystemGroups.NOBODY, realm_for_sharding=realm, is_system_group=True
         )
         do_change_realm_permission_group_setting(
             realm,
@@ -427,6 +426,8 @@ class StreamAdminTest(ZulipTestCase):
             )
         ]
 
+        request_settings_dict = dict.fromkeys(Stream.stream_permission_group_settings)
+
         self.assertFalse(user_profile.can_create_web_public_streams())
         self.assertTrue(owner.can_create_web_public_streams())
         # As per can_create_web_public_channel_group, only owners
@@ -436,6 +437,7 @@ class StreamAdminTest(ZulipTestCase):
                 streams_raw,
                 user_profile,
                 autocreate=True,
+                request_settings_dict=request_settings_dict,
             )
 
         with self.settings(WEB_PUBLIC_STREAMS_ENABLED=False):
@@ -446,12 +448,14 @@ class StreamAdminTest(ZulipTestCase):
                     streams_raw,
                     owner,
                     autocreate=True,
+                    request_settings_dict=request_settings_dict,
                 )
 
         existing_streams, new_streams = list_to_streams(
             streams_raw,
             owner,
             autocreate=True,
+            request_settings_dict=request_settings_dict,
         )
 
         self.assert_length(new_streams, 3)
@@ -463,44 +467,6 @@ class StreamAdminTest(ZulipTestCase):
         self.assertEqual(actual_stream_descriptions, set(stream_descriptions))
         for stream in new_streams:
             self.assertTrue(stream.is_web_public)
-
-    def test_make_stream_public_zephyr_mirror(self) -> None:
-        user_profile = self.mit_user("starnine")
-        self.login_user(user_profile)
-        realm = user_profile.realm
-        self.make_stream("target_stream", realm=realm, invite_only=True)
-        self.subscribe(user_profile, "target_stream")
-
-        do_change_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
-        params = {
-            "is_private": orjson.dumps(False).decode(),
-        }
-        stream_id = get_stream("target_stream", realm).id
-        result = self.client_patch(f"/json/streams/{stream_id}", params, subdomain="zephyr")
-        self.assert_json_success(result)
-        stream = get_stream("target_stream", realm)
-        self.assertFalse(stream.invite_only)
-        self.assertFalse(stream.history_public_to_subscribers)
-
-        messages = get_topic_messages(user_profile, stream, "channel events")
-        self.assert_length(messages, 1)
-        expected_notification = (
-            f"@_**{user_profile.full_name}|{user_profile.id}** changed the [access permissions](/help/channel-permissions) "
-            "for this channel from **Private, protected history** to **Public, protected history**."
-        )
-        self.assertEqual(messages[0].content, expected_notification)
-
-        realm_audit_log = RealmAuditLog.objects.filter(
-            event_type=AuditLogEventType.CHANNEL_PROPERTY_CHANGED,
-            modified_stream=stream,
-        ).last()
-        assert realm_audit_log is not None
-        expected_extra_data = {
-            RealmAuditLog.OLD_VALUE: True,
-            RealmAuditLog.NEW_VALUE: False,
-            "property": "invite_only",
-        }
-        self.assertEqual(realm_audit_log.extra_data, expected_extra_data)
 
     def test_make_stream_private_with_public_history(self) -> None:
         # Convert a public stream to a private stream with shared history
@@ -603,7 +569,7 @@ class StreamAdminTest(ZulipTestCase):
             "history_public_to_subscribers": orjson.dumps(True).decode(),
         }
         owners_group = NamedUserGroup.objects.get(
-            name=SystemGroups.OWNERS, realm=realm, is_system_group=True
+            name=SystemGroups.OWNERS, realm_for_sharding=realm, is_system_group=True
         )
         do_change_realm_permission_group_setting(
             realm,
@@ -616,7 +582,7 @@ class StreamAdminTest(ZulipTestCase):
         self.assert_json_error(result, "Insufficient permission")
 
         nobody_group = NamedUserGroup.objects.get(
-            name=SystemGroups.NOBODY, realm=realm, is_system_group=True
+            name=SystemGroups.NOBODY, realm_for_sharding=realm, is_system_group=True
         )
         do_change_realm_permission_group_setting(
             realm,
@@ -937,7 +903,7 @@ class StreamAdminTest(ZulipTestCase):
             attachment.refresh_from_db()
             self.assertFalse(attachment.is_realm_public)
             nobody_group = NamedUserGroup.objects.get(
-                name="role:nobody", is_system_group=True, realm=realm
+                name="role:nobody", is_system_group=True, realm_for_sharding=realm
             )
             do_change_stream_group_based_setting(
                 private_stream_public_history, setting_name, nobody_group, acting_user=cordelia
@@ -987,7 +953,7 @@ class StreamAdminTest(ZulipTestCase):
             attachment.refresh_from_db()
 
             nobody_group = NamedUserGroup.objects.get(
-                name="role:nobody", is_system_group=True, realm=realm
+                name="role:nobody", is_system_group=True, realm_for_sharding=realm
             )
             do_change_stream_group_based_setting(
                 private_stream_protected_history, setting_name, nobody_group, acting_user=cordelia
@@ -1016,18 +982,16 @@ class StreamAdminTest(ZulipTestCase):
             attachment.refresh_from_db()
             self.assertFalse(attachment.is_realm_public)
             nobody_group = NamedUserGroup.objects.get(
-                name="role:nobody", is_system_group=True, realm=realm
+                name="role:nobody", is_system_group=True, realm_for_sharding=realm
             )
             do_change_stream_group_based_setting(
                 private_stream_protected_history, setting_name, nobody_group, acting_user=cordelia
             )
 
     def test_try_make_stream_public_with_private_history(self) -> None:
-        # We only support public streams with private history if
-        # is_zephyr_mirror_realm, and don't allow changing stream
-        # permissions in such realms.  So changing the
-        # history_public_to_subscribers property of a public stream is
-        # not possible in Zulip today
+        # We don't support public streams with private history, so
+        # changing the history_public_to_subscribers property of a
+        # public stream is not possible in Zulip today
         user_profile = self.example_user("hamlet")
         self.login_user(user_profile)
         realm = user_profile.realm
@@ -1162,7 +1126,7 @@ class StreamAdminTest(ZulipTestCase):
         desdemona = self.example_user("desdemona")
         channel = get_stream("Denmark", desdemona.realm)
         moderators_group = NamedUserGroup.objects.get(
-            name=SystemGroups.MODERATORS, realm=channel.realm, is_system_group=True
+            name=SystemGroups.MODERATORS, realm_for_sharding=channel.realm, is_system_group=True
         )
         self.login_user(desdemona)
         do_deactivate_stream(channel, acting_user=desdemona)
@@ -1501,7 +1465,7 @@ class StreamAdminTest(ZulipTestCase):
         self.assertIn(self.example_user("prospero").id, notified_user_ids)
         self.assertNotIn(self.example_user("polonius").id, notified_user_ids)
         nobody_group = NamedUserGroup.objects.get(
-            name="role:nobody", is_system_group=True, realm=realm
+            name="role:nobody", is_system_group=True, realm_for_sharding=realm
         )
         do_change_stream_group_based_setting(
             stream_name_1,
@@ -1671,7 +1635,7 @@ class StreamAdminTest(ZulipTestCase):
         iago = self.example_user("iago")
         hamlet = self.example_user("hamlet")
         nobody_group = NamedUserGroup.objects.get(
-            name="role:nobody", is_system_group=True, realm=hamlet.realm
+            name="role:nobody", is_system_group=True, realm_for_sharding=hamlet.realm
         )
 
         self.login_user(hamlet)
@@ -2064,10 +2028,10 @@ class StreamAdminTest(ZulipTestCase):
         permission_config = Stream.stream_permission_group_settings[setting_name]
 
         nobody_group = NamedUserGroup.objects.get(
-            name="role:nobody", is_system_group=True, realm=realm
+            name="role:nobody", is_system_group=True, realm_for_sharding=realm
         )
         moderators_system_group = NamedUserGroup.objects.get(
-            name="role:moderators", realm=realm, is_system_group=True
+            name="role:moderators", realm_for_sharding=realm, is_system_group=True
         )
         params = {}
 
@@ -2081,7 +2045,9 @@ class StreamAdminTest(ZulipTestCase):
         stream = get_stream("stream_name1", realm)
         self.assertEqual(getattr(stream, setting_name).id, moderators_system_group.id)
 
-        hamletcharacters_group = NamedUserGroup.objects.get(name="hamletcharacters", realm=realm)
+        hamletcharacters_group = NamedUserGroup.objects.get(
+            name="hamletcharacters", realm_for_sharding=realm
+        )
         params[setting_name] = orjson.dumps({"new": hamletcharacters_group.id}).decode()
         result = self.client_patch(
             f"/json/streams/{stream.id}",
@@ -2132,7 +2098,7 @@ class StreamAdminTest(ZulipTestCase):
         )
 
         owners_group = NamedUserGroup.objects.get(
-            name="role:owners", is_system_group=True, realm=realm
+            name="role:owners", is_system_group=True, realm_for_sharding=realm
         )
         params[setting_name] = orjson.dumps({"new": owners_group.id}).decode()
         result = self.client_patch(f"/json/streams/{stream.id}", params)
@@ -2150,7 +2116,7 @@ class StreamAdminTest(ZulipTestCase):
         self.assertEqual(getattr(stream, setting_name).id, nobody_group.id)
 
         everyone_group = NamedUserGroup.objects.get(
-            name="role:everyone", is_system_group=True, realm=realm
+            name="role:everyone", is_system_group=True, realm_for_sharding=realm
         )
         params[setting_name] = orjson.dumps({"new": everyone_group.id}).decode()
         result = self.client_patch(
@@ -2168,7 +2134,7 @@ class StreamAdminTest(ZulipTestCase):
             )
 
         internet_group = NamedUserGroup.objects.get(
-            name="role:internet", is_system_group=True, realm=realm
+            name="role:internet", is_system_group=True, realm_for_sharding=realm
         )
         params[setting_name] = orjson.dumps({"new": internet_group.id}).decode()
         result = self.client_patch(
@@ -2299,7 +2265,7 @@ class StreamAdminTest(ZulipTestCase):
         realm = user.realm
         self.login_user(user)
         owners_system_group = NamedUserGroup.objects.get(
-            realm=realm, name=SystemGroups.OWNERS, is_system_group=True
+            realm_for_sharding=realm, name=SystemGroups.OWNERS, is_system_group=True
         )
         do_change_realm_permission_group_setting(
             realm,
@@ -2345,10 +2311,10 @@ class StreamAdminTest(ZulipTestCase):
         stream = self.subscribe(desdemona, "stream_name1")
 
         everyone_group = NamedUserGroup.objects.get(
-            name=SystemGroups.EVERYONE, realm=realm, is_system_group=True
+            name=SystemGroups.EVERYONE, realm_for_sharding=realm, is_system_group=True
         )
         moderators_group = NamedUserGroup.objects.get(
-            name=SystemGroups.MODERATORS, realm=realm, is_system_group=True
+            name=SystemGroups.MODERATORS, realm_for_sharding=realm, is_system_group=True
         )
         self.login("desdemona")
         result = self.client_patch(
@@ -2369,7 +2335,7 @@ class StreamAdminTest(ZulipTestCase):
         self.assertEqual(messages[-1].content, expected_notification)
 
         owners_group = NamedUserGroup.objects.get(
-            name=SystemGroups.OWNERS, realm=realm, is_system_group=True
+            name=SystemGroups.OWNERS, realm_for_sharding=realm, is_system_group=True
         )
         hamlet = self.example_user("hamlet")
         result = self.client_patch(
@@ -2402,7 +2368,9 @@ class StreamAdminTest(ZulipTestCase):
         )
         self.assertEqual(messages[-1].content, expected_notification)
 
-        hamletcharacters_group = NamedUserGroup.objects.get(name="hamletcharacters", realm=realm)
+        hamletcharacters_group = NamedUserGroup.objects.get(
+            name="hamletcharacters", realm_for_sharding=realm
+        )
         result = self.client_patch(
             f"/json/streams/{stream.id}",
             {
@@ -2433,7 +2401,7 @@ class StreamAdminTest(ZulipTestCase):
         self.assertEqual(messages[-1].content, expected_notification)
 
         nobody_group = NamedUserGroup.objects.get(
-            name=SystemGroups.NOBODY, realm=realm, is_system_group=True
+            name=SystemGroups.NOBODY, realm_for_sharding=realm, is_system_group=True
         )
         result = self.client_patch(
             f"/json/streams/{stream.id}",
@@ -3521,7 +3489,7 @@ class SubscriptionAPITest(ZulipTestCase):
         user.save()
 
         members_group = NamedUserGroup.objects.get(
-            name=SystemGroups.MEMBERS, realm=realm, is_system_group=True
+            name=SystemGroups.MEMBERS, realm_for_sharding=realm, is_system_group=True
         )
         bulk_add_members_to_user_groups([members_group], [user.id], acting_user=None)
         self.subscribe_via_post(
@@ -3621,7 +3589,7 @@ class SubscriptionAPITest(ZulipTestCase):
         realm = cordelia.realm
 
         admins_group = NamedUserGroup.objects.get(
-            name=SystemGroups.ADMINISTRATORS, realm=realm, is_system_group=True
+            name=SystemGroups.ADMINISTRATORS, realm_for_sharding=realm, is_system_group=True
         )
         do_change_realm_permission_group_setting(
             realm, stream_policy, admins_group.usergroup_ptr, acting_user=None
@@ -3638,7 +3606,7 @@ class SubscriptionAPITest(ZulipTestCase):
         self.subscribe_via_post(iago, ["new_stream1"], invite_only=invite_only)
 
         full_members_group = NamedUserGroup.objects.get(
-            name=SystemGroups.FULL_MEMBERS, realm=realm, is_system_group=True
+            name=SystemGroups.FULL_MEMBERS, realm_for_sharding=realm, is_system_group=True
         )
         do_change_realm_permission_group_setting(
             realm, stream_policy, full_members_group, acting_user=None
@@ -3845,7 +3813,7 @@ class SubscriptionAPITest(ZulipTestCase):
         # Now add ourselves
         with (
             self.capture_send_event_calls(expected_num_events=2) as events,
-            self.assert_database_query_count(20),
+            self.assert_database_query_count(17),
         ):
             self.subscribe_via_post(
                 self.test_user,
@@ -3967,7 +3935,7 @@ class SubscriptionAPITest(ZulipTestCase):
 
         iago = self.example_user("iago")
         admins_group = NamedUserGroup.objects.get(
-            name=SystemGroups.ADMINISTRATORS, realm=realm, is_system_group=True
+            name=SystemGroups.ADMINISTRATORS, realm_for_sharding=realm, is_system_group=True
         )
         do_change_stream_group_based_setting(
             stream, "can_send_message_group", admins_group, acting_user=iago
@@ -3981,7 +3949,7 @@ class SubscriptionAPITest(ZulipTestCase):
         self.assertEqual(json["already_subscribed"], {})
 
         moderators_group = NamedUserGroup.objects.get(
-            name=SystemGroups.MODERATORS, realm=realm, is_system_group=True
+            name=SystemGroups.MODERATORS, realm_for_sharding=realm, is_system_group=True
         )
         setting_group_member_dict = UserGroupMembersData(
             direct_members=[self.example_user("cordelia").id],
@@ -4318,70 +4286,6 @@ class SubscriptionAPITest(ZulipTestCase):
             self.assert_length(event_stream_objects, 1)
             self.assertEqual(event_stream_objects[0]["stream_id"], private.id)
 
-    def test_bulk_subscribe_MIT(self) -> None:
-        mit_user = self.mit_user("starnine")
-        num_streams = 15
-
-        realm = get_realm("zephyr")
-        stream_names = [f"stream_{i}" for i in range(num_streams)]
-        streams = [self.make_stream(stream_name, realm=realm) for stream_name in stream_names]
-
-        for stream in streams:
-            stream.is_in_zephyr_realm = True
-            stream.save(update_fields=["is_in_zephyr_realm"])
-
-        # Verify that peer_event events are never sent in Zephyr
-        # realm. This does generate stream creation events from
-        # send_stream_creation_events_for_previously_inaccessible_streams.
-        with self.assert_database_query_count(num_streams + 19):
-            with self.capture_send_event_calls(expected_num_events=num_streams + 1) as events:
-                self.subscribe_via_post(
-                    mit_user,
-                    stream_names,
-                    dict(principals=orjson.dumps([mit_user.id]).decode()),
-                    subdomain="zephyr",
-                )
-            # num_streams stream creation events:
-            self.assertEqual(
-                {(event["event"]["type"], event["event"]["op"]) for event in events[0:num_streams]},
-                {("stream", "create")},
-            )
-            # Followed by one subscription event:
-            self.assertEqual(events[num_streams]["event"]["type"], "subscription")
-
-        with self.capture_send_event_calls(expected_num_events=2):
-            bulk_remove_subscriptions(
-                realm,
-                users=[mit_user],
-                streams=streams,
-                acting_user=None,
-            )
-
-    def test_subscribe_others_to_public_stream_in_zephyr_realm(self) -> None:
-        """
-        Users cannot be subscribed to public streams by other users in zephyr realm.
-        """
-        starnine = self.mit_user("starnine")
-        espuser = self.mit_user("espuser")
-
-        realm = get_realm("zephyr")
-        stream = self.make_stream("stream_1", realm=realm)
-        stream.is_in_zephyr_realm = True
-        stream.save(update_fields=["is_in_zephyr_realm"])
-
-        result = self.subscribe_via_post(
-            starnine,
-            ["stream_1"],
-            dict(principals=orjson.dumps([starnine.id, espuser.id]).decode()),
-            subdomain="zephyr",
-            allow_fail=True,
-        )
-        self.assert_json_error(
-            result,
-            "You can only invite other Zephyr mirroring users to private channels.",
-            status_code=400,
-        )
-
     def test_bulk_subscribe_many(self) -> None:
         # Create a whole bunch of streams
         streams = [f"stream_{i}" for i in range(30)]
@@ -4414,9 +4318,9 @@ class SubscriptionAPITest(ZulipTestCase):
         test_user_ids = [user.id for user in test_users]
 
         with (
-            self.assert_database_query_count(23),
+            self.assert_database_query_count(20),
             self.assert_memcached_count(11),
-            mock.patch("zerver.views.streams.send_messages_for_new_subscribers"),
+            mock.patch("zerver.views.streams.send_user_subscribed_and_new_channel_notifications"),
         ):
             self.subscribe_via_post(
                 desdemona,
@@ -4747,7 +4651,7 @@ class SubscriptionAPITest(ZulipTestCase):
         realm_name = "no_othello_allowed"
         realm = do_create_realm(realm_name, "Everyone but Othello is allowed")
         nobody_group = NamedUserGroup.objects.get(
-            name="role:nobody", is_system_group=True, realm=realm
+            name="role:nobody", is_system_group=True, realm_for_sharding=realm
         )
         stream_dict = {
             "name": "publicstream",
@@ -4985,8 +4889,12 @@ class SubscriptionAPITest(ZulipTestCase):
 
     def test_notification_bot_dm_on_subscription(self) -> None:
         desdemona = self.example_user("desdemona")
+        realm = desdemona.realm
         self.login_user(desdemona)
-
+        bot = self.notification_bot(realm)
+        test_channel = self.make_stream("test A")
+        announce = realm.new_stream_announcements_stream
+        assert announce is not None
         user_ids = [
             desdemona.id,
             self.example_user("cordelia").id,
@@ -4995,19 +4903,192 @@ class SubscriptionAPITest(ZulipTestCase):
             self.example_user("iago").id,
             self.example_user("prospero").id,
         ]
-
+        principals_dict = dict(
+            principals=orjson.dumps(user_ids).decode(), announce=orjson.dumps(True).decode()
+        )
+        # When subscribing to an already existing channel with announce=True,
+        # the bot should send DMs to all the newly subscribed users, but
+        # no announcement message.
+        now = timezone_now()
         response = self.subscribe_via_post(
-            desdemona, ["Test stream 1"], dict(principals=orjson.dumps(user_ids).decode())
+            desdemona,
+            [test_channel.name],
+            principals_dict,
         )
         data = self.assert_json_success(response)
         self.assertEqual(data["new_subscription_messages_sent"], True)
 
+        notification_bot_dms = Message.objects.filter(
+            realm_id=realm.id,
+            sender=bot.id,
+            recipient__type=Recipient.PERSONAL,
+            date_sent__gt=now,
+        )
+        self.assert_length(notification_bot_dms, 5)
+        notif_bot_dm_recipients = [
+            dm["recipient__type_id"] for dm in notification_bot_dms.values("recipient__type_id")
+        ]
+        self.assertSetEqual(
+            {id for id in user_ids if id != desdemona.id}, set(notif_bot_dm_recipients)
+        )
+
+        announcement_channel_message = Message.objects.filter(
+            realm_id=realm.id,
+            sender=bot.id,
+            recipient__type=Recipient.STREAM,
+            recipient__type_id=announce.id,
+            date_sent__gt=now,
+        )
+        self.assertEqual(announcement_channel_message.count(), 0)
+
+        # When subscribing to a newly created channel with announce=True,
+        # we expect an announcement message and new channel message,
+        # but no DM notifications.
+        now = timezone_now()
+        response = self.subscribe_via_post(
+            desdemona,
+            ["test B"],
+            principals_dict,
+        )
+        data = self.assert_json_success(response)
+        self.assertEqual(data["new_subscription_messages_sent"], True)
+
+        notification_bot_dms = Message.objects.filter(
+            realm_id=realm.id,
+            sender=bot.id,
+            recipient__type=Recipient.PERSONAL,
+            date_sent__gt=now,
+        )
+        self.assertEqual(notification_bot_dms.count(), 0)
+
+        announcement_channel_message = Message.objects.filter(
+            realm_id=realm.id,
+            sender=bot.id,
+            recipient__type=Recipient.STREAM,
+            recipient__type_id=announce.id,
+            date_sent__gt=now,
+        )
+        self.assert_length(announcement_channel_message.values(), 1)
+        self.assertEqual(
+            announcement_channel_message[0].content,
+            f"@_**{desdemona.full_name}|{desdemona.id}** created a new channel #**test B**.",
+        )
+
+        new_channel = get_stream("test B", realm)
+        new_channel_message = Message.objects.filter(
+            realm_id=realm.id,
+            sender=bot.id,
+            recipient__type=Recipient.STREAM,
+            recipient__type_id=new_channel.id,
+            date_sent__gt=now,
+        )
+        self.assert_length(new_channel_message.values(), 1)
+        self.assertEqual(
+            new_channel_message[0].topic_name(), Realm.STREAM_EVENTS_NOTIFICATION_TOPIC_NAME
+        )
+        self.assertEqual(
+            new_channel_message[0].content,
+            f"**Public** channel created by @_**{desdemona.full_name}|{desdemona.id}**. **Description:**\n"
+            "```` quote\n*No description.*\n````",
+        )
+
+        # When subscribing to an already existing channel, if the number of new
+        # subscriptions exceeds the limit, no DMs or announcement message should
+        # be sent.
+        now = timezone_now()
+        test_channel = self.make_stream("test C")
         with self.settings(MAX_BULK_NEW_SUBSCRIPTION_MESSAGES=5):
             response = self.subscribe_via_post(
-                desdemona, ["Test stream 2"], dict(principals=orjson.dumps(user_ids).decode())
+                desdemona,
+                [test_channel.name],
+                principals_dict,
             )
         data = self.assert_json_success(response)
         self.assertEqual(data["new_subscription_messages_sent"], False)
+
+        notification_bot_dms = Message.objects.filter(
+            realm_id=realm.id,
+            sender=bot.id,
+            recipient__type=Recipient.PERSONAL,
+            date_sent__gt=now,
+        )
+        self.assertEqual(notification_bot_dms.count(), 0)
+
+        announcement_channel_message = Message.objects.filter(
+            realm_id=realm.id,
+            sender=bot.id,
+            recipient__type=Recipient.STREAM,
+            recipient__type_id=announce.id,
+            date_sent__gt=now,
+        )
+        self.assertEqual(announcement_channel_message.count(), 0)
+
+        # The max number of new subscriptions limit only impacts
+        # DM notifications, so for a newly created channel, we
+        # still expect an announcement message and new channel
+        # message (and no DM notifications).
+        now = timezone_now()
+        with self.settings(MAX_BULK_NEW_SUBSCRIPTION_MESSAGES=5):
+            response = self.subscribe_via_post(
+                desdemona,
+                ["test D"],
+                principals_dict,
+            )
+        data = self.assert_json_success(response)
+        self.assertEqual(data["new_subscription_messages_sent"], False)
+
+        notification_bot_dms = Message.objects.filter(
+            realm_id=realm.id,
+            sender=bot.id,
+            recipient__type=Recipient.PERSONAL,
+            date_sent__gt=now,
+        )
+        self.assertEqual(notification_bot_dms.count(), 0)
+
+        announcement_channel_message = Message.objects.filter(
+            realm_id=realm.id,
+            sender=bot.id,
+            recipient__type=Recipient.STREAM,
+            recipient__type_id=announce.id,
+            date_sent__gt=now,
+        )
+        self.assertEqual(announcement_channel_message.count(), 1)
+        self.assertEqual(
+            announcement_channel_message[0].content,
+            f"@_**{desdemona.full_name}|{desdemona.id}** created a new channel #**test D**.",
+        )
+
+        new_channel = get_stream("test D", realm)
+        new_channel_message = Message.objects.filter(
+            realm_id=realm.id,
+            sender=bot.id,
+            recipient__type=Recipient.STREAM,
+            recipient__type_id=new_channel.id,
+            date_sent__gt=now,
+        )
+        self.assert_length(new_channel_message.values(), 1)
+        self.assertEqual(
+            new_channel_message[0].topic_name(), Realm.STREAM_EVENTS_NOTIFICATION_TOPIC_NAME
+        )
+        self.assertEqual(
+            new_channel_message[0].content,
+            f"**Public** channel created by @_**{desdemona.full_name}|{desdemona.id}**. **Description:**\n"
+            "```` quote\n*No description.*\n````",
+        )
+
+        # When send_new_subscription_messages is false, confirm that the
+        # response doesn't include new_subscription_messages_sent boolean
+        # field.
+        response = self.subscribe_via_post(
+            desdemona,
+            ["test E"],
+            dict(
+                principals=orjson.dumps(user_ids).decode(),
+                send_new_subscription_messages=orjson.dumps(False).decode(),
+            ),
+        )
+        data = self.assert_json_success(response)
+        self.assertNotIn("new_subscription_messages_sent", data)
 
 
 class InviteOnlyStreamTest(ZulipTestCase):

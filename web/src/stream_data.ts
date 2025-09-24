@@ -495,7 +495,7 @@ export function all_subscribed_streams_are_in_home_view(): boolean {
 }
 
 export function canonicalized_name(stream_name: string): string {
-    return stream_name.toString().toLowerCase();
+    return stream_name.toLowerCase();
 }
 
 export function get_color(stream_id: number | undefined): string {
@@ -1075,12 +1075,13 @@ export function create_sub_from_server_data(
     // a copy of the object with `_.omit(attrs, 'subscribers')`, but `_.omit` is
     // slow enough to show up in timings when you have 1000s of streams.
 
-    const subscriber_user_ids = attrs.subscribers;
+    const full_data = attrs.partial_subscribers === undefined;
+    const subscriber_user_ids = full_data ? attrs.subscribers : attrs.partial_subscribers;
 
     delete attrs.subscribers;
+    delete attrs.partial_subscribers;
 
     sub = {
-        render_subscribers: !realm.realm_is_zephyr_mirror_realm || attrs.invite_only,
         newly_subscribed: false,
         is_muted: false,
         pin_to_top: false,
@@ -1104,11 +1105,7 @@ export function create_sub_from_server_data(
     stream_ids_by_name.set(sub.name, sub.stream_id);
     sub_store.add_hydrated_sub(sub.stream_id, sub);
 
-    if (attrs.partial_subscribers !== undefined) {
-        peer_data.set_subscribers(sub.stream_id, attrs.partial_subscribers, false);
-    } else {
-        peer_data.set_subscribers(sub.stream_id, subscriber_user_ids ?? []);
-    }
+    peer_data.set_subscribers(sub.stream_id, subscriber_user_ids ?? [], full_data);
 
     return sub;
 }
