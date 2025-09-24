@@ -13,6 +13,13 @@ const {initialize_user_settings} = zrequire("user_settings");
 const user_settings = {web_font_size_px: 16};
 initialize_user_settings({user_settings});
 
+run_test("ordered_lists", () => {
+    assert.equal(
+        postprocess_content('<ol start="9"><li>Nine</li><li>Ten</li></ol>'),
+        '<ol start="9" class="counter-length-2" style="counter-reset: count 8;"><li>Nine</li><li>Ten</li></ol>',
+    );
+});
+
 // Care should be taken to present real-world cases here and
 // throughout, rather than contrived examples that serve
 // only to satisfy 100% test coverage.
@@ -79,13 +86,6 @@ run_test("postprocess_media_and_embeds", () => {
             '<div class="message_embed_description">All about us.</div>' +
             "</div>" +
             "</div>",
-    );
-});
-
-run_test("ordered_lists", () => {
-    assert.equal(
-        postprocess_content('<ol start="9"><li>Nine</li><li>Ten</li></ol>'),
-        '<ol start="9" class="counter-length-2" style="counter-reset: count 8;"><li>Nine</li><li>Ten</li></ol>',
     );
 });
 
