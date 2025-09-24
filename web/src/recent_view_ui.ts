@@ -1851,7 +1851,7 @@ export function initialize({
     maybe_load_older_messages,
     hide_other_views,
 }: {
-    on_click_participant: (avatar_element: Element, participant_user_id: number) => void;
+    on_click_participant: (avatar_element: HTMLElement, participant_user_id: number) => void;
     on_mark_pm_as_read: (user_ids_string: string) => void;
     on_mark_topic_as_read: (stream_id: number, topic: string) => void;
     maybe_load_older_messages: (first_unread_unmuted_message_id: number) => void;
@@ -1863,7 +1863,7 @@ export function initialize({
     $("body").on(
         "click",
         "#recent-view-content-table .recent_view_participant_avatar",
-        function (e) {
+        function (this: HTMLElement, e) {
             const user_id_string = $(this).parent().attr("data-user-id");
             assert(user_id_string !== undefined);
             const participant_user_id = Number.parseInt(user_id_string, 10);
