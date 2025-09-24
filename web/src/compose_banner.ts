@@ -149,6 +149,7 @@ export function clear_warnings(): void {
 
 export function clear_uploads(): void {
     $("#compose_banners .upload_banner").remove();
+    $(`#compose_banners .${CSS.escape(CLASSNAMES.convert_pasted_text_to_file)}`).remove();
 }
 
 export function clear_unmute_topic_notifications(): void {
@@ -170,10 +171,6 @@ export function clear_non_interleaved_view_messages_fading_banner(): void {
 
 export function clear_interleaved_view_messages_fading_banner(): void {
     $(`#compose_banners .${CSS.escape(CLASSNAMES.interleaved_view_messages_fading)}`).remove();
-}
-
-export function clear_convert_pasted_text_to_file_banner(): void {
-    $(`#compose_banners .${CSS.escape(CLASSNAMES.convert_pasted_text_to_file)}`).remove();
 }
 
 export function clear_all(): void {

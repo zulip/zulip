@@ -97,7 +97,6 @@ export function clear_compose_box() {
     compose_banner.clear_errors();
     compose_banner.clear_warnings();
     compose_banner.clear_uploads();
-    compose_banner.clear_convert_pasted_text_to_file_banner();
     compose_ui.hide_compose_spinner();
     scheduled_messages.reset_selected_schedule_timestamp();
     $(".needs-empty-compose").removeClass("disabled-on-hover");
