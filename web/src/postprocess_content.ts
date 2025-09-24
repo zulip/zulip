@@ -66,6 +66,38 @@ export function postprocess_content(html: string): string {
             elt.removeAttribute("target");
         }
 
+        if (!elt.parentElement?.classList.contains("message_inline_image")) {
+            // For non-media (images, video) user uploads, the following block
+            // ensures that the title attribute always displays the filename,
+            // as a security measure.
+            let title: string;
+            let legacy_title: string;
+            if (
+                url.origin === window.location.origin &&
+                url.pathname.startsWith("/user_uploads/")
+            ) {
+                // We add the word "download" to make clear what will
+                // happen when clicking the file.  This is particularly
+                // important in the desktop app, where hovering a URL does
+                // not display the URL like it does in the web app.
+                title = legacy_title = $t(
+                    {defaultMessage: "Download {filename}"},
+                    {
+                        filename: decodeURIComponent(
+                            url.pathname.slice(url.pathname.lastIndexOf("/") + 1),
+                        ),
+                    },
+                );
+            } else {
+                title = url.toString();
+                legacy_title = href;
+            }
+            elt.setAttribute(
+                "title",
+                ["", legacy_title].includes(elt.title) ? title : `${title}\n${elt.title}`,
+            );
+        }
+
         if (elt.querySelector("img") || elt.querySelector("video")) {
             // We want a class to refer to media links
             elt.classList.add("media-anchor-element");
@@ -193,35 +225,6 @@ export function postprocess_content(html: string): string {
                     inline_image.classList.add("landscape-thumbnail");
                 }
             }
-        } else {
-            // For non-image user uploads, the following block ensures that the title
-            // attribute always displays the filename as a security measure.
-            let title: string;
-            let legacy_title: string;
-            if (
-                url.origin === window.location.origin &&
-                url.pathname.startsWith("/user_uploads/")
-            ) {
-                // We add the word "download" to make clear what will
-                // happen when clicking the file.  This is particularly
-                // important in the desktop app, where hovering a URL does
-                // not display the URL like it does in the web app.
-                title = legacy_title = $t(
-                    {defaultMessage: "Download {filename}"},
-                    {
-                        filename: decodeURIComponent(
-                            url.pathname.slice(url.pathname.lastIndexOf("/") + 1),
-                        ),
-                    },
-                );
-            } else {
-                title = url.toString();
-                legacy_title = href;
-            }
-            elt.setAttribute(
-                "title",
-                ["", legacy_title].includes(elt.title) ? title : `${title}\n${elt.title}`,
-            );
         }
     }
 

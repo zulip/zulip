@@ -81,7 +81,7 @@ run_test("postprocess_media_and_embeds", () => {
             '<a class="message_embed_image" href="https://example.com/about" style="background-image: url(&quot;https://example.com/preview.jpeg&quot;)" target="_blank" rel="noopener noreferrer" title="https://example.com/about"></a>' +
             '<div class="data-container">' +
             '<div class="message_embed_title">' +
-            '<a href="https://example.com/about" target="_blank" rel="noopener noreferrer" class="message-embed-title-link" title="https://example.com/about">About us</a>' +
+            '<a href="https://example.com/about" target="_blank" rel="noopener noreferrer" title="https://example.com/about" class="message-embed-title-link">About us</a>' +
             "</div>" +
             '<div class="message_embed_description">All about us.</div>' +
             "</div>" +
