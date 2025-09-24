@@ -861,7 +861,7 @@ function suggestion_search_string(suggestion_line: SuggestionLine): string {
     return search_strings.join(" ");
 }
 
-function suggestions_for_current_filter(): SuggestionLine[] {
+function suggestions_for_empty_search_query(): SuggestionLine[] {
     if (narrow_state.stream_id() && narrow_state.topic() !== undefined) {
         return [
             get_default_suggestion_line([
@@ -902,8 +902,8 @@ class Attacher {
         // of the list.
         if (search_query_is_empty && this.add_current_filter) {
             this.add_current_filter = false;
-            for (const current_filter_line of suggestions_for_current_filter()) {
-                this.push(current_filter_line);
+            for (const suggestion of suggestions_for_empty_search_query()) {
+                this.push(suggestion);
             }
         }
     }
