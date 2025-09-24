@@ -98,18 +98,6 @@ export function postprocess_content(html: string): string {
             );
         }
 
-        // Update older, smaller default.jpg YouTube preview images
-        // with higher-quality preview images (320px wide)
-        if (elt.parentElement?.classList.contains("youtube-video")) {
-            const img = elt.querySelector("img");
-            assert(img instanceof HTMLImageElement);
-            const img_src = img.src;
-            if (img_src.endsWith("/default.jpg")) {
-                const mq_src = img_src.replace(/\/default.jpg$/, "/mqdefault.jpg");
-                img.src = mq_src;
-            }
-        }
-
         // Add a class to the anchor tag on
         if (elt.parentElement?.classList.contains("message_embed_title")) {
             elt.classList.add("message-embed-title-link");
@@ -132,6 +120,17 @@ export function postprocess_content(html: string): string {
         if (typeof title === "string") {
             message_media_link?.setAttribute("aria-label", title);
             message_media_link?.removeAttribute("title");
+        }
+
+        // Update older, smaller default.jpg YouTube preview images
+        // with higher-quality preview images (320px wide)
+        if (message_media_wrapper.classList.contains("youtube-video")) {
+            assert(message_media_image instanceof HTMLImageElement);
+            const img_src = message_media_image.src;
+            if (img_src.endsWith("/default.jpg")) {
+                const mq_src = img_src.replace(/\/default.jpg$/, "/mqdefault.jpg");
+                message_media_image.src = mq_src;
+            }
         }
 
         // Replace the legacy .message_inline_image class, whose
