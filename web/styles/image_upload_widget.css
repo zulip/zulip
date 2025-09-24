@@ -46,6 +46,10 @@
         right: 10px;
         z-index: 99;
         line-height: 20px;
+
+        &:focus:not(:focus-visible) {
+            outline: none;
+        }
     }
 
     .image-disabled-text {
@@ -93,6 +97,10 @@
         position: absolute;
         z-index: 99;
         visibility: hidden;
+
+        &:focus:not(:focus-visible) {
+            outline: none;
+        }
     }
 
     .image-upload-text:hover {
