@@ -26,6 +26,18 @@ export function postprocess_content(html: string): string {
         ol.style.setProperty("counter-reset", `count ${list_start - 1}`);
     }
 
+    // Here we're setting up better processing of message embeds;
+    // In the future, we will be able to write logic here to permit
+    // recipients to remove embeds on a per-message basis.
+    // We want to do this processing up front, so that embeds benefit
+    // from other processing below for links and images
+    for (const message_embed of template.content.querySelectorAll(".message_embed")) {
+        const message_embed_title_link = message_embed.querySelector(".message_embed_title a");
+        // Add a class to the anchor tag on embed-title links for easier
+        // reference from CSS
+        message_embed_title_link?.classList.add("message-embed-title-link");
+    }
+
     for (const elt of template.content.querySelectorAll("a")) {
         // Ensure that all external links have target="_blank"
         // rel="opener noreferrer".  This ensures that external links
@@ -96,11 +108,6 @@ export function postprocess_content(html: string): string {
                 "title",
                 ["", legacy_title].includes(elt.title) ? title : `${title}\n${elt.title}`,
             );
-        }
-
-        // Add a class to the anchor tag on
-        if (elt.parentElement?.classList.contains("message_embed_title")) {
-            elt.classList.add("message-embed-title-link");
         }
     }
 
