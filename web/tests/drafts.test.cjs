@@ -633,8 +633,8 @@ test("format_drafts", ({override, override_rewire, mock_template}) => {
     assert.deepEqual(draft_model.get(), data);
 
     override(realm, "realm_topics_policy", "disable_empty_topic");
-    expected[5].topic_display_name = "";
-    expected[5].is_empty_string_topic = false;
+    expected[5].topic_display_name = "translated: No topic entered";
+    expected[5].is_empty_string_topic = true;
     assert.deepEqual(draft_model.get(), data);
 
     const stub_render_now = timerender.render_now;

@@ -646,13 +646,20 @@ export function format_draft(draft: LocalStorageDraftWithId): FormattedDraft | u
         let draft_topic_display_name = draft.topic;
         let is_empty_string_topic = false;
 
-        // If the channel is not known (recipient was not specified while the creation of the
-        // draft) and the topic is empty, the draft_topic_display_name will always be empty string
-        // and the draft title will appear as "# >". We don't use the term "general chat" until
-        // the channel is known.
-        if (sub && draft.topic === "" && stream_data.can_use_empty_topic(draft.stream_id)) {
-            draft_topic_display_name = util.get_final_topic_display_name("");
+        if (draft.topic === "") {
             is_empty_string_topic = true;
+            if (sub && stream_data.can_use_empty_topic(draft.stream_id)) {
+                // If the channel is known and it allows empty topic, we display
+                // the realm_empty_topic_display_name.
+                draft_topic_display_name = util.get_final_topic_display_name("");
+            } else {
+                // If the channel is not known (channel field was empty during the
+                // creation of the draft) or it doesn't allow empty topics, we display
+                // "No topic entered". We can't use realm_empty_topic_display_name
+                // for empty topics in unknown channels, since we are unaware of the
+                // channel's configuration.
+                draft_topic_display_name = $t({defaultMessage: "No topic entered"});
+            }
         }
 
         return {
