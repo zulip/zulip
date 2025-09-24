@@ -594,7 +594,7 @@ export function setup_topic_search_typeahead(): void {
 export function initialize({
     on_topic_click,
 }: {
-    on_topic_click: (stream_id: number, topic?: string) => void;
+    on_topic_click: (stream_id: number, topic: string) => void;
 }): void {
     $("#stream_filters").on(
         "click",
@@ -620,7 +620,7 @@ export function initialize({
             const stream_id_string = $stream_row.attr("data-stream-id");
             assert(stream_id_string !== undefined);
             const stream_id = Number.parseInt(stream_id_string, 10);
-            const topic = $(e.target).parents("li").attr("data-topic-name");
+            const topic = $(e.target).parents("li").attr("data-topic-name")!;
             on_topic_click(stream_id, topic);
 
             e.preventDefault();
