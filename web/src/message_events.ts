@@ -27,7 +27,12 @@ import * as message_lists from "./message_lists.ts";
 import * as message_notifications from "./message_notifications.ts";
 import * as message_parser from "./message_parser.ts";
 import * as message_store from "./message_store.ts";
-import {type Message, type RawMessage, raw_message_schema} from "./message_store.ts";
+import {
+    type Message,
+    type MessageEditHistoryEntry,
+    type RawMessage,
+    raw_message_schema,
+} from "./message_store.ts";
 import * as message_view from "./message_view.ts";
 import * as narrow_state from "./narrow_state.ts";
 import * as pm_list from "./pm_list.ts";
@@ -568,14 +573,7 @@ export function update_messages(events: UpdateMessageEvent[]): void {
                      * history events. This logic ensures that all
                      * messages that were moved are displayed as such
                      * without a browser reload. */
-                    const edit_history_entry: {
-                        user_id: number | null;
-                        timestamp: number;
-                        stream?: number;
-                        prev_stream?: number;
-                        topic?: string;
-                        prev_topic?: string;
-                    } = {
+                    const edit_history_entry: MessageEditHistoryEntry = {
                         user_id: event.user_id,
                         timestamp: event.edit_timestamp,
                     };
