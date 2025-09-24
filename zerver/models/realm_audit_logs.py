@@ -190,6 +190,7 @@ class AbstractRealmAuditLog(models.Model):
     HOW_REALM_CREATOR_FOUND_ZULIP_OPTIONS = {
         "existing_user": "At an organization that's using it",
         "search_engine": "Search engine",
+        "ai_chatbot": "AI/LLM",
         "review_site": "Review site",
         "personal_recommendation": "Personal recommendation",
         "hacker_news": "Hacker News",
