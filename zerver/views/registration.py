@@ -632,34 +632,19 @@ def registration_helper(
                 form.cleaned_data["how_realm_creator_found_zulip"]
             ]
             how_realm_creator_found_zulip_extra_context = ""
-            if (
-                how_realm_creator_found_zulip
-                == RealmAuditLog.HOW_REALM_CREATOR_FOUND_ZULIP_OPTIONS["other"]
-            ):
-                how_realm_creator_found_zulip_extra_context = form.cleaned_data[
-                    "how_realm_creator_found_zulip_other_text"
-                ]
-            elif (
-                how_realm_creator_found_zulip
-                == RealmAuditLog.HOW_REALM_CREATOR_FOUND_ZULIP_OPTIONS["ad"]
-            ):
-                how_realm_creator_found_zulip_extra_context = form.cleaned_data[
-                    "how_realm_creator_found_zulip_where_ad"
-                ]
-            elif (
-                how_realm_creator_found_zulip
-                == RealmAuditLog.HOW_REALM_CREATOR_FOUND_ZULIP_OPTIONS["existing_user"]
-            ):
-                how_realm_creator_found_zulip_extra_context = form.cleaned_data[
-                    "how_realm_creator_found_zulip_which_organization"
-                ]
-            elif (
-                how_realm_creator_found_zulip
-                == RealmAuditLog.HOW_REALM_CREATOR_FOUND_ZULIP_OPTIONS["review_site"]
-            ):  # nocoverage
-                how_realm_creator_found_zulip_extra_context = form.cleaned_data[
-                    "how_realm_creator_found_zulip_review_site"
-                ]
+            extra_context_options = {
+                "other": "how_realm_creator_found_zulip_other_text",
+                "ad": "how_realm_creator_found_zulip_where_ad",
+                "existing_user": "how_realm_creator_found_zulip_which_organization",
+                "review_site": "how_realm_creator_found_zulip_review_site",
+            }
+            for option, field_name in extra_context_options.items():
+                if (
+                    how_realm_creator_found_zulip
+                    == RealmAuditLog.HOW_REALM_CREATOR_FOUND_ZULIP_OPTIONS[option]
+                ):
+                    how_realm_creator_found_zulip_extra_context = form.cleaned_data[field_name]
+                    break
 
             realm = do_create_realm(
                 string_id,
