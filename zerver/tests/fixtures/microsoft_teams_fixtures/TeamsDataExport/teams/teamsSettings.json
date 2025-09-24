@@ -1,0 +1,172 @@
+[
+  {
+    "Id": "63e383c5-dceb-43f6-bdef-cff3926b96d7",
+    "DisplayName": "lemonstand",
+    "InternalId": "19:qaqvZZdd8D6_n9H2i8XwCoFgf4I8DQpqstZiA3SW7Qg1@thread.tacv2",
+    "Visibility": "public",
+    "IsArchived": false,
+    "IsMembershipLimitedToOwners": false,
+    "MemberSettings": {
+      "AllowCreateUpdateChannels": true,
+      "AllowDeleteChannels": true,
+      "AllowAddRemoveApps": true,
+      "AllowCreateUpdateRemoveTabs": true,
+      "AllowCreateUpdateRemoveConnectors": true
+    },
+    "GuestSettings": {
+      "AllowCreateUpdateChannels": false,
+      "AllowDeleteChannels": false
+    },
+    "MessagingSettings": {
+      "AllowUserEditMessages": true,
+      "AllowUserDeleteMessages": true,
+      "AllowOwnerDeleteMessages": true,
+      "AllowTeamMentions": true,
+      "AllowChannelMentions": true
+    },
+    "FunSettings": {
+      "AllowGiphy": true,
+      "GiphyContentRating": "moderate",
+      "AllowStickersAndMemes": true,
+      "AllowCustomMemes": true
+    },
+    "DiscoverySettings": { "ShowInTeamsSearchAndSuggestions": true },
+    "Summary": { "OwnersCount": "3", "MembersCount": "4", "GuestsCount": "0" }
+  },
+  {
+    "Id": "5cfea048-aa63-4701-a940-f7b4b9bfcd98",
+    "DisplayName": "Design",
+    "InternalId": "19:Ziry_T8IQQgRiXFr4P3PIUUYut0GKcoq1LkBxXuGkeg1@thread.tacv2",
+    "Visibility": "public",
+    "IsArchived": false,
+    "IsMembershipLimitedToOwners": false,
+    "MemberSettings": {
+      "AllowCreateUpdateChannels": true,
+      "AllowDeleteChannels": true,
+      "AllowAddRemoveApps": true,
+      "AllowCreateUpdateRemoveTabs": true,
+      "AllowCreateUpdateRemoveConnectors": true
+    },
+    "GuestSettings": {
+      "AllowCreateUpdateChannels": false,
+      "AllowDeleteChannels": false
+    },
+    "MessagingSettings": {
+      "AllowUserEditMessages": true,
+      "AllowUserDeleteMessages": true,
+      "AllowOwnerDeleteMessages": true,
+      "AllowTeamMentions": true,
+      "AllowChannelMentions": true
+    },
+    "FunSettings": {
+      "AllowGiphy": true,
+      "GiphyContentRating": "moderate",
+      "AllowStickersAndMemes": true,
+      "AllowCustomMemes": true
+    },
+    "DiscoverySettings": { "ShowInTeamsSearchAndSuggestions": true },
+    "Summary": { "OwnersCount": "2", "MembersCount": "4", "GuestsCount": "0" }
+  },
+  {
+    "Id": "062cc59e-f7fa-4a1f-a99e-bf5f58aed949",
+    "DisplayName": "core team",
+    "InternalId": "19:jSplIgZcYr_E27KKMBeIPYUpAIv0GsbX8gZbV-gmHew1@thread.tacv2",
+    "Visibility": "private",
+    "IsArchived": false,
+    "IsMembershipLimitedToOwners": false,
+    "MemberSettings": {
+      "AllowCreateUpdateChannels": true,
+      "AllowDeleteChannels": true,
+      "AllowAddRemoveApps": true,
+      "AllowCreateUpdateRemoveTabs": true,
+      "AllowCreateUpdateRemoveConnectors": true
+    },
+    "GuestSettings": {
+      "AllowCreateUpdateChannels": false,
+      "AllowDeleteChannels": false
+    },
+    "MessagingSettings": {
+      "AllowUserEditMessages": true,
+      "AllowUserDeleteMessages": true,
+      "AllowOwnerDeleteMessages": true,
+      "AllowTeamMentions": true,
+      "AllowChannelMentions": true
+    },
+    "FunSettings": {
+      "AllowGiphy": true,
+      "GiphyContentRating": "moderate",
+      "AllowStickersAndMemes": true,
+      "AllowCustomMemes": true
+    },
+    "DiscoverySettings": { "ShowInTeamsSearchAndSuggestions": false },
+    "Summary": { "OwnersCount": "1", "MembersCount": "4", "GuestsCount": "0" }
+  },
+  {
+    "Id": "4707a9cc-9fe0-4bc2-980a-cd722ffbff06",
+    "DisplayName": "will begon\u0027s team",
+    "InternalId": "19:lqdix95v6et7PTYxDZlXmlKIwt77DeH_WikzPVX7kuU1@thread.tacv2",
+    "Visibility": "public",
+    "IsArchived": false,
+    "IsMembershipLimitedToOwners": false,
+    "MemberSettings": {
+      "AllowCreateUpdateChannels": true,
+      "AllowDeleteChannels": true,
+      "AllowAddRemoveApps": true,
+      "AllowCreateUpdateRemoveTabs": true,
+      "AllowCreateUpdateRemoveConnectors": true
+    },
+    "GuestSettings": {
+      "AllowCreateUpdateChannels": false,
+      "AllowDeleteChannels": false
+    },
+    "MessagingSettings": {
+      "AllowUserEditMessages": true,
+      "AllowUserDeleteMessages": true,
+      "AllowOwnerDeleteMessages": true,
+      "AllowTeamMentions": true,
+      "AllowChannelMentions": true
+    },
+    "FunSettings": {
+      "AllowGiphy": true,
+      "GiphyContentRating": "moderate",
+      "AllowStickersAndMemes": true,
+      "AllowCustomMemes": true
+    },
+    "DiscoverySettings": { "ShowInTeamsSearchAndSuggestions": true },
+    "Summary": { "OwnersCount": "0", "MembersCount": "2", "GuestsCount": "0" }
+  },
+  {
+    "Id": "d608b92d-8ae6-4898-bd76-4b13e3d48469",
+    "DisplayName": "New members",
+    "InternalId": "19:bHoJg8DQLm4F6EoU_SUNlBGuMO1pjeeUSgDTEgk3XtE1@thread.tacv2",
+    "Visibility": "public",
+    "IsArchived": false,
+    "IsMembershipLimitedToOwners": false,
+    "MemberSettings": {
+      "AllowCreateUpdateChannels": true,
+      "AllowDeleteChannels": true,
+      "AllowAddRemoveApps": true,
+      "AllowCreateUpdateRemoveTabs": true,
+      "AllowCreateUpdateRemoveConnectors": true
+    },
+    "GuestSettings": {
+      "AllowCreateUpdateChannels": false,
+      "AllowDeleteChannels": false
+    },
+    "MessagingSettings": {
+      "AllowUserEditMessages": true,
+      "AllowUserDeleteMessages": true,
+      "AllowOwnerDeleteMessages": true,
+      "AllowTeamMentions": true,
+      "AllowChannelMentions": true
+    },
+    "FunSettings": {
+      "AllowGiphy": true,
+      "GiphyContentRating": "moderate",
+      "AllowStickersAndMemes": true,
+      "AllowCustomMemes": true
+    },
+    "DiscoverySettings": { "ShowInTeamsSearchAndSuggestions": true },
+    "Summary": { "OwnersCount": "3", "MembersCount": "4", "GuestsCount": "0" }
+  }
+]
