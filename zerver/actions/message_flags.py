@@ -19,7 +19,7 @@ from zerver.lib.queue import queue_event_on_commit
 from zerver.lib.stream_subscription import get_subscribed_stream_recipient_ids_for_user
 from zerver.lib.topic import filter_by_topic_name_via_message
 from zerver.lib.user_message import DEFAULT_HISTORICAL_FLAGS, create_historical_user_messages
-from zerver.models import Message, Recipient, UserMessage, UserProfile
+from zerver.models import Message, PushDevice, PushDeviceToken, Recipient, UserMessage, UserProfile
 from zerver.tornado.django_api import send_event_on_commit, send_event_rollback_unsafe
 
 
@@ -229,11 +229,20 @@ def do_clear_mobile_push_notifications_for_ids(
     # only for the message-edit use case where we'll have a single message_id.
     assert len(user_profile_ids) == 1 or len(message_ids) == 1
 
-    messages_by_user = defaultdict(list)
+    push_device_registered_user_ids = (
+        PushDeviceToken.objects.filter(user_id__in=user_profile_ids)
+        .values_list("user_id", flat=True)
+        .union(
+            # Uses index "zerver_pushdevice_user_bouncer_device_id_idx".
+            PushDevice.objects.filter(
+                user_id__in=user_profile_ids, bouncer_device_id__isnull=False
+            ).values_list("user_id", flat=True)
+        )
+    )
     notifications_to_update = (
         UserMessage.objects.filter(
             message_id__in=message_ids,
-            user_profile_id__in=user_profile_ids,
+            user_profile_id__in=push_device_registered_user_ids,
         )
         .extra(  # noqa: S610
             where=[UserMessage.where_active_push_notification()],
@@ -241,6 +250,7 @@ def do_clear_mobile_push_notifications_for_ids(
         .values_list("user_profile_id", "message_id")
     )
 
+    messages_by_user = defaultdict(list)
     for user_id, message_id in notifications_to_update:
         messages_by_user[user_id].append(message_id)
 
