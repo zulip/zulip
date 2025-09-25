@@ -513,6 +513,20 @@
         font-weight: bold;
     }
 
+    .message-media-inline-image {
+        .media-anchor-element {
+            /* We want the image to behave as inline, which the
+               .message-media-inline-image will ensure, but in
+               order to keep inline images from touching each
+               other when they flow over separate lines, we
+               introduce top/bottom margins of 3px--a value
+               derived from the border around legacy images and
+               images presented in galleries. */
+            display: inline-block;
+            margin: 3px 0;
+        }
+    }
+
     .twitter-image,
     .message-media-preview-image,
     .message-media-preview-video {
@@ -577,6 +591,10 @@
         img.image-loading-placeholder {
             content: var(--svg-url-thumbnail-loader);
         }
+    }
+
+    .inline-image {
+        display: inline;
     }
 
     .twitter-tweet {
