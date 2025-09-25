@@ -1579,3 +1579,7 @@ button#register_auth_button_gitlab {
         cursor: not-allowed;
     }
 }
+
+.self-hosting-login-help-text {
+    margin-top: 10px;
+}
