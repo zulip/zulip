@@ -502,6 +502,10 @@
     */
     --unread-marker-left: -1px;
 
+    /* Used by upload overlay to show compose box above it. */
+    --compose-default-z-index: 4;
+    --upload-overlay-z-index: 10000;
+    --compose-with-upload-overlay-z-index: 10001;
     /*
     Compose-recipient box minimum height. Used in a flexbox context to
     allow elements like DM pills to stack without breaking out of their
