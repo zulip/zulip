@@ -645,7 +645,13 @@
     position: fixed;
     bottom: 0;
     left: 0;
-    z-index: 4;
+    z-index: var(--compose-default-z-index);
+}
+
+@media (width > $sm_min) {
+    .upload-overlay-visible #compose {
+        z-index: var(--compose-with-upload-overlay-z-index);
+    }
 }
 
 #compose-container {

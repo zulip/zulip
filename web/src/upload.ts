@@ -32,6 +32,25 @@ export function compose_upload_cancel(): void {
     compose_upload_object.cancelAll();
 }
 
+export function current_message_list_has_edit_box(): boolean {
+    return (
+        message_lists.current !== undefined && $(".focused-message-list .message_edit").length > 0
+    );
+}
+
+function show_upload_overlay(): void {
+    if (current_message_list_has_edit_box()) {
+        // Don't show the overlay if an edit box is open.
+        return;
+    }
+
+    $("body").addClass("upload-overlay-visible");
+}
+
+function hide_upload_overlay(): void {
+    $("body").removeClass("upload-overlay-visible");
+}
+
 export function feature_check(): XMLHttpRequestUpload {
     // Show the upload button only if the browser supports it.
     return window.XMLHttpRequest && new window.XMLHttpRequest().upload;
@@ -454,6 +473,7 @@ export function setup_upload(config: Config): Uppy<ZulipMeta, TusBody> {
     $drag_drop_container.on("drop", (event) => {
         event.preventDefault();
         event.stopPropagation();
+        hide_upload_overlay();
         assert(event.originalEvent !== undefined);
         assert(event.originalEvent.dataTransfer !== null);
         const files = event.originalEvent.dataTransfer.files;
@@ -671,18 +691,35 @@ export function initialize(): void {
         }
     });
 
+    let drag_counter = 0;
     // Allow the app panel to receive drag/drop events.
     $(".app, #navbar-fixed-container").on("dragover", (event) => {
         event.preventDefault();
+        // Show the upload overlay during drag events.
+        show_upload_overlay();
     });
 
-    // TODO: Do something visual to hint that drag/drop will work.
     $(".app, #navbar-fixed-container").on("dragenter", (event) => {
         event.preventDefault();
+        drag_counter += 1;
+        // Show the upload overlay during drag events.
+        show_upload_overlay();
+    });
+
+    $(".app, #navbar-fixed-container").on("dragleave", (event) => {
+        event.preventDefault();
+        drag_counter -= 1;
+        // Hide the upload overlay when no files are being dragged.
+        if (drag_counter === 0) {
+            hide_upload_overlay();
+        }
     });
 
     $(".app, #navbar-fixed-container").on("drop", (event) => {
         event.preventDefault();
+        drag_counter = 0;
+        // Hide the upload overlay after files are dropped.
+        hide_upload_overlay();
 
         if (event.target.nodeName === "IMG" && event.target === drag_drop_img) {
             drag_drop_img = null;
