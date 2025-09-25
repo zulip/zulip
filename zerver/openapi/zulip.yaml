@@ -5515,6 +5515,7 @@ paths:
                                         - 3 = Zoom (User OAuth integration)
                                         - 4 = BigBlueButton
                                         - 5 = Zoom (Server to Server OAuth integration)
+                                        - 6 = Constructor Groups
 
                                         Note that only one of the [Zoom integrations][zoom-video-calls] can
                                         be configured on a Zulip server.
@@ -19621,6 +19622,7 @@ paths:
                           - 3 = Zoom (User OAuth integration)
                           - 4 = BigBlueButton
                           - 5 = Zoom (Server to Server OAuth integration)
+                          - 6 = Constructor Groups
 
                           Note that only one of the [Zoom integrations][zoom-video-calls] can
                           be configured on a Zulip server.
@@ -25521,6 +25523,43 @@ paths:
                         "msg": "",
                         "result": "success",
                         "url": "/calls/bigbluebutton/join?meeting_id=%22zulip-something%22&password=%22something%22&checksum=%22somechecksum%22",
+                      }
+
+  /calls/constructorgroups/create:
+    post:
+      tags: ["channels"]
+      operationId: create-constructor-groups-video-call
+      summary: Create Constructor Groups video call
+      description: |
+        Create a video call URL for a Constructor Groups video call.
+        Requires [Constructor Groups](/integrations/doc/constructor-groups)
+        to be configured on the Zulip server.
+
+        The integration searches for an existing room with the user's name
+        pattern, or creates a new room if none exists.
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      ignored_parameters_unsupported: {}
+                      url:
+                        description: |
+                          The URL for the Constructor Groups video call.
+                        type: string
+                        example: "https://constructor.example.app/groups/room/abc123"
+                    example:
+                      {
+                        "msg": "",
+                        "result": "success",
+                        "url": "https://constructor.example.app/groups/room/abc123",
                       }
 
 components:
