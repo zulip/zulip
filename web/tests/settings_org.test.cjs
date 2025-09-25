@@ -439,6 +439,10 @@ test("set_up", ({override, override_rewire}) => {
             id: 4,
             name: "BigBlueButton",
         },
+        constructor_groups: {
+            id: 6,
+            name: "Constructor Groups",
+        },
     });
     override(realm, "realm_message_retention_days", null);
 

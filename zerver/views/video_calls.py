@@ -50,6 +50,84 @@ class VideoCallSession(OutgoingSession):
         super().__init__(role="video_calls", timeout=5)
 
 
+class ConstructorGroupsService:
+    def __init__(self) -> None:
+        if not self._is_configured():
+            raise JsonableError(_("Failed to create Constructor Groups video call room"))
+
+        self.access_key = settings.CONSTRUCTOR_GROUPS_ACCESS_KEY
+        self.secret_key = settings.CONSTRUCTOR_GROUPS_SECRET_KEY
+        self.base_url = (
+            settings.CONSTRUCTOR_GROUPS_URL.rstrip("/") if settings.CONSTRUCTOR_GROUPS_URL else ""
+        )
+
+    @staticmethod
+    def _is_configured() -> bool:
+        return (
+            settings.CONSTRUCTOR_GROUPS_URL is not None
+            and settings.CONSTRUCTOR_GROUPS_ACCESS_KEY is not None
+            and settings.CONSTRUCTOR_GROUPS_SECRET_KEY is not None
+        )
+
+    def _make_authenticated_request(
+        self, method: str, endpoint: str, data: dict[str, Any] | None = None
+    ) -> dict[str, Any]:
+        """Make authenticated request to Constructor Groups XAPI"""
+        url = f"{self.base_url}{endpoint}"
+
+        # Construct authentication token: ACCESS_KEY|SHA256(ACCESS_KEY|SECRET_KEY)
+        combined_string = f"{self.access_key}|{self.secret_key}"
+        hash_hex = hashlib.sha256(combined_string.encode("utf-8")).hexdigest()
+        auth_token = f"{self.access_key}|{hash_hex}"
+
+        headers = {
+            "Authorization": f"Bearer {auth_token}",
+            "Content-Type": "application/json",
+        }
+
+        try:
+            session = VideoCallSession()
+            if method.upper() == "GET":
+                response = session.get(url, headers=headers, params=data or {})
+            elif method.upper() == "POST":
+                response = session.post(url, headers=headers, json=data or {})
+            else:
+                raise ValueError(f"Unsupported HTTP method: {method}")
+
+            response.raise_for_status()
+            return response.json()
+
+        except requests.HTTPError as e:
+            if e.response.status_code == 409:
+                raise JsonableError(_("Room name conflict"))
+            else:
+                logging.exception(
+                    "Constructor Groups API request failed with status %s", e.response.status_code
+                )
+                raise JsonableError(_("Failed to create Constructor Groups video call room"))
+        except Exception:
+            logging.exception("Constructor Groups API request failed")
+            raise JsonableError(_("Failed to create Constructor Groups video call room"))
+
+    def search_rooms(self, user_email: str) -> list[dict[str, Any]]:
+        """Search for default rooms for specific user"""
+        params = {
+            "creator_email": user_email,
+            "is_default_room": True,
+            "page": 1,
+            "size": 1,
+        }
+
+        response_data = self._make_authenticated_request("GET", "/room/search", params)
+        return response_data.get("data", [])
+
+    def create_room(self, name: str, user_email: str) -> dict[str, Any]:
+        """Create new default room with specified name"""
+        data = {"name": name, "creator_email": user_email, "is_default_room": True}
+
+        return self._make_authenticated_request("POST", "/room", data)
+
+
 class InvalidVideoCallProviderTokenError(JsonableError):
     code = ErrorCode.INVALID_VIDEO_CALL_PROVIDER_TOKEN
 
@@ -459,3 +537,37 @@ def join_bigbluebutton(request: HttpRequest, *, bigbluebutton: str) -> HttpRespo
         settings.BIG_BLUE_BUTTON_URL + "api/join", join_params
     )
     return redirect(append_url_query_string(redirect_url_base, "checksum=" + checksum))
+
+
+@typed_endpoint_without_parameters
+def make_constructor_groups_video_call(
+    request: HttpRequest,
+    user_profile: UserProfile,
+) -> HttpResponse:
+    service = ConstructorGroupsService()
+
+    existing_rooms = service.search_rooms(user_profile.delivery_email)
+
+    if existing_rooms:
+        room_data = existing_rooms[0]
+    else:
+        try:
+            room_name = f"{user_profile.full_name}'s Zulip Videoconferencing Room"
+            room_data = service.create_room(room_name, user_profile.delivery_email)
+        except JsonableError as e:
+            logging.error("Constructor Groups API request failed: %s", e)
+            # If room name conflict (409), try with user ID suffix
+            if "Room name conflict" in str(e.msg):
+                fallback_name = (
+                    f"{user_profile.full_name}-{user_profile.id}'s Zulip Videoconferencing Room"
+                )
+                room_data = service.create_room(fallback_name, user_profile.delivery_email)
+            else:
+                raise
+
+    room_url = room_data.get("url", "")
+    if not room_url:
+        logging.error("Constructor Groups API returned room without URL: %s", room_data)
+        raise JsonableError(_("Failed to create Constructor Groups video call room."))
+
+    return json_success(request, {"url": room_url})
