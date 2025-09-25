@@ -405,7 +405,7 @@ class TestDigestEmailMessages(ZulipTestCase):
         num_queued_users = call_enqueue_emails(get_realm("zulipinternal"))
         self.assertEqual(num_queued_users, 0)
         num_queued_users = call_enqueue_emails(get_realm("zulip"))
-        self.assertEqual(num_queued_users, 10)
+        self.assertEqual(num_queued_users, 11)
 
     @override_settings(SEND_DIGEST_EMAILS=True)
     def test_inactive_users_queued_for_digest(self) -> None:

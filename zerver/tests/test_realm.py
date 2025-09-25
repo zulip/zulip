@@ -2091,9 +2091,9 @@ class RealmTest(ZulipTestCase):
             realm_for_sharding=realm, name=SystemGroups.FULL_MEMBERS, is_system_group=True
         )
 
-        self.assert_length(UserGroupMembership.objects.filter(user_group=members_system_group), 9)
+        self.assert_length(UserGroupMembership.objects.filter(user_group=members_system_group), 10)
         self.assert_length(
-            UserGroupMembership.objects.filter(user_group=full_members_system_group), 9
+            UserGroupMembership.objects.filter(user_group=full_members_system_group), 10
         )
         self.assertEqual(realm.waiting_period_threshold, 0)
 

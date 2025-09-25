@@ -139,7 +139,7 @@ def add_subscriptions(client: Client) -> None:
     assert_success_response(result)
     validate_against_openapi_schema(result, "/users/me/subscriptions", "post", "200")
 
-    user_id = 25
+    user_id = 26
     ensure_users([user_id], ["newbie"])
     # {code_example|start}
     # To subscribe other users to a channel, you may pass
@@ -879,7 +879,7 @@ def get_user_groups(client: Client) -> int:
 
 @openapi_test_function("/streams/{stream_id}/members:get")
 def get_subscribers(client: Client) -> None:
-    user_ids = [11, 25]
+    user_ids = [11, 26]
     ensure_users(user_ids, ["iago", "newbie"])
     # {code_example|start}
     # Get the subscribers to a channel. Note that `client.get_subscribers`

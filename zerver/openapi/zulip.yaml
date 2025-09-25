@@ -23621,7 +23621,7 @@ paths:
                   type: array
                   items:
                     type: integer
-                  example: [16, 12]
+                  example: [17, 12]
                 announce:
                   description: |
                     This determines whether [notification bot](/help/configure-automated-notices)
