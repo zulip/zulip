@@ -74,6 +74,11 @@ const bot_test = {
     is_admin: false,
     is_bot: true,
 };
+const non_active_user = {
+    email: "nonactiveuser@zulip.com",
+    user_id: 107,
+    full_name: "Non-active user",
+};
 people.add_active_user(alice);
 people.add_active_user(bob);
 people.add_active_user(me);
@@ -81,6 +86,7 @@ people.add_active_user(zoe);
 people.add_active_user(cardelio);
 people.add_active_user(iago);
 people.add_active_user(bot_test);
+people.add_deactivated_user(non_active_user);
 people.initialize_current_user(me.user_id);
 
 function test(label, f) {
@@ -193,6 +199,22 @@ test("get_conversations", ({override}) => {
         pm_data,
         expected_data.filter((item) => item.recipients === "Me Myself"),
     );
+
+    // Conversations with deactivated users (including group conversations)
+    // should be marked accordingly.
+    pm_conversations.recent.insert([non_active_user.user_id], 18);
+    pm_conversations.recent.insert([alice.user_id, bob.user_id, non_active_user.user_id], 19);
+    pm_data = pm_list_data.get_conversations();
+
+    const deactivated_user = pm_data.find(
+        (conversation) => conversation.recipients === "Non-active user",
+    );
+    const deactivated_group = pm_data.find(
+        (conversation) => conversation.recipients === "Alice, Bob, Non-active user",
+    );
+
+    assert.ok(deactivated_user?.is_deactivated);
+    assert.ok(deactivated_group?.is_deactivated);
 });
 
 test("get_conversations bot", ({override}) => {
@@ -362,6 +384,42 @@ test("get_list_info_unread_messages", ({override}) => {
         "Me Myself",
         "Alice",
     ]);
+
+    // Any conversations including deactivated users should be
+    // hidden.
+    pm_conversations.recent.insert([non_active_user.user_id], 18);
+    pm_conversations.recent.insert([alice.user_id, bob.user_id, non_active_user.user_id], 19);
+    list_info = pm_list_data.get_list_info(false);
+
+    const has_deactivated_conversation = list_info.conversations_to_be_shown.some((conversation) =>
+        conversation.recipients.includes("Non-active user"),
+    );
+    assert.ok(!has_deactivated_conversation);
+
+    // Zooming should reveal the conversations including deactivated
+    // users.
+    list_info = pm_list_data.get_list_info(true);
+    check_list_info(list_info, 19, 0, [
+        "Alice, Bob, Non-active user",
+        "Non-active user",
+        "Iago",
+        "Cardelio",
+        "Alice, Bob, Cardelio, Zoe",
+        "Alice, Bob, Cardelio",
+        "Alice, Cardelio, Zoe",
+        "Bob, Cardelio, Zoe",
+        "Alice, Cardelio",
+        "Bob, Cardelio",
+        "Cardelio, Zoe",
+        "Alice, Bob, Zoe",
+        "Alice, Zoe",
+        "Bob, Zoe",
+        "Zoe",
+        "Alice, Bob",
+        "Bob",
+        "Me Myself",
+        "Alice",
+    ]);
 });
 
 test("get_list_info_no_unread_messages", ({override}) => {
@@ -412,6 +470,35 @@ test("get_list_info_no_unread_messages", ({override}) => {
     // Zooming will show all conversations.
     list_info = pm_list_data.get_list_info(true);
     check_list_info(list_info, 10, 0, [
+        "Bob, Cardelio",
+        "Alice, Cardelio",
+        "Bob, Zoe",
+        "Alice, Bob",
+        "Cardelio, Zoe",
+        "Cardelio",
+        "Zoe",
+        "Bob",
+        "Me Myself",
+        "Alice",
+    ]);
+
+    // Any conversations including deactivated users should be
+    // hidden.
+    pm_conversations.recent.insert([non_active_user.user_id], 11);
+    pm_conversations.recent.insert([alice.user_id, bob.user_id, non_active_user.user_id], 12);
+    list_info = pm_list_data.get_list_info(false);
+
+    const has_deactivated_conversation = list_info.conversations_to_be_shown.some((conversation) =>
+        conversation.recipients.includes("Non-active user"),
+    );
+    assert.ok(!has_deactivated_conversation);
+
+    // Zooming should reveal the conversations including deactivated
+    // users.
+    list_info = pm_list_data.get_list_info(true);
+    check_list_info(list_info, 12, 0, [
+        "Alice, Bob, Non-active user",
+        "Non-active user",
         "Bob, Cardelio",
         "Alice, Cardelio",
         "Bob, Zoe",

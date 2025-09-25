@@ -1587,6 +1587,12 @@ export function add_active_user(person: User, source = "inital_fetch"): void {
     non_active_user_dict.delete(person.user_id);
 }
 
+export function add_deactivated_user(person: User): void {
+    // This function is used for testing purposes only.
+
+    _add_user(person);
+}
+
 export const is_person_active = (
     user_id: number,
     allow_missing_user: boolean | undefined = undefined,
