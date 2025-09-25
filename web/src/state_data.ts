@@ -455,6 +455,7 @@ export const realm_schema = z.object({
         zoom: z.optional(z.object({name: z.string(), id: z.number()})),
         zoom_server_to_server: z.optional(z.object({name: z.string(), id: z.number()})),
         big_blue_button: z.optional(z.object({name: z.string(), id: z.number()})),
+        constructor_groups: z.optional(z.object({name: z.string(), id: z.number()})),
     }),
     realm_avatar_changes_disabled: z.boolean(),
     realm_bot_domain: z.string(),

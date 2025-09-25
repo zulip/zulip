@@ -73,6 +73,71 @@ class UnknownZoomUserError(JsonableError):
         super().__init__(_("Unknown Zoom user email"))
 
 
+class ConstructorGroupsService:
+    def __init__(self) -> None:
+        if not self._is_configured():
+            raise CreateVideoCallFailedError("Constructor Groups")
+
+        self.access_key = settings.CONSTRUCTOR_GROUPS_ACCESS_KEY
+        self.secret_key = settings.CONSTRUCTOR_GROUPS_SECRET_KEY
+        self.base_url = (
+            settings.CONSTRUCTOR_GROUPS_URL.rstrip("/") if settings.CONSTRUCTOR_GROUPS_URL else ""
+        )
+
+    @staticmethod
+    def _is_configured() -> bool:
+        return (
+            settings.CONSTRUCTOR_GROUPS_URL is not None
+            and settings.CONSTRUCTOR_GROUPS_ACCESS_KEY is not None
+            and settings.CONSTRUCTOR_GROUPS_SECRET_KEY is not None
+        )
+
+    def _make_authenticated_request(
+        self, method: str, endpoint: str, data: dict[str, Any] | None = None
+    ) -> dict[str, Any]:
+        """Make authenticated request to Constructor Groups XAPI"""
+        url = f"{self.base_url}{endpoint}"
+
+        # Construct authentication token: ACCESS_KEY|SHA256(ACCESS_KEY|SECRET_KEY)
+        combined_string = f"{self.access_key}|{self.secret_key}"
+        hash_hex = hashlib.sha256(combined_string.encode("utf-8")).hexdigest()
+        auth_token = f"{self.access_key}|{hash_hex}"
+
+        headers = {
+            "Authorization": f"Bearer {auth_token}",
+            "Content-Type": "application/json",
+        }
+
+        try:
+            session = VideoCallSession()
+            if method.upper() == "POST":
+                response = session.post(url, headers=headers, json=data or {})
+            else:
+                raise ValueError(f"Unsupported HTTP method: {method}")
+
+            response.raise_for_status()
+            return response.json()
+        except requests.HTTPError as e:
+            logging.exception(
+                "Constructor Groups API request failed with status %s", e.response.status_code
+            )
+            raise CreateVideoCallFailedError("Constructor Groups")
+        except Exception:
+            logging.exception("Constructor Groups API request failed")
+            raise CreateVideoCallFailedError("Constructor Groups")
+
+    def get_or_create_default_room(
+        self, creator_email: str, name: str, fallback_name: str
+    ) -> dict[str, Any]:
+        data = {
+            "creator_email": creator_email,
+            "name": name,
+            "fallback_name": fallback_name,
+        }
+
+        return self._make_authenticated_request("POST", "/room/default", data)
+
+
 class OAuthVideoCallProvider(ABC):
     provider_name: str = NotImplemented
     client_id: str | None = NotImplemented
@@ -466,3 +531,24 @@ def join_bigbluebutton(request: HttpRequest, *, bigbluebutton: str) -> HttpRespo
         settings.BIG_BLUE_BUTTON_URL + "api/join", join_params
     )
     return redirect(append_url_query_string(redirect_url_base, "checksum=" + checksum))
+
+
+@typed_endpoint_without_parameters
+def make_constructor_groups_video_call(
+    request: HttpRequest,
+    user_profile: UserProfile,
+) -> HttpResponse:
+    service = ConstructorGroupsService()
+
+    room_data = service.get_or_create_default_room(
+        creator_email=user_profile.delivery_email,
+        name=f"{user_profile.full_name}'s Zulip room",
+        fallback_name=f"{user_profile.full_name}'s Zulip room ({user_profile.realm_id}-{user_profile.id})",
+    )
+
+    room_url = room_data.get("url", "")
+    if not room_url:
+        logging.error("Constructor Groups API returned room without URL: %s", room_data)
+        raise CreateVideoCallFailedError("Constructor Groups")
+
+    return json_success(request, {"url": room_url})

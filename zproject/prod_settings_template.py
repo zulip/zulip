@@ -744,6 +744,12 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
 ## set big_blue_button_secret in zulip-secrets.conf.
 # BIG_BLUE_BUTTON_URL = "https://bbb.example.com/bigbluebutton/"
 
+## Controls the Constructor Groups video call integration. You must also
+## set constructor_groups_access_key and constructor_groups_secret_key in
+## zulip-secrets.conf.
+# CONSTRUCTOR_GROUPS_URL = "https://example.constructor.app/api/groups/xapi"
+
+
 ################
 ## AI Features
 ##

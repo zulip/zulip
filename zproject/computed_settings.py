@@ -532,6 +532,9 @@ DROPBOX_APP_KEY = get_secret("dropbox_app_key")
 
 BIG_BLUE_BUTTON_SECRET = get_secret("big_blue_button_secret")
 
+CONSTRUCTOR_GROUPS_ACCESS_KEY = get_secret("constructor_groups_access_key")
+CONSTRUCTOR_GROUPS_SECRET_KEY = get_secret("constructor_groups_secret_key")
+
 # These are the bots that Zulip sends automated messages as.
 INTERNAL_BOTS = [
     {

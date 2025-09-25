@@ -271,6 +271,7 @@ from zerver.views.video_calls import (
     deauthorize_zoom_user,
     get_bigbluebutton_url,
     join_bigbluebutton,
+    make_constructor_groups_video_call,
     make_zoom_video_call,
     register_zoom_user,
 )
@@ -598,6 +599,8 @@ v1_api_and_json_patterns = [
     rest_path("calls/zoom/create", POST=make_zoom_video_call),
     # Used to generate a BigBlueButton video call URL
     rest_path("calls/bigbluebutton/create", GET=get_bigbluebutton_url),
+    # Used to generate a Constructor Groups video call URL
+    rest_path("calls/constructorgroups/create", POST=make_constructor_groups_video_call),
     # export/realm -> zerver.views.realm_export
     rest_path("export/realm", POST=export_realm, GET=get_realm_exports),
     rest_path("export/realm/<int:export_id>", DELETE=delete_realm_export),

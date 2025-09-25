@@ -20,6 +20,14 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 12.0
 
+**Feature level 460**
+
+* [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events),
+  `PATCH /realm`: Constructor Groups integration added as an option
+  for the realm setting `video_chat_provider`.
+* [`POST /calls/constructorgroups/create`](/api/create-constructor-groups-video-call):
+  Added a new endpoint to create a Constructor Groups video call URL.
+
 **Feature level 459**
 
 * [`DELETE /users/{user_id}`](/api/deactivate-user): Added new

@@ -5490,11 +5490,15 @@ paths:
                                         - 3 = Zoom (User OAuth integration)
                                         - 4 = BigBlueButton
                                         - 5 = Zoom (Server to Server OAuth integration)
+                                        - 6 = Constructor Groups
 
                                         Note that only one of the [Zoom integrations][zoom-video-calls] can
                                         be configured on a Zulip server.
 
-                                        **Changes**: In Zulip 10.0 (feature level 353), added the Zoom Server
+                                        **Changes**: In Zulip 12.0 (feature level 460), added the
+                                        Constructor Groups option.
+
+                                        In Zulip 10.0 (feature level 353), added the Zoom Server
                                         to Server OAuth option.
 
                                         In Zulip 3.0 (feature level 1), added the None option
@@ -19196,11 +19200,15 @@ paths:
                           - 3 = Zoom (User OAuth integration)
                           - 4 = BigBlueButton
                           - 5 = Zoom (Server to Server OAuth integration)
+                          - 6 = Constructor Groups
 
                           Note that only one of the [Zoom integrations][zoom-video-calls] can
                           be configured on a Zulip server.
 
-                          **Changes**: In Zulip 10.0 (feature level 353), added the Zoom Server
+                          **Changes**: In Zulip 12.0 (feature level 460), added the
+                          Constructor Groups option.
+
+                          In Zulip 10.0 (feature level 353), added the Zoom Server
                           to Server OAuth option.
 
                           In Zulip 3.0 (feature level 1), added the None option
@@ -25283,6 +25291,42 @@ paths:
                         "msg": "",
                         "result": "success",
                         "url": "/calls/bigbluebutton/join?meeting_id=%22zulip-something%22&password=%22something%22&checksum=%22somechecksum%22",
+                      }
+
+  /calls/constructorgroups/create:
+    post:
+      tags: ["channels"]
+      operationId: create-constructor-groups-video-call
+      summary: Create Constructor Groups video call
+      description: |
+        Create a video call URL for a Constructor Groups video call.
+        Requires [Constructor Groups](/integrations/constructor-groups)
+        to be configured on the Zulip server.
+
+        **Changes**: New in Zulip 12.0 (feature level 460).
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      ignored_parameters_unsupported: {}
+                      url:
+                        description: |
+                          The URL for the Constructor Groups video call.
+                        type: string
+                        example: "https://example.constructor.app/groups/room/room-123"
+                    example:
+                      {
+                        "msg": "",
+                        "result": "success",
+                        "url": "https://example.constructor.app/groups/room/room-123",
                       }
 
 components:

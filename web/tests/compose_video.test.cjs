@@ -64,6 +64,10 @@ const realm_available_video_chat_providers = {
         id: 4,
         name: "BigBlueButton",
     },
+    constructor_groups: {
+        id: 6,
+        name: "Constructor Groups",
+    },
 };
 
 function test(label, f) {
@@ -269,6 +273,49 @@ test("videos", ({override}) => {
         assert.ok(called);
         assert.match(syntax_to_insert, audio_link_regex);
     })();
+
+    (function test_constructor_groups_video_link_compose_clicked() {
+        let syntax_to_insert;
+        let called = false;
+
+        const $textarea = $.create("constructor-groups-target-stub");
+        $textarea.set_parents_result(".message_edit_form", []);
+
+        const ev = {
+            preventDefault() {},
+            stopPropagation() {},
+        };
+
+        override(compose_ui, "insert_syntax_and_focus", (syntax) => {
+            syntax_to_insert = syntax;
+            called = true;
+        });
+
+        override(
+            realm,
+            "realm_video_chat_provider",
+            realm_available_video_chat_providers.constructor_groups.id,
+        );
+
+        channel.post = (payload) => {
+            assert.equal(payload.url, "/json/calls/constructorgroups/create");
+            assert.deepEqual(payload.data, {}); // Empty data object
+            payload.success({
+                result: "success",
+                msg: "",
+                url: "https://example.constructor.app/groups/room/room-123",
+            });
+            return {abort() {}};
+        };
+
+        $("textarea#compose-textarea").val("");
+        const video_handler = $("body").get_on_handler("click", ".video_link");
+        video_handler.call($textarea, ev);
+        const video_link_regex =
+            /\[translated: Join video call\.]\(https:\/\/example\.constructor\.app\/groups\/room\/room-123\)/;
+        assert.ok(called);
+        assert.match(syntax_to_insert, video_link_regex);
+    })();
 });
 
 test("test_video_chat_button_toggle disabled", ({override}) => {
@@ -297,6 +344,17 @@ test("test_video_chat_button_toggle enabled", ({override}) => {
         realm_available_video_chat_providers.jitsi_meet.id,
     );
     override(realm, "realm_jitsi_server_url", "https://meet.jit.si");
+    override(window, "to_$", () => $("window-stub"));
+    compose_setup.initialize();
+    assert.equal($(".compose-control-buttons-container .video_link").visible(), true);
+});
+
+test("test_constructor_groups_video_chat_button_toggle enabled", ({override}) => {
+    override(
+        realm,
+        "realm_video_chat_provider",
+        realm_available_video_chat_providers.constructor_groups.id,
+    );
     override(window, "to_$", () => $("window-stub"));
     compose_setup.initialize();
     assert.equal($(".compose-control-buttons-container .video_link").visible(), true);
