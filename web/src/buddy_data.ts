@@ -248,83 +248,101 @@ export type TitleData = {
     third_line: string;
     show_you?: boolean;
     is_deactivated?: boolean;
+    show_status_in_tooltip?: boolean;
 };
 
 export function get_title_data(user_ids_string: string, is_group: boolean): TitleData {
     if (is_group) {
-        // For groups, just return a string with recipient names.
         return {
             first_line: people.format_recipients(user_ids_string, "long"),
             second_line: "",
             third_line: "",
+            show_you: false,
+            is_deactivated: false,
+            show_status_in_tooltip: false,
         };
     }
 
-    // Since it's not a group, user_ids_string is a single user ID.
     const user_id = Number.parseInt(user_ids_string, 10);
     const person = people.get_by_user_id(user_id);
     const is_deactivated = !people.is_person_active(user_id);
+    const last_seen = user_last_seen_time_status(user_id);
+    const is_my_user = people.is_my_user_id(user_id);
+    const status_text = user_status.get_status_text(user_id) ?? "";
 
     if (person.is_bot) {
         const bot_owner = people.get_bot_owner_user(person);
 
         if (bot_owner) {
             const bot_owner_name = $t(
-                {defaultMessage: "Owner: {name}"},
-                {name: bot_owner.full_name},
+                { defaultMessage: "Owner: {name}" },
+                { name: bot_owner.full_name },
             );
 
             return {
                 first_line: person.full_name,
                 second_line: bot_owner_name,
                 third_line: is_deactivated
-                    ? $t({defaultMessage: "This bot has been deactivated."})
+                    ? $t({ defaultMessage: "This bot has been deactivated." })
                     : "",
+                show_you: is_my_user,
                 is_deactivated,
+                show_status_in_tooltip: false,
             };
         }
 
-        // Bot does not have an owner.
         return {
             first_line: person.full_name,
             second_line: "",
             third_line: "",
+            show_you: is_my_user,
+            is_deactivated,
+            show_status_in_tooltip: false,
         };
     }
-
-    // For buddy list and individual direct messages.
-    // Since is_group=False, it's a single, human user.
-    const last_seen = user_last_seen_time_status(user_id);
-    const is_my_user = people.is_my_user_id(user_id);
 
     if (is_deactivated) {
         return {
             first_line: person.full_name,
-            second_line: $t({defaultMessage: "This user has been deactivated."}),
+            second_line: $t({ defaultMessage: "This user has been deactivated." }),
             third_line: "",
             show_you: is_my_user,
             is_deactivated,
+            show_status_in_tooltip: false,
         };
     }
 
-    // Users has a status.
-    if (user_status.get_status_text(user_id)) {
-        return {
-            first_line: person.full_name,
-            second_line: user_status.get_status_text(user_id),
-            third_line: last_seen,
-            show_you: is_my_user,
-        };
-    }
+    if (status_text) {
+    return {
+        first_line: person.full_name,
+        second_line: last_seen,
+        third_line: status_text,
+        show_you: is_my_user,
+        is_deactivated,
+        show_status_in_tooltip:
+            page_params.compact_mode || is_status_truncated(status_text),
+    };
+}
 
-    // Users does not have a status.
+
     return {
         first_line: person.full_name,
         second_line: last_seen,
         third_line: "",
         show_you: is_my_user,
+        is_deactivated,
+        show_status_in_tooltip: false,
     };
 }
+
+function is_status_truncated(status: string): boolean {
+    if (!status) {
+        return false;
+    }
+    return status.length > 30;
+}
+
+
 
 export function get_items_for_users(user_ids: number[]): BuddyUserInfo[] {
     const direct_message_recipients = narrow_state.pm_ids_set();
@@ -415,6 +433,8 @@ function filter_user_ids(user_filter_text: string, user_ids: number[]): number[]
     const persons = user_ids.map((user_id) => people.get_by_user_id(user_id));
     return [...people.filter_people_by_search_terms(persons, user_filter_text)];
 }
+
+
 
 function get_filtered_user_id_list(
     user_filter_text: string,
