@@ -599,6 +599,9 @@ INTEGRATIONS: dict[str, Integration] = {
         "big-blue-button", ["video-calling", "communication"], display_name="BigBlueButton"
     ),
     "capistrano": Integration("capistrano", ["deployment"], display_name="Capistrano"),
+    "constructor-groups": Integration(
+        "constructor-groups", ["communication"], display_name="Constructor Groups"
+    ),
     "discourse": Integration("discourse", ["communication"]),
     "email": Integration("email", ["communication"]),
     "errbot": Integration("errbot", ["meta-integration", "bots"]),
@@ -711,7 +714,7 @@ NO_SCREENSHOT_CONFIG = (
     # Outgoing integrations - Docs won't have a screenshot
     {"email", "onyx"}
     # Video call integrations - Docs won't have a screenshot
-    | {"big-blue-button", "jitsi", "zoom"}
+    | {"big-blue-button", "constructor-groups", "jitsi", "zoom"}
     # Integrations that require screenshots of message threads - support is yet to be added
     | {
         "errbot",
