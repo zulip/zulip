@@ -113,8 +113,32 @@ export function postprocess_content(html: string): string {
         }
     }
 
+    // We need to quickly wrap inline images so we can pass them onto the
+    // image-processing loop below.
+    for (const inline_img_elt of template.content.querySelectorAll(".inline-image")) {
+        const original_src = inline_img_elt.getAttribute("data-original-src");
+        assert(typeof original_src === "string");
+        const alt = inline_img_elt.getAttribute("alt");
+
+        const media_wrapper = inertDocument.createElement("span");
+        media_wrapper.classList.add("message-media-inline-image");
+
+        const media_link = inertDocument.createElement("a");
+        media_link.setAttribute("href", original_src);
+        media_link.setAttribute("target", "_blank");
+        media_link.setAttribute("rel", "noopener noreferrer");
+
+        if (alt) {
+            media_link.setAttribute("title", alt);
+        }
+
+        media_link.append(inline_img_elt.cloneNode(true));
+        media_wrapper.append(media_link);
+        inline_img_elt.parentNode?.replaceChild(media_wrapper, inline_img_elt);
+    }
+
     for (const message_media_wrapper of template.content.querySelectorAll(
-        ".message_inline_image",
+        ".message_inline_image, .message-media-inline-image",
     )) {
         const message_media_link = message_media_wrapper.querySelector("a");
         const message_media_image = message_media_wrapper.querySelector("img");
@@ -171,7 +195,9 @@ export function postprocess_content(html: string): string {
                 // If the image source URL can't be parsed, likely due to
                 // some historical bug in the Markdown processor, just
                 // drop the invalid image element.
-                message_media_image.closest(".message-media-preview-image")!.remove();
+                message_media_image
+                    .closest(".message-media-preview-image, .message-media-inline-image")!
+                    .remove();
                 continue;
             }
 
