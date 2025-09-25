@@ -737,6 +737,10 @@ export function parse({
         return "<br>\n";
     };
 
+    // Treat images as links, because only the backend markdown processor
+    // can handle them correctly.
+    renderer.image = renderer.link;
+
     function preprocess_code_blocks(src: string): string {
         return fenced_code.process_fenced_code(src);
     }
