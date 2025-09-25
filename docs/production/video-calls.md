@@ -9,6 +9,7 @@ supported by Zulip are:
   100% open source video conferencing solution.
 - [Zoom](https://zulip.com/integrations/doc/zoom)
 - [BigBlueButton](https://zulip.com/integrations/doc/big-blue-button)
+- [Constructor Groups](https://zulip.com/integrations/doc/constructor-groups)
 
 By default, Zulip uses the [cloud version of Jitsi Meet](https://meet.jit.si/)
 as its call provider. This page documents the configurations required to support
