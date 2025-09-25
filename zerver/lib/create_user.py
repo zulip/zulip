@@ -115,6 +115,7 @@ def create_user_profile(
     timezone: str,
     default_language: str,
     force_date_joined: datetime | None = None,
+    is_imported_stub: bool = False,
     *,
     email_address_visibility: int,
 ) -> UserProfile:
@@ -141,6 +142,7 @@ def create_user_profile(
         default_language=default_language,
         delivery_email=email,
         email_address_visibility=email_address_visibility,
+        is_imported_stub=is_imported_stub,
     )
     if bot_type or not active:
         password = None
