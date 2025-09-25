@@ -315,9 +315,9 @@ class TestSCIMUser(SCIMTestCase):
             "startIndex": 1,
             "Resources": [
                 self.generate_user_schema(user_profile)
-                for user_profile in UserProfile.objects.filter(realm=realm, is_bot=False).order_by(
-                    "id"
-                )
+                for user_profile in UserProfile.objects.filter(
+                    realm=realm, is_bot=False, delivery_email__endswith="@zulip.com"
+                ).order_by("id")
             ],
         }
 

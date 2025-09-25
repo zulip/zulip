@@ -24063,7 +24063,7 @@ paths:
                   type: array
                   items:
                     type: integer
-                  example: [16, 12]
+                  example: [17, 12]
                 announce:
                   description: |
                     This determines whether [notification bot](/help/configure-automated-notices)
@@ -29882,5 +29882,5 @@ components:
         The user ID of the target bot.
       schema:
         type: integer
-      example: 16
+      example: 17
       required: true
