@@ -236,7 +236,10 @@ setting](https://www.postgresql.org/docs/current/runtime-config-connection.html#
 #### `random_page_cost`
 
 Override PostgreSQL's [`random_page_cost`
-setting](https://www.postgresql.org/docs/current/runtime-config-query.html#GUC-RANDOM-PAGE-COST)
+setting](https://www.postgresql.org/docs/current/runtime-config-query.html#GUC-RANDOM-PAGE-COST).
+Zulip defaults this value to 1.1, which is an appropriate value for
+SSDs; if your server uses spinning disks, you should set this back to
+the upstream default of 4.0.
 
 #### `replication_primary`
 
