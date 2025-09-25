@@ -48,6 +48,12 @@
             <a target="_blank" rel="noopener noreferrer" href="{{ org_creation_link }}">Create a new organization</a> if you don't have one yet.
             {% endtrans %}
         </div>
+        <div class="bottom-text self-hosting-login-help-text">
+            {{ _("Self-hosting Zulip?") }}
+            {% trans self_hosted_login_help="https://zulip.com/help/self-hosted-billing#log-in-to-billing-management" %}
+            You can <a target="_blank" rel="noopener noreferrer" href="{{ self_hosted_login_help }}">log in to manage plans and billing.</a>
+            {% endtrans %}
+        </div>
     </div>
 
 </div>
