@@ -11,11 +11,11 @@ from operator import or_
 from threading import Lock, Thread
 from typing import Any, NoReturn, Union
 
-import orjson
 from django.core.management.base import CommandError
 from django.db.models import Q
 from typing_extensions import override
 
+from zerver.lib.export import orjson_stream
 from zerver.lib.management import ZulipBaseCommand
 from zerver.lib.soft_deactivation import reactivate_user_if_soft_deactivated
 from zerver.lib.upload import save_attachment_contents
@@ -304,7 +304,7 @@ This is most often used for legal compliance.
                     row["attachments"] = ""
             return row
 
-        def chunked_results() -> Iterator[list[dict[str, str]]]:
+        def chunked_results() -> Iterator[dict[str, str]]:
             min_id = 0
             while True:
                 batch_query = messages_query.filter(id__gt=min_id)
@@ -316,25 +316,13 @@ This is most often used for legal compliance.
                 if len(batch) == 0:
                     break
                 min_id = int(batch[-1]["id"])
-                yield batch
+                print(".")
+                yield from batch
 
         print("Exporting messages...")
         if options["output"].endswith(".json"):
             with open(options["output"], "wb") as json_file:
-                first_chunk = True
-                for batch in chunked_results():
-                    print(".")
-                    if not first_chunk:
-                        json_file.write(b",\n")
-                    chunk = orjson.dumps(batch, option=orjson.OPT_INDENT_2)
-                    if not first_chunk:
-                        assert chunk.startswith(b"[\n")
-                        chunk = chunk[2:]
-                    assert chunk.endswith(b"\n]")
-                    chunk = chunk[:-2]
-                    json_file.write(chunk)
-                    first_chunk = False
-                json_file.write(b"\n]")
+                json_file.writelines(orjson_stream(chunked_results()))
         elif options["output"].endswith(".csv"):
             with open(options["output"], "w") as csv_file:
                 columns = [
@@ -350,7 +338,5 @@ This is most often used for legal compliance.
                     columns += ["attachments"]
                 csvwriter = csv.DictWriter(csv_file, columns)
                 csvwriter.writeheader()
-                for batch in chunked_results():
-                    print(".")
-                    csvwriter.writerows(batch)
+                csvwriter.writerows(chunked_results())
         download_queue.join()
