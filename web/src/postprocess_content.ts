@@ -178,7 +178,8 @@ export function postprocess_content(html: string): string {
                 image_url.pathname.startsWith("/user_uploads/thumbnail/")
             ) {
                 let thumbnail_name = thumbnail.preferred_format.name;
-                if (message_media_image.dataset.animated === "true") {
+                // eslint-disable-next-line unicorn/prefer-dom-node-dataset
+                if (message_media_image.getAttribute("data-animated") === "true") {
                     if (
                         user_settings.web_animate_image_previews === "always" ||
                         // Treat on_hover as "always" on mobile web, where
@@ -208,7 +209,10 @@ export function postprocess_content(html: string): string {
         // set those values as `height` and `width` attributes on the
         // image source.
         if (message_media_image?.hasAttribute("data-original-dimensions")) {
-            const original_dimensions_attribute = message_media_image.dataset.originalDimensions;
+            // eslint-disable-next-line unicorn/prefer-dom-node-dataset
+            const original_dimensions_attribute = message_media_image.getAttribute(
+                "data-original-dimensions",
+            );
             assert(original_dimensions_attribute);
             const original_dimensions: string[] = original_dimensions_attribute.split("x");
             assert(
