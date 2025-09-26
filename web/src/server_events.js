@@ -122,8 +122,11 @@ function get_events_success(events) {
                 // But in any case, insert_new_messages handles multiple
                 // messages, only one of which was sent by this client,
                 // correctly.
-
-                message_events.insert_new_messages(messages, sent_by_this_client, false);
+                message_events.insert_new_messages({
+                    type: "server_message",
+                    raw_messages: messages,
+                    sent_by_this_client,
+                });
             }
         } catch (error) {
             blueslip.error("Failed to insert new messages", undefined, error);
