@@ -1,6 +1,7 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
 
+import * as scroll_util from "./scroll_util.ts";
 import * as util from "./util.ts";
 
 export type Context = {
@@ -79,7 +80,10 @@ export function set_initial_element(element_id: string | undefined, context: Con
         const focus_element = current_element.children[0];
         assert(focus_element instanceof HTMLElement);
         activate_element(focus_element, context);
-        util.the($(`.${CSS.escape(context.items_list_selector)}`)).scrollTop = 0;
+        scroll_util.scroll_element_into_container(
+            $(focus_element),
+            $(`.${CSS.escape(context.items_list_selector)}`),
+        );
     }
 }
 
