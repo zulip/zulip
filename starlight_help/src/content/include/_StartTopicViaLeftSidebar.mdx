@@ -1,0 +1,18 @@
+import FlattenedSteps from "../../components/FlattenedSteps.astro";
+import KeyboardTip from "../../components/KeyboardTip.astro";
+import ComposeAndSendMessage from "../include/_ComposeAndSendMessage.mdx";
+
+import SquarePlusIcon from "~icons/zulip-icon/square-plus";
+
+<FlattenedSteps>
+  1. Click the **new topic** (<SquarePlusIcon />) button
+     next to the name of the channel where you'd like to start a conversation.
+  1. Enter a topic name. Think about finishing the sentence: “Hey, can we chat about… ?”
+
+  <ComposeAndSendMessage />
+</FlattenedSteps>
+
+<KeyboardTip>
+  You can also use the <kbd>C</kbd> keyboard shortcut to start a new topic in
+  the channel you're viewing.
+</KeyboardTip>

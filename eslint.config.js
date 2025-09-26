@@ -329,4 +329,13 @@ export default defineConfig(
             "import/unambiguous": "off",
         },
     },
+    {
+        files: ["starlight_help/src/content/include/*"],
+        rules: {
+            // We need to turn off this rule since we want import statements
+            // to be easily copy-paste-able between content/include and
+            // content/docs.
+            "import/no-useless-path-segments": "off",
+        },
+    },
 );
