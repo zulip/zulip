@@ -33,13 +33,17 @@ from datetime import timedelta
 from typing import Any
 
 from django.conf import settings
+from django.contrib.postgres.aggregates import ArrayAgg
 from django.db import connection, transaction
-from django.db.models import Model
+from django.db.models import Case, CharField, Model, Value, When
+from django.db.models.functions import Upper
 from django.utils.timezone import now as timezone_now
 from psycopg2.sql import SQL, Composable, Identifier, Literal
 
 from zerver.lib.logging_util import log_to_file
+from zerver.lib.message import event_recipient_ids_for_action_on_messages
 from zerver.lib.request import RequestVariableConversionError
+from zerver.lib.topic import DB_TOPIC_NAME
 from zerver.models import (
     ArchivedAttachment,
     ArchivedReaction,
@@ -54,7 +58,9 @@ from zerver.models import (
     Stream,
     SubMessage,
     UserMessage,
+    UserProfile,
 )
+from zerver.tornado.django_api import send_event_on_commit
 
 logger = logging.getLogger("zulip.retention")
 log_to_file(logger, settings.RETENTION_LOG_PATH)
@@ -123,8 +129,9 @@ def move_rows(
 def run_archiving(
     query: SQL,
     type: int,
-    realm: Realm | None = None,
+    realm: Realm,
     chunk_size: int | None = MESSAGE_BATCH_SIZE,
+    acting_user: UserProfile | None = None,
     **kwargs: Composable,
 ) -> int:
     # This function is carefully designed to achieve our
@@ -153,7 +160,7 @@ def run_archiving(
             )
             if new_chunk:
                 move_related_objects_to_archive(new_chunk)
-                delete_messages(new_chunk)
+                delete_messages(new_chunk, realm, acting_user=acting_user)
                 message_count += len(new_chunk)
             else:
                 archive_transaction.delete()  # Nothing was archived
@@ -317,14 +324,115 @@ def move_attachment_messages_to_archive(msg_ids: list[int]) -> None:
         cursor.execute(query, dict(message_ids=tuple(msg_ids)))
 
 
-def delete_messages(msg_ids: list[int]) -> None:
+def _process_grouped_messages_deletion(
+    realm: Realm,
+    message_ids: list[int],
+    *,
+    stream: Stream | None,
+    topic: str | None,
+    acting_user: UserProfile | None,
+) -> None:
+    """
+    Helper for do_delete_messages. Should not be called directly otherwise.
+    """
+
+    from zerver.actions.message_delete import DeleteMessagesEvent, check_update_first_message_id
+
+    if not message_ids:
+        return  # nocoverage
+
+    event: DeleteMessagesEvent = {
+        "type": "delete_message",
+        "message_ids": message_ids,
+    }
+    if stream is None:
+        assert topic is None
+        message_type = "private"
+    else:
+        assert topic is not None
+        message_type = "stream"
+        event["stream_id"] = stream.id
+        event["topic"] = topic
+    event["message_type"] = message_type
+
+    # We exclude long-term idle users, since they by definition have no active clients.
+    users_to_notify = event_recipient_ids_for_action_on_messages(
+        message_ids,
+        is_channel_message=stream is not None,
+        channel=stream if message_type == "stream" else None,
+    )
+
+    if acting_user is not None:
+        # Always send event to the user who deleted the message.
+        users_to_notify.add(acting_user.id)
+
+    if stream is not None:
+        check_update_first_message_id(realm, stream, message_ids, users_to_notify)
+
+    # Uses index: zerver_message_pkey
+    Message.objects.filter(id__in=message_ids).delete()
+
+    send_event_on_commit(realm, event, users_to_notify)
+
+
+def delete_messages(
+    msg_ids: list[int], realm: Realm, acting_user: UserProfile | None = None
+) -> None:
     # Important note: This also deletes related objects with a foreign
     # key to Message (due to `on_delete=CASCADE` in our models
     # configuration), so we need to be sure we've taken care of
     # archiving the messages before doing this step.
-    #
-    # Uses index: zerver_message_pkey
-    Message.objects.filter(id__in=msg_ids).delete()
+
+    # Besides deleting messages, this function needs to send out message deletion events.
+    # This requires grouping the messages per (channel, topic) for channel messages
+    # and per conversation for DMs.
+    # Message archiving through retention policy can involve large numbers of messages,
+    # so we care about performance here and thus prefer to offload this work to the database
+    # instead of running loops in Python.
+    query = (
+        Message.objects.filter(id__in=msg_ids)
+        .annotate(
+            group_topic=Case(
+                When(is_channel_message=True, then=Upper(DB_TOPIC_NAME)),
+                default=Value(None),
+                output_field=CharField(),
+            )
+        )
+        .values("recipient_id", "group_topic")
+        .annotate(message_ids=ArrayAgg("id", order_by="id"))
+    )
+    grouped_message_ids = {}
+    recipient_id_to_stream = {}
+    for row in query:
+        recipient_id = row["recipient_id"]
+        topic = row["group_topic"]
+        if topic is not None and recipient_id not in recipient_id_to_stream:
+            # We could be more efficient and fetch the stream in the same query as the grouped message ids data,
+            # but besides the do_scrub_realm codepath, the messages we process here should only ever be from at most
+            # one channel. So in these cases, we should be doing just a single fetch in this whole loop.
+            recipient_id_to_stream[recipient_id] = Stream.objects.get(recipient_id=recipient_id)
+
+        key = (recipient_id, topic) if topic is not None else recipient_id
+        grouped_message_ids[key] = row["message_ids"]
+
+    for key, message_ids in grouped_message_ids.items():
+        topic_name: str | None
+        stream: Stream | None
+        match key:
+            case (recipient_id, topic_name):
+                topic_name = topic_name.lower()
+                stream = recipient_id_to_stream[recipient_id]
+            case _:
+                topic_name = None
+                stream = None
+
+        _process_grouped_messages_deletion(
+            realm,
+            message_ids,
+            stream=stream,
+            topic=topic,
+            acting_user=acting_user,
+        )
 
 
 def delete_expired_attachments(realm: Realm) -> None:
@@ -456,7 +564,10 @@ def get_realms_and_streams_for_archiving() -> list[tuple[Realm, list[Stream]]]:
 
 
 def move_messages_to_archive(
-    message_ids: list[int], realm: Realm | None = None, chunk_size: int = MESSAGE_BATCH_SIZE
+    message_ids: list[int],
+    realm: Realm,
+    chunk_size: int = MESSAGE_BATCH_SIZE,
+    acting_user: UserProfile | None = None,
 ) -> None:
     """
     Callers using this to archive a large amount of messages should ideally make sure the message_ids are
@@ -489,6 +600,7 @@ def move_messages_to_archive(
             message_ids=Literal(tuple(message_ids_chunk)),
             realm=realm,
             chunk_size=None,
+            acting_user=acting_user,
         )
         # Clean up attachments:
         archived_attachments = ArchivedAttachment.objects.filter(
