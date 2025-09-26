@@ -411,7 +411,7 @@ A **warning** is a note on what happens when there is some kind of problem.
 Tips are more common than warnings.
 
 ```
-import ZulipNote from "../../../components/ZulipNote.astro";
+import ZulipNote from "../../components/ZulipNote.astro";
 
 <ZulipNote>
   This feature is only available to organization owners and administrators.
