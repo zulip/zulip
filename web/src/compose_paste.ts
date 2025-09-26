@@ -208,6 +208,23 @@ export function is_single_image(paste_html: string): boolean {
     );
 }
 
+function get_code_block_lanaguage(
+    pre_element: HTMLElement,
+    code_element_class_name: string,
+): string {
+    let language = "";
+    const parent_contains_lang_metadata =
+        pre_element.parentElement?.classList.contains("zulip-code-block");
+
+    if (parent_contains_lang_metadata) {
+        const codehilite_element = pre_element.closest<HTMLElement>(".codehilite");
+        language = codehilite_element?.getAttribute("data-code-language") ?? "";
+    } else {
+        language = (/language-(\S+)/.exec(code_element_class_name) ?? [null, ""])[1];
+    }
+    return language;
+}
+
 export function paste_handler_converter(
     paste_html: string,
     $textarea?: JQuery<HTMLTextAreaElement>,
@@ -456,7 +473,8 @@ export function paste_handler_converter(
 
     // We override the original upstream implementation of this rule to make
     // several tweaks:
-    // - We turn any single line code blocks into inline markdown code.
+    // - We turn any single line code blocks into inline markdown code, if they don't
+    // have associated language metadata.
     // - We generalise the filter condition to allow a `pre` element with a
     // `code` element as its only non-empty child, which applies to Zulip code
     // blocks too.
@@ -486,9 +504,11 @@ export function paste_handler_converter(
             const code = codeElement.textContent;
             assert(code !== null);
 
-            // We convert single line code inside a code block to inline markdown code,
-            // and the code for this is taken from upstream's `code` rule.
-            if (!code.includes("\n")) {
+            const className = codeElement.getAttribute("class") ?? "";
+            const language = get_code_block_lanaguage(node, className);
+            // We convert single line code inside a code block which does not have language metadata
+            // to inline markdown code, and the code for this is taken from upstream's `code` rule.
+            if (!code.includes("\n") && language === "") {
                 // If the cursor is just after a backtick, then we don't add extra backticks.
                 if (
                     $textarea &&
@@ -512,11 +532,6 @@ export function paste_handler_converter(
 
                 return delimiter + extraSpace + code + extraSpace + delimiter;
             }
-
-            const className = codeElement.getAttribute("class") ?? "";
-            const language = node.parentElement?.classList.contains("zulip-code-block")
-                ? (node.closest<HTMLElement>(".codehilite")?.dataset?.codeLanguage ?? "")
-                : (/language-(\S+)/.exec(className) ?? [null, ""])[1];
 
             assert(options.fence !== undefined);
             const fenceChar = options.fence.charAt(0);
