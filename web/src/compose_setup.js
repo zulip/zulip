@@ -5,7 +5,7 @@ import {unresolve_name} from "../shared/src/resolved_topic.ts";
 import render_add_poll_modal from "../templates/add_poll_modal.hbs";
 import render_add_todo_list_modal from "../templates/add_todo_list_modal.hbs";
 
-import * as compose from "./compose.js";
+import * as compose from "./compose.ts";
 import * as compose_actions from "./compose_actions.ts";
 import * as compose_banner from "./compose_banner.ts";
 import * as compose_call from "./compose_call.ts";
@@ -13,7 +13,7 @@ import * as compose_call_ui from "./compose_call_ui.ts";
 import * as compose_fade from "./compose_fade.ts";
 import * as compose_notifications from "./compose_notifications.ts";
 import * as compose_recipient from "./compose_recipient.ts";
-import * as compose_send_menu_popover from "./compose_send_menu_popover.js";
+import * as compose_send_menu_popover from "./compose_send_menu_popover.ts";
 import * as compose_state from "./compose_state.ts";
 import * as compose_ui from "./compose_ui.ts";
 import * as compose_validate from "./compose_validate.ts";

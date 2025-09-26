@@ -585,7 +585,7 @@ export let show = (raw_terms: NarrowTerm[], show_opts: ShowMessageViewOpts): voi
                         // message locally available and then call
                         // message_view.show recursively, setting a flag to
                         // indicate we've already done this.
-                        message_helper.process_new_message(data.message);
+                        message_helper.process_new_server_message(data.message);
                         show(raw_terms, {
                             ...opts,
                             fetched_target_message: true,
