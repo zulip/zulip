@@ -1800,46 +1800,54 @@ class RealmCreationTest(ZulipTestCase):
 
     @override_settings(OPEN_REALM_CREATION=True)
     def test_create_education_demo_organization_welcome_bot_direct_message(self) -> None:
-        password = "test"
-        string_id = "custom-test"
-        email = "user1@test.com"
-        realm_name = "Test"
+        realm_name = "demo education test"
 
-        # Create new realm with the email.
+        # Create new demo organization.
         result = self.submit_realm_creation_form(
-            email,
-            realm_subdomain=string_id,
+            email=None,
             realm_name=realm_name,
             realm_type=Realm.ORG_TYPES["education"]["id"],
+            create_demo=True,
         )
         self.assertEqual(result.status_code, 302)
-        self.assertTrue(
-            result["Location"].endswith(
-                f"/accounts/new/send_confirm/?email={quote(email)}&realm_name={quote_plus(realm_name)}&realm_type=35&realm_default_language=en&realm_subdomain={string_id}"
-            )
-        )
-        result = self.client_get(result["Location"])
-        self.assert_in_response("check your email", result)
+        self.assertTrue(re.search(r"/accounts/do_confirm/\w+$", result["Location"]))
 
-        # Visit the confirmation link.
-        confirmation_url = self.get_confirmation_url_from_outbox(email)
-        result = self.client_get(confirmation_url)
-        self.assertEqual(result.status_code, 200)
+        # Bypass sending email confirmation because demo organization
+        # owners will not set an email address, and go straight to the
+        # user registration form.
+        key = result["Location"].split("/")[-1]
+        result = self.client_get(result["Location"])
+        self.assert_in_response('action="/realm/register/"', result)
+
+        prereg_realm = PreregistrationRealm.objects.last()
+        assert prereg_realm is not None
+        self.assertEqual(prereg_realm.string_id, "")
+        self.assertTrue(prereg_realm.demo_organization)
+        self.assertEqual(prereg_realm.name, realm_name)
 
         result = self.submit_reg_form_for_user(
-            email,
-            password,
-            realm_subdomain=string_id,
+            email=None,
+            password=None,
+            realm_subdomain="",
             realm_name=realm_name,
-            enable_marketing_emails=False,
             realm_type=Realm.ORG_TYPES["education"]["id"],
-            is_demo_organization=True,
+            key=key,
+            create_demo=True,
         )
         self.assertEqual(result.status_code, 302)
+
+        # Confirm new realm is a demo organization.
+        realm = Realm.objects.latest("date_created")
+        self.assertEqual(realm.name, realm_name)
+        self.assertTrue(realm.string_id.startswith("demo-"))
+        expected_deletion_date = realm.date_created + timedelta(
+            days=settings.DEMO_ORG_DEADLINE_DAYS
+        )
+        self.assertEqual(realm.demo_organization_scheduled_deletion_date, expected_deletion_date)
 
         # Make sure the correct Welcome Bot direct message is sent.
         welcome_msg = Message.objects.filter(
-            realm_id=get_realm(string_id).id,
+            realm_id=realm.id,
             sender__email="welcome-bot@zulip.com",
             recipient__type=Recipient.PERSONAL,
         ).latest("id")
@@ -1849,6 +1857,16 @@ class RealmCreationTest(ZulipTestCase):
         self.assertNotIn("getting started guide", welcome_msg.content)
         self.assertIn("using Zulip for a class guide", welcome_msg.content)
         self.assertIn("demo organization", welcome_msg.content)
+
+        # Organization owner has expected defaults for demo organization creation.
+        owner = realm.get_human_owner_users().last()
+        assert owner is not None
+        self.assertEqual(owner.full_name, "Your name")
+        self.assertEqual(owner.delivery_email, "")
+        self.assertEqual(
+            owner.email_address_visibility, UserProfile.EMAIL_ADDRESS_VISIBILITY_NOBODY
+        )
+        self.assertFalse(owner.enable_marketing_emails)
 
     @override_settings(OPEN_REALM_CREATION=True)
     def test_create_realm_with_custom_language(self) -> None:
@@ -2062,17 +2080,26 @@ class RealmCreationTest(ZulipTestCase):
         # The remaining PreregistrationRealm should have been used up:
         self.assertEqual(PreregistrationRealm.objects.filter(email=email, status=0).count(), 0)
 
+    def test_register_demo_organization_with_email(self) -> None:
+        result = self.client_post("/new/", {"email": "name@example.com", "create_demo": "true"})
+
+        self.assertEqual(result.status_code, 200)
+        self.assertContains(result, "Email address not required for demo organizations.")
+
     @override_settings(OPEN_REALM_CREATION=True)
     def test_invalid_email_signup(self) -> None:
         result = self.submit_realm_creation_form(
             email="<foo", realm_subdomain="custom-test", realm_name="Zulip test"
         )
         self.assert_in_response("Please use your real email address.", result)
+        self.assert_in_response("Enter a valid email address.", result)
 
         result = self.submit_realm_creation_form(
             email="foo\x00bar", realm_subdomain="custom-test", realm_name="Zulip test"
         )
         self.assert_in_response("Please use your real email address.", result)
+        self.assert_in_response("Null characters are not allowed.", result)
+        self.assert_in_response("Enter a valid email address.", result)
 
     @override_settings(OPEN_REALM_CREATION=True)
     def test_mailinator_signup(self) -> None:
@@ -4501,6 +4528,8 @@ class UserSignUpTest(ZulipTestCase):
         self.assertEqual(result.status_code, 302)
 
         realm = Realm.objects.latest("date_created")
+        self.assertEqual(realm.name, "Demo organization")
+        self.assertTrue(realm.string_id.startswith("demo-"))
         self.assertTrue(
             result["Location"].startswith(
                 f"http://{realm.string_id}.testserver/accounts/login/subdomain"
@@ -4514,8 +4543,9 @@ class UserSignUpTest(ZulipTestCase):
         assert user_profile is not None
         self.assert_logged_in_user_id(user_profile.id)
 
-        # Demo organizations are created without setting an email address for the owner.
+        # Organization owner has expected defaults for demo organization creation.
         self.assertEqual(user_profile.delivery_email, "")
+        self.assertEqual(user_profile.full_name, "Your name")
         scheduled_email = ScheduledEmail.objects.filter(users=user_profile).last()
         assert scheduled_email is None
 
@@ -4523,7 +4553,7 @@ class UserSignUpTest(ZulipTestCase):
         self.assertEqual(
             user_profile.email_address_visibility, UserProfile.EMAIL_ADDRESS_VISIBILITY_NOBODY
         )
-
+        self.assertFalse(user_profile.enable_marketing_emails)
         expected_deletion_date = realm.date_created + timedelta(
             days=settings.DEMO_ORG_DEADLINE_DAYS
         )

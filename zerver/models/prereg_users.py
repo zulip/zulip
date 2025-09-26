@@ -36,6 +36,7 @@ class PreregistrationRealm(models.Model):
     )
     string_id = models.CharField(max_length=Realm.MAX_REALM_SUBDOMAIN_LENGTH)
     email = models.EmailField()
+    demo_organization = models.BooleanField(default=False)
 
     confirmation = GenericRelation("confirmation.Confirmation", related_query_name="prereg_realm")
     status = models.IntegerField(default=0)
