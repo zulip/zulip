@@ -3,8 +3,7 @@ import logging
 from collections.abc import Callable, Sequence
 from datetime import datetime
 from functools import wraps
-from io import BytesIO
-from typing import TYPE_CHECKING, Concatenate, TypeVar, cast, overload
+from typing import Concatenate, TypeVar, overload
 from urllib.parse import urlsplit
 
 import django_otp
@@ -14,8 +13,7 @@ from django.contrib.auth import login as django_login
 from django.contrib.auth.decorators import user_passes_test as django_user_passes_test
 from django.contrib.auth.models import AbstractBaseUser, AnonymousUser
 from django.contrib.auth.views import redirect_to_login
-from django.http import HttpRequest, HttpResponse, HttpResponseRedirect, QueryDict
-from django.http.multipartparser import MultiPartParser
+from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.shortcuts import resolve_url
 from django.template.response import SimpleTemplateResponse, TemplateResponse
 from django.utils.crypto import constant_time_compare
@@ -45,7 +43,7 @@ from zerver.lib.exceptions import (
 )
 from zerver.lib.queue import queue_json_publish_rollback_unsafe
 from zerver.lib.rate_limiter import is_local_addr, rate_limit_request_by_ip, rate_limit_user
-from zerver.lib.request import RequestNotes
+from zerver.lib.request import RequestNotes, populate_post_data
 from zerver.lib.response import json_method_not_allowed
 from zerver.lib.subdomains import get_subdomain, user_matches_subdomain
 from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
@@ -59,9 +57,6 @@ from zerver.lib.webhooks.common import (
 from zerver.models import UserProfile
 from zerver.models.clients import get_client
 from zerver.models.users import get_user_profile_by_api_key
-
-if TYPE_CHECKING:
-    from django.http.request import _ImmutableQueryDict
 
 webhook_logger = logging.getLogger("zulip.zerver.webhooks")
 webhook_unsupported_events_logger = logging.getLogger("zulip.zerver.webhooks.unsupported")
@@ -863,27 +858,7 @@ def process_as_post(
         # Django upstream.
 
         if not request.POST:
-            # Only take action if POST is empty.
-            if request.content_type == "multipart/form-data":
-                POST, files = MultiPartParser(
-                    request.META,
-                    BytesIO(request.body),
-                    request.upload_handlers,
-                    request.encoding,
-                ).parse()
-                # request.POST is an immutable QueryDict in most cases, while
-                # MultiPartParser.parse() returns a mutable instance of QueryDict.
-                # This can be fix when https://code.djangoproject.com/ticket/17235
-                # is resolved.
-                # django-stubs makes QueryDict of different mutabilities incompatible
-                # types. There is no way to acknowledge the django-stubs mypy plugin
-                # the change of POST's mutability, so we bypass the check with cast.
-                # See also: https://github.com/typeddjango/django-stubs/pull/925#issue-1206399444
-                POST._mutable = False
-                request.POST = cast("_ImmutableQueryDict", POST)
-                request.FILES.update(files)
-            elif request.content_type == "application/x-www-form-urlencoded":
-                request.POST = QueryDict(request.body, encoding=request.encoding)
+            request = populate_post_data(request)
 
         return view_func(request, *args, **kwargs)
 

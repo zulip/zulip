@@ -1,10 +1,12 @@
 from collections import defaultdict
 from collections.abc import MutableMapping
 from dataclasses import dataclass, field
-from typing import Any, Optional
+from io import BytesIO
+from typing import TYPE_CHECKING, Any, Optional, cast
 
 from django.conf import settings
-from django.http import HttpRequest, HttpResponse
+from django.http import HttpRequest, HttpResponse, QueryDict
+from django.http.multipartparser import MultiPartParser
 from django.utils.translation import gettext as _
 from typing_extensions import override
 
@@ -15,6 +17,9 @@ from zerver.models import Client, Realm
 
 if settings.ZILENCER_ENABLED:
     from zilencer.models import RemoteZulipServer
+
+if TYPE_CHECKING:
+    from django.http.request import _ImmutableQueryDict
 
 
 @dataclass
@@ -98,3 +103,29 @@ class RequestVariableConversionError(JsonableError):
 
 
 arguments_map: dict[str, list[str]] = defaultdict(list)
+
+
+def populate_post_data(request: HttpRequest) -> HttpRequest:
+    # Only take action if POST is empty.
+    if request.content_type == "multipart/form-data":
+        POST, files = MultiPartParser(
+            request.META,
+            BytesIO(request.body),
+            request.upload_handlers,
+            request.encoding,
+        ).parse()
+        # request.POST is an immutable QueryDict in most cases, while
+        # MultiPartParser.parse() returns a mutable instance of QueryDict.
+        # This can be fix when https://code.djangoproject.com/ticket/17235
+        # is resolved.
+        # django-stubs makes QueryDict of different mutabilities incompatible
+        # types. There is no way to acknowledge the django-stubs mypy plugin
+        # the change of POST's mutability, so we bypass the check with cast.
+        # See also: https://github.com/typeddjango/django-stubs/pull/925#issue-1206399444
+        POST._mutable = False
+        request.POST = cast("_ImmutableQueryDict", POST)
+        request.FILES.update(files)
+    elif request.content_type == "application/x-www-form-urlencoded":
+        request.POST = QueryDict(request.body, encoding=request.encoding)
+
+    return request
