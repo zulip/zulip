@@ -34,6 +34,7 @@ import * as message_reminder from "./message_reminder.ts";
 import * as message_store from "./message_store.ts";
 import * as message_view from "./message_view.ts";
 import * as muted_users_ui from "./muted_users_ui.ts";
+import * as narrow_state from "./narrow_state.ts";
 import * as narrow_title from "./narrow_title.ts";
 import * as navbar_alerts from "./navbar_alerts.ts";
 import * as navigation_views from "./navigation_views.ts";
@@ -728,7 +729,7 @@ export function dispatch_normal_event(event) {
                     }
                     stream_list.update_subscribe_to_more_streams_link();
                     break;
-                case "delete":
+                case "delete": {
                     for (const stream_id of event.stream_ids) {
                         const was_subscribed = sub_store.get(stream_id).subscribed;
                         stream_data.delete_sub(stream_id);
@@ -757,9 +758,13 @@ export function dispatch_normal_event(event) {
                         unread_ops.process_read_messages_event(message_ids);
                         message_events.remove_messages(message_ids);
                         stream_topic_history.remove_history_for_stream(stream_id);
+                        if (narrow_state.stream_id() === stream_id) {
+                            browser_history.go_to_location(browser_history.get_home_view_hash());
+                        }
                     }
                     stream_list.update_subscribe_to_more_streams_link();
                     break;
+                }
                 default:
                     blueslip.error("Unexpected event type stream/" + event.op);
                     break;
@@ -814,6 +819,14 @@ export function dispatch_normal_event(event) {
                 case "remove":
                     for (const rec of event.subscriptions) {
                         const sub = sub_store.get(rec.stream_id);
+                        if (
+                            sub.invite_only &&
+                            sub.stream_id === compose_state.selected_recipient_id
+                        ) {
+                            compose_state.set_selected_recipient_id("");
+                            compose_state.topic("");
+                            compose_recipient.on_compose_select_recipient_update();
+                        }
                         stream_events.mark_unsubscribed(sub);
                     }
                     break;
