@@ -25,6 +25,7 @@ from zerver.lib.email_mirror_helpers import (
 from zerver.lib.email_notifications import convert_html_to_markdown
 from zerver.lib.exceptions import JsonableError, RateLimitedError
 from zerver.lib.message import normalize_body, truncate_content, truncate_topic
+from zerver.models.constants import MAX_TOPIC_NAME_LENGTH
 from zerver.lib.rate_limiter import RateLimitedObject
 from zerver.lib.send_email import FromAddress
 from zerver.lib.streams import access_stream_for_send_message
@@ -156,6 +157,7 @@ def construct_zulip_body(
     include_quotes: bool = False,
     include_footer: bool = False,
     prefer_text: bool = True,
+    include_subject: str | None = None,
 ) -> str:
     body = extract_body(message, include_quotes, prefer_text)
     # Remove null characters, since Zulip will reject
@@ -172,6 +174,12 @@ def construct_zulip_body(
     if show_sender:
         from_address = str(message.get("From", ""))
         preamble = f"From: {from_address}\n"
+    
+    # If the email subject was too long, add it to the message body
+    # so users don't lose the full subject information
+    if include_subject is not None:
+        subject_line = f"Subject: {include_subject}\n"
+        preamble = preamble + subject_line
 
     postamble = extract_and_upload_attachments(message, realm, sender)
     if postamble != "":
@@ -456,6 +464,10 @@ def process_stream_message(to: str, message: EmailMessage) -> None:
     # Don't remove quotations if message is forwarded, unless otherwise specified:
     if "include_quotes" not in options:
         options["include_quotes"] = is_forwarded(subject_header)
+    
+    # Include the full subject in the message body if it's longer than MAX_TOPIC_NAME_LENGTH
+    if len(subject) > MAX_TOPIC_NAME_LENGTH:
+        options["include_subject"] = subject
 
     body = construct_zulip_body(message, realm, sender=sender, **options)
     send_zulip(sender, channel, subject, body)
