@@ -1487,8 +1487,7 @@ li.active-sub-filter {
     &.showing-expanded-navigation {
         /* When the expanded navigation is visible,
            hide the condensed navigation's controls. */
-        #left-sidebar-navigation-list-condensed,
-        .left-sidebar-navigation-menu-icon {
+        #left-sidebar-navigation-list-condensed {
             display: none;
         }
         /* Give the sidebar title through the end of the markers
@@ -1580,6 +1579,10 @@ li.active-sub-filter {
         &:hover {
             color: var(--color-vdots-hover);
             background-color: var(--color-background-sidebar-action-hover);
+        }
+
+        &.hide {
+            display: none !important;
         }
     }
 }
