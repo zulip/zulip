@@ -26,7 +26,7 @@ import * as channel_folders_popover from "./channel_folders_popover.ts";
 import * as click_handlers from "./click_handlers.ts";
 import * as color_picker_popover from "./color_picker_popover.ts";
 import * as common from "./common.ts";
-import * as compose from "./compose.js";
+import * as compose from "./compose.ts";
 import * as compose_closed_ui from "./compose_closed_ui.ts";
 import * as compose_notifications from "./compose_notifications.ts";
 import * as compose_paste from "./compose_paste.ts";
@@ -155,7 +155,7 @@ import * as timerender from "./timerender.ts";
 import * as tippyjs from "./tippyjs.ts";
 import * as topic_list from "./topic_list.ts";
 import * as topic_popover from "./topic_popover.ts";
-import * as transmit from "./transmit.js";
+import * as transmit from "./transmit.ts";
 import * as typeahead_helper from "./typeahead_helper.ts";
 import * as typing from "./typing.ts";
 import * as unread from "./unread.ts";
@@ -174,7 +174,7 @@ import * as user_status_ui from "./user_status_ui.ts";
 import * as user_topic_popover from "./user_topic_popover.ts";
 import * as user_topics from "./user_topics.ts";
 import * as util from "./util.ts";
-import * as widgets from "./widgets.js";
+import * as widgets from "./widgets.ts";
 
 // This is where most of our initialization takes place.
 // TODO: Organize it a lot better.  In particular, move bigger
