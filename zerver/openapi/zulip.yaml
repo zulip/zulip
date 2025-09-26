@@ -1502,9 +1502,15 @@ paths:
                                 but only to the clients that declared the `archived_channels`
                                 [client capability][client-capabilities].
 
-                                **Changes**: Prior to Zulip 11.0 (feature level 378),
-                                this event was never sent when archiving or unarchiving
-                                a channel.
+                                This event is also sent to all users in a Zulip organization
+                                when deactivating a user for settings set to anonymous user
+                                groups which the user is direct member of.
+
+                                **Changes**: Starting with Zulip 12.0 (feature level ZF-9c8bb9),
+                                this event can also be sent when deactivating or reactivating a user.
+
+                                Prior to Zulip 11.0 (feature level 378), this event was never
+                                sent when archiving or unarchiving a channel.
 
                                 Before Zulip 9.0 (feature level 256), this event was never
                                 sent when the `first_message_id` property of a channel was
@@ -3540,13 +3546,20 @@ paths:
                                 if `include_deactivated_groups` client capability
                                 is set to `true`.
 
-                                This event is also sent when deactivating or reactivating
-                                a user for settings set to anonymous user groups which the
-                                user is direct member of. When deactivating the user, event
-                                is only sent to users who cannot access the deactivated user.
+                                This event is also sent to all users in a Zulip organization
+                                when deactivating a user for settings set to anonymous user
+                                groups which the user is direct member of.
 
-                                **Changes**: Starting with Zulip 10.0 (feature level 303), this
-                                event can also be sent when deactivating or reactivating a user.
+                                **Changes**: Prior to Zulip 12.0 (feature level ZF-9c8bb9), when
+                                deactivating the user, this event was only sent to users who
+                                cannot access the deactivated user.
+
+                                Prior to Zulip 12.0 (feature level ZF-9c8bb9), this event was
+                                also sent when reactivating a user for settings set to anonymous
+                                user groups which the user is direct member of.
+
+                                Starting with Zulip 10.0 (feature level 303), this event can also
+                                be sent when deactivating or reactivating a user.
 
                                 Prior to Zulip 10.0 (feature level 294), this event was sent to
                                 all clients when a user group was deactivated.
@@ -4669,13 +4682,20 @@ paths:
                                 event type supports multiple properties being changed in a
                                 single event.
 
-                                This event is also sent when deactivating or reactivating a user
-                                for settings set to anonymous user groups which the user is direct
-                                member of. When deactivating the user, event is only sent to users
-                                who cannot access the deactivated user.
+                                This event is also sent to all users in a Zulip organization
+                                when deactivating a user for settings set to anonymous user
+                                groups which the user is direct member of.
 
-                                **Changes**: Starting with Zulip 10.0 (feature level 303), this
-                                event can also be sent when deactivating or reactivating a user.
+                                **Changes**: Prior to Zulip 12.0 (feature level ZF-9c8bb9), when
+                                deactivating the user, this event was only sent to users who
+                                cannot access the deactivated user.
+
+                                Prior to Zulip 12.0 (feature level ZF-9c8bb9), this event was
+                                also sent when reactivating a user for settings set to anonymous
+                                user groups which the user is direct member of.
+
+                                Starting with Zulip 10.0 (feature level 303), this event can also
+                                be sent when deactivating or reactivating a user.
 
                                 In Zulip 7.0 (feature level 163), the realm setting
                                 `email_address_visibility` was removed. It was replaced by a [user
