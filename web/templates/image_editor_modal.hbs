@@ -1,0 +1,17 @@
+<div class="micromodal" id="uppy-editor" aria-hidden="true">
+    <div class="modal__overlay" tabindex="-1">
+        <div class="modal__container" role="dialog" aria-modal="true" aria-labelledby="dialog_title">
+            <div class="modal__header">
+                <h1 class="modal__title"></h1>
+                <button class="modal__close" aria-label="{{t 'Close modal' }}" data-micromodal-close></button>
+            </div>
+            <main class="modal__content">
+                <div class="loading-placeholder"></div>
+            </main>
+            <footer class="modal__footer">
+                <button type="button" class="modal__button dialog_exit_button" aria-label="{{t 'Close this dialog window' }}" data-micromodal-close>{{t "Cancel" }}</button>
+                <button type="button" class="modal__button dialog_submit_button">{{t "Save changes"}}</button>
+            </footer>
+        </div>
+    </div>
+</div>

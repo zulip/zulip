@@ -35,7 +35,7 @@ async function delete_message_test(page: Page): Promise<void> {
 
     await common.wait_for_micromodal_to_open(page);
     await page.evaluate(() => {
-        document.querySelector<HTMLButtonElement>(".dialog_submit_button")?.click();
+        document.querySelector<HTMLButtonElement>(".modal--open .dialog_submit_button")?.click();
     });
     await common.wait_for_micromodal_to_close(page);
 
