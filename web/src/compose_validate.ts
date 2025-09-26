@@ -1063,6 +1063,28 @@ export function check_overflow_text($container: JQuery): number {
     return text.length;
 }
 
+export let update_posting_policy_banner_post_validation = (): void => {
+    const banner_text = get_posting_policy_error_message();
+    if (banner_text === "") {
+        compose_banner.clear_errors();
+        return;
+    }
+
+    let banner_classname = compose_banner.CLASSNAMES.no_post_permissions;
+    if (compose_state.selected_recipient_id === "direct") {
+        banner_classname = compose_banner.CLASSNAMES.cannot_send_direct_message;
+        compose_banner.cannot_send_direct_message_error(banner_text);
+    } else {
+        compose_banner.show_error_message(banner_text, banner_classname, $("#compose_banners"));
+    }
+};
+
+export function rewire_update_posting_policy_banner_post_validation(
+    value: typeof update_posting_policy_banner_post_validation,
+): void {
+    update_posting_policy_banner_post_validation = value;
+}
+
 export let validate_and_update_send_button_status = function (): void {
     const is_valid = validate(false, false);
     const $send_button = $("#compose-send-button");
@@ -1074,6 +1096,7 @@ export let validate_and_update_send_button_status = function (): void {
         send_button_element._tippy.hide();
         send_button_element._tippy.show();
     }
+    update_posting_policy_banner_post_validation();
 };
 
 export function rewire_validate_and_update_send_button_status(
