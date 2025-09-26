@@ -1,12 +1,33 @@
 import type {DebouncedFunc} from "lodash";
 import _ from "lodash";
+import assert from "minimalistic-assert";
 import * as z from "zod/mini";
 
 import * as channel from "./channel.ts";
+import {localstorage} from "./localstorage.ts";
 import type {Message} from "./message_store.ts";
 import * as starred_messages from "./starred_messages.ts";
 
-export function send_flag_update_for_messages(msg_ids: number[], flag: string, op: string): void {
+const untracked_flag_entry_schema = z.object({
+    add_ids: z.pipe(
+        z.array(z.number()),
+        z.transform((ids) => new Set(ids)),
+    ),
+    remove_ids: z.pipe(
+        z.array(z.number()),
+        z.transform((ids) => new Set(ids)),
+    ),
+});
+const untracked_flag_record_schema = z.record(z.string(), untracked_flag_entry_schema);
+
+type UntrackedFlagEntry = z.infer<typeof untracked_flag_entry_schema>;
+type UntrackedFlagRecord = z.infer<typeof untracked_flag_record_schema>;
+
+export function send_flag_update_for_messages(
+    msg_ids: number[],
+    flag: string,
+    op: "add" | "remove",
+): void {
     void channel.post({
         url: "/json/messages/flags",
         data: {
@@ -14,8 +35,102 @@ export function send_flag_update_for_messages(msg_ids: number[], flag: string, o
             flag,
             op,
         },
+        success() {
+            mutate_local_untracked_flag_changes(flag, (changes) => {
+                // Remove ids for which the latest change has been sent to the server.
+                for (const id of msg_ids) {
+                    changes.add_ids.delete(id);
+                    changes.remove_ids.delete(id);
+                }
+                return changes;
+            });
+        },
+        error() {
+            mutate_local_untracked_flag_changes(flag, (changes) => {
+                for (const id of msg_ids) {
+                    if (op === "add") {
+                        if (changes.remove_ids.has(id)) {
+                            changes.remove_ids.delete(id);
+                        } else {
+                            changes.add_ids.add(id);
+                        }
+                    } else {
+                        if (changes.add_ids.has(id)) {
+                            changes.add_ids.delete(id);
+                        } else {
+                            changes.remove_ids.add(id);
+                        }
+                    }
+                }
+                return changes;
+            });
+        },
     });
 }
+
+export function send_flag_update_for_untracked_messages(): void {
+    const process_entries = (entries: UntrackedFlagRecord): UntrackedFlagRecord | undefined => {
+        for (const [flag, entry] of Object.entries(entries)) {
+            if (entry.add_ids.size > 0) {
+                send_flag_update_for_messages([...entry.add_ids], flag, "add");
+            }
+            if (entry.remove_ids.size > 0) {
+                send_flag_update_for_messages([...entry.remove_ids], flag, "remove");
+            }
+        }
+        // The above API calls are expected to succeed, but even if they fail,
+        // we can still clear the untracked entries here since the failed ones
+        // will be added back.
+        return {};
+    };
+    mutate_all_local_untracked_flag_changes(process_entries);
+}
+
+export function mutate_local_untracked_flag_changes(
+    flag: string,
+    cb: (entries: UntrackedFlagEntry) => UntrackedFlagEntry | undefined,
+): void {
+    mutate_all_local_untracked_flag_changes((untracked_flag_entries) => {
+        const new_entries = cb(
+            untracked_flag_entries[flag] ?? {add_ids: new Set(), remove_ids: new Set()},
+        );
+        if (new_entries === undefined) {
+            return undefined;
+        }
+        untracked_flag_entries[flag] = new_entries;
+        return untracked_flag_entries;
+    });
+}
+
+export function mutate_all_local_untracked_flag_changes(
+    cb: (entries: UntrackedFlagRecord) => UntrackedFlagRecord | undefined,
+): void {
+    if (!localstorage.supported()) {
+        return;
+    }
+    const ls = localstorage();
+    const untracked_flag_entries_value = ls.get("untracked_flag_entries");
+    const result = untracked_flag_record_schema.safeParse(untracked_flag_entries_value);
+
+    const untracked_flag_entries = result.success ? result.data : {};
+    const changed_entries = cb(untracked_flag_entries);
+    if (changed_entries === undefined) {
+        return;
+    }
+
+    // Convert Sets back to arrays for storage
+    const entries_array: Record<string, {add_ids: number[]; remove_ids: number[]}> = {};
+    for (const flag of Object.keys(changed_entries)) {
+        assert(changed_entries[flag] !== undefined);
+        const encode_entry = {
+            add_ids: [...changed_entries[flag].add_ids],
+            remove_ids: [...changed_entries[flag].remove_ids],
+        };
+        entries_array[flag] = encode_entry;
+    }
+    ls.set("untracked_flag_entries", entries_array);
+}
+
 export let _unread_batch_size = 1000;
 
 export function rewire__unread_batch_size(value: typeof _unread_batch_size): void {
