@@ -33,6 +33,8 @@ UNTESTED_GENERATED_CURL_EXAMPLES = {
     # Having a message for a specific user available to test this endpoint
     # is tricky for testing.
     "delete-reminder",
+    # Would need Constructor Groups credentials configured to test this endpoint.
+    "create-constructor-groups-video-call",
 }
 
 
