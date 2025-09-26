@@ -522,10 +522,6 @@
     opacity: 0.4;
 }
 
-.dropdown-list-item-common-styles .dropdown-list-text-selected {
-    font-weight: 700;
-}
-
 .recent-view-filter-dropdown-list-container .dropdown-list-wrapper,
 .inbox-filter-dropdown-list-container .dropdown-list-wrapper {
     /* We want these dropdowns to open to fit their
