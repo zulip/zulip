@@ -11,6 +11,11 @@
     {{/if}}
     {{/if}}
     <span class="pill-label">
+        {{#if is_email_pill}}
+            {{~#if invited_user_name}}
+                <span class="invited-user-name">{{invited_user_name}}</span>
+            {{~/if~}}
+        {{/if}}
         <span class="pill-value">
             {{#if has_stream}}
                 {{~#if stream.invite_only ~}}
