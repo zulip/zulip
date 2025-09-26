@@ -457,6 +457,21 @@ function update_test_welcome_bot_custom_message_button_status(): void {
     $test_message_button.prop("disabled", true);
 }
 
+export function resize_settings_textarea(textarea_id: string): void {
+    const $el = $<HTMLTextAreaElement>(`#${CSS.escape(textarea_id)}`);
+
+    const min_rows = 2;
+    const max_rows = 5;
+    $el.attr("rows", min_rows);
+    const scrollheight = util.the($el).scrollHeight;
+
+    const line_height = Number.parseFloat($el.css("line-height"));
+    const needed_rows = Math.ceil(scrollheight / line_height) - 1;
+    const new_rows = Math.min(Math.max(needed_rows, min_rows), max_rows);
+
+    $el.attr("rows", new_rows);
+}
+
 export function check_disable_direct_message_initiator_group_widget(): void {
     const direct_message_permission_group_widget = settings_components.get_group_setting_widget(
         "realm_direct_message_permission_group",
@@ -1142,6 +1157,7 @@ export function save_organization_settings(
                 // a change.
                 unsaved_welcome_message_custom_text = "";
             }
+            settings_components.resize_textareas_in_subsection($subsection_parent);
         },
         error(xhr) {
             settings_components.change_save_button_state($save_button_container, "failed");

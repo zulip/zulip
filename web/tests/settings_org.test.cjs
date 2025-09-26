@@ -573,6 +573,7 @@ test("set_up", ({override, override_rewire}) => {
     $("#id_realm_welcome_message_custom_text").set_parent(
         $.create("<stub welcome message custom text>"),
     );
+    override_rewire(settings_components, "resize_textareas_in_subsection", noop);
 
     // Make our plan not limited so we don't have to stub all the
     // elements involved in disabling the can_create_groups input.
