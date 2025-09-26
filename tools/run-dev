@@ -295,6 +295,9 @@ async def forward(upstream_port: int, request: web.Request) -> web.StreamRespons
 
 
 def run_help_center_dev_server(external_host: str) -> "subprocess.Popen[bytes]":
+    env = os.environ.copy()
+    env["ZULIP_WEB_APP_PROXY_PORT"] = str(proxy_port)
+
     return subprocess.Popen(
         [
             "/usr/local/bin/corepack",
@@ -305,6 +308,7 @@ def run_help_center_dev_server(external_host: str) -> "subprocess.Popen[bytes]":
             f"--allowed-hosts={urlsplit(external_host).hostname}",
         ],
         cwd="starlight_help",
+        env=env,
     )
 
 
