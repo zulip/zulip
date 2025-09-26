@@ -10,7 +10,7 @@
                     {{#if stream_name}}
                         {{stream_name}}
                     {{else}}
-                        &nbsp;
+                        <span class="drafts-unknown-msg-header-field">{{t "No channel selected" }}</span>
                     {{/if}}
                 </div>
                 <span class="stream_topic_separator"><i class="zulip-icon zulip-icon-chevron-right"></i></span>
@@ -34,7 +34,7 @@
                     {{#if has_recipient_data}}
                     <span class="private_message_header_name">{{t "You and {recipients}" }}</span>
                     {{else}}
-                    <em>{{t "No DM recipients" }}</em>
+                    <span class="drafts-unknown-msg-header-field">{{t "No DM recipients" }}</span>
                     {{/if}}
                     {{/if}}
                 </div>
