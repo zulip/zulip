@@ -21,6 +21,7 @@ export type ApiStreamSubscription = z.infer<typeof api_stream_subscription_schem
 export const stream_subscription_schema = z.object({
     ...z.omit(api_stream_subscription_schema, {
         subscribers: true,
+        subscriber_count: true,
     }).shape,
     // These properties are added in `stream_data` when hydrating the streams and are not present in the data we get from the server.
     newly_subscribed: z.boolean(),

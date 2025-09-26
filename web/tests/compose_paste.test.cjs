@@ -16,11 +16,11 @@ const compose_paste = zrequire("compose_paste");
 const stream_data = zrequire("stream_data");
 
 set_global("document", {});
-stream_data.add_sub({
+stream_data.add_sub_for_tests({
     stream_id: 4,
     name: "Rome",
 });
-stream_data.add_sub({
+stream_data.add_sub_for_tests({
     stream_id: 5,
     name: "Romeo`s lair",
 });

@@ -102,13 +102,13 @@ run_test("basics", () => {
         name: "Stream 4",
         folder_id: frontend_folder.id,
     });
-    stream_data.add_sub(stream_1);
+    stream_data.add_sub_for_tests(stream_1);
 
     assert.deepEqual(channel_folders.user_has_folders(), false);
 
-    stream_data.add_sub(stream_2);
-    stream_data.add_sub(stream_3);
-    stream_data.add_sub(stream_4);
+    stream_data.add_sub_for_tests(stream_2);
+    stream_data.add_sub_for_tests(stream_3);
+    stream_data.add_sub_for_tests(stream_4);
 
     assert.deepEqual(channel_folders.get_stream_ids_in_folder(frontend_folder.id), [
         stream_2.stream_id,
