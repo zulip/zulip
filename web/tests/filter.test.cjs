@@ -597,7 +597,9 @@ test("basics", () => {
 
     terms = [
         {operator: "channel", operand: "channel_name"},
+        {operator: "channels", operand: "all"},
         {operator: "channels", operand: "public"},
+        {operator: "channels", operand: "subscribed"},
         {operator: "topic", operand: "patience"},
     ];
     filter = new Filter(terms);
@@ -1136,6 +1138,14 @@ test("predicate_basics", ({override}) => {
     assert.ok(predicate({type: direct_message}));
     assert.ok(!predicate({type: stream_message}));
 
+    predicate = get_predicate([["channels", "all"]]);
+    assert.ok(predicate({type: stream_message, stream_id: old_sub_id}));
+    assert.ok(predicate({type: stream_message, stream_id: private_sub_id}));
+    assert.ok(predicate({type: stream_message, stream_id: web_public_sub_id}));
+
+    predicate = get_predicate([["channels", "subscribed"]]);
+    assert.ok(predicate({type: stream_message, stream_id: private_sub_id}));
+
     predicate = get_predicate([["channels", "public"]]);
     assert.ok(predicate({type: stream_message, stream_id: old_sub_id}));
     assert.ok(!predicate({type: stream_message, stream_id: private_sub_id}));
@@ -1433,6 +1443,14 @@ test("negated_predicates", () => {
     assert.ok(predicate({type: stream_message, stream_id: 999999}));
     assert.ok(!predicate({type: stream_message, stream_id: social_stream_id}));
 
+    narrow = [{operator: "channels", operand: "all", negated: true}];
+    predicate = new Filter(narrow).predicate();
+    assert.ok(predicate({}));
+
+    narrow = [{operator: "channels", operand: "subscribed", negated: true}];
+    predicate = new Filter(narrow).predicate();
+    assert.ok(predicate({}));
+
     narrow = [{operator: "channels", operand: "public", negated: true}];
     predicate = new Filter(narrow).predicate();
     assert.ok(predicate({}));
@@ -1540,12 +1558,44 @@ test("parse", () => {
     ];
     _test();
 
+    string = "text channels:all more text";
+    terms = [
+        {operator: "search", operand: "text"},
+        {operator: "channels", operand: "all"},
+        {operator: "search", operand: "more text"},
+    ];
+    _test();
+
+    string = "text channels:subscribed more text";
+    terms = [
+        {operator: "search", operand: "text"},
+        {operator: "channels", operand: "subscribed"},
+        {operator: "search", operand: "more text"},
+    ];
+    _test();
+
     string = "text channels:public more text";
     terms = [
         {operator: "search", operand: "text"},
         {operator: "channels", operand: "public"},
         {operator: "search", operand: "more text"},
     ];
+    _test();
+
+    string = "channels:all";
+    terms = [{operator: "channels", operand: "all"}];
+    _test();
+
+    string = "-channels:all";
+    terms = [{operator: "channels", operand: "all", negated: true}];
+    _test();
+
+    string = "channels:subscribed";
+    terms = [{operator: "channels", operand: "subscribed"}];
+    _test();
+
+    string = "-channels:subscribed";
+    terms = [{operator: "channels", operand: "subscribed", negated: true}];
     _test();
 
     string = "channels:public";
@@ -1557,6 +1607,14 @@ test("parse", () => {
     _test();
 
     // "streams" was renamed to "channels"
+    string = "streams:all";
+    terms = [{operator: "channels", operand: "all"}];
+    _test();
+
+    string = "streams:subscribed";
+    terms = [{operator: "channels", operand: "subscribed"}];
+    _test();
+
     string = "streams:public";
     terms = [{operator: "channels", operand: "public"}];
     _test();
@@ -1618,6 +1676,38 @@ test("unparse", () => {
     assert.deepEqual(Filter.unparse(terms), string);
 
     terms = [
+        {operator: "channels", operand: "all"},
+        {operator: "search", operand: "text"},
+    ];
+
+    string = "channels:all text";
+    assert.deepEqual(Filter.unparse(terms), string);
+
+    terms = [{operator: "channels", operand: "all"}];
+    string = "channels:all";
+    assert.deepEqual(Filter.unparse(terms), string);
+
+    terms = [{operator: "channels", operand: "all", negated: true}];
+    string = "-channels:all";
+    assert.deepEqual(Filter.unparse(terms), string);
+
+    terms = [
+        {operator: "channels", operand: "subscribed"},
+        {operator: "search", operand: "text"},
+    ];
+
+    string = "channels:subscribed text";
+    assert.deepEqual(Filter.unparse(terms), string);
+
+    terms = [{operator: "channels", operand: "subscribed"}];
+    string = "channels:subscribed";
+    assert.deepEqual(Filter.unparse(terms), string);
+
+    terms = [{operator: "channels", operand: "subscribed", negated: true}];
+    string = "-channels:subscribed";
+    assert.deepEqual(Filter.unparse(terms), string);
+
+    terms = [
         {operator: "channels", operand: "public"},
         {operator: "search", operand: "text"},
     ];
@@ -1668,6 +1758,22 @@ test("describe", ({mock_template, override}) => {
     let string;
     mock_template("search_description.hbs", true, (_data, html) => html);
 
+    narrow = [{operator: "channels", operand: "all"}];
+    string = "all channels that you can view";
+    assert.equal(Filter.search_description_as_html(narrow, false), string);
+
+    narrow = [{operator: "channels", operand: "all", negated: true}];
+    string = "exclude all channels that you can view";
+    assert.equal(Filter.search_description_as_html(narrow, false), string);
+
+    narrow = [{operator: "channels", operand: "subscribed"}];
+    string = "all subscribed channels";
+    assert.equal(Filter.search_description_as_html(narrow, false), string);
+
+    narrow = [{operator: "channels", operand: "subscribed", negated: true}];
+    string = "exclude all subscribed channels";
+    assert.equal(Filter.search_description_as_html(narrow, false), string);
+
     narrow = [{operator: "channels", operand: "public"}];
     string = "all public channels";
     assert.equal(Filter.search_description_as_html(narrow, false), string);
@@ -1695,6 +1801,9 @@ test("describe", ({mock_template, override}) => {
 
     narrow = [{operator: "channels", operand: "web-public", negated: true}];
     string = "exclude all web-public channels";
+
+    narrow = [{operator: "channels", operand: "all"}];
+    string = "all channels that you can view";
     assert.equal(Filter.search_description_as_html(narrow, false), string);
     page_params.is_spectator = false;
 
@@ -1959,6 +2068,8 @@ test("term_type", () => {
         };
     }
 
+    assert_term_type(term("channels", "all"), "channels-all");
+    assert_term_type(term("channels", "subscribed"), "channels-subscribed");
     assert_term_type(term("channels", "public"), "channels-public");
     assert_term_type(term("channel", "whatever"), "channel");
     assert_term_type(term("dm", "whomever"), "dm");
@@ -1985,6 +2096,8 @@ test("term_type", () => {
     assert_term_sort(["bogus", "channel", "topic"], ["channel", "topic", "bogus"]);
     assert_term_sort(["channel", "topic", "channel"], ["channel", "channel", "topic"]);
 
+    assert_term_sort(["search", "channels-all"], ["channels-all", "search"]);
+    assert_term_sort(["search", "channels-subscribed"], ["channels-subscribed", "search"]);
     assert_term_sort(["search", "channels-public"], ["channels-public", "search"]);
 
     const terms = [
@@ -2059,6 +2172,8 @@ test("is_valid_search_term", () => {
         ["near:home", false],
         ["channel:" + denmark.stream_id, true],
         [`channel:${invalid_sub_id}`, false],
+        ["channels:all", true],
+        ["channels:subscribed", true],
         ["channels:public", true],
         ["channels:private", false],
         ["topic:GhostTown", true],
@@ -2345,6 +2460,8 @@ test("navbar_helpers", ({override}) => {
     const is_mentioned = [{operator: "is", operand: "mentioned"}];
     const is_resolved = [{operator: "is", operand: "resolved"}];
     const is_followed = [{operator: "is", operand: "followed"}];
+    const channels_all = [{operator: "channels", operand: "all"}];
+    const channels_subscribed = [{operator: "channels", operand: "subscribed"}];
     const channels_public = [{operator: "channels", operand: "public"}];
     const channels_web_public = [{operator: "channels", operand: "web-public"}];
     const channel_topic_terms = [
@@ -2524,6 +2641,20 @@ test("navbar_helpers", ({override}) => {
             icon: "question-circle-o",
             title: "translated: Unknown channel",
             redirect_url_with_search: "#",
+        },
+        {
+            terms: channels_all,
+            is_common_narrow: true,
+            icon: undefined,
+            title: "translated: Messages in all channels",
+            redirect_url_with_search: "/#narrow/channels/all",
+        },
+        {
+            terms: channels_subscribed,
+            is_common_narrow: true,
+            icon: undefined,
+            title: "translated: Messages in all subscribed channels",
+            redirect_url_with_search: "/#narrow/channels/subscribed",
         },
         {
             terms: channels_public,
@@ -2852,7 +2983,9 @@ run_test("is_spectator_compatible", () => {
     );
     assert.ok(!Filter.is_spectator_compatible([{operator: "is", operand: "starred"}]));
     assert.ok(!Filter.is_spectator_compatible([{operator: "is", operand: "dm"}]));
+    assert.ok(Filter.is_spectator_compatible([{operator: "channels", operand: "all"}]));
     assert.ok(Filter.is_spectator_compatible([{operator: "channels", operand: "public"}]));
+    assert.ok(!Filter.is_spectator_compatible([{operator: "channels", operand: "subscribed"}]));
 
     // Malformed input not allowed
     assert.ok(!Filter.is_spectator_compatible([{operator: "has"}]));
@@ -2866,7 +2999,9 @@ run_test("is_spectator_compatible", () => {
     // "stream" was renamted to "channel"
     assert.ok(Filter.is_spectator_compatible([{operator: "stream", operand: "Denmark"}]));
     // "streams" was renamed to "channels"
+    assert.ok(Filter.is_spectator_compatible([{operator: "streams", operand: "all"}]));
     assert.ok(Filter.is_spectator_compatible([{operator: "streams", operand: "public"}]));
+    assert.ok(!Filter.is_spectator_compatible([{operator: "streams", operand: "subscribed"}]));
     // "group-pm-with:" was replaced with "dm-including:"
     assert.ok(
         !Filter.is_spectator_compatible([{operator: "group-pm-with", operand: "hamlet@zulip.com"}]),
