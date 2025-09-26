@@ -636,12 +636,8 @@ export function show_user_profile(user: User, default_tab_key = "profile-tab"): 
     const show_user_group_container =
         user_group_picker_pill.get_user_groups_allowed_to_add_members().length > 0 &&
         people.is_person_active(user.user_id);
-    // We currently have the main UI for editing your own profile in
-    // settings, so can_manage_profile is artificially false for those.
     const can_manage_profile =
-        (people.can_admin_user(user) || current_user.is_admin) &&
-        !user.is_system_bot &&
-        !people.is_my_user_id(user.user_id);
+        (people.can_admin_user(user) || current_user.is_admin) && !user.is_system_bot;
     const args: Record<string, unknown> = {
         can_manage_profile,
         date_joined: timerender.get_localized_date_or_time_for_format(
@@ -749,7 +745,9 @@ export function show_user_profile(user: User, default_tab_key = "profile-tab"): 
     if (can_manage_profile) {
         const manage_profile_label = user.is_bot
             ? $t({defaultMessage: "Manage bot"})
-            : $t({defaultMessage: "Manage user"});
+            : people.is_my_user_id(user.user_id)
+              ? $t({defaultMessage: "Edit profile"})
+              : $t({defaultMessage: "Manage user"});
         const manage_profile_tab = {
             label: manage_profile_label,
             key: "manage-profile-tab",
@@ -1109,6 +1107,66 @@ function toggle_submit_button($edit_form: JQuery): void {
     $submit_button.prop("disabled", false);
 }
 
+export function add_or_remove_owner_from_role_dropdown(): void {
+    if (!current_user.is_owner) {
+        $("#user-role-select")
+            .find(
+                `option[value="${CSS.escape(settings_config.user_role_values.owner.code.toString())}"]`,
+            )
+            .hide();
+    } else {
+        $("#user-role-select")
+            .find(
+                `option[value="${CSS.escape(settings_config.user_role_values.owner.code.toString())}"]`,
+            )
+            .show();
+    }
+}
+
+export function update_user_own_role_dropdown_state(user_id: number): void {
+    const modal_user_id = get_user_id_if_user_profile_modal_open();
+    if (modal_user_id !== user_id) {
+        return;
+    }
+    
+    const $select_elem = $("#user-role-select");
+    const viewed_user = people.get_by_user_id(user_id);
+
+    if (people.is_my_user_id(user_id)) {
+        if (viewed_user.is_owner && people.is_current_user_only_owner()) {
+            ui_util.disable_element_and_add_tooltip(
+                $select_elem,
+                "Because you are the only organization owner, you cannot change your role.",
+            );
+            return;
+        }
+        if (!current_user.is_admin) {
+            $select_elem.attr("disabled", "true");
+            return;
+        }
+    } 
+
+    if (people.is_my_user_id(user_id)) {
+        if (!current_user.is_admin) {
+            $select_elem.attr("disabled", "true");
+            return;
+        }
+    } else if (!current_user.is_admin || (!current_user.is_owner && viewed_user.is_owner)) {
+        $select_elem.attr("disabled", "true");
+        return;
+    }
+
+    ui_util.enable_element_and_remove_tooltip($select_elem);
+}
+
+export function set_user_role_dropdown_value(user_id: number): void {
+    const modal_user_id = get_user_id_if_user_profile_modal_open();
+    if (modal_user_id === user_id) {
+        const user_role = people.get_by_user_id(user_id).role;
+        $("#user-role-select").val(user_role);
+    }
+}
+
 export function show_edit_user_info_modal(user_id: number, $container: JQuery): void {
     const person = people.maybe_get_user_by_id(user_id);
     const is_active = people.is_person_active(user_id);
@@ -1124,7 +1182,6 @@ export function show_edit_user_info_modal(user_id: number, $container: JQuery): 
         email: person.delivery_email,
         full_name: person.full_name,
         user_role_values: settings_config.user_role_values,
-        disable_role_dropdown: person.is_owner && !current_user.is_owner,
         is_active,
         hide_deactivate_button,
         max_user_name_length: people.MAX_USER_NAME_LENGTH,
@@ -1132,14 +1189,9 @@ export function show_edit_user_info_modal(user_id: number, $container: JQuery): 
 
     $container.append($(html_body));
     // Set role dropdown and fields user pills
-    $("#user-role-select").val(person.role);
-    if (!current_user.is_owner) {
-        $("#user-role-select")
-            .find(
-                `option[value="${CSS.escape(settings_config.user_role_values.owner.code.toString())}"]`,
-            )
-            .hide();
-    }
+    set_user_role_dropdown_value(user_id);
+    add_or_remove_owner_from_role_dropdown();
+    update_user_own_role_dropdown_state(user_id);
 
     const custom_profile_field_form_selector = "#edit-user-form .custom-profile-field-form";
     $(custom_profile_field_form_selector).empty();
@@ -1446,19 +1498,10 @@ export function initialize(): void {
         e.preventDefault();
     });
 
-    $("body").on(
-        "click",
-        "#user-profile-modal #name .user-profile-manage-others-edit-button",
-        (e) => {
-            show_manage_user_tab("manage-profile-tab");
-            e.stopPropagation();
-            e.preventDefault();
-        },
-    );
-
-    $("body").on("click", "#user-profile-modal #name .user-profile-manage-own-edit-button", () => {
-        browser_history.go_to_location("#settings/profile");
-        hide_user_profile();
+    $("body").on("click", "#user-profile-modal #name .user-profile-manage-edit-button", (e) => {
+        show_manage_user_tab("manage-profile-tab");
+        e.stopPropagation();
+        e.preventDefault();
     });
 
     /* These click handlers are implemented as just deep links to the
