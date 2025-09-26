@@ -624,6 +624,48 @@ export function handle_keyup(
     rtl.set_rtl_class_for_textarea($textarea);
 }
 
+/**
+ * True if the cursor in `$textarea` sits between an opening run of ` and its
+ * still‑missing matching closer.  Works for any run‑length (`, ```, …).
+ */
+export function cursor_inside_inline_span($textarea: JQuery<HTMLTextAreaElement>): boolean {
+    const textareaElement = $textarea[0];
+    if (!textareaElement || typeof textareaElement.selectionStart !== "number") {
+        return false;
+    }
+    // jQuery.val() can be string | number | string[] | undefined.
+    const val = $textarea.val();
+    if (typeof val !== "string") {
+        return false;
+    }
+    const caret = textareaElement.selectionStart;
+
+    const last_newline = val.lastIndexOf("\n", caret - 1);
+    const line_start = last_newline === -1 ? 0 : last_newline + 1;
+    const current_line = val.slice(line_start, caret);
+
+    let open_backtick_count = 0;
+    for (let i = 0; i < current_line.length; i += 1) {
+        if (current_line[i] === "`") {
+            let consecutive_count = 0;
+            while (i < current_line.length && current_line[i] === "`") {
+                consecutive_count += 1;
+                i += 1;
+            }
+            i -= 1;
+
+            // A code span can be opened with any number of consecutive backticks,
+            // and can only be closed with the same number of consecutive backticks.
+            if (open_backtick_count === 0) {
+                open_backtick_count = consecutive_count;
+            } else if (consecutive_count === open_backtick_count) {
+                open_backtick_count = 0;
+            }
+        }
+    }
+    return open_backtick_count > 0;
+}
+
 export function cursor_inside_code_block($textarea: JQuery<HTMLTextAreaElement>): boolean {
     // Returns whether the cursor is at a point that would be inside
     // a code block on rendering the textarea content as markdown.
