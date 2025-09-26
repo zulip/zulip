@@ -1024,7 +1024,14 @@ export function update_stream_sidebar_for_narrow(filter: Filter): JQuery | undef
     // We want to update channel view for inbox for the same reasons
     // we want to the topics list here.
     update_inbox_channel_view_callback(stream_id);
-    topic_list.rebuild_left_sidebar($stream_li, stream_id);
+    requestAnimationFrame(() => {
+        topic_list.rebuild_left_sidebar($stream_li, stream_id);
+        if (info.topic_selected) {
+            topic_list.left_sidebar_scroll_zoomed_in_topic_into_view();
+        } else {
+            scroll_stream_into_view($stream_li);
+        }
+    });
     topic_list.topic_state_typeahead?.lookup(true);
     return $stream_li;
 }
@@ -1035,14 +1042,11 @@ export function handle_narrow_activated(
     show_more_topics: boolean,
 ): void {
     const $stream_li = update_stream_sidebar_for_narrow(filter);
-    if ($stream_li) {
-        scroll_stream_into_view($stream_li);
-        if (!change_hash) {
-            if (!is_zoomed_in() && show_more_topics) {
-                zoom_in();
-            } else if (is_zoomed_in() && !show_more_topics) {
-                zoom_out();
-            }
+    if ($stream_li && !change_hash) {
+        if (!is_zoomed_in() && show_more_topics) {
+            zoom_in();
+        } else if (is_zoomed_in() && !show_more_topics) {
+            zoom_out();
         }
     }
 
@@ -1371,16 +1375,16 @@ export let scroll_stream_into_view = function ($stream_li: JQuery): void {
         blueslip.error("Invalid stream_li was passed in");
         return;
     }
-    const stream_filter_height = $("#left-sidebar-search").outerHeight()!;
-    const header_height = $stream_li
-        .closest(".stream-list-section-container")
-        .children(".stream-list-subsection-header")
-        .outerHeight()!;
-    scroll_util.scroll_element_into_container(
-        $stream_li,
-        $container,
-        stream_filter_height + header_height,
-    );
+
+    // Get the element with the channel name which we want to
+    // be visible.
+    const $stream_header = $stream_li.find(".subscription_block");
+    const header_height =
+        $stream_li
+            .closest(".stream-list-section-container")
+            .children(".stream-list-subsection-header")
+            .outerHeight()! + 2; // + 2px for top border
+    scroll_util.scroll_element_into_container($stream_header, $container, header_height);
     // Note: If the stream is in a collapsed folder, we don't uncollapse
     // the folder. We do uncollapse when the user clicks on the channel,
     // but that's handled elsewhere.
