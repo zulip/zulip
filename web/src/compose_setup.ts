@@ -1,11 +1,13 @@
 import $ from "jquery";
 import _ from "lodash";
+import assert from "minimalistic-assert";
+import * as z from "zod/mini";
 
 import {unresolve_name} from "../shared/src/resolved_topic.ts";
 import render_add_poll_modal from "../templates/add_poll_modal.hbs";
 import render_add_todo_list_modal from "../templates/add_todo_list_modal.hbs";
 
-import * as compose from "./compose.js";
+import * as compose from "./compose.ts";
 import * as compose_actions from "./compose_actions.ts";
 import * as compose_banner from "./compose_banner.ts";
 import * as compose_call from "./compose_call.ts";
@@ -13,7 +15,7 @@ import * as compose_call_ui from "./compose_call_ui.ts";
 import * as compose_fade from "./compose_fade.ts";
 import * as compose_notifications from "./compose_notifications.ts";
 import * as compose_recipient from "./compose_recipient.ts";
-import * as compose_send_menu_popover from "./compose_send_menu_popover.js";
+import * as compose_send_menu_popover from "./compose_send_menu_popover.ts";
 import * as compose_state from "./compose_state.ts";
 import * as compose_ui from "./compose_ui.ts";
 import * as compose_validate from "./compose_validate.ts";
@@ -38,13 +40,14 @@ import {get_timestamp_for_flatpickr} from "./timerender.ts";
 import * as ui_report from "./ui_report.ts";
 import * as upload from "./upload.ts";
 import * as user_topics from "./user_topics.ts";
+import * as util from "./util.ts";
 import * as widget_modal from "./widget_modal.ts";
 
-export function abort_xhr() {
+export function abort_xhr(): void {
     upload.compose_upload_cancel();
 }
 
-function setup_compose_actions_hooks() {
+function setup_compose_actions_hooks(): void {
     compose_actions.register_compose_box_clear_hook(compose.clear_invites);
     compose_actions.register_compose_box_clear_hook(compose.clear_private_stream_alert);
     compose_actions.register_compose_box_clear_hook(compose.clear_preview_area);
@@ -53,7 +56,7 @@ function setup_compose_actions_hooks() {
     compose_actions.register_compose_cancel_hook(compose_call.abort_video_callbacks);
 }
 
-export function initialize() {
+export function initialize(): void {
     // Register hooks for compose_actions.
     setup_compose_actions_hooks();
 
@@ -65,10 +68,16 @@ export function initialize() {
     );
 
     $("textarea#compose-textarea").on("keydown", (event) => {
-        compose_ui.handle_keydown(event, $("textarea#compose-textarea").expectOne());
+        compose_ui.handle_keydown(
+            event,
+            $<HTMLTextAreaElement>("textarea#compose-textarea").expectOne(),
+        );
     });
     $("textarea#compose-textarea").on("keyup", (event) => {
-        compose_ui.handle_keyup(event, $("textarea#compose-textarea").expectOne());
+        compose_ui.handle_keyup(
+            event,
+            $<HTMLTextAreaElement>("textarea#compose-textarea").expectOne(),
+        );
     });
 
     $("textarea#compose-textarea").on("input", () => {
@@ -115,9 +124,12 @@ export function initialize() {
             resize.reset_compose_message_max_height();
         });
     });
-    update_compose_max_height.observe(document.querySelector("#compose"));
+    update_compose_max_height.observe(document.querySelector("#compose")!);
 
-    function get_input_info(event) {
+    function get_input_info(event: JQuery.ClickEvent): {
+        is_edit_input: boolean;
+        $banner_container: JQuery;
+    } {
         const $edit_banners_container = $(event.target).closest(".edit_form_banners");
         const is_edit_input = $edit_banners_container.length > 0;
         const $banner_container = is_edit_input ? $edit_banners_container : $("#compose_banners");
@@ -132,11 +144,12 @@ export function initialize() {
         (event) => {
             event.preventDefault();
             const {$banner_container, is_edit_input} = get_input_info(event);
+            assert(event.target instanceof HTMLElement);
             const $row = $(event.target).closest(".message_row");
             compose_validate.clear_stream_wildcard_warnings($banner_container);
             compose_validate.set_user_acknowledged_stream_wildcard_flag(true);
             if (is_edit_input) {
-                message_edit.save_message_row_edit($row);
+                void message_edit.save_message_row_edit($row);
             } else if (event.target.dataset.validationTrigger === "schedule") {
                 compose_send_menu_popover.open_schedule_message_menu();
 
@@ -164,6 +177,7 @@ export function initialize() {
                 return;
             }
             const sub = stream_data.get_sub_by_id(stream_id);
+            assert(sub !== undefined);
             stream_settings_components.sub_or_unsub(sub);
             $(user_not_subscribed_selector).remove();
         },
@@ -176,8 +190,8 @@ export function initialize() {
             event.preventDefault();
 
             const $target = $(event.target).parents(".main-view-banner");
-            const stream_id = Number.parseInt($target.attr("data-stream-id"), 10);
-            const topic_name = $target.attr("data-topic-name");
+            const stream_id = Number.parseInt($target.attr("data-stream-id")!, 10);
+            const topic_name = $target.attr("data-topic-name")!;
 
             message_edit.with_first_message_id(stream_id, topic_name, (message_id) => {
                 if (message_id === undefined) {
@@ -210,7 +224,7 @@ export function initialize() {
                 } else {
                     message_edit.toggle_resolve_topic(message_id, topic_name, true);
                 }
-                compose_validate.clear_topic_resolved_warning(true);
+                compose_validate.clear_topic_resolved_warning();
             });
         },
     );
@@ -224,8 +238,8 @@ export function initialize() {
             event.preventDefault();
 
             const $target = $(event.target).parents(".main-view-banner");
-            const stream_id = Number.parseInt($target.attr("data-stream-id"), 10);
-            const topic_name = $target.attr("data-topic-name");
+            const stream_id = Number.parseInt($target.attr("data-stream-id")!, 10);
+            const topic_name = $target.attr("data-topic-name")!;
 
             user_topics.set_user_topic_visibility_policy(
                 stream_id,
@@ -244,9 +258,7 @@ export function initialize() {
         (event) => {
             event.preventDefault();
             if ($(event.target).attr("data-action") === "mark-as-read") {
-                $(event.target)
-                    .parents(`${automatic_new_visibility_policy_banner_selector}`)
-                    .remove();
+                $(event.target).parents(automatic_new_visibility_policy_banner_selector).remove();
                 onboarding_steps.post_onboarding_step_as_read("visibility_policy_banner");
                 return;
             }
@@ -262,6 +274,7 @@ export function initialize() {
         (event) => {
             event.preventDefault();
             const send_at_timestamp = scheduled_messages.get_selected_send_later_timestamp();
+            assert(send_at_timestamp !== undefined);
             compose_send_menu_popover.do_schedule_message(send_at_timestamp);
         },
     );
@@ -279,14 +292,15 @@ export function initialize() {
             const user_id = Number($invite_row.attr("data-user-id"));
             const stream_id = Number($invite_row.attr("data-stream-id"));
 
-            function success() {
+            function success(): void {
                 $invite_row.remove();
             }
 
-            function xhr_failure(xhr) {
+            function xhr_failure(xhr: JQuery.jqXHR<unknown>): void {
                 let error_message = "Failed to subscribe user!";
-                if (xhr.responseJSON?.msg) {
-                    error_message = xhr.responseJSON.msg;
+                const parsed = z.object({msg: z.string()}).safeParse(xhr.responseJSON);
+                if (parsed.success) {
+                    error_message = parsed.data.msg;
                 }
                 compose.clear_invites();
                 compose_banner.show_error_message(
@@ -299,6 +313,7 @@ export function initialize() {
             }
 
             const sub = sub_store.get(stream_id);
+            assert(sub !== undefined);
 
             subscriber_api.add_user_ids_to_stream([user_id], sub, true, success, xhr_failure);
         },
@@ -319,7 +334,7 @@ export function initialize() {
         `${jump_to_conversation_banner_selector} .main-view-banner-action-button`,
         (event) => {
             event.preventDefault();
-            $(event.target).parents(`${jump_to_conversation_banner_selector}`).remove();
+            $(event.target).parents(jump_to_conversation_banner_selector).remove();
             onboarding_steps.post_onboarding_step_as_read("jump_to_conversation_banner");
         },
     );
@@ -330,9 +345,7 @@ export function initialize() {
         `${non_interleaved_view_messages_fading_banner_selector} .main-view-banner-action-button`,
         (event) => {
             event.preventDefault();
-            $(event.target)
-                .parents(`${non_interleaved_view_messages_fading_banner_selector}`)
-                .remove();
+            $(event.target).parents(non_interleaved_view_messages_fading_banner_selector).remove();
             onboarding_steps.post_onboarding_step_as_read("non_interleaved_view_messages_fading");
         },
     );
@@ -343,7 +356,7 @@ export function initialize() {
         `${interleaved_view_messages_fading_banner_selector} .main-view-banner-action-button`,
         (event) => {
             event.preventDefault();
-            $(event.target).parents(`${interleaved_view_messages_fading_banner_selector}`).remove();
+            $(event.target).parents(interleaved_view_messages_fading_banner_selector).remove();
             onboarding_steps.post_onboarding_step_as_read("interleaved_view_messages_fading");
         },
     );
@@ -366,7 +379,7 @@ export function initialize() {
         $("#compose .file_input").trigger("click");
     });
 
-    $("body").on("click", ".video_link", (e) => {
+    $("body").on("click", ".video_link", function (this: HTMLElement, e): void {
         e.preventDefault();
         e.stopPropagation();
 
@@ -376,10 +389,10 @@ export function initialize() {
             return;
         }
 
-        compose_call_ui.generate_and_insert_audio_or_video_call_link($(e.target), false);
+        compose_call_ui.generate_and_insert_audio_or_video_call_link($(this), false);
     });
 
-    $("body").on("click", ".audio_link", (e) => {
+    $("body").on("click", ".audio_link", function (this: HTMLElement, e): void {
         e.preventDefault();
         e.stopPropagation();
 
@@ -389,31 +402,34 @@ export function initialize() {
             return;
         }
 
-        compose_call_ui.generate_and_insert_audio_or_video_call_link($(e.target), true);
+        compose_call_ui.generate_and_insert_audio_or_video_call_link($(this), true);
     });
 
-    $("body").on("click", ".time_pick", function (e) {
+    $("body").on("click", ".time_pick", function (this: HTMLElement, e) {
         e.preventDefault();
         e.stopPropagation();
 
         let $target_textarea;
-        let edit_message_id;
         const $compose_click_target = $(this);
         if ($compose_click_target.parents(".message_edit_form").length === 1) {
-            edit_message_id = rows.id($compose_click_target.parents(".message_row"));
-            $target_textarea = $(`#edit_form_${CSS.escape(edit_message_id)} .message_edit_content`);
+            const edit_message_id = rows.id($compose_click_target.parents(".message_row"));
+            $target_textarea = $<HTMLTextAreaElement>(
+                `#edit_form_${edit_message_id} textarea.message_edit_content`,
+            );
         } else {
-            $target_textarea = $compose_click_target.closest("form").find("textarea");
+            $target_textarea = $compose_click_target
+                .closest("form")
+                .find<HTMLTextAreaElement>("textarea");
         }
 
         if (!flatpickr.is_open()) {
-            const on_timestamp_selection = (val) => {
-                const timestr = `<time:${val}> `;
+            const on_timestamp_selection = (time: string): void => {
+                const timestr = `<time:${time}> `;
                 compose_ui.insert_syntax_and_focus(timestr, $target_textarea);
             };
 
             flatpickr.show_flatpickr(
-                $compose_click_target[0],
+                util.the($compose_click_target),
                 on_timestamp_selection,
                 get_timestamp_for_flatpickr(),
                 {
@@ -421,7 +437,7 @@ export function initialize() {
                     position: "auto center",
                     // Since we want to handle close of flatpickr manually, we don't want
                     // flatpickr to hide automatically on clicking its trigger element.
-                    ignoredFocusElements: [e.currentTarget],
+                    ignoredFocusElements: [this],
                 },
             );
         } else {
@@ -433,8 +449,8 @@ export function initialize() {
         e.preventDefault();
         e.stopPropagation();
 
-        function validate_input() {
-            const question = $("#poll-question-input").val().trim();
+        function validate_input(): boolean {
+            const question = $<HTMLInputElement>("#poll-question-input").val()!.trim();
 
             if (question === "") {
                 ui_report.error(
@@ -490,7 +506,7 @@ export function initialize() {
             e.preventDefault();
             e.stopPropagation();
 
-            function validate_input(e) {
+            function validate_input(e: JQuery.ClickEvent): boolean {
                 let is_valid = true;
                 e.preventDefault();
                 e.stopPropagation();
@@ -580,7 +596,7 @@ export function initialize() {
         // input is blurred, we immediately update the topic's
         // displayed text and compose-area placeholder when the
         // compose textarea is focused.
-        const $input = $("input#stream_message_recipient_topic");
+        const $input = $<HTMLInputElement>("input#stream_message_recipient_topic");
         compose_recipient.update_topic_displayed_text($input.val());
         compose_recipient.update_compose_area_placeholder_text();
         compose_fade.do_update_all();
@@ -593,7 +609,7 @@ export function initialize() {
 
     $(".compose-scrollable-buttons").on(
         "scroll",
-        _.throttle((e) => {
+        _.throttle((e: JQuery.ScrollEvent) => {
             compose_ui.handle_scrolling_formatting_buttons(e);
         }, 150),
     );
@@ -614,14 +630,14 @@ export function initialize() {
     // To track delayed effects originating from the "blur" event
     // and its use of setTimeout, we need to set up a variable to
     // reference the timeout's ID across events.
-    let recipient_focused_timeout;
+    let recipient_focused_timeout: ReturnType<typeof setTimeout>;
     $("input#stream_message_recipient_topic").on("focus", () => {
         // We don't want the `recently-focused` class removed via
         // a setTimeout from the "blur" event, if we're suddenly
         // focused again.
         clearTimeout(recipient_focused_timeout);
         const $compose_recipient = $("#compose-recipient");
-        const $input = $("input#stream_message_recipient_topic");
+        const $input = $<HTMLInputElement>("input#stream_message_recipient_topic");
         compose_recipient.update_topic_displayed_text($input.val(), true);
         compose_recipient.update_compose_area_placeholder_text();
         // When the topic input is focused, we no longer treat
@@ -653,7 +669,7 @@ export function initialize() {
 
     $("input#stream_message_recipient_topic, #private_message_recipient").on("blur", () => {
         const $compose_recipient = $("#compose-recipient");
-        const $input = $("input#stream_message_recipient_topic");
+        const $input = $<HTMLInputElement>("input#stream_message_recipient_topic");
         // To correct for an edge case when clearing the topic box
         // via the left sidebar, we do the following actions after a
         // delay; these will not have an effect for DMs, and so can
@@ -679,7 +695,7 @@ export function initialize() {
     $("body").on("click", ".formatting_button", function (e) {
         const $compose_click_target = $(this);
         const $textarea = $compose_click_target.closest("form").find("textarea");
-        const format_type = $(this).attr("data-format-type");
+        const format_type = $(this).attr("data-format-type")!;
         compose_ui.format_text($textarea, format_type);
         popovers.hide_all();
         $textarea.trigger("focus");

@@ -74,7 +74,10 @@ run_test("message_store", () => {
     // Let's add a message into our message_store via
     // message_helper.process_new_message.
     assert.equal(message_store.get(in_message.id), undefined);
-    message_helper.process_new_message(in_message);
+    message_helper.process_new_message({
+        type: "server_message",
+        raw_message: in_message,
+    });
     const message = message_store.get(in_message.id);
     assert.equal(message.alerted, true);
 
@@ -97,8 +100,11 @@ run_test("unread", () => {
     assert.equal(unread.num_unread_for_topic(stream_id, topic_name), 0);
 
     let in_message = {...messages.isaac_to_denmark_stream};
-    in_message = message_helper.process_new_message(in_message);
+    in_message = message_helper.process_new_message({
+        type: "server_message",
+        raw_message: in_message,
+    });
 
-    unread.process_loaded_messages([in_message]);
+    unread.process_loaded_messages([in_message.message]);
     assert.equal(unread.num_unread_for_topic(stream_id, topic_name), 1);
 });
