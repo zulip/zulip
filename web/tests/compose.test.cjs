@@ -627,6 +627,48 @@ test_ui("initialize", ({override}) => {
     })();
 });
 
+test_ui("autosaves drafts while typing after a minute", ({override, override_rewire}) => {
+    mock_banners();
+    initialize_handlers({override});
+
+    const fake_compose_box = new FakeComposeBox();
+    fake_compose_box.set_textarea_val("hello world");
+    compose_state.set_message_type("stream");
+
+    const saved_draft_opts = [];
+    override_rewire(drafts, "update_draft", (opts = {}) => {
+        saved_draft_opts.push(opts);
+        return "1";
+    });
+
+    try {
+        MockDate.set(new Date("2020-01-01T00:00:00Z"));
+        const $textarea = $("textarea#compose-textarea");
+        $textarea.trigger("input");
+        assert.deepEqual(saved_draft_opts, []);
+
+        MockDate.set(new Date("2020-01-01T00:00:30Z"));
+        $textarea.trigger("input");
+        assert.deepEqual(saved_draft_opts, []);
+
+        MockDate.set(new Date("2020-01-01T00:01:01Z"));
+        $textarea.trigger("input");
+        assert.deepEqual(saved_draft_opts, [{no_notify: true}]);
+
+        MockDate.set(new Date("2020-01-01T00:01:20Z"));
+        $textarea.trigger("input");
+        assert.equal(saved_draft_opts.length, 1);
+
+        MockDate.set(new Date("2020-01-01T00:02:30Z"));
+        $textarea.trigger("input");
+        assert.equal(saved_draft_opts.length, 2);
+        assert.deepEqual(saved_draft_opts[1], {no_notify: true});
+    } finally {
+        compose_state.set_message_type(undefined);
+        MockDate.reset();
+    }
+});
+
 test_ui("update_fade", ({override, override_rewire}) => {
     mock_banners();
     initialize_handlers({override});
