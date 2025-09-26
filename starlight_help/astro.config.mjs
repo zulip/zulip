@@ -384,7 +384,7 @@ export default defineConfig({
                     label: "Apps",
                     items: [
                         {
-                            label: "Download apps for every platform",
+                            label: "Download apps",
                             link: "https://zulip.com/apps/",
                             attrs: {
                                 class: "external-icon-sidebar",
