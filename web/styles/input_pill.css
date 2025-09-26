@@ -235,6 +235,13 @@
     }
 }
 
+.display_only_pill,
+.person_picker {
+    .pill:hover {
+        background-color: var(--color-background-text-hover-direct-mention);
+    }
+}
+
 #compose-direct-recipient .pill-container {
     border: 1px solid var(--color-compose-recipient-box-border-color);
 
@@ -282,13 +289,15 @@
 .display_only_pill {
     /* Ensure middle alignment in table contexts. */
     vertical-align: middle;
+    /* Resetting these values to prevent unintended inheritance. */
+    padding: 0;
+    border: 0;
 }
 
 /* These pill are similar to .not-editable, but are meant to show
    profile cards when clicked. */
 .panel_user_list > .pill-container,
 .creator_details > .display_only_pill {
-    background-color: hsl(0deg 0% 0% / 7%);
     gap: 2px;
     flex-wrap: nowrap;
 
@@ -302,7 +311,6 @@
     }
 
     > .pill {
-        background-color: transparent;
         border: none;
         text-decoration: none;
 
