@@ -2,13 +2,20 @@
     <div>
         {{first_line}}
         {{#if show_you}}
-        <span class="my_user_status">{{t "(you)" }}</span>
+            <span class="my_user_status">{{t "(you)"}}</span>
         {{/if}}
     </div>
+
     {{#if second_line}}
-        <div class="tooltip-inner-content {{#if is_deactivated}}italic{{/if}}" >{{second_line}}</div>
+        <div class="tooltip-inner-content {{#if is_deactivated}}italic{{/if}}">
+            {{second_line}}
+        </div>
     {{/if}}
-    {{#if third_line}}
-        <div class="tooltip-inner-content {{#if is_deactivated}}italic{{/if}}">{{third_line}}</div>
+
+    {{#if (and third_line show_status_in_tooltip)}}
+        <div class="tooltip-inner-content {{#if is_deactivated}}italic{{/if}}">
+            {{third_line}}
+        </div>
     {{/if}}
 </div>
+
