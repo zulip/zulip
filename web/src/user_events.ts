@@ -1,5 +1,5 @@
 // This module is kind of small, but it will help us keep
-// server_events.js simple while breaking some circular
+// server_events.ts simple while breaking some circular
 // dependencies that existed when this code was in people.js.
 // (We should do bot updates here too.)
 import $ from "jquery";

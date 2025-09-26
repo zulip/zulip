@@ -52,29 +52,41 @@ run_test("get starred ids in topic", () => {
     // id: 1 isn't inserted, to test handling the case
     // when message_store.get() returns undefined
     message_store.update_message_cache({
-        id: 2,
-        type: "private",
+        type: "server_message",
+        message: {
+            id: 2,
+            type: "private",
+        },
     });
     message_store.update_message_cache({
-        // Different stream
-        id: 3,
-        type: "stream",
-        stream_id: 19,
-        topic: "topic",
+        type: "server_message",
+        message: {
+            // Different stream
+            id: 3,
+            type: "stream",
+            stream_id: 19,
+            topic: "topic",
+        },
     });
     message_store.update_message_cache({
-        // Different topic
-        id: 4,
-        type: "stream",
-        stream_id: 20,
-        topic: "some other topic",
+        type: "server_message",
+        message: {
+            // Different topic
+            id: 4,
+            type: "stream",
+            stream_id: 20,
+            topic: "some other topic",
+        },
     });
     message_store.update_message_cache({
-        // Correct match
-        id: 5,
-        type: "stream",
-        stream_id: 20,
-        topic: "topic",
+        type: "server_message",
+        message: {
+            // Correct match
+            id: 5,
+            type: "stream",
+            stream_id: 20,
+            topic: "topic",
+        },
     });
 
     assert.deepEqual(starred_messages.get_count_in_topic(20, "topic"), 1);

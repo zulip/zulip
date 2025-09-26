@@ -17,7 +17,7 @@ const {page_params} = require("./lib/zpage_params.cjs");
 // functions (like overlays.settings_open).  Within that context, to
 // test whether a given key (e.g. `x`) results in a specific function
 // (e.g. `ui.foo()`), we fail to import any modules other than
-// hotkey.js so that accessing them will result in a ReferenceError.
+// hotkey.ts so that accessing them will result in a ReferenceError.
 //
 // Then we create a stub `ui.foo`, and call the hotkey function.  If
 // it calls any external module other than `ui.foo`, it'll crash.
@@ -37,7 +37,7 @@ set_global("document", {
 
 const activity_ui = mock_esm("../src/activity_ui");
 const activity = zrequire("../src/activity");
-const browser_history = mock_esm("../src/browser_history");
+const browser_history = mock_esm("../src/browser_history", {go_to_location() {}});
 const compose_actions = mock_esm("../src/compose_actions");
 const compose_reply = mock_esm("../src/compose_reply");
 const condense = mock_esm("../src/condense");
@@ -106,7 +106,7 @@ message_lists.current = {
     },
     selected_row() {
         const $row = $.create("selected-row-stub");
-        $row.set_find_results(".message-actions-menu-button", []);
+        $row.set_find_results(".message-actions-menu-button", ["<menu-button-stub>"]);
         $row.set_find_results(".emoji-message-control-button-container", {
             closest: () => ({css: () => "none"}),
         });
@@ -114,6 +114,8 @@ message_lists.current = {
     },
     selected_message() {
         return {
+            type: "stream",
+            stream_id: 2,
             sent_by_me: true,
             flags: ["read", "starred"],
         };
@@ -355,11 +357,11 @@ function test_normal_typing() {
     assert_unmapped('~!@#$%^*()_+{}:"<>');
 }
 
-test_while_not_editing_text("unmapped keys return false easily", () => {
+run_test("unmapped keys return false easily", () => {
     // Unmapped keys should immediately return false, without
-    // calling any functions outside of hotkey.js.
+    // calling any functions outside of hotkey.ts.
     // (unless we are editing text)
-    assert_unmapped("bfoyz");
+    assert_unmapped("bfo");
     assert_unmapped("BEFLOQTWXYZ");
 });
 
