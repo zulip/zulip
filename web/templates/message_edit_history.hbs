@@ -35,19 +35,38 @@
                             </p>
                         </div>
                         {{else}}
-                        {{#if stream_changed}}
+                        {{#if (or stream_changed topic_edited)}}
                         <div class="message_content message_edit_history_content">
-                            <p>{{t "Channel" }}: <span class="highlight_text_inserted">{{ new_stream }}</span>
-                                <span class="highlight_text_deleted">{{ prev_stream }}</span>
-                            </p>
-                        </div>
-                        {{/if}}
-                        {{#if topic_edited}}
-                        <div class="message_content message_edit_history_content">
-                            <p>{{t "Topic" }}:
-                                <span class="highlight_text_inserted {{#if is_empty_string_new_topic}}empty-topic-display{{/if}}">{{ new_topic_display_name }}</span>
-                                <span class="highlight_text_deleted {{#if is_empty_string_prev_topic}}empty-topic-display{{/if}}">{{ prev_topic_display_name }}</span>
-                            </p>
+                            {{#if (eq topic_resolved_or_unresolved "none")}}
+                            {{#tr}}
+                                Message moved from <prev-link></prev-link> to <new-link></new-link>.
+                                {{#*inline "prev-link"~}}
+                                    <a class="white-space-preserve-wrap" href="{{prev_stream_topic_url}}">
+                                        {{~!-- squash whitespace --~}}
+                                        #{{prev_stream}} &gt; <span {{#if is_empty_string_topic}}class="empty-topic-display"{{/if}}>{{prev_topic_display_name}}</span>
+                                        {{~!-- squash whitespace --~}}
+                                    </a>
+                                {{~/inline}}
+                                {{#*inline "new-link"~}}
+                                    <a class="white-space-preserve-wrap" href="{{new_stream_topic_url}}">
+                                        {{~!-- squash whitespace --~}}
+                                        #{{new_stream}} &gt; <span {{#if is_empty_string_topic}}class="empty-topic-display"{{/if}}>{{new_topic_display_name}}</span>
+                                        {{~!-- squash whitespace --~}}
+                                    </a>
+                                {{~/inline}}
+                            {{/tr}}
+                            {{else}}
+                            {{#tr}}
+                                <z-link></z-link> was marked as {topic_resolved_or_unresolved}.
+                                {{#*inline "z-link"~}}
+                                    <a class="white-space-preserve-wrap" href="{{prev_stream_topic_url}}">
+                                        {{~!-- squash whitespace --~}}
+                                        #{{prev_stream}} &gt; <span {{#if is_empty_string_topic}}class="empty-topic-display"{{/if}}>{{prev_topic_display_name}}</span>
+                                        {{~!-- squash whitespace --~}}
+                                    </a>
+                                {{~/inline}}
+                            {{/tr}}
+                            {{/if}}
                         </div>
                         {{/if}}
                         {{#if body_to_render}}
