@@ -35,7 +35,8 @@ const url_options_schema = z.array(url_option_schema);
 
 const PresetUrlOption = {
     BRANCHES: "branches",
-    MAPPING: "mapping",
+    CHANNEL_MAPPING: "mapping",
+    MAP_TO_TOPICS: "map_to_topics",
 };
 
 export function show_generate_integration_url_modal(api_key: string): void {
@@ -72,6 +73,7 @@ export function show_generate_integration_url_modal(api_key: string): void {
         const $dialog_submit_button = $("#generate-integration-url-modal .dialog_submit_button");
         const $show_integration_events = $("#show-integration-events");
         const $config_container = $("#integration-url-config-options-container");
+        let $map_to_topics_checkbox: JQuery<HTMLInputElement>;
 
         $dialog_submit_button.prop("disabled", true);
         $("#integration-url-stream_widget").prop("disabled", true);
@@ -116,6 +118,16 @@ export function show_generate_integration_url_modal(api_key: string): void {
             update_url();
         }
 
+        function set_checkbox_disabled_state(
+            $checkbox: JQuery<HTMLInputElement>,
+            disable: boolean,
+        ): void {
+            $checkbox
+                .prop("disabled", disable)
+                .closest(".input-group")
+                .toggleClass("control-label-disabled", disable);
+        }
+
         function render_url_options(config: UrlOption[]): void {
             const validated_config = url_options_schema.parse(config);
             $config_container.empty();
@@ -130,7 +142,7 @@ export function show_generate_integration_url_modal(api_key: string): void {
                     $config_element.find("#integration-url-all-branches").on("change", () => {
                         show_branch_filtering_ui();
                     });
-                } else if (option.key === PresetUrlOption.MAPPING) {
+                } else if (option.key === PresetUrlOption.CHANNEL_MAPPING) {
                     continue;
                 } else if (option.validator === "check_bool") {
                     const config_html = render_generate_integration_url_config_checkbox_modal({
@@ -157,6 +169,20 @@ export function show_generate_integration_url_modal(api_key: string): void {
                 }
                 $config_container.append($config_element);
             }
+
+            $map_to_topics_checkbox = $<HTMLInputElement>(
+                "input#integration-url-map_to_topics-checkbox",
+            );
+            set_checkbox_disabled_state($map_to_topics_checkbox, true);
+
+            // Only one of $override_topic checkbox or $map_to_topics checkbox
+            // can be checked at a time.
+            // Use "click" event to avoid infinite feedback loops.
+            $map_to_topics_checkbox.add($override_topic).on("click", function () {
+                const other_checkbox =
+                    this === $override_topic[0] ? $map_to_topics_checkbox : $override_topic;
+                set_checkbox_disabled_state(other_checkbox, this.checked);
+            });
         }
 
         $override_topic.on("change", function () {
@@ -248,11 +274,11 @@ export function show_generate_integration_url_modal(api_key: string): void {
             if (url_options) {
                 for (const option of url_options) {
                     let $input_element;
-                    if (option.key === PresetUrlOption.MAPPING) {
+                    if (option.key === PresetUrlOption.CHANNEL_MAPPING) {
                         const stream_input = stream_input_dropdown_widget.value();
                         if (stream_input === map_channels_option?.unique_id) {
                             params.delete("stream");
-                            params.set(PresetUrlOption.MAPPING, "channels");
+                            params.set(PresetUrlOption.CHANNEL_MAPPING, "channels");
                         }
                     } else if (option.key === PresetUrlOption.BRANCHES) {
                         if ($("#integration-url-all-branches").prop("checked")) {
@@ -370,7 +396,7 @@ export function show_generate_integration_url_modal(api_key: string): void {
             }
 
             const mapping_option = url_options?.find(
-                (option) => option.key === PresetUrlOption.MAPPING,
+                (option) => option.key === PresetUrlOption.CHANNEL_MAPPING,
             );
 
             if (mapping_option) {
@@ -404,17 +430,27 @@ export function show_generate_integration_url_modal(api_key: string): void {
             dropdown.hide();
             const user_selected_option = stream_input_dropdown_widget.value();
             if (user_selected_option === direct_messages_option.unique_id) {
-                $override_topic.prop("checked", false).prop("disabled", true);
-                $override_topic.closest(".input-group").addClass("control-label-disabled");
+                $override_topic.prop("checked", false);
+                set_checkbox_disabled_state($override_topic, true);
+                $map_to_topics_checkbox.prop("checked", false);
+                set_checkbox_disabled_state($map_to_topics_checkbox, true);
                 $topic_input.val("");
             } else if (user_selected_option === map_channels_option.unique_id) {
-                $override_topic.prop("checked", true).prop("disabled", true);
-                $override_topic.closest(".input-group").addClass("control-label-disabled");
+                $override_topic.prop("checked", true);
+                set_checkbox_disabled_state($override_topic, true);
+                $map_to_topics_checkbox.prop("checked", false);
+                set_checkbox_disabled_state($map_to_topics_checkbox, true);
                 $topic_input.val("");
                 $topic_input.parent().removeClass("hide");
             } else {
-                $override_topic.prop("disabled", false);
-                $override_topic.closest(".input-group").removeClass("control-label-disabled");
+                set_checkbox_disabled_state(
+                    $override_topic,
+                    $map_to_topics_checkbox.is(":checked"),
+                );
+                set_checkbox_disabled_state(
+                    $map_to_topics_checkbox,
+                    $override_topic.is(":checked"),
+                );
             }
             $override_topic.trigger("change");
             event.preventDefault();
@@ -448,8 +484,7 @@ export function show_generate_integration_url_modal(api_key: string): void {
             $("#integrations-event-container .integration-event").prop("checked", false);
             $show_integration_events.prop("checked", false);
 
-            $override_topic.prop("checked", false).prop("disabled", true);
-            $override_topic.closest(".input-group").addClass("control-label-disabled");
+            set_checkbox_disabled_state($override_topic, true);
             $topic_input.val("");
             $topic_input.parent().addClass("hide");
 
