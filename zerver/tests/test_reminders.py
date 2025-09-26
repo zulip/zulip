@@ -8,6 +8,7 @@ from zerver.actions.scheduled_messages import try_deliver_one_scheduled_message
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.models import Message, ScheduledMessage
+from zerver.models.recipients import Recipient, get_or_create_direct_message_group
 
 if TYPE_CHECKING:
     from django.test.client import _MonkeyPatchedWSGIResponse as TestHttpResponse
@@ -115,6 +116,40 @@ class RemindersTest(ZulipTestCase):
             message_id,
         )
         self.assertEqual(scheduled_message.topic_name(), Message.DM_TOPIC)
+
+    def test_schedule_reminder_using_direct_message_group(self) -> None:
+        hamlet = self.example_user("hamlet")
+        othello = self.example_user("othello")
+
+        self.login("hamlet")
+        content = "Test message"
+        scheduled_delivery_timestamp = int(time.time() + 86400)
+
+        # Create a direct message group between hamlet and othello.
+        get_or_create_direct_message_group(id_list=[hamlet.id, othello.id])
+
+        # Create a direct message group for hamlet's self messages.
+        hamlet_self_direct_message_group = get_or_create_direct_message_group(id_list=[hamlet.id])
+
+        # Scheduling a direct message with user IDs is successful.
+        message_id = self.send_dm_from_hamlet_to_othello(content)
+        result = self.do_schedule_reminder(message_id, scheduled_delivery_timestamp)
+        self.assert_json_success(result)
+        scheduled_message = self.last_scheduled_reminder()
+        self.assertEqual(
+            scheduled_message.content, self.get_dm_reminder_content(content, message_id)
+        )
+        self.assertEqual(scheduled_message.recipient.type, Recipient.DIRECT_MESSAGE_GROUP)
+        self.assertEqual(scheduled_message.recipient.type_id, hamlet_self_direct_message_group.id)
+        self.assertEqual(scheduled_message.sender, hamlet)
+        self.assertEqual(
+            scheduled_message.scheduled_timestamp,
+            timestamp_to_datetime(scheduled_delivery_timestamp),
+        )
+        self.assertEqual(
+            scheduled_message.reminder_target_message_id,
+            message_id,
+        )
 
     def test_schedule_reminder_with_bad_timestamp(self) -> None:
         self.login("hamlet")
