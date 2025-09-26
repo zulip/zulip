@@ -472,7 +472,7 @@ run_test("show_empty_narrow_message", ({mock_template, override}) => {
     assert.equal(
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
-            "translated: You have not sent any direct messages to yourself yet!",
+            "translated: You haven't sent yourself any notes yet!",
             "translated HTML: Use this space for personal notes, or to test out Zulip features.",
         ),
     );
