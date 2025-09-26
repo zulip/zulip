@@ -222,7 +222,7 @@ def do_update_mobile_push_notification(
 def do_clear_mobile_push_notifications_for_ids(
     user_profile_ids: list[int], message_ids: list[int]
 ) -> None:
-    if len(message_ids) == 0:
+    if len(user_profile_ids) == 0 or len(message_ids) == 0:
         return
 
     # This function supports clearing notifications for several users
