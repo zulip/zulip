@@ -75,7 +75,13 @@
 
             &:empty::before {
                 color: var(--color-text-placeholder);
-                content: attr(data-placeholder);
+                /* We add an `aria-label` attribute to the input element,
+                   since the content property is applicable only when the
+                   input is empty. In order to avoid duplicate announcements
+                   when the input is empty, we also add an empty ("") alt text
+                   to the content property in CSS, which is intended for speech
+                   output by screen-readers. */
+                content: attr(data-placeholder) / "";
             }
         }
 
