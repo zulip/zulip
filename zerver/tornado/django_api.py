@@ -104,6 +104,9 @@ def request_event_queue(
     # database.
     get_user_profile_narrow_by_id(user_profile.id)
 
+    if user_client.name == "ZulipFlutter" and queue_lifespan_secs == 0:
+        queue_lifespan_secs = 12 * 60 * 60  # Test 12-hour-long GCs for Flutter
+
     tornado_url = get_tornado_url(get_user_tornado_port(user_profile))
     req = {
         "dont_block": "true",
