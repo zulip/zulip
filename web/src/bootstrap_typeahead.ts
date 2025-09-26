@@ -250,6 +250,8 @@ export class Typeahead<ItemType extends string | object> {
     closeInputFieldOnHide: (() => void) | undefined;
     helpOnEmptyStrings: boolean;
     tabIsEnter: boolean;
+    typeahead_registered_keys: Set<string>;
+    repeat_key_map: Map<string, boolean> | undefined;
     stopAdvance: boolean;
     advanceKeys: string[];
     non_tippy_parent_element: string | undefined;
@@ -267,6 +269,7 @@ export class Typeahead<ItemType extends string | object> {
     // Used for custom situations where we want to hide the typeahead
     // after selecting an option, instead of the default call to lookup().
     hideAfterSelect: () => boolean;
+    on_show: (() => void) | undefined;
     hideOnEmptyAfterBackspace: boolean;
     // Used for adding a custom classname to the typeahead link.
     getCustomItemClassname: ((item: ItemType) => string) | undefined;
@@ -304,6 +307,8 @@ export class Typeahead<ItemType extends string | object> {
         this.openInputFieldOnKeyUp = options.openInputFieldOnKeyUp;
         this.closeInputFieldOnHide = options.closeInputFieldOnHide;
         this.tabIsEnter = options.tabIsEnter ?? true;
+        this.typeahead_registered_keys = new Set();
+        this.repeat_key_map = options.repeat_key_map ?? undefined;
         this.helpOnEmptyStrings = options.helpOnEmptyStrings ?? false;
         this.non_tippy_parent_element = options.non_tippy_parent_element;
         this.values = new WeakMap();
@@ -312,6 +317,7 @@ export class Typeahead<ItemType extends string | object> {
         this.updateElementContent = options.updateElementContent ?? true;
         this.showOnClick = options.showOnClick ?? true;
         this.hideAfterSelect = options.hideAfterSelect ?? (() => true);
+        this.on_show = options.on_show;
         this.hideOnEmptyAfterBackspace = options.hideOnEmptyAfterBackspace ?? false;
         this.getCustomItemClassname = options.getCustomItemClassname;
         this.listen();
@@ -529,7 +535,10 @@ export class Typeahead<ItemType extends string | object> {
         this.render(final_items.slice(0, this.items), matching_items);
 
         if (!this.shown) {
-            return this.show();
+            this.show();
+            if (this.on_show) {
+                this.on_show();
+            }
         }
 
         return this;
@@ -630,6 +639,12 @@ export class Typeahead<ItemType extends string | object> {
             .on("keydown", this.keydown.bind(this))
             .on("typeahead.refreshPosition", this.refreshPosition.bind(this));
 
+        if (the(this.input_element.$element).id === "private_message_recipient") {
+            $(this.input_element.$element).on("focusout", () => {
+                this.typeahead_registered_keys.clear();
+            });
+        }
+
         this.$menu
             .on("click", "li", this.click.bind(this))
             .on("mouseenter", "li", this.mouseenter.bind(this))
@@ -656,7 +671,12 @@ export class Typeahead<ItemType extends string | object> {
     maybeStopAdvance(e: JQuery.KeyPressEvent | JQuery.KeyUpEvent | JQuery.KeyDownEvent): void {
         if (
             (this.stopAdvance || (e.key !== "Tab" && e.key !== "Enter")) &&
-            !this.advanceKeys.includes(e.key)
+            !this.advanceKeys.includes(e.key) &&
+            !(
+                the(this.input_element.$element).id === "private_message_recipient" &&
+                e.shiftKey &&
+                e.key === "Tab"
+            )
         ) {
             e.stopPropagation();
         }
@@ -704,6 +724,13 @@ export class Typeahead<ItemType extends string | object> {
     }
 
     keydown(e: JQuery.KeyDownEvent): void {
+        if (
+            the(this.input_element.$element).id === "private_message_recipient" &&
+            ["Enter", "Tab"].includes(e.key) &&
+            this.repeat_key_map?.get(e.key) === false
+        ) {
+            this.typeahead_registered_keys.add(e.key);
+        }
         if (this.trigger_selection(e)) {
             if (!this.shown) {
                 return;
@@ -726,6 +753,18 @@ export class Typeahead<ItemType extends string | object> {
     }
 
     keyup(e: JQuery.KeyUpEvent): void {
+        if (
+            the(this.input_element.$element).id === "private_message_recipient" &&
+            ["Enter", "Tab"].includes(e.key)
+        ) {
+            // We didn't want to trigger keyup in typeahead. Focus changed to typeahead
+            // after keydown on another element.
+            if (!this.typeahead_registered_keys.has(e.key)) {
+                this.lookup(false);
+                return;
+            }
+            this.typeahead_registered_keys.delete(e.key);
+        }
         this.mouse_moved_since_typeahead = false;
         // NOTE: Ideally we can ignore meta keyup calls here but
         // it's better to just trigger the lookup call to update the list in case
@@ -927,4 +966,6 @@ type TypeaheadOptions<ItemType> = {
     showOnClick?: boolean;
     hideAfterSelect?: () => boolean;
     getCustomItemClassname?: (item: ItemType) => string;
+    repeat_key_map?: Map<string, boolean>;
+    on_show?: () => void;
 };
