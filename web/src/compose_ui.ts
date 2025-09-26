@@ -460,7 +460,7 @@ export function compute_placeholder_text(opts: ComposePlaceholderOptions): strin
     } else if (opts.direct_message_user_ids.length > 0) {
         const user_ids = opts.direct_message_user_ids;
         if (people.is_direct_message_conversation_with_self(user_ids)) {
-            return $t({defaultMessage: "Message yourself"});
+            return $t({defaultMessage: "Write yourself a note"});
         }
         const users = people.get_users_from_ids(user_ids);
         const recipient_parts = users.map((user) => {

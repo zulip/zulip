@@ -222,7 +222,7 @@ run_test("test_non_message_list_input", () => {
         user_ids: [current_user.user_id],
     });
     let label = $("#left_bar_compose_reply_button_big").html();
-    assert.equal(label, "Message yourself");
+    assert.equal(label, "Write yourself a note");
 
     // Invalid data for a the reply button text.
     compose_closed_ui.update_recipient_text_for_reply_button({
