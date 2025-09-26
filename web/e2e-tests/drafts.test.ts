@@ -27,6 +27,7 @@ async function test_empty_drafts(page: Page): Promise<void> {
     await page.waitForSelector(drafts_overlay, {visible: true});
     assert.strictEqual(await common.get_text_from_selector(page, ".drafts-list"), "No drafts.");
 
+    await page.waitForSelector(`${drafts_overlay} .exit`, {visible: true});
     await page.click(`${drafts_overlay} .exit`);
     await wait_for_drafts_to_disappear(page);
 }
@@ -40,10 +41,12 @@ async function create_stream_message_draft(page: Page): Promise<void> {
         content: "Test stream message.",
     });
     await page.type("#stream_message_recipient_topic", "tests", {delay: 100});
+    await page.waitForSelector("#compose_close", {visible: true});
     await page.click("#compose_close");
 }
 
 async function test_restore_stream_message_draft_by_opening_compose_box(page: Page): Promise<void> {
+    await page.waitForSelector(".search_icon", {visible: true});
     await page.click(".search_icon");
     await page.waitForSelector("#search_query", {visible: true});
     await common.clear_and_type(page, "#search_query", "stream:Denmark topic:tests");
@@ -53,6 +56,7 @@ async function test_restore_stream_message_draft_by_opening_compose_box(page: Pa
     await common.get_current_msg_list_id(page, wait_for_change);
     await page.keyboard.press("Enter");
 
+    await page.waitForSelector("#left_bar_compose_reply_button_big", {visible: true});
     await page.click("#left_bar_compose_reply_button_big");
     await page.waitForSelector("#send_message_form", {visible: true});
 
@@ -61,6 +65,7 @@ async function test_restore_stream_message_draft_by_opening_compose_box(page: Pa
         topic: "tests",
         content: "Test stream message. ",
     });
+    await page.waitForSelector("#compose_close", {visible: true});
     await page.click("#compose_close");
     await page.waitForSelector("#send_message_form", {visible: false});
 }
@@ -75,12 +80,14 @@ async function create_private_message_draft(page: Page): Promise<void> {
 }
 
 async function test_restore_private_message_draft_by_opening_composebox(page: Page): Promise<void> {
+    await page.waitForSelector("#left_bar_compose_reply_button_big", {visible: true});
     await page.click("#left_bar_compose_reply_button_big");
     await page.waitForSelector("#private_message_recipient", {visible: true});
 
     await common.check_form_contents(page, "form#send_message_form", {
         content: "Test direct message. ",
     });
+    await page.waitForSelector("#compose_close", {visible: true});
     await page.click("#compose_close");
     await page.waitForSelector("#private_message_recipient", {visible: false});
 }
@@ -144,6 +151,10 @@ async function test_previously_created_drafts_rendered(page: Page): Promise<void
 
 async function test_restore_message_draft_via_draft_overlay(page: Page): Promise<void> {
     console.log("Restoring stream message draft");
+    await page.waitForSelector(
+        "#drafts_table .message_row:not(.private-message) .restore-overlay-message",
+        {visible: true},
+    );
     await page.click("#drafts_table .message_row:not(.private-message) .restore-overlay-message");
     await wait_for_drafts_to_disappear(page);
     await page.waitForSelector("#stream_message_recipient_topic", {visible: true});
@@ -165,6 +176,7 @@ async function edit_stream_message_draft(page: Page): Promise<void> {
     await common.fill_form(page, "form#send_message_form", {
         content: "Updated stream message",
     });
+    await page.waitForSelector("#compose_close", {visible: true});
     await page.click("#compose_close");
 }
 
@@ -198,6 +210,9 @@ async function test_edited_draft_message(page: Page): Promise<void> {
 
 async function test_restore_private_message_draft_via_draft_overlay(page: Page): Promise<void> {
     console.log("Restoring direct message draft.");
+    await page.waitForSelector(".message_row.private-message .restore-overlay-message", {
+        visible: true,
+    });
     await page.click(".message_row.private-message .restore-overlay-message");
     await wait_for_drafts_to_disappear(page);
     await page.waitForSelector("#compose-direct-recipient", {visible: true});
@@ -218,6 +233,7 @@ async function test_restore_private_message_draft_via_draft_overlay(page: Page):
         "Cordelia, Lear's daughter and King Hamlet - Zulip Dev - Zulip",
         "Didn't narrow to the direct messages with cordelia and hamlet",
     );
+    await page.waitForSelector("#compose_close", {visible: true});
     await page.click("#compose_close");
 }
 
@@ -247,6 +263,7 @@ async function test_save_draft_by_reloading(page: Page): Promise<void> {
 
     // Reloading into a direct messages narrow opens compose box.
     await page.waitForSelector("#compose-textarea", {visible: true});
+    await page.waitForSelector("#compose_close", {visible: true});
     await page.click("#compose_close");
 
     console.log("Reloading finished. Opening drafts again now.");
@@ -275,6 +292,10 @@ async function test_save_draft_by_reloading(page: Page): Promise<void> {
 
 async function test_delete_draft_on_clearing_text(page: Page): Promise<void> {
     console.log("Deleting draft by clearing compose box textarea.");
+    await page.waitForSelector(
+        "#drafts_table .message_row:not(.private-message) .restore-overlay-message",
+        {visible: true},
+    );
     await page.click("#drafts_table .message_row:not(.private-message) .restore-overlay-message");
     await wait_for_drafts_to_disappear(page);
     await page.waitForSelector("#send_message_form", {visible: true});
@@ -289,6 +310,9 @@ async function test_delete_draft_on_clearing_text(page: Page): Promise<void> {
 
 async function drafts_test(page: Page): Promise<void> {
     await common.log_in(page);
+    await page.waitForSelector("#left-sidebar-navigation-list .top_left_all_messages", {
+        visible: true,
+    });
     await page.click("#left-sidebar-navigation-list .top_left_all_messages");
     const message_list_id = await common.get_current_msg_list_id(page, true);
     await page.waitForSelector(
@@ -309,6 +333,7 @@ async function drafts_test(page: Page): Promise<void> {
     });
     await create_private_message_draft(page);
     // Close and try restoring it by opening the composebox again.
+    await page.waitForSelector("#compose_close", {visible: true});
     await page.click("#compose_close");
     await test_restore_private_message_draft_by_opening_composebox(page);
 
