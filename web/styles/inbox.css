@@ -639,10 +639,14 @@
 }
 
 .inbox-folder-components {
-    margin-bottom: 0.5em;
     border-radius: 5px;
     border: 0.5px solid hsl(0deg 0% 0% / 13%);
     overflow: hidden;
+
+    &:has(.inbox-row:not(.hidden_by_filters)),
+    &:has(.inbox-header:not(.hidden_by_filters)) {
+        margin-bottom: 0.5em;
+    }
 }
 
 .inbox-folder.inbox-collapsed-state,
