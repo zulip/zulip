@@ -62,6 +62,7 @@ from zerver.lib.test_helpers import (
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.models import (
     Message,
+    PushDevice,
     PushDeviceToken,
     RealmAuditLog,
     Recipient,
@@ -2371,6 +2372,7 @@ class TestClearOnRead(ZulipTestCase):
             user_profile_id=hamlet.id,
             message_id__in=message_ids,
         ).update(flags=F("flags").bitor(UserMessage.flags.active_mobile_push_notification))
+        self.register_push_device(hamlet.id)
 
         with mock_queue_publish("zerver.actions.message_flags.queue_event_on_commit") as m:
             assert stream.recipient_id is not None
@@ -2381,6 +2383,24 @@ class TestClearOnRead(ZulipTestCase):
         self.assert_length(groups, 1)
         self.assertEqual(sum(len(g) for g in groups), len(message_ids))
         self.assertEqual({id for g in groups for id in g}, set(message_ids))
+
+        # Verify we don't enqueue events to clear, when no push device is registered.
+        message_ids = [
+            self.send_stream_message(self.example_user("iago"), stream.name, f"yo {i}")
+            for i in range(n_msgs, n_msgs + 2)
+        ]
+        UserMessage.objects.filter(
+            user_profile_id=hamlet.id,
+            message_id__in=message_ids,
+        ).update(flags=F("flags").bitor(UserMessage.flags.active_mobile_push_notification))
+
+        PushDevice.objects.all().delete()
+        PushDeviceToken.objects.all().delete()
+
+        with mock_queue_publish("zerver.actions.message_flags.queue_event_on_commit") as m:
+            assert stream.recipient_id is not None
+            do_mark_stream_messages_as_read(hamlet, stream.recipient_id)
+            m.assert_not_called()
 
 
 class TestPushNotificationsContent(ZulipTestCase):
