@@ -701,6 +701,7 @@ export function set_up(): void {
             $events_container: $("#profile-settings"),
             default_id: selected_timezone ?? user_settings.timezone,
             unique_id_type: "string",
+            placeholder_text: $t_html({defaultMessage: "Your time zone"}),
         };
 
         user_timezone_dropdown_widget = new dropdown_widget.DropdownWidget(opts);
