@@ -25,6 +25,7 @@ from zerver.lib.narrow import (
     get_base_query_for_search,
     is_spectator_compatible,
     is_web_public_narrow,
+    parse_anchor_date_value,
     parse_anchor_value,
     update_narrow_terms_containing_empty_topic_fallback_name,
 )
@@ -110,6 +111,7 @@ def get_messages_backend(
     maybe_user_profile: UserProfile | AnonymousUser,
     *,
     allow_empty_topic_name: Json[bool] = False,
+    anchor_date_val: Annotated[str | None, ApiParamConfig("anchor_date")] = None,
     anchor_val: Annotated[str | None, ApiParamConfig("anchor")] = None,
     apply_markdown: Json[bool] = True,
     client_gravatar: Json[bool] = True,
@@ -142,9 +144,10 @@ def get_messages_backend(
         include_anchor = False
 
     anchor = None
+    anchor_date = None
     if client_requested_message_ids is None:
         anchor = parse_anchor_value(anchor_val, use_first_unread_anchor_val)
-
+        anchor_date = parse_anchor_date_value(anchor_val, anchor_date_val)
     realm = get_valid_realm_from_request(request)
     narrow = clean_narrow_for_message_fetch(narrow, realm, maybe_user_profile)
 
@@ -243,12 +246,13 @@ def get_messages_backend(
             realm=realm,
             is_web_public_query=is_web_public_query,
             anchor=anchor,
+            anchor_date=anchor_date,
             include_anchor=include_anchor,
             num_before=num_before,
             num_after=num_after,
             client_requested_message_ids=client_requested_message_ids,
         )
-
+        # print("bef and aft", num_before, num_after)
         anchor = query_info.anchor
         include_history = query_info.include_history
         is_search = query_info.is_search
@@ -289,6 +293,7 @@ def get_messages_backend(
                 user_message_flags[message_id] = UserMessage.flags_list_for_flags(flags)
                 result_message_ids.append(message_id)
 
+        # print("result",result_message_ids)
         search_fields: dict[int, dict[str, str]] = {}
         if is_search:
             for row in rows:

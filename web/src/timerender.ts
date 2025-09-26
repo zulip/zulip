@@ -1,6 +1,7 @@
 import {
     differenceInHours,
     differenceInMinutes,
+    format,
     formatISO,
     isEqual,
     isValid,
@@ -584,4 +585,17 @@ export function is_browser_timezone_same_as(zulip_time_zone: string): boolean {
     // We delegate most of this check to facilitate testing.
     // We don't want to mock browser_time_zone.
     return are_timezones_on_same_clock_now(browser_time_zone(), zulip_time_zone);
+}
+
+export function get_dates_for_date_operator(): Map<string, string> {
+    const current_date = new Date();
+    const today = format(current_date, "yyyy-MM-dd");
+    const yesterdayDate = new Date(current_date);
+    yesterdayDate.setDate(current_date.getDate() - 1);
+    const yesterday = format(yesterdayDate, "yyyy-MM-dd");
+
+    return new Map([
+        ["today", today],
+        ["yesterday", yesterday],
+    ]);
 }

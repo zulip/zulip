@@ -15,6 +15,7 @@ import {type Suggestion, search_term_description_html} from "./search_suggestion
 import type {NarrowTerm} from "./state_data.ts";
 import * as state_data from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
+import * as timerender from "./timerender.ts";
 import * as user_status from "./user_status.ts";
 import type {UserStatusEmojiInfo} from "./user_status.ts";
 import * as util from "./util.ts";
@@ -383,6 +384,15 @@ function get_search_operand(item: SearchPill, for_display: boolean): string {
         }
         if (item.operator === "topic") {
             return util.get_final_topic_display_name(item.operand);
+        }
+        if (item.operator === "date") {
+            const dates = timerender.get_dates_for_date_operator();
+            if (item.operand === dates.get("today")) {
+                return "today";
+            }
+            if (item.operand === dates.get("yesterday")) {
+                return "yesterday";
+            }
         }
         // For all other `for_display=true` cases, we just show the default operand.
     }

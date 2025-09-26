@@ -136,6 +136,7 @@ export const allowed_web_public_narrow_operators = [
     "near",
     "id",
     "with",
+    "date",
 ];
 
 export function is_spectator_compatible(hash: string): boolean {

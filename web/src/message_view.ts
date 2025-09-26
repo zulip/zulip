@@ -714,14 +714,25 @@ export let show = (raw_terms: NarrowTerm[], show_opts: ShowMessageViewOpts): voi
 
             {
                 let anchor;
-
+                let anchor_date;
+                let date_opearator;
                 // Either we're trying to center the narrow around a
                 // particular message ID (which could be max_int), or we're
                 // asking the server to figure out for us what the first
                 // unread message is, and center the narrow around that.
                 switch (id_info.final_select_id) {
                     case undefined:
-                        anchor = "first_unread";
+                        date_opearator = raw_terms.find((raw_term) => raw_term.operator === "date");
+                        if (date_opearator) {
+                            anchor = "date";
+                            // Take the given date string, interpret it as local midnight (00:00:00),
+                            // and then convert that local time into its equivalent UTC timestamp.
+                            anchor_date = new Date(
+                                `${date_opearator.operand}T00:00:00`,
+                            ).toISOString();
+                        } else {
+                            anchor = "first_unread";
+                        }
                         break;
                     case -1:
                         // This case should never happen in this code path; it's
@@ -737,9 +748,10 @@ export let show = (raw_terms: NarrowTerm[], show_opts: ShowMessageViewOpts): voi
                 }
                 message_fetch.load_messages_for_narrow({
                     anchor,
+                    anchor_date,
                     validate_filter_topic_post_fetch:
                         filter.requires_adjustment_for_moved_with_target,
-                    cont() {
+                    cont(data) {
                         if (message_lists.current !== msg_list) {
                             return;
                         }
@@ -768,6 +780,8 @@ export let show = (raw_terms: NarrowTerm[], show_opts: ShowMessageViewOpts): voi
                                 select_offset: then_select_offset,
                                 msg_list,
                                 select_opts,
+                                anchor: data.anchor,
+                                anchor_type: anchor.toString(),
                             });
                         }
                     },
@@ -1080,6 +1094,12 @@ export function maybe_add_local_messages(opts: {
         return;
     }
 
+    // If the user has applied the `date` filter, it is recommended to let the
+    // server determine and return the message ID closest to the searched date.
+    if (filter.has_operator("date")) {
+        id_info.final_select_id = undefined;
+        return;
+    }
     // We can now assume filter.can_apply_locally(),
     // because !can_apply_locally => cannot_compute
 
@@ -1202,6 +1222,8 @@ export function render_message_list_with_selected_message(opts: {
     id_info: TargetMessageIdInfo;
     select_offset: number | undefined;
     select_opts: SelectIdOpts;
+    anchor?: number | undefined;
+    anchor_type?: string | undefined;
 }): void {
     if (message_lists.current !== undefined && message_lists.current !== opts.msg_list) {
         // If we navigated away from a view while we were fetching
@@ -1219,7 +1241,14 @@ export function render_message_list_with_selected_message(opts: {
     const id_info = opts.id_info;
     const select_offset = opts.select_offset;
 
-    const msg_id = id_info.final_select_id ?? message_lists.current.first_unread_message_id();
+    let msg_id = id_info.final_select_id;
+    if (msg_id === undefined) {
+        if (opts.anchor_type === "date") {
+            msg_id = opts.anchor;
+        } else {
+            msg_id = message_lists.current.first_unread_message_id();
+        }
+    }
     // There should be something since it's not visibly empty.
     assert(msg_id !== undefined);
 

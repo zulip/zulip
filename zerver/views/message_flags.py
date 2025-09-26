@@ -13,6 +13,7 @@ from zerver.lib.exceptions import JsonableError
 from zerver.lib.narrow import (
     NarrowParameter,
     fetch_messages,
+    parse_anchor_date_value,
     parse_anchor_value,
     update_narrow_terms_containing_empty_topic_fallback_name,
 )
@@ -81,6 +82,7 @@ def update_message_flags_for_narrow(
     user_profile: UserProfile,
     *,
     anchor_val: Annotated[str, ApiParamConfig("anchor")],
+    anchor_date_val: Annotated[str | None, ApiParamConfig("anchor_date")] = None,
     flag: str,
     include_anchor: Json[bool] = True,
     narrow: Json[list[NarrowParameter] | None],
@@ -89,7 +91,7 @@ def update_message_flags_for_narrow(
     operation: Annotated[str, ApiParamConfig("op")],
 ) -> HttpResponse:
     anchor = parse_anchor_value(anchor_val, use_first_unread_anchor=False)
-
+    anchor_date = parse_anchor_date_value(anchor_val, anchor_date_val)
     if num_before > 0 and num_after > 0 and not include_anchor:
         raise JsonableError(_("The anchor can only be excluded at an end of the range"))
 
@@ -107,6 +109,7 @@ def update_message_flags_for_narrow(
         realm=user_profile.realm,
         is_web_public_query=False,
         anchor=anchor,
+        anchor_date=anchor_date,
         include_anchor=include_anchor,
         num_before=num_before,
         num_after=num_after,

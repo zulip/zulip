@@ -1,8 +1,10 @@
 import re
 from collections.abc import Callable, Iterable, Sequence
 from dataclasses import dataclass
+from datetime import datetime
 from typing import Any, Generic, TypeAlias, TypeVar
 
+from dateutil import parser
 from django.conf import settings
 from django.contrib.auth.models import AnonymousUser
 from django.core.exceptions import ValidationError
@@ -28,6 +30,7 @@ from sqlalchemy.sql import (
     true,
     union_all,
 )
+from sqlalchemy.sql.expression import extract
 from sqlalchemy.sql.selectable import SelectBase
 from sqlalchemy.types import ARRAY, Boolean, Integer, Text
 from typing_extensions import override
@@ -151,6 +154,7 @@ def is_spectator_compatible(narrow: Iterable[NarrowParameter]) -> bool:
     supported_operators = [
         *channel_operators,
         *channels_operators,
+        "date",
         "topic",
         "sender",
         "has",
@@ -301,6 +305,7 @@ class NarrowBuilder:
             # operator is removed.
             "pm_with": self.by_dm,
             "group_pm_with": self.by_group_pm_with,
+            "date": self.by_date,
         }
         self.is_channel_narrow = False
         self.is_dm_narrow = False
@@ -351,6 +356,10 @@ class NarrowBuilder:
             maybe_negate = lambda cond: cond
 
         return method(query, operand, maybe_negate)
+
+    def by_date(self, query: Select, operand: str, maybe_negate: ConditionTransform) -> Select:
+        # This operator is being handled with the use of `anchor_date` parameter itself in `fetch_messages`.
+        return query
 
     def by_has(self, query: Select, operand: str, maybe_negate: ConditionTransform) -> Select:
         if operand not in ["attachment", "image", "link", "reaction"]:
@@ -1184,6 +1193,17 @@ def find_first_unread_anchor(
     return anchor
 
 
+def parse_anchor_date_value(anchor_val: str | None, anchor_date: str | None) -> datetime | None:
+    if anchor_val != "date":
+        return None
+    if not anchor_date:
+        raise JsonableError(_("Missing 'anchor_date' argument."))
+    try:
+        return parser.isoparse(anchor_date)
+    except ValueError:
+        raise ValidationError(_("Search date must be in the ISO 8601 format."))
+
+
 def parse_anchor_value(anchor_val: str | None, use_first_unread_anchor: bool) -> int | None:
     """Given the anchor and use_first_unread_anchor parameters passed by
     the client, computes what anchor value the client requested,
@@ -1205,6 +1225,10 @@ def parse_anchor_value(anchor_val: str | None, use_first_unread_anchor: bool) ->
     if anchor_val == "newest":
         return LARGER_THAN_MAX_MESSAGE_ID
     if anchor_val == "first_unread":
+        return None
+    if anchor_val == "date":
+        # This anchor type is used to search for the message ID
+        # having date sent closest to the anchor_date.
         return None
     try:
         # We don't use `.isnumeric()` to support negative numbers for
@@ -1407,6 +1431,7 @@ def fetch_messages(
     realm: Realm,
     is_web_public_query: bool,
     anchor: int | None,
+    anchor_date: datetime | None,
     include_anchor: bool,
     num_before: int,
     num_after: int,
@@ -1454,6 +1479,21 @@ def fetch_messages(
         if client_requested_message_ids is not None:
             query = query.filter(inner_msg_id_col.in_(client_requested_message_ids))
         else:
+            if anchor_date:
+                date_query = query.order_by(
+                    func.abs(
+                        extract(
+                            "epoch",
+                            literal_column("zerver_message.date_sent") - literal(anchor_date),
+                        )
+                    )
+                )
+                closest_message = sa_conn.execute(date_query).first()
+                if not closest_message:
+                    # This case can arise when the narrow condition results in no message found.
+                    anchor = LARGER_THAN_MAX_MESSAGE_ID
+                else:
+                    anchor = closest_message._mapping["message_id"]
             if anchor is None:
                 # `anchor=None` corresponds to the anchor="first_unread" parameter.
                 anchor = find_first_unread_anchor(
