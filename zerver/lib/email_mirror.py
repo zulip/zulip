@@ -467,6 +467,11 @@ def process_stream_message(to: str, message: EmailMessage) -> None:
 
 
 def process_missed_message(to: str, message: EmailMessage) -> None:
+    auto_submitted = message.get("Auto-Submitted", "")
+    if auto_submitted in ("auto-replied", "auto-generated"):
+        logger.info("Dropping %s message from %s", auto_submitted, message.get("From"))
+        return
+
     mm_address = get_usable_missed_message_address(to)
     mm_address.increment_times_used()
 

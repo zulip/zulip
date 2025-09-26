@@ -1587,6 +1587,43 @@ class TestMissedMessageEmailMessages(ZulipTestCase):
         for i in range(5):
             process_missed_message(mm_address, incoming_valid_message)
 
+    def test_autoreply(self) -> None:
+        self.login("hamlet")
+        othello = self.example_user("othello")
+        result = self.client_post(
+            "/json/messages",
+            {
+                "type": "private",
+                "content": "test_receive_missed_message_email_messages",
+                "to": orjson.dumps([othello.id]).decode(),
+            },
+        )
+        self.assert_json_success(result)
+
+        usermessage = most_recent_usermessage(othello)
+
+        mm_address = create_missed_message_address(othello, usermessage.message)
+
+        incoming_autoreply = EmailMessage()
+        incoming_autoreply.set_content("An auto-reply")
+        incoming_autoreply["Subject"] = "TestMissedMessageEmailMessages subject"
+        incoming_autoreply["From"] = self.example_email("othello")
+        incoming_autoreply["To"] = mm_address
+        incoming_autoreply["Reply-to"] = self.example_email("othello")
+        incoming_autoreply["Auto-Submitted"] = "auto-replied"
+
+        hamlet = self.example_user("hamlet")
+        message = most_recent_message(hamlet)
+        with self.assert_database_query_count(0), self.assertLogs(logger_name, level="INFO") as m:
+            process_message(incoming_autoreply)
+        self.assertEqual(
+            m.output,
+            [f"INFO:{logger_name}:Dropping auto-replied message from othello@zulip.com"],
+        )
+
+        # It should get dropped, so the most recent message is unchanged
+        self.assertEqual(message, most_recent_message(hamlet))
+
 
 class TestEmptyGatewaySetting(ZulipTestCase):
     def test_missed_message(self) -> None:
