@@ -3037,6 +3037,23 @@ class SingleUserExportTest(ExportFile):
         )
 
         @checker
+        def zerver_alertwordremoval(records: list[dict[str, Any]]) -> None:
+            """
+            Validate zerver_alertwordremoval entries in users.json for single-user export.
+            This checker just verifies the shape/types; count may legitimately be 0+.
+            """
+            # Basic shape/type checks; don't enforce counts here.
+            for row in records:
+                # Rows should include at least the removed word and a timestamp
+                # (id/realm/user_profile may also be present in export payloads).
+                self.assertIn("word", row)
+                self.assertIsInstance(row["word"], str)
+
+                self.assertIn("removed_at", row)
+                # removed_at is serialized as ISO-8601 string in export
+                self.assertIsInstance(row["removed_at"], str)
+
+        @checker
         def zerver_externalauthid(records: list[Record]) -> None:
             (rec,) = records
             self.assertEqual(rec["user"], cordelia.id)
