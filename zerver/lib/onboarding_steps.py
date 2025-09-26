@@ -58,6 +58,9 @@ ONE_TIME_NOTICES: list[OneTimeNotice] = [
     OneTimeNotice(
         name="navigation_tour_video",
     ),
+    OneTimeNotice(
+        name="intro_go_to_conversation_button_tooltip",
+    ),
 ]
 
 ONE_TIME_ACTIONS = [OneTimeAction(name="narrow_to_dm_with_welcome_bot_new_user")]
