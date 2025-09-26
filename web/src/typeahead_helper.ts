@@ -1026,10 +1026,33 @@ export function rewire_sort_user_groups(value: typeof sort_user_groups): void {
     sort_user_groups = value;
 }
 
+export function query_matches_person_name(
+    query: string,
+    person: UserPillData,
+    should_remove_diacritics: boolean | undefined = undefined,
+    match_prefix?: boolean,
+): boolean {
+    query = query.toLowerCase();
+    should_remove_diacritics ??= people.should_remove_diacritics_for_query(query);
+
+    const full_name = people.maybe_remove_diacritics_from_name(
+        person.user,
+        should_remove_diacritics,
+    );
+
+    return typeahead.query_matches_string_in_order_assume_canonicalized(
+        query,
+        full_name.toLowerCase(),
+        " ",
+        match_prefix,
+    );
+}
+
 export function query_matches_person(
     query: string,
     person: UserPillData | UserOrMentionPillData,
     should_remove_diacritics: boolean | undefined = undefined,
+    match_prefix?: boolean,
 ): boolean {
     if (
         person.type === "broadcast" &&
@@ -1039,20 +1062,7 @@ export function query_matches_person(
     }
 
     if (person.type === "user") {
-        query = query.toLowerCase();
-        should_remove_diacritics ??= people.should_remove_diacritics_for_query(query);
-
-        const full_name = people.maybe_remove_diacritics_from_name(
-            person.user,
-            should_remove_diacritics,
-        );
-        if (
-            typeahead.query_matches_string_in_order_assume_canonicalized(
-                query,
-                full_name.toLowerCase(),
-                " ",
-            )
-        ) {
+        if (query_matches_person_name(query, person, should_remove_diacritics, match_prefix)) {
             return true;
         }
 
