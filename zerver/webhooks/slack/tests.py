@@ -42,7 +42,17 @@ class SlackWebhookTests(WebhookTestCase):
         self, url: str, get_param: str, token: str, **kwargs: dict[str, Any]
     ) -> dict[str, Any]:
         slack_api_endpoints: dict[str, Any] = {
-            "https://slack.com/api/users.info": {"name": USER},
+            "https://slack.com/api/users.info": {
+                "user": {
+                    "name": "john.doe",
+                    "profile": {
+                        "display_name_normalized": USER,
+                        "display_name": USER,
+                        "real_name_normalized": USER,
+                        "real_name": USER,
+                    },
+                }
+            },
             "https://slack.com/api/conversations.info": {"name": CHANNEL},
         }
         self.assertIn(url, slack_api_endpoints)

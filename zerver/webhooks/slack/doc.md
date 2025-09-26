@@ -49,8 +49,13 @@ If you are looking to quickly move your Slack integrations to Zulip, check out
    & Permissions** menu, and scroll down to the **Scopes** section.
 
 1. Make sure **Bot Token Scopes** includes `channels:read`,
-   `channels:history`, `emoji:read`, `team:read`, `users:read`, and
-   `users:read.email`.
+   `channels:history`, `emoji:read`, `team:read` and `users:read`.
+
+   !!! note ""
+    For the Slack → Zulip **forwarding** integration, `users:read.email` is not
+    required (we only use profile/display names). Other tooling like the Slack
+    **importer** or Slack **bridge** may still require `users:read.email`.
+
 
     !!! tip ""
 
@@ -78,6 +83,8 @@ If you are looking to quickly move your Slack integrations to Zulip, check out
 {!congrats.md!}
 
 ![](/static/images/integrations/slack/001.png)
+*Example screenshot; actual Slack display names vary by workspace.*
+
 
 ### Related documentation
 
