@@ -150,9 +150,47 @@ export function expand_views($views_label_container: JQuery, $views_label_icon: 
     $views_label_icon.removeClass("rotate-icon-right");
 }
 
-function toggle_condensed_navigation_area(): void {
+export function collapse_views($views_label_container: JQuery, $views_label_icon: JQuery): void {
+    $views_label_container.addClass("showing-condensed-navigation");
+    $views_label_container.removeClass("showing-expanded-navigation");
+    $views_label_icon.addClass("rotate-icon-right");
+    $views_label_icon.removeClass("rotate-icon-down");
+}
+
+export function force_expand_views(): void {
+    if (page_params.is_spectator) {
+        // We don't support collapsing VIEWS for spectators, so exit early.
+        return;
+    }
+
     const $views_label_container = $("#views-label-container");
     const $views_label_icon = $("#toggle-top-left-navigation-area-icon");
+
+    if ($views_label_container.hasClass("showing-condensed-navigation")) {
+        expand_views($views_label_container, $views_label_icon);
+        save_state(STATES.EXPANDED);
+        resize.resize_stream_filters_container();
+    }
+}
+
+export function force_collapse_views(): void {
+    if (page_params.is_spectator) {
+        // We don't support collapsing VIEWS for spectators, so exit early.
+        return;
+    }
+
+    const $views_label_container = $("#views-label-container");
+    const $views_label_icon = $("#toggle-top-left-navigation-area-icon");
+
+    if ($views_label_container.hasClass("showing-expanded-navigation")) {
+        collapse_views($views_label_container, $views_label_icon);
+        save_state(STATES.CONDENSED);
+        resize.resize_stream_filters_container();
+    }
+}
+
+function toggle_condensed_navigation_area(): void {
+    const $views_label_container = $("#views-label-container");
 
     if (page_params.is_spectator) {
         // We don't support collapsing VIEWS for spectators, so exit early.
@@ -160,17 +198,10 @@ function toggle_condensed_navigation_area(): void {
     }
 
     if ($views_label_container.hasClass("showing-expanded-navigation")) {
-        // Toggle into the condensed state
-        $views_label_container.addClass("showing-condensed-navigation");
-        $views_label_container.removeClass("showing-expanded-navigation");
-        $views_label_icon.addClass("rotate-icon-right");
-        $views_label_icon.removeClass("rotate-icon-down");
-        save_state(STATES.CONDENSED);
+        force_collapse_views();
     } else {
-        expand_views($views_label_container, $views_label_icon);
-        save_state(STATES.EXPANDED);
+        force_expand_views();
     }
-    resize.resize_stream_filters_container();
 }
 
 export function animate_mention_changes($li: JQuery, new_mention_count: number): void {
