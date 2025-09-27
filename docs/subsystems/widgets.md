@@ -322,10 +322,10 @@ shown here) and then sets up a click handler like below:
         // data structure.
         var reply_content = data.choices[idx].reply;
 
-        transmit.reply_message({
-            message: opts.message,
-            content: reply_content,
-        });
+        transmit.reply_message(
+            opts.message,
+            reply_content,
+        );
     });
 ```
 

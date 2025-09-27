@@ -39,10 +39,7 @@ export function activate(opts) {
             // data structure.
             const reply_content = data.choices[idx].reply;
 
-            transmit.reply_message({
-                message: opts.message,
-                content: reply_content,
-            });
+            transmit.reply_message(opts.message, reply_content);
         });
 
         return $elem;

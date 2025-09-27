@@ -98,7 +98,7 @@ export function send_message(
     });
 }
 
-export function reply_message(opts: {message: Message; content: string}): void {
+export function reply_message(message: Message, content: string): void {
     // This code does an application-triggered reply to a message (as
     // opposed to the user themselves doing it).  Its only use case
     // for now is experimental widget-aware bots, so treat this as
@@ -106,8 +106,6 @@ export function reply_message(opts: {message: Message; content: string}): void {
     // bot that wants to give users 3 or 4 canned replies to some
     // choice, but it wants to front-end each of these options
     // with a one-click button.  This function is part of that architecture.
-    const message = opts.message;
-    let content = opts.content;
 
     function success(): void {
         // TODO: If server response comes back before the message event,
