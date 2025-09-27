@@ -237,8 +237,12 @@ def process_client(
     `user` parameter.
     """
     request_notes = RequestNotes.get_notes(request)
+
     if client_name is None:
         client_name = request_notes.client_name
+
+    elif client_name == "internal":
+        request_notes.client_name = client_name
 
     assert client_name is not None
 
@@ -251,6 +255,7 @@ def process_client(
         client_name = "website"
 
     request_notes.client = get_client(client_name)
+
     if user is not None and user.is_authenticated:
         update_user_activity(request, user, query)
 
