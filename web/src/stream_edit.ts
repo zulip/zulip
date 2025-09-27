@@ -543,6 +543,7 @@ export function initialize(): void {
         e.stopPropagation();
 
         const sub = narrow_state.stream_sub();
+
         if (sub === undefined) {
             return;
         }
@@ -551,12 +552,8 @@ export function initialize(): void {
 
         setTimeout(() => {
             if (message_lists.current !== undefined) {
-                message_fetch.load_messages_for_narrow({
-                    anchor: "newest",
+                message_fetch.maybe_load_newer_messages({
                     msg_list: message_lists.current,
-                    cont() {
-                        message_lists.current?.update_trailing_bookend(true);
-                    },
                 });
             }
         }, 500);
