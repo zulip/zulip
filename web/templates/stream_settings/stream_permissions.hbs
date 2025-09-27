@@ -116,7 +116,7 @@
 
         <div id="channel-messaging-permissions" class="settings-subsection-parent">
             <div class="channel-messaging-permissions-title-container {{#if is_stream_edit}}subsection-header{{/if}}">
-                <h4 class="stream_setting_subsection_title">{{t "Messaging permissions"}}</h4>
+                <h4 class="stream_setting_subsection_title">{{t "Messaging permissions and options"}}</h4>
                 {{#if is_stream_edit}}
                     {{> ../settings/settings_save_discard_widget section_name="messaging-permissions"}}
                 {{/if}}
@@ -134,6 +134,13 @@
                     {{> ../settings/dropdown_options_widget option_values=stream_topics_policy_values}}
                 </select>
                 {{> topics_already_exist_error .}}
+            </div>
+            <div class="input-group">
+                {{> ../dropdown_widget_with_label
+                  widget_name=default_code_block_language_widget_name
+                  label="Default code block language"
+                  value_type="string"
+                  }}
             </div>
         </div>
 

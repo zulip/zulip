@@ -449,8 +449,8 @@ class FencedBlockPreprocessor(Preprocessor):
         self.handlers: list[ZulipBaseHandler] = []
 
         default_language = None
-        if isinstance(self.md, ZulipMarkdown) and self.md.zulip_realm is not None:
-            default_language = self.md.zulip_realm.default_code_block_language
+        if isinstance(self.md, ZulipMarkdown):
+            default_language = self.md.default_code_block_language
         handler = OuterHandler(processor, output, self.run_content_validators, default_language)
         self.push(handler)
 

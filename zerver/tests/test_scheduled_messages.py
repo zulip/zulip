@@ -9,10 +9,12 @@ import orjson
 import time_machine
 from django.utils.timezone import now as timezone_now
 
+from zerver.actions.realm_settings import do_set_realm_property
 from zerver.actions.scheduled_messages import (
     SCHEDULED_MESSAGE_LATE_CUTOFF_MINUTES,
     try_deliver_one_scheduled_message,
 )
+from zerver.actions.streams import do_change_default_code_block_language
 from zerver.actions.users import change_user_is_active
 from zerver.lib.message import is_message_to_self
 from zerver.lib.test_classes import ZulipTestCase
@@ -20,6 +22,7 @@ from zerver.lib.test_helpers import most_recent_message
 from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.models import Attachment, Message, Recipient, ScheduledMessage, UserMessage
 from zerver.models.recipients import get_or_create_direct_message_group
+from zerver.models.streams import get_stream
 
 if TYPE_CHECKING:
     from django.test.client import _MonkeyPatchedWSGIResponse as TestHttpResponse
@@ -727,3 +730,131 @@ class ScheduledMessageTest(ZulipTestCase):
             [scheduled_message.id],
         )
         self.assertEqual(scheduled_message.has_attachment, True)
+
+    def test_default_code_block_language_on_scheduling_messages(self) -> None:
+        iago = self.example_user("iago")
+        realm = iago.realm
+        stream = get_stream("Denmark", realm)
+
+        do_set_realm_property(realm, "default_code_block_language", "javascript", acting_user=iago)
+        do_change_default_code_block_language(stream, "python", acting_user=iago)
+
+        scheduled_delivery_timestamp = int(time.time() + 86400)
+
+        message_content = "```\nprint('Hello, world!')\n```"
+
+        # Stream level value should take precedence over the realm level value.
+        result = self.do_schedule_message(
+            "channel", stream.id, message_content, scheduled_delivery_timestamp
+        )
+        scheduled_message = self.last_scheduled_message()
+        self.assert_json_success(result)
+        assert scheduled_message.rendered_content is not None
+        self.assertIn('data-code-language="Python"', scheduled_message.rendered_content)
+
+        # If the default code block language for stream is empty string,
+        # message should be rendered using realm's default code block language.
+        do_change_default_code_block_language(stream, "", acting_user=iago)
+        result = self.do_schedule_message(
+            "channel", stream.id, message_content, scheduled_delivery_timestamp
+        )
+        scheduled_message = self.last_scheduled_message()
+        self.assert_json_success(result)
+        assert scheduled_message.rendered_content is not None
+        self.assertIn('data-code-language="JavaScript"', scheduled_message.rendered_content)
+
+        # DMs should use the realm level value.
+        do_change_default_code_block_language(stream, "", acting_user=iago)
+        result = self.do_schedule_message(
+            "direct", [iago.id], message_content, scheduled_delivery_timestamp
+        )
+        scheduled_message = self.last_scheduled_message()
+        self.assert_json_success(result)
+        assert scheduled_message.rendered_content is not None
+        self.assertIn('data-code-language="JavaScript"', scheduled_message.rendered_content)
+
+    def test_default_code_block_language_on_editing_scheduled_messages(self) -> None:
+        iago = self.example_user("iago")
+        realm = iago.realm
+        denmark_stream = get_stream("Denmark", realm)
+
+        do_set_realm_property(realm, "default_code_block_language", "javascript", acting_user=iago)
+        do_change_default_code_block_language(denmark_stream, "python", acting_user=iago)
+
+        scheduled_delivery_timestamp = int(time.time() + 86400)
+
+        message_content = "```\nprint('Hello, world!')\n```"
+
+        # Stream level value should take precedence over the realm level value.
+        result = self.do_schedule_message(
+            "channel", denmark_stream.id, message_content, scheduled_delivery_timestamp
+        )
+        scheduled_message = self.last_scheduled_message()
+        self.assert_json_success(result)
+        assert scheduled_message.rendered_content is not None
+        self.assertIn('data-code-language="Python"', scheduled_message.rendered_content)
+
+        scheduled_message_id = scheduled_message.id
+        # Editing content will change the language used to render code blocks
+        # if the stream's default language is changed.
+        do_change_default_code_block_language(denmark_stream, "rust", acting_user=iago)
+        edited_content = "```\nprint('Hello, world edited!')\n```"
+        payload = {
+            "content": edited_content,
+        }
+        result = self.client_patch(f"/json/scheduled_messages/{scheduled_message_id}", payload)
+        self.assert_json_success(result)
+        scheduled_message = ScheduledMessage.objects.get(id=scheduled_message_id)
+        assert scheduled_message.rendered_content is not None
+        self.assertIn('data-code-language="Rust"', scheduled_message.rendered_content)
+
+        verona_stream = get_stream("Verona", realm)
+        do_change_default_code_block_language(verona_stream, "java", acting_user=iago)
+
+        # Changing recipient will change the language used to render
+        # code blocks if content is changed.
+        payload = {
+            "type": "stream",
+            "to": orjson.dumps(verona_stream.id).decode(),
+            "topic": "Test topic",
+            "content": message_content,
+        }
+        result = self.client_patch(f"/json/scheduled_messages/{scheduled_message_id}", payload)
+        self.assert_json_success(result)
+        scheduled_message = ScheduledMessage.objects.get(id=scheduled_message_id)
+        assert scheduled_message.rendered_content is not None
+        self.assertIn('data-code-language="Java"', scheduled_message.rendered_content)
+
+        payload = {
+            "type": "direct",
+            "to": orjson.dumps([self.example_user("othello").id]).decode(),
+            "content": edited_content,
+        }
+        result = self.client_patch(f"/json/scheduled_messages/{scheduled_message_id}", payload)
+        self.assert_json_success(result)
+        scheduled_message = ScheduledMessage.objects.get(id=scheduled_message_id)
+        assert scheduled_message.rendered_content is not None
+        self.assertIn('data-code-language="JavaScript"', scheduled_message.rendered_content)
+
+        # Only changing recipient without content does not change the
+        # code blocks language.
+        payload = {
+            "type": "stream",
+            "to": orjson.dumps(denmark_stream.id).decode(),
+            "topic": "Test topic",
+        }
+        result = self.client_patch(f"/json/scheduled_messages/{scheduled_message_id}", payload)
+        self.assert_json_success(result)
+        scheduled_message = ScheduledMessage.objects.get(id=scheduled_message_id)
+        assert scheduled_message.rendered_content is not None
+        self.assertIn('data-code-language="JavaScript"', scheduled_message.rendered_content)
+
+        payload = {
+            "type": "direct",
+            "to": orjson.dumps([self.example_user("othello").id]).decode(),
+        }
+        result = self.client_patch(f"/json/scheduled_messages/{scheduled_message_id}", payload)
+        self.assert_json_success(result)
+        scheduled_message = ScheduledMessage.objects.get(id=scheduled_message_id)
+        assert scheduled_message.rendered_content is not None
+        self.assertIn('data-code-language="JavaScript"', scheduled_message.rendered_content)

@@ -429,6 +429,17 @@ test("update_property", ({override}) => {
         assert.equal(added_sidebar_rows, 1);
     }
 
+    // Test default_code_block_language change event
+    {
+        const stub = make_stub();
+        override(stream_settings_ui, "update_default_code_block_language", stub.f);
+        stream_events.update_property(stream_id, "default_code_block_language", "javascript");
+        assert.equal(stub.num_calls, 1);
+        const args = stub.get_args("sub", "value");
+        assert.equal(args.sub.stream_id, stream_id);
+        assert.equal(args.value, "javascript");
+    }
+
     // Test deprecated properties for coverage.
     {
         stream_events.update_property(stream_id, "stream_post_policy", 2);
