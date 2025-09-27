@@ -548,11 +548,11 @@ export function initialize(): void {
         }
 
         stream_settings_components.ajaxSubscribe(sub.name, sub.color);
-        
+
         setTimeout(() => {
             if (message_lists.current !== undefined) {
                 message_fetch.load_messages_for_narrow({
-                    anchor: "newest", 
+                    anchor: "newest",
                     msg_list: message_lists.current,
                     cont() {
                         message_lists.current?.update_trailing_bookend(true);
