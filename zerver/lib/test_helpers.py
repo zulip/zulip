@@ -400,10 +400,16 @@ class HostRequestMock(HttpRequest):
         self.content_type = ""
         self.session = SessionBase()
 
+        # Mock parse_client() in middleware.py
+        if meta_data and "HTTP_USER_AGENT" in meta_data:
+            client = meta_data["HTTP_USER_AGENT"]
+        else:
+            client = ""
+
         RequestNotes.set_notes(
             self,
             RequestNotes(
-                client_name="",
+                client_name=client,
                 log_data={},
                 tornado_handler_id=None if tornado_handler is None else tornado_handler.handler_id,
                 client=get_client(client_name) if client_name is not None else None,

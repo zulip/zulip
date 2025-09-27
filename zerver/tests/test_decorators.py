@@ -499,7 +499,7 @@ class RateLimitTestCase(ZulipTestCase):
         expect_rate_limit: bool,
         check_web_view: bool = False,
     ) -> None:
-        META = {"REMOTE_ADDR": remote_addr, "PATH_INFO": "test"}
+        META = {"REMOTE_ADDR": remote_addr, "PATH_INFO": "test", "HTTP_USER_AGENT": client_name}
 
         request = HostRequestMock(host="zulip.testserver", client_name=client_name, meta_data=META)
         view_func = self.ratelimited_web_view if check_web_view else self.ratelimited_json_view
