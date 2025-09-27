@@ -28,6 +28,7 @@ from zerver.lib.request import (
     RequestNotes,
     RequestVariableMissingError,
     arguments_map,
+    populate_post_data,
 )
 from zerver.lib.response import MutableJsonResponse
 
@@ -449,7 +450,9 @@ def typed_endpoint(
     expect_no_parameters: bool = False,
 ) -> Callable[Concatenate[HttpRequest, ParamT], ReturnT]:
     # Extract all the type information from the view function.
+
     endpoint_info = parse_view_func_signature(view_func)
+
     if expect_no_parameters:
         assert len(endpoint_info.parameters) == 0, UNEXPECTED_KEYWORD_ONLY_PARAMETERS.format(
             view_func_name=endpoint_info.view_func_full_name
@@ -492,6 +495,9 @@ def typed_endpoint(
             if parameter.param_name in kwargs:
                 # Skip parameters that are already supplied by the caller.
                 continue
+
+            if request.method in ["DELETE", "PATCH", "PUT"] and not request.POST:
+                request = populate_post_data(request)
 
             # Extract the value to parse from the request body if specified.
             if parameter.argument_type_is_body:
