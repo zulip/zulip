@@ -219,9 +219,15 @@ export function sort_groups(
         }
     }
 
-    const folder_sections_sorted = [...folder_sections.values()].sort(
-        (section_a, section_b) => section_a.order! - section_b.order!,
-    );
+    const folder_sections_sorted = [...folder_sections.values()].sort((section_a, section_b) => {
+        if (section_a.streams.length > 0 && section_b.streams.length === 0) {
+            return -1;
+        }
+        if (section_b.streams.length > 0 && section_a.streams.length === 0) {
+            return 1;
+        }
+        return section_a.order! - section_b.order!;
+    });
 
     if (
         pinned_section.streams.length > 0 ||
