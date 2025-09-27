@@ -1888,6 +1888,11 @@ export class MessageListView {
     ): void {
         // This is not the only place we render bookends; see also the
         // partial in message_group.hbs, which do not set is_trailing_bookend.
+
+        // Check if user can subscribe to the stream
+        const stream_sub = stream_data.get_sub_by_id(stream_id);
+        const can_subscribe = stream_sub ? stream_data.can_toggle_subscription(stream_sub) : false;
+
         const $rendered_trailing_bookend = $(
             render_bookend({
                 stream_id,
@@ -1899,6 +1904,7 @@ export class MessageListView {
                 is_trailing_bookend: true,
                 invite_only,
                 is_web_public,
+                can_subscribe,
             }),
         );
         this.$list.append($rendered_trailing_bookend);

@@ -230,3 +230,7 @@
 
     width: 100%;
 }
+
+.not-subscribed-banner .banner-content {
+    align-items: center;
+}
