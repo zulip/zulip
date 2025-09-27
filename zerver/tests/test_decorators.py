@@ -1603,11 +1603,13 @@ class TestRequestNotes(ZulipTestCase):
 
 class ClientTestCase(ZulipTestCase):
     def test_process_client(self) -> None:
-        def request_user_agent(user_agent: str) -> tuple[Client, str]:
+        def request_user_agent(
+            user_agent: str, client_name: str | None = None
+        ) -> tuple[Client, str]:
             request = HttpRequest()
             request.META["HTTP_USER_AGENT"] = user_agent
             LogRequests(lambda request: HttpResponse()).process_request(request)
-            process_client(request)
+            process_client(request, client_name=client_name)
             notes = RequestNotes.get_notes(request)
             assert notes.client is not None
             assert notes.client_name is not None
@@ -1669,3 +1671,9 @@ class ClientTestCase(ZulipTestCase):
         # client_name has the full name still, though
         self.assertEqual(client_name, "very-long-name-goes-here-and-still-works")
         self.assert_length(queries, 0)
+
+        with queries_captured(keep_cache_warm=False) as queries:
+            client, internal_client = request_user_agent("ZulipThingy/2.0.0", "internal")
+        self.assertEqual(client.name, "internal")
+        self.assertEqual(internal_client, "internal")
+        self.assert_length(queries, 2)
