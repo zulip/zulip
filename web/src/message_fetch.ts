@@ -147,7 +147,7 @@ function process_result(data: MessageFetchResponse, opts: MessageFetchOptions): 
     const raw_messages = data.messages;
 
     const messages = raw_messages.map((raw_message) =>
-        message_helper.process_new_message(raw_message),
+        message_helper.process_new_server_message(raw_message),
     );
     const has_found_oldest = opts.msg_list?.data.fetch_status.has_found_oldest() ?? false;
     const has_found_newest = opts.msg_list?.data.fetch_status.has_found_newest() ?? false;

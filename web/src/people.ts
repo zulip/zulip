@@ -616,6 +616,10 @@ export function pm_with_user_ids(message: Message | MessageWithBooleans): number
         typeof message.display_recipient !== "string",
         "Private messages should have list of recipients",
     );
+    // TODO: Ideally display_recipient would be not optional in LocalMessage
+    // or MessageWithBooleans, ideally by refactoring the use of
+    // `build_display_recipient`, but that seemed complicated to type.
+    assert(message.display_recipient !== undefined);
 
     if (message.display_recipient.length === 0) {
         blueslip.error("Empty recipient list in message");
@@ -1728,6 +1732,7 @@ function get_involved_people(message: MessageWithBooleans): DisplayRecipientUser
             typeof message.display_recipient !== "string",
             "Private messages should have list of recipients",
         );
+        assert(message.display_recipient !== undefined);
         involved_people = message.display_recipient;
     }
 
@@ -1810,6 +1815,8 @@ export function maybe_incr_recipient_count(
     if (!message.sent_by_me) {
         return;
     }
+
+    assert(message.display_recipient !== undefined);
 
     // Track the number of direct messages we've sent to this person
     // to improve autocomplete

@@ -6,7 +6,7 @@ import render_send_later_popover from "../templates/popovers/send_later_popover.
 
 import * as blueslip from "./blueslip.ts";
 import * as channel from "./channel.ts";
-import * as compose from "./compose.js";
+import * as compose from "./compose.ts";
 import * as compose_state from "./compose_state.ts";
 import * as compose_validate from "./compose_validate.ts";
 import * as drafts from "./drafts.ts";
