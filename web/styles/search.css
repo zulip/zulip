@@ -66,7 +66,8 @@
     .search-input-and-pills {
         grid-area: search-pills;
         display: flex;
-        padding: 0;
+        /* Add vertical padding to maintain consistent spacing when pills wrap */
+        padding: 0.125em 0;
         flex-wrap: wrap;
         gap: 0.125em; /* 2px at 16px em */
         align-self: center;
