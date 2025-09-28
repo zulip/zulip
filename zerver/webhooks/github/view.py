@@ -852,19 +852,19 @@ def find_zulip_user_by_github_username(github_username: str, realm: Realm) -> Us
             field_type=CustomProfileField.EXTERNAL_ACCOUNT,
             field_data__contains='"subtype": "github"'
         ).first()
-        
+
         if not github_field:
             return None
-            
+
         # Find the user with this GitHub username
         field_value = CustomProfileFieldValue.objects.filter(
             field=github_field,
             value=github_username
         ).first()
-        
+
         if field_value and field_value.user_profile.is_active:
             return field_value.user_profile
-            
+
         return None
     except Exception:
         return None
@@ -888,14 +888,13 @@ def convert_github_usernames_in_text(text: str, realm: Realm) -> str:
     """
     # Pattern to match GitHub usernames (alphanumeric, hyphens, underscores)
     github_username_pattern = r'@([a-zA-Z0-9](?:[a-zA-Z0-9]|-(?=[a-zA-Z0-9])){0,38})'
-    
+
     def replace_username(match):
         github_username = match.group(1)
         return convert_github_username_to_zulip_mention(github_username, realm)
-    
+
     return re.sub(github_username_pattern, replace_username, text)
 
-    return payload["sender"]["login"].tame(check_string)
 
 
 def get_sender_url(payload: WildValue) -> str:
