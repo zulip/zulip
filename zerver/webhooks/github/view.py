@@ -34,9 +34,8 @@ from zerver.lib.webhooks.git import (
     get_short_sha,
     is_branch_name_notifiable,
 )
-from zerver.models import CustomProfileField, CustomProfileFieldValue, Realm
+from zerver.models import CustomProfileField, CustomProfileFieldValue, Realm, UserProfile
 from zerver.lib.mention import silent_mention_syntax_for_user
-from zerver.models import UserProfile
 
 fixture_to_headers = get_http_headers_from_filename("HTTP_X_GITHUB_EVENT")
 
@@ -69,7 +68,6 @@ class Helper:
         self.request = request
         self.payload = payload
         self.include_title = include_title
-        self.realm = realm
         self.realm = realm
 
     def log_unsupported(self, event: str) -> None:
@@ -330,6 +328,7 @@ class LazyContext(dict[str, str | int]):
         super().__init__()
         self.payload = payload
         self.include_title = include_title
+        self.realm = realm
         self.template_values: dict[str, Callable[[], str | int]] = {
             "sender": lambda: get_sender_name_with_mention(self.payload, self.realm),
             "author": lambda: self.payload["discussion"]["user"]["login"].tame(check_string),
