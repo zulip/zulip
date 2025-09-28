@@ -385,7 +385,7 @@ def get_discussion_body(helper: Helper) -> str:
     payload = helper.payload
     action = get_discussion_action(payload)
     DISCUSSION_TEMPLATE = DISCUSSION_TEMPLATES[action]
-    context = LazyContext(payload, helper.include_title)
+    context = LazyContext(payload, helper.include_title, helper.realm)
     return DISCUSSION_TEMPLATE.format_map(context)
 
 
