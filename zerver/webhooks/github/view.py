@@ -8,6 +8,7 @@ from typing_extensions import override
 
 from zerver.decorator import log_unsupported_webhook_event, webhook_view
 from zerver.lib.exceptions import UnsupportedWebhookEventTypeError
+from zerver.lib.mention import silent_mention_syntax_for_user
 from zerver.lib.partial import partial
 from zerver.lib.response import json_success
 from zerver.lib.typed_endpoint import JsonBodyPayload, typed_endpoint
@@ -35,7 +36,6 @@ from zerver.lib.webhooks.git import (
     is_branch_name_notifiable,
 )
 from zerver.models import CustomProfileField, CustomProfileFieldValue, Realm, UserProfile
-from zerver.lib.mention import silent_mention_syntax_for_user
 
 fixture_to_headers = get_http_headers_from_filename("HTTP_X_GITHUB_EVENT")
 
@@ -324,7 +324,7 @@ def get_push_commits_body(helper: Helper) -> str:
 class LazyContext(dict[str, str | int]):
     """Template rendering context for discussions."""
 
-    def __init__(self, payload: WildValue, include_title: bool) -> None:
+    def __init__(self, payload: WildValue, include_title: bool, realm: Realm) -> None:
         super().__init__()
         self.payload = payload
         self.include_title = include_title
@@ -832,13 +832,13 @@ def get_sender_name(payload: WildValue) -> str:
     return payload["sender"]["login"].tame(check_string)
 
 
-
 def get_sender_name_with_mention(payload: WildValue, realm: Realm) -> str:
     """
     Get sender name and convert GitHub username to Zulip mention if possible.
     """
     github_username = payload["sender"]["login"].tame(check_string)
     return convert_github_username_to_zulip_mention(github_username, realm)
+
 
 def find_zulip_user_by_github_username(github_username: str, realm: Realm) -> UserProfile | None:
     """
@@ -850,7 +850,7 @@ def find_zulip_user_by_github_username(github_username: str, realm: Realm) -> Us
         github_field = CustomProfileField.objects.filter(
             realm=realm,
             field_type=CustomProfileField.EXTERNAL_ACCOUNT,
-            field_data__contains='"subtype": "github"'
+            field_data__contains='"subtype": "github"',
         ).first()
 
         if not github_field:
@@ -858,8 +858,7 @@ def find_zulip_user_by_github_username(github_username: str, realm: Realm) -> Us
 
         # Find the user with this GitHub username
         field_value = CustomProfileFieldValue.objects.filter(
-            field=github_field,
-            value=github_username
+            field=github_field, value=github_username
         ).first()
 
         if field_value and field_value.user_profile.is_active:
@@ -887,14 +886,13 @@ def convert_github_usernames_in_text(text: str, realm: Realm) -> str:
     This function is generic enough to be used by all integrations.
     """
     # Pattern to match GitHub usernames (alphanumeric, hyphens, underscores)
-    github_username_pattern = r'@([a-zA-Z0-9](?:[a-zA-Z0-9]|-(?=[a-zA-Z0-9])){0,38})'
+    github_username_pattern = r"@([a-zA-Z0-9](?:[a-zA-Z0-9]|-(?=[a-zA-Z0-9])){0,38})"
 
-    def replace_username(match):
+    def replace_username(match: re.Match[str]) -> str:
         github_username = match.group(1)
         return convert_github_username_to_zulip_mention(github_username, realm)
 
     return re.sub(github_username_pattern, replace_username, text)
-
 
 
 def get_sender_url(payload: WildValue) -> str:
