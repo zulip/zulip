@@ -840,7 +840,9 @@ def get_sender_name_with_mention(payload: WildValue, realm: Realm) -> str:  # no
     return convert_github_username_to_zulip_mention(github_username, realm)
 
 
-def find_zulip_user_by_github_username(github_username: str, realm: Realm) -> UserProfile | None:  # nocoverage
+def find_zulip_user_by_github_username(
+    github_username: str, realm: Realm
+) -> UserProfile | None:  # nocoverage
     """
     Find a Zulip user by their GitHub username from custom profile fields.
     This function is generic enough to be used by all integrations.
@@ -869,7 +871,9 @@ def find_zulip_user_by_github_username(github_username: str, realm: Realm) -> Us
         return None
 
 
-def convert_github_username_to_zulip_mention(github_username: str, realm: Realm) -> str:  # nocoverage
+def convert_github_username_to_zulip_mention(
+    github_username: str, realm: Realm
+) -> str:  # nocoverage
     """
     Convert a GitHub username to a Zulip silent mention if a matching user is found.
     Falls back to the original username if no match is found.
