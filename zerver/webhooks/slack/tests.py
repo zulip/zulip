@@ -12,7 +12,7 @@ from zerver.webhooks.slack.view import INVALID_SLACK_TOKEN_MESSAGE
 EXPECTED_TOPIC = "Message from Slack"
 
 MESSAGE_WITH_NORMAL_TEXT = "Hello, this is a normal text message"
-USER = "supersecretemail"
+USER = "John Doe"
 CHANNEL = "general"
 EXPECTED_MESSAGE = "**{user}**: {message}"
 TOPIC_WITH_CHANNEL = "channel: {channel}"
@@ -166,9 +166,7 @@ class SlackWebhookTests(WebhookTestCase):
 
     @mock_slack_api_calls
     def test_message_with_channel_and_user_mentions(self) -> None:
-        message_body = (
-            "@**supersecretemail** **#general** message with both channel and user mentions"
-        )
+        message_body = "@**John Doe** **#general** message with both channel and user mentions"
         expected_message = EXPECTED_MESSAGE.format(user=USER, message=message_body)
         self.check_webhook(
             "message_with_channel_and_user_mentions",
@@ -237,7 +235,9 @@ class SlackWebhookTests(WebhookTestCase):
 
     @mock_slack_api_calls
     def test_message_with_user_mentions(self) -> None:
-        message_body = "@**supersecretemail** @**supersecretemail** @**supersecretemail** hello, this is a message with mentions"
+        message_body = (
+            "@**John Doe** @**John Doe** @**John Doe** hello, this is a message with mentions"
+        )
         expected_message = EXPECTED_MESSAGE.format(user=USER, message=message_body)
         self.check_webhook(
             "message_with_user_mentions",
@@ -308,7 +308,7 @@ class SlackWebhookTests(WebhookTestCase):
 
     @mock_slack_api_calls
     def test_message_with_complex_formatted_mentions(self) -> None:
-        message_body = "@**supersecretemail** **#general** ~~***@**all*****~~"
+        message_body = "@**John Doe** **#general** ~~***@**all*****~~"
         expected_message = EXPECTED_MESSAGE.format(user=USER, message=message_body)
         self.check_webhook(
             "message_with_complex_formatted_mentions",

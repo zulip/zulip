@@ -64,7 +64,7 @@ def get_slack_sender_name(user_id: str, token: str) -> str:
         token=token,
         user=user_id,
     )
-    return slack_user_data["name"]
+    return slack_user_data["real_name"]
 
 
 def convert_slack_user_and_channel_mentions(text: str, app_token: str) -> str:
