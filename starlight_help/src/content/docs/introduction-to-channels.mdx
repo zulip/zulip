@@ -8,6 +8,7 @@ import FlattenedSteps from "../../components/FlattenedSteps.astro";
 import NavigationSteps from "../../components/NavigationSteps.astro";
 import ZulipTip from "../../components/ZulipTip.astro";
 import ChannelsIntro from "../include/_ChannelsIntro.mdx";
+import MobileChannels from "../include/_MobileChannels.mdx";
 
 import BarChartIcon from "~icons/fa/bar-chart";
 import SortAlphaAscIcon from "~icons/fa/sort-alpha-asc";
@@ -45,15 +46,14 @@ subscribe to [private](/help/channel-permissions#private-channels) channels.
   </TabItem>
 
   <TabItem label="Mobile">
-    Access this feature by following the web app instructions in your mobile
-    device browser. You can also follow a link to an unsubscribed channel in
-    a Zulip message, press and hold the channel name until the long-press menu
-    appears, and tap **Subscribe**.
+    <FlattenedSteps>
+      <MobileChannels />
 
-    Implementation of a list of channels to subscribe to in the mobile app is
-    tracked [on GitHub](https://github.com/zulip/zulip-flutter/issues/188).
-    If you're interested in this feature, please react to the issue's
-    description with 👍.
+      1. Scroll to the bottom of the list of subscribed channels.
+      1. Tap **All Channels**.
+      1. Scroll through the list of channels.
+      1. Use the toggle to the right of the channel name to subscribe to it.
+    </FlattenedSteps>
   </TabItem>
 </Tabs>
 
