@@ -241,7 +241,7 @@ export function canonical_url_of_media(media: HTMLMediaElement | HTMLImageElemen
 export function render_lightbox_media_list(): void {
     if (!is_open) {
         const message_media_list = $<HTMLMediaElement | HTMLImageElement>(
-            ".focused-message-list .message-media-preview-image img, .focused-message-list .message_inline_video video",
+            ".focused-message-list .message-media-inline-image img, .focused-message-list .message-media-preview-image img, .focused-message-list .message_inline_video video",
         ).toArray();
         const $lightbox_media_list = $("#lightbox_overlay .image-list").empty();
         for (const media of message_media_list) {
@@ -414,7 +414,7 @@ export function show_from_selected_message(): void {
     let $message = $message_selected;
     // This is a function to satisfy eslint unicorn/no-array-callback-reference
     const media_classes = (): string =>
-        ".message-media-preview-image img, .message-media-preview-video video";
+        ".message-media-inline-image img, .message-media-preview-image img, .message-media-preview-video video";
     let $media = $message.find<HTMLMediaElement | HTMLImageElement>(media_classes());
     let $prev_traverse = false;
 
@@ -645,7 +645,7 @@ export function initialize(): void {
 
     $("#main_div, #compose .preview_content").on(
         "click",
-        ".message-media-preview-image:not(.message_inline_video) a, .message_inline_animated_image_still",
+        ".message-media-inline-image a, .message-media-preview-image:not(.message_inline_video) a, .message_inline_animated_image_still",
         function (e) {
             // prevent the link from opening in a new page.
             e.preventDefault();
