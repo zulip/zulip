@@ -347,6 +347,8 @@ run_test("local_echo", () => {
 });
 
 run_test("bookend", ({override}) => {
+    stream_data.can_toggle_subscription = () => true;
+
     const list = new MessageList({
         data: new MessageListData({
             excludes_muted_topics: false,
@@ -470,6 +472,19 @@ run_test("bookend", ({override}) => {
         assert.equal(bookend.subscribed, false);
         assert.equal(bookend.deactivated, false);
         assert.equal(bookend.just_unsubscribed, false);
+    }
+
+    // Test case for admin viewing a private stream they cannot access.
+    is_subscribed = false;
+    invite_only = true;
+    override(stream_data, "can_administer_channel", () => true);
+    override(stream_data, "can_toggle_subscription", () => false);
+
+    {
+        const stub = make_stub();
+        list.view.render_trailing_bookend = stub.f;
+        list.update_trailing_bookend();
+        assert.equal(stub.num_calls, 0);
     }
 });
 

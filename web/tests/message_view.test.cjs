@@ -14,7 +14,6 @@ const hash_util = zrequire("hash_util");
 const compose_state = zrequire("compose_state");
 const narrow_banner = zrequire("narrow_banner");
 const people = zrequire("people");
-const stream_data = zrequire("stream_data");
 const {Filter} = zrequire("../src/filter");
 const message_view = zrequire("message_view");
 const narrow_title = zrequire("narrow_title");
@@ -50,10 +49,23 @@ mock_esm("../src/compose_banner", {
 const compose_pm_pill = mock_esm("../src/compose_pm_pill");
 mock_esm("../src/settings_data", {
     user_can_access_all_other_users: () => true,
-    user_has_permission_for_group_setting: () => true,
 });
 mock_esm("../src/spectators", {
     login_to_access() {},
+});
+const subs = new Map();
+const stream_data = mock_esm("../src/stream_data", {
+    add_sub_for_tests: (sub) => subs.set(sub.stream_id, sub),
+    subscribe_myself(sub) {
+        const s = subs.get(sub.stream_id);
+        if (s) {
+            s.subscribed = true;
+        }
+    },
+    get_sub_by_id_string: (id) => subs.get(Number.parseInt(id, 10)),
+    is_web_public_by_stream_id: (id) => subs.get(id)?.is_web_public ?? false,
+    can_toggle_subscription: () => true,
+    can_use_empty_topic: () => false,
 });
 
 function empty_narrow_html(title, notice_html, search_data) {
@@ -643,6 +655,42 @@ run_test("show_empty_narrow_message", ({mock_template, override}) => {
             'translated HTML: Learn more about emoji reactions <a target="_blank" rel="noopener noreferrer" href="/help/emoji-reactions">here</a>.',
         ),
     );
+
+    // for admin viewing a private channel they can't access
+    const private_sub = {
+        stream_id: 101,
+        name: "private",
+        subscribed: false,
+        invite_only: true,
+    };
+    override(stream_data, "get_sub_by_id_string", (id_string) => {
+        assert.equal(id_string, private_sub.stream_id.toString());
+        return private_sub;
+    });
+    override(stream_data, "can_administer_channel", (sub) => {
+        assert.deepEqual(sub, private_sub);
+        return true;
+    });
+    override(stream_data, "can_toggle_subscription", () => false);
+    current_filter = set_filter([["stream", private_sub.stream_id.toString()]]);
+    narrow_banner.show_empty_narrow_message(current_filter);
+    assert.equal(
+        $(".empty_feed_notice_main").html(),
+        empty_narrow_html(
+            "translated: You are not allowed to view messages in this private channel.",
+        ),
+    );
+
+    // Test that a non-admin does NOT get the special banner.
+    override(stream_data, "can_administer_channel", () => false);
+    override(stream_data, "can_toggle_subscription", () => false);
+    narrow_banner.show_empty_narrow_message(current_filter);
+    assert.equal(
+        $(".empty_feed_notice_main").html(),
+        empty_narrow_html(
+            "translated: This channel doesn't exist, or you are not allowed to view it.",
+        ),
+    );
 });
 
 run_test("show_empty_narrow_message_with_search", ({mock_template, override}) => {
@@ -815,6 +863,7 @@ run_test("narrow_to_compose_target streams", ({override, override_rewire}) => {
 
     // Test with blank topic, without realm_topics_policy
     override(realm, "realm_topics_policy", "allow_empty_topic");
+    override(stream_data, "can_use_empty_topic", () => true);
     compose_state.topic("");
     args.called = false;
     message_view.to_compose_target();
@@ -826,6 +875,7 @@ run_test("narrow_to_compose_target streams", ({override, override_rewire}) => {
 
     // Test with no topic, with realm mandatory topics
     override(realm, "realm_topics_policy", "disable_empty_topic");
+    override(stream_data, "can_use_empty_topic", () => false);
     compose_state.topic(undefined);
     args.called = false;
     message_view.to_compose_target();
@@ -834,6 +884,7 @@ run_test("narrow_to_compose_target streams", ({override, override_rewire}) => {
 
     // Test with no topic, without realm mandatory topics
     override(realm, "realm_topics_policy", "allow_empty_topic");
+    override(stream_data, "can_use_empty_topic", () => true);
     compose_state.topic(undefined);
     args.called = false;
     message_view.to_compose_target();

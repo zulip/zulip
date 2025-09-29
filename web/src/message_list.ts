@@ -452,6 +452,19 @@ export class MessageList {
         // If user narrows to a stream, don't update
         // trailing bookend if user is subscribed.
         const sub = stream_data.get_sub_by_id(stream_id);
+
+        if (
+            sub &&
+            sub.invite_only &&
+            !stream_data.can_toggle_subscription(sub) &&
+            stream_data.can_administer_channel(sub)
+        ) {
+            // This is a special case for administrators viewing a private
+            // channel they are not subscribed to. They have metadata access
+            // but not content access, so we do not show a bookend at all.
+            return;
+        }
+
         if (
             sub &&
             sub.subscribed &&
