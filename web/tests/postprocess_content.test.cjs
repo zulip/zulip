@@ -142,7 +142,17 @@ run_test("inline_image_galleries", ({override}) => {
                 '<a href="/user_uploads/path/to/image.png" title="image.png">' +
                 '<img data-original-dimensions="1000x1000" src="/user_uploads/thumbnail/path/to/image.png/840x560.webp">' +
                 "</a>" +
-                "</div>",
+                "</div>" +
+                "<p>" +
+                '<img alt="image" class="inline-image" data-original-content-type="image/png" data-original-dimensions="900x600" data-original-src="/user_uploads/path/to/image-wide.png" src="/user_uploads/thumbnail/path/to/image.png/900x600.webp">' +
+                " or " +
+                '<img alt="image" class="inline-image" data-original-content-type="image/png" data-original-dimensions="600x900" data-original-src="/user_uploads/path/to/image-tall.png" src="/user_uploads/thumbnail/path/to/image.png/600x900.webp">' +
+                "</p>" +
+                "<p>" +
+                '<img alt="image" class="inline-image" data-original-content-type="image/png" data-original-dimensions="900x600" data-original-src="/user_uploads/path/to/image-wide.png" src="/user_uploads/thumbnail/path/to/image.png/900x600.webp">' +
+                "<br>" +
+                '<img alt="image" class="inline-image" data-original-content-type="image/png" data-original-dimensions="600x900" data-original-src="/user_uploads/path/to/image-tall.png" src="/user_uploads/thumbnail/path/to/image.png/600x900.webp">' +
+                "</p>",
         ),
         "<p>Message text</p>" +
             '<div class="message-thumbnail-gallery">' +
@@ -164,7 +174,34 @@ run_test("inline_image_galleries", ({override}) => {
             '<img data-original-dimensions="1000x1000" src="/user_uploads/thumbnail/path/to/image.png/840x560.webp" class="media-image-element portrait-thumbnail" loading="lazy" width="1000" height="1000" style="width: 10em;">' +
             "</a>" +
             "</div>" +
-            "</div>",
+            "</div>" +
+            "<p>" +
+            '<span class="message-media-inline-image">' +
+            '<a href="/user_uploads/path/to/image-wide.png" target="_blank" rel="noopener noreferrer" class="media-anchor-element" aria-label="image">' +
+            '<img alt="image" class="inline-image media-image-element landscape-thumbnail" data-original-content-type="image/png" data-original-dimensions="900x600" data-original-src="/user_uploads/path/to/image-wide.png" src="/user_uploads/thumbnail/path/to/image.png/840x560.webp" loading="lazy" width="900" height="600" style="width: 15em;">' +
+            "</a>" +
+            "</span>" +
+            " or " +
+            '<span class="message-media-inline-image">' +
+            '<a href="/user_uploads/path/to/image-tall.png" target="_blank" rel="noopener noreferrer" class="media-anchor-element" aria-label="image">' +
+            '<img alt="image" class="inline-image media-image-element portrait-thumbnail" data-original-content-type="image/png" data-original-dimensions="600x900" data-original-src="/user_uploads/path/to/image-tall.png" src="/user_uploads/thumbnail/path/to/image.png/840x560.webp" loading="lazy" width="600" height="900" style="width: 6.666666666666667em;">' +
+            "</a>" +
+            "</span>" +
+            "</p>" +
+            "<p>" +
+            '<div class="message-thumbnail-gallery">' +
+            '<span class="message-media-inline-image message-media-gallery-image">' +
+            '<a href="/user_uploads/path/to/image-wide.png" target="_blank" rel="noopener noreferrer" class="media-anchor-element" aria-label="image">' +
+            '<img alt="image" class="inline-image media-image-element landscape-thumbnail" data-original-content-type="image/png" data-original-dimensions="900x600" data-original-src="/user_uploads/path/to/image-wide.png" src="/user_uploads/thumbnail/path/to/image.png/840x560.webp" loading="lazy" width="900" height="600" style="width: 15em;">' +
+            "</a>" +
+            "</span>" +
+            '<span class="message-media-inline-image message-media-gallery-image">' +
+            '<a href="/user_uploads/path/to/image-tall.png" target="_blank" rel="noopener noreferrer" class="media-anchor-element" aria-label="image">' +
+            '<img alt="image" class="inline-image media-image-element portrait-thumbnail" data-original-content-type="image/png" data-original-dimensions="600x900" data-original-src="/user_uploads/path/to/image-tall.png" src="/user_uploads/thumbnail/path/to/image.png/840x560.webp" loading="lazy" width="600" height="900" style="width: 6.666666666666667em;">' +
+            "</a>" +
+            "</span>" +
+            "</div>" +
+            "</p>",
     );
 });
 
