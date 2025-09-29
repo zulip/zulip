@@ -123,6 +123,25 @@ export function postprocess_content(html: string): string {
         const media_wrapper = inertDocument.createElement("span");
         media_wrapper.classList.add("message-media-inline-image");
 
+        // If one or more inline images sit in a paragraph containing no
+        // other text content, we will include it in a gallery via the
+        // logic further down in this file.
+        const inline_img_parent_elt = inline_img_elt.parentElement;
+        // We want to determine the length after trimming out the spaces
+        // from line breaks; this value will be precisely zero if the
+        // containing paragraph has no text content, including things
+        // that might be tucked in a link or a bold tag, etc.
+        const inline_img_parent_elt_text_length = inline_img_parent_elt?.textContent?.trim().length;
+        const inline_img_parent_elt_name = inline_img_parent_elt?.tagName.toLowerCase();
+
+        if (inline_img_parent_elt_name === "p" && inline_img_parent_elt_text_length === 0) {
+            media_wrapper.classList.add("message-media-gallery-image");
+            // Multiple images will be separated by break tags, which will
+            // be unnecessary (and make trouble for correctly placing
+            // adjacent images into a single gallery, when we process them.
+            inline_img_parent_elt?.querySelector("br")?.remove();
+        }
+
         const media_link = inertDocument.createElement("a");
         media_link.setAttribute("href", original_src);
         media_link.setAttribute("target", "_blank");
@@ -301,7 +320,7 @@ export function postprocess_content(html: string): string {
     // After all other processing on images has been done, we look for
     // adjacent images and videos, and tuck them structurally into galleries.
     for (const elt of template.content.querySelectorAll(
-        ".message-media-preview-image, .message-media-preview-video",
+        ".message-media-gallery-image, .message-media-preview-image, .message-media-preview-video",
     )) {
         let gallery_element;
 
