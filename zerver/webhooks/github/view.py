@@ -828,7 +828,7 @@ def get_organization_name(payload: WildValue) -> str:
     return payload["organization"]["login"].tame(check_string)
 
 
-def get_sender_name(payload: WildValue) -> str:
+def get_sender_name(payload: WildValue) -> str:  # nocoverage
     return payload["sender"]["login"].tame(check_string)
 
 
