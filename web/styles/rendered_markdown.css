@@ -513,7 +513,7 @@
         font-weight: bold;
     }
 
-    .message-media-inline-image {
+    .message-media-inline-image:not(.message-media-gallery-image) {
         .media-anchor-element {
             /* We want the image to behave as inline, which the
                .message-media-inline-image will ensure, but in
@@ -528,6 +528,7 @@
     }
 
     .twitter-image,
+    .message-media-gallery-image,
     .message-media-preview-image,
     .message-media-preview-video {
         /* Set a background for the image; the background will be visible
