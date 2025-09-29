@@ -10081,12 +10081,39 @@ paths:
       description: |
         Permanently delete a message.
 
-        This API corresponds to the
-        [delete a message completely][delete-completely] feature documented in
-        the Zulip help center.
+        This API corresponds to the [delete a message completely][delete-completely]
+        feature documented in the Zulip help center.
+
+        A user must be able to access the content of a message in order to delete it.
+        See [channel permissions](/help/channel-permissions) for more information
+        about content access for channel messages. For direct messages, the user
+        must have received or sent the direct message to have content access.
+
+        See [restricting message deletion](/help/restrict-message-editing-and-deletion)
+        for documentation on when users are allowed to delete messages.
+
+        The relevant realm settings in the API that are related to the above linked
+        documentation on when users are allowed to delete messages are:
+
+        - `realm_can_delete_any_message_group`
+        - `realm_can_delete_own_message_group`
+        - `realm_can_set_delete_message_policy_group`
+        - `realm_message_content_delete_limit_seconds`
+
+        The relevant per-channel permission settings in the API that are related to the
+        above linked documentation on when users are allowed to delete messages in a
+        specific channel are:
+
+        - `can_delete_any_message_group`
+        - `can_delete_own_message_group`
+
+        More details about these realm and channel settings can be found in the
+        [`POST /register`](/api/register-queue) response.
+
+        **Changes**: Prior to Zulip 10.0 (feature level 281), only organization
+        administrators had permission to permanently delete a message.
 
         [delete-completely]: /help/delete-a-message#delete-a-message-completely
-      x-requires-administrator: true
       parameters:
         - $ref: "#/components/parameters/MessageId"
       responses:
