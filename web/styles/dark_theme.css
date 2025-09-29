@@ -140,30 +140,6 @@
         }
     }
 
-    .group-row.active,
-    .stream-row.active {
-        background-color: hsl(0deg 0% 0% / 20%);
-    }
-
-    .stream-row,
-    .group-row {
-        /* This is for coluring the plus sign SVGs in stream-list UI */
-        /* public */
-        .check:not(.checked) .sub-unsub-icon {
-            color: hsl(218deg 14% 33%);
-        }
-
-        /* private */
-        .disabled .sub-unsub-icon {
-            opacity: 0.5;
-        }
-
-        /* public :hover */
-        .check:not(.checked, .disabled):hover .sub-unsub-icon {
-            color: hsl(230deg 11% 67%);
-        }
-    }
-
     #recent_view_table {
         .zulip-icon-user {
             opacity: 0.7;

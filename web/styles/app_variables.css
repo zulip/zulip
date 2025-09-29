@@ -1028,6 +1028,24 @@
         hsl(0deg 0% 0% / 20%)
     );
     --color-background-grey-box: light-dark(#f5f5f5, hsl(0deg 0% 0% / 20%));
+    --color-stream-group-row-checked-icon: hsl(240deg 96% 68%);
+    --color-stream-group-row-checked-icon-hover: hsl(240deg 41% 50%);
+    --color-stream-group-row-checked-icon-disabled: light-dark(
+        hsl(240deg 96% 68% / 100%),
+        hsl(240deg 96% 68% / 50%)
+    );
+    --color-stream-group-row-plus-icon: light-dark(
+        hsl(0deg 0% 72%),
+        hsl(218deg 14% 33%)
+    );
+    --color-stream-group-row-plus-icon-hover: light-dark(
+        hsl(0deg 0% 27%),
+        hsl(230deg 11% 67%)
+    );
+    --color-stream-group-row-plus-icon-disabled: light-dark(
+        hsl(0deg 0% 87% / 100%),
+        hsl(218deg 14% 33% / 50%)
+    );
 
     /* Recent view */
     --recent-view-max-avatars: 4;
