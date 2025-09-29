@@ -18976,6 +18976,12 @@ paths:
                               A [group-setting value](/api/group-setting-values) defining the set of
                               users who have permission to delete any message in the organization.
 
+                              Note that a user must also be able to access the content of a message
+                              in order to delete it. See [channel permissions](/help/channel-permissions)
+                              for information about content access for channel messages. For direct
+                              messages, the user must have received or sent the direct message to
+                              have content access.
+
                               **Changes**: New in Zulip 10.0 (feature level 281). Previously, this
                               permission was limited to administrators only and was uneditable.
                           - $ref: "#/components/schemas/GroupSettingValue"
