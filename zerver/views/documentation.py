@@ -76,6 +76,10 @@ def add_api_url_context(
     context["html_settings_links"] = html_settings_links
 
 
+def add_canonical_link_context(context: dict[str, Any], request: HttpRequest) -> None:
+    context["REL_CANONICAL_LINK"] = f"https://zulip.com{request.path}"
+
+
 class ApiURLView(TemplateView):
     @override
     def get_context_data(self, **kwargs: Any) -> dict[str, str]:
@@ -200,6 +204,9 @@ class MarkdownDirectoryView(ApiURLView):
             else:
                 sidebar_index = None
             title_base = "Zulip terms and policies"
+            # We don't add a rel-canonical link to self-hosted server policies docs.
+            if settings.CORPORATE_ENABLED:
+                add_canonical_link_context(context, self.request)
         elif self.api_doc_view:
             context["page_is_api_center"] = True
             context["doc_root"] = "/api/"
@@ -207,6 +214,7 @@ class MarkdownDirectoryView(ApiURLView):
             sidebar_article = self.get_path("sidebar_index")
             sidebar_index = sidebar_article.article_path
             title_base = "Zulip API documentation"
+            add_canonical_link_context(context, self.request)
         else:
             raise AssertionError("Invalid documentation view type")
 
@@ -364,6 +372,7 @@ class IntegrationView(ApiURLView):
         context: dict[str, Any] = super().get_context_data(**kwargs)
         add_integrations_context(context)
         add_integrations_open_graph_context(context, self.request)
+        add_canonical_link_context(context, self.request)
         add_google_analytics_context(context)
         return context
 
