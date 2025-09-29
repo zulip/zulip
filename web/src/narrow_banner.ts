@@ -314,8 +314,21 @@ export function pick_empty_narrow_banner(current_filter: Filter): NarrowBannerDa
                     spectators.login_to_access(true);
                     return SPECTATOR_STREAM_NARROW_BANNER;
                 }
-                if (stream_sub && stream_data.can_toggle_subscription(stream_sub)) {
-                    return default_banner;
+                if (stream_sub) {
+                    if (stream_data.can_toggle_subscription(stream_sub)) {
+                        // You have content access to the channel, and therefore
+                        // can subscribe to the channel.
+                        return default_banner;
+                    }
+                    if (stream_sub.invite_only) {
+                        // You don't have content access to this private channel.
+                        return {
+                            title: $t({
+                                defaultMessage:
+                                    "You are not allowed to view messages in this private channel.",
+                            }),
+                        };
+                    }
                 }
                 return {
                     title: $t({
