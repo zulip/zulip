@@ -165,18 +165,18 @@
     .group-row {
         /* This is for coluring the plus sign SVGs in stream-list UI */
         /* public */
-        .check:not(.checked) svg {
-            fill: hsl(218deg 14% 33%);
+        .check:not(.checked) .sub-unsub-icon {
+            color: hsl(218deg 14% 33%);
         }
 
         /* private */
-        .disabled svg {
+        .disabled .sub-unsub-icon {
             opacity: 0.5;
         }
 
         /* public :hover */
-        .check:not(.checked, .disabled):hover svg {
-            fill: hsl(230deg 11% 67%);
+        .check:not(.checked, .disabled):hover .sub-unsub-icon {
+            color: hsl(230deg 11% 67%);
         }
     }
 
