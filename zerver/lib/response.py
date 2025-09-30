@@ -64,9 +64,9 @@ class MutableJsonResponse(HttpResponse):
     @content.setter
     def content(self, value: Any) -> None:
         """Set the content for the response."""
-        assert isinstance(HttpResponse.content, property)
-        assert HttpResponse.content.fset is not None
-        HttpResponse.content.fset(self, value)
+        content: object = super(MutableJsonResponse, type(self)).content
+        assert isinstance(content, property)
+        content.__set__(self, value)
         self._needs_serialization = False
 
     # The superclass HttpResponse defines an iterator that doesn't access the content
