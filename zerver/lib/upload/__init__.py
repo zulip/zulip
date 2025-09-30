@@ -138,7 +138,7 @@ def get_file_info(user_file: UploadedFile) -> tuple[str, str]:
     fake_msg = EmailMessage()
     extras = {}
     if user_file.content_type_extra:
-        extras = {k: v.decode() if v else None for k, v in user_file.content_type_extra.items()}  # type: ignore[attr-defined]  # https://github.com/typeddjango/django-stubs/pull/2754
+        extras = {k: v.decode() if v else None for k, v in user_file.content_type_extra.items()}
     fake_msg.add_header("content-type", content_type, **extras)
     content_type = fake_msg["content-type"]
 
