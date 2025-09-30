@@ -7,9 +7,6 @@ PYTHONWARNINGS+=',ignore::ResourceWarning'
 # https://github.com/disqus/django-bitfield/pull/135
 PYTHONWARNINGS+=',default:Attribute s is deprecated and will be removed in Python 3.14; use value instead:DeprecationWarning:__main__'
 
-# https://github.com/boto/botocore/pull/3239
-PYTHONWARNINGS+=',ignore:datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version.:DeprecationWarning:botocore.auth'
-
 # https://github.com/mahmoud/glom/pull/258
 PYTHONWARNINGS+=',ignore:invalid escape sequence '\'\\' '\'':DeprecationWarning'
 PYTHONWARNINGS+=',ignore:invalid escape sequence '\'\\' '\'':SyntaxWarning'
