@@ -168,7 +168,7 @@ The file uploads bucket should have a policy of:
 ```
 
 The file-uploads bucket should not be world-readable. See the
-[documentation on the Zulip security model](security-model.md) for
+[documentation on the Zulip security model](securing-your-zulip-server.md) for
 details on the security model for uploaded files.
 
 However, the avatars bucket is intended to be world-readable, so its
