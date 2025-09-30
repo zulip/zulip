@@ -7994,7 +7994,22 @@ paths:
             2.1.x and older in the `found_newest` return value).
           schema:
             $ref: "#/components/schemas/Anchor"
-          example: "43"
+          example: "date"
+        - name: anchor_date
+          in: query
+          description: |
+            Date and time (in ISO 8601 format) to search for messages closest to this datetime.
+            If only the date is provided, the timezone will be interpreted as UTC.
+
+            _Changes_: New in Zulip 11.0 (feature level ZF-3ea45d).
+          schema:
+            type: string
+            nullable: true
+          example: "2025-09-18"
+          x-constraint:
+            - name: anchor-date-required
+              description: anchor_date is required if anchor is set to 'date'
+              expression: anchor == 'date' && anchor_date !== null
         - name: include_anchor
           in: query
           description: |
@@ -8079,7 +8094,11 @@ paths:
                       minItems: 2
                       maxItems: 2
                 default: []
-              example: [{"operand": "Denmark", "operator": "channel"}]
+              example:
+                [
+                  {"operand": "Denmark", "operator": "channel"},
+                  {"operand": "2025-09-18", "operator": "date"},
+                ]
         - $ref: "#/components/parameters/ClientGravatar"
         - name: apply_markdown
           in: query
@@ -8976,7 +8995,20 @@ paths:
                         - `oldest`: The oldest message.
                         - `first_unread`: The oldest unread message matching the
                           query, if any; otherwise, the most recent message.
-                      example: "43"
+                      example: "date"
+                anchor_date:
+                  description: |
+                    Date and time (in ISO 8601 format) to search for messages closest to this datetime.
+                    If only the date is provided, the timezone will be interpreted as UTC.
+
+                    _Changes_: New in Zulip 11.0 (feature level ZF-3ea45d).
+                  type: string
+                  nullable: true
+                  example: "2025-09-18"
+                  x-constraint:
+                    - name: anchor-date-required
+                      description: anchor_date is required if anchor is set to 'date'
+                      expression: anchor == 'date' && anchor_date !== null
                 include_anchor:
                   description: |
                     Whether a message with the specified ID matching the narrow
@@ -9038,7 +9070,11 @@ paths:
                         minItems: 2
                         maxItems: 2
                   default: []
-                  example: [{"operand": "Denmark", "operator": "channel"}]
+                  example:
+                    [
+                      {"operand": "Denmark", "operator": "channel"},
+                      {"operand": "2025-09-18", "operator": "date"},
+                    ]
                 op:
                   description: |
                     Whether to `add` the flag or `remove` it.
