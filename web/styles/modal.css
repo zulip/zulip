@@ -783,3 +783,9 @@ ul.modal-options-list {
         background: var(--color-background-active-popover-menu);
     }
 }
+
+#change_stream_name,
+#change_user_group_name {
+    /* 14px = 2 * 6px + 2 * 1px (6px padding and 1px border on left and right). */
+    max-width: calc(100% - 14px);
+}
