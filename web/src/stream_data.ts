@@ -1057,16 +1057,16 @@ export function clean_up_description(sub: StreamSubscription): void {
 }
 
 export function create_sub_from_server_data(
-    attrs: ApiGenericStreamSubscription,
+    server_attrs: ApiGenericStreamSubscription,
     subscribed: boolean,
     previously_subscribed: boolean,
 ): StreamSubscription {
-    if (!attrs.stream_id) {
+    if (!server_attrs.stream_id) {
         // fail fast
         throw new Error("We cannot create a sub without a stream_id");
     }
 
-    let sub = sub_store.get(attrs.stream_id);
+    let sub = sub_store.get(server_attrs.stream_id);
     if (sub !== undefined) {
         // We've already created this subscription, no need to continue.
         return sub;
@@ -1079,14 +1079,16 @@ export function create_sub_from_server_data(
     // a copy of the object with `_.omit(attrs, 'subscribers')`, but `_.omit` is
     // slow enough to show up in timings when you have 1000s of streams.
 
-    const full_data = attrs.partial_subscribers === undefined;
-    const subscriber_user_ids = full_data ? attrs.subscribers : attrs.partial_subscribers;
+    const full_data = server_attrs.partial_subscribers === undefined;
+    const subscriber_user_ids = full_data
+        ? server_attrs.subscribers
+        : server_attrs.partial_subscribers;
 
     // Omit properties not used for the sub object
-    const {subscribers, subscriber_count, partial_subscribers, ...sub_attrs} = attrs;
+    const {subscribers, subscriber_count, partial_subscribers, ...attrs} = server_attrs;
 
-    assert(attrs.subscriber_count !== undefined);
-    peer_data.set_subscriber_count(attrs.stream_id, attrs.subscriber_count);
+    assert(server_attrs.subscriber_count !== undefined);
+    peer_data.set_subscriber_count(server_attrs.stream_id, server_attrs.subscriber_count);
 
     sub = {
         newly_subscribed: false,
@@ -1097,10 +1099,10 @@ export function create_sub_from_server_data(
         push_notifications: null,
         email_notifications: null,
         wildcard_mentions_notify: null,
-        color: "color" in attrs ? attrs.color : color_data.pick_color(),
+        color: "color" in server_attrs ? server_attrs.color : color_data.pick_color(),
         subscribed,
         previously_subscribed,
-        ...sub_attrs,
+        ...attrs,
     };
 
     clean_up_description(sub);
