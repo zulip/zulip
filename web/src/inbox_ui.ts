@@ -12,6 +12,7 @@ import render_inbox_view from "../templates/inbox_view/inbox_view.hbs";
 import render_introduce_zulip_view_modal from "../templates/introduce_zulip_view_modal.hbs";
 import render_user_with_status_icon from "../templates/user_with_status_icon.hbs";
 
+import * as animate from "./animate.ts";
 import * as buddy_data from "./buddy_data.ts";
 import * as channel_folders from "./channel_folders.ts";
 import * as compose_closed_ui from "./compose_closed_ui.ts";
@@ -1372,16 +1373,49 @@ function filter_should_hide_stream_row({
 }
 
 export function collapse_or_expand(container_id: string): void {
-    $(`#${container_id}`).toggleClass("inbox-collapsed-state");
+    const animation_duration = 200; // ms
+    const $toggle_container = $(`#${container_id}`);
+    let $all_elements = $(".inbox-header.inbox-folder, .inbox-folder-components");
+    const $blocker = $("#inbox-animation-extra-content-blocker");
+    $all_elements = $all_elements.add($blocker);
+    // If a folder was expanded/collapsed.
+    if ($toggle_container.hasClass("inbox-folder")) {
+        const $content = $toggle_container.next(".inbox-folder-components");
+        animate.collapse_or_expand({
+            toggle_class: "inbox-collapsed-state",
+            $toggle_container,
+            $content,
+            $all_elements,
+            duration: animation_duration,
+        });
+        // If a channel was expanded/collapsed.
+    } else {
+        const $content = $toggle_container.next(".inbox-topic-container");
+        // Remove parent`.inbox-folder-components` and
+        // add it's contents to `$all_elements`.
+        const $parent_folder_components = $toggle_container.closest(".inbox-folder-components");
+        $all_elements = $all_elements.not($parent_folder_components);
+        const $parent_folder_components_children = $parent_folder_components.children().children();
+        $all_elements = $all_elements.add($parent_folder_components_children);
+        animate.collapse_or_expand({
+            toggle_class: "inbox-collapsed-state",
+            $toggle_container,
+            $content,
+            $all_elements,
+            duration: animation_duration,
+        });
+    }
 
     if (collapsed_containers.has(container_id)) {
         collapsed_containers.delete(container_id);
+        update_collapsed_note_visibility();
     } else {
         collapsed_containers.add(container_id);
+        // Show after the animation is complete.
+        setTimeout(update_collapsed_note_visibility, animation_duration);
     }
 
     save_data_to_ls();
-    update_collapsed_note_visibility();
 }
 
 // We show the note "All of your unread conversations are hidden.
