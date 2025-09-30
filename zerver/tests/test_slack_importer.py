@@ -770,6 +770,7 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(zerver_userprofile[0]["enable_desktop_notifications"], True)
         self.assertEqual(zerver_userprofile[0]["email"], "jon@gmail.com")
         self.assertEqual(zerver_userprofile[0]["full_name"], "John Doe")
+        self.assertEqual(zerver_userprofile[0]["is_imported_stub"], True)
 
         self.assertEqual(
             zerver_userprofile[1]["id"], test_slack_user_id_to_zulip_user_id["U0CBK5KAT"]
@@ -778,6 +779,7 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(zerver_userprofile[1]["is_staff"], False)
         self.assertEqual(zerver_userprofile[1]["is_active"], True)
         self.assertEqual(zerver_userprofile[0]["is_mirror_dummy"], False)
+        self.assertEqual(zerver_userprofile[1]["is_imported_stub"], True)
 
         self.assertEqual(
             zerver_userprofile[2]["id"], test_slack_user_id_to_zulip_user_id["U09TYF5Sk"]
@@ -788,6 +790,7 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(zerver_userprofile[2]["email"], "bot1@zulipchat.com")
         self.assertEqual(zerver_userprofile[2]["bot_type"], 1)
         self.assertEqual(zerver_userprofile[2]["avatar_source"], "U")
+        self.assertEqual(zerver_userprofile[2]["is_imported_stub"], True)
 
         self.assertEqual(
             zerver_userprofile[3]["id"], test_slack_user_id_to_zulip_user_id["UHSG7OPQN"]
@@ -800,6 +803,7 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(zerver_userprofile[3]["full_name"], "Matt Perry")
         self.assertEqual(zerver_userprofile[3]["is_mirror_dummy"], True)
         self.assertEqual(zerver_userprofile[3]["can_forge_sender"], False)
+        self.assertEqual(zerver_userprofile[3]["is_imported_stub"], True)
 
         self.assertEqual(
             zerver_userprofile[4]["id"], test_slack_user_id_to_zulip_user_id["U8VAHEVUY"]
@@ -808,6 +812,7 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(zerver_userprofile[4]["is_staff"], False)
         self.assertEqual(zerver_userprofile[4]["is_active"], True)
         self.assertEqual(zerver_userprofile[4]["is_mirror_dummy"], False)
+        self.assertEqual(zerver_userprofile[4]["is_imported_stub"], True)
 
         self.assertEqual(
             zerver_userprofile[5]["id"], test_slack_user_id_to_zulip_user_id["U8X25EBAB"]
@@ -816,6 +821,7 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(zerver_userprofile[5]["is_staff"], False)
         self.assertEqual(zerver_userprofile[5]["is_active"], True)
         self.assertEqual(zerver_userprofile[5]["is_mirror_dummy"], False)
+        self.assertEqual(zerver_userprofile[5]["is_imported_stub"], True)
 
         self.assertEqual(
             zerver_userprofile[6]["id"], test_slack_user_id_to_zulip_user_id["U015J7JSE"]
@@ -824,6 +830,7 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(zerver_userprofile[6]["is_staff"], False)
         self.assertEqual(zerver_userprofile[6]["is_active"], True)
         self.assertEqual(zerver_userprofile[6]["is_mirror_dummy"], False)
+        self.assertEqual(zerver_userprofile[6]["is_imported_stub"], True)
 
         self.assertEqual(
             zerver_userprofile[7]["id"], test_slack_user_id_to_zulip_user_id["U1RDFEC80"]
@@ -832,6 +839,7 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(zerver_userprofile[7]["is_staff"], False)
         self.assertEqual(zerver_userprofile[7]["is_active"], True)
         self.assertEqual(zerver_userprofile[7]["is_mirror_dummy"], False)
+        self.assertEqual(zerver_userprofile[7]["is_imported_stub"], True)
 
         # Importer should raise error when user emails are malformed
         bad_email1 = user_data[0]["profile"]["email"] = "jon@gmail,com"

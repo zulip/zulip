@@ -159,6 +159,7 @@ from zerver.actions.user_settings import (
 from zerver.actions.user_status import do_update_user_status
 from zerver.actions.user_topics import do_set_user_topic_visibility_policy
 from zerver.actions.users import (
+    do_change_is_imported_stub,
     do_change_user_role,
     do_deactivate_user,
     do_update_outgoing_webhook_service,
@@ -3858,6 +3859,17 @@ class NormalActionsTest(BaseAction):
         check_realm_export_consent("events[1]", events[1])
         check_subscription_peer_add("events[2]", events[2])
         check_user_group_add_members("events[3]", events[3])
+
+    def test_do_activate_imported_stub_user(self) -> None:
+        self.user_profile.is_imported_stub = True
+        self.user_profile.save()
+
+        with self.verify_action() as events:
+            do_change_is_imported_stub(self.user_profile)
+
+        check_realm_user_update("events[0]", events[0], "is_imported_stub")
+        self.assertEqual(events[0]["person"]["user_id"], self.user_profile.id)
+        self.assertFalse(events[0]["person"]["is_imported_stub"])
 
     def test_do_deactivate_realm(self) -> None:
         realm = self.user_profile.realm

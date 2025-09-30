@@ -127,6 +127,7 @@ def build_user_profile(
         timezone=timezone,
         is_bot=is_bot,
         bot_type=bot_type,
+        is_imported_stub=True,
     )
     dct = model_to_dict(obj)
 

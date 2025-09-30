@@ -109,6 +109,7 @@ class MatterMostImporter(ZulipTestCase):
         self.assertEqual(user["realm"], 3)
         self.assertEqual(user["short_name"], "harry")
         self.assertEqual(user["timezone"], "UTC")
+        self.assertEqual(user["is_imported_stub"], True)
 
         # A user with a `null` team value shouldn't be an admin.
         harry_dict["teams"] = None
@@ -130,6 +131,7 @@ class MatterMostImporter(ZulipTestCase):
         self.assertEqual(user["realm"], 3)
         self.assertEqual(user["short_name"], "snape")
         self.assertEqual(user["timezone"], "UTC")
+        self.assertEqual(user["is_imported_stub"], True)
 
     def test_process_guest_user(self) -> None:
         user_id_mapper = IdMapper[str]()
@@ -154,6 +156,7 @@ class MatterMostImporter(ZulipTestCase):
         self.assertEqual(user["realm"], 3)
         self.assertEqual(user["short_name"], "sirius")
         self.assertEqual(user["timezone"], "UTC")
+        self.assertEqual(user["is_imported_stub"], True)
 
         # A guest user with a `null` team value should be a regular
         # user. (It's a bit of a mystery why the Mattermost export

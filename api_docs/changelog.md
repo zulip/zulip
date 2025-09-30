@@ -20,6 +20,18 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 12.0
 
+**Feature level 433**
+
+* [`GET /users`](/api/get-users), [`GET /users/{user_id}`](/api/get-user),
+  [`GET /users/{email}`](/api/get-user-by-email) and
+  [`GET /users/me`](/api/get-own-user): Added `is_imported_stub` field to
+  returned user objects.
+* [`POST /register`](/api/register-queue): Added `is_imported` field
+  in the user objects returned in the `realm_users` field and in the bot
+  objects returned in `cross_realm_bots` field.
+* [`GET /events`](/api/get-events): Added `is_imported_stub` field to
+  user objects sent in `realm_user` events.
+
 **Feature level 432**
 
 * [`POST /mobile_push/register`](/api/register-push-device): Replaced

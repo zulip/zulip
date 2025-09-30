@@ -583,6 +583,7 @@ class APIUserDict(TypedDict):
     profile_data: NotRequired[dict[str, Any] | None]
     is_system_bot: NotRequired[bool]
     max_message_id: NotRequired[int]
+    is_imported_stub: bool
 
 
 def format_user_row(
@@ -627,6 +628,7 @@ def format_user_row(
         if acting_user is None
         else row["date_joined"].isoformat(timespec="minutes"),
         delivery_email=delivery_email,
+        is_imported_stub=row["is_imported_stub"],
     )
 
     if acting_user is None:
@@ -976,6 +978,7 @@ def user_profile_to_user_row(user_profile: UserProfile) -> RawUserDict:
         bot_type=user_profile.bot_type,
         long_term_idle=user_profile.long_term_idle,
         email_address_visibility=user_profile.email_address_visibility,
+        is_imported_stub=user_profile.is_imported_stub,
     )
 
 
@@ -1029,6 +1032,7 @@ def get_data_for_inaccessible_user(realm: Realm, user_id: int) -> APIUserDict:
         delivery_email=None,
         avatar_url=get_avatar_for_inaccessible_user(),
         profile_data={},
+        is_imported_stub=False,
     )
     return user_dict
 

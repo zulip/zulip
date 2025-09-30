@@ -371,6 +371,7 @@ def users_to_zerver_userprofile(
             date_joined=timestamp,
             timezone=timezone,
             last_login=timestamp,
+            is_imported_stub=True,
         )
         userprofile_dict = model_to_dict(userprofile)
         # Set realm id separately as the corresponding realm is not yet a Realm model instance

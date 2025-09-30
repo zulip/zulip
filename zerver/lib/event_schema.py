@@ -117,6 +117,7 @@ from zerver.lib.event_types import (
     PersonEmail,
     PersonFullName,
     PersonIsActive,
+    PersonIsImportedStub,
     PersonRole,
     PersonTimezone,
     PlanTypeData,
@@ -278,6 +279,7 @@ PERSON_TYPES: dict[str, type[BaseModel]] = dict(
     role=PersonRole,
     timezone=PersonTimezone,
     is_active=PersonIsActive,
+    is_imported_stub=PersonIsImportedStub,
 )
 
 

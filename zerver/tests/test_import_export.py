@@ -1780,6 +1780,11 @@ class RealmImportExportTest(ExportFile):
                 ).count(),
             )
 
+        # Check is_imported_stub is False for users imported from another
+        # Zulip organization.
+        for user_profile in UserProfile.objects.filter(realm=imported_realm):
+            self.assertFalse(user_profile.is_imported_stub)
+
         # Check folder field for imported streams
         for stream in Stream.objects.filter(realm=imported_realm):
             if stream.name == "Verona":

@@ -631,6 +631,21 @@ paths:
                                           type: boolean
                                           description: |
                                             A boolean describing whether the user account has been deactivated.
+                                    - type: object
+                                      additionalProperties: false
+                                      description: |
+                                        When an imported user logs into the organization for
+                                        the first time.
+
+                                        **Changes**: New in Zulip 12.0 (feature level 433).
+                                      properties:
+                                        user_id:
+                                          type: integer
+                                          description: |
+                                            The ID of the user affected by this change.
+                                        is_imported_stub:
+                                          type: boolean
+                                          description: This value is always `false`.
                               additionalProperties: false
                               example:
                                 {
@@ -1132,6 +1147,7 @@ paths:
                                       "date_joined": "2020-07-15T15:04:02.030833+00:00",
                                       "avatar_url": "https://secure.gravatar.com/avatar/c6b5578d4964bd9c5fae593c6868912a?d=identicon&version=1",
                                       "profile_data": {},
+                                      "is_imported_stub": false,
                                     },
                                   "id": 0,
                                 }
@@ -10463,6 +10479,7 @@ paths:
                               "is_guest": false,
                               "date_joined": "2019-10-20T07:50:53.728864+00:00",
                               "full_name": "aaron",
+                              "is_imported_stub": false,
                             },
                             {
                               "date_joined": "2019-10-20T07:50:53.729659+00:00",
@@ -10502,6 +10519,7 @@ paths:
                               "is_active": true,
                               "email": "hamlet@zulip.com",
                               "delivery_email": null,
+                              "is_imported_stub": false,
                             },
                             {
                               "bot_owner_id": 11,
@@ -10519,6 +10537,7 @@ paths:
                               "bot_type": 1,
                               "timezone": "",
                               "is_bot": true,
+                              "is_imported_stub": false,
                             },
                           ],
                       }
@@ -11056,6 +11075,17 @@ paths:
                           present only when `email_address_visibility` was restricted and the
                           requesting user had permission to access realm users' emails. As of
                           this feature level, this field is always present.
+                      is_imported_stub:
+                        type: boolean
+                        description: |
+                          Indicates whether this user object is a stub account imported from
+                          another chat system. Stub accounts are used to represent the senders
+                          for imported messages. Stub accounts can be converted to regular Zulip
+                          accounts when the user starts using Zulip, preserving that imported
+                          user's message history.
+
+                          **Changes**: New in Zulip 12.0 (feature level 433).
+                        example: false
                       profile_data:
                         $ref: "#/components/schemas/profile_data"
                     example:
@@ -11077,6 +11107,7 @@ paths:
                         "msg": "",
                         "result": "success",
                         "user_id": 5,
+                        "is_imported_stub": false,
                         "profile_data":
                           {
                             "5": {"value": "2000-01-01"},
@@ -14875,6 +14906,7 @@ paths:
                             "is_active": true,
                             "email": "hamlet@zulip.com",
                             "delivery_email": null,
+                            "is_imported_stub": false,
                           },
                       }
     patch:
@@ -15009,6 +15041,7 @@ paths:
                             "is_active": true,
                             "email": "hamlet@zulip.com",
                             "delivery_email": null,
+                            "is_imported_stub": false,
                           },
                       }
     patch:
@@ -21340,6 +21373,7 @@ paths:
                                   nullable: true
                                 avatar_version: {}
                                 profile_data: {}
+                                is_imported_stub: {}
                       server_supported_permission_settings:
                         description: |
                           Present if `realm` is present in `fetch_event_types`.
@@ -28140,6 +28174,7 @@ components:
             avatar_url:
               nullable: true
             avatar_version: {}
+            is_imported_stub: {}
             profile_data: {}
     UserBase:
       type: object
@@ -28276,6 +28311,17 @@ components:
             Version for the user's avatar. Used for cache-busting requests
             for the user's avatar. Clients generally shouldn't need to use this;
             most avatar URLs sent by Zulip will already end with `?v={avatar_version}`.
+        is_imported_stub:
+          type: boolean
+          description: |
+            Indicates whether this user object is a stub account imported from
+            another chat system. Stub accounts are used to represent the senders
+            for imported messages. Stub accounts can be converted to regular Zulip
+            accounts when the user starts using Zulip, preserving that imported
+            user's message history.
+
+            **Changes**: New in Zulip 12.0 (feature level 433).
+          example: false
         profile_data:
           $ref: "#/components/schemas/profile_data"
     profile_data:

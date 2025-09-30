@@ -128,6 +128,7 @@ class RocketChatImporter(ZulipTestCase):
         self.assertEqual(user["realm"], realm_id)
         self.assertEqual(user["short_name"], "rocket.cat")
         self.assertEqual(user["timezone"], "UTC")
+        self.assertEqual(user["is_imported_stub"], True)
 
         user_id = user_id_mapper.get(rocketchat_data["user"][2]["_id"])
         user = user_handler.get_user(user_id)
@@ -147,6 +148,7 @@ class RocketChatImporter(ZulipTestCase):
         self.assertEqual(user["realm"], realm_id)
         self.assertEqual(user["short_name"], "harry.potter")
         self.assertEqual(user["timezone"], "UTC")
+        self.assertEqual(user["is_imported_stub"], True)
 
         # Test `is_mirror_dummy` set for users of type `unknown`
         rocketchat_data["user"].append(
