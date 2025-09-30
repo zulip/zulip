@@ -1,6 +1,6 @@
 # To build these production upgrade test images, say an Debian 12 Bookworm system
 # preinstalled with Zulip 7.0:
-#   docker build . -f Dockerfile.prod \
+#   docker build --pull . -f Dockerfile.prod \
 #     --build-arg=BASE_IMAGE=zulip/ci:bookworm \
 #     --build-arg=VERSION=7.0 \
 #     --tag=zulip/ci:bookworm-7.0
