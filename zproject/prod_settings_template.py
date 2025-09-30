@@ -789,7 +789,7 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
 # SESSION_COOKIE_AGE = 60 * 60 * 24 * 7 * 2  # 2 weeks
 
 ## Password strength requirements; learn about configuration at
-## https://zulip.readthedocs.io/en/latest/production/security-model.html.
+## https://zulip.readthedocs.io/en/latest/production/securing-your-zulip-server.html.
 # PASSWORD_MIN_LENGTH = 6
 # PASSWORD_MAX_LENGTH = 100
 # PASSWORD_MIN_GUESSES = 10000
