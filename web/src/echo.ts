@@ -272,7 +272,7 @@ export function insert_local_message(
         content_type: "text/html",
         sender_email: people.my_current_email(),
         sender_full_name: people.my_full_name(),
-        avatar_url: current_user.avatar_url,
+        avatar_url: people.small_avatar_url_for_person(current_user),
         timestamp: Date.now() / 1000,
         local_id: local_id_float.toString(),
         locally_echoed: true,
