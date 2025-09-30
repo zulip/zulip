@@ -25,7 +25,9 @@
     max-width: calc(100% - 32px);
     max-height: 96%;
     width: 37.1428em; /* 520px at 14px em */
-    border-radius: 4px;
+    overflow: hidden;
+    border: 1px solid var(--color-border-modal);
+    border-radius: 7px;
     box-sizing: border-box;
 }
 
@@ -41,6 +43,11 @@
         "heading close-button" 1.8em "heading ." auto / minmax(0, 1fr)
         1.8125em;
     column-gap: 4px;
+    background-color: var(--color-background-modal-bar);
+
+    &:has(+ .modal__content) {
+        border-bottom: 1px solid var(--color-border-modal-bar);
+    }
 }
 
 .modal__footer {
@@ -49,6 +56,7 @@
     align-items: center;
     /* 20px 24px at 16px/1em */
     padding: 1.25em 1.5em;
+    background-color: var(--color-background-modal-bar);
 }
 
 .modal__title {
@@ -129,6 +137,10 @@
     /* Set a max-width, less the 1.5em of left and right
        padding specified above. */
     max-width: calc(100% - 3em);
+
+    & + .modal__footer {
+        border-top: 1px solid var(--color-border-modal-bar);
+    }
 
     &.simplebar-scrollable-y + .modal__footer {
         border-top: 1px solid var(--color-border-modal-footer);
