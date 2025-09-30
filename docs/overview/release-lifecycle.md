@@ -51,9 +51,9 @@ When new security releases are published, we simultaneously publish
 the fixes to the `main` and stable release branches, so
 that anyone using those branches can immediately upgrade as well.
 
-See also our [security model][security-model] documentation.
+See also our [security model][securing-your-zulip-server] documentation.
 
-[security-model]: ../production/security-model.md
+[securing-your-zulip-server]: ../production/securing-your-zulip-server.md
 
 ### Git versions
 
