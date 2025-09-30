@@ -590,7 +590,7 @@
        preserve an apparent border around
        them, and a square aspect-ratio, even under
        `box-sizing: border-box` in the area. */
-    --length-search-input-pill-image: calc(var(--height-input-pill) - 2px);
+    --length-search-pill-image: calc(var(--height-input-pill) - 2px);
     --length-input-pill-exit: 1.1429em; /* 16px at 14px/em */
     --input-pill-side-padding: 0.3571em; /* 5px at 14px/em */
     --vertical-spacing-input-pill: 2px;
