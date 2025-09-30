@@ -765,7 +765,7 @@ export const all_group_setting_labels = {
         can_set_topics_policy_group: new Handlebars.SafeString(
             $t_html({
                 defaultMessage:
-                    "Who can configure the per-channel <i>general chat</i> topic configuration",
+                    "Who can configure the per-channel <i>general chat</i> topic configuration <i>(also requires being a channel administrator)</i>",
             }),
         ),
     },
