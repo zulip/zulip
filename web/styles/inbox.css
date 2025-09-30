@@ -767,3 +767,10 @@
         }
     }
 }
+
+#inbox-animation-extra-content-blocker {
+    height: 0;
+    background: var(--color-background-inbox);
+    z-index: 10000;
+    position: relative;
+}
