@@ -395,6 +395,7 @@ class RawUserDict(TypedDict):
     bot_type: int | None
     long_term_idle: bool
     email_address_visibility: int
+    is_imported_stub: bool
 
 
 class RemoteRealmDictValue(TypedDict):

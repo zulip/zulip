@@ -1683,6 +1683,7 @@ class UserProfileTest(ZulipTestCase):
                 is_system_bot=True,
                 role=400,
                 timezone="",
+                is_imported_stub=False,
             )
 
         expected_emails = [
