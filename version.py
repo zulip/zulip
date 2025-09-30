@@ -49,4 +49,4 @@ API_FEATURE_LEVEL = 421
 #   historical commits sharing the same major version, in which case a
 #   minor version bump suffices.
 
-PROVISION_VERSION = (342, 2)  # bumped 2025-10-22 to upgrade Python requirements
+PROVISION_VERSION = (342, 3)  # bumped 2025-10-22 to upgrade uv
