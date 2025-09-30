@@ -53,7 +53,7 @@ means that one person might be a user of multiple Zulip realms. The
 administrators of an organization have a great deal of control over
 who can register an account, what permissions new users have, etc. For
 more on security considerations and options, see [the security model
-section](../production/security-model.md) and the [Zulip help
+section](../production/securing-your-zulip-server.md) and the [Zulip help
 center](https://zulip.com/help/).
 
 ## Components
