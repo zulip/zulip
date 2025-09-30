@@ -104,25 +104,27 @@ Replace `<username>` and `<server_ip>` with the appropriate values below.
          ```bash
          cd mattermost-docker/
          ```
-      1. Create an export of all your Mattermost teams, as a tar file.
+      1. Create a full export of the server, including attached files.
          ```bash
-         docker exec -it mattermost-docker_app_1 mattermost \
-             export bulk data/export.json --all-teams --attachments
-         cd volumes/app/mattermost/data/
-         mkdir -p exported_emoji
-         tar --transform 's|^|mattermost/|' -czf export.tar.gz \
-             data/ exported_emoji/ export.json
+         docker exec -it mattermost-docker_app_1 mmctl export create
+         ```
+      1. List all of the exports on the server, and copy the name of the
+         latest one to your clipboard.
+         ```bash
+         docker exec -it mattermost-docker_app_1 mmctl export list
+         ```
+      1. Generate a link to download the file. This requires the
+         `EnableExportDirectDownload` feature flag to be set to `true`.
+         ```bash
+         docker exec -it mattermost-docker_app_1 mmctl export \
+            generate-presigned-url latest_export.zip
          ```
       1. Exit your shell on the Mattermost server.
          ```bash
          exit
          ```
-      1. Finally, copy the exported tar file from the server to your local
-         computer. You may need to replace `mattermost-docker` with the
-         appropriate path for your installation.
-         ```bash "<username>" "<server_ip>"
-         scp <username>@<server_ip>:mattermost-docker/volumes/app/mattermost/data/export.tar.gz .
-         ```
+      1. Download the exported file from the server to your local
+         computer using the generated presigned url.
     </Steps>
   </TabItem>
 
