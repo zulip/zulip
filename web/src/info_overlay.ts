@@ -55,11 +55,17 @@ const markdown_help_rows = [
     },
     {
         markdown: `#**${$t({defaultMessage: "channel name"})}**`,
+        // TODO: Ideally, we'd pass get_stream_by_name in
+        // helper_config and do some surgery to remove the resulting
+        // broken link, or something.
         output_html: `<p><a>#${$t({defaultMessage: "channel name"})}</a></p>`,
         effect_html: $t({defaultMessage: "(links to a channel)"}),
     },
     {
         markdown: `#**${$t({defaultMessage: "channel name"})}>${$t({defaultMessage: "topic name"})}**`,
+        // TODO: Ideally, we'd pass get_stream_by_name in
+        // helper_config and do some surgery to remove the resulting
+        // broken link, or something.
         output_html: `<p><a>#${$t({defaultMessage: "channel name"})} > ${$t({defaultMessage: "topic name"})}</a></p>`,
         effect_html: $t({defaultMessage: "(links to topic)"}),
     },
@@ -114,22 +120,26 @@ ${$t({defaultMessage: "This text won't be visible until the user clicks."})}
     {
         markdown: $t({defaultMessage: "Some inline `code`"}),
     },
+    // These code block examples are chosen to include no strings needing translation.
     {
         markdown: `\
 \`\`\`
-def ${$t({defaultMessage: "zulip"})}():
-    print ${$t({defaultMessage: "Zulip"})}
+def f():
+    print("Zulip")
 \`\`\``,
     },
     {
         markdown: `\
 \`\`\`python
-def ${$t({defaultMessage: "zulip"})}():
-    print ${$t({defaultMessage: "Zulip"})}
+def f():
+    print("Zulip")
 \`\`\``,
+        // output_html required because we don't have pygments in the web app processor.
         output_html: `\
-<div class="codehilite"><pre><span class="k">def</span> <span class="nf">${$t({defaultMessage: "zulip"})}</span><span class="p">():</span>
-    <span class="k">print</span> <span class="s">${$t({defaultMessage: "Zulip"})}</span></pre></div>`,
+<div class="codehilite zulip-code-block" data-code-language="Python"><pre><div class="code-buttons-container">
+    </span></div><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">f</span><span class="p">():</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"Zulip"</span><span class="p">)</span>
+</code></pre></div>`,
     },
     {
         markdown: $t(
@@ -145,10 +155,12 @@ def ${$t({defaultMessage: "zulip"})}():
     },
     {
         markdown: `/me ${$t({defaultMessage: "is busy working"})}`,
+        // output_html required since /me rendering is not done in Markdown processor.
         output_html: `<p><span class="sender_name">Iago</span> <span class="status-message">${$t({defaultMessage: "is busy working"})}</span></p>`,
     },
     {
         markdown: "<time:2023-05-28T13:30:00+05:30>",
+        // Don't we support time elements?
         output_html:
             '<p><time datetime="2023-05-28T08:00:00Z"><span class="timestamp-content-wrapper"><i class="zulip-icon zulip-icon-clock markdown-timestamp-icon"></i>Sun, May 28, 2023, 1:30 PM</span></time></p>',
     },
@@ -157,6 +169,7 @@ def ${$t({defaultMessage: "zulip"})}():
 ${$t({defaultMessage: "Milk"})}
 ${$t({defaultMessage: "Tea"})}
 ${$t({defaultMessage: "Coffee"})}`,
+        // output_html required since poll rendering is done outside Markdown.
         output_html: `\
 <div class="poll-widget">
     <h4 class="poll-question-header">${$t({defaultMessage: "What did you drink this morning?"})}</h4>
@@ -189,6 +202,7 @@ ${$t({defaultMessage: "Coffee"})}`,
 ${$t({defaultMessage: "Task 1"})}: ${$t({defaultMessage: "This is the first task."})}
 ${$t({defaultMessage: "Task 2"})}: ${$t({defaultMessage: "This is the second task."})}
 ${$t({defaultMessage: "Last task"})}`,
+        // output_html required since todo rendering is done outside Markdown.
         output_html: `\
 <div class="message_content rendered_markdown">
     <div class="widget-content">

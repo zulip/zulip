@@ -200,7 +200,7 @@ IGNORED_PHRASES = [
     r"strikethrough",
     r"support team",
     r"topic name",
-    r"zulip",
+    r"function",
 ]
 
 # Sort regexes in descending order of their lengths. As a result, the
