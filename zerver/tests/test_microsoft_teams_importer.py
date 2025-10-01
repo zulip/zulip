@@ -25,6 +25,7 @@ from zerver.lib.import_realm import do_import_realm
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models.realms import get_realm
 from zerver.models.recipients import Recipient
+from zerver.models.streams import Stream, Subscription
 from zerver.models.users import UserProfile
 from zerver.tests.test_import_export import make_export_output_dir
 
@@ -55,6 +56,56 @@ MICROSOFT_TEAMS_EXPORT_USER_ROLE_DATA = MicrosoftTeamsUserRoleData(
     },
     guest_user_ids={"16741626-4cd8-46cc-bf36-42ecc2b5fdce"},
 )
+
+
+EXPORTED_MICROSOFT_TEAMS_TEAM_ID: dict[str, str] = {
+    "Core team": "7c050abd-3cbb-448b-a9de-405f54cc14b2",
+    "Community": "002145f2-eaba-4962-997d-6d841a9f50af",
+    "Contributors": "2a00a70a-00f5-4da5-8618-8281194f0de0",
+    "Feedback & support": "5e5f1988-3216-4ca0-83e9-18c04ecc7533",
+    "Kandra Labs": "1d513e46-d8cd-41db-b84f-381fe5730794",
+}
+
+
+def get_exported_microsoft_teams_user_data() -> list[MicrosoftTeamsFieldsT]:
+    test_class = ZulipTestCase()
+    return json.loads(
+        test_class.fixture_data(
+            "usersList.json", "microsoft_teams_fixtures/TeamsData_ZulipChat/users"
+        )
+    )
+
+
+def get_exported_team_data(team_id: str) -> MicrosoftTeamsFieldsT:
+    test_class = ZulipTestCase()
+    team_list = json.loads(
+        test_class.fixture_data(
+            "teamsList.json",
+            "microsoft_teams_fixtures/TeamsData_ZulipChat/teams",
+        )
+    )
+
+    team_list_data = next(team_data for team_data in team_list if team_id == team_data["GroupsId"])
+    team_settings = json.loads(
+        test_class.fixture_data(
+            "teamsSettings.json",
+            "microsoft_teams_fixtures/TeamsData_ZulipChat/teams",
+        )
+    )
+    team_settings_data = next(
+        team_data for team_data in team_settings if team_data["Id"] == team_id
+    )
+    return {**team_list_data, **team_settings_data}
+
+
+def get_exported_team_subscription_list(team_id: str) -> list[MicrosoftTeamsFieldsT]:
+    test_class = ZulipTestCase()
+    return json.loads(
+        test_class.fixture_data(
+            f"teamMembers_{team_id}.json",
+            f"microsoft_teams_fixtures/TeamsData_ZulipChat/teams/{team_id}",
+        )
+    )
 
 
 def graph_api_users_callback(request: PreparedRequest) -> ResponseTuple:
@@ -134,6 +185,18 @@ class MicrosoftTeamsImportTestCase(ZulipTestCase):
 
 
 class MicrosoftTeamsImporterIntegrationTest(MicrosoftTeamsImportTestCase):
+    def get_imported_channel_subscriber_emails(self, channel: str | Stream) -> set[str]:
+        if isinstance(channel, str):
+            imported_channel = Stream.objects.get(
+                name=channel,
+                realm=get_realm(self.test_realm_subdomain),
+            )
+        else:
+            imported_channel = channel  # nocoverage
+        subscriptions = Subscription.objects.filter(recipient=imported_channel.recipient)
+        users = {sub.user_profile.email for sub in subscriptions}
+        return users
+
     def convert_microsoft_teams_export_fixture(self, fixture_folder: str) -> None:
         fixture_file_path = self.fixture_file_name(fixture_folder, "microsoft_teams_fixtures")
         if not os.path.isdir(fixture_file_path):
@@ -153,6 +216,8 @@ class MicrosoftTeamsImporterIntegrationTest(MicrosoftTeamsImportTestCase):
         self.converted_file_output_dir = make_export_output_dir()
         self.test_realm_subdomain = "test-import-teams-realm"
         self.import_microsoft_teams_export_fixture(fixture)
+        exported_user_data = get_exported_microsoft_teams_user_data()
+        self.exported_user_data_map = {u["Id"]: u for u in exported_user_data}
 
     def get_imported_realm_user_field_values(self, field: str, **kwargs: Any) -> list[str | int]:
         return list(
@@ -192,6 +257,36 @@ class MicrosoftTeamsImporterIntegrationTest(MicrosoftTeamsImportTestCase):
         raw_exported_user_full_names = [user["DisplayName"] for user in raw_exported_users_data]
         imported_user_full_names = self.get_imported_realm_user_field_values("full_name")
         self.assertEqual(sorted(raw_exported_user_full_names), sorted(imported_user_full_names))
+
+    def test_imported_channels(self) -> None:
+        self.do_import_realm_fixture()
+        all_imported_channels = Stream.objects.filter(
+            realm=get_realm(self.test_realm_subdomain),
+        )
+
+        self.assert_length(all_imported_channels, len(EXPORTED_MICROSOFT_TEAMS_TEAM_ID))
+
+        for channel in all_imported_channels:
+            channel_name = channel.name
+
+            # Teams data are imported correctly
+            raw_team_data = get_exported_team_data(EXPORTED_MICROSOFT_TEAMS_TEAM_ID[channel_name])
+            self.assertEqual(channel_name, raw_team_data["Name"])
+            self.assertEqual(channel.description, raw_team_data["Description"] or "")
+            self.assertEqual(channel.deactivated, raw_team_data["IsArchived"])
+            self.assertEqual(channel.invite_only, raw_team_data["Visibility"] == "private")
+
+            # Teams subscription are imported correctly.
+            imported_channel_subscriber_emails = self.get_imported_channel_subscriber_emails(
+                channel_name
+            )
+            raw_subscription_list = get_exported_team_subscription_list(
+                EXPORTED_MICROSOFT_TEAMS_TEAM_ID[channel_name]
+            )
+            expected_subscriber_emails: set[str] = {
+                self.exported_user_data_map[sub["UserId"]]["Mail"] for sub in raw_subscription_list
+            }
+            self.assertSetEqual(expected_subscriber_emails, imported_channel_subscriber_emails)
 
 
 class MicrosoftTeamsImporterUnitTest(MicrosoftTeamsImportTestCase):
