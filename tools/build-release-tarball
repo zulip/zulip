@@ -109,7 +109,9 @@ echo "$version" >version
 
 cd "$OUTPUT_DIR"
 
-tar --append -f "$TARBALL" "$prefix/prod-static" "$prefix/build_id" "$prefix/version" "$prefix/zulip-git-version" "$prefix/locale" "$prefix/staticfiles.json" "$prefix/webpack-stats-production.json"
+# We don't include starlight_help/dist_no_relative_links since that is only useful for zulip.com
+# and zulip.com doesn't use tarballs for deployment.
+tar --append -f "$TARBALL" "$prefix/prod-static" "$prefix/build_id" "$prefix/version" "$prefix/zulip-git-version" "$prefix/locale" "$prefix/staticfiles.json" "$prefix/webpack-stats-production.json" "$prefix/starlight_help/dist"
 
 rm -rf "$prefix"
 
