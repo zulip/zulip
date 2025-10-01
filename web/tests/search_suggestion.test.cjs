@@ -157,11 +157,11 @@ test("dm_suggestions", ({override, mock_template}) => {
     let suggestions = get_suggestions(query);
     let expected = [
         "is:dm",
-        "dm:alice@zulip.com",
-        "dm:bob@zulip.com",
-        "dm:jeff@zulip.com",
         "dm:myself@zulip.com",
         "dm:ted@zulip.com",
+        "dm:bob@zulip.com",
+        "dm:alice@zulip.com",
+        "dm:jeff@zulip.com",
     ];
     assert.deepEqual(suggestions.strings, expected);
 
@@ -871,14 +871,13 @@ test("people_suggestions", ({override, mock_template}) => {
 
     let expected = [
         "te",
-        "dm:bob@zulip.com", // bob térry
         "dm:ted@zulip.com",
-        "sender:bob@zulip.com",
+        "dm:bob@zulip.com", // bob térry
         "sender:ted@zulip.com",
-        "dm-including:bob@zulip.com",
+        "sender:bob@zulip.com",
         "dm-including:ted@zulip.com",
+        "dm-including:bob@zulip.com",
     ];
-
     assert.deepEqual(suggestions.strings, expected);
 
     const accessible_user = {
@@ -891,14 +890,14 @@ test("people_suggestions", ({override, mock_template}) => {
 
     expected = [
         "te",
-        "dm:bob@zulip.com",
         "dm:ted@zulip.com",
+        "dm:bob@zulip.com",
         "dm:user299@zulipdev.com",
-        "sender:bob@zulip.com",
         "sender:ted@zulip.com",
+        "sender:bob@zulip.com",
         "sender:user299@zulipdev.com",
-        "dm-including:bob@zulip.com",
         "dm-including:ted@zulip.com",
+        "dm-including:bob@zulip.com",
         "dm-including:user299@zulipdev.com",
     ];
     assert.deepEqual(suggestions.strings, expected);
