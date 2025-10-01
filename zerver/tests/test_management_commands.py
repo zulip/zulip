@@ -601,7 +601,7 @@ class TestSendCustomEmail(ZulipTestCase):
         audit_logs = RealmAuditLog.objects.filter(event_type=AuditLogEventType.CUSTOM_EMAIL_SENT)
         self.assertEqual(audit_logs.count(), 0)
 
-    def test_custom_email_prevents_duplicate_prevention_by_user(self) -> None:
+    def test_custom_email_duplicate_prevention_by_user(self) -> None:
         path = "zerver/tests/fixtures/email/custom_emails/email_base_headers_custom_test.md"
 
         # Generate email hash
@@ -611,6 +611,7 @@ class TestSendCustomEmail(ZulipTestCase):
 
         iago = self.example_user("iago")
         prospero = self.example_user("prospero")
+        othello = self.example_user("othello")
 
         call_command(
             self.COMMAND_NAME,
@@ -619,19 +620,17 @@ class TestSendCustomEmail(ZulipTestCase):
         )
 
         # Verify RealmAuditLog entries were created
-        audit_logs = RealmAuditLog.objects.filter(
-            event_type=AuditLogEventType.CUSTOM_EMAIL_SENT, modified_user__in=[iago, prospero]
-        )
+        audit_logs = RealmAuditLog.objects.filter(event_type=AuditLogEventType.CUSTOM_EMAIL_SENT)
         self.assertEqual(audit_logs.count(), 2)
         self.assertEqual(email_template_hash, audit_logs[0].extra_data["email_id"])
 
-        # Second send attempt - should exclude both users (same delivery email)
+        # Second send attempt - should exclude both users
 
         with patch("builtins.print") as mock_print:
             call_command(
                 self.COMMAND_NAME,
                 f"--path={path}",
-                f"-u={iago.delivery_email},{prospero.delivery_email}",
+                f"-u={iago.delivery_email},{prospero.delivery_email},{othello.delivery_email}",
             )
 
             self.assertEqual(
@@ -641,10 +640,15 @@ class TestSendCustomEmail(ZulipTestCase):
                 ],
             )
         new_audit_logs = RealmAuditLog.objects.filter(
-            event_type=AuditLogEventType.CUSTOM_EMAIL_SENT, modified_user__in=[iago, prospero]
+            event_type=AuditLogEventType.CUSTOM_EMAIL_SENT
         )
-        self.assertEqual(new_audit_logs.count(), 2)
-        self.assertEqual(email_template_hash, audit_logs[0].extra_data["email_id"])
+        self.assertEqual(new_audit_logs.count(), 3)
+        self.assertEqual(email_template_hash, new_audit_logs[0].extra_data["email_id"])
+
+        othello_audit_log = RealmAuditLog.objects.filter(
+            event_type=AuditLogEventType.CUSTOM_EMAIL_SENT, modified_user=othello
+        )
+        self.assertEqual(othello_audit_log.count(), 1)
 
     def test_custom_marketing_email_duplicate_prevention_by_email(self) -> None:
         path = "zerver/tests/fixtures/email/custom_emails/email_base_headers_custom_test.md"
@@ -729,7 +733,7 @@ class TestSendCustomEmail(ZulipTestCase):
             )
 
             # Verify that email sending was attempted
-            self.assertEqual(mock_send.call_count, 2)  # Once for each user
+            self.assertEqual(mock_send.call_count, 2)
 
         # Verify no audit log entries were created
         final_audit_count = RealmAuditLog.objects.filter(
