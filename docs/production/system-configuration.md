@@ -372,7 +372,7 @@ volume.
 
 Individual organizations may be assigned to ports, either via their
 subdomain names, or their fully-qualified hostname (for [organizations
-using `REALM_HOSTS`][multiple-organizations.md#other-hostnames]):
+using `REALM_HOSTS`](multiple-organizations.md#other-hostnames)):
 
 ```ini
 [tornado_sharding]
