@@ -709,16 +709,18 @@ def send_custom_email(
 
     # Filter out users who already received this email
     if distinct_email:
-        # For marketing emails: exclude by delivery_email
         already_sent_emails = RealmAuditLog.objects.filter(
-            event_type=AuditLogEventType.CUSTOM_EMAIL_SENT, extra_data__email_id=email_template_hash
-        ).values_list("modified_user__delivery_email", flat=True)
-        already_sent_count = len(already_sent_emails)
-        already_sent_emails_lower = [email.lower() for email in already_sent_emails if email]
+            event_type=AuditLogEventType.CUSTOM_EMAIL_SENT,
+            extra_data__email_id=email_template_hash,
+            modified_user__isnull=False,
+        ).annotate(
+            lower_email=Lower("modified_user__delivery_email")
+        ).values_list("lower_email", flat=True).distinct()
 
+        already_sent_count = already_sent_emails.count()
         users = (
             users.annotate(lower_email=Lower("delivery_email"))
-            .exclude(lower_email__in=already_sent_emails_lower)
+            .exclude(lower_email__in=already_sent_emails)
             .distinct("lower_email")
             .order_by("lower_email", "id")
         )
@@ -728,7 +730,7 @@ def send_custom_email(
             event_type=AuditLogEventType.CUSTOM_EMAIL_SENT, extra_data__email_id=email_template_hash
         ).values_list("modified_user_id", flat=True)
 
-        already_sent_count = len(already_sent_users)
+        already_sent_count = already_sent_users.count()
         users = users.exclude(id__in=already_sent_users)
         users = users.order_by("id")
 
