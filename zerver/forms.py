@@ -342,6 +342,12 @@ class AltchaWidget(forms.TextInput):
         attrs: dict[str, Any] | None = None,
         renderer: BaseRenderer | None = None,
     ) -> SafeString:
+        altcha_strings = orjson.dumps(
+            {
+                "verified": _("Verified that you're a human user!"),
+                "verifying": _("Verifying that you're not a bot…"),
+            }
+        ).decode()
         return format_html(
             (
                 "<altcha-widget"
@@ -349,21 +355,19 @@ class AltchaWidget(forms.TextInput):
                 '  challengeurl="/json/antispam_challenge"'
                 "  hidelogo"
                 "  hidefooter"
-                '  floating="bottom"'
                 "  refetchonexpire"
                 '  style="{}"'
                 '  strings="{}"'
                 ">"
+                '<div class="altcha-text-container">'
+                    '<div class="altcha-loader loading-indicator-spinner"></div>'
+                    '<div class="altcha-confirmation">{}</div>'
+                "</div>"
             ),
             "--altcha-max-width: 300px;",
-            orjson.dumps(
-                {
-                    "verified": _("Verified that you're a human user!"),
-                    "verifying": _("Verifying that you're not a bot…"),
-                }
-            ).decode(),
+            altcha_strings,
+            _("Verified that you're a human user!"),
         )
-
 
 class CaptchaRealmCreationForm(RealmCreationForm):
     captcha = forms.CharField(required=True, widget=AltchaWidget)

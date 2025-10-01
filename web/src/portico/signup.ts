@@ -385,12 +385,31 @@ $(() => {
                 return fetch(url, {...init, credentials: "include"});
             },
         });
+
         const $submit = $(altcha).closest("form").find("button[type=submit]");
         $submit.prop("disabled", true);
+
+        const $text_container = $(altcha).find(".altcha-text-container");
+        const $loader = $text_container.find(".altcha-loader");
+        const $confirmation = $text_container.find(".altcha-confirmation");
+
         // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
         altcha.addEventListener("statechange", ((ev: AltchaStateChangeEvent) => {
-            if (ev.detail.state === "verified") {
+            $loader.hide();
+            $confirmation.hide();
+
+            if (ev.detail.state === "verifying" || ev.detail.state === "solving") {
+                // Show a loader when verification is in progress.
+                $loader.show();
+                $submit.prop("disabled", true);
+            } else if (ev.detail.state === "verified") {
+                // Show the verification confirmation message for a few seconds.
+                $confirmation.show();
                 $submit.prop("disabled", false);
+
+                setTimeout(() => {
+                    $confirmation.fadeOut(400);
+                }, 3000); // 3 seconds
             }
         }) as EventListener);
     }
