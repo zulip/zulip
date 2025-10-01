@@ -1,5 +1,7 @@
 import json
+import math
 import os
+from collections import defaultdict
 from collections.abc import Callable
 from functools import wraps
 from typing import Any, Concatenate, TypeAlias
@@ -10,24 +12,34 @@ from django.utils.timezone import now as timezone_now
 from requests import PreparedRequest
 from typing_extensions import ParamSpec
 
+from zerver.data_import.import_util import get_data_file
 from zerver.data_import.microsoft_teams import (
     MICROSOFT_GRAPH_API_URL,
+    ChannelMetadata,
     MicrosoftTeamsFieldsT,
     MicrosoftTeamsUserIdToZulipUserIdT,
     MicrosoftTeamsUserRoleData,
     ODataQueryParameter,
     convert_users,
     do_convert_directory,
+    get_batched_export_message_data,
     get_microsoft_graph_api_data,
+    get_microsoft_teams_sender_id_from_message,
+    get_timestamp_from_message,
     get_user_roles,
+    is_microsoft_teams_event_message,
 )
+from zerver.lib.export import MESSAGE_BATCH_CHUNK_SIZE
 from zerver.lib.import_realm import do_import_realm
 from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.topic import messages_for_topic
+from zerver.models.messages import Message
 from zerver.models.realms import get_realm
 from zerver.models.recipients import Recipient
 from zerver.models.streams import Stream, Subscription
-from zerver.models.users import UserProfile
+from zerver.models.users import UserProfile, get_system_bot
 from zerver.tests.test_import_export import make_export_output_dir
+from zproject import settings
 
 ParamT = ParamSpec("ParamT")
 
@@ -57,6 +69,8 @@ MICROSOFT_TEAMS_EXPORT_USER_ROLE_DATA = MicrosoftTeamsUserRoleData(
     guest_user_ids={"16741626-4cd8-46cc-bf36-42ecc2b5fdce"},
 )
 
+
+PRIVATE_MICROSOFT_TEAMS_CHANNELS = ["19:42c4944387224bf79bcad3cb6809a335@thread.tacv2"]
 
 EXPORTED_MICROSOFT_TEAMS_TEAM_ID: dict[str, str] = {
     "Core team": "7c050abd-3cbb-448b-a9de-405f54cc14b2",
@@ -106,6 +120,38 @@ def get_exported_team_subscription_list(team_id: str) -> list[MicrosoftTeamsFiel
             f"microsoft_teams_fixtures/TeamsData_ZulipChat/teams/{team_id}",
         )
     )
+
+
+def get_exported_team_message_list(team_id: str) -> list[MicrosoftTeamsFieldsT]:
+    test_class = ZulipTestCase()
+    return json.loads(
+        test_class.fixture_data(
+            f"messages_{team_id}.json",
+            f"microsoft_teams_fixtures/TeamsData_ZulipChat/teams/{team_id}",
+        )
+    )
+
+
+def get_exported_team_channel_metadata(team_id: str) -> dict[str, ChannelMetadata]:
+    test_class = ZulipTestCase()
+    microsoft_teams_channel_metadata = {}
+    team_channels = json.loads(
+        test_class.fixture_data(
+            f"channels_{team_id}.json",
+            f"microsoft_teams_fixtures/TeamsData_ZulipChat/teams/{team_id}",
+        )
+    )
+
+    for team_channel in team_channels:
+        microsoft_teams_channel_metadata[team_channel["Id"]] = ChannelMetadata(
+            display_name=team_channel["DisplayName"],
+            is_favourite_by_default=team_channel["IsFavoriteByDefault"],
+            is_archived=team_channel["IsArchived"],
+            is_favorite_by_default=team_channel["IsFavoriteByDefault"],
+            membership_type=team_channel["MembershipType"],
+            team_id=team_id,
+        )
+    return microsoft_teams_channel_metadata
 
 
 def graph_api_users_callback(request: PreparedRequest) -> ResponseTuple:
@@ -287,6 +333,105 @@ class MicrosoftTeamsImporterIntegrationTest(MicrosoftTeamsImportTestCase):
                 self.exported_user_data_map[sub["UserId"]]["Mail"] for sub in raw_subscription_list
             }
             self.assertSetEqual(expected_subscriber_emails, imported_channel_subscriber_emails)
+
+    def test_imported_channel_messages(self) -> None:
+        self.do_import_realm_fixture()
+        channel_name = "Core team"
+        exported_team_messages = get_exported_team_message_list(
+            EXPORTED_MICROSOFT_TEAMS_TEAM_ID[channel_name]
+        )
+        test_realm = get_realm(self.test_realm_subdomain)
+        channel = Stream.objects.get(
+            name=channel_name,
+            realm=test_realm,
+        )
+        assert channel.recipient is not None
+
+        convertable_exported_messages: list[MicrosoftTeamsFieldsT] = []
+        convertable_exported_message_datetimes: list[float] = []
+        exported_sender_messages_map: dict[str, list[float]] = defaultdict(list)
+        private_channel_message_exists: bool
+
+        for message in exported_team_messages:
+            if is_microsoft_teams_event_message(message):
+                continue
+            if message["ChannelIdentity"]["ChannelId"] in PRIVATE_MICROSOFT_TEAMS_CHANNELS:
+                private_channel_message_exists = True
+                continue
+            sender_id = get_microsoft_teams_sender_id_from_message(message)
+            if sender_id not in self.exported_user_data_map:
+                continue
+            sender_email = self.exported_user_data_map[sender_id]["Mail"]
+
+            convertable_exported_messages.append(message)
+            message_datetime = get_timestamp_from_message(message)
+            convertable_exported_message_datetimes.append(message_datetime)
+            exported_sender_messages_map[sender_email].append(message_datetime)
+        self.assertTrue(private_channel_message_exists)
+
+        imported_channel_messages = (
+            Message.objects.filter(
+                recipient=channel.recipient,
+                realm=test_realm,
+            )
+            .exclude(sender_id=get_system_bot(settings.WELCOME_BOT, test_realm.id).id)
+            .order_by("id")
+        )
+        self.assertTrue(imported_channel_messages.exists())
+
+        imported_message_datetimes: list[float] = []
+        imported_sender_messages_map: dict[str, list[float]] = defaultdict(list)
+        last_date_sent: float = float("-inf")
+
+        for imported_message in imported_channel_messages:
+            message_date_sent = imported_message.date_sent.timestamp()
+            # Imported messages are sorted chronologically.
+            self.assertLessEqual(last_date_sent, message_date_sent)
+            last_date_sent = max(last_date_sent, message_date_sent)
+
+            # Message content is not empty.
+            self.assertIsNotNone(imported_message.content)
+            self.assertIsNotNone(imported_message.rendered_content)
+
+            imported_message_datetimes.append(message_date_sent)
+            imported_sender_messages_map[imported_message.sender.email].append(message_date_sent)
+
+        self.assertListEqual(
+            sorted(imported_message_datetimes),
+            sorted(convertable_exported_message_datetimes),
+        )
+
+        # Message sender is correct.
+        for sender_email, exported_message_datetimes in exported_sender_messages_map.items():
+            self.assertListEqual(
+                sorted(exported_message_datetimes),
+                sorted(imported_sender_messages_map[sender_email]),
+            )
+
+        microsoft_team_channel_metadata = get_exported_team_channel_metadata(
+            EXPORTED_MICROSOFT_TEAMS_TEAM_ID[channel_name]
+        )
+
+        # Microsoft Teams channels are correctly converted and imported
+        # as Zulip topics.
+        for (
+            microsoft_team_channel_id,
+            microsoft_team_channel_data,
+        ) in microsoft_team_channel_metadata.items():
+            messages_in_a_microsoft_team_channel = [
+                m
+                for m in convertable_exported_messages
+                if m["ChannelIdentity"]["ChannelId"] == microsoft_team_channel_id
+            ]
+
+            topic_name = microsoft_team_channel_data.display_name
+
+            imported_messages_in_a_zulip_topic = messages_for_topic(
+                test_realm.id, channel.recipient.id, topic_name
+            )
+            self.assertEqual(
+                len(messages_in_a_microsoft_team_channel), len(imported_messages_in_a_zulip_topic)
+            )
 
 
 class MicrosoftTeamsImporterUnitTest(MicrosoftTeamsImportTestCase):
@@ -491,3 +636,34 @@ class MicrosoftTeamsImporterUnitTest(MicrosoftTeamsImportTestCase):
             if user["Mail"] not in GUEST_USER_EMAILS
         }
         self.assertSetEqual(result_user_ids, expected_member_users)
+
+    def test_get_batched_export_message_data(self) -> None:
+        # Load a couple separate files to see how it handles combining and batching
+        # messages from multiple files.
+        message_file_paths = [
+            self.fixture_file_name(
+                "TeamsData_ZulipChat/teams/7c050abd-3cbb-448b-a9de-405f54cc14b2/messages_7c050abd-3cbb-448b-a9de-405f54cc14b2.json",
+                "microsoft_teams_fixtures",
+            ),
+            self.fixture_file_name(
+                "TeamsData_ZulipChat/teams/2a00a70a-00f5-4da5-8618-8281194f0de0/messages_2a00a70a-00f5-4da5-8618-8281194f0de0.json",
+                "microsoft_teams_fixtures",
+            ),
+        ]
+        total_messages = 0
+        for path in message_file_paths:
+            total_messages += len(get_data_file(path))
+
+        chunk_sizes = [5, 10, MESSAGE_BATCH_CHUNK_SIZE]
+        for chunk_size in chunk_sizes:
+            message_batches = 0
+            expected_batch_amount = math.ceil(total_messages / chunk_size)
+            messages_left = total_messages
+            for batched_messages in get_batched_export_message_data(message_file_paths, chunk_size):
+                if chunk_size <= messages_left:
+                    self.assertGreaterEqual(chunk_size, len(batched_messages))
+                    messages_left -= len(batched_messages)
+                else:
+                    self.assertGreaterEqual(messages_left, len(batched_messages))
+                message_batches += 1
+            self.assertTrue(message_batches == expected_batch_amount)
