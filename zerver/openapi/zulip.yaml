@@ -14125,7 +14125,6 @@ paths:
                     - "google" - Google
                     - "twitter" - Twitter
                     - "text" - Plain text
-                    - "google-blob" - Google blobs
                   type: string
                   example: "google"
                 demote_inactive_streams:
@@ -17802,7 +17801,6 @@ paths:
                               used to display emoji to the user everywhere they appear in the UI.
 
                               - "google" - Google modern
-                              - "google-blob" - Google classic
                               - "twitter" - Twitter
                               - "text" - Plain text
                           demote_inactive_streams:
@@ -20712,7 +20710,6 @@ paths:
                               used to display emoji to the user everywhere they appear in the UI.
 
                               - "google" - Google modern
-                              - "google-blob" - Google classic
                               - "twitter" - Twitter
                               - "text" - Plain text
                           demote_inactive_streams:
@@ -21963,7 +21960,6 @@ paths:
                     used to display emoji to the user everywhere they appear in the UI.
 
                     - "google" - Google modern
-                    - "google-blob" - Google classic
                     - "twitter" - Twitter
                     - "text" - Plain text
 
