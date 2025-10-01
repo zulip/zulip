@@ -36,7 +36,6 @@
     "date-fns": "^4.1.0",
     "email-addresses": "^5.0.0",
     "emoji-datasource-google": "^15.0.1",
-    "emoji-datasource-google-blob": "npm:emoji-datasource-google@^3.0.0",
     "emoji-datasource-twitter": "^15.0.1",
     "error-stack-parser": "^2.0.2",
     "expose-loader": "^5.0.0",

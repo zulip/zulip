@@ -134,9 +134,6 @@ importers:
       emoji-datasource-google:
         specifier: ^15.0.1
         version: 15.1.2
-      emoji-datasource-google-blob:
-        specifier: npm:emoji-datasource-google@^3.0.0
-        version: emoji-datasource-google@3.0.0
       emoji-datasource-twitter:
         specifier: ^15.0.1
         version: 15.1.2
@@ -4419,9 +4416,6 @@ packages:
 
   emoji-datasource-google@15.1.2:
     resolution: {integrity: sha512-RzBMQtclTnSDgjf/QbcNAkgZmA7al3TSnQxKJvZNwdDjOOlYdzBSmkvGYP9ZzHpBS4HBQ8IOQDsueV1YCA64LA==}
-
-  emoji-datasource-google@3.0.0:
-    resolution: {integrity: sha512-Ms+IO6V40EKcfBjxs76iLYQexo6Tgl8MbTxM7Z4Qm5n/Hwkr/DNNYui40aU3YaVd8oRNLaMXN1/rS++/VHViPQ==}
 
   emoji-datasource-twitter@15.1.2:
     resolution: {integrity: sha512-Xz60XJ2v8W1POg8I/UkkxJXw2FnKIPO6y20nFXjHhhGV07MqXYh3O085WaYElW8UAwUgxmASaZxvYiUUepw3qg==}
@@ -14265,8 +14259,6 @@ snapshots:
       '@emmetio/css-abbreviation': 2.1.8
 
   emoji-datasource-google@15.1.2: {}
-
-  emoji-datasource-google@3.0.0: {}
 
   emoji-datasource-twitter@15.1.2: {}
 
