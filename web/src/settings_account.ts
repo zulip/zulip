@@ -106,16 +106,12 @@ function display_avatar_upload_started(): void {
     $("#user-avatar-upload-widget .image-delete-button").hide();
 }
 
-function upload_avatar($file_input: JQuery<HTMLInputElement>): void {
+function upload_avatar(file: File): void {
     const form_data = new FormData();
 
     assert(csrf_token !== undefined);
     form_data.append("csrfmiddlewaretoken", csrf_token);
-    const files = util.the($file_input).files;
-    assert(files !== null);
-    for (const [i, file] of [...files].entries()) {
-        form_data.append("file-" + i, file);
-    }
+    form_data.append("file", file);
     display_avatar_upload_started();
     channel.post({
         url: "/json/users/me/avatar",

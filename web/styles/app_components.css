@@ -1474,3 +1474,49 @@ input.invalid-input {
         }
     }
 }
+
+#uppy-editor {
+    .uppy-Dashboard-close,
+    .uppy-DashboardContent-bar {
+        display: none;
+    }
+
+    .modal__title {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .loading-placeholder {
+        position: absolute;
+        top: calc(50% - 1.3572em);
+        left: calc(50% - 1.3572em);
+    }
+
+    .modal__content {
+        padding: 0;
+        max-width: 100%;
+        width: 100%;
+    }
+
+    .uppy-Dashboard-FileCard,
+    .uppy-Dashboard-files {
+        display: none;
+    }
+
+    .uppy-ImageCropper-controls {
+        /* This is needed to override the top padding set for narrow
+        screens by cropperJS. */
+        padding-top: 0;
+    }
+
+    .uppy-c-btn {
+        &:focus:not(:focus-visible) {
+            background-color: unset;
+        }
+
+        &:focus-visible {
+            background-color: hsl(0deg 0% 100% / 50%);
+        }
+    }
+}

@@ -49,4 +49,4 @@ API_FEATURE_LEVEL = 427
 #   historical commits sharing the same major version, in which case a
 #   minor version bump suffices.
 
-PROVISION_VERSION = (350, 0)  # bumped 2025-09-30 to upgrade Python requirements
+PROVISION_VERSION = (350, 1)  # bumped 2025-10-01 to add uppy/dashboard and uppy/image-editor.
