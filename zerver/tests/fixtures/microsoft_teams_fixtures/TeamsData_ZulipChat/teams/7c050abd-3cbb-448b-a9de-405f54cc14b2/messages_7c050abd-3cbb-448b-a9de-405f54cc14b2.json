@@ -500,5 +500,92 @@
       "TeamsAppUpgraded": null,
       "TeamUnarchived": null
     }
+  },
+  {
+    "Id": "1766591445649",
+    "ReplyToId": null,
+    "MessageType": "message",
+    "CreatedDateTime": "2025-12-24T15:50:45.649Z",
+    "LastModifiedDateTime": "2025-12-24T15:50:45.649Z",
+    "LastEditedDateTime": null,
+    "DeletedDateTime": null,
+    "Subject": "",
+    "Summary": null,
+    "ChatId": null,
+    "Importance": "normal",
+    "Locale": "en-us",
+    "WebUrl": "https://teams.microsoft.com/l/message/19%3A42c4944387224bf79bcad3cb6809a335%40thread.tacv2/1766591445649?groupId=7c050abd-3cbb-448b-a9de-405f54cc14b2&tenantId=af4acab6-6476-4c2f-bef2-ff6479dd3940&createdTime=1766591445649&parentMessageId=1766591445649",
+    "PolicyViolation": null,
+    "EventDetail": null,
+    "From": {
+      "Application": null,
+      "Device": null,
+      "User": {
+        "Id": "88cbf3c2-0810-4d32-aa19-863c12bf7be9",
+        "DisplayName": "Pieter K",
+        "UserIdentityType": "aadUser",
+        "TenantId": "af4acab6-6476-4c2f-bef2-ff6479dd3940"
+      }
+    },
+    "Body": {
+      "ContentType": "html",
+      "Content": "<p>Private message!</p>"
+    },
+    "ChannelIdentity": {
+      "TeamId": "7c050abd-3cbb-448b-a9de-405f54cc14b2",
+      "ChannelId": "19:42c4944387224bf79bcad3cb6809a335@thread.tacv2"
+    },
+    "Attachments": [],
+    "Mentions": [],
+    "Reactions": []
+  },
+  {
+    "Id": "1762259740970",
+    "ReplyToId": null,
+    "MessageType": "unknownFutureValue",
+    "CreatedDateTime": "2025-11-04T12:35:40.97Z",
+    "LastModifiedDateTime": "2025-11-04T12:35:40.97Z",
+    "LastEditedDateTime": null,
+    "DeletedDateTime": null,
+    "Subject": null,
+    "Summary": null,
+    "ChatId": null,
+    "Importance": "normal",
+    "Locale": "en-us",
+    "WebUrl": "https://teams.microsoft.com/l/message/19%3A42c4944387224bf79bcad3cb6809a335%40thread.tacv2/1762259740970?groupId=7c050abd-3cbb-448b-a9de-405f54cc14b2&tenantId=af4acab6-6476-4c2f-bef2-ff6479dd3940&createdTime=1762259740970&parentMessageId=1762259740970",
+    "From": null,
+    "PolicyViolation": null,
+    "Body": {
+      "ContentType": "html",
+      "Content": "<systemEventMessage/>"
+    },
+    "ChannelIdentity": {
+      "TeamId": "7c050abd-3cbb-448b-a9de-405f54cc14b2",
+      "ChannelId": "19:42c4944387224bf79bcad3cb6809a335@thread.tacv2"
+    },
+    "Attachments": [],
+    "Mentions": [],
+    "Reactions": [],
+    "EventDetail": {
+      "VisibleHistoryStartDateTime": "0001-01-01T00:00:00Z",
+      "Members": [
+        {
+          "Id": "16741626-4cd8-46cc-bf36-42ecc2b5fdce",
+          "DisplayName": null,
+          "UserIdentityType": "aadUser",
+          "TenantId": "af4acab6-6476-4c2f-bef2-ff6479dd3940"
+        }
+      ],
+      "Initiator": {
+        "Application": null,
+        "Device": null,
+        "User": {
+          "Id": "88cbf3c2-0810-4d32-aa19-863c12bf7be9",
+          "DisplayName": null,
+          "UserIdentityType": "aadUser",
+          "TenantId": "af4acab6-6476-4c2f-bef2-ff6479dd3940"
+        }
+      }
+    }
   }
 ]

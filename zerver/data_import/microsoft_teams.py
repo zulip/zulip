@@ -1,7 +1,9 @@
 import logging
 import os
 from collections import defaultdict
+from collections.abc import Iterable
 from dataclasses import dataclass
+from datetime import datetime
 from typing import Any, Literal, TypeAlias
 from urllib.parse import SplitResult
 
@@ -11,18 +13,22 @@ from django.utils.timezone import now as timezone_now
 
 from zerver.data_import.import_util import (
     ZerverFieldsT,
+    build_message,
     build_realm,
     build_recipient,
     build_stream,
     build_subscription,
     build_user_profile,
+    build_usermessages,
     build_zerver_realm,
+    convert_html_to_text,
     create_converted_data_files,
     get_data_file,
+    make_subscriber_map,
     validate_user_emails_for_import,
 )
 from zerver.data_import.sequencer import NEXT_ID
-from zerver.lib.export import do_common_export_processes
+from zerver.lib.export import MESSAGE_BATCH_CHUNK_SIZE, do_common_export_processes
 from zerver.models.recipients import Recipient
 from zerver.models.users import UserProfile
 
@@ -39,6 +45,20 @@ class TeamMetadata:
     is_archived: bool
     zulip_channel_id: int
     zulip_recipient_id: int
+
+
+@dataclass
+class ChannelMetadata:
+    """
+    "channel" is equivalent to Zulip topics.
+    """
+
+    display_name: str
+    is_favourite_by_default: bool
+    is_archived: bool
+    is_favorite_by_default: bool
+    membership_type: str
+    team_id: str
 
 
 AddedTeamsT: TypeAlias = dict[str, TeamMetadata]
@@ -341,6 +361,203 @@ def convert_users(
     return microsoft_teams_user_id_to_zulip_user_id
 
 
+def get_timestamp_from_message(message: MicrosoftTeamsFieldsT) -> float:
+    return datetime.fromisoformat(message["CreatedDateTime"]).timestamp()
+
+
+def get_microsoft_teams_sender_id_from_message(message: MicrosoftTeamsFieldsT) -> str:
+    return message["From"]["User"]["Id"]
+
+
+def is_microsoft_teams_event_message(message: MicrosoftTeamsFieldsT) -> bool:
+    return message["MessageType"] == "unknownFutureValue" and message["From"] is None
+
+
+def process_messages(
+    added_teams: dict[str, TeamMetadata],
+    channel_metadata: None | dict[str, ChannelMetadata],
+    is_private: bool,
+    messages: list[MicrosoftTeamsFieldsT],
+    microsoft_teams_user_id_to_zulip_user_id: MicrosoftTeamsUserIdToZulipUserIdT,
+    realm_id: int,
+    subscriber_map: dict[int, set[int]],
+) -> tuple[list[ZerverFieldsT], list[ZerverFieldsT]]:
+    zerver_usermessage: list[ZerverFieldsT] = []
+    zerver_messages: list[ZerverFieldsT] = []
+    total_user_messages = 0
+    total_skipped_user_messages = 0
+    skipped_deleted_users_message = 0
+
+    for message in messages:
+        if is_microsoft_teams_event_message(message):
+            continue
+
+        message_content_type = message["Body"]["ContentType"]
+        if message_content_type == "html":
+            try:
+                content = convert_html_to_text(message["Body"]["Content"])
+            except Exception:  # nocoverage
+                logging.warning(
+                    "Error converting HTML to text for message: '%s'; continuing", content
+                )
+                logging.warning(str(message))
+                continue
+        else:  # nocoverage
+            logging.warning("Unable to convert this message content type: %s", message_content_type)
+            continue
+
+        # Determine message type, private or channel.
+        if message["ChannelIdentity"] is not None:
+            if channel_metadata is None:
+                raise AssertionError("Failed to build channel data.")
+            current_channel = channel_metadata[message["ChannelIdentity"]["ChannelId"]]
+            if current_channel.membership_type == "private":
+                # Don't include private channel messages.
+                continue
+            topic_name = current_channel.display_name
+            is_direct_message_type = False
+            recipient_id = added_teams[message["ChannelIdentity"]["TeamId"]].zulip_recipient_id
+        else:  # nocoverage
+            assert message["ChatId"] is not None
+            # TODO: Converting direct messages is not yet supported. Since
+            # subscription list and recipient map of direct message conversations
+            # are not listed, we have to manually build them as we iterate over
+            # the user messages.
+            continue
+
+        microsoft_teams_sender_id: str = get_microsoft_teams_sender_id_from_message(message)
+
+        if microsoft_teams_sender_id not in microsoft_teams_user_id_to_zulip_user_id:
+            # TODO: Deleted users are not included in the exported user list but their
+            # messages are still exported and point to the deactivated user as the sender.
+            skipped_deleted_users_message += 1
+            continue
+
+        message_id = NEXT_ID("message")
+        zulip_message = build_message(
+            topic_name=topic_name,
+            date_sent=get_timestamp_from_message(message),
+            message_id=message_id,
+            content=content,
+            rendered_content=None,
+            user_id=microsoft_teams_user_id_to_zulip_user_id[microsoft_teams_sender_id],
+            recipient_id=recipient_id,
+            realm_id=realm_id,
+            is_channel_message=not is_direct_message_type,
+            # TODO: Process links and attachments
+            has_image=False,
+            has_link=False,
+            has_attachment=False,
+            is_direct_message_type=is_direct_message_type,
+        )
+        zerver_messages.append(zulip_message)
+
+        (num_created, num_skipped) = build_usermessages(
+            zerver_usermessage=zerver_usermessage,
+            subscriber_map=subscriber_map,
+            recipient_id=recipient_id,
+            mentioned_user_ids=[],
+            message_id=message_id,
+            is_private=is_direct_message_type,
+        )
+
+        total_user_messages += num_created
+        total_skipped_user_messages += num_skipped
+
+        logging.debug(
+            "Created %s UserMessages; deferred %s due to long-term idle",
+            total_user_messages,
+            total_skipped_user_messages,
+        )
+
+    logging.info(
+        "Unable to convert %s message(s) from deleted users.",
+        skipped_deleted_users_message,
+    )
+
+    return (
+        zerver_messages,
+        zerver_usermessage,
+    )
+
+
+def get_batched_export_message_data(
+    message_data_paths: list[str], chunk_size: int = MESSAGE_BATCH_CHUNK_SIZE
+) -> Iterable[list[MicrosoftTeamsFieldsT]]:
+    batched_messages: list[MicrosoftTeamsFieldsT] = []
+    for path in message_data_paths:
+        messages = get_data_file(path)
+        # Teams export tool doesn't sort messages in chronological order.
+        # Sort Microsoft Teams messages by their ID, which is their date
+        # sent in unix time.
+        for message in sorted(messages, key=lambda m: int(m["Id"])):
+            if len(batched_messages) == chunk_size:
+                yield batched_messages
+                batched_messages.clear()
+            batched_messages.append(message)
+
+    if batched_messages:
+        yield batched_messages
+
+
+def convert_messages(
+    added_teams: dict[str, TeamMetadata],
+    microsoft_teams_user_id_to_zulip_user_id: MicrosoftTeamsUserIdToZulipUserIdT,
+    output_dir: str,
+    realm_id: int,
+    realm: dict[str, Any],
+    teams_data_dir: str,
+    chunk_size: int = MESSAGE_BATCH_CHUNK_SIZE,
+) -> None:
+    microsoft_teams_channel_metadata: dict[str, ChannelMetadata] = {}
+    subscriber_map = make_subscriber_map(
+        zerver_subscription=realm["zerver_subscription"],
+    )
+    team_data_folders = []
+    for f in os.listdir(teams_data_dir):
+        path = os.path.join(teams_data_dir, f)
+        if os.path.isdir(path):
+            team_data_folders.append(f)
+
+    message_file_paths = []
+    for team_id in team_data_folders:
+        team_data_folder = os.path.join(teams_data_dir, team_id)
+        team_messages_file_path = os.path.join(team_data_folder, f"messages_{team_id}.json")
+        message_file_paths.append(team_messages_file_path)
+
+        team_channels_list = get_data_file(
+            os.path.join(team_data_folder, f"channels_{team_id}.json")
+        )
+        for team_channel in team_channels_list:
+            microsoft_teams_channel_metadata[team_channel["Id"]] = ChannelMetadata(
+                display_name=team_channel["DisplayName"],
+                is_favourite_by_default=team_channel["IsFavoriteByDefault"],
+                is_archived=team_channel["IsArchived"],
+                is_favorite_by_default=team_channel["IsFavoriteByDefault"],
+                membership_type=team_channel["MembershipType"],
+                team_id=team_id,
+            )
+
+    dump_file_id = 1
+    for message_chunk in get_batched_export_message_data(message_file_paths, chunk_size):
+        (zerver_messages, zerver_usermessage) = process_messages(
+            added_teams=added_teams,
+            channel_metadata=microsoft_teams_channel_metadata,
+            is_private=False,
+            messages=message_chunk,
+            microsoft_teams_user_id_to_zulip_user_id=microsoft_teams_user_id_to_zulip_user_id,
+            subscriber_map=subscriber_map,
+            realm_id=realm_id,
+        )
+
+        create_converted_data_files(
+            dict(zerver_message=zerver_messages, zerver_usermessage=zerver_usermessage),
+            output_dir,
+            f"/messages-{dump_file_id:06}.json",
+        )
+        dump_file_id += 1
+
+
 def do_convert_directory(
     microsoft_teams_dir: str,
     output_dir: str,
@@ -376,10 +593,19 @@ def do_convert_directory(
 
     teams_data_dir = os.path.join(microsoft_teams_dir, "teams")
 
-    convert_teams_to_channels(
+    added_teams = convert_teams_to_channels(
         microsoft_teams_user_id_to_zulip_user_id=microsoft_teams_user_id_to_zulip_user_id,
         realm=realm,
         realm_id=realm_id,
+        teams_data_dir=teams_data_dir,
+    )
+
+    convert_messages(
+        added_teams=added_teams,
+        microsoft_teams_user_id_to_zulip_user_id=microsoft_teams_user_id_to_zulip_user_id,
+        output_dir=output_dir,
+        realm_id=realm_id,
+        realm=realm,
         teams_data_dir=teams_data_dir,
     )
 
