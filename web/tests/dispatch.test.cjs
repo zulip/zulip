@@ -1170,7 +1170,7 @@ run_test("user_settings", ({override}) => {
     event = event_fixtures.user_settings__web_escape_navigates_to_home_view;
     override(user_settings, "web_escape_navigates_to_home_view", false);
     let toggled = [];
-    $("#go-to-home-view-hotkey-help").toggleClass = (cls) => {
+    $("#keyboard-shortcuts .go-to-home-view-hotkey-help").toggleClass = (cls) => {
         toggled.push(cls);
     };
     dispatch(event);
