@@ -6,6 +6,7 @@ import os
 import shutil
 import subprocess
 import sys
+import tempfile
 from collections.abc import Iterator, Sequence
 from typing import Any
 
@@ -312,16 +313,25 @@ def setup_emoji_farms(cache_path: str, emoji_data: list[dict[str, Any]]) -> None
             f"emoji-datasource-{emojiset}",
             "img",
             emojiset,
-            "sheets-256",
+            "sheets-clean",
             "64.png",
         )
         sheet_dst = os.path.join(TARGET_EMOJI_SHEETS, f"{emojiset}.webp")
-        # From libwebp: [Q is] between 0 and 100. For lossy, 0 gives
-        #   the smallest size and 100 the largest. For lossless, this
-        #   parameter is the amount of effort put into the
-        #   compression: 0 is the fastest but gives larger files
-        #   compared to the slowest, but best, 100.
-        subprocess.check_call(["vips", "copy", sheet_src, f"{sheet_dst}[lossless=true,Q=100]"])
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            # First quantize the image to 256 colors (like sheets-256 in
+            # emoji-datasource); libvips can only do this when saving to a PNG.
+            quantized = os.path.join(tmpdir, "quantized.png")
+            subprocess.check_call(
+                ["vips", "copy", sheet_src, f"{quantized}[palette,dither=0,effort=10]"]
+            )
+
+            # From libwebp: [Q is] between 0 and 100. For lossy, 0 gives
+            #   the smallest size and 100 the largest. For lossless, this
+            #   parameter is the amount of effort put into the
+            #   compression: 0 is the fastest but gives larger files
+            #   compared to the slowest, but best, 100.
+            subprocess.check_call(["vips", "copy", quantized, f"{sheet_dst}[lossless,Q=100]"])
 
     # Set up standard emoji sets.
     for emojiset in ["google", "twitter"]:
