@@ -1,6 +1,6 @@
 from collections import defaultdict
 from email.headerregistry import Address
-from typing import Any
+from typing import Any, NamedTuple
 
 from django.conf import settings
 from django.contrib.auth.tokens import PasswordResetTokenGenerator, default_token_generator
@@ -57,6 +57,7 @@ from zerver.lib.user_groups import (
 )
 from zerver.lib.users import (
     GroupPermissionUpdates,
+    SettingToUpdate,
     check_group_permission_updates_for_deactivating_user,
     get_active_bots_owned_by_user,
     get_user_ids_who_can_access_user,
@@ -407,64 +408,107 @@ def get_new_setting_value_after_deactivation(
     )
 
 
+class PermissionSettingChangeResult(NamedTuple):
+    value_changed: bool
+    new_user_group_members_dict: int | UserGroupMembersDict
+
+
+def _apply_permission_setting_change(
+    setting_object: Realm | Stream | NamedUserGroup,
+    setting_update: SettingToUpdate,
+    user_profile: UserProfile,
+    acting_user: UserProfile | None,
+    event_type: AuditLogEventType,
+    update_settings_list: set[str],
+    anonymous_groups_to_delete: list[int],
+    anonymous_groups_to_update: list[int],
+    realm_audit_logs_objects: list[RealmAuditLog],
+) -> PermissionSettingChangeResult:
+    realm = user_profile.realm
+    setting_name = setting_update.setting_name
+    old_setting_value = setting_update.group_setting_value
+    nobody_group = NamedUserGroup.objects.get(
+        name=SystemGroups.NOBODY, realm_for_sharding=realm, is_system_group=True
+    )
+    anonymous_group_id = getattr(setting_object, setting_name + "_id")
+    new_setting_value = get_new_setting_value_after_deactivation(
+        old_setting_value, user_profile, nobody_group
+    )
+
+    value_changed = isinstance(new_setting_value, int)
+    if value_changed:
+        anonymous_groups_to_delete.append(anonymous_group_id)
+        setattr(setting_object, setting_name + "_id", new_setting_value)
+        update_settings_list.add(setting_name)
+    else:
+        anonymous_groups_to_update.append(anonymous_group_id)
+
+    if isinstance(setting_object, Stream):
+        audit_log_kwargs: dict[str, Any] = dict(modified_stream=setting_object)
+    elif isinstance(setting_object, NamedUserGroup):
+        audit_log_kwargs = dict(modified_user_group=setting_object)
+    else:
+        audit_log_kwargs = {}
+
+    realm_audit_logs_objects.append(
+        RealmAuditLog(
+            realm=realm,
+            acting_user=acting_user,
+            event_type=event_type,
+            event_time=timezone_now(),
+            extra_data={
+                RealmAuditLog.OLD_VALUE: get_group_setting_value_for_audit_log_data(
+                    old_setting_value
+                ),
+                RealmAuditLog.NEW_VALUE: get_group_setting_value_for_audit_log_data(
+                    new_setting_value
+                ),
+                "property": setting_name,
+            },
+            **audit_log_kwargs,
+        )
+    )
+
+    new_user_group_members_dict = convert_to_user_group_members_dict(new_setting_value)
+
+    return PermissionSettingChangeResult(value_changed, new_user_group_members_dict)
+
+
 def update_group_settings_for_deactivated_user(
     group_permission_updates: GroupPermissionUpdates,
     user_profile: UserProfile,
     acting_user: UserProfile | None,
 ) -> None:
-    anonymous_groups_to_delete = []
-    anonymous_groups_to_update = []
+    anonymous_groups_to_delete: list[int] = []
+    anonymous_groups_to_update: list[int] = []
+    realm_audit_logs_objects: list[RealmAuditLog] = []
 
     realm = user_profile.realm
-    nobody_group = NamedUserGroup.objects.get(
-        name=SystemGroups.NOBODY, realm_for_sharding=realm, is_system_group=True
-    )
-
-    updated_realm_settings = []
 
     all_active_user_ids = active_user_ids(realm.id)
 
-    event_time = timezone_now()
-    realm_audit_logs_objects = []
-    realm_event_data = {}
+    updated_realm_settings: set[str] = set()
+    realm_event_data: dict[str, int | UserGroupMembersDict] = {}
+
     for realm_setting_update in group_permission_updates.realm_settings_to_update:
-        setting_name = realm_setting_update.setting_name
-        old_setting_value = realm_setting_update.group_setting_value
-        anonymous_group_id = getattr(realm, setting_name + "_id")
-
-        new_setting_value = get_new_setting_value_after_deactivation(
-            old_setting_value, user_profile, nobody_group
+        change_result = _apply_permission_setting_change(
+            setting_object=realm,
+            setting_update=realm_setting_update,
+            user_profile=user_profile,
+            acting_user=acting_user,
+            event_type=AuditLogEventType.REALM_PROPERTY_CHANGED,
+            update_settings_list=updated_realm_settings,
+            anonymous_groups_to_delete=anonymous_groups_to_delete,
+            anonymous_groups_to_update=anonymous_groups_to_update,
+            realm_audit_logs_objects=realm_audit_logs_objects,
         )
 
-        if isinstance(new_setting_value, int):
-            anonymous_groups_to_delete.append(anonymous_group_id)
-            setattr(realm, setting_name + "_id", new_setting_value)
-            updated_realm_settings.append(setting_name)
-        else:
-            anonymous_groups_to_update.append(anonymous_group_id)
-
-        realm_audit_logs_objects.append(
-            RealmAuditLog(
-                realm=realm,
-                event_type=AuditLogEventType.REALM_PROPERTY_CHANGED,
-                event_time=event_time,
-                acting_user=acting_user,
-                extra_data={
-                    RealmAuditLog.OLD_VALUE: get_group_setting_value_for_audit_log_data(
-                        old_setting_value
-                    ),
-                    RealmAuditLog.NEW_VALUE: get_group_setting_value_for_audit_log_data(
-                        new_setting_value
-                    ),
-                    "property": setting_name,
-                },
-            )
+        realm_event_data[realm_setting_update.setting_name] = (
+            change_result.new_user_group_members_dict
         )
 
-        realm_event_data[setting_name] = convert_to_user_group_members_dict(new_setting_value)
-
-    if len(updated_realm_settings) != 0:
-        realm.save(update_fields=updated_realm_settings)
+    if updated_realm_settings:
+        realm.save(update_fields=list(updated_realm_settings))
 
     if realm_event_data:
         event = dict(
@@ -475,8 +519,8 @@ def update_group_settings_for_deactivated_user(
         )
         send_event_on_commit(realm, event, all_active_user_ids)
 
-    updated_stream_settings = set()
-    stream_objs_to_update = []
+    updated_stream_settings: set[str] = set()
+    stream_objs_to_update: list[Stream] = []
 
     updated_streams = [
         stream_setting_update.stream
@@ -489,47 +533,27 @@ def update_group_settings_for_deactivated_user(
         setting_value_changed = False
 
         for setting_update in stream_setting_update.settings:
-            setting_name = setting_update.setting_name
-            old_setting_value = setting_update.group_setting_value
-            anonymous_group_id = getattr(stream, setting_name + "_id")
-
-            new_setting_value = get_new_setting_value_after_deactivation(
-                old_setting_value, user_profile, nobody_group
+            change_result = _apply_permission_setting_change(
+                setting_object=stream,
+                setting_update=setting_update,
+                user_profile=user_profile,
+                acting_user=acting_user,
+                event_type=AuditLogEventType.CHANNEL_GROUP_BASED_SETTING_CHANGED,
+                update_settings_list=updated_stream_settings,
+                anonymous_groups_to_delete=anonymous_groups_to_delete,
+                anonymous_groups_to_update=anonymous_groups_to_update,
+                realm_audit_logs_objects=realm_audit_logs_objects,
             )
 
-            if isinstance(new_setting_value, int):
-                anonymous_groups_to_delete.append(anonymous_group_id)
-                setattr(stream, setting_name + "_id", new_setting_value)
+            if change_result.value_changed:
                 setting_value_changed = True
-                updated_stream_settings.add(setting_name)
-            else:
-                anonymous_groups_to_update.append(anonymous_group_id)
-
-            realm_audit_logs_objects.append(
-                RealmAuditLog(
-                    realm=realm,
-                    acting_user=acting_user,
-                    modified_stream=stream,
-                    event_type=AuditLogEventType.CHANNEL_GROUP_BASED_SETTING_CHANGED,
-                    event_time=event_time,
-                    extra_data={
-                        RealmAuditLog.OLD_VALUE: get_group_setting_value_for_audit_log_data(
-                            old_setting_value
-                        ),
-                        RealmAuditLog.NEW_VALUE: get_group_setting_value_for_audit_log_data(
-                            new_setting_value
-                        ),
-                        "property": setting_name,
-                    },
-                )
-            )
 
             notify_user_ids = can_access_stream_ids_dict[stream.id]
             stream_event = dict(
                 op="update",
                 type="stream",
-                property=setting_name,
-                value=convert_to_user_group_members_dict(new_setting_value),
+                property=setting_update.setting_name,
+                value=change_result.new_user_group_members_dict,
                 stream_id=stream.id,
                 name=stream.name,
             )
@@ -538,60 +562,40 @@ def update_group_settings_for_deactivated_user(
         if setting_value_changed:
             stream_objs_to_update.append(stream)
 
-    if len(stream_objs_to_update) != 0:
+    if stream_objs_to_update:
         Stream.objects.bulk_update(stream_objs_to_update, fields=list(updated_stream_settings))
 
-    updated_group_settings = set()
-    group_objs_to_update = []
+    updated_group_settings: set[str] = set()
+    group_objs_to_update: list[NamedUserGroup] = []
     for group_setting_update in group_permission_updates.group_settings_to_update:
         group = group_setting_update.group
         setting_value_changed = False
         event_data: dict[str, str | int | UserGroupMembersDict] = {}
 
         for setting_update in group_setting_update.settings:
-            setting_name = setting_update.setting_name
-            old_setting_value = setting_update.group_setting_value
-            anonymous_group_id = getattr(group, setting_name + "_id")
-
-            new_setting_value = get_new_setting_value_after_deactivation(
-                old_setting_value, user_profile, nobody_group
+            change_result = _apply_permission_setting_change(
+                setting_object=group,
+                setting_update=setting_update,
+                user_profile=user_profile,
+                acting_user=acting_user,
+                event_type=AuditLogEventType.USER_GROUP_GROUP_BASED_SETTING_CHANGED,
+                update_settings_list=updated_group_settings,
+                anonymous_groups_to_delete=anonymous_groups_to_delete,
+                anonymous_groups_to_update=anonymous_groups_to_update,
+                realm_audit_logs_objects=realm_audit_logs_objects,
             )
 
-            if isinstance(new_setting_value, int):
-                anonymous_groups_to_delete.append(anonymous_group_id)
-                setattr(group, setting_name + "_id", new_setting_value)
+            event_data[setting_update.setting_name] = change_result.new_user_group_members_dict
+
+            if change_result.value_changed:
                 setting_value_changed = True
-                updated_group_settings.add(setting_name)
-            else:
-                anonymous_groups_to_update.append(anonymous_group_id)
-
-            realm_audit_logs_objects.append(
-                RealmAuditLog(
-                    realm=realm,
-                    acting_user=acting_user,
-                    event_type=AuditLogEventType.USER_GROUP_GROUP_BASED_SETTING_CHANGED,
-                    event_time=timezone_now(),
-                    modified_user_group=group,
-                    extra_data={
-                        RealmAuditLog.OLD_VALUE: get_group_setting_value_for_audit_log_data(
-                            old_setting_value
-                        ),
-                        RealmAuditLog.NEW_VALUE: get_group_setting_value_for_audit_log_data(
-                            new_setting_value
-                        ),
-                        "property": setting_name,
-                    },
-                )
-            )
-
-            event_data[setting_name] = convert_to_user_group_members_dict(new_setting_value)
 
         do_send_user_group_update_event(group, event_data)
 
         if setting_value_changed:
             group_objs_to_update.append(group)
 
-    if len(group_objs_to_update) != 0:
+    if group_objs_to_update:
         NamedUserGroup.objects.bulk_update(
             group_objs_to_update, fields=list(updated_group_settings)
         )
