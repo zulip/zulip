@@ -13,6 +13,7 @@ from zerver.data_import.import_util import (
     ZerverFieldsT,
     build_realm,
     build_recipient,
+    build_stream,
     build_subscription,
     build_user_profile,
     build_zerver_realm,
@@ -25,8 +26,114 @@ from zerver.lib.export import do_common_export_processes
 from zerver.models.recipients import Recipient
 from zerver.models.users import UserProfile
 
+
+@dataclass
+class TeamMetadata:
+    """
+    "team" is equivalent to a Zulip channel
+    """
+
+    description: str
+    display_name: str
+    visibility: Literal["public", "private"]
+    is_archived: bool
+    zulip_channel_id: int
+    zulip_recipient_id: int
+
+
+AddedTeamsT: TypeAlias = dict[str, TeamMetadata]
+TeamIdToZulipRecipientIdT: TypeAlias = dict[str, int]
 MicrosoftTeamsUserIdToZulipUserIdT: TypeAlias = dict[str, int]
 MicrosoftTeamsFieldsT: TypeAlias = dict[str, Any]
+
+MICROSOFT_TEAMS_DEFAULT_ANNOUNCEMENTS_CHANNEL_NAME = "All company"
+
+
+def convert_teams_to_channels(
+    microsoft_teams_user_id_to_zulip_user_id: MicrosoftTeamsUserIdToZulipUserIdT,
+    realm: dict[str, Any],
+    realm_id: int,
+    teams_data_dir: str,
+) -> AddedTeamsT:
+    team_data_folders = []
+    for f in os.listdir(teams_data_dir):
+        path = os.path.join(teams_data_dir, f)
+        if os.path.isdir(path):
+            team_data_folders.append(f)
+
+    logging.info("######### IMPORTING TEAMS STARTED #########\n")
+
+    # Build teams subscription map
+    team_id_to_zulip_subscriber_ids: dict[str, set[int]] = defaultdict(set)
+    for team_id in team_data_folders:
+        team_members_file_name = f"teamMembers_{team_id}.json"
+        team_members_file_path = os.path.join(teams_data_dir, team_id, team_members_file_name)
+        team_members: list[MicrosoftTeamsFieldsT] = get_data_file(team_members_file_path)
+
+        for member in team_members:
+            zulip_user_id = microsoft_teams_user_id_to_zulip_user_id[member["UserId"]]
+            team_id_to_zulip_subscriber_ids[team_id].add(zulip_user_id)
+
+    # Compile teamsSettings.json and teamsList.json and convert
+    # teams to Zulip channels.
+    teams_list = get_data_file(os.path.join(teams_data_dir, "teamsList.json"))
+    teams_settings = get_data_file(os.path.join(teams_data_dir, "teamsSettings.json"))
+    team_dict: dict[str, Any] = {team["GroupsId"]: team for team in teams_list}
+    teams_metadata: AddedTeamsT = {}
+    for team_settings in teams_settings:
+        team_id = team_settings.get("Id")
+
+        assert team_id and team_id in team_dict, (
+            f"Team {team_id} appears in teamsSettings.json but not teamsList.json!"
+        )
+
+        compiled_team_data: MicrosoftTeamsFieldsT = {**team_dict[team_id], **team_settings}
+
+        channel_id = NEXT_ID("channel")
+        recipient_id = NEXT_ID("recipient")
+
+        channel = build_stream(
+            # Microsoft Teams export doesn't include teams creation date.
+            date_created=float(timezone_now().timestamp()),
+            realm_id=realm_id,
+            name=compiled_team_data["Name"],
+            description=compiled_team_data["Description"] or "",
+            stream_id=channel_id,
+            deactivated=compiled_team_data["IsArchived"],
+            invite_only=compiled_team_data["Visibility"] == "private",
+        )
+        realm["zerver_stream"].append(channel)
+
+        recipient = build_recipient(channel_id, recipient_id, Recipient.STREAM)
+        realm["zerver_recipient"].append(recipient)
+
+        for zulip_user_id in team_id_to_zulip_subscriber_ids[team_id]:
+            sub = build_subscription(
+                recipient_id=recipient_id,
+                user_id=zulip_user_id,
+                subscription_id=NEXT_ID("subscription"),
+            )
+            realm["zerver_subscription"].append(sub)
+
+        # If the org uses the "All company" team, set it as the announcements channel.
+        if (
+            compiled_team_data["Name"] == MICROSOFT_TEAMS_DEFAULT_ANNOUNCEMENTS_CHANNEL_NAME
+        ):  # nocoverage
+            realm["zerver_realm"][0]["new_stream_announcements_stream"] = channel_id
+            realm["zerver_realm"][0]["zulip_update_announcements_stream"] = channel_id
+            realm["zerver_realm"][0]["signup_announcements_stream"] = channel_id
+            logging.info("Using the channel 'All company' as default announcements channel.")
+
+        teams_metadata[team_id] = TeamMetadata(
+            description=compiled_team_data["Description"],
+            display_name=compiled_team_data["DisplayName"],
+            visibility=compiled_team_data["Visibility"],
+            is_archived=compiled_team_data["IsArchived"],
+            zulip_channel_id=channel_id,
+            zulip_recipient_id=recipient_id,
+        )
+
+    return teams_metadata
 
 
 @dataclass
@@ -259,12 +366,21 @@ def do_convert_directory(
     realm["zerver_recipient"] = []
     realm["zerver_subscription"] = []
 
-    convert_users(
+    microsoft_teams_user_id_to_zulip_user_id = convert_users(
         microsoft_teams_user_role_data=get_user_roles(microsoft_graph_api_token),
         realm=realm,
         realm_id=realm_id,
         timestamp=int(NOW),
         users_list=get_data_file(os.path.join(users_data_dir, "usersList.json")),
+    )
+
+    teams_data_dir = os.path.join(microsoft_teams_dir, "teams")
+
+    convert_teams_to_channels(
+        microsoft_teams_user_id_to_zulip_user_id=microsoft_teams_user_id_to_zulip_user_id,
+        realm=realm,
+        realm_id=realm_id,
+        teams_data_dir=teams_data_dir,
     )
 
     create_converted_data_files(realm, output_dir, "/realm.json")
