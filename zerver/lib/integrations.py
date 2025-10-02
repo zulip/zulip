@@ -69,6 +69,7 @@ FIXTURELESS_INTEGRATIONS_WITH_SCREENSHOTS: list[str] = [
     "capistrano",
     "codebase",
     "discourse",
+    "git",
     "github-actions",
     "google-calendar",
     "jenkins",
