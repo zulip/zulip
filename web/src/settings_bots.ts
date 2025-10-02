@@ -28,6 +28,7 @@ import type {UploadWidget} from "./upload_widget.ts";
 import * as user_deactivation_ui from "./user_deactivation_ui.ts";
 import * as user_profile from "./user_profile.ts";
 
+const GENERIC_BOT_TYPE = 1;
 const INCOMING_WEBHOOK_BOT_TYPE = 2;
 const OUTGOING_WEBHOOK_BOT_TYPE = "3";
 const OUTGOING_WEBHOOK_BOT_TYPE_INT = 3;
@@ -65,7 +66,7 @@ function is_local_part(value: string): boolean {
 }
 
 function should_show_generate_integration_url_button(bot_type: number): boolean {
-    return [INCOMING_WEBHOOK_BOT_TYPE].includes(bot_type);
+    return [INCOMING_WEBHOOK_BOT_TYPE, GENERIC_BOT_TYPE].includes(bot_type);
 }
 export function render_bots(): void {
     $("#active_bots_list").empty();
