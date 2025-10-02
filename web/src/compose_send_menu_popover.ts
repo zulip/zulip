@@ -31,8 +31,8 @@ function set_compose_box_schedule(element: HTMLElement): number {
 }
 
 export function open_schedule_message_menu(
-    remind_message_id: number | undefined = undefined,
-    target: tippy.ReferenceElement = util.the($("#send_later i")),
+    remind_message_id: number | undefined,
+    target: tippy.ReferenceElement,
 ): void {
     if (remind_message_id === undefined && !compose_validate.validate(true)) {
         return;
@@ -262,7 +262,7 @@ export function initialize(): void {
             // Handle Send later clicks
             $popper.one("click", ".open_send_later_modal", () => {
                 popover_menus.hide_current_popover_if_visible(instance);
-                open_schedule_message_menu();
+                open_schedule_message_menu(undefined, util.the($("#send_later i")));
             });
             $popper.one("click", ".compose_new_message", () => {
                 drafts.update_draft();

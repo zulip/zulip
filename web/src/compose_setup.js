@@ -38,6 +38,7 @@ import {get_timestamp_for_flatpickr} from "./timerender.ts";
 import * as ui_report from "./ui_report.ts";
 import * as upload from "./upload.ts";
 import * as user_topics from "./user_topics.ts";
+import * as util from "./util.ts";
 import * as widget_modal from "./widget_modal.ts";
 
 export function abort_xhr() {
@@ -138,7 +139,10 @@ export function initialize() {
             if (is_edit_input) {
                 message_edit.save_message_row_edit($row);
             } else if (event.target.dataset.validationTrigger === "schedule") {
-                compose_send_menu_popover.open_schedule_message_menu();
+                compose_send_menu_popover.open_schedule_message_menu(
+                    undefined,
+                    util.the($("#send_later i")),
+                );
 
                 // We need to set this flag to true here because `open_schedule_message_menu` validates the message and sets
                 // the user acknowledged wildcard flag back to 'false' and we don't want that to happen because then it
