@@ -1,0 +1,39 @@
+#!/usr/bin/env python3
+
+import configparser
+import logging
+import time
+from contextlib import suppress
+from typing import Any
+
+import zulip
+
+config_file = configparser.RawConfigParser()
+config_file.read("/etc/zulip/zulip.conf")
+send_to_channel = config_file.get("mirror_to_czo", "send_to_channel")
+
+reading = zulip.Client(config_file="/etc/zulip/mirror_to_czo.zulipcore.zuliprc")
+sending = zulip.Client(config_file="/etc/zulip/mirror_to_czo.czo.zuliprc")
+
+logging.Formatter.converter = time.gmtime
+logging.basicConfig(format="%(asctime)s mirror_to_czo: %(message)s", level=logging.INFO)
+
+
+def send_mirror(msg: dict[str, Any]) -> None:
+    logging.info(msg["message"]["content"])
+    sending.send_message(
+        {
+            "type": "stream",
+            "to": send_to_channel,
+            "topic": msg["message"]["subject"],
+            "content": msg["message"]["content"],
+        }
+    )
+
+
+with suppress(KeyboardInterrupt):
+    reading.call_on_each_event(
+        send_mirror,
+        event_types=["message"],
+        narrow=[["stream", "signups"]],
+    )
