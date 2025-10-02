@@ -52,6 +52,10 @@ def process_repo(
     else:
         revisions = f"{lower_version}..{upper_version}"
         revisions_display = f"{lower_version[0:12]}..{upper_version[0:12]}"
+    if revisions == "":
+        # Repository has no commits overlapping with version range
+        print(f"0 commits from {repo_full}")
+        return
     commit_count = len(
         subprocess.check_output(
             ["git", "log", "--pretty=oneline", revisions],
@@ -182,6 +186,8 @@ for full_repository, branch in [
     ("zulip/zulip-desktop", "main"),
     ("zulip/docker-zulip", "main"),
     ("zulip/python-zulip-api", "main"),
+    ("zulip/zulip-archive", "master"),
+    ("zulip/zulip-architecture", "main"),
     ("zulip/zulip-terminal", "main"),
     ("zulip/zulint", "main"),
     ("zulip/github-actions-zulip", "main"),
@@ -189,6 +195,17 @@ for full_repository, branch in [
     ("zulip/zulip-archive", "master"),
     ("zulip/zulipbot", "main"),
     ("zulip/zulip-zapier", "master"),
+    # Legacy repositories, not actively developed.
+    ("zulip/zulip-desktop-legacy", "master"),
+    ("zulip/zulip-android-legacy", "master"),
+    ("zulip/zulip-ios-legacy", "master"),
+    ("zulip/hubot-zulip", "master"),
+    ("zulip/puppet-zulip", "master"),
+    ("zulip/trello-to-zulip", "master"),
+    ("zulip/swift-zulip-api", "master"),
+    ("zulip/errbot-backend-zulip", "master"),
+    ("zulip/zulip-redmine-plugin", "master"),
+    ("zulip/zulip-csharp", "master"),
 ]:
     repository = os.path.basename(full_repository)
 
