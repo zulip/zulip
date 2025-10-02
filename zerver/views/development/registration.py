@@ -100,7 +100,7 @@ def register_demo_development_realm(request: HttpRequest) -> HttpResponse:
     email = ""
     realm_default_language = "en"
     realm_name = generate_demo_realm_name()
-    realm_type = Realm.ORG_TYPES["unspecified"]["id"]
+    realm_type = Realm.ORG_TYPES["education"]["id"]
     realm_subdomain = realm_name
     email_address_visibility = orjson.dumps(UserProfile.EMAIL_ADDRESS_VISIBILITY_NOBODY)
     prereg_realm = create_preregistration_realm(

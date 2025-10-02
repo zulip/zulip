@@ -1812,7 +1812,7 @@ class RealmCreationTest(ZulipTestCase):
         self.assertNotIn("I've kicked off some conversations", welcome_msg.content)
 
     @override_settings(OPEN_REALM_CREATION=True)
-    def test_create_education_demo_organization_welcome_bot_direct_message(self) -> None:
+    def test_create_education_organization_welcome_bot_direct_message(self) -> None:
         password = "test"
         string_id = "custom-test"
         email = "user1@test.com"
@@ -1846,7 +1846,6 @@ class RealmCreationTest(ZulipTestCase):
             realm_name=realm_name,
             enable_marketing_emails=False,
             realm_type=Realm.ORG_TYPES["education"]["id"],
-            is_demo_organization=True,
         )
         self.assertEqual(result.status_code, 302)
 
@@ -1858,10 +1857,9 @@ class RealmCreationTest(ZulipTestCase):
         ).latest("id")
         self.assertTrue(welcome_msg.content.startswith("Hello, and welcome to Zulip!"))
 
-        # Organization type is education, and organization is a demo organization.
+        # Organization type is education.
         self.assertNotIn("getting started guide", welcome_msg.content)
         self.assertIn("using Zulip for a class guide", welcome_msg.content)
-        self.assertIn("demo organization", welcome_msg.content)
 
     @override_settings(OPEN_REALM_CREATION=True)
     def test_create_realm_with_custom_language(self) -> None:
@@ -4544,6 +4542,19 @@ class UserSignUpTest(ZulipTestCase):
             days=settings.DEMO_ORG_DEADLINE_DAYS
         )
         self.assertEqual(realm.demo_organization_scheduled_deletion_date, expected_deletion_date)
+
+        # Make sure the correct Welcome Bot direct message is sent.
+        welcome_msg = Message.objects.filter(
+            realm_id=realm.id,
+            sender__email="welcome-bot@zulip.com",
+            recipient__type=Recipient.PERSONAL,
+        ).latest("id")
+        self.assertTrue(welcome_msg.content.startswith("Hello, and welcome to Zulip!"))
+
+        # Organization type is education, and organization is a demo organization.
+        self.assertNotIn("getting started guide", welcome_msg.content)
+        self.assertIn("using Zulip for a class guide", welcome_msg.content)
+        self.assertIn("demo organization", welcome_msg.content)
 
     def test_get_default_language_for_new_user(self) -> None:
         realm = get_realm("zulip")
