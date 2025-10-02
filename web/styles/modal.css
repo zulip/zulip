@@ -32,22 +32,27 @@
 }
 
 .modal__header {
-    /* 16px 16px 16px 24px at 16px/1em */
-    padding: 1em 1em 1em 1.5em;
     display: grid;
-    /* 1.8em is the shortest round value for heading at which none of
-       the letters of the english alphabet get cut by overflow:hidden
-       at em = 20px
-       29px at 16px/1em = 1.8125 */
+    /* The grid structure uses two grid columns to define the
+       area for the modal close button, with the rightmost column
+       being used for the close button and to also serve as the
+       right padding and the column to its left accounts for the
+       space of modal close button icon width - right padding. */
     grid-template:
-        "heading close-button" 1.8em "heading ." auto / minmax(0, 1fr)
-        1.8125em;
-    column-gap: 4px;
+        ". modal-header-content modal-close-button modal-close-button" 2.75em /* 44px at 16px/1em */
+        ". modal-header-content .                  ." minmax(0, auto)
+        / 1em minmax(0, 1fr) minmax(0, auto) 1em; /* 16px at 16px/1em */
     background-color: var(--color-background-modal-bar);
 
     &:has(+ .modal__content) {
         border-bottom: 1px solid var(--color-border-modal-bar);
     }
+}
+
+.modal__header-content {
+    grid-area: modal-header-content;
+    /* 10px at 16px/1em */
+    padding: 0.625em 0;
 }
 
 .modal__footer {
@@ -59,15 +64,21 @@
 }
 
 .modal__title {
-    grid-area: heading;
     margin: 0;
-    /* 24px at 16px/1em */
-    font-size: 1.5em;
-    font-weight: 600;
-    line-height: 1.25;
+    /* 20px at 16px/1em */
+    font-size: 1.25em;
+    font-weight: 650;
+    line-height: 1.2; /* 24px at 20px/1em */
     overflow: hidden;
     overflow-wrap: break-word;
     color: var(--color-modal-heading-text);
+
+    .icon-button {
+        /* 16px icon + 4px padding = 24px icon button,
+           which matches with the line height of the
+           modal title. */
+        padding: 0.25em; /* 4px at 16px/1em */
+    }
 
     .channel-privacy-type-icon {
         /* This pushes back on suspect styles
@@ -98,15 +109,10 @@
 }
 
 .modal__close {
-    &::before {
-        content: "\2715";
-        color: var(--color-modal-close-button);
-    }
-    background: transparent;
-    border: 0;
+    grid-area: modal-close-button;
 
-    &:hover {
-        background: var(--color-background-modal-close-button-hover);
+    &:focus-visible {
+        outline-offset: -2px !important;
     }
 }
 
@@ -313,9 +319,9 @@
 }
 
 .user-profile-name-heading {
-    max-width: 80%;
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 10px;
     /* Padding for icon outlines to occupy the space so that they don't get clipped. */
     padding: 0 1px;
