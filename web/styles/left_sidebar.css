@@ -692,13 +692,24 @@
        state that might show a highlight. */
     border-radius: 4px;
 
+    /* Always show the box-shadow outline on hover and
+       an open left-sidebar menu (vdots) */
     &:hover,
     &:has(.left_sidebar_menu_icon_visible) {
-        background-color: var(--color-background-hover-narrow-filter);
         box-shadow: inset 0 0 0 1px var(--color-shadow-sidebar-row-hover);
+    }
 
-        .sidebar-topic-check {
+    /* However, only adjust the background colors outside of active
+       filters, whose colors are more intense in light and dark mode
+       than the hover-narrow-filter color values. */
+    &:not(.active-sub-filter) {
+        &:hover,
+        &:has(.left_sidebar_menu_icon_visible) {
             background-color: var(--color-background-hover-narrow-filter);
+
+            .sidebar-topic-check {
+                background-color: var(--color-background-hover-narrow-filter);
+            }
         }
     }
 
