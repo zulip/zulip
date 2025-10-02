@@ -40,7 +40,7 @@ from analytics.models import RealmCount, StreamCount, UserCount
 from version import ZULIP_VERSION
 from zerver.lib.avatar_hash import user_avatar_base_path_from_ids
 from zerver.lib.migration_status import MigrationStatusJson, parse_migration_status
-from zerver.lib.parallel import run_parallel
+from zerver.lib.parallel import run_parallel, run_parallel_queue
 from zerver.lib.pysa import mark_sanitized
 from zerver.lib.stream_color import STREAM_ASSIGNMENT_COLORS
 from zerver.lib.timestamp import datetime_to_timestamp
@@ -96,7 +96,7 @@ from zerver.models.saved_snippets import SavedSnippet
 from zerver.models.users import ExternalAuthID, get_system_bot
 
 if TYPE_CHECKING:
-    from mypy_boto3_s3.service_resource import Object
+    from mypy_boto3_s3.service_resource import Bucket, Object
 
 # Custom mypy types follow:
 Record: TypeAlias = dict[str, Any]
@@ -1968,6 +1968,7 @@ def export_uploads_and_avatars(
     attachments: Iterable[Attachment] | None = None,
     user: UserProfile | None,
     output_dir: Path,
+    processes: int = 1,
 ) -> None:
     uploads_output_dir = os.path.join(output_dir, "uploads")
     avatars_output_dir = os.path.join(output_dir, "avatars")
@@ -2043,6 +2044,7 @@ def export_uploads_and_avatars(
             output_dir=uploads_output_dir,
             user_ids=user_ids,
             valid_hashes=path_ids,
+            processes=processes,
         )
 
         avatar_hash_values = set()
@@ -2062,6 +2064,7 @@ def export_uploads_and_avatars(
             output_dir=avatars_output_dir,
             user_ids=user_ids,
             valid_hashes=avatar_hash_values,
+            processes=processes,
         )
 
         emoji_paths = set()
@@ -2079,6 +2082,7 @@ def export_uploads_and_avatars(
             output_dir=emoji_output_dir,
             user_ids=user_ids,
             valid_hashes=emoji_paths,
+            processes=processes,
         )
 
         if user is None:
@@ -2143,19 +2147,40 @@ def _get_exported_s3_record(
     return record
 
 
-def _save_s3_object_to_file(
-    s3_obj: "Object",
-    output_dir: str,
-    processing_uploads: bool,
+@dataclass
+class S3DownloadsProcessState:
+    output_dir: str
+    processing_uploads: bool
+    bucket: "Bucket"
+
+
+# We are not using sContextVar for its thread-safety, here -- since we
+# use processes, not threads, for parallelism. All we need is a global
+# box which is serializable by pickle's dependency analysis, which we
+# can set and get out of in the other process. We want it primarily
+# for things which take some work to set up and can't be pickled
+# (Bucket) or are large and don't change (the list of user-ids with
+# consent, below) which we don't want to pass on every call.
+s3_downloads_context: ContextVar[S3DownloadsProcessState] = ContextVar("s3_downloads_context")
+
+
+def s3_downloads_process_initializer(
+    output_dir: str, processing_uploads: bool, bucket_name: str
 ) -> None:
+    bucket = get_bucket(bucket_name)
+    s3_downloads_context.set(S3DownloadsProcessState(output_dir, processing_uploads, bucket))
+
+
+def _save_s3_key_to_file(key_name: str) -> None:
+    context = s3_downloads_context.get()
     # Helper function for export_files_from_s3
-    if not processing_uploads:
-        filename = os.path.join(output_dir, s3_obj.key)
+    if not context.processing_uploads:
+        filename = os.path.join(context.output_dir, key_name)
     else:
-        fields = s3_obj.key.split("/")
+        fields = key_name.split("/")
         if len(fields) != 3:
-            raise AssertionError(f"Suspicious key with invalid format {s3_obj.key}")
-        filename = os.path.join(output_dir, s3_obj.key)
+            raise AssertionError(f"Suspicious key with invalid format {key_name}")
+        filename = os.path.join(context.output_dir, key_name)
 
     if "../" in filename:
         raise AssertionError(f"Suspicious file with invalid format {filename}")
@@ -2167,7 +2192,8 @@ def _save_s3_object_to_file(
 
     if not os.path.exists(dirname):
         os.makedirs(dirname)
-    s3_obj.download_file(Filename=filename)
+
+    context.bucket.Object(key_name).download_file(Filename=filename)
 
 
 def export_files_from_s3(
@@ -2179,6 +2205,7 @@ def export_files_from_s3(
     output_dir: Path,
     user_ids: set[int],
     valid_hashes: set[str] | None,
+    processes: int = 1,
 ) -> None:
     processing_uploads = flavor == "upload"
     processing_emoji = flavor == "emoji"
@@ -2194,7 +2221,7 @@ def export_files_from_s3(
         email_gateway_bot = get_system_bot(settings.EMAIL_GATEWAY_BOT, internal_realm.id)
         user_ids.add(email_gateway_bot.id)
 
-    def iterate_attachments() -> Iterator[Record]:
+    def iterate_attachments(do_download_obj: Callable[[str], Any]) -> Iterator[Record]:
         count = 0
         for bkey in bucket.objects.filter(Prefix=object_prefix):
             # This is promised to be iterated in sorted filename order.
@@ -2229,7 +2256,7 @@ def export_files_from_s3(
 
             record = _get_exported_s3_record(bucket_name, s3_obj, processing_emoji, realm.id)
 
-            _save_s3_object_to_file(s3_obj, output_dir, processing_uploads)
+            do_download_obj(s3_obj.key)
 
             yield record
             count += 1
@@ -2237,7 +2264,19 @@ def export_files_from_s3(
             if count % 100 == 0:
                 logging.info("Finished %s", count)
 
-    write_records_json_file(output_dir, iterate_attachments())
+    with run_parallel_queue(
+        _save_s3_key_to_file,
+        processes,
+        initializer=s3_downloads_process_initializer,
+        initargs=(
+            output_dir,
+            processing_uploads,
+            bucket_name,
+        ),
+        report_every=100,
+        report=lambda count: logging.info("Successfully downloaded %s attachments", count),
+    ) as do_download_obj:
+        write_records_json_file(output_dir, iterate_attachments(do_download_obj))
 
 
 def export_uploads_from_local(
@@ -2533,7 +2572,9 @@ def do_export_realm(
     )
 
     logging.info("Exporting uploaded files and avatars")
-    export_uploads_and_avatars(realm, attachments=attachments, user=None, output_dir=output_dir)
+    export_uploads_and_avatars(
+        realm, attachments=attachments, user=None, output_dir=output_dir, processes=processes
+    )
 
     # Start parallel jobs to export the UserMessage objects.
     launch_user_message_subprocesses(
@@ -2583,12 +2624,6 @@ class UserMessageProcessState:
     consented_user_ids: set[int] | None
 
 
-# We are not using the ContextVar for its thread-safety, here -- since
-# we use processes, not threads, for parallelism. All we need is a
-# global box which is serializable by pickle's dependency analysis,
-# which we can set and get out of in the other process. We want it
-# primarily for things which are large and don't change (the list of
-# user-ids with consent) which we don't want to pass on every call.
 usermessage_context: ContextVar[UserMessageProcessState] = ContextVar("usermessage_context")
 
 
