@@ -196,6 +196,7 @@ export let send_message = (): void => {
     assert(draft_id !== undefined);
 
     const message_type = compose_state.get_message_type();
+    assert(message_type !== undefined);
     let message_data: SendMessageData;
     if (message_type === "private") {
         const recipient_emails = compose_state.private_message_recipient_emails();
@@ -214,7 +215,6 @@ export let send_message = (): void => {
             stream_id: undefined,
         };
     } else {
-        assert(message_type === "stream");
         const stream_id = compose_state.stream_id();
         assert(stream_id !== undefined);
         const topic = compose_state.topic();
