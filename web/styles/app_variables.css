@@ -2967,17 +2967,6 @@
     --unread-marker-left: 0;
 
     /* Colors used across the app */
-    /* We mix an opaque version with the background for
-       replicating the color on .sidebar-topic-check, which
-       will mask a portion of the topic-grouping bracket.
-       The same is necessary for buddy-list heading hovers
-       in the right sidebar. */
-    --color-background-opaque-hover-active-narrow-filter: color-mix(
-        in srgb,
-        hsl(0deg 0% 97%) 8%,
-        hsl(0deg 0% 97%) 8%,
-        hsl(0deg 0% 11%)
-    );
     --color-recipient-bar-controls-spinner: hsl(0deg 0% 100%);
     --box-shadow-unread-counter-normal: none;
 

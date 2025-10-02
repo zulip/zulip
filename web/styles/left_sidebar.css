@@ -997,13 +997,6 @@ li.active-sub-filter {
 
     &:hover {
         background-color: var(--color-background-active-narrow-filter);
-
-        .sidebar-topic-check {
-            /* This variable is only set and used in dark mode. */
-            background-color: var(
-                --color-background-opaque-hover-active-narrow-filter
-            );
-        }
     }
 
     .sidebar-topic-check {
