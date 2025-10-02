@@ -697,6 +697,8 @@ NO_SCREENSHOT_WEBHOOKS = {
     "ifttt",  # Docs don't have a screenshot
     "slack_incoming",  # Docs don't have a screenshot
     "zapier",  # Docs don't have a screenshot
+    # This calls back to Slack API endpoints.
+    "slack",
 }
 
 
@@ -804,7 +806,6 @@ WEBHOOK_SCREENSHOT_CONFIG: dict[str, list[WebhookScreenshotConfig]] = {
     "rundeck": [WebhookScreenshotConfig("start.json")],
     "semaphore": [WebhookScreenshotConfig("pull_request.json")],
     "sentry": [WebhookScreenshotConfig("event_for_exception_python.json")],
-    "slack": [WebhookScreenshotConfig("message_with_normal_text.json")],
     "sonarqube": [WebhookScreenshotConfig("error.json")],
     "sonarr": [WebhookScreenshotConfig("sonarr_episode_grabbed.json")],
     "splunk": [WebhookScreenshotConfig("search_one_result.json")],
