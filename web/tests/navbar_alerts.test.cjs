@@ -4,6 +4,7 @@ const assert = require("node:assert/strict");
 
 const {addDays} = require("date-fns");
 
+const {make_realm} = require("./lib/example_realm.cjs");
 const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 const {page_params} = require("./lib/zpage_params.cjs");
@@ -18,7 +19,7 @@ const {set_current_user, set_realm} = zrequire("state_data");
 
 const current_user = {};
 set_current_user(current_user);
-const realm = {};
+const realm = make_realm();
 set_realm(realm);
 
 function test(label, f) {
@@ -151,17 +152,4 @@ test("should_show_server_upgrade_banner", ({override}) => {
     // Set the date to > 7 days from the last upgrade nag dismissal time.
     override(Date, "now", () => addDays(start_time, 8).getTime()); // Thursday 1/9/2024 10:00:00 AM (UTC+0)
     assert.equal(navbar_alerts.should_show_server_upgrade_banner(ls), true);
-});
-
-test("get_demo_organization_deadline_days_remaining", ({override}) => {
-    const start_time = new Date("2024-01-01T10:00:00.000Z"); // Wednesday 1/1/2024 10:00:00 AM (UTC+0)
-    override(Date, "now", () => start_time);
-
-    const demo_organization_scheduled_deletion_date = addDays(start_time, 7); // Wednesday 1/8/2024 10:00:00 AM (UTC+0)
-    override(
-        realm,
-        "demo_organization_scheduled_deletion_date",
-        Math.trunc(demo_organization_scheduled_deletion_date / 1000),
-    );
-    assert.equal(navbar_alerts.get_demo_organization_deadline_days_remaining(), 7);
 });

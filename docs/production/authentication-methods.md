@@ -1,14 +1,34 @@
 # Authentication methods
 
-Zulip supports a wide variety of authentication methods. Some of them
-require configuration to set up.
+Zulip supports a wide variety of authentication methods:
+
+- [Email and password](#email-and-password), which is enabled by default.
+- [Social authentication](#social-authentication) with Google, GitHub,
+  and GitLab, which is easy to set up with a few lines of configuration.
+  Authentication with Apple additionally requires registering with Apple.
+- [Microsoft Entra ID](#microsoft-entra-id) (AzureAD), which is similarly easy to
+  configure.
+- [LDAP (including Active Directory)](#ldap-including-active-directory). Zulip
+  supports retrieving information about users via LDAP, and optionally using LDAP
+  as an authentication mechanism.
+- [SAML](#saml), which is supported by Okta, OneLogin, Entra ID (AzureAD),
+  Keycloak, Auth0 and many other identity providers.
+- [OpenID Connect](#openid-connect). Zulip can be integrated with any OpenID
+  Connect (OIDC) authentication provider.
+- [JSON Web Tokens (JWT)](#json-web-tokens-jwt)
+- [Apache-based SSO with `REMOTE_USER`](#apache-based-sso-with-remote_user)
 
 To configure or disable authentication methods on your Zulip server,
 edit the `AUTHENTICATION_BACKENDS` setting in
 `/etc/zulip/settings.py`, as well as any additional configuration your
 chosen authentication methods require; then restart the Zulip server.
 
-Details on each method below.
+If your authentication provider is not supported out-of-the-box, you can
+configure [custom authentication backends](#custom-authentication-backends). If
+you need help, best-effort community support is available in the [Zulip
+development community](https://zulip.com/development-community/). To inquire
+about options for custom development, [contact Zulip
+Sales](mailto:sales@zulip.com).
 
 ## Email and password
 
@@ -21,20 +41,123 @@ email and password.
 When first setting up your Zulip server, this method must be used for
 creating the initial realm and user. You can disable it after that.
 
-## Plug-and-play SSO (Google, GitHub, GitLab)
+### Passwords
+
+Zulip stores user passwords using the standard Argon2 algorithm.
+
+When the user is choosing a password, Zulip checks the password's
+strength using the popular [zxcvbn][zxcvbn] library. Weak passwords
+are rejected, and strong passwords encouraged. The minimum password
+strength allowed is controlled by two settings in
+`/etc/zulip/settings.py`:
+
+- `PASSWORD_MIN_LENGTH`: The minimum acceptable length, in characters.
+  Shorter passwords are rejected even if they pass the `zxcvbn` test
+  controlled by `PASSWORD_MIN_GUESSES`.
+
+- `PASSWORD_MIN_GUESSES`: The minimum acceptable strength of the
+  password, in terms of the estimated number of passwords an attacker
+  is likely to guess before trying this one. If the user attempts to
+  set a password that `zxcvbn` estimates to be guessable in less than
+  `PASSWORD_MIN_GUESSES`, then Zulip rejects the password.
+
+  By default, `PASSWORD_MIN_GUESSES` is 10000. This provides
+  significant protection against online attacks, while limiting the
+  burden imposed on users choosing a password. See
+  [password strength](password-strength.md) for an extended
+  discussion on how we chose this value.
+
+  Estimating the guessability of a password is a complex problem and
+  impossible to efficiently do perfectly. For background or when
+  considering an alternate value for this setting, the article
+  ["Passwords and the Evolution of Imperfect Authentication"][bhos15]
+  is recommended. The [2016 zxcvbn paper][zxcvbn-paper] adds useful
+  information about the performance of zxcvbn, and [a large 2012 study
+  of Yahoo users][bon12] is informative about the strength of the
+  passwords users choose.
+
+<!---
+  If the BHOS15 link ever goes dead: it's reference 30 of the zxcvbn
+  paper, aka https://dl.acm.org/citation.cfm?id=2699390 , in the
+  _Communications of the ACM_ aka CACM.  (But the ACM has it paywalled.)
+  .
+  Hooray for USENIX and IEEE: the other papers' canonical links are
+  not paywalled.  The Yahoo study is reference 5 in BHOS15.
+-->
+
+[zxcvbn]: https://github.com/dropbox/zxcvbn
+[bhos15]: http://www.cl.cam.ac.uk/~fms27/papers/2015-BonneauHerOorSta-passwords.pdf
+[zxcvbn-paper]: https://www.usenix.org/system/files/conference/usenixsecurity16/sec16_paper_wheeler.pdf
+[bon12]: http://ieeexplore.ieee.org/document/6234435/
+
+## Social authentication
 
 With just a few lines of configuration, your Zulip server can
-authenticate users with any of several single-sign-on (SSO)
-authentication providers:
+authenticate users with:
 
 - Google accounts, with `GoogleAuthBackend`
 - GitHub accounts, with `GitHubAuthBackend`
 - GitLab accounts, with `GitLabAuthBackend`
-- Microsoft Entra ID (AzureAD), with `AzureADAuthBackend`
 
 Each of these requires one to a handful of lines of configuration in
 `settings.py`, as well as a secret in `zulip-secrets.conf`. Details
 are documented in your `settings.py`.
+
+### Sign in with Apple
+
+Zulip supports using the web flow for Sign in with Apple on
+self-hosted servers. To do so, you'll need to do the following:
+
+1. Visit [the Apple Developer site][apple-developer] and [Create a
+   Services ID][apple-create-services-id]. When prompted for a "Return
+   URL", enter `https://zulip.example.com/complete/apple/` (using the
+   domain for your server).
+
+1. Create a [Sign in with Apple private key][apple-create-private-key].
+
+1. Store the resulting private key at
+   `/etc/zulip/apple-auth-key.p8`. Be sure to set
+   permissions correctly:
+
+   ```bash
+   chown zulip:zulip /etc/zulip/apple-auth-key.p8
+   chmod 640 /etc/zulip/apple-auth-key.p8
+   ```
+
+1. Configure Apple authentication in `/etc/zulip/settings.py`:
+
+   - `SOCIAL_AUTH_APPLE_TEAM`: Your Team ID from Apple, which is a
+     string like "A1B2C3D4E5".
+   - `SOCIAL_AUTH_APPLE_SERVICES_ID`: The Services ID you created in
+     step 1, which might look like "com.example.services".
+   - `SOCIAL_AUTH_APPLE_APP_ID`: The App ID, or Bundle ID, of your
+     app that you used in step 1 to configure your Services ID.
+     This might look like "com.example.app".
+   - `SOCIAL_AUTH_APPLE_KEY`: Despite the name this is not a key, but
+     rather the Key ID of the key you created in step 2. This looks
+     like "F6G7H8I9J0".
+   - `AUTHENTICATION_BACKENDS`: Uncomment (or add) a line like
+     `'zproject.backends.AppleAuthBackend',` to enable Apple auth
+     using the created configuration.
+
+1. Register with Apple the email addresses or domains your Zulip
+   server sends email to users from. For instructions and background,
+   see the "Email Relay Service" subsection of
+   [this page][apple-get-started]. For details on what email
+   addresses Zulip sends from, see our
+   [outgoing email documentation][outgoing-email].
+
+[apple-create-services-id]: https://help.apple.com/developer-account/?lang=en#/dev1c0e25352
+[apple-developer]: https://developer.apple.com/account/resources/
+[apple-create-private-key]: https://help.apple.com/developer-account/?lang=en#/dev77c875b7e
+[apple-get-started]: https://developer.apple.com/sign-in-with-apple/get-started/
+[outgoing-email]: email.md
+
+## Microsoft Entra ID
+
+Set up authentication with Microsoft Entra ID (AzureAD) by modifying the
+`AzureADAuthBackend` configuration in `settings.py`, as well as a secret in
+`zulip-secrets.conf`. Details are documented in your `settings.py`.
 
 (ldap)=
 
@@ -45,10 +168,10 @@ optionally using LDAP as an authentication mechanism.
 
 In either configuration, you will need to do the following:
 
-1. These instructions assume you have an installed Zulip server and
-   are logged into a shell there. You can have created an
-   organization already using EmailAuthBackend, or plan to create the
-   organization using LDAP authentication.
+1. [Install a Zulip server](./install.md), and log into a shell.
+
+1. _(optional)_ Create an organization using EmailAuthBackend. Alternately, you
+   can plan to create the organization using LDAP authentication.
 
 1. Tell Zulip how to connect to your LDAP server:
 
@@ -187,10 +310,10 @@ All of these data synchronization options have the same model:
   your configuration changes take effect.
 - Logs are available in `/var/log/zulip/ldap.log`.
 
-When using this feature, you may also want to
-[prevent users from changing their display name in the Zulip UI][restrict-name-changes],
-since any such changes would be automatically overwritten on the sync
-run of `manage.py sync_ldap_user_data`.
+When using this feature, you may also want to [prevent users from
+changing their display name or email address in the Zulip
+UI][restrict-name-changes], since any such changes would be
+automatically overwritten.
 
 [restrict-name-changes]: https://zulip.com/help/restrict-name-and-email-changes
 
@@ -269,40 +392,49 @@ groups. To configure this feature:
 
 [zulip-groups]: https://zulip.com/help/user-groups
 
-#### Synchronizing email addresses
+### Synchronizing email addresses
 
-User accounts in Zulip are uniquely identified by their email address,
-and that's [currently](https://github.com/zulip/zulip/pull/16208) the
-only way through which a Zulip account is associated with their LDAP
-user account.
+Zulip 11.0+ supports automatically handling changes in email address
+for most LDAP installations. All you need to do is set the
+`unique_account_id` field in `AUTH_LDAP_USER_ATTR_MAP` to a **stable
+unique identifier** for the account. If your LDAP server has a policy
+of never changing the Distinguished Name (`dn`) for a user, you can
+use that. But it's worth checking if your LDAP provider offers a UUID
+that is guaranteed to always map to the same user account.
 
-In particular, whenever a user attempts to log in to Zulip using LDAP,
-Zulip will use the LDAP information to authenticate the access, and
-determine the user's email address. It will then log in the user to
-the Zulip account with that email address (or if none exists,
-potentially prompt the user to create one). This model is convenient,
-because it works well with any LDAP provider (and handles migrations
-between LDAP providers transparently).
+For Active Directory installations, the immutable Security Identifier
+[`objectSid`](https://ldapwiki.com/wiki/Wiki.jsp?page=Security%20Identifier)
+is recommended.
 
-However, when a user's email address is changed in your LDAP
-directory, manual action needs to be taken to tell Zulip that the
-email address Zulip account with the new email address.
+:::{note}
 
-There are two ways to execute email address changes:
+While most LDAP data is synced in `sync_ldap_user_data`, email address
+synchronization is only checked on login. The first time a user logs
+in with `unique_account_id` enabled, the unique ID will be linked with
+their Zulip account. After a change in their LDAP email address, Zulip
+will update the linked Zulip account's Zulip email address the next
+time the user logs in.
 
-- Users changing their email address in LDAP can [change their email
-  address in Zulip](https://zulip.com/help/change-your-email-address)
-  before logging out of Zulip. The user will need to be able to
-  receive email at the new email address in order to complete this
-  flow.
+:::
+
+#### Manually handling LDAP email changes
+
+If you don't have `unique_account_id` enabled, when a user's email
+address is changed in your LDAP directory, it must be manually updated
+in Zulip:
 
 - A server administrator can use the `manage.py change_user_email`
-  [management command][management-commands] to adjust a Zulip
+  [management command][management-commands] to update a Zulip
   account's email address directly.
 
-If a user accidentally creates a duplicate account, the duplicate
-account can be deactivated (and its email address changed) or deleted,
-and then the real account adjusted using the management command above.
+- Users can [change their email address in
+  Zulip](https://zulip.com/help/change-your-email-address). The user
+  must be already logged into Zulip and able to receive email at the
+  new email address.
+
+Not doing so will often lead to a duplicate account when the user next
+logs in. If that happens, you can delete the duplicate account and
+then correct the user's email address using the management command.
 
 [management-commands]: ../production/management-commands.md
 
@@ -609,7 +741,8 @@ other IdPs (identity providers). You can configure it as follows:
    IdP.
 
 [saml-help-center]: https://zulip.com/help/saml-authentication
-[user-role-help-center]: https://zulip.com/help/roles-and-permissions
+[user-role-help-center]: https://zulip.com/help/user-roles
+[user-groups-help-center]: https://zulip.com/help/user-groups
 
 ### IdP-initiated SSO
 
@@ -656,7 +789,7 @@ to the root and `engineering` subdomains:
 </saml2:Attribute>
 ```
 
-### Synchronizing user role or custom profile fields during login
+### Synchronizing data during login
 
 In contrast with SCIM or LDAP, the SAML protocol only allows Zulip to
 access data about a user when that user authenticates to Zulip using
@@ -670,15 +803,17 @@ offer SCIM or the fields one is interested in syncing change rarely
 enough that asking users to logout and then login again to resync
 their metadata might feel reasonable.
 
-Specifically, Zulip supports synchronizing the [user
+Specifically, Zulip supports synchronizing
+[group memberships][user-groups-help-center], the [user
 role][user-role-help-center] and [custom profile
 fields][custom-profile-fields] from the SAML provider.
 
-In order to use this functionality, configure
-`SOCIAL_AUTH_SYNC_ATTRS_DICT` in `/etc/zulip/settings.py` according to
-the instructions in the inline documentation in the file. Servers
-installed before Zulip 10.0 may want to [update inline comment
-documentation][update-inline-comments] first in order to access it.
+In order to use this functionality, configure `SOCIAL_AUTH_SYNC_ATTRS_DICT` in
+`/etc/zulip/settings.py` according to the instructions in the inline
+documentation in the file. Servers installed before Zulip 10.0 may want to
+[update inline comment documentation][update-inline-comments] first in order to
+access it. For configuring syncing of groups see
+[below][configure-saml-group-sync].
 
 Custom profile fields are only synchronized during login, not during
 account creation; we consider this [a
@@ -690,6 +825,46 @@ When user role is provided by the SAML IdP during signup of a
 user who's coming from an invitation link, the IdP-provided role will
 take precedence over the role set in the invitation.
 :::
+
+[configure-saml-group-sync]: #synchronizing-group-membership-with-saml
+
+#### Synchronizing group membership with SAML
+
+Zulip 11.0+ includes support for syncing group memberships upon user
+login. To activate this feature, uncomment the `groups` field in the
+config in `SOCIAL_AUTH_SYNC_ATTRS_DICT` and configure the list as
+explained below. An example configuration might look like this:
+
+```python
+SOCIAL_AUTH_SYNC_ATTRS_DICT = {
+    "your_subdomain": {
+        "saml": {
+            "groups": ["group1", ("samlgroup2", "zulipgroup2"), "group3"],
+        }
+    }
+}
+```
+
+The tuple syntax (`("samlgroup2", "zulipgroup2")`) should be used when
+the Zulip group that you'd like to sync does not have exactly the same
+name as the SAML group.
+
+Your SAML IdP will need to provide the list of SAML group names in the
+`zulip_groups` attribute of the `SAMLResponse`. When a user logs in
+using SAML, groups are synced as follows:
+
+1. If a Zulip group name does not occur in the
+   `SOCIAL_AUTH_SYNC_ATTRS_DICT` groups list, that group's membership
+   is managed entirely in Zulip.
+1. Otherwise, if the group appears in `zulip_groups` in the
+   `SAMLResponse`, the user is added to that group (if not already a
+   member).
+1. Otherwise, the user is removed from that group (if currently a
+   member).
+
+Only direct membership of groups is synced through this protocol;
+subgroups of Zulip groups are managed entirely [inside
+Zulip](https://zulip.com/help/manage-user-groups#add-user-groups-to-a-group).
 
 ### SCIM
 
@@ -988,56 +1163,6 @@ to debug.
   sees the cookie, treats them as logged in, and proceeds to serve
   them the main app page normally.
 
-## Sign in with Apple
-
-Zulip supports using the web flow for Sign in with Apple on
-self-hosted servers. To do so, you'll need to do the following:
-
-1. Visit [the Apple Developer site][apple-developer] and [Create a
-   Services ID.][apple-create-services-id]. When prompted for a "Return
-   URL", enter `https://zulip.example.com/complete/apple/` (using the
-   domain for your server).
-
-1. Create a [Sign in with Apple private key][apple-create-private-key].
-
-1. Store the resulting private key at
-   `/etc/zulip/apple-auth-key.p8`. Be sure to set
-   permissions correctly:
-
-   ```bash
-   chown zulip:zulip /etc/zulip/apple-auth-key.p8
-   chmod 640 /etc/zulip/apple-auth-key.p8
-   ```
-
-1. Configure Apple authentication in `/etc/zulip/settings.py`:
-
-   - `SOCIAL_AUTH_APPLE_TEAM`: Your Team ID from Apple, which is a
-     string like "A1B2C3D4E5".
-   - `SOCIAL_AUTH_APPLE_SERVICES_ID`: The Services ID you created in
-     step 1, which might look like "com.example.services".
-   - `SOCIAL_AUTH_APPLE_APP_ID`: The App ID, or Bundle ID, of your
-     app that you used in step 1 to configure your Services ID.
-     This might look like "com.example.app".
-   - `SOCIAL_AUTH_APPLE_KEY`: Despite the name this is not a key, but
-     rather the Key ID of the key you created in step 2. This looks
-     like "F6G7H8I9J0".
-   - `AUTHENTICATION_BACKENDS`: Uncomment (or add) a line like
-     `'zproject.backends.AppleAuthBackend',` to enable Apple auth
-     using the created configuration.
-
-1. Register with Apple the email addresses or domains your Zulip
-   server sends email to users from. For instructions and background,
-   see the "Email Relay Service" subsection of
-   [this page][apple-get-started]. For details on what email
-   addresses Zulip sends from, see our
-   [outgoing email documentation][outgoing-email].
-
-[apple-create-services-id]: https://help.apple.com/developer-account/?lang=en#/dev1c0e25352
-[apple-developer]: https://developer.apple.com/account/resources/
-[apple-create-private-key]: https://help.apple.com/developer-account/?lang=en#/dev77c875b7e
-[apple-get-started]: https://developer.apple.com/sign-in-with-apple/get-started/
-[outgoing-email]: email.md
-
 ## OpenID Connect
 
 Zulip can be integrated with any OpenID Connect (OIDC) authentication
@@ -1071,7 +1196,7 @@ assumes the name is correct, and new users will not be presented with
 a registration form unless they need to accept Terms of Service for
 the server (i.e. `TERMS_OF_SERVICE_VERSION` is set).
 
-## JWT
+## JSON Web Tokens (JWT)
 
 Zulip supports using JSON Web Tokens (JWT) authentication in two ways:
 
@@ -1094,7 +1219,9 @@ configure the JWT secret and algorithm via `JWT_AUTH_KEYS` in
 `/etc/zulip/settings.py`; see the inline comment documentation in that
 file for details.
 
-## Configuring a custom Python wrapper around the `authenticate` mechanism
+## Custom authentication backends
+
+### Configuring a custom Python wrapper around the `authenticate` mechanism
 
 Zulip supports configuring a custom authentication function that will
 work as a wrapper around every login attempt to Zulip, enabling custom
@@ -1187,11 +1314,11 @@ request), this is where it should happen.
 
 [django-authenticate-details]: https://docs.djangoproject.com/en/5.0/topics/auth/customizing/#writing-an-authentication-backend
 
-## Adding more authentication backends
+### Adding more authentication backends
 
 Adding an integration with any of the more than 100 authentication
 providers supported by [python-social-auth][python-social-auth] (e.g.,
-Facebook, Twitter, etc.) is easy to do if you're willing to write a
+Facebook, X, etc.) is easy to do if you're willing to write a
 bit of code, and pull requests to add new backends are welcome.
 
 For example, the

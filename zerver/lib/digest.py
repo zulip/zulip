@@ -11,10 +11,14 @@ from django.db import transaction
 from django.db.models import Exists, OuterRef, QuerySet
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
+from markupsafe import Markup
 
 from confirmation.models import one_click_unsubscribe_link
 from zerver.context_processors import common_context
-from zerver.lib.email_notifications import build_message_list
+from zerver.lib.email_notifications import (
+    build_message_list,
+    message_content_allowed_in_missedmessage_emails,
+)
 from zerver.lib.logging_util import log_to_file
 from zerver.lib.message import get_last_message_id
 from zerver.lib.queue import queue_json_publish_rollback_unsafe
@@ -28,6 +32,7 @@ from zerver.models import (
     Stream,
     Subscription,
     UserActivityInterval,
+    UserMessage,
     UserProfile,
 )
 from zerver.models.realm_audit_logs import AuditLogEventType
@@ -250,7 +255,7 @@ def gather_new_streams(
     realm: Realm,
     recently_created_streams: list[Stream],  # streams only need id and name
     can_access_public: bool,
-) -> tuple[int, dict[str, list[str]]]:
+) -> tuple[int, dict[str, list[Markup] | list[str]]]:
     if can_access_public:
         new_streams = [stream for stream in recently_created_streams if not stream.invite_only]
     else:
@@ -261,15 +266,30 @@ def gather_new_streams(
 
     for stream in new_streams:
         narrow_url = stream_narrow_url(realm, stream)
-        channel_link = f"<a href='{narrow_url}'>{stream.name}</a>"
+        channel_link = Markup("<a href='{narrow_url}'>{stream_name}</a>").format(
+            narrow_url=narrow_url, stream_name=stream.name
+        )
         channels_html.append(channel_link)
         channels_plain.append(stream.name)
 
     return len(new_streams), {"html": channels_html, "plain": channels_plain}
 
 
-def enough_traffic(hot_conversations: str, new_streams: int) -> bool:
-    return bool(hot_conversations or new_streams)
+def get_new_messages_count(user: UserProfile, threshold: datetime) -> int:
+    count = UserMessage.objects.filter(
+        user_profile=user, message__date_sent__gte=threshold, message__sender__is_bot=False
+    ).count()
+    return count
+
+
+def enough_traffic(
+    hot_conversations: int, new_streams: int, new_messages: int, show_message_content: bool
+) -> bool:
+    if new_streams > 0:
+        return True
+    if not show_message_content:
+        return new_messages > 0
+    return hot_conversations > 0
 
 
 def get_user_stream_map(user_ids: list[int], cutoff_date: datetime) -> dict[int, set[int]]:
@@ -350,24 +370,11 @@ def bulk_get_digest_context(
     user_stream_map = get_user_stream_map(user_ids, cutoff_date)
 
     for user in users:
-        stream_ids = user_stream_map[user.id]
-
-        recent_topics = []
-        for stream_id in stream_ids:
-            recent_topics += get_recent_topics(realm.id, stream_id, cutoff_date)
-
-        hot_topics = get_hot_topics(recent_topics, stream_ids)
-
         context = common_context(user)
 
         # Start building email template data.
         unsubscribe_link = one_click_unsubscribe_link(user, "digest")
         context.update(unsubscribe_link=unsubscribe_link)
-
-        # Get context data for hot conversations.
-        context["hot_conversations"] = [
-            hot_topic.teaser_data(user, stream_id_map) for hot_topic in hot_topics
-        ]
 
         # Gather new streams.
         new_streams_count, new_streams = gather_new_streams(
@@ -375,8 +382,34 @@ def bulk_get_digest_context(
             recently_created_streams=recently_created_streams,
             can_access_public=user.can_access_public_streams(),
         )
-        context["new_channels"] = new_streams
+
         context["new_streams_count"] = new_streams_count
+        context[
+            "message_content_disabled_by_realm"
+        ] = not realm.message_content_allowed_in_email_notifications
+        context[
+            "message_content_disabled_by_user"
+        ] = not user.message_content_in_email_notifications
+
+        if not message_content_allowed_in_missedmessage_emails(user):
+            # Count new messages when message content is hidden in email notifications.
+            context["new_messages_count"] = get_new_messages_count(user, cutoff_date)
+            context["hot_conversations"] = []
+            context["show_message_content"] = False
+        else:
+            # Otherwise, get context data for hot conversations.
+            stream_ids = user_stream_map[user.id]
+            recent_topics = []
+            for stream_id in stream_ids:
+                recent_topics += get_recent_topics(realm.id, stream_id, cutoff_date)
+            hot_topics = get_hot_topics(recent_topics, stream_ids)
+
+            context["hot_conversations"] = [
+                hot_topic.teaser_data(user, stream_id_map) for hot_topic in hot_topics
+            ]
+            context["new_channels"] = new_streams
+            context["new_messages_count"] = 0
+            context["show_message_content"] = True
 
         yield user, context
 
@@ -400,7 +433,12 @@ def bulk_handle_digest_email(user_ids: list[int], cutoff: float) -> None:
 
     for user, context in bulk_get_digest_context(users, cutoff):
         # We don't want to send emails containing almost no information.
-        if not enough_traffic(context["hot_conversations"], context["new_streams_count"]):
+        if not enough_traffic(
+            len(context["hot_conversations"]),
+            context["new_streams_count"],
+            context["new_messages_count"],
+            context["show_message_content"],
+        ):
             continue
 
         digest_users.append(user)

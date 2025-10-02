@@ -8,9 +8,6 @@ type QueryWord = {
 export type SearchData = {
     query_words: QueryWord[];
     has_stop_word: boolean;
-    stream_query?: string;
-    topic_query?: string;
-    is_empty_string_topic?: boolean;
 };
 
 export type NarrowBannerData = {
@@ -21,9 +18,9 @@ export type NarrowBannerData = {
 
 export function narrow_error(narrow_banner_data: NarrowBannerData): string {
     const title = narrow_banner_data.title;
-    const html = narrow_banner_data.html;
+    const notice_html = narrow_banner_data.html;
     const search_data = narrow_banner_data.search_data;
 
-    const empty_feed_notice = render_empty_feed_notice({title, html, search_data});
+    const empty_feed_notice = render_empty_feed_notice({title, notice_html, search_data});
     return empty_feed_notice;
 }

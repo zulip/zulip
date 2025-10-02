@@ -52,11 +52,11 @@ const MAX_LOOKBACK_FOR_TYPEAHEAD_COMPLETION = 60 + 6 + 20;
 // **********************************
 // They do not do any HTML escaping, at all.
 // And your input to them is rendered as though it were HTML by
-// the default highlighter.
+// the default `item_html`.
 //
 // So if you are not using trusted input, you MUST use a
-// highlighter that escapes (i.e. one that calls
-// typeahead_helper.highlight_with_escaping).
+// custom `item_html` that escapes (i.e. one that calls
+// Handlebars.Utils.escapeExpression).
 
 // ---------------- TYPE DECLARATIONS ----------------
 // There are many types of suggestions that can show
@@ -181,7 +181,7 @@ export function update_emoji_data(initial_emojis: EmojiDict[]): void {
 }
 
 export function topics_seen_for(stream_id?: number): string[] {
-    if (!stream_id) {
+    if (!stream_id || stream_data.is_empty_topic_only_channel(stream_id)) {
         return [];
     }
 
@@ -655,6 +655,17 @@ export function get_person_suggestions(
         } else {
             persons = all_persons;
         }
+
+        const user = people.get_from_unique_full_name(query);
+        if (user !== undefined) {
+            return [
+                {
+                    type: "user",
+                    user,
+                },
+            ];
+        }
+
         // Exclude muted users from typeaheads.
         persons = muted_users.filter_muted_users(persons);
         let person_items: UserOrMentionPillData[] = persons.map((person) => ({
@@ -671,8 +682,12 @@ export function get_person_suggestions(
                 })),
             ];
         }
-
-        return person_items.filter((item) => typeahead_helper.query_matches_person(query, item));
+        const should_remove_diacritics = people.should_remove_diacritics_for_query(
+            query.toLowerCase(),
+        );
+        return person_items.filter((item) =>
+            typeahead_helper.query_matches_person(query, item, should_remove_diacritics),
+        );
     }
 
     let groups: UserGroup[];
@@ -843,11 +858,12 @@ export function get_candidates(
         }
         completing = "syntax";
         token = current_token;
-        // If the code formatting button was triggered, we want to show a blank option
-        // to improve the discoverability of the possibility of specifying a language.
-        const language_list = compose_ui.code_formatting_button_triggered
-            ? ["", ...realm_playground.get_pygments_typeahead_list_for_composebox()]
-            : realm_playground.get_pygments_typeahead_list_for_composebox();
+
+        const default_language = realm.realm_default_code_block_language;
+        const language_list = realm_playground.get_pygments_typeahead_list_for_composebox();
+        if (default_language) {
+            language_list.unshift(default_language);
+        }
         compose_ui.set_code_formatting_button_triggered(false);
         const matcher = get_language_matcher(token);
         const matches = language_list.filter((item) => matcher(item));
@@ -1093,7 +1109,7 @@ export function get_candidates(
     return [];
 }
 
-export function content_highlighter_html(item: TypeaheadSuggestion): string | undefined {
+export function content_item_html(item: TypeaheadSuggestion): string | undefined {
     switch (item.type) {
         case "emoji":
             return typeahead_helper.render_emoji(item);
@@ -1109,7 +1125,12 @@ export function content_highlighter_html(item: TypeaheadSuggestion): string | un
         case "stream":
             return typeahead_helper.render_stream(item);
         case "syntax":
-            return typeahead_helper.render_typeahead_item({primary: item.language});
+            return typeahead_helper.render_typeahead_item({
+                primary: item.language,
+                is_default_language:
+                    item.language !== "" &&
+                    item.language === realm.realm_default_code_block_language,
+            });
         case "topic_jump":
             return typeahead_helper.render_typeahead_item({primary: item.message});
         case "topic_list": {
@@ -1186,7 +1207,7 @@ export function content_typeahead_selected(
                 let user_group_mention_text = is_silent ? "@_*" : "@*";
                 user_group_mention_text += item.name + "* ";
                 beginning += user_group_mention_text;
-                compose_validate.warn_if_mentioning_unsubscribed_group(
+                void compose_validate.warn_if_mentioning_unsubscribed_group(
                     item,
                     $textbox,
                     is_silent ?? false,
@@ -1204,7 +1225,7 @@ export function content_typeahead_selected(
                     is_silent,
                 );
                 if (!is_silent && item.type !== "broadcast") {
-                    compose_validate.warn_if_mentioning_unsubscribed_user(item, $textbox);
+                    void compose_validate.warn_if_mentioning_unsubscribed_user(item, $textbox);
                     mention_text = compose_validate.convert_mentions_to_silent_in_direct_messages(
                         mention_text,
                         item.user.full_name,
@@ -1223,23 +1244,33 @@ export function content_typeahead_selected(
                 highlight.end = highlight.start + item.placeholder.length;
             }
             break;
-        case "stream":
+        case "stream": {
             beginning = beginning.slice(0, -token.length - 1);
             if (beginning.endsWith("#*")) {
                 beginning = beginning.slice(0, -2);
             }
 
-            // for stream links, we use markdown link syntax if the #**stream** syntax
-            // will generate a broken url.
-            if (topic_link_util.will_produce_broken_stream_topic_link(item.name)) {
-                // use markdown link syntax
+            const sub = stream_data.get_sub_by_name(item.name);
+            const is_empty_topic_only_channel =
+                sub && stream_data.is_empty_topic_only_channel(sub.stream_id);
+            const is_greater_than_key_pressed =
+                event && event.type === "keydown" && event.key === ">";
+
+            // For empty topic only channel, skip showing topic typeahead and
+            // insert direct channel link.
+            if (is_empty_topic_only_channel && !is_greater_than_key_pressed) {
+                beginning += topic_link_util.get_stream_link_syntax(item.name);
+            } else if (topic_link_util.will_produce_broken_stream_topic_link(item.name)) {
+                // for stream links, we use markdown link syntax if the #**stream** syntax
+                // will generate a broken url.
                 beginning += topic_link_util.get_fallback_markdown_link(item.name) + ">";
             } else {
                 beginning += "#**" + item.name + ">";
             }
 
-            compose_validate.warn_if_private_stream_is_linked(item, $textbox);
+            void compose_validate.warn_if_private_stream_is_linked(item, $textbox);
             break;
+        }
         case "syntax": {
             // Isolate the end index of the triple backticks/tildes, including
             // possibly a space afterward
@@ -1376,7 +1407,7 @@ export function initialize_topic_edit_typeahead(
     };
     return new Typeahead(bootstrap_typeahead_input, {
         dropup,
-        highlighter_html(item: string): string {
+        item_html(item: string): string {
             const is_empty_string_topic = item === "";
             const topic_display_name = util.get_final_topic_display_name(item);
             return typeahead_helper.render_typeahead_item({
@@ -1415,15 +1446,6 @@ function get_footer_html(): string | false {
         case "silent_mention":
             tip_text = $t({defaultMessage: "This silent mention won't trigger notifications."});
             break;
-        case "syntax":
-            if (realm.realm_default_code_block_language !== "") {
-                tip_text = $t(
-                    {defaultMessage: "Default is {language}. Use 'text' to disable highlighting."},
-                    {language: realm.realm_default_code_block_language},
-                );
-                break;
-            }
-            return false;
         default:
             return false;
     }
@@ -1445,7 +1467,7 @@ export function initialize_compose_typeahead($element: JQuery<HTMLTextAreaElemen
             // O(n) behavior in the number of users in the organization
             // inside the typeahead library.
             source: get_candidates,
-            highlighter_html: content_highlighter_html,
+            item_html: content_item_html,
             matcher() {
                 return true;
             },
@@ -1464,6 +1486,15 @@ export function initialize_compose_typeahead($element: JQuery<HTMLTextAreaElemen
 
                     if (item.is_new_topic) {
                         return `<em>${$t({defaultMessage: "New"})}</em>`;
+                    }
+                } else if (item.type === "syntax") {
+                    if (
+                        item.language !== "" &&
+                        item.language === realm.realm_default_code_block_language
+                    ) {
+                        return `<em>${$t({defaultMessage: "(default)"})}</em>`;
+                    } else if (item.language === "text") {
+                        return `<em>${$t({defaultMessage: "(no highlighting)"})}</em>`;
                     }
                 }
                 return false;
@@ -1508,7 +1539,7 @@ export function initialize({
             return topics_seen_for(compose_state.stream_id());
         },
         items: max_num_items,
-        highlighter_html(item: string): string {
+        item_html(item: string): string {
             const is_empty_string_topic = item === "";
             const topic_display_name = util.get_final_topic_display_name(item);
             return typeahead_helper.render_typeahead_item({
@@ -1529,6 +1560,11 @@ export function initialize({
             }
             return sorted;
         },
+        updater(item: string, _query: string): string {
+            $("textarea#compose-textarea").trigger("focus");
+            $nextFocus = undefined;
+            return item;
+        },
         option_label(matching_items: string[], item: string): string | false {
             if (!matching_items.includes(item)) {
                 return `<em>${$t({defaultMessage: "New"})}</em>`;
@@ -1546,7 +1582,7 @@ export function initialize({
         source: get_pm_people,
         items: max_num_items,
         dropup: true,
-        highlighter_html(item: UserGroupPillData | UserPillData) {
+        item_html(item: UserGroupPillData | UserPillData) {
             return typeahead_helper.render_person_or_user_group(item);
         },
         matcher(): boolean {

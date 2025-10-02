@@ -2,7 +2,7 @@ import $ from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
 import type * as tippy from "tippy.js";
-import {z} from "zod";
+import * as z from "zod/mini";
 
 import * as typeahead from "../shared/src/typeahead.ts";
 import render_introduce_zulip_view_modal from "../templates/introduce_zulip_view_modal.hbs";
@@ -113,6 +113,11 @@ let is_waiting_for_revive_current_focus = true;
 // Used to store the last scroll position of the recent view before
 // it is hidden to avoid scroll jumping when it is shown again.
 let last_scroll_offset: number | undefined;
+let hide_other_views_callback: (() => void) | undefined;
+
+export function set_hide_other_views(callback: () => void): void {
+    hide_other_views_callback = callback;
+}
 
 export function set_initial_message_fetch_status(value: boolean): void {
     is_initial_message_fetch_pending = value;
@@ -329,7 +334,7 @@ function set_table_focus(row: number, col: number, using_keyboard = false): bool
     $current_focus_elem = "table";
 
     if (using_keyboard) {
-        const scroll_element = util.the($("html"));
+        const scroll_element = util.the($(":root"));
         const half_height_of_visible_area = scroll_element.offsetHeight / 2;
         const topic_offset = topic_offset_to_visible_area($topic_row);
 
@@ -342,9 +347,19 @@ function set_table_focus(row: number, col: number, using_keyboard = false): bool
 
     let reply_recipient_information: compose_closed_ui.ReplyRecipientInformation;
     if (type === "private") {
-        reply_recipient_information = {
-            display_reply_to: $topic_row.find(".recent_topic_name a").text(),
-        };
+        const $recipients_info = $topic_row.find(".recent-view-table-link");
+        const narrow_url = $recipients_info.attr("href");
+        assert(narrow_url !== undefined);
+        const recipient_ids = hash_util.decode_dm_recipient_user_ids_from_narrow_url(narrow_url);
+        if (recipient_ids) {
+            reply_recipient_information = {
+                user_ids: recipient_ids,
+            };
+        } else {
+            reply_recipient_information = {
+                display_reply_to: $recipients_info.text(),
+            };
+        }
     } else {
         const stream_name = $topic_row.find(".recent_topic_stream a").text();
         const stream = stream_data.get_sub_by_name(stream_name);
@@ -558,13 +573,15 @@ function get_avatars_context(all_senders: number[]): AvatarsContext {
     const displayed_other_senders = extra_sender_ids.slice(-MAX_EXTRA_SENDERS);
     const other_senders_count = Math.max(0, all_senders.length - max_avatars);
     // Collect extra sender fullname for tooltip
-    const displayed_other_names = people.get_display_full_names(displayed_other_senders.reverse());
+    const displayed_other_names = people.get_display_full_names(
+        displayed_other_senders.toReversed(),
+    );
     if (extra_sender_ids.length > MAX_EXTRA_SENDERS) {
         // We display only 10 extra senders in tooltips,
         // and just display remaining number of senders.
         const remaining_senders = extra_sender_ids.length - MAX_EXTRA_SENDERS;
         // Pluralization syntax from:
-        // https://formatjs.io/docs/core-concepts/icu-syntax/#plural-format
+        // https://formatjs.github.io/docs/core-concepts/icu-syntax#plural-format
         displayed_other_names.push(
             $t(
                 {
@@ -597,8 +614,7 @@ type ConversationContext = {
     | {
           is_private: true;
           user_ids_string: string;
-          rendered_pm_with: string;
-          recipient_id: number;
+          rendered_pm_with_html: string;
           pm_url: string;
           is_group: boolean;
           is_bot: boolean;
@@ -650,7 +666,7 @@ function format_conversation(conversation_data: ConversationData): ConversationC
         const stream_id = last_msg.stream_id;
         const stream_name = stream_data.get_stream_name_from_id(last_msg.stream_id);
         const stream_color = stream_info.color;
-        const stream_url = hash_util.by_stream_url(stream_id);
+        const stream_url = hash_util.channel_url_by_user_setting(stream_id);
         const invite_only = stream_info.invite_only;
         const is_web_public = stream_info.is_web_public;
         const is_archived = stream_info.is_archived;
@@ -674,7 +690,7 @@ function format_conversation(conversation_data: ConversationData): ConversationC
         // Since the css for displaying senders in reverse order is much simpler,
         // we provide our handlebars with senders in opposite order.
         // Display in most recent sender first order.
-        all_senders = recent_senders.get_topic_recent_senders(stream_id, topic).reverse();
+        all_senders = recent_senders.get_topic_recent_senders(stream_id, topic).toReversed();
 
         stream_context = {
             stream_id,
@@ -696,7 +712,7 @@ function format_conversation(conversation_data: ConversationData): ConversationC
         // Direct message info
         const user_ids_string = last_msg.to_user_ids;
         assert(typeof last_msg.display_recipient !== "string");
-        const rendered_pm_with = last_msg.display_recipient
+        const rendered_pm_with_html = last_msg.display_recipient
             .filter(
                 (recipient: DisplayRecipientUser) =>
                     !people.is_my_user_id(recipient.id) || last_msg.display_recipient.length === 1,
@@ -708,7 +724,6 @@ function format_conversation(conversation_data: ConversationData): ConversationC
                 }),
             )
             .sort();
-        const recipient_id = last_msg.recipient_id;
         const pm_url = last_msg.pm_with_url;
         const is_group = last_msg.display_recipient.length > 2;
         const has_unread_mention =
@@ -736,12 +751,17 @@ function format_conversation(conversation_data: ConversationData): ConversationC
         // display the other recipients on the direct message conversation with different
         // styling, but it's important to not destroy the information of "who's actually
         // talked".
-        all_senders = recent_senders.get_pm_recent_senders(user_ids_string).participants.reverse();
+        all_senders = recent_senders
+            .get_pm_recent_senders(user_ids_string)
+            .participants.toReversed();
 
         dm_context = {
             user_ids_string,
-            rendered_pm_with: util.format_array_as_list(rendered_pm_with, "long", "conjunction"),
-            recipient_id,
+            rendered_pm_with_html: util.format_array_as_list(
+                rendered_pm_with_html,
+                "long",
+                "conjunction",
+            ),
             pm_url,
             is_group,
             is_bot,
@@ -793,11 +813,11 @@ export function process_topic_edit(
     // logic behind this and important notes on use of this function.
     recent_view_data.conversations.delete(recent_view_util.get_topic_key(old_stream_id, old_topic));
 
-    const old_topic_msgs = message_util.get_messages_in_topic(old_stream_id, old_topic);
+    const old_topic_msgs = message_util.get_loaded_messages_in_topic(old_stream_id, old_topic);
     process_messages(old_topic_msgs);
 
     new_stream_id = new_stream_id || old_stream_id;
-    const new_topic_msgs = message_util.get_messages_in_topic(new_stream_id, new_topic);
+    const new_topic_msgs = message_util.get_loaded_messages_in_topic(new_stream_id, new_topic);
     process_messages(new_topic_msgs);
 }
 
@@ -819,7 +839,7 @@ export function update_topics_of_deleted_message_ids(message_ids: number[]): voi
     const msgs_to_process = [];
     for (const [stream_id, topic] of topics_to_rerender.values()) {
         recent_view_data.conversations.delete(recent_view_util.get_topic_key(stream_id, topic));
-        const msgs = message_util.get_messages_in_topic(stream_id, topic);
+        const msgs = message_util.get_loaded_messages_in_topic(stream_id, topic);
         msgs_to_process.push(...msgs);
     }
 
@@ -881,10 +901,11 @@ export function filters_should_hide_row(topic_data: ConversationData): boolean {
     if (dropdown_filters.has(views_util.FILTERS.UNMUTED_TOPICS) && msg.type === "stream") {
         // We want to show the unmuted or followed topics within muted
         // streams in Recent Conversations.
-        const topic_unmuted_or_followed = Boolean(
-            user_topics.is_topic_unmuted_or_followed(msg.stream_id, msg.topic),
+        const topic_unmuted_or_followed = user_topics.is_topic_unmuted_or_followed(
+            msg.stream_id,
+            msg.topic,
         );
-        const topic_muted = Boolean(user_topics.is_topic_muted(msg.stream_id, msg.topic));
+        const topic_muted = user_topics.is_topic_muted(msg.stream_id, msg.topic);
         const stream_muted = stream_data.is_muted(msg.stream_id);
         if (topic_muted || (stream_muted && !topic_unmuted_or_followed)) {
             return true;
@@ -1234,15 +1255,9 @@ function recenter_focus_if_off_screen(): void {
             topic_element === null ||
             $(topic_element).parents("#recent-view-content-tbody").length === 0
         ) {
-            // There are two theoretical reasons that the center
-            // element might be null. One is that we haven't rendered
-            // the view yet; but in that case, we should have returned
-            // early checking is_waiting_for_revive_current_focus.
-            //
-            // The other possibility is that the table is too short
-            // for there to be an topic row element at the center of
-            // the table region; in that case, we just select the last
-            // element.
+            // The table is too short for there to be an topic row element
+            // at the center of the table region; in that case, we just
+            // select the last element.
             row_focus = $topic_rows.length - 1;
         } else {
             row_focus = $topic_rows.index($(topic_element).closest("tr")[0]);
@@ -1250,22 +1265,6 @@ function recenter_focus_if_off_screen(): void {
 
         set_table_focus(row_focus, col_focus);
     }
-}
-
-function is_scroll_position_for_render(): boolean {
-    const scroll_position = window.scrollY;
-    const window_height = window.innerHeight;
-    // We allocate `--max-unmaximized-compose-height` in empty space
-    // below the last rendered row in recent view.
-    //
-    // We don't want user to see this empty space until there are no
-    // new rows to render when the user is scrolling to the bottom of
-    // the view. So, we render new rows when user has scrolled 2 / 3
-    // of (the total scrollable height - the empty space).
-    const compose_max_height = $("html").css("--max-unmaximized-compose-height");
-    assert(typeof compose_max_height === "string");
-    const scroll_max = document.body.scrollHeight - Number.parseInt(compose_max_height, 10);
-    return scroll_position + window_height >= (2 / 3) * scroll_max;
 }
 
 function callback_after_render(): void {
@@ -1311,13 +1310,13 @@ function get_list_data_for_widget(): ConversationData[] {
     return [...recent_view_data.get_conversations().values()];
 }
 
-export function complete_rerender(): void {
+export function complete_rerender(coming_from_other_views = false): void {
     if (!recent_view_util.is_visible()) {
         return;
     }
 
     if (!page_params.is_node_test) {
-        max_avatars = Number.parseInt($("html").css("--recent-view-max-avatars"), 10);
+        max_avatars = Number.parseInt($(":root").css("--recent-view-max-avatars"), 10);
     }
 
     // Show topics list
@@ -1328,10 +1327,12 @@ export function complete_rerender(): void {
         return;
     }
 
-    // This is the first time we are rendering the Recent Conversations view.
-    // So, we always scroll to the top to avoid any scroll jumping in case
-    // user is returning from another view.
-    window.scrollTo(0, 0);
+    if (coming_from_other_views) {
+        // This is the first time we are rendering the Recent Conversations view.
+        // So, we always scroll to the top to avoid any scroll jumping in case
+        // user is returning from another view.
+        window.scrollTo(0, 0);
+    }
 
     const rendered_body = render_recent_view_body({
         search_val: $("#recent_view_search").val() ?? "",
@@ -1368,9 +1369,9 @@ export function complete_rerender(): void {
             ...list_widget.generic_sort_functions("numeric", ["last_msg_id"]),
         },
         html_selector: get_topic_row,
-        $simplebar_container: $("html"),
+        $simplebar_container: $(":root"),
         callback_after_render,
-        is_scroll_position_for_render,
+        is_scroll_position_for_render: views_util.is_scroll_position_for_render,
         post_scroll__pre_render_callback() {
             // Update the focused element for keyboard navigation if needed.
             recenter_focus_if_off_screen();
@@ -1405,17 +1406,23 @@ export function update_recent_view_rendered_time(): void {
 }
 
 export function show(): void {
+    assert(hide_other_views_callback !== undefined);
+    hide_other_views_callback();
     // We remove event handler before hiding, so they need to
     // be attached again, checking for topics_widget to be defined
     // is a reliable solution to check if recent view was displayed earlier.
     const reattach_event_handlers = topics_widget !== undefined;
     views_util.show({
-        highlight_view_in_left_sidebar: left_sidebar_navigation_area.highlight_recent_view,
+        highlight_view_in_left_sidebar() {
+            views_util.handle_message_view_deactivated(
+                left_sidebar_navigation_area.highlight_recent_view,
+            );
+        },
         $view: $("#recent_view"),
         // We want to show `new stream message` instead of
         // `new topic`, which we are already doing in this
         // function. So, we reuse it here.
-        update_compose: compose_closed_ui.update_buttons_for_non_specific_views,
+        update_compose: compose_closed_ui.update_buttons,
         is_recent_view: true,
         is_visible: recent_view_util.is_visible,
         set_visible: recent_view_util.set_visible,
@@ -1436,7 +1443,7 @@ export function show(): void {
                 user_settings.web_escape_navigates_to_home_view,
         });
         dialog_widget.launch({
-            html_heading: $t_html({defaultMessage: "Welcome to <b>recent conversations</b>!"}),
+            html_heading: $t_html({defaultMessage: "Welcome to recent conversations!"}),
             html_body,
             html_submit_button: $t_html({defaultMessage: "Got it"}),
             on_click() {
@@ -1457,6 +1464,9 @@ function filter_buttons(): JQuery {
 }
 
 export function hide(): void {
+    if (!recent_view_util.is_visible()) {
+        return;
+    }
     // Since we have events attached to element (window) which are present in
     // views others than recent view, it is important to clear events here.
     topics_widget?.clear_event_handlers();
@@ -1812,7 +1822,7 @@ export function change_focused_element($elt: JQuery, input_key: string): boolean
     return false;
 }
 
-const filter_schema = z.array(z.string()).default([]);
+const filter_schema = z._default(z.array(z.string()), []);
 
 function load_filters(): void {
     // load filters from local storage.
@@ -1839,18 +1849,21 @@ export function initialize({
     on_mark_pm_as_read,
     on_mark_topic_as_read,
     maybe_load_older_messages,
+    hide_other_views,
 }: {
-    on_click_participant: (avatar_element: Element, participant_user_id: number) => void;
+    on_click_participant: (avatar_element: HTMLElement, participant_user_id: number) => void;
     on_mark_pm_as_read: (user_ids_string: string) => void;
     on_mark_topic_as_read: (stream_id: number, topic: string) => void;
     maybe_load_older_messages: (first_unread_unmuted_message_id: number) => void;
+    hide_other_views: () => void;
 }): void {
+    hide_other_views_callback = hide_other_views;
     load_filters();
 
     $("body").on(
         "click",
         "#recent-view-content-table .recent_view_participant_avatar",
-        function (e) {
+        function (this: HTMLElement, e) {
             const user_id_string = $(this).parent().attr("data-user-id");
             assert(user_id_string !== undefined);
             const participant_user_id = Number.parseInt(user_id_string, 10);
@@ -1954,19 +1967,13 @@ export function initialize({
 
     // Search for all table rows (this combines stream & topic names)
     $("body").on(
-        "keyup",
+        "input",
         "#recent_view_search",
         _.debounce(() => {
             update_filters_view();
             // Wait for user to go idle before initiating search.
         }, 300),
     );
-
-    $("body").on("click", "#recent_view_search_clear", (e) => {
-        e.stopPropagation();
-        $("#recent_view_search").val("");
-        update_filters_view();
-    });
 
     $("body").on("click", ".recent-view-load-more-container .fetch-messages-button", () => {
         $(".recent-view-load-more-container .button-label").toggleClass("invisible", true);

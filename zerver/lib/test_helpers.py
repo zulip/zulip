@@ -12,13 +12,12 @@ from unittest import mock
 from unittest.mock import patch
 
 import boto3.session
-import dns.rdtypes.ANY.TXT
-import dns.resolver
 import fakeldap
 import ldap
 import orjson
 from django.conf import settings
 from django.contrib.auth.models import AnonymousUser
+from django.contrib.sessions.backends.base import SessionBase
 from django.db.migrations.state import StateApps
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.http.request import QueryDict
@@ -397,6 +396,7 @@ class HostRequestMock(HttpRequest):
         self.user = user_profile or AnonymousUser()
         self._body = orjson.dumps(post_data)
         self.content_type = ""
+        self.session = SessionBase()
 
         RequestNotes.set_notes(
             self,
@@ -571,8 +571,7 @@ def write_instrumentation_reports(full_suite: bool, include_webhooks: bool) -> N
         var_dir = "var"  # TODO make sure path is robust here
         fn = os.path.join(var_dir, "url_coverage.txt")
         with open(fn, "wb") as f:
-            for call in calls:
-                f.write(orjson.dumps(call, option=orjson.OPT_APPEND_NEWLINE))
+            f.writelines(orjson.dumps(call, option=orjson.OPT_APPEND_NEWLINE) for call in calls)
 
         if full_suite:
             print(f"INFO: URL coverage report is in {fn}")
@@ -795,16 +794,3 @@ def ratelimit_rule(
 def consume_response(response: HttpResponseBase) -> None:
     assert response.streaming
     collections.deque(response, maxlen=0)
-
-
-def dns_txt_answer(name_str: str, txt: str) -> dns.resolver.Answer:
-    name = dns.name.from_text(name_str)
-    rdclass = dns.rdataclass.IN
-    rdtype = dns.rdatatype.TXT
-    response = dns.message.make_query(
-        name, rdtype, rdclass, flags=dns.flags.QR | dns.flags.RA | dns.flags.RD
-    )
-    response.find_rrset(dns.message.ANSWER, name, rdclass, rdtype, create=True).add(
-        dns.rdtypes.ANY.TXT.TXT(rdclass, rdtype, txt)
-    )
-    return dns.resolver.Answer(name, rdtype, rdclass, response)

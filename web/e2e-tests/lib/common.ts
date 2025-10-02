@@ -10,7 +10,7 @@ import type {Browser, ConsoleMessage, ConsoleMessageLocation, ElementHandle, Pag
 import puppeteer from "puppeteer";
 import StackFrame from "stackframe";
 import StackTraceGPS from "stacktrace-gps";
-import {z} from "zod";
+import * as z from "zod/mini";
 
 const root_dir = url.fileURLToPath(new URL("../../..", import.meta.url));
 const puppeteer_dir = path.join(root_dir, "var/puppeteer");
@@ -37,7 +37,11 @@ export const pm_recipient = {
     async set(page: Page, recipient: string): Promise<void> {
         // Without using the delay option here there seems to be
         // a flake where the typeahead doesn't show up.
-        await page.type("#private_message_recipient", recipient, {delay: 100});
+        // The flake seems to be due to some method that triggers focus on
+        // compose textarea, which causes the typeahead to not show up.
+        // Add a delay before typing.
+        await timersPromises.setTimeout(100);
+        await page.type("#private_message_recipient", recipient);
 
         // PM typeaheads always have an image. This ensures we are waiting for the right typeahead to appear.
         const entry = await page.waitForSelector(".typeahead .active a .typeahead-image", {
@@ -49,7 +53,9 @@ export const pm_recipient = {
     },
 
     async expect(page: Page, expected: string): Promise<void> {
-        const actual_recipients = await page.evaluate(() => zulip_test.private_message_recipient());
+        const actual_recipients = await page.evaluate(() =>
+            zulip_test.private_message_recipient_emails(),
+        );
         assert.equal(actual_recipients, expected);
     },
 };
@@ -66,19 +72,17 @@ export const window_size = {
 };
 
 export async function ensure_browser(): Promise<Browser> {
-    if (browser === null) {
-        browser = await puppeteer.launch({
-            args: [
-                `--window-size=${window_size.width},${window_size.height}`,
-                "--no-sandbox",
-                "--disable-setuid-sandbox",
-            ],
-            // TODO: Change defaultViewport to 1280x1024 when puppeteer fixes the window size issue with firefox.
-            // Here is link to the issue that is tracking the above problem https://github.com/puppeteer/puppeteer/issues/6442.
-            defaultViewport: null,
-            headless: true,
-        });
-    }
+    browser ??= await puppeteer.launch({
+        args: [
+            `--window-size=${window_size.width},${window_size.height}`,
+            "--no-sandbox",
+            "--disable-setuid-sandbox",
+        ],
+        // TODO: Change defaultViewport to 1280x1024 when puppeteer fixes the window size issue with firefox.
+        // Here is link to the issue that is tracking the above problem https://github.com/puppeteer/puppeteer/issues/6442.
+        defaultViewport: null,
+        headless: true,
+    });
     return browser;
 }
 
@@ -94,9 +98,8 @@ export async function screenshot(page: Page, name: string | null = null): Promis
         screenshot_id += 1;
     }
 
-    const screenshot_path = path.join(puppeteer_dir, `${name}.png`);
     await page.screenshot({
-        path: screenshot_path,
+        path: `${path.join(puppeteer_dir, name)}.png`,
     });
 }
 
@@ -256,14 +259,11 @@ export async function get_internal_email_from_name(
 
 export async function log_in(
     page: Page,
-    credentials: {username: string; password: string} | null = null,
+    credentials: {username: string; password: string} = test_credentials.default_user,
 ): Promise<void> {
     console.log("Logging in");
     await page.goto(realm_url + "login/");
     assert.equal(realm_url + "login/", page.url());
-    if (credentials === null) {
-        credentials = test_credentials.default_user;
-    }
     // fill login form
     const params = {
         username: credentials.username,
@@ -560,7 +560,7 @@ export async function open_streams_modal(page: Page): Promise<void> {
 
     await page.waitForSelector("#subscription_overlay", {visible: true});
     const url = await page_url_with_fragment(page);
-    assert.ok(url.includes("#channels/notsubscribed"));
+    assert.ok(url.includes("#channels/available"));
 }
 
 export async function open_personal_menu(page: Page): Promise<void> {

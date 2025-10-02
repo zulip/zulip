@@ -10,6 +10,7 @@ from typing_extensions import override
 
 from corporate.lib.stripe import get_latest_seat_count
 from zerver.actions.create_user import notify_new_user
+from zerver.actions.streams import do_set_stream_property
 from zerver.actions.user_settings import do_change_user_setting
 from zerver.lib.initial_password import initial_password
 from zerver.lib.test_classes import ZulipTestCase
@@ -17,7 +18,7 @@ from zerver.lib.timezone import canonicalize_timezone
 from zerver.models import Message, Recipient, Stream, UserProfile
 from zerver.models.realms import get_realm
 from zerver.models.recipients import get_direct_message_group_user_ids
-from zerver.models.streams import get_stream
+from zerver.models.streams import StreamTopicsPolicyEnum, get_stream
 from zerver.models.users import get_system_bot
 from zerver.signals import JUST_CREATED_THRESHOLD, get_device_browser, get_device_os
 
@@ -286,6 +287,7 @@ class TestNotifyNewUser(ZulipTestCase):
         self.assertEqual(message.recipient.type, Recipient.STREAM)
         actual_stream = Stream.objects.get(id=message.recipient.type_id)
         self.assertEqual(actual_stream.name, "core team")
+        self.assertEqual(message.topic_name(), "signups")
         self.assertIn(
             f"@_**Cordelia, Lear's daughter|{new_user.id}** joined this organization.",
             message.content,
@@ -296,6 +298,28 @@ class TestNotifyNewUser(ZulipTestCase):
         new_user.refresh_from_db()
         notify_new_user(new_user)
         self.assertEqual(self.get_message_count(), message_count + 1)
+
+    def test_notify_realm_of_new_user_in_empty_topic_only_channel(self) -> None:
+        realm = get_realm("zulip")
+        iago = self.example_user("iago")
+        stream = get_stream("core team", realm)
+        realm.signup_announcements_stream = stream
+        realm.save(update_fields=["signup_announcements_stream"])
+        do_set_stream_property(
+            stream, "topics_policy", StreamTopicsPolicyEnum.empty_topic_only.value, iago
+        )
+
+        new_user = self.example_user("cordelia")
+        message_count = self.get_message_count()
+
+        notify_new_user(new_user)
+        self.assertEqual(self.get_message_count(), message_count + 1)
+        message = self.get_last_message()
+        self.assertEqual(message.topic_name(), "")
+        self.assertIn(
+            f"@_**Cordelia, Lear's daughter|{new_user.id}** joined this organization.",
+            message.content,
+        )
 
     def test_notify_realm_of_new_user_in_manual_license_management(self) -> None:
         realm = get_realm("zulip")

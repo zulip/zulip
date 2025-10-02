@@ -53,7 +53,11 @@
     {{tooltip_hotkey_hints "Ctrl" "Enter"}}
 </template>
 <template id="preview-tooltip">
-    {{t 'Preview' }}
+    {{t 'Preview mode' }}
+    {{tooltip_hotkey_hints "Alt" "P"}}
+</template>
+<template id="exit-preview-tooltip">
+    {{t 'Exit preview mode' }}
     {{tooltip_hotkey_hints "Alt" "P"}}
 </template>
 <template id="add-global-time-tooltip">
@@ -93,10 +97,6 @@
 <template id="delete-draft-tooltip-template">
     {{t 'Delete draft' }}
     {{tooltip_hotkey_hints "Backspace"}}
-</template>
-<template id="restore-draft-tooltip-template">
-    {{t 'Restore draft' }}
-    {{tooltip_hotkey_hints "Enter"}}
 </template>
 <template id="gear-menu-tooltip-template">
     {{t 'Main menu' }}
@@ -165,6 +165,12 @@
         <div class="tootlip-inner-content views-message-count italic"></div>
     </div>
 </template>
+<template id="reminders-tooltip-template">
+    <div class="views-tooltip-container" data-view-code="reminders">
+        <div>{{t 'Reminders'}}</div>
+        <div class="tootlip-inner-content views-message-count italic"></div>
+    </div>
+</template>
 <template id="show-all-direct-messages-template">
     {{t 'Direct message feed' }}
     {{tooltip_hotkey_hints "Shift" "P"}}
@@ -174,10 +180,6 @@
         <div>{{t 'Mentions' }}</div>
         <div class="tootlip-inner-content views-message-count italic"></div>
     </div>
-</template>
-<template id="filter-streams-tooltip-template">
-    {{t 'Filter channels' }}
-    {{tooltip_hotkey_hints "Q"}}
 </template>
 <template id="message-expander-tooltip-template">
     {{t 'Show more' }}
@@ -253,12 +255,12 @@
     {{t "Mute topic" }}
     {{tooltip_hotkey_hints "Shift" "M"}}
 </template>
-<template id="restore-scheduled-message-tooltip-template">
-    {{t 'Edit and reschedule message' }}
-    {{tooltip_hotkey_hints "Enter"}}
-</template>
 <template id="delete-scheduled-message-tooltip-template">
     {{t 'Delete scheduled message' }}
+    {{tooltip_hotkey_hints "Backspace"}}
+</template>
+<template id="delete-reminder-tooltip-template">
+    {{t 'Delete reminder' }}
     {{tooltip_hotkey_hints "Backspace"}}
 </template>
 <template id="create-new-stream-tooltip-template">
@@ -288,4 +290,16 @@
 </template>
 <template id="cancel-button-tooltip-template">
     {{t 'Cancel' }}
+</template>
+<template id="filter-left-sidebar-tooltip-template">
+    {{t 'Filter left sidebar' }}
+    {{tooltip_hotkey_hints "Q"}}
+</template>
+<template id="inbox-channel-mute-toogle-tooltip-template">
+    <div>
+        <div>{{t "You have muted this channel." }}</div>
+        <div class="italic">
+            {{t "Click to unmute this channel." }}
+        </div>
+    </div>
 </template>

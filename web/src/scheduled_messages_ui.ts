@@ -52,41 +52,51 @@ function narrow_via_edit_scheduled_message(compose_args: ScheduledMessageCompose
 }
 
 export function open_scheduled_message_in_compose(
-    scheduled_msg: ScheduledMessage,
+    scheduled_message: ScheduledMessage,
     should_narrow_to_recipient?: boolean,
 ): void {
     let compose_args;
-    if (scheduled_msg.type === "stream") {
+    let narrow_args;
+
+    if (scheduled_message.type === "stream") {
         compose_args = {
             message_type: "stream" as const,
-            stream_id: scheduled_msg.to,
-            topic: scheduled_msg.topic,
-            content: scheduled_msg.content,
+            stream_id: scheduled_message.to,
+            topic: scheduled_message.topic,
+            content: scheduled_message.content,
         };
+        narrow_args = compose_args;
     } else {
-        const recipient_emails = [];
-        if (scheduled_msg.to) {
-            for (const recipient_id of scheduled_msg.to) {
-                const recipient_user = people.get_by_user_id(recipient_id);
-                if (!recipient_user.is_inaccessible_user) {
-                    recipient_emails.push(recipient_user.email);
-                }
-            }
-        }
+        const recipient_ids = scheduled_message.to.filter(
+            (recipient_id) => !people.get_by_user_id(recipient_id).is_inaccessible_user,
+        );
+        const recipient_emails = recipient_ids.map(
+            (recipient_id) => people.get_by_user_id(recipient_id).email,
+        );
         compose_args = {
             message_type: "private" as const,
+            private_message_recipient_ids: recipient_ids,
+            content: scheduled_message.content,
+            keep_composebox_empty: true,
+        };
+        // Narrow filters still use emails for PMs, though we'll
+        // eventually want to migrate that as well.
+        narrow_args = {
+            message_type: "private" as const,
             private_message_recipient: recipient_emails.join(","),
-            content: scheduled_msg.content,
+            content: scheduled_message.content,
             keep_composebox_empty: true,
         };
     }
 
     if (should_narrow_to_recipient) {
-        narrow_via_edit_scheduled_message(compose_args);
+        narrow_via_edit_scheduled_message(narrow_args);
     }
 
     compose_actions.start(compose_args);
-    scheduled_messages.set_selected_schedule_timestamp(scheduled_msg.scheduled_delivery_timestamp);
+    scheduled_messages.set_selected_schedule_timestamp(
+        scheduled_message.scheduled_delivery_timestamp,
+    );
 }
 
 function show_message_unscheduled_banner(scheduled_delivery_timestamp: number): void {
@@ -112,12 +122,12 @@ export function edit_scheduled_message(
     scheduled_message_id: number,
     should_narrow_to_recipient = true,
 ): void {
-    const scheduled_msg = scheduled_messages.scheduled_messages_data.get(scheduled_message_id);
-    assert(scheduled_msg !== undefined);
+    const scheduled_message = scheduled_messages.scheduled_messages_by_id.get(scheduled_message_id);
+    assert(scheduled_message !== undefined);
 
     scheduled_messages.delete_scheduled_message(scheduled_message_id, () => {
-        open_scheduled_message_in_compose(scheduled_msg, should_narrow_to_recipient);
-        show_message_unscheduled_banner(scheduled_msg.scheduled_delivery_timestamp);
+        open_scheduled_message_in_compose(scheduled_message, should_narrow_to_recipient);
+        show_message_unscheduled_banner(scheduled_message.scheduled_delivery_timestamp);
     });
 }
 

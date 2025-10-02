@@ -30,7 +30,8 @@
 }
 
 .modal__header {
-    padding: 16px 16px 16px 24px;
+    /* 16px 16px 16px 24px at 16px/1em */
+    padding: 1em 1em 1em 1.5em;
     display: grid;
     /* 1.8em is the shortest round value for heading at which none of
        the letters of the english alphabet get cut by overflow:hidden
@@ -39,27 +40,28 @@
     grid-template:
         "heading close-button" 1.8em "heading ." auto / minmax(0, 1fr)
         1.8125em;
-    grid-column-gap: 4px;
+    column-gap: 4px;
 }
 
 .modal__footer {
     display: flex;
     justify-content: flex-end;
     align-items: center;
-    padding: 20px 24px;
+    /* 20px 24px at 16px/1em */
+    padding: 1.25em 1.5em;
 }
 
 .modal__title {
     grid-area: heading;
     margin: 0;
-    /* 16 / 14 * 1.375 = 1.5714, from original 1.375rem */
-    font-size: 1.5714em;
+    /* 24px at 16px/1em */
+    font-size: 1.5em;
     font-weight: 600;
     line-height: 1.25;
     overflow: hidden;
-    word-wrap: break-word;
+    overflow-wrap: break-word;
 
-    .stream-privacy-type-icon {
+    .channel-privacy-type-icon {
         /* This pushes back on suspect styles
            in app_components.css. A fuller fix
            will require tracking down other
@@ -100,49 +102,51 @@
         overflow: hidden;
         text-overflow: ellipsis;
     }
-
-    .user-profile-manage-own-edit-button,
-    .user-profile-manage-others-edit-button,
-    .user-profile-manage-own-copy-link-button {
-        color: hsl(200deg 100% 50%);
-        cursor: pointer;
-
-        &:hover {
-            color: hsl(200deg 100% 25%);
-        }
-    }
 }
 
 .modal__close {
     &::before {
         content: "\2715";
+        color: var(--color-modal-close-button);
     }
     background: transparent;
     border: 0;
 
     &:hover {
-        background: hsl(0deg 0% 90%);
+        background: var(--color-background-modal-close-button-hover);
     }
 }
 
 .modal__content {
     display: flex;
     flex-direction: column;
-    /* 16px at 14px/1em */
-    font-size: 1.1429em;
-    padding: 2px 24px;
-    line-height: 1.5;
+    /* 2px 24px at 16px/1em */
+    padding: 0.125em 1.5em;
     /* Prevent the appearance of a horizontal
        native scrollbar at certain
        info-density/zoom levels. */
     overflow: hidden auto;
-    /* Set a max-width, less the 24px of left and right
+    /* Set a max-width, less the 1.5em of left and right
        padding specified above. */
-    max-width: calc(100% - 48px);
+    max-width: calc(100% - 3em);
 
     &.simplebar-scrollable-y + .modal__footer {
-        border-top: 1px solid hsl(0deg 0% 87%);
+        border-top: 1px solid var(--color-border-modal-footer);
     }
+
+    .channel-privacy-type-icon {
+        /* This pushes back on suspect styles
+           in app_components.css. A fuller fix
+           will require tracking down other
+           instances of this class. */
+        width: auto;
+        padding-right: 0;
+    }
+}
+
+#api_key_value {
+    font-family: "Source Code Pro", monospace;
+    font-size: 1em;
 }
 
 .modal__button {
@@ -286,12 +290,18 @@
             line-height: 1.625em; /* 26px at 16px font-size at 14px em */
 
             &:hover {
-                background-color: hsl(0deg 0% 0% / 5%);
+                background-color: light-dark(
+                    hsl(0deg 0% 0% / 5%),
+                    hsl(0deg 0% 100% / 5%)
+                );
             }
 
             &:active,
             &:focus {
-                background-color: hsl(0deg 0% 0% / 10%);
+                background-color: light-dark(
+                    hsl(0deg 0% 0% / 10%),
+                    hsl(0deg 0% 100% / 10%)
+                );
                 outline: none;
             }
         }
@@ -410,7 +420,7 @@
 .modal_select {
     width: var(--modal-input-width);
     padding: 4px 25px 4px 6px;
-    color: hsl(0deg 0% 33%);
+    color: var(--color-text-default);
     border-radius: 4px;
     border: 1px solid hsl(0deg 0% 80%);
     cursor: pointer;
@@ -446,7 +456,7 @@
 .modal_url_input,
 .modal_text_input {
     padding: 4px 6px;
-    color: hsl(0deg 0% 33%);
+    color: var(--color-text-default);
     border-radius: 4px;
     border: 1px solid hsl(0deg 0% 80%);
     box-shadow: inset 0 1px 1px hsl(0deg 0% 0% / 7.5%);
@@ -469,6 +479,25 @@
 #add-realm-domain-widget {
     .modal_text_input {
         width: 14.7143em; /* 206px at 14px em */
+    }
+}
+
+.edit_profile_field_choices_container,
+#profile_field_choices {
+    .modal_text_input {
+        margin-bottom: 0;
+    }
+
+    .choice-row {
+        display: flex;
+        align-items: center;
+    }
+}
+
+.choice-row,
+.option-row {
+    .icon-button {
+        font-size: 1.1em;
     }
 }
 
@@ -524,6 +553,8 @@
             height: 0;
             overflow: auto;
             flex-grow: 1;
+            padding-top: 2px;
+            padding-right: var(--width-simplebar-scroll-hover);
 
             .option-row {
                 list-style-type: none;
@@ -622,7 +653,7 @@
 
         #integrations-event-options {
             .integration-event-wrapper {
-                margin: 5px 0;
+                margin: var(--settings-nested-checkbox-vertical-margins);
             }
 
             .integration-event-name {
@@ -634,24 +665,6 @@
 
 #invite_users_option_tabs_container {
     margin-bottom: 20px;
-}
-
-#send_later_options {
-    .send_later_list {
-        margin: 0;
-        list-style: none;
-
-        .send_later_option {
-            display: flex;
-            padding: 3px 15px;
-
-            &:focus,
-            &:hover {
-                text-decoration: none;
-                background-color: hsl(0deg 0% 0% / 20%);
-            }
-        }
-    }
 }
 
 .dialog-widget-footer-minor-text {
@@ -729,4 +742,50 @@
             }
         }
     }
+}
+
+ul.modal-options-list {
+    list-style: none;
+    margin: 0;
+}
+
+.modal-option-content {
+    box-sizing: border-box;
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: flex-start;
+    gap: 0.4375em; /* 7px at 16px/1em */
+    padding: 0.25em 0.5em; /* 4px 8px at 16px/1em */
+    line-height: 1.25em; /* 20px at 16px/1em */
+    color: var(--color-text-default);
+    border-radius: 4px;
+
+    &:focus {
+        /* Override the default focus style */
+        outline: none !important;
+        color: inherit;
+        text-decoration: none;
+    }
+
+    &:hover,
+    &:focus-visible {
+        color: var(--color-text-default);
+        background: var(--color-background-hover-popover-menu);
+        text-decoration: none;
+    }
+
+    &:focus-visible {
+        outline: 1px solid var(--color-outline-focus) !important;
+        outline-offset: -1px;
+    }
+
+    &:active {
+        background: var(--color-background-active-popover-menu);
+    }
+}
+
+#change_stream_name,
+#change_user_group_name {
+    /* 14px = 2 * 6px + 2 * 1px (6px padding and 1px border on left and right). */
+    max-width: calc(100% - 14px);
 }

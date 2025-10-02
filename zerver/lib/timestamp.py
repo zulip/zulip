@@ -47,3 +47,11 @@ def timestamp_to_datetime(timestamp: float) -> datetime:
 def datetime_to_timestamp(dt: datetime) -> int:
     verify_UTC(dt)
     return int(dt.timestamp())
+
+
+def format_datetime_to_string(dt: datetime, use_twenty_four_hour_time: bool) -> str:
+    if use_twenty_four_hour_time:
+        hhmm_string = dt.strftime("%H:%M")
+    else:
+        hhmm_string = dt.strftime("%I:%M %p")
+    return dt.strftime(f"%A, %B %d, %Y at {hhmm_string} %Z")

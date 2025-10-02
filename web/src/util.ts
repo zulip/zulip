@@ -1,6 +1,6 @@
 import Handlebars from "handlebars/runtime.js";
 import _ from "lodash";
-import {z} from "zod";
+import * as z from "zod/mini";
 
 import * as blueslip from "./blueslip.ts";
 import {$t} from "./i18n.ts";
@@ -237,7 +237,7 @@ export function sorted_ids(ids: number[]): number[] {
     return id_list;
 }
 
-export function set_match_data(target: Message, source: MatchedMessage): void {
+export function set_match_data(target: Message, source: MatchedMessage | RawMessage): void {
     target.match_subject = source.match_subject;
     target.match_content = source.match_content;
 }
@@ -441,7 +441,7 @@ export function format_array_as_list(
     return list_formatter.format(array);
 }
 
-export function format_array_as_list_with_conjuction(
+export function format_array_as_list_with_conjunction(
     array: string[],
     // long uses "and", narrow uses commas.
     join_strategy: "long" | "narrow",
@@ -456,7 +456,12 @@ export function format_array_as_list_with_highlighted_elements(
 ): string {
     // If Intl.ListFormat is not supported
     if (Intl.ListFormat === undefined) {
-        return array.map((item) => `<b>${Handlebars.Utils.escapeExpression(item)}</b>`).join(", ");
+        return array
+            .map(
+                (item) =>
+                    `<b class="highlighted-element">${Handlebars.Utils.escapeExpression(item)}</b>`,
+            )
+            .join(", ");
     }
 
     // Use Intl.ListFormat to format the array as a Internationalized list.
@@ -465,9 +470,11 @@ export function format_array_as_list_with_highlighted_elements(
     const formatted_parts = list_formatter.formatToParts(array);
     return formatted_parts
         .map((part) => {
+            // There are two types of parts: elements (the actual
+            // items), and literals (commas, etc.). We need to
+            // HTML-escape the elements, but not the literals.
             if (part.type === "element") {
-                // Only highlight the values passed in array and not commas, etc.
-                return `<b>${Handlebars.Utils.escapeExpression(part.value)}</b>`;
+                return `<b class="highlighted-element">${Handlebars.Utils.escapeExpression(part.value)}</b>`;
             }
             return part.value;
         })
@@ -556,9 +563,9 @@ export function get_final_topic_display_name(topic_name: string): string {
 }
 
 export function is_topic_name_considered_empty(topic: string): boolean {
-    // NOTE: Use this check only when realm.realm_mandatory_topics is set to true.
+    // NOTE: Use this check only when realm.realm_topics_policy is set to disable_empty_topic.
     topic = topic.trim();
-    // When the topic is mandatory in a realm via realm_mandatory_topics, the topic
+    // When the topic is mandatory in a realm via realm_topics_policy, the topic
     // can't be an empty string, "(no topic)", or the displayed topic name for empty string.
     if (topic === "" || topic === "(no topic)" || topic === get_final_topic_display_name("")) {
         return true;
@@ -567,7 +574,7 @@ export function is_topic_name_considered_empty(topic: string): boolean {
 }
 
 export function get_retry_backoff_seconds(
-    xhr: JQuery.jqXHR<unknown>,
+    xhr: JQuery.jqXHR<unknown> | undefined,
     attempts: number,
     tighter_backoff = false,
 ): number {
@@ -592,12 +599,26 @@ export function get_retry_backoff_seconds(
         "retry-after": z.number(),
         code: z.literal("RATE_LIMIT_HIT"),
     });
-    const parsed = rate_limited_error_schema.safeParse(xhr.responseJSON);
-    if (xhr.status === 429 && parsed?.success && parsed?.data) {
+    const parsed = rate_limited_error_schema.safeParse(xhr?.responseJSON);
+    if (xhr?.status === 429 && parsed?.success && parsed?.data) {
         // Add a bit of jitter to the required delay suggested by the
         // server, because we may be racing with other copies of the web
         // app.
         rate_limit_delay_secs = parsed.data["retry-after"] + Math.random() * 0.5;
     }
     return Math.max(backoff_delay_secs, rate_limit_delay_secs);
+}
+
+export async function sha256_hash(text: string): Promise<string | undefined> {
+    // The Web Crypto API is only available in secure contexts (HTTPS or localhost).
+    if (!window.isSecureContext) {
+        return undefined;
+    }
+
+    const encoder = new TextEncoder();
+    const data = encoder.encode(text);
+    const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+    const hashArray = [...new Uint8Array(hashBuffer)];
+    const hashHex = hashArray.map((byte) => byte.toString(16).padStart(2, "0")).join("");
+    return hashHex;
 }

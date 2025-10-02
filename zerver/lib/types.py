@@ -160,14 +160,20 @@ class RawStreamDict(TypedDict):
 
     can_add_subscribers_group_id: int
     can_administer_channel_group_id: int
+    can_delete_any_message_group_id: int
+    can_delete_own_message_group_id: int
+    can_move_messages_out_of_channel_group_id: int
+    can_move_messages_within_channel_group_id: int
     can_send_message_group_id: int
     can_remove_subscribers_group_id: int
+    can_resolve_topics_group_id: int
     can_subscribe_group_id: int
     creator_id: int | None
     date_created: datetime
     deactivated: bool
     description: str
     first_message_id: int | None
+    folder_id: int | None
     is_recently_active: bool
     history_public_to_subscribers: bool
     id: int
@@ -177,6 +183,8 @@ class RawStreamDict(TypedDict):
     name: str
     rendered_description: str
     stream_post_policy: int
+    subscriber_count: int
+    topics_policy: str
 
 
 class RawSubscriptionDict(TypedDict):
@@ -206,8 +214,13 @@ class SubscriptionStreamDict(TypedDict):
     audible_notifications: bool | None
     can_add_subscribers_group: int | UserGroupMembersDict
     can_administer_channel_group: int | UserGroupMembersDict
+    can_delete_any_message_group: int | UserGroupMembersDict
+    can_delete_own_message_group: int | UserGroupMembersDict
+    can_move_messages_out_of_channel_group: int | UserGroupMembersDict
+    can_move_messages_within_channel_group: int | UserGroupMembersDict
     can_send_message_group: int | UserGroupMembersDict
     can_remove_subscribers_group: int | UserGroupMembersDict
+    can_resolve_topics_group: int | UserGroupMembersDict
     can_subscribe_group: int | UserGroupMembersDict
     color: str
     creator_id: int | None
@@ -216,6 +229,7 @@ class SubscriptionStreamDict(TypedDict):
     desktop_notifications: bool | None
     email_notifications: bool | None
     first_message_id: int | None
+    folder_id: int | None
     is_recently_active: bool
     history_public_to_subscribers: bool
     in_home_view: bool
@@ -232,7 +246,10 @@ class SubscriptionStreamDict(TypedDict):
     stream_id: int
     stream_post_policy: int
     stream_weekly_traffic: int | None
+    subscriber_count: int
     subscribers: NotRequired[list[int]]
+    partial_subscribers: NotRequired[list[int]]
+    topics_policy: str
     wildcard_mentions_notify: bool | None
 
 
@@ -240,13 +257,19 @@ class NeverSubscribedStreamDict(TypedDict):
     is_archived: bool
     can_add_subscribers_group: int | UserGroupMembersDict
     can_administer_channel_group: int | UserGroupMembersDict
+    can_delete_any_message_group: int | UserGroupMembersDict
+    can_delete_own_message_group: int | UserGroupMembersDict
+    can_move_messages_out_of_channel_group: int | UserGroupMembersDict
+    can_move_messages_within_channel_group: int | UserGroupMembersDict
     can_send_message_group: int | UserGroupMembersDict
     can_remove_subscribers_group: int | UserGroupMembersDict
+    can_resolve_topics_group: int | UserGroupMembersDict
     can_subscribe_group: int | UserGroupMembersDict
     creator_id: int | None
     date_created: int
     description: str
     first_message_id: int | None
+    folder_id: int | None
     is_recently_active: bool
     history_public_to_subscribers: bool
     invite_only: bool
@@ -258,7 +281,10 @@ class NeverSubscribedStreamDict(TypedDict):
     stream_id: int
     stream_post_policy: int
     stream_weekly_traffic: int | None
+    subscriber_count: int
     subscribers: NotRequired[list[int]]
+    partial_subscribers: NotRequired[list[int]]
+    topics_policy: str
 
 
 class DefaultStreamDict(TypedDict):
@@ -270,13 +296,19 @@ class DefaultStreamDict(TypedDict):
     is_archived: bool
     can_add_subscribers_group: int | UserGroupMembersDict
     can_administer_channel_group: int | UserGroupMembersDict
+    can_delete_any_message_group: int | UserGroupMembersDict
+    can_delete_own_message_group: int | UserGroupMembersDict
+    can_move_messages_out_of_channel_group: int | UserGroupMembersDict
+    can_move_messages_within_channel_group: int | UserGroupMembersDict
     can_send_message_group: int | UserGroupMembersDict
     can_remove_subscribers_group: int | UserGroupMembersDict
+    can_resolve_topics_group: int | UserGroupMembersDict
     can_subscribe_group: int | UserGroupMembersDict
     creator_id: int | None
     date_created: int
     description: str
     first_message_id: int | None
+    folder_id: int | None
     is_recently_active: bool
     history_public_to_subscribers: bool
     invite_only: bool
@@ -286,6 +318,8 @@ class DefaultStreamDict(TypedDict):
     rendered_description: str
     stream_id: int  # `stream_id` represents `id` of the `Stream` object in `API_FIELDS`
     stream_post_policy: int
+    subscriber_count: int
+    topics_policy: str
     # Computed fields not specified in `Stream.API_FIELDS`
     is_announcement_only: bool
     is_default: NotRequired[bool]
@@ -329,11 +363,11 @@ class RealmPlaygroundDict(TypedDict):
 
 @dataclass
 class GroupPermissionSetting:
-    require_system_group: bool
-    allow_internet_group: bool
     allow_nobody_group: bool
     allow_everyone_group: bool
     default_group_name: str
+    require_system_group: bool = False
+    allow_internet_group: bool = False
     default_for_system_groups: str | None = None
     allowed_system_groups: list[str] = field(default_factory=list)
 

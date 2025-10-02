@@ -21,6 +21,7 @@ from django.utils.timezone import now as timezone_now
 from typing_extensions import override
 
 from scripts.lib.zulip_tools import get_or_create_dev_uuid_var_path
+from zerver.actions.channel_folders import check_add_channel_folder
 from zerver.actions.create_realm import do_create_realm
 from zerver.actions.custom_profile_fields import (
     do_update_user_custom_profile_data_if_changed,
@@ -30,6 +31,7 @@ from zerver.actions.custom_profile_fields import (
 from zerver.actions.message_send import build_message_send_dict, do_send_messages
 from zerver.actions.realm_emoji import check_add_realm_emoji
 from zerver.actions.realm_linkifiers import do_add_linkifier
+from zerver.actions.realm_settings import do_set_realm_moderation_request_channel
 from zerver.actions.scheduled_messages import check_schedule_message
 from zerver.actions.streams import bulk_add_subscriptions
 from zerver.actions.user_groups import create_user_group_in_database
@@ -45,6 +47,7 @@ from zerver.lib.remote_server import get_realms_info_for_push_bouncer
 from zerver.lib.server_initialization import create_internal_realm, create_users
 from zerver.lib.storage import static_path
 from zerver.lib.stream_color import STREAM_ASSIGNMENT_COLORS
+from zerver.lib.stream_subscription import bulk_create_stream_subscriptions
 from zerver.lib.types import AnalyticsDataUploadLevel, ProfileFieldData
 from zerver.lib.users import add_service
 from zerver.lib.utils import generate_api_key
@@ -155,6 +158,7 @@ def subscribe_users_to_streams(realm: Realm, stream_dict: dict[str, dict[str, An
     subscriptions_to_add = []
     event_time = timezone_now()
     all_subscription_logs = []
+    subscriber_count_changes: dict[int, set[int]] = defaultdict(set)
     profiles = UserProfile.objects.select_related("realm").filter(realm=realm)
     for i, stream_name in enumerate(stream_dict):
         stream = Stream.objects.get(name=stream_name, realm=realm)
@@ -168,6 +172,8 @@ def subscribe_users_to_streams(realm: Realm, stream_dict: dict[str, dict[str, An
                 color=STREAM_ASSIGNMENT_COLORS[i % len(STREAM_ASSIGNMENT_COLORS)],
             )
             subscriptions_to_add.append(s)
+            if profile.is_active:
+                subscriber_count_changes[stream.id].add(profile.id)
 
             log = RealmAuditLog(
                 realm=profile.realm,
@@ -178,7 +184,7 @@ def subscribe_users_to_streams(realm: Realm, stream_dict: dict[str, dict[str, An
                 event_time=event_time,
             )
             all_subscription_logs.append(log)
-    Subscription.objects.bulk_create(subscriptions_to_add)
+    bulk_create_stream_subscriptions(subs=subscriptions_to_add, streams=subscriber_count_changes)
     RealmAuditLog.objects.bulk_create(all_subscription_logs)
 
 
@@ -726,6 +732,7 @@ class Command(ZulipBaseCommand):
                         subscriptions_list.append((profile, r))
 
             subscriptions_to_add: list[Subscription] = []
+            subscriber_count_changes: dict[int, set[int]] = defaultdict(set)
             event_time = timezone_now()
             all_subscription_logs: list[RealmAuditLog] = []
 
@@ -741,6 +748,8 @@ class Command(ZulipBaseCommand):
                 )
 
                 subscriptions_to_add.append(s)
+                if profile.is_active:
+                    subscriber_count_changes[recipient.type_id].add(profile.id)
 
                 log = RealmAuditLog(
                     realm=profile.realm,
@@ -752,7 +761,9 @@ class Command(ZulipBaseCommand):
                 )
                 all_subscription_logs.append(log)
 
-            Subscription.objects.bulk_create(subscriptions_to_add)
+            bulk_create_stream_subscriptions(
+                subs=subscriptions_to_add, streams=subscriber_count_changes
+            )
             RealmAuditLog.objects.bulk_create(all_subscription_logs)
 
             # Create custom profile field data
@@ -835,7 +846,7 @@ class Command(ZulipBaseCommand):
             # cURL example to delete an existing scheduled message.
             check_schedule_message(
                 sender=iago,
-                client=get_client("populate_db"),
+                client=get_client("ZulipDataImport"),
                 recipient_type_name="stream",
                 message_to=[Stream.objects.get(name="Denmark", realm=zulip_realm).id],
                 topic_name="test-api",
@@ -845,7 +856,7 @@ class Command(ZulipBaseCommand):
             )
             check_schedule_message(
                 sender=iago,
-                client=get_client("populate_db"),
+                client=get_client("ZulipDataImport"),
                 recipient_type_name="private",
                 message_to=[iago.id],
                 topic_name=None,
@@ -963,8 +974,7 @@ class Command(ZulipBaseCommand):
 
         if options["delete"]:
             if options["test_suite"]:
-                # Create test users; the MIT ones are needed to test
-                # the Zephyr mirroring codepaths.
+                # Create test users
                 event_time = timezone_now()
                 testsuite_mit_users = [
                     ("Fred Sipb (MIT)", "sipbtest@mit.edu"),
@@ -982,6 +992,7 @@ class Command(ZulipBaseCommand):
                         "core team": {
                             "description": "A private channel for core team members",
                             "invite_only": True,
+                            "history_public_to_subscribers": False,
                         }
                     },
                 )
@@ -1011,6 +1022,11 @@ class Command(ZulipBaseCommand):
                     lear_realm, [core_team_stream], [lear_user], acting_user=None
                 )
 
+                core_team_stream = Stream.objects.get(name="core team", realm=zulip_realm)
+                do_set_realm_moderation_request_channel(
+                    zulip_realm, core_team_stream, core_team_stream.id, acting_user=None
+                )
+
             if not options["test_suite"]:
                 # To keep the messages.json fixtures file for the test
                 # suite fast, don't add these users and subscriptions
@@ -1020,10 +1036,28 @@ class Command(ZulipBaseCommand):
                 raw_emojis = ["😎", "😂", "🐱‍👤"]
 
                 admins_system_group = NamedUserGroup.objects.get(
-                    name=SystemGroups.ADMINISTRATORS, realm=zulip_realm, is_system_group=True
+                    name=SystemGroups.ADMINISTRATORS,
+                    realm_for_sharding=zulip_realm,
+                    is_system_group=True,
+                )
+
+                engineering_channel_folder = check_add_channel_folder(
+                    zulip_realm,
+                    "Engineering",
+                    "For convenient *channel folder* testing! :octopus:",
+                    acting_user=iago,
+                )
+                information_channel_folder = check_add_channel_folder(
+                    zulip_realm,
+                    "Information",
+                    "For user-facing information and questions",
+                    acting_user=iago,
                 )
                 zulip_stream_dict: dict[str, dict[str, Any]] = {
-                    "devel": {"description": "For developing"},
+                    "devel": {
+                        "description": "For developing",
+                        "folder_id": engineering_channel_folder.id,
+                    },
                     # ビデオゲーム - VideoGames (japanese)
                     "ビデオゲーム": {
                         "description": f"Share your favorite video games!  {raw_emojis[2]}",
@@ -1032,12 +1066,22 @@ class Command(ZulipBaseCommand):
                     "announce": {
                         "description": "For announcements",
                         "can_send_message_group": admins_system_group,
+                        "folder_id": information_channel_folder.id,
                     },
                     "design": {"description": "For design", "creator": hamlet},
-                    "support": {"description": "For support"},
+                    "support": {
+                        "description": "For support",
+                        "folder_id": information_channel_folder.id,
+                    },
                     "social": {"description": "For socializing"},
-                    "test": {"description": "For testing `code`"},
-                    "errors": {"description": "For errors"},
+                    "test": {
+                        "description": "For testing `code`",
+                        "folder_id": engineering_channel_folder.id,
+                    },
+                    "errors": {
+                        "description": "For errors",
+                        "folder_id": engineering_channel_folder.id,
+                    },
                     # 조리법 - Recipes (Korean), Пельмени - Dumplings (Russian)
                     "조리법 " + raw_emojis[0]: {
                         "description": "Everything cooking, from pasta to Пельмени"
@@ -1236,7 +1280,7 @@ def generate_and_send_messages(
     while num_messages < tot_messages:
         saved_data: dict[str, Any] = {}
         message = Message(realm=realm)
-        message.sending_client = get_client("populate_db")
+        message.sending_client = get_client("ZulipDataImport")
 
         message.content = next(texts)
 
@@ -1248,7 +1292,7 @@ def generate_and_send_messages(
             # Use an old recipient
             recipient_type, recipient_id, saved_data = recipients[num_messages - 1]
             if recipient_type == Recipient.PERSONAL:
-                personals_pair = saved_data["personals_pair"]
+                personals_pair = list(saved_data["personals_pair"])
                 random.shuffle(personals_pair)
             elif recipient_type == Recipient.STREAM:
                 message.subject = saved_data["subject"]
@@ -1265,7 +1309,7 @@ def generate_and_send_messages(
             / 100.0
         ):
             recipient_type = Recipient.PERSONAL
-            personals_pair = random.choice(personals_pairs)
+            personals_pair = list(random.choice(personals_pairs))
             random.shuffle(personals_pair)
         elif randkey <= random_max * 1.0:
             recipient_type = Recipient.STREAM
@@ -1274,11 +1318,13 @@ def generate_and_send_messages(
         if recipient_type == Recipient.DIRECT_MESSAGE_GROUP:
             sender_id = random.choice(direct_message_group_members[message.recipient.id])
             message.sender = get_user_profile_by_id(sender_id)
+            message.subject = Message.DM_TOPIC
         elif recipient_type == Recipient.PERSONAL:
             message.recipient = Recipient.objects.get(
                 type=Recipient.PERSONAL, type_id=personals_pair[0]
             )
             message.sender = get_user_profile_by_id(personals_pair[1])
+            message.subject = Message.DM_TOPIC
             saved_data["personals_pair"] = personals_pair
         elif recipient_type == Recipient.STREAM:
             # Pick a random subscriber to the stream

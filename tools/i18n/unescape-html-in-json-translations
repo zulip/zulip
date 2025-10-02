@@ -1,8 +1,0 @@
-#!/usr/bin/env sh
-
-set -ex
-
-find ./locale \
-    -regextype sed \
-    -regex '^\./locale/.*/\(mobile\|translations\).json$' \
-    -exec ./tools/i18n/unescape-contents --unescape-html {} \;

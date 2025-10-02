@@ -103,9 +103,9 @@ export function frame_todo_message_content(): string {
     const todos: string[] = [];
 
     $(".option-row").each(function () {
-        const todo_name = $(this).find(".todo-input").val()?.toString().trim() ?? "";
+        const todo_name = $(this).find<HTMLInputElement>("input.todo-input").val()?.trim() ?? "";
         const todo_description =
-            $(this).find(".todo-description-input").val()?.toString().trim() ?? "";
+            $(this).find<HTMLInputElement>("input.todo-description-input").val()?.trim() ?? "";
 
         if (todo_name) {
             let todo = "";

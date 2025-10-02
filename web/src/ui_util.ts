@@ -1,4 +1,5 @@
 import $ from "jquery";
+import assert from "minimalistic-assert";
 import type * as tippy from "tippy.js";
 
 import * as blueslip from "./blueslip.ts";
@@ -193,13 +194,40 @@ export function update_unread_mention_info_in_dom(
 ): void {
     const $unread_mention_info_span = $unread_mention_info_elem.find(".unread_mention_info");
     if (!stream_has_any_unread_mention_messages) {
-        $unread_mention_info_span.hide();
+        $unread_mention_info_span.toggleClass("no-display", true);
         $unread_mention_info_span.text("");
         return;
     }
 
-    $unread_mention_info_span.show();
+    $unread_mention_info_span.toggleClass("no-display", false);
     $unread_mention_info_span.text("@");
+}
+
+export function do_new_unread_animation($target: JQuery): void {
+    // The .new-unread-highlight class manages the
+    // transition on the target element's background.
+    // The pulse effect on unread counts, by contrast,
+    // is handled via CSS animations on the .new-unread
+    // class.
+    $target.addClass("new-unread new-unread-highlight");
+    // We listen for the end of the animation to remove
+    // the .new-unread class; this allows us to express
+    // exclusively in CSS our desired timing, duration,
+    // and any other effects. Doing so also gives us
+    // very smooth rendering, as no visual properties
+    // get tied to JavaScript's event loop.
+    $target.on("animationend animationcancel", (): void => {
+        $target.removeClass("new-unread");
+        // We remove the transition-managing highlight
+        // some time after the animation has run; how
+        // long after doesn't really matter, as the
+        // transition will run as soon as .new-unread
+        // is removed above. This just ensures that we
+        // *do* see a transition on the background color.
+        setTimeout(() => {
+            $target.removeClass("new-unread-highlight");
+        }, 2000);
+    });
 }
 
 /**
@@ -278,11 +306,16 @@ export function disable_element_and_add_tooltip($element: JQuery, tooltip_text: 
     // tippy tooltips on disabled elements. So, as a workaround, we wrap the
     // disabled element in a span and show the tooltip on this wrapper instead.
     // https://atomiks.github.io/tippyjs/v6/constructor/#disabled-elements
-    if ($element.prop("disabled")) {
-        // If already disabled, there's nothing to do.
+    $element.prop("disabled", true);
+    const $disabled_tooltip_wrapper = $element.parent(".disabled-tooltip");
+    if ($disabled_tooltip_wrapper.length > 0) {
+        // If element is already wrapped in a disabled-tooltip wrapper,
+        // only update the tooltip text if it has changed.
+        if ($disabled_tooltip_wrapper.attr("data-tippy-content") !== tooltip_text) {
+            $disabled_tooltip_wrapper.attr("data-tippy-content", tooltip_text);
+        }
         return;
     }
-    $element.prop("disabled", true);
     const $tooltip_target_wrapper = $("<span>");
     $tooltip_target_wrapper.addClass("disabled-tooltip");
     $tooltip_target_wrapper.attr("data-tippy-content", tooltip_text).attr("tabindex", "0");
@@ -294,9 +327,32 @@ export function enable_element_and_remove_tooltip($element: JQuery): void {
     // and explicitly removes any attached tooltips on the wrapper to prevent
     // ghost tooltips.
     $element.prop("disabled", false);
-    const tooltip_wrapper: tippy.ReferenceElement = $element.parent(".disabled-tooltip")[0]!;
-    if (tooltip_wrapper?._tippy) {
-        tooltip_wrapper._tippy.destroy();
+    const tooltip_wrapper: tippy.ReferenceElement | undefined =
+        $element.parent(".disabled-tooltip")[0];
+    if (tooltip_wrapper) {
+        if (tooltip_wrapper._tippy) {
+            tooltip_wrapper._tippy.destroy();
+        }
+        $element.unwrap(".disabled-tooltip");
     }
-    $element.unwrap(".disabled-tooltip");
+}
+
+export function get_left_sidebar_search_term(): string {
+    const $search_box = $<HTMLInputElement>("input.left-sidebar-search-input").expectOne();
+    const search_term = $search_box.val();
+    assert(search_term !== undefined);
+    return search_term.trim();
+}
+
+export function disable_left_sidebar_search(): void {
+    if ($<HTMLInputElement>("#left-sidebar-search input").val()) {
+        // Triggle click on the close button to clear the search term and
+        // update the left sidebar.
+        $("#left-sidebar-search .input-close-filter-button").trigger("click");
+    }
+    $("#left-sidebar-search").hide();
+}
+
+export function enable_left_sidebar_search(): void {
+    $("#left-sidebar-search").show();
 }

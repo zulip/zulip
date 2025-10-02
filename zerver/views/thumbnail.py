@@ -13,8 +13,8 @@ def backend_serve_thumbnail(
     request: HttpRequest,
     maybe_user_profile: UserProfile | AnonymousUser,
     *,
-    url: str,
     size: str,
+    url: str,
 ) -> HttpResponseBase:
     # This URL used to be passed arbitrary URLs, and pass them through
     # Camo; we no longer support doing so, and instead return a 403.

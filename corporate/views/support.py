@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from datetime import timedelta
 from operator import attrgetter
 from typing import Annotated, Any, Literal
-from urllib.parse import urlencode, urlsplit
+from urllib.parse import urlsplit
 
 from django import forms
 from django.conf import settings
@@ -27,7 +27,7 @@ from corporate.lib.activity import (
     remote_installation_stats_link,
 )
 from corporate.lib.billing_types import BillingModality
-from corporate.models import CustomerPlan
+from corporate.models.plans import CustomerPlan
 from zerver.actions.create_realm import do_change_realm_subdomain
 from zerver.actions.realm_settings import (
     do_change_realm_max_invites,
@@ -87,6 +87,11 @@ class DemoRequestForm(forms.Form):
     SORTED_ORG_TYPE_NAMES = sorted(
         ([org_type["name"] for org_type in Realm.ORG_TYPES.values() if not org_type["hidden"]]),
     )
+    TYPE_OF_HOSTING_OPTIONS = [
+        "Zulip Cloud",
+        "Self-hosting",
+        "Both / not sure",
+    ]
     full_name = forms.CharField(max_length=MAX_INPUT_LENGTH)
     email = forms.EmailField()
     role = forms.CharField(max_length=MAX_INPUT_LENGTH)
@@ -94,6 +99,7 @@ class DemoRequestForm(forms.Form):
     organization_type = forms.CharField()
     organization_website = forms.URLField(required=True, assume_scheme="https")
     expected_user_count = forms.CharField(max_length=MAX_INPUT_LENGTH)
+    type_of_hosting = forms.CharField()
     message = forms.CharField(widget=forms.Textarea)
 
 
@@ -157,6 +163,7 @@ def demo_request(request: HttpRequest) -> HttpResponse:
     context = {
         "MAX_INPUT_LENGTH": DemoRequestForm.MAX_INPUT_LENGTH,
         "SORTED_ORG_TYPE_NAMES": DemoRequestForm.SORTED_ORG_TYPE_NAMES,
+        "TYPE_OF_HOSTING_OPTIONS": DemoRequestForm.TYPE_OF_HOSTING_OPTIONS,
     }
 
     if request.POST:
@@ -174,6 +181,7 @@ def demo_request(request: HttpRequest) -> HttpResponse:
                 "organization_type": form.cleaned_data["organization_type"],
                 "organization_website": form.cleaned_data["organization_website"],
                 "expected_user_count": form.cleaned_data["expected_user_count"],
+                "type_of_hosting": form.cleaned_data["type_of_hosting"],
                 "message": form.cleaned_data["message"],
             }
             # Sent to the server's sales team, so this email is not user-facing.
@@ -542,9 +550,7 @@ def support(
                 request.session["success_message"] = (
                     f"Subdomain changed from {old_subdomain} to {new_subdomain}"
                 )
-                return HttpResponseRedirect(
-                    reverse("support") + "?" + urlencode({"q": new_subdomain})
-                )
+                return HttpResponseRedirect(reverse("support", query={"q": new_subdomain}))
         elif status is not None:
             if status == "active":
                 do_send_realm_reactivation_email(realm, acting_user=acting_user)
@@ -599,6 +605,7 @@ def support(
                 if parse_result.port:
                     hostname = f"{hostname}:{parse_result.port}"
                 subdomain = get_subdomain_from_hostname(hostname)
+                assert subdomain is not None
                 with suppress(Realm.DoesNotExist):
                     realms.add(get_realm(subdomain))
             except ValidationError:
@@ -625,7 +632,7 @@ def support(
             user.id for user in PreregistrationRealm.objects.filter(email__in=key_words)
         ]
         confirmations += get_confirmations(
-            [Confirmation.REALM_CREATION],
+            [Confirmation.NEW_REALM_USER_REGISTRATION],
             preregistration_realm_ids,
             hostname=request.get_host(),
         )

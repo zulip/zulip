@@ -54,10 +54,16 @@ exports.test_streams = {
         is_web_public: false,
         message_retention_days: null,
         stream_post_policy: 1,
+        topics_policy: "inherit",
         can_administer_channel_group: 2,
+        can_delete_any_message_group: 2,
+        can_delete_own_message_group: 2,
+        can_move_messages_out_of_channel_group: 2,
+        can_move_messages_within_channel_group: 2,
         can_send_message_group: 2,
         can_remove_subscribers_group: 2,
         is_recently_active: true,
+        subscriber_count: 10,
     },
     test: {
         is_archived: false,
@@ -74,10 +80,16 @@ exports.test_streams = {
         is_announcement_only: false,
         message_retention_days: null,
         stream_post_policy: 1,
+        topics_policy: "inherit",
         can_administer_channel_group: 2,
+        can_delete_any_message_group: 2,
+        can_delete_own_message_group: 2,
+        can_move_messages_out_of_channel_group: 2,
+        can_move_messages_within_channel_group: 2,
         can_send_message_group: 2,
         can_remove_subscribers_group: 2,
         is_recently_active: true,
+        subscriber_count: 2,
     },
 };
 
@@ -135,6 +147,38 @@ exports.fixtures = {
             ],
         },
         upload_space_used: 90000,
+    },
+
+    channel_folder__add: {
+        type: "channel_folder",
+        op: "add",
+        channel_folder: {
+            id: 1,
+            name: "Frontend",
+            description: "Channels for frontend discussions",
+            rendered_description: "<p>Channels for frontend discussions</p>",
+            date_created: 1681662420,
+            creator_id: 10,
+            is_archived: false,
+        },
+    },
+
+    channel_folder__reorder: {
+        type: "channel_folder",
+        op: "reorder",
+        order: [2, 3, 1],
+    },
+
+    channel_folder__update: {
+        type: "channel_folder",
+        op: "update",
+        channel_folder_id: 1,
+        data: {
+            name: "New frontend",
+            description: "Channels for new frontend discussions",
+            rendered_description: "<p>Channels for new frontend discussions</p>",
+            is_archived: true,
+        },
     },
 
     channel_typing_edit_message__start: {
@@ -247,6 +291,29 @@ exports.fixtures = {
         ],
     },
 
+    navigation_view__add: {
+        type: "navigation_view",
+        op: "add",
+        navigation_view: {
+            fragment: "narrow/is/alerted",
+            is_pinned: true,
+            name: "Watched phrases",
+        },
+    },
+
+    navigation_view__remove: {
+        type: "navigation_view",
+        op: "remove",
+        fragment: "narrow/is/alerted",
+    },
+
+    navigation_view__update: {
+        type: "navigation_view",
+        op: "update",
+        fragment: "narrow/is/alerted",
+        data: {is_pinned: false},
+    },
+
     onboarding_steps: {
         type: "onboarding_steps",
         onboarding_steps: [
@@ -263,17 +330,12 @@ exports.fixtures = {
 
     presence: {
         type: "presence",
-        email: "alice@example.com",
-        user_id: 42,
-        presence: {
-            electron: {
-                status: "active",
-                timestamp: fake_now,
-                client: "electron",
-                pushable: false,
+        presences: {
+            42: {
+                active_timestamp: fake_now,
+                idle_timestamp: fake_now,
             },
         },
-        server_timestamp: fake_now,
     },
 
     reaction__add: {
@@ -347,13 +409,6 @@ exports.fixtures = {
         value: false,
     },
 
-    realm__update__mandatory_topics: {
-        type: "realm",
-        op: "update",
-        property: "mandatory_topics",
-        value: false,
-    },
-
     realm__update__name: {
         type: "realm",
         op: "update",
@@ -418,6 +473,7 @@ exports.fixtures = {
             plan_type: 3,
             upload_quota_mib: 50000,
             max_file_upload_size_mib: 1024,
+            topics_policy: "disable_empty_topic",
         },
     },
 
@@ -457,7 +513,7 @@ exports.fixtures = {
         bot: {
             email: "the-bot@example.com",
             user_id: 42,
-            avatar_url: "/some/path/to/avatar",
+            avatar_url: "/avatar/42",
             api_key: "SOME_KEY",
             full_name: "The Bot",
             bot_type: 1,
@@ -567,7 +623,7 @@ exports.fixtures = {
         op: "add",
         person: {
             ...test_user,
-            avatar_url: "/some/path/to/avatar",
+            avatar_url: `/avatar/${test_user.user_id}`,
             avatar_version: 1,
             is_admin: false,
             is_active: true,
@@ -587,7 +643,7 @@ exports.fixtures = {
         op: "add",
         person: {
             ...test_user,
-            avatar_url: "/some/path/to/avatar",
+            avatar_url: `/avatar/${test_user.user_id}`,
             avatar_version: 1,
             is_admin: false,
             is_active: true,
@@ -639,6 +695,29 @@ exports.fixtures = {
         op: "update",
         property: "presence_enabled",
         value: false,
+    },
+
+    reminders__add: {
+        type: "reminders",
+        op: "add",
+        reminders: [
+            {
+                reminder_id: 17,
+                type: "private",
+                to: [6],
+                content: "Hello there!",
+                rendered_content: "<p>Hello there!</p>",
+                scheduled_delivery_timestamp: 1681662420,
+                failed: false,
+                reminder_target_message_id: 213,
+            },
+        ],
+    },
+
+    reminders__remove: {
+        type: "reminders",
+        op: "remove",
+        reminder_id: 17,
     },
 
     restart: {
@@ -1162,6 +1241,20 @@ exports.fixtures = {
         op: "update",
         property: "web_home_view",
         value: "recent_topics",
+    },
+
+    user_settings__web_left_sidebar_show_channel_folders: {
+        type: "user_settings",
+        op: "update",
+        property: "web_left_sidebar_show_channel_folders",
+        value: false,
+    },
+
+    user_settings__web_left_sidebar_unreads_count_summary: {
+        type: "user_settings",
+        op: "update",
+        property: "web_left_sidebar_unreads_count_summary",
+        value: false,
     },
 
     user_settings__web_line_height_percent: {

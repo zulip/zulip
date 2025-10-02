@@ -112,8 +112,17 @@ migrations.
   django.db.utils.OperationalError: cannot ALTER TABLE "table_name" because it has pending trigger events
   ```
 
-  when testing the migration, the reason is often that these operations
-  were incorrectly mixed. To resolve this, consider making the migration
+  when testing the migration, the reason is:
+
+  PostgreSQL prohibits schema changes (e.g., `ALTER TABLE`)
+  if there are deferred trigger events still pending.
+  Now most Zulip constraints are `DEFERRABLE INITIALLY DEFERRED` which means
+  the constraint will not be checked until the transaction is committed,
+  and You are not allowed to update, insert, alter or any other query
+  that will modify the table without executing all pending triggers which would be
+  constraint checking in this case.
+
+  To resolve this, consider making the migration
   non-atomic, splitting it into two migration files (recommended), or replacing the
   `RunPython` logic with pure SQL (though this can generally be difficult).
 

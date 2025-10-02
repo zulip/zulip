@@ -89,12 +89,12 @@ the development environment][authentication-dev-server].
 
 ## Mobile
 
-See the mobile project's documentation on [using a development server
-for mobile development][mobile-dev-server].
+See the mobile project's documentation on [getting set up to develop
+and contribute to the mobile app][mobile-development-guide].
 
 [rest-api]: https://zulip.com/api/rest
 [authentication-dev-server]: authentication.md
 [django-runserver]: https://docs.djangoproject.com/en/5.0/ref/django-admin/#runserver
 [new-feature-tutorial]: ../tutorials/new-feature-tutorial.md
 [testing-docs]: ../testing/testing.md
-[mobile-dev-server]: https://github.com/zulip/zulip-mobile/blob/main/docs/howto/dev-server.md#using-a-dev-version-of-the-server
+[mobile-development-guide]: https://github.com/zulip/zulip-flutter/blob/main/docs/setup.md

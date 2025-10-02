@@ -6,26 +6,30 @@ import render_more_topics from "../templates/more_topics.hbs";
 import render_more_topics_spinner from "../templates/more_topics_spinner.hbs";
 import render_topic_list_item from "../templates/topic_list_item.hbs";
 
+import {all_messages_data} from "./all_messages_data.ts";
 import * as blueslip from "./blueslip.ts";
+import {Typeahead} from "./bootstrap_typeahead.ts";
+import type {TypeaheadInputElement} from "./bootstrap_typeahead.ts";
 import * as popover_menus from "./popover_menus.ts";
-import * as popovers from "./popovers.ts";
 import * as scroll_util from "./scroll_util.ts";
-import * as sidebar_ui from "./sidebar_ui.ts";
 import * as stream_topic_history from "./stream_topic_history.ts";
 import * as stream_topic_history_util from "./stream_topic_history_util.ts";
+import type {StreamSubscription} from "./sub_store.ts";
+import * as sub_store from "./sub_store.ts";
+import * as topic_filter_pill from "./topic_filter_pill.ts";
+import type {TopicFilterPill, TopicFilterPillWidget} from "./topic_filter_pill.ts";
 import * as topic_list_data from "./topic_list_data.ts";
 import type {TopicInfo} from "./topic_list_data.ts";
+import * as typeahead_helper from "./typeahead_helper.ts";
+import * as ui_util from "./ui_util.ts";
 import * as vdom from "./vdom.ts";
 
-/*
-    Track all active widgets with a Map by stream_id.
-
-    (We have at max one for now, but we may
-    eventually allow multiple streams to be
-    expanded.)
-*/
-
-const active_widgets = new Map<number, TopicListWidget>();
+/* Track all active widgets with a Map by stream_id. We have at max
+   one for now, but we may eventually allow multiple streams to be
+   expanded. */
+const active_widgets = new Map<number, LeftSidebarTopicListWidget>();
+export let topic_filter_pill_widget: TopicFilterPillWidget | null = null;
+export let topic_state_typeahead: Typeahead<TopicFilterPill> | undefined;
 
 // We know whether we're zoomed or not.
 let zoomed = false;
@@ -34,6 +38,15 @@ export function update(): void {
     for (const widget of active_widgets.values()) {
         widget.build();
     }
+}
+
+function update_widget_for_stream(stream_id: number): void {
+    const widget = active_widgets.get(stream_id);
+    if (widget === undefined) {
+        blueslip.warn("User re-narrowed before topic history was returned.");
+        return;
+    }
+    widget.build();
 }
 
 export function clear(): void {
@@ -46,20 +59,15 @@ export function clear(): void {
     active_widgets.clear();
 }
 
-export function focus_topic_search_filter(): void {
-    popovers.hide_all();
-    sidebar_ui.show_left_sidebar();
-    const $filter = $("#filter-topic-input").expectOne();
-    $filter.trigger("focus");
-}
-
 export function close(): void {
     zoomed = false;
     clear();
+    ui_util.enable_left_sidebar_search();
 }
 
 export function zoom_out(): void {
     zoomed = false;
+    ui_util.enable_left_sidebar_search();
 
     const stream_ids = [...active_widgets.keys()];
 
@@ -73,7 +81,7 @@ export function zoom_out(): void {
     assert(widget !== undefined);
     const parent_widget = widget.get_parent();
 
-    rebuild(parent_widget, stream_id);
+    rebuild_left_sidebar(parent_widget, stream_id);
 }
 
 type ListInfoNodeOptions =
@@ -89,7 +97,7 @@ type ListInfoNodeOptions =
           type: "spinner";
       };
 
-type ListInfoNode = vdom.Node<ListInfoNodeOptions>;
+export type ListInfoNode = vdom.Node<ListInfoNodeOptions>;
 
 export function keyed_topic_li(conversation: TopicInfo): ListInfoNode {
     const render = (): string => render_topic_list_item(conversation);
@@ -149,21 +157,108 @@ export function spinner_li(): ListInfoNode {
     };
 }
 
+export function is_full_topic_history_available(
+    stream_id: number,
+    num_topics_displayed: number,
+): boolean {
+    if (stream_topic_history.has_history_for(stream_id)) {
+        return true;
+    }
+
+    function all_topics_in_cache(sub: StreamSubscription): boolean {
+        // Checks whether this browser's cache of contiguous messages
+        // (used to locally render narrows) in all_messages_data has all
+        // messages from a given stream. Because all_messages_data is a range,
+        // we just need to compare it to the range of history on the stream.
+
+        // If the cache isn't initialized, it's a clear false.
+        if (all_messages_data === undefined || all_messages_data.empty()) {
+            return false;
+        }
+
+        // If the cache doesn't have the latest messages, we can't be sure
+        // we have all topics.
+        if (!all_messages_data.fetch_status.has_found_newest()) {
+            return false;
+        }
+
+        if (sub.first_message_id === null) {
+            // If the stream has no message history, we have it all
+            // vacuously.  This should be a very rare condition, since
+            // stream creation sends a message.
+            return true;
+        }
+
+        const first_cached_message = all_messages_data.first_including_muted();
+        if (sub.first_message_id < first_cached_message!.id) {
+            // Missing the oldest topics in this stream in our cache.
+            return false;
+        }
+
+        // At this stage, number of topics displayed in the topic list
+        // widget is at max `topic_list_data.max_topics` and
+        // sub.first_message_id >= first_cached_message!.id.
+        //
+        // There's a possibility of a few topics missing for messages
+        // which were sent when the user wasn't subscribed.
+        // Fetch stream history to confirm if all topics are already
+        // displayed otherwise rebuild with updated data.
+        stream_topic_history_util.get_server_history(stream_id, () => {
+            const history = stream_topic_history.find_or_create(stream_id);
+            if (history.topics.size > num_topics_displayed) {
+                update_widget_for_stream(stream_id);
+            }
+        });
+        // We return `true` which can possibly lead to missing
+        // 'show all topics', even if all the topics are not displayed.
+        // The `get_server_history` call above takes care of fetching
+        // channel history and rebuilding topic list if needed.
+        return true;
+    }
+
+    const sub = sub_store.get(stream_id);
+    const in_cache = sub !== undefined && all_topics_in_cache(sub);
+
+    if (in_cache) {
+        /*
+            If the stream is cached, we can add it to
+            fetched_stream_ids.  Note that for the opposite
+            scenario, we don't delete from
+            fetched_stream_ids, because we may just be
+            waiting for the initial message fetch.
+        */
+        stream_topic_history.mark_history_fetched_for(stream_id);
+    }
+
+    return in_cache;
+}
+
 export class TopicListWidget {
+    topic_list_class_name = "topic-list";
     prior_dom: vdom.Tag<ListInfoNodeOptions> | undefined = undefined;
     $parent_elem: JQuery;
     my_stream_id: number;
+    filter_topics: (topic_names: string[]) => string[];
 
-    constructor($parent_elem: JQuery, my_stream_id: number) {
+    constructor(
+        $parent_elem: JQuery,
+        my_stream_id: number,
+        filter_topics: (topic_names: string[]) => string[],
+    ) {
         this.$parent_elem = $parent_elem;
         this.my_stream_id = my_stream_id;
+        this.filter_topics = filter_topics;
     }
 
-    build_list(spinner: boolean): vdom.Tag<ListInfoNodeOptions> {
+    build_list(
+        spinner: boolean,
+        formatter: (conversation: TopicInfo) => ListInfoNode,
+        is_zoomed: boolean,
+    ): vdom.Tag<ListInfoNodeOptions> {
         const list_info = topic_list_data.get_list_info(
             this.my_stream_id,
-            zoomed,
-            get_topic_search_term(),
+            is_zoomed,
+            this.filter_topics,
         );
 
         const num_possible_topics = list_info.num_possible_topics;
@@ -173,9 +268,9 @@ export class TopicListWidget {
 
         const is_showing_all_possible_topics =
             list_info.items.length === num_possible_topics &&
-            stream_topic_history.is_complete_for_stream_id(this.my_stream_id);
+            is_full_topic_history_available(this.my_stream_id, num_possible_topics);
 
-        const topic_list_classes: [string] = ["topic-list"];
+        const topic_list_classes: [string] = [this.topic_list_class_name];
 
         if (list_info.items.length > 0) {
             topic_list_classes.push("topic-list-has-topics");
@@ -183,7 +278,7 @@ export class TopicListWidget {
 
         const attrs: [string, string][] = [["class", topic_list_classes.join(" ")]];
 
-        const nodes = list_info.items.map((conversation) => keyed_topic_li(conversation));
+        const nodes = list_info.items.map((conversation) => formatter(conversation));
 
         if (spinner) {
             nodes.push(spinner_li());
@@ -214,45 +309,70 @@ export class TopicListWidget {
     }
 
     remove(): void {
-        this.$parent_elem.find(".topic-list").remove();
+        this.$parent_elem.find(`.${this.topic_list_class_name}`).remove();
         this.prior_dom = undefined;
     }
 
-    build(spinner = false): void {
-        const new_dom = this.build_list(spinner);
+    build(
+        spinner = false,
+        formatter: (conversation: TopicInfo) => ListInfoNode,
+        is_zoomed: boolean,
+    ): void {
+        const new_dom = this.build_list(spinner, formatter, is_zoomed);
 
         const replace_content = (html: string): void => {
             this.remove();
             this.$parent_elem.append($(html));
         };
 
-        const find = (): JQuery => this.$parent_elem.find(".topic-list");
+        const find = (): JQuery => this.$parent_elem.find(`.${this.topic_list_class_name}`);
 
         vdom.update(replace_content, find, new_dom, this.prior_dom);
 
         this.prior_dom = new_dom;
     }
+
+    is_empty(): boolean {
+        const $topic_list = this.$parent_elem.find(`.${this.topic_list_class_name}`);
+        return !$topic_list.hasClass("topic-list-has-topics");
+    }
+}
+
+function filter_topics_left_sidebar(topic_names: string[]): string[] {
+    const search_term = get_left_sidebar_topic_search_term();
+    return topic_list_data.filter_topics_by_search_term(
+        topic_names,
+        search_term,
+        get_typeahead_search_pills_syntax(),
+    );
+}
+
+export class LeftSidebarTopicListWidget extends TopicListWidget {
+    constructor($parent_elem: JQuery, my_stream_id: number) {
+        super($parent_elem, my_stream_id, filter_topics_left_sidebar);
+    }
+
+    override build(spinner = false): void {
+        const is_zoomed = zoomed;
+        const formatter = keyed_topic_li;
+
+        super.build(spinner, formatter, is_zoomed);
+    }
 }
 
 export function clear_topic_search(e: JQuery.Event): void {
     e.stopPropagation();
-    const $input = $("#filter-topic-input");
-    if ($input.length > 0) {
-        $input.val("");
-        $input.trigger("blur");
 
-        // Since this changes the contents of the search input, we
-        // need to rerender the topic list.
-        const stream_ids = [...active_widgets.keys()];
+    topic_filter_pill_widget?.clear(true);
 
-        const stream_id = stream_ids[0];
-        assert(stream_id !== undefined);
-        const widget = active_widgets.get(stream_id);
-        assert(widget !== undefined);
-        const parent_widget = widget.get_parent();
-
-        rebuild(parent_widget, stream_id);
-    }
+    const $input = $("#topic_filter_query");
+    // Since the `clear` function of the topic_filter_pill_widget
+    // takes care of clearing both the text content and the
+    // pills, we just need to trigger an input event on the
+    // contenteditable element to reset the topic list via
+    // the `input` event handler without having to manually
+    // manage the reset of the topic list.
+    $input.trigger("input");
 }
 
 export function active_stream_id(): number | undefined {
@@ -276,7 +396,7 @@ export function get_stream_li(): JQuery | undefined {
     return $stream_li;
 }
 
-export function rebuild($stream_li: JQuery, stream_id: number): void {
+export function rebuild_left_sidebar($stream_li: JQuery, stream_id: number): void {
     const active_widget = active_widgets.get(stream_id);
 
     if (active_widget) {
@@ -285,13 +405,13 @@ export function rebuild($stream_li: JQuery, stream_id: number): void {
     }
 
     clear();
-    const widget = new TopicListWidget($stream_li, stream_id);
+    const widget = new LeftSidebarTopicListWidget($stream_li, stream_id);
     widget.build();
 
     active_widgets.set(stream_id, widget);
 }
 
-export function scroll_zoomed_in_topic_into_view(): void {
+export function left_sidebar_scroll_zoomed_in_topic_into_view(): void {
     const $selected_topic = $(".topic-list .topic-list-item.active-sub-filter");
     if ($selected_topic.length === 0) {
         // If we don't have a selected topic, scroll to top.
@@ -310,6 +430,7 @@ export function scroll_zoomed_in_topic_into_view(): void {
 // handle hiding/showing the non-narrowed streams
 export function zoom_in(): void {
     zoomed = true;
+    ui_util.disable_left_sidebar_search();
 
     const stream_id = active_stream_id();
     if (stream_id === undefined) {
@@ -340,7 +461,8 @@ export function zoom_in(): void {
             // It is fine to force scroll here even if user has scrolled to a different
             // position since we just added some topics to the list which moved user
             // to a different position anyway.
-            scroll_zoomed_in_topic_into_view();
+            left_sidebar_scroll_zoomed_in_topic_into_view();
+            topic_state_typeahead?.lookup(true);
         }
     }
 
@@ -348,22 +470,131 @@ export function zoom_in(): void {
     active_widget.build(spinner);
 
     stream_topic_history_util.get_server_history(stream_id, on_success);
-    scroll_zoomed_in_topic_into_view();
+    left_sidebar_scroll_zoomed_in_topic_into_view();
 }
 
-export function get_topic_search_term(): string {
-    const $filter = $<HTMLInputElement>("input#filter-topic-input");
-    const filter_val = $filter.val();
-    if (filter_val === undefined) {
+export function get_left_sidebar_topic_search_term(): string {
+    if (zoomed) {
+        return $("#topic_filter_query").text().trim();
+    }
+    return ui_util.get_left_sidebar_search_term();
+}
+
+export function get_typeahead_search_pills_syntax(): string {
+    const pills = topic_filter_pill_widget?.items() ?? [];
+
+    if (pills.length === 0) {
         return "";
     }
-    return filter_val.trim();
+
+    // For now, there is only one pill in the left sidebar topic search input.
+    // This is because we only allow one topic filter pill at a time.
+    // If we allow multiple pills in the future, we may need to
+    // change this logic to return the syntax of all pills.
+    if (pills.length > 1) {
+        blueslip.warn("Multiple pills found in left sidebar topic search input.");
+    }
+
+    // We can remove this assumption once we allow multiple pills and hence update the
+    // callers of this function to handle multiple pills and implement the search accordingly.
+    return pills[0]!.syntax;
+}
+
+function set_search_bar_text(text: string): void {
+    const $input = $("#topic_filter_query");
+    $input.text(text);
+    $input.trigger("input");
+}
+
+export function setup_topic_search_typeahead(): void {
+    const $input = $("#topic_filter_query");
+    const $pill_container = $("#left-sidebar-filter-topic-input");
+
+    if ($input.length === 0 || $pill_container.length === 0) {
+        return;
+    }
+
+    topic_filter_pill_widget = topic_filter_pill.create_pills($pill_container);
+
+    const typeahead_input: TypeaheadInputElement = {
+        $element: $input,
+        type: "contenteditable",
+    };
+
+    const options = {
+        source() {
+            const stream_id = active_stream_id();
+            assert(stream_id !== undefined);
+
+            if (!stream_topic_history.stream_has_locally_available_resolved_topics(stream_id)) {
+                return [];
+            }
+            const $pills = $("#left-sidebar-filter-topic-input .pill");
+            if ($pills.length > 0) {
+                return [];
+            }
+            return [...topic_filter_pill.filter_options];
+        },
+        item_html(item: TopicFilterPill) {
+            return typeahead_helper.render_topic_state(item.label);
+        },
+        matcher(item: TopicFilterPill, query: string) {
+            // This basically only matches if `is:` is in the query.
+            return (
+                query.includes(":") &&
+                (item.syntax.toLowerCase().startsWith(query.toLowerCase()) ||
+                    (item.syntax.startsWith("-") &&
+                        item.syntax.slice(1).toLowerCase().startsWith(query.toLowerCase())))
+            );
+        },
+        sorter(items: TopicFilterPill[]) {
+            // This sort order places "Unresolved topics" first
+            // always, which is good because that's almost always what
+            // users will want.
+            return items;
+        },
+        updater(item: TopicFilterPill) {
+            assert(topic_filter_pill_widget !== null);
+            topic_filter_pill_widget.clear(true);
+            topic_filter_pill_widget.appendValue(item.syntax);
+            set_search_bar_text("");
+            $input.trigger("focus");
+            return get_left_sidebar_topic_search_term();
+        },
+        // Prevents key events from propagating to other handlers or
+        // triggering default browser actions.
+        stopAdvance: true,
+        // Use dropup, to match compose typeahead.
+        dropup: true,
+    };
+
+    topic_state_typeahead = new Typeahead(typeahead_input, options);
+
+    $input.on("keydown", (e: JQuery.KeyDownEvent) => {
+        if (e.key === "Enter") {
+            e.preventDefault();
+            e.stopPropagation();
+        } else if (e.key === ",") {
+            e.stopPropagation();
+            return;
+        }
+    });
+
+    topic_filter_pill_widget.onPillRemove(() => {
+        const stream_id = active_stream_id();
+        if (stream_id !== undefined) {
+            const widget = active_widgets.get(stream_id);
+            if (widget) {
+                widget.build();
+            }
+        }
+    });
 }
 
 export function initialize({
     on_topic_click,
 }: {
-    on_topic_click: (stream_id: number, topic?: string) => void;
+    on_topic_click: (stream_id: number, topic: string) => void;
 }): void {
     $("#stream_filters").on(
         "click",
@@ -380,11 +611,16 @@ export function initialize({
                 return;
             }
 
+            if (document.getSelection()?.type === "Range") {
+                // To avoid the click behavior if a topic link is selected.
+                e.preventDefault();
+                return;
+            }
             const $stream_row = $(e.target).parents(".narrow-filter");
             const stream_id_string = $stream_row.attr("data-stream-id");
             assert(stream_id_string !== undefined);
             const stream_id = Number.parseInt(stream_id_string, 10);
-            const topic = $(e.target).parents("li").attr("data-topic-name");
+            const topic = $(e.target).parents("li").attr("data-topic-name")!;
             on_topic_click(stream_id, topic);
 
             e.preventDefault();
@@ -392,9 +628,24 @@ export function initialize({
         },
     );
 
-    $("body").on("input", "#filter-topic-input", (): void => {
+    $("body").on("input", "#left-sidebar-filter-topic-input", (): void => {
         const stream_id = active_stream_id();
         assert(stream_id !== undefined);
         active_widgets.get(stream_id)?.build();
+
+        if (get_left_sidebar_topic_search_term() === "") {
+            // When the contenteditable div is empty, the browser
+            // adds a <br> element to it, which interferes with
+            // the ":empty" selector in the CSS. Hence, we detect
+            // this case and clear the content of the div to ensure
+            // that the CSS styles are applied correctly.
+            // TODO: Remove this when we have a better way to handle
+            // empty contenteditable elements. Since while testing this
+            // effect in a sandbox, a `display: inline` applied to the
+            // contenteditable element seems to fix the issue, but that
+            // doesn't work in this particular case.
+            // See: https://stackoverflow.com/questions/14638887/br-is-inserted-into-contenteditable-html-element-if-left-empty
+            $("#topic_filter_query").empty();
+        }
     });
 }

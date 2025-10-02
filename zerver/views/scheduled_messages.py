@@ -10,11 +10,14 @@ from zerver.actions.scheduled_messages import (
     delete_scheduled_message,
     edit_scheduled_message,
 )
-from zerver.lib.exceptions import JsonableError
+from zerver.lib.exceptions import DeliveryTimeNotInFutureError, JsonableError
 from zerver.lib.recipient_parsing import extract_direct_message_recipient_ids, extract_stream_id
 from zerver.lib.request import RequestNotes
 from zerver.lib.response import json_success
-from zerver.lib.scheduled_messages import get_undelivered_scheduled_messages
+from zerver.lib.scheduled_messages import (
+    get_undelivered_reminders,
+    get_undelivered_scheduled_messages,
+)
 from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.lib.typed_endpoint import (
     ApiParamConfig,
@@ -34,6 +37,11 @@ def fetch_scheduled_messages(request: HttpRequest, user_profile: UserProfile) ->
     )
 
 
+@typed_endpoint_without_parameters
+def fetch_reminders(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
+    return json_success(request, data={"reminders": get_undelivered_reminders(user_profile)})
+
+
 @typed_endpoint
 def delete_scheduled_messages(
     request: HttpRequest,
@@ -50,15 +58,15 @@ def update_scheduled_message_backend(
     request: HttpRequest,
     user_profile: UserProfile,
     *,
-    scheduled_message_id: PathOnly[NonNegativeInt],
+    message_content: Annotated[str | None, ApiParamConfig("content")] = None,
     req_type: Annotated[
         Annotated[str, check_string_in_validator(Message.API_RECIPIENT_TYPES)] | None,
         ApiParamConfig("type"),
     ] = None,
+    scheduled_delivery_timestamp: Json[int] | None = None,
+    scheduled_message_id: PathOnly[NonNegativeInt],
     to: Json[int | list[int]] | None = None,
     topic_name: OptionalTopic = None,
-    message_content: Annotated[str | None, ApiParamConfig("content")] = None,
-    scheduled_delivery_timestamp: Json[int] | None = None,
 ) -> HttpResponse:
     if (
         req_type is None
@@ -101,7 +109,7 @@ def update_scheduled_message_backend(
     if scheduled_delivery_timestamp is not None:
         deliver_at = timestamp_to_datetime(scheduled_delivery_timestamp)
         if deliver_at <= timezone_now():
-            raise JsonableError(_("Scheduled delivery time must be in the future."))
+            raise DeliveryTimeNotInFutureError
 
     sender = user_profile
     client = RequestNotes.get_notes(request).client
@@ -127,15 +135,15 @@ def create_scheduled_message_backend(
     request: HttpRequest,
     user_profile: UserProfile,
     *,
+    message_content: Annotated[str, ApiParamConfig("content")],
+    read_by_sender: Json[bool] | None = None,
+    req_to: Annotated[Json[int | list[int]], ApiParamConfig("to")],
     req_type: Annotated[
         Annotated[str, check_string_in_validator(Message.API_RECIPIENT_TYPES)],
         ApiParamConfig("type"),
     ],
-    req_to: Annotated[Json[int | list[int]], ApiParamConfig("to")],
-    message_content: Annotated[str, ApiParamConfig("content")],
     scheduled_delivery_timestamp: Json[int],
     topic_name: OptionalTopic = None,
-    read_by_sender: Json[bool] | None = None,
 ) -> HttpResponse:
     recipient_type_name = req_type
     if recipient_type_name == "direct":
@@ -151,7 +159,7 @@ def create_scheduled_message_backend(
 
     deliver_at = timestamp_to_datetime(scheduled_delivery_timestamp)
     if deliver_at <= timezone_now():
-        raise JsonableError(_("Scheduled delivery time must be in the future."))
+        raise DeliveryTimeNotInFutureError
 
     sender = user_profile
     client = RequestNotes.get_notes(request).client

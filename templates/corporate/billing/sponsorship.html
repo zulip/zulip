@@ -172,9 +172,8 @@
                         <textarea id="paid-users-description" name="paid_users_description" cols="100" rows="2"></textarea>
                         <div id="sponsorship-paid-users-description-error" class="alert alert-danger sponsorship-field-error"></div>
                     </div>
-                    <!-- Disabled buttons do not fire any events, so we need a container div that isn't disabled for tippyjs to work -->
-                    <div class="upgrade-button-container" {% if is_demo_organization %}data-tippy-content="Convert demo organization before upgrading."{% endif %}>
-                        <button type="submit" id="sponsorship-button" class="stripe-button-el invoice-button" {% if is_demo_organization %}disabled{% endif %}>
+                    <div class="upgrade-button-container">
+                        <button type="submit" id="sponsorship-button" class="stripe-button-el invoice-button">
                             <span class="sponsorship-button-text">Submit</span>
                             <object class="loader sponsorship-button-loader" type="image/svg+xml" data="{{ static('images/loading/loader-white.svg') }}"></object>
                         </button>

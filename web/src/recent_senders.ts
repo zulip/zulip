@@ -31,9 +31,7 @@ export class IdTracker {
     }
 
     max_id(): number {
-        if (this._cached_max_id === undefined) {
-            this._cached_max_id = _.max([...this.ids]);
-        }
+        this._cached_max_id ??= _.max([...this.ids]);
         return this._cached_max_id ?? -1;
     }
 

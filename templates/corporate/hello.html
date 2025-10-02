@@ -43,7 +43,7 @@
                     <img alt="" width="1095" height="496" class='appshot-1__img' src="{{ static('images/landing-page/hello/generated/screen-1-2x.jpg') }}"/>
                 </picture>
                 <div class="cta-buttons">
-                    <a href="/try-zulip/">
+                    <a href="{{ 'https://chat.zulip.org' if not development_environment}}/?show_try_zulip_modal">
                         See it in use
                         <div class="cta-desc">in an open organization</div>
                     </a>
@@ -242,11 +242,11 @@
                 </div>
             </div>
             <div class="badges">
-                <a class="badge-getapp" href="https://www.getapp.com/collaboration-software/web-collaboration/category-leaders/">
-                <img alt="" src="https://capterra.s3.amazonaws.com/assets/images/gdm-badges/ga-category_leaders-2023.png"/>
+                <a class="badge-getapp" href="https://www.getapp.com/collaboration-software/web-collaboration/category-leaders">
+                    <img alt="" src="https://brand-assets.getapp.com/badge/05c62fe0-cb84-41bf-ae2d-cd0105373a2c.svg"/>
                 </a>
                 <a class="badge-capterra" href="https://www.capterra.com/p/197945/Zulip/">
-                <img alt="" src="{{ static('images/landing-page/hello/capterra-2023.png') }}"/>
+                    <img alt="" src="https://brand-assets.capterra.com/badge/d7c03c95-8f34-466e-b964-546b102899f1.svg"/>
                 </a>
             </div>
         </div>

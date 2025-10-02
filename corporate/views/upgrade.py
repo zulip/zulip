@@ -12,7 +12,7 @@ from corporate.lib.decorator import (
     authenticated_remote_realm_management_endpoint,
     authenticated_remote_server_management_endpoint,
 )
-from corporate.models import CustomerPlan
+from corporate.models.plans import CustomerPlan
 from zerver.decorator import require_organization_member, zulip_login_required
 from zerver.lib.response import json_success
 from zerver.lib.typed_endpoint import typed_endpoint
@@ -203,8 +203,16 @@ def upgrade_page(
         billing_modality=billing_modality,
     )
     billing_session = RealmBillingSession(user)
-    redirect_url, context = billing_session.get_initial_upgrade_context(initial_upgrade_request)
+    if billing_session.realm.demo_organization_scheduled_deletion_date is not None:
+        return render(
+            request,
+            "corporate/billing/demo_organization_billing_disabled.html",
+            context={
+                "upgrade_request": True,
+            },
+        )
 
+    redirect_url, context = billing_session.get_initial_upgrade_context(initial_upgrade_request)
     if redirect_url:
         return HttpResponseRedirect(redirect_url)
 

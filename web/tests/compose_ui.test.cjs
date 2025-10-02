@@ -2,6 +2,7 @@
 
 const assert = require("node:assert/strict");
 
+const {make_realm} = require("./lib/example_realm.cjs");
 const {$t} = require("./lib/i18n.cjs");
 const {mock_esm, set_global, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
@@ -30,7 +31,7 @@ const text_field_edit = mock_esm("text-field-edit");
 const {set_realm} = zrequire("state_data");
 const {initialize_user_settings} = zrequire("user_settings");
 
-const realm = {};
+const realm = make_realm({realm_topics_policy: "allow_empty_topic"});
 set_realm(realm);
 initialize_user_settings({user_settings: {}});
 
@@ -209,7 +210,7 @@ run_test("compute_placeholder_text", ({override}) => {
         name: "all",
         stream_id: 2,
     };
-    stream_data.add_sub(stream_all);
+    stream_data.add_sub_for_tests(stream_all);
     opts.stream_id = stream_all.stream_id;
     assert.equal(compose_ui.compute_placeholder_text(opts), $t({defaultMessage: "Message #all"}));
 
@@ -1281,11 +1282,14 @@ run_test("right-to-left", () => {
 
 const get_focus_area = compose_ui._get_focus_area;
 run_test("get_focus_area", ({override}) => {
-    assert.equal(get_focus_area({message_type: "private"}), "#private_message_recipient");
+    assert.equal(
+        get_focus_area({message_type: "private", private_message_recipient_ids: []}),
+        "#private_message_recipient",
+    );
     assert.equal(
         get_focus_area({
             message_type: "private",
-            private_message_recipient: "bob@example.com",
+            private_message_recipient_ids: [bob.user_id],
         }),
         "textarea#compose-textarea",
     );
@@ -1293,12 +1297,20 @@ run_test("get_focus_area", ({override}) => {
         get_focus_area({message_type: "stream"}),
         "#compose_select_recipient_widget_wrapper",
     );
-    override(realm, "realm_mandatory_topics", true);
+
+    stream_data.add_sub_for_tests({
+        message_type: "stream",
+        name: "fun",
+        stream_id: 4,
+        topics_policy: "inherit",
+    });
+
+    override(realm, "realm_topics_policy", "disable_empty_topic");
     assert.equal(
         get_focus_area({message_type: "stream", stream_name: "fun", stream_id: 4}),
         "input#stream_message_recipient_topic",
     );
-    override(realm, "realm_mandatory_topics", false);
+    override(realm, "realm_topics_policy", "allow_empty_topic");
     assert.equal(
         get_focus_area({message_type: "stream", stream_name: "fun", stream_id: 4}),
         "textarea#compose-textarea",

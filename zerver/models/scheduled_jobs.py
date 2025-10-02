@@ -138,6 +138,17 @@ class APIScheduledDirectMessageDict(TypedDict):
     failed: bool
 
 
+class APIReminderDirectMessageDict(TypedDict):
+    reminder_id: int
+    to: list[int]
+    type: str
+    content: str
+    rendered_content: str
+    scheduled_delivery_timestamp: int
+    failed: bool
+    reminder_target_message_id: int
+
+
 class ScheduledMessage(models.Model):
     sender = models.ForeignKey(UserProfile, on_delete=CASCADE)
     recipient = models.ForeignKey(Recipient, on_delete=CASCADE)
@@ -152,6 +163,10 @@ class ScheduledMessage(models.Model):
     delivered = models.BooleanField(default=False)
     delivered_message = models.ForeignKey(Message, null=True, on_delete=CASCADE)
     has_attachment = models.BooleanField(default=False, db_index=True)
+    request_timestamp = models.DateTimeField(default=timezone_now)
+    # Only used for REMIND delivery_type messages.
+    reminder_target_message_id = models.IntegerField(null=True)
+    reminder_note = models.TextField(null=True)
 
     # Metadata for messages that failed to send when their scheduled
     # moment arrived.
@@ -199,6 +214,9 @@ class ScheduledMessage(models.Model):
 
     @override
     def __str__(self) -> str:
+        if self.recipient.type != Recipient.STREAM:
+            return f"{self.recipient.label()} {self.sender!r} {self.scheduled_timestamp}"
+
         return f"{self.recipient.label()} {self.subject} {self.sender!r} {self.scheduled_timestamp}"
 
     def topic_name(self) -> str:
@@ -207,15 +225,15 @@ class ScheduledMessage(models.Model):
     def set_topic_name(self, topic_name: str) -> None:
         self.subject = topic_name
 
-    def is_stream_message(self) -> bool:
+    def is_channel_message(self) -> bool:
         return self.recipient.type == Recipient.STREAM
 
     def to_dict(self) -> APIScheduledStreamMessageDict | APIScheduledDirectMessageDict:
         recipient, recipient_type_str = get_recipient_ids(self.recipient, self.sender.id)
 
         if recipient_type_str == "private":
-            # The topic for direct messages should always be an empty string.
-            assert self.topic_name() == ""
+            # The topic for direct messages should always be "\x07".
+            assert self.topic_name() == Message.DM_TOPIC
 
             return APIScheduledDirectMessageDict(
                 scheduled_message_id=self.id,
@@ -239,6 +257,21 @@ class ScheduledMessage(models.Model):
             topic=self.topic_name(),
             scheduled_delivery_timestamp=datetime_to_timestamp(self.scheduled_timestamp),
             failed=self.failed,
+        )
+
+    def to_reminder_dict(self) -> APIReminderDirectMessageDict:
+        assert self.reminder_target_message_id is not None
+        recipient, recipient_type_str = get_recipient_ids(self.recipient, self.sender.id)
+        assert recipient_type_str == "private"
+        return APIReminderDirectMessageDict(
+            reminder_id=self.id,
+            to=recipient,
+            type=recipient_type_str,
+            content=self.content,
+            rendered_content=self.rendered_content,
+            scheduled_delivery_timestamp=datetime_to_timestamp(self.scheduled_timestamp),
+            failed=self.failed,
+            reminder_target_message_id=self.reminder_target_message_id,
         )
 
 

@@ -2,7 +2,7 @@ from django.conf import settings
 from django.utils.translation import gettext as _
 
 from corporate.lib.stripe import LicenseLimitError, get_latest_seat_count, get_seat_count
-from corporate.models import CustomerPlan, get_current_plan_by_realm
+from corporate.models.plans import CustomerPlan, get_current_plan_by_realm
 from zerver.actions.create_user import send_group_direct_message_to_admins
 from zerver.lib.exceptions import InvitationError, JsonableError
 from zerver.models import Realm, UserProfile

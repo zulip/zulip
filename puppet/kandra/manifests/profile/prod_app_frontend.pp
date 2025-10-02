@@ -32,16 +32,6 @@ class kandra::profile::prod_app_frontend inherits kandra::profile::base {
     notify  => Service['nginx'],
   }
 
-  file { '/usr/lib/nagios/plugins/zulip_zephyr_mirror':
-    require => Package[$zulip::common::nagios_plugins],
-    recurse => true,
-    purge   => true,
-    owner   => 'root',
-    group   => 'root',
-    mode    => '0755',
-    source  => 'puppet:///modules/kandra/nagios_plugins/zulip_zephyr_mirror',
-  }
-
   # Prod has our Apple Push Notifications Service private key at
   # /etc/ssl/django-private/apns-dist.pem
 }

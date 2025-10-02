@@ -2,7 +2,7 @@ import $ from "jquery";
 
 import * as compose_pm_pill from "./compose_pm_pill.ts";
 import * as people from "./people.ts";
-import {realm} from "./state_data.ts";
+import * as stream_data from "./stream_data.ts";
 import * as sub_store from "./sub_store.ts";
 
 let message_type: "stream" | "private" | undefined;
@@ -10,6 +10,7 @@ let recipient_edited_manually = false;
 let is_content_unedited_restored_draft = false;
 let last_focused_compose_type_input: HTMLTextAreaElement | undefined;
 let preview_render_count = 0;
+let is_processing_forward_message = false;
 
 // We use this variable to keep track of whether user has viewed the topic resolved
 // banner for the current compose session, for a narrow. This prevents the banner
@@ -18,6 +19,7 @@ let preview_render_count = 0;
 // the narrow and the user should still be able to see the banner once after
 // performing these actions
 let recipient_viewed_topic_resolved_banner = false;
+let recipient_viewed_topic_moved_banner = false;
 let recipient_guest_ids_for_dm_warning: number[] = [];
 
 export function set_recipient_edited_manually(flag: boolean): void {
@@ -60,6 +62,14 @@ export function has_recipient_viewed_topic_resolved_banner(): boolean {
     return recipient_viewed_topic_resolved_banner;
 }
 
+export function set_recipient_viewed_topic_moved_banner(flag: boolean): void {
+    recipient_viewed_topic_moved_banner = flag;
+}
+
+export function has_recipient_viewed_topic_moved_banner(): boolean {
+    return recipient_viewed_topic_moved_banner;
+}
+
 export function set_recipient_guest_ids_for_dm_warning(guest_ids: number[]): void {
     recipient_guest_ids_for_dm_warning = guest_ids;
 }
@@ -76,6 +86,14 @@ export function set_preview_render_count(count: number): void {
     preview_render_count = count;
 }
 
+export function set_is_processing_forward_message(val: boolean): void {
+    is_processing_forward_message = val;
+}
+
+export function get_is_processing_forward_message(): boolean {
+    return is_processing_forward_message;
+}
+
 export function composing(): boolean {
     // This is very similar to get_message_type(), but it returns
     // a boolean.
@@ -84,7 +102,9 @@ export function composing(): boolean {
 
 function get_or_set(
     input_selector: string,
-    keep_leading_whitespace?: boolean,
+    // For the compose box, it's important to preserve leading spaces,
+    // but not newlines.
+    keep_leading_spaces?: boolean,
     no_trim?: boolean,
 ): (newval?: string) => string {
     // We can't hoist the assignment of '$elem' out of this lambda,
@@ -98,8 +118,8 @@ function get_or_set(
         }
         if (no_trim) {
             return oldval;
-        } else if (keep_leading_whitespace) {
-            return oldval.trimEnd();
+        } else if (keep_leading_spaces) {
+            return oldval.trimEnd().replace(/^(\r?\n)+/, "");
         }
         return oldval.trim();
     };
@@ -206,7 +226,7 @@ export function focus_in_empty_compose(
     // Check whether the current input element is empty for each input type.
     switch (focused_element_id) {
         case "private_message_recipient":
-            return private_message_recipient().length === 0;
+            return private_message_recipient_ids().length === 0;
         case "stream_message_recipient_topic":
             return topic() === "";
         case "compose_select_recipient_widget_wrapper":
@@ -216,14 +236,24 @@ export function focus_in_empty_compose(
     return false;
 }
 
-export function private_message_recipient(): string;
-export function private_message_recipient(value: string): undefined;
-export function private_message_recipient(value?: string): string | undefined {
+export function private_message_recipient_emails(): string;
+export function private_message_recipient_emails(value: string): undefined;
+export function private_message_recipient_emails(value?: string): string | undefined {
     if (typeof value === "string") {
         compose_pm_pill.set_from_emails(value);
         return undefined;
     }
     return compose_pm_pill.get_emails();
+}
+
+export function private_message_recipient_ids(): number[];
+export function private_message_recipient_ids(value: number[]): undefined;
+export function private_message_recipient_ids(value?: number[]): number[] | undefined {
+    if (value === undefined) {
+        return compose_pm_pill.get_user_ids();
+    }
+    compose_pm_pill.set_from_user_ids(value);
+    return undefined;
 }
 
 export function has_message_content(): boolean {
@@ -241,14 +271,14 @@ export function has_savable_message_content(): boolean {
 
 export function has_full_recipient(): boolean {
     if (message_type === "stream") {
-        const has_topic = topic() !== "" || !realm.realm_mandatory_topics;
+        const has_topic = topic() !== "" || stream_data.can_use_empty_topic(stream_id());
         return stream_id() !== undefined && has_topic;
     }
-    return private_message_recipient() !== "";
+    return private_message_recipient_ids().length > 0;
 }
 
 export function update_email(user_id: number, new_email: string): void {
-    let reply_to = private_message_recipient();
+    let reply_to = private_message_recipient_emails();
 
     if (!reply_to) {
         return;
@@ -256,7 +286,7 @@ export function update_email(user_id: number, new_email: string): void {
 
     reply_to = people.update_email_in_reply_to(reply_to, user_id, new_email);
 
-    private_message_recipient(reply_to);
+    private_message_recipient_emails(reply_to);
 }
 
 let _can_restore_drafts = true;

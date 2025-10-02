@@ -7,9 +7,11 @@ import render_stream_can_subscribe_group_label from "../templates/stream_setting
 import render_stream_privacy_icon from "../templates/stream_settings/stream_privacy_icon.hbs";
 import render_stream_settings_tip from "../templates/stream_settings/stream_settings_tip.hbs";
 
+import * as channel_folders from "./channel_folders.ts";
 import * as hash_parser from "./hash_parser.ts";
 import {$t} from "./i18n.ts";
 import * as overlays from "./overlays.ts";
+import * as settings_banner from "./settings_banner.ts";
 import * as settings_components from "./settings_components.ts";
 import * as settings_config from "./settings_config.ts";
 import * as settings_data from "./settings_data.ts";
@@ -37,7 +39,7 @@ function settings_button_for_sub(sub: StreamSubscription): JQuery {
 }
 
 export let show_subscribed = true;
-export let show_not_subscribed = false;
+export let show_available = false;
 
 export function is_subscribed_stream_tab_active(): boolean {
     // Returns true if "Subscribed" tab in stream settings is open
@@ -45,18 +47,18 @@ export function is_subscribed_stream_tab_active(): boolean {
     return show_subscribed;
 }
 
-export function is_not_subscribed_stream_tab_active(): boolean {
-    // Returns true if "not-subscribed" tab in stream settings is open
+export function is_available_stream_tab_active(): boolean {
+    // Returns true if "available" tab in stream settings is open
     // otherwise false.
-    return show_not_subscribed;
+    return show_available;
 }
 
 export function set_show_subscribed(value: boolean): void {
     show_subscribed = value;
 }
 
-export function set_show_not_subscribed(value: boolean): void {
-    show_not_subscribed = value;
+export function set_show_available(value: boolean): void {
+    show_available = value;
 }
 
 export function update_web_public_stream_privacy_option_state($container: JQuery): void {
@@ -66,10 +68,10 @@ export function update_web_public_stream_privacy_option_state($container: JQuery
         )}']`,
     );
 
-    const for_stream_edit_panel = $container.attr("id") === "stream_permission_settings";
+    const for_stream_edit_panel = $container.attr("id") === "stream_settings";
     if (for_stream_edit_panel) {
         const stream_id = Number.parseInt(
-            $container.closest(".subscription_settings.show").attr("data-stream-id")!,
+            $container.find(".subscription_settings.show").attr("data-stream-id")!,
             10,
         );
         const sub = sub_store.get(stream_id);
@@ -89,18 +91,18 @@ export function update_web_public_stream_privacy_option_state($container: JQuery
             $web_public_stream_elem.prop("disabled", true);
             return;
         }
-        $web_public_stream_elem.closest(".settings-radio-input-parent").hide();
+        $web_public_stream_elem.closest(".settings-radio-input-parent").prop("hidden", true);
         $container
-            .find(".stream-privacy-values .settings-radio-input-parent:visible")
+            .find(".stream-privacy-values .settings-radio-input-parent:not([hidden])")
             .last()
             .css("border-bottom", "none");
     } else {
-        if (!$web_public_stream_elem.is(":visible")) {
+        if ($web_public_stream_elem.closest(".settings-radio-input-parent").prop("hidden")) {
             $container
-                .find(".stream-privacy-values .settings-radio-input-parent:visible")
+                .find(".stream-privacy-values .settings-radio-input-parent:not([hidden])")
                 .last()
                 .css("border-bottom", "");
-            $web_public_stream_elem.closest(".settings-radio-input-parent").show();
+            $web_public_stream_elem.closest(".settings-radio-input-parent").prop("hidden", false);
         }
         $web_public_stream_elem.prop(
             "disabled",
@@ -198,9 +200,15 @@ export function update_settings_button_for_sub(sub: StreamSubscription): void {
     }
 
     if (sub.subscribed) {
-        $settings_button.text($t({defaultMessage: "Unsubscribe"})).removeClass("unsubscribed");
+        $settings_button
+            .text($t({defaultMessage: "Unsubscribe"}))
+            .removeClass("unsubscribed action-button-quiet-brand")
+            .addClass("action-button-quiet-neutral");
     } else {
-        $settings_button.text($t({defaultMessage: "Subscribe"})).addClass("unsubscribed");
+        $settings_button
+            .text($t({defaultMessage: "Subscribe"}))
+            .addClass("unsubscribed action-button-quiet-brand")
+            .removeClass("action-button-quiet-neutral");
     }
     if (stream_data.can_toggle_subscription(sub)) {
         $settings_button.prop("disabled", false);
@@ -218,6 +226,34 @@ export function update_settings_button_for_sub(sub: StreamSubscription): void {
     }
 }
 
+export function update_settings_button_for_archive_and_unarchive(sub: StreamSubscription): void {
+    if (!hash_parser.is_editing_stream(sub.stream_id)) {
+        return;
+    }
+
+    // This is for the Archive/Unarchive button in the right panel.
+    const $archive_button = $(
+        `.stream_settings_header[data-stream-id='${CSS.escape(sub.stream_id.toString())}'] .deactivate`,
+    );
+    const $unarchive_button = $(
+        `.stream_settings_header[data-stream-id='${CSS.escape(sub.stream_id.toString())}'] .reactivate`,
+    );
+
+    if (!stream_data.can_administer_channel(sub)) {
+        $archive_button.hide();
+        $unarchive_button.hide();
+        return;
+    }
+
+    if (sub.is_archived) {
+        $archive_button.hide();
+        $unarchive_button.show();
+    } else {
+        $unarchive_button.hide();
+        $archive_button.show();
+    }
+}
+
 export function update_regular_sub_settings(sub: StreamSubscription): void {
     // These are in the right panel.
     if (!hash_parser.is_editing_stream(sub.stream_id)) {
@@ -230,6 +266,28 @@ export function update_regular_sub_settings(sub: StreamSubscription): void {
         $settings.find(".stream-email-box").show();
     } else {
         $settings.find(".stream-email-box").hide();
+    }
+}
+
+export function enable_or_disable_generate_email_button(sub: StreamSubscription): void {
+    if (!hash_parser.is_editing_stream(sub.stream_id)) {
+        return;
+    }
+
+    const $settings = $(
+        `.subscription_settings[data-stream-id='${CSS.escape(sub.stream_id.toString())}']`,
+    );
+    const $generate_email_button_container = $settings.find(
+        ".generate-channel-email-button-container",
+    );
+    const $generate_email_button = $generate_email_button_container.find(".copy_email_button");
+
+    if (stream_data.can_access_stream_email(sub)) {
+        $generate_email_button.prop("disabled", false);
+        $generate_email_button_container.removeClass("disabled_setting_tooltip");
+    } else {
+        $generate_email_button.prop("disabled", true);
+        $generate_email_button_container.addClass("disabled_setting_tooltip");
     }
 }
 
@@ -278,13 +336,13 @@ export function enable_or_disable_permission_settings_in_edit_panel(
 
     const $stream_settings = stream_settings_containers.get_edit_container(sub);
 
-    const $general_settings_container = $stream_settings.find($("#stream_permission_settings"));
+    const $general_settings_container = $stream_settings.find(".stream-permissions");
     $general_settings_container
         .find("input, button")
         .prop("disabled", !sub.can_change_stream_permissions_requiring_metadata_access);
 
     const $advanced_configurations_container = $stream_settings.find(
-        $("#stream-advanced-configurations"),
+        $(".advanced-configurations-container"),
     );
     $advanced_configurations_container
         .find("input, select, button")
@@ -295,6 +353,10 @@ export function enable_or_disable_permission_settings_in_edit_panel(
     $permission_pill_container_elements
         .find(".input")
         .prop("contenteditable", sub.can_change_stream_permissions_requiring_metadata_access);
+
+    $stream_settings
+        .find(".channel-folder-widget-container button")
+        .prop("disabled", !sub.can_change_stream_permissions_requiring_metadata_access);
 
     if (!sub.can_change_stream_permissions_requiring_metadata_access) {
         $general_settings_container.find(".default-stream").addClass("control-label-disabled");
@@ -314,7 +376,7 @@ export function enable_or_disable_permission_settings_in_edit_panel(
         $advanced_configurations_container,
     );
 
-    update_default_stream_and_stream_privacy_state($stream_settings);
+    update_default_stream_and_stream_privacy_state($("#stream_settings"));
 
     const disable_message_retention_setting =
         !realm.zulip_plan_is_not_limited || !current_user.is_owner;
@@ -325,7 +387,8 @@ export function enable_or_disable_permission_settings_in_edit_panel(
         .find(".message-retention-setting-custom-input")
         .prop("disabled", disable_message_retention_setting);
 
-    update_web_public_stream_privacy_option_state($("#stream_permission_settings"));
+    update_web_public_stream_privacy_option_state($("#stream_settings"));
+    update_public_stream_privacy_option_state($("#stream_settings"));
 
     if (!sub.can_change_stream_permissions_requiring_content_access) {
         const $stream_privacy_values = $stream_settings
@@ -339,6 +402,16 @@ export function enable_or_disable_permission_settings_in_edit_panel(
             $setting_element.closest(".input-group").addClass("group_setting_disabled");
             settings_components.disable_opening_typeahead_on_clicking_label($setting_element);
         }
+    }
+    settings_banner.set_up_upgrade_banners();
+
+    if (!stream_data.user_can_set_topics_policy(sub)) {
+        $stream_settings.find("#id_topics_policy").prop("disabled", true);
+    }
+
+    if (!stream_data.user_can_set_delete_message_policy()) {
+        settings_components.disable_group_permission_setting($("#id_can_delete_any_message_group"));
+        settings_components.disable_group_permission_setting($("#id_can_delete_own_message_group"));
     }
 }
 
@@ -407,23 +480,25 @@ export function update_notification_setting_checkbox(
 
 export function update_stream_row_in_settings_tab(sub: StreamSubscription): void {
     // This is in the left panel.
-    // This function display/hide stream row in stream settings tab,
-    // used to display immediate effect of add/removal subscription event.
-    // If user is subscribed or unsubscribed to stream, it will show sub or unsub
-    // row under "Subscribed" or "Not subscribed" (only if the stream is public) tab, otherwise
-    // if stream is not public hide stream row under tab.
+    // This function is used to display immediate effect of add/removal subscription
+    // event.
+    // If user is subscribed or unsubscribed to stream, the stream row is kept in
+    // the tab view if user can toggle the state again, otherwise the stream row
+    // is removed.
 
-    if (is_subscribed_stream_tab_active() || is_not_subscribed_stream_tab_active()) {
+    if (is_subscribed_stream_tab_active() || is_available_stream_tab_active()) {
         const $row = row_for_stream_id(sub.stream_id);
 
         if (
             (is_subscribed_stream_tab_active() && sub.subscribed) ||
-            (is_not_subscribed_stream_tab_active() && !sub.subscribed)
+            (is_available_stream_tab_active() &&
+                !sub.subscribed &&
+                stream_data.can_toggle_subscription(sub))
         ) {
             if (stream_settings_components.filter_includes_channel(sub)) {
                 $row.removeClass("notdisplayed");
             }
-        } else if (sub.invite_only || current_user.is_guest) {
+        } else if (current_user.is_guest || !stream_data.can_toggle_subscription(sub)) {
             $row.addClass("notdisplayed");
         }
     }
@@ -437,7 +512,7 @@ export function update_add_subscriptions_elements(sub: SettingsSubscription): vo
     // We are only concerned with the Subscribers tab for editing streams.
     const $add_subscribers_container = $(".edit_subscribers_for_stream .subscriber_list_settings");
 
-    if (current_user.is_guest || realm.realm_is_zephyr_mirror_realm) {
+    if (current_user.is_guest) {
         // For guest users, we just hide the add_subscribers feature.
         $add_subscribers_container.hide();
         return;
@@ -501,22 +576,11 @@ export function enable_or_disable_add_subscribers_elements(
         $container_elem.find(".add_subscribers_container").addClass("add_subscribers_disabled");
     }
 
-    if (stream_creation) {
-        const $subscribe_all_users_button = $container_elem.find("button.add_all_users_to_stream");
-        $subscribe_all_users_button.prop("disabled", !enable_elem);
-
-        if (enable_elem) {
-            $container_elem
-                .find(".add_all_users_to_stream_button_container")
-                .removeClass("add_subscribers_disabled");
-        } else {
-            $container_elem
-                .find(".add_all_users_to_stream_button_container")
-                .addClass("add_subscribers_disabled");
-        }
-    } else {
+    if (!stream_creation) {
         const $add_subscribers_button = $container_elem.find(".add-subscriber-button").expectOne();
-        $add_subscribers_button.prop("disabled", !enable_elem);
+        const input_empty =
+            $container_elem.find(".pill").length === 0 && $input_element.text().length === 0;
+        $add_subscribers_button.prop("disabled", !enable_elem || input_empty);
         if (enable_elem) {
             $add_subscribers_button.css("pointer-events", "");
         }
@@ -542,15 +606,13 @@ export function update_stream_privacy_choices(policy: string): void {
     if (!overlays.streams_open()) {
         return;
     }
-    const stream_edit_panel_opened = $("#stream_permission_settings").is(":visible");
-    const stream_creation_form_opened = $("#stream-creation").is(":visible");
 
-    if (!stream_edit_panel_opened && !stream_creation_form_opened) {
+    if ($("#subscription_overlay .nothing-selected").css("display") !== "none") {
         return;
     }
     let $container = $("#stream-creation");
-    if (stream_edit_panel_opened) {
-        $container = $("#stream_permission_settings");
+    if ($("#stream_settings").css("display") !== "none") {
+        $container = $("#stream_settings");
     }
 
     if (policy === "can_create_private_channel_group") {
@@ -561,5 +623,53 @@ export function update_stream_privacy_choices(policy: string): void {
     }
     if (policy === "can_create_web_public_channel_group") {
         update_web_public_stream_privacy_option_state($container);
+    }
+}
+
+export function update_channel_folder_dropdown(sub: StreamSubscription): void {
+    if (!hash_parser.is_editing_stream(sub.stream_id)) {
+        return;
+    }
+
+    settings_components.set_channel_folder_dropdown_value(sub);
+}
+
+export function maybe_reset_channel_folder_dropdown(archived_folder_id: number): void {
+    const $elem = $("#id_folder_id");
+    const selected_value = settings_components.get_channel_folder_value_from_dropdown_widget($elem);
+    if (selected_value === archived_folder_id) {
+        const active_stream_id = stream_settings_components.get_active_data().id;
+        const sub = sub_store.get(active_stream_id)!;
+        update_setting_element(sub, "folder_id");
+    }
+}
+
+export function set_folder_dropdown_visibility($container: JQuery): void {
+    if (current_user.is_admin) {
+        $container.find(".channel-folder-container").show();
+        $container.find(".no-folders-configured-message").hide();
+        return;
+    }
+
+    const realm_has_channel_folders = channel_folders.get_active_folder_ids().size > 0;
+    if (realm_has_channel_folders) {
+        $container.find(".channel-folder-container").show();
+        $container.find(".no-folders-configured-message").hide();
+    } else {
+        $container.find(".channel-folder-container").hide();
+        $container.find(".no-folders-configured-message").show();
+    }
+}
+
+export function update_folder_dropdown_visibility(): void {
+    if (!overlays.streams_open()) {
+        return;
+    }
+
+    set_folder_dropdown_visibility($("#stream-creation"));
+
+    const active_stream_id = stream_settings_components.get_active_data().id;
+    if (active_stream_id) {
+        set_folder_dropdown_visibility($("#stream_settings"));
     }
 }

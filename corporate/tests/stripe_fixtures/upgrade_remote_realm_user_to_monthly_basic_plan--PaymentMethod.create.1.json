@@ -11,7 +11,8 @@
     },
     "email": null,
     "name": "John Doe",
-    "phone": null
+    "phone": null,
+    "tax_id": null
   },
   "card": {
     "brand": "visa",
@@ -34,6 +35,7 @@
       ],
       "preferred": null
     },
+    "regulated_status": "unregulated",
     "three_d_secure_usage": {
       "supported": true
     },

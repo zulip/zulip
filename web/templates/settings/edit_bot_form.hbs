@@ -3,7 +3,7 @@
         <div class="alert" id="bot-edit-form-error"></div>
         <div class="input-group name_change_container">
             <label for="edit_bot_full_name" class="modal-field-label">{{t "Name" }}</label>
-            <input type="text" autocomplete="off" name="full_name" id="edit_bot_full_name" class="modal_text_input" value="{{ full_name }}" />
+            <input type="text" autocomplete="off" name="full_name" id="edit_bot_full_name" class="modal_text_input" value="{{ full_name }}" maxlength="{{max_bot_name_length}}" />
         </div>
         <input type="hidden" name="is_full_name" value="true" />
         <div class="input-group email_change_container">
@@ -51,12 +51,12 @@
     {{/if}}
     <div class="input-group">
         {{#if is_active}}
-        <button class="button rounded button-danger deactivate_bot_button">
+        <button class="button rounded button-danger deactivate-bot-button">
             {{t 'Deactivate bot' }}
         </button>
         {{else}}
         <span>
-            <button class="button rounded reactivate_user_button">
+            <button class="button rounded reactivate-user-button">
                 {{t 'Reactivate bot' }}
             </button>
         </span>

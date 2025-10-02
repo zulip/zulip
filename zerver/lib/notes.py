@@ -9,7 +9,7 @@ _KeyT = TypeVar("_KeyT")
 _DataT = TypeVar("_DataT")
 
 
-class BaseNotes(Generic[_KeyT, _DataT], ABC):
+class BaseNotes(ABC, Generic[_KeyT, _DataT]):
     """This class defines a generic type-safe mechanism for associating
     additional data with an object (without modifying the original
     object via subclassing or monkey-patching).

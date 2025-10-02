@@ -4,6 +4,7 @@ const assert = require("node:assert/strict");
 
 const _ = require("lodash");
 
+const {make_realm} = require("./lib/example_realm.cjs");
 const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 
@@ -39,21 +40,45 @@ const unread = zrequire("unread");
 
 const REALM_EMPTY_TOPIC_DISPLAY_NAME = "test general chat";
 
-set_realm({realm_empty_topic_display_name: REALM_EMPTY_TOPIC_DISPLAY_NAME});
+set_realm(make_realm({realm_empty_topic_display_name: REALM_EMPTY_TOPIC_DISPLAY_NAME}));
 
 const general = {
     stream_id: 556,
     name: "general",
 };
 
-stream_data.add_sub(general);
+stream_data.add_sub_for_tests(general);
 
 function get_list_info(zoom, search) {
     const stream_id = general.stream_id;
     const zoomed = zoom === undefined ? false : zoom;
     const search_term = search === undefined ? "" : search;
-    return topic_list_data.get_list_info(stream_id, zoomed, search_term);
+    return topic_list_data.get_list_info(stream_id, zoomed, (topics) =>
+        topic_list_data.filter_topics_by_search_term(topics, search_term),
+    );
 }
+
+test("filter_topics_by_search_term with resolved topics_state", () => {
+    const topic_names = ["topic 1", "✔ resolved topic", "topic 2"];
+    const search_term = "";
+
+    // Filter for resolved topics.
+    let topics_state = "is:resolved";
+
+    let result = topic_list_data.filter_topics_by_search_term(
+        topic_names,
+        search_term,
+        topics_state,
+    );
+
+    assert.deepEqual(result, ["✔ resolved topic"]);
+
+    // Filter for unresolved topics.
+    topics_state = "-is:resolved";
+    result = topic_list_data.filter_topics_by_search_term(topic_names, search_term, topics_state);
+
+    assert.deepEqual(result, ["topic 1", "topic 2"]);
+});
 
 function test(label, f) {
     run_test(label, (helpers) => {

@@ -4,7 +4,7 @@ import copy
 import logging
 import time
 from collections.abc import Callable, Collection, Iterable, Sequence
-from typing import Any
+from typing import Any, Literal
 
 from django.conf import settings
 from django.utils.translation import gettext as _
@@ -19,6 +19,10 @@ from zerver.lib import emoji
 from zerver.lib.alert_words import user_alert_words
 from zerver.lib.avatar import avatar_url
 from zerver.lib.bot_config import load_bot_config_template
+from zerver.lib.channel_folders import (
+    get_channel_folders_for_spectators,
+    get_channel_folders_in_realm,
+)
 from zerver.lib.compatibility import is_outdated_server
 from zerver.lib.default_streams import get_default_stream_ids_for_realm
 from zerver.lib.exceptions import JsonableError
@@ -42,11 +46,16 @@ from zerver.lib.message import (
 from zerver.lib.muted_users import get_user_mutes
 from zerver.lib.narrow_helpers import NeverNegatedNarrowTerm, read_stop_words
 from zerver.lib.narrow_predicate import check_narrow_for_events
+from zerver.lib.navigation_views import get_navigation_views_for_user
 from zerver.lib.onboarding_steps import get_next_onboarding_steps
 from zerver.lib.presence import get_presence_for_user, get_presences_for_realm
+from zerver.lib.push_notifications import get_push_devices
 from zerver.lib.realm_icon import realm_icon_url
 from zerver.lib.realm_logo import get_realm_logo_source, get_realm_logo_url
-from zerver.lib.scheduled_messages import get_undelivered_scheduled_messages
+from zerver.lib.scheduled_messages import (
+    get_undelivered_reminders,
+    get_undelivered_scheduled_messages,
+)
 from zerver.lib.soft_deactivation import reactivate_user_if_soft_deactivated
 from zerver.lib.sounds import get_available_notification_sounds
 from zerver.lib.stream_subscription import handle_stream_notifications_compatibility
@@ -75,10 +84,12 @@ from zerver.lib.users import (
     get_data_for_inaccessible_user,
     get_users_for_api,
     is_administrator_role,
+    is_moderator_role,
     max_message_id_for_user,
 )
 from zerver.lib.utils import optional_bytes_to_mib
 from zerver.models import (
+    ChannelFolder,
     Client,
     CustomProfileField,
     Draft,
@@ -100,10 +111,12 @@ from zerver.models.realm_emoji import get_all_custom_emoji_for_realm
 from zerver.models.realm_playgrounds import get_realm_playgrounds
 from zerver.models.realms import (
     MessageEditHistoryVisibilityPolicyEnum,
+    RealmTopicsPolicyEnum,
     get_corresponding_policy_value_for_group_setting,
     get_realm_domains,
 )
 from zerver.models.streams import get_default_stream_groups
+from zerver.models.users import ResolvedTopicNoticeAutoReadPolicyEnum
 from zerver.tornado.django_api import get_user_events, request_event_queue
 from zproject.backends import email_auth_enabled, password_auth_enabled
 
@@ -136,7 +149,7 @@ def has_pending_sponsorship_request(
         user_has_billing_access = user_profile is not None and user_profile.has_billing_access
 
     if settings.CORPORATE_ENABLED and user_profile is not None and user_has_billing_access:
-        from corporate.models import get_customer_by_realm
+        from corporate.models.customers import get_customer_by_realm
 
         customer = get_customer_by_realm(user_profile.realm)
         if customer is not None:
@@ -157,7 +170,7 @@ def fetch_initial_state_data(
     slim_presence: bool = False,
     presence_last_update_id_fetched_by_client: int | None = None,
     presence_history_limit_days: int | None = None,
-    include_subscribers: bool = True,
+    include_subscribers: bool | Literal["partial"] = True,
     include_streams: bool = True,
     spectator_requested_language: str | None = None,
     pronouns_field_type_supported: bool = True,
@@ -165,6 +178,7 @@ def fetch_initial_state_data(
     user_list_incomplete: bool = False,
     include_deactivated_groups: bool = False,
     archived_channels: bool = False,
+    simplified_presence_events: bool = False,
 ) -> dict[str, Any]:
     """When `event_types` is None, fetches the core data powering the
     web app's `page_params` and `/api/v1/register` (for mobile/terminal
@@ -295,6 +309,12 @@ def fetch_initial_state_data(
         else:
             state["saved_snippets"] = do_get_saved_snippets(user_profile)
 
+    if want("navigation_views"):
+        if user_profile is None:
+            state["navigation_views"] = []
+        else:
+            state["navigation_views"] = get_navigation_views_for_user(user_profile)
+
     if want("drafts"):
         if user_profile is None:
             state["drafts"] = []
@@ -314,6 +334,9 @@ def fetch_initial_state_data(
             [] if user_profile is None else get_undelivered_scheduled_messages(user_profile)
         )
 
+    if want("reminders"):
+        state["reminders"] = [] if user_profile is None else get_undelivered_reminders(user_profile)
+
     if want("muted_topics") and (
         # Suppress muted_topics data for clients that explicitly
         # support user_topic. This allows clients to request both the
@@ -328,7 +351,7 @@ def fetch_initial_state_data(
         state["muted_users"] = [] if user_profile is None else get_user_mutes(user_profile)
 
     if want("presence"):
-        if presence_last_update_id_fetched_by_client is not None:
+        if presence_last_update_id_fetched_by_client is not None or simplified_presence_events:
             # This param being submitted by the client, means they want to use
             # the modern API.
             slim_presence = True
@@ -467,7 +490,6 @@ def fetch_initial_state_data(
         )
 
         state["server_generation"] = settings.SERVER_GENERATION
-        state["realm_is_zephyr_mirror_realm"] = realm.is_zephyr_mirror_realm
         state["development_environment"] = settings.DEVELOPMENT
         state["realm_org_type"] = realm.org_type
         state["realm_plan_type"] = realm.plan_type
@@ -536,8 +558,12 @@ def fetch_initial_state_data(
 
         state["max_stream_name_length"] = Stream.MAX_NAME_LENGTH
         state["max_stream_description_length"] = Stream.MAX_DESCRIPTION_LENGTH
+        state["max_bulk_new_subscription_messages"] = settings.MAX_BULK_NEW_SUBSCRIPTION_MESSAGES
         state["max_topic_length"] = MAX_TOPIC_NAME_LENGTH
         state["max_message_length"] = settings.MAX_MESSAGE_LENGTH
+        state["max_channel_folder_name_length"] = ChannelFolder.MAX_NAME_LENGTH
+        state["max_channel_folder_description_length"] = ChannelFolder.MAX_DESCRIPTION_LENGTH
+        state["max_reminder_note_length"] = settings.MAX_REMINDER_NOTE_LENGTH
         if realm.demo_organization_scheduled_deletion_date is not None:
             state["demo_organization_scheduled_deletion_date"] = datetime_to_timestamp(
                 realm.demo_organization_scheduled_deletion_date
@@ -580,6 +606,12 @@ def fetch_initial_state_data(
             ).name
         )
 
+        state["realm_topics_policy"] = RealmTopicsPolicyEnum(realm.topics_policy).name
+
+        state["realm_mandatory_topics"] = (
+            realm.topics_policy == RealmTopicsPolicyEnum.disable_empty_topic.value
+        )
+
     if want("realm_user_settings_defaults"):
         realm_user_default = RealmUserDefault.objects.get(realm=realm)
         state["realm_user_settings_defaults"] = {}
@@ -593,6 +625,11 @@ def fetch_initial_state_data(
         )
         state["realm_user_settings_defaults"]["available_notification_sounds"] = (
             get_available_notification_sounds()
+        )
+        state["realm_user_settings_defaults"]["resolved_topic_notice_auto_read_policy"] = (
+            ResolvedTopicNoticeAutoReadPolicyEnum(
+                realm_user_default.resolved_topic_notice_auto_read_policy
+            ).name
         )
 
     if want("realm_domains"):
@@ -711,12 +748,22 @@ def fetch_initial_state_data(
                 "config_options": [
                     {
                         "key": c.name,
-                        "label": c.description,
+                        "label": c.label,
                         "validator": c.validator.__name__,
                     }
                     for c in integration.config_options
                 ]
                 if integration.config_options
+                else [],
+                "url_options": [
+                    {
+                        "key": c.name,
+                        "label": c.label,
+                        "validator": c.validator.__name__,
+                    }
+                    for c in integration.url_options
+                ]
+                if integration.url_options
                 else [],
             }
             for integration in WEBHOOK_INTEGRATIONS
@@ -757,6 +804,12 @@ def fetch_initial_state_data(
         state["unsubscribed"] = sub_info.unsubscribed
         state["never_subscribed"] = sub_info.never_subscribed
 
+    if want("channel_folders"):
+        if user_profile is None:
+            state["channel_folders"] = get_channel_folders_for_spectators(realm)
+        else:
+            state["channel_folders"] = get_channel_folders_in_realm(user_profile.realm, True)
+
     if want("update_message_flags") and want("message"):
         # Keeping unread_msgs updated requires both message flag updates and
         # message updates. This is due to the fact that new messages will not
@@ -784,6 +837,7 @@ def fetch_initial_state_data(
             state["streams"] = do_get_streams(
                 user_profile,
                 include_web_public=True,
+                exclude_archived=not archived_channels,
                 include_all=True,
                 anonymous_group_membership=anonymous_group_membership_data_dict,
             )
@@ -837,6 +891,11 @@ def fetch_initial_state_data(
         state["user_settings"]["available_notification_sounds"] = (
             get_available_notification_sounds()
         )
+        state["user_settings"]["resolved_topic_notice_auto_read_policy"] = (
+            ResolvedTopicNoticeAutoReadPolicyEnum(
+                settings_user.resolved_topic_notice_auto_read_policy
+            ).name
+        )
 
     if want("user_status"):
         # We require creating an account to access statuses.
@@ -864,6 +923,9 @@ def fetch_initial_state_data(
         # abuse.
         state["giphy_api_key"] = settings.GIPHY_API_KEY if settings.GIPHY_API_KEY else ""
 
+    if want("push_device"):
+        state["push_devices"] = {} if user_profile is None else get_push_devices(user_profile)
+
     if user_profile is None:
         # To ensure we have the correct user state set.
         assert state["is_admin"] is False
@@ -886,6 +948,7 @@ def apply_events(
     user_list_incomplete: bool,
     include_deactivated_groups: bool,
     archived_channels: bool = False,
+    simplified_presence_events: bool = False,
 ) -> None:
     for event in events:
         if fetch_event_types is not None and event["type"] not in fetch_event_types:
@@ -909,6 +972,7 @@ def apply_events(
             user_list_incomplete=user_list_incomplete,
             include_deactivated_groups=include_deactivated_groups,
             archived_channels=archived_channels,
+            simplified_presence_events=simplified_presence_events,
         )
 
 
@@ -924,6 +988,7 @@ def apply_event(
     user_list_incomplete: bool,
     include_deactivated_groups: bool,
     archived_channels: bool = False,
+    simplified_presence_events: bool = False,
 ) -> None:
     if event["type"] == "message":
         state["max_message_id"] = max(state["max_message_id"], event["message"]["id"])
@@ -985,6 +1050,20 @@ def apply_event(
             for idx, saved_snippet in enumerate(state["saved_snippets"]):
                 if saved_snippet["id"] == event["saved_snippet"]["id"]:
                     state["saved_snippets"][idx] = event["saved_snippet"]
+                    break
+
+    elif event["type"] == "navigation_view":
+        if event["op"] == "add":
+            state["navigation_views"].append(event["navigation_view"])
+        elif event["op"] == "update":
+            for navigation_view in state["navigation_views"]:
+                if navigation_view["fragment"] == event["fragment"]:
+                    navigation_view.update(event["data"])
+                    break
+        elif event["op"] == "remove":
+            for idx, navigation_view in enumerate(state["navigation_views"]):
+                if navigation_view["fragment"] == event["fragment"]:
+                    del state["navigation_views"][idx]
                     break
 
     elif event["type"] == "drafts":
@@ -1095,7 +1174,7 @@ def apply_event(
                 if "role" in person:
                     state["is_admin"] = is_administrator_role(person["role"])
                     state["is_owner"] = person["role"] == UserProfile.ROLE_REALM_OWNER
-                    state["is_moderator"] = person["role"] == UserProfile.ROLE_MODERATOR
+                    state["is_moderator"] = is_moderator_role(person["role"])
                     state["is_guest"] = person["role"] == UserProfile.ROLE_GUEST
                     # Recompute properties based on is_admin/is_guest
                     state["can_create_private_streams"] = user_profile.can_create_private_streams()
@@ -1196,9 +1275,12 @@ def apply_event(
                             state["never_subscribed"],
                         ]:
                             for sub in sub_dict:
-                                sub["subscribers"] = [
+                                subscriber_key = (
+                                    "subscribers" if "subscribers" in sub else "partial_subscribers"
+                                )
+                                sub[subscriber_key] = [
                                     user_id
-                                    for user_id in sub["subscribers"]
+                                    for user_id in sub[subscriber_key]
                                     if user_id != person_user_id
                                 ]
 
@@ -1241,8 +1323,11 @@ def apply_event(
                     state["never_subscribed"],
                 ]:
                     for sub in sub_dict:
-                        sub["subscribers"] = [
-                            user_id for user_id in sub["subscribers"] if user_id != person_user_id
+                        subscriber_key = (
+                            "subscribers" if "subscribers" in sub else "partial_subscribers"
+                        )
+                        sub[subscriber_key] = [
+                            user_id for user_id in sub[subscriber_key] if user_id != person_user_id
                         ]
         else:
             raise AssertionError("Unexpected event type {type}/{op}".format(**event))
@@ -1307,53 +1392,47 @@ def apply_event(
 
         if event["op"] == "delete":
             deleted_stream_ids = {stream["stream_id"] for stream in event["streams"]}
+
+            state["subscriptions"] = [
+                stream
+                for stream in state["subscriptions"]
+                if stream["stream_id"] not in deleted_stream_ids
+            ]
+
+            state["unsubscribed"] = [
+                stream
+                for stream in state["unsubscribed"]
+                if stream["stream_id"] not in deleted_stream_ids
+            ]
+
+            state["never_subscribed"] = [
+                stream
+                for stream in state["never_subscribed"]
+                if stream["stream_id"] not in deleted_stream_ids
+            ]
+
             if "streams" in state:
                 state["streams"] = [
                     s for s in state["streams"] if s["stream_id"] not in deleted_stream_ids
                 ]
 
-            if archived_channels:
-                for stream in state["subscriptions"]:
-                    if stream["stream_id"] in deleted_stream_ids:
-                        stream["is_archived"] = True
-
-                for stream in state["unsubscribed"]:
-                    if stream["stream_id"] in deleted_stream_ids:
-                        stream["is_archived"] = True
-                        stream["first_message_id"] = Stream.objects.get(
-                            id=stream["stream_id"]
-                        ).first_message_id
-
-                for stream in state["never_subscribed"]:
-                    if stream["stream_id"] in deleted_stream_ids:
-                        stream["is_archived"] = True
-                        stream["first_message_id"] = Stream.objects.get(
-                            id=stream["stream_id"]
-                        ).first_message_id
-            else:
-                state["subscriptions"] = [
-                    stream
-                    for stream in state["subscriptions"]
-                    if stream["stream_id"] not in deleted_stream_ids
-                ]
-
-                state["unsubscribed"] = [
-                    stream
-                    for stream in state["unsubscribed"]
-                    if stream["stream_id"] not in deleted_stream_ids
-                ]
-
-                state["never_subscribed"] = [
-                    stream
-                    for stream in state["never_subscribed"]
-                    if stream["stream_id"] not in deleted_stream_ids
-                ]
-
         if event["op"] == "update":
             # For legacy reasons, we call stream data 'subscriptions' in
             # the state var here, for the benefit of the JS code.
+            for obj in state["subscriptions"]:
+                if obj["name"].lower() == event["name"].lower():
+                    obj[event["property"]] = event["value"]
+                    if event["property"] == "description":
+                        obj["rendered_description"] = event["rendered_description"]
+                    if event.get("history_public_to_subscribers") is not None:
+                        obj["history_public_to_subscribers"] = event[
+                            "history_public_to_subscribers"
+                        ]
+                    if event.get("is_web_public") is not None:
+                        obj["is_web_public"] = event["is_web_public"]
+
+            updated_first_message_ids = dict()
             for sub_list in [
-                state["subscriptions"],
                 state["unsubscribed"],
                 state["never_subscribed"],
             ]:
@@ -1368,6 +1447,17 @@ def apply_event(
                             ]
                         if event.get("is_web_public") is not None:
                             obj["is_web_public"] = event["is_web_public"]
+                        if (
+                            event["property"] == "is_archived"
+                            and event["value"]
+                            and obj["first_message_id"] is None
+                        ):
+                            new_first_message_id = Stream.objects.get(
+                                id=obj["stream_id"]
+                            ).first_message_id
+                            assert new_first_message_id is not None
+                            obj["first_message_id"] = new_first_message_id
+                            updated_first_message_ids[obj["stream_id"]] = new_first_message_id
             # Also update the pure streams data
             if "streams" in state:
                 for stream in state["streams"]:
@@ -1383,6 +1473,13 @@ def apply_event(
                                 ]
                             if event.get("is_web_public") is not None:
                                 stream["is_web_public"] = event["is_web_public"]
+                            if (
+                                event["property"] == "is_archived"
+                                and stream["stream_id"] in updated_first_message_ids
+                            ):
+                                stream["first_message_id"] = updated_first_message_ids[
+                                    stream["stream_id"]
+                                ]
 
     elif event["type"] == "default_streams":
         state["realm_default_streams"] = event["default_streams"]
@@ -1534,9 +1631,12 @@ def apply_event(
             # add the new subscriptions
             for sub in event["subscriptions"]:
                 if sub["stream_id"] not in existing_stream_ids:
-                    if "subscribers" in sub and not include_subscribers:
+                    subscriber_key = (
+                        "subscribers" if "subscribers" in sub else "partial_subscribers"
+                    )
+                    if subscriber_key in sub and not include_subscribers:
                         sub = copy.deepcopy(sub)
-                        del sub["subscribers"]
+                        del sub[subscriber_key]
                     state["subscriptions"].append(sub)
 
             # remove them from unsubscribed if they had been there
@@ -1555,7 +1655,10 @@ def apply_event(
             # Remove our user from the subscribers of the removed subscriptions.
             if include_subscribers:
                 for sub in removed_subs:
-                    sub["subscribers"].remove(user_profile.id)
+                    subscriber_key = (
+                        "subscribers" if "subscribers" in sub else "partial_subscribers"
+                    )
+                    sub[subscriber_key].remove(user_profile.id)
 
             state["unsubscribed"] += removed_subs
 
@@ -1567,6 +1670,10 @@ def apply_event(
                 if sub["stream_id"] == event["stream_id"]:
                     sub[event["property"]] = event["value"]
         elif event["op"] == "peer_add":
+            # Note: We don't update subscriber_count here, since we
+            # have no way to know whether the added subscriber is
+            # already in our count or not. The opposite decision would
+            # be defensible, but this is less code.
             if include_subscribers:
                 stream_ids = set(event["stream_ids"])
                 user_ids = set(event["user_ids"])
@@ -1578,9 +1685,13 @@ def apply_event(
                 ]:
                     for sub in sub_dict:
                         if sub["stream_id"] in stream_ids:
-                            subscribers = set(sub["subscribers"]) | user_ids
-                            sub["subscribers"] = sorted(subscribers)
+                            subscriber_key = (
+                                "subscribers" if "subscribers" in sub else "partial_subscribers"
+                            )
+                            subscribers = set(sub[subscriber_key]) | user_ids
+                            sub[subscriber_key] = sorted(subscribers)
         elif event["op"] == "peer_remove":
+            # Note: We don't update subscriber_count here, as with peer_add.
             if include_subscribers:
                 stream_ids = set(event["stream_ids"])
                 user_ids = set(event["user_ids"])
@@ -1592,8 +1703,11 @@ def apply_event(
                 ]:
                     for sub in sub_dict:
                         if sub["stream_id"] in stream_ids:
-                            subscribers = set(sub["subscribers"]) - user_ids
-                            sub["subscribers"] = sorted(subscribers)
+                            subscriber_key = (
+                                "subscribers" if "subscribers" in sub else "partial_subscribers"
+                            )
+                            subscribers = set(sub[subscriber_key]) - user_ids
+                            sub[subscriber_key] = sorted(subscribers)
         else:
             raise AssertionError("Unexpected event type {type}/{op}".format(**event))
     elif event["type"] == "presence":
@@ -1606,13 +1720,17 @@ def apply_event(
         # This means that the state resulting from fetch_initial_state + apply_events will not
         # match the state of a hypothetical fetch_initial_state fetch that included the fully
         # updated data. This is intended and not a bug.
-        if slim_presence:
+        if simplified_presence_events:
+            user_key = next(iter(event["presences"].keys()))
+            user_id = user_key
+            slim_presence = True
+        elif slim_presence:
             user_key = str(event["user_id"])
+            user_id = event["user_id"]
         else:
             user_key = event["email"]
-        state["presences"][user_key] = get_presence_for_user(event["user_id"], slim_presence)[
-            user_key
-        ]
+            user_id = event["user_id"]
+        state["presences"][user_key] = get_presence_for_user(user_id, slim_presence)[user_key]
     elif event["type"] == "update_message":
         # We don't return messages in /register, so we don't need to
         # do anything for content updates, but we may need to update
@@ -1845,6 +1963,21 @@ def apply_event(
         else:
             fields = ["stream_id", "topic_name", "visibility_policy", "last_updated"]
             state["user_topics"].append({x: event[x] for x in fields})
+    elif event["type"] == "channel_folder":
+        if event["op"] == "add":
+            state["channel_folders"].append(event["channel_folder"])
+            state["channel_folders"].sort(key=lambda folder: folder["id"])
+        elif event["op"] == "update":
+            for channel_folder in state["channel_folders"]:
+                if channel_folder["id"] == event["channel_folder_id"]:
+                    channel_folder.update(event["data"])
+        elif event["op"] == "reorder":
+            order_mapping = {_[1]: _[0] for _ in enumerate(event["order"])}
+            for channel_folder in state["channel_folders"]:
+                channel_folder["order"] = order_mapping[channel_folder["id"]]
+            state["channel_folders"].sort(key=lambda folder: folder["order"])
+        else:
+            raise AssertionError("Unexpected event type {type}/{op}".format(**event))
     elif event["type"] == "has_zoom_token":
         state["has_zoom_token"] = event["value"]
     elif event["type"] == "web_reload_client":
@@ -1858,6 +1991,9 @@ def apply_event(
     elif event["type"] == "restart":
         # The Tornado process restarted.  This has no effect; we ignore it.
         pass
+    elif event["type"] == "push_device":
+        state["push_devices"][event["push_account_id"]]["status"] = event["status"]
+        state["push_devices"][event["push_account_id"]]["error_code"] = event.get("error_code")
     else:
         raise AssertionError("Unexpected event type {}".format(event["type"]))
 
@@ -1877,6 +2013,7 @@ class ClientCapabilities(TypedDict):
     include_deactivated_groups: NotRequired[bool]
     archived_channels: NotRequired[bool]
     empty_topic_name: NotRequired[bool]
+    simplified_presence_events: NotRequired[bool]
 
 
 DEFAULT_CLIENT_CAPABILITIES = ClientCapabilities(notification_settings_null=False)
@@ -1894,7 +2031,7 @@ def do_events_register(
     event_types: Sequence[str] | None = None,
     queue_lifespan_secs: int = 0,
     all_public_streams: bool = False,
-    include_subscribers: bool = True,
+    include_subscribers: bool | Literal["partial"] = True,
     include_streams: bool = True,
     client_capabilities: ClientCapabilities = DEFAULT_CLIENT_CAPABILITIES,
     narrow: Collection[NeverNegatedNarrowTerm] = [],
@@ -1919,6 +2056,7 @@ def do_events_register(
     include_deactivated_groups = client_capabilities.get("include_deactivated_groups", False)
     archived_channels = client_capabilities.get("archived_channels", False)
     empty_topic_name = client_capabilities.get("empty_topic_name", False)
+    simplified_presence_events = client_capabilities.get("simplified_presence_events", False)
 
     if fetch_event_types is not None:
         event_types_set: set[str] | None = set(fetch_event_types)
@@ -1954,6 +2092,7 @@ def do_events_register(
             include_streams=include_streams,
             spectator_requested_language=spectator_requested_language,
             include_deactivated_groups=include_deactivated_groups,
+            simplified_presence_events=simplified_presence_events,
         )
 
         post_process_state(
@@ -1990,6 +2129,7 @@ def do_events_register(
         include_deactivated_groups=include_deactivated_groups,
         archived_channels=archived_channels,
         empty_topic_name=empty_topic_name,
+        simplified_presence_events=simplified_presence_events,
     )
 
     if queue_id is None:
@@ -2013,6 +2153,7 @@ def do_events_register(
         user_list_incomplete=user_list_incomplete,
         include_deactivated_groups=include_deactivated_groups,
         archived_channels=archived_channels,
+        simplified_presence_events=simplified_presence_events,
     )
 
     # Apply events that came in while we were fetching initial data
@@ -2024,10 +2165,11 @@ def do_events_register(
         fetch_event_types=fetch_event_types,
         client_gravatar=client_gravatar,
         slim_presence=slim_presence,
-        include_subscribers=include_subscribers,
+        include_subscribers=True if include_subscribers == "partial" else include_subscribers,
         linkifier_url_template=linkifier_url_template,
         user_list_incomplete=user_list_incomplete,
         include_deactivated_groups=include_deactivated_groups,
+        simplified_presence_events=simplified_presence_events,
     )
 
     post_process_state(

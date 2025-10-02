@@ -6,18 +6,22 @@
 </p>
 <p>{{t "Their password will be cleared from our systems, and any bots they maintain will be disabled." }}</p>
 <p>
-    {{#tr}}
-        <strong>{username}</strong> has {number_of_invites_by_user} unexpired invitations.
-    {{/tr}}
-    {{#if bots_owned_by_user}}
-        {{t "They administer the following bots:"}}
-        <ul>
-            {{#each bots_owned_by_user}}
-                <li>{{this.full_name}}</li>
-            {{/each}}
-        </ul>
+    {{#if number_of_invites_by_user}}
+        {{#tr}}
+            <strong>{username}</strong> has {number_of_invites_by_user, plural, one {# unexpired invitation} other {# unexpired invitations}}.
+        {{/tr}}
     {{/if}}
 </p>
+{{#if bots_owned_by_user}}
+    <p>
+        {{t "They administer the following bots:"}}
+    </p>
+    <ul>
+        {{#each bots_owned_by_user}}
+            <li>{{this.full_name}}</li>
+        {{/each}}
+    </ul>
+{{/if}}
 <label class="checkbox">
     <input type="checkbox" class="send_email" />
     <span class="rendered-checkbox"></span>

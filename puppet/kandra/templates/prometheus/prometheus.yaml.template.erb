@@ -69,14 +69,14 @@ scrape_configs:
   - job_name: "smokescreen"
     ec2_sd_configs:
       - region: us-east-1
-        port: 9810
+        port: 4760
         filters:
           - name: "tag:role"
             values: ["smokescreen"]
           - name: instance-state-name
             values: ["running"]
     static_configs:
-      - targets: ["<%= @czo %>:9810"]
+      - targets: ["<%= @czo %>:4760"]
         labels:
           deploy: prod
           instance: <%= @czo %>
@@ -278,6 +278,12 @@ scrape_configs:
         target_label: bucket
       - target_label: __address__
         replacement: localhost:9188
+
+  - job_name: "weblate"
+    scrape_interval: 15m
+    scrape_timeout: 120s
+    static_configs:
+      - targets: ["localhost:9189"]
 
   - job_name: "vector"
     scrape_interval: 30s

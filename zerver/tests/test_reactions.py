@@ -95,7 +95,7 @@ class ReactionEmojiTest(ZulipTestCase):
         Formatted reactions data is saved in cache.
         """
         senders = [self.example_user("hamlet"), self.example_user("cordelia")]
-        emojis = ["smile", "tada"]
+        emojis = ["slight_smile", "tada"]
         expected_emoji_codes = ["1f642", "1f389"]
 
         for sender, emoji in zip(senders, emojis, strict=False):
@@ -108,7 +108,7 @@ class ReactionEmojiTest(ZulipTestCase):
             self.assertEqual(200, result.status_code)
 
         key = to_dict_cache_key_id(1)
-        message = extract_message_dict(cache_get(key)[0])
+        message = extract_message_dict(cache_get(key))
 
         expected_reaction_data = [
             {

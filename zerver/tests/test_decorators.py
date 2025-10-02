@@ -1244,8 +1244,8 @@ class TestAuthenticatedJsonViewDecorator(ZulipTestCase):
         )
 
     def _do_test(self, user_email: str) -> "TestHttpResponse":
-        data = {"password": initial_password(user_email)}
-        return self.client_post(r"/accounts/webathena_kerberos_login/", data)
+        data = {"status_text": "working"}
+        return self.client_post(r"/json/users/me/status", data)
 
 
 class TestPublicJsonViewDecorator(ZulipTestCase):
@@ -1440,9 +1440,9 @@ class RestAPITest(ZulipTestCase):
         self.assertEqual(str(result["Allow"]), "DELETE, GET, HEAD, PATCH")
 
     def test_http_accept_redirect(self) -> None:
-        result = self.client_get("/json/users", HTTP_ACCEPT="text/html")
+        result = self.client_get("/json/attachments", HTTP_ACCEPT="text/html")
         self.assertEqual(result.status_code, 302)
-        self.assertTrue(result["Location"].endswith("/login/?next=%2Fjson%2Fusers"))
+        self.assertTrue(result["Location"].endswith("/login/?next=%2Fjson%2Fattachments"))
 
 
 class TestUserAgentParsing(ZulipTestCase):

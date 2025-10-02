@@ -1,4 +1,4 @@
-import {z} from "zod";
+import * as z from "zod/mini";
 
 import * as blueslip from "./blueslip.ts";
 import * as channel from "./channel.ts";
@@ -12,33 +12,34 @@ import * as widgetize from "./widgetize.ts";
 
 export type Submessage = z.infer<typeof message_store.submessage_schema>;
 
-export const zform_widget_extra_data_schema = z
-    .object({
-        choices: z.array(
-            z.object({
-                type: z.string(),
-                long_name: z.string(),
-                reply: z.string(),
-                short_name: z.string(),
-            }),
-        ),
-        heading: z.string(),
-        type: z.literal("choices"),
-    })
-    .nullable();
+export const zform_widget_extra_data_schema = z.object({
+    choices: z.array(
+        z.object({
+            type: z.string(),
+            long_name: z.string(),
+            reply: z.string(),
+            short_name: z.string(),
+        }),
+    ),
+    heading: z.string(),
+    type: z.literal("choices"),
+});
 
-const poll_widget_extra_data_schema = z
-    .object({
-        question: z.string().optional(),
-        options: z.array(z.string()).optional(),
-    })
-    .nullable();
+const poll_widget_extra_data_schema = z.nullable(
+    z.object({
+        question: z.optional(z.string()),
+        options: z.optional(z.array(z.string())),
+    }),
+);
 
 const widget_data_event_schema = z.object({
     sender_id: z.number(),
     data: z.discriminatedUnion("widget_type", [
         z.object({widget_type: z.literal("poll"), extra_data: poll_widget_extra_data_schema}),
-        z.object({widget_type: z.literal("zform"), extra_data: zform_widget_extra_data_schema}),
+        z.object({
+            widget_type: z.literal("zform"),
+            extra_data: z.nullable(zform_widget_extra_data_schema),
+        }),
         z.object({
             widget_type: z.literal("todo"),
             extra_data: todo_widget_extra_data_schema,
@@ -56,18 +57,12 @@ const inbound_data_event_schema = z.object({
     ),
 });
 
-const submessages_event_schema = z
-    .tuple([widget_data_event_schema])
-    .rest(inbound_data_event_schema);
+const submessages_event_schema = z.tuple([widget_data_event_schema], inbound_data_event_schema);
 
 type SubmessageEvents = z.infer<typeof submessages_event_schema>;
 
 export function get_message_events(message: Message): SubmessageEvents | undefined {
     if (message.locally_echoed) {
-        return undefined;
-    }
-
-    if (!message.submessages) {
         return undefined;
     }
 
@@ -163,10 +158,6 @@ export function update_message(submsg: Submessage): void {
         // the original message, since the server doesn't
         // track that.
         return;
-    }
-
-    if (message.submessages === undefined) {
-        message.submessages = [];
     }
 
     const existing = message.submessages.find((sm) => sm.id === submsg.id);

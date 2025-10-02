@@ -44,5 +44,6 @@ def environment(**options: Any) -> Environment:
 
     env.policies["json.dumps_function"] = json_dumps
     env.policies["json.dumps_kwargs"] = {}
+    env.policies["ext.i18n.trimmed"] = True
 
     return env

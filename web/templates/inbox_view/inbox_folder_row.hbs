@@ -1,0 +1,25 @@
+{{!-- col-index `0` is COLUMNS.FULL_ROW --}}
+<div id="{{ header_id }}" tabindex="0" class="inbox-header inbox-folder {{#unless is_header_visible}}hidden_by_filters{{/unless}} {{#if is_collapsed}}inbox-collapsed-state{{/if}}" data-col-index="0">
+    <div class="inbox-focus-border">
+        <div class="inbox-left-part-wrapper">
+            <div class="inbox-left-part">
+                <div class="inbox-header-name">
+                    <span class="inbox-header-name-text">
+                        {{#if is_dm_header}}
+                            {{t 'DIRECT MESSAGES'}}
+                        {{else}}
+                            {{name}}
+                        {{/if}}
+                    </span>
+                </div>
+                <div class="collapsible-button"><i class="folder-row-chevron zulip-icon zulip-icon-chevron-down"></i></div>
+                <span class="unread_mention_info tippy-zulip-tooltip
+                  {{#unless has_unread_mention}}hidden{{/unless}}"
+                  data-tippy-content="{{t 'You have unread mentions' }}">@</span>
+                <div class="unread-count-focus-outline">
+                    <span class="unread_count">{{unread_count}}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

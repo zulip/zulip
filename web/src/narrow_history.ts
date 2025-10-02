@@ -26,12 +26,12 @@ function is_URL_hash_same_as_filter_hash(filter: Filter): boolean {
 // history, so that we are able to restore it if the user
 // navigates back to this page.
 function _save_narrow_state(): void {
-    const current_filter = narrow_state.filter();
-    if (current_filter === undefined) {
+    if (message_lists.current === undefined) {
         return;
     }
 
-    assert(message_lists.current !== undefined);
+    const current_filter = narrow_state.filter();
+    assert(current_filter !== undefined);
     // Only save state if the URL hash matches the filter terms.
     if (!is_URL_hash_same_as_filter_hash(current_filter)) {
         return;

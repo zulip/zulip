@@ -9,6 +9,7 @@ import * as buddy_data from "./buddy_data.ts";
 import * as gear_menu_util from "./gear_menu_util.ts";
 import * as hash_util from "./hash_util.ts";
 import {$t} from "./i18n.ts";
+import * as message_delete from "./message_delete.ts";
 import * as message_edit from "./message_edit.ts";
 import * as message_lists from "./message_lists.ts";
 import * as muted_users from "./muted_users.ts";
@@ -38,6 +39,7 @@ type ActionPopoverContext = {
     view_source_menu_item: string | undefined;
     should_display_hide_option: boolean;
     should_display_mark_as_unread: boolean;
+    should_display_remind_me_option: boolean;
     should_display_collapse: boolean;
     should_display_uncollapse: boolean;
     should_display_quote_message: boolean;
@@ -56,7 +58,6 @@ type TopicPopoverContext = {
     is_empty_string_topic: boolean;
     topic_unmuted: boolean;
     is_spectator: boolean;
-    is_moderator: boolean;
     is_topic_empty: boolean;
     can_move_topic: boolean;
     can_rename_topic: boolean;
@@ -110,6 +111,7 @@ type GearMenuContext = {
     is_spectator: boolean;
     is_self_hosted: boolean;
     is_development_environment: boolean;
+    is_demo_organization: boolean;
     is_plan_limited: boolean;
     is_plan_standard: boolean;
     is_plan_standard_sponsored_for_free: boolean;
@@ -129,7 +131,6 @@ type GearMenuContext = {
     show_billing: boolean;
     show_remote_billing: boolean;
     show_plans: boolean;
-    show_webathena: boolean;
     sponsorship_pending: boolean;
     user_has_billing_access: boolean;
     user_color_scheme: number;
@@ -212,13 +213,15 @@ export function get_actions_popover_content_context(message_id: number): ActionP
 
     const conversation_time_url = hash_util.by_conversation_and_time_url(message);
 
-    const should_display_delete_option = message_edit.get_deletability(message) && not_spectator;
+    const should_display_delete_option = message_delete.get_deletability(message);
     const should_display_read_receipts_option = realm.realm_enable_read_receipts && not_spectator;
+    const should_display_remind_me_option = not_spectator;
 
     function is_add_reaction_icon_visible(): boolean {
         assert(message_lists.current !== undefined);
         const $message_row = message_lists.current.get_row(message_id);
-        return $message_row.find(".message_controls .reaction_button").is(":visible");
+        const $reaction_button = $message_row.find(".message_controls .reaction_button");
+        return $reaction_button.length === 1 && $reaction_button.css("display") !== "none";
     }
 
     // Since we only display msg actions and star icons on windows smaller than
@@ -228,7 +231,7 @@ export function get_actions_popover_content_context(message_id: number): ActionP
         !message.is_me_message &&
         !is_add_reaction_icon_visible() &&
         not_spectator &&
-        !(stream_id && stream_data.is_stream_archived(stream_id));
+        !(stream_id && stream_data.is_stream_archived_by_id(stream_id));
 
     return {
         message_id: message.id,
@@ -236,6 +239,7 @@ export function get_actions_popover_content_context(message_id: number): ActionP
         editability_menu_item,
         move_message_menu_item,
         should_display_mark_as_unread,
+        should_display_remind_me_option,
         view_source_menu_item,
         should_display_collapse,
         should_display_uncollapse,
@@ -262,11 +266,12 @@ export function get_topic_popover_content_context({
     const topic_unmuted = user_topics.is_topic_unmuted(sub.stream_id, topic_name);
     const has_starred_messages = starred_messages.get_count_in_topic(sub.stream_id, topic_name) > 0;
     const has_unread_messages = num_unread_for_topic(sub.stream_id, topic_name) > 0;
-    const can_move_topic =
-        !sub.is_archived && settings_data.user_can_move_messages_between_streams();
+    const can_move_topic = stream_data.user_can_move_messages_out_of_channel(sub);
     const can_rename_topic =
-        !sub.is_archived && settings_data.user_can_move_messages_to_another_topic();
-    const can_resolve_topic = !sub.is_archived && settings_data.user_can_resolve_topic();
+        stream_data.user_can_move_messages_within_channel(sub) &&
+        !stream_data.is_empty_topic_only_channel(sub.stream_id);
+    const can_resolve_topic = !sub.is_archived && stream_data.can_resolve_topics(sub);
+
     const visibility_policy = user_topics.get_topic_visibility_policy(sub.stream_id, topic_name);
     const all_visibility_policies = user_topics.all_visibility_policies;
     const is_spectator = page_params.is_spectator;
@@ -284,7 +289,6 @@ export function get_topic_popover_content_context({
         can_move_topic,
         can_rename_topic,
         can_resolve_topic,
-        is_moderator: current_user.is_moderator,
         is_realm_admin: current_user.is_admin,
         topic_is_resolved: resolved_topic.is_resolved(topic_name),
         has_starred_messages,
@@ -388,6 +392,7 @@ export function get_gear_menu_content_context(): GearMenuContext {
         is_spectator: page_params.is_spectator,
         is_self_hosted: realm.realm_plan_type === settings_config.realm_plan_types.self_hosted.code,
         is_development_environment: page_params.development_environment,
+        is_demo_organization: realm.demo_organization_scheduled_deletion_date !== undefined,
         is_plan_limited: realm.realm_plan_type === settings_config.realm_plan_types.limited.code,
         is_plan_standard,
         is_plan_standard_sponsored_for_free:
@@ -410,7 +415,6 @@ export function get_gear_menu_content_context(): GearMenuContext {
         show_billing: billing_info.show_billing,
         show_remote_billing: billing_info.show_remote_billing,
         show_plans: billing_info.show_plans,
-        show_webathena: page_params.show_webathena,
         sponsorship_pending: realm_billing.has_pending_sponsorship_request,
         user_has_billing_access,
         // user color scheme

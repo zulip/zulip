@@ -9,12 +9,13 @@ from typing_extensions import override
 
 from zerver.lib.markdown.priorities import PREPROCESSOR_PRIORITIES
 
-# There is a lot of duplicated code between this file and
-# help_relative_links.py. So if you're making a change here consider making
-# it there as well.
-
 REGEXP = re.compile(r"\{settings_tab\|(?P<setting_identifier>.*?)\}")
 
+
+# If any changes to this link mapping are made,
+# `starlight_help/src/components/NavigationSteps.astro` should be updated accordingly.
+# This manual update mechanism will cease to exist once we have switched to the
+# starlight_help system.
 link_mapping = {
     # a mapping from the setting identifier that is the same as the final URL
     # breadcrumb to that setting to the name of its setting type, the setting
@@ -99,6 +100,11 @@ link_mapping = {
         "Custom profile fields",
         "/#organization/profile-field-settings",
     ],
+    "channel-folder-settings": [
+        "Organization settings",
+        "Channel folders",
+        "/#organization/channel-folders",
+    ],
     "data-exports-admin": [
         "Organization settings",
         "Data exports",
@@ -125,7 +131,7 @@ def getMarkdown(setting_type_name: str, setting_name: str, setting_link: str) ->
             return f"1. Navigate to the {relative_link} \
                     tab of the **{setting_type_name}** menu."
         return f"1. Go to {relative_link}."
-    return settings_markdown.format(
+    return settings_markdown.format(  # nocoverage
         setting_type_name=setting_type_name,
         setting_reference=f"**{setting_name}**",
     )

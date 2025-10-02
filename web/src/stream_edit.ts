@@ -2,10 +2,11 @@ import ClipboardJS from "clipboard";
 import $ from "jquery";
 import assert from "minimalistic-assert";
 import type * as tippy from "tippy.js";
-import {z} from "zod";
+import * as z from "zod/mini";
 
 import render_settings_deactivation_stream_modal from "../templates/confirm_dialog/confirm_deactivate_stream.hbs";
-import render_inline_decorated_stream_name from "../templates/inline_decorated_stream_name.hbs";
+import render_settings_reactivation_stream_modal from "../templates/confirm_dialog/confirm_reactivate_stream.hbs";
+import render_inline_decorated_channel_name from "../templates/inline_decorated_channel_name.hbs";
 import render_change_stream_info_modal from "../templates/stream_settings/change_stream_info_modal.hbs";
 import render_confirm_stream_privacy_change_modal from "../templates/stream_settings/confirm_stream_privacy_change_modal.hbs";
 import render_copy_email_address_modal from "../templates/stream_settings/copy_email_address_modal.hbs";
@@ -16,6 +17,7 @@ import * as blueslip from "./blueslip.ts";
 import type {Bot} from "./bot_data.ts";
 import * as browser_history from "./browser_history.ts";
 import * as channel from "./channel.ts";
+import * as channel_folders_ui from "./channel_folders_ui.ts";
 import * as confirm_dialog from "./confirm_dialog.ts";
 import {show_copied_confirmation} from "./copied_tooltip.ts";
 import * as dialog_widget from "./dialog_widget.ts";
@@ -31,6 +33,7 @@ import * as scroll_util from "./scroll_util.ts";
 import * as settings_components from "./settings_components.ts";
 import * as settings_config from "./settings_config.ts";
 import * as settings_data from "./settings_data.ts";
+import * as settings_notifications from "./settings_notifications.ts";
 import * as settings_org from "./settings_org.ts";
 import type {CurrentUser} from "./state_data.ts";
 import {current_user, realm} from "./state_data.ts";
@@ -38,7 +41,6 @@ import * as stream_data from "./stream_data.ts";
 import * as stream_edit_subscribers from "./stream_edit_subscribers.ts";
 import * as stream_edit_toggler from "./stream_edit_toggler.ts";
 import * as stream_settings_api from "./stream_settings_api.ts";
-import type {SubData} from "./stream_settings_api.ts";
 import * as stream_settings_components from "./stream_settings_components.ts";
 import * as stream_settings_containers from "./stream_settings_containers.ts";
 import * as stream_settings_data from "./stream_settings_data.ts";
@@ -64,7 +66,7 @@ type StreamSetting = {
     is_checked: boolean;
 };
 
-const settings_labels_schema = stream_properties_schema.omit({color: true}).keyof();
+const settings_labels_schema = z.keyof(z.omit(stream_properties_schema, {color: true}));
 
 const realm_labels_schema = z.enum([
     "push_notifications",
@@ -72,7 +74,7 @@ const realm_labels_schema = z.enum([
     "message_content_in_email_notifications",
 ]);
 
-const notification_labels_schema = stream_specific_notification_settings_schema.keyof();
+const notification_labels_schema = z.keyof(stream_specific_notification_settings_schema);
 
 export function setup_subscriptions_tab_hash(tab_key_value: string): void {
     if ($("#subscription_overlay .right").hasClass("show")) {
@@ -87,8 +89,8 @@ export function setup_subscriptions_tab_hash(tab_key_value: string): void {
             browser_history.update("#channels/subscribed");
             break;
         }
-        case "not-subscribed": {
-            browser_history.update("#channels/notsubscribed");
+        case "available": {
+            browser_history.update("#channels/available");
             break;
         }
         default: {
@@ -168,10 +170,6 @@ export function update_stream_description(sub: StreamSubscription): void {
 function show_subscription_settings(sub: SettingsSubscription): void {
     const $edit_container = stream_settings_containers.get_edit_container(sub);
     stream_ui_updates.update_add_subscriptions_elements(sub);
-
-    if (!sub.render_subscribers) {
-        return;
-    }
 
     if (!stream_data.can_toggle_subscription(sub)) {
         stream_ui_updates.initialize_cant_subscribe_popover();
@@ -261,6 +259,7 @@ export function show_settings_for(node: HTMLElement): void {
         other_settings,
         stream_privacy_policy_values: settings_config.stream_privacy_policy_values,
         stream_privacy_policy: stream_data.get_stream_privacy_policy(stream_id),
+        stream_topics_policy_values: settings_config.get_stream_topics_policy_values(),
         check_default_stream: stream_data.is_default_stream_id(stream_id),
         zulip_plan_is_not_limited: realm.zulip_plan_is_not_limited,
         upgrade_text_for_wide_organization_logo: realm.upgrade_text_for_wide_organization_logo,
@@ -271,6 +270,7 @@ export function show_settings_for(node: HTMLElement): void {
         can_access_stream_email: stream_data.can_access_stream_email(sub),
         group_setting_labels: settings_config.all_group_setting_labels.stream,
         has_billing_access: settings_data.user_has_billing_access(),
+        empty_string_topic_display_name: util.get_final_topic_display_name(""),
     });
     scroll_util.get_content_element($("#stream_settings")).html(html);
 
@@ -281,14 +281,18 @@ export function show_settings_for(node: HTMLElement): void {
 
     $(".nothing-selected").hide();
     $("#subscription_overlay .stream_change_property_info").hide();
+    $("#id_topics_policy").val(sub.topics_policy);
 
     $edit_container.addClass("show");
 
+    stream_ui_updates.update_settings_button_for_archive_and_unarchive(sub);
     show_subscription_settings(sub);
     settings_org.set_message_retention_setting_dropdown(sub);
     stream_ui_updates.enable_or_disable_permission_settings_in_edit_panel(sub);
     setup_group_setting_widgets(slim_sub);
     stream_ui_updates.update_can_subscribe_group_label($edit_container);
+    stream_settings_components.set_up_folder_dropdown_widget(sub);
+    stream_ui_updates.set_folder_dropdown_visibility($("#stream_settings"));
 
     $("#channels_overlay_container").on(
         "click",
@@ -313,25 +317,6 @@ export function update_muting_rendering(sub: StreamSubscription): void {
     $edit_container.find(".mute-note").toggleClass("hide-mute-note", !sub.is_muted);
 }
 
-function stream_notification_reset(elem: HTMLElement): void {
-    const sub = get_sub_for_target(elem);
-    const data: SubData = [{stream_id: sub.stream_id, property: "is_muted", value: false}];
-    for (const [per_stream_setting_name, global_setting_name] of Object.entries(
-        settings_config.generalize_stream_notification_setting,
-    )) {
-        data.push({
-            stream_id: sub.stream_id,
-            property: settings_labels_schema.parse(per_stream_setting_name),
-            value: user_settings[global_setting_name],
-        });
-    }
-
-    stream_settings_api.bulk_set_stream_property(
-        data,
-        $(elem).closest(".subsection-parent").find(".alert-notification"),
-    );
-}
-
 function stream_setting_changed(elem: HTMLInputElement): void {
     const sub = get_sub_for_target(elem);
     const $status_element = $(elem).closest(".subsection-parent").find(".alert-notification");
@@ -351,10 +336,15 @@ function stream_setting_changed(elem: HTMLInputElement): void {
 }
 
 export function archive_stream(stream_id: number, $alert_element: JQuery): void {
+    dialog_widget.show_dialog_spinner();
     channel.del({
         url: "/json/streams/" + stream_id,
+        success() {
+            dialog_widget.hide_dialog_spinner();
+        },
         error(xhr) {
             ui_report.error($t_html({defaultMessage: "Failed"}), xhr, $alert_element);
+            dialog_widget.hide_dialog_spinner();
         },
     });
 }
@@ -506,6 +496,11 @@ function show_stream_email_address_modal(address: string, sub: StreamSubscriptio
 
     const email_address_clipboard = new ClipboardJS(
         "#copy_email_address_modal .copy-email-address",
+        {
+            text() {
+                return $(".email-address").text();
+            },
+        },
     );
     email_address_clipboard.on("success", (e) => {
         assert(e.trigger instanceof HTMLElement);
@@ -565,7 +560,7 @@ export function initialize(): void {
         },
     );
 
-    $("#channels_overlay_container").on("keypress", "#change_stream_description", (e) => {
+    $("#channels_overlay_container").on("keydown", "#change_stream_description", (e) => {
         // Stream descriptions cannot be multiline, so disable enter key
         // to prevent new line
         if (keydown_util.is_enter_event(e)) {
@@ -579,7 +574,7 @@ export function initialize(): void {
         ".stream-permissions-warning-banner .main-view-banner-close-button",
         (event) => {
             event.preventDefault();
-            $("#stream_permission_settings .stream-permissions-warning-banner").empty();
+            $("#stream_settings .stream-permissions-warning-banner").empty();
         },
     );
 
@@ -601,7 +596,7 @@ export function initialize(): void {
             const sub = sub_store.get(stream_id);
             assert(sub !== undefined);
             stream_settings_components.sub_or_unsub(sub, $stream_row);
-            $("#stream_permission_settings .stream-permissions-warning-banner").empty();
+            $("#stream_settings .stream-permissions-warning-banner").empty();
         },
     );
 
@@ -658,7 +653,8 @@ export function initialize(): void {
         "click",
         ".subsection-parent .reset-stream-notifications-button",
         function on_click(this: HTMLElement) {
-            stream_notification_reset(this);
+            const sub = get_sub_for_target(this);
+            settings_notifications.do_reset_stream_notifications(this, sub);
         },
     );
 
@@ -712,7 +708,7 @@ export function initialize(): void {
         const stream_id = get_stream_id(this);
         const stream = sub_store.get(stream_id);
 
-        const stream_name_with_privacy_symbol_html = render_inline_decorated_stream_name({stream});
+        const stream_name_with_privacy_symbol_html = render_inline_decorated_channel_name({stream});
 
         const is_new_stream_announcements_stream =
             stream_id === realm.realm_new_stream_announcements_stream_id;
@@ -742,6 +738,46 @@ export function initialize(): void {
             help_link: "/help/archive-a-channel",
             html_body,
             on_click: do_archive_stream,
+        });
+
+        $(".dialog_submit_button").attr("data-stream-id", stream_id);
+    });
+
+    $("#channels_overlay_container").on("click", ".reactivate", function (this: HTMLElement, e) {
+        e.preventDefault();
+        e.stopPropagation();
+        const stream_id = get_stream_id(this);
+        function do_unarchive_stream(): void {
+            dialog_widget.show_dialog_spinner();
+            channel.patch({
+                url: `/json/streams/${stream_id}`,
+                data: {is_archived: false},
+                success() {
+                    dialog_widget.hide_dialog_spinner();
+                },
+                error(xhr) {
+                    ui_report.error(
+                        $t_html({defaultMessage: "Failed"}),
+                        xhr,
+                        $(".stream_change_property_info"),
+                    );
+                    dialog_widget.hide_dialog_spinner();
+                },
+            });
+        }
+
+        const stream = sub_store.get(stream_id);
+        const stream_name_with_privacy_symbol_html = render_inline_decorated_channel_name({stream});
+        const html_body = render_settings_reactivation_stream_modal();
+
+        confirm_dialog.launch({
+            html_heading: $t_html(
+                {defaultMessage: "Unarchive <z-link></z-link>?"},
+                {"z-link": () => stream_name_with_privacy_symbol_html},
+            ),
+            id: "unarchive-stream-modal",
+            html_body,
+            on_click: do_unarchive_stream,
         });
 
         $(".dialog_submit_button").attr("data-stream-id", stream_id);
@@ -797,8 +833,10 @@ export function initialize(): void {
                 $subsection,
                 sub,
             );
-            if (sub && $subsection.attr("id") === "stream_permission_settings") {
-                stream_ui_updates.update_default_stream_and_stream_privacy_state($subsection);
+            if (sub && $subsection.hasClass("stream-permissions")) {
+                stream_ui_updates.update_default_stream_and_stream_privacy_state(
+                    $("#stream_settings"),
+                );
                 const $edit_container = stream_settings_containers.get_edit_container(sub);
                 stream_ui_updates.update_can_subscribe_group_label($edit_container);
             }
@@ -861,11 +899,17 @@ export function initialize(): void {
 
             const $subsection = $(this).closest(".settings-subsection-parent");
             settings_org.discard_stream_settings_subsection_changes($subsection, sub);
-            if ($subsection.attr("id") === "stream_permission_settings") {
-                stream_ui_updates.update_default_stream_and_stream_privacy_state($subsection);
+            if ($subsection.hasClass("stream-permissions")) {
+                stream_ui_updates.update_default_stream_and_stream_privacy_state(
+                    $("#stream_settings"),
+                );
                 const $edit_container = stream_settings_containers.get_edit_container(sub);
                 stream_ui_updates.update_can_subscribe_group_label($edit_container);
             }
         },
     );
+
+    $("#channels_overlay_container").on("click", ".create-channel-folder-button", () => {
+        channel_folders_ui.add_channel_folder();
+    });
 }

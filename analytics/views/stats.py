@@ -182,7 +182,7 @@ def get_chart_data_for_stream(
     start: Annotated[datetime | None, BeforeValidator(to_utc_datetime)] = None,
     end: Annotated[datetime | None, BeforeValidator(to_utc_datetime)] = None,
 ) -> HttpResponse:
-    stream, ignored_sub = access_stream_by_id(
+    stream, _sub = access_stream_by_id(
         user_profile,
         stream_id,
         require_content_access=False,
@@ -599,13 +599,13 @@ def client_label_map(name: str) -> str:
     if name == "ZulipTerminal":
         return "Terminal app"
     if name == "ZulipAndroid":
-        return "Old Android app"
+        return "Ancient Android app"
     if name == "ZulipiOS":
-        return "Old iOS app"
+        return "Ancient iOS app"
     if name == "ZulipMobile":
-        return "Mobile app (React Native)"
+        return "Old mobile app (React Native)"
     if name in ["ZulipFlutter", "ZulipMobile/flutter"]:
-        return "Mobile app beta (Flutter)"
+        return "Mobile app (Flutter)"
     if name in ["ZulipPython", "API: Python"]:
         return "Python API"
     if name.startswith("Zulip") and name.endswith("Webhook"):
@@ -619,9 +619,9 @@ def rewrite_client_arrays(value_arrays: dict[str, list[int]]) -> dict[str, list[
         mapped_label = client_label_map(label)
         if mapped_label in mapped_arrays:
             for i in range(len(array)):
-                mapped_arrays[mapped_label][i] += value_arrays[label][i]
+                mapped_arrays[mapped_label][i] += array[i]
         else:
-            mapped_arrays[mapped_label] = [value_arrays[label][i] for i in range(len(array))]
+            mapped_arrays[mapped_label] = array.copy()
     return mapped_arrays
 
 

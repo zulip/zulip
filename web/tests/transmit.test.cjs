@@ -20,7 +20,7 @@ const sent_messages = mock_esm("../src/sent_messages", {
         callback();
     },
 });
-const server_events = mock_esm("../src/server_events");
+const server_events_state = mock_esm("../src/server_events_state");
 
 const people = zrequire("people");
 const transmit = zrequire("transmit");
@@ -133,7 +133,7 @@ run_test("topic wildcard mention not allowed", ({override}) => {
 
 run_test("reply_message_stream", ({override}) => {
     const social_stream_id = 555;
-    stream_data.add_sub({
+    stream_data.add_sub_for_tests({
         name: "social",
         stream_id: social_stream_id,
     });
@@ -155,13 +155,10 @@ run_test("reply_message_stream", ({override}) => {
     });
 
     override(current_user, "user_id", 44);
-    server_events.queue_id = 66;
+    server_events_state.queue_id = 66;
     sent_messages.get_new_local_id = () => "99";
 
-    transmit.reply_message({
-        message: stream_message,
-        content,
-    });
+    transmit.reply_message(stream_message, content);
 
     assert.deepEqual(send_message_args, {
         sender_id: 44,
@@ -196,13 +193,10 @@ run_test("reply_message_private", ({override}) => {
     });
 
     override(current_user, "user_id", 155);
-    server_events.queue_id = 177;
+    server_events_state.queue_id = 177;
     sent_messages.get_new_local_id = () => "199";
 
-    transmit.reply_message({
-        message: pm_message,
-        content,
-    });
+    transmit.reply_message(pm_message, content);
 
     assert.deepEqual(send_message_args, {
         sender_id: 155,
@@ -221,7 +215,5 @@ run_test("reply_message_errors", () => {
 
     blueslip.expect("error", "unknown message type");
 
-    transmit.reply_message({
-        message: bogus_message,
-    });
+    transmit.reply_message(bogus_message, "");
 });

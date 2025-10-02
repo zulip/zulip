@@ -1,5 +1,6 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
+import type * as tippy from "tippy.js";
 
 import render_message_actions_popover from "../templates/popovers/message_actions_popover.hbs";
 
@@ -8,6 +9,7 @@ import * as compose_reply from "./compose_reply.ts";
 import * as condense from "./condense.ts";
 import {show_copied_confirmation} from "./copied_tooltip.ts";
 import * as emoji_picker from "./emoji_picker.ts";
+import * as message_delete from "./message_delete.ts";
 import * as message_edit from "./message_edit.ts";
 import * as message_lists from "./message_lists.ts";
 import type {Message} from "./message_store.ts";
@@ -25,7 +27,7 @@ import {the} from "./util.ts";
 let message_actions_popover_keyboard_toggle = false;
 
 function get_action_menu_menu_items(): JQuery {
-    return $("[data-tippy-root] #message-actions-menu-dropdown li:not(.divider):visible a");
+    return $("[data-tippy-root] #message-actions-menu-dropdown li:not(.divider) a");
 }
 
 function focus_first_action_popover_item(): void {
@@ -64,7 +66,14 @@ export function toggle_message_actions_menu(message: Message): boolean {
     return true;
 }
 
-export function initialize(): void {
+export function initialize({
+    message_reminder_click_handler,
+}: {
+    message_reminder_click_handler: (
+        remind_message_id: number,
+        target: tippy.ReferenceElement,
+    ) => void;
+}): void {
     popover_menus.register_popover_menu(".actions_hover .message-actions-menu-button", {
         theme: "popover-menu",
         placement: "bottom",
@@ -141,6 +150,14 @@ export function initialize(): void {
                 popover_menus.hide_current_popover_if_visible(instance);
             });
 
+            $popper.one("click", ".message-reminder", (e) => {
+                const remind_message_id = Number($(e.currentTarget).attr("data-message-id"));
+                popover_menus.hide_current_popover_if_visible(instance);
+                message_reminder_click_handler(remind_message_id, instance.reference);
+                e.preventDefault();
+                e.stopPropagation();
+            });
+
             $popper.one("click", ".popover_move_message", (e) => {
                 const message_id = Number($(e.currentTarget).attr("data-message-id"));
                 assert(message_lists.current !== undefined);
@@ -209,7 +226,7 @@ export function initialize(): void {
 
             $popper.one("click", ".delete_message", (e) => {
                 const message_id = Number($(e.currentTarget).attr("data-message-id"));
-                message_edit.delete_message(message_id);
+                message_delete.delete_message(message_id);
                 e.preventDefault();
                 e.stopPropagation();
                 popover_menus.hide_current_popover_if_visible(instance);

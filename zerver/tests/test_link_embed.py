@@ -21,7 +21,7 @@ from zerver.lib.url_preview.oembed import get_oembed_data, strip_cdata
 from zerver.lib.url_preview.parsers import GenericParser, OpenGraphParser
 from zerver.lib.url_preview.preview import get_link_embed_data
 from zerver.lib.url_preview.types import UrlEmbedData, UrlOEmbedData
-from zerver.models import Message, Realm, UserProfile
+from zerver.models import Message, Realm, UserMessage, UserProfile
 from zerver.worker.embed_links import FetchLinksEmbedData
 
 
@@ -377,7 +377,11 @@ class PreviewTestCase(ZulipTestCase):
     @responses.activate
     @override_settings(INLINE_URL_EMBED_PREVIEW=True)
     def _send_message_with_test_org_url(
-        self, sender: UserProfile, queue_should_run: bool = True, relative_url: bool = False
+        self,
+        sender: UserProfile,
+        queue_should_run: bool = True,
+        relative_url: bool = False,
+        other_content: str = "",
     ) -> Message:
         url = "http://test.org/"
         # Ensure the cache for this is empty
@@ -386,7 +390,7 @@ class PreviewTestCase(ZulipTestCase):
             msg_id = self.send_personal_message(
                 sender,
                 self.example_user("cordelia"),
-                content=url,
+                content=url + other_content,
             )
             if queue_should_run:
                 patched.assert_called_once()
@@ -508,6 +512,48 @@ class PreviewTestCase(ZulipTestCase):
         self.assertTrue(
             "INFO:root:Time spent on get_link_embed_data for http://test.org/: "
             in info_logs.output[0]
+        )
+
+    def test_mentions_preserved(self) -> None:
+        # Updating the message with the preview content should be sure
+        # to preserve the mention data.
+        msg = self._send_message_with_test_org_url(
+            sender=self.example_user("hamlet"),
+            other_content=" @**Cordelia, Lear's daughter** mention",
+        )
+        self.assertEqual(
+            int(
+                UserMessage.objects.get(message=msg, user_profile=self.example_user("hamlet")).flags
+            ),
+            int(UserMessage.flags.read | UserMessage.flags.is_private),
+        )
+        self.assertEqual(
+            int(
+                UserMessage.objects.get(
+                    message=msg, user_profile=self.example_user("cordelia")
+                ).flags
+            ),
+            int(UserMessage.flags.mentioned | UserMessage.flags.is_private),
+        )
+
+        msg = self._send_message_with_test_org_url(
+            sender=self.example_user("hamlet"), other_content=" @*hamletcharacters* mention"
+        )
+        self.assertEqual(
+            int(
+                UserMessage.objects.get(message=msg, user_profile=self.example_user("hamlet")).flags
+            ),
+            int(
+                UserMessage.flags.mentioned | UserMessage.flags.read | UserMessage.flags.is_private
+            ),
+        )
+        self.assertEqual(
+            int(
+                UserMessage.objects.get(
+                    message=msg, user_profile=self.example_user("cordelia")
+                ).flags
+            ),
+            int(UserMessage.flags.mentioned | UserMessage.flags.is_private),
         )
 
     def test_get_link_embed_data(self) -> None:

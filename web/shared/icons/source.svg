@@ -1,5 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16">
-    <g fill="#000">
+<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
+    <g>
         <path
             d="M6 5.333c0-.368.298-.666.667-.666H10A.667.667 0 1 1 10 6H6.667A.667.667 0 0 1 6 5.333Zm.667 2a.667.667 0 0 0 0 1.334H10a.667.667 0 1 0 0-1.334H6.667Z" />
         <path

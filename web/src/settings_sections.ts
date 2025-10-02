@@ -7,6 +7,7 @@ import * as settings_account from "./settings_account.ts";
 import * as settings_bots from "./settings_bots.ts";
 import * as settings_emoji from "./settings_emoji.ts";
 import * as settings_exports from "./settings_exports.ts";
+import * as settings_folders from "./settings_folders.ts";
 import * as settings_invites from "./settings_invites.ts";
 import * as settings_linkifiers from "./settings_linkifiers.ts";
 import * as settings_muted_users from "./settings_muted_users.ts";
@@ -78,6 +79,7 @@ export function initialize(): void {
         "organization-level-user-defaults",
         settings_realm_user_settings_defaults.set_up,
     );
+    load_func_dict.set("channel-folders", settings_folders.set_up);
 }
 
 export function load_settings_section(section: string): void {
@@ -115,5 +117,6 @@ export function reset_sections(): void {
     settings_user_topics.reset();
     settings_muted_users.reset();
     alert_words_ui.reset();
+    settings_folders.reset();
     // settings_users doesn't need a reset()
 }

@@ -14,9 +14,6 @@ class UserPresence(models.Model):
     NOTE: Users can disable updates to this table (see UserProfile.presence_enabled),
     so this cannot be used to determine if a user was recently active on Zulip.
     The UserActivity table is recommended for that purpose.
-
-    This is a tricky subsystem, because it is highly optimized.  See the docs:
-      https://zulip.readthedocs.io/en/latest/subsystems/presence.html
     """
 
     user_profile = models.OneToOneField(UserProfile, on_delete=CASCADE, unique=True)

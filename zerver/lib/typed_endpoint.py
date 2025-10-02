@@ -240,7 +240,7 @@ def parse_single_parameter(
         # metadata attached to Annotated. Note that we do not transform
         # param_type to its underlying type because the Annotated metadata might
         # still be needed by other parties like Pydantic.
-        ignored_type, *annotations = get_args(param_type)
+        _type, *annotations = get_args(param_type)
         for annotation in annotations:
             if not isinstance(annotation, ApiParamConfig):
                 continue
@@ -316,6 +316,7 @@ def parse_view_func_signature(
 ERROR_TEMPLATES = {
     "bool_parsing": _("{var_name} is not a boolean"),
     "bool_type": _("{var_name} is not a boolean"),
+    "dataclass_type": _("{var_name} does not have the expected format"),
     "datetime_parsing": _("{var_name} is not a date"),
     "datetime_type": _("{var_name} is not a date"),
     "dict_type": _("{var_name} is not a dict"),

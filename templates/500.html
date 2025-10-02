@@ -14,27 +14,35 @@
 <div class="errorbox">
     <div class="errorcontent">
         <h1 class="lead">{{ _("Internal server error") }}</h1>
-        <p>
-            {% trans %}
-            Your Zulip chat cannot be loaded because the server is experiencing technical difficulties.
-            {% endtrans %}
-        </p>
-        <p>
-            {% trans %}
-            This page will reload automatically when service is restored.
-            {% endtrans %}
-            {% if corporate_enabled %}
+        {% if corporate_enabled %}
+            <!-- Keep in sync with web/html/5xx-cloud.html -->
+            <p>
                 {% trans %}
-                In the meantime, you can <a href="mailto:{{support_email}}">contact Zulip support</a>.
+                Something went wrong. Sorry about that! We're aware of
+                the problem and are working to fix it.
+                Zulip will load automatically once it is working again.
                 {% endtrans %}
-            {% else %}
+            </p>
+            <p>
+                {% trans status_url="https://status.zulip.com/" %}
+                Please check <a href="{{status_url}}">Zulip Cloud status</a> for
+                more information, and <a href="mailto:{{support_email}}">contact
+                Zulip support</a> with any questions.
+                {% endtrans %}
+            </p>
+        {% else %}
+            <!-- Keep in sync with web/html/5xx.html -->
+            <p>
                 {% trans %}
-                In the meantime, you can <a href="mailto:{{support_email}}">contact
-                this server's administrators</a> for support.
+                Something went wrong. Sorry about that!
+                Zulip will load automatically once it is working again.
                 {% endtrans %}
-            {% endif %}
-        </p>
-        {% if not corporate_enabled %}
+            </p>
+            <p>
+                {% trans %}
+                <a href="mailto:{{support_email}}">Contact this server's administrators</a> for support.
+                {% endtrans %}
+            </p>
             <p>
                 {% trans troubleshooting_url="https://zulip.readthedocs.io/en/latest/production/troubleshooting.html" %}
                 If you administer this server, you may want to check out the

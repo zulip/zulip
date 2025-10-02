@@ -6,12 +6,13 @@
       "country": "US",
       "line1": "123 Main St",
       "line2": null,
-      "postal_code": "94105",
+      "postal_code": "12345",
       "state": "CA"
     },
     "email": null,
     "name": "John Doe",
-    "phone": null
+    "phone": null,
+    "tax_id": null
   },
   "card": {
     "brand": "visa",
@@ -22,9 +23,9 @@
     },
     "country": "US",
     "display_brand": "visa",
-    "exp_month": 2,
-    "exp_year": 2026,
-    "fingerprint": "9XKsMixKBi6kIIzd",
+    "exp_month": 1,
+    "exp_year": 9999,
+    "fingerprint": "NORMALIZED",
     "funding": "credit",
     "generated_from": null,
     "last4": "4242",
@@ -40,9 +41,9 @@
     },
     "wallet": null
   },
-  "created": 1740080510,
+  "created": 1000000000,
   "customer": null,
-  "id": "pm_1Qufd3DEQaroqDjsvPgCjrpD",
+  "id": "customer_minimum_licenses_for_plan--Customer.retrieve.1.json",
   "livemode": false,
   "metadata": {},
   "object": "payment_method",

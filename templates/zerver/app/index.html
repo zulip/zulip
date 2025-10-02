@@ -7,12 +7,15 @@
 {% set PAGE_DESCRIPTION = _("Browse the publicly accessible channels in {org_name} without logging in.").format(org_name=realm_name)  %}
 
 {% block meta_viewport %}
-<!-- From version 132, Firefox now defaults to not resize the viewport
+<!--
+From version 132, Firefox now defaults to not resize the viewport
 content but only the visual viewport. While this works well in
 Chrome Android, it creates a buggy experience in Firefox Android
 where the compose box is hidden under keyboard. To fix it, we rollback
-to resizing content when keyboard is shown on Firefox Android. -->
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no {% if is_firefox_android %}, interactive-widget=resizes-content{% endif %}" />
+to resizing content when keyboard is shown on Firefox Android.
+TODO: Remove this when Firefox Android fixes the bug -
+https://bugzilla.mozilla.org/show_bug.cgi?id=1943053 -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no{% if is_firefox_android %}, interactive-widget=resizes-content{% endif %}" />
 {% endblock %}
 
 {% block customhead %}
@@ -101,27 +104,6 @@ to resizing content when keyboard is shown on Firefox Android. -->
     border-top-color: hsl(0,0%,52%);
     animation: zspinner 1s linear infinite;
     }
-
-    /* Bootstrap 'a' tag styles for styling reload link */
-    a#reload-lnk:focus {
-    outline: thin dotted #333;
-    outline: 5px auto -webkit-focus-ring-color;
-    outline-offset: -2px;
-    }
-    a#reload-lnk:hover,
-    a#reload-lnk:active {
-    outline: 0;
-    }
-    a#reload-lnk {
-    color: #0088cc;
-    text-decoration: none;
-    cursor: pointer;
-    }
-    a#reload-lnk:hover,
-    a#reload-lnk:focus {
-    color: #005580;
-    text-decoration: underline;
-    }
 </style>
 {% endblock %}
 
@@ -157,6 +139,7 @@ to resizing content when keyboard is shown on Firefox Android. -->
 <div id="groups_overlay_container"></div>
 <div id="drafts_table"></div>
 <div id="scheduled_messages_overlay_container"></div>
+<div id="reminders-overlay-container"></div>
 <div id="settings_overlay_container" class="overlay" data-overlay="settings" aria-hidden="true">
 </div>
 <div id="message-edit-history-overlay-container"></div>
@@ -185,26 +168,8 @@ to resizing content when keyboard is shown on Firefox Android. -->
     <source class="notification-sound-source-mp3" type="audio/mpeg" />
 </audio>
 
-<div class="alert-box app-alert-box">
-    <div id="popup_banners_wrapper" class="banner-wrapper">
-        <div class="alert alert_sidebar alert-error home-error-bar" id="zephyr-mirror-error">
-            <div class="exit"></div>
-            {# The below isn't tagged for translation
-            intentionally, because the feature is only used at
-            MIT. #}
-            <strong>Your Zephyr mirror is not working.</strong>
-            <span id="normal-zephyr-mirror-error-text">
-                We recommend that
-                you <a class="webathena_login">give Zulip the ability to mirror the messages for you via
-            Webathena</a>.  If you'd prefer, you can instead
-                <a href="/zephyr-mirror/" target="_blank" rel="noopener noreferrer">run the
-            Zephyr mirror script yourself</a> in a screen
-            session.
-            </span>
-            <span id="desktop-zephyr-mirror-error-text" class="notdisplayed">
-                To fix this, you'll need to use the web interface.
-            </span>
-        </div>
+<div id="alert-popup-container">
+    <div id="popup_banners_wrapper" class="banner-wrapper alert-box">
         <div class="alert alert_sidebar alert-error home-error-bar" id="home-error"></div>
         <div class="alert alert_sidebar" id="request-progress-status-banner">
             <div class="alert-zulip-logo">
@@ -222,6 +187,8 @@ to resizing content when keyboard is shown on Firefox Android. -->
         </div>
     </div>
 </div>
+
+<div class="blueslip-error-container"></div>
 
 <div id="navbar-fixed-container">
     <div id="navbar_alerts_wrapper" class="banner-wrapper"></div>
@@ -243,7 +210,7 @@ to resizing content when keyboard is shown on Firefox Android. -->
                     </table>
                     <div id="recent_view_bottom_whitespace">
                         <div class="bottom-messages-logo">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 773.12 773.12">
+                            <svg class="messages-logo-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 773.12 773.12">
                                 <circle cx="386.56" cy="386.56" r="386.56"/>
                                 <path d="M566.66 527.25c0 33.03-24.23 60.05-53.84 60.05H260.29c-29.61 0-53.84-27.02-53.84-60.05 0-20.22 9.09-38.2 22.93-49.09l134.37-120c2.5-2.14 5.74 1.31 3.94 4.19l-49.29 98.69c-1.38 2.76.41 6.16 3.25 6.16h191.18c29.61 0 53.83 27.03 53.83 60.05zm0-281.39c0 20.22-9.09 38.2-22.93 49.09l-134.37 120c-2.5 2.14-5.74-1.31-3.94-4.19l49.29-98.69c1.38-2.76-.41-6.16-3.25-6.16H260.29c-29.61 0-53.84-27.02-53.84-60.05s24.23-60.05 53.84-60.05h252.54c29.61 0 53.83 27.02 53.83 60.05z"/>
                             </svg>
@@ -254,12 +221,12 @@ to resizing content when keyboard is shown on Firefox Android. -->
                     <div class="recent-view-load-more-container main-view-banner info notvisible">
                         <div class="last-fetched-message banner_content">{{ _('This view is still loading messages.') }}</div>
                         <button class="fetch-messages-button main-view-banner-action-button right_edge notvisible">
-                            <div class="loading-indicator"></div>
+                            <span class="loading-indicator"></span>
                             <span class="button-label">{{ _('Load more') }}</span>
                         </button>
                     </div>
                 </div>
-                <div id="inbox-view">
+                <div id="inbox-view" class="no-visible-focus-outlines">
                     <div class="inbox-container">
                         <div id="inbox-pane"></div>
                     </div>
@@ -267,7 +234,7 @@ to resizing content when keyboard is shown on Firefox Android. -->
                 <div id="message_feed_container">
                     <div class="message-feed" id="main_div">
                         <div class="top-messages-logo">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 773.12 773.12">
+                            <svg class="messages-logo-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 773.12 773.12">
                                 <circle cx="386.56" cy="386.56" r="386.56"/>
                                 <path d="M566.66 527.25c0 33.03-24.23 60.05-53.84 60.05H260.29c-29.61 0-53.84-27.02-53.84-60.05 0-20.22 9.09-38.2 22.93-49.09l134.37-120c2.5-2.14 5.74 1.31 3.94 4.19l-49.29 98.69c-1.38 2.76.41 6.16 3.25 6.16h191.18c29.61 0 53.83 27.03 53.83 60.05zm0-281.39c0 20.22-9.09 38.2-22.93 49.09l-134.37 120c-2.5 2.14-5.74-1.31-3.94-4.19l49.29-98.69c1.38-2.76-.41-6.16-3.25-6.16H260.29c-29.61 0-53.84-27.02-53.84-60.05s24.23-60.05 53.84-60.05h252.54c29.61 0 53.83 27.02 53.83 60.05z"/>
                             </svg>

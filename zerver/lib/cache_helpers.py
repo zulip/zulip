@@ -1,6 +1,6 @@
 # See https://zulip.readthedocs.io/en/latest/subsystems/caching.html for docs
 import logging
-from collections.abc import Callable, Iterable
+from collections.abc import Callable, Iterable, Iterator
 from datetime import timedelta
 from typing import Any
 
@@ -27,9 +27,11 @@ from zerver.models.clients import get_client_cache_key
 from zerver.models.users import base_get_user_narrow_queryset
 
 
-def get_narrow_users() -> QuerySet[UserProfile]:
-    return base_get_user_narrow_queryset().filter(
-        long_term_idle=False, realm__in=get_active_realm_ids()
+def get_narrow_users() -> Iterator[UserProfile]:
+    return (
+        base_get_user_narrow_queryset()
+        .filter(long_term_idle=False, realm__in=get_active_realm_ids())
+        .iterator()
     )
 
 
@@ -89,12 +91,17 @@ cache_fillers: dict[
 ] = {
     "user_narrow": (get_narrow_users, user_narrow_cache_items, 3600 * 24 * 7, 10000),
     "client": (
-        Client.objects.all,
+        lambda: Client.objects.all().iterator(),
         client_cache_items,
         3600 * 24 * 7,
         10000,
     ),
-    "session": (Session.objects.all, session_cache_items, 3600 * 24 * 7, 10000),
+    "session": (
+        lambda: Session.objects.all().iterator(),
+        session_cache_items,
+        3600 * 24 * 7,
+        10000,
+    ),
 }
 
 

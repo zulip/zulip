@@ -5,6 +5,7 @@ import assert from "minimalistic-assert";
 
 import render_channel_message_link from "../templates/channel_message_link.hbs";
 import code_buttons_container from "../templates/code_buttons_container.hbs";
+import render_markdown_audio from "../templates/markdown_audio.hbs";
 import render_markdown_timestamp from "../templates/markdown_timestamp.hbs";
 import render_mention_content_wrapper from "../templates/mention_content_wrapper.hbs";
 import render_topic_link from "../templates/topic_link.hbs";
@@ -239,9 +240,7 @@ export const update_elements = ($content: JQuery): void => {
     $content.find("a.stream-topic, a.message-link").each(function (): void {
         const narrow_url = $(this).attr("href");
         assert(narrow_url !== undefined);
-        const channel_topic = hash_util.decode_stream_topic_from_url(
-            window.location.origin + narrow_url,
-        );
+        const channel_topic = hash_util.decode_stream_topic_from_url(narrow_url);
         assert(channel_topic !== null);
         const channel_name = sub_store.maybe_get_stream_name(channel_topic.stream_id);
         if (channel_name !== undefined && $(this).find(".highlight").length === 0) {
@@ -369,6 +368,20 @@ export const update_elements = ($content: JQuery): void => {
             });
         });
         $codehilite.addClass("zulip-code-block");
+    });
+
+    $content.find("audio").each(function (): void {
+        // We grab the audio source and title for
+        // inserting into the template
+        const audio_src = $(this).attr("src");
+        const audio_title = $(this).attr("title");
+
+        const rendered_audio = render_markdown_audio({
+            audio_src,
+            audio_title,
+        });
+
+        $(this).replaceWith($(rendered_audio));
     });
 
     // Display emoji (including realm emoji) as text if

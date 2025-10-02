@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, Any, Literal, Optional
 from django_auth_ldap.config import GroupOfUniqueNamesType, LDAPGroupType
 
 from scripts.lib.zulip_tools import deport
-from zproject.settings_types import JwtAuthKey, OIDCIdPConfigDict, SAMLIdPConfigDict
+from zproject.settings_types import JwtAuthKey, OIDCIdPConfigDict, SAMLIdPConfigDict, SCIMConfigDict
 
 from .config import DEVELOPMENT, PRODUCTION, get_config, get_secret
 
@@ -53,6 +53,7 @@ LDAP_APPEND_DOMAIN: str | None = None
 LDAP_EMAIL_ATTR: str | None = None
 AUTH_LDAP_REVERSE_EMAIL_SEARCH: Optional["LDAPSearch"] = None
 AUTH_LDAP_USERNAME_ATTR: str | None = None
+
 # AUTH_LDAP_USER_ATTR_MAP is uncommented in prod_settings_template.py,
 # so the value here mainly serves to help document the default.
 AUTH_LDAP_USER_ATTR_MAP: dict[str, str] = {
@@ -93,6 +94,7 @@ SOCIAL_AUTH_SAML_TECHNICAL_CONTACT: dict[str, str] | None = None
 SOCIAL_AUTH_SAML_SUPPORT_CONTACT: dict[str, str] | None = None
 SOCIAL_AUTH_SAML_ENABLED_IDPS: dict[str, SAMLIdPConfigDict] = {}
 SOCIAL_AUTH_SAML_SECURITY_CONFIG: dict[str, Any] = {}
+
 # Set this to True to enforce that any configured IdP needs to specify
 # the limit_to_subdomains setting to be considered valid:
 SAML_REQUIRE_LIMIT_TO_SUBDOMAINS = False
@@ -112,8 +114,7 @@ SOCIAL_AUTH_APPLE_EMAIL_AS_USERNAME = True
 SOCIAL_AUTH_OIDC_ENABLED_IDPS: dict[str, OIDCIdPConfigDict] = {}
 SOCIAL_AUTH_OIDC_FULL_NAME_VALIDATED = False
 
-SOCIAL_AUTH_SYNC_CUSTOM_ATTRS_DICT: dict[str, dict[str, dict[str, str]]] = {}
-SOCIAL_AUTH_SYNC_ATTRS_DICT: dict[str, dict[str, dict[str, str]]] = {}
+SOCIAL_AUTH_SYNC_ATTRS_DICT: dict[str, dict[str, dict[str, str | list[str | tuple[str, str]]]]] = {}
 
 # Other auth
 SSO_APPEND_DOMAIN: str | None = None
@@ -166,6 +167,7 @@ S3_UPLOADS_STORAGE_CLASS: Literal[
     "STANDARD_IA",
 ] = "STANDARD"
 S3_AVATAR_PUBLIC_URL_PREFIX: str | None = None
+S3_SKIP_CHECKSUM: bool = False
 LOCAL_UPLOADS_DIR: str | None = None
 LOCAL_AVATARS_DIR: str | None = None
 LOCAL_FILES_DIR: str | None = None
@@ -229,7 +231,7 @@ PASSWORD_MIN_GUESSES = 10000
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 SESSION_COOKIE_AGE = 60 * 60 * 24 * 7 * 2  # 2 weeks
 
-ZULIP_SERVICES_URL = "https://push.zulipchat.com"
+ZULIP_SERVICES_URL: str | None = "https://push.zulipchat.com"
 ZULIP_SERVICE_PUSH_NOTIFICATIONS = False
 
 # For this setting, we need to have None as the default value, so
@@ -240,8 +242,6 @@ ZULIP_SERVICE_PUSH_NOTIFICATIONS = False
 # is enabled.
 ZULIP_SERVICE_SUBMIT_USAGE_STATISTICS: bool | None = None
 ZULIP_SERVICE_SECURITY_ALERTS = False
-
-PUSH_NOTIFICATION_REDACT_CONTENT = False
 
 # Old setting kept around for backwards compatibility. Some old servers
 # may have it in their settings.py.
@@ -258,6 +258,7 @@ RATE_LIMIT_TOR_TOGETHER = False
 SEND_LOGIN_EMAILS = True
 EMBEDDED_BOTS_ENABLED = False
 
+USING_CAPTCHA = False
 DEFAULT_RATE_LIMITING_RULES = {
     # Limits total number of API requests per unit time by each user.
     # Rate limiting general API access protects the server against
@@ -268,8 +269,10 @@ DEFAULT_RATE_LIMITING_RULES = {
     ],
     # Limits total number of unauthenticated API requests (primarily
     # used by the public access option). Since these are
-    # unauthenticated requests, each IP address is a separate bucket.
+    # unauthenticated requests, each IPv4 address is a separate bucket.
+    # For IPv6, one bucket is used for each /64 subnet.
     "api_by_ip": [
+        # 100 requests per minute.
         (60, 100),
     ],
     # Limits total requests to the Mobile Push Notifications Service
@@ -317,6 +320,7 @@ DEFAULT_RATE_LIMITING_RULES = {
     # sending of an email, restricting the number per IP address. This
     # is a general anti-spam measure.
     "sends_email_by_ip": [
+        # 5 emails per day.
         (86400, 5),
     ],
     # Limits access to uploaded files, in web-public contexts, done by
@@ -448,6 +452,13 @@ EMAIL_BACKEND: str | None = None
 # Set in settings.py when email isn't configured.
 WARN_NO_EMAIL = False
 
+# If enabled, all email-sending will happen in the worker.  This means
+# that the UI cannot display configuration errors which prevented
+# email sending, so this is usually left off except in
+# well-established deployments which know the configuration is
+# correct.
+EMAIL_ALWAYS_ENQUEUED = False
+
 # If True, disable rate-limiting and other filters on sending error messages
 # to admins, and enable logging on the error-reporting itself.  Useful
 # mainly in development.
@@ -501,14 +512,10 @@ ROOT_DOMAIN_LANDING_PAGE = False
 # Subdomain for serving endpoints to users from self-hosted deployments.
 SELF_HOSTING_MANAGEMENT_SUBDOMAIN: str | None = None
 
-# If using the Zephyr mirroring supervisord configuration, the
-# hostname to connect to in order to transfer credentials from webathena.
-PERSONAL_ZMIRROR_SERVER: str | None = None
-
 # When security-relevant links in emails expire.
 CONFIRMATION_LINK_DEFAULT_VALIDITY_DAYS = 1
 INVITATION_LINK_VALIDITY_DAYS = 10
-REALM_CREATION_LINK_VALIDITY_DAYS = 7
+CAN_CREATE_REALM_LINK_VALIDITY_DAYS = 7
 
 # Version number for ToS.  Change this if you want to force every
 # user to click through to re-accept terms of service before using
@@ -565,9 +572,7 @@ STAGING = False
 #
 # The default for OFFLINE_THRESHOLD_SECS is chosen as
 # `PRESENCE_PING_INTERVAL_SECS * 3 + 20`, which is designed to allow 2
-# round trips, plus an extra in case an update fails. See
-# https://zulip.readthedocs.io/en/latest/subsystems/presence.html for
-# details on the presence architecture.
+# round trips, plus an extra in case an update fails.
 #
 # How long to wait before clients should treat a user as offline.
 OFFLINE_THRESHOLD_SECS = 200
@@ -630,6 +635,9 @@ NAGIOS_BOT_HOST = SYSTEM_BOT_REALM + "." + EXTERNAL_HOST
 # Use half of the available CPUs for data import purposes.
 DEFAULT_DATA_EXPORT_IMPORT_PARALLELISM = (len(os.sched_getaffinity(0)) // 2) or 1
 
+# Use the default tmpfile path for automated imports
+IMPORT_TMPFILE_DIRECTORY: str | None = None
+
 # How long after the last upgrade to nag users that the server needs
 # to be upgraded because of likely security releases in the meantime.
 # Default is 18 months, constructed as 12 months before someone should
@@ -643,6 +651,11 @@ OUTGOING_WEBHOOK_TIMEOUT_SECONDS = 10
 # Any message content exceeding this limit will be truncated.
 # See: `_internal_prep_message` function in zerver/actions/message_send.py.
 MAX_MESSAGE_LENGTH = 10000
+
+# Maximum length of note text for a reminder.
+# NOTE: Keep it significantly smaller than MAX_MESSAGE_LENGTH
+# to avoid message being completely truncated when reminder is sent.
+MAX_REMINDER_NOTE_LENGTH = 1000
 
 # The maximum number of drafts to send in the response to /register.
 # More drafts, should they exist for some crazy reason, could be
@@ -671,6 +684,10 @@ MAX_STREAM_SIZE_FOR_TYPING_NOTIFICATIONS = 100
 # be soft-reactivated in the case of user group mention.
 MAX_GROUP_SIZE_FOR_MENTION_REACTIVATION = 11
 
+# The maximum number of newly subscribed users for which the server
+# will consider sending DMs to each new subscriber.
+MAX_BULK_NEW_SUBSCRIPTION_MESSAGES = 100
+
 # Limiting guest access to other users via the
 # can_access_all_users_group setting makes presence queries much more
 # expensive. This can be a significant performance problem for
@@ -689,9 +706,12 @@ CUSTOM_AUTHENTICATION_WRAPPER_FUNCTION: Callable[..., Any] | None = None
 # notification.
 RESOLVE_TOPIC_UNDO_GRACE_PERIOD_SECONDS = 60
 
-# For realm imports during registration, maximum size of file
-# that can be uploaded.
-MAX_WEB_DATA_IMPORT_SIZE_MB = 1024
+# Maximum allowed size of uploaded file for realm import on the web.
+# 0 disables import; None means no limit.
+#
+# Note that this is a limit for the size of the uploaded export
+# itself, not any additional files that may be imported as well.
+MAX_WEB_DATA_IMPORT_SIZE_MB: int | None = 0
 
 # Minimum and maximum permitted number of days before full data
 # deletion when deactivating an organization. A nonzero minimum helps
@@ -714,3 +734,13 @@ MAX_PER_USER_MONTHLY_AI_COST: float | None = 0.5
 NAVIGATION_TOUR_VIDEO_URL: str | None = (
     "https://static.zulipchat.com/static/navigation-tour-video/zulip-10.mp4"
 )
+
+# Webhook signature verification.
+VERIFY_WEBHOOK_SIGNATURES = True
+
+# SCIM API configuration.
+SCIM_CONFIG: dict[str, SCIMConfigDict] = {}
+
+# Minimum number of subscribers in a channel for us to no longer
+# send full subscriber data to the client.
+MIN_PARTIAL_SUBSCRIBERS_CHANNEL_SIZE = 1000

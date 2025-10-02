@@ -19,6 +19,10 @@ export function make_indicator(
     } = {},
 ): void {
     let $container = $outer_container;
+    // The pixel values here were established under a 14px
+    // font-size, so we convert the values to ems using
+    // this value
+    const legacy_em_in_px = 14;
 
     // TODO: We set white-space to 'nowrap' because under some
     // unknown circumstances (it happens on Keegan's laptop) the text
@@ -61,9 +65,9 @@ export function make_indicator(
     // These width calculations are tied to the spinner width and
     // margins defined via CSS
     if (width !== undefined) {
-        $container.css({width: width + text_width});
+        $container.css({width: `${(width + text_width) / legacy_em_in_px}em`});
     } else {
-        $container.css({width: 38 + text_width});
+        $container.css({width: `${(38 + text_width) / legacy_em_in_px}em`});
     }
     if (height !== undefined) {
         $container.css({height});

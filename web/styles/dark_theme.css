@@ -3,45 +3,11 @@
 %dark-theme {
     color-scheme: dark;
 
-    .placeholder {
-        color: hsl(0deg 0% 55%);
-        opacity: 1;
-    }
-
-    & textarea::placeholder,
-    input::placeholder {
-        @extend .placeholder;
-    }
-
     kbd {
         text-shadow: none;
     }
 
     /************************* MODAL DARK THEME *******************/
-    .user-profile-manage-own-edit-button,
-    .user-profile-manage-others-edit-button,
-    .user-profile-manage-own-copy-link-button {
-        color: hsl(200deg 100% 50%);
-        cursor: pointer;
-
-        &:hover {
-            color: hsl(200deg 79% 66%);
-        }
-    }
-
-    .modal__content.simplebar-scrollable-y + .modal__footer {
-        border-top: 1px solid hsl(0deg 0% 100% / 20%);
-    }
-
-    .modal__close {
-        &::before {
-            color: hsl(236deg 33% 90%);
-        }
-
-        &:hover {
-            background: hsl(0deg 0% 91% / 10%);
-        }
-    }
 
     #message-formatting,
     #keyboard-shortcuts {
@@ -49,7 +15,6 @@
             border: 1px solid var(--color-hotkey-hint);
             border-radius: 3px;
             color: var(--color-hotkey-hint);
-            text-align: center;
             opacity: 0.8;
         }
     }
@@ -60,54 +25,6 @@
         .enter_sends_minor {
             color: hsl(0deg 0% 80%);
         }
-    }
-
-    & table.table-striped thead.table-sticky-headers th {
-        background-color: hsl(0deg 0% 0%);
-
-        &[data-sort]:hover {
-            background-color: hsl(211deg 29% 14%) !important;
-        }
-    }
-
-    /* Extend the 'light-border' TippyJS theme, which is intended for
-       popovers/menus that should use default background colors, to use
-       our dark theme colors in Zulip's dark theme.
-     */
-    .tippy-box[data-theme~="light-border"] {
-        .tippy-content a,
-        p {
-            color: hsl(236deg 33% 90%);
-        }
-    }
-
-    .tippy-box:not([data-theme]) {
-        background: hsl(0deg 0% 0%);
-
-        &[data-placement^="top"] > .tippy-arrow::before {
-            border-top-color: hsl(0deg 0% 0%);
-        }
-
-        &[data-placement^="bottom"] > .tippy-arrow::before {
-            border-bottom-color: hsl(0deg 0% 0%);
-        }
-
-        &[data-placement^="left"] > .tippy-arrow::before {
-            border-left-color: hsl(0deg 0% 0%);
-        }
-
-        &[data-placement^="right"] > .tippy-arrow::before {
-            border-right-color: hsl(0deg 0% 0%);
-        }
-    }
-
-    .tippy-box[data-theme="dropdown-widget"] {
-        background-color: hsl(240deg 5% 16%);
-        border: 1px solid hsl(0deg 0% 0%);
-        box-shadow:
-            0 7px 13px hsl(0deg 0% 0% / 35%),
-            0 5px 8px hsl(0deg 0% 0% / 32%),
-            0 2px 4px hsl(0deg 0% 0% / 20%);
     }
 
     .dropdown-list-delete {
@@ -121,160 +38,6 @@
         &:hover {
             color: hsl(7deg 100% 74%) !important;
         }
-    }
-
-    #navbar-middle .column-middle-inner,
-    .header,
-    #message_view_header {
-        background-color: var(--color-background-navbar);
-    }
-
-    #scroll-to-bottom-button-container {
-        background: transparent;
-    }
-
-    .main-view-banner {
-        .above_compose_banner_action_link {
-            color: hsl(200deg 100% 50%);
-        }
-
-        &.success {
-            background-color: hsl(147deg 100% 8%);
-            border-color: hsl(149deg 48% 52% / 40%);
-            color: hsl(147deg 51% 80%);
-
-            .main-view-banner-close-button {
-                color: hsl(147deg 51% 55% / 50%);
-
-                &:hover {
-                    color: hsl(147deg 51% 55%);
-                }
-
-                &:active {
-                    color: hsl(147deg 51% 55% / 75%);
-                }
-            }
-
-            .main-view-banner-action-button {
-                background-color: hsl(147deg 51% 55% / 10%);
-                color: inherit;
-
-                &:hover {
-                    background-color: hsl(147deg 51% 55% / 15%);
-                }
-
-                &:active {
-                    background-color: hsl(147deg 51% 55% / 20%);
-                }
-            }
-        }
-
-        &.warning,
-        &.warning-style {
-            background-color: hsl(53deg 100% 11%);
-            border-color: hsl(38deg 44% 60% / 40%);
-            color: hsl(50deg 45% 80%);
-
-            .main-view-banner-close-button {
-                color: hsl(50deg 45% 61% / 50%);
-
-                &:hover {
-                    color: hsl(50deg 45% 61%);
-                }
-
-                &:active {
-                    color: hsl(50deg 45% 61% / 75%);
-                }
-            }
-
-            .main-view-banner-action-button {
-                background-color: hsl(50deg 45% 61% / 10%);
-                color: hsl(50deg 45% 61%);
-
-                &:hover {
-                    background-color: hsl(50deg 45% 61% / 15%);
-                }
-
-                &:active {
-                    background-color: hsl(50deg 45% 61% / 20%);
-                }
-            }
-        }
-
-        &.error {
-            background-color: hsl(0deg 60% 19%);
-            border-color: hsl(3deg 73% 74% / 40%);
-            color: hsl(3deg 73% 80%);
-
-            .main-view-banner-close-button {
-                color: hsl(3deg 73% 74% / 50%);
-
-                &:hover {
-                    color: hsl(3deg 73% 74%);
-                }
-
-                &:active {
-                    color: hsl(3deg 73% 74% / 75%);
-                }
-            }
-
-            .main-view-banner-action-button {
-                background-color: hsl(3deg 73% 74% / 10%);
-                color: hsl(3deg 73% 74%);
-
-                &:hover {
-                    background: hsl(3deg 73% 74% / 15%);
-                }
-
-                &:active {
-                    background: hsl(3deg 73% 74% / 20%);
-                }
-            }
-        }
-
-        &.info {
-            background-color: hsl(204deg 100% 12%);
-            border-color: hsl(205deg 58% 69% / 40%);
-            position: relative;
-            color: hsl(205deg 58% 80%);
-
-            .main-view-banner-close-button {
-                color: hsl(205deg 58% 69% / 50%);
-
-                &:hover {
-                    color: hsl(205deg 58% 69%);
-                }
-
-                &:active {
-                    color: hsl(205deg 58% 69% / 75%);
-                }
-            }
-
-            .main-view-banner-action-button,
-            .upload_banner_cancel_button {
-                background-color: hsl(205deg 58% 69% / 10%);
-                border-color: transparent;
-                color: hsl(205deg 58% 69%);
-
-                &:hover {
-                    background-color: hsl(205deg 58% 69% / 15%);
-                }
-
-                &:active {
-                    background-color: hsl(205deg 58% 69% / 20%);
-                }
-            }
-        }
-    }
-
-    .upload_banner {
-        .moving_bar {
-            background: hsl(204deg 63% 18%);
-        }
-    }
-
-    .stream_header_colorblock.disabled {
-        filter: brightness(50%);
     }
 
     /* this one is because in the app we have blue and in dark-theme it should be white. */
@@ -292,8 +55,7 @@
     input:not([type="radio"]):read-only,
     textarea:read-only,
     #organization-permissions .dropdown-widget-button:disabled,
-    #organization-settings .dropdown-widget-button:disabled,
-    #stream-advanced-configurations .dropdown-widget-button:disabled {
+    #organization-settings .dropdown-widget-button:disabled {
         color: inherit;
         opacity: 0.5;
     }
@@ -303,35 +65,30 @@
         opacity: 0.4;
     }
 
-    .rendered_markdown .message_inline_image {
-        background: hsl(0deg 0% 100% / 3%);
-
-        img.image-loading-placeholder {
-            content: url("../images/loading/loader-white.svg");
-        }
-
-        &:hover {
-            background: hsl(0deg 0% 100% / 15%);
-        }
-    }
-
-    & input[type="text"],
-    input[type="email"],
-    input[type="password"],
-    input[type="number"],
-    input[type="url"],
-    input[type="date"],
     textarea,
     select,
-    .pill-container,
     .user-status-content-wrapper,
     .custom-time-input-value,
     #organization-permissions .dropdown-widget-button,
-    #organization-settings .dropdown-widget-button,
-    #stream-advanced-configurations .dropdown-widget-button {
+    #organization-settings .dropdown-widget-button {
         background-color: hsl(0deg 0% 0% / 20%);
         border-color: hsl(0deg 0% 0% / 60%);
-        color: inherit;
+    }
+
+    input:not(.input-element) {
+        &[type="text"],
+        &[type="email"],
+        &[type="password"],
+        &[type="number"],
+        &[type="url"],
+        &[type="date"] {
+            background-color: hsl(0deg 0% 0% / 20%);
+            border-color: hsl(0deg 0% 0% / 60%);
+
+            &:focus {
+                border-color: hsl(0deg 0% 0% / 90%);
+            }
+        }
     }
 
     .popover-filter-input-wrapper .popover-filter-input:focus {
@@ -345,17 +102,8 @@
         color: hsl(236deg 33% 90%);
     }
 
-    .pill-container {
-        border-style: solid;
-        border-width: 1px;
-
-        &.not-editable-by-user {
-            opacity: 0.5;
-        }
-    }
-
-    .settings-profile-user-field {
-        border-color: hsl(3deg 73% 74%);
+    .pill-container.not-editable-by-user {
+        opacity: 0.5;
     }
 
     #searchbox {
@@ -369,58 +117,18 @@
         }
     }
 
-    .create_user_group_plus_button,
-    .create_stream_plus_button {
-        color: hsl(0deg 0% 100%);
-        background-color: hsl(0deg 0% 0% / 20%);
-        border-color: hsl(0deg 0% 0% / 60%);
-    }
-
-    .table-striped thead th {
-        background-color: hsl(0deg 0% 0% / 50%);
-        border-color: hsl(0deg 0% 0% / 90%);
-    }
-
-    & input[type="text"]:focus,
-    input[type="email"]:focus,
-    input[type="number"]:focus,
     textarea:focus,
     textarea.new_message_textarea:focus,
     #compose_recipient_box:focus {
         border-color: hsl(0deg 0% 0% / 90%);
     }
 
-    .compose_control_button:hover {
-        color: inherit;
-    }
-
-    #compose-content {
-        border-color: hsl(0deg 0% 0% / 60%);
-    }
-
-    .compose_table .stream-selection-header-colorblock {
-        border-color: hsl(240deg 11% 5%);
-    }
-
     /* Not that .message_row (below) needs to be more contrast on dark theme */
-    #compose-content,
     .message-feed .recipient_row,
     .message_row,
     .overlay-message-row .overlay-message-info-box,
     .preview_message_area {
         border-color: hsl(0deg 0% 0% / 40%);
-    }
-
-    & div.overlay,
-    #subscription_overlay
-        #stream-creation
-        #stream_creation_form
-        #stream_creating_indicator:not(:empty),
-    #groups_overlay
-        #user-group-creation
-        #user_group_creation_form
-        #user_group_creating_indicator:not(:empty) {
-        background-color: hsl(212deg 28% 8% / 75%);
     }
 
     & div.overlay .flex.overlay-content > .overlay-container,
@@ -437,20 +145,9 @@
         }
     }
 
-    /* Undo default dropdown background color for dark mode. */
-    #searchbox_form .dropdown-menu ul {
-        background-color: unset;
-    }
-
     .popover hr,
     hr {
-        color: hsl(212deg 28% 18%);
         opacity: 0.2;
-    }
-
-    .narrow_to_compose_recipients,
-    .close {
-        color: hsl(236deg 33% 80%);
     }
 
     .zoom-in {
@@ -554,19 +251,6 @@
         border: 1px solid hsl(11deg 46% 54%);
     }
 
-    .alert {
-        text-shadow: none;
-
-        .close {
-            color: inherit;
-            opacity: 0.8;
-        }
-
-        .close:hover {
-            opacity: 1;
-        }
-    }
-
     .alert.alert-success {
         color: inherit;
         background-color: hsl(161deg 60% 46% / 20%);
@@ -598,67 +282,38 @@
         .alert.alert-error::before {
             color: hsl(0deg 75% 65%);
         }
-
-        .stacktrace {
-            color: hsl(314deg 22% 85%);
-
-            .expand {
-                color: hsl(318deg 14% 36%);
-            }
-
-            .subtle {
-                color: hsl(314deg 19% 63%);
-            }
-
-            .stacktrace-more-info {
-                background-color: hsl(312deg 7% 14%);
-            }
-
-            .code-context {
-                color: hsl(314deg 27% 82%);
-                background-color: hsl(312deg 7% 14%);
-                box-shadow:
-                    inset 0 11px 10px -10px hsl(0deg 0% 6%),
-                    inset 0 -11px 10px -10px hsl(0deg 0% 6%);
-
-                .line-number {
-                    color: hsl(318deg 14% 44%);
-                }
-
-                .focus-line {
-                    background-color: hsl(307deg 9% 19%);
-                }
-            }
-        }
     }
 
-    #user-profile-modal {
-        #default-section {
-            .default-field {
-                .name {
-                    color: hsl(236deg 33% 90%);
-                }
+    .stacktrace {
+        color: hsl(314deg 22% 85%);
+        background-color: hsl(318deg 12% 21%);
+        border: 1px solid hsl(0deg 75% 65%);
+
+        .expand {
+            color: hsl(318deg 14% 36%);
+        }
+
+        .subtle {
+            color: hsl(314deg 19% 63%);
+        }
+
+        .stacktrace-more-info {
+            background-color: hsl(312deg 7% 14%);
+        }
+
+        .code-context {
+            color: hsl(314deg 27% 82%);
+            background-color: hsl(312deg 7% 14%);
+            box-shadow:
+                inset 0 11px 10px -10px hsl(0deg 0% 6%),
+                inset 0 -11px 10px -10px hsl(0deg 0% 6%);
+
+            .line-number {
+                color: hsl(318deg 14% 44%);
             }
-        }
 
-        #content {
-            .field-section {
-                .name {
-                    color: hsl(236deg 33% 90%);
-                }
-            }
-        }
-
-        .subscription-group-list,
-        .subscription-stream-list,
-        .subscription-stream-list .user-stream-list tr,
-        .subscription-group-list .user-group-list tr {
-            border-color: hsl(0deg 0% 0% / 40%);
-        }
-
-        .manage-profile-tab-footer {
-            &.modal__footer_wrapper {
-                border-top: 1px solid hsl(0deg 0% 100% / 20%);
+            .focus-line {
+                background-color: hsl(307deg 9% 19%);
             }
         }
     }
@@ -672,25 +327,9 @@
         background-color: hsl(0deg 0% 0% / 20%);
     }
 
-    #feedback_container {
-        border-color: hsl(0deg 0% 0% / 50%);
-
-        & a:hover {
-            color: hsl(0deg 0% 100%);
-        }
-    }
-
     /* Search highlight used in both topics and rendered_markdown */
     .highlight {
         background-color: hsl(51deg 100% 23%);
-    }
-
-    .sub-unsub-message span::before,
-    .sub-unsub-message span::after,
-    .date_row span::before,
-    .date_row span::after {
-        opacity: 0.15;
-        border-bottom: 1px solid hsl(0deg 0% 100%);
     }
 
     .searching-for-more-topics img {
@@ -715,7 +354,7 @@
     }
 
     & a:not(:active):focus,
-    button:not(.action-button, .icon-button):focus,
+    button:not(.action-button, .icon-button):focus-visible,
     i.fa:focus,
     i.zulip-icon:focus,
     [role="button"]:focus {
@@ -725,55 +364,6 @@
     .color_animated_button {
         .zulip-icon {
             color: hsl(0deg 0% 100%);
-        }
-    }
-
-    /* Widgets: Poll */
-    .poll-widget {
-        .poll-vote {
-            color: hsl(185deg 35% 65%);
-            border-color: hsl(185deg 35% 35%);
-
-            &:hover {
-                color: hsl(185deg 50% 70%);
-                border-color: hsl(185deg 40% 40%);
-                background-color: hsl(185deg 20% 20%);
-            }
-
-            &:focus {
-                color: hsl(185deg 50% 65%);
-                border-color: hsl(185deg 40% 50%);
-                background-color: hsl(185deg 40% 35%);
-            }
-        }
-
-        .poll-names {
-            color: hsl(236deg 15% 70%);
-        }
-    }
-
-    /* Widgets: Todo */
-    .todo-widget {
-        & label.checkbox {
-            & input[type="checkbox"] {
-                ~ .custom-checkbox {
-                    border-color: hsl(185deg 40% 45%);
-                    opacity: 0.7;
-                }
-
-                &:hover ~ .custom-checkbox {
-                    background-color: hsl(185deg 20% 20%);
-                    border-color: hsl(185deg 40% 35%);
-                }
-
-                &:checked ~ .custom-checkbox {
-                    background-color: hsl(185deg 40% 45%);
-                }
-
-                &:focus ~ .custom-checkbox {
-                    outline-color: hsl(0deg 0% 100% / 0%);
-                }
-            }
         }
     }
 
@@ -787,31 +377,6 @@
             &:focus,
             &:hover {
                 color: inherit;
-            }
-        }
-    }
-
-    #read_receipts_modal .read_receipts_list li {
-        &:hover {
-            background-color: hsl(0deg 0% 100% / 5%);
-        }
-
-        &:active,
-        &:focus {
-            background-color: hsl(0deg 0% 100% / 10%);
-        }
-    }
-
-    #settings_page,
-    #stream_settings,
-    #user_group_settings {
-        .save-button-controls .discard-button {
-            color: hsl(0deg 0% 80%);
-
-            &:hover {
-                .save-discard-widget-button-text {
-                    color: hsl(0deg 0% 100%);
-                }
             }
         }
     }

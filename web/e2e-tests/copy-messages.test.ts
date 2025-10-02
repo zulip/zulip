@@ -39,7 +39,7 @@ async function copy_messages(
             const parser = new DOMParser();
             const doc = parser.parseFromString(copied_html, "text/html");
 
-            return [...doc.body.children].map((el) => el.textContent!.trim());
+            return [...doc.body.children].map((el) => el.textContent.trim());
         },
         start_message,
         end_message,

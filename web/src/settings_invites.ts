@@ -1,5 +1,5 @@
 import $ from "jquery";
-import {z} from "zod";
+import * as z from "zod/mini";
 
 import render_settings_resend_invite_modal from "../templates/confirm_dialog/confirm_resend_invite.hbs";
 import render_settings_revoke_invite_modal from "../templates/confirm_dialog/confirm_revoke_invite.hbs";
@@ -9,7 +9,7 @@ import * as blueslip from "./blueslip.ts";
 import * as channel from "./channel.ts";
 import * as confirm_dialog from "./confirm_dialog.ts";
 import * as dialog_widget from "./dialog_widget.ts";
-import {$t, $t_html} from "./i18n.ts";
+import {$t_html} from "./i18n.ts";
 import * as ListWidget from "./list_widget.ts";
 import * as loading from "./loading.ts";
 import * as people from "./people.ts";
@@ -24,7 +24,7 @@ export const invite_schema = z.intersection(
     z.object({
         invited_by_user_id: z.number(),
         invited: z.number(),
-        expiry_date: z.number().nullable(),
+        expiry_date: z.nullable(z.number()),
         id: z.number(),
         invited_as: z.number(),
     }),
@@ -196,6 +196,7 @@ function do_revoke_invite({
 function do_resend_invite({$row, invite_id}: {$row: JQuery; invite_id: string}): void {
     const modal_invite_id = $(".dialog_submit_button").attr("data-invite-id");
     const $resend_button = $row.find("button.resend");
+    const $check_button = $row.find("button.check");
 
     if (modal_invite_id !== invite_id) {
         blueslip.error("Invite resending canceled due to non-matching fields.");
@@ -224,9 +225,15 @@ function do_resend_invite({$row, invite_id}: {$row: JQuery; invite_id: string}):
         success() {
             dialog_widget.hide_dialog_spinner();
             dialog_widget.close();
-            $resend_button.prop("disabled", true);
-            $resend_button.text($t({defaultMessage: "Sent!"}));
-            $resend_button.removeClass("resend button-warning").addClass("sea-green");
+
+            $resend_button.hide();
+            $check_button.removeClass("hide");
+
+            // Showing a success checkmark for a short time (3 seconds).
+            setTimeout(() => {
+                $resend_button.show();
+                $check_button.addClass("hide");
+            }, 3000);
         },
     });
 }
@@ -266,8 +273,8 @@ export function on_load_success(
         const $row = $(this).closest(".invite_row");
         const email = $row.find(".email").text();
         const referred_by = $row.find(".referred_by").text();
-        const invite_id = $(this).attr("data-invite-id")!;
-        const is_multiuse = $(this).attr("data-is-multiuse")!;
+        const invite_id = $(this).closest("tr").attr("data-invite-id")!;
+        const is_multiuse = $(this).closest("tr").attr("data-is-multiuse")!;
         const ctx = {
             is_multiuse: is_multiuse === "true",
             email,
@@ -300,7 +307,7 @@ export function on_load_success(
 
         const $row = $(this).closest(".invite_row");
         const email = $row.find(".email").text();
-        const invite_id = $(this).attr("data-invite-id")!;
+        const invite_id = $(this).closest("tr").attr("data-invite-id")!;
         const html_body = render_settings_resend_invite_modal({email});
 
         confirm_dialog.launch({
@@ -320,17 +327,11 @@ export function on_load_success(
 
 export function update_invite_users_setting_tip(): void {
     if (settings_data.user_can_invite_users_by_email()) {
-        $(".invite-user-settings-tip").hide();
+        $(".invite-user-settings-banner").hide();
         return;
     }
 
-    $(".invite-user-settings-tip").show();
-    $(".invite-user-settings-tip").text(
-        $t({
-            defaultMessage:
-                "You do not have permission to send invite emails in this organization.",
-        }),
-    );
+    $(".invite-user-settings-banner").show();
 }
 
 export function update_invite_user_panel(): void {

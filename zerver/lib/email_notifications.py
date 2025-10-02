@@ -16,24 +16,29 @@ import lxml.html
 from bs4 import BeautifulSoup
 from django.conf import settings
 from django.contrib.auth import get_backends
+from django.utils.timezone import get_current_timezone_name as timezone_get_current_timezone_name
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from django.utils.translation import override as override_language
 from lxml.html import builder as e
+from markupsafe import Markup
 
 from confirmation.models import one_click_unsubscribe_link
 from zerver.lib.display_recipient import get_display_recipient
 from zerver.lib.markdown.fenced_code import FENCE_RE
 from zerver.lib.message import bulk_access_messages
+from zerver.lib.message_cache import MessageDict
 from zerver.lib.notification_data import get_mentioned_user_group
 from zerver.lib.queue import queue_event_on_commit
 from zerver.lib.send_email import EMAIL_DATE_FORMAT, FromAddress, send_future_email
 from zerver.lib.soft_deactivation import soft_reactivate_if_personal_notification
 from zerver.lib.tex import change_katex_to_raw_latex
+from zerver.lib.timestamp import format_datetime_to_string
 from zerver.lib.timezone import canonicalize_timezone
 from zerver.lib.topic import get_topic_display_name, get_topic_resolution_and_bare_name
 from zerver.lib.url_encoding import (
     direct_message_group_narrow_url,
+    message_link_url,
     personal_narrow_url,
     stream_narrow_url,
     topic_narrow_url,
@@ -54,7 +59,7 @@ def relative_to_full_url(fragment: lxml.html.HtmlElement, base_url: str) -> None
     # 2: We also need to update the title attribute in the narrow links which
     # is not possible with `make_links_absolute()`.
     for link_info in fragment.iterlinks():
-        elem, attrib, link, pos = link_info
+        elem, attrib, link, _pos = link_info
         match = re.match(r"/?#narrow/", link)
         if match is not None:
             link = re.sub(r"^/?#narrow/", base_url + "/#narrow/", link)
@@ -180,6 +185,25 @@ def fix_spoilers_in_text(content: str, language: str) -> str:
     return "\n".join(output)
 
 
+def convert_time_to_local_timezone(fragment: lxml.html.HtmlElement, user: UserProfile) -> None:
+    user_tz = user.timezone or timezone_get_current_timezone_name()
+    time_elements = fragment.findall(".//time")
+
+    for time_elem in time_elements:
+        datetime_str = time_elem.get("datetime")
+        if not datetime_str:
+            # We expect there to always be a datetime attribute.
+            continue  # nocoverage
+        try:
+            dt_utc = timezone_now().strptime(datetime_str, "%Y-%m-%dT%H:%M:%S%z")
+            dt_local = dt_utc.astimezone(zoneinfo.ZoneInfo(canonicalize_timezone(user_tz)))
+            formatted_time = format_datetime_to_string(dt_local, user.twenty_four_hour_time)
+            time_elem.text = formatted_time
+        except Exception as e:
+            logger.warning("Failed to convert time element '%s': %s", datetime_str, e)
+            continue
+
+
 def add_quote_prefix_in_text(content: str) -> str:
     """
     We add quote prefix ">" to each line of the message in plain text
@@ -206,10 +230,13 @@ def build_message_list(
     messages_to_render: list[dict[str, Any]] = []
 
     def sender_string(message: Message) -> str:
-        if message.recipient.type in (Recipient.STREAM, Recipient.DIRECT_MESSAGE_GROUP):
+        if message.recipient.type == Recipient.STREAM:
             return message.sender.full_name
-        else:
-            return ""
+        elif message.recipient.type == Recipient.DIRECT_MESSAGE_GROUP:
+            display_recipient = get_display_recipient(message.recipient)
+            if len(display_recipient) > 2:
+                return message.sender.full_name
+        return ""
 
     def fix_plaintext_image_urls(content: str) -> str:
         # Replace image URLs in plaintext content of the form
@@ -218,11 +245,13 @@ def build_message_list(
         return re.sub(r"\[(\S*)\]\((\S*)\)", r"\2", content)
 
     def prepend_sender_to_message(
-        message_plain: str, message_html: str, sender: str
-    ) -> tuple[str, str]:
+        message_plain: str, message_html: Markup, sender: str
+    ) -> tuple[str, Markup]:
         message_plain = f"{sender}:\n{message_plain}"
         message_soup = BeautifulSoup(message_html, "html.parser")
-        sender_name_soup = BeautifulSoup(f"<b>{sender}</b>: ", "html.parser")
+        sender_name_soup = BeautifulSoup(
+            Markup("<b>{sender}</b>: ").format(sender=sender), "html.parser"
+        )
         first_tag = message_soup.find()
         if first_tag and first_tag.name == "div":
             first_tag = first_tag.find()
@@ -230,9 +259,11 @@ def build_message_list(
             first_tag.insert(0, sender_name_soup)
         else:
             message_soup.insert(0, sender_name_soup)
-        return message_plain, str(message_soup)
+        return message_plain, Markup(BeautifulSoup.decode(message_soup))
 
-    def build_message_payload(message: Message, sender: str | None = None) -> dict[str, str]:
+    def build_message_payload(
+        message: Message, sender: str | None = None
+    ) -> dict[str, str | Markup]:
         plain = message.content
         plain = fix_plaintext_image_urls(plain)
         # There's a small chance of colliding with non-Zulip URLs containing
@@ -250,8 +281,9 @@ def build_message_list(
         fix_emojis(fragment, user.emojiset)
         fix_spoilers_in_html(fragment, user.default_language)
         change_katex_to_raw_latex(fragment)
+        convert_time_to_local_timezone(fragment, user)
 
-        html = lxml.html.tostring(fragment, encoding="unicode")
+        html = Markup(lxml.html.tostring(fragment, encoding="unicode"))
         if sender:
             plain, html = prepend_sender_to_message(plain, html, sender)
         return {"plain": plain, "html": html}
@@ -265,10 +297,13 @@ def build_message_list(
             grouping: dict[str, Any] = {"user": message.sender_id}
             narrow_link = personal_narrow_url(
                 realm=user.realm,
-                sender=message.sender,
+                sender_id=message.sender.id,
+                sender_full_name=message.sender.full_name,
             )
             header = f"You and {message.sender.full_name}"
-            header_html = f"<a style='color: #ffffff;' href='{narrow_link}'>{header}</a>"
+            header_html = Markup(
+                "<a style='color: #ffffff;' href='{narrow_link}'>{header}</a>"
+            ).format(narrow_link=narrow_link, header=header)
         elif message.recipient.type == Recipient.DIRECT_MESSAGE_GROUP:
             grouping = {"huddle": message.recipient_id}
             display_recipient = get_display_recipient(message.recipient)
@@ -278,7 +313,9 @@ def build_message_list(
             )
             other_recipients = [r["full_name"] for r in display_recipient if r["id"] != user.id]
             header = "You and {}".format(", ".join(other_recipients))
-            header_html = f"<a style='color: #ffffff;' href='{narrow_link}'>{header}</a>"
+            header_html = Markup(
+                "<a style='color: #ffffff;' href='{narrow_link}'>{header}</a>"
+            ).format(narrow_link=narrow_link, header=header)
         else:
             assert message.recipient.type == Recipient.STREAM
             grouping = {"stream": message.recipient_id, "topic": message.topic_name().lower()}
@@ -296,7 +333,14 @@ def build_message_list(
             )
             header = f"{stream.name} > {message.topic_name()}"
             stream_link = stream_narrow_url(user.realm, stream)
-            header_html = f"<a href='{stream_link}'>{stream.name}</a> > <a href='{narrow_link}'>{message.topic_name()}</a>"
+            header_html = Markup(
+                "<a href='{stream_link}'>{stream_name}</a> &gt; <a href='{narrow_link}'>{topic_name}</a>"
+            ).format(
+                stream_link=stream_link,
+                stream_name=stream.name,
+                narrow_link=narrow_link,
+                topic_name=message.topic_name(),
+            )
         return {
             "grouping": grouping,
             "plain": header,
@@ -482,35 +526,37 @@ def do_send_missedmessage_events_reply_in_zulip(
         reply_to_name = "Zulip"
 
     senders = list({m["message"].sender for m in missed_messages})
-    if missed_messages[0]["message"].recipient.type == Recipient.DIRECT_MESSAGE_GROUP:
-        display_recipient = get_display_recipient(missed_messages[0]["message"].recipient)
+    message = missed_messages[0]["message"]
+    if message.recipient.type == Recipient.DIRECT_MESSAGE_GROUP:
+        display_recipient = get_display_recipient(message.recipient)
         narrow_url = direct_message_group_narrow_url(
             user=user_profile,
             display_recipient=display_recipient,
         )
         context.update(narrow_url=narrow_url)
         other_recipients = [r["full_name"] for r in display_recipient if r["id"] != user_profile.id]
-        context.update(group_pm=True)
-        if len(other_recipients) == 2:
-            direct_message_group_display_name = " and ".join(other_recipients)
-            context.update(huddle_display_name=direct_message_group_display_name)
+        if len(other_recipients) <= 1:
+            context.update(group_pm=False, private_message=True)
+        elif len(other_recipients) == 2:
+            group_display_name = " and ".join(other_recipients)
+            context.update(group_pm=True, direct_message_group_display_name=group_display_name)
         elif len(other_recipients) == 3:
-            direct_message_group_display_name = (
+            group_display_name = (
                 f"{other_recipients[0]}, {other_recipients[1]}, and {other_recipients[2]}"
             )
-            context.update(huddle_display_name=direct_message_group_display_name)
+            context.update(group_pm=True, direct_message_group_display_name=group_display_name)
         else:
-            direct_message_group_display_name = "{}, and {} others".format(
+            group_display_name = "{}, and {} others".format(
                 ", ".join(other_recipients[:2]), len(other_recipients) - 2
             )
-            context.update(huddle_display_name=direct_message_group_display_name)
-    elif missed_messages[0]["message"].recipient.type == Recipient.PERSONAL:
+            context.update(group_pm=True, direct_message_group_display_name=group_display_name)
+    elif message.recipient.type == Recipient.PERSONAL:
         narrow_url = personal_narrow_url(
             realm=user_profile.realm,
-            sender=missed_messages[0]["message"].sender,
+            sender_id=message.sender.id,
+            sender_full_name=message.sender.full_name,
         )
-        context.update(narrow_url=narrow_url)
-        context.update(private_message=True)
+        context.update(narrow_url=narrow_url, private_message=True)
     elif (
         context["mention"]
         or context["stream_email_notify"]
@@ -532,13 +578,10 @@ def do_send_missedmessage_events_reply_in_zulip(
                     ]
                 }
             )
-        message = missed_messages[0]["message"]
         assert message.recipient.type == Recipient.STREAM
         stream = Stream.objects.only("id", "name").get(id=message.recipient.type_id)
-        narrow_url = topic_narrow_url(
-            realm=user_profile.realm,
-            stream=stream,
-            topic_name=message.topic_name(),
+        narrow_url = message_link_url(
+            user_profile.realm, MessageDict.wide_dict(message), conversation_link=not mention
         )
         context.update(narrow_url=narrow_url)
         topic_resolved, bare_topic_name = get_topic_resolution_and_bare_name(message.topic_name())
@@ -559,7 +602,7 @@ def do_send_missedmessage_events_reply_in_zulip(
             messages=[],
             sender_str="",
             realm_str=realm.name,
-            huddle_display_name="",
+            direct_message_group_display_name="",
             show_message_content=False,
             message_content_disabled_by_user=not user_profile.message_content_in_email_notifications,
             message_content_disabled_by_realm=not realm.message_content_allowed_in_email_notifications,
@@ -621,6 +664,18 @@ def handle_missedmessage_emails(
         # BUG: Investigate why it's possible to get here.
         return  # nocoverage
 
+    if user_profile.delivery_email == "":
+        # The assertions here are to help document the only circumstance under which
+        # this condition should be possible.
+        assert (
+            user_profile.realm.demo_organization_scheduled_deletion_date is not None
+            and user_profile.is_realm_owner
+        )
+        # Because demo organizations are created without setting an email, we can't
+        # send any missed message emails until they add an email to their account,
+        # e.g., they receive a direct message from the Welcome or Notification bot.
+        return
+
     # Note: This query structure automatically filters out any
     # messages that were permanently deleted, since those would now be
     # in the ArchivedMessage table, not the Message table.
@@ -652,7 +707,7 @@ def handle_missedmessage_emails(
 
     for msg_list in messages_by_bucket.values():
         msg = min(msg_list, key=lambda msg: msg.date_sent)
-        if msg.is_stream_message() and UserMessage.has_any_mentions(user_profile_id, msg.id):
+        if msg.is_channel_message and UserMessage.has_any_mentions(user_profile_id, msg.id):
             context_messages = get_context_for_message(msg)
             filtered_context_messages = bulk_access_messages(
                 user_profile, context_messages, is_modifying_message=False
@@ -686,7 +741,9 @@ def handle_missedmessage_emails(
         )
 
 
-def get_onboarding_email_schedule(user: UserProfile) -> dict[str, timedelta]:
+def get_onboarding_email_schedule(
+    user: UserProfile, demo_organization_creator: bool = False
+) -> dict[str, timedelta]:
     onboarding_emails = {
         # The delay should be 1 hour before the below specified number of days
         # as our goal is to maximize the chance that this email is near the top
@@ -700,7 +757,16 @@ def get_onboarding_email_schedule(user: UserProfile) -> dict[str, timedelta]:
     user_tz = user.timezone
     if user_tz == "":
         user_tz = "UTC"
-    signup_day = user.date_joined.astimezone(
+
+    # Because demo organizations are created without setting an email for the
+    # owner's account, we schedule these emails when/if they add an email to
+    # their account.
+    if demo_organization_creator:
+        start_date = timezone_now()
+    else:
+        start_date = user.date_joined
+
+    day_of_week_user_registered = start_date.astimezone(
         zoneinfo.ZoneInfo(canonicalize_timezone(user_tz))
     ).isoweekday()
 
@@ -708,27 +774,27 @@ def get_onboarding_email_schedule(user: UserProfile) -> dict[str, timedelta]:
     # -Do not send emails on Saturday or Sunday
     # -Have at least one weekday between each (potential) email
 
-    # User signed up on Monday
-    if signup_day == 1:
+    # User registered on Monday
+    if day_of_week_user_registered == 1:
         # Send onboarding_team_to_zulip on Tuesday
         onboarding_emails["onboarding_team_to_zulip"] = timedelta(days=8, hours=-1)
 
-    # User signed up on Tuesday
-    if signup_day == 2:
+    # User registered on Tuesday
+    if day_of_week_user_registered == 2:
         # Send onboarding_zulip_guide on Monday
         onboarding_emails["onboarding_zulip_guide"] = timedelta(days=6, hours=-1)
         # Send onboarding_team_to_zulip on Wednesday
         onboarding_emails["onboarding_team_to_zulip"] = timedelta(days=8, hours=-1)
 
-    # User signed up on Wednesday
-    if signup_day == 3:
+    # User registered on Wednesday
+    if day_of_week_user_registered == 3:
         # Send onboarding_zulip_guide on Tuesday
         onboarding_emails["onboarding_zulip_guide"] = timedelta(days=6, hours=-1)
         # Send onboarding_team_to_zulip on Thursday
         onboarding_emails["onboarding_team_to_zulip"] = timedelta(days=8, hours=-1)
 
-    # User signed up on Thursday
-    if signup_day == 4:
+    # User registered on Thursday
+    if day_of_week_user_registered == 4:
         # Send onboarding_zulip_topics on Monday
         onboarding_emails["onboarding_zulip_topics"] = timedelta(days=4, hours=-1)
         # Send onboarding_zulip_guide on Wednesday
@@ -736,8 +802,8 @@ def get_onboarding_email_schedule(user: UserProfile) -> dict[str, timedelta]:
         # Send onboarding_team_to_zulip on Friday
         onboarding_emails["onboarding_team_to_zulip"] = timedelta(days=8, hours=-1)
 
-    # User signed up on Friday
-    if signup_day == 5:
+    # User registered on Friday
+    if day_of_week_user_registered == 5:
         # Send onboarding_zulip_topics on Tuesday
         onboarding_emails["onboarding_zulip_topics"] = timedelta(days=4, hours=-1)
         # Send onboarding_zulip_guide on Thursday
@@ -745,10 +811,10 @@ def get_onboarding_email_schedule(user: UserProfile) -> dict[str, timedelta]:
         # Send onboarding_team_to_zulip on Monday
         onboarding_emails["onboarding_team_to_zulip"] = timedelta(days=10, hours=-1)
 
-    # User signed up on Saturday; no adjustments needed
+    # User registered on Saturday; no adjustments needed
 
-    # User signed up on Sunday
-    if signup_day == 7:
+    # User registered on Sunday
+    if day_of_week_user_registered == 7:
         # Send onboarding_team_to_zulip on Monday
         onboarding_emails["onboarding_team_to_zulip"] = timedelta(days=8, hours=-1)
 
@@ -838,7 +904,9 @@ def send_account_registered_email(user: UserProfile, realm_creation: bool = Fals
     )
 
 
-def enqueue_welcome_emails(user: UserProfile, realm_creation: bool = False) -> None:
+def enqueue_welcome_emails(
+    user: UserProfile, realm_creation: bool = False, demo_organization_creator: bool = False
+) -> None:
     # Imported here to avoid import cycles.
     from zerver.context_processors import common_context
 
@@ -860,7 +928,7 @@ def enqueue_welcome_emails(user: UserProfile, realm_creation: bool = False) -> N
 
     # Any emails scheduled below should be added to the logic in get_onboarding_email_schedule
     # to determine how long to delay sending the email based on when the user signed up.
-    onboarding_email_schedule = get_onboarding_email_schedule(user)
+    onboarding_email_schedule = get_onboarding_email_schedule(user, demo_organization_creator)
 
     if other_account_count == 0:
         onboarding_zulip_topics_context = common_context(user)
@@ -915,7 +983,7 @@ def enqueue_welcome_emails(user: UserProfile, realm_creation: bool = False) -> N
         )
 
     # We only send the onboarding_team_to_zulip email to user who created the organization.
-    if realm_creation:
+    if realm_creation or demo_organization_creator:
         onboarding_team_to_zulip_context = common_context(user)
         onboarding_team_to_zulip_context.update(
             unsubscribe_link=unsubscribe_link,

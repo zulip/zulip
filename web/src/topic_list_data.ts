@@ -156,10 +156,37 @@ type TopicListInfo = {
     more_topics_unread_count_muted: boolean;
 };
 
+export function filter_topics_by_search_term(
+    topic_names: string[],
+    search_term: string,
+    topics_state = "",
+): string[] {
+    if (search_term === "" && topics_state === "") {
+        return topic_names;
+    }
+
+    const word_separator_regex = /[\s/:_-]/; // Use -, _, :, / as word separators in addition to spaces.
+    const empty_string_topic_display_name = util.get_final_topic_display_name("");
+    topic_names = util.filter_by_word_prefix_match(
+        topic_names,
+        search_term,
+        (topic) => (topic === "" ? empty_string_topic_display_name : topic),
+        word_separator_regex,
+    );
+
+    if (topics_state === "is:resolved") {
+        topic_names = topic_names.filter((name) => resolved_topic.is_resolved(name));
+    } else if (topics_state === "-is:resolved") {
+        topic_names = topic_names.filter((name) => !resolved_topic.is_resolved(name));
+    }
+
+    return topic_names;
+}
+
 export function get_list_info(
     stream_id: number,
     zoomed: boolean,
-    search_term: string,
+    filter_topics: (topic_names: string[]) => string[],
 ): TopicListInfo {
     const narrowed_topic = narrow_state.topic();
     const topic_choice_state: TopicChoiceState = {
@@ -187,16 +214,7 @@ export function get_list_info(
         topic_names.unshift(narrowed_topic);
     }
 
-    if (zoomed) {
-        const word_separator_regex = /[\s/:_-]/; // Use -, _, :, / as word separators in addition to spaces.
-        const empty_string_topic_display_name = util.get_final_topic_display_name("");
-        topic_names = util.filter_by_word_prefix_match(
-            topic_names,
-            search_term,
-            (topic) => (topic === "" ? empty_string_topic_display_name : topic),
-            word_separator_regex,
-        );
-    }
+    topic_names = filter_topics(topic_names);
 
     if (stream_muted && !zoomed) {
         const unmuted_or_followed_topics = topic_names.filter((topic) =>

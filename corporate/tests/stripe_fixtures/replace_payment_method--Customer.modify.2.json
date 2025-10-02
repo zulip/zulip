@@ -3,7 +3,6 @@
   "balance": 0,
   "created": 1000000000,
   "currency": "usd",
-  "default_currency": "usd",
   "default_source": null,
   "delinquent": false,
   "description": "zulip (Zulip Dev)",

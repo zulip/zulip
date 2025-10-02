@@ -718,7 +718,7 @@ input#terminal:checked ~ #tab-terminal {
     .contributors-grid {
         padding-top: 5px;
         display: grid;
-        grid-gap: 5px;
+        gap: 5px;
         grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     }
 }
@@ -1288,7 +1288,6 @@ label.label-title {
 }
 
 #devtools-wrapper {
-    text-align: right;
     display: flex;
     justify-content: center;
 }
@@ -1478,4 +1477,48 @@ label.label-title {
         color: hsl(0deg 0% 100%);
         text-decoration: underline;
     }
+}
+
+.text-image-in-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    .text-image-in-row-image {
+        width: 300px;
+        height: auto;
+    }
+
+    .text-image-in-row-text {
+        align-content: center;
+        max-width: 300px;
+    }
+
+    .windborne-alaska-image {
+        width: 255px;
+    }
+
+    @media (width <= 700px) {
+        flex-wrap: wrap;
+
+        .text-image-in-row-image {
+            width: 100%;
+            height: auto;
+        }
+
+        .text-image-in-row-text {
+            max-width: 100%;
+        }
+    }
+}
+
+.markdown-image-caption {
+    opacity: 0.8;
+    margin-top: 5px;
+    text-align: center;
+    font-style: italic;
+}
+
+.markdown-image-with-caption {
+    margin: 0;
 }

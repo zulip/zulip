@@ -1,5 +1,6 @@
 from datetime import timedelta
 from operator import itemgetter
+from typing import Literal
 from unittest import mock
 
 import orjson
@@ -14,15 +15,26 @@ from zerver.actions.realm_settings import (
 )
 from zerver.actions.streams import do_change_stream_group_based_setting, do_deactivate_stream
 from zerver.actions.user_groups import add_subgroups_to_user_group, check_add_user_group
+from zerver.actions.user_settings import do_change_user_setting
 from zerver.actions.user_topics import do_set_user_topic_visibility_policy
+from zerver.lib import utils
 from zerver.lib.message import messages_for_ids
 from zerver.lib.message_cache import MessageDict
+from zerver.lib.stream_topic import StreamTopicTarget
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import most_recent_message, queries_captured
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.topic import TOPIC_NAME
 from zerver.lib.utils import assert_is_not_none
-from zerver.models import Attachment, Message, NamedUserGroup, Realm, UserProfile, UserTopic
+from zerver.models import (
+    Attachment,
+    Message,
+    NamedUserGroup,
+    Realm,
+    Subscription,
+    UserProfile,
+    UserTopic,
+)
 from zerver.models.groups import SystemGroups
 from zerver.models.messages import UserMessage
 from zerver.models.realms import MessageEditHistoryVisibilityPolicyEnum, get_realm
@@ -84,6 +96,20 @@ class EditMessageTest(ZulipTestCase):
                 fetch_message_dict["edit_history"],
                 message_edit_history,
             )
+
+    def check_message_flags(
+        self, message_id: int, user_ids: list[int], flag: str, check_present: bool
+    ) -> None:
+        # Make sure we updated the message flags correctly to the DB.
+        for user_id in user_ids:
+            um = UserMessage.objects.get(
+                user_profile_id=user_id,
+                message_id=message_id,
+            )
+            if check_present:
+                self.assertIn(flag, um.flags_list())
+            else:
+                self.assertNotIn(flag, um.flags_list())
 
     def test_edit_message_no_changes(self) -> None:
         self.login("hamlet")
@@ -188,6 +214,7 @@ class EditMessageTest(ZulipTestCase):
         self.assertEqual(response_dict["message"]["id"], msg_id)
         self.assertEqual(response_dict["message"]["recipient_id"], cordelia.recipient_id)
         self.assertEqual(response_dict["message"]["flags"], ["read"])
+        self.assertEqual(response_dict["message"][TOPIC_NAME], "")
 
         msg_id = self.send_personal_message(
             from_user=cordelia, to_user=hamlet, content="Incoming direct message"
@@ -199,6 +226,7 @@ class EditMessageTest(ZulipTestCase):
         # Incoming DMs show the recipient_id that outgoing DMs would.
         self.assertEqual(response_dict["message"]["recipient_id"], cordelia.recipient_id)
         self.assertEqual(response_dict["message"]["flags"], [])
+        self.assertEqual(response_dict["message"][TOPIC_NAME], "")
 
         # Send message to web-public stream where hamlet is not subscribed.
         # This will test case of user having no `UserMessage` but having access
@@ -335,12 +363,12 @@ class EditMessageTest(ZulipTestCase):
             result, "Not logged in: API authentication or user session required", 401
         )
 
-        # Verify deactivated streams are rejected.  This may change in the future.
+        # Verify success with deactivated streams.
         do_deactivate_stream(web_public_stream, acting_user=None)
         result = self.client_get("/json/messages/" + str(web_public_stream_msg_id))
-        self.assert_json_error(
-            result, "Not logged in: API authentication or user session required", 401
-        )
+        response_dict = self.assert_json_success(result)
+        self.assertEqual(response_dict["raw_content"], "web-public message")
+        self.assertEqual(response_dict["message"]["flags"], ["read"])
 
     def test_fetch_raw_message_stream_wrong_realm(self) -> None:
         user_profile = self.example_user("hamlet")
@@ -641,6 +669,41 @@ class EditMessageTest(ZulipTestCase):
             "<p>content before edit, line 1</p>\n<p>content before edit, line 3</p>",
         )
 
+    def test_edit_direct_message_history(self) -> None:
+        msg_id = self.send_personal_message(
+            self.example_user("hamlet"),
+            self.example_user("othello"),
+            content="content before edit",
+        )
+
+        self.login("hamlet")
+        new_content = "content after edit"
+        result = self.client_patch(
+            f"/json/messages/{msg_id}",
+            {
+                "content": new_content,
+            },
+        )
+        self.assert_json_success(result)
+
+        message_edit_history = self.client_get(f"/json/messages/{msg_id}/history")
+        json_response = orjson.loads(message_edit_history.content)
+        message_history = json_response["message_history"]
+        self.assertEqual(message_history[0]["content"], "content before edit")
+        self.assertEqual(message_history[0]["rendered_content"], "<p>content before edit</p>")
+        self.assertEqual(message_history[0]["topic"], "")
+
+        self.assertEqual(message_history[1]["prev_content"], "content before edit")
+        self.assertEqual(message_history[1]["prev_rendered_content"], "<p>content before edit</p>")
+        self.assertEqual(message_history[1]["content"], "content after edit")
+        self.assertEqual(message_history[1]["rendered_content"], "<p>content after edit</p>")
+        self.assertEqual(message_history[1]["topic"], "")
+
+        self.assertEqual(
+            message_history[1]["content_html_diff"],
+            '<div><p>content <span class="highlight_text_inserted">after</span> <span class="highlight_text_deleted">before</span> edit</p></div>',
+        )
+
     def test_empty_message_edit(self) -> None:
         self.login("hamlet")
         msg_id = self.send_stream_message(
@@ -709,9 +772,10 @@ class EditMessageTest(ZulipTestCase):
             (
                 '<div><p>Here is a link to <a href="http://www.zulipchat.com"'
                 ">zulip "
-                '<span class="highlight_text_inserted"> Link: http://www.zulipchat.com .'
+                '<span class="highlight_text_inserted"> Link: http://www.zulipchat.com'
+                '</span> </a> <span class="highlight_text_inserted">.'
                 '</span> <span class="highlight_text_deleted"> Link: http://www.zulip.org .'
-                "</span> </a></p></div>"
+                "</span> </p></div>"
             ),
         )
 
@@ -1249,7 +1313,9 @@ class EditMessageTest(ZulipTestCase):
         message.save()
 
         administrators_system_group = NamedUserGroup.objects.get(
-            name=SystemGroups.ADMINISTRATORS, realm=get_realm("zulip"), is_system_group=True
+            name=SystemGroups.ADMINISTRATORS,
+            realm_for_sharding=get_realm("zulip"),
+            is_system_group=True,
         )
 
         # test the various possible message editing settings
@@ -1367,22 +1433,22 @@ class EditMessageTest(ZulipTestCase):
         self.subscribe(polonius, "Denmark")
 
         administrators_system_group = NamedUserGroup.objects.get(
-            name=SystemGroups.ADMINISTRATORS, realm=realm, is_system_group=True
+            name=SystemGroups.ADMINISTRATORS, realm_for_sharding=realm, is_system_group=True
         )
         full_members_system_group = NamedUserGroup.objects.get(
-            name=SystemGroups.FULL_MEMBERS, realm=realm, is_system_group=True
+            name=SystemGroups.FULL_MEMBERS, realm_for_sharding=realm, is_system_group=True
         )
         members_system_group = NamedUserGroup.objects.get(
-            name=SystemGroups.MEMBERS, realm=realm, is_system_group=True
+            name=SystemGroups.MEMBERS, realm_for_sharding=realm, is_system_group=True
         )
         moderators_system_group = NamedUserGroup.objects.get(
-            name=SystemGroups.MODERATORS, realm=realm, is_system_group=True
+            name=SystemGroups.MODERATORS, realm_for_sharding=realm, is_system_group=True
         )
         everyone_system_group = NamedUserGroup.objects.get(
-            name=SystemGroups.EVERYONE, realm=realm, is_system_group=True
+            name=SystemGroups.EVERYONE, realm_for_sharding=realm, is_system_group=True
         )
         nobody_system_group = NamedUserGroup.objects.get(
-            name=SystemGroups.NOBODY, realm=realm, is_system_group=True
+            name=SystemGroups.NOBODY, realm_for_sharding=realm, is_system_group=True
         )
 
         # any user can edit the topic of a message
@@ -1439,13 +1505,13 @@ class EditMessageTest(ZulipTestCase):
         )
         do_edit_message_assert_success(id_, "E", "iago")
 
-        # even owners and admins cannot edit the topics of messages
         set_message_editing_params(True, "unlimited", nobody_system_group)
+        # owners and admins are allowed to edit the topics via channel-level
+        # `can_move_messages_within_channel_group` permission
+        do_edit_message_assert_success(id_, "H", "desdemona")
+        do_edit_message_assert_success(id_, "I", "iago")
         do_edit_message_assert_error(
-            id_, "H", "You don't have permission to edit this message", "desdemona"
-        )
-        do_edit_message_assert_error(
-            id_, "H", "You don't have permission to edit this message", "iago"
+            id_, "E", "You don't have permission to edit this message", "shiva"
         )
 
         # users can edit topics even if allow_message_editing is False
@@ -1491,9 +1557,9 @@ class EditMessageTest(ZulipTestCase):
         # Polonius and Cordelia are in the allowed user group, so can move messages.
         do_edit_message_assert_success(id_, "I", "polonius")
         do_edit_message_assert_success(id_, "J", "cordelia")
-        # Iago is not in the allowed user group, so cannot move messages.
+        # Hamlet is not in the allowed user group, so cannot move messages.
         do_edit_message_assert_error(
-            id_, "K", "You don't have permission to edit this message", "iago"
+            id_, "K", "You don't have permission to edit this message", "hamlet"
         )
 
         # Test for checking the setting for anonymous user group.
@@ -1562,7 +1628,7 @@ class EditMessageTest(ZulipTestCase):
         # has been set properly.
         called = False
         for call_args in mock_send_event.call_args_list:
-            (arg_realm, arg_event, arg_notified_users) = call_args[0]
+            (_arg_realm, arg_event, arg_notified_users) = call_args[0]
             if arg_event["type"] == "update_message":
                 self.assertEqual(arg_event["type"], "update_message")
                 self.assertEqual(
@@ -1620,7 +1686,7 @@ class EditMessageTest(ZulipTestCase):
         # has been set properly.
         called = False
         for call_args in mock_send_event.call_args_list:
-            (arg_realm, arg_event, arg_notified_users) = call_args[0]
+            (_arg_realm, arg_event, arg_notified_users) = call_args[0]
             if arg_event["type"] == "update_message":
                 self.assertEqual(arg_event["type"], "update_message")
                 self.assertEqual(
@@ -1642,6 +1708,13 @@ class EditMessageTest(ZulipTestCase):
         self.subscribe(cordelia, stream_name)
         self.login_user(hamlet)
         message_id = self.send_stream_message(hamlet, stream_name, "Hello everyone")
+
+        self.check_message_flags(
+            message_id,
+            user_ids=[hamlet.id, cordelia.id],
+            flag="topic_wildcard_mentioned",
+            check_present=False,
+        )
 
         users_to_be_notified = sorted(
             [
@@ -1668,7 +1741,7 @@ class EditMessageTest(ZulipTestCase):
         # Here we assert topic_wildcard_mention_user_ids has been set properly.
         called = False
         for call_args in mock_send_event.call_args_list:
-            (arg_realm, arg_event, arg_notified_users) = call_args[0]
+            (_arg_realm, arg_event, arg_notified_users) = call_args[0]
             if arg_event["type"] == "update_message":
                 self.assertEqual(arg_event["type"], "update_message")
                 self.assertEqual(arg_event["topic_wildcard_mention_user_ids"], [hamlet.id])
@@ -1677,6 +1750,74 @@ class EditMessageTest(ZulipTestCase):
                 )
                 called = True
         self.assertTrue(called)
+
+        self.check_message_flags(
+            message_id, user_ids=[hamlet.id], flag="topic_wildcard_mentioned", check_present=True
+        )
+        self.check_message_flags(
+            message_id, user_ids=[cordelia.id], flag="topic_wildcard_mentioned", check_present=False
+        )
+
+    @mock.patch("zerver.actions.message_edit.send_event_on_commit")
+    def test_remove_topic_wildcard_mention(self, mock_send_event: mock.MagicMock) -> None:
+        stream_name = "Macbeth"
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+        self.make_stream(stream_name, history_public_to_subscribers=True)
+        self.subscribe(hamlet, stream_name)
+        self.subscribe(cordelia, stream_name)
+        self.login_user(hamlet)
+        message_id = self.send_stream_message(hamlet, stream_name, "Hello @**topic**")
+
+        self.check_message_flags(
+            message_id, user_ids=[hamlet.id], flag="topic_wildcard_mentioned", check_present=True
+        )
+        self.check_message_flags(
+            message_id, user_ids=[cordelia.id], flag="topic_wildcard_mentioned", check_present=False
+        )
+
+        users_to_be_notified = sorted(
+            [
+                {
+                    "id": hamlet.id,
+                    "flags": ["read"],
+                },
+                {
+                    "id": cordelia.id,
+                    "flags": [],
+                },
+            ],
+            key=itemgetter("id"),
+        )
+        result = self.client_patch(
+            f"/json/messages/{message_id}",
+            {
+                "content": "Hello everyone",
+            },
+        )
+        self.assert_json_success(result)
+
+        # Extract the send_event call where event type is 'update_message'.
+        # Here we assert 'stream_wildcard_mention_user_ids' is empty and flag
+        # is removed.
+        called = False
+        for call_args in mock_send_event.call_args_list:
+            (_arg_realm, arg_event, arg_notified_users) = call_args[0]
+            if arg_event["type"] == "update_message":
+                self.assertEqual(arg_event["type"], "update_message")
+                self.assertEqual(arg_event["stream_wildcard_mention_user_ids"], [])
+                self.assertEqual(
+                    sorted(arg_notified_users, key=itemgetter("id")), users_to_be_notified
+                )
+                called = True
+        self.assertTrue(called)
+
+        self.check_message_flags(
+            message_id,
+            user_ids=[hamlet.id, cordelia.id],
+            flag="topic_wildcard_mentioned",
+            check_present=False,
+        )
 
     def test_topic_wildcard_mention_restrictions_when_editing(self) -> None:
         cordelia = self.example_user("cordelia")
@@ -1691,7 +1832,7 @@ class EditMessageTest(ZulipTestCase):
         realm = cordelia.realm
 
         moderators_system_group = NamedUserGroup.objects.get(
-            name=SystemGroups.MODERATORS, realm=realm, is_system_group=True
+            name=SystemGroups.MODERATORS, realm_for_sharding=realm, is_system_group=True
         )
 
         do_change_realm_permission_group_setting(
@@ -1754,6 +1895,13 @@ class EditMessageTest(ZulipTestCase):
         self.login_user(hamlet)
         message_id = self.send_stream_message(hamlet, stream_name, "Hello everyone")
 
+        self.check_message_flags(
+            message_id,
+            user_ids=[hamlet.id, cordelia.id],
+            flag="stream_wildcard_mentioned",
+            check_present=False,
+        )
+
         users_to_be_notified = sorted(
             [
                 {
@@ -1779,7 +1927,7 @@ class EditMessageTest(ZulipTestCase):
         # Here we assert 'stream_wildcard_mention_user_ids' has been set properly.
         called = False
         for call_args in mock_send_event.call_args_list:
-            (arg_realm, arg_event, arg_notified_users) = call_args[0]
+            (_arg_realm, arg_event, arg_notified_users) = call_args[0]
             if arg_event["type"] == "update_message":
                 self.assertEqual(arg_event["type"], "update_message")
                 self.assertEqual(
@@ -1790,6 +1938,74 @@ class EditMessageTest(ZulipTestCase):
                 )
                 called = True
         self.assertTrue(called)
+
+        self.check_message_flags(
+            message_id,
+            user_ids=[hamlet.id, cordelia.id],
+            flag="stream_wildcard_mentioned",
+            check_present=True,
+        )
+
+    @mock.patch("zerver.actions.message_edit.send_event_on_commit")
+    def test_remove_stream_wildcard_mention(self, mock_send_event: mock.MagicMock) -> None:
+        stream_name = "Macbeth"
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+        self.make_stream(stream_name, history_public_to_subscribers=True)
+        self.subscribe(hamlet, stream_name)
+        self.subscribe(cordelia, stream_name)
+        self.login_user(hamlet)
+        message_id = self.send_stream_message(hamlet, stream_name, "Hello @**everyone**")
+
+        self.check_message_flags(
+            message_id,
+            user_ids=[hamlet.id, cordelia.id],
+            flag="stream_wildcard_mentioned",
+            check_present=True,
+        )
+
+        users_to_be_notified = sorted(
+            [
+                {
+                    "id": hamlet.id,
+                    "flags": ["read"],
+                },
+                {
+                    "id": cordelia.id,
+                    "flags": [],
+                },
+            ],
+            key=itemgetter("id"),
+        )
+        result = self.client_patch(
+            f"/json/messages/{message_id}",
+            {
+                "content": "Hello everyone",
+            },
+        )
+        self.assert_json_success(result)
+
+        # Extract the send_event call where event type is 'update_message'.
+        # Here we assert 'stream_wildcard_mention_user_ids' is empty and flag
+        # is removed.
+        called = False
+        for call_args in mock_send_event.call_args_list:
+            (_arg_realm, arg_event, arg_notified_users) = call_args[0]
+            if arg_event["type"] == "update_message":
+                self.assertEqual(arg_event["type"], "update_message")
+                self.assertEqual(arg_event["stream_wildcard_mention_user_ids"], [])
+                self.assertEqual(
+                    sorted(arg_notified_users, key=itemgetter("id")), users_to_be_notified
+                )
+                called = True
+        self.assertTrue(called)
+
+        self.check_message_flags(
+            message_id,
+            user_ids=[hamlet.id, cordelia.id],
+            flag="stream_wildcard_mentioned",
+            check_present=False,
+        )
 
     def test_stream_wildcard_mention_restrictions_when_editing(self) -> None:
         cordelia = self.example_user("cordelia")
@@ -1804,7 +2020,7 @@ class EditMessageTest(ZulipTestCase):
         realm = cordelia.realm
 
         moderators_system_group = NamedUserGroup.objects.get(
-            name=SystemGroups.MODERATORS, realm=realm, is_system_group=True
+            name=SystemGroups.MODERATORS, realm_for_sharding=realm, is_system_group=True
         )
 
         do_change_realm_permission_group_setting(
@@ -1897,7 +2113,7 @@ class EditMessageTest(ZulipTestCase):
         support = check_add_user_group(othello.realm, "support", [othello], acting_user=othello)
 
         moderators_system_group = NamedUserGroup.objects.get(
-            realm=iago.realm, name=SystemGroups.MODERATORS, is_system_group=True
+            realm_for_sharding=iago.realm, name=SystemGroups.MODERATORS, is_system_group=True
         )
 
         self.login("cordelia")
@@ -2257,3 +2473,313 @@ class EditMessageTest(ZulipTestCase):
         result_content = orjson.loads(result.content)
         self.assertEqual(result_content["result"], "success")
         self.assert_length(result_content["detached_uploads"], 0)
+
+    def test_edit_message_race_condition(self) -> None:
+        # If two users try to edit the same message at the same time,
+        # one of them should get an error message, as the `prev_content`
+        # parameter passed to the PATCH call would be outdated and not
+        # match.
+
+        # If `prev_content` does not match the expected value, this means
+        # the edit request is stale and should be rejected. We simulate
+        # that here.
+        self.login("hamlet")
+        msg_id = self.send_stream_message(
+            self.example_user("hamlet"),
+            "Denmark",
+            topic_name="editing",
+            content="Init message",
+        )
+        init_msg = utils.sha256_hash("Init message")
+        result = self.client_patch(
+            f"/json/messages/{msg_id}",
+            {
+                "content": "First user edit",
+                "prev_content_sha256": init_msg,
+            },
+        )
+        self.assert_json_success(result)
+        self.check_message(msg_id, topic_name="editing", content="First user edit")
+
+        result = self.client_patch(
+            f"/json/messages/{msg_id}",
+            {
+                "content": "Second user edit",
+                "prev_content_sha256": init_msg,
+            },
+        )
+        self.assert_json_error(
+            result,
+            "'prev_content_sha256' value does not match the expected value.",
+        )
+        self.check_message(msg_id, topic_name="editing", content="First user edit")
+
+    def check_automatic_change_visibility_policy_on_initiation_during_moving_messages(
+        self,
+        message_id: int,
+        sender_id: int,
+        stream_topic_target: StreamTopicTarget,
+        visibility_policy: Literal[
+            UserTopic.VisibilityPolicy.FOLLOWED, UserTopic.VisibilityPolicy.UNMUTED
+        ],
+        expected_follow_or_unmute_target_topic: bool | None = None,
+    ) -> None:
+        result = self.client_patch(
+            f"/json/messages/{message_id}",
+            {
+                "stream_id": stream_topic_target.stream_id,
+                "topic": stream_topic_target.topic_name,
+            },
+        )
+        self.assert_json_success(result)
+
+        user_ids = stream_topic_target.user_ids_with_visibility_policy(visibility_policy)
+
+        if expected_follow_or_unmute_target_topic:
+            self.assertIn(sender_id, user_ids)
+        else:
+            self.assertNotIn(sender_id, user_ids)
+
+    def test_move_message_to_new_topic_with_automatic_follow_policy(self) -> None:
+        self.login("iago")
+        iago = self.example_user("iago")
+        cordelia = self.example_user("cordelia")
+        hamlet = self.example_user("hamlet")
+        shiva = self.example_user("shiva")
+
+        users = [iago, cordelia, hamlet, shiva]
+        stream = self.make_stream("new_stream")
+        original_topic = "original"
+        post_move = "post-move"
+
+        for user in users:
+            self.subscribe(user, stream.name)
+            do_change_user_setting(
+                user,
+                "automatically_follow_topics_policy",
+                UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_INITIATION,
+                acting_user=None,
+            )
+
+        msg_ids = [
+            self.send_stream_message(
+                sender=sender,
+                stream_name=stream.name,
+                topic_name=original_topic,
+                content=f"Message sent by {sender.full_name}",
+            )
+            for sender in users
+        ]
+
+        stream_topic_target_original = StreamTopicTarget(
+            stream_id=stream.id,
+            topic_name=original_topic,
+        )
+
+        user_ids = stream_topic_target_original.user_ids_with_visibility_policy(
+            UserTopic.VisibilityPolicy.FOLLOWED
+        )
+        self.assertEqual(user_ids, {iago.id})
+
+        stream_topic_target_post_move = StreamTopicTarget(
+            stream_id=stream.id,
+            topic_name=post_move,
+        )
+
+        # If the target topic has no message, then the visibility policy
+        # of the sender of first message being moved to the topic is set
+        # to FOLLOWED.
+        self.check_automatic_change_visibility_policy_on_initiation_during_moving_messages(
+            msg_ids[2],
+            hamlet.id,
+            stream_topic_target_post_move,
+            UserTopic.VisibilityPolicy.FOLLOWED,
+            True,
+        )
+
+        # If the target topic already has messages in it, then the visibility
+        # policy of the sender of first message being moved to topic is only
+        # set if it is sent before the first preexisting message of target
+        # topic
+        self.check_automatic_change_visibility_policy_on_initiation_during_moving_messages(
+            msg_ids[3],
+            shiva.id,
+            stream_topic_target_post_move,
+            UserTopic.VisibilityPolicy.FOLLOWED,
+            False,
+        )
+
+        self.check_automatic_change_visibility_policy_on_initiation_during_moving_messages(
+            msg_ids[1],
+            cordelia.id,
+            stream_topic_target_post_move,
+            UserTopic.VisibilityPolicy.FOLLOWED,
+            True,
+        )
+
+        # If the message is moved to a topic in a new private stream with
+        # protected history, then visibility policy of sender is set to
+        # FOLLOWED only if it can be accessed by the sender.
+        private_stream = self.make_stream(
+            "private", invite_only=True, history_public_to_subscribers=False
+        )
+        self.subscribe(iago, private_stream.name)
+        self.subscribe(cordelia, private_stream.name)
+
+        stream_topic_target_post_move = StreamTopicTarget(
+            stream_id=private_stream.id,
+            topic_name=post_move,
+        )
+        user_ids = stream_topic_target_post_move.user_ids_with_visibility_policy(
+            UserTopic.VisibilityPolicy.FOLLOWED
+        )
+        self.assertEqual(user_ids, set())
+
+        self.check_automatic_change_visibility_policy_on_initiation_during_moving_messages(
+            msg_ids[2],
+            hamlet.id,
+            stream_topic_target_post_move,
+            UserTopic.VisibilityPolicy.FOLLOWED,
+            False,
+        )
+
+        self.check_automatic_change_visibility_policy_on_initiation_during_moving_messages(
+            msg_ids[1],
+            cordelia.id,
+            stream_topic_target_post_move,
+            UserTopic.VisibilityPolicy.FOLLOWED,
+            True,
+        )
+
+    def test_move_message_to_new_topic_with_automatic_unmute_policy(self) -> None:
+        self.login("iago")
+        iago = self.example_user("iago")
+        cordelia = self.example_user("cordelia")
+        hamlet = self.example_user("hamlet")
+        shiva = self.example_user("shiva")
+
+        users = [iago, cordelia, hamlet, shiva]
+        stream = self.make_stream("new_stream")
+        recipient = stream.recipient
+        original_topic = "original"
+        post_move = "post-move"
+
+        for user in users:
+            self.subscribe(user, stream.name)
+            do_change_user_setting(
+                user,
+                "automatically_unmute_topics_in_muted_streams_policy",
+                UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_INITIATION,
+                acting_user=None,
+            )
+            subscription = Subscription.objects.get(recipient=recipient, user_profile=user)
+            subscription.is_muted = True
+            subscription.save()
+
+        msg_ids = [
+            self.send_stream_message(
+                sender=sender,
+                stream_name=stream.name,
+                topic_name=original_topic,
+                content=f"Message sent by {sender.full_name}",
+            )
+            for sender in users
+        ]
+
+        stream_topic_target_original = StreamTopicTarget(
+            stream_id=stream.id,
+            topic_name=original_topic,
+        )
+
+        user_ids = stream_topic_target_original.user_ids_with_visibility_policy(
+            UserTopic.VisibilityPolicy.UNMUTED
+        )
+        self.assertEqual(user_ids, {iago.id})
+
+        stream_topic_target_post_move = StreamTopicTarget(
+            stream_id=stream.id,
+            topic_name=post_move,
+        )
+
+        # If the target topic has no message, then the visibility policy
+        # of the sender of first message being moved to the topic is set
+        # to UNMUTED.
+        self.check_automatic_change_visibility_policy_on_initiation_during_moving_messages(
+            msg_ids[2],
+            hamlet.id,
+            stream_topic_target_post_move,
+            UserTopic.VisibilityPolicy.UNMUTED,
+            True,
+        )
+
+        # If the target topic already has messages in it, then the visibility
+        # policy of the sender of first message being moved to topic is only
+        # set if it is sent before the first preexisting message of target
+        # topic
+        self.check_automatic_change_visibility_policy_on_initiation_during_moving_messages(
+            msg_ids[3],
+            shiva.id,
+            stream_topic_target_post_move,
+            UserTopic.VisibilityPolicy.UNMUTED,
+            False,
+        )
+
+        self.check_automatic_change_visibility_policy_on_initiation_during_moving_messages(
+            msg_ids[1],
+            cordelia.id,
+            stream_topic_target_post_move,
+            UserTopic.VisibilityPolicy.UNMUTED,
+            True,
+        )
+
+    def test_automatic_follow_policy_in_channel_with_protected_history(self) -> None:
+        self.login("iago")
+        iago = self.example_user("iago")
+        hamlet = self.example_user("hamlet")
+
+        do_change_user_setting(
+            hamlet,
+            "automatically_follow_topics_policy",
+            UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_INITIATION,
+            acting_user=None,
+        )
+
+        # Iago's message to "test topic" is not visible to Hamlet.
+        core = self.make_stream("core", iago.realm, True, history_public_to_subscribers=False)
+        self.subscribe(iago, "core")
+        self.send_stream_message(iago, "core", topic_name="test topic")
+
+        self.subscribe(hamlet, "core")
+        self.send_stream_message(iago, "core", topic_name="#general")
+
+        msg_id = self.send_stream_message(hamlet, "core", topic_name="#general")
+
+        stream_topic_target_post_move = StreamTopicTarget(
+            stream_id=core.id,
+            topic_name="test topic",
+        )
+
+        self.assertEqual(
+            stream_topic_target_post_move.user_ids_with_visibility_policy(
+                UserTopic.VisibilityPolicy.FOLLOWED
+            ),
+            set(),
+        )
+
+        # Verify that Hamlet follows the topic after moving his
+        # message, because as far as he knows, his message is now the
+        # first message in "test topic".
+        self.check_automatic_change_visibility_policy_on_initiation_during_moving_messages(
+            msg_id,
+            hamlet.id,
+            stream_topic_target_post_move,
+            UserTopic.VisibilityPolicy.FOLLOWED,
+            True,
+        )
+
+        self.assertEqual(
+            stream_topic_target_post_move.user_ids_with_visibility_policy(
+                UserTopic.VisibilityPolicy.FOLLOWED
+            ),
+            {hamlet.id},
+        )

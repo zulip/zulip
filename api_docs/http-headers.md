@@ -48,7 +48,7 @@ client = zulip.Client(
 
 If you are working on an integration that you plan to share outside
 your organization, you can get help picking a good name in
-`#integrations` in the [Zulip development
+[#integrations][integrations-channel] in the [Zulip development
 community](https://zulip.com/development-community/).
 
 ## Rate-limiting response headers
@@ -78,3 +78,4 @@ to a given request, the values returned will be for the strictest
 limit.
 
 [rate-limiting-rules]: https://zulip.readthedocs.io/en/latest/production/security-model.html#rate-limiting
+[integrations-channel]: https://chat.zulip.org/#narrow/channel/127-integrations/

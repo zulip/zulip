@@ -13,4 +13,4 @@ class Migration(migrations.Migration):
         ("zerver", "0309_userprofile_can_create_users"),
     ]
 
-    operations: list[migrations.operations.base.Operation] = []
+    operations = []

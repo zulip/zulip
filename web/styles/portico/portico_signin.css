@@ -51,6 +51,7 @@ html {
     margin-top: 0;
 }
 
+#realm-import-post-process,
 #new-realm-creation {
     .get-started {
         font-size: 2rem;
@@ -86,6 +87,7 @@ html {
         font-size: 1.5em;
         font-weight: 300;
         margin: 0;
+        line-height: 1.25;
         height: 0;
         transform: translateX(-15px) translateY(-60px);
         text-align: left;
@@ -322,6 +324,11 @@ html {
 
     .new-organization-button {
         margin-top: 25px;
+
+        &[disabled] {
+            cursor: default;
+            opacity: 0.6;
+        }
     }
 }
 
@@ -365,17 +372,6 @@ html {
     .default-stream-groups p {
         width: 330px;
         margin: 0 auto 10px;
-    }
-
-    .terms-of-service .text-error {
-        position: relative;
-        display: block;
-        top: -5px;
-        padding: 0;
-        height: 0;
-
-        font-size: 0.7em;
-        font-weight: 600;
     }
 }
 
@@ -446,33 +442,6 @@ html {
 
     .alert-info {
         font-weight: 400;
-    }
-
-    .demo-organization-warning {
-        position: relative;
-        display: block;
-        background-color: hsl(360deg 100% 93%);
-        border: 1px solid hsl(0deg 0% 80%);
-        border-radius: 4px;
-        padding: 10px;
-        margin: 10px 0;
-        font-size: 1rem;
-        font-weight: 400;
-        line-height: 1.5;
-        color: hsl(0deg 0% 27%);
-
-        & a {
-            text-decoration: none;
-        }
-
-        &::before {
-            display: inline;
-            margin-right: 8px;
-
-            font-family: FontAwesome;
-            font-weight: 600;
-            content: "\f071";
-        }
     }
 
     .alert {
@@ -561,7 +530,17 @@ html {
             margin-bottom: 10px;
         }
 
-        & label {
+        /* TODO: We need to audit all the portico <label> elements
+           and:
+           1) Add a unifying class so that these side-effect-prone
+              element selectors don't continue to introduce ugly
+              regressions
+           2) Rework the containing layout of `.input-box` so as to
+              not use fiddly positioning
+           3) Clean up other related .altcha-label references in
+              this file.
+        */
+        & label:not(.altcha-label) {
             position: absolute;
             top: 0;
             left: 0;
@@ -571,6 +550,11 @@ html {
             transition: 0.3s ease;
             transition-property:
                 color, font-size, font-weight, transform; /* stylelint-disable-line plugin/no-low-performance-animation-properties */
+        }
+
+        .altcha-label {
+            /* Push back against Bootstrap. */
+            margin-bottom: 0;
         }
 
         &.moving-label {
@@ -882,6 +866,20 @@ button#register_auth_button_gitlab {
 .back-to-login-wrapper {
     margin: 20px 0 0;
     text-align: left;
+
+    &.forgot-password-container {
+        margin: 0;
+    }
+
+    &.signup-link-wrapper {
+        font-weight: normal;
+        float: right;
+
+        .register-link {
+            font-size: 1rem;
+            margin-left: 5px;
+        }
+    }
 }
 
 .register-page-container .register-form-login-redirect {
@@ -925,6 +923,8 @@ button#register_auth_button_gitlab {
     }
 }
 
+#realm-import-post-process,
+#realm-creation-form-slack-import,
 #account-deactivated-success-page-details,
 #server-deactivate-details,
 #remote-billing-confirm-login-form,
@@ -969,7 +969,7 @@ button#register_auth_button_gitlab {
             width: calc(100% - 20px);
         }
 
-        & label {
+        & label:not(.altcha-label) {
             position: absolute;
             margin: 0;
             top: 0;
@@ -1497,4 +1497,89 @@ button#register_auth_button_gitlab {
         margin: 0;
         padding: 0;
     }
+}
+
+#realm-creation-import-from-wrapper #import_from[disabled] {
+    cursor: not-allowed;
+}
+
+#realm-creation-import-from-wrapper .extra-info-realm-creation-import-from {
+    padding-top: 5px;
+}
+
+#slack-import-drag-drop-wrapper {
+    width: 100%;
+    margin: 10px 0 0 5px;
+
+    #slack-import-drag-and-drop {
+        margin-right: 5px;
+    }
+}
+
+#realm-import-post-process,
+#realm-creation-form-slack-import {
+    .register-button {
+        margin: 0 auto;
+    }
+
+    #update-slack-access-token {
+        display: none;
+    }
+
+    .slack-import-extra-info {
+        margin-top: 0;
+
+        .not-editable-realm-field {
+            padding-top: 0;
+        }
+    }
+
+    .input-box.no-validation {
+        margin: 0;
+    }
+}
+
+#slack-import-drag-and-drop .uppy-DragDrop-container {
+    border: 1px dashed hsl(0deg 0% 0%);
+    background-color: hsl(0deg 0% 0% / 5%);
+    color: hsl(0deg 0% 40%);
+    font-size: 1rem;
+
+    &:focus {
+        outline: none;
+        box-shadow: none;
+    }
+
+    &:focus-visible {
+        outline: 1px solid hsl(213deg 81% 79%);
+    }
+}
+
+#realm-import-owner {
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+#cancel-slack-import {
+    color: hsl(200deg 100% 40%);
+    text-decoration: none;
+
+    &:hover,
+    &:focus {
+        cursor: pointer;
+        color: hsl(200.16deg 100% 25.1%);
+        text-decoration: underline;
+    }
+}
+
+#realm-creation-form-slack-import .register-button {
+    &[disabled] {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+}
+
+.self-hosting-login-help-text {
+    margin-top: 10px;
 }

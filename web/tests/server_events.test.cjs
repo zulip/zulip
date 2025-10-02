@@ -75,7 +75,6 @@ const message = {
     submessages: [],
     sender_full_name: "user1",
     sender_email: "user2@foo.com",
-    sender_realm_str: "foo",
     display_recipient: "test",
     type: "stream",
     stream_id: 1,
@@ -93,7 +92,8 @@ run_test("message_event", ({override}) => {
     };
 
     let inserted;
-    override(message_events, "insert_new_messages", (messages) => {
+    override(message_events, "insert_new_messages", (message_data) => {
+        const messages = message_data.raw_messages;
         assert.equal(messages[0].content, event.message.content);
         inserted = true;
         return messages;

@@ -32,7 +32,7 @@
         <div class="flex_container">
             <div class="left_part recent_view_focusable line_clamp" data-col-index="{{ column_indexes.topic }}">
                 {{#if is_private}}
-                <a href="{{pm_url}}" class="recent-view-table-link {{#if is_group}}recent-view-dm-group{{/if}}">{{{rendered_pm_with}}}</a>
+                <a href="{{pm_url}}" class="recent-view-table-link {{#if is_group}}recent-view-dm-group{{else}}recent-view-dm{{/if}}">{{{rendered_pm_with_html}}}</a>
                 {{else}}
                 <a class="white-space-preserve-wrap recent-view-table-link {{#if is_empty_string_topic}}empty-topic-display{{/if}}" href="{{topic_url}}">{{topic_display_name}}</a>
                 {{/if}}
@@ -67,9 +67,9 @@
                             {{#if (eq visibility_policy all_visibility_policies.FOLLOWED)}}
                                 <i class="zulip-icon zulip-icon-follow recipient_bar_icon visibility-status-icon" tabindex="0" aria-label="{{t 'Topic actions menu' }}" aria-haspopup="true" data-stream-id="{{stream_id}}" data-topic-name="{{topic}}" data-topic-url="{{topic_url}}" data-tippy-content="{{t 'You follow this topic.'}}" role="button"></i>
                             {{else if (eq visibility_policy all_visibility_policies.UNMUTED)}}
-                                <i class="zulip-icon zulip-icon-unmute-new recipient_bar_icon visibility-status-icon" tabindex="0" aria-label="{{t 'Topic actions menu' }}" aria-haspopup="true" data-stream-id="{{stream_id}}" data-topic-name="{{topic}}" data-topic-url="{{topic_url}}" data-tippy-content="{{t 'You have unmuted this topic.'}}" role="button"></i>
+                                <i class="zulip-icon zulip-icon-unmute recipient_bar_icon visibility-status-icon" tabindex="0" aria-label="{{t 'Topic actions menu' }}" aria-haspopup="true" data-stream-id="{{stream_id}}" data-topic-name="{{topic}}" data-topic-url="{{topic_url}}" data-tippy-content="{{t 'You have unmuted this topic.'}}" role="button"></i>
                             {{else if (eq visibility_policy all_visibility_policies.MUTED)}}
-                                <i class="zulip-icon zulip-icon-mute-new recipient_bar_icon visibility-status-icon" tabindex="0" aria-label="{{t 'Topic actions menu' }}" aria-haspopup="true" data-stream-id="{{stream_id}}" data-topic-name="{{topic}}" data-topic-url="{{topic_url}}" data-tippy-content="{{t 'You have muted this topic.'}}" role="button"></i>
+                                <i class="zulip-icon zulip-icon-mute recipient_bar_icon visibility-status-icon" tabindex="0" aria-label="{{t 'Topic actions menu' }}" aria-haspopup="true" data-stream-id="{{stream_id}}" data-topic-name="{{topic}}" data-topic-url="{{topic_url}}" data-tippy-content="{{t 'You have muted this topic.'}}" role="button"></i>
                             {{else}}
                                 <i class="zulip-icon zulip-icon-more-vertical recent-view-row-topic-menu visibility-status-icon" tabindex="0" aria-label="{{t 'Topic actions menu' }}" aria-haspopup="true" data-stream-id="{{stream_id}}" data-topic-name="{{topic}}" data-topic-url="{{topic_url}}" role="button"></i>
                             {{/if}}

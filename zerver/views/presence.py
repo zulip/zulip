@@ -1,4 +1,3 @@
-from datetime import timedelta
 from typing import Annotated, Any
 
 from django.conf import settings
@@ -16,10 +15,10 @@ from zerver.lib.presence import get_presence_for_user, get_presence_response
 from zerver.lib.request import RequestNotes
 from zerver.lib.response import json_success
 from zerver.lib.timestamp import datetime_to_timestamp
-from zerver.lib.typed_endpoint import ApiParamConfig, typed_endpoint
+from zerver.lib.typed_endpoint import ApiParamConfig, PathOnly, typed_endpoint
 from zerver.lib.user_status import get_user_status
 from zerver.lib.users import access_user_by_id, check_can_access_user
-from zerver.models import UserActivity, UserPresence, UserProfile, UserStatus
+from zerver.models import UserPresence, UserProfile, UserStatus
 from zerver.models.users import get_active_user, get_active_user_profile_by_id_in_realm
 
 
@@ -84,15 +83,15 @@ def update_user_status_backend(
     user_profile: UserProfile,
     *,
     away: Json[bool] | None = None,
-    status_text: Annotated[
-        str | None, StringConstraints(strip_whitespace=True, max_length=60)
-    ] = None,
-    emoji_name: str | None = None,
     emoji_code: str | None = None,
+    emoji_name: str | None = None,
     # TODO: emoji_type is the more appropriate name for this parameter, but changing
     # that requires nontrivial work on the API documentation, since it's not clear
     # that the reactions endpoint would prefer such a change.
     emoji_type: Annotated[str | None, ApiParamConfig("reaction_type")] = None,
+    status_text: Annotated[
+        str | None, StringConstraints(strip_whitespace=True, max_length=60)
+    ] = None,
 ) -> HttpResponse:
     if status_text is not None:
         status_text = status_text.strip()
@@ -149,16 +148,41 @@ def update_user_status_backend(
 
 @human_users_only
 @typed_endpoint
+def update_user_status_admin(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    *,
+    user_id: PathOnly[Json[int]],
+    status_text: Annotated[
+        str | None, StringConstraints(strip_whitespace=True, max_length=60)
+    ] = None,
+    emoji_name: str | None = None,
+    emoji_code: str | None = None,
+    emoji_type: Annotated[str | None, ApiParamConfig("reaction_type")] = None,
+) -> HttpResponse:
+    target_user = access_user_by_id(user_profile, user_id, for_admin=True)
+    return update_user_status_backend(
+        request,
+        user_profile=target_user,
+        status_text=status_text,
+        emoji_name=emoji_name,
+        emoji_code=emoji_code,
+        emoji_type=emoji_type,
+    )
+
+
+@human_users_only
+@typed_endpoint
 def update_active_status_backend(
     request: HttpRequest,
     user_profile: UserProfile,
     *,
-    status: str,
-    ping_only: Json[bool] = False,
-    new_user_input: Json[bool] = False,
-    slim_presence: Json[bool] = False,
-    last_update_id: Json[int] | None = None,
     history_limit_days: Json[int] | None = None,
+    last_update_id: Json[int] | None = None,
+    new_user_input: Json[bool] = False,
+    ping_only: Json[bool] = False,
+    slim_presence: Json[bool] = False,
+    status: str,
 ) -> HttpResponse:
     if last_update_id is not None:
         # This param being submitted by the client, means they want to use
@@ -182,21 +206,6 @@ def update_active_status_backend(
             last_update_id_fetched_by_client=last_update_id,
             history_limit_days=history_limit_days,
         )
-
-    if user_profile.realm.is_zephyr_mirror_realm:
-        # In zephyr mirroring realms, users can't see the presence of other
-        # users, but each user **is** interested in whether their mirror bot
-        # (running as their user) has been active.
-        try:
-            activity = UserActivity.objects.get(
-                user_profile=user_profile, query="get_events", client__name="zephyr_mirror"
-            )
-
-            ret["zephyr_mirror_active"] = activity.last_visit > timezone_now() - timedelta(
-                minutes=5
-            )
-        except UserActivity.DoesNotExist:
-            ret["zephyr_mirror_active"] = False
 
     return json_success(request, data=ret)
 

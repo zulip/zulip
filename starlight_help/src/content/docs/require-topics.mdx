@@ -1,0 +1,60 @@
+---
+title: Configure whether topics are required in channel messages
+---
+
+import {TabItem, Tabs} from "@astrojs/starlight/components";
+
+import FlattenedSteps from "../../components/FlattenedSteps.astro";
+import NavigationSteps from "../../components/NavigationSteps.astro";
+import AdminOnly from "../include/_AdminOnly.mdx";
+import GeneralChatIntro from "../include/_GeneralChatIntro.mdx";
+import SaveChanges from "../include/_SaveChanges.mdx";
+import SelectChannelViewGeneralAdvanced from "../include/_SelectChannelViewGeneralAdvanced.mdx";
+
+<GeneralChatIntro />
+
+Administrators can configure the default for whether topics are required in
+channel messages (i.e., whether it's possible to send messages to the “*general
+chat*” topic).
+
+The default configuration can be overridden for any channel. You can also
+configure channels to [allow only the “*general chat*”
+topic](/help/general-chat-channels).
+
+## Set the default *general chat* topic configuration
+
+<AdminOnly />
+
+<FlattenedSteps>
+  <NavigationSteps target="settings/organization-settings" />
+
+  1. Under **Compose settings**, select the desired option from the **Default
+     *general chat* topic configuration for channels** dropdown.
+
+  <SaveChanges />
+</FlattenedSteps>
+
+## Configure permission to post to “*general chat*” in a specific channel
+
+<Tabs>
+  <TabItem label="Desktop/Web">
+    <FlattenedSteps>
+      <NavigationSteps target="relative/channel/all" />
+
+      1. Select a channel.
+
+      <SelectChannelViewGeneralAdvanced />
+
+      1. Under **Messaging permissions**, choose the desired option from the **Allow
+         posting to the *general chat* topic?** dropdown.
+
+      <SaveChanges />
+    </FlattenedSteps>
+  </TabItem>
+</Tabs>
+
+## Related articles
+
+* [Introduction to topics](/help/introduction-to-topics)
+* [“*General chat*” topic](/help/general-chat-topic)
+* [“*General chat*” channels](/help/general-chat-channels)

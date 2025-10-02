@@ -5,6 +5,8 @@ const assert = require("node:assert/strict");
 const {get_final_topic_display_name} = require("../src/util.ts");
 
 const {mock_banners} = require("./lib/compose_banner.cjs");
+const {make_user_group} = require("./lib/example_group.cjs");
+const {make_realm} = require("./lib/example_realm.cjs");
 const example_settings = require("./lib/example_settings.cjs");
 const {mock_esm, set_global, with_overrides, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
@@ -51,6 +53,7 @@ const emoji_picker = zrequire("emoji_picker");
 const typeahead_helper = zrequire("typeahead_helper");
 const muted_users = zrequire("muted_users");
 const people = zrequire("people");
+const peer_data = zrequire("peer_data");
 const user_groups = zrequire("user_groups");
 const user_pill = zrequire("user_pill");
 const stream_data = zrequire("stream_data");
@@ -61,12 +64,16 @@ const composebox_typeahead = zrequire("composebox_typeahead");
 const settings_config = zrequire("settings_config");
 const {set_current_user, set_realm} = zrequire("state_data");
 const {initialize_user_settings} = zrequire("user_settings");
-
 const current_user = {};
 set_current_user(current_user);
-const realm = {realm_empty_topic_display_name: REALM_EMPTY_TOPIC_DISPLAY_NAME};
+const realm = make_realm({
+    realm_empty_topic_display_name: REALM_EMPTY_TOPIC_DISPLAY_NAME,
+    realm_topics_policy: "allow_empty_topic",
+});
 set_realm(realm);
-const user_settings = {};
+const user_settings = {
+    web_channel_default_view: settings_config.web_channel_default_view_values.channel_feed.code,
+};
 initialize_user_settings({user_settings});
 
 const ct = composebox_typeahead;
@@ -437,112 +444,124 @@ const notification_bot = {
 
 const notification_bot_item = user_item(notification_bot);
 
-const hamletcharacters = user_group_item({
-    name: "hamletcharacters",
-    id: 1,
-    creator_id: null,
-    date_created: 1596710000,
-    description: "Characters of Hamlet",
-    members: new Set([100, 104]),
-    is_system_group: false,
-    direct_subgroup_ids: new Set([]),
-    can_add_members_group: 2,
-    can_join_group: 2,
-    can_leave_group: 2,
-    can_manage_group: 2,
-    can_mention_group: 2,
-    can_remove_members_group: 2,
-    deactivated: false,
-});
+const hamletcharacters = user_group_item(
+    make_user_group({
+        name: "hamletcharacters",
+        id: 1,
+        creator_id: null,
+        date_created: 1596710000,
+        description: "Characters of Hamlet",
+        members: new Set([100, 104]),
+        is_system_group: false,
+        direct_subgroup_ids: new Set([]),
+        can_add_members_group: 2,
+        can_join_group: 2,
+        can_leave_group: 2,
+        can_manage_group: 2,
+        can_mention_group: 2,
+        can_remove_members_group: 2,
+        deactivated: false,
+    }),
+);
 
-const backend = user_group_item({
-    name: "Backend",
-    id: 2,
-    creator_id: null,
-    date_created: 1596710000,
-    description: "Backend team",
-    members: new Set([101]),
-    is_system_group: false,
-    direct_subgroup_ids: new Set([1]),
-    can_add_members_group: 1,
-    can_join_group: 1,
-    can_leave_group: 2,
-    can_manage_group: 1,
-    can_mention_group: 1,
-    can_remove_members_group: 2,
-    deactivated: false,
-});
+const backend = user_group_item(
+    make_user_group({
+        name: "Backend",
+        id: 2,
+        creator_id: null,
+        date_created: 1596710000,
+        description: "Backend team",
+        members: new Set([101]),
+        is_system_group: false,
+        direct_subgroup_ids: new Set([1]),
+        can_add_members_group: 1,
+        can_join_group: 1,
+        can_leave_group: 2,
+        can_manage_group: 1,
+        can_mention_group: 1,
+        can_remove_members_group: 2,
+        deactivated: false,
+    }),
+);
 
-const call_center = user_group_item({
-    name: "Call Center",
-    id: 3,
-    creator_id: null,
-    date_created: 1596710000,
-    description: "folks working in support",
-    members: new Set([102]),
-    is_system_group: false,
-    direct_subgroup_ids: new Set([]),
-    can_add_members_group: 2,
-    can_join_group: 2,
-    can_leave_group: 2,
-    can_manage_group: 2,
-    can_mention_group: 2,
-    can_remove_members_group: 2,
-    deactivated: false,
-});
+const call_center = user_group_item(
+    make_user_group({
+        name: "Call Center",
+        id: 3,
+        creator_id: null,
+        date_created: 1596710000,
+        description: "folks working in support",
+        members: new Set([102]),
+        is_system_group: false,
+        direct_subgroup_ids: new Set([]),
+        can_add_members_group: 2,
+        can_join_group: 2,
+        can_leave_group: 2,
+        can_manage_group: 2,
+        can_mention_group: 2,
+        can_remove_members_group: 2,
+        deactivated: false,
+    }),
+);
 
-const support = user_group_item({
-    name: "support",
-    id: 4,
-    creator_id: null,
-    date_created: 1596710000,
-    description: "Support team",
-    members: new Set([]),
-    is_system_group: false,
-    direct_subgroup_ids: new Set([]),
-    can_add_members_group: 2,
-    can_join_group: 2,
-    can_leave_group: 2,
-    can_manage_group: 2,
-    can_mention_group: 2,
-    deactivated: false,
-});
+const support = user_group_item(
+    make_user_group({
+        name: "support",
+        id: 4,
+        creator_id: null,
+        date_created: 1596710000,
+        description: "Support team",
+        members: new Set([]),
+        is_system_group: false,
+        direct_subgroup_ids: new Set([]),
+        can_add_members_group: 2,
+        can_join_group: 2,
+        can_leave_group: 2,
+        can_manage_group: 2,
+        can_mention_group: 2,
+        deactivated: false,
+    }),
+);
 
-const admins = user_group_item({
-    name: "Administrators",
-    id: 5,
-    creator_id: null,
-    date_created: 1596710000,
-    description: "Administrators",
-    members: new Set([102, 103]),
-    is_system_group: true,
-    direct_subgroup_ids: new Set([]),
-    can_add_members_group: 2,
-    can_join_group: 2,
-    can_leave_group: 2,
-    can_manage_group: 2,
-    can_mention_group: 2,
-    can_remove_members_group: 2,
-    deactivated: false,
-});
+const admins = user_group_item(
+    make_user_group({
+        name: "Administrators",
+        id: 5,
+        creator_id: null,
+        date_created: 1596710000,
+        description: "Administrators",
+        members: new Set([102, 103]),
+        is_system_group: true,
+        direct_subgroup_ids: new Set([]),
+        can_add_members_group: 2,
+        can_join_group: 2,
+        can_leave_group: 2,
+        can_manage_group: 2,
+        can_mention_group: 2,
+        can_remove_members_group: 2,
+        deactivated: false,
+    }),
+);
 
-const members = user_group_item({
-    name: "role:members",
-    id: 6,
-    creator_id: null,
-    date_created: 1596710000,
-    description: "Members",
-    members: new Set([100, 101, 104]),
-    is_system_group: true,
-    direct_subgroup_ids: new Set([5]),
-    can_add_members_group: 2,
-    can_join_group: 2,
-    can_leave_group: 2,
-    can_manage_group: 2,
-    can_mention_group: 2,
-    can_remove_members_group: 2,
-    deactivated: false,
-});
+const members = user_group_item(
+    make_user_group({
+        name: "role:members",
+        id: 6,
+        creator_id: null,
+        date_created: 1596710000,
+        description: "Members",
+        members: new Set([100, 101, 104]),
+        is_system_group: true,
+        direct_subgroup_ids: new Set([5]),
+        can_add_members_group: 2,
+        can_join_group: 2,
+        can_leave_group: 2,
+        can_manage_group: 2,
+        can_mention_group: 2,
+        can_remove_members_group: 2,
+        deactivated: false,
+    }),
+);
 
 const sweden_stream = stream_item({
     name: "Sweden",
@@ -598,12 +617,12 @@ const broken_link_stream = stream_item({
     can_add_subscribers_group: support.id,
 });
 
-stream_data.add_sub(sweden_stream);
-stream_data.add_sub(denmark_stream);
-stream_data.add_sub(netherland_stream);
-stream_data.add_sub(mobile_stream);
-stream_data.add_sub(mobile_team_stream);
-stream_data.add_sub(broken_link_stream);
+stream_data.add_sub_for_tests(sweden_stream);
+stream_data.add_sub_for_tests(denmark_stream);
+stream_data.add_sub_for_tests(netherland_stream);
+stream_data.add_sub_for_tests(mobile_stream);
+stream_data.add_sub_for_tests(mobile_team_stream);
+stream_data.add_sub_for_tests(broken_link_stream);
 
 const make_emoji = (emoji_dict) => ({
     emoji_name: emoji_dict.name,
@@ -1196,9 +1215,9 @@ test("initialize", ({override, override_rewire, mock_template}) => {
                 let expected_value = sweden_topics_to_show;
                 assert.deepEqual(actual_value, expected_value);
 
-                // options.highlighter_html()
+                // options.item_html()
                 options.query = "Kro";
-                actual_value = options.highlighter_html("kronor");
+                actual_value = options.item_html("kronor");
                 expected_value =
                     '<div class="typeahead-text-container">\n' +
                     '    <strong class="typeahead-strong-section">kronor</strong></div>\n';
@@ -1206,14 +1225,14 @@ test("initialize", ({override, override_rewire, mock_template}) => {
 
                 // Highlighted content should be escaped.
                 options.query = "<";
-                actual_value = options.highlighter_html("<&>");
+                actual_value = options.item_html("<&>");
                 expected_value =
                     '<div class="typeahead-text-container">\n' +
                     '    <strong class="typeahead-strong-section">&lt;&amp;&gt;</strong></div>\n';
                 assert.equal(actual_value, expected_value);
 
                 options.query = "even m";
-                actual_value = options.highlighter_html("even more ice");
+                actual_value = options.item_html("even more ice");
                 expected_value =
                     '<div class="typeahead-text-container">\n' +
                     '    <strong class="typeahead-strong-section">even more ice</strong></div>\n';
@@ -1433,13 +1452,13 @@ test("initialize", ({override, override_rewire, mock_template}) => {
                 assert.ok(caret_called);
 
                 othello.delivery_email = "othello@zulip.com";
-                // options.highlighter_html()
+                // options.item_html()
                 //
-                // Again, here we only verify that the highlighter has been set to
-                // content_highlighter_html.
+                // Again, here we only verify that the item_html has been set to
+                // content_item_html.
                 ct.get_or_set_completing_for_tests("mention");
                 ct.get_or_set_token_for_testing("othello");
-                actual_value = options.highlighter_html(othello_item);
+                actual_value = options.item_html(othello_item);
                 expected_value =
                     `    <span class="zulip-icon zulip-icon-user-circle-offline user-circle-offline user-circle"></span>\n` +
                     `    <img class="typeahead-image" src="/avatar/${othello.user_id}" />\n` +
@@ -1452,7 +1471,7 @@ test("initialize", ({override, override_rewire, mock_template}) => {
 
                 ct.get_or_set_completing_for_tests("mention");
                 ct.get_or_set_token_for_testing("hamletcharacters");
-                actual_value = options.highlighter_html(hamletcharacters);
+                actual_value = options.item_html(hamletcharacters);
                 expected_value =
                     '    <i class="typeahead-image zulip-icon zulip-icon-user-group no-presence-circle" aria-hidden="true"></i>\n' +
                     '<div class="typeahead-text-container">\n' +
@@ -1714,7 +1733,6 @@ test("initialize", ({override, override_rewire, mock_template}) => {
     $("form#send_message_form").off("keydown");
     $("form#send_message_form").off("keyup");
     $("#private_message_recipient").off("blur");
-    $("#send_later").css = noop;
     ct.initialize({
         on_enter_send: finish,
     });
@@ -2253,7 +2271,7 @@ test("tokenizing", () => {
     assert.equal(ct.tokenize_compose_str("foo #bar@foo"), "#bar@foo");
 });
 
-test("content_highlighter_html", ({override_rewire}) => {
+test("content_item_html", ({override_rewire}) => {
     ct.get_or_set_completing_for_tests("emoji");
     const emoji = {emoji_name: "person shrugging", emoji_url: "¯\\_(ツ)_/¯", type: "emoji"};
     let th_render_typeahead_item_called = false;
@@ -2261,7 +2279,7 @@ test("content_highlighter_html", ({override_rewire}) => {
         assert.deepEqual(item, emoji);
         th_render_typeahead_item_called = true;
     });
-    ct.content_highlighter_html(emoji);
+    ct.content_item_html(emoji);
 
     ct.get_or_set_completing_for_tests("mention");
     let th_render_person_called = false;
@@ -2269,14 +2287,14 @@ test("content_highlighter_html", ({override_rewire}) => {
         assert.deepEqual(person, othello_item);
         th_render_person_called = true;
     });
-    ct.content_highlighter_html(othello_item);
+    ct.content_item_html(othello_item);
 
     let th_render_user_group_called = false;
     override_rewire(typeahead_helper, "render_user_group", (user_group) => {
         assert.deepEqual(user_group, backend);
         th_render_user_group_called = true;
     });
-    ct.content_highlighter_html(backend);
+    ct.content_item_html(backend);
 
     // We don't have any fancy rendering for slash commands yet.
     ct.get_or_set_completing_for_tests("slash");
@@ -2293,7 +2311,7 @@ test("content_highlighter_html", ({override_rewire}) => {
         });
         th_render_slash_command_called = true;
     });
-    ct.content_highlighter_html(me_slash);
+    ct.content_item_html(me_slash);
 
     ct.get_or_set_completing_for_tests("stream");
     let th_render_stream_called = false;
@@ -2301,15 +2319,18 @@ test("content_highlighter_html", ({override_rewire}) => {
         assert.deepEqual(stream, denmark_stream);
         th_render_stream_called = true;
     });
-    ct.content_highlighter_html(denmark_stream);
+    ct.content_item_html(denmark_stream);
 
     ct.get_or_set_completing_for_tests("syntax");
     th_render_typeahead_item_called = false;
     override_rewire(typeahead_helper, "render_typeahead_item", (item) => {
-        assert.deepEqual(item, {primary: "py"});
+        assert.deepEqual(item, {
+            is_default_language: false,
+            primary: "py",
+        });
         th_render_typeahead_item_called = true;
     });
-    ct.content_highlighter_html({type: "syntax", language: "py"});
+    ct.content_item_html({type: "syntax", language: "py"});
 
     // Verify that all stub functions have been called.
     assert.ok(th_render_typeahead_item_called);
@@ -2596,6 +2617,17 @@ test("message people", ({override, override_rewire}) => {
     assert.deepEqual(results, [hamletcharacters, admins]);
 });
 
+test("person suggestion for unique full name syntax", () => {
+    let results = ct.get_person_suggestions(`${ali.full_name}|${ali.user_id}`, {});
+    // Ali is not a valid user, so we should get no results.
+    assert.deepEqual(results, []);
+
+    // Add Ali as a valid user.
+    people.add_valid_user_id(ali.user_id);
+    results = ct.get_person_suggestions(`${ali.full_name}|${ali.user_id}`, {});
+    assert.deepEqual(results, [ali_item]);
+});
+
 test("muted users excluded from results", () => {
     // This logic is common to direct message recipients as
     // well as mentions typeaheads, so we need only test once.
@@ -2620,9 +2652,7 @@ test("muted users excluded from results", () => {
     assert.deepEqual(results, [mention_all, call_center]);
 });
 
-test("direct message recipients sorted according to stream / topic being viewed", ({
-    override_rewire,
-}) => {
+test("direct message recipients sorted according to stream / topic being viewed", () => {
     // This tests that direct message recipient results are sorted with
     // subscribers of the stream / topic being viewed being given priority.
     // If no stream is being viewed, the sort is alphabetical (for testing,
@@ -2630,12 +2660,7 @@ test("direct message recipients sorted according to stream / topic being viewed"
     let results;
 
     // Simulating just cordelia being subscribed to denmark.
-    override_rewire(
-        stream_data,
-        "is_user_subscribed",
-        (stream_id, user_id) =>
-            stream_id === denmark_stream.stream_id && user_id === cordelia.user_id,
-    );
+    peer_data.set_subscribers(denmark_stream.stream_id, [cordelia.user_id]);
     mock_banners();
 
     // When viewing no stream, sorting is alphabetical
@@ -2650,11 +2675,7 @@ test("direct message recipients sorted according to stream / topic being viewed"
     assert.deepEqual(results, [cordelia_item, ali_item, alice_item]);
 
     // Simulating just alice being subscribed to denmark.
-    override_rewire(
-        stream_data,
-        "is_user_subscribed",
-        (stream_id, user_id) => stream_id === denmark_stream.stream_id && user_id === alice.user_id,
-    );
+    peer_data.set_subscribers(denmark_stream.stream_id, [alice.user_id]);
 
     // When viewing denmark stream to which alice is subscribed, ali is not
     // 1st despite having an exact name match with the query.

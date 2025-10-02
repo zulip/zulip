@@ -2,6 +2,7 @@
 
 const assert = require("node:assert/strict");
 
+const {make_stream} = require("./lib/example_stream.cjs");
 const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 
@@ -20,7 +21,7 @@ const message_lists = zrequire("message_lists");
 const {set_current_user, set_realm} = zrequire("state_data");
 
 set_current_user({});
-set_realm({});
+set_realm(make_stream());
 
 const alice = {
     email: "alice@example.com",
@@ -95,11 +96,20 @@ run_test("get_unread_ids", () => {
         mentioned_me_directly: false,
     };
 
-    message_store.update_message_cache(stream_msg);
-    message_store.update_message_cache(private_msg);
-    message_store.update_message_cache(other_topic_message);
+    message_store.update_message_cache({
+        type: "server_message",
+        message: stream_msg,
+    });
+    message_store.update_message_cache({
+        type: "server_message",
+        message: private_msg,
+    });
+    message_store.update_message_cache({
+        type: "server_message",
+        message: other_topic_message,
+    });
 
-    stream_data.add_sub(sub);
+    stream_data.add_sub_for_tests(sub);
 
     terms = [{operator: "search", operand: "whatever"}];
     set_filter(terms);
@@ -238,7 +248,7 @@ run_test("get_unread_ids", () => {
     terms = [
         {operator: "channel", operand: sub.stream_id.toString()},
         {operator: "topic", operand: "another topic"},
-        {operator: "with", operand: stream_msg.id},
+        {operator: "with", operand: stream_msg.id.toString()},
     ];
     set_filter(terms);
     unread_ids = candidate_ids();
@@ -247,7 +257,7 @@ run_test("get_unread_ids", () => {
     terms = [
         {operator: "channel", operand: sub.stream_id.toString()},
         {operator: "topic", operand: "another topic"},
-        {operator: "with", operand: private_msg.id},
+        {operator: "with", operand: private_msg.id.toString()},
     ];
     set_filter(terms);
     unread_ids = candidate_ids();

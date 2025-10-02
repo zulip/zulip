@@ -22,7 +22,7 @@ from zerver.lib.realm_icon import get_realm_icon_url
 from zerver.lib.request import RequestNotes
 from zerver.lib.send_email import FromAddress
 from zerver.lib.subdomains import get_subdomain, is_root_domain_available
-from zerver.models import Realm, UserProfile
+from zerver.models import PreregistrationRealm, Realm, UserProfile
 from zerver.models.realms import get_realm
 from zproject.backends import (
     AUTH_BACKEND_NAME_MAP,
@@ -283,6 +283,10 @@ def latest_info_context() -> dict[str, str]:
     return context
 
 
+def is_realm_import_enabled() -> bool:
+    return settings.MAX_WEB_DATA_IMPORT_SIZE_MB != 0
+
+
 def get_realm_create_form_context() -> dict[str, Any]:
     context = {
         "language_list": get_language_list(),
@@ -290,5 +294,7 @@ def get_realm_create_form_context() -> dict[str, Any]:
         "MAX_REALM_SUBDOMAIN_LENGTH": str(Realm.MAX_REALM_SUBDOMAIN_LENGTH),
         "root_domain_available": is_root_domain_available(),
         "sorted_realm_types": sorted(Realm.ORG_TYPES.values(), key=lambda d: d["display_order"]),
+        "is_realm_import_enabled": is_realm_import_enabled(),
+        "import_from_choices": PreregistrationRealm.IMPORT_FROM_CHOICES,
     }
     return context

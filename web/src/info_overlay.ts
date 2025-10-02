@@ -212,7 +212,7 @@ Last task`,
                             <span class="rendered-checkbox"></span>
                         </div>
                         <div>
-                            <strike><strong>Task 1:</strong> This is the first task.</strike>
+                            <s><strong>Task 1:</strong> This is the first task.</s>
                         </div>
                     </label>
                 </li>
@@ -330,7 +330,7 @@ export function set_up_toggler(): void {
 
     $(".informational-overlays .overlay-tabs").append($elem);
 
-    $("#go-to-home-view-hotkey-help").toggleClass(
+    $("#keyboard-shortcuts .go-to-home-view-hotkey-help").toggleClass(
         "notdisplayed",
         !user_settings.web_escape_navigates_to_home_view,
     );

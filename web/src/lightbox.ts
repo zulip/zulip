@@ -34,9 +34,10 @@ type Media = {
 let is_open = false;
 
 // The asset map is a map of all retrieved images and YouTube videos that are memoized instead of
-// being looked up multiple times.  It is keyed by the asset's "canonical URL," which is likely the
-// `src` used in the message feed, but for thumbnailed images is the full-resolution original URL.
-const asset_map = new Map<string, Media>();
+// being looked up multiple times. It is keyed by the message id with each value being the
+// message's assets map keyed by the asset's "canonical URL," which is likely the `src` used in
+// the message feed, but for thumbnailed images is the full-resolution original URL.
+const asset_map = new Map<number, Map<string, Media>>();
 
 export class PanZoomControl {
     // Class for both initializing and controlling the
@@ -104,9 +105,6 @@ export class PanZoomControl {
                 case "z":
                 case "-":
                     this.zoomOut();
-                    break;
-                case "v":
-                    overlays.close_overlay("lightbox");
                     break;
             }
             e.preventDefault();
@@ -211,6 +209,10 @@ export function clear_for_testing(): void {
     asset_map.clear();
 }
 
+export function invalidate_asset_map_of_message(message_id: number): void {
+    asset_map.delete(message_id);
+}
+
 function set_selected_media_element($media: JQuery<HTMLMediaElement | HTMLImageElement>): void {
     // Clear out any previously selected element
     $(".media-to-select-in-lightbox-list").removeClass("media-to-select-in-lightbox-list");
@@ -239,7 +241,7 @@ export function canonical_url_of_media(media: HTMLMediaElement | HTMLImageElemen
 export function render_lightbox_media_list(): void {
     if (!is_open) {
         const message_media_list = $<HTMLMediaElement | HTMLImageElement>(
-            ".focused-message-list .message_inline_image img, .focused-message-list .message_inline_video video",
+            ".focused-message-list .message-media-preview-image img, .focused-message-list .message_inline_video video",
         ).toArray();
         const $lightbox_media_list = $("#lightbox_overlay .image-list").empty();
         for (const media of message_media_list) {
@@ -373,17 +375,13 @@ function display_video(payload: Media): void {
 }
 
 export function build_open_media_function(
-    on_close: (() => void) | undefined,
+    on_close = (): void => {
+        remove_video_players();
+        is_open = false;
+        assert(document.activeElement instanceof HTMLElement);
+        document.activeElement.blur();
+    },
 ): ($media: JQuery<HTMLMediaElement | HTMLImageElement>) => void {
-    if (on_close === undefined) {
-        on_close = function () {
-            remove_video_players();
-            is_open = false;
-            assert(document.activeElement instanceof HTMLElement);
-            document.activeElement.blur();
-        };
-    }
-
     return function ($media: JQuery<HTMLMediaElement | HTMLImageElement>): void {
         // This is used both for clicking on media in the messagelist, as well as clicking on images
         // in the media list under the lightbox when it is open.
@@ -415,7 +413,8 @@ export function show_from_selected_message(): void {
     const $message_selected = $(".selected_message");
     let $message = $message_selected;
     // This is a function to satisfy eslint unicorn/no-array-callback-reference
-    const media_classes = (): string => ".message_inline_image img, .message_inline_image video";
+    const media_classes = (): string =>
+        ".message-media-preview-image img, .message-media-preview-video video";
     let $media = $message.find<HTMLMediaElement | HTMLImageElement>(media_classes());
     let $prev_traverse = false;
 
@@ -483,15 +482,39 @@ function supports_heic(): boolean {
 
 // retrieve the metadata from the DOM and store into the asset_map.
 export function parse_media_data(media: HTMLMediaElement | HTMLImageElement): Media {
-    const canonical_url = canonical_url_of_media(media);
-    if (asset_map.has(canonical_url)) {
-        // Use the cached value
-        const payload = asset_map.get(canonical_url);
-        assert(payload !== undefined);
-        return payload;
-    }
-
     const $media = $(media);
+    const canonical_url = canonical_url_of_media(media);
+    let message_id;
+
+    // This includes the preview feature in the message-edit UI as well as compose.
+    const is_compose_preview_media = $media.closest(".preview_content").length > 0;
+    const $message_row = rows.get_closest_row($media);
+    let use_asset_map;
+    let sender_full_name;
+
+    if (is_compose_preview_media || rows.is_overlay_row($message_row)) {
+        // We don't use the asset map cache in compose/edit UIs or
+        // overlays, since the content is not stable.
+        sender_full_name = people.my_full_name();
+        use_asset_map = false;
+    } else if ($message_row.length > 0) {
+        use_asset_map = true;
+        message_id = rows.id($message_row);
+
+        if (asset_map.has(message_id) && asset_map.get(message_id)?.has(canonical_url)) {
+            // Use the cached value
+            const payload = asset_map.get(message_id)!.get(canonical_url);
+            assert(payload !== undefined);
+            return payload;
+        }
+
+        const message = message_store.get(message_id);
+        if (message === undefined) {
+            blueslip.error("Lightbox for unknown message", {message_id});
+        } else {
+            sender_full_name = message.sender_full_name;
+        }
+    }
 
     // if wrapped in the .youtube-video class, it will be length = 1, and therefore
     // cast to true.
@@ -499,9 +522,6 @@ export function parse_media_data(media: HTMLMediaElement | HTMLImageElement): Me
     const is_vimeo_video = $media.closest(".vimeo-video").length > 0;
     const is_embed_video = $media.closest(".embed-video").length > 0;
     const is_inline_video = $media.closest(".message_inline_video").length > 0;
-
-    // check if media is descendent of #compose .preview_content
-    const is_compose_preview_media = $media.closest("#compose .preview_content").length === 1;
 
     const $parent = $media.parent();
     let type: MediaType;
@@ -561,18 +581,6 @@ export function parse_media_data(media: HTMLMediaElement | HTMLImageElement): Me
             source = url;
         }
     }
-    let sender_full_name;
-    if (is_compose_preview_media) {
-        sender_full_name = people.my_full_name();
-    } else {
-        const message_id = rows.get_message_id(media);
-        const message = message_store.get(message_id);
-        if (message === undefined) {
-            blueslip.error("Lightbox for unknown message", {message_id});
-        } else {
-            sender_full_name = message.sender_full_name;
-        }
-    }
 
     const payload = {
         user: sender_full_name,
@@ -585,8 +593,13 @@ export function parse_media_data(media: HTMLMediaElement | HTMLImageElement): Me
         url: util.is_valid_url(url) ? url : "",
     };
 
-    if (!is_loading_placeholder && canonical_url !== "") {
-        asset_map.set(canonical_url, payload);
+    if (use_asset_map && !is_loading_placeholder && canonical_url !== "") {
+        // Update the asset_map, if we had a message ID involved.
+        assert(message_id !== undefined);
+        if (!asset_map.has(message_id)) {
+            asset_map.set(message_id, new Map<string, Media>());
+        }
+        asset_map.get(message_id)!.set(canonical_url, payload);
     }
     return payload;
 }
@@ -632,7 +645,7 @@ export function initialize(): void {
 
     $("#main_div, #compose .preview_content").on(
         "click",
-        ".message_inline_image:not(.message_inline_video) a, .message_inline_animated_image_still",
+        ".message-media-preview-image:not(.message_inline_video) a, .message_inline_animated_image_still",
         function (e) {
             // prevent the link from opening in a new page.
             e.preventDefault();

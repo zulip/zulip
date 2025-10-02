@@ -3,6 +3,8 @@
 const assert = require("node:assert/strict");
 
 const events = require("./lib/events.cjs");
+const {make_user_group} = require("./lib/example_group.cjs");
+const {make_realm} = require("./lib/example_realm.cjs");
 const {mock_esm, set_global, with_overrides, zrequire} = require("./lib/namespace.cjs");
 const {make_stub} = require("./lib/stub.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
@@ -49,6 +51,9 @@ const realm_icon = mock_esm("../src/realm_icon");
 const realm_logo = mock_esm("../src/realm_logo");
 const realm_playground = mock_esm("../src/realm_playground");
 const reload = mock_esm("../src/reload");
+const message_reminder = mock_esm("../src/message_reminder");
+const reminders_overlay_ui = mock_esm("../src/reminders_overlay_ui");
+const navigation_views = mock_esm("../src/navigation_views");
 const saved_snippets = mock_esm("../src/saved_snippets");
 const saved_snippets_ui = mock_esm("../src/saved_snippets_ui");
 const scheduled_messages = mock_esm("../src/scheduled_messages");
@@ -77,6 +82,8 @@ const settings_users = mock_esm("../src/settings_users");
 const sidebar_ui = mock_esm("../src/sidebar_ui");
 const stream_data = mock_esm("../src/stream_data");
 const stream_list = mock_esm("../src/stream_list");
+const stream_settings_components = mock_esm("../src/stream_settings_components");
+const stream_settings_data = mock_esm("../src/stream_settings_data");
 const stream_settings_ui = mock_esm("../src/stream_settings_ui");
 const stream_list_sort = mock_esm("../src/stream_list_sort");
 const stream_topic_history = mock_esm("../src/stream_topic_history");
@@ -87,6 +94,7 @@ const submessage = mock_esm("../src/submessage");
 mock_esm("../src/left_sidebar_navigation_area", {
     update_starred_count() {},
     update_scheduled_messages_row() {},
+    update_reminders_row() {},
     handle_home_view_changed() {},
 });
 const typing_events = mock_esm("../src/typing_events");
@@ -103,7 +111,7 @@ const {initialize: initialize_realm_user_settings_defaults} = zrequire(
 const {set_current_user, set_realm} = zrequire("state_data");
 const {initialize_user_settings} = zrequire("user_settings");
 
-const realm = {};
+const realm = make_realm();
 set_realm(realm);
 const current_user = {};
 set_current_user(current_user);
@@ -135,6 +143,7 @@ page_params.test_suite = false;
 
 // For data-oriented modules, just use them, don't stub them.
 const alert_words = zrequire("alert_words");
+const channel_folders = zrequire("channel_folders");
 const emoji = zrequire("emoji");
 const message_store = zrequire("message_store");
 const people = zrequire("people");
@@ -161,7 +170,10 @@ people.add_active_user(me);
 people.add_active_user(test_user);
 people.initialize_current_user(me.user_id);
 
-message_store.update_message_cache(test_message);
+message_store.update_message_cache({
+    type: "server_message",
+    message: test_message,
+});
 
 const realm_emoji = {};
 const emoji_codes = zrequire("../../static/generated/emoji/emoji_codes.json");
@@ -187,6 +199,37 @@ run_test("alert_words", ({override}) => {
     assert.deepEqual(alert_words.get_word_list(), [{word: "lunch"}, {word: "fire"}]);
     assert.ok(alert_words.has_alert_word("fire"));
     assert.ok(alert_words.has_alert_word("lunch"));
+});
+
+run_test("navigation_views", ({override}) => {
+    const add_event = event_fixtures.navigation_view__add;
+    {
+        const stub = make_stub();
+        override(navigation_views, "add_navigation_view", stub.f);
+
+        dispatch(add_event);
+        assert.equal(stub.num_calls, 1);
+        assert_same(stub.get_args("event").event, add_event.navigation_view);
+    }
+    const update_event = event_fixtures.navigation_view__update;
+    {
+        const stub = make_stub();
+        override(navigation_views, "update_navigation_view", stub.f);
+
+        dispatch(update_event);
+        assert.equal(stub.num_calls, 1);
+        assert_same(stub.get_args("event").event, update_event.fragment);
+    }
+
+    const remove_event = event_fixtures.navigation_view__remove;
+    {
+        const stub = make_stub();
+        override(navigation_views, "remove_navigation_view", stub.f);
+
+        dispatch(remove_event);
+        assert.equal(stub.num_calls, 1);
+        assert_same(stub.get_args("event").event, remove_event.fragment);
+    }
 });
 
 run_test("saved_snippets", ({override}) => {
@@ -234,23 +277,25 @@ run_test("attachments", ({override}) => {
 
 run_test("user groups", ({override}) => {
     let event = event_fixtures.user_group__add;
-    user_groups.add({
-        id: 1,
-        name: "Backend",
-        creator_id: null,
-        date_created: 1596713966,
-        description: "Backend folks",
-        members: [1, 2, 4],
-        is_system_group: false,
-        direct_subgroup_ids: [3, 5],
-        can_add_members_group: 16,
-        can_join_group: 16,
-        can_leave_group: 15,
-        can_manage_group: 16,
-        can_mention_group: 11,
-        can_remove_members_group: 16,
-        deactivated: false,
-    });
+    user_groups.add(
+        make_user_group({
+            id: 1,
+            name: "Backend",
+            creator_id: null,
+            date_created: 1596713966,
+            description: "Backend folks",
+            members: [1, 2, 4],
+            is_system_group: false,
+            direct_subgroup_ids: [3, 5],
+            can_add_members_group: 16,
+            can_join_group: 16,
+            can_leave_group: 15,
+            can_manage_group: 16,
+            can_mention_group: 11,
+            can_remove_members_group: 16,
+            deactivated: false,
+        }),
+    );
 
     {
         const user_group_settings_ui_stub = make_stub();
@@ -420,10 +465,8 @@ run_test("presence", ({override}) => {
     override(activity_ui, "update_presence_info", stub.f);
     dispatch(event);
     assert.equal(stub.num_calls, 1);
-    const args = stub.get_args("user_id", "presence", "server_time");
-    assert_same(args.user_id, event.user_id);
-    assert_same(args.presence, event.presence);
-    assert_same(args.server_time, event.server_timestamp);
+    const args = stub.get_args("presences");
+    assert_same(args.presences, event.presences);
 });
 
 run_test("reaction", ({override}) => {
@@ -447,6 +490,30 @@ run_test("reaction", ({override}) => {
         const args = stub.get_args("event");
         assert_same(args.event.emoji_name, event.emoji_name);
         assert_same(args.event.message_id, event.message_id);
+    }
+});
+
+run_test("reminders", ({override}) => {
+    override(reminders_overlay_ui, "rerender", noop);
+    override(reminders_overlay_ui, "remove_reminder_id", noop);
+
+    let event = event_fixtures.reminders__add;
+    {
+        const stub = make_stub();
+        override(message_reminder, "add_reminders", stub.f);
+        dispatch(event);
+        assert.equal(stub.num_calls, 1);
+        const args = stub.get_args("reminders");
+        assert_same(args.reminders, event.reminders);
+    }
+    event = event_fixtures.reminders__remove;
+    {
+        const stub = make_stub();
+        override(message_reminder, "remove_reminder", stub.f);
+        dispatch(event);
+        assert.equal(stub.num_calls, 1);
+        const args = stub.get_args("reminder_id");
+        assert_same(args.reminder_id, event.reminder_id);
     }
 });
 
@@ -485,6 +552,95 @@ run_test("scheduled_messages", ({override}) => {
     }
 });
 
+run_test("channel_folders", ({override}) => {
+    channel_folders.initialize({channel_folders: []});
+
+    let event = event_fixtures.channel_folder__add;
+    {
+        const stub = make_stub();
+        override(stream_ui_updates, "update_folder_dropdown_visibility", stub.f);
+
+        dispatch(event);
+
+        assert.equal(stub.num_calls, 1);
+        const folders = channel_folders.get_channel_folders();
+        assert.equal(folders.length, 1);
+        assert.equal(folders[0].id, event.channel_folder.id);
+        assert.equal(folders[0].name, event.channel_folder.name);
+    }
+
+    event = event_fixtures.channel_folder__update;
+    {
+        const stub = make_stub();
+        override(stream_settings_ui, "update_channel_folder_name", stub.f);
+        override(stream_list, "update_streams_sidebar", stub.f);
+        override(stream_settings_ui, "reset_dropdown_set_to_archived_folder", stub.f);
+        const update_dropdown_visibility_stub = make_stub();
+        override(
+            stream_ui_updates,
+            "update_folder_dropdown_visibility",
+            update_dropdown_visibility_stub.f,
+        );
+
+        dispatch(event);
+
+        assert.equal(stub.num_calls, 3);
+        assert.equal(update_dropdown_visibility_stub.num_calls, 1);
+        const folders = channel_folders.get_channel_folders(true);
+        const args = stub.get_args("folder_id");
+        assert_same(args.folder_id, event.channel_folder_id);
+
+        assert.equal(folders.length, 1);
+        assert.equal(folders[0].id, event.channel_folder_id);
+        assert.equal(folders[0].name, event.data.name);
+        assert.equal(folders[0].description, event.data.description);
+        assert.equal(
+            folders[0].rendered_description,
+            event.data.rendered_description.replace("<p>", "").replace("</p>", ""),
+        );
+        assert.equal(folders[0].is_archived, event.data.is_archived);
+    }
+
+    event = event_fixtures.channel_folder__reorder;
+    {
+        const folder_1 = {
+            name: "Folder 1",
+            description: "",
+            rendered_description: "",
+            creator_id: null,
+            date_created: 1596710000,
+            id: 2,
+            is_archived: false,
+        };
+        const folder_2 = {
+            name: "Folder 2",
+            description: "",
+            rendered_description: "",
+            creator_id: null,
+            date_created: 1596720000,
+            id: 3,
+            is_archived: false,
+        };
+        channel_folders.add(folder_1);
+        channel_folders.add(folder_2);
+        const stub = make_stub();
+        override(stream_list, "update_streams_sidebar", stub.f);
+
+        dispatch(event);
+
+        assert.equal(stub.num_calls, 1);
+        const folders = channel_folders.get_channel_folders(true);
+        assert.equal(folders.length, 3);
+
+        // new order is [2, 3, 1]
+        assert.equal(folder_1.order, 0);
+        assert.equal(folder_2.order, 1);
+    }
+
+    blueslip.expect("error", "Unexpected event type channel_folder/other");
+    server_events_dispatch.dispatch_normal_event({type: "channel_folder", op: "other"});
+});
+
 run_test("realm settings", ({override}) => {
     override(current_user, "is_admin", true);
     override(realm, "realm_date_created", new Date("2023-01-01Z"));
@@ -498,7 +654,7 @@ run_test("realm settings", ({override}) => {
     override(gear_menu, "rerender", noop);
     override(narrow_title, "redraw_title", noop);
     override(navbar_alerts, "toggle_organization_profile_incomplete_banner", noop);
-    override(compose_recipient, "update_topic_inputbox_on_mandatory_topics_change", noop);
+    override(compose_recipient, "update_topic_inputbox_on_topics_policy_change", noop);
     override(compose_recipient, "update_compose_area_placeholder_text", noop);
     override(compose_recipient, "check_posting_policy_for_compose_box", noop);
 
@@ -535,9 +691,6 @@ run_test("realm settings", ({override}) => {
         assert_same(val, "new_realm_name");
     });
     assert_same(realm.realm_name, "new_realm_name");
-
-    event = event_fixtures.realm__update__mandatory_topics;
-    test_realm_boolean(event, "realm_mandatory_topics");
 
     event = event_fixtures.realm__update__org_type;
     dispatch(event);
@@ -597,6 +750,7 @@ run_test("realm settings", ({override}) => {
     override(realm, "realm_can_move_messages_between_topics_group", 1);
     override(realm, "realm_can_move_messages_between_topics_group", 5);
     override(realm, "realm_direct_message_permission_group", 1);
+    override(realm, "realm_topics_policy", "allow_empty_topic");
     override(realm, "realm_plan_type", 2);
     override(realm, "realm_upload_quota_mib", 5000);
     override(realm, "max_file_upload_size_mib", 10);
@@ -607,6 +761,19 @@ run_test("realm settings", ({override}) => {
     });
     override(settings_org, "populate_auth_methods", noop);
     override(user_group_edit, "update_realm_setting_in_permissions_panel", noop);
+    override(overlays, "streams_open", () => true);
+    override(stream_settings_components, "get_active_data", () => ({
+        id: events.test_streams.devel.stream_id,
+    }));
+    override(stream_settings_data, "get_sub_for_settings", () => ({
+        ...events.test_streams.devel,
+        can_add_subscribers: false,
+    }));
+    let add_subscribers_element_updated = false;
+    override(stream_ui_updates, "update_add_subscriptions_elements", (sub) => {
+        assert.deepEqual(sub, {...events.test_streams.devel, can_add_subscribers: false});
+        add_subscribers_element_updated = true;
+    });
     dispatch(event);
     assert_same(realm.realm_create_multiuse_invite_group, 3);
     assert_same(realm.realm_allow_message_editing, true);
@@ -622,10 +789,12 @@ run_test("realm settings", ({override}) => {
     assert_same(realm.realm_can_move_messages_between_topics_group, 3);
     assert_same(realm.realm_can_resolve_topics_group, 1);
     assert_same(realm.realm_direct_message_permission_group, 3);
+    assert_same(realm.realm_topics_policy, "disable_empty_topic");
     assert_same(realm.realm_plan_type, 3);
     assert_same(realm.realm_upload_quota_mib, 50000);
     assert_same(realm.max_file_upload_size_mib, 1024);
     assert_same(update_stream_privacy_choices_called, true);
+    assert_same(add_subscribers_element_updated, true);
 
     event = event_fixtures.realm__update_dict__icon;
     override(realm_icon, "rerender", noop);
@@ -1001,7 +1170,7 @@ run_test("user_settings", ({override}) => {
     event = event_fixtures.user_settings__web_escape_navigates_to_home_view;
     override(user_settings, "web_escape_navigates_to_home_view", false);
     let toggled = [];
-    $("#go-to-home-view-hotkey-help").toggleClass = (cls) => {
+    $("#keyboard-shortcuts .go-to-home-view-hotkey-help").toggleClass = (cls) => {
         toggled.push(cls);
     };
     dispatch(event);
@@ -1051,8 +1220,18 @@ run_test("user_settings", ({override}) => {
 
     event = event_fixtures.user_settings__web_channel_default_view;
     override(user_settings, "web_channel_default_view", 2);
+    let called_create_initial_sidebar_rows = false;
+    let called_update_streams_sidebar = false;
+    override(stream_list, "create_initial_sidebar_rows", () => {
+        called_create_initial_sidebar_rows = true;
+    });
+    override(stream_list, "update_streams_sidebar", () => {
+        called_update_streams_sidebar = true;
+    });
     dispatch(event);
     assert_same(user_settings.web_channel_default_view, 1);
+    assert.equal(called_create_initial_sidebar_rows, true);
+    assert.equal(called_update_streams_sidebar, true);
 
     event = event_fixtures.user_settings__web_font_size_px;
     override(user_settings, "web_font_size_px", 14);
@@ -1158,6 +1337,18 @@ run_test("user_settings", ({override}) => {
     dispatch(event);
     assert_same(user_settings.starred_message_counts, true);
 
+    event = event_fixtures.user_settings__web_left_sidebar_show_channel_folders;
+    override(stream_list, "build_stream_list", noop);
+    override(user_settings, "web_left_sidebar_show_channel_folders", true);
+    dispatch(event);
+    assert_same(user_settings.web_left_sidebar_show_channel_folders, false);
+
+    event = event_fixtures.user_settings__web_left_sidebar_unreads_count_summary;
+    override(stream_list, "update_unread_counts_visibility", noop);
+    override(user_settings, "web_left_sidebar_unreads_count_summary", true);
+    dispatch(event);
+    assert_same(user_settings.web_left_sidebar_unreads_count_summary, false);
+
     event = event_fixtures.user_settings__receives_typing_notifications;
     override(user_settings, "receives_typing_notifications", false);
     dispatch(event);
@@ -1189,7 +1380,7 @@ run_test("user_settings", ({override}) => {
     {
         const stub = make_stub();
         event = event_fixtures.user_settings__web_stream_unreads_count_display_policy;
-        override(stream_list, "update_dom_unread_counts_visibility", stub.f);
+        override(stream_list, "build_stream_list", stub.f);
         override(user_settings, "web_stream_unreads_count_display_policy", 1);
         dispatch(event);
         assert.equal(stub.num_calls, 1);

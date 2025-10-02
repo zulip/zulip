@@ -2,7 +2,7 @@ from collections import defaultdict
 from collections.abc import Collection, Iterable
 from dataclasses import dataclass
 from datetime import datetime, timedelta
-from typing import TypedDict
+from typing import Any, TypedDict
 
 from django.db import transaction
 from django.db.models import Exists, OuterRef, Q, QuerySet
@@ -12,6 +12,8 @@ from django.utils.translation import gettext as _
 from zerver.lib.default_streams import get_default_stream_ids_for_realm
 from zerver.lib.exceptions import (
     CannotAdministerChannelError,
+    CannotSetTopicsPolicyError,
+    ChannelExistsError,
     IncompatibleParametersError,
     JsonableError,
     OrganizationOwnerRequiredError,
@@ -24,17 +26,21 @@ from zerver.lib.stream_subscription import (
 from zerver.lib.stream_traffic import get_average_weekly_stream_traffic, get_streams_traffic
 from zerver.lib.string_validation import check_stream_name
 from zerver.lib.timestamp import datetime_to_timestamp
+from zerver.lib.topic import get_topic_display_name
 from zerver.lib.types import APIStreamDict, UserGroupMembersData
 from zerver.lib.user_groups import (
     UserGroupMembershipDetails,
+    access_user_group_for_setting,
     get_group_setting_value_for_register_api,
     get_members_and_subgroups_of_groups,
     get_recursive_membership_groups,
     get_role_based_system_groups_dict,
     get_root_id_annotated_recursive_subgroups_for_groups,
+    parse_group_setting_value,
     user_has_permission_for_group_setting,
 )
 from zerver.models import (
+    ChannelFolder,
     DefaultStreamGroup,
     Message,
     NamedUserGroup,
@@ -50,6 +56,7 @@ from zerver.models import (
 from zerver.models.groups import SystemGroups
 from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.streams import (
+    StreamTopicsPolicyEnum,
     bulk_get_streams,
     get_realm_stream,
     get_stream,
@@ -83,31 +90,71 @@ class StreamDict(TypedDict, total=False):
     stream_post_policy: int
     history_public_to_subscribers: bool | None
     message_retention_days: int | None
+    topics_policy: int | None
     can_add_subscribers_group: UserGroup | None
     can_administer_channel_group: UserGroup | None
+    can_delete_any_message_group: UserGroup | None
+    can_delete_own_message_group: UserGroup | None
+    can_move_messages_out_of_channel_group: UserGroup | None
+    can_move_messages_within_channel_group: UserGroup | None
     can_send_message_group: UserGroup | None
     can_remove_subscribers_group: UserGroup | None
+    can_resolve_topics_group: UserGroup | None
     can_subscribe_group: UserGroup | None
+    folder: ChannelFolder | None
 
 
-def get_stream_permission_policy_name(
+def get_stream_permission_policy_key(
     *,
     invite_only: bool | None = None,
     history_public_to_subscribers: bool | None = None,
     is_web_public: bool | None = None,
 ) -> str:
-    policy_name = None
-    for permission_dict in Stream.PERMISSION_POLICIES.values():
+    policy_key = None
+    for permission_key, permission_dict in Stream.PERMISSION_POLICIES.items():
         if (
             permission_dict["invite_only"] == invite_only
             and permission_dict["history_public_to_subscribers"] == history_public_to_subscribers
             and permission_dict["is_web_public"] == is_web_public
         ):
-            policy_name = permission_dict["policy_name"]
+            policy_key = permission_key
             break
 
-    assert policy_name is not None
-    return policy_name
+    assert policy_key is not None
+    return policy_key
+
+
+def get_stream_topics_policy(realm: Realm, stream: Stream) -> int:
+    if stream.topics_policy == StreamTopicsPolicyEnum.inherit.value:
+        return realm.topics_policy
+    return stream.topics_policy
+
+
+def validate_topics_policy(
+    topics_policy: str | None,
+    user_profile: UserProfile,
+    # Pass None when creating a channel and the channel being edited when editing a channel's settings
+    stream: Stream | None = None,
+) -> StreamTopicsPolicyEnum | None:
+    if topics_policy is not None and isinstance(topics_policy, StreamTopicsPolicyEnum):
+        if (
+            topics_policy != StreamTopicsPolicyEnum.inherit
+            and not user_profile.can_set_topics_policy()
+        ):
+            raise JsonableError(_("Insufficient permission"))
+
+        # Cannot set `topics_policy` to `empty_topic_only` when there are messages
+        # in non-empty topics in the current channel.
+        if (
+            stream is not None
+            and topics_policy == StreamTopicsPolicyEnum.empty_topic_only
+            and channel_has_named_topics(stream)
+        ):
+            raise CannotSetTopicsPolicyError(
+                get_topic_display_name("", user_profile.default_language)
+            )
+        return topics_policy
+    return None
 
 
 def get_default_value_for_history_public_to_subscribers(
@@ -123,11 +170,6 @@ def get_default_value_for_history_public_to_subscribers(
         # If we later decide to support public streams without
         # history, we can remove this code path.
         history_public_to_subscribers = True
-
-    if realm.is_zephyr_mirror_realm:
-        # In the Zephyr mirroring model, history is unconditionally
-        # not public to subscribers, even for public streams.
-        history_public_to_subscribers = False
 
     return history_public_to_subscribers
 
@@ -148,13 +190,44 @@ def send_stream_creation_event(
     user_ids: list[int],
     recent_traffic: dict[int, int] | None = None,
     anonymous_group_membership: dict[int, UserGroupMembersData] | None = None,
+    for_unarchiving: bool = False,
 ) -> None:
     event = dict(
         type="stream",
         op="create",
         streams=[stream_to_dict(stream, recent_traffic, anonymous_group_membership)],
+        for_unarchiving=for_unarchiving,
     )
     send_event_on_commit(realm, event, user_ids)
+
+
+def check_channel_creation_permissions(
+    user_profile: UserProfile,
+    *,
+    is_default_stream: bool,
+    invite_only: bool,
+    is_web_public: bool,
+    message_retention_days: str | int | None,
+) -> None:
+    if invite_only and not user_profile.can_create_private_streams():
+        raise JsonableError(_("Insufficient permission"))
+    if not invite_only and not user_profile.can_create_public_streams():
+        raise JsonableError(_("Insufficient permission"))
+    if is_default_stream and not user_profile.is_realm_admin:
+        raise JsonableError(_("Insufficient permission"))
+    if invite_only and is_default_stream:
+        raise JsonableError(_("A default channel cannot be private."))
+    if is_web_public:
+        if not user_profile.realm.web_public_streams_enabled():
+            raise JsonableError(_("Web-public channels are not enabled."))
+        if not user_profile.can_create_web_public_streams():
+            # We set can_create_web_public_channel_group to allow only organization
+            # owners to create web-public streams, because of their sensitive nature.
+            raise JsonableError(_("Insufficient permission"))
+    if message_retention_days is not None:
+        if not user_profile.is_realm_owner:
+            raise OrganizationOwnerRequiredError
+        user_profile.realm.ensure_not_on_limited_plan()
 
 
 def get_stream_permission_default_group(
@@ -163,7 +236,7 @@ def get_stream_permission_default_group(
     creator: UserProfile | None = None,
 ) -> UserGroup:
     setting_default_name = Stream.stream_permission_group_settings[setting_name].default_group_name
-    if setting_default_name == "stream_creator_or_nobody":
+    if setting_default_name == "channel_creator":
         if creator:
             default_group = UserGroup(
                 realm=creator.realm,
@@ -248,6 +321,20 @@ def get_user_ids_with_metadata_access_via_permission_groups(stream: Stream) -> s
     return users_with_metadata_access_dict[stream.id]
 
 
+def channel_events_topic_name(stream: Stream) -> str:
+    if stream.topics_policy == StreamTopicsPolicyEnum.empty_topic_only.value:
+        return ""
+    return str(Realm.STREAM_EVENTS_NOTIFICATION_TOPIC_NAME)
+
+
+def channel_has_named_topics(stream: Stream) -> bool:
+    return (
+        Message.objects.filter(realm_id=stream.realm_id, recipient=stream.recipient)
+        .exclude(subject="")
+        .exists()
+    )
+
+
 @transaction.atomic(savepoint=False)
 def create_stream_if_needed(
     realm: Realm,
@@ -258,11 +345,18 @@ def create_stream_if_needed(
     history_public_to_subscribers: bool | None = None,
     stream_description: str = "",
     message_retention_days: int | None = None,
+    topics_policy: int | None = None,
     can_add_subscribers_group: UserGroup | None = None,
     can_administer_channel_group: UserGroup | None = None,
+    can_delete_any_message_group: UserGroup | None = None,
+    can_delete_own_message_group: UserGroup | None = None,
+    can_move_messages_out_of_channel_group: UserGroup | None = None,
+    can_move_messages_within_channel_group: UserGroup | None = None,
     can_send_message_group: UserGroup | None = None,
     can_remove_subscribers_group: UserGroup | None = None,
+    can_resolve_topics_group: UserGroup | None = None,
     can_subscribe_group: UserGroup | None = None,
+    folder: ChannelFolder | None = None,
     acting_user: UserProfile | None = None,
     anonymous_group_membership: dict[int, UserGroupMembersData] | None = None,
 ) -> tuple[Stream, bool]:
@@ -290,6 +384,9 @@ def create_stream_if_needed(
 
     stream_name = stream_name.strip()
 
+    if topics_policy is None:
+        topics_policy = StreamTopicsPolicyEnum.inherit.value
+
     (stream, created) = Stream.objects.get_or_create(
         realm=realm,
         name__iexact=stream_name,
@@ -300,8 +397,9 @@ def create_stream_if_needed(
             invite_only=invite_only,
             is_web_public=is_web_public,
             history_public_to_subscribers=history_public_to_subscribers,
-            is_in_zephyr_realm=realm.is_zephyr_mirror_realm,
             message_retention_days=message_retention_days,
+            folder=folder,
+            topics_policy=topics_policy,
             **group_setting_values,
         ),
     )
@@ -376,11 +474,22 @@ def create_streams_if_needed(
             history_public_to_subscribers=stream_dict.get("history_public_to_subscribers"),
             stream_description=stream_dict.get("description", ""),
             message_retention_days=stream_dict.get("message_retention_days", None),
+            topics_policy=stream_dict.get("topics_policy", None),
             can_add_subscribers_group=stream_dict.get("can_add_subscribers_group", None),
             can_administer_channel_group=stream_dict.get("can_administer_channel_group", None),
+            can_delete_any_message_group=stream_dict.get("can_delete_any_message_group", None),
+            can_delete_own_message_group=stream_dict.get("can_delete_own_message_group", None),
+            can_move_messages_out_of_channel_group=stream_dict.get(
+                "can_move_messages_out_of_channel_group", None
+            ),
+            can_move_messages_within_channel_group=stream_dict.get(
+                "can_move_messages_within_channel_group", None
+            ),
             can_send_message_group=stream_dict.get("can_send_message_group", None),
             can_remove_subscribers_group=stream_dict.get("can_remove_subscribers_group", None),
+            can_resolve_topics_group=stream_dict.get("can_resolve_topics_group", None),
             can_subscribe_group=stream_dict.get("can_subscribe_group", None),
+            folder=stream_dict.get("folder", None),
             acting_user=acting_user,
             anonymous_group_membership=anonymous_group_membership,
         )
@@ -469,7 +578,7 @@ def check_stream_access_based_on_can_send_message_group(
             raise JsonableError(_("You do not have permission to post in this channel."))
 
     if not user_has_permission_for_group_setting(
-        stream.can_send_message_group,
+        stream.can_send_message_group_id,
         sender,
         Stream.stream_permission_group_settings["can_send_message_group"],
         direct_member_only=False,
@@ -616,7 +725,6 @@ def user_has_content_access(
     user_group_membership_details: UserGroupMembershipDetails,
     *,
     is_subscribed: bool,
-    exclude_zephyr_realms_from_public_check: bool = False,
 ) -> bool:
     if stream.is_web_public:
         return True
@@ -626,9 +734,6 @@ def user_has_content_access(
 
     if user_profile.is_guest:
         return False
-
-    if exclude_zephyr_realms_from_public_check and not stream.invite_only:
-        return True
 
     if stream.is_public():
         return True
@@ -868,24 +973,19 @@ def get_web_public_streams_queryset(realm: Realm) -> QuerySet[Stream]:
     return Stream.objects.filter(
         realm=realm,
         is_web_public=True,
-        # In theory, nothing conflicts with allowing web-public access
-        # to deactivated streams.  However, we should offer a way to
-        # review archived streams and adjust their settings before
-        # allowing that configuration to exist.
-        deactivated=False,
         # In theory, is_web_public=True implies invite_only=False and
         # history_public_to_subscribers=True, but it's safer to include
         # these in the query.
         invite_only=False,
         history_public_to_subscribers=True,
-    ).select_related("can_send_message_group", "can_send_message_group__named_user_group")
+    )
 
 
 def check_stream_name_available(realm: Realm, name: str) -> None:
     check_stream_name(name)
     try:
         get_stream(name, realm)
-        raise JsonableError(_("Channel name is already in use."))
+        raise ChannelExistsError(name)
     except Stream.DoesNotExist:
         pass
 
@@ -1059,6 +1159,101 @@ def can_access_stream_history_by_id(user_profile: UserProfile, stream_id: int) -
     return can_access_stream_history(user_profile, stream)
 
 
+def can_delete_any_message_in_channel(user_profile: UserProfile, stream: Stream) -> bool:
+    return user_has_permission_for_group_setting(
+        stream.can_delete_any_message_group_id,
+        user_profile,
+        Stream.stream_permission_group_settings["can_delete_any_message_group"],
+        direct_member_only=False,
+    )
+
+
+def can_delete_own_message_in_channel(user_profile: UserProfile, stream: Stream) -> bool:
+    return user_has_permission_for_group_setting(
+        stream.can_delete_own_message_group_id,
+        user_profile,
+        Stream.stream_permission_group_settings["can_delete_own_message_group"],
+        direct_member_only=False,
+    )
+
+
+def can_move_messages_out_of_channel(user_profile: UserProfile, stream: Stream) -> bool:
+    if user_profile.is_realm_admin:
+        return True
+
+    if user_profile.can_move_messages_between_streams():
+        return True
+
+    if can_administer_accessible_channel(stream, user_profile):
+        return True
+
+    return user_has_permission_for_group_setting(
+        stream.can_move_messages_out_of_channel_group_id,
+        user_profile,
+        Stream.stream_permission_group_settings["can_move_messages_out_of_channel_group"],
+        direct_member_only=False,
+    )
+
+
+def can_move_messages_within_channel(user_profile: UserProfile, stream: Stream) -> bool:
+    if user_profile.is_realm_admin or can_administer_accessible_channel(stream, user_profile):
+        return True
+
+    return user_has_permission_for_group_setting(
+        stream.can_move_messages_within_channel_group_id,
+        user_profile,
+        Stream.stream_permission_group_settings["can_move_messages_within_channel_group"],
+        direct_member_only=False,
+    )
+
+
+def can_edit_topic(user_profile: UserProfile, orig_stream: Stream, target_stream: Stream) -> bool:
+    # Users can only edit topics if they have either of these permissions:
+    #   1) organization-level permission to edit topics
+    #   2) channel-level permission to edit topics in the original channel
+    #   3) channel-level permission to edit topics in the target channel
+    # If none apply, throw error.
+    if user_profile.can_move_messages_to_another_topic():
+        return True
+
+    if can_move_messages_within_channel(user_profile, orig_stream):
+        return True
+
+    if orig_stream.id != target_stream.id and can_move_messages_within_channel(
+        user_profile, target_stream
+    ):
+        return True
+
+    return False
+
+
+def can_resolve_topics_in_stream(user: UserProfile, stream: Stream) -> bool:
+    return user_has_permission_for_group_setting(
+        stream.can_resolve_topics_group_id,
+        user,
+        Stream.stream_permission_group_settings["can_resolve_topics_group"],
+        direct_member_only=False,
+    )
+
+
+def can_resolve_topics(user: UserProfile, orig_stream: Stream, target_stream: Stream) -> bool:
+    # Users can only resolve topics if they have either of these permissions:
+    #   1) organization-level permission to resolve topics
+    #   2) channel-level permission to resolve topics in the original channel
+    #   3) channel-level permission to resolve topics in the target channel
+    # If none apply, throw error.
+    if user.can_resolve_topic():
+        return True
+
+    if can_resolve_topics_in_stream(user, orig_stream):
+        return True
+
+    if orig_stream != target_stream and can_resolve_topics_in_stream(user, target_stream):
+        return True
+
+    return False
+
+
 def bulk_can_remove_subscribers_from_streams(
     streams: list[Stream], user_profile: UserProfile
 ) -> bool:
@@ -1168,10 +1363,10 @@ def get_streams_to_which_user_cannot_add_subscribers(
 def can_administer_accessible_channel(channel: Stream, user_profile: UserProfile) -> bool:
     # IMPORTANT: This function expects its callers to have already
     # checked that the user can access the provided channel.
-    group_allowed_to_administer_channel = channel.can_administer_channel_group
-    assert group_allowed_to_administer_channel is not None
+    group_id_allowed_to_administer_channel = channel.can_administer_channel_group_id
+    assert group_id_allowed_to_administer_channel is not None
     return user_has_permission_for_group_setting(
-        group_allowed_to_administer_channel,
+        group_id_allowed_to_administer_channel,
         user_profile,
         Stream.stream_permission_group_settings["can_administer_channel_group"],
     )
@@ -1218,8 +1413,6 @@ def get_content_access_streams(
     user_profile: UserProfile,
     streams: Collection[Stream],
     user_group_membership_details: UserGroupMembershipDetails,
-    *,
-    exclude_zephyr_realms_from_public_check: bool = False,
 ) -> list[Stream]:
     if len(streams) == 0:
         return []
@@ -1240,7 +1433,6 @@ def get_content_access_streams(
             stream,
             user_group_membership_details,
             is_subscribed=is_subscribed,
-            exclude_zephyr_realms_from_public_check=exclude_zephyr_realms_from_public_check,
         ):
             content_access_streams.append(stream)
 
@@ -1257,14 +1449,11 @@ def filter_stream_authorization_for_adding_subscribers(
             streams_to_which_user_cannot_add_subscribers=[],
         )
 
-    # For adding subscribers, we consider streams in zephyr realm
-    # public.
     user_group_membership_details = UserGroupMembershipDetails(user_recursive_group_ids=None)
     content_access_streams = get_content_access_streams(
         user_profile,
         streams,
         user_group_membership_details,
-        exclude_zephyr_realms_from_public_check=True,
     )
     content_access_stream_ids = {stream.id for stream in content_access_streams}
 
@@ -1299,13 +1488,57 @@ def filter_stream_authorization_for_adding_subscribers(
     )
 
 
+def access_requested_group_permissions(
+    user_profile: UserProfile,
+    realm: Realm,
+    request_settings_dict: dict[str, Any],
+) -> tuple[dict[str, UserGroup], dict[int, UserGroupMembersData]]:
+    anonymous_group_membership = {}
+    group_settings_map = {}
+    system_groups_name_dict = get_role_based_system_groups_dict(realm)
+    for setting_name, permission_configuration in Stream.stream_permission_group_settings.items():
+        assert setting_name in request_settings_dict
+        if request_settings_dict[setting_name] is not None:
+            setting_request_value = request_settings_dict[setting_name]
+            setting_value = parse_group_setting_value(
+                setting_request_value, system_groups_name_dict[SystemGroups.NOBODY]
+            )
+            group_settings_map[setting_name] = access_user_group_for_setting(
+                setting_value,
+                user_profile,
+                setting_name=setting_name,
+                permission_configuration=permission_configuration,
+            )
+            if (
+                setting_name in ["can_delete_any_message_group", "can_delete_own_message_group"]
+                and group_settings_map[setting_name].id
+                != system_groups_name_dict[SystemGroups.NOBODY].id
+                and not user_profile.can_set_delete_message_policy()
+            ):
+                raise JsonableError(_("Insufficient permission"))
+
+            if not isinstance(setting_value, int):
+                anonymous_group_membership[group_settings_map[setting_name].id] = setting_value
+        else:
+            group_settings_map[setting_name] = get_stream_permission_default_group(
+                setting_name, system_groups_name_dict, creator=user_profile
+            )
+            if permission_configuration.default_group_name == "channel_creator":
+                # Default for some settings like "can_administer_channel_group"
+                # is anonymous group with stream creator.
+                anonymous_group_membership[group_settings_map[setting_name].id] = (
+                    UserGroupMembersData(direct_subgroups=[], direct_members=[user_profile.id])
+                )
+    return group_settings_map, anonymous_group_membership
+
+
 def list_to_streams(
     streams_raw: Collection[StreamDict],
     user_profile: UserProfile,
     autocreate: bool = False,
     unsubscribing_others: bool = False,
     is_default_stream: bool = False,
-    anonymous_group_membership: dict[int, UserGroupMembersData] | None = None,
+    request_settings_dict: dict[str, Any] | None = None,
 ) -> tuple[list[Stream], list[Stream]]:
     """Converts list of dicts to a list of Streams, validating input in the process
 
@@ -1339,18 +1572,11 @@ def list_to_streams(
     ):
         raise JsonableError(_("Insufficient permission"))
 
-    message_retention_days_not_none = False
-    web_public_stream_requested = False
     for stream_dict in streams_raw:
         stream_name = stream_dict["name"]
         stream = existing_stream_map.get(stream_name.lower())
         if stream is None:
-            if stream_dict.get("message_retention_days", None) is not None:
-                message_retention_days_not_none = True
             missing_stream_dicts.append(stream_dict)
-
-            if autocreate and stream_dict["is_web_public"]:
-                web_public_stream_requested = True
         else:
             existing_streams.append(stream)
 
@@ -1359,18 +1585,6 @@ def list_to_streams(
         # streams to exist already.
         created_streams: list[Stream] = []
     else:
-        # autocreate=True path starts here
-        for stream_dict in missing_stream_dicts:
-            invite_only = stream_dict.get("invite_only", False)
-            if invite_only and not user_profile.can_create_private_streams():
-                raise JsonableError(_("Insufficient permission"))
-            if not invite_only and not user_profile.can_create_public_streams():
-                raise JsonableError(_("Insufficient permission"))
-            if is_default_stream and not user_profile.is_realm_admin:
-                raise JsonableError(_("Insufficient permission"))
-            if invite_only and is_default_stream:
-                raise JsonableError(_("A default channel cannot be private."))
-
         if not autocreate:
             raise JsonableError(
                 _("Channel(s) ({channel_names}) do not exist").format(
@@ -1380,19 +1594,47 @@ def list_to_streams(
                 )
             )
 
-        if web_public_stream_requested:
-            if not user_profile.realm.web_public_streams_enabled():
-                raise JsonableError(_("Web-public channels are not enabled."))
-            if not user_profile.can_create_web_public_streams():
-                # We set can_create_web_public_channel_group to allow only organization
-                # owners to create web-public streams, because of their sensitive nature.
-                raise JsonableError(_("Insufficient permission"))
+        assert request_settings_dict is not None
+        group_settings_map, anonymous_group_membership = access_requested_group_permissions(
+            user_profile,
+            user_profile.realm,
+            request_settings_dict,
+        )
 
-        if message_retention_days_not_none:
-            if not user_profile.is_realm_owner:
-                raise OrganizationOwnerRequiredError
+        # autocreate=True path starts here
+        for stream_dict in missing_stream_dicts:
+            check_channel_creation_permissions(
+                user_profile,
+                is_default_stream=is_default_stream,
+                invite_only=stream_dict.get("invite_only", False),
+                is_web_public=stream_dict["is_web_public"],
+                message_retention_days=stream_dict.get("message_retention_days", None),
+            )
 
-            user_profile.realm.ensure_not_on_limited_plan()
+            stream_dict["can_add_subscribers_group"] = group_settings_map[
+                "can_add_subscribers_group"
+            ]
+            stream_dict["can_administer_channel_group"] = group_settings_map[
+                "can_administer_channel_group"
+            ]
+            stream_dict["can_delete_any_message_group"] = group_settings_map[
+                "can_delete_any_message_group"
+            ]
+            stream_dict["can_delete_own_message_group"] = group_settings_map[
+                "can_delete_own_message_group"
+            ]
+            stream_dict["can_move_messages_out_of_channel_group"] = group_settings_map[
+                "can_move_messages_out_of_channel_group"
+            ]
+            stream_dict["can_move_messages_within_channel_group"] = group_settings_map[
+                "can_move_messages_within_channel_group"
+            ]
+            stream_dict["can_send_message_group"] = group_settings_map["can_send_message_group"]
+            stream_dict["can_remove_subscribers_group"] = group_settings_map[
+                "can_remove_subscribers_group"
+            ]
+            stream_dict["can_resolve_topics_group"] = group_settings_map["can_resolve_topics_group"]
+            stream_dict["can_subscribe_group"] = group_settings_map["can_subscribe_group"]
 
         # We already filtered out existing streams, so dup_streams
         # will normally be an empty list below, but we protect against somebody
@@ -1485,11 +1727,26 @@ def stream_to_dict(
     can_administer_channel_group = get_group_setting_value_for_register_api(
         stream.can_administer_channel_group_id, anonymous_group_membership
     )
+    can_delete_any_message_group = get_group_setting_value_for_register_api(
+        stream.can_delete_any_message_group_id, anonymous_group_membership
+    )
+    can_delete_own_message_group = get_group_setting_value_for_register_api(
+        stream.can_delete_own_message_group_id, anonymous_group_membership
+    )
+    can_move_messages_out_of_channel_group = get_group_setting_value_for_register_api(
+        stream.can_move_messages_out_of_channel_group_id, anonymous_group_membership
+    )
+    can_move_messages_within_channel_group = get_group_setting_value_for_register_api(
+        stream.can_move_messages_within_channel_group_id, anonymous_group_membership
+    )
     can_send_message_group = get_group_setting_value_for_register_api(
         stream.can_send_message_group_id, anonymous_group_membership
     )
     can_remove_subscribers_group = get_group_setting_value_for_register_api(
         stream.can_remove_subscribers_group_id, anonymous_group_membership
+    )
+    can_resolve_topics_group = get_group_setting_value_for_register_api(
+        stream.can_resolve_topics_group_id, anonymous_group_membership
     )
     can_subscribe_group = get_group_setting_value_for_register_api(
         stream.can_subscribe_group_id, anonymous_group_membership
@@ -1503,13 +1760,19 @@ def stream_to_dict(
         is_archived=stream.deactivated,
         can_add_subscribers_group=can_add_subscribers_group,
         can_administer_channel_group=can_administer_channel_group,
+        can_delete_any_message_group=can_delete_any_message_group,
+        can_delete_own_message_group=can_delete_own_message_group,
+        can_move_messages_out_of_channel_group=can_move_messages_out_of_channel_group,
+        can_move_messages_within_channel_group=can_move_messages_within_channel_group,
         can_send_message_group=can_send_message_group,
         can_remove_subscribers_group=can_remove_subscribers_group,
+        can_resolve_topics_group=can_resolve_topics_group,
         can_subscribe_group=can_subscribe_group,
         creator_id=stream.creator_id,
         date_created=datetime_to_timestamp(stream.date_created),
         description=stream.description,
         first_message_id=stream.first_message_id,
+        folder_id=stream.folder_id,
         is_recently_active=stream.is_recently_active,
         history_public_to_subscribers=stream.history_public_to_subscribers,
         invite_only=stream.invite_only,
@@ -1521,13 +1784,21 @@ def stream_to_dict(
         stream_post_policy=stream_post_policy,
         is_announcement_only=stream_post_policy == Stream.STREAM_POST_POLICY_ADMINS,
         stream_weekly_traffic=stream_weekly_traffic,
+        subscriber_count=stream.subscriber_count,
+        topics_policy=StreamTopicsPolicyEnum(stream.topics_policy).name,
     )
 
 
 def get_web_public_streams(
     realm: Realm, anonymous_group_membership: dict[int, UserGroupMembersData]
 ) -> list[APIStreamDict]:  # nocoverage
-    query = get_web_public_streams_queryset(realm)
+    query = get_web_public_streams_queryset(realm).select_related(
+        # TODO: We need these fields to compute stream_post_policy; we
+        # can drop this select_related clause once that legacy field
+        # is removed from the API.
+        "can_send_message_group",
+        "can_send_message_group__named_user_group",
+    )
     streams = query.only(*Stream.API_FIELDS)
     stream_dicts = [stream_to_dict(stream, None, anonymous_group_membership) for stream in streams]
     return stream_dicts
@@ -1559,8 +1830,7 @@ def get_streams_for_user(
                 *Stream.API_FIELDS,
                 "can_send_message_group",
                 "can_send_message_group__named_user_group",
-                # Both of these fields are need for get_content_access_streams.
-                "is_in_zephyr_realm",
+                # This field is needed for get_content_access_streams.
                 "recipient_id",
             )
         )
@@ -1586,8 +1856,7 @@ def get_streams_for_user(
                     *Stream.API_FIELDS,
                     "can_send_message_group",
                     "can_send_message_group__named_user_group",
-                    # Both of these fields are need for get_content_access_streams.
-                    "is_in_zephyr_realm",
+                    # This field is needed for get_content_access_streams.
                     "recipient_id",
                 )
             )
@@ -1758,7 +2027,7 @@ def check_update_all_streams_active_status(
 
 
 def send_stream_deletion_event(
-    realm: Realm, user_ids: Iterable[int], streams: list[Stream]
+    realm: Realm, user_ids: Iterable[int], streams: list[Stream], for_archiving: bool = False
 ) -> None:
     stream_deletion_event = dict(
         type="stream",
@@ -1766,6 +2035,7 @@ def send_stream_deletion_event(
         # "streams" is deprecated, kept only for compatibility.
         streams=[dict(stream_id=stream.id) for stream in streams],
         stream_ids=[stream.id for stream in streams],
+        for_archiving=for_archiving,
     )
     send_event_on_commit(realm, stream_deletion_event, user_ids)
 

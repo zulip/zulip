@@ -9,11 +9,13 @@ from django.core.files.uploadedfile import UploadedFile
 from django.db import transaction
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
+from django.urls import reverse
 from django.utils.html import escape
 from django.utils.safestring import SafeString
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy
 from pydantic import Json
+from pydantic.functional_validators import AfterValidator
 
 from confirmation.models import (
     Confirmation,
@@ -31,8 +33,9 @@ from zerver.actions.user_settings import (
     do_start_email_change_process,
 )
 from zerver.actions.users import generate_password_reset_url
-from zerver.decorator import human_users_only
+from zerver.decorator import human_users_only, require_post
 from zerver.lib.avatar import avatar_url
+from zerver.lib.email_notifications import enqueue_welcome_emails
 from zerver.lib.email_validation import (
     get_realm_email_validator,
     validate_email_is_valid,
@@ -48,11 +51,13 @@ from zerver.lib.typed_endpoint import typed_endpoint, typed_endpoint_without_par
 from zerver.lib.typed_endpoint_validators import (
     check_int_in_validator,
     check_string_in_validator,
+    parse_enum_from_string_value,
     timezone_validator,
 )
 from zerver.lib.upload import upload_avatar_image
 from zerver.models import EmailChangeStatus, UserProfile
 from zerver.models.realms import avatar_changes_disabled, name_changes_disabled
+from zerver.models.users import ResolvedTopicNoticeAutoReadPolicyEnum
 from zerver.views.auth import redirect_to_deactivation_notice
 from zproject.backends import check_password_strength, email_belongs_to_ldap
 
@@ -61,7 +66,6 @@ AVATAR_CHANGES_DISABLED_ERROR = gettext_lazy("Avatar changes are disabled in thi
 
 def validate_email_change_request(user_profile: UserProfile, new_email: str) -> None:
     if not user_profile.is_active:
-        # TODO: Make this into a user-facing error, not JSON
         raise UserDeactivatedError
 
     if user_profile.realm.email_changes_disabled and not user_profile.is_realm_admin:
@@ -78,24 +82,44 @@ def validate_email_change_request(user_profile: UserProfile, new_email: str) -> 
         validate_email_not_already_in_realm(
             user_profile.realm,
             new_email,
+            allow_inactive_mirror_dummies=False,
             verbose=False,
         )
     except ValidationError as e:
         raise JsonableError(e.message)
 
 
-def confirm_email_change(request: HttpRequest, confirmation_key: str) -> HttpResponse:
+def confirm_email_change_get(request: HttpRequest, confirmation_key: str) -> HttpResponse:
     try:
-        email_change_object = get_object_from_key(
-            confirmation_key, [Confirmation.EMAIL_CHANGE], mark_object_used=True
-        )
-    except ConfirmationKeyError as exception:
+        get_object_from_key(confirmation_key, [Confirmation.EMAIL_CHANGE], mark_object_used=False)
+    except ConfirmationKeyError as exception:  # nocoverage
         return render_confirmation_key_error(request, exception)
 
-    assert isinstance(email_change_object, EmailChangeStatus)
-    new_email = email_change_object.new_email
-    old_email = email_change_object.old_email
+    return render(
+        request,
+        "confirmation/redirect_to_post.html",
+        context={
+            "target_url": reverse("confirm_email_change"),
+            "key": confirmation_key,
+        },
+    )
+
+
+@require_post
+@typed_endpoint
+def confirm_email_change(request: HttpRequest, *, key: str) -> HttpResponse:
     with transaction.atomic(durable=True):
+        try:
+            email_change_object = get_object_from_key(
+                key, [Confirmation.EMAIL_CHANGE], mark_object_used=True
+            )
+        except ConfirmationKeyError as exception:
+            return render_confirmation_key_error(request, exception)
+
+        assert isinstance(email_change_object, EmailChangeStatus)
+        new_email = email_change_object.new_email
+        old_email = email_change_object.old_email
+
         user_profile = UserProfile.objects.select_for_update().get(
             id=email_change_object.user_profile_id
         )
@@ -110,8 +134,16 @@ def confirm_email_change(request: HttpRequest, confirmation_key: str) -> HttpRes
 
         if user_profile.realm.deactivated:
             return redirect_to_deactivation_notice()
-
-        validate_email_change_request(user_profile, new_email)
+        try:
+            validate_email_change_request(user_profile, new_email)
+        except UserDeactivatedError:
+            context = {"realm_url": user_profile.realm.url}
+            return render(
+                request,
+                "zerver/portico_error_pages/user_deactivated.html",
+                context=context,
+                status=401,
+            )
         do_change_user_delivery_email(user_profile, new_email, acting_user=user_profile)
 
     user_profile = UserProfile.objects.get(id=email_change_object.user_profile_id)
@@ -125,6 +157,9 @@ def confirm_email_change(request: HttpRequest, confirmation_key: str) -> HttpRes
             user_profile.realm.demo_organization_scheduled_deletion_date is not None
             and user_profile.is_realm_owner
         )
+        # Schedule onboarding emails for demo organization owner now that we have an
+        # email address for their account.
+        enqueue_welcome_emails(user_profile, demo_organization_creator=True)
         # Because demo organizations are created without setting an email and password
         # we want to redirect to setting a password after configuring and confirming
         # an email for the owner's account.
@@ -198,93 +233,90 @@ def json_change_settings(
     request: HttpRequest,
     user_profile: UserProfile,
     *,
-    full_name: str | None = None,
-    email: str | None = None,
-    old_password: str | None = None,
-    new_password: str | None = None,
-    twenty_four_hour_time: Json[bool] | None = None,
-    web_mark_read_on_scroll_policy: Annotated[
-        Json[int], check_int_in_validator(UserProfile.WEB_MARK_READ_ON_SCROLL_POLICY_CHOICES)
-    ]
-    | None = None,
-    web_channel_default_view: Annotated[
-        Json[int], check_int_in_validator(UserProfile.WEB_CHANNEL_DEFAULT_VIEW_CHOICES)
-    ]
-    | None = None,
-    starred_message_counts: Json[bool] | None = None,
-    receives_typing_notifications: Json[bool] | None = None,
-    fluid_layout_width: Json[bool] | None = None,
-    high_contrast_mode: Json[bool] | None = None,
-    color_scheme: Annotated[Json[int], check_int_in_validator(UserProfile.COLOR_SCHEME_CHOICES)]
-    | None = None,
-    web_font_size_px: Json[int] | None = None,
-    web_line_height_percent: Json[int] | None = None,
-    translate_emoticons: Json[bool] | None = None,
-    display_emoji_reaction_users: Json[bool] | None = None,
-    default_language: str | None = None,
-    web_home_view: Annotated[str, check_string_in_validator(web_home_view_options)] | None = None,
-    web_escape_navigates_to_home_view: Json[bool] | None = None,
-    left_side_userlist: Json[bool] | None = None,
-    emojiset: Annotated[str, check_string_in_validator(emojiset_choices)] | None = None,
-    demote_inactive_streams: Annotated[
-        Json[int], check_int_in_validator(UserProfile.DEMOTE_STREAMS_CHOICES)
-    ]
-    | None = None,
-    web_stream_unreads_count_display_policy: Annotated[
-        Json[int],
-        check_int_in_validator(UserProfile.WEB_STREAM_UNREADS_COUNT_DISPLAY_POLICY_CHOICES),
-    ]
-    | None = None,
-    timezone: Annotated[str, timezone_validator()] | None = None,
-    email_notifications_batching_period_seconds: Json[int] | None = None,
-    enable_drafts_synchronization: Json[bool] | None = None,
-    enable_stream_desktop_notifications: Json[bool] | None = None,
-    enable_stream_email_notifications: Json[bool] | None = None,
-    enable_stream_push_notifications: Json[bool] | None = None,
-    enable_stream_audible_notifications: Json[bool] | None = None,
-    wildcard_mentions_notify: Json[bool] | None = None,
-    enable_followed_topic_desktop_notifications: Json[bool] | None = None,
-    enable_followed_topic_email_notifications: Json[bool] | None = None,
-    enable_followed_topic_push_notifications: Json[bool] | None = None,
-    enable_followed_topic_audible_notifications: Json[bool] | None = None,
-    enable_followed_topic_wildcard_mentions_notify: Json[bool] | None = None,
-    notification_sound: str | None = None,
-    enable_desktop_notifications: Json[bool] | None = None,
-    enable_sounds: Json[bool] | None = None,
-    enable_offline_email_notifications: Json[bool] | None = None,
-    enable_offline_push_notifications: Json[bool] | None = None,
-    enable_online_push_notifications: Json[bool] | None = None,
-    enable_digest_emails: Json[bool] | None = None,
-    enable_login_emails: Json[bool] | None = None,
-    enable_marketing_emails: Json[bool] | None = None,
-    message_content_in_email_notifications: Json[bool] | None = None,
-    pm_content_in_desktop_notifications: Json[bool] | None = None,
-    desktop_icon_count_display: Annotated[
-        Json[int], check_int_in_validator(UserProfile.DESKTOP_ICON_COUNT_DISPLAY_CHOICES)
-    ]
-    | None = None,
-    realm_name_in_email_notifications_policy: Annotated[
-        Json[int],
-        check_int_in_validator(UserProfile.REALM_NAME_IN_EMAIL_NOTIFICATIONS_POLICY_CHOICES),
-    ]
-    | None = None,
+    allow_private_data_export: Json[bool] | None = None,
     automatically_follow_topics_policy: Annotated[
         Json[int],
         check_int_in_validator(UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_CHOICES),
     ]
     | None = None,
+    automatically_follow_topics_where_mentioned: Json[bool] | None = None,
     automatically_unmute_topics_in_muted_streams_policy: Annotated[
         Json[int],
         check_int_in_validator(UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_CHOICES),
     ]
     | None = None,
-    automatically_follow_topics_where_mentioned: Json[bool] | None = None,
-    presence_enabled: Json[bool] | None = None,
+    color_scheme: Annotated[Json[int], check_int_in_validator(UserProfile.COLOR_SCHEME_CHOICES)]
+    | None = None,
+    default_language: str | None = None,
+    demote_inactive_streams: Annotated[
+        Json[int], check_int_in_validator(UserProfile.DEMOTE_STREAMS_CHOICES)
+    ]
+    | None = None,
+    desktop_icon_count_display: Annotated[
+        Json[int], check_int_in_validator(UserProfile.DESKTOP_ICON_COUNT_DISPLAY_CHOICES)
+    ]
+    | None = None,
+    display_emoji_reaction_users: Json[bool] | None = None,
+    email: str | None = None,
+    email_address_visibility: Annotated[
+        Json[int], check_int_in_validator(UserProfile.EMAIL_ADDRESS_VISIBILITY_TYPES)
+    ]
+    | None = None,
+    email_notifications_batching_period_seconds: Json[int] | None = None,
+    emojiset: Annotated[str, check_string_in_validator(emojiset_choices)] | None = None,
+    enable_desktop_notifications: Json[bool] | None = None,
+    enable_digest_emails: Json[bool] | None = None,
+    enable_drafts_synchronization: Json[bool] | None = None,
+    enable_followed_topic_audible_notifications: Json[bool] | None = None,
+    enable_followed_topic_desktop_notifications: Json[bool] | None = None,
+    enable_followed_topic_email_notifications: Json[bool] | None = None,
+    enable_followed_topic_push_notifications: Json[bool] | None = None,
+    enable_followed_topic_wildcard_mentions_notify: Json[bool] | None = None,
+    enable_login_emails: Json[bool] | None = None,
+    enable_marketing_emails: Json[bool] | None = None,
+    enable_offline_email_notifications: Json[bool] | None = None,
+    enable_offline_push_notifications: Json[bool] | None = None,
+    enable_online_push_notifications: Json[bool] | None = None,
+    enable_sounds: Json[bool] | None = None,
+    enable_stream_audible_notifications: Json[bool] | None = None,
+    enable_stream_desktop_notifications: Json[bool] | None = None,
+    enable_stream_email_notifications: Json[bool] | None = None,
+    enable_stream_push_notifications: Json[bool] | None = None,
     enter_sends: Json[bool] | None = None,
+    fluid_layout_width: Json[bool] | None = None,
+    full_name: str | None = None,
+    high_contrast_mode: Json[bool] | None = None,
+    hide_ai_features: Json[bool] | None = None,
+    left_side_userlist: Json[bool] | None = None,
+    message_content_in_email_notifications: Json[bool] | None = None,
+    new_password: str | None = None,
+    notification_sound: str | None = None,
+    old_password: str | None = None,
+    pm_content_in_desktop_notifications: Json[bool] | None = None,
+    presence_enabled: Json[bool] | None = None,
+    realm_name_in_email_notifications_policy: Annotated[
+        Json[int],
+        check_int_in_validator(UserProfile.REALM_NAME_IN_EMAIL_NOTIFICATIONS_POLICY_CHOICES),
+    ]
+    | None = None,
+    receives_typing_notifications: Json[bool] | None = None,
+    resolved_topic_notice_auto_read_policy: Annotated[
+        str | None,
+        AfterValidator(
+            lambda val: parse_enum_from_string_value(
+                val,
+                "resolved_topic_notice_auto_read_policy",
+                ResolvedTopicNoticeAutoReadPolicyEnum,
+            )
+        ),
+    ] = None,
     send_private_typing_notifications: Json[bool] | None = None,
-    send_stream_typing_notifications: Json[bool] | None = None,
     send_read_receipts: Json[bool] | None = None,
-    allow_private_data_export: Json[bool] | None = None,
+    send_stream_typing_notifications: Json[bool] | None = None,
+    starred_message_counts: Json[bool] | None = None,
+    timezone: Annotated[str, timezone_validator()] | None = None,
+    translate_emoticons: Json[bool] | None = None,
+    twenty_four_hour_time: Json[bool] | None = None,
     user_list_style: Annotated[
         Json[int], check_int_in_validator(UserProfile.USER_LIST_STYLE_CHOICES)
     ]
@@ -293,13 +325,28 @@ def json_change_settings(
         str, check_string_in_validator(web_animate_image_previews_options)
     ]
     | None = None,
-    email_address_visibility: Annotated[
-        Json[int], check_int_in_validator(UserProfile.EMAIL_ADDRESS_VISIBILITY_TYPES)
+    web_channel_default_view: Annotated[
+        Json[int], check_int_in_validator(UserProfile.WEB_CHANNEL_DEFAULT_VIEW_CHOICES)
+    ]
+    | None = None,
+    web_escape_navigates_to_home_view: Json[bool] | None = None,
+    web_font_size_px: Json[int] | None = None,
+    web_home_view: Annotated[str, check_string_in_validator(web_home_view_options)] | None = None,
+    web_left_sidebar_show_channel_folders: Json[bool] | None = None,
+    web_left_sidebar_unreads_count_summary: Json[bool] | None = None,
+    web_line_height_percent: Json[int] | None = None,
+    web_mark_read_on_scroll_policy: Annotated[
+        Json[int], check_int_in_validator(UserProfile.WEB_MARK_READ_ON_SCROLL_POLICY_CHOICES)
     ]
     | None = None,
     web_navigate_to_sent_message: Json[bool] | None = None,
+    web_stream_unreads_count_display_policy: Annotated[
+        Json[int],
+        check_int_in_validator(UserProfile.WEB_STREAM_UNREADS_COUNT_DISPLAY_POLICY_CHOICES),
+    ]
+    | None = None,
     web_suggest_update_timezone: Json[bool] | None = None,
-    hide_ai_features: Json[bool] | None = None,
+    wildcard_mentions_notify: Json[bool] | None = None,
 ) -> HttpResponse:
     # UserProfile object is being refetched here to make sure that we
     # do not use stale object from cache which can happen when a

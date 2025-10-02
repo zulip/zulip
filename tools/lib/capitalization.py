@@ -22,7 +22,6 @@ IGNORED_PHRASES = [
     r"GCM",
     r"GitHub",
     r"Gravatar",
-    r"Help Center",
     r"HTTP",
     r"ID",
     r"IDs",
@@ -31,10 +30,10 @@ IGNORED_PHRASES = [
     r"JSON",
     r"Jitsi",
     r"Jotform",
-    r"Kerberos",
     r"LinkedIn",
     r"LDAP",
     r"Markdown",
+    r"OAuth",
     r"OTP",
     r"Pivotal",
     r"Recent conversations",
@@ -46,9 +45,7 @@ IGNORED_PHRASES = [
     r"Tuesday",
     r"URL",
     r"UUID",
-    r"Webathena",
     r"WordPress",
-    r"Zephyr",
     r"Zoom",
     r"Zulip",
     r"Zulip Server",
@@ -57,6 +54,7 @@ IGNORED_PHRASES = [
     r"Zulip Cloud",
     r"Zulip Cloud Standard",
     r"Zulip Cloud Plus",
+    r"Zulip Desktop",
     r"BigBlueButton",
     # Code things
     r"\.zuliprc",
@@ -79,6 +77,8 @@ IGNORED_PHRASES = [
     r"email",
     r"enabled",
     r"signups",
+    # Pasted text filename
+    r"PastedText",
     # Placeholders
     r"keyword",
     r"streamname",
@@ -121,6 +121,8 @@ IGNORED_PHRASES = [
     r"^cookie$",
     # Used to refer custom time limits
     r"\bN\b",
+    r"minute",
+    r"minutes",
     # Capital c feels obtrusive in clear status option
     r"clear",
     r"group direct messages with \{recipient\}",
@@ -155,6 +157,8 @@ IGNORED_PHRASES = [
     r"to add a new line",
     # Used in showing Notification Bot read receipts message
     "Notification Bot",
+    # Used in strings around welcome bot custom messages
+    r"Welcome Bot",
     # Used in presence_enabled setting label
     r"invisible mode off",
     # Typeahead suggestions for "Pronouns" custom field type.
@@ -171,6 +175,10 @@ IGNORED_PHRASES = [
     r"archived",
     # Used in pills for deactivated users.
     r"deactivated",
+    # Used in pills for resolved topics.
+    r"resolved",
+    # Used in pills for unresolved topics.
+    r"unresolved",
     # This is a reference to a setting/secret and should be lowercase.
     r"zulip_org_id",
     # These are custom time unit options for modal dropdowns
@@ -182,6 +190,8 @@ IGNORED_PHRASES = [
     r"everyone except guests can subscribe to any public channel",
     # Used in branch-filtering label in the integration-url-modal.
     r"comma-separated list",
+    # Used in info_overlay.
+    r"then",
 ]
 
 # Sort regexes in descending order of their lengths. As a result, the
@@ -277,6 +287,8 @@ def check_banned_words(text: str) -> list[str]:
                 or "realm_uri" in lower_cased_text
                 or "realm_url" in lower_cased_text
                 or "remote_realm_host" in lower_cased_text
+                or "realm_message" in lower_cased_text
+                or "realm_move" in lower_cased_text
             ):
                 continue
             kwargs = dict(word=word, text=text, reason=reason)

@@ -9,14 +9,17 @@ import render_guest_in_dm_recipient_warning from "../templates/compose_banner/gu
 import render_not_subscribed_warning from "../templates/compose_banner/not_subscribed_warning.hbs";
 import render_private_stream_warning from "../templates/compose_banner/private_stream_warning.hbs";
 import render_stream_wildcard_warning from "../templates/compose_banner/stream_wildcard_warning.hbs";
+import render_topic_moved_banner from "../templates/compose_banner/topic_moved_banner.hbs";
 import render_wildcard_mention_not_allowed_error from "../templates/compose_banner/wildcard_mention_not_allowed_error.hbs";
 import render_compose_limit_indicator from "../templates/compose_limit_indicator.hbs";
+import render_topics_required_error_message from "../templates/topics_required_error_message.hbs";
 
 import * as blueslip from "./blueslip.ts";
 import * as compose_banner from "./compose_banner.ts";
 import * as compose_pm_pill from "./compose_pm_pill.ts";
 import * as compose_state from "./compose_state.ts";
 import * as compose_ui from "./compose_ui.ts";
+import * as hash_util from "./hash_util.ts";
 import {$t} from "./i18n.ts";
 import * as message_store from "./message_store.ts";
 import * as message_util from "./message_util.ts";
@@ -26,7 +29,7 @@ import * as people from "./people.ts";
 import * as reactions from "./reactions.ts";
 import * as recent_senders from "./recent_senders.ts";
 import * as settings_data from "./settings_data.ts";
-import {realm} from "./state_data.ts";
+import {current_user, realm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import * as sub_store from "./sub_store.ts";
 import type {StreamSubscription} from "./sub_store.ts";
@@ -43,7 +46,7 @@ let message_too_long = false;
 // Since same functions are used for both compose and message edit,
 //  we need to track when we are validating compose box.
 let is_validating_compose_box = false;
-let disabled_send_tooltip_message = "";
+let disabled_send_tooltip_message_html = "";
 let posting_policy_error_message = "";
 
 export const NO_PERMISSION_TO_POST_IN_CHANNEL_ERROR_MESSAGE = $t({
@@ -53,9 +56,17 @@ export const NO_PRIVATE_RECIPIENT_ERROR_MESSAGE = $t({
     defaultMessage: "Please add a valid recipient.",
 });
 export const NO_CHANNEL_SELECTED_ERROR_MESSAGE = $t({defaultMessage: "Please select a channel."});
-export const TOPICS_REQUIRED_ERROR_MESSAGE = $t({
-    defaultMessage: "Topics are required in this organization.",
-});
+export const get_topics_required_error_tooltip_message_html = (): string => {
+    const error_message_html = render_topics_required_error_message({
+        empty_string_topic_display_name: util.get_final_topic_display_name(""),
+    });
+    // The `.tippy-content` element uses `display: flex`, which prevents the empty
+    // topic name from appearing italicized and inline within the error message text.
+    // To resolve this, we wrap the message in a `.tooltip-inner-content` div,
+    // allowing inline formatting and benefiting from the line height adjustment
+    // accompanying the class suitable for multi-line tooltips such as this one.
+    return `<div class="tooltip-inner-content">${error_message_html}</div>`;
+};
 export const get_message_too_long_for_compose_error = (): string =>
     $t(
         {defaultMessage: `Message length shouldn't be greater than {max_length} characters.`},
@@ -106,6 +117,7 @@ function set_message_too_long_for_compose(status: boolean): void {
 function set_message_too_long_for_edit(status: boolean, $container: JQuery): void {
     const message_too_long = status;
     const $message_edit_save_container = $container.find(".message_edit_save_container");
+    $message_edit_save_container.toggleClass("message-too-long-for-edit", message_too_long);
     const save_is_disabled =
         message_too_long ||
         $message_edit_save_container.hasClass("message-edit-time-limit-expired");
@@ -125,24 +137,29 @@ export function get_posting_policy_error_message(): string {
     return posting_policy_error_message;
 }
 
-export function get_disabled_send_tooltip(): string {
-    return disabled_send_tooltip_message;
+export function get_disabled_send_tooltip_html(): string {
+    return disabled_send_tooltip_message_html;
 }
 
 export function get_disabled_save_tooltip($container: JQuery): string {
     const $button_wrapper = $container.find(".message_edit_save_container");
+    // The time limit expiry tooltip takes precedence over the message
+    // length exceeded tooltip.
     if ($button_wrapper.hasClass("message-edit-time-limit-expired")) {
         return $t({
             defaultMessage: "You can no longer save changes to this message.",
         });
     }
-    if (message_too_long) {
+    if ($button_wrapper.hasClass("message-too-long-for-edit")) {
         return get_message_too_long_for_compose_error();
     }
     return "";
 }
 
-export function needs_subscribe_warning(user_id: number, stream_id: number): boolean {
+export async function needs_subscribe_warning(
+    user_id: number,
+    stream_id: number,
+): Promise<boolean> {
     // This returns true if all of these conditions are met:
     //  * the user is valid
     //  * the user is not already subscribed to the stream
@@ -168,7 +185,7 @@ export function needs_subscribe_warning(user_id: number, stream_id: number): boo
         return false;
     }
 
-    if (stream_data.is_user_subscribed(stream_id, user_id)) {
+    if (await stream_data.maybe_fetch_is_user_subscribed(stream_id, user_id, false)) {
         // If our user is already subscribed
         return false;
     }
@@ -222,10 +239,10 @@ function get_stream_id_for_textarea($textarea: JQuery<HTMLTextAreaElement>): num
     return compose_state.stream_id();
 }
 
-export function warn_if_private_stream_is_linked(
+export async function warn_if_private_stream_is_linked(
     linked_stream: StreamSubscription,
     $textarea: JQuery<HTMLTextAreaElement>,
-): void {
+): Promise<void> {
     const stream_id = get_stream_id_for_textarea($textarea);
 
     if (!stream_id) {
@@ -257,12 +274,22 @@ export function warn_if_private_stream_is_linked(
     // Don't warn if subscribers list of current compose_stream is
     // a subset of linked_stream's subscribers list, because
     // everyone will be subscribed to the linked stream and so
-    // knows it exists.  (But always warn Zephyr users, since
-    // we may not know their stream's subscribers.)
-    if (
-        peer_data.is_subscriber_subset(stream_id, linked_stream.stream_id) &&
-        !realm.realm_is_zephyr_mirror_realm
-    ) {
+    // knows it exists.
+    // Note: `is_subscriber_subset` can return `null` if we encounter
+    // an error fetching subscriber data. In that case, we just show
+    // the banner.
+    if (await peer_data.is_subscriber_subset(stream_id, linked_stream.stream_id)) {
+        return;
+    }
+
+    // If we've changed streams since fetching subscriber data,
+    // don't update the UI anymore.
+    // Note: The user might have removed the mention of the private
+    // stream during the fetch, and in that case the banner will
+    // still (possibly) show up. If we add logic in the future to
+    // remove banners as the user edits their message, we could use
+    // that here as well.
+    if (stream_id !== get_stream_id_for_textarea($textarea)) {
         return;
     }
 
@@ -286,15 +313,10 @@ export function warn_if_private_stream_is_linked(
     }
 }
 
-export function warn_if_mentioning_unsubscribed_user(
+export async function warn_if_mentioning_unsubscribed_user(
     mentioned: UserOrMention,
     $textarea: JQuery<HTMLTextAreaElement>,
-): void {
-    // Disable for Zephyr mirroring realms, since we never have subscriber lists there
-    if (realm.realm_is_zephyr_mirror_realm) {
-        return;
-    }
-
+): Promise<void> {
     if (mentioned.type === "broadcast") {
         return; // don't check if @all/@everyone/@stream
     }
@@ -305,7 +327,13 @@ export function warn_if_mentioning_unsubscribed_user(
         return;
     }
 
-    if (needs_subscribe_warning(user_id, stream_id)) {
+    if (await needs_subscribe_warning(user_id, stream_id)) {
+        // Double check that we're still composing to the same stream id
+        // after the awaited fetch for subscriber data.
+        if (get_stream_id_for_textarea($textarea) !== stream_id) {
+            return;
+        }
+
         const $banner_container = compose_banner.get_compose_banner_container($textarea);
         const $existing_invites_area = $banner_container.find(
             `.${CSS.escape(compose_banner.CLASSNAMES.recipient_not_subscribed)}`,
@@ -338,11 +366,11 @@ export function warn_if_mentioning_unsubscribed_user(
     }
 }
 
-export function warn_if_mentioning_unsubscribed_group(
+export async function warn_if_mentioning_unsubscribed_group(
     mentioned_group: UserGroup,
     $textarea: JQuery<HTMLTextAreaElement>,
     is_silent: boolean,
-): void {
+): Promise<void> {
     if (is_silent) {
         return;
     }
@@ -356,7 +384,7 @@ export function warn_if_mentioning_unsubscribed_group(
     let any_member_subscribed = false;
     for (const user_id of group_members) {
         if (
-            stream_data.is_user_subscribed(stream_id, user_id) &&
+            (await stream_data.maybe_fetch_is_user_subscribed(stream_id, user_id, false)) &&
             people.is_person_active(user_id)
         ) {
             any_member_subscribed = true;
@@ -364,6 +392,12 @@ export function warn_if_mentioning_unsubscribed_group(
         }
     }
     if (any_member_subscribed) {
+        return;
+    }
+
+    // Double check that we're still composing to the same stream id
+    // after the awaited fetches for subscriber data.
+    if (get_stream_id_for_textarea($textarea) !== stream_id) {
         return;
     }
 
@@ -403,6 +437,17 @@ export function warn_if_topic_resolved(topic_changed: boolean): void {
     //
     // Pass topic_changed=true if this function was called in response
     // to a topic being edited.
+    const recipient_widget_hidden =
+        $(".compose_select_recipient-dropdown-list-container").length === 0;
+    if (compose_state.get_is_processing_forward_message() && recipient_widget_hidden) {
+        // This is for the case of forwarding a message when the
+        // channel picker is opened. There is a possibility that
+        // this banner might be displayed at the same time the
+        // channel picker is opened. We don't want that situation.
+        // Therefore, we are preventing the display of this
+        // banner when the channel picker is opened.
+        return;
+    }
 
     const stream_id = compose_state.stream_id();
     if (stream_id === undefined) {
@@ -425,7 +470,7 @@ export function warn_if_topic_resolved(topic_changed: boolean): void {
             return;
         }
 
-        const button_text = settings_data.user_can_move_messages_to_another_topic()
+        const button_text = settings_data.user_can_resolve_topic()
             ? $t({defaultMessage: "Unresolve topic"})
             : null;
 
@@ -454,9 +499,90 @@ export function warn_if_topic_resolved(topic_changed: boolean): void {
     }
 }
 
+export function clear_topic_moved_info(): void {
+    compose_state.set_recipient_viewed_topic_moved_banner(false);
+    $(`#compose_banners .${CSS.escape(compose_banner.CLASSNAMES.topic_is_moved)}`).remove();
+}
+
+export function inform_if_topic_is_moved(
+    orig_topic: string,
+    old_stream_id: number,
+    acting_user_id: number | null,
+): void {
+    const stream_id = compose_state.stream_id();
+    if (stream_id === undefined || acting_user_id === current_user.user_id) {
+        clear_topic_moved_info();
+        return;
+    }
+    const sub = stream_data.get_sub_by_id(stream_id);
+    if (sub === undefined) {
+        clear_topic_moved_info();
+        return;
+    }
+
+    const message_content = compose_state.message_content();
+    if (message_content === "") {
+        // Don't warn if the compose box is empty, as you've not done anything yet.
+        clear_topic_moved_info();
+        return;
+    }
+
+    const topic_name = compose_state.topic();
+    const stream_edited = stream_id !== old_stream_id;
+    const topic_edited = topic_name !== orig_topic;
+    const topic_is_renamed =
+        topic_edited &&
+        resolved_topic.unresolve_name(orig_topic) !== resolved_topic.unresolve_name(topic_name);
+
+    if (!(stream_edited || topic_is_renamed)) {
+        clear_topic_moved_info();
+        return;
+    }
+
+    const old_stream = stream_data.get_sub_by_id(old_stream_id);
+    if (!old_stream) {
+        clear_topic_moved_info();
+        return;
+    }
+
+    let is_empty_string_topic;
+    if (orig_topic !== "") {
+        is_empty_string_topic = false;
+    } else {
+        is_empty_string_topic = true;
+    }
+    const narrow_url = hash_util.by_stream_topic_url(old_stream_id, orig_topic);
+    const context = {
+        banner_type: compose_banner.INFO,
+        stream_id: sub.stream_id,
+        topic_name,
+        narrow_url,
+        orig_topic,
+        old_stream: old_stream.name,
+        classname: compose_banner.CLASSNAMES.topic_is_moved,
+        show_colored_icon: false,
+        is_empty_string_topic,
+    };
+    const new_row_html = render_topic_moved_banner(context);
+
+    if (compose_state.has_recipient_viewed_topic_moved_banner()) {
+        // Replace any existing banner of this type to avoid showing
+        // two banners if a conversation is moved twice in quick succession.
+        clear_topic_moved_info();
+    }
+
+    const appended = compose_banner.append_compose_banner_to_banner_list(
+        $(new_row_html),
+        $("#compose_banners"),
+    );
+    if (appended) {
+        compose_state.set_recipient_viewed_topic_moved_banner(true);
+    }
+}
+
 export function warn_if_in_search_view(): void {
     const filter = narrow_state.filter();
-    if (filter && !filter.supports_collapsing_recipients()) {
+    if (filter && !filter.contains_no_partial_conversations()) {
         const context = {
             banner_type: compose_banner.WARNING,
             banner_text: $t({
@@ -590,17 +716,6 @@ export function set_user_acknowledged_stream_wildcard_flag(value: boolean): void
     user_acknowledged_stream_wildcard = value;
 }
 
-export function get_invalid_recipient_emails(): string[] {
-    const private_recipients = util.extract_pm_recipients(
-        compose_state.private_message_recipient(),
-    );
-    const invalid_recipients = private_recipients.filter(
-        (email) => !people.is_valid_email_for_compose(email),
-    );
-
-    return invalid_recipients;
-}
-
 function is_recipient_large_stream(): boolean {
     const stream_id = compose_state.stream_id();
     if (stream_id === undefined) {
@@ -697,7 +812,7 @@ export function validate_stream_message_mentions(opts: StreamWildcardOptions): b
                 opts.$banner_container,
             );
             if (is_validating_compose_box) {
-                disabled_send_tooltip_message = WILDCARD_MENTION_ERROR_TOOLTIP_MESSAGE;
+                disabled_send_tooltip_message_html = WILDCARD_MENTION_ERROR_TOOLTIP_MESSAGE;
             }
             return false;
         }
@@ -706,7 +821,7 @@ export function validate_stream_message_mentions(opts: StreamWildcardOptions): b
             show_stream_wildcard_warnings(opts);
             compose_ui.hide_compose_spinner();
             if (is_validating_compose_box) {
-                disabled_send_tooltip_message =
+                disabled_send_tooltip_message_html =
                     CHANNEL_WILDCARD_ACKNOWLEDGE_MISSING_ERROR_TOOLTIP_MESSAGE;
             }
             return false;
@@ -725,7 +840,7 @@ export function validate_stream_message_address_info(sub: StreamSubscription): b
     if (sub.is_archived) {
         compose_banner.show_stream_does_not_exist_error(sub.name);
         if (is_validating_compose_box) {
-            disabled_send_tooltip_message = INVALID_CHANNEL_ERROR_TOOLTIP_MESSAGE;
+            disabled_send_tooltip_message_html = INVALID_CHANNEL_ERROR_TOOLTIP_MESSAGE;
         }
         return false;
     }
@@ -734,7 +849,7 @@ export function validate_stream_message_address_info(sub: StreamSubscription): b
     }
     compose_banner.show_stream_not_subscribed_error(sub, UNSUBSCRIBED_CHANNEL_ERROR_MESSAGE);
     if (is_validating_compose_box) {
-        disabled_send_tooltip_message = UNSUBSCRIBED_CHANNEL_ERROR_MESSAGE;
+        disabled_send_tooltip_message_html = UNSUBSCRIBED_CHANNEL_ERROR_MESSAGE;
     }
     return false;
 }
@@ -752,24 +867,21 @@ function validate_stream_message(scheduling_message: boolean, show_banner = true
             show_banner,
         );
         if (is_validating_compose_box) {
-            disabled_send_tooltip_message = NO_CHANNEL_SELECTED_ERROR_MESSAGE;
+            disabled_send_tooltip_message_html = NO_CHANNEL_SELECTED_ERROR_MESSAGE;
         }
         return false;
     }
 
-    if (realm.realm_mandatory_topics) {
+    if (!stream_data.can_use_empty_topic(compose_state.stream_id())) {
         const topic = compose_state.topic();
         const missing_topic = util.is_topic_name_considered_empty(topic);
         if (missing_topic) {
-            report_validation_error(
-                TOPICS_REQUIRED_ERROR_MESSAGE,
-                compose_banner.CLASSNAMES.topic_missing,
-                $banner_container,
-                $("input#stream_message_recipient_topic"),
-                show_banner,
-            );
+            if (show_banner) {
+                compose_banner.topic_missing_error(util.get_final_topic_display_name(""));
+            }
             if (is_validating_compose_box) {
-                disabled_send_tooltip_message = TOPICS_REQUIRED_ERROR_MESSAGE;
+                disabled_send_tooltip_message_html =
+                    get_topics_required_error_tooltip_message_html();
             }
             return false;
         }
@@ -780,7 +892,7 @@ function validate_stream_message(scheduling_message: boolean, show_banner = true
         compose_banner.show_stream_does_not_exist_error(stream_id.toString());
         if (is_validating_compose_box) {
             // show_stream_does_not_exist_error already opens the channel selection dropdown.
-            disabled_send_tooltip_message = INVALID_CHANNEL_ERROR_TOOLTIP_MESSAGE;
+            disabled_send_tooltip_message_html = INVALID_CHANNEL_ERROR_TOOLTIP_MESSAGE;
         }
         return false;
     }
@@ -793,7 +905,7 @@ function validate_stream_message(scheduling_message: boolean, show_banner = true
         );
 
         if (is_validating_compose_box) {
-            disabled_send_tooltip_message = NO_PERMISSION_TO_POST_IN_CHANNEL_ERROR_MESSAGE;
+            disabled_send_tooltip_message_html = NO_PERMISSION_TO_POST_IN_CHANNEL_ERROR_MESSAGE;
             posting_policy_error_message = NO_PERMISSION_TO_POST_IN_CHANNEL_ERROR_MESSAGE;
         }
         return false;
@@ -820,11 +932,11 @@ function validate_stream_message(scheduling_message: boolean, show_banner = true
 
 // The function checks whether the recipients are users of the realm or cross realm users (bots
 // for now)
-function validate_private_message(show_banner = true): boolean {
+export function validate_private_message(show_banner = true): boolean {
     const user_ids = compose_pm_pill.get_user_ids();
     const user_ids_string = util.sorted_ids(user_ids).join(",");
     const $banner_container = $("#compose_banners");
-    const missing_direct_message_recipient = compose_state.private_message_recipient().length === 0;
+    const missing_direct_message_recipient = user_ids.length === 0;
 
     if (missing_direct_message_recipient) {
         report_validation_error(
@@ -835,60 +947,22 @@ function validate_private_message(show_banner = true): boolean {
             show_banner,
         );
         if (is_validating_compose_box) {
-            disabled_send_tooltip_message = NO_PRIVATE_RECIPIENT_ERROR_MESSAGE;
+            disabled_send_tooltip_message_html = NO_PRIVATE_RECIPIENT_ERROR_MESSAGE;
         }
         return false;
-    } else if (realm.realm_is_zephyr_mirror_realm) {
-        // For Zephyr mirroring realms, the frontend doesn't know which users exist
-        return true;
     }
 
     const direct_message_error_string = check_dm_permissions_and_get_error_string(user_ids_string);
     if (direct_message_error_string) {
         compose_banner.cannot_send_direct_message_error(direct_message_error_string);
         if (is_validating_compose_box) {
-            disabled_send_tooltip_message = direct_message_error_string;
+            disabled_send_tooltip_message_html = direct_message_error_string;
             posting_policy_error_message = direct_message_error_string;
         }
         return false;
     }
 
-    const invalid_recipients = get_invalid_recipient_emails();
-
     let context = {};
-    if (invalid_recipients.length === 1) {
-        context = {recipient: invalid_recipients.join(",")};
-        const error_message = $t(
-            {defaultMessage: "The recipient {recipient} is not valid."},
-            context,
-        );
-        compose_banner.show_error_message(
-            error_message,
-            compose_banner.CLASSNAMES.invalid_recipient,
-            $banner_container,
-            $("#private_message_recipient"),
-        );
-        if (is_validating_compose_box) {
-            disabled_send_tooltip_message = error_message;
-        }
-        return false;
-    } else if (invalid_recipients.length > 1) {
-        context = {recipients: invalid_recipients.join(",")};
-        const error_message = $t(
-            {defaultMessage: "The recipients {recipients} are not valid."},
-            context,
-        );
-        compose_banner.show_error_message(
-            error_message,
-            compose_banner.CLASSNAMES.invalid_recipients,
-            $banner_container,
-            $("#private_message_recipient"),
-        );
-        if (is_validating_compose_box) {
-            disabled_send_tooltip_message = error_message;
-        }
-        return false;
-    }
 
     for (const user_id of user_ids) {
         if (!people.is_person_active(user_id)) {
@@ -905,7 +979,7 @@ function validate_private_message(show_banner = true): boolean {
             );
 
             if (is_validating_compose_box) {
-                disabled_send_tooltip_message = error_message;
+                disabled_send_tooltip_message_html = error_message;
             }
             return false;
         }
@@ -1047,7 +1121,7 @@ function report_validation_error(
 export let validate = (scheduling_message: boolean, show_banner = true): boolean => {
     is_validating_compose_box = true;
     posting_policy_error_message = "";
-    disabled_send_tooltip_message = "";
+    disabled_send_tooltip_message_html = "";
     const message_content = compose_state.message_content();
     // The validation checks in this function are in a specific priority order. Don't
     // change their order unless you want to change which priority they're shown in.
@@ -1078,7 +1152,7 @@ export let validate = (scheduling_message: boolean, show_banner = true): boolean
         }
         blueslip.debug("Invalid compose state: Empty message");
         if (is_validating_compose_box) {
-            disabled_send_tooltip_message = NO_MESSAGE_CONTENT_ERROR_MESSAGE;
+            disabled_send_tooltip_message_html = NO_MESSAGE_CONTENT_ERROR_MESSAGE;
         }
         is_validating_compose_box = false;
         return false;
@@ -1087,27 +1161,11 @@ export let validate = (scheduling_message: boolean, show_banner = true): boolean
         $("textarea#compose-textarea").toggleClass("invalid", false);
     }
 
-    if ($("#zephyr-mirror-error").is(":visible")) {
-        const error_message = $t({
-            defaultMessage: "You need to be running Zephyr mirroring in order to send messages!",
-        });
-        compose_banner.show_error_message(
-            error_message,
-            compose_banner.CLASSNAMES.zephyr_not_running,
-            $("#compose_banners"),
-        );
-        if (is_validating_compose_box) {
-            disabled_send_tooltip_message = error_message;
-        }
-        blueslip.debug("Invalid compose state: Zephyr mirroring not running");
-        is_validating_compose_box = false;
-        return false;
-    }
     // TODO: This doesn't actually show a banner, it triggers a flash
     const trigger_flash = show_banner;
     if (!validate_message_length($("#send_message_form"), trigger_flash)) {
         if (is_validating_compose_box) {
-            disabled_send_tooltip_message = get_message_too_long_for_compose_error();
+            disabled_send_tooltip_message_html = get_message_too_long_for_compose_error();
         }
         blueslip.debug("Invalid compose state: Message too long");
         is_validating_compose_box = false;
@@ -1116,7 +1174,7 @@ export let validate = (scheduling_message: boolean, show_banner = true): boolean
 
     if (upload_in_progress) {
         if (is_validating_compose_box) {
-            disabled_send_tooltip_message = UPLOAD_IN_PROGRESS_ERROR_TOOLTIP_MESSAGE;
+            disabled_send_tooltip_message_html = UPLOAD_IN_PROGRESS_ERROR_TOOLTIP_MESSAGE;
         }
         blueslip.debug("Invalid compose state: Upload in progress");
         is_validating_compose_box = false;

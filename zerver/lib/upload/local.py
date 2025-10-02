@@ -103,11 +103,15 @@ class LocalUploadBackend(ZulipUploadBackend):
             filehandle.write(chunk)
 
     @override
-    def attachment_vips_source(self, path_id: str) -> StreamingSourceWithSize:
+    def attachment_source(self, path_id: str) -> StreamingSourceWithSize:
         file_path = os.path.join(assert_is_not_none(settings.LOCAL_UPLOADS_DIR), "files", path_id)
         assert_is_local_storage_path("files", file_path)
-        source = pyvips.Source.new_from_file(file_path)
-        return StreamingSourceWithSize(size=os.path.getsize(file_path), source=source)
+        vips_source = pyvips.Source.new_from_file(file_path)
+        return StreamingSourceWithSize(
+            size=os.path.getsize(file_path),
+            vips_source=vips_source,
+            reader=lambda: open(file_path, "rb"),
+        )
 
     @override
     def delete_message_attachment(self, path_id: str) -> bool:

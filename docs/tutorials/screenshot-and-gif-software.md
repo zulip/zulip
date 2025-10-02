@@ -57,7 +57,7 @@ to check out your branch.
 
 - [ScreenToGif](https://www.screentogif.com)
 - [Gyazo GIF](https://gyazo.com/en)
-- [Monosnap](https://www.monosnap.com/welcome)
+- [Monosnap](https://monosnap.com)
 
 ### Linux
 

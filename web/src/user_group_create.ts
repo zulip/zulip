@@ -214,7 +214,7 @@ function create_user_group(): void {
         subgroups: JSON.stringify(subgroup_ids),
     };
     loading.make_indicator($("#user_group_creating_indicator"), {
-        text: $t({defaultMessage: "Creating group..."}),
+        text: $t({defaultMessage: "Creating group…"}),
     });
 
     const permission_settings = Object.keys(realm.server_supported_permission_settings.group);

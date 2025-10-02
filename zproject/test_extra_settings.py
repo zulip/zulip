@@ -204,7 +204,9 @@ BIG_BLUE_BUTTON_URL = "https://bbb.example.com/bigbluebutton/"
 # By default two factor authentication is disabled in tests.
 # Explicitly set this to True within tests that must have this on.
 TWO_FACTOR_AUTHENTICATION_ENABLED = False
+
 DEVELOPMENT_DISABLE_PUSH_BOUNCER_DOMAIN_CHECK = False
+ZULIP_SERVICES_URL = f"http://push.{EXTERNAL_HOST}"
 
 # Disable all Zulip services by default. Tests can activate them by
 # overriding settings explicitly when they want to enable something,
@@ -294,3 +296,11 @@ RESOLVE_TOPIC_UNDO_GRACE_PERIOD_SECONDS = 0
 KATEX_SERVER = False
 
 ROOT_DOMAIN_LANDING_PAGE = False
+
+# Disable verifying webhook signatures in tests by default.
+# Tests that intend to verify webhook signatures should override this setting.
+VERIFY_WEBHOOK_SIGNATURES = False
+
+AUTH_LDAP_USER_ATTR_MAP = {
+    "full_name": "cn",
+}

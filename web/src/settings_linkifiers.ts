@@ -1,7 +1,7 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
 import SortableJS from "sortablejs";
-import {z} from "zod";
+import * as z from "zod/mini";
 
 import render_confirm_delete_linkifier from "../templates/confirm_dialog/confirm_delete_linkifier.hbs";
 import render_admin_linkifier_edit_form from "../templates/settings/admin_linkifier_edit_form.hbs";
@@ -69,7 +69,7 @@ function open_linkifier_edit_form(linkifier_id: number): void {
             error_continuation(xhr: JQuery.jqXHR<unknown>) {
                 $change_linkifier_button.prop("disabled", false);
                 const parsed = z
-                    .object({errors: z.record(z.array(z.string()).optional())})
+                    .object({errors: z.record(z.string(), z.optional(z.array(z.string())))})
                     .safeParse(xhr.responseJSON);
                 if (parsed.success) {
                     handle_linkifier_api_error(
@@ -220,7 +220,9 @@ export function build_page(): void {
         e.stopPropagation();
         const $button = $(this);
         const html_body = render_confirm_delete_linkifier();
-        const url = "/json/realm/filters/" + encodeURIComponent($button.attr("data-linkifier-id")!);
+        const url =
+            "/json/realm/filters/" +
+            encodeURIComponent($button.closest("tr").attr("data-linkifier-id")!);
 
         confirm_dialog.launch({
             html_heading: $t_html({defaultMessage: "Delete linkifier?"}),
@@ -238,7 +240,7 @@ export function build_page(): void {
         e.stopPropagation();
 
         const $button = $(this);
-        const linkifier_id = Number.parseInt($button.attr("data-linkifier-id")!, 10);
+        const linkifier_id = Number.parseInt($button.closest("tr").attr("data-linkifier-id")!, 10);
         open_linkifier_edit_form(linkifier_id);
     });
 
@@ -286,7 +288,7 @@ export function build_page(): void {
                 error(xhr) {
                     $add_linkifier_button.prop("disabled", false);
                     const parsed = z
-                        .object({errors: z.record(z.array(z.string()).optional())})
+                        .object({errors: z.record(z.string(), z.optional(z.array(z.string())))})
                         .safeParse(xhr.responseJSON);
                     if (parsed.success) {
                         handle_linkifier_api_error(

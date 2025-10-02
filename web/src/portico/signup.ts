@@ -1,7 +1,12 @@
+import {Uppy} from "@uppy/core";
+import DragDrop from "@uppy/drag-drop";
+import Tus from "@uppy/tus";
+import "@uppy/core/css/style.min.css";
+import "@uppy/drag-drop/css/style.min.css";
 import $ from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
-import {z} from "zod";
+import * as z from "zod/mini";
 
 import * as common from "../common.ts";
 import {$t} from "../i18n.ts";
@@ -9,6 +14,9 @@ import {password_quality, password_warning} from "../password_quality.ts";
 import * as settings_config from "../settings_config.ts";
 
 import * as portico_modals from "./portico_modals.ts";
+
+/* global AltchaWidgetMethods, AltchaStateChangeEvent */
+import "altcha";
 
 $(() => {
     // NB: this file is included on multiple pages.  In each context,
@@ -60,7 +68,16 @@ $(() => {
 
     $("#registration, #password_reset, #create_realm").validate({
         rules: {
-            password: "password_strength",
+            password: {
+                password_strength: {
+                    depends(element: HTMLElement): boolean {
+                        // In the registration flow where the user is required to
+                        // enter their LDAP password, we don't check password strength,
+                        // and the validator method is not even set up.
+                        return element.id !== "ldap-password";
+                    },
+                },
+            },
             new_password1: "password_strength",
         },
         errorElement: "p",
@@ -84,7 +101,7 @@ $(() => {
         if ($(".help-inline:not(:empty)").length === 0) {
             // Find the first input field present in the form that is
             // not hidden and disabled and store it in a variable.
-            const $firstInputElement = $("input:not(:hidden, :disabled)").first();
+            const $firstInputElement = $("input:not([type=hidden], :disabled)").first();
             // Focus on the first input field in the form.
             $firstInputElement.trigger("focus");
             // Override the automatic scroll to the focused
@@ -302,8 +319,8 @@ $(() => {
         $("#new-user-email-address-visibility .current-selected-option").text(selected_option_text);
     });
 
-    $("#registration").on("click keypress", ".edit-realm-details", (e) => {
-        if (e.type === "keypress" && e.key !== "Enter") {
+    $("#registration").on("click keydown", ".edit-realm-details", (e) => {
+        if (e.type === "keydown" && e.key !== "Enter") {
             return;
         }
 
@@ -317,12 +334,20 @@ $(() => {
         $(e.target).hide();
     });
 
+    $("form.select-email-form").on("keydown", function (e) {
+        if (e.key === "Enter") {
+            e.preventDefault();
+            $(this).trigger("submit");
+        }
+    });
+
     $<HTMLSelectElement>("#how-realm-creator-found-zulip select").on("change", function () {
         const elements = new Map([
             ["other", "how-realm-creator-found-zulip-other"],
             ["ad", "how-realm-creator-found-zulip-where-ad"],
             ["existing_user", "how-realm-creator-found-zulip-which-organization"],
             ["review_site", "how-realm-creator-found-zulip-review-site"],
+            ["ai_chatbot", "how-realm-creator-found-zulip-which-ai-chatbot"],
         ]);
 
         const hideElement = (element: string): void => {
@@ -351,4 +376,152 @@ $(() => {
             showElement(selected_element);
         }
     });
+
+    // Configure altcha
+    const altcha = document.querySelector<AltchaWidgetMethods & HTMLElement>("altcha-widget");
+    if (altcha) {
+        altcha.configure({
+            auto: "onload",
+            async customfetch(url: string, init?: RequestInit) {
+                return fetch(url, {...init, credentials: "include"});
+            },
+        });
+        const $submit = $(altcha).closest("form").find("button[type=submit]");
+        $submit.prop("disabled", true);
+        // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+        altcha.addEventListener("statechange", ((ev: AltchaStateChangeEvent) => {
+            if (ev.detail.state === "verified") {
+                $submit.prop("disabled", false);
+            }
+        }) as EventListener);
+    }
+
+    if ($("#slack-import-drag-and-drop").length > 0) {
+        const key = $<HTMLInputElement>("#auth_key_for_file_upload").val();
+        const uppy = new Uppy({
+            autoProceed: true,
+            restrictions: {
+                maxNumberOfFiles: 1,
+                minNumberOfFiles: 1,
+                allowedFileTypes: [".zip", "application/zip"],
+            },
+            meta: {
+                key,
+            },
+            locale: {
+                strings: {
+                    youCanOnlyUploadFileTypes: $t({
+                        defaultMessage: "Upload your Slack export zip file.",
+                    }),
+                },
+                // Copied from
+                // https://github.com/transloadit/uppy/blob/d1a3345263b3421a06389aa2e84c66e894b3f29d/packages/%40uppy/utils/src/Translator.ts#L122
+                // since we don't want to override the default function.
+                // Defining pluralize is required by typescript.
+                pluralize(n: number): 0 | 1 {
+                    if (n === 1) {
+                        return 0;
+                    }
+                    return 1;
+                },
+            },
+        });
+        uppy.use(DragDrop, {
+            target: "#slack-import-drag-and-drop",
+            locale: {
+                strings: {
+                    // Override the default text for the drag and drop area.
+                    dropHereOr: $t({
+                        defaultMessage:
+                            "Drag and drop your Slack export file here, or click to browse.",
+                    }),
+                    // Required by typescript to define this.
+                    browse: $t({
+                        defaultMessage: "Browse",
+                    }),
+                },
+            },
+        });
+        uppy.use(Tus, {
+            endpoint: "/api/v1/tus/",
+            // Allow user to upload the same file multiple times.
+            removeFingerprintOnSuccess: true,
+        });
+        uppy.on("restriction-failed", (_file, error) => {
+            $("#slack-import-file-upload-error").text(error.message);
+        });
+        uppy.on("upload-error", (_file, error) => {
+            $("#slack-import-file-upload-error").text(error.message);
+        });
+        uppy.on("upload-success", (file, _response) => {
+            assert(file !== undefined);
+            $("#slack-import-start-upload-wrapper").removeClass("hidden");
+            $("#slack-import-uploaded-file-name").text(file.name!);
+            $("#slack-import-file-upload-error").text("");
+            $("#realm-creation-form-slack-import .register-button").prop("disabled", false);
+        });
+        // Reset uppy state to allow user replace existing uploaded file.
+        uppy.on("complete", () => {
+            uppy.clear();
+        });
+    }
+
+    if ($("#slack-import-poll-status").length > 0) {
+        const key = $<HTMLInputElement>("#auth_key_for_polling").val();
+        const pollInterval = 2000; // Poll every 2 seconds
+
+        let poll_id: ReturnType<typeof setTimeout> | undefined;
+        function checkImportStatus(): void {
+            $.get(`/json/realm/import/status/${key}`, {}, (response) => {
+                const {status, redirect} = z
+                    .object({status: z.string(), redirect: z.optional(z.string())})
+                    .parse(response);
+                $("#slack-import-poll-status").text(status);
+                if (poll_id && redirect !== undefined) {
+                    clearInterval(poll_id);
+                    window.location.assign(redirect);
+                }
+            });
+        }
+
+        // Start polling
+        poll_id = setInterval(checkImportStatus, pollInterval);
+    }
+
+    $("#cancel-slack-import").on("click", () => {
+        $("#cancel-slack-import-form").trigger("submit");
+    });
+
+    $("#slack-access-token").on("input", () => {
+        $("#update-slack-access-token").show();
+    });
+
+    if ($("a#deactivated-org-auto-redirect").length > 0) {
+        // Update the href of the deactivated organization auto-redirect link
+        // to include the current URL hash, if it exists.
+        const $deactivated_org_auto_redirect = $("a#deactivated-org-auto-redirect");
+        let new_org_url = $deactivated_org_auto_redirect.attr("href")!;
+        const url_hash = window.location.hash;
+        if (url_hash.startsWith("#")) {
+            // Ensure we don't double-add hashes and handle query parameters properly
+            const url = new URL(new_org_url);
+            url.hash = url_hash;
+            new_org_url = url.toString();
+        }
+        $deactivated_org_auto_redirect.attr("href", new_org_url);
+
+        // This is a special case for the deactivated organization page,
+        // where we want to redirect to the login page after 5 seconds.
+        const interval_id = setInterval(() => {
+            const $countdown_elt = $("#deactivated-org-auto-redirect-countdown");
+            const current_countdown = Number($countdown_elt.text());
+            if (current_countdown > 0) {
+                $countdown_elt.text((current_countdown - 1).toString());
+            } else {
+                const new_org_url = $deactivated_org_auto_redirect.attr("href")!;
+                window.location.href = new_org_url;
+                clearInterval(interval_id);
+            }
+        }, 1000);
+    }
 });

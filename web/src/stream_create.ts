@@ -1,6 +1,6 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
-import {z} from "zod";
+import * as z from "zod/mini";
 
 import render_subscription_invites_warning_modal from "../templates/confirm_dialog/confirm_subscription_invites_warning.hbs";
 import render_change_stream_info_modal from "../templates/stream_settings/change_stream_info_modal.hbs";
@@ -8,11 +8,13 @@ import render_change_stream_info_modal from "../templates/stream_settings/change
 import * as channel from "./channel.ts";
 import * as confirm_dialog from "./confirm_dialog.ts";
 import * as dialog_widget from "./dialog_widget.ts";
+import type {DropdownWidget} from "./dropdown_widget.ts";
 import {$t, $t_html} from "./i18n.ts";
 import * as keydown_util from "./keydown_util.ts";
 import * as loading from "./loading.ts";
 import * as onboarding_steps from "./onboarding_steps.ts";
 import * as settings_components from "./settings_components.ts";
+import * as settings_config from "./settings_config.ts";
 import * as settings_data from "./settings_data.ts";
 import {current_user, realm} from "./state_data.ts";
 import * as stream_create_subscribers from "./stream_create_subscribers.ts";
@@ -30,6 +32,8 @@ let created_stream: string | undefined;
 // Default is true since the current user is added to
 // the subscribers list initially.
 let current_user_subscribed_to_created_stream = true;
+
+let folder_widget: DropdownWidget | undefined;
 
 export function reset_created_stream(): void {
     created_stream = undefined;
@@ -71,7 +75,12 @@ export function maybe_update_error_message(): void {
 const group_setting_widget_map = new Map<string, GroupSettingPillContainer | null>([
     ["can_add_subscribers_group", null],
     ["can_administer_channel_group", null],
+    ["can_delete_any_message_group", null],
+    ["can_delete_own_message_group", null],
+    ["can_move_messages_out_of_channel_group", null],
+    ["can_move_messages_within_channel_group", null],
     ["can_remove_subscribers_group", null],
+    ["can_resolve_topics_group", null],
     ["can_send_message_group", null],
 ]);
 
@@ -172,7 +181,7 @@ function toggle_advanced_configurations(): void {
     const $advanced_configurations_view = $(".advanced-configurations-collapase-view");
     const $toggle_button = $(".toggle-advanced-configurations-icon");
 
-    if ($advanced_configurations_view.is(":visible")) {
+    if (!$advanced_configurations_view.hasClass("hide")) {
         // Toggle into the condensed state
         $advanced_configurations_view.addClass("hide");
         $toggle_button.addClass("fa-caret-right");
@@ -237,7 +246,7 @@ $("body").on(
     },
 );
 
-$("body").on("click", ".advanced-configurations-container .advance-config-title-container", (e) => {
+$("body").on("click", ".advanced-configurations-container .advance-config-toggle-area", (e) => {
     e.stopPropagation();
     toggle_advanced_configurations();
 });
@@ -379,10 +388,12 @@ function create_stream(): void {
     }
 
     loading.make_indicator($("#stream_creating_indicator"), {
-        text: $t({defaultMessage: "Creating channel..."}),
+        text: $t({defaultMessage: "Creating channel…"}),
     });
 
-    const data = {
+    const topics_policy = $("#id_new_topics_policy").val();
+
+    const data: Record<string, string> = {
         subscriptions,
         is_web_public: JSON.stringify(is_web_public),
         invite_only: JSON.stringify(invite_only),
@@ -390,9 +401,18 @@ function create_stream(): void {
         is_default_stream: JSON.stringify(default_stream),
         message_retention_days: JSON.stringify(message_retention_selection),
         announce: JSON.stringify(announce),
+        topics_policy: JSON.stringify(topics_policy),
         principals,
         ...group_setting_values,
     };
+
+    assert(folder_widget !== undefined);
+    const folder_id = folder_widget.value();
+    if (folder_id !== settings_config.no_folder_selected) {
+        // We do not include "folder_id" in request data if
+        // new stream will not be added to any folder.
+        data.folder_id = JSON.stringify(folder_id);
+    }
 
     // Subscribe yourself and possible other people to a new stream.
     void channel.post({
@@ -405,7 +425,7 @@ function create_stream(): void {
             // The rest of the work is done via the subscribe event we will get
         },
         error(xhr): void {
-            const error_message = z.object({msg: z.string().optional()}).parse(xhr.responseJSON);
+            const error_message = z.object({msg: z.optional(z.string())}).parse(xhr.responseJSON);
             if (error_message?.msg?.includes("access")) {
                 // If we can't access the stream, we can safely
                 // assume it's a duplicate stream that we are not invited to.
@@ -435,7 +455,7 @@ function create_stream(): void {
     });
 }
 
-export function new_stream_clicked(stream_name: string): void {
+export function new_stream_clicked(stream_name: string, folder_id: number | undefined): void {
     // this changes the tab switcher (settings/preview) which isn't necessary
     // to a add new stream title.
     stream_settings_components.show_subs_pane.create_stream();
@@ -445,6 +465,12 @@ export function new_stream_clicked(stream_name: string): void {
         $("#create_stream_name").val(stream_name);
     }
     show_new_stream_modal();
+    assert(folder_widget !== undefined);
+    if (folder_id) {
+        folder_widget.render(folder_id);
+    } else {
+        folder_widget.render(-1);
+    }
     $("#create_stream_name").trigger("focus");
 }
 
@@ -462,7 +488,11 @@ export function show_new_stream_modal(): void {
     stream_create_subscribers.build_widgets();
 
     // Select the first visible and enabled choice for stream privacy.
-    $("#make-invite-only input:visible:not([disabled])").first().prop("checked", true);
+    $(
+        "#stream_creation_form .stream-privacy-values .settings-radio-input-parent:not([hidden]) input:not(:disabled)",
+    )
+        .first()
+        .prop("checked", true);
     // Make the options default to the same each time
 
     // The message retention setting is visible to owners only. The below block
@@ -508,6 +538,20 @@ export function show_new_stream_modal(): void {
         true,
         true,
     );
+
+    $("#id_new_topics_policy").val(settings_config.get_stream_topics_policy_values().inherit.code);
+    if (!stream_data.user_can_set_topics_policy()) {
+        $("#id_new_topics_policy").prop("disabled", true);
+    }
+
+    if (!stream_data.user_can_set_delete_message_policy()) {
+        settings_components.disable_group_permission_setting(
+            $("#id_new_can_delete_any_message_group"),
+        );
+        settings_components.disable_group_permission_setting(
+            $("#id_new_can_delete_own_message_group"),
+        );
+    }
 
     // set default state for "announce stream" and "default stream" option.
     $("#stream_creation_form .default-stream input").prop("checked", false);
@@ -615,6 +659,7 @@ export function set_up_handlers(): void {
 
     set_up_group_setting_widgets();
     settings_components.enable_opening_typeahead_on_clicking_label($container);
+    folder_widget = stream_settings_components.set_up_folder_dropdown_widget();
 }
 
 export function initialize(): void {
@@ -668,4 +713,23 @@ export function initialize(): void {
 
         dialog_widget.submit_api_request(channel.patch, url, data);
     }
+}
+
+export function set_channel_folder_dropdown_value(folder_id: number): void {
+    assert(folder_widget !== undefined);
+    folder_widget.render(folder_id);
+}
+
+export function maybe_reset_channel_folder_dropdown(archived_folder_id: number): void {
+    assert(folder_widget !== undefined);
+    if (folder_widget.value() === archived_folder_id) {
+        set_channel_folder_dropdown_value(settings_config.no_folder_selected);
+    }
+}
+
+export function get_channel_folder_dropdown_value(): number {
+    assert(folder_widget !== undefined);
+    const value = folder_widget.value()!;
+    assert(typeof value === "number");
+    return value;
 }

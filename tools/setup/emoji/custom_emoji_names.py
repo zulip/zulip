@@ -6,7 +6,7 @@ CUSTOM_EMOJI_NAME_MAPS: dict[str, dict[str, Any]] = {
     "1f603": {"canonical_name": "smiley", "aliases": []},
     # the Google emoji for this is not great, so made People/9 'smile' and
     # renamed this one
-    "1f604": {"canonical_name": "big_smile", "aliases": []},
+    "1f604": {"canonical_name": "smile", "aliases": []},
     # from gemoji/Unicode
     "1f601": {"canonical_name": "grinning_face_with_smiling_eyes", "aliases": []},
     # satisfied doesn't seem like a good description of these images
@@ -20,7 +20,7 @@ CUSTOM_EMOJI_NAME_MAPS: dict[str, dict[str, Any]] = {
     "1f60a": {"canonical_name": "blush", "aliases": []},
     # halo comes from gemoji/Unicode
     "1f607": {"canonical_name": "innocent", "aliases": ["halo"]},
-    "1f642": {"canonical_name": "smile", "aliases": []},
+    "1f642": {"canonical_name": "slight_smile", "aliases": []},
     "1f643": {"canonical_name": "upside_down", "aliases": ["oops"]},
     "1f609": {"canonical_name": "wink", "aliases": []},
     "1f60c": {"canonical_name": "relieved", "aliases": []},

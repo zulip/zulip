@@ -94,6 +94,7 @@ def request_event_queue(
     include_deactivated_groups: bool = False,
     archived_channels: bool = False,
     empty_topic_name: bool = False,
+    simplified_presence_events: bool = False,
 ) -> str | None:
     if not settings.USING_TORNADO:
         return None
@@ -125,6 +126,7 @@ def request_event_queue(
         "include_deactivated_groups": orjson.dumps(include_deactivated_groups),
         "archived_channels": orjson.dumps(archived_channels),
         "empty_topic_name": orjson.dumps(empty_topic_name),
+        "simplified_presence_events": orjson.dumps(simplified_presence_events),
     }
 
     if event_types is not None:

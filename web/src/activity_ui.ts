@@ -2,15 +2,15 @@ import $ from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
 
-import render_empty_list_widget_for_list from "../templates/empty_list_widget_for_list.hbs";
-
 import * as activity from "./activity.ts";
 import * as blueslip from "./blueslip.ts";
 import * as buddy_data from "./buddy_data.ts";
 import {buddy_list} from "./buddy_list.ts";
 import * as keydown_util from "./keydown_util.ts";
 import {ListCursor} from "./list_cursor.ts";
+import * as loading from "./loading.ts";
 import * as narrow_state from "./narrow_state.ts";
+import * as peer_data from "./peer_data.ts";
 import * as people from "./people.ts";
 import * as pm_list from "./pm_list.ts";
 import * as popovers from "./popovers.ts";
@@ -120,17 +120,6 @@ export function searching(): boolean {
     return user_filter?.searching() ?? false;
 }
 
-export function render_empty_user_list_message_if_needed($container: JQuery): void {
-    const empty_list_message = $container.attr("data-search-results-empty");
-
-    if (!empty_list_message || $container.children().length > 0) {
-        return;
-    }
-
-    const empty_list_widget_html = render_empty_list_widget_for_list({empty_list_message});
-    $container.append($(empty_list_widget_html));
-}
-
 export let build_user_sidebar = (): number[] | undefined => {
     if (realm.realm_presence_disabled) {
         return undefined;
@@ -143,9 +132,6 @@ export let build_user_sidebar = (): number[] | undefined => {
 
     buddy_list.populate({all_user_ids});
 
-    render_empty_user_list_message_if_needed(buddy_list.$users_matching_view_list);
-    render_empty_user_list_message_if_needed(buddy_list.$other_users_list);
-
     return all_user_ids; // for testing
 };
 
@@ -153,13 +139,68 @@ export function rewire_build_user_sidebar(value: typeof build_user_sidebar): voi
     build_user_sidebar = value;
 }
 
+export function remove_loading_indicator_for_search(): void {
+    loading.destroy_indicator($("#buddy-list-loading-subscribers"));
+    $("#buddy_list_wrapper").show();
+}
+
+// We need to make sure we have all subscribers before displaying
+// users during search, because we show all matching users and
+// sort them by if they're subscribed. We store all pending fetches,
+// in case we navigate away from a stream and back to it and kick
+// off another search. We also store the current pending fetch so
+// we know if it's still relevant once it's completed.
+let pending_fetch_for_search_stream_id: number | undefined;
+const all_pending_fetches_for_search = new Map<number, Promise<void>>();
+
+export async function await_pending_promise_for_testing(): Promise<void> {
+    assert(pending_fetch_for_search_stream_id !== undefined);
+    await all_pending_fetches_for_search.get(pending_fetch_for_search_stream_id);
+}
+
 function do_update_users_for_search(): void {
     // Hide all the popovers but not userlist sidebar
     // when the user is searching.
     popovers.hide_all();
-    build_user_sidebar();
-    assert(user_cursor !== undefined);
-    user_cursor.reset();
+
+    const stream_id = narrow_state.stream_id(narrow_state.filter(), true);
+    if (!stream_id || peer_data.has_full_subscriber_data(stream_id)) {
+        pending_fetch_for_search_stream_id = undefined;
+        build_user_sidebar();
+        assert(user_cursor !== undefined);
+        user_cursor.reset();
+        return;
+    }
+
+    pending_fetch_for_search_stream_id = stream_id;
+
+    // If we're already fetching for this stream, we don't need to wait for
+    // another promise. The sidebar will be updated once that promise resolves.
+    if (all_pending_fetches_for_search.has(stream_id)) {
+        return;
+    }
+
+    all_pending_fetches_for_search.set(
+        stream_id,
+        (async () => {
+            $("#buddy_list_wrapper").hide();
+            loading.make_indicator($("#buddy-list-loading-subscribers"));
+            await peer_data.maybe_fetch_stream_subscribers(stream_id);
+            all_pending_fetches_for_search.delete(stream_id);
+
+            // If we changed narrows during the fetch, don't rebuild the sidebar
+            // anymore. Let the new narrow handle its own state. The loading indicator
+            // should have already been removed on narrow change.
+            if (pending_fetch_for_search_stream_id !== stream_id) {
+                return;
+            }
+            remove_loading_indicator_for_search();
+            pending_fetch_for_search_stream_id = undefined;
+            build_user_sidebar();
+            assert(user_cursor !== undefined);
+            user_cursor.reset();
+        })(),
+    );
 }
 
 const update_users_for_search = _.throttle(do_update_users_for_search, 50);
@@ -186,11 +227,12 @@ export function initialize(opts: {narrow_by_email: (email: string) => void}): vo
     activity.send_presence_to_server();
 }
 
-export function update_presence_info(
-    user_id: number,
-    info: PresenceInfoFromEvent,
-    server_time: number,
-): void {
+export function update_presence_info(info: PresenceInfoFromEvent): void {
+    const presence_entry = Object.entries(info)[0];
+    assert(presence_entry !== undefined);
+    const [user_id_string, presence_info] = presence_entry;
+    const user_id = Number.parseInt(user_id_string, 10);
+
     // There can be some case where the presence event
     // was set for an inaccessible user if
     // CAN_ACCESS_ALL_USERS_GROUP_LIMITS_PRESENCE is
@@ -200,7 +242,7 @@ export function update_presence_info(
         return;
     }
 
-    presence.update_info_from_event(user_id, info, server_time);
+    presence.update_info_from_event(user_id, presence_info);
     redraw_user(user_id);
     pm_list.update_private_messages();
 }
@@ -259,6 +301,9 @@ export function set_cursor_and_filter(): void {
         on_focus() {
             user_cursor!.reset();
         },
+        set_is_highlight_visible(value: boolean) {
+            user_cursor!.set_is_highlight_visible(value);
+        },
     });
 
     const $input = user_filter.input_field();
@@ -297,6 +342,7 @@ export function initiate_search(): void {
 export function clear_search(): void {
     if (user_filter) {
         user_filter.clear_search();
+        remove_loading_indicator_for_search();
     }
 }
 

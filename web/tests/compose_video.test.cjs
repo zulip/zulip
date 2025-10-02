@@ -3,6 +3,7 @@
 const assert = require("node:assert/strict");
 
 const events = require("./lib/events.cjs");
+const {make_realm} = require("./lib/example_realm.cjs");
 const {mock_esm, set_global, with_overrides, zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 const $ = require("./lib/zjquery.cjs");
@@ -29,7 +30,7 @@ const server_events_dispatch = zrequire("server_events_dispatch");
 const compose_setup = zrequire("compose_setup");
 const {set_current_user, set_realm} = zrequire("state_data");
 
-const realm = {};
+const realm = make_realm();
 set_realm(realm);
 const current_user = {};
 set_current_user(current_user);
@@ -78,6 +79,7 @@ function test(label, f) {
 
 test("videos", ({override}) => {
     override(realm, "realm_video_chat_provider", realm_available_video_chat_providers.disabled.id);
+    override(window, "to_$", () => $("window-stub"));
 
     stub_out_video_calls();
 
@@ -280,6 +282,7 @@ test("videos", ({override}) => {
 
 test("test_video_chat_button_toggle disabled", ({override}) => {
     override(realm, "realm_video_chat_provider", realm_available_video_chat_providers.disabled.id);
+    override(window, "to_$", () => $("window-stub"));
     compose_setup.initialize();
     assert.equal($(".compose-control-buttons-container .video_link").visible(), false);
 });
@@ -290,6 +293,7 @@ test("test_video_chat_button_toggle no url", ({override}) => {
         "realm_video_chat_provider",
         realm_available_video_chat_providers.jitsi_meet.id,
     );
+    override(window, "to_$", () => $("window-stub"));
     page_params.jitsi_server_url = null;
     compose_setup.initialize();
     assert.equal($(".compose-control-buttons-container .video_link").visible(), false);
@@ -302,6 +306,7 @@ test("test_video_chat_button_toggle enabled", ({override}) => {
         realm_available_video_chat_providers.jitsi_meet.id,
     );
     override(realm, "realm_jitsi_server_url", "https://meet.jit.si");
+    override(window, "to_$", () => $("window-stub"));
     compose_setup.initialize();
     assert.equal($(".compose-control-buttons-container .video_link").visible(), true);
 });

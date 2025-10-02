@@ -2,13 +2,9 @@ import $ from "jquery";
 
 // this will hide the alerts that you click "x" on.
 $("body").on("click", ".alert-box .exit", function () {
-    const $alert = $(this).parent("div");
-    $alert.addClass("fade-out");
+    const $stack_trace = $(this).closest(".stacktrace");
+    $stack_trace.addClass("fade-out");
     setTimeout(() => {
-        $alert.removeClass("fade-out show");
+        $stack_trace.removeClass("fade-out show");
     }, 300);
-});
-
-$(".alert-box").on("click", ".stackframe", function () {
-    $(this).siblings(".code-context").toggle("fast");
 });

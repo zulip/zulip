@@ -24,14 +24,22 @@ class kandra::profile::base {
     'emacs-nox',
     # Prevent accidental reboots
     'molly-guard',
+    # For extracting Teleport certs
+    'sqlite3',
     # Useful tools in a production environment
     'screen',
     'strace',
     'bind9-host',
     'git',
     'nagios-plugins-contrib',
+    'ripgrep',
+    'bat',
   ]
   zulip::safepackage { $org_base_packages: ensure => installed }
+  file { '/usr/local/bin/bat':
+    ensure => link,
+    target => '/usr/bin/batcat',
+  }
 
   # Uninstall the AWS kernel, but only after we install the usual one
   package { ['linux-image-aws', 'linux-headers-aws', 'linux-aws-*', 'linux-image-*-aws', 'linux-modules-*-aws']:

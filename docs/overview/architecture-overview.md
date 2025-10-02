@@ -9,11 +9,10 @@ incoming webhook [integrations](https://zulip.com/integrations/)
 with other services and applications (see [the directory structure
 guide](directory-structure.md)).
 
-[Zulip Mobile](https://github.com/zulip/zulip-mobile) is the official
-mobile Zulip client supporting both iOS and Android, written in
-JavaScript with React Native, and [Zulip
-Desktop](https://github.com/zulip/zulip-desktop) is the official Zulip
-desktop client for macOS, Linux, and Windows.
+[Zulip Flutter](https://github.com/zulip/zulip-flutter) is the official
+mobile Zulip client supporting both iOS and Android, built with Flutter,
+and [Zulip Desktop](https://github.com/zulip/zulip-desktop) is the
+official Zulip desktop client for macOS, Linux, and Windows.
 [Zulip Terminal](https://github.com/zulip/zulip-terminal) is our
 official terminal-based client.
 
@@ -22,14 +21,13 @@ other glue code: [Python API
 bindings](https://github.com/zulip/python-zulip-api); [JavaScript API
 bindings](https://github.com/zulip/zulip-js); a [Hubot
 adapter](https://github.com/zulip/hubot-zulip); integrations with
-[Phabricator](https://github.com/zulip/phabricator-to-zulip),
 [Jenkins](https://github.com/zulip/zulip-jenkins-plugin),
 [Puppet](https://github.com/matthewbarr/puppet-zulip),
 [Redmine](https://github.com/zulip/zulip-redmine-plugin), and
 [Trello](https://github.com/zulip/trello-to-zulip);
 and [many more](https://github.com/zulip/).
 
-We use [Transifex](https://explore.transifex.com/zulip/zulip/) to do
+We use [Weblate](https://hosted.weblate.org/projects/zulip/) to do
 translations.
 
 In this overview, we'll mainly discuss the core Zulip server and web
@@ -54,9 +52,12 @@ chamber with its own users, channels, customizations, and so on. This
 means that one person might be a user of multiple Zulip realms. The
 administrators of an organization have a great deal of control over
 who can register an account, what permissions new users have, etc. For
-more on security considerations and options, see [the security model
-section](../production/security-model.md) and the [Zulip Help
-Center](https://zulip.com/help/).
+more on security considerations and options, see our [guide on securing
+your Zulip server][security-guide], [security overview][security-overview],
+and the [Zulip help center](https://zulip.com/help/).
+
+[security-overview]: https://zulip.com/security/
+[security-guide]: ../production/securing-your-zulip-server.md
 
 ## Components
 

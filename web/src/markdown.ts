@@ -23,10 +23,10 @@ import * as util from "./util.ts";
 // If we see preview-related syntax in our content, we will need the
 // backend to render it.
 const preview_regexes = [
-    // Inline image and video previews, check for contiguous chars ending in image and video suffix
+    // Inline media previews, check for contiguous chars ending in media suffix
     // To keep the below regexes simple, split them out for the end-of-message case
 
-    /\S*(?:\.bmp|\.gif|\.jpg|\.jpeg|\.png|\.webp|\.mp4|\.webm)\)?(\s+|$)/m,
+    /\S*(?:\.bmp|\.gif|\.jpg|\.jpeg|\.png|\.webp|\.mp4|\.webm|\.aac|\.flac|\.mp3|\.mpeg|\.wav)\)?(\s+|$)/m,
 
     // Twitter and youtube links are given previews
 
@@ -37,7 +37,7 @@ function contains_preview_link(content: string): boolean {
     return preview_regexes.some((re) => re.test(content));
 }
 
-let web_app_helpers: MarkdownHelpers | undefined;
+export let web_app_helpers: MarkdownHelpers | undefined;
 
 export type AbstractMap<K, V> = {
     keys: () => IterableIterator<K>;
@@ -862,7 +862,10 @@ export function initialize(helper_config: MarkdownHelpers): void {
     web_app_helpers = helper_config;
 }
 
-export function render(raw_content: string): {
+export function render(
+    raw_content: string,
+    helper_config?: MarkdownHelpers,
+): {
     content: string;
     flags: string[];
     is_me_message: boolean;
@@ -870,7 +873,7 @@ export function render(raw_content: string): {
     // This is generally only intended to be called by the web app. Most
     // other platforms should call parse().
     assert(web_app_helpers !== undefined);
-    const {content, flags} = parse({raw_content, helper_config: web_app_helpers});
+    const {content, flags} = parse({raw_content, helper_config: helper_config ?? web_app_helpers});
     return {
         content,
         flags,

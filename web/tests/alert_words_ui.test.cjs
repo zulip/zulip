@@ -11,6 +11,7 @@ const channel = mock_esm("../src/channel");
 
 const alert_words = zrequire("alert_words");
 const alert_words_ui = zrequire("alert_words_ui");
+const banners = mock_esm("../src/banners");
 
 alert_words.initialize({
     alert_words: ["foo", "bar"],
@@ -78,45 +79,26 @@ run_test("remove_alert_word", ({override_rewire}) => {
 
     remove_func(event);
 
-    const $alert_word_status = $("#alert_word_status");
-    const $alert_word_status_text = $(".alert_word_status_text");
-    $alert_word_status.set_find_results(".alert_word_status_text", $alert_word_status_text);
+    const $alert_word_status_banner = $(".alert-word-status-banner");
+    const $alert_word_status_banner_label = $(".alert-word-status-banner .banner-label");
+    banners.open = (banner, _container) => {
+        $alert_word_status_banner.addClass(`banner-${banner.intent}`);
+        $alert_word_status_banner_label.text(banner.label);
+    };
 
     // test failure
     fail_func();
-    assert.ok($alert_word_status.hasClass("alert-danger"));
-    assert.equal($alert_word_status_text.text(), "translated: Error removing alert word!");
-    assert.ok($alert_word_status.visible());
+    assert.ok($alert_word_status_banner.hasClass("banner-danger"));
+    assert.equal(
+        $alert_word_status_banner_label.text(),
+        `translated HTML: Error removing alert word <b>translated: zot</b>!`,
+    );
 
     // test success
     success_func();
-    assert.ok($alert_word_status.hasClass("alert-success"));
+    assert.ok($alert_word_status_banner.hasClass("banner-success"));
     assert.equal(
-        $alert_word_status_text.text(),
-        `translated: Alert word "translated: zot" removed successfully!`,
+        $alert_word_status_banner_label.text(),
+        `translated HTML: Alert word <b>translated: zot</b> removed successfully!`,
     );
-    assert.ok($alert_word_status.visible());
-});
-
-run_test("close_status_message", ({override_rewire}) => {
-    override_rewire(alert_words_ui, "rerender_alert_words_ui", noop);
-    alert_words_ui.set_up_alert_words();
-
-    const $alert_word_settings = $("#alert-word-settings");
-    const close = $alert_word_settings.get_on_handler("click", ".close-alert-word-status");
-
-    const $alert = $(".alert");
-    const $close_button = $(".close-alert-word-status");
-    $close_button.set_parents_result(".alert", $alert);
-
-    $alert.show();
-
-    const event = {
-        preventDefault() {},
-        currentTarget: ".close-alert-word-status",
-    };
-
-    assert.ok($alert.visible());
-    close(event);
-    assert.ok(!$alert.visible());
 });

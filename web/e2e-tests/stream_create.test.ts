@@ -6,7 +6,7 @@ import * as common from "./lib/common.ts";
 
 async function user_row_selector(page: Page, name: string): Promise<string> {
     const user_id = await common.get_user_id_from_name(page, name);
-    const selector = `.remove_potential_subscriber[data-user-id="${user_id}"]`;
+    const selector = `.settings-subscriber-row[data-user-id="${user_id}"]`;
     return selector;
 }
 

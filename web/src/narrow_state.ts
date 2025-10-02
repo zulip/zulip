@@ -1,6 +1,7 @@
 import assert from "minimalistic-assert";
 
 import {Filter} from "./filter.ts";
+import * as inbox_util from "./inbox_util.ts";
 import * as message_lists from "./message_lists.ts";
 import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
@@ -8,9 +9,20 @@ import type {NarrowTerm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import type {StreamSubscription} from "./sub_store.ts";
 import * as unread from "./unread.ts";
+import * as util from "./util.ts";
 
 export function filter(): Filter | undefined {
-    // `Recent Conversations` and `Inbox` return undefined;
+    // We use Filter objects for message views as well as the list of
+    // topics channel view.
+    //
+    // TODO: Some renaming/refactoring to put this in a separate
+    // module from the rest of this file, which is all about message
+    // views, would be valuable.
+    if (inbox_util.is_visible()) {
+        return inbox_util.filter;
+    }
+
+    // `Recent Conversations` returns undefined;
     return message_lists.current?.data.filter;
 }
 
@@ -29,7 +41,7 @@ export function search_terms(current_filter: Filter | undefined = filter()): Nar
 }
 
 export function is_search_view(current_filter: Filter | undefined = filter()): boolean {
-    if (current_filter && !current_filter.supports_collapsing_recipients()) {
+    if (current_filter && !current_filter.contains_no_partial_conversations()) {
         return true;
     }
     return false;
@@ -91,9 +103,9 @@ function collect_single(terms: NarrowTerm[]): Map<string, string> {
 export function set_compose_defaults(): {
     stream_id?: number;
     topic?: string;
-    private_message_recipient?: string;
+    private_message_recipient_ids?: number[];
 } {
-    const opts: {stream_id?: number; topic?: string; private_message_recipient?: string} = {};
+    const opts: {stream_id?: number; topic?: string; private_message_recipient_ids?: number[]} = {};
     const single = collect_single(search_terms());
 
     // Set the stream, topic, and/or direct message recipient
@@ -112,12 +124,14 @@ export function set_compose_defaults(): {
         opts.topic = topic;
     }
 
-    const private_message_recipient = single.get("dm");
+    const private_message_recipient_emails = single.get("dm");
     if (
-        private_message_recipient !== undefined &&
-        people.is_valid_bulk_emails_for_compose(private_message_recipient.split(","))
+        private_message_recipient_emails !== undefined &&
+        people.is_valid_bulk_emails_for_compose(private_message_recipient_emails.split(","))
     ) {
-        opts.private_message_recipient = private_message_recipient;
+        opts.private_message_recipient_ids = people.emails_string_to_user_ids(
+            private_message_recipient_emails,
+        );
     }
     return opts;
 }
@@ -165,7 +179,7 @@ export function stream_sub(
     return stream_data.get_sub_by_id(id);
 }
 
-export let topic = (current_filter: Filter | undefined = filter()): string | undefined => {
+export function topic(current_filter: Filter | undefined = filter()): string | undefined {
     if (current_filter === undefined) {
         return undefined;
     }
@@ -174,39 +188,9 @@ export let topic = (current_filter: Filter | undefined = filter()): string | und
         return operands[0];
     }
     return undefined;
-};
-
-export function rewire_topic(value: typeof topic): void {
-    topic = value;
 }
 
-export function pm_ids_string(filter?: Filter): string | undefined {
-    // If you are narrowed to a group direct message with
-    // users 4, 5, and 99, this will return "4,5,99"
-    const emails_string = pm_emails_string(filter);
-
-    if (!emails_string) {
-        return undefined;
-    }
-
-    const user_ids_string = people.reply_to_to_user_ids_string(emails_string);
-
-    return user_ids_string;
-}
-
-export let pm_ids_set = (filter?: Filter): Set<number> => {
-    const ids_string = pm_ids_string(filter);
-    const pm_ids_list = ids_string ? people.user_ids_string_to_ids_array(ids_string) : [];
-    return new Set(pm_ids_list);
-};
-
-export function rewire_pm_ids_set(value: typeof pm_ids_set): void {
-    pm_ids_set = value;
-}
-
-export function pm_emails_string(
-    current_filter: Filter | undefined = filter(),
-): string | undefined {
+export function pm_ids_string(current_filter: Filter | undefined = filter()): string | undefined {
     if (current_filter === undefined) {
         return undefined;
     }
@@ -216,7 +200,18 @@ export function pm_emails_string(
         return undefined;
     }
 
-    return operands[0];
+    // If you are narrowed to a group direct message with users 4, 5, and 99,
+    // this will return "4,5,99". Will return undefined when the value of the
+    // operand string does not translate to a comma-separated list of valid
+    // user emails.
+    const emails_string = util.the(operands);
+    return people.reply_to_to_user_ids_string(emails_string);
+}
+
+export function pm_ids_set(filter?: Filter): Set<number> {
+    const ids_string = pm_ids_string(filter);
+    const pm_ids_list = ids_string ? people.user_ids_string_to_ids_array(ids_string) : [];
+    return new Set(pm_ids_list);
 }
 
 // We expect get_first_unread_info and therefore _possible_unread_message_ids

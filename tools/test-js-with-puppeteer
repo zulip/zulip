@@ -63,7 +63,7 @@ options = parser.parse_args()
 
 
 def run_single_test(test_file: str, test_number: int, total_tests: int) -> int:
-    cmd = ["node", "--experimental-strip-types", "--no-warnings=ExperimentalWarning", test_file]
+    cmd = ["node", test_file]
 
     test_name = os.path.basename(test_file)
     cmd_str = shlex.join(cmd)

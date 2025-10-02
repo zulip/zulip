@@ -1,4 +1,0 @@
-{
-    "subject": "service remote load on postgres.humbughq.com",
-    "body": "**PROBLEM**: service is CRITICAL\n> CRITICAL - load average: 7.49, 8.20, 4.72"
-}

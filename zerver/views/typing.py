@@ -29,9 +29,9 @@ def send_notification_backend(
     request: HttpRequest,
     user_profile: UserProfile,
     *,
-    req_type: Annotated[Literal["direct", "stream", "channel"], ApiParamConfig("type")] = "direct",
-    operator: Annotated[Literal["start", "stop"], ApiParamConfig("op")],
     notification_to: Annotated[Json[list[int] | None], ApiParamConfig("to")] = None,
+    operator: Annotated[Literal["start", "stop"], ApiParamConfig("op")],
+    req_type: Annotated[Literal["direct", "stream", "channel"], ApiParamConfig("type")] = "direct",
     stream_id: Json[int | None] = None,
     topic: OptionalTopic = None,
 ) -> HttpResponse:

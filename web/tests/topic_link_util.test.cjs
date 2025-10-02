@@ -2,11 +2,20 @@
 
 const assert = require("node:assert/strict");
 
-const {zrequire} = require("./lib/namespace.cjs");
+const {zrequire, mock_esm} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 
 const topic_link_util = zrequire("topic_link_util");
 const stream_data = zrequire("stream_data");
+const settings_config = zrequire("settings_config");
+mock_esm("../src/user_settings", {
+    user_settings: {
+        web_channel_default_view: settings_config.web_channel_default_view_values.channel_feed.code,
+    },
+});
+mock_esm("../src/state_data", {
+    realm: {realm_empty_topic_display_name: "general chat"},
+});
 
 const sweden_stream = {
     name: "Sweden",
@@ -40,10 +49,10 @@ const markdown_stream = {
     type: "stream",
 };
 
-stream_data.add_sub(sweden_stream);
-stream_data.add_sub(denmark_stream);
-stream_data.add_sub(dollar_stream);
-stream_data.add_sub(markdown_stream);
+stream_data.add_sub_for_tests(sweden_stream);
+stream_data.add_sub_for_tests(denmark_stream);
+stream_data.add_sub_for_tests(dollar_stream);
+stream_data.add_sub_for_tests(markdown_stream);
 
 run_test("stream_link_syntax_test", () => {
     assert.equal(topic_link_util.get_stream_link_syntax("Sweden"), "#**Sweden**");
@@ -117,6 +126,23 @@ run_test("stream_topic_link_syntax_test", () => {
     assert.equal(
         topic_link_util.get_stream_topic_link_syntax("Sweden", "&a[b"),
         "[#Sweden > &amp;a&#91;b](#narrow/channel/1-Sweden/topic/.26a.5Bb)",
+    );
+
+    assert.equal(topic_link_util.get_stream_topic_link_syntax("Sweden", ""), "#**Sweden>**");
+
+    assert.equal(
+        topic_link_util.get_stream_topic_link_syntax("$$MONEY$$", ""),
+        "[#&#36;&#36;MONEY&#36;&#36; > translated: general chat](#narrow/channel/6-.24.24MONEY.24.24/topic/)",
+    );
+
+    assert.equal(
+        topic_link_util.get_fallback_markdown_link("Sweden", "abc", 123),
+        "[#Sweden > abc @ 💬](#narrow/channel/1-Sweden/topic/abc/near/123)",
+    );
+
+    assert.equal(
+        topic_link_util.get_fallback_markdown_link("Sweden", "", 123),
+        "[#Sweden > translated: general chat @ 💬](#narrow/channel/1-Sweden/topic//near/123)",
     );
 
     // Only for full coverage of the module.

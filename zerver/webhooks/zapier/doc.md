@@ -38,7 +38,7 @@ sent by Zapier directly in Zulip.
         enter the email associated with your Zulip account in the
         **Recipients** field. Otherwise, enter `user` +
         [your user ID](/help/view-someones-profile) +
-        `@` + your Zulip domain, e.g., `user123@acme.zulipchat.com`.
+        `@` + your Zulip domain, e.g., `user123@{{ display_host }}`.
 
 1. Click **Publish** to enable your Zap.
 

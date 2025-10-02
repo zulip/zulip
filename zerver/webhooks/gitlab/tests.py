@@ -257,6 +257,12 @@ class GitlabHookTests(WebhookTestCase):
 
         self.check_webhook("note_hook__issue_note", expected_topic_name, expected_message)
 
+    def test_note_design_event_message(self) -> None:
+        expected_topic_name = "testing-zulip-gitlab-integration / design Screenshot.png"
+        expected_message = "Satyam Bansal [commented](https://gitlab.com/sbansal1999/testing-zulip-gitlab-integration/-/issues/1/designs/Screenshot.png#note_1458583152) on design [Screenshot.png](https://gitlab.com/sbansal1999/testing-zulip-gitlab-integration/-/issues/1/designs/Screenshot.png):\n\n~~~ quote\nhello\n~~~"
+
+        self.check_webhook("note_hook__design_note", expected_topic_name, expected_message)
+
     def test_note_confidential_issue_event_message(self) -> None:
         expected_subject = "testing-zulip-gitlab-integration / issue #1 Add more lines"
         expected_message = "Satyam Bansal [commented](https://gitlab.com/sbansal1999/testing-zulip-gitlab-integration/-/issues/1#note_1406130881) on [issue #1](https://gitlab.com/sbansal1999/testing-zulip-gitlab-integration/-/issues/1):\n\n~~~ quote\nSome more comments\n~~~"
@@ -269,6 +275,13 @@ class GitlabHookTests(WebhookTestCase):
         expected_message = "[[testing-zulip-gitlab-integration](https://gitlab.com/sbansal1999/testing-zulip-gitlab-integration)] Satyam Bansal [commented](https://gitlab.com/sbansal1999/testing-zulip-gitlab-integration/-/issues/1#note_1406279810) on [issue #1 Add more lines](https://gitlab.com/sbansal1999/testing-zulip-gitlab-integration/-/issues/1):\n\n~~~ quote\nThis is again a random comment.\n~~~"
 
         self.check_webhook("note_hook__issue_note", expected_topic_name, expected_message)
+
+    def test_note_design_with_custom_topic_in_url(self) -> None:
+        self.url = self.build_webhook_url(topic="notifications")
+        expected_topic_name = "notifications"
+        expected_message = "[[testing-zulip-gitlab-integration](https://gitlab.com/sbansal1999/testing-zulip-gitlab-integration)] Satyam Bansal [commented](https://gitlab.com/sbansal1999/testing-zulip-gitlab-integration/-/issues/1/designs/Screenshot.png#note_1458583152) on design [Screenshot.png](https://gitlab.com/sbansal1999/testing-zulip-gitlab-integration/-/issues/1/designs/Screenshot.png):\n\n~~~ quote\nhello\n~~~"
+
+        self.check_webhook("note_hook__design_note", expected_topic_name, expected_message)
 
     def test_note_snippet_old_event_message(self) -> None:
         expected_topic_name = "my-awesome-project / snippet #2 test"
@@ -373,6 +386,22 @@ A trivial change that should probably be ignored.
 
         self.check_webhook(
             "merge_request_hook__merge_request_approved", expected_topic_name, expected_message
+        )
+
+    def test_merge_request_approval_event_message(self) -> None:
+        expected_topic_name = "my-awesome-project / MR #1 Update the README"
+        expected_message = "Sumit Bhanushali added their approval for [MR #1](https://gitlab.com/sumitb16/my-awesome-project/merge_requests/1)."
+
+        self.check_webhook(
+            "merge_request_hook__merge_request_approval", expected_topic_name, expected_message
+        )
+
+    def test_merge_request_unapproval_event_message(self) -> None:
+        expected_topic_name = "my-awesome-project / MR #1 Update the README"
+        expected_message = "Sumit Bhanushali removed their approval for [MR #1](https://gitlab.com/sumitb16/my-awesome-project/merge_requests/1)."
+
+        self.check_webhook(
+            "merge_request_hook__merge_request_unapproval", expected_topic_name, expected_message
         )
 
     def test_merge_request_updated_event_message(self) -> None:
@@ -656,3 +685,77 @@ A trivial change that should probably be ignored.
         expected_message = "Release v1.1 for tag v1.1 was deleted."
 
         self.check_webhook("release_hook__delete", expected_topic_name, expected_message)
+
+    def test_feature_flag_activate_event_message(self) -> None:
+        expected_topic_name = "sample"
+        expected_message = "kolanuvarun739 activated the feature flag [sample-feature-flag](https://gitlab.com/kolanuvarun/sample/-/feature_flags)."
+
+        self.check_webhook("feature_flag_hook__activated", expected_topic_name, expected_message)
+
+    def test_feature_flag_deactivate_event_message(self) -> None:
+        expected_topic_name = "sample"
+        expected_message = "kolanuvarun739 deactivated the feature flag [sample-feature-flag](https://gitlab.com/kolanuvarun/sample/-/feature_flags)."
+
+        self.check_webhook("feature_flag_hook__deactivated", expected_topic_name, expected_message)
+
+    def test_resource_access_token_project_expiry(self) -> None:
+        expected_topic_name = "Flight"
+        expected_message = "The access token [acd](https://example.com/flightjs/Flight/-/settings/access_tokens) will expire on Jan 26, 2024."
+
+        self.check_webhook(
+            "resource_access_token_hook__project_expiry", expected_topic_name, expected_message
+        )
+
+    def test_resource_access_token_group_expiry(self) -> None:
+        expected_topic_name = "Twitter"
+        expected_message = "The access token [acd](https://gitlab.com/groups/twitter/-/settings/access_tokens) will expire on Jan 26, 2024."
+
+        self.check_webhook(
+            "resource_access_token_hook__group_expiry", expected_topic_name, expected_message
+        )
+
+    def test_deployment_started_event_message(self) -> None:
+        expected_topic_name = "test / production"
+        expected_message = "[Vedant Joshi](https://gitlab.com/theofficialvedantjoshi) started a new [deployment](https://gitlab.com/vedant8600317/test/-/jobs/9905389091):\n> [5879366](https://gitlab.com/vedant8600317/test/-/commit/58793660b22d6ceacbdc23b28a0562bca339702c) Update .gitlab-ci.yml file"
+
+        self.check_webhook(
+            "deployment_hook__running",
+            expected_topic_name,
+            expected_message,
+            HTTP_X_GITLAB_EVENT="Deployment Hook",
+        )
+
+    def test_deployment_succeeded_event_message(self) -> None:
+        expected_topic_name = "test / production"
+        expected_message = "The [deployment](https://gitlab.com/vedant8600317/test/-/jobs/9905389091) was successful."
+
+        self.check_webhook(
+            "deployment_hook__success",
+            expected_topic_name,
+            expected_message,
+            HTTP_X_GITLAB_EVENT="Deployment Hook",
+        )
+
+    def test_deployment_failed_event_message(self) -> None:
+        expected_topic_name = "test / production"
+        expected_message = (
+            "The [deployment](https://gitlab.com/vedant8600317/test/-/jobs/9905759933) failed."
+        )
+
+        self.check_webhook(
+            "deployment_hook__failed",
+            expected_topic_name,
+            expected_message,
+            HTTP_X_GITLAB_EVENT="Deployment Hook",
+        )
+
+    def test_deployment_canceled_event_message(self) -> None:
+        expected_topic_name = "test / production"
+        expected_message = "The [deployment](https://gitlab.com/vedant8600317/test/-/jobs/9905830127) was canceled."
+
+        self.check_webhook(
+            "deployment_hook__canceled",
+            expected_topic_name,
+            expected_message,
+            HTTP_X_GITLAB_EVENT="Deployment Hook",
+        )

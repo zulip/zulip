@@ -129,6 +129,10 @@ badge](https://www.capterra.com/p/197945/Zulip/).
 
 ## Press highlights
 
+- June 2025: Zulip's head of product is interviewed about how we’ve built a
+  welcoming open-source community around Zulip [on the Business of Open Source
+  podcast](https://open.spotify.com/episode/3KMLGk4buv8zfDxTjVnChw).
+
 - September 2024: An in-depth interview with Zulip’s head of product [on The
   Changelog podcast](https://changelog.com/podcast/607): *“We talk about Zulip’s
   origins, how it’s open source, the way it’s led, no VC funding, what makes it
@@ -202,6 +206,16 @@ badge](https://www.capterra.com/p/197945/Zulip/).
   [Podcast.__init__](https://www.pythonpodcast.com/about/).
 
 ## Major server releases and product announcements
+
+- August 2025: [Zulip Server 11.0
+  released](https://blog.zulip.com/2025/08/13/zulip-11-0-released/), with over
+  3300 new commits. 76 people contributed commits to Zulip since the 10.0
+  release.
+
+- June 2025: Zulip’s next-generation mobile app for Android and iOS, built on
+  Flutter,
+  [becomes](https://blog.zulip.com/2025/06/17/flutter-mobile-app-launched/) the
+  official mobile app.
 
 - March 2025: [Zulip Server 10.0
   released](https://blog.zulip.com/2025/03/20/zulip-10-0-released/), with over

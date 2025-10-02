@@ -23,6 +23,9 @@ from zerver.lib.event_types import (
     EventAttachmentAdd,
     EventAttachmentRemove,
     EventAttachmentUpdate,
+    EventChannelFolderAdd,
+    EventChannelFolderReorder,
+    EventChannelFolderUpdate,
     EventCustomProfileFields,
     EventDefaultStreamGroups,
     EventDefaultStreams,
@@ -34,14 +37,18 @@ from zerver.lib.event_types import (
     EventHasZoomToken,
     EventHeartbeat,
     EventInvitesChanged,
+    EventLegacyPresence,
     EventMessage,
+    EventModernPresence,
     EventMutedTopics,
     EventMutedUsers,
+    EventNavigationViewAdd,
+    EventNavigationViewRemove,
+    EventNavigationViewUpdate,
     EventOnboardingSteps,
-    EventPresence,
+    EventPushDevice,
     EventReactionAdd,
     EventReactionRemove,
-    EventRealmBilling,
     EventRealmBotAdd,
     EventRealmBotDelete,
     EventRealmBotUpdate,
@@ -60,6 +67,8 @@ from zerver.lib.event_types import (
     EventRealmUserRemove,
     EventRealmUserSettingsDefaultsUpdate,
     EventRealmUserUpdate,
+    EventRemindersAdd,
+    EventRemindersRemove,
     EventRestart,
     EventSavedSnippetsAdd,
     EventSavedSnippetsRemove,
@@ -76,10 +85,8 @@ from zerver.lib.event_types import (
     EventSubscriptionPeerRemove,
     EventSubscriptionRemove,
     EventSubscriptionUpdate,
-    EventTypingEditChannelMessageStart,
-    EventTypingEditChannelMessageStop,
-    EventTypingEditDirectMessageStart,
-    EventTypingEditDirectMessageStop,
+    EventTypingEditMessageStart,
+    EventTypingEditMessageStop,
     EventTypingStart,
     EventTypingStop,
     EventUpdateDisplaySettings,
@@ -113,10 +120,12 @@ from zerver.lib.event_types import (
     PersonRole,
     PersonTimezone,
     PlanTypeData,
+    RealmTopicsPolicyData,
 )
 from zerver.lib.topic import ORIG_TOPIC, TOPIC_NAME
 from zerver.lib.types import UserGroupMembersDict
 from zerver.models import Realm, RealmUserDefault, Stream, UserProfile
+from zerver.models.streams import StreamTopicsPolicyEnum
 
 
 def validate_with_model(data: dict[str, object], model: type[BaseModel]) -> None:
@@ -161,6 +170,8 @@ check_alert_words = make_checker(EventAlertWords)
 check_attachment_add = make_checker(EventAttachmentAdd)
 check_attachment_remove = make_checker(EventAttachmentRemove)
 check_attachment_update = make_checker(EventAttachmentUpdate)
+check_channel_folder_add = make_checker(EventChannelFolderAdd)
+check_channel_folder_reorder = make_checker(EventChannelFolderReorder)
 check_custom_profile_fields = make_checker(EventCustomProfileFields)
 check_default_stream_groups = make_checker(EventDefaultStreamGroups)
 check_default_streams = make_checker(EventDefaultStreams)
@@ -172,10 +183,13 @@ check_heartbeat = make_checker(EventHeartbeat)
 check_invites_changed = make_checker(EventInvitesChanged)
 check_message = make_checker(EventMessage)
 check_muted_users = make_checker(EventMutedUsers)
+check_navigation_view_add = make_checker(EventNavigationViewAdd)
+check_navigation_view_remove = make_checker(EventNavigationViewRemove)
+check_navigation_view_update = make_checker(EventNavigationViewUpdate)
 check_onboarding_steps = make_checker(EventOnboardingSteps)
+check_push_device = make_checker(EventPushDevice)
 check_reaction_add = make_checker(EventReactionAdd)
 check_reaction_remove = make_checker(EventReactionRemove)
-check_realm_billing = make_checker(EventRealmBilling)
 check_realm_bot_delete = make_checker(EventRealmBotDelete)
 check_realm_deactivated = make_checker(EventRealmDeactivated)
 check_realm_domains_add = make_checker(EventRealmDomainsAdd)
@@ -186,6 +200,8 @@ check_realm_linkifiers = make_checker(EventRealmLinkifiers)
 check_realm_playgrounds = make_checker(EventRealmPlaygrounds)
 check_realm_user_add = make_checker(EventRealmUserAdd)
 check_realm_user_remove = make_checker(EventRealmUserRemove)
+check_reminder_add = make_checker(EventRemindersAdd)
+check_reminder_remove = make_checker(EventRemindersRemove)
 check_restart = make_checker(EventRestart)
 check_saved_snippets_add = make_checker(EventSavedSnippetsAdd)
 check_saved_snippets_remove = make_checker(EventSavedSnippetsRemove)
@@ -202,10 +218,8 @@ check_subscription_peer_remove = make_checker(EventSubscriptionPeerRemove)
 check_subscription_remove = make_checker(EventSubscriptionRemove)
 check_typing_start = make_checker(EventTypingStart)
 check_typing_stop = make_checker(EventTypingStop)
-check_typing_edit_channel_message_start = make_checker(EventTypingEditChannelMessageStart)
-check_typing_edit_direct_message_start = make_checker(EventTypingEditDirectMessageStart)
-check_typing_edit_channel_message_stop = make_checker(EventTypingEditChannelMessageStop)
-check_typing_edit_direct_message_stop = make_checker(EventTypingEditDirectMessageStop)
+check_typing_edit_message_start = make_checker(EventTypingEditMessageStart)
+check_typing_edit_message_stop = make_checker(EventTypingEditMessageStop)
 check_update_message_flags_add = make_checker(EventUpdateMessageFlagsAdd)
 check_update_message_flags_remove = make_checker(EventUpdateMessageFlagsRemove)
 check_user_group_add = make_checker(EventUserGroupAdd)
@@ -230,10 +244,12 @@ check_web_reload_client_event = make_checker(EventWebReloadClient)
 # TODO: work through the bottom of this file to try to find ways to
 #       simplify our types or make them more robust
 
+_check_channel_folder_update = make_checker(EventChannelFolderUpdate)
 _check_delete_message = make_checker(EventDeleteMessage)
 _check_has_zoom_token = make_checker(EventHasZoomToken)
+_check_legacy_presence = make_checker(EventLegacyPresence)
+_check_modern_presence = make_checker(EventModernPresence)
 _check_muted_topics = make_checker(EventMutedTopics)
-_check_presence = make_checker(EventPresence)
 _check_realm_bot_add = make_checker(EventRealmBotAdd)
 _check_realm_bot_update = make_checker(EventRealmBotUpdate)
 _check_realm_default_update = make_checker(EventRealmUserSettingsDefaultsUpdate)
@@ -263,6 +279,13 @@ PERSON_TYPES: dict[str, type[BaseModel]] = dict(
     timezone=PersonTimezone,
     is_active=PersonIsActive,
 )
+
+
+def check_channel_folder_update(var_name: str, event: dict[str, object], fields: set[str]) -> None:
+    _check_channel_folder_update(var_name, event)
+
+    assert isinstance(event["data"], dict)
+    assert set(event["data"].keys()) == fields
 
 
 def check_delete_message(
@@ -317,14 +340,14 @@ def check_muted_topics(
         assert list(map(type, muted_topic_tuple)) == [str, str, int]
 
 
-def check_presence(
+def check_legacy_presence(
     var_name: str,
     event: dict[str, object],
     has_email: bool,
     presence_key: str,
     status: str,
 ) -> None:
-    _check_presence(var_name, event)
+    _check_legacy_presence(var_name, event)
 
     assert ("email" in event) == has_email
 
@@ -334,6 +357,15 @@ def check_presence(
     [(event_presence_key, event_presence_value)] = event["presence"].items()
     assert event_presence_key == presence_key
     assert event_presence_value["status"] == status
+
+
+def check_modern_presence(var_name: str, event: dict[str, object], user_id: int) -> None:
+    _check_modern_presence(var_name, event)
+
+    assert isinstance(event["presences"], dict)
+
+    [(event_presences_key, _event_presences_value)] = event["presences"].items()
+    assert event_presences_key == str(user_id)
 
 
 def check_realm_bot_add(
@@ -444,6 +476,7 @@ def check_realm_update(
     property_type = Realm.property_types[prop]
     if inspect.isclass(property_type) and issubclass(property_type, Enum):
         assert isinstance(value, str)
+        property_type[value]
     else:
         assert isinstance(value, property_type)
 
@@ -460,7 +493,12 @@ def check_realm_default_update(
     assert prop in RealmUserDefault.property_types
 
     prop_type = RealmUserDefault.property_types[prop]
-    assert isinstance(event["value"], prop_type)
+    value = event["value"]
+    if inspect.isclass(prop_type) and issubclass(prop_type, Enum):
+        assert isinstance(value, str)
+        prop_type[value]
+    else:
+        assert isinstance(value, prop_type)
 
 
 def check_realm_update_dict(
@@ -485,6 +523,8 @@ def check_realm_update_dict(
             sub_type = GroupSettingUpdateData
         elif "plan_type" in event["data"]:
             sub_type = PlanTypeData
+        elif "topics_policy" in event["data"]:
+            sub_type = RealmTopicsPolicyData
         else:
             raise AssertionError("unhandled fields in data")
 
@@ -529,6 +569,8 @@ def check_stream_update(
         "name",
         "stream_id",
         "first_message_id",
+        "is_archived",
+        "folder_id",
     }
 
     if prop == "description":
@@ -559,12 +601,21 @@ def check_stream_update(
     elif prop == "first_message_id":
         assert extra_keys == set()
         assert isinstance(value, int)
+    elif prop == "topics_policy":
+        assert extra_keys == set()
+        assert value in [e.name for e in StreamTopicsPolicyEnum]
     elif prop == "is_recently_active":
         assert extra_keys == set()
         assert isinstance(value, bool)
     elif prop == "is_announcement_only":
         assert extra_keys == set()
         assert isinstance(value, bool)
+    elif prop == "is_archived":
+        assert extra_keys == set()
+        assert isinstance(value, bool)
+    elif prop == "folder_id":
+        assert extra_keys == set()
+        assert value is None or isinstance(value, int)
     else:
         raise AssertionError(f"Unknown property: {prop}")
 
@@ -616,7 +667,11 @@ def check_user_settings_update(
         assert isinstance(value, str)
     else:
         setting_type = UserProfile.property_types[setting_name]
-        assert isinstance(value, setting_type)
+        if inspect.isclass(setting_type) and issubclass(setting_type, Enum):
+            assert isinstance(value, str)
+            setting_type[value]
+        else:
+            assert isinstance(value, setting_type)
 
     if setting_name == "default_language":
         assert "language_name" in event

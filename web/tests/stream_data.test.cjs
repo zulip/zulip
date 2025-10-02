@@ -2,6 +2,8 @@
 
 const assert = require("node:assert/strict");
 
+const {make_user_group} = require("./lib/example_group.cjs");
+const {make_realm} = require("./lib/example_realm.cjs");
 const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 const blueslip = require("./lib/zblueslip.cjs");
@@ -26,7 +28,7 @@ const bot_data = mock_esm("../src/bot_data");
 
 const current_user = {};
 set_current_user(current_user);
-const realm = {};
+const realm = make_realm();
 set_realm(realm);
 const user_settings = {};
 initialize_user_settings({user_settings});
@@ -53,54 +55,55 @@ const test_user = {
 
 const admin_user_id = 1;
 const moderator_user_id = 2;
+
 // set up user data
-const admins_group = {
+const admins_group = make_user_group({
     name: "Admins",
     id: 1,
     members: new Set([admin_user_id]),
     is_system_group: true,
     direct_subgroup_ids: new Set([]),
-};
+});
 
-const moderators_group = {
+const moderators_group = make_user_group({
     name: "Moderators",
     id: 2,
     members: new Set([moderator_user_id]),
     is_system_group: true,
     direct_subgroup_ids: new Set([admins_group.id]),
-};
+});
 
-const everyone_group = {
+const everyone_group = make_user_group({
     name: "Everyone",
     id: 3,
     members: new Set([me.user_id, test_user.user_id]),
     is_system_group: true,
     direct_subgroup_ids: new Set([moderators_group.id]),
-};
+});
 
-const nobody_group = {
+const nobody_group = make_user_group({
     name: "Nobody",
     id: 4,
     members: new Set([]),
     is_system_group: true,
     direct_subgroup_ids: new Set([]),
-};
+});
 
-const students = {
+const students = make_user_group({
     name: "Students",
     id: 5,
     members: new Set([test_user.user_id]),
     is_system_group: false,
     direct_subgroup_ids: new Set([]),
-};
+});
 
-const me_group = {
+const me_group = make_user_group({
     name: "Me Group",
     id: 6,
     members: new Set([me.user_id]),
     is_system_group: false,
     direct_subgroup_ids: new Set([]),
-};
+});
 
 function initialize_and_override_current_user(user_id, override) {
     people.initialize_current_user(user_id);
@@ -139,6 +142,9 @@ test("basics", () => {
         is_muted: true,
         invite_only: true,
         history_public_to_subscribers: true,
+        can_add_subscribers_group: admins_group.id,
+        can_administer_channel_group: admins_group.id,
+        can_subscribe_group: admins_group.id,
     };
     const social = {
         subscribed: true,
@@ -148,6 +154,9 @@ test("basics", () => {
         is_muted: false,
         invite_only: true,
         history_public_to_subscribers: false,
+        can_add_subscribers_group: admins_group.id,
+        can_administer_channel_group: admins_group.id,
+        can_subscribe_group: admins_group.id,
     };
     const test = {
         subscribed: true,
@@ -156,6 +165,9 @@ test("basics", () => {
         stream_id: 3,
         is_muted: true,
         invite_only: false,
+        can_add_subscribers_group: admins_group.id,
+        can_administer_channel_group: admins_group.id,
+        can_subscribe_group: admins_group.id,
     };
     const web_public_stream = {
         subscribed: false,
@@ -166,12 +178,15 @@ test("basics", () => {
         invite_only: false,
         history_public_to_subscribers: true,
         is_web_public: true,
+        can_add_subscribers_group: admins_group.id,
+        can_administer_channel_group: admins_group.id,
+        can_subscribe_group: admins_group.id,
     };
-    stream_data.add_sub(denmark);
-    stream_data.add_sub(social);
-    stream_data.add_sub(web_public_stream);
+    stream_data.add_sub_for_tests(denmark);
+    stream_data.add_sub_for_tests(social);
+    stream_data.add_sub_for_tests(web_public_stream);
     assert.ok(stream_data.all_subscribed_streams_are_in_home_view());
-    stream_data.add_sub(test);
+    stream_data.add_sub_for_tests(test);
     assert.ok(!stream_data.all_subscribed_streams_are_in_home_view());
 
     assert.equal(stream_data.get_sub("denmark"), denmark);
@@ -249,8 +264,16 @@ test("basics", () => {
     const stream_starting_with_25 = {
         name: "25-or-6-to-4",
         stream_id: 400,
+        can_add_subscribers_group: admins_group.id,
+        can_administer_channel_group: admins_group.id,
+        can_subscribe_group: admins_group.id,
+        subscribed: false,
+        is_muted: false,
+        invite_only: false,
+        history_public_to_subscribers: true,
+        is_web_public: false,
     };
-    stream_data.add_sub(stream_starting_with_25);
+    stream_data.add_sub_for_tests(stream_starting_with_25);
     assert.equal(stream_data.slug_to_stream_id("25-or-6-to-4"), 400);
     assert.equal(hash_util.decode_operand("channel", "25-or-6-to-4"), "400");
 
@@ -263,8 +286,11 @@ test("basics", () => {
     const stream_99 = {
         name: "99",
         stream_id: 401,
+        can_add_subscribers_group: admins_group.id,
+        can_administer_channel_group: admins_group.id,
+        can_subscribe_group: admins_group.id,
     };
-    stream_data.add_sub(stream_99);
+    stream_data.add_sub_for_tests(stream_99);
     assert.equal(stream_data.slug_to_stream_id("99"), 401);
     assert.equal(hash_util.decode_operand("channel", "99"), "401");
     // But if there's a stream with id 99, it gets priority over
@@ -272,8 +298,11 @@ test("basics", () => {
     const stream_id_99 = {
         name: "Some Stream",
         stream_id: 99,
+        can_add_subscribers_group: admins_group.id,
+        can_administer_channel_group: admins_group.id,
+        can_subscribe_group: admins_group.id,
     };
-    stream_data.add_sub(stream_id_99);
+    stream_data.add_sub_for_tests(stream_id_99);
     assert.equal(stream_data.slug_to_stream_id("99"), 99);
     assert.equal(hash_util.decode_operand("channel", "99"), "99");
 
@@ -293,6 +322,9 @@ test("basics", () => {
                 name: "social",
                 stream_id: 2,
                 subscribed: true,
+                can_add_subscribers_group: admins_group.id,
+                can_administer_channel_group: admins_group.id,
+                can_subscribe_group: admins_group.id,
             },
             unique_id: 2,
         },
@@ -305,8 +337,100 @@ test("basics", () => {
                 name: "test",
                 stream_id: 3,
                 subscribed: true,
+                can_add_subscribers_group: admins_group.id,
+                can_administer_channel_group: admins_group.id,
+                can_subscribe_group: admins_group.id,
             },
             unique_id: 3,
+        },
+    ]);
+
+    assert.deepEqual(stream_data.get_streams_for_move_messages_widget(), [
+        {
+            name: "social",
+            stream: {
+                color: "red",
+                history_public_to_subscribers: false,
+                invite_only: true,
+                is_muted: false,
+                name: "social",
+                stream_id: 2,
+                subscribed: true,
+                can_add_subscribers_group: admins_group.id,
+                can_administer_channel_group: admins_group.id,
+                can_subscribe_group: admins_group.id,
+            },
+            unique_id: 2,
+        },
+        {
+            name: "test",
+            stream: {
+                color: "yellow",
+                invite_only: false,
+                is_muted: true,
+                name: "test",
+                stream_id: 3,
+                subscribed: true,
+                can_add_subscribers_group: admins_group.id,
+                can_administer_channel_group: admins_group.id,
+                can_subscribe_group: admins_group.id,
+            },
+            unique_id: 3,
+        },
+        {
+            name: "25-or-6-to-4",
+            stream: {
+                history_public_to_subscribers: true,
+                invite_only: false,
+                is_muted: false,
+                is_web_public: false,
+                name: "25-or-6-to-4",
+                stream_id: 400,
+                subscribed: false,
+                can_add_subscribers_group: admins_group.id,
+                can_administer_channel_group: admins_group.id,
+                can_subscribe_group: admins_group.id,
+            },
+            unique_id: 400,
+        },
+        {
+            name: "web_public_stream",
+            stream: {
+                name: "web_public_stream",
+                stream_id: 4,
+                can_add_subscribers_group: admins_group.id,
+                can_administer_channel_group: admins_group.id,
+                can_subscribe_group: admins_group.id,
+                color: "yellow",
+                history_public_to_subscribers: true,
+                invite_only: false,
+                is_muted: false,
+                is_web_public: true,
+                subscribed: false,
+            },
+            unique_id: 4,
+        },
+        {
+            name: "99",
+            stream: {
+                name: "99",
+                stream_id: 401,
+                can_add_subscribers_group: admins_group.id,
+                can_administer_channel_group: admins_group.id,
+                can_subscribe_group: admins_group.id,
+            },
+            unique_id: 401,
+        },
+        {
+            name: "Some Stream",
+            stream: {
+                name: "Some Stream",
+                stream_id: 99,
+                can_add_subscribers_group: admins_group.id,
+                can_administer_channel_group: admins_group.id,
+                can_subscribe_group: admins_group.id,
+            },
+            unique_id: 99,
         },
     ]);
 
@@ -322,8 +446,75 @@ test("basics", () => {
                 name: "social",
                 stream_id: 2,
                 subscribed: true,
+                can_add_subscribers_group: admins_group.id,
+                can_administer_channel_group: admins_group.id,
+                can_subscribe_group: admins_group.id,
             },
             unique_id: 2,
+        },
+    ]);
+
+    social.invite_only = true;
+    social.can_subscribe_group = me_group.id;
+    social.subscribed = false;
+
+    stream_starting_with_25.invite_only = true;
+
+    assert.deepEqual(stream_data.get_streams_for_move_messages_widget(), [
+        {
+            name: "social",
+            stream: {
+                color: "red",
+                history_public_to_subscribers: false,
+                invite_only: true,
+                is_muted: false,
+                name: "social",
+                stream_id: 2,
+                subscribed: false,
+                can_add_subscribers_group: admins_group.id,
+                can_administer_channel_group: admins_group.id,
+                can_subscribe_group: me_group.id,
+            },
+            unique_id: 2,
+        },
+        {
+            name: "web_public_stream",
+            stream: {
+                color: "yellow",
+                history_public_to_subscribers: true,
+                invite_only: false,
+                is_muted: false,
+                is_web_public: true,
+                name: "web_public_stream",
+                stream_id: 4,
+                subscribed: false,
+                can_add_subscribers_group: admins_group.id,
+                can_administer_channel_group: admins_group.id,
+                can_subscribe_group: admins_group.id,
+            },
+            unique_id: 4,
+        },
+        {
+            name: "99",
+            stream: {
+                name: "99",
+                stream_id: 401,
+                can_add_subscribers_group: admins_group.id,
+                can_administer_channel_group: admins_group.id,
+                can_subscribe_group: admins_group.id,
+            },
+            unique_id: 401,
+        },
+        {
+            name: "Some Stream",
+            stream: {
+                name: "Some Stream",
+                stream_id: 99,
+                can_add_subscribers_group: admins_group.id,
+                can_administer_channel_group: admins_group.id,
+                can_subscribe_group: admins_group.id,
+            },
+            unique_id: 99,
         },
     ]);
 });
@@ -391,7 +582,7 @@ test("get_streams_for_user", ({override}) => {
     };
     const subs = [denmark, social, test, world, errors];
     for (const sub of subs) {
-        stream_data.add_sub(sub);
+        stream_data.add_sub_for_tests(sub);
     }
     override(current_user, "user_id", me.user_id);
 
@@ -441,7 +632,7 @@ test("renames", () => {
         color: "red",
         stream_id: id,
     };
-    stream_data.add_sub(sub);
+    stream_data.add_sub_for_tests(sub);
     sub = stream_data.get_sub("Denmark");
     assert.equal(sub.color, "red");
     sub = sub_store.get(id);
@@ -480,7 +671,7 @@ test("admin_options", ({override}) => {
             date_created: 1691057093,
             creator_id: null,
         };
-        stream_data.add_sub(sub);
+        stream_data.add_sub_for_tests(sub);
         return sub;
     }
 
@@ -615,9 +806,9 @@ test("stream_settings", ({override}) => {
         creator_id: null,
         is_archived: true,
     };
-    stream_data.add_sub(cinnamon);
-    stream_data.add_sub(amber);
-    stream_data.add_sub(blue);
+    stream_data.add_sub_for_tests(cinnamon);
+    stream_data.add_sub_for_tests(amber);
+    stream_data.add_sub_for_tests(blue);
 
     let sub_rows = stream_settings_data.get_streams_for_settings_page();
     assert.equal(sub_rows[0].color, "blue");
@@ -635,12 +826,13 @@ test("stream_settings", ({override}) => {
     assert.equal(sub_rows[0].history_public_to_subscribers, true);
     assert.equal(sub_rows[0].message_retention_days, 10);
 
-    const sub = stream_data.get_sub("a");
+    let sub = stream_data.get_sub("a");
     stream_data.update_stream_privacy(sub, {
         invite_only: false,
         history_public_to_subscribers: false,
     });
     stream_data.update_message_retention_setting(sub, -1);
+    stream_data.update_topics_policy_setting(sub, "allow_topics_policy");
     stream_data.update_stream_permission_group_setting(
         "can_remove_subscribers_group",
         sub,
@@ -651,11 +843,14 @@ test("stream_settings", ({override}) => {
         sub,
         moderators_group.id,
     );
+    stream_data.update_channel_folder(sub, 3);
     assert.equal(sub.invite_only, false);
     assert.equal(sub.history_public_to_subscribers, false);
     assert.equal(sub.message_retention_days, -1);
+    assert.equal(sub.topics_policy, "allow_topics_policy");
     assert.equal(sub.can_remove_subscribers_group, moderators_group.id);
     assert.equal(sub.can_administer_channel_group, moderators_group.id);
+    assert.equal(sub.folder_id, 3);
 
     // For guest user only retrieve subscribed streams
     sub_rows = stream_settings_data.get_updated_unsorted_subs();
@@ -665,6 +860,12 @@ test("stream_settings", ({override}) => {
     assert.equal(sub_rows[0].name, "c");
     assert.equal(sub_rows[1].name, "a");
     assert.equal(sub_rows.length, 2);
+
+    sub = stream_data.get_sub("b");
+    stream_data.update_stream_privacy(sub, {
+        is_web_public: true,
+    });
+    assert.equal(sub.is_web_public, true);
 });
 
 test("default_stream_names", () => {
@@ -695,10 +896,10 @@ test("default_stream_names", () => {
     };
 
     stream_data.set_realm_default_streams([announce.stream_id, general.stream_id]);
-    stream_data.add_sub(announce);
-    stream_data.add_sub(public_stream);
-    stream_data.add_sub(private_stream);
-    stream_data.add_sub(general);
+    stream_data.add_sub_for_tests(announce);
+    stream_data.add_sub_for_tests(public_stream);
+    stream_data.add_sub_for_tests(private_stream);
+    stream_data.add_sub_for_tests(general);
 
     const names = stream_data.get_non_default_stream_names();
     assert.deepEqual(names.sort(), [{name: "public", unique_id: 102}]);
@@ -709,23 +910,45 @@ test("default_stream_names", () => {
 
 test("delete_sub", () => {
     const canada = {
+        stream_id: 101,
+        name: "Canada",
+        subscribed: true,
+    };
+
+    stream_data.add_sub_for_tests(canada);
+
+    assert.ok(stream_data.is_subscribed(canada.stream_id));
+    assert.equal(stream_data.get_sub("Canada").stream_id, canada.stream_id);
+    assert.equal(sub_store.get(canada.stream_id).name, "Canada");
+
+    stream_data.delete_sub(canada.stream_id);
+    assert.ok(!stream_data.is_subscribed(canada.stream_id));
+    assert.ok(!stream_data.get_sub("Canada"));
+    assert.ok(!sub_store.get(canada.stream_id));
+
+    blueslip.expect("warn", "Failed to archive stream 99999");
+    stream_data.delete_sub(99999);
+});
+
+test("mark_archived", () => {
+    const canada = {
         is_archived: false,
         stream_id: 101,
         name: "Canada",
         subscribed: true,
     };
 
-    stream_data.add_sub(canada);
+    stream_data.add_sub_for_tests(canada);
     const num_subscribed_subs = stream_data.num_subscribed_subs();
     const archived_subs = stream_data.get_archived_subs();
 
     assert.ok(stream_data.is_subscribed(canada.stream_id));
     assert.equal(stream_data.get_sub("Canada").stream_id, canada.stream_id);
     assert.equal(sub_store.get(canada.stream_id).name, "Canada");
-    assert.equal(stream_data.is_stream_archived(canada.stream_id), false);
+    assert.equal(stream_data.is_stream_archived_by_id(canada.stream_id), false);
 
-    stream_data.delete_sub(canada.stream_id);
-    assert.ok(stream_data.is_stream_archived(canada.stream_id));
+    stream_data.mark_archived(canada.stream_id);
+    assert.ok(stream_data.is_stream_archived_by_id(canada.stream_id));
     assert.ok(stream_data.is_subscribed(canada.stream_id));
     assert.ok(stream_data.get_sub("Canada"));
     assert.ok(sub_store.get(canada.stream_id));
@@ -733,7 +956,30 @@ test("delete_sub", () => {
     assert.equal(stream_data.get_archived_subs().length, archived_subs.length + 1);
 
     blueslip.expect("warn", "Failed to archive stream 99999");
-    stream_data.delete_sub(99999);
+    stream_data.mark_archived(99999);
+});
+
+test("mark_unarchived", () => {
+    const canada = {
+        stream_id: 101,
+        name: "Canada",
+        is_archived: true,
+        subscribed: true,
+    };
+
+    stream_data.add_sub_for_tests(canada);
+    assert.ok(stream_data.is_stream_archived_by_id(canada.stream_id));
+    assert.ok(stream_data.is_subscribed(canada.stream_id));
+
+    stream_data.mark_unarchived(canada.stream_id);
+    assert.ok(!stream_data.is_stream_archived_by_id(canada.stream_id));
+    assert.ok(stream_data.is_subscribed(canada.stream_id));
+    const sub = stream_data.get_sub("Canada");
+    assert.equal(sub.stream_id, canada.stream_id);
+    assert.equal(sub.is_archived, false);
+
+    blueslip.expect("warn", "Failed to unarchive stream 99999");
+    stream_data.mark_unarchived(99999);
 });
 
 test("notifications", ({override}) => {
@@ -750,7 +996,7 @@ test("notifications", ({override}) => {
         push_notifications: null,
         wildcard_mentions_notify: null,
     };
-    stream_data.add_sub(india);
+    stream_data.add_sub_for_tests(india);
 
     assert.ok(!stream_data.receives_notifications(india.stream_id, "desktop_notifications"));
     assert.ok(!stream_data.receives_notifications(india.stream_id, "audible_notifications"));
@@ -820,7 +1066,7 @@ test("notifications", ({override}) => {
         push_notifications: null,
         wildcard_mentions_notify: null,
     };
-    stream_data.add_sub(canada);
+    stream_data.add_sub_for_tests(canada);
 
     const antarctica = {
         stream_id: 104,
@@ -832,7 +1078,7 @@ test("notifications", ({override}) => {
         push_notifications: null,
         wildcard_mentions_notify: null,
     };
-    stream_data.add_sub(antarctica);
+    stream_data.add_sub_for_tests(antarctica);
 
     override(user_settings, "enable_stream_desktop_notifications", true);
     override(user_settings, "enable_stream_audible_notifications", true);
@@ -908,8 +1154,8 @@ const jazy = {
 };
 
 test("is_new_stream_announcements_stream_muted", ({override}) => {
-    stream_data.add_sub(tony);
-    stream_data.add_sub(jazy);
+    stream_data.add_sub_for_tests(tony);
+    stream_data.add_sub_for_tests(jazy);
 
     override(realm, "realm_new_stream_announcements_stream_id", tony.stream_id);
     assert.ok(!stream_data.is_new_stream_announcements_stream_muted());
@@ -955,10 +1201,10 @@ test("muted_stream_ids", () => {
         history_public_to_subscribers: true,
         is_web_public: true,
     };
-    stream_data.add_sub(denmark);
-    stream_data.add_sub(social);
-    stream_data.add_sub(test);
-    stream_data.add_sub(web_public_stream);
+    stream_data.add_sub_for_tests(denmark);
+    stream_data.add_sub_for_tests(social);
+    stream_data.add_sub_for_tests(test);
+    stream_data.add_sub_for_tests(web_public_stream);
 
     assert.deepEqual(stream_data.muted_stream_ids(), [1, 3]);
 });
@@ -978,7 +1224,7 @@ test("remove_default_stream", () => {
         is_muted: true,
     };
 
-    stream_data.add_sub(remove_me);
+    stream_data.add_sub_for_tests(remove_me);
     stream_data.set_realm_default_streams([remove_me.stream_id]);
     stream_data.remove_default_stream(remove_me.stream_id);
     assert.ok(!stream_data.is_default_stream_id(remove_me.stream_id));
@@ -993,11 +1239,14 @@ test("create_sub", () => {
         stream_id: 102,
         name: "India",
         subscribed: true,
+        is_web_public: true,
+        subscriber_count: 3,
     };
 
     const canada = {
         name: "Canada",
         subscribed: true,
+        subscriber_count: 2,
     };
 
     const antarctica = {
@@ -1005,6 +1254,8 @@ test("create_sub", () => {
         name: "Antarctica",
         subscribed: true,
         color: "#76ce90",
+        partial_subscribers: [1, 2, 3],
+        subscriber_count: 10,
     };
 
     const india_sub = stream_data.create_sub_from_server_data(india);
@@ -1062,6 +1313,7 @@ test("initialize", ({override}) => {
             {
                 name: "subscriptions",
                 stream_id: 2001,
+                subscriber_count: 0,
             },
         ];
 
@@ -1069,6 +1321,7 @@ test("initialize", ({override}) => {
             {
                 name: "unsubscribed",
                 stream_id: 2002,
+                subscriber_count: 0,
             },
         ];
 
@@ -1076,6 +1329,7 @@ test("initialize", ({override}) => {
             {
                 name: "never_subscribed",
                 stream_id: 2003,
+                subscriber_count: 0,
             },
         ];
 
@@ -1110,7 +1364,7 @@ test("initialize", ({override}) => {
         stream_id: 89,
     };
 
-    stream_data.add_sub(foo);
+    stream_data.add_sub_for_tests(foo);
     initialize();
     assert.equal(stream_data.get_new_stream_announcements_stream(), "foo");
 });
@@ -1141,7 +1395,7 @@ test("get_invite_stream_data", ({override}) => {
     override(current_user, "user_id", me.user_id);
     override(current_user, "is_admin", true);
 
-    stream_data.add_sub(orie);
+    stream_data.add_sub_for_tests(orie);
     stream_data.set_realm_default_streams([orie.stream_id]);
 
     override(realm, "realm_can_add_subscribers_group", everyone_group.id);
@@ -1170,7 +1424,7 @@ test("get_invite_stream_data", ({override}) => {
         can_add_subscribers_group: nobody_group.id,
         can_subscribe_group: nobody_group.id,
     };
-    stream_data.add_sub(inviter);
+    stream_data.add_sub_for_tests(inviter);
 
     expected_list.push({
         name: "Inviter",
@@ -1196,7 +1450,7 @@ test("get_invite_stream_data", ({override}) => {
         can_subscribe_group: nobody_group.id,
     };
 
-    stream_data.add_sub(tokyo);
+    stream_data.add_sub_for_tests(tokyo);
     assert.deepEqual(stream_data.get_invite_stream_data(), expected_list);
 
     const random = {
@@ -1210,7 +1464,7 @@ test("get_invite_stream_data", ({override}) => {
         can_subscribe_group: nobody_group.id,
     };
 
-    stream_data.add_sub(random);
+    stream_data.add_sub_for_tests(random);
 
     expected_list.push({
         name: "Random",
@@ -1279,6 +1533,111 @@ test("can_post_messages_in_stream", ({override}) => {
     assert.equal(stream_data.can_post_messages_in_stream(social), false);
 });
 
+test("can_move_messages_out_of_channel", ({override}) => {
+    const social = {
+        subscribed: true,
+        name: "social",
+        stream_id: 10,
+        can_administer_channel_group: nobody_group.id,
+        can_move_messages_out_of_channel_group: nobody_group.id,
+    };
+    const scotland = {
+        subscribed: true,
+        name: "scotland",
+        stream_id: 11,
+        can_administer_channel_group: nobody_group.id,
+        can_move_messages_out_of_channel_group: everyone_group.id,
+    };
+
+    override(realm, "realm_can_move_messages_between_channels_group", nobody_group.id);
+    override(current_user, "user_id", admin_user_id);
+    assert.equal(stream_data.user_can_move_messages_out_of_channel(social), false);
+    social.can_administer_channel_group = admins_group.id;
+    assert.equal(stream_data.user_can_move_messages_out_of_channel(social), true);
+
+    override(current_user, "user_id", moderator_user_id);
+    assert.equal(stream_data.user_can_move_messages_out_of_channel(social), false);
+
+    assert.equal(stream_data.user_can_move_messages_out_of_channel(scotland), true);
+
+    page_params.is_spectator = true;
+    assert.equal(stream_data.user_can_move_messages_out_of_channel(scotland), false);
+
+    page_params.is_spectator = false;
+    scotland.is_archived = true;
+    assert.equal(stream_data.user_can_move_messages_out_of_channel(scotland), false);
+});
+
+test("can_move_messages_within_channel", ({override}) => {
+    const social = {
+        subscribed: true,
+        name: "social",
+        stream_id: 10,
+        can_administer_channel_group: nobody_group.id,
+        can_move_messages_within_channel_group: nobody_group.id,
+    };
+    const scotland = {
+        subscribed: true,
+        name: "scotland",
+        stream_id: 11,
+        can_administer_channel_group: nobody_group.id,
+        can_move_messages_within_channel_group: everyone_group.id,
+    };
+
+    override(realm, "realm_can_move_messages_between_topics_group", nobody_group.id);
+    override(current_user, "user_id", admin_user_id);
+    assert.equal(stream_data.user_can_move_messages_within_channel(social), false);
+    social.can_administer_channel_group = admins_group.id;
+    assert.equal(stream_data.user_can_move_messages_within_channel(social), true);
+
+    override(current_user, "user_id", moderator_user_id);
+    assert.equal(stream_data.user_can_move_messages_within_channel(social), false);
+
+    assert.equal(stream_data.user_can_move_messages_within_channel(scotland), true);
+
+    page_params.is_spectator = true;
+    assert.equal(stream_data.user_can_move_messages_within_channel(scotland), false);
+
+    page_params.is_spectator = false;
+    scotland.is_archived = true;
+    assert.equal(stream_data.user_can_move_messages_within_channel(scotland), false);
+});
+
+test("can_resolve_topics", ({override}) => {
+    override(realm, "realm_can_resolve_topics_group", admins_group.id);
+    const sub = {
+        name: "Denmark",
+        subscribed: true,
+        color: "red",
+        stream_id: 1,
+        can_resolve_topics_group: admins_group.id,
+    };
+    stream_data.add_sub_for_tests(sub);
+
+    assert.equal(stream_data.can_resolve_topics(undefined), false);
+    initialize_and_override_current_user(admin_user_id, override);
+    assert.equal(stream_data.can_resolve_topics(undefined), true);
+    assert.equal(stream_data.can_resolve_topics(sub), true);
+    initialize_and_override_current_user(moderator_user_id, override);
+    assert.equal(stream_data.can_resolve_topics(sub), false);
+
+    sub.can_resolve_topics_group = moderators_group.id;
+    initialize_and_override_current_user(admin_user_id, override);
+    assert.equal(stream_data.can_resolve_topics(sub), true);
+    initialize_and_override_current_user(moderator_user_id, override);
+    assert.equal(stream_data.can_resolve_topics(sub), true);
+    initialize_and_override_current_user(test_user.user_id, override);
+    assert.equal(stream_data.can_resolve_topics(sub), false);
+
+    sub.can_resolve_topics_group = everyone_group.id;
+    initialize_and_override_current_user(admin_user_id, override);
+    assert.equal(stream_data.can_resolve_topics(sub), true);
+    initialize_and_override_current_user(moderator_user_id, override);
+    assert.equal(stream_data.can_resolve_topics(sub), true);
+    initialize_and_override_current_user(test_user.user_id, override);
+    assert.equal(stream_data.can_resolve_topics(sub), true);
+});
+
 test("can_unsubscribe_others", ({override}) => {
     const sub = {
         name: "Denmark",
@@ -1290,7 +1649,7 @@ test("can_unsubscribe_others", ({override}) => {
         can_add_subscribers_group: nobody_group.id,
         can_subscribe_group: nobody_group.id,
     };
-    stream_data.add_sub(sub);
+    stream_data.add_sub_for_tests(sub);
 
     initialize_and_override_current_user(admin_user_id, override);
     assert.equal(stream_data.can_unsubscribe_others(sub), true);
@@ -1353,7 +1712,7 @@ test("can_subscribe_others", ({override}) => {
         can_administer_channel_group: nobody_group.id,
         can_remove_subscribers_group: admins_group.id,
     };
-    stream_data.add_sub(sub);
+    stream_data.add_sub_for_tests(sub);
 
     initialize_and_override_current_user(admin_user_id, override);
     assert.equal(stream_data.can_subscribe_others(sub), true);
@@ -1412,6 +1771,76 @@ test("can_subscribe_others", ({override}) => {
     assert.equal(stream_data.can_subscribe_others(sub), false);
 });
 
+test("user_can_set_topics_policy", ({override}) => {
+    const sub = {
+        name: "Denmark",
+        subscribed: true,
+        color: "red",
+        stream_id: 1,
+        can_add_subscribers_group: admins_group.id,
+        can_administer_channel_group: nobody_group.id,
+        can_remove_subscribers_group: admins_group.id,
+    };
+    stream_data.add_sub_for_tests(sub);
+
+    override(realm, "realm_can_set_topics_policy_group", nobody_group.id);
+    // Admins can always change per-channel topics policy.
+    initialize_and_override_current_user(admin_user_id, override);
+    override(current_user, "is_admin", true);
+    assert.equal(stream_data.user_can_set_topics_policy(sub), true);
+
+    initialize_and_override_current_user(moderator_user_id, override);
+    override(current_user, "is_admin", false);
+    assert.equal(stream_data.user_can_set_topics_policy(sub), false);
+
+    // Not allowed as user not in can_administer_channel_group.
+    override(realm, "realm_can_set_topics_policy_group", everyone_group.id);
+    assert.equal(stream_data.user_can_set_topics_policy(sub), false);
+
+    sub.can_administer_channel_group = moderators_group.id;
+    assert.equal(stream_data.user_can_set_topics_policy(sub), true);
+
+    // Only realm_can_set_topics_policy_group is checked if sub is not provided.
+    assert.equal(stream_data.user_can_set_topics_policy(), true);
+    override(realm, "realm_can_set_topics_policy_group", nobody_group.id);
+    assert.equal(stream_data.user_can_set_topics_policy(sub), false);
+});
+
+test("user_can_set_delete_message_policy", ({override}) => {
+    const sub = {
+        name: "Denmark",
+        subscribed: true,
+        color: "red",
+        stream_id: 1,
+        can_add_subscribers_group: admins_group.id,
+        can_administer_channel_group: nobody_group.id,
+        can_remove_subscribers_group: admins_group.id,
+    };
+    stream_data.add_sub_for_tests(sub);
+
+    override(realm, "realm_can_set_delete_message_policy_group", nobody_group.id);
+    // Admins can always change per-channel delete_message policy.
+    initialize_and_override_current_user(admin_user_id, override);
+    override(current_user, "is_admin", true);
+    assert.equal(stream_data.user_can_set_delete_message_policy(sub), true);
+
+    initialize_and_override_current_user(moderator_user_id, override);
+    override(current_user, "is_admin", false);
+    assert.equal(stream_data.user_can_set_delete_message_policy(sub), false);
+
+    // Not allowed as user not in can_administer_channel_group.
+    override(realm, "realm_can_set_delete_message_policy_group", everyone_group.id);
+    assert.equal(stream_data.user_can_set_delete_message_policy(sub), false);
+
+    sub.can_administer_channel_group = moderators_group.id;
+    assert.equal(stream_data.user_can_set_delete_message_policy(sub), true);
+
+    // Only realm_can_set_delete_message_policy_group is checked if sub is not provided.
+    assert.equal(stream_data.user_can_set_delete_message_policy(), true);
+    override(realm, "realm_can_set_delete_message_policy_group", nobody_group.id);
+    assert.equal(stream_data.user_can_set_delete_message_policy(sub), false);
+});
+
 test("options for dropdown widget", () => {
     const denmark = {
         subscribed: true,
@@ -1449,10 +1878,10 @@ test("options for dropdown widget", () => {
         history_public_to_subscribers: true,
         is_web_public: true,
     };
-    stream_data.add_sub(denmark);
-    stream_data.add_sub(social);
-    stream_data.add_sub(web_public_stream);
-    stream_data.add_sub(test);
+    stream_data.add_sub_for_tests(denmark);
+    stream_data.add_sub_for_tests(social);
+    stream_data.add_sub_for_tests(web_public_stream);
+    stream_data.add_sub_for_tests(test);
 
     assert.deepEqual(stream_data.get_options_for_dropdown_widget(), [
         {
@@ -1829,4 +2258,31 @@ run_test("can_archive_stream", ({override}) => {
 
     social.can_administer_channel_group = me_group.id;
     assert.equal(stream_data.can_archive_stream(social), true);
+});
+
+run_test("is_empty_topic_only_channel", ({override}) => {
+    const social = {
+        subscribed: true,
+        color: "red",
+        name: "social",
+        stream_id: 2,
+        topics_policy: "empty_topic_only",
+    };
+    stream_data.add_sub_for_tests(social);
+    const scotland = {
+        subscribed: true,
+        color: "red",
+        name: "scotland",
+        stream_id: 3,
+        topics_policy: "inherit",
+    };
+    override(realm, "realm_topics_policy", "allow_empty_topic");
+    assert.equal(stream_data.is_empty_topic_only_channel(undefined), false);
+
+    stream_data.add_sub_for_tests(scotland);
+    override(current_user, "user_id", me.user_id);
+
+    override(current_user, "is_admin", true);
+    assert.equal(stream_data.is_empty_topic_only_channel(social.stream_id), true);
+    assert.equal(stream_data.is_empty_topic_only_channel(scotland.stream_id), false);
 });

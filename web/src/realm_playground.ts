@@ -1,5 +1,4 @@
-import assert from "minimalistic-assert";
-import type {z} from "zod";
+import type * as z from "zod/mini";
 
 import * as typeahead from "../shared/src/typeahead.ts";
 
@@ -42,7 +41,6 @@ function sort_pygments_pretty_names_by_priority(
         comparator_func(a, b),
     );
     for (const [alias, data] of priority_sorted_pygments_data) {
-        assert(data !== undefined);
         const pretty_name = data.pretty_name;
         // JS Map remembers the original order of insertion of keys.
         if (map_pygments_pretty_name_to_aliases.has(pretty_name)) {
@@ -88,7 +86,7 @@ export function get_pygments_typeahead_list_for_settings(query: string): Map<str
     }
 
     for (const [key, values] of map_pygments_pretty_name_to_aliases) {
-        const formatted_string = util.format_array_as_list_with_conjuction(values, "narrow");
+        const formatted_string = util.format_array_as_list_with_conjunction(values, "narrow");
         language_labels.set(key, key + " (" + formatted_string + ")");
     }
 

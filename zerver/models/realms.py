@@ -55,7 +55,7 @@ def clear_supported_auth_backends_cache() -> None:
 class RealmAuthenticationMethod(models.Model):
     """
     Tracks which authentication backends are enabled for a realm.
-    An enabled backend is represented in this table a row with appropriate
+    An enabled backend is represented in this table as a row with appropriate
     .realm value and .name matching the name of the target backend in the
     AUTH_BACKEND_NAME_MAP dict.
     """
@@ -155,11 +155,17 @@ class MessageEditHistoryVisibilityPolicyEnum(Enum):
     none = 3
 
 
-class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stubs cannot resolve the custom CTEManager yet https://github.com/typeddjango/django-stubs/issues/1023
+class RealmTopicsPolicyEnum(Enum):
+    allow_empty_topic = 2
+    disable_empty_topic = 3
+
+
+class Realm(models.Model):
     MAX_REALM_NAME_LENGTH = 40
     MAX_REALM_DESCRIPTION_LENGTH = 1000
     MAX_REALM_SUBDOMAIN_LENGTH = 40
     MAX_REALM_REDIRECT_URL_LENGTH = 128
+    MAX_REALM_WELCOME_MESSAGE_CUSTOM_TEXT_LENGTH = 8000
 
     INVITES_STANDARD_REALM_DAILY_MAX = 3000
     MESSAGE_VISIBILITY_LIMITED = 10000
@@ -186,6 +192,7 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
     # cease to be the case.
     push_notifications_enabled = models.BooleanField(default=False, db_index=True)
     push_notifications_enabled_end_timestamp = models.DateTimeField(default=None, null=True)
+    require_e2ee_push_notifications = models.BooleanField(default=False, db_default=False)
 
     date_created = models.DateTimeField(default=timezone_now)
     scheduled_deletion_date = models.DateTimeField(default=None, db_index=True, null=True)
@@ -223,12 +230,17 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
     send_welcome_emails = models.BooleanField(default=True)
     message_content_allowed_in_email_notifications = models.BooleanField(default=True)
 
-    mandatory_topics = models.BooleanField(default=False)
+    topics_policy = models.PositiveSmallIntegerField(
+        default=RealmTopicsPolicyEnum.allow_empty_topic.value
+    )
+    REALM_TOPICS_POLICY_TYPES = list(RealmTopicsPolicyEnum)
 
     require_unique_names = models.BooleanField(default=False)
     name_changes_disabled = models.BooleanField(default=False)
     email_changes_disabled = models.BooleanField(default=False)
     avatar_changes_disabled = models.BooleanField(default=False)
+
+    welcome_message_custom_text = models.TextField(default="")
 
     POLICY_MEMBERS_ONLY = 1
     POLICY_ADMINS_ONLY = 2
@@ -382,6 +394,16 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         "UserGroup", on_delete=models.RESTRICT, related_name="+"
     )
 
+    # UserGroup which is allowed to set per-channel delete permissions setting.
+    can_set_delete_message_policy_group = models.ForeignKey(
+        "UserGroup", on_delete=models.RESTRICT, related_name="+"
+    )
+
+    # UserGroup which is allowed to set per-channel `topics_policy` setting.
+    can_set_topics_policy_group = models.ForeignKey(
+        "UserGroup", on_delete=models.RESTRICT, related_name="+"
+    )
+
     WILDCARD_MENTION_POLICY_TYPES = [field.value for field in WildcardMentionPolicyEnum]
 
     # Threshold in days for new users to create streams, and potentially take
@@ -419,6 +441,14 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
     ZULIP_SANDBOX_CHANNEL_NAME = gettext_lazy("sandbox")
     DEFAULT_NOTIFICATION_STREAM_NAME = gettext_lazy("general")
     STREAM_EVENTS_NOTIFICATION_TOPIC_NAME = gettext_lazy("channel events")
+    REPORT_MESSAGE_REASONS = {
+        "spam": gettext_lazy("Spam"),
+        "harassment": gettext_lazy("Harassment"),
+        "inappropriate": gettext_lazy("Inappropriate content"),
+        "norms": gettext_lazy("Violates community norms"),
+        "other": gettext_lazy("Other reason"),
+    }
+    MAX_REPORT_MESSAGE_EXPLANATION_LENGTH = 1000
     moderation_request_channel = models.ForeignKey(
         "Stream",
         related_name="+",
@@ -690,7 +720,6 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         inline_url_embed_preview=bool,
         invite_required=bool,
         jitsi_server_url=str | None,
-        mandatory_topics=bool,
         message_content_allowed_in_email_notifications=bool,
         message_content_edit_limit_seconds=int | None,
         message_content_delete_limit_seconds=int | None,
@@ -701,74 +730,63 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         name=str,
         name_changes_disabled=bool,
         push_notifications_enabled=bool,
+        require_e2ee_push_notifications=bool,
         require_unique_names=bool,
         send_welcome_emails=bool,
+        topics_policy=RealmTopicsPolicyEnum,
         video_chat_provider=int,
         waiting_period_threshold=int,
         want_advertise_in_communities_directory=bool,
+        welcome_message_custom_text=str,
     )
 
     REALM_PERMISSION_GROUP_SETTINGS: dict[str, GroupPermissionSetting] = dict(
         create_multiuse_invite_group=GroupPermissionSetting(
-            require_system_group=False,
-            allow_internet_group=False,
             allow_nobody_group=True,
             allow_everyone_group=False,
             default_group_name=SystemGroups.ADMINISTRATORS,
         ),
         can_access_all_users_group=GroupPermissionSetting(
             require_system_group=True,
-            allow_internet_group=False,
             allow_nobody_group=False,
             allow_everyone_group=True,
             default_group_name=SystemGroups.EVERYONE,
+            # Note that user_can_access_all_other_users in the web
+            # app is relying on members always have access.
             allowed_system_groups=[SystemGroups.EVERYONE, SystemGroups.MEMBERS],
         ),
         can_add_subscribers_group=GroupPermissionSetting(
-            require_system_group=False,
-            allow_internet_group=False,
             allow_nobody_group=True,
             allow_everyone_group=False,
             default_group_name=SystemGroups.MEMBERS,
         ),
         can_add_custom_emoji_group=GroupPermissionSetting(
-            require_system_group=False,
-            allow_internet_group=False,
             allow_nobody_group=True,
             allow_everyone_group=False,
             default_group_name=SystemGroups.MEMBERS,
         ),
         can_create_bots_group=GroupPermissionSetting(
-            require_system_group=False,
-            allow_internet_group=False,
             allow_nobody_group=True,
             allow_everyone_group=False,
             default_group_name=SystemGroups.MEMBERS,
         ),
         can_create_groups=GroupPermissionSetting(
-            require_system_group=False,
-            allow_internet_group=False,
             allow_nobody_group=True,
             allow_everyone_group=False,
             default_group_name=SystemGroups.MEMBERS,
         ),
         can_create_public_channel_group=GroupPermissionSetting(
-            require_system_group=False,
-            allow_internet_group=False,
             allow_nobody_group=True,
             allow_everyone_group=False,
             default_group_name=SystemGroups.MEMBERS,
         ),
         can_create_private_channel_group=GroupPermissionSetting(
-            require_system_group=False,
-            allow_internet_group=False,
             allow_nobody_group=True,
             allow_everyone_group=False,
             default_group_name=SystemGroups.MEMBERS,
         ),
         can_create_web_public_channel_group=GroupPermissionSetting(
             require_system_group=True,
-            allow_internet_group=False,
             allow_nobody_group=True,
             allow_everyone_group=False,
             default_group_name=SystemGroups.OWNERS,
@@ -780,92 +798,76 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
             ],
         ),
         can_create_write_only_bots_group=GroupPermissionSetting(
-            require_system_group=False,
-            allow_internet_group=False,
             allow_nobody_group=True,
             allow_everyone_group=False,
             default_group_name=SystemGroups.MEMBERS,
         ),
         can_delete_any_message_group=GroupPermissionSetting(
-            require_system_group=False,
-            allow_internet_group=False,
             allow_nobody_group=True,
             allow_everyone_group=False,
             default_group_name=SystemGroups.ADMINISTRATORS,
         ),
         can_delete_own_message_group=GroupPermissionSetting(
-            require_system_group=False,
-            allow_internet_group=False,
             allow_nobody_group=True,
             allow_everyone_group=True,
             default_group_name=SystemGroups.EVERYONE,
         ),
         can_invite_users_group=GroupPermissionSetting(
-            require_system_group=False,
-            allow_internet_group=False,
             allow_nobody_group=True,
             allow_everyone_group=False,
             default_group_name=SystemGroups.MEMBERS,
         ),
         can_manage_all_groups=GroupPermissionSetting(
-            require_system_group=False,
-            allow_internet_group=False,
             allow_nobody_group=False,
             allow_everyone_group=False,
             default_group_name=SystemGroups.OWNERS,
         ),
         can_manage_billing_group=GroupPermissionSetting(
-            require_system_group=False,
-            allow_internet_group=False,
             allow_nobody_group=False,
             allow_everyone_group=False,
             default_group_name=SystemGroups.ADMINISTRATORS,
         ),
         can_mention_many_users_group=GroupPermissionSetting(
-            require_system_group=False,
-            allow_internet_group=False,
             allow_nobody_group=True,
             allow_everyone_group=True,
             default_group_name=SystemGroups.ADMINISTRATORS,
         ),
         can_move_messages_between_channels_group=GroupPermissionSetting(
-            require_system_group=False,
-            allow_internet_group=False,
             allow_nobody_group=True,
             allow_everyone_group=False,
             default_group_name=SystemGroups.MEMBERS,
         ),
         can_move_messages_between_topics_group=GroupPermissionSetting(
-            require_system_group=False,
-            allow_internet_group=False,
             allow_nobody_group=True,
             allow_everyone_group=True,
             default_group_name=SystemGroups.EVERYONE,
         ),
         can_resolve_topics_group=GroupPermissionSetting(
-            require_system_group=False,
-            allow_internet_group=False,
             allow_nobody_group=True,
             allow_everyone_group=True,
             default_group_name=SystemGroups.EVERYONE,
         ),
+        can_set_delete_message_policy_group=GroupPermissionSetting(
+            allow_nobody_group=True,
+            allow_everyone_group=False,
+            default_group_name=SystemGroups.MODERATORS,
+        ),
+        can_set_topics_policy_group=GroupPermissionSetting(
+            allow_nobody_group=True,
+            allow_everyone_group=True,
+            default_group_name=SystemGroups.MEMBERS,
+        ),
         can_summarize_topics_group=GroupPermissionSetting(
-            require_system_group=False,
-            allow_internet_group=False,
             allow_nobody_group=True,
             allow_everyone_group=True,
             default_group_name=SystemGroups.EVERYONE,
         ),
         direct_message_initiator_group=GroupPermissionSetting(
-            require_system_group=False,
-            allow_internet_group=False,
             allow_nobody_group=True,
             allow_everyone_group=True,
             default_group_name=SystemGroups.EVERYONE,
         ),
         direct_message_permission_group=GroupPermissionSetting(
-            require_system_group=False,
-            allow_internet_group=False,
             allow_nobody_group=True,
             allow_everyone_group=True,
             default_group_name=SystemGroups.EVERYONE,
@@ -1180,16 +1182,8 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         return settings.REALM_HOSTS.get(subdomain, default_host)
 
     @property
-    def is_zephyr_mirror_realm(self) -> bool:
-        return self.string_id == "zephyr"
-
-    @property
-    def webathena_enabled(self) -> bool:
-        return self.is_zephyr_mirror_realm
-
-    @property
     def presence_disabled(self) -> bool:
-        return self.is_zephyr_mirror_realm
+        return False
 
     def web_public_streams_enabled(self) -> bool:
         if not settings.WEB_PUBLIC_STREAMS_ENABLED:

@@ -16,9 +16,6 @@ class zulip::postgresql_base {
       $tsearch_datadir = "${postgresql_sharedir}/tsearch_data"
       $pgroonga_setup_sql_path = "${postgresql_sharedir}/pgroonga_setup.sql"
       $setup_system_deps = 'setup_apt_repo'
-      $postgresql_restart = "pg_ctlcluster ${zulip::postgresql_common::version} main restart"
-      $postgresql_dict_dict = '/var/cache/postgresql/dicts/en_us.dict'
-      $postgresql_dict_affix = '/var/cache/postgresql/dicts/en_us.affix'
     }
     'RedHat': {
       $postgresql = "postgresql${zulip::postgresql_common::version}"
@@ -32,28 +29,12 @@ class zulip::postgresql_base {
       $tsearch_datadir = "${postgresql_sharedir}/tsearch_data/"
       $pgroonga_setup_sql_path = "${postgresql_sharedir}/pgroonga_setup.sql"
       $setup_system_deps = 'setup_yum_repo'
-      $postgresql_restart = "systemctl restart postgresql-${zulip::postgresql_common::version}"
-      # TODO Since we can't find the PostgreSQL dicts directory on CentOS yet, we
-      # link directly to the hunspell directory.
-      $postgresql_dict_dict = '/usr/share/myspell/en_US.dic'
-      $postgresql_dict_affix = '/usr/share/myspell/en_US.aff'
     }
     default: {
       fail('osfamily not supported')
     }
   }
 
-  file { "${tsearch_datadir}/en_us.dict":
-    ensure  => link,
-    require => Package[$postgresql],
-    target  => $postgresql_dict_dict,
-  }
-  file { "${tsearch_datadir}/en_us.affix":
-    ensure  => link,
-    require => Package[$postgresql],
-    target  => $postgresql_dict_affix,
-
-  }
   file { "${tsearch_datadir}/zulip_english.stop":
     ensure  => file,
     require => Package[$postgresql],
@@ -61,6 +42,7 @@ class zulip::postgresql_base {
     group   => 'root',
     mode    => '0644',
     source  => 'puppet:///modules/zulip/postgresql/zulip_english.stop',
+    tag     => ['postgresql_upgrade'],
   }
   zulip::nagios_plugins { 'zulip_postgresql': }
 
@@ -73,6 +55,7 @@ class zulip::postgresql_base {
         Package[$postgresql],
         Exec[$setup_system_deps]
       ],
+      tag     => ['postgresql_upgrade'],
     }
     exec { 'pgroonga-config':
       require => Package["${postgresql}-pgdg-pgroonga"],

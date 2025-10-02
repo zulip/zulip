@@ -70,7 +70,7 @@
                 font-weight: 300;
                 line-height: 0.8;
                 text-align: center;
-                border: 2px solid hsl(156deg 28% 70%);
+                border: 2px solid var(--color-border-todo-checkbox);
 
                 border-radius: 4px;
                 filter: brightness(1);
@@ -83,8 +83,8 @@
                 background-size: 75%;
                 background-position: 50% 50%;
                 background-repeat: no-repeat;
-                background-color: hsl(156deg 41% 40%);
-                border: 2px solid hsl(156deg 41% 40%);
+                background-color: var(--color-background-todo-checkbox-checked);
+                border-color: var(--color-border-todo-checkbox-checked);
             }
 
             &:disabled ~ .custom-checkbox {
@@ -93,7 +93,13 @@
             }
 
             &:hover ~ .custom-checkbox {
-                border-color: hsl(156deg 30% 50%);
+                border-color: var(--color-border-todo-checkbox-hover);
+            }
+
+            &:not(:checked):hover ~ .custom-checkbox {
+                /* We only change the background color on hover,
+                   when the checkbox is not checked. */
+                background-color: var(--color-background-todo-checkbox-hover);
             }
 
             &:focus ~ .custom-checkbox {
@@ -130,7 +136,7 @@
         border: 1px solid hsl(0deg 0% 80%);
         box-shadow: inset 0 1px 1px hsl(0deg 0% 0% / 7.5%);
         border-radius: 4px;
-        color: hsl(0deg 0% 33%);
+        color: var(--color-text-default);
 
         &:focus {
             border-color: hsl(206deg 80% 62% / 80%);
@@ -156,7 +162,13 @@
         font-weight: 400;
     }
 
-    & span.poll-option {
+    .poll-option-label {
+        display: flex;
+        gap: 5px;
+        align-items: baseline;
+    }
+
+    .poll-option-text {
         font-weight: 600;
         /* Start with max-content, but allow options
            to shrink, so that voting names wrap comfortably. */
@@ -164,28 +176,35 @@
     }
 
     .poll-vote {
-        color: hsl(156deg 41% 40%);
-        border-color: hsl(156deg 28% 70%);
+        color: var(--color-poll-vote);
+        border-color: var(--color-border-poll-vote);
         border-style: solid;
         font-weight: 600;
         border-radius: 3px;
+        /* We don't want poll-vote tallies to spill
+           digits onto second lines in narrow viewports. */
+        flex-shrink: 0;
         min-width: 1.7857em; /* 25px at 14px / em */
         height: 1.7857em; /* 25px at 14px / em */
         font-size: 0.9285em; /* 13px at 14px / em */
         background-color: var(--color-background-widget-button);
 
         &:hover {
-            border-color: hsl(156deg 30% 50%);
+            color: var(--color-poll-vote-hover);
+            background-color: var(--color-background-poll-vote-hover);
+            border-color: var(--color-border-poll-vote-hover);
         }
 
         &:focus {
             outline: 0;
-            background-color: hsl(156deg 41% 90%);
+            color: var(--color-poll-vote-focus);
+            background-color: var(--color-background-poll-vote-focus);
+            border-color: var(--color-border-poll-vote-focus);
         }
     }
 
     .poll-names {
-        color: hsl(0deg 0% 45%);
+        color: var(--color-poll-names);
         /* Aim for 50% of the flexbox for voting names,
            but also shrink modestly (.5) adjacent a long
            option. */
@@ -230,6 +249,13 @@ button {
         &:active {
             transition: 0.2s ease;
             transition-property: background-color, border-color, color;
+        }
+
+        &:disabled {
+            cursor: not-allowed;
+            filter: saturate(0);
+            background-color: var(--color-background-zulip-button-disabled);
+            color: hsl(0deg 3% 52%);
         }
     }
 }
@@ -301,4 +327,18 @@ input {
 
 .current-user-vote {
     background-color: hsl(156deg 10% 90% / 90%);
+}
+
+.add-task-wrapper {
+    display: inline;
+    position: relative;
+    z-index: 1;
+
+    /* Unlike other browsers like Chrome, Microsoft Edge, etc.,
+    Firefox does not automatically display the "not-allowed"
+    cursor for disabled elements. The below css ensures that the
+    correct cursor is shown across all browsers. */
+    &:hover {
+        cursor: not-allowed;
+    }
 }

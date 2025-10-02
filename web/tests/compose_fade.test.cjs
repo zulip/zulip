@@ -2,6 +2,7 @@
 
 const assert = require("node:assert/strict");
 
+const {make_realm} = require("./lib/example_realm.cjs");
 const {mock_jquery, zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 
@@ -11,15 +12,6 @@ mock_jquery((selector) => {
             return {
                 val() {
                     return "lunch";
-                },
-                is(arg) {
-                    switch (arg) {
-                        case ":focus":
-                            return true;
-                        /* istanbul ignore next */
-                        default:
-                            throw new Error(`Unknown arg ${arg}`);
-                    }
                 },
             };
         /* istanbul ignore next */
@@ -36,7 +28,7 @@ const compose_fade_helper = zrequire("compose_fade_helper");
 const compose_state = zrequire("compose_state");
 const {set_realm} = zrequire("state_data");
 
-const realm = {};
+const realm = make_realm();
 set_realm(realm);
 
 const me = {
@@ -71,7 +63,7 @@ run_test("set_focused_recipient", () => {
     };
 
     stream_data.clear_subscriptions();
-    stream_data.add_sub(sub);
+    stream_data.add_sub_for_tests(sub);
     compose_state.set_stream_id(sub.stream_id);
     peer_data.set_subscribers(sub.stream_id, [me.user_id, alice.user_id]);
     compose_fade.set_focused_recipient("stream");
@@ -114,13 +106,13 @@ run_test("want_normal_display", ({override}) => {
 
     // Focused recipient is a valid stream with no topic set
     // when topics are mandatory
-    override(realm, "realm_mandatory_topics", true);
-    stream_data.add_sub(sub);
+    override(realm, "realm_topics_policy", "disable_empty_topic");
+    stream_data.add_sub_for_tests(sub);
     assert.ok(compose_fade_helper.want_normal_display());
 
     // Focused recipient is a valid stream with no topic set
     // when topics are not mandatory. Focused to input box.
-    override(realm, "realm_mandatory_topics", false);
+    override(realm, "realm_topics_policy", "allow_empty_topic");
     assert.ok(compose_fade_helper.want_normal_display());
 
     // If we're focused to a topic, then we do want to fade.

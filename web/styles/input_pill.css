@@ -4,8 +4,10 @@
     flex-wrap: wrap;
     min-width: 0;
 
+    background-color: var(--color-background-pill-container);
+
     padding: var(--outer-spacing-input-pill-container);
-    border: 1px solid hsl(0deg 0% 0% / 15%);
+    border: 1px solid var(--color-border-pill-container);
     border-radius: 4px;
     align-items: center;
 
@@ -27,21 +29,42 @@
         margin: 0;
 
         color: inherit;
-        border: 1px solid transparent;
 
         border-radius: 4px;
         background-color: var(--color-background-input-pill);
         cursor: pointer;
 
+        /* Not focus-visible, because we want to support mouse+backpace to
+           delete pills */
         &:focus {
-            border-color: var(--color-focus-outline-input-pill);
+            /* Box shadow instead of border, because user pills have avatars
+               that extend all the way to the edge of the pill. */
+            box-shadow: 0 0 0 1px var(--color-focus-outline-input-pill) inset;
             outline: none;
+
+            /* For user pills with avatars, the avatar covers up the box
+               shadow, so we also have to make a border around the avatar. */
+            .pill-image-border {
+                border-right: none;
+                border-radius: 4px 0 0 4px;
+                border-color: var(--color-focus-outline-input-pill);
+            }
         }
 
         .pill-image {
-            height: var(--length-input-pill-image);
-            width: var(--length-input-pill-image);
-            border-radius: 4px 0 0 4px;
+            height: var(--height-input-pill);
+            width: var(--height-input-pill);
+            border-radius: 4px;
+        }
+
+        .pill-image-border {
+            height: var(--height-input-pill);
+            width: var(--height-input-pill);
+            position: absolute;
+            box-sizing: border-box;
+            border: 1px solid;
+            border-radius: 4px;
+            border-color: var(--color-border-input-pill-image);
         }
 
         .zulip-icon {
@@ -70,7 +93,8 @@
             line-height: 1.5;
         }
 
-        .pill-close-button {
+        .pill-close-button,
+        .pill-expand-button {
             font-size: 0.7142em; /* 10px at 14px em */
             text-decoration: none;
             /* Let the close button's box stretch,
@@ -92,20 +116,22 @@
             opacity: 0.7;
         }
 
-        .exit {
+        .exit,
+        .expand {
             width: var(--length-input-pill-exit);
             height: var(--length-input-pill-exit);
             display: flex;
             justify-content: center;
             margin-right: 2px;
             border-radius: 2px;
-        }
 
-        .exit:hover {
-            background: var(--color-background-input-pill-exit-hover);
+            &:hover {
+                background: var(--color-background-input-pill-exit-hover);
 
-            .pill-close-button {
-                opacity: 1;
+                .pill-close-button,
+                .pill-expand-button {
+                    opacity: 1;
+                }
             }
         }
 
@@ -193,7 +219,6 @@
 
     &.not-editable-by-user {
         cursor: not-allowed;
-        background-color: hsl(0deg 0% 93%);
 
         .pill {
             cursor: not-allowed;
@@ -212,17 +237,9 @@
 
 #compose-direct-recipient .pill-container {
     border: 1px solid var(--color-compose-recipient-box-border-color);
-    background-color: var(
-        --color-background-compose-direct-recipient-pill-container
-    );
 
     .input:first-child:empty::before {
         content: attr(data-no-recipients-text);
-        opacity: 0.5;
-    }
-
-    .pill + .input:empty::before {
-        content: attr(data-some-recipients-text);
         opacity: 0.5;
     }
 
@@ -240,12 +257,16 @@
     );
 }
 
+#invitee_emails_container .pill-container.not-editable-by-user {
+    height: var(--height-input-pill);
+    background-color: var(--color-background-pill-container-input-disabled);
+}
+
 .add_subscribers_container .pill-container,
 .add_streams_container .pill-container,
 .add-user-group-container .pill-container,
 .add_members_container .pill-container {
     width: 100%;
-    background-color: hsl(0deg 0% 100%);
 
     .input:first-child:empty::before {
         opacity: 0.5;

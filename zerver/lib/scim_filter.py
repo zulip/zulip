@@ -1,5 +1,5 @@
 from django.http import HttpRequest
-from django_scim.filters import UserFilterQuery
+from django_scim.filters import GroupFilterQuery, UserFilterQuery
 
 from zerver.lib.request import RequestNotes
 
@@ -36,12 +36,6 @@ class ZulipUserFilterQuery(UserFilterQuery):
         ("active", None, None): "zerver_userprofile.is_active",
     }
 
-    # joins tells django-scim2 to always add the specified JOINS
-    # to the formed SQL queries. We need to JOIN the Realm table
-    # because we need to limit the results to the realm (subdomain)
-    # of the request.
-    joins = ("INNER JOIN zerver_realm ON zerver_realm.id = realm_id",)
-
     @classmethod
     def get_extras(cls, q: str, request: HttpRequest | None = None) -> tuple[str, list[object]]:
         """
@@ -58,6 +52,26 @@ class ZulipUserFilterQuery(UserFilterQuery):
         assert realm is not None
 
         return (
-            "AND zerver_realm.id = %s AND zerver_userprofile.is_bot = False ORDER BY zerver_userprofile.id",
+            "AND zerver_userprofile.realm_id = %s AND zerver_userprofile.is_bot = False ORDER BY zerver_userprofile.id",
+            [realm.id],
+        )
+
+
+class ZulipGroupFilterQuery(GroupFilterQuery):
+    attr_map = {
+        ("displayName", None, None): "zerver_namedusergroup.name",
+    }
+
+    @classmethod
+    def get_extras(cls, q: str, request: HttpRequest | None = None) -> tuple[str, list[object]]:
+        """
+        Here we ensure that results are limited to the subdomain of the request.
+        """
+        assert request is not None
+        realm = RequestNotes.get_notes(request).realm
+        assert realm is not None
+
+        return (
+            "AND zerver_namedusergroup.realm_id = %s AND zerver_namedusergroup.deactivated = False ORDER BY zerver_namedusergroup.usergroup_ptr_id",
             [realm.id],
         )

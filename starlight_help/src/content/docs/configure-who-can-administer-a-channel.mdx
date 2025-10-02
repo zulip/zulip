@@ -1,0 +1,40 @@
+---
+title: Configure who can administer a channel
+---
+
+import FlattenedSteps from "../../components/FlattenedSteps.astro";
+import NavigationSteps from "../../components/NavigationSteps.astro";
+import ZulipNote from "../../components/ZulipNote.astro";
+import ChannelAdminPermissions from "../include/_ChannelAdminPermissions.mdx";
+import SaveChanges from "../include/_SaveChanges.mdx";
+import SelectChannelViewGeneralAdvanced from "../include/_SelectChannelViewGeneralAdvanced.mdx";
+
+<ZulipNote>
+  Organization administrators can automatically administer all channels.
+</ZulipNote>
+
+<ChannelAdminPermissions />
+
+## Configure who can administer a channel
+
+<FlattenedSteps>
+  <NavigationSteps target="relative/channel/all" />
+
+  1. Select a channel.
+
+  <SelectChannelViewGeneralAdvanced />
+
+  1. Under **Administrative permissions**, configure **Who can administer
+     this channel**.
+
+  <SaveChanges />
+</FlattenedSteps>
+
+## Related articles
+
+* [Channel permissions](/help/channel-permissions)
+* [User roles](/help/user-roles)
+* [User groups](/help/user-groups)
+* [Channel posting policy](/help/channel-posting-policy)
+* [Configure who can unsubscribe anyone from a channel](/help/configure-who-can-unsubscribe-others)
+* [Archive a channel](/help/archive-a-channel)

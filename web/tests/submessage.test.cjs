@@ -13,11 +13,7 @@ const widgetize = mock_esm("../src/widgetize");
 const submessage = zrequire("submessage");
 
 run_test("get_message_events", () => {
-    let msg = {};
-
-    assert.equal(submessage.get_message_events(msg), undefined);
-
-    msg = {
+    let msg = {
         submessages: [],
     };
     assert.equal(submessage.get_message_events(msg), undefined);
@@ -117,6 +113,7 @@ run_test("check sender", ({override}) => {
 run_test("handle_event", () => {
     const message = {
         id: 42,
+        submessages: [],
     };
 
     const event = {

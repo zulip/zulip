@@ -15,16 +15,10 @@ from corporate.lib.stripe import (
     get_configured_fixed_price_plan_offer,
     start_of_next_billing_cycle,
 )
-from corporate.models import (
-    Customer,
-    CustomerPlan,
-    CustomerPlanOffer,
-    LicenseLedger,
-    SponsoredPlanTypes,
-    ZulipSponsorshipRequest,
-    get_current_plan_by_customer,
-    get_customer_by_realm,
-)
+from corporate.models.customers import Customer, get_customer_by_realm
+from corporate.models.licenses import LicenseLedger
+from corporate.models.plans import CustomerPlan, CustomerPlanOffer, get_current_plan_by_customer
+from corporate.models.sponsorships import SponsoredPlanTypes, ZulipSponsorshipRequest
 from zerver.actions.create_realm import do_create_realm
 from zerver.actions.invites import do_create_multiuse_invite_link
 from zerver.actions.realm_settings import do_change_realm_org_type, do_send_realm_reactivation_email
@@ -757,7 +751,7 @@ class TestSupportEndpoint(ZulipTestCase):
     def test_realm_support_view_queries(self) -> None:
         iago = self.example_user("iago")
         self.login_user(iago)
-        with self.assert_database_query_count(19):
+        with self.assert_database_query_count(23):
             result = self.client_get("/activity/support", {"q": "zulip"}, subdomain="zulip")
             self.assertEqual(result.status_code, 200)
 
@@ -845,11 +839,10 @@ class TestSupportEndpoint(ZulipTestCase):
                     '<option value="active" selected>Active</option>',
                     '<option value="deactivated" >Deactivated</option>',
                     f'<option value="{zulip_realm.org_type}" selected>',
-                    'scrub-realm-button">',
-                    'data-string-id="zulip"',
                 ],
                 result,
             )
+            self.assert_not_in_success_response(["scrub-realm-button"], result)
 
         def check_lear_realm_query_result(result: "TestHttpResponse") -> None:
             self.assert_in_success_response(
@@ -862,8 +855,6 @@ class TestSupportEndpoint(ZulipTestCase):
                     'input type="number" name="annual_discounted_price" value="None"',
                     '<option value="active" selected>Active</option>',
                     '<option value="deactivated" >Deactivated</option>',
-                    'scrub-realm-button">',
-                    'data-string-id="lear"',
                     "<b>Plan name</b>: Zulip Cloud Standard",
                     "<b>Status</b>: Active",
                     "<b>Billing schedule</b>: Annual",
@@ -876,6 +867,7 @@ class TestSupportEndpoint(ZulipTestCase):
                 ],
                 result,
             )
+            self.assert_not_in_success_response(["scrub-realm-button"], result)
 
         def check_preregistration_user_query_result(
             result: "TestHttpResponse", email: str, invite: bool = False
@@ -1832,6 +1824,10 @@ class TestSupportEndpoint(ZulipTestCase):
 
         iago = self.example_user("iago")
         self.login_user(iago)
+
+        # Confirm scrub realm button is shown for deactivated realms.
+        result = self.client_get("/activity/support", {"q": "limited"})
+        self.assert_in_success_response(["scrub-realm-button"], result)
 
         result = self.client_post(
             "/activity/support",

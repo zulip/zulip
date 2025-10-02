@@ -10,7 +10,8 @@ from django.conf import settings
 from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 
-from corporate.models import Customer, CustomerPlan
+from corporate.models.customers import Customer
+from corporate.models.plans import CustomerPlan
 from zerver.context_processors import get_apps_page_url
 from zerver.lib.integrations import CATEGORIES, INTEGRATIONS, META_CATEGORY
 from zerver.lib.test_classes import ZulipTestCase
@@ -47,7 +48,7 @@ class DocPageTest(ZulipTestCase):
             "/devtools/",
             "/emails/",
             "/errors/",
-            "/help/",
+            "/help",
             "/integrations/",
         ]:
             if url.startswith(prefix):
@@ -69,6 +70,11 @@ class DocPageTest(ZulipTestCase):
 
         if url.startswith("/attribution/"):
             allow_robots = False
+
+        # When a raw MDX file is being fetched, the meta tag to
+        # disallow robots will be absent.
+        if url in ["/help/status-and-availability?raw", "/help/?raw", "/help?raw"]:
+            allow_robots = True
 
         result = self.get_doc(url, subdomain=subdomain)
         self.print_msg_if_error(url, result)
@@ -243,6 +249,49 @@ class DocPageTest(ZulipTestCase):
         self._test("/devtools/", ["Useful development URLs"])
         self._test("/emails/", ["Manually generate most emails"])
 
+    def test_dev_help_default_page_endpoints(self) -> None:
+        # View on Zulip.com and View source URLs should be visible.
+        self._test(
+            "/help/status-and-availability",
+            [
+                'href="https://zulip.com/help/status-and-availability"',
+                'href="/help/status-and-availability?raw"',
+            ],
+        )
+
+        # Raw MDX file should be shown when `?raw` is present.
+        self._test(
+            "/help/status-and-availability?raw",
+            ["---", "title: Status and availability", "### Set a status"],
+        )
+
+        self._test(
+            "/help/nonexistent-page-that-does-not-exist",
+            ["This is not a valid help path and not a valid MDX file"],
+        )
+
+        # `?raw` should have no effect when the page does not exist
+        self._test(
+            "/help/nonexistent-page-that-does-not-exist?raw",
+            ["This is not a valid help path and not a valid MDX file"],
+        )
+
+        # Root /help and /help/ is a special case without subpath.
+        self._test("/help/?raw", ["---", "title: Zulip help center"])
+        self._test("/help?raw", ["---", "title: Zulip help center"])
+
+        with (
+            mock.patch("builtins.open", side_effect=OSError("File read error")),
+            self.assertLogs("django.request", level="ERROR") as m,
+        ):
+            result = self.client_get("/help/status-and-availability?raw")
+            self.assertEqual(result.status_code, 500)
+            self.assertIn("Error reading MDX file", result.content.decode())
+            self.assertEqual(
+                m.output,
+                ["ERROR:django.request:Internal Server Error: /help/status-and-availability"],
+            )
+
     def test_error_endpoints(self) -> None:
         self._test("/errors/404/", ["Page not found"])
         self._test("/errors/5xx/", ["Internal server error"])
@@ -264,7 +313,6 @@ class DocPageTest(ZulipTestCase):
         self._test("/security/", ["TLS encryption"])
         self._test("/use-cases/", ["Use cases and customer stories"])
         self._test("/why-zulip/", ["Why Zulip?"])
-        self._test("/try-zulip/", ["check out the Zulip app"])
         # /for/... pages
         self._test("/for/open-source/", ["for open source projects"])
         self._test("/for/events/", ["for conferences and events"])
@@ -428,79 +476,26 @@ class DocPageTest(ZulipTestCase):
         self.assertTrue('data-platform="ZulipElectron"' in result.content.decode())
 
 
-class HelpTest(ZulipTestCase):
-    def test_help_settings_links(self) -> None:
-        result = self.client_get("/help/change-the-time-format")
+class CustomShorthandLinksTest(ZulipTestCase):
+    # We do not test relative links here since relative links were only
+    # used in the old help pages. We should probably remove the logic
+    # for relative links after we have done the official cutover to the
+    # starlight help center: https://github.com/zulip/zulip/issues/35654.
+    def test_settings_links(self) -> None:
+        result = self.client_get("/api/api-keys")
         self.assertEqual(result.status_code, 200)
-        self.assertIn('Go to <a href="/#settings/preferences">Preferences</a>', str(result.content))
+        self.assertIn(
+            'Go to <a href="/#settings/account-and-privacy">Account &amp; privacy</a>',
+            str(result.content),
+        )
         # Check that the sidebar was rendered properly.
-        self.assertIn("Getting started with Zulip", str(result.content))
+        self.assertIn("API documentation home", str(result.content))
 
         with self.settings(ROOT_DOMAIN_LANDING_PAGE=True):
-            result = self.client_get("/help/change-the-time-format", subdomain="")
+            result = self.client_get("/api/api-keys", subdomain="")
         self.assertEqual(result.status_code, 200)
-        self.assertIn("<strong>Preferences</strong>", str(result.content))
+        self.assertIn("<strong>Account &amp; privacy</strong>", str(result.content))
         self.assertNotIn("/#settings", str(result.content))
-
-    def test_help_relative_links_for_gear(self) -> None:
-        result = self.client_get("/help/analytics")
-        self.assertIn(
-            '<a href="/stats"><i class="zulip-icon zulip-icon-bar-chart"></i> Usage statistics</a>',
-            str(result.content),
-        )
-        self.assertEqual(result.status_code, 200)
-
-        with self.settings(ROOT_DOMAIN_LANDING_PAGE=True):
-            result = self.client_get("/help/analytics", subdomain="")
-        self.assertEqual(result.status_code, 200)
-        self.assertIn(
-            '<strong><i class="zulip-icon zulip-icon-bar-chart"></i> Usage statistics</strong>',
-            str(result.content),
-        )
-        self.assertNotIn("/stats", str(result.content))
-
-    def test_help_relative_gear_billing_links(self) -> None:
-        result = self.client_get("/help/zulip-cloud-billing")
-        self.assertIn(
-            '<a href="/plans/"><i class="zulip-icon zulip-icon-rocket"></i> Plans and pricing</a>',
-            str(result.content),
-        )
-        self.assertEqual(result.status_code, 200)
-
-        with self.settings(CORPORATE_ENABLED=False):
-            result = self.client_get("/help/zulip-cloud-billing")
-        self.assertEqual(result.status_code, 200)
-        self.assertIn(
-            '<strong><i class="zulip-icon zulip-icon-rocket"></i> Plans and pricing</strong>',
-            str(result.content),
-        )
-        self.assertNotIn('<a href="/plans/">', str(result.content))
-
-        with self.settings(ROOT_DOMAIN_LANDING_PAGE=True):
-            result = self.client_get("/help/zulip-cloud-billing", subdomain="")
-        self.assertEqual(result.status_code, 200)
-        self.assertIn(
-            '<strong><i class="zulip-icon zulip-icon-rocket"></i> Plans and pricing</strong>',
-            str(result.content),
-        )
-        self.assertNotIn('a href="/plans/">', str(result.content))
-
-    def test_help_relative_links_for_stream(self) -> None:
-        result = self.client_get("/help/message-a-channel-by-email")
-        self.assertIn(
-            '<a href="/#channels/subscribed"><i class="zulip-icon zulip-icon-hash"></i> Channel settings</a>',
-            str(result.content),
-        )
-        self.assertEqual(result.status_code, 200)
-
-        with self.settings(ROOT_DOMAIN_LANDING_PAGE=True):
-            result = self.client_get("/help/message-a-channel-by-email", subdomain="")
-        self.assertEqual(result.status_code, 200)
-        self.assertIn(
-            '<strong><i class="zulip-icon zulip-icon-hash"></i> Channel settings</strong>',
-            str(result.content),
-        )
-        self.assertNotIn("/#channels", str(result.content))
 
 
 class IntegrationTest(ZulipTestCase):
@@ -521,8 +516,8 @@ class IntegrationTest(ZulipTestCase):
     def test_api_url_view_subdomains_homepage_base(self) -> None:
         context: dict[str, Any] = {}
         add_api_url_context(context, HostRequestMock())
-        self.assertEqual(context["api_url_scheme_relative"], "yourZulipDomain.testserver/api")
-        self.assertEqual(context["api_url"], "http://yourZulipDomain.testserver/api")
+        self.assertEqual(context["api_url_scheme_relative"], "your-org.testserver/api")
+        self.assertEqual(context["api_url"], "http://your-org.testserver/api")
         self.assertFalse(context["html_settings_links"])
 
     def test_api_url_view_subdomains_full(self) -> None:

@@ -46,9 +46,9 @@ def update_message_flags(
     request: HttpRequest,
     user_profile: UserProfile,
     *,
+    flag: str,
     messages: Json[list[int]],
     operation: Annotated[str, ApiParamConfig("op")],
-    flag: str,
 ) -> HttpResponse:
     request_notes = RequestNotes.get_notes(request)
     assert request_notes.log_data is not None
@@ -81,12 +81,12 @@ def update_message_flags_for_narrow(
     user_profile: UserProfile,
     *,
     anchor_val: Annotated[str, ApiParamConfig("anchor")],
-    include_anchor: Json[bool] = True,
-    num_before: Json[NonNegativeInt],
-    num_after: Json[NonNegativeInt],
-    narrow: Json[list[NarrowParameter] | None],
-    operation: Annotated[str, ApiParamConfig("op")],
     flag: str,
+    include_anchor: Json[bool] = True,
+    narrow: Json[list[NarrowParameter] | None],
+    num_after: Json[NonNegativeInt],
+    num_before: Json[NonNegativeInt],
+    operation: Annotated[str, ApiParamConfig("op")],
 ) -> HttpResponse:
     anchor = parse_anchor_value(anchor_val, use_first_unread_anchor=False)
 
@@ -149,7 +149,7 @@ def mark_all_as_read(request: HttpRequest, user_profile: UserProfile) -> HttpRes
 def mark_stream_as_read(
     request: HttpRequest, user_profile: UserProfile, *, stream_id: Json[int]
 ) -> HttpResponse:
-    stream, sub = access_stream_by_id(user_profile, stream_id)
+    stream, _sub = access_stream_by_id(user_profile, stream_id)
     assert stream.recipient_id is not None
     count = do_mark_stream_messages_as_read(user_profile, stream.recipient_id)
 
@@ -166,10 +166,10 @@ def mark_topic_as_read(
     request: HttpRequest,
     user_profile: UserProfile,
     *,
-    stream_id: Json[int],
     topic_name: str,
+    stream_id: Json[int],
 ) -> HttpResponse:
-    stream, sub = access_stream_by_id(user_profile, stream_id)
+    stream, _sub = access_stream_by_id(user_profile, stream_id)
     assert stream.recipient_id is not None
 
     if topic_name:

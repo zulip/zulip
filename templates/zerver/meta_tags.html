@@ -1,4 +1,7 @@
 <!-- Google / search engine tags -->
+{% if REL_CANONICAL_LINK %}
+<link rel="canonical" href="{{ REL_CANONICAL_LINK }}" />
+{% endif %}
 {% if allow_search_engine_indexing %}
     {% if PAGE_DESCRIPTION %}
     <meta name="description" content="{{ PAGE_DESCRIPTION }}" />

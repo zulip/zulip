@@ -29,11 +29,11 @@ export function get_count_of_messages_in_topic_sent_after_current_message(
     topic: string,
     message_id: number,
 ): number {
-    const all_messages = get_messages_in_topic(stream_id, topic);
+    const all_messages = get_loaded_messages_in_topic(stream_id, topic);
     return all_messages.filter((msg) => msg.id >= message_id).length;
 }
 
-export function get_messages_in_topic(stream_id: number, topic: string): Message[] {
+export function get_loaded_messages_in_topic(stream_id: number, topic: string): Message[] {
     return all_messages_data
         .all_messages()
         .filter(

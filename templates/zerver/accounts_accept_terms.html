@@ -55,7 +55,7 @@ the registration flow has its own (nearly identical) copy of the fields below in
                     </label>
                     {% if form.terms.errors %}
                         {% for error in form.terms.errors %}
-                        <p class="help-inline text-error">{{ error }}</p>
+                        <p class="error help-inline alert alert-error">{{ error }}</p>
                         {% endfor %}
                     {% endif %}
                 </div>

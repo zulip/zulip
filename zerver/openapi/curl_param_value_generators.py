@@ -5,12 +5,14 @@
 # based on Zulip's OpenAPI definitions, as well as test setup and
 # fetching of appropriate parameter values to use when running the
 # cURL examples as part of the tools/test-api test suite.
+import re
 from collections.abc import Callable
 from functools import wraps
 from typing import Any
 
 from django.utils.timezone import now as timezone_now
 
+from zerver.actions.channel_folders import check_add_channel_folder
 from zerver.actions.create_user import do_create_user
 from zerver.actions.presence import update_user_presence
 from zerver.actions.reactions import do_add_reaction
@@ -21,6 +23,7 @@ from zerver.lib.initial_password import initial_password
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.upload import upload_message_attachment
 from zerver.models import Client, Message, NamedUserGroup, UserPresence
+from zerver.models.channel_folders import ChannelFolder
 from zerver.models.realms import get_realm
 from zerver.models.users import UserProfile, get_user
 from zerver.openapi.openapi import Parameter
@@ -291,7 +294,6 @@ def get_temp_user_group_id() -> dict[str, object]:
 
 @openapi_param_value_generator(["/user_groups/{user_group_id}/deactivate:post"])
 def get_temp_user_group_id_for_deactivation() -> dict[str, object]:
-    print(NamedUserGroup.objects.all())
     user_group, _ = NamedUserGroup.objects.get_or_create(
         name="temp-deactivation",
         realm=get_realm("zulip"),
@@ -389,3 +391,38 @@ def remove_attachment() -> dict[str, object]:
     attachment_id = url.replace("/user_uploads/", "").split("/")[0]
 
     return {"attachment_id": attachment_id}
+
+
+@openapi_param_value_generator(["/channel_folders:patch"])
+def add_channel_folders() -> dict[str, object]:
+    user_profile = helpers.example_user("iago")
+    realm = user_profile.realm
+    check_add_channel_folder(
+        realm,
+        "General",
+        "Channel for general discussions",
+        acting_user=user_profile,
+    )
+    check_add_channel_folder(
+        realm,
+        "Documentation",
+        "Channels for **documentation** discussions",
+        acting_user=user_profile,
+    )
+    check_add_channel_folder(realm, "Memes", "Channels for sharing memes", acting_user=user_profile)
+    channel_folders = ChannelFolder.objects.filter(realm=realm)
+
+    return {"order": [folder.id for folder in channel_folders]}
+
+
+@openapi_param_value_generator(["/user_uploads/{realm_id_str}/{filename}:get"])
+def get_temporary_url_for_uploaded_file() -> dict[str, object]:
+    realm_id = ""
+    filename = ""
+    user_profile = helpers.example_user("iago")
+    url = upload_message_attachment("dummy.txt", "text/plain", b"zulip!", user_profile)[0]
+    upload_path_parts = re.match(r"/user_uploads/(\d+)/(.*)", url)
+    if upload_path_parts:
+        realm_id = upload_path_parts[1]
+        filename = upload_path_parts[2]
+    return {"realm_id_str": realm_id, "filename": filename}

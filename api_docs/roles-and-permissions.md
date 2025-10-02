@@ -36,7 +36,8 @@ by the [events API](/api/get-events).
 
 Note that [`POST /register`](/api/register-queue) also returns an
 `is_moderator` boolean property specifying whether the current user is
-an organization moderator.
+at least an organization moderator. The property will be true for admins
+and owners too.
 
 Additionally, user account data include an `is_billing_admin` property
 specifying whether the user is a billing administrator for the Zulip

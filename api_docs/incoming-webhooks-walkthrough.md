@@ -210,26 +210,108 @@ tools which you can use to test your webhook - 2 command line tools and a GUI.
 
 ### Webhooks requiring custom configuration
 
-In rare cases, it's necessary for an incoming webhook to require
-additional user configuration beyond what is specified in the post
-URL.  The typical use case for this is APIs like the Stripe API that
-require clients to do a callback to get details beyond an opaque
-object ID that one would want to include in a Zulip notification.
+In cases where an incoming webhook integration supports optional URL parameters,
+one can use the `url_options` feature. It's a field in the `WebhookIntegration`
+class that is used when [generating a URL for an integration](/help/generate-integration-url)
+in the web app, which encodes the user input for each URL parameter in the
+incoming webhook's URL.
 
-These configuration options are declared as follows:
+These URL options are declared as follows:
 
 ```python
-    WebhookIntegration('helloworld', ['misc'], display_name='Hello World',
-                       config_options=[('HelloWorld API key', 'hw_api_key', check_string)])
+    WebhookIntegration(
+        'helloworld',
+        ...
+        url_options=[
+          WebhookUrlOption(
+            name='ignore_private_repositories',
+            label='Exclude notifications from private repositories',
+            validator=check_string
+          ),
+        ],
+    )
 ```
 
-`config_options` is a list describing the parameters the user should
-configure:
-    1. A user-facing string describing the field to display to users.
-    2. The field name you'll use to access this from your `view.py` function.
-    3. A Validator, used to verify the input is valid.
+`url_options` is a list describing the parameters the web app UI should offer when
+generating the incoming webhook URL:
 
-Common validators are available in `zerver/lib/validators.py`.
+  - `name`: The parameter name that is used to encode the user input in the
+    integration's webhook URL.
+  - `label`: A short descriptive label for this URL parameter in the web app UI.
+  - `validator`: A validator function, which is used to determine the input type
+    for this option in the UI, and to indicate how to validate the input.
+    Currently, the web app UI only supports these validators:
+      - `check_bool` for checkbox/select input.
+      - `check_string` for text input.
+
+!!! warn ""
+
+    **Note**: To add support for other validators, you can update
+    `web/src/integration_url_modal.ts`. Common validators are available in
+    `zerver/lib/validator.py`.
+
+In rare cases, it may be necessary for an incoming webhook to require
+additional user configuration beyond what is specified in the POST
+URL. A typical use case for this would be APIs that require clients
+to do a callback to get details beyond an opaque object ID that one
+would want to include in a Zulip notification message.
+
+The `config_options` field in the `WebhookIntegration` class is reserved
+for this use case.
+
+### WebhookUrlOption presets
+
+The `build_preset_config` method creates `WebhookUrlOption` objects with
+pre-configured fields. These preset URL options primarily serve two
+purposes:
+
+- To construct common `WebhookUrlOption` objects that are used in various
+  incoming webhook integrations.
+
+- To construct `WebhookUrlOption` objects with special UI in the web-app
+  for [generating incoming webhook URLs](/help/generate-integration-url).
+
+Using a preset URL option with the `build_preset_config` method:
+
+```python
+# zerver/lib/integrations.py
+from zerver.lib.webhooks.common import PresetUrlOption, WebhookUrlOption
+  # -- snip --
+    WebhookIntegration(
+        "github",
+        # -- snip --
+        url_options=[
+            WebhookUrlOption.build_preset_config(PresetUrlOption.BRANCHES),
+        ],
+    ),
+```
+
+Currently configured preset URL options:
+
+- **`BRANCHES`**: This preset is intended to be used for [version control
+  integrations](/integrations/version-control), and adds UI for the user to
+  configure which branches of a project's repository will trigger Zulip
+  notification messages. When the user specifies which branches to receive
+  notifications from, the `branches` parameter will be added to the [generated
+  integration URL](/help/generate-integration-url). For example, if the user
+  input `main` and `dev` for the branches of their repository, then
+  `&branches=main%2Cdev` would be appended to the generated integration URL.
+
+- **`IGNORE_PRIVATE_REPOSITORIES`**: This preset is intended to be used for
+  [version control integrations](/integrations/version-control), and adds UI
+  for the user exclude private repositories from triggering Zulip
+  notification messages. When the user selects this option, the
+  `ignore_private_repositories` boolean parameter will be added to the
+  [generated integration URL](/help/generate-integration-url).
+
+- **`MAPPING`**: This preset is intended to be used for [chat-app
+  integrations](/integrations/communication) (like Slack), and adds a
+  special option, **Matching Zulip channel**, to the UI for where to send
+  Zulip notification messages. This special option maps the notification
+  messages to Zulip channels that match the messages' original channel
+  name in the third-party app. When selected, this requires setting a
+  single topic for notification messages, and adds `&mapping=channels`
+  to the [generated integration URL](/help/generate-integration-url).
 
 ## Step 4: Manually testing the webhook
 

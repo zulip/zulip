@@ -59,7 +59,7 @@
         </li>
         {{/if}}
         {{!-- Group 4 --}}
-        {{#if (or should_display_mark_as_unread should_display_hide_option should_display_collapse should_display_uncollapse)}}
+        {{#if (or should_display_mark_as_unread should_display_remind_me_option should_display_hide_option should_display_collapse should_display_uncollapse)}}
         <li role="separator" class="popover-menu-separator"></li>
         {{/if}}
         {{#if should_display_mark_as_unread}}
@@ -68,6 +68,14 @@
                 <i class="popover-menu-icon zulip-icon zulip-icon-mark-as-unread" aria-hidden="true"></i>
                 <span class="popover-menu-label">{{t "Mark as unread from here" }}</span>
                 {{popover_hotkey_hints "Shift" "U"}}
+            </a>
+        </li>
+        {{/if}}
+        {{#if should_display_remind_me_option}}
+        <li role="none" class="link-item popover-menu-list-item">
+            <a role="menuitem" data-message-id="{{message_id}}" class="message-reminder popover-menu-link" tabindex="0">
+                <i class="popover-menu-icon zulip-icon zulip-icon-alarm-clock" aria-hidden="true"></i>
+                <span class="popover-menu-label">{{t "Remind me about this" }}</span>
             </a>
         </li>
         {{/if}}

@@ -25,10 +25,14 @@ from zerver.actions.message_send import (
 )
 from zerver.actions.uploads import AttachmentChangeResult, check_attachment_reference_change
 from zerver.actions.user_topics import bulk_do_set_user_topic_visibility_policy
+from zerver.lib import utils
 from zerver.lib.exceptions import (
     JsonableError,
     MessageMoveError,
+    MessagesNotAllowedInEmptyTopicError,
+    PreviousMessageContentMismatchedError,
     StreamWildcardMentionNotAllowedError,
+    TopicsNotAllowedError,
     TopicWildcardMentionNotAllowedError,
 )
 from zerver.lib.markdown import MessageRenderingResult, topic_links
@@ -52,16 +56,22 @@ from zerver.lib.streams import (
     access_stream_by_id,
     access_stream_by_id_for_message,
     can_access_stream_history,
+    can_edit_topic,
+    can_move_messages_out_of_channel,
+    can_resolve_topics,
     check_stream_access_based_on_can_send_message_group,
+    get_stream_topics_policy,
     notify_stream_is_recently_active_update,
 )
 from zerver.lib.string_validation import check_stream_topic
+from zerver.lib.thumbnail import get_user_upload_previews, rewrite_thumbnailed_images
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.topic import (
     ORIG_TOPIC,
     RESOLVED_TOPIC_PREFIX,
     TOPIC_LINKS,
     TOPIC_NAME,
+    get_topic_display_name,
     maybe_rename_general_chat_to_empty_topic,
     messages_for_topic,
     participants_for_topic,
@@ -69,16 +79,17 @@ from zerver.lib.topic import (
     update_edit_history,
     update_messages_for_topic_edit,
 )
+from zerver.lib.topic_link_util import get_stream_topic_link_syntax
 from zerver.lib.types import DirectMessageEditRequest, EditHistoryEvent, StreamMessageEditRequest
-from zerver.lib.url_encoding import near_stream_message_url
+from zerver.lib.url_encoding import stream_message_url
 from zerver.lib.user_message import bulk_insert_all_ums
 from zerver.lib.user_topics import get_users_with_user_topic_visibility_policy
 from zerver.lib.widget import is_widget_message
 from zerver.models import (
     ArchivedAttachment,
+    ArchivedMessage,
     Attachment,
     Message,
-    Reaction,
     Recipient,
     Stream,
     Subscription,
@@ -86,8 +97,8 @@ from zerver.models import (
     UserProfile,
     UserTopic,
 )
-from zerver.models.streams import get_stream_by_id_in_realm
-from zerver.models.users import get_system_bot
+from zerver.models.streams import StreamTopicsPolicyEnum, get_stream_by_id_in_realm
+from zerver.models.users import ResolvedTopicNoticeAutoReadPolicyEnum, get_system_bot
 from zerver.tornado.django_api import send_event_on_commit
 
 
@@ -107,14 +118,15 @@ def validate_message_edit_payload(
     topic_name: str | None,
     propagate_mode: str | None,
     content: str | None,
+    prev_content_sha256: str | None,
 ) -> None:
     """
-    Checks that the data sent is well-formed. Does not handle editability, permissions etc.
+    Validates that a message edit request is well-formed. Does not handle permissions.
     """
     if topic_name is None and content is None and stream_id is None:
         raise JsonableError(_("Nothing to change"))
 
-    if not message.is_stream_message():
+    if not message.is_channel_message:
         if stream_id is not None:
             raise JsonableError(_("Direct messages cannot be moved to channels."))
         if topic_name is not None:
@@ -122,9 +134,6 @@ def validate_message_edit_payload(
 
     if propagate_mode != "change_one" and topic_name is None and stream_id is None:
         raise JsonableError(_("Invalid propagate_mode without topic edit"))
-
-    if message.realm.mandatory_topics and topic_name in ("(no topic)", ""):
-        raise JsonableError(_("Topics are required in this organization."))
 
     if topic_name in {
         RESOLVED_TOPIC_PREFIX.strip(),
@@ -141,6 +150,14 @@ def validate_message_edit_payload(
     # Right now, we prevent users from editing widgets.
     if content is not None and is_widget_message(message):
         raise JsonableError(_("Widgets cannot be edited."))
+
+    # We don't restrict this check to requests to edit content, to
+    # give the parameter a pure meaning. But clients sending this for
+    # topic moves are likely doing so in error.
+    if prev_content_sha256 is not None and prev_content_sha256 != utils.sha256_hash(
+        message.content
+    ):
+        raise PreviousMessageContentMismatchedError
 
 
 def validate_user_can_edit_message(
@@ -162,11 +179,53 @@ def validate_user_can_edit_message(
             raise JsonableError(_("The time limit for editing this message has passed"))
 
 
+def get_unread_user_ids_for_resolved_topic_notifications(
+    stream: Stream,
+    topic_name: str,
+    users_following_topic: set[UserProfile] | None,
+) -> set[int]:
+    unread_user_ids: set[int] = set()
+
+    all_stream_user_profiles = UserProfile.objects.filter(
+        id__in=get_active_subscriptions_for_stream_id(
+            stream.id, include_deactivated_users=False
+        ).values_list("user_profile_id", flat=True),
+        is_bot=False,
+    )
+
+    user_ids_following_topic: set[int] = set()
+    if users_following_topic is not None:
+        user_ids_following_topic = {user.id for user in users_following_topic}
+    else:
+        user_ids_following_topic = set(
+            UserTopic.objects.filter(
+                stream=stream,
+                topic_name__iexact=topic_name,
+                visibility_policy=UserTopic.VisibilityPolicy.FOLLOWED,
+            ).values_list("user_profile_id", flat=True)
+        )
+
+    for user_profile in all_stream_user_profiles:
+        if (
+            user_profile.resolved_topic_notice_auto_read_policy
+            == ResolvedTopicNoticeAutoReadPolicyEnum.never.value
+        ):
+            unread_user_ids.add(user_profile.id)
+        elif (
+            user_profile.resolved_topic_notice_auto_read_policy
+            == ResolvedTopicNoticeAutoReadPolicyEnum.except_followed.value
+            and user_profile.id in user_ids_following_topic
+        ):
+            unread_user_ids.add(user_profile.id)
+
+    return unread_user_ids
+
+
 def maybe_send_resolve_topic_notifications(
     *,
     user_profile: UserProfile,
     message_edit_request: StreamMessageEditRequest,
-    changed_messages: QuerySet[Message],
+    users_following_topic: set[UserProfile] | None,
 ) -> tuple[int | None, bool]:
     """Returns resolved_topic_message_id if resolve topic notifications were in fact sent."""
     # Note that topics will have already been stripped in check_update_message.
@@ -200,16 +259,15 @@ def maybe_send_resolve_topic_notifications(
     ):
         return None, True
 
-    # Compute the users who either sent or reacted to messages that
-    # were moved via the "resolve topic' action. Only those users
-    # should be eligible for this message being managed as unread.
-    affected_participant_ids = set(
-        changed_messages.values_list("sender_id", flat=True).union(
-            Reaction.objects.filter(message__in=changed_messages).values_list(
-                "user_profile_id", flat=True
-            )
-        )
+    # Compute the users for whom this message should be marked as unread
+    # based on the `resolved_topic_notice_auto_read_policy` user setting.
+    topic_name = message_edit_request.target_topic_name
+    unread_user_ids = get_unread_user_ids_for_resolved_topic_notifications(
+        stream=stream,
+        topic_name=topic_name,
+        users_following_topic=users_following_topic,
     )
+
     sender = get_system_bot(settings.NOTIFICATION_BOT, user_profile.realm_id)
     user_mention = silent_mention_syntax_for_user(user_profile)
     with override_language(stream.realm.default_language):
@@ -221,12 +279,13 @@ def maybe_send_resolve_topic_notifications(
         resolved_topic_message_id = internal_send_stream_message(
             sender,
             stream,
-            message_edit_request.target_topic_name,
+            topic_name,
             notification_string.format(
                 user=user_mention,
             ),
             message_type=Message.MessageType.RESOLVE_TOPIC_NOTIFICATION,
-            limit_unread_user_ids=affected_participant_ids,
+            limit_unread_user_ids=unread_user_ids,
+            mark_as_read_for_acting_user=True,
             acting_user=user_profile,
         )
 
@@ -273,15 +332,15 @@ def send_message_moved_breadcrumbs(
     old_topic_name = message_edit_request.orig_topic_name
     new_stream = message_edit_request.target_stream
     new_topic_name = message_edit_request.target_topic_name
-    old_topic_link = f"#**{old_stream.name}>{old_topic_name}**"
-    new_topic_link = f"#**{new_stream.name}>{new_topic_name}**"
+    old_topic_link = get_stream_topic_link_syntax(old_stream.id, old_stream.name, old_topic_name)
+    new_topic_link = get_stream_topic_link_syntax(new_stream.id, new_stream.name, new_topic_name)
     message = {
         "id": target_message.id,
         "stream_id": new_stream.id,
         "display_recipient": new_stream.name,
         "topic": new_topic_name,
     }
-    moved_message_link = near_stream_message_url(target_message.realm, message)
+    moved_message_link = stream_message_url(target_message.realm, message)
 
     if new_thread_notification_string is not None:
         with override_language(new_stream.realm.default_language):
@@ -295,6 +354,7 @@ def send_message_moved_breadcrumbs(
                     user=user_mention,
                     changed_messages_count=changed_messages_count,
                 ),
+                mark_as_read_for_acting_user=True,
                 acting_user=user_profile,
             )
 
@@ -310,6 +370,7 @@ def send_message_moved_breadcrumbs(
                     new_location=new_topic_link,
                     changed_messages_count=changed_messages_count,
                 ),
+                mark_as_read_for_acting_user=True,
                 acting_user=user_profile,
             )
 
@@ -348,6 +409,7 @@ def update_user_message_flags(
 ) -> None:
     mentioned_ids = rendering_result.mentions_user_ids
     ids_with_alert_words = rendering_result.user_ids_with_alert_words
+    stream_wildcard_mentioned = rendering_result.mentions_stream_wildcard
     changed_ums: set[UserMessage] = set()
 
     def update_flag(um: UserMessage, should_set: bool, flag: int) -> None:
@@ -367,11 +429,10 @@ def update_user_message_flags(
         mentioned = um.user_profile_id in mentioned_ids
         update_flag(um, mentioned, UserMessage.flags.mentioned)
 
-        if rendering_result.mentions_stream_wildcard:
-            update_flag(um, True, UserMessage.flags.stream_wildcard_mentioned)
-        elif rendering_result.mentions_topic_wildcard:
-            topic_wildcard_mentioned = um.user_profile_id in topic_participant_user_ids
-            update_flag(um, topic_wildcard_mentioned, UserMessage.flags.topic_wildcard_mentioned)
+        update_flag(um, stream_wildcard_mentioned, UserMessage.flags.stream_wildcard_mentioned)
+
+        topic_wildcard_mentioned = um.user_profile_id in topic_participant_user_ids
+        update_flag(um, topic_wildcard_mentioned, UserMessage.flags.topic_wildcard_mentioned)
 
     for um in changed_ums:
         um.save(update_fields=["flags"])
@@ -381,10 +442,15 @@ def do_update_embedded_data(
     user_profile: UserProfile,
     message: Message,
     rendered_content: str | MessageRenderingResult,
+    mention_data: MentionData | None = None,
 ) -> None:
     ums = UserMessage.objects.filter(message=message.id)
     update_fields = ["rendered_content"]
     if isinstance(rendered_content, MessageRenderingResult):
+        assert mention_data is not None
+        for group_id in rendered_content.mentions_user_group_ids:
+            members = mention_data.get_group_members(group_id)
+            rendered_content.mentions_user_ids.update(members)
         update_user_message_flags(rendered_content, ums)
         message.rendered_content = rendered_content.rendered_content
         message.rendered_content_version = markdown_version
@@ -428,14 +494,18 @@ def get_visibility_policy_after_merge(
     # Whichever of the two policies is most visible is what we keep.
     # The general motivation is to err on the side of showing messages
     # rather than hiding them.
-    if orig_topic_visibility_policy == target_topic_visibility_policy:
-        return orig_topic_visibility_policy
-    elif UserTopic.VisibilityPolicy.UNMUTED in (
-        orig_topic_visibility_policy,
-        target_topic_visibility_policy,
-    ):
+    visibility_policies = {orig_topic_visibility_policy, target_topic_visibility_policy}
+
+    if UserTopic.VisibilityPolicy.FOLLOWED in visibility_policies:
+        return UserTopic.VisibilityPolicy.FOLLOWED
+
+    if UserTopic.VisibilityPolicy.UNMUTED in visibility_policies:
         return UserTopic.VisibilityPolicy.UNMUTED
-    return UserTopic.VisibilityPolicy.INHERIT
+
+    if UserTopic.VisibilityPolicy.INHERIT in visibility_policies:
+        return UserTopic.VisibilityPolicy.INHERIT
+
+    return UserTopic.VisibilityPolicy.MUTED
 
 
 def update_message_content(
@@ -500,6 +570,7 @@ def update_message_content(
     event["prior_mention_user_ids"] = list(prior_mention_user_ids)
     event["presence_idle_user_ids"] = filter_presence_idle_user_ids(info.active_user_ids)
     event["all_bot_user_ids"] = list(info.all_bot_user_ids)
+    event["push_device_registered_user_ids"] = list(info.push_device_registered_user_ids)
     if rendering_result.mentions_stream_wildcard:
         event["stream_wildcard_mention_user_ids"] = list(info.stream_wildcard_mention_user_ids)
         event["stream_wildcard_mention_in_followed_topic_user_ids"] = list(
@@ -528,6 +599,41 @@ def update_message_content(
         rendering_result.mentions_user_ids,
         info.stream_push_user_ids,
     )
+
+
+def apply_automatic_unmute_follow_topics_policy(
+    user_profile: UserProfile,
+    target_stream: Stream,
+    target_topic_name: str,
+) -> None:
+    if (
+        user_profile.automatically_follow_topics_policy
+        == UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_INITIATION
+    ):
+        bulk_do_set_user_topic_visibility_policy(
+            [user_profile],
+            target_stream,
+            target_topic_name,
+            visibility_policy=UserTopic.VisibilityPolicy.FOLLOWED,
+        )
+    elif (
+        user_profile.automatically_unmute_topics_in_muted_streams_policy
+        == UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_INITIATION
+    ):
+        subscription = Subscription.objects.filter(
+            recipient=target_stream.recipient,
+            user_profile=user_profile,
+            active=True,
+            is_user_active=True,
+        ).first()
+
+        if subscription is not None and subscription.is_muted:
+            bulk_do_set_user_topic_visibility_policy(
+                [user_profile],
+                target_stream,
+                target_topic_name,
+                visibility_policy=UserTopic.VisibilityPolicy.UNMUTED,
+            )
 
 
 # This must be called already in a transaction, with a write lock on
@@ -626,7 +732,7 @@ def do_update_message(
             # This does message.save(update_fields=[...])
             save_message_for_edit_use_case(message=target_message)
 
-            event["message_ids"] = update_message_cache([target_message])
+            event["message_ids"] = sorted(update_message_cache([target_message]))
             users_to_be_notified = list(map(user_info, ums))
             send_event_on_commit(user_profile.realm, event, users_to_be_notified)
 
@@ -836,7 +942,7 @@ def do_update_message(
     changed_messages = save_changes_for_propagation_mode()
 
     realm_id = target_message.realm_id
-    event["message_ids"] = update_message_cache(changed_messages, realm_id)
+    event["message_ids"] = sorted(update_message_cache(changed_messages, realm_id))
 
     # The following blocks arranges that users who are subscribed to a
     # stream and can see history from before they subscribed get
@@ -1096,20 +1202,66 @@ def do_update_message(
                     visibility_policy=new_visibility_policy,
                 )
 
+    elif message_edit_request.is_stream_edited or message_edit_request.is_topic_edited:
+        sender = target_message.sender
+
+        target_stream = message_edit_request.target_stream
+        target_topic = message_edit_request.target_topic_name
+
+        assert target_stream.recipient_id is not None
+
+        messages_in_target_topic = messages_for_topic(
+            realm.id, target_stream.recipient_id, target_topic
+        ).exclude(id__in=[*changed_message_ids])
+
+        # All behavior in channels with protected history depends on
+        # the permissions of users who might glean information about
+        # whether the topic previously existed. So we need to look at
+        # whether this message is becoming the first message in the
+        # target topic, as seen by the user who we might change topic
+        # visibility policy for in this code path.
+        first_message_in_target_topic = bulk_access_stream_messages_query(
+            sender, messages_in_target_topic, target_stream
+        ).first()
+
+        is_target_message_first = False
+        # the target_message would be the first message in the moved topic
+        # either if the moved topic doesn't have any messages, or if the
+        # target_message is sent before the first message in the moved
+        # topic.
+        if (
+            first_message_in_target_topic is None
+            or target_message.id < first_message_in_target_topic.id
+        ):
+            is_target_message_first = True
+
+        if not sender.is_bot and sender not in users_losing_access and is_target_message_first:
+            apply_automatic_unmute_follow_topics_policy(sender, target_stream, target_topic)
+
     send_event_on_commit(user_profile.realm, event, users_to_be_notified)
 
     resolved_topic_message_id = None
-    resolved_topic_message_deleted = False
+    # We calculate the users for which the resolved-topic notification
+    # should be marked as unread using the topic visibility policy and
+    # the `resolved_topic_notice_auto_read_policy` user setting.
+    users_following_original_topic = None
+    if moved_all_visible_messages:
+        users_following_original_topic = {
+            user
+            for user, visibility_policy in orig_topic_user_profile_to_visibility_policy.items()
+            if visibility_policy == UserTopic.VisibilityPolicy.FOLLOWED
+        }
+
     if (
         message_edit_request.is_topic_edited
         and not message_edit_request.is_content_edited
         and not message_edit_request.is_stream_edited
     ):
-        resolved_topic_message_id, resolved_topic_message_deleted = (
+        resolved_topic_message_id, _resolved_topic_message_deleted = (
             maybe_send_resolve_topic_notifications(
                 user_profile=user_profile,
                 message_edit_request=message_edit_request,
-                changed_messages=changed_messages,
+                users_following_topic=users_following_original_topic,
             )
         )
 
@@ -1302,7 +1454,7 @@ def build_message_edit_request(
             content = "(deleted)"
         new_content = normalize_body(content)
 
-    if not message.is_stream_message():
+    if not message.is_channel_message:
         # We have already validated that at least one of content, topic, or stream
         # must be modified, and for DMs, only the content can be edited.
         return DirectMessageEditRequest(
@@ -1343,6 +1495,19 @@ def build_message_edit_request(
         target_stream = access_stream_by_id_for_message(user_profile, stream_id)[0]
         is_stream_edited = True
 
+    topics_policy = get_stream_topics_policy(message.realm, target_stream)
+    empty_topic_display_name = get_topic_display_name("", user_profile.default_language)
+    target_topic_empty = target_topic_name in ("(no topic)", "")
+    if (
+        target_topic_empty
+        and (is_topic_edited or is_stream_edited)
+        and topics_policy == StreamTopicsPolicyEnum.disable_empty_topic.value
+    ):
+        raise MessagesNotAllowedInEmptyTopicError(empty_topic_display_name)
+
+    if topics_policy == StreamTopicsPolicyEnum.empty_topic_only.value and not target_topic_empty:
+        raise TopicsNotAllowedError(empty_topic_display_name)
+
     return StreamMessageEditRequest(
         is_content_edited=is_content_edited,
         content=new_content,
@@ -1370,6 +1535,7 @@ def check_update_message(
     send_notification_to_old_thread: bool = True,
     send_notification_to_new_thread: bool = True,
     content: str | None = None,
+    prev_content_sha256: str | None = None,
 ) -> UpdateMessageResult:
     """This will update a message given the message id and user profile.
     It checks whether the user profile has the permission to edit the message
@@ -1397,7 +1563,9 @@ def check_update_message(
         if topic_name == message.topic_name():
             topic_name = None
 
-    validate_message_edit_payload(message, stream_id, topic_name, propagate_mode, content)
+    validate_message_edit_payload(
+        message, stream_id, topic_name, propagate_mode, content, prev_content_sha256
+    )
 
     message_edit_request = build_message_edit_request(
         message=message,
@@ -1413,10 +1581,16 @@ def check_update_message(
         and message_edit_request.is_topic_edited
     ):
         if message_edit_request.topic_resolved or message_edit_request.topic_unresolved:
-            if not user_profile.can_resolve_topic():
-                raise JsonableError(_("You don't have permission to resolve topics."))
+            if not can_resolve_topics(
+                user_profile, message_edit_request.orig_stream, message_edit_request.target_stream
+            ):
+                raise JsonableError(
+                    _("You don't have permission to resolve topics in this channel.")
+                )
         else:
-            if not user_profile.can_move_messages_to_another_topic():
+            if not can_edit_topic(
+                user_profile, message_edit_request.orig_stream, message_edit_request.target_stream
+            ):
                 raise JsonableError(_("You don't have permission to edit this message"))
 
             # If there is a change to the topic, check that the user is allowed to
@@ -1424,7 +1598,6 @@ def check_update_message(
             # and the time limit for editing topics is passed, raise an error.
             if (
                 user_profile.realm.move_messages_within_stream_limit_seconds is not None
-                and not user_profile.is_realm_admin
                 and not user_profile.is_moderator
             ):
                 deadline_seconds = (
@@ -1460,12 +1633,12 @@ def check_update_message(
         )
         links_for_embed |= rendering_result.links_for_preview
 
-        if message.is_stream_message() and rendering_result.mentions_stream_wildcard:
+        if message.is_channel_message and rendering_result.mentions_stream_wildcard:
             stream = access_stream_by_id(user_profile, message.recipient.type_id)[0]
             if not stream_wildcard_mention_allowed(message.sender, stream, message.realm):
                 raise StreamWildcardMentionNotAllowedError
 
-        if message.is_stream_message() and rendering_result.mentions_topic_wildcard:
+        if message.is_channel_message and rendering_result.mentions_topic_wildcard:
             topic_participant_count = len(
                 participants_for_topic(message.realm.id, message.recipient.id, message.topic_name())
             )
@@ -1480,8 +1653,8 @@ def check_update_message(
 
     if isinstance(message_edit_request, StreamMessageEditRequest):
         if message_edit_request.is_stream_edited:
-            assert message.is_stream_message()
-            if not user_profile.can_move_messages_between_streams():
+            assert message.is_channel_message
+            if not can_move_messages_out_of_channel(user_profile, message_edit_request.orig_stream):
                 raise JsonableError(_("You don't have permission to move this message"))
 
             check_stream_access_based_on_can_send_message_group(
@@ -1490,7 +1663,6 @@ def check_update_message(
 
             if (
                 user_profile.realm.move_messages_between_streams_limit_seconds is not None
-                and not user_profile.is_realm_admin
                 and not user_profile.is_moderator
             ):
                 deadline_seconds = (
@@ -1504,7 +1676,6 @@ def check_update_message(
 
         if (
             propagate_mode == "change_all"
-            and not user_profile.is_realm_admin
             and not user_profile.is_moderator
             and message_edit_request.is_message_moved
             and not message_edit_request.topic_resolved
@@ -1562,3 +1733,31 @@ def check_update_message(
             notify_stream_is_recently_active_update(new_stream, is_stream_active)
 
     return updated_message_result
+
+
+@transaction.atomic(durable=True)
+def re_thumbnail(
+    message_class: type[Message] | type[ArchivedMessage], message_id: int, enqueue: bool
+) -> None:
+    message = message_class.objects.select_for_update().get(id=message_id)
+    assert message.rendered_content is not None
+    image_metadata = get_user_upload_previews(
+        message.realm_id,
+        message.rendered_content,
+        enqueue=enqueue,
+        lock=True,
+    ).image_metadata
+
+    new_content, _ = rewrite_thumbnailed_images(
+        message.rendered_content,
+        image_metadata,
+    )
+
+    if new_content is None:
+        pass
+    elif isinstance(message, Message):
+        do_update_embedded_data(message.sender, message, new_content)
+    else:
+        assert isinstance(message, ArchivedMessage)
+        message.rendered_content = new_content
+        message.save(update_fields=["rendered_content"])

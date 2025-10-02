@@ -7,9 +7,9 @@ export function disable_scrolling(): void {
     // as part of the document flow, we cannot capture `scroll` events on them and prevent propagation
     // as event bubbling doesn't work naturally.
     const scrollbar_width = window.innerWidth - document.documentElement.clientWidth;
-    $("html").css({"overflow-y": "hidden", "--disabled-scrollbar-width": `${scrollbar_width}px`});
+    $(":root").css({"overflow-y": "hidden", "--disabled-scrollbar-width": `${scrollbar_width}px`});
 }
 
 export function enable_scrolling(): void {
-    $("html").css({"overflow-y": "scroll", "--disabled-scrollbar-width": "0px"});
+    $(":root").css({"overflow-y": "scroll", "--disabled-scrollbar-width": "0px"});
 }

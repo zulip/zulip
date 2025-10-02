@@ -1,9 +1,0 @@
-# Accept incoming traffic on UDP port 2104 (zhm)
--A INPUT -p udp --dport 2104 -j ACCEPT
-
-# It's hard to know what ephemeral ports the zephyr clients are listening on.
-# Apparently they do not send outgoing traffic sufficient for the
-# ESTABLISHED,RELATED rule above.  So for now we allow all UDP traffic.
-#
-# FIXME: do something better here.
--A INPUT -p udp -j ACCEPT

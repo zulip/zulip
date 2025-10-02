@@ -74,6 +74,7 @@
 
     .navbar-search:not(.expanded) {
         right: 0;
+        background-color: var(--color-background-search-collapsed);
 
         .search_close_button {
             display: none;
@@ -214,6 +215,15 @@
         }
     }
 
+    /* for both input container and search suggestions */
+    .user-pill-container {
+        > .pill-label {
+            min-width: fit-content;
+            white-space: nowrap;
+            width: fit-content;
+        }
+    }
+
     #searchbox-input-container {
         display: grid;
         /* The next two styles override .input-append style from app_components.js */
@@ -223,7 +233,7 @@
         border: none;
         grid-template:
             "search-icon search-pills search-close" var(--search-box-height)
-            ". search-pills ." auto / auto minmax(0, 1fr)
+            ". search-pills ." auto / var(--search-left-padding) minmax(0, 1fr)
             1.75em; /* 28px at 16px em */
         align-content: center;
         cursor: pointer;
@@ -231,8 +241,7 @@
         /* Override styles for .pill-container that aren't relevant for search. */
         &.pill-container {
             background: inherit;
-            /* Maintain only a column gap. */
-            gap: 0 0.3125em; /* 5px at 16px em */
+            gap: 0;
             /* Override padding. */
             padding: 0;
         }
@@ -240,6 +249,7 @@
         .pill {
             margin: 0;
             min-width: unset;
+            background-color: var(--color-background-input-pill-search);
         }
 
         &:not(.focused) {
@@ -263,14 +273,21 @@
         .user-pill-container {
             gap: 2px 5px;
             /* Don't enforce a height, as user-pill containers
-               can contain multiple user pills that wrap onto
-               new lines. */
+                can contain multiple user pills that wrap onto
+                new lines. */
             height: unset;
+            border: 1px solid transparent;
+
+            /* Not focus-visible, because we want to support mouse+backpace
+                to delete pills */
+            &:focus {
+                /* Unlike regular `.pill` this multi-user pill has a border,
+                    so we use border instead of box-shadow on focus. */
+                box-shadow: none;
+                border-color: var(--color-focus-outline-input-pill);
+            }
 
             > .pill-label {
-                min-width: fit-content;
-                white-space: nowrap;
-                width: fit-content;
                 /* Replaced by the 5px gap. */
                 margin-right: 0;
                 /* Don't inherit large line-height for user pill labels. */
@@ -279,26 +296,39 @@
 
             .pill {
                 /* Reduce user pill height by 2px to
-                   preserve an apparent border around
-                   them even under `box-sizing: border-box`
-                   in the area. */
+                    preserve an apparent border around
+                    them even under `box-sizing: border-box`
+                    in the area. */
                 height: calc(var(--height-input-pill) - 2px);
                 border: none;
                 /* Match border radius to image */
                 border-radius: 4px;
                 max-width: none;
                 /* Set the minimum width on the pill container;
-                   this accommodates the avatar, a minimum
-                   two-character username, and the closing X.
-                   90px at 20px/1em */
+                    this accommodates the avatar, a minimum
+                    two-character username, and the closing X.
+                    90px at 20px/1em.
+
+                TODO: This would ideally be reworked, as we need to
+                override it for search suggestion pills (with no X) below.
+               */
                 min-width: 4.5em;
                 display: grid;
                 grid-template-columns:
-                    var(--length-input-pill-image) minmax(0, 1fr)
+                    var(--length-search-input-pill-image) minmax(0, 1fr)
                     var(--length-input-pill-exit);
                 align-content: center;
                 /* Don't inherit large line-height for user pills themselves, either. */
                 line-height: 1.1;
+
+                .pill-image {
+                    height: var(--length-search-input-pill-image);
+                    width: var(--length-search-input-pill-image);
+                }
+
+                .pill-image-border {
+                    border: none;
+                }
 
                 &:not(.deactivated-pill) {
                     background-color: var(--color-background-user-pill);
@@ -357,16 +387,23 @@
     }
 
     .typeahead-menu .simplebar-content > li > a {
-        padding: 3px 40px;
+        padding: 3px var(--search-left-padding);
         /* Override white-space: nowrap from zulip.css */
         white-space: normal;
 
         .search_list_item {
             max-width: 100%;
+            display: flex;
+            gap: 5px;
+            align-items: center;
+        }
+
+        .search_list_item .description {
+            margin: 2px 0;
         }
 
         .search_list_item .pill-container {
-            margin: 1px 5px;
+            margin: 2px 0;
             /* This contains only one pill, which handles its own border */
             border: none;
             cursor: pointer;
@@ -377,6 +414,15 @@
         .pill {
             align-items: baseline;
             margin: 0;
+
+            /* We remove the close button's column space from the grid template
+               for search suggestions, since there's no exit button.
+               The min-width here prevents extra space on very short names. */
+            min-width: 0;
+            grid-template-columns: var(--length-search-input-pill-image) minmax(
+                    0,
+                    1fr
+                );
 
             &:focus {
                 /* Keep the border the same color, there's no user interaction for users in the typeahead menu */

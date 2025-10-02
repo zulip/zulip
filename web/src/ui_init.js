@@ -5,9 +5,10 @@ import assert from "minimalistic-assert";
 import generated_emoji_codes from "../../static/generated/emoji/emoji_codes.json";
 import * as fenced_code from "../shared/src/fenced_code.ts";
 import render_compose from "../templates/compose.hbs";
-import render_message_feed_bottom_whitespace from "../templates/message_feed_bottom_whitespace.hbs";
 import render_message_feed_errors from "../templates/message_feed_errors.hbs";
 import render_navbar from "../templates/navbar.hbs";
+import render_try_zulip_modal from "../templates/try_zulip_modal.hbs";
+import render_view_bottom_loading_indicator from "../templates/view_bottom_loading_indicator.hbs";
 
 import * as about_zulip from "./about_zulip.ts";
 import * as activity from "./activity.ts";
@@ -20,10 +21,12 @@ import * as banners from "./banners.ts";
 import * as blueslip from "./blueslip.ts";
 import * as bot_data from "./bot_data.ts";
 import * as channel from "./channel.ts";
+import * as channel_folders from "./channel_folders.ts";
+import * as channel_folders_popover from "./channel_folders_popover.ts";
 import * as click_handlers from "./click_handlers.ts";
 import * as color_picker_popover from "./color_picker_popover.ts";
 import * as common from "./common.ts";
-import * as compose from "./compose.js";
+import * as compose from "./compose.ts";
 import * as compose_closed_ui from "./compose_closed_ui.ts";
 import * as compose_notifications from "./compose_notifications.ts";
 import * as compose_paste from "./compose_paste.ts";
@@ -40,6 +43,7 @@ import * as condense from "./condense.ts";
 import * as copy_messages from "./copy_messages.ts";
 import * as desktop_integration from "./desktop_integration.ts";
 import * as desktop_notifications from "./desktop_notifications.ts";
+import * as dialog_widget from "./dialog_widget.ts";
 import * as drafts from "./drafts.ts";
 import * as drafts_overlay_ui from "./drafts_overlay_ui.ts";
 import * as echo from "./echo.ts";
@@ -70,11 +74,13 @@ import * as message_fetch from "./message_fetch.ts";
 import * as message_list_hover from "./message_list_hover.ts";
 import * as message_list_tooltips from "./message_list_tooltips.ts";
 import * as message_lists from "./message_lists.ts";
+import * as message_reminder from "./message_reminder.ts";
 import * as message_scroll from "./message_scroll.ts";
 import * as message_view from "./message_view.ts";
 import * as message_view_header from "./message_view_header.ts";
 import * as message_viewport from "./message_viewport.ts";
 import * as modals from "./modals.ts";
+import * as mouse_drag from "./mouse_drag.ts";
 import * as muted_users from "./muted_users.ts";
 import * as narrow_history from "./narrow_history.ts";
 import * as narrow_state from "./narrow_state.ts";
@@ -82,6 +88,7 @@ import * as narrow_title from "./narrow_title.ts";
 import * as navbar_alerts from "./navbar_alerts.ts";
 import * as navbar_help_menu from "./navbar_help_menu.ts";
 import * as navigate from "./navigate.ts";
+import * as navigation_views from "./navigation_views.ts";
 import * as onboarding_steps from "./onboarding_steps.ts";
 import * as overlays from "./overlays.ts";
 import {page_params} from "./page_params.ts";
@@ -100,6 +107,7 @@ import * as realm_playground from "./realm_playground.ts";
 import * as realm_user_settings_defaults from "./realm_user_settings_defaults.ts";
 import * as recent_view_ui from "./recent_view_ui.ts";
 import * as reload_setup from "./reload_setup.js";
+import * as reminders_overlay_ui from "./reminders_overlay_ui.ts";
 import * as resize_handler from "./resize_handler.ts";
 import * as saved_snippets from "./saved_snippets.ts";
 import * as scheduled_messages from "./scheduled_messages.ts";
@@ -109,6 +117,7 @@ import * as scroll_bar from "./scroll_bar.ts";
 import * as scroll_util from "./scroll_util.ts";
 import * as search from "./search.ts";
 import * as server_events from "./server_events.js";
+import * as server_events_state from "./server_events_state.ts";
 import * as settings from "./settings.ts";
 import * as settings_notifications from "./settings_notifications.ts";
 import * as settings_panel_menu from "./settings_panel_menu.ts";
@@ -146,7 +155,7 @@ import * as timerender from "./timerender.ts";
 import * as tippyjs from "./tippyjs.ts";
 import * as topic_list from "./topic_list.ts";
 import * as topic_popover from "./topic_popover.ts";
-import * as transmit from "./transmit.js";
+import * as transmit from "./transmit.ts";
 import * as typeahead_helper from "./typeahead_helper.ts";
 import * as typing from "./typing.ts";
 import * as unread from "./unread.ts";
@@ -176,7 +185,7 @@ import * as widgets from "./widgets.js";
    things jumping around slightly when the email address is shown. */
 
 function initialize_bottom_whitespace() {
-    $("#bottom_whitespace").html(render_message_feed_bottom_whitespace());
+    $("#bottom_whitespace").html(render_view_bottom_loading_indicator());
 }
 
 function initialize_navbar() {
@@ -187,6 +196,10 @@ function initialize_navbar() {
     });
 
     $("#header-container").html(rendered_navbar);
+    // Track when the image is loaded to updated CSS properties.
+    $("#header-container img.header-button-avatar-image").on("load", (e) => {
+        e.currentTarget.classList.add("avatar-loaded");
+    });
 }
 
 function initialize_compose_box() {
@@ -395,7 +408,7 @@ function initialize_unread_ui() {
     unread_ui.initialize({notify_server_messages_read: unread_ops.notify_server_messages_read});
 }
 
-export function initialize_everything(state_data) {
+export async function initialize_everything(state_data) {
     /*
         When we initialize our various modules, a lot
         of them will consume data from the server
@@ -433,6 +446,7 @@ export function initialize_everything(state_data) {
        user_settings before setting the theme. Because information
        density is so fundamental, we initialize that first, however. */
     initialize_user_settings(state_data.user_settings);
+    mouse_drag.initialize();
     sidebar_ui.restore_sidebar_toggle_status();
     i18n.initialize({language_list: page_params.language_list});
     timerender.initialize();
@@ -448,16 +462,22 @@ export function initialize_everything(state_data) {
     left_sidebar_tooltips.initialize();
     // This populates data for scheduled messages.
     scheduled_messages.initialize(state_data.scheduled_messages);
+    message_reminder.initialize(state_data.reminders);
+    navigation_views.initialize(state_data.navigation_views);
     scheduled_messages_ui.initialize();
+    reminders_overlay_ui.initialize();
     popover_menus.initialize();
     left_sidebar_navigation_area_popovers.initialize();
     user_topic_popover.initialize();
     topic_popover.initialize();
-    message_actions_popover.initialize();
+    const message_reminder_click_handler = (remind_message_id, target) => {
+        compose_send_menu_popover.open_schedule_message_menu(remind_message_id, target);
+    };
+    message_actions_popover.initialize({message_reminder_click_handler});
     compose_send_menu_popover.initialize();
 
     realm_user_settings_defaults.initialize(state_data.realm_settings_defaults);
-    people.initialize(current_user.user_id, state_data.people);
+    await people.initialize(current_user.user_id, state_data.people, state_data.user_groups);
     starred_messages.initialize(state_data.starred_messages);
 
     // The emoji module must be initialized before the right sidebar
@@ -471,6 +491,9 @@ export function initialize_everything(state_data) {
     // module, so that we can tell whether user is member of
     // user_group whose members are allowed to create multiuse invite.
     user_groups.initialize(state_data.user_groups);
+
+    // Channel folders data must be initialized before left sidebar.
+    channel_folders.initialize(state_data.channel_folders);
 
     // These components must be initialized early, because other
     // modules' initialization has not been audited for whether they
@@ -513,8 +536,11 @@ export function initialize_everything(state_data) {
                 first_unread_message_id,
             });
         },
+        hide_other_views: inbox_ui.hide,
     });
-    inbox_ui.initialize();
+    inbox_ui.initialize({
+        hide_other_views: recent_view_ui.hide,
+    });
     alert_words.initialize(state_data.alert_words);
     saved_snippets.initialize(state_data.saved_snippets);
     emojisets.initialize();
@@ -544,7 +570,7 @@ export function initialize_everything(state_data) {
     left_sidebar_navigation_area.initialize();
     stream_list_sort.initialize();
     stream_list.initialize({
-        on_stream_click(stream_id, trigger) {
+        show_channel_feed(stream_id, trigger) {
             const sub = sub_store.get(stream_id);
             sidebar_ui.hide_all();
             popovers.hide_all();
@@ -558,6 +584,7 @@ export function initialize_everything(state_data) {
                 {trigger},
             );
         },
+        update_inbox_channel_view: inbox_ui.update_channel_view,
     });
     condense.initialize();
     spoilers.initialize();
@@ -567,12 +594,20 @@ export function initialize_everything(state_data) {
     stream_popover.initialize();
     color_picker_popover.initialize();
     add_stream_options_popover.initialize();
+    channel_folders_popover.initialize();
     click_handlers.initialize();
     scheduled_messages_overlay_ui.initialize();
-    compose_paste.initialize();
+    compose_paste.initialize({
+        upload_pasted_file: upload.upload_pasted_file,
+    });
     overlays.initialize();
     invite.initialize();
     message_view_header.initialize();
+    server_events_state.initialize({
+        ...state_data.server_events_state,
+        assert_get_events_running: server_events.assert_get_events_running,
+        restart_get_events: server_events.restart_get_events,
+    });
     server_events.initialize(state_data.server_events);
     user_status.initialize(state_data.user_status);
     compose_recipient.initialize();
@@ -682,7 +717,7 @@ export function initialize_everything(state_data) {
             ];
 
             if (latest_msg_id !== undefined) {
-                narrow.push({operator: "with", operand: latest_msg_id});
+                narrow.push({operator: "with", operand: String(latest_msg_id)});
             }
 
             message_view.show(narrow, {trigger: "sidebar"});
@@ -701,11 +736,9 @@ export function initialize_everything(state_data) {
     drafts_overlay_ui.initialize();
     // This needs to happen after activity_ui.initialize, so that user_filter
     // is defined. Also, must happen after people.initialize()
-    onboarding_steps.initialize(
-        state_data.onboarding_steps,
-        state_data.navigation_tour_video_url,
-        message_view.show,
-    );
+    onboarding_steps.initialize(state_data.onboarding_steps, {
+        show_message_view: message_view.show,
+    });
     typing.initialize();
     starred_messages_ui.initialize();
     user_status_ui.initialize();
@@ -719,7 +752,29 @@ export function initialize_everything(state_data) {
     $("#app-loading").addClass("loaded");
 }
 
+function show_try_zulip_modal() {
+    const html_body = render_try_zulip_modal();
+    dialog_widget.launch({
+        text_heading: i18n.$t({defaultMessage: "Welcome to the Zulip development community!"}),
+        html_body,
+        html_submit_button: i18n.$t({defaultMessage: "Let's go!"}),
+        on_click() {
+            // Do nothing
+        },
+        single_footer_button: true,
+        focus_submit_on_open: true,
+        close_on_submit: true,
+    });
+}
+
 $(() => {
+    // Remove '?show_try_zulip_modal', if present.
+    const url = new URL(window.location.href);
+    if (url.searchParams.has("show_try_zulip_modal")) {
+        url.searchParams.delete("show_try_zulip_modal");
+        window.history.replaceState(window.history.state, "", url.toString());
+    }
+
     if (page_params.is_spectator) {
         const data = {
             apply_markdown: true,
@@ -740,6 +795,9 @@ $(() => {
             success(response_data) {
                 const state_data = state_data_schema.parse(response_data);
                 initialize_everything(state_data);
+                if (page_params.show_try_zulip_modal) {
+                    show_try_zulip_modal();
+                }
             },
             error() {
                 $("#app-loading-middle-content").hide();

@@ -1,0 +1,110 @@
+{% extends "zerver/portico_signup.html" %}
+{% set entrypoint = "register" %}
+
+{% block title %}
+<title>{{ _("Import from Slack") }} | Zulip</title>
+{% endblock %}
+
+{% block portico_content %}
+<div class="app register-page">
+    <div class="app-main register-page-container new-style flex full-page center">
+        <div class="register-form left" id="realm-creation-form-slack-import">
+            <div class="lead">
+                <h1 class="get-started">{{ _("Import from Slack") }}</h1>
+            </div>
+            <div class="white-box">
+                {% if poll_for_import_completion %}
+                {% if import_poll_error_message %}
+                <p class="text-error">{{ import_poll_error_message }}</p>
+                {% endif %}
+                <input type='hidden' name='key' value='{{ key }}' id="auth_key_for_polling" />
+                <div class="input-box">
+                    <label for="uploaded-file-info">{{ _("Import progress") }}</label>
+                    <div id="slack-import-poll-status" class="not-editable-realm-field">
+                        {{ _("Checking import status…") }}
+                    </div>
+                </div>
+                {% else %}
+                <form method="post" class="form-inline" action="{{ url('import_realm_from_slack') }}">
+                    {{ csrf_input }}
+                    <div class="input-box no-validation">
+                        <input type='hidden' name='key' value='{{ key }}' id="auth_key_for_file_upload"/>
+                    </div>
+                    <div class="input-box slack-import-extra-info">
+                        <div class="not-editable-realm-field">
+                            {% trans %}
+                            Follow <a href="https://zulip.com/help//import-from-slack#export-your-slack-data:~:text=Export%20user%20data%20and%20custom%20emoji" rel="noopener noreferrer" target="_blank">these instructions</a> to obtain a <strong>Bot User OAuth Token</strong>.
+                            {% endtrans %}
+                        </div>
+                    </div>
+                    <div class="input-box">
+                        <label for="slack_access_token" class="inline-block label-title">{{ _('Slack bot user OAuth token') }}</label>
+                        <textarea id="slack-access-token"
+                          placeholder="xoxb-…"
+                          rows="3"
+                          maxlength="100" name="slack_access_token">
+                            {%- if slack_access_token -%}
+                                {{ slack_access_token }}
+                            {%- endif -%}
+                        </textarea>
+                        {% if slack_access_token_validation_error %}
+                        <p id="slack-access-token-validation-error" class="help-inline text-error">{{ slack_access_token_validation_error }}</p>
+                        {% endif %}
+                    </div>
+                    <div class="input-box">
+                        <button type="submit" class="register-button" {% if slack_access_token %} id="update-slack-access-token"{% endif %}>
+                            {% if slack_access_token %}
+                            {{ _("Update") }}
+                            {% else %}
+                            {{ _("Submit") }}
+                            {% endif %}
+                        </button>
+                    </div>
+                </form>
+                {% if slack_access_token %}
+                <div class="input-box" id="slack-import-drag-drop-wrapper">
+                    <label for="slack-import-drag-and-drop" class="inline-block label-title">{{ _('Upload your Slack export file') }}</label>
+                    <div class="not-editable-realm-field">
+                        {% trans %}
+                        Follow <a href="https://zulip.com/help/import-from-slack#export-your-slack-data" target="_blank" rel="noopener noreferrer">these instructions</a> to obtain your Slack message history export.
+                        {% endtrans %}
+                    </div>
+                    <div id="slack-import-drag-and-drop" data-max-file-size="{{max_file_size}}"></div>
+                    <p id="slack-import-file-upload-error" class="help-inline text-error">{{ invalid_file_error_message }}</p>
+                </div>
+                <form id="slack-import-start-upload-wrapper" method="post" class="form-inline {% if uploaded_import_file_name %}{% else %}hidden{% endif %}" action="{{ url('import_realm_from_slack') }}">
+                    {{ csrf_input }}
+                    <div class="input-box no-validation">
+                        <input type='hidden' name='key' value='{{ key }}' />
+                        <input type='hidden' name='start_slack_import' value="true" />
+                    </div>
+                    <div class="input-box">
+                        <label for="uploaded-file-info">{{ _("Uploaded export file") }}</label>
+                        <div class="not-editable-realm-field" id="slack-import-uploaded-file-name">{{ uploaded_import_file_name }}</div>
+                    </div>
+                    <div class="input-box">
+                        <button type="submit" class="register-button"{% if invalid_file_error_message %} disabled{% endif %}>
+                            {{ _("Start import") }}
+                        </button>
+                    </div>
+                </form>
+                {% endif %}
+                {% endif %}
+            </div>
+            {% if poll_for_import_completion %}
+            {% else %}
+            <form method="post" class="hidden" id="cancel-slack-import-form" action="{{ url('import_realm_from_slack') }}">
+                {{ csrf_input }}
+                <input type='hidden' name='key' value="{{ key }}" />
+                <input type='hidden' name='cancel_import' value='true'/>
+            </form>
+            <div class="bottom-text">
+                {% trans %}
+                Or <span id="cancel-slack-import" tabindex="0">create organization</span> without importing data.
+                {% endtrans %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

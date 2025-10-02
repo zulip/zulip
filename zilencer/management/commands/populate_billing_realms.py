@@ -18,7 +18,9 @@ from corporate.lib.stripe import (
     add_months,
     sign_string,
 )
-from corporate.models import Customer, CustomerPlan, LicenseLedger
+from corporate.models.customers import Customer
+from corporate.models.licenses import LicenseLedger
+from corporate.models.plans import CustomerPlan
 from scripts.lib.zulip_tools import TIMESTAMP_FORMAT
 from zerver.actions.create_realm import do_create_realm
 from zerver.actions.create_user import do_create_user

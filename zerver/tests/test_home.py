@@ -10,7 +10,8 @@ from django.conf import settings
 from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 
-from corporate.models import Customer, CustomerPlan
+from corporate.models.customers import Customer
+from corporate.models.plans import CustomerPlan
 from version import ZULIP_VERSION
 from zerver.actions.create_user import do_create_user
 from zerver.actions.realm_settings import do_change_realm_plan_type, do_set_realm_property
@@ -57,7 +58,7 @@ class HomeTest(ZulipTestCase):
         "presence_history_limit_days_for_web_app",
         "promote_sponsoring_zulip",
         "request_language",
-        "show_webathena",
+        "show_try_zulip_modal",
         "state_data",
         "test_suite",
         "translation_data",
@@ -75,6 +76,7 @@ class HomeTest(ZulipTestCase):
         "can_create_streams",
         "can_create_web_public_streams",
         "can_invite_others_to_realm",
+        "channel_folders",
         "cross_realm_bots",
         "custom_profile_field_types",
         "custom_profile_fields",
@@ -94,17 +96,22 @@ class HomeTest(ZulipTestCase):
         "jitsi_server_url",
         "last_event_id",
         "max_avatar_file_size_mib",
+        "max_channel_folder_description_length",
+        "max_channel_folder_name_length",
         "max_file_upload_size_mib",
         "max_icon_file_size_mib",
         "max_logo_file_size_mib",
         "max_message_id",
         "max_message_length",
+        "max_reminder_note_length",
         "max_stream_description_length",
         "max_stream_name_length",
+        "max_bulk_new_subscription_messages",
         "max_topic_length",
         "muted_topics",
         "muted_users",
         "navigation_tour_video_url",
+        "navigation_views",
         "never_subscribed",
         "onboarding_steps",
         "password_min_guesses",
@@ -112,6 +119,7 @@ class HomeTest(ZulipTestCase):
         "password_max_length",
         "presences",
         "presence_last_update_id",
+        "push_devices",
         "queue_id",
         "realm_allow_edit_history",
         "realm_allow_message_editing",
@@ -138,6 +146,8 @@ class HomeTest(ZulipTestCase):
         "realm_can_move_messages_between_channels_group",
         "realm_can_move_messages_between_topics_group",
         "realm_can_resolve_topics_group",
+        "realm_can_set_delete_message_policy_group",
+        "realm_can_set_topics_policy_group",
         "realm_can_summarize_topics_group",
         "realm_create_multiuse_invite_group",
         "realm_create_private_stream_policy",
@@ -174,7 +184,6 @@ class HomeTest(ZulipTestCase):
         "realm_inline_image_preview",
         "realm_inline_url_embed_preview",
         "realm_invite_required",
-        "realm_is_zephyr_mirror_realm",
         "realm_jitsi_server_url",
         "realm_linkifiers",
         "realm_logo_source",
@@ -200,9 +209,11 @@ class HomeTest(ZulipTestCase):
         "realm_presence_disabled",
         "realm_push_notifications_enabled",
         "realm_push_notifications_enabled_end_timestamp",
+        "realm_require_e2ee_push_notifications",
         "realm_require_unique_names",
         "realm_send_welcome_emails",
         "realm_signup_announcements_stream_id",
+        "realm_topics_policy",
         "realm_upload_quota_mib",
         "realm_uri",
         "realm_url",
@@ -212,10 +223,12 @@ class HomeTest(ZulipTestCase):
         "realm_video_chat_provider",
         "realm_waiting_period_threshold",
         "realm_want_advertise_in_communities_directory",
+        "realm_welcome_message_custom_text",
         "realm_wildcard_mention_policy",
         "realm_zulip_update_announcements_stream_id",
         "realm_moderation_request_channel_id",
         "recent_private_conversations",
+        "reminders",
         "saved_snippets",
         "scheduled_messages",
         "server_avatar_changes_disabled",
@@ -277,7 +290,7 @@ class HomeTest(ZulipTestCase):
 
         # Verify succeeds once logged-in
         with (
-            self.assert_database_query_count(54),
+            self.assert_database_query_count(58),
             patch("zerver.lib.cache.cache_set") as cache_mock,
         ):
             result = self._get_home_page(stream="Denmark")
@@ -375,7 +388,7 @@ class HomeTest(ZulipTestCase):
             "promote_sponsoring_zulip",
             "realm_rendered_description",
             "request_language",
-            "show_webathena",
+            "show_try_zulip_modal",
             "state_data",
             "test_suite",
             "translation_data",
@@ -385,6 +398,12 @@ class HomeTest(ZulipTestCase):
         ]
         self.assertCountEqual(page_params, expected_keys)
         self.assertIsNone(page_params["state_data"])
+
+        with self.settings(DEVELOPMENT=True):
+            result = self.client_get("/?show_try_zulip_modal")
+        self.assertEqual(result.status_code, 200)
+        page_params = self._get_page_params(result)
+        self.assertEqual(page_params["show_try_zulip_modal"], True)
 
     def test_realm_authentication_methods(self) -> None:
         realm = get_realm("zulip")
@@ -578,7 +597,7 @@ class HomeTest(ZulipTestCase):
         # Verify number of queries for Realm admin isn't much higher than for normal users.
         self.login("iago")
         with (
-            self.assert_database_query_count(53),
+            self.assert_database_query_count(57),
             patch("zerver.lib.cache.cache_set") as cache_mock,
         ):
             result = self._get_home_page()
@@ -610,7 +629,7 @@ class HomeTest(ZulipTestCase):
         self._get_home_page()
 
         # Then for the second page load, measure the number of queries.
-        with self.assert_database_query_count(49):
+        with self.assert_database_query_count(53):
             result = self._get_home_page()
 
         # Do a sanity check that our new streams were in the payload.

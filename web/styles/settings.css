@@ -129,11 +129,23 @@ h3,
     gap: 0.5rem;
 }
 
-.admin-realm-description {
-    height: 16em;
+.admin-realm-description,
+.admin-realm-welcome-message-custom-text {
+    height: 12em;
     width: 100%;
     max-width: 500px;
     box-sizing: border-box;
+}
+
+.admin-realm-welcome-message-custom-text {
+    margin-bottom: 10px;
+}
+
+#welcome_message_custom_text_buttons_container {
+    display: inline-flex;
+    /* 5px at 16px em */
+    gap: 0.3125em;
+    align-items: center;
 }
 
 .setting_notification_sound,
@@ -162,7 +174,7 @@ h3,
 
 .wrapped-table {
     overflow-wrap: anywhere;
-    word-wrap: break-word;
+    overflow-wrap: break-word;
     white-space: pre-wrap;
     white-space: normal;
 }
@@ -238,7 +250,7 @@ h3,
         }
     }
 
-    .table-sticky-headers th {
+    .table-sticky-headers {
         position: sticky;
         top: 0;
         z-index: 1;
@@ -255,18 +267,10 @@ h3,
         font-size: 0.8571em; /* 12px at 14px/em */
         font-weight: 400;
         vertical-align: middle;
-        line-height: 1.6667em; /* 20px at 12px/em */
+        line-height: inherit;
         display: inline-block;
         float: none;
         margin-top: 9px;
-    }
-
-    .loading_indicator_spinner {
-        width: 30%;
-        height: 1.4286em; /* 20px at 14px/em */
-        margin-top: 7px;
-        vertical-align: middle;
-        display: inline-block;
     }
 
     .inline {
@@ -317,7 +321,7 @@ h3,
 .settings_select,
 .list_select {
     padding: 0 25px 0 6px;
-    color: hsl(0deg 0% 33%);
+    color: var(--color-text-default);
     border-radius: 4px;
     border: 1px solid hsl(0deg 0% 80%);
     cursor: pointer;
@@ -340,7 +344,7 @@ select.settings_select {
     background-image: var(--icon-chevron-down);
     background-repeat: no-repeat;
     background-position: 98%;
-    background-size: 14px;
+    background-size: 1em;
 }
 
 #admin-active-users-list,
@@ -357,6 +361,7 @@ select.settings_select {
     word-break: normal;
 }
 
+.export_url_spinner,
 .last_active {
     .loading_indicator_spinner {
         width: 1.25em;
@@ -369,17 +374,14 @@ select.settings_select {
 }
 
 .input-group {
-    margin: 0 0 20px;
-
-    /* Class to use when the following input-group is related and should
-       appear just after this element. Normally the margin is 20px, but
-       for related settings, we set it to 10px. */
-    &.thinner {
-        margin-bottom: 10px;
-    }
+    margin: 0 0 1.25em; /* 20px at 16px/em */
 
     & label.checkbox + label {
         cursor: pointer;
+    }
+
+    .message_count {
+        margin: 10px 0 0;
     }
 }
 
@@ -430,6 +432,26 @@ input[type="checkbox"] {
     }
 }
 
+.decorated-stream-name-dropdown-widget {
+    .dropdown_widget_value {
+        /* The max-width should account for the
+           16px-square box (at 16px/1em) for the
+           chevron icon. */
+        max-width: calc(100% - 1em);
+        display: flex;
+        align-items: baseline;
+        /* Mimic the space from the previous inline
+           layout. */
+        gap: 0.4ch;
+    }
+
+    .decorated-channel-name {
+        overflow-x: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+}
+
 .allow-subdomains,
 .new-realm-domain-allow-subdomains {
     margin: 0 !important;
@@ -441,7 +463,7 @@ input[type="checkbox"] {
 
 .admin-realm-form {
     & h3 {
-        margin-bottom: 10px;
+        margin: 10px 0 5px;
     }
 
     .subsection-header h3 {
@@ -453,12 +475,17 @@ input[type="checkbox"] {
 .notification-settings-form {
     .subsection-header h3 {
         display: inline-block;
+        margin: 10px 0 5px;
     }
 
     .tip {
         width: fit-content;
         margin-top: 0;
     }
+}
+
+.send_test_notification {
+    margin-bottom: 15px;
 }
 
 .preferences-settings-form {
@@ -470,6 +497,7 @@ input[type="checkbox"] {
 .information-density-settings {
     display: flex;
     gap: 2em;
+    margin: 0 0 20px;
 
     &.disabled-setting .display-value {
         opacity: 0.4;
@@ -491,26 +519,81 @@ input[type="checkbox"] {
     }
 }
 
-#stream-specific-notify-table .unmute_stream {
-    position: relative;
-    left: 3px;
-    top: 2px;
+#stream-specific-notify-table {
+    .reset_stream_notifications {
+        opacity: 0;
+        visibility: hidden;
+        transition: 0.2s ease;
+        transition-property: opacity, visibility;
 
-    &:hover {
-        color: var(--color-unmute-stream-hover);
-        cursor: pointer;
+        &:hover {
+            cursor: pointer;
+        }
+
+        &:active {
+            outline: none;
+        }
+    }
+
+    .unmute_stream {
+        &:hover {
+            cursor: pointer;
+        }
+
+        &:focus {
+            outline: none;
+        }
+    }
+
+    .stream-controls {
+        display: flex;
+        align-items: center;
+        /* This gap matches a single space character. */
+        gap: 0.4ch;
+
+        .stream-privacy {
+            display: flex;
+        }
+
+        &:hover {
+            .reset_stream_notifications {
+                opacity: 1;
+                visibility: visible;
+            }
+        }
+    }
+}
+
+#confirm_reset_stream_notifications_modal {
+    .channel-privacy-type-icon {
+        padding-left: 3px;
+        padding-right: 0;
+        width: auto;
+    }
+}
+
+#customizable_stream_notifications_table .dropdown-widget-button {
+    /* 225px at 16px/1em */
+    width: 14.0625em;
+
+    &:focus {
+        outline: none;
+    }
+
+    &:focus-visible {
+        outline: 2px solid var(--color-outline-focus);
     }
 }
 
 .advanced-configurations-container {
-    .advance-config-title-container {
+    .advance-config-toggle-area {
+        cursor: pointer;
         display: flex;
         align-items: center;
-        cursor: pointer;
-        flex-wrap: wrap;
+        gap: 0 0.625em;
 
         .stream_setting_subsection_title {
-            margin: 4px 8px;
+            margin: 4px 0;
         }
 
         .toggle-advanced-configurations-icon {
@@ -526,7 +609,7 @@ input[type="checkbox"] {
 }
 
 .organization-settings-parent {
-    padding-top: 10px;
+    padding-top: 5px;
 }
 
 #id_org_profile_preview {
@@ -538,7 +621,7 @@ input[type="checkbox"] {
 }
 
 .inline-block.organization-permissions-parent {
-    padding-top: 10px;
+    padding-top: 5px;
 }
 
 #org-other-permissions .tip {
@@ -562,32 +645,22 @@ input[type="checkbox"] {
     margin: 0 2px;
 }
 
+.overlay-keyboard-shortcuts .popover-menu-hotkey-hints {
+    display: inline-flex;
+    padding-left: 0;
+}
+
 .edit-attachment-buttons {
     display: inline-block;
     vertical-align: middle;
-    height: 32px;
-}
-
-.edit-attachment-buttons .remove-attachment {
-    margin-left: 5px;
-}
-
-.edit-attachment-buttons .download-attachment {
-    display: block;
-    padding: 6px 9px;
-    text-decoration: none;
-
-    &:hover {
-        color: hsl(156deg 41% 40%);
-    }
 }
 
 .remove-alert-word {
     margin-top: 1px;
 }
 
-.alert_word_status_text {
-    overflow-wrap: anywhere;
+.alert-word-status-banner {
+    margin-bottom: 20px;
 }
 
 .alert-notification {
@@ -601,8 +674,6 @@ input[type="checkbox"] {
     overflow-wrap: anywhere;
     background-color: transparent;
     border-radius: 4px;
-    margin-top: 14px;
-    margin-left: 10px;
     color: hsl(156deg 30% 50%);
     padding: 3px 10px;
 
@@ -639,8 +710,6 @@ input[type="checkbox"] {
 
     & img {
         margin-right: 6px;
-        vertical-align: middle;
-        margin-top: -2px;
     }
 
     .settings-save-checkmark {
@@ -695,22 +764,23 @@ input[type="checkbox"] {
     }
 }
 
+#edit-user-form .alert-notification.custom-field-status,
+#profile-settings .alert-notification.custom-field-status,
+#profile-settings .alert-notification.full-name-status,
+#profile-settings .alert-notification.timezone-setting-status {
+    padding-top: 0;
+    padding-bottom: 0;
+    margin-top: 0;
+    padding-left: 0;
+    margin-left: 5px;
+    border: none;
+}
+
 #profile-settings {
     .custom-profile-fields-form .custom_user_field label,
     .full-name-change-container label,
     .timezone-setting-form label {
         min-width: fit-content;
-    }
-
-    .alert-notification.custom-field-status,
-    .alert-notification.full-name-status,
-    .alert-notification.timezone-setting-status {
-        padding-top: 0;
-        padding-bottom: 0;
-        margin-top: 0;
-        padding-left: 0;
-        margin-left: 5px;
-        border: none;
     }
 
     .person_picker {
@@ -752,6 +822,14 @@ input[type="checkbox"] {
 .admin-realm-message-retention-days {
     width: 5ch;
     text-align: right;
+}
+
+.delete-choice {
+    display: inline-flex;
+
+    &.hide {
+        display: none;
+    }
 }
 
 #add-default-stream-modal {
@@ -836,7 +914,8 @@ input[type="checkbox"] {
 .admin_profile_fields_table,
 .edit_profile_field_choices_container,
 .profile_field_choices_table,
-.admin_linkifiers_table {
+.admin_linkifiers_table,
+.admin_channel_folders_table {
     .movable-row {
         .move-handle {
             cursor: move;
@@ -859,20 +938,19 @@ input[type="checkbox"] {
 
 #organization-permissions {
     .dropdown-widget-button {
-        color: hsl(0deg 0% 33%);
+        color: var(--color-text-default);
     }
 }
 
 #organization-settings {
     .dropdown-widget-button {
-        color: hsl(0deg 0% 33%);
+        color: var(--color-text-default);
     }
 }
 
 .org-permissions-form .pill-container {
     /* Subtract 2 * (2px padding) + 2 * (1px border) */
     min-width: calc(var(--modal-input-width) - 6px);
-    background-color: hsl(0deg 0% 100%);
 
     .input {
         flex-grow: 1;
@@ -898,6 +976,7 @@ input[type="checkbox"] {
 #bot-settings {
     .add-a-new-bot {
         margin-bottom: 2px;
+        margin-top: 10px;
     }
 
     hr {
@@ -1016,7 +1095,7 @@ input[type="checkbox"] {
     .bot-card-api-key .bot-card-api-key-value-and-button {
         display: block;
         margin-left: 0;
-        word-wrap: break-word;
+        overflow-wrap: break-word;
         word-break: break-all;
         white-space: normal;
     }
@@ -1110,7 +1189,7 @@ input[type="checkbox"] {
     }
 
     .alert_word_listing .value {
-        word-wrap: break-word;
+        overflow-wrap: break-word;
         word-break: break-all;
         white-space: normal;
     }
@@ -1324,14 +1403,6 @@ label.preferences-radio-choice-label {
     margin-right: 1px;
 }
 
-.manage-user-button,
-.deactivate-user-button,
-.reactivate-user-button {
-    display: inline-flex;
-    align-items: center;
-    min-height: 35px;
-}
-
 .download_bot_zuliprc,
 .copy_zuliprc,
 .open_bots_subscribed_streams,
@@ -1339,26 +1410,6 @@ label.preferences-radio-choice-label {
 .deactivate-bot-button {
     display: inline-flex;
     align-items: center;
-}
-
-.invite-user-link {
-    display: grid;
-    grid-template-columns: auto 1fr;
-    width: fit-content;
-    align-items: center;
-    text-decoration: none;
-
-    &:hover {
-        text-decoration: none;
-    }
-
-    .zulip-icon-user-plus {
-        margin-right: 5px;
-    }
-
-    &:hover .user-settings-invite-user-label {
-        text-decoration: underline;
-    }
 }
 
 /* -- new settings overlay -- */
@@ -1587,7 +1638,7 @@ label.preferences-radio-choice-label {
 .time-limit-custom-input,
 .realm_jitsi_server_url_custom_input {
     padding: 4px 6px;
-    color: hsl(0deg 0% 33%);
+    color: var(--color-text-default);
     border: 1px solid hsl(0deg 0% 80%);
     transition:
         border-color linear 0.2s,
@@ -1764,12 +1815,16 @@ label.preferences-radio-choice-label {
     }
 }
 
+.profile-field-choices-wrapper > .alphabetize-choices-button {
+    display: block;
+    margin: 12px 0 0;
+}
+
 .custom_user_field,
 .bot_owner_user_field {
     .pill-container {
         min-height: 24px;
         max-width: 206px;
-        background-color: hsl(0deg 0% 100%);
 
         &:focus-within {
             border-color: hsl(206deg 80% 62% / 80%);
@@ -1807,7 +1862,7 @@ label.preferences-radio-choice-label {
 }
 
 .settings_textarea {
-    color: hsl(0deg 0% 33%);
+    color: var(--color-text-default);
     background-color: hsl(0deg 0% 100%);
     border-radius: 4px;
     vertical-align: middle;
@@ -1861,8 +1916,8 @@ label.preferences-radio-choice-label {
     }
 }
 
-/* This value needs to match with the same in subscriptions.css, as
-   we have some shared styles declared there */
+/* We should eventually consolidate some of these styles with the styles
+   in subscriptions.css, using shared classnames. */
 @container settings-overlay (width < $settings_overlay_sidebar_collapse_breakpoint) {
     .profile-settings-form {
         .user-avatar-section {
@@ -1914,9 +1969,25 @@ label.preferences-radio-choice-label {
             #settings_content {
                 height: 100%;
             }
+        }
 
-            &.right {
-                top: 47px;
+        .content-wrapper.right {
+            position: absolute;
+            display: block;
+            left: 101%;
+            margin: 0;
+            width: 100%;
+            height: calc(100% - var(--settings-overlay-header-height));
+
+            top: var(--settings-overlay-header-height);
+            background-color: var(--color-background-modal);
+            border: none;
+
+            transition: left 0.3s ease; /* stylelint-disable-line plugin/no-low-performance-animation-properties */
+            z-index: 10;
+
+            &.show {
+                left: 0%;
             }
         }
 
@@ -2133,8 +2204,7 @@ label.preferences-radio-choice-label {
     }
 
     .alert-notification {
-        margin-top: auto;
-        margin-bottom: 12px;
+        margin-left: 10px;
         margin-right: auto;
     }
 
@@ -2215,7 +2285,7 @@ label.preferences-radio-choice-label {
 .settings_url_input,
 .settings_text_input {
     padding: 4px 6px;
-    color: hsl(0deg 0% 33%);
+    color: var(--color-text-default);
     border-radius: 4px;
     border: 1px solid hsl(0deg 0% 80%);
     box-shadow: inset 0 1px 1px hsl(0deg 0% 0% / 7.5%);
@@ -2244,7 +2314,6 @@ label.preferences-radio-choice-label {
     .settings_text_input,
     .settings_textarea,
     .pill-container {
-        border-color: hsl(0deg 0% 100%);
         margin-bottom: 0;
 
         &:focus {
@@ -2296,6 +2365,22 @@ label.preferences-radio-choice-label {
     width: 110px;
 }
 
+#admin-user-list .tab-switcher {
+    margin-left: 0;
+}
+
 #data-exports .tab-switcher .ind-tab {
     width: 160px;
+}
+
+#admin_invites_table {
+    .check:disabled {
+        opacity: 1;
+    }
+
+    .check {
+        &.hide {
+            display: none;
+        }
+    }
 }

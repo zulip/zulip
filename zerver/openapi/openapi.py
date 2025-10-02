@@ -470,7 +470,7 @@ def validate_test_response(request: Request, response: Response) -> bool:
         return True
     # Code is not declared but appears in various 400 responses. If
     # common, it can be added to 400 response schema
-    if status_code.startswith("4"):
+    if status_code.startswith("4") or status_code == "502":
         # This return statement should ideally be not here. But since
         # we have not defined 400 responses for various paths this has
         # been added as all 400 have the same schema.  When all 400

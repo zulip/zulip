@@ -2,6 +2,8 @@
 
 const assert = require("node:assert/strict");
 
+const {make_user_group} = require("./lib/example_group.cjs");
+const {make_realm} = require("./lib/example_realm.cjs");
 const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 const $ = require("./lib/zjquery.cjs");
@@ -28,9 +30,16 @@ function MessageListView() {
         prepend: noop,
         clear_rendering_state: noop,
         get_row: () => ({
-            find: () => ({
-                is: () => false,
-            }),
+            find(selector) {
+                assert.equal(selector, ".message_controls .reaction_button");
+                return {
+                    length: 1,
+                    css(property) {
+                        assert.equal(property, "display");
+                        return "none";
+                    },
+                };
+            },
         }),
         message_containers: new Map(),
     };
@@ -46,7 +55,10 @@ mock_esm("../src/hash_util", {
 });
 mock_esm("../src/stream_data", {
     is_subscribed: () => true,
-    is_stream_archived: () => false,
+    is_stream_archived_by_id: () => false,
+    get_sub_by_id: () => noop,
+    user_can_move_messages_within_channel: () => true,
+    is_empty_topic_only_channel: () => false,
 });
 mock_esm("../src/group_permission_settings", {
     get_group_permission_setting_config() {
@@ -58,7 +70,7 @@ mock_esm("../src/group_permission_settings", {
 
 const current_user = {};
 set_current_user(current_user);
-const realm = {};
+const realm = make_realm();
 set_realm(realm);
 
 // Define test users
@@ -86,13 +98,13 @@ const me = {
     is_guest: false,
 };
 
-const everyone = {
+const everyone = make_user_group({
     name: "role:everyone",
     id: 2,
     members: new Set([999, 1000, 2000]),
     is_system_group: true,
     direct_subgroup_ids: new Set([]),
-};
+});
 user_groups.initialize({realm_user_groups: [everyone]});
 
 // Helper functions:
@@ -153,8 +165,6 @@ function set_page_params_no_edit_restrictions({override}) {
 function test(label, f) {
     run_test(label, (helpers) => {
         // Stubs for calculate_timestamp_widths()
-        $("<div>").css = noop;
-        $(":root").css = noop;
         $("<div>").width = noop;
         $("<div>").remove = noop;
 
@@ -193,6 +203,7 @@ test("my_message_all_actions", ({override}) => {
             unread: false,
             collapsed: false,
             not_spectator: true,
+            submessages: [],
             edit_history: [
                 {
                     prev_content: "Previous content",

@@ -108,7 +108,7 @@ def api_grafana_webhook(
                     + "\n"
                 )
 
-            if alert["annotations"]:
+            if alert.get("annotations"):
                 annotation_information = ""
                 for key, value in alert["annotations"].items():
                     annotation_information += "- " + key + ": " + value.tame(check_string) + "\n"
@@ -116,12 +116,12 @@ def api_grafana_webhook(
                     annotation_information=annotation_information
                 )
 
-            if alert["generatorURL"]:
+            if alert.get("generatorURL"):
                 body += MESSAGE_GENERATOR_TEMPLATE.format(
                     generator_url=alert["generatorURL"].tame(check_string)
                 )
 
-            if alert["silenceURL"]:
+            if alert.get("silenceURL"):
                 body += MESSAGE_SILENCE_TEMPLATE.format(
                     silence_url=alert["silenceURL"].tame(check_string)
                 )

@@ -7,13 +7,15 @@ To run a Zulip server, you will need:
   - Ubuntu 22.04
   - Ubuntu 24.04
   - Debian 12
+  - Debian 13
 - A supported CPU architecture:
   - x86-64
   - aarch64
-- At least 2 GB RAM, and 10 GB disk space
+- At least 2 GB RAM
   - If you have < 5 GB RAM, we require some swap space; we recommend configuring
     2 GB of swap
   - If you expect 100+ users: 4 GB RAM, and 2 CPUs
+- 10GB free space (i.e. approximately a 25GB total disk, given OS requirements)
 - A hostname in DNS
 - Credentials for sending email
 
@@ -36,7 +38,7 @@ on issues you'll encounter](install-existing-server.md).
 
 #### Operating system
 
-Ubuntu 22.04, Ubuntu 24.04, and Debian 12
+Ubuntu 22.04, Ubuntu 24.04, Debian 12, and Debian 13
 are supported for running Zulip in production. You can also
 run Zulip on other platforms that support Docker using
 [docker-zulip][docker-zulip-homepage].
@@ -68,10 +70,10 @@ sudo apt update
   style instances for organizations with hundreds of users (active or
   no).
 
-- Disk space: You'll need at least 10 GB of free disk space for a
-  server with dozens of users. We recommend using an SSD and avoiding
-  cloud storage backends that limit the IOPS per second, since the
-  disk is primarily used for the Zulip database.
+- Disk space: You'll need at least 10 GB of dedicated free disk space
+  for a server with dozens of users. We recommend using an SSD and
+  avoiding cloud storage backends that limit the IOPS per second,
+  since the disk is primarily used for the Zulip database.
 
 See our [documentation on scalability](#scalability) below for advice
 on hardware requirements for larger organizations.
@@ -228,9 +230,10 @@ installing Zulip with a dedicated database server.
   backend][s3-uploads].
 
 - **Sharding:** For servers with several thousand daily active users,
-  Zulip supports sharding its real-time-push Tornado service, both by
-  realm/organization (for hosting many organizations) and by user ID
-  (for hosting single very large organizations)
+  Zulip supports [sharding its real-time-push Tornado
+  service][tornado-sharding], both by realm/organization (for hosting many
+  organizations) and by user ID (for hosting single very large
+  organizations).
 
   Care must be taken when dividing traffic for a single Zulip realm
   between multiple Zulip application servers, which is why we
@@ -248,3 +251,4 @@ document](../subsystems/performance.md) may also be of interest.
 [s3-uploads]: upload-backends.md#s3-backend-configuration
 [streaming-replication]: postgresql.md#postgresql-warm-standby
 [contact-support]: https://zulip.com/help/contact-support
+[tornado-sharding]: system-configuration.md#tornado_sharding

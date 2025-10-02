@@ -116,7 +116,12 @@ def execute_from_command_line(argv: list[str] | None = None) -> None:
 
 
 if __name__ == "__main__":
-    assert_not_running_as_root()
+    if len(sys.argv) > 1 and sys.argv[1] == "email_server":
+        # This needs to be able to run as root to read certificates
+        # for STARTTLS, and bind to port 25.
+        pass
+    else:
+        assert_not_running_as_root()
 
     config_file = configparser.RawConfigParser()
     config_file.read("/etc/zulip/zulip.conf")
@@ -143,7 +148,6 @@ if __name__ == "__main__":
 
     log_management_command(sys.argv, settings.MANAGEMENT_LOG_PATH)
 
-    os.environ.setdefault("PYTHONSTARTUP", os.path.join(BASE_DIR, "scripts/lib/pythonrc.py"))
     if "--no-traceback" not in sys.argv and len(sys.argv) > 1:
         sys.argv.append("--traceback")
     try:

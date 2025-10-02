@@ -1,7 +1,7 @@
 import $ from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
-import {z} from "zod";
+import * as z from "zod/mini";
 
 import * as resolved_topic from "../shared/src/resolved_topic.ts";
 
@@ -16,17 +16,25 @@ import * as compose_validate from "./compose_validate.ts";
 import * as direct_message_group_data from "./direct_message_group_data.ts";
 import * as drafts from "./drafts.ts";
 import * as echo from "./echo.ts";
+import type {RawLocalMessage} from "./echo.ts";
 import type {Filter} from "./filter.ts";
+import * as lightbox from "./lightbox.ts";
 import * as message_edit from "./message_edit.ts";
 import * as message_edit_history from "./message_edit_history.ts";
 import * as message_events_util from "./message_events_util.ts";
 import * as message_helper from "./message_helper.ts";
+import type {LocalMessage} from "./message_helper.ts";
 import * as message_list_data_cache from "./message_list_data_cache.ts";
 import * as message_lists from "./message_lists.ts";
 import * as message_notifications from "./message_notifications.ts";
 import * as message_parser from "./message_parser.ts";
 import * as message_store from "./message_store.ts";
-import {type Message, type RawMessage, raw_message_schema} from "./message_store.ts";
+import {
+    type Message,
+    type MessageEditHistoryEntry,
+    type RawMessage,
+    raw_message_schema,
+} from "./message_store.ts";
 import * as message_view from "./message_view.ts";
 import * as narrow_state from "./narrow_state.ts";
 import * as pm_list from "./pm_list.ts";
@@ -206,7 +214,7 @@ export let update_views_filtered_on_message_property = (
                         messages_to_remove.delete(raw_message.id);
                         const message = message_store.get(raw_message.id);
                         messages_to_add.push(
-                            message ?? message_helper.process_new_message(raw_message),
+                            message ?? message_helper.process_new_server_message(raw_message),
                         );
                     }
                     msg_list.data.remove([...messages_to_remove]);
@@ -237,7 +245,7 @@ export let update_views_filtered_on_message_property = (
                     // we reach here but `message_helper.process_new_message`
                     // already handles that case.
                     for (const raw_message of parsed_data.messages) {
-                        message_helper.process_new_message(raw_message);
+                        message_helper.process_new_server_message(raw_message);
                     }
                     update_views_filtered_on_message_property(
                         message_ids,
@@ -286,14 +294,35 @@ export function rewire_update_views_filtered_on_message_property(
     update_views_filtered_on_message_property = value;
 }
 
-export function insert_new_messages(
-    raw_messages: RawMessage[],
-    sent_by_this_client: boolean,
-    deliver_locally: boolean,
-): Message[] {
-    const messages = raw_messages.map((raw_message) =>
-        message_helper.process_new_message(raw_message, deliver_locally),
-    );
+export type InsertNewMessagesOpts = {
+    sent_by_this_client: boolean;
+} & (
+    | {
+          type: "server_message";
+          raw_messages: RawMessage[];
+      }
+    | {
+          type: "local_message";
+          raw_messages: RawLocalMessage[];
+      }
+);
+
+export function insert_new_messages(opts: InsertNewMessagesOpts): Message[] {
+    const deliver_locally = opts.type === "local_message";
+    let messages: Message[] = [];
+    let local_messages: LocalMessage[] | undefined = [];
+    if (opts.type === "server_message") {
+        messages = opts.raw_messages.map((raw_message) =>
+            message_helper.process_new_server_message(raw_message),
+        );
+    } else {
+        local_messages = opts.raw_messages.map((raw_message) =>
+            message_helper.process_new_local_message(raw_message),
+        );
+        // Local messages have extra data on them that we need to access in
+        // a few places, but otherwise we can treat them like regular messages.
+        messages = local_messages;
+    }
 
     const any_untracked_unread_messages = unread.process_loaded_messages(messages, false);
     direct_message_group_data.process_loaded_messages(messages);
@@ -349,7 +378,7 @@ export function insert_new_messages(
     // sent_by_this_client will be true if ANY of the messages
     // were sent by this client; notifications.notify_local_mixes
     // will filter out any not sent by us.
-    if (sent_by_this_client) {
+    if (opts.sent_by_this_client) {
         compose_notifications.notify_local_mixes(messages, need_user_to_scroll, {
             narrow_to_recipient(message_id) {
                 message_view.narrow_by_topic(message_id, {trigger: "outside_current_view"});
@@ -365,7 +394,7 @@ export function insert_new_messages(
     // tracking before we update the stream sidebar, to take advantage
     // of how stream_topic_history uses the echo data structures.
     if (deliver_locally) {
-        for (const message of messages) {
+        for (const message of local_messages) {
             echo.track_local_message(message);
         }
     }
@@ -449,18 +478,19 @@ export function update_messages(events: UpdateMessageEvent[]): void {
                     // Add message's edit_history in message dict
                     // For messages that are edited, edit_history needs to
                     // be added to message in frontend.
-                    if (anchor_message.edit_history === undefined) {
-                        anchor_message.edit_history = [];
-                    }
                     anchor_message.edit_history = [
                         edit_history_entry,
-                        ...anchor_message.edit_history,
+                        ...(anchor_message.edit_history ?? []),
                     ];
                 }
                 any_message_content_edited = true;
 
                 // Update raw_content, so that editing a few times in a row is fast.
                 anchor_message.raw_content = event.content;
+
+                // Editing a message may change the titles for linked
+                // media, so we must invalidate the asset map.
+                lightbox.invalidate_asset_map_of_message(event.message_id);
             }
 
             if (unread.update_message_for_mention(anchor_message, any_message_content_edited)) {
@@ -532,9 +562,6 @@ export function update_messages(events: UpdateMessageEvent[]): void {
                     local_cache_missing_messages = true;
                 }
             }
-            // The event.message_ids received from the server are not in sorted order.
-            // Sorts in ascending order.
-            event_messages.sort((a, b) => a.id - b.id);
 
             if (
                 going_forward_change &&
@@ -552,6 +579,7 @@ export function update_messages(events: UpdateMessageEvent[]): void {
                 }
 
                 compose_validate.warn_if_topic_resolved(true);
+                compose_validate.inform_if_topic_is_moved(orig_topic, old_stream_id, event.user_id);
                 compose_fade.set_focused_recipient("stream");
             }
 
@@ -568,14 +596,7 @@ export function update_messages(events: UpdateMessageEvent[]): void {
                      * history events. This logic ensures that all
                      * messages that were moved are displayed as such
                      * without a browser reload. */
-                    const edit_history_entry: {
-                        user_id: number | null;
-                        timestamp: number;
-                        stream?: number;
-                        prev_stream?: number;
-                        topic?: string;
-                        prev_topic?: string;
-                    } = {
+                    const edit_history_entry: MessageEditHistoryEntry = {
                         user_id: event.user_id,
                         timestamp: event.edit_timestamp,
                     };
@@ -587,12 +608,9 @@ export function update_messages(events: UpdateMessageEvent[]): void {
                         edit_history_entry.topic = new_topic;
                         edit_history_entry.prev_topic = orig_topic;
                     }
-                    if (moved_message.edit_history === undefined) {
-                        moved_message.edit_history = [];
-                    }
                     moved_message.edit_history = [
                         edit_history_entry,
-                        ...moved_message.edit_history,
+                        ...(moved_message.edit_history ?? []),
                     ];
                 }
 
@@ -633,7 +651,7 @@ export function update_messages(events: UpdateMessageEvent[]): void {
 
             // Remove the stream_topic_entry for the old topics;
             // must be called after we call set message topic since
-            // it calls `get_messages_in_topic` which thinks that
+            // it calls `get_loaded_messages_in_topic` which thinks that
             // `topic` and `stream` of the messages are correctly set.
             const num_messages = event_messages.length;
             if (num_messages > 0) {

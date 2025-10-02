@@ -13,7 +13,9 @@
         {{/if}}
         {{else}}
         <div class="org-info org-plan hidden-for-spectators">
-            {{#if is_plan_limited }}
+            {{#if is_demo_organization }}
+            <a href="/help/demo-organizations" target="_blank" rel="noopener noreferrer" class="navigate-link-on-enter popover-menu-link">{{t "Demo organization" }}</a>
+            {{else if is_plan_limited }}
             <a href="/plans/" target="_blank" rel="noopener noreferrer" class="navigate-link-on-enter popover-menu-link">Zulip Cloud Free</a>
             {{else if is_plan_standard}}
             <a href="/plans/" target="_blank" rel="noopener noreferrer" class="navigate-link-on-enter popover-menu-link">Zulip Cloud Standard</a>
@@ -30,12 +32,17 @@
             <a href="/sponsorship/" target="_blank" rel="noopener noreferrer" class="navigate-link-on-enter popover-menu-link">{{t "Sponsorship request pending" }}</a>
         </div>
         {{else}}
-        {{#if is_plan_limited }}
+        {{#if (and is_demo_organization is_owner) }}
+        <div class="org-info org-upgrade">
+            <a class="convert-demo-organization popover-menu-link">{{t "Convert into permanent organization" }}</a>
+        </div>
+        {{/if}}
+        {{#if (and is_plan_limited (not is_demo_organization))}}
         <div class="org-info org-upgrade">
             <a href="/upgrade/" target="_blank" rel="noopener noreferrer" class="navigate-link-on-enter popover-menu-link">{{t "Upgrade to {standard_plan_name}" }}</a>
         </div>
         {{/if}}
-        {{#unless is_org_on_paid_plan}}
+        {{#unless (or is_org_on_paid_plan is_demo_organization)}}
         {{#if is_education_org }}
         <div class="org-info org-upgrade">
             <a href="/sponsorship/" target="_blank" rel="noopener noreferrer" class="navigate-link-on-enter popover-menu-link">{{t 'Request education pricing' }}</a>
@@ -182,7 +189,7 @@
         {{/if}}
         {{/if}}
         {{!-- Group 3 --}}
-        {{#if (or can_invite_users_by_email can_create_multiuse_invite is_spectator show_webathena)}}
+        {{#if (or can_invite_users_by_email can_create_multiuse_invite is_spectator)}}
         <li role="separator" class="popover-menu-separator"></li>
         {{/if}}
         {{#if (or can_invite_users_by_email can_create_multiuse_invite)}}
@@ -190,14 +197,6 @@
             <a role="menuitem" tabindex="0" class="invite-user-link popover-menu-link">
                 <i class="popover-menu-icon zulip-icon zulip-icon-user-plus" aria-hidden="true"></i>
                 <span class="popover-menu-label">{{t 'Invite users' }}</span>
-            </a>
-        </li>
-        {{/if}}
-        {{#if show_webathena}}
-        <li role="none" class="link-item popover-menu-list-item" title="{{t 'Grant Zulip the Kerberos tickets needed to run your Zephyr mirror via Webathena' }}" id="webathena_login_menu">
-            <a role="menuitem" href="#webathena" class="webathena_login popover-menu-link">
-                <i class="popover-menu-icon fa fa-bolt" aria-hidden="true"></i>
-                <span class="popover-menu-label">{{t 'Link with Webathena' }}</span>
             </a>
         </li>
         {{/if}}

@@ -17,6 +17,7 @@ export type UserGroupPill = {
     type: "user_group";
     group_id: number;
     group_name: string;
+    show_expand_button?: boolean;
 };
 
 export type UserGroupPillWidget = InputPillContainer<UserGroupPill>;
@@ -34,6 +35,7 @@ export function generate_pill_html(item: UserGroupPill): string {
         group_id: item.group_id,
         show_group_members_count: true,
         group_members_count: group_members.length,
+        show_expand_button: item.show_expand_button ?? false,
     });
 }
 
@@ -87,12 +89,14 @@ export function append_user_group(
     group: UserGroup,
     pill_widget: CombinedPillContainer | GroupSettingPillContainer | UserGroupPillWidget,
     execute_oncreate_callback = true,
+    show_expand_button = false,
 ): void {
     pill_widget.appendValidatedData(
         {
             type: "user_group",
             group_id: group.id,
             group_name: group.name,
+            show_expand_button,
         },
         false,
         !execute_oncreate_callback,

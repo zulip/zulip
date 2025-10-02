@@ -25,7 +25,6 @@ from zerver.lib.email_mirror_helpers import (
 from zerver.lib.email_notifications import convert_html_to_markdown
 from zerver.lib.exceptions import JsonableError, RateLimitedError
 from zerver.lib.message import normalize_body, truncate_content, truncate_topic
-from zerver.lib.queue import queue_json_publish_rollback_unsafe
 from zerver.lib.rate_limiter import RateLimitedObject
 from zerver.lib.send_email import FromAddress
 from zerver.lib.streams import access_stream_for_send_message
@@ -122,14 +121,6 @@ def get_usable_missed_message_address(address: str) -> MissedMessageEmailAddress
         mm_address = MissedMessageEmailAddress.objects.select_related(
             "user_profile",
             "user_profile__realm",
-            # Fetch group settings that are needed to determine whether a user
-            # can send a direct message to a given recipient.
-            "user_profile__realm__can_access_all_users_group",
-            "user_profile__realm__can_access_all_users_group__named_user_group",
-            "user_profile__realm__direct_message_initiator_group",
-            "user_profile__realm__direct_message_initiator_group__named_user_group",
-            "user_profile__realm__direct_message_permission_group",
-            "user_profile__realm__direct_message_permission_group__named_user_group",
             "message",
             "message__sender",
             "message__recipient",
@@ -410,7 +401,7 @@ def find_emailgateway_recipient(message: EmailMessage) -> str:
 def strip_from_subject(subject: str) -> str:
     # strips RE and FWD from the subject
     # from: https://stackoverflow.com/questions/9153629/regex-code-for-removing-fwd-re-etc-from-email-subject
-    reg = r"([\[\(] *)?\b(RE|AW|FWD?) *([-:;)\]][ :;\])-]*|$)|\]+ *$"
+    reg = r"([\[\(] *)?\b(RE|AW|SV|FWD?) *(\[\d+\])?([-:;)\]][ :;\])-]*|$)|\]+ *$"
     stripped = re.sub(reg, "", subject, flags=re.IGNORECASE | re.MULTILINE)
     return stripped.strip()
 
@@ -420,6 +411,22 @@ def is_forwarded(subject: str) -> bool:
     # of FWD at the beginning of the subject.
     reg = r"([\[\(] *)?\b(FWD?) *([-:;)\]][ :;\])-]*|$)|\]+ *$"
     return bool(re.match(reg, subject, flags=re.IGNORECASE))
+
+
+def check_access_for_channel_email_address(channel_email_address: ChannelEmailAddress) -> None:
+    channel = channel_email_address.channel
+    sender = channel_email_address.sender
+    creator = channel_email_address.creator
+    realm = channel_email_address.realm
+    email_gateway_bot = get_system_bot(settings.EMAIL_GATEWAY_BOT, realm.id)
+
+    if sender.id == email_gateway_bot.id and creator is not None:
+        user_for_access_check = creator
+    else:
+        user_for_access_check = sender
+
+    # Raises JsonableError on permission denied
+    access_stream_for_send_message(user_for_access_check, channel, forwarder_user_profile=None)
 
 
 def process_stream_message(to: str, message: EmailMessage) -> None:
@@ -437,27 +444,18 @@ def process_stream_message(to: str, message: EmailMessage) -> None:
     subject = subject or _("Email with no subject")
 
     channel_email_address, options = decode_stream_email_address(to)
+    channel = channel_email_address.channel
+    sender = channel_email_address.sender
+    realm = channel_email_address.realm
+    try:
+        check_access_for_channel_email_address(channel_email_address)
+    except JsonableError as e:
+        logger.info("Failed to process email to %s (%s): %s", channel.name, realm.string_id, e)
+        return
 
     # Don't remove quotations if message is forwarded, unless otherwise specified:
     if "include_quotes" not in options:
         options["include_quotes"] = is_forwarded(subject_header)
-
-    channel = channel_email_address.channel
-    sender = channel_email_address.sender
-    creator = channel_email_address.creator
-    realm = channel_email_address.realm
-    email_gateway_bot = get_system_bot(settings.EMAIL_GATEWAY_BOT, realm.id)
-
-    if sender.id == email_gateway_bot.id and creator is not None:
-        user_for_access_check = creator
-    else:
-        user_for_access_check = sender
-
-    try:
-        access_stream_for_send_message(user_for_access_check, channel, forwarder_user_profile=None)
-    except JsonableError as e:
-        logger.info("Failed to process email to %s (%s): %s", channel.name, realm.string_id, e)
-        return
 
     body = construct_zulip_body(message, realm, sender=sender, **options)
     send_zulip(sender, channel, subject, body)
@@ -469,6 +467,11 @@ def process_stream_message(to: str, message: EmailMessage) -> None:
 
 
 def process_missed_message(to: str, message: EmailMessage) -> None:
+    auto_submitted = message.get("Auto-Submitted", "")
+    if auto_submitted in ("auto-replied", "auto-generated"):
+        logger.info("Dropping %s message from %s", auto_submitted, message.get("From"))
+        return
+
     mm_address = get_usable_missed_message_address(to)
     mm_address.increment_times_used()
 
@@ -532,35 +535,31 @@ def process_message(message: EmailMessage, rcpt_to: str | None = None) -> None:
         log_error(message, e.args[0], to)
 
 
-def validate_to_address(rcpt_to: str) -> None:
-    if is_missed_message_address(rcpt_to):
-        get_usable_missed_message_address(rcpt_to)
+def validate_to_address(address: str, rate_limit: bool = True) -> None:
+    if is_missed_message_address(address):
+        mm_address = get_usable_missed_message_address(address)
+        if mm_address.message.recipient.type == Recipient.STREAM:
+            # ACL's on DMs are harder to apply simply, so we
+            # just check channel messages.
+            access_stream_for_send_message(
+                mm_address.user_profile,
+                get_stream_by_id_in_realm(
+                    mm_address.message.recipient.type_id,
+                    mm_address.user_profile.realm,
+                ),
+                forwarder_user_profile=None,
+            )
     else:
-        decode_stream_email_address(rcpt_to)
-
-
-def mirror_email_message(rcpt_to: str, msg_base64: str) -> dict[str, str]:
-    try:
-        validate_to_address(rcpt_to)
-    except ZulipEmailForwardError as e:
-        return {
-            "status": "error",
-            "msg": f"5.1.1 Bad destination mailbox address: {e}",
-        }
-
-    queue_json_publish_rollback_unsafe(
-        "email_mirror",
-        {
-            "rcpt_to": rcpt_to,
-            "msg_base64": msg_base64,
-        },
-    )
-    return {"status": "success"}
+        channel_email = decode_stream_email_address(address)[0]
+        if rate_limit:
+            # Only channel email addresses are rate-limited, since
+            # they are likely to be used as the destination for
+            # mails from automated systems.
+            rate_limit_mirror_by_realm(channel_email.realm)
+        check_access_for_channel_email_address(channel_email)
 
 
 # Email mirror rate limiter code:
-
-
 class RateLimitedRealmMirror(RateLimitedObject):
     def __init__(self, realm: Realm) -> None:
         self.realm = realm

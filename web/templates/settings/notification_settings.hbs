@@ -1,6 +1,6 @@
 <form class="notification-settings-form">
     <div class="general_notifications {{#if for_realm_settings}}settings-subsection-parent{{else}}subsection-parent{{/if}}">
-        <div class="subsection-header inline-block">
+        <div class="subsection-header">
             <h3>{{t "Notification triggers" }}</h3>
             {{> settings_save_discard_widget section_name="general-notify-settings" show_only_indicator=(not for_realm_settings) }}
         </div>
@@ -41,6 +41,7 @@
                               is_checked=this.is_checked
                               is_disabled=this.is_disabled
                               is_mobile_checkbox=this.is_mobile_checkbox
+                              push_notifications_disabled=this.push_notifications_disabled
                               prefix=../../prefix }}
                         {{/each}}
                     </tr>
@@ -49,13 +50,29 @@
             {{#unless for_realm_settings}}
             <tbody id="stream-specific-notify-table">
             </tbody>
+            <tbody id="customizable_stream_notifications_table">
+                <tr>
+                    <td>
+                        {{> ../dropdown_widget widget_name="customize_stream_notifications" custom_classes="decorated-stream-name-dropdown-widget"}}
+                    </td>
+                    {{#each custom_stream_specific_notification_settings}}
+                        {{> notification_settings_checkboxes
+                          setting_name=this.setting_name
+                          is_checked=this.is_checked
+                          is_mobile_checkbox=this.is_mobile_checkbox
+                          is_disabled=this.is_disabled
+                          push_notifications_disabled=this.push_notifications_disabled
+                          prefix="customize_stream_" }}
+                    {{/each}}
+                </tr>
+            </tbody>
             {{/unless}}
         </table>
     </div>
 
     <div class="topic_notifications m-10 {{#if for_realm_settings}}settings-subsection-parent{{else}}subsection-parent{{/if}}">
 
-        <div class="subsection-header inline-block">
+        <div class="subsection-header">
             <h3>{{t "Topic notifications" }}
                 {{> ../help_link_widget link="/help/topic-notifications" }}
             </h3>
@@ -96,19 +113,35 @@
                 {{> dropdown_options_widget option_values=automatically_unmute_topics_in_muted_streams_policy_values}}
             </select>
         </div>
+
+        <div class="input-group">
+            <label for="{{prefix}}resolved_topic_notice_auto_read_policy" class="settings-field-label">{{t "Automatically mark resolved topic notices as read" }}</label>
+            <select name="resolved_topic_notice_auto_read_policy" class="setting_resolved_topic_notice_auto_read_policy prop-element settings_select bootstrap-focus-style" id="{{prefix}}resolved_topic_notice_auto_read_policy" data-setting-widget-type="string">
+                {{> dropdown_options_widget option_values=resolved_topic_notice_auto_read_policy_values}}
+            </select>
+        </div>
     </div>
 
     <div class="desktop_notifications m-10 {{#if for_realm_settings}}settings-subsection-parent{{else}}subsection-parent{{/if}}">
 
-        <div class="subsection-header inline-block">
+        <div class="subsection-header">
             <h3>{{t "Desktop message notifications" }}
                 {{> ../help_link_widget link="/help/desktop-notifications" }}
             </h3>
             {{> settings_save_discard_widget section_name="desktop-message-settings" show_only_indicator=(not for_realm_settings) }}
         </div>
 
+        {{#if (eq prefix "user_")}}
+        <div class="desktop-notification-settings-banners banner-wrapper"></div>
+        {{/if}}
+
         {{#unless for_realm_settings}}
-        <p><a class="send_test_notification">{{t "Send a test notification" }}</a></p>
+        {{> ../components/action_button
+          label=(t "Send a test notification")
+          attention="quiet"
+          intent="neutral"
+          custom_classes="send_test_notification"
+          }}
         {{/unless}}
 
         {{#each notification_settings.desktop_notification_settings}}
@@ -148,18 +181,14 @@
 
     <div class="mobile_notifications m-10 {{#if for_realm_settings}}settings-subsection-parent{{else}}subsection-parent{{/if}}">
 
-        <div class="subsection-header inline-block">
+        <div class="subsection-header">
             <h3>{{t "Mobile message notifications" }}
                 {{> ../help_link_widget link="/help/mobile-notifications" }}
             </h3>
             {{> settings_save_discard_widget section_name="mobile-message-settings" show_only_indicator=(not for_realm_settings) }}
         </div>
         {{#unless realm_push_notifications_enabled}}
-        <div class="tip">
-            {{#tr}}
-                Mobile push notifications are not enabled on this server. <z-link>Learn more</z-link>
-                {{#*inline "z-link"}}<a href="/help/mobile-notifications#enabling-push-notifications-for-self-hosted-servers" target="_blank" rel="noopener noreferrer">{{> @partial-block}}</a>{{/inline}}
-            {{/tr}}
+        <div class="mobile-push-notifications-banner-container banner-wrapper">
         </div>
         {{/unless}}
 
@@ -175,7 +204,7 @@
 
     <div class="email_message_notifications m-10 {{#if for_realm_settings}}settings-subsection-parent{{else}}subsection-parent{{/if}}">
 
-        <div class="subsection-header inline-block">
+        <div class="subsection-header">
             <h3>{{t "Email message notifications" }}
                 {{> ../help_link_widget link="/help/email-notifications" }}
             </h3>
@@ -224,7 +253,7 @@
 
     <div class="other_email_notifications m-10 {{#if for_realm_settings}}settings-subsection-parent{{else}}subsection-parent{{/if}}">
 
-        <div class="subsection-header inline-block">
+        <div class="subsection-header">
             <h3>{{t "Other emails" }}</h3>
             {{> settings_save_discard_widget section_name="other-emails-settings" show_only_indicator=(not for_realm_settings) }}
         </div>

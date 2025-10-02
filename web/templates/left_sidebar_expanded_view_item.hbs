@@ -1,0 +1,22 @@
+<li class="top_left_{{css_class_suffix}} top_left_row {{#if hidden_for_spectators}}hidden-for-spectators{{/if}} {{#if is_home_view}}selected-home-view{{/if}}">
+    <a href="#{{fragment}}" class="left-sidebar-navigation-label-container tippy-left-sidebar-tooltip" data-tooltip-template-id="{{tooltip_template_id}}">
+        <span class="filter-icon">
+            <i class="zulip-icon {{icon}}" aria-hidden="true"></i>
+        </span>
+        {{~!-- squash whitespace --~}}
+        <span class="left-sidebar-navigation-label">{{name}}</span>
+        <span class="unread_count {{unread_count_type}}{{#unless unread_count}} hide{{/unless}}">
+            {{#if unread_count}}
+                {{unread_count}}
+            {{/if}}
+        </span>
+        {{#if supports_masked_unread}}
+        <span class="masked_unread_count">
+            <i class="zulip-icon zulip-icon-masked-unread"></i>
+        </span>
+        {{/if}}
+    </a>
+    {{#if menu_icon_class}}
+        <span class="arrow sidebar-menu-icon {{menu_icon_class}} hidden-for-spectators"><i class="zulip-icon zulip-icon-more-vertical" aria-label="{{menu_aria_label}}"></i></span>
+    {{/if}}
+</li>

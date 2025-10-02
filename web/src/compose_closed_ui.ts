@@ -20,6 +20,7 @@ type RecipientLabel = {
     label_text: string;
     has_empty_string_topic?: boolean;
     stream_name?: string;
+    is_dm_with_self?: boolean;
 };
 
 function get_stream_recipient_label(stream_id: number, topic: string): RecipientLabel | undefined {
@@ -36,9 +37,25 @@ function get_stream_recipient_label(stream_id: number, topic: string): Recipient
     return undefined;
 }
 
+function get_direct_message_recipient_label(user_ids: number[]): RecipientLabel {
+    let label_text = "";
+    let is_dm_with_self = false;
+    if (people.is_direct_message_conversation_with_self(user_ids)) {
+        is_dm_with_self = true;
+    } else {
+        label_text = message_store.get_pm_full_names(user_ids);
+    }
+    const recipient_label: RecipientLabel = {
+        label_text,
+        is_dm_with_self,
+    };
+    return recipient_label;
+}
+
 export type ReplyRecipientInformation = {
     stream_id?: number | undefined;
     topic?: string | undefined;
+    user_ids?: number[] | undefined;
     display_reply_to?: string | undefined;
 };
 
@@ -59,6 +76,9 @@ export function get_recipient_label(
                 recipient_information.stream_id,
                 recipient_information.topic,
             );
+        }
+        if (recipient_information.user_ids !== undefined) {
+            return get_direct_message_recipient_label(recipient_information.user_ids);
         }
         if (recipient_information.display_reply_to !== undefined) {
             return {label_text: recipient_information.display_reply_to};
@@ -83,7 +103,7 @@ export function get_recipient_label(
         }
         if (user_ids_string !== undefined) {
             const user_ids = people.user_ids_string_to_ids_array(user_ids_string);
-            return {label_text: message_store.get_pm_full_names(user_ids)};
+            return get_direct_message_recipient_label(user_ids);
         }
         // Show the standard button text for empty narrows without
         // a clear reply target, e.g., an empty search view.
@@ -95,7 +115,8 @@ export function get_recipient_label(
         if (selected_message?.is_stream) {
             return get_stream_recipient_label(selected_message.stream_id, selected_message.topic);
         }
-        return {label_text: selected_message.display_reply_to};
+        const user_ids = people.user_ids_string_to_ids_array(selected_message.to_user_ids);
+        return get_direct_message_recipient_label(user_ids);
     }
     // Fall through to show the standard button text.
     return undefined;
@@ -135,6 +156,12 @@ export function rewire_update_reply_button_state(value: typeof update_reply_butt
     update_reply_button_state = value;
 }
 
+function update_new_conversation_button(
+    data_attribute_string: "direct" | "stream" | "non-specific",
+): void {
+    $("#new_conversation_button").attr("data-conversation-type", data_attribute_string);
+}
+
 function maybe_get_selected_message_stream_id(): number | undefined {
     if (message_lists.current?.visibly_empty()) {
         return undefined;
@@ -157,35 +184,46 @@ function should_disable_compose_reply_button_for_stream(): boolean {
     return false;
 }
 
-function update_buttons(disable_reply?: boolean): void {
-    update_reply_button_state(disable_reply);
+// Exported for tests
+export function should_disable_compose_reply_button_for_direct_message(): boolean {
+    const pm_ids_string = narrow_state.pm_ids_string();
+    // If we can identify a direct message recipient, and the user can't
+    // reply to that recipient, then we disable the compose_reply_button.
+    if (pm_ids_string && !message_util.user_can_send_direct_message(pm_ids_string)) {
+        return true;
+    }
+    return false;
 }
 
-export function update_buttons_for_private(): void {
-    const pm_ids_string = narrow_state.pm_ids_string();
-
-    let disable_reply;
-
-    if (!pm_ids_string || message_util.user_can_send_direct_message(pm_ids_string)) {
-        disable_reply = false;
+export function update_buttons(update_type?: string): void {
+    let disable_reply_button;
+    if (update_type === "direct") {
+        // Based on whether there's a direct message recipient for
+        // the current narrow_state.
+        disable_reply_button = should_disable_compose_reply_button_for_direct_message();
     } else {
-        // disable the [Message X] button when in a private narrow
-        // if the user cannot dm the current recipient
-        disable_reply = true;
+        // Based on whether there's a selected channel message in
+        // the current message list.
+        disable_reply_button = should_disable_compose_reply_button_for_stream();
     }
 
-    $("#new_conversation_button").attr("data-conversation-type", "direct");
-    update_buttons(disable_reply);
+    if (update_type === "direct" || update_type === "stream") {
+        update_new_conversation_button(update_type);
+        update_reply_button_state(disable_reply_button);
+        return;
+    }
+
+    // Default case for most views.
+    update_new_conversation_button("non-specific");
+    update_reply_button_state(disable_reply_button);
+    set_standard_text_for_reply_button();
 }
 
-export function update_buttons_for_stream_views(): void {
-    $("#new_conversation_button").attr("data-conversation-type", "stream");
-    update_buttons(should_disable_compose_reply_button_for_stream());
-}
-
-export function update_buttons_for_non_specific_views(): void {
-    $("#new_conversation_button").attr("data-conversation-type", "non-specific");
-    update_buttons(should_disable_compose_reply_button_for_stream());
+export function maybe_update_buttons_for_dm_recipient(): void {
+    const filter = narrow_state.filter();
+    if (filter?.contains_only_private_messages()) {
+        update_buttons("direct");
+    }
 }
 
 function set_reply_button_label(label: string): void {
@@ -205,6 +243,7 @@ export function update_recipient_text_for_reply_button(
         const rendered_recipient_label = render_reply_recipient_label({
             has_empty_string_topic: recipient_label.has_empty_string_topic,
             channel_name: recipient_label.stream_name,
+            is_dm_with_self: recipient_label.is_dm_with_self,
             empty_string_topic_display_name,
             label_text: recipient_label.label_text,
         });
@@ -212,6 +251,18 @@ export function update_recipient_text_for_reply_button(
     } else {
         set_standard_text_for_reply_button();
     }
+}
+
+function can_user_reply_to_message(message_id: number): boolean {
+    const selected_message = message_store.get(message_id);
+    if (selected_message === undefined) {
+        return false;
+    }
+    if (selected_message.is_stream) {
+        return !should_disable_compose_reply_button_for_stream();
+    }
+    assert(selected_message.is_private);
+    return message_util.user_can_send_direct_message(selected_message.to_user_ids);
 }
 
 export function initialize(): void {
@@ -222,14 +273,9 @@ export function initialize(): void {
             // open due to the combined feed view loading in the background,
             // so we only update if message feed is visible.
             update_recipient_text_for_reply_button();
-
-            // Disable compose reply button if the selected message is a stream
-            // message and the user is not allowed to post in the stream the message
-            // belongs to.
-            if (maybe_get_selected_message_stream_id() !== undefined) {
-                update_buttons_for_stream_views();
-                update_buttons_for_non_specific_views();
-            }
+            update_reply_button_state(
+                !can_user_reply_to_message(message_lists.current!.selected_id()),
+            );
         }
     });
 

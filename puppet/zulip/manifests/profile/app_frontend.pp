@@ -70,6 +70,6 @@ class zulip::profile::app_frontend {
     hour    => '6',
     minute  => '0',
     dow     => '0',
-    command => '/home/zulip/deployments/current/scripts/restart-server --fill-cache',
+    command => '/home/zulip/deployments/current/scripts/restart-server --fill-cache --skip-client-reloads',
   }
 }

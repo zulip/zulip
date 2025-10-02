@@ -569,8 +569,8 @@ def check_string_or_int(var_name: str, val: object) -> str | int:
     raise ValidationError(_("{var_name} is not a string or integer").format(var_name=var_name))
 
 
-@dataclass
-class WildValue:
+@dataclass(eq=False)
+class WildValue:  # noqa: PLW1641
     var_name: str
     value: object
 
@@ -590,7 +590,7 @@ class WildValue:
 
     @override
     def __eq__(self, other: object) -> bool:
-        return self.value == other
+        raise TypeError("cannot compare WildValue")
 
     def __len__(self) -> int:
         if not isinstance(self.value, dict | list | str):

@@ -26,6 +26,7 @@ from zerver.actions.custom_profile_fields import (
     try_add_realm_custom_profile_field,
 )
 from zerver.actions.muted_users import do_mute_user
+from zerver.actions.navigation_views import do_add_navigation_view
 from zerver.actions.presence import do_update_user_presence
 from zerver.actions.reactions import check_add_reaction
 from zerver.actions.realm_emoji import check_add_realm_emoji
@@ -76,6 +77,7 @@ from zerver.models import (
     Attachment,
     BotConfigData,
     BotStorageData,
+    ChannelFolder,
     CustomProfileField,
     CustomProfileFieldValue,
     DirectMessageGroup,
@@ -83,6 +85,7 @@ from zerver.models import (
     Message,
     MutedUser,
     NamedUserGroup,
+    NavigationView,
     OnboardingStep,
     OnboardingUserMessage,
     Reaction,
@@ -112,7 +115,7 @@ from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.realms import get_realm
 from zerver.models.recipients import get_direct_message_group_hash
 from zerver.models.streams import get_active_streams, get_stream
-from zerver.models.users import get_system_bot, get_user_by_delivery_email
+from zerver.models.users import ExternalAuthID, get_system_bot, get_user_by_delivery_email
 
 
 def make_datetime(val: float) -> datetime:
@@ -409,7 +412,7 @@ class RealmImportExportTest(ExportFile):
         if export_type == RealmExport.EXPORT_FULL_WITH_CONSENT:
             assert exportable_user_ids is not None
 
-        with patch("zerver.lib.export.create_soft_link"), self.assertLogs(level="INFO"):
+        with self.assertLogs(level="INFO"):
             do_export_realm(
                 realm=realm,
                 output_dir=output_dir,
@@ -846,11 +849,13 @@ class RealmImportExportTest(ExportFile):
         # Consented users:
         hamlet = self.example_user("hamlet")
         othello = self.example_user("othello")
+        cordelia = self.example_user("cordelia")
         # Iago will be non-consenting.
         iago = self.example_user("iago")
 
         do_change_user_setting(hamlet, "allow_private_data_export", True, acting_user=None)
         do_change_user_setting(othello, "allow_private_data_export", True, acting_user=None)
+        do_change_user_setting(cordelia, "allow_private_data_export", True, acting_user=None)
         do_change_user_setting(iago, "allow_private_data_export", False, acting_user=None)
 
         # Despite both hamlet and othello having consent enabled, in a public export
@@ -861,6 +866,9 @@ class RealmImportExportTest(ExportFile):
         a_message = Message.objects.get(id=a_message_id)
         a_message.sending_client = private_client
         a_message.save()
+
+        # Verify that a group DM between consenting users is not exported
+        self.send_group_direct_message(hamlet, [othello, cordelia])
 
         # SavedSnippets are private content - so in a public export, despite
         # hamlet having consent enabled, such objects should not be exported.
@@ -884,6 +892,9 @@ class RealmImportExportTest(ExportFile):
 
         exported_user_presence_ids = self.get_set(realm_data["zerver_userpresence"], "id")
         self.assertIn(iago_presence.id, exported_user_presence_ids)
+
+        exported_huddle_ids = self.get_set(realm_data["zerver_huddle"], "id")
+        self.assertEqual(exported_huddle_ids, set())
 
     def test_export_realm_with_member_consent(self) -> None:
         realm = Realm.objects.get(string_id="zulip")
@@ -1409,7 +1420,7 @@ class RealmImportExportTest(ExportFile):
 
         denmark_stream = get_stream("Denmark", original_realm)
         denmark_stream.creator = hamlet
-        denmark_stream.save()
+        denmark_stream.save(update_fields=["creator"])
 
         internal_realm = get_realm(settings.SYSTEM_BOT_REALM)
         cross_realm_bot = get_system_bot(settings.WELCOME_BOT, internal_realm.id)
@@ -1579,6 +1590,17 @@ class RealmImportExportTest(ExportFile):
             reaction_type=Reaction.REALM_EMOJI,
         )
 
+        do_add_navigation_view(
+            hamlet,
+            "inbox",
+            True,
+        )
+        do_add_navigation_view(
+            hamlet,
+            "recent",
+            False,
+        )
+
         user_status = UserStatus.objects.order_by("id").last()
         assert user_status
 
@@ -1617,6 +1639,15 @@ class RealmImportExportTest(ExportFile):
             message_id=onboarding_message_id,
             flags=OnboardingUserMessage.flags.starred,
         )
+
+        channel_folder = ChannelFolder.objects.create(
+            realm=original_realm,
+            name="Frontend",
+            description="Frontend channels",
+            creator=self.example_user("iago"),
+        )
+        stream.folder = channel_folder
+        stream.save()
 
         # We want to have an extra, malformed RealmEmoji with no .author
         # to test that upon import that gets fixed.
@@ -1750,6 +1781,21 @@ class RealmImportExportTest(ExportFile):
                 stream.recipient_id,
                 Recipient.objects.get(type=Recipient.STREAM, type_id=stream.id).id,
             )
+            self.assertEqual(
+                stream.subscriber_count,
+                Subscription.objects.filter(
+                    recipient=stream.recipient, active=True, is_user_active=True
+                ).count(),
+            )
+
+        # Check folder field for imported streams
+        for stream in Stream.objects.filter(realm=imported_realm):
+            if stream.name == "Verona":
+                # Folder was only set for "Verona" stream in original realm.
+                assert stream.folder is not None
+                self.assertEqual(stream.folder.name, "Frontend")
+            else:
+                self.assertIsNone(stream.folder_id)
 
         for dm_group in DirectMessageGroup.objects.all():
             # Direct Message groups don't have a realm column, so we just test all
@@ -2080,6 +2126,14 @@ class RealmImportExportTest(ExportFile):
             )
             return onboarding_steps
 
+        @getter
+        def get_navigation_views(r: Realm) -> set[str]:
+            user_id = get_user_id(r, "King Hamlet")
+            navigation_views = set(
+                NavigationView.objects.filter(user_id=user_id).values_list("fragment", flat=True)
+            )
+            return navigation_views
+
         # test muted topics
         @getter
         def get_muted_topics(r: Realm) -> set[str]:
@@ -2114,18 +2168,18 @@ class RealmImportExportTest(ExportFile):
 
         @getter
         def get_named_user_group_names(r: Realm) -> set[str]:
-            return {group.name for group in NamedUserGroup.objects.filter(realm=r)}
+            return {group.name for group in NamedUserGroup.objects.filter(realm_for_sharding=r)}
 
         @getter
         def get_user_membership(r: Realm) -> set[str]:
-            usergroup = NamedUserGroup.objects.get(realm=r, name="hamletcharacters")
+            usergroup = NamedUserGroup.objects.get(realm_for_sharding=r, name="hamletcharacters")
             usergroup_membership = UserGroupMembership.objects.filter(user_group=usergroup)
             users = {membership.user_profile.email for membership in usergroup_membership}
             return users
 
         @getter
         def get_group_group_membership(r: Realm) -> set[str]:
-            usergroup = NamedUserGroup.objects.get(realm=r, name="role:members")
+            usergroup = NamedUserGroup.objects.get(realm_for_sharding=r, name="role:members")
             group_group_membership = GroupGroupMembership.objects.filter(supergroup=usergroup)
             subgroups = {
                 membership.subgroup.named_user_group.name for membership in group_group_membership
@@ -2137,7 +2191,7 @@ class RealmImportExportTest(ExportFile):
             # We already check the members of the group through UserGroupMembership
             # objects, but we also want to check direct_members field is set
             # correctly since we do not include this in export data.
-            usergroup = NamedUserGroup.objects.get(realm=r, name="hamletcharacters")
+            usergroup = NamedUserGroup.objects.get(realm_for_sharding=r, name="hamletcharacters")
             direct_members = usergroup.direct_members.all()
             direct_member_emails = {user.email for user in direct_members}
             return direct_member_emails
@@ -2147,14 +2201,14 @@ class RealmImportExportTest(ExportFile):
             # We already check the subgroups of the group through GroupGroupMembership
             # objects, but we also want to check that direct_subgroups field is set
             # correctly since we do not include this in export data.
-            usergroup = NamedUserGroup.objects.get(realm=r, name="role:members")
+            usergroup = NamedUserGroup.objects.get(realm_for_sharding=r, name="role:members")
             direct_subgroups = usergroup.direct_subgroups.all()
             direct_subgroup_names = {group.named_user_group.name for group in direct_subgroups}
             return direct_subgroup_names
 
         @getter
         def get_user_group_can_mention_group_setting(r: Realm) -> str:
-            user_group = NamedUserGroup.objects.get(realm=r, name="hamletcharacters")
+            user_group = NamedUserGroup.objects.get(realm_for_sharding=r, name="hamletcharacters")
             return user_group.can_mention_group.named_user_group.name
 
         # test botstoragedata and botconfigdata
@@ -2213,7 +2267,7 @@ class RealmImportExportTest(ExportFile):
 
         @getter
         def get_user_group_mention(r: Realm) -> str:
-            user_group = NamedUserGroup.objects.get(realm=r, name="hamletcharacters")
+            user_group = NamedUserGroup.objects.get(realm_for_sharding=r, name="hamletcharacters")
             data_usergroup_id = f'data-user-group-id="{user_group.id}"'
             mention_message = get_stream_messages(r).get(
                 rendered_content__contains=data_usergroup_id
@@ -2248,6 +2302,10 @@ class RealmImportExportTest(ExportFile):
                 tups, {("onboarding message", OnboardingUserMessage.flags.starred.mask)}
             )
             return tups
+
+        @getter
+        def get_channel_folders(r: Realm) -> set[str]:
+            return set(ChannelFolder.objects.filter(realm=r).values_list("name", flat=True))
 
         return getters
 
@@ -2979,6 +3037,21 @@ class SingleUserExportTest(ExportFile):
         def zerver_alertword(records: list[Record]) -> None:
             self.assertEqual(records[-1]["word"], "pizza")
 
+        ExternalAuthID.objects.create(
+            user=cordelia,
+            realm=cordelia.realm,
+            external_auth_method_name="test-auth",
+            external_auth_id="test-value",
+        )
+
+        @checker
+        def zerver_externalauthid(records: list[Record]) -> None:
+            (rec,) = records
+            self.assertEqual(rec["user"], cordelia.id)
+            self.assertEqual(rec["realm"], cordelia.realm_id)
+            self.assertEqual(rec["external_auth_method_name"], "test-auth")
+            self.assertEqual(rec["external_auth_id"], "test-value")
+
         favorite_city = try_add_realm_custom_profile_field(
             realm,
             "Favorite city",
@@ -3005,6 +3078,14 @@ class SingleUserExportTest(ExportFile):
         @checker
         def zerver_muteduser(records: list[Record]) -> None:
             self.assertEqual(records[-1]["muted_user"], othello.id)
+
+        do_add_navigation_view(hamlet, "inbox", True)
+        do_add_navigation_view(cordelia, "recent", False)
+
+        @checker
+        def zerver_navigationview(records: list[Record]) -> None:
+            self.assertEqual(records[-1]["fragment"], "recent")
+            self.assertEqual(records[-1]["is_pinned"], False)
 
         smile_message_id = self.send_stream_message(hamlet, "Denmark")
 

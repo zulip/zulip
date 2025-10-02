@@ -20,7 +20,7 @@ host by following these instructions. Currently supported platforms
 are:
 
 - Ubuntu 22.04, 24.04
-- Debian 12
+- Debian 12, 13
 - CentOS 7 (beta)
 - Fedora 38 (beta)
 - RHEL 7 (beta)

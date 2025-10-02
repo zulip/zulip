@@ -4,9 +4,15 @@ const assert = require("node:assert/strict");
 
 const {JSDOM} = require("jsdom");
 
-const {zrequire} = require("./lib/namespace.cjs");
+const {zrequire, mock_esm} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 
+const settings_config = zrequire("settings_config");
+mock_esm("../src/user_settings", {
+    user_settings: {
+        web_channel_default_view: settings_config.web_channel_default_view_values.channel_feed.code,
+    },
+});
 const clipboard_handler = zrequire("clipboard_handler");
 const stream_data = zrequire("stream_data");
 const people = zrequire("people");
@@ -27,7 +33,7 @@ run_test("copy_link_to_clipboard", async ({override}) => {
         subscribed: true,
         type: "stream",
     };
-    stream_data.add_sub(stream);
+    stream_data.add_sub_for_tests(stream);
     const {window} = new JSDOM();
     global.document = window.document;
 

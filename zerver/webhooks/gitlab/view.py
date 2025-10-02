@@ -1,4 +1,5 @@
 import re
+from datetime import datetime, timezone
 from typing import Protocol
 
 from django.http import HttpRequest, HttpResponse
@@ -30,6 +31,15 @@ from zerver.lib.webhooks.git import (
     is_branch_name_notifiable,
 )
 from zerver.models import UserProfile
+
+TOPIC_WITH_DESIGN_INFO_TEMPLATE = "{repo} / {type} {design_name}"
+DESIGN_COMMENT_MESSAGE_TEMPLATE = (
+    "{user_name} {action} on design [{design_name}]({design_url}):\n{content_message}"
+)
+
+FEATURE_FLAG_MESSAGE_TEMPLATE = "{user} {action} the feature flag [{name}]({url})."
+
+ACCESS_TOKEN_EXPIRY_MESSAGE_TEMPLATE = "The access token [{name}]({url}) will expire on {date}."
 
 
 def fixture_to_headers(fixture_name: str) -> dict[str, str]:
@@ -209,6 +219,23 @@ def replace_assignees_username_with_name(
     return formatted_assignees
 
 
+def parse_design_comment(comment: WildValue, repository_url: str) -> tuple[str, str, str]:
+    note_id = comment["id"].tame(check_int)
+
+    # As there is no issue field in the payloads related to designs,
+    # we need to parse the issue number from the new_path field.
+    design_path = comment["position"]["new_path"].tame(check_string)
+
+    # Sample design_path: "designs/issue-1/Screenshot_20250302_230445.png"
+    _, issue_subpath, design_name = design_path.split("/")
+
+    issue_number = issue_subpath.split("-")[-1]
+    design_url = f"{repository_url}/-/issues/{issue_number}/designs/{design_name}"
+    comment_url = f"{design_url}#note_{note_id}"
+
+    return comment_url, design_url, design_name
+
+
 def get_commented_commit_event_body(payload: WildValue, include_title: bool) -> str:
     comment = payload["object_attributes"]
     action = "[commented]({})".format(comment["url"].tame(check_string))
@@ -250,6 +277,23 @@ def get_commented_issue_event_body(payload: WildValue, include_title: bool) -> s
         message=comment["note"].tame(check_string),
         type="issue",
         title=payload["issue"]["title"].tame(check_string) if include_title else None,
+    )
+
+
+def get_commented_design_event_body(payload: WildValue, include_title: bool) -> str:
+    comment = payload["object_attributes"]
+    repository_url = payload["repository"]["homepage"].tame(check_string)
+
+    comment_url, design_url, design_name = parse_design_comment(comment, repository_url)
+    action = f"[commented]({comment_url})"
+    content_message = CONTENT_MESSAGE_TEMPLATE.format(message=comment["note"].tame(check_string))
+
+    return DESIGN_COMMENT_MESSAGE_TEMPLATE.format(
+        user_name=get_issue_user_name(payload),
+        action=action,
+        design_name=design_name,
+        design_url=design_url,
+        content_message=content_message,
     )
 
 
@@ -369,6 +413,71 @@ def get_release_event_body(payload: WildValue, include_title: bool) -> str:
     return body
 
 
+def get_feature_flag_event_body(payload: WildValue, include_title: bool) -> str:
+    repo_url = payload["project"]["web_url"].tame(check_string)
+    feature_flag = payload["object_attributes"]
+    action = "activated" if feature_flag["active"] else "deactivated"
+
+    return FEATURE_FLAG_MESSAGE_TEMPLATE.format(
+        user=payload["user"]["username"].tame(check_string),
+        action=action,
+        name=feature_flag["name"].tame(check_string),
+        url=f"{repo_url}/-/feature_flags",
+    )
+
+
+def get_access_token_page_url(payload: WildValue) -> str:
+    """
+    Generate the URL for the access tokens based on whether it's
+    for a group or a project.
+    """
+    if "group" in payload:
+        group_path = payload["group"]["group_path"].tame(check_string)
+        return f"https://gitlab.com/groups/{group_path}/-/settings/access_tokens"
+
+    project_url = payload["project"]["web_url"].tame(check_string)
+    return f"{project_url}/-/settings/access_tokens"
+
+
+def get_resource_access_token_expiry_event_body(payload: WildValue, include_title: bool) -> str:
+    access_token = payload["object_attributes"]
+    expiry_date = access_token["expires_at"].tame(check_string)
+    formatted_date = (
+        datetime.strptime(expiry_date, "%Y-%m-%d")
+        .replace(tzinfo=timezone.utc)
+        .strftime("%b %d, %Y")
+    )
+
+    return ACCESS_TOKEN_EXPIRY_MESSAGE_TEMPLATE.format(
+        name=access_token["name"].tame(check_string),
+        url=get_access_token_page_url(payload),
+        date=formatted_date,
+    )
+
+
+def get_deployment_event_body(payload: WildValue, include_title: bool) -> str:
+    user_text = (
+        f"[{payload['user']['name'].tame(check_string)}]({payload['user_url'].tame(check_string)})"
+    )
+
+    deployment_status = payload["status"].tame(check_string)
+    deployable_url = payload.get("deployable_url", "").tame(check_string)
+    deployment_text = f"[deployment]({deployable_url})" if deployable_url else "deployment"
+
+    commit_title = payload["commit_title"].tame(check_string)
+    commit_url = payload["commit_url"].tame(check_string)
+    commit_sha = commit_url.split("/")[-1][:7]
+
+    deployment_event_body_map = {
+        "running": f"{user_text} started a new {deployment_text}:\n> [{commit_sha}]({commit_url}) {commit_title}",
+        "success": f"The {deployment_text} was successful.",
+        "failed": f"The {deployment_text} failed.",
+        "canceled": f"The {deployment_text} was canceled.",
+    }
+
+    return deployment_event_body_map[deployment_status]
+
+
 def get_repo_name(payload: WildValue) -> str:
     if "project" in payload:
         return payload["project"]["name"].tame(check_string)
@@ -405,6 +514,17 @@ def get_object_url(payload: WildValue) -> str:
     return payload["object_attributes"]["url"].tame(check_string)
 
 
+def skip_previews(event: str) -> bool:
+    # Add event names to this array for which previews should be skipped.
+    return event in [
+        # Design events link to images, but the images cannot be
+        # accessed without authentication, so trying to preview them
+        # doesn't work.
+        "Note Hook DesignManagement::Design",
+        "Confidential Note Hook DesignManagement::Design",
+    ]
+
+
 class EventFunction(Protocol):
     def __call__(self, payload: WildValue, include_title: bool) -> str: ...
 
@@ -425,9 +545,15 @@ EVENT_FUNCTION_MAPPER: dict[str, EventFunction] = {
     "Note Hook MergeRequest": get_commented_merge_request_event_body,
     "Note Hook Issue": get_commented_issue_event_body,
     "Confidential Note Hook Issue": get_commented_issue_event_body,
+    "Note Hook DesignManagement::Design": get_commented_design_event_body,
+    "Confidential Note Hook DesignManagement::Design": get_commented_design_event_body,
     "Note Hook Snippet": get_commented_snippet_event_body,
     "Merge Request Hook approved": partial(get_merge_request_event_body, "approved"),
     "Merge Request Hook unapproved": partial(get_merge_request_event_body, "unapproved"),
+    # approval and unapproval events are triggered only if there's more than one required approver
+    # ref: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/8742
+    "Merge Request Hook approval": partial(get_merge_request_event_body, "approval"),
+    "Merge Request Hook unapproval": partial(get_merge_request_event_body, "unapproval"),
     "Merge Request Hook open": partial(get_merge_request_open_or_updated_body, "created"),
     "Merge Request Hook update": get_merge_request_updated_event_body,
     "Merge Request Hook merge": partial(get_merge_request_event_body, "merged"),
@@ -439,6 +565,9 @@ EVENT_FUNCTION_MAPPER: dict[str, EventFunction] = {
     "Build Hook": get_build_hook_event_body,
     "Pipeline Hook": get_pipeline_event_body,
     "Release Hook": get_release_event_body,
+    "Feature Flag Hook": get_feature_flag_event_body,
+    "Resource Access Token Hook": get_resource_access_token_expiry_event_body,
+    "Deployment Hook": get_deployment_event_body,
 }
 
 ALL_EVENT_TYPES = list(EVENT_FUNCTION_MAPPER.keys())
@@ -469,7 +598,9 @@ def api_gitlab_webhook(
             body = f"[{project_url}] {body}"
 
         topic_name = get_topic_based_on_event(event, payload, use_merge_request_title)
-        check_send_webhook_message(request, user_profile, topic_name, body, event)
+        check_send_webhook_message(
+            request, user_profile, topic_name, body, event, no_previews=skip_previews(event)
+        )
     return json_success(request)
 
 
@@ -514,6 +645,18 @@ def get_topic_based_on_event(event: str, payload: WildValue, use_merge_request_t
             id=payload["issue"]["iid"].tame(check_int),
             title=payload["issue"]["title"].tame(check_string),
         )
+    elif event in (
+        "Note Hook DesignManagement::Design",
+        "Confidential Note Hook DesignManagement::Design",
+    ):
+        design_path = payload["object_attributes"]["position"]["new_path"].tame(check_string)
+        design_name = design_path.split("/")[-1]
+
+        return TOPIC_WITH_DESIGN_INFO_TEMPLATE.format(
+            repo=get_repo_name(payload),
+            type="design",
+            design_name=design_name,
+        )
     elif event == "Note Hook MergeRequest":
         return TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
             repo=get_repo_name(payload),
@@ -532,6 +675,14 @@ def get_topic_based_on_event(event: str, payload: WildValue, use_merge_request_t
             type="snippet",
             id=payload["snippet"]["id"].tame(check_int),
             title=payload["snippet"]["title"].tame(check_string),
+        )
+
+    elif event == "Resource Access Token Hook" and payload.get("group"):
+        return payload["group"]["group_name"].tame(check_string)
+    elif event == "Deployment Hook":
+        return "{} / {}".format(
+            get_repo_name(payload),
+            payload["environment"].tame(check_string),
         )
     return get_repo_name(payload)
 

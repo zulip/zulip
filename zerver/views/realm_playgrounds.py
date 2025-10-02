@@ -43,10 +43,10 @@ def add_realm_playground(
     user_profile: UserProfile,
     *,
     name: str,
-    url_template: str,
     pygments_language: Annotated[
         str, AfterValidator(lambda x: check_pygments_language("pygments_language", x))
     ],
+    url_template: str,
 ) -> HttpResponse:
     playground_id = check_add_realm_playground(
         realm=user_profile.realm,

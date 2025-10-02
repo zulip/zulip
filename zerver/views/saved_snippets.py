@@ -27,16 +27,16 @@ def create_saved_snippet(
     request: HttpRequest,
     user_profile: UserProfile,
     *,
-    title: Annotated[
-        str,
-        StringConstraints(
-            min_length=1, max_length=SavedSnippet.MAX_TITLE_LENGTH, strip_whitespace=True
-        ),
-    ],
     content: Annotated[
         str,
         StringConstraints(
             min_length=1, max_length=settings.MAX_MESSAGE_LENGTH, strip_whitespace=True
+        ),
+    ],
+    title: Annotated[
+        str,
+        StringConstraints(
+            min_length=1, max_length=SavedSnippet.MAX_TITLE_LENGTH, strip_whitespace=True
         ),
     ],
 ) -> HttpResponse:
@@ -51,17 +51,17 @@ def edit_saved_snippet(
     request: HttpRequest,
     user_profile: UserProfile,
     *,
+    content: Annotated[
+        str | None,
+        StringConstraints(
+            min_length=1, max_length=settings.MAX_MESSAGE_LENGTH, strip_whitespace=True
+        ),
+    ] = None,
     saved_snippet_id: PathOnly[int],
     title: Annotated[
         str | None,
         StringConstraints(
             min_length=1, max_length=SavedSnippet.MAX_TITLE_LENGTH, strip_whitespace=True
-        ),
-    ] = None,
-    content: Annotated[
-        str | None,
-        StringConstraints(
-            min_length=1, max_length=settings.MAX_MESSAGE_LENGTH, strip_whitespace=True
         ),
     ] = None,
 ) -> HttpResponse:

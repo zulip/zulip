@@ -9,16 +9,16 @@ from django.db import connection
 from django.db.models import Exists, F, Max, OuterRef, QuerySet, Sum
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
-from django_cte import With
+from django_cte import CTE, with_cte
 from psycopg2.sql import SQL
 
 from analytics.lib.counts import COUNT_STATS
 from analytics.models import RealmCount
 from zerver.lib.cache import generic_bulk_cached_fetch, to_dict_cache_key_id
-from zerver.lib.display_recipient import get_display_recipient_by_id
+from zerver.lib.display_recipient import get_display_recipient, get_display_recipient_by_id
 from zerver.lib.exceptions import JsonableError, MissingAuthenticationError
 from zerver.lib.markdown import MessageRenderingResult
-from zerver.lib.mention import MentionData
+from zerver.lib.mention import MentionData, sender_can_mention_group
 from zerver.lib.message_cache import MessageDict, extract_message_dict, stringify_message_dict
 from zerver.lib.partial import partial
 from zerver.lib.request import RequestVariableConversionError
@@ -41,11 +41,7 @@ from zerver.lib.topic import (
     messages_for_topic,
 )
 from zerver.lib.types import FormattedEditHistoryEvent, UserDisplayRecipient
-from zerver.lib.user_groups import (
-    UserGroupMembershipDetails,
-    get_recursive_membership_groups,
-    user_has_permission_for_group_setting,
-)
+from zerver.lib.user_groups import UserGroupMembershipDetails, get_recursive_membership_groups
 from zerver.lib.user_topics import build_get_topic_visibility_policy, get_topic_visibility_policy
 from zerver.lib.users import get_inaccessible_user_ids
 from zerver.models import (
@@ -60,10 +56,9 @@ from zerver.models import (
     UserTopic,
 )
 from zerver.models.constants import MAX_TOPIC_NAME_LENGTH
-from zerver.models.groups import SystemGroups
 from zerver.models.messages import get_usermessage_by_message_id
 from zerver.models.realms import MessageEditHistoryVisibilityPolicyEnum
-from zerver.models.users import is_cross_realm_bot_email
+from zerver.models.recipients import DirectMessageGroup
 
 
 class MessageDetailsDict(TypedDict, total=False):
@@ -154,6 +149,7 @@ class SendMessageRequest:
     default_bot_user_ids: set[int]
     service_bot_tuples: list[tuple[int, int]]
     all_bot_user_ids: set[int]
+    push_device_registered_user_ids: set[int]
     # IDs of topic participants who should be notified of topic wildcard mention.
     # The 'user_allows_notifications_in_StreamTopic' with 'wildcard_mentions_notify'
     # setting ON should return True.
@@ -187,6 +183,8 @@ class SendMessageRequest:
     disable_external_notifications: bool = False
     automatic_new_visibility_policy: int | None = None
     recipients_for_user_creation_events: dict[UserProfile, set[int]] | None = None
+    reminder_target_message_id: int | None = None
+    reminder_note: str | None = None
 
 
 # We won't try to fetch more unread message IDs from the database than
@@ -297,6 +295,7 @@ def messages_for_ids(
         cache_transformer=lambda obj: obj,
         extractor=extract_message_dict,
         setter=stringify_message_dict,
+        pickled_tupled=False,
     )
 
     message_list: list[dict[str, Any]] = []
@@ -468,7 +467,7 @@ def access_web_public_message(
     except Message.DoesNotExist:
         raise MissingAuthenticationError
 
-    if not message.is_stream_message():
+    if not message.is_channel_message:
         raise MissingAuthenticationError
 
     queryset = get_web_public_streams_queryset(realm)
@@ -480,7 +479,6 @@ def access_web_public_message(
     # These should all have been enforced by the code in
     # get_web_public_streams_queryset
     assert stream.is_web_public
-    assert not stream.deactivated
     assert not stream.invite_only
     assert stream.history_public_to_subscribers
 
@@ -619,7 +617,7 @@ def event_recipient_ids_for_action_on_messages(
         return set(usermessages.values_list("user_profile_id", flat=True))
 
     sample_message = messages[0]
-    if not sample_message.is_stream_message():
+    if not sample_message.is_channel_message:
         # For DM, event is sent to users who actually received the message.
         return get_user_ids_having_usermessage_row_for_messages(message_ids)
 
@@ -656,9 +654,7 @@ def event_recipient_ids_for_action_on_messages(
     #    * Users who were initially subscribed and later unsubscribed
     #      (usermessages exist for messages they received while subscribed).
     usermessage_rows = UserMessage.objects.filter(message_id__in=message_ids).exclude(
-        # Excluding guests here implements can_access_public_channels,
-        # since we already know realm.is_zephyr_mirror_realm is false,
-        # based on the value of is_history_public_to_subscribers.
+        # Excluding guests here implements can_access_public_channels.
         user_profile__role=UserProfile.ROLE_GUEST
     )
     if exclude_long_term_idle_users:
@@ -858,6 +854,7 @@ def get_raw_unread_data(
             "flags",
             "recipient_id",
         )
+        # Descending order, so truncation keeps the latest unreads.
         .order_by("-message_id")
     )
 
@@ -887,11 +884,10 @@ def get_raw_unread_data(
             # inside a CTE, such that the join to Recipients, below, can't be
             # implied to remove rows, and thus allows a Nested Loop join,
             # potentially memoized to reduce the number of Recipient lookups.
-            cte = With(user_msgs[:MAX_UNREAD_MESSAGES])
+            cte = CTE(user_msgs[:MAX_UNREAD_MESSAGES])
 
             user_msgs = (
-                cte.join(Recipient, id=cte.col.recipient_id)
-                .with_cte(cte)
+                with_cte(cte, select=cte.join(Recipient, id=cte.col.recipient_id))
                 .annotate(
                     message_id=cte.col.message_id,
                     sender_id=cte.col.sender_id,
@@ -910,9 +906,13 @@ def get_raw_unread_data(
                     "recipient__type",
                     "recipient__type_id",
                 )
+                # Output in ascending order. We can't just reverse,
+                # since the CTE join does not guarantee that it
+                # preserves the original descending order.
+                .order_by("message_id")
             )
 
-            rows = list(reversed(user_msgs))
+            rows = list(user_msgs)
         finally:
             cursor.execute("SET enable_bitmapscan TO on")
         return extract_unread_data_from_um_rows(rows, user_profile)
@@ -1008,9 +1008,26 @@ def extract_unread_data_from_um_rows(
 
         elif msg_type == Recipient.DIRECT_MESSAGE_GROUP:
             user_ids_string = get_direct_message_group_users(recipient_id)
-            direct_message_group_dict[message_id] = dict(
-                user_ids_string=user_ids_string,
-            )
+            user_ids = [int(uid) for uid in user_ids_string.split(",")]
+
+            # For API compatibility, we populate pm_dict for 1:1 and self DMs
+            # so clients relying on pm_dict continue to work during the migration.
+            # We populate direct_message_group_dict for group size > 2.
+            if len(user_ids) <= 2:
+                if len(user_ids) == 1:
+                    # For self-DM, other_user_id is the user's own id
+                    other_user_id = user_ids[0]
+                else:
+                    # For 1:1 DM, other_user_id is the other participant
+                    other_user_id = user_ids[1] if user_ids[0] == user_profile.id else user_ids[0]
+
+                pm_dict[message_id] = dict(
+                    other_user_id=other_user_id,
+                )
+            else:
+                direct_message_group_dict[message_id] = dict(
+                    user_ids_string=user_ids_string,
+                )
 
         # TODO: Add support for alert words here as well.
         is_mentioned = (row["flags"] & UserMessage.flags.mentioned) != 0
@@ -1513,28 +1530,9 @@ def check_user_group_mention_allowed(sender: UserProfile, user_group_ids: list[i
     user_groups = NamedUserGroup.objects.filter(id__in=user_group_ids).select_related(
         "can_mention_group", "can_mention_group__named_user_group"
     )
-    sender_is_system_bot = is_cross_realm_bot_email(sender.delivery_email)
 
     for group in user_groups:
-        can_mention_group = group.can_mention_group
-        if (
-            hasattr(can_mention_group, "named_user_group")
-            and can_mention_group.named_user_group.name == SystemGroups.EVERYONE
-        ):
-            continue
-        if sender_is_system_bot:
-            raise JsonableError(
-                _("You are not allowed to mention user group '{user_group_name}'.").format(
-                    user_group_name=group.name
-                )
-            )
-
-        if not user_has_permission_for_group_setting(
-            can_mention_group,
-            sender,
-            NamedUserGroup.GROUP_PERMISSION_SETTINGS["can_mention_group"],
-            direct_member_only=False,
-        ):
+        if not sender_can_mention_group(sender, group):
             raise JsonableError(
                 _("You are not allowed to mention user group '{user_group_name}'.").format(
                     user_group_name=group.name
@@ -1722,7 +1720,7 @@ def should_change_visibility_policy(
 
 def set_visibility_policy_possible(user_profile: UserProfile, message: Message) -> bool:
     """If the user can set a visibility policy."""
-    if not message.is_stream_message():
+    if not message.is_channel_message:
         return False
 
     if user_profile.is_bot:
@@ -1736,4 +1734,26 @@ def set_visibility_policy_possible(user_profile: UserProfile, message: Message) 
 
 def remove_single_newlines(content: str) -> str:
     content = content.strip("\n")
-    return re.sub(r"(?<!\n)\n(?!\n|[-*] |[0-9]+\. )", " ", content)
+    return re.sub(r"(?<!\n)\n(?!\n|[-*] |[0-9]+\. ) *", " ", content)
+
+
+def is_1_to_1_message(message: Message) -> bool:
+    if message.recipient.type == Recipient.DIRECT_MESSAGE_GROUP:
+        direct_message_group = DirectMessageGroup.objects.get(id=message.recipient.type_id)
+        return direct_message_group.group_size <= 2
+
+    if message.recipient.type == Recipient.PERSONAL:
+        return True
+
+    return False
+
+
+def is_message_to_self(message: Message) -> bool:
+    if message.recipient.type == Recipient.DIRECT_MESSAGE_GROUP:
+        group_members = get_display_recipient(message.recipient)
+        return len(group_members) == 1 and group_members[0]["id"] == message.sender.id
+
+    if message.recipient.type == Recipient.PERSONAL:
+        return message.recipient == message.sender.recipient
+
+    return False

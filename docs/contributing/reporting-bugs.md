@@ -55,7 +55,7 @@ Steps and best practices for filing a GitHub issue:
    - [zulip/zulip](https://github.com/zulip/zulip/issues) for issues with the
      Zulip web app or server. A good default if you aren't sure which repository
      to use.
-   - [zulip/zulip-mobile](https://github.com/zulip/zulip-mobile/issues) for
+   - [zulip/zulip-flutter](https://github.com/zulip/zulip-flutter/issues) for
      issues with the mobile apps.
    - [zulip/zulip-desktop](https://github.com/zulip/zulip-desktop/issues) for
      issues that are specific to the Zulip desktop app, and therefore _do not_

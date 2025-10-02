@@ -3,12 +3,11 @@
   "balance": 0,
   "created": 1000000000,
   "currency": null,
-  "default_currency": null,
   "default_source": null,
   "delinquent": false,
   "description": "zulip (Zulip Dev)",
   "discount": null,
-  "email": "othello@zulip.com",
+  "email": "desdemona@zulip.com",
   "id": "billing_page_permissions--Customer.create.1.json",
   "invoice_prefix": "NORMALIZED",
   "invoice_settings": {

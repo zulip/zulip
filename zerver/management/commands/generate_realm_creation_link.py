@@ -14,7 +14,7 @@ class Command(ZulipBaseCommand):
     Outputs a randomly generated, 1-time-use link for Organization creation.
     Whoever visits the link can create a new organization on this server, regardless of whether
     settings.OPEN_REALM_CREATION is enabled. The link would expire automatically after
-    settings.REALM_CREATION_LINK_VALIDITY_DAYS.
+    settings.CAN_CREATE_REALM_LINK_VALIDITY_DAYS.
 
     Usage: ./manage.py generate_realm_creation_link """
 

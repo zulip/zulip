@@ -1,3 +1,7 @@
+:root.dark-theme {
+    color-scheme: dark;
+}
+
 body {
     --base-font-size-px: 16px;
     width: 100%;
@@ -132,4 +136,8 @@ body {
 #showroom_component_banner_default_wrapper {
     width: min(100%, 800px);
     margin: 0 auto;
+}
+
+.showroom-filter-input-container {
+    width: clamp(200px, 100%, 400px);
 }

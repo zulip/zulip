@@ -1,6 +1,6 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
-import {z} from "zod";
+import * as z from "zod/mini";
 
 import render_message_edit_history from "../templates/message_edit_history.hbs";
 import render_message_history_overlay from "../templates/message_history_overlay.hbs";
@@ -53,13 +53,13 @@ const server_message_history_schema = z.object({
             rendered_content: z.string(),
             timestamp: z.number(),
             topic: z.string(),
-            user_id: z.number().or(z.null()),
-            prev_topic: z.string().optional(),
-            stream: z.number().optional(),
-            prev_stream: z.number().optional(),
-            prev_content: z.string().optional(),
-            prev_rendered_content: z.string().optional(),
-            content_html_diff: z.string().optional(),
+            user_id: z.nullable(z.number()),
+            prev_topic: z.optional(z.string()),
+            stream: z.optional(z.number()),
+            prev_stream: z.optional(z.number()),
+            prev_content: z.optional(z.string()),
+            prev_rendered_content: z.optional(z.string()),
+            content_html_diff: z.optional(z.string()),
         }),
     ),
 });
@@ -127,6 +127,7 @@ export function fetch_and_render_message_history(message: Message): void {
             move_history_only,
         }),
     );
+    $("#message-edit-history-overlay-container").attr("data-message-id", message.id);
     open_overlay();
     show_loading_indicator();
     void channel.get({
@@ -136,6 +137,13 @@ export function fetch_and_render_message_history(message: Message): void {
             allow_empty_topic_name: true,
         },
         success(raw_data) {
+            if (
+                !overlays.message_edit_history_open() ||
+                $("#message-edit-history-overlay-container").attr("data-message-id") !==
+                    String(message.id)
+            ) {
+                return;
+            }
             const data = server_message_history_schema.parse(raw_data);
 
             const content_edit_history: EditHistoryEntry[] = [];

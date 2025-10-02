@@ -123,14 +123,14 @@ export function update_view_on_deactivate(user_id: number, is_bot: boolean): voi
     const $button = $row.find("button.deactivate");
     $button.prop("disabled", false);
     $row.find("i.deactivated-user-icon").show();
-    $button.addClass("button-warning reactivate");
-    $button.removeClass("button-danger deactivate");
+    $button.addClass("icon-button-success reactivate");
+    $button.removeClass("icon-button-danger deactivate");
     if (is_bot) {
-        $button.addClass("reactivate-bot-tooltip");
-        $button.removeClass("deactivate-bot-tooltip");
+        $button.closest("span").addClass("reactivate-bot-tooltip");
+        $button.closest("span").removeClass("deactivate-bot-tooltip");
     } else {
-        $button.addClass("reactivate-user-tooltip");
-        $button.removeClass("deactivate-user-tooltip");
+        $button.closest("span").addClass("reactivate-user-tooltip");
+        $button.closest("span").removeClass("deactivate-user-tooltip");
     }
     $button
         .empty()
@@ -160,14 +160,14 @@ export function update_view_on_reactivate(user_id: number, is_bot: boolean): voi
 
     const $button = $row.find("button.reactivate");
     $row.find("i.deactivated-user-icon").hide();
-    $button.addClass("button-danger deactivate");
-    $button.removeClass("button-warning reactivate");
+    $button.addClass("icon-button-danger deactivate");
+    $button.removeClass("icon-button-success reactivate");
     if (is_bot) {
-        $button.addClass("deactivate-bot-tooltip");
-        $button.removeClass("reactivate-bot-tooltip");
+        $button.closest("span").addClass("deactivate-bot-tooltip");
+        $button.closest("span").removeClass("reactivate-bot-tooltip");
     } else {
-        $button.addClass("deactivate-user-tooltip");
-        $button.removeClass("reactivate-user-tooltip");
+        $button.closest("span").addClass("deactivate-user-tooltip");
+        $button.closest("span").removeClass("reactivate-user-tooltip");
     }
     $button
         .empty()
@@ -203,6 +203,15 @@ function add_value_to_filters(
     // and in turn apply the new filters.
     assert(section.list_widget !== undefined);
     section.list_widget.hard_redraw();
+}
+
+function are_filters_active(
+    filters: UserSettingsSection["filters"],
+    $search_input: JQuery,
+): boolean {
+    const search_value = String($search_input.val()).trim();
+    const selected_role = filters.role_code;
+    return Boolean(search_value) || selected_role !== 0;
 }
 
 function role_selected_handler(
@@ -256,7 +265,7 @@ function get_roles_with_counts(user_ids: number[]): dropdown_widget.Option[] {
                     },
                 ),
             }))
-            .reverse(),
+            .toReversed(),
     ];
 }
 
@@ -519,6 +528,10 @@ function active_create_table(active_users: number[]): void {
             predicate(person) {
                 return people.predicate_for_user_settings_filters(person, active_section.filters);
             },
+            is_active() {
+                const $search_input = $("#admin-active-users-list .search");
+                return are_filters_active(active_section.filters, $search_input);
+            },
             onupdate: reset_scrollbar($users_table),
         },
         $parent_container: $("#admin-active-users-list").expectOne(),
@@ -568,6 +581,10 @@ function deactivated_create_table(deactivated_users: number[]): void {
                         person,
                         deactivated_section.filters,
                     );
+                },
+                is_active() {
+                    const $search_input = $("#admin-deactivated-users-list .search");
+                    return are_filters_active(deactivated_section.filters, $search_input);
                 },
                 onupdate: reset_scrollbar($deactivated_users_table),
             },
@@ -749,7 +766,7 @@ function handle_edit_form($tbody: JQuery): void {
         e.stopPropagation();
         e.preventDefault();
 
-        const user_id = Number.parseInt($(this).attr("data-user-id")!, 10);
+        const user_id = Number.parseInt($(this).closest("tr").attr("data-user-id")!, 10);
         if (people.is_my_user_id(user_id)) {
             browser_history.go_to_location("#settings/profile");
             return;

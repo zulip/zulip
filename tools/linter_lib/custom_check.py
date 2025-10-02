@@ -38,6 +38,8 @@ FILES_WITH_LEGACY_SUBJECT = {
     # to fix everything until we migrate the DB to "topic".
     "zerver/tests/test_message_fetch.py",
     "zerver/tests/test_message_topics.py",
+    # This is actually email subjects
+    "zerver/lib/email_mirror_server.py",
 }
 
 shebang_rules: list["Rule"] = [
@@ -211,6 +213,7 @@ js_rules = RuleList(
             "description": "Avoid using the `style=` attribute; we prefer styling in CSS files",
             "exclude": {
                 "web/tests/compose_paste.test.cjs",
+                "web/tests/postprocess_content.test.cjs",
             },
             "good_lines": ["#my-style {color: blue;}", "const style =", 'some_style = "test"'],
             "bad_lines": ['<p style="color: blue;">Foo</p>', 'style = "color: blue;"'],
@@ -247,6 +250,7 @@ python_rules = RuleList(
             "exclude": FILES_WITH_LEGACY_SUBJECT,
             "exclude_line": {
                 ("zerver/lib/message.py", "message__subject__iexact=message.topic_name(),"),
+                ("zerver/lib/streams.py", '.exclude(subject="")'),
                 ("zerver/views/streams.py", "message__subject__iexact=topic_name,"),
                 ("zerver/lib/message_cache.py", 'and obj["subject"] == ""'),
                 (
@@ -487,6 +491,10 @@ python_rules = RuleList(
                     "zerver/tests/test_subs.py",
                     "with transaction.atomic(savepoint=True), self.assertRaises(JsonableError):",
                 ),
+                (
+                    "zproject/backends.py",
+                    "@transaction.atomic(savepoint=True)  # intentional use of savepoint=True",
+                ),
             },
         },
         *whitespace_rules,
@@ -568,7 +576,7 @@ html_rules: list["Rule"] = [
         "description": "`placeholder` value should be translatable.",
         "exclude_line": {
             ("templates/zerver/realm_creation_form.html", 'placeholder="acme"'),
-            ("templates/zerver/realm_creation_form.html", 'placeholder="Acme or Ακμή"'),
+            ("templates/zerver/slack_import.html", 'placeholder="xoxb-…"'),
         },
         "exclude": {
             "templates/corporate",
@@ -577,7 +585,7 @@ html_rules: list["Rule"] = [
             "web/templates/settings/playground_settings_admin.hbs",
         },
         "good_lines": [
-            '<input class="stream-list-filter" type="text" placeholder="{{ _(\'Filter streams\') }}" />'
+            '<input class="left-sidebar-search-input" type="text" placeholder="{{ _(\'Filter left sidebar\') }}" />'
         ],
         "bad_lines": ['<input placeholder="foo">'],
     },
@@ -603,7 +611,7 @@ html_rules: list["Rule"] = [
         "pattern": "placeholder='[^{]",
         "description": "`placeholder` value should be translatable.",
         "good_lines": [
-            '<input class="stream-list-filter" type="text" placeholder="{{ _(\'Filter streams\') }}" />'
+            '<input class="left-sidebar-search-input" type="text" placeholder="{{ _(\'Filter left sidebar\') }}" />'
         ],
         "bad_lines": ["<input placeholder='foo'>"],
         "exclude": {
@@ -672,7 +680,7 @@ html_rules: list["Rule"] = [
     },
     {
         "pattern": r"link=\"help/",
-        "description": "Relative links to Help Center should start with /help/",
+        "description": "Relative links to help center should start with /help/",
         "good_lines": ['link="/help/foo"'],
         "bad_lines": ['link="help/foo"'],
     },
@@ -734,8 +742,6 @@ html_rules: list["Rule"] = [
             "templates/zerver/accounts_send_confirm.html",
             "templates/zerver/integrations/index.html",
             "templates/zerver/documentation_main.html",
-            "templates/corporate/zephyr.html",
-            "templates/corporate/zephyr-mirror.html",
         },
         "good_lines": ["#my-style {color: blue;}", 'style="display: none"', "style='display: none"],
         "bad_lines": ['<p style="color: blue;">Foo</p>', 'style = "color: blue;"'],
@@ -849,14 +855,6 @@ markdown_rules = RuleList(
         {
             "pattern": r"\[(?P<url>[^\]]+)\]\((?P=url)\)",
             "description": "Linkified Markdown URLs should use cleaner <http://example.com> syntax.",
-            "exclude": {"help/"},
-        },
-        {
-            "pattern": r"<http(s?)://[^>]+>",
-            "description": """Autolinks are not allowed in /help documentation due to the upcoming migration to mdx.
-            Use Linkified markdown URLs [url](url) instead.
-            See https://github.com/mdx-js/mdx/issues/1049 for more info.""",
-            "include_only": {"help/"},
         },
         {
             "pattern": "https://zulip.readthedocs.io/en/latest/[a-zA-Z0-9]",
@@ -900,19 +898,18 @@ markdown_rules = RuleList(
 )
 
 help_markdown_rules = RuleList(
-    langs=["md"],
+    langs=["mdx"],
     rules=[
-        *markdown_rules.rules,
         {
             "pattern": "[a-z][.][A-Z]",
             "description": "Likely missing space after end of sentence",
-            "include_only": {"help/"},
+            "include_only": {"starlight_help/src/content/docs/"},
             "exclude_pattern": "Rocket.Chat|org.zulip.Zulip",
         },
         {
             "pattern": r"\b[rR]ealm[s]?\b",
-            "include_only": {"help/"},
-            "exclude": {"help/change-organization-url.md"},
+            "include_only": {"starlight_help/src/content/docs/"},
+            "exclude": {"starlight_help/src/content/docs/change-organization-url.mdx"},
             "good_lines": ["Organization", "deactivate_realm", "realm_filter"],
             "bad_lines": ["Users are in a realm", "Realm is the best model"],
             "description": "Realms are referred to as Organizations in user-facing docs.",
@@ -963,6 +960,53 @@ txt_rules = RuleList(
     langs=["txt", "text", "yaml", "yml"],
     rules=whitespace_rules,
 )
+
+svg_rules = RuleList(
+    langs=["svg"],
+    rules=[
+        {
+            "pattern": r"fill=(['\"])(.*?)\1",
+            "description": "System icons ignore fill values, so do not include the fill property.",
+            "include_only": {"web/shared/icons/", "web/images/icons/"},
+            # This file needs the fill property to define the fill as
+            # a linear gradient. We cannot define the gradient in CSS
+            # in a clean way and thus we have decided to define the
+            # gradient in the SVG itself.
+            "exclude": {"web/shared/icons/user-circle-idle.svg"},
+        },
+        {
+            "pattern": "fill:",
+            "description": "System icons ignore fill values, so do not include the fill property.",
+            "include_only": {"web/shared/icons/", "web/images/icons/"},
+        },
+        {
+            "pattern": r"fill-rule=(['\"])(.*?)\1",
+            "description": "System icons ignore fill-rule values, so do not include the fill-rule property.",
+            "include_only": {"web/shared/icons/", "web/images/icons/"},
+        },
+        {
+            "pattern": "fill-rule:",
+            "description": "System icons ignore fill-rule values, so do not include the fill-rule property.",
+            "include_only": {"web/shared/icons/", "web/images/icons/"},
+        },
+        {
+            "pattern": r"stroke=(['\"])(.*?)\1",
+            "description": "System icons ignore stroke values, so do not include the stroke property.",
+            "include_only": {"web/shared/icons/", "web/images/icons/"},
+        },
+        {
+            "pattern": "stroke:",
+            "description": "System icons ignore stroke values, so do not include the stroke property.",
+            "include_only": {"web/shared/icons/", "web/images/icons/"},
+        },
+        {
+            "pattern": "class=",
+            "description": "System icons ignore class values, so do not include the class property.",
+            "include_only": {"web/shared/icons/", "web/images/icons/"},
+        },
+    ],
+)
+
 non_py_rules = [
     handlebars_rules,
     jinja2_rules,
@@ -975,4 +1019,5 @@ non_py_rules = [
     txt_rules,
     puppet_rules,
     openapi_rules,
+    svg_rules,
 ]

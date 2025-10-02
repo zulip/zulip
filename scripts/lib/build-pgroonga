@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -euxo pipefail
 
-version="3.1.8"
-sha256=5a38743492ba21f708df447b1ca0ac07ceff9715d9604aa2303f6dda795d096e
+version="4.0.1"
+sha256=e2dfe40f3a0342e9ce4f1212043c46564fda3678e8cfda8587bbc37b103ebd17
 
 tmpdir="$(mktemp -d)"
 trap 'rm -r "$tmpdir"' EXIT
@@ -13,5 +13,14 @@ sha256sum -c <<<"$sha256 $tarball"
 tar -xzf "$tarball"
 cd "pgroonga-$version"
 
-make -j "$(nproc)" HAVE_MSGPACK=1
+if pkg-config msgpack-c; then
+    msgpack='msgpack-c'
+elif pkg-config msgpack; then
+    msgpack='msgpack'
+else
+    echo 'build-pgroonga: Cannot find msgpack'
+    exit 1
+fi
+
+make -j "$(nproc)" HAVE_MSGPACK=1 MSGPACK_PACKAGE_NAME="$msgpack"
 make install

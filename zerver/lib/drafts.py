@@ -63,7 +63,7 @@ def further_validated_draft_dict(
             raise JsonableError(_("Topic must not contain null bytes"))
         if len(to) != 1:
             raise JsonableError(_("Must specify exactly 1 channel ID for channel messages"))
-        stream, sub = access_stream_by_id(user_profile, to[0])
+        stream, _sub = access_stream_by_id(user_profile, to[0])
         recipient_id = stream.recipient_id
     elif draft_dict.type == "private" and len(to) != 0:
         to_users = get_user_profiles_by_ids(set(to), user_profile.realm)

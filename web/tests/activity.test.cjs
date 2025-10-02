@@ -4,11 +4,13 @@ const assert = require("node:assert/strict");
 
 const {
     clear_buddy_list,
-    override_user_matches_narrow,
+    override_user_matches_narrow_using_loaded_data,
     buddy_list_add_user_matching_view,
     buddy_list_add_other_user,
     stub_buddy_list_elements,
 } = require("./lib/buddy_list.cjs");
+const {make_realm} = require("./lib/example_realm.cjs");
+const {make_message_list} = require("./lib/message_list.cjs");
 const {mock_esm, set_global, with_overrides, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
 const blueslip = require("./lib/zblueslip.cjs");
@@ -50,13 +52,12 @@ const stream_data = zrequire("stream_data");
 const peer_data = zrequire("peer_data");
 const message_lists = zrequire("message_lists");
 const util = zrequire("util");
-const {Filter} = zrequire("../src/filter");
 const {set_current_user, set_realm} = zrequire("state_data");
 const {initialize_user_settings} = zrequire("user_settings");
 
 const current_user = {};
 set_current_user(current_user);
-const realm = {};
+const realm = make_realm();
 set_realm(realm);
 const user_settings = {};
 initialize_user_settings({user_settings});
@@ -113,13 +114,9 @@ const $fred_stub = $.create("fred stub");
 
 const rome_sub = {name: "Rome", subscribed: true, stream_id: 1001};
 function add_sub_and_set_as_current_narrow(sub) {
-    stream_data.add_sub(sub);
-    const filter = new Filter([{operator: "stream", operand: sub.stream_id}]);
-    message_lists.set_current({
-        data: {
-            filter,
-        },
-    });
+    stream_data.add_sub_for_tests(sub);
+    const filter_terms = [{operator: "stream", operand: sub.stream_id}];
+    message_lists.set_current(make_message_list(filter_terms));
 }
 
 function test(label, f) {
@@ -392,7 +389,11 @@ test("handlers", ({override, override_rewire, mock_template}) => {
 });
 
 test("first/prev/next", ({override, override_rewire, mock_template}) => {
-    override_rewire(buddy_data, "user_matches_narrow", override_user_matches_narrow);
+    override_rewire(
+        buddy_data,
+        "user_matches_narrow_using_loaded_data",
+        override_user_matches_narrow_using_loaded_data,
+    );
     mock_template("presence_rows.hbs", false, () => "<presence-rows-stub>");
     override(padded_widget, "update_padding", noop);
     stub_buddy_list_elements();
@@ -465,29 +466,6 @@ test("first/prev/next", ({override, override_rewire, mock_template}) => {
     assert.equal(buddy_list.prev_key(fred.user_id), alice.user_id);
     assert.equal(buddy_list.next_key(alice.user_id), fred.user_id);
     assert.equal(buddy_list.next_key(fred.user_id), undefined);
-});
-
-test("render_empty_user_list_message", ({override, mock_template}) => {
-    const empty_list_message = "No matching users.";
-    mock_template("empty_list_widget_for_list.hbs", false, (data) => {
-        assert.equal(data.empty_list_message, empty_list_message);
-        return "<empty-list-stub>";
-    });
-
-    let $appended_data;
-    override(buddy_list, "$container", {
-        append($data) {
-            $appended_data = $data;
-        },
-        attr(name) {
-            assert.equal(name, "data-search-results-empty");
-            return empty_list_message;
-        },
-        children: () => [],
-    });
-
-    activity_ui.render_empty_user_list_message_if_needed(buddy_list.$container);
-    assert.equal($appended_data.selector, "<empty-list-stub>");
 });
 
 test("insert_one_user_into_empty_list", ({override, mock_template}) => {
@@ -721,11 +699,10 @@ test("update_presence_info", ({override, override_rewire}) => {
     override(realm, "server_presence_ping_interval_seconds", 60);
     override(realm, "server_presence_offline_threshold_seconds", 200);
 
-    const server_time = 500;
-    const info = {
-        website: {
-            status: "active",
-            timestamp: server_time,
+    let info = {
+        [me.user_id]: {
+            active_timestamp: 500,
+            idle_timestamp: 500,
         },
     };
 
@@ -738,12 +715,19 @@ test("update_presence_info", ({override, override_rewire}) => {
     });
 
     presence.presence_info.delete(me.user_id);
-    activity_ui.update_presence_info(me.user_id, info, server_time);
+    activity_ui.update_presence_info(info);
     assert.ok(inserted);
     assert.deepEqual(presence.presence_info.get(me.user_id).status, "active");
 
+    info = {
+        [alice.user_id]: {
+            active_timestamp: 500,
+            idle_timestamp: 500,
+        },
+    };
+
     presence.presence_info.delete(alice.user_id);
-    activity_ui.update_presence_info(alice.user_id, info, server_time);
+    activity_ui.update_presence_info(info);
     assert.ok(inserted);
 
     const expected = {status: "active", last_active: 500};
@@ -751,7 +735,13 @@ test("update_presence_info", ({override, override_rewire}) => {
 
     // Test invalid and inaccessible user IDs.
     const invalid_user_id = 99;
-    activity_ui.update_presence_info(invalid_user_id, info, server_time);
+    info = {
+        [invalid_user_id]: {
+            active_timestamp: 500,
+            idle_timestamp: 500,
+        },
+    };
+    activity_ui.update_presence_info(info);
     assert.equal(presence.presence_info.get(invalid_user_id), undefined);
 
     const inaccessible_user_id = 10;
@@ -762,11 +752,18 @@ test("update_presence_info", ({override, override_rewire}) => {
         "Unknown user",
     );
     people._add_user(inaccessible_user);
-    activity_ui.update_presence_info(inaccessible_user_id, info, server_time);
+    info = {
+        [inaccessible_user_id]: {
+            active_timestamp: 500,
+            idle_timestamp: 500,
+        },
+    };
+    activity_ui.update_presence_info(info);
     assert.equal(presence.presence_info.get(inaccessible_user_id), undefined);
 });
 
 test("initialize", ({override, override_rewire}) => {
+    override(document, "to_$", () => $("document-stub"));
     override(pm_list, "update_private_messages", noop);
     override(watchdog, "check_for_unsuspend", noop);
     override(buddy_list, "fill_screen_with_content", noop);
@@ -816,7 +813,6 @@ test("initialize", ({override, override_rewire}) => {
     activity.initialize();
     activity_ui.initialize({narrow_by_email() {}});
     payload.success({
-        zephyr_mirror_active: true,
         presences: {},
         msg: "",
         result: "success",
@@ -828,7 +824,6 @@ test("initialize", ({override, override_rewire}) => {
 
     assert.ok(scroll_handler_started);
     assert.ok(!activity.new_user_input);
-    assert.ok(!$("#zephyr-mirror-error").hasClass("show"));
     assert.equal(activity.compute_active_status(), "active");
 
     $(window).idle = (params) => {
@@ -841,7 +836,6 @@ test("initialize", ({override, override_rewire}) => {
     activity.initialize();
     activity_ui.initialize({narrow_by_email() {}});
     payload.success({
-        zephyr_mirror_active: false,
         presences: {},
         msg: "",
         result: "success",
@@ -849,13 +843,12 @@ test("initialize", ({override, override_rewire}) => {
         presence_last_update_id: -1,
     });
 
-    assert.ok($("#zephyr-mirror-error").hasClass("show"));
     assert.ok(!activity.new_user_input);
     assert.equal(activity.compute_active_status(), "idle");
 
     // Exercise the mousemove handler, which just
     // sets a flag.
-    $("html").get_on_handler("mousemove")();
+    $(document).get_on_handler("mousemove")();
 
     clear();
 });

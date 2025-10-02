@@ -110,6 +110,27 @@ body {
 }
 
 input,
+button {
+    /* Browsers default to inline-block,
+       so preserve this value. */
+    vertical-align: middle;
+    /* Preserve normal font-weight, though
+       it appears UA stylesheets do not set
+       the weight to other values. */
+    font-weight: normal;
+    /* Likewise with zeroed margin. */
+    margin: 0;
+
+    /* Reset these values from Firefox's
+       UA stylesheet (still present in
+       April 2025) */
+    &::-moz-focus-inner {
+        padding: 0;
+        border: 0;
+    }
+}
+
+input,
 button,
 select,
 textarea {
@@ -213,6 +234,10 @@ p.n-margin {
     }
 }
 
+.messages-logo-svg {
+    width: 1.7188em; /* 27.5px at 16px/1em */
+}
+
 .bottom-messages-logo {
     display: none;
 }
@@ -220,9 +245,9 @@ p.n-margin {
 .alert-zulip-logo,
 .top-messages-logo,
 .bottom-messages-logo {
-    width: 24px;
-    height: 24px;
-    margin: 0 auto 12px;
+    width: 1.7143em; /* 24px at 14px/em */
+    height: 1.7143em;
+    margin: 0 auto 0.8571em; /* 12px at 14px/em */
 
     & svg {
         & circle {
@@ -246,10 +271,6 @@ p.n-margin {
     /* Since padding under message header is not transparent
        we need to position it below the padding. */
     padding-top: var(--header-padding-bottom);
-    margin-bottom: 0;
-    /* To fit the logo inside the spinner. */
-    position: relative;
-    top: -2px;
 }
 
 /* See https://web.dev/animations-guide/#triggers before adding any funny animation properties here. */
@@ -310,10 +331,18 @@ p.n-margin {
     }
 
     .exit-me {
-        font-size: 20pt;
-        font-weight: 200;
-        margin: 0 0 0 10px;
-        cursor: pointer;
+        margin: 0 0 0 5px;
+    }
+
+    .float-header {
+        display: flex;
+        align-items: center;
+    }
+
+    .feedback-button-container {
+        display: flex;
+        align-items: center;
+        margin-left: auto;
     }
 }
 
@@ -651,6 +680,13 @@ input {
     font-family: "Source Sans 3 VF", sans-serif;
 }
 
+/* Override browsers that use
+   `cursor: default` */
+label,
+button {
+    cursor: pointer;
+}
+
 /* Override Bootstrap's fixed sizes for various elements */
 textarea,
 label {
@@ -658,9 +694,13 @@ label {
     line-height: inherit;
 }
 
+button:focus {
+    outline: 0;
+}
+
 /* Bootstrap's focus outline uses -webkit-focus-ring-color which doesn't exist in Firefox */
 a:not(:active):focus,
-button:focus,
+button:focus-visible,
 label.checkbox input[type="checkbox"]:focus ~ .rendered-checkbox,
 i.fa:focus,
 i.zulip-icon:focus-visible,
@@ -670,7 +710,7 @@ i.zulip-icon:focus-visible,
 }
 
 /* List of text-like input types taken from Bootstrap */
-input {
+input:not(.input-element) {
     &[type="text"],
     &[type="password"],
     &[type="datetime"],
@@ -771,7 +811,7 @@ strong {
 
 .buddy_list_tooltip_content {
     text-align: left;
-    word-wrap: break-word;
+    overflow-wrap: break-word;
     /* 280px at 14px/1em */
     max-width: 20em;
 }
@@ -803,13 +843,26 @@ strong {
     position: relative;
 }
 
-.new_messages {
-    background-color: hsl(194deg 53% 79%);
+@keyframes pulse-unread {
+    /* Only unread dots in collapsed Views
+       have offset variables set; all others
+       will fall back to 0 (no offset). */
+    0% {
+        transform: scale(1) translateX(var(--unread-dot-x-offset, 0));
+    }
+
+    50% {
+        transform: scale(var(--pulse-unread-scale-max))
+            translateX(var(--unread-dot-x-offset-scaled, 0));
+    }
+
+    100% {
+        transform: scale(1) translateX(var(--unread-dot-x-offset, 0));
+    }
 }
 
-.new_messages,
-.new_messages_fadeout {
-    transition: background-color 3s ease-in-out;
+.new-unread .unread_count {
+    animation: 2s ease-in-out 2 pulse-unread;
 }
 
 .messagebox-content .slow-send-spinner {
@@ -830,9 +883,7 @@ strong {
 .copy-paste-text {
     /* Hide the text that we want copy paste to capture */
     position: absolute;
-    text-indent: -99999px;
-    float: left;
-    width: 0;
+    left: -99999px;
 }
 
 @keyframes rotate {
@@ -960,7 +1011,7 @@ div.focused-message-list.is-conversation-view .recipient_row {
     flex: 1;
     line-height: 1.2142em;
     padding: 0 5px;
-    color: hsl(0deg 0% 33%);
+    color: var(--color-text-default);
     border-radius: 4px;
     border: 1px solid hsl(0deg 0% 80%);
 
@@ -997,7 +1048,7 @@ div.focused-message-list.is-conversation-view .recipient_row {
 }
 
 .topic_edit_save {
-    border-color: light-dark(hsla(0deg 0% 0% / 10%), hsla(0deg 0% 0% / 60%));
+    border-color: light-dark(hsl(0deg 0% 0% / 10%), hsl(0deg 0% 0% / 60%));
     border-width: 1px;
     border-style: solid;
     background-clip: padding-box;
@@ -1193,21 +1244,28 @@ nav {
 }
 
 #loading_older_messages_indicator,
-#loading_newer_messages_indicator {
+#loading_more_indicator {
     margin: 10px;
 }
 
 #loading_older_messages_indicator_box_container,
-#loading_newer_messages_indicator_box_container {
+#loading_more_indicator_box_container {
     position: absolute;
     left: 50%;
+
+    /* Override the base rules in app_components.css, which would require
+       coordination with loading.make_indicator */
+    .loading_indicator_spinner {
+        height: 2.7143em; /* 38px at 14px/em */
+        width: 2.7143em; /* 38px at 14px/em */
+    }
 }
 
 #loading_older_messages_indicator_box,
-#loading_newer_messages_indicator_box {
+#loading_more_indicator_box {
     position: relative;
-    left: -50%;
-    top: -43px;
+    left: -1.3571em; /* 50% of 38px = 19px at 14px/em */
+    top: -3.0714em; /* -43px at 14px/em */
     z-index: 1;
     border-radius: 6px;
 }
@@ -1223,8 +1281,10 @@ nav {
 
 #page_loading_indicator_box {
     position: relative;
-    left: -50%;
-    top: -43px;
+    /* 50% of 38px = 19px at 14px/1em */
+    left: -1.3571em;
+    /* -43px at 14px/1em */
+    top: -3.0714em;
     z-index: 1;
     border-radius: 6px;
 }
@@ -1246,23 +1306,14 @@ nav {
     text-align: center;
 }
 
-div.topic_edit_spinner,
-div.toggle_resolve_topic_spinner {
+div.topic_edit_spinner {
     display: flex;
     align-items: center;
     width: 1.2em; /* 18px at 15px/em  (from font size set in .message-header-contents) */
     height: 1.2em; /* 18px at 15px/em */
 }
 
-.on_hover_topic_unresolve,
-.on_hover_topic_resolve {
-    /* Matches the width set in `show_toggle_resolve_topic_spinner`,
-       to ensure spinner and resolve icon are the same width */
-    width: 1em;
-}
-
-div.topic_edit_spinner .loading_indicator_spinner,
-div.toggle_resolve_topic_spinner .loading_indicator_spinner {
+div.topic_edit_spinner .loading_indicator_spinner {
     width: 0.9333em; /* 14px at 15px/em  (from font size set in .message-header-contents) */
     height: 0.9333em; /* 14px at 15px/em */
 
@@ -1289,6 +1340,14 @@ div.toggle_resolve_topic_spinner .loading_indicator_spinner {
     vertical-align: bottom;
 }
 
+#invite-user-form .loading_indicator_spinner {
+    height: 1em;
+    width: fit-content;
+    display: inline-block;
+    float: none;
+    margin: 0 5px;
+}
+
 .add-user-group-container,
 .add_streams_container {
     display: inline-flex;
@@ -1296,12 +1355,19 @@ div.toggle_resolve_topic_spinner .loading_indicator_spinner {
     width: 100%;
 }
 
+#invite_welcome_custom_message_text {
+    resize: vertical;
+    height: 8em;
+    width: 100%;
+    box-sizing: border-box;
+}
+
 .custom-time-input-value {
     width: 5ch;
     margin-right: 15px;
 
     padding: 4px 6px;
-    color: hsl(0deg 0% 33%);
+    color: var(--color-text-default);
     border-radius: 4px;
     border: 1px solid hsl(0deg 0% 80%);
     box-shadow: inset 0 1px 1px hsl(0deg 0% 0% / 7.5%);
@@ -1333,14 +1399,14 @@ div.toggle_resolve_topic_spinner .loading_indicator_spinner {
     font-size: 1.5em;
     font-weight: 400;
     line-height: inherit;
-    word-wrap: break-word;
+    overflow-wrap: break-word;
 }
 
 .empty-feed-notice-description {
     font-size: 1.1em;
 
     .search-query-word {
-        word-wrap: break-word;
+        overflow-wrap: break-word;
     }
 }
 
@@ -1382,76 +1448,6 @@ div.toggle_resolve_topic_spinner .loading_indicator_spinner {
     width: 100%;
     height: 10px;
     margin-bottom: 0;
-}
-
-.sub-unsub-message {
-    padding-bottom: 10px;
-    text-align: center;
-}
-
-.sub-unsub-message span {
-    font-size: 1em;
-    display: block;
-    padding: 4px;
-    overflow: hidden;
-}
-
-.sub-unsub-message .stream-status {
-    opacity: 0.6;
-
-    & i {
-        font-size: 0.7143em; /* 10px at 14px / em */
-        /* TODO: Don't use relative positioning here. */
-        position: relative;
-        top: 0.1em; /* 1px at 10px / em */
-        margin-left: 0.2em; /* 2px at 10px / em */
-    }
-
-    .zulip-icon.zulip-icon-lock {
-        font-size: 0.8571em; /* 12px at 14px / em */
-        top: 0.0833em; /* 1px at 12px / em */
-        margin-left: 0.1667em; /* 2px at 12px / em */
-    }
-}
-
-.sub-unsub-message span::before,
-.sub-unsub-message span::after,
-.date_row span::before,
-.date_row span::after {
-    display: inline-block;
-    position: relative;
-    content: " ";
-    vertical-align: middle;
-    height: 0;
-    opacity: 0.15;
-    border-bottom: 1px solid hsl(0deg 0% 0%);
-}
-
-.sub-unsub-message span::before,
-.sub-unsub-message span::after {
-    width: 50%;
-}
-
-.date_row span::before {
-    width: 100%;
-}
-
-.date_row span::after {
-    width: 6px;
-    left: 0.25em;
-    /* Align date with message time and recipient bar date. */
-    margin-right: -1px;
-}
-
-.sub-unsub-message span::before,
-.date_row span::before {
-    right: 0.25em;
-    margin-left: -50%;
-}
-
-.sub-unsub-message span::after {
-    left: 0.25em;
-    margin-right: -50%;
 }
 
 .screen {
@@ -2190,6 +2186,28 @@ body:not(.spectator-view) {
         }
     }
 
+    &.folder_id-dropdown-list-container {
+        width: calc(var(--modal-input-width) * 0.75);
+
+        /* Alignment adjustments on channel-folder selector. */
+        .dropdown-list-item-name:has(.dropdown-list-buttons) {
+            /* We hold the first row height to 28px at 16px/1em
+               for the sake of the buttons plus their padding. */
+            grid-template-rows: 1.75em minmax(0, auto);
+            /* We also align everything to start, so that we can
+               offset the text from the top to align it with the
+               buttons. */
+            align-items: start;
+
+            .dropdown-list-text-neutral {
+                /* 0.2em is an eyeballed value that keeps the buttons
+                   well aligned with the first/only line of text. */
+                padding-top: 0.2em;
+                align-self: start;
+            }
+        }
+    }
+
     .no-dropdown-items {
         color: hsl(0deg 0% 60%);
         display: none;
@@ -2200,8 +2218,14 @@ body:not(.spectator-view) {
     }
 
     .dropdown-list .dropdown-list-item-common-styles {
-        position: relative;
-        display: flex;
+        display: grid;
+        grid-template:
+            "privacy-icon     item-label       " min-content
+            "item-description item-description" minmax(0, min-content) / minmax(
+                0,
+                auto
+            )
+            minmax(0, 1fr);
         color: var(--color-dropdown-item);
         padding: 3px 10px 3px 8px;
         font-weight: 400;
@@ -2211,7 +2235,8 @@ body:not(.spectator-view) {
            vertically centered properly. */
         line-height: 1.214;
 
-        .stream-privacy-type-icon {
+        .channel-privacy-type-icon {
+            grid-area: privacy-icon;
             line-height: 1.214;
             font-size: 0.93em;
             /* We set only the width so that flexbox
@@ -2228,16 +2253,51 @@ body:not(.spectator-view) {
             top: 0.05em;
         }
 
-        .dropdown-list-delete,
-        .dropdown-list-edit {
-            position: absolute;
-            top: 0;
-            right: 5px;
-            visibility: hidden;
+        .decorated-channel-name {
+            grid-area: item-label;
         }
 
-        .dropdown-list-edit {
-            right: 30px;
+        .dropdown-list-item-description {
+            grid-area: item-description;
+        }
+
+        .dropdown-list-item-name {
+            grid-area: item-label;
+            display: grid;
+            grid-template:
+                "item-text item-buttons" minmax(0, auto)
+                "item-text .           " minmax(0, auto) / minmax(0, 1fr)
+                minmax(0, auto);
+            align-items: center;
+
+            &:has(.dropdown-list-buttons) {
+                grid-template-rows: 1.75em minmax(0, auto);
+                align-items: start;
+
+                .dropdown-list-text-neutral {
+                    padding-top: 0.2em;
+                    align-self: start;
+                }
+            }
+
+            .dropdown-list-text-neutral {
+                grid-area: item-text;
+                align-self: center;
+            }
+        }
+
+        /* This correctly places neutral text items
+           appearing without a wrapping
+           `.dropdown-list-item-name` class. */
+        .dropdown-list-text-neutral {
+            grid-area: item-label;
+            align-self: center;
+        }
+
+        .dropdown-list-buttons {
+            grid-area: item-buttons;
+            display: flex;
+            visibility: hidden;
         }
 
         &:focus,
@@ -2258,7 +2318,8 @@ body:not(.spectator-view) {
 .dropdown-list-container .list-item {
     color: var(--color-dropdown-item);
 
-    &:focus {
+    &:focus,
+    &.current_selection {
         background-color: var(--background-color-active-dropdown-item);
         outline: none;
     }
@@ -2276,14 +2337,14 @@ body:not(.spectator-view) {
             background-color: transparent;
         }
 
-        &.active {
+        &.current_user_setting {
             background-color: var(--background-color-active-dropdown-item);
             outline: none;
         }
     }
 }
 
-.dropdown-list-item-common-styles .dropdown-list-bold-selected {
+.dropdown-list-item-common-styles .dropdown-list-text-selected {
     font-weight: 700;
 }
 
@@ -2373,17 +2434,34 @@ body:not(.spectator-view) {
 
 #personal-menu {
     .header-button-avatar {
+        /* Put styling on div rather than img to gracefully handle
+           uBlock Origin blocking of gravatar, which seems to make
+           the img disappear. */
         width: 1.5em; /* 24px at 16px em */
         height: 1.5em; /* 24px at 16px em */
         background-size: cover;
         border-radius: 4px;
         background-color: var(--color-background-image-loader);
         border: 1px solid var(--color-border-personal-menu-avatar);
+        overflow: hidden;
+
+        .header-button-avatar-image {
+            /* Overcome `vertical-align: middle`. This prevents the
+               avatar in the navbar from being lower by a pixel. */
+            display: block;
+        }
+
+        &:has(.avatar-loaded) {
+            background-color: transparent;
+            border-color: transparent;
+        }
     }
 }
 
+.default-language-display,
 .empty-topic-display,
-.empty-topic-placeholder-display::placeholder {
+.empty-topic-placeholder-display::placeholder,
+.drafts-unknown-msg-header-field {
     font-style: italic;
 }
 

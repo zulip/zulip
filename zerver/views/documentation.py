@@ -6,6 +6,7 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Any
 
+import werkzeug
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse, HttpResponseNotFound
 from django.template import loader
@@ -43,15 +44,21 @@ class DocumentationArticle:
     endpoint_method: str | None
 
 
-def add_api_url_context(context: dict[str, Any], request: HttpRequest) -> None:
+def add_api_url_context(
+    context: dict[str, Any], request: HttpRequest, is_zilencer_endpoint: bool = False
+) -> None:
     context.update(zulip_default_context(request))
+
+    if is_zilencer_endpoint:
+        context["api_url"] = (settings.ZULIP_SERVICES_URL or "https://push.zulipchat.com") + "/api"
+        return
 
     subdomain = get_subdomain(request)
     if subdomain != Realm.SUBDOMAIN_FOR_ROOT_DOMAIN or not settings.ROOT_DOMAIN_LANDING_PAGE:
         display_subdomain = subdomain
         html_settings_links = True
     else:
-        display_subdomain = "yourZulipDomain"
+        display_subdomain = "your-org"
         html_settings_links = False
 
     display_host = Realm.host_for_subdomain(display_subdomain)
@@ -59,12 +66,18 @@ def add_api_url_context(context: dict[str, Any], request: HttpRequest) -> None:
     api_url = settings.EXTERNAL_URI_SCHEME + api_url_scheme_relative
     zulip_url = settings.EXTERNAL_URI_SCHEME + display_host
 
+    context["display_subdomain"] = display_subdomain
+    context["display_host"] = display_host
     context["external_url_scheme"] = settings.EXTERNAL_URI_SCHEME
     context["api_url"] = api_url
     context["api_url_scheme_relative"] = api_url_scheme_relative
     context["zulip_url"] = zulip_url
 
     context["html_settings_links"] = html_settings_links
+
+
+def add_canonical_link_context(context: dict[str, Any], request: HttpRequest) -> None:
+    context["REL_CANONICAL_LINK"] = f"https://zulip.com{request.path}"
 
 
 class ApiURLView(TemplateView):
@@ -82,7 +95,6 @@ sidebar_links = XPath("//a[@href=$url]")
 class MarkdownDirectoryView(ApiURLView):
     path_template = ""
     policies_view = False
-    help_view = False
     api_doc_view = False
 
     def __init__(self, **kwargs: Any) -> None:
@@ -95,21 +107,20 @@ class MarkdownDirectoryView(ApiURLView):
         self._post_render_callbacks.append(callback)
 
     def get_path(self, article: str) -> DocumentationArticle:
+        # We don't want to allow relative pathnames in `article`
+        # as they could introduce security vulnerabilities.
+        article = werkzeug.utils.secure_filename(article)
+
         http_status = 200
         if article == "":
             article = "index"
-        elif article == "include/sidebar_index":
-            pass
         elif article == "api-doc-template":
             # This markdown template shouldn't be accessed directly.
             article = "missing"
             http_status = 404
-        elif "/" in article:
-            article = "missing"
-            http_status = 404
         elif len(article) > 100 or not re.match(r"^[0-9a-zA-Z_-]+$", article):
-            article = "missing"
-            http_status = 404
+            article = "missing"  # nocoverage
+            http_status = 404  # nocoverage
 
         path = self.path_template % (article,)
         endpoint_name = None
@@ -149,7 +160,7 @@ class MarkdownDirectoryView(ApiURLView):
                         endpoint_path=None,
                         endpoint_method=None,
                     )
-            elif self.help_view or self.policies_view:
+            elif self.policies_view:
                 article = "missing"
                 http_status = 404
                 path = self.path_template % (article,)
@@ -183,14 +194,7 @@ class MarkdownDirectoryView(ApiURLView):
                 settings.DEPLOY_ROOT, "templates", documentation_article.article_path
             )
 
-        if self.help_view:
-            context["page_is_help_center"] = True
-            context["doc_root"] = "/help/"
-            context["doc_root_title"] = "Help center"
-            sidebar_article = self.get_path("include/sidebar_index")
-            sidebar_index = sidebar_article.article_path
-            title_base = "Zulip help center"
-        elif self.policies_view:
+        if self.policies_view:
             context["page_is_policy_center"] = True
             context["doc_root"] = "/policies/"
             context["doc_root_title"] = "Terms and policies"
@@ -200,6 +204,9 @@ class MarkdownDirectoryView(ApiURLView):
             else:
                 sidebar_index = None
             title_base = "Zulip terms and policies"
+            # We don't add a rel-canonical link to self-hosted server policies docs.
+            if settings.CORPORATE_ENABLED:
+                add_canonical_link_context(context, self.request)
         elif self.api_doc_view:
             context["page_is_api_center"] = True
             context["doc_root"] = "/api/"
@@ -207,12 +214,14 @@ class MarkdownDirectoryView(ApiURLView):
             sidebar_article = self.get_path("sidebar_index")
             sidebar_index = sidebar_article.article_path
             title_base = "Zulip API documentation"
+            add_canonical_link_context(context, self.request)
         else:
             raise AssertionError("Invalid documentation view type")
 
         # The following is a somewhat hacky approach to extract titles from articles.
         endpoint_name = None
         endpoint_method = None
+        is_zilencer_endpoint = False
         if os.path.exists(article_absolute_path):
             with open(article_absolute_path) as article_file:
                 first_line = article_file.readlines()[0]
@@ -224,6 +233,7 @@ class MarkdownDirectoryView(ApiURLView):
                 assert endpoint_name is not None
                 assert endpoint_method is not None
                 article_title = get_openapi_summary(endpoint_name, endpoint_method)
+                is_zilencer_endpoint = endpoint_name.startswith("/remotes/")
             elif self.api_doc_view and "{generate_api_header(" in first_line:
                 api_operation = context["PAGE_METADATA_URL"].split("/api/")[1]
                 endpoint_name, endpoint_method = get_endpoint_from_operationid(api_operation)
@@ -255,7 +265,7 @@ class MarkdownDirectoryView(ApiURLView):
 
         # An "article" might require the api_url_context to be rendered
         api_url_context: dict[str, Any] = {}
-        add_api_url_context(api_url_context, self.request)
+        add_api_url_context(api_url_context, self.request, is_zilencer_endpoint)
         api_url_context["run_content_validators"] = True
         context["api_url_context"] = api_url_context
         if endpoint_name and endpoint_method:
@@ -362,6 +372,7 @@ class IntegrationView(ApiURLView):
         context: dict[str, Any] = super().get_context_data(**kwargs)
         add_integrations_context(context)
         add_integrations_open_graph_context(context, self.request)
+        add_canonical_link_context(context, self.request)
         add_google_analytics_context(context)
         return context
 

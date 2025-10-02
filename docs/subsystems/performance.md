@@ -137,24 +137,23 @@ idle for a minute. It's likely that with some strategy for detecting
 such situations, we could reduce their volume (and thus overall
 Tornado load) dramatically.
 
-Currently, Tornado is sharded by realm, which is sufficient for
-arbitrary scaling of the number of organizations on a multi-tenant
-system like zulip.com. With a somewhat straightforward set of work,
-one could change this to sharding by `user_id` instead, which will
-eventually be important for individual large organizations with many
-thousands of concurrent users.
+Currently, Tornado is sharded by realm, and optionally by user-id
+within each realm. Sharding by realm is sufficient for arbitrary
+scaling of the number of organizations on a multi-tenant system like
+zulip.com. Sharding by user-id is necessary for very large
+organizations with multiple thousands of active users at once.
 
 ### Presence
 
 `POST /users/me/presence` requests, which submit the current user's
 presence information and return the information for all other active
 users in the organization, account for about 36% of all HTTP requests
-on production Zulip servers. See
-[presence](presence.md) for details on this system and
-how it's optimized. For this article, it's important to know that
-presence is one of the most important scalability concerns for any
-chat system, because it cannot be cached long, and is structurally a
-quadratic problem.
+on production Zulip servers. See the [presence API
+documentation](https://zulip.com/api/update-presence) for details on
+this system and how it's optimized. For this article, it's important
+to know that presence is one of the most important scalability
+concerns for any chat system, because it cannot be cached long, and is
+structurally a quadratic problem.
 
 Because typical presence requests consume 10-50ms of server-side
 processing time (to fetch and send back live data on all other active

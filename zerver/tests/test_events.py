@@ -27,6 +27,14 @@ from zerver.actions.bots import (
     do_change_default_events_register_stream,
     do_change_default_sending_stream,
 )
+from zerver.actions.channel_folders import (
+    check_add_channel_folder,
+    do_archive_channel_folder,
+    do_change_channel_folder_description,
+    do_change_channel_folder_name,
+    do_unarchive_channel_folder,
+    try_reorder_realm_channel_folders,
+)
 from zerver.actions.create_user import do_create_user, do_reactivate_user
 from zerver.actions.custom_profile_fields import (
     check_remove_custom_profile_field_value,
@@ -60,6 +68,11 @@ from zerver.actions.message_edit import (
 )
 from zerver.actions.message_flags import do_update_message_flags
 from zerver.actions.muted_users import do_mute_user, do_unmute_user
+from zerver.actions.navigation_views import (
+    do_add_navigation_view,
+    do_remove_navigation_view,
+    do_update_navigation_view,
+)
 from zerver.actions.onboarding_steps import do_mark_onboarding_step_as_read
 from zerver.actions.presence import do_update_user_presence
 from zerver.actions.reactions import do_add_reaction, do_remove_reaction
@@ -106,12 +119,15 @@ from zerver.actions.streams import (
     bulk_add_subscriptions,
     bulk_remove_subscriptions,
     do_change_stream_description,
+    do_change_stream_folder,
     do_change_stream_group_based_setting,
     do_change_stream_message_retention_days,
     do_change_stream_permission,
     do_change_subscription_property,
     do_deactivate_stream,
     do_rename_stream,
+    do_set_stream_property,
+    do_unarchive_stream,
 )
 from zerver.actions.submessage import do_add_submessage
 from zerver.actions.typing import (
@@ -127,6 +143,7 @@ from zerver.actions.user_groups import (
     check_add_user_group,
     do_change_user_group_permission_setting,
     do_deactivate_user_group,
+    do_reactivate_user_group,
     do_update_user_group_description,
     do_update_user_group_name,
     remove_subgroups_from_user_group,
@@ -152,6 +169,9 @@ from zerver.lib.event_schema import (
     check_attachment_add,
     check_attachment_remove,
     check_attachment_update,
+    check_channel_folder_add,
+    check_channel_folder_reorder,
+    check_channel_folder_update,
     check_custom_profile_fields,
     check_default_stream_groups,
     check_default_streams,
@@ -163,11 +183,16 @@ from zerver.lib.event_schema import (
     check_has_zoom_token,
     check_heartbeat,
     check_invites_changed,
+    check_legacy_presence,
     check_message,
+    check_modern_presence,
     check_muted_topics,
     check_muted_users,
+    check_navigation_view_add,
+    check_navigation_view_remove,
+    check_navigation_view_update,
     check_onboarding_steps,
-    check_presence,
+    check_push_device,
     check_reaction_add,
     check_reaction_remove,
     check_realm_bot_add,
@@ -203,10 +228,8 @@ from zerver.lib.event_schema import (
     check_subscription_peer_remove,
     check_subscription_remove,
     check_subscription_update,
-    check_typing_edit_channel_message_start,
-    check_typing_edit_channel_message_stop,
-    check_typing_edit_direct_message_start,
-    check_typing_edit_direct_message_stop,
+    check_typing_edit_message_start,
+    check_typing_edit_message_stop,
     check_typing_start,
     check_typing_stop,
     check_update_display_settings,
@@ -226,9 +249,14 @@ from zerver.lib.event_schema import (
     check_user_topic,
 )
 from zerver.lib.events import apply_events, fetch_initial_state_data, post_process_state
+from zerver.lib.exceptions import InvalidBouncerPublicKeyError
 from zerver.lib.markdown import render_message_markdown
 from zerver.lib.mention import MentionBackend, MentionData
 from zerver.lib.muted_users import get_mute_object
+from zerver.lib.push_registration import (
+    RegisterPushDeviceToBouncerQueueItem,
+    handle_register_push_device_to_bouncer,
+)
 from zerver.lib.streams import check_update_all_streams_active_status, user_has_metadata_access
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import (
@@ -260,6 +288,7 @@ from zerver.models import (
     MultiuseInvite,
     NamedUserGroup,
     PreregistrationUser,
+    PushDevice,
     Realm,
     RealmAuditLog,
     RealmDomain,
@@ -276,10 +305,11 @@ from zerver.models import (
     UserStatus,
     UserTopic,
 )
+from zerver.models.bots import get_bot_services
 from zerver.models.clients import get_client
 from zerver.models.groups import SystemGroups
 from zerver.models.realm_audit_logs import AuditLogEventType
-from zerver.models.streams import get_stream
+from zerver.models.streams import StreamTopicsPolicyEnum, get_stream
 from zerver.models.users import get_user_by_delivery_email
 from zerver.openapi.openapi import validate_against_openapi_schema
 from zerver.tornado.django_api import send_event_rollback_unsafe
@@ -331,6 +361,7 @@ class BaseAction(ZulipTestCase):
         include_deactivated_groups: bool = False,
         archived_channels: bool = False,
         allow_empty_topic_name: bool = True,
+        simplified_presence_events: bool = False,
     ) -> Iterator[list[dict[str, Any]]]:
         """
         Make sure we have a clean slate of client descriptors for these tests.
@@ -362,6 +393,8 @@ class BaseAction(ZulipTestCase):
                 linkifier_url_template=linkifier_url_template,
                 user_list_incomplete=user_list_incomplete,
                 include_deactivated_groups=include_deactivated_groups,
+                archived_channels=archived_channels,
+                simplified_presence_events=simplified_presence_events,
             )
         )
 
@@ -427,6 +460,7 @@ class BaseAction(ZulipTestCase):
             user_list_incomplete=user_list_incomplete,
             include_deactivated_groups=include_deactivated_groups,
             archived_channels=archived_channels,
+            simplified_presence_events=simplified_presence_events,
         )
         post_process_state(
             self.user_profile, hybrid_state, notification_settings_null, allow_empty_topic_name
@@ -460,6 +494,7 @@ class BaseAction(ZulipTestCase):
             user_list_incomplete=user_list_incomplete,
             include_deactivated_groups=include_deactivated_groups,
             archived_channels=archived_channels,
+            simplified_presence_events=simplified_presence_events,
         )
         post_process_state(
             self.user_profile, normal_state, notification_settings_null, allow_empty_topic_name
@@ -474,13 +509,25 @@ class BaseAction(ZulipTestCase):
                 for u in state["never_subscribed"]:
                     if "subscribers" in u:
                         u["subscribers"].sort()
+                    # this isn't guaranteed to match
+                    del u["subscriber_count"]
             if "subscriptions" in state:
                 for u in state["subscriptions"]:
                     if "subscribers" in u:
                         u["subscribers"].sort()
+                    # this isn't guaranteed to match
+                    del u["subscriber_count"]
                 state["subscriptions"] = {u["name"]: u for u in state["subscriptions"]}
             if "unsubscribed" in state:
+                for u in state["unsubscribed"]:
+                    # this isn't guaranteed to match
+                    del u["subscriber_count"]
                 state["unsubscribed"] = {u["name"]: u for u in state["unsubscribed"]}
+            if "streams" in state:
+                for stream in state["streams"]:
+                    if "subscriber_count" in stream:
+                        # this isn't guaranteed to match
+                        del stream["subscriber_count"]
             if "realm_bots" in state:
                 state["realm_bots"] = {u["email"]: u for u in state["realm_bots"]}
             # Since time is different for every call, just fix the value
@@ -608,13 +655,14 @@ class NormalActionsTest(BaseAction):
                 )
 
     def test_pm_send_message_events(self) -> None:
-        with self.verify_action():
+        with self.verify_action() as events:
             self.send_personal_message(
                 self.example_user("cordelia"),
                 self.example_user("hamlet"),
                 "hola",
                 skip_capture_on_commit_callbacks=True,
             )
+        self.assertEqual(events[0]["message"][TOPIC_NAME], "")
 
         # Verify direct message editing - content only edit
         pm = Message.objects.order_by("-id")[0]
@@ -662,13 +710,14 @@ class NormalActionsTest(BaseAction):
             self.example_user("hamlet"),
             self.example_user("othello"),
         ]
-        with self.verify_action():
+        with self.verify_action() as events:
             self.send_group_direct_message(
                 self.example_user("cordelia"),
                 direct_message_group,
                 "hola",
                 skip_capture_on_commit_callbacks=True,
             )
+        self.assertEqual(events[0]["message"][TOPIC_NAME], "")
 
     def test_user_creation_events_on_sending_messages(self) -> None:
         self.set_up_db_for_testing_user_access()
@@ -1002,9 +1051,14 @@ class NormalActionsTest(BaseAction):
 
         # Verify special case of embedded content update
         content = "embed_content"
-        rendering_result = render_message_markdown(message, content)
+        mention_data = MentionData(
+            mention_backend=MentionBackend(message.realm_id),
+            content=content,
+            message_sender=message.sender,
+        )
+        rendering_result = render_message_markdown(message, content, mention_data=mention_data)
         with self.verify_action(state_change_expected=False) as events:
-            do_update_embedded_data(self.user_profile, message, rendering_result)
+            do_update_embedded_data(self.user_profile, message, rendering_result, mention_data)
         check_update_message(
             "events[0]",
             events[0],
@@ -1018,9 +1072,15 @@ class NormalActionsTest(BaseAction):
         # Verify move topic to different stream.
         self.subscribe(self.user_profile, "Verona")
         self.subscribe(self.user_profile, "Denmark")
-        self.send_stream_message(iago, "Verona")
+        # Message passed to the message edit request is usually last in
+        # event["message_ids"]. Since we want to test sorting of these
+        # message_ids later on, we need send the message_id to be used
+        # in the message_edit_request first; Otherwise
+        # event["message_ids"] would be sorted even without any sorting
+        # function.
         message_id = self.send_stream_message(self.user_profile, "Verona")
         message = Message.objects.get(id=message_id)
+        self.send_stream_message(iago, "Verona")
         stream = get_stream("Denmark", self.user_profile.realm)
         propagate_mode = "change_all"
         prior_mention_user_ids = set()
@@ -1059,6 +1119,8 @@ class NormalActionsTest(BaseAction):
             has_new_stream_id=True,
             is_embedded_update_only=False,
         )
+        # Make sure the message_ids returned are sorted.
+        self.assertEqual(events[0]["message_ids"], sorted(events[0]["message_ids"]))
 
         # Move both stream and topic, with update_message_flags
         # excluded from event types.
@@ -1310,7 +1372,7 @@ class NormalActionsTest(BaseAction):
         check_subscription_peer_add("events[1]", events[1])
 
         nobody_group = NamedUserGroup.objects.get(
-            name=SystemGroups.NOBODY, realm=iago.realm, is_system_group=True
+            name=SystemGroups.NOBODY, realm_for_sharding=iago.realm, is_system_group=True
         )
         private_stream = get_stream("private_stream", iago.realm)
         self.assertTrue(
@@ -1374,7 +1436,7 @@ class NormalActionsTest(BaseAction):
         self.assertEqual(event["stream_id"], private_stream.id)
 
         nobody_group = NamedUserGroup.objects.get(
-            name=SystemGroups.NOBODY, realm=iago.realm, is_system_group=True
+            name=SystemGroups.NOBODY, realm_for_sharding=iago.realm, is_system_group=True
         )
         private_stream = get_stream("private_stream", iago.realm)
         self.assertFalse(
@@ -1463,7 +1525,7 @@ class NormalActionsTest(BaseAction):
                 invite_expires_in_minutes=invite_expires_in_minutes,
             )
 
-        with self.verify_action(num_events=2) as events:
+        with self.verify_action(num_events=3) as events:
             do_deactivate_user(user_profile, acting_user=None)
         check_invites_changed("events[0]", events[0])
 
@@ -1612,7 +1674,7 @@ class NormalActionsTest(BaseAction):
                 msg_id,
                 "start",
             )
-        check_typing_edit_direct_message_start("events[0]", events[0])
+        check_typing_edit_message_start("events[0]", events[0])
 
         with self.verify_action(state_change_expected=False) as events:
             do_send_direct_message_edit_typing_notification(
@@ -1621,7 +1683,7 @@ class NormalActionsTest(BaseAction):
                 msg_id,
                 "stop",
             )
-        check_typing_edit_direct_message_stop("events[0]", events[0])
+        check_typing_edit_message_stop("events[0]", events[0])
 
     def test_stream_edit_message_typing_events(self) -> None:
         channel = get_stream("Denmark", self.user_profile.realm)
@@ -1633,13 +1695,13 @@ class NormalActionsTest(BaseAction):
             do_send_stream_message_edit_typing_notification(
                 self.user_profile, channel.id, msg_id, "start", topic_name
             )
-        check_typing_edit_channel_message_start("events[0]", events[0])
+        check_typing_edit_message_start("events[0]", events[0])
 
         with self.verify_action(state_change_expected=False) as events:
             do_send_stream_message_edit_typing_notification(
                 self.user_profile, channel.id, msg_id, "stop", topic_name
             )
-        check_typing_edit_channel_message_stop("events[0]", events[0])
+        check_typing_edit_message_stop("events[0]", events[0])
 
     def test_custom_profile_fields_events(self) -> None:
         realm = self.user_profile.realm
@@ -1745,7 +1807,30 @@ class NormalActionsTest(BaseAction):
         check_realm_user_update("events[0]", events[0], "custom_profile_field")
         self.assertEqual(events[0]["person"]["custom_profile_field"].keys(), {"id", "value"})
 
-    def test_presence_events(self) -> None:
+    def test_navigation_views_events(self) -> None:
+        with self.verify_action() as events:
+            navigation_view = do_add_navigation_view(
+                self.user_profile, fragment="inbox", is_pinned=True, name=None
+            )
+        check_navigation_view_add("events[0]", events[0])
+        self.assertEqual(events[0]["navigation_view"]["fragment"], "inbox")
+        self.assertEqual(events[0]["navigation_view"]["is_pinned"], True)
+        self.assertIsNone(events[0]["navigation_view"]["name"])
+
+        with self.verify_action() as events:
+            do_update_navigation_view(
+                self.user_profile, navigation_view, is_pinned=False, name=None
+            )
+        check_navigation_view_update("events[0]", events[0])
+        self.assertEqual(events[0]["fragment"], "inbox")
+        self.assertEqual(events[0]["data"]["is_pinned"], False)
+
+        with self.verify_action() as events:
+            do_remove_navigation_view(self.user_profile, navigation_view)
+        check_navigation_view_remove("events[0]", events[0])
+        self.assertEqual(events[0]["fragment"], "inbox")
+
+    def test_legacy_presence_events(self) -> None:
         with self.verify_action(slim_presence=False) as events:
             do_update_user_presence(
                 self.user_profile,
@@ -1754,7 +1839,7 @@ class NormalActionsTest(BaseAction):
                 UserPresence.LEGACY_STATUS_ACTIVE_INT,
             )
 
-        check_presence(
+        check_legacy_presence(
             "events[0]",
             events[0],
             has_email=True,
@@ -1770,13 +1855,23 @@ class NormalActionsTest(BaseAction):
                 UserPresence.LEGACY_STATUS_ACTIVE_INT,
             )
 
-        check_presence(
+        check_legacy_presence(
             "events[0]",
             events[0],
             has_email=False,
             presence_key="website",
             status="active",
         )
+
+    def test_modern_presence_events(self) -> None:
+        with self.verify_action(simplified_presence_events=True) as events:
+            do_update_user_presence(
+                self.user_profile,
+                get_client("ZulipAndroid/1.0"),
+                timezone_now(),
+                UserPresence.LEGACY_STATUS_ACTIVE_INT,
+            )
+        check_modern_presence("events[0]", events[0], self.user_profile.id)
 
     def test_presence_events_multiple_clients(self) -> None:
         now = timezone_now()
@@ -1816,7 +1911,7 @@ class NormalActionsTest(BaseAction):
                 UserPresence.LEGACY_STATUS_ACTIVE_INT,
             )
 
-        check_presence(
+        check_legacy_presence(
             "events[0]",
             events[0],
             has_email=True,
@@ -1831,20 +1926,21 @@ class NormalActionsTest(BaseAction):
         realm.signup_announcements_stream = get_stream("core team", realm)
         realm.save(update_fields=["signup_announcements_stream"])
 
-        with self.verify_action(num_events=5) as events:
+        with self.verify_action(num_events=6) as events:
             self.register("test1@zulip.com", "test1")
-        self.assert_length(events, 5)
+        self.assert_length(events, 6)
 
         check_realm_user_add("events[0]", events[0])
         new_user_profile = get_user_by_delivery_email("test1@zulip.com", self.user_profile.realm)
         self.assertEqual(new_user_profile.delivery_email, "test1@zulip.com")
 
         check_subscription_peer_add("events[3]", events[3])
+        check_subscription_peer_add("events[4]", events[4])
 
-        check_message("events[4]", events[4])
+        check_message("events[5]", events[5])
         self.assertIn(
             f'data-user-id="{new_user_profile.id}">test1_zulip.com</span> joined this organization.',
-            events[4]["message"]["content"],
+            events[5]["message"]["content"],
         )
 
         check_user_group_add_members("events[1]", events[1])
@@ -1862,19 +1958,20 @@ class NormalActionsTest(BaseAction):
         realm.signup_announcements_stream = get_stream("core team", realm)
         realm.save(update_fields=["signup_announcements_stream"])
 
-        with self.verify_action(num_events=5) as events:
+        with self.verify_action(num_events=6) as events:
             self.register("test1@zulip.com", "test1")
-        self.assert_length(events, 5)
+        self.assert_length(events, 6)
         check_realm_user_add("events[0]", events[0])
         new_user_profile = get_user_by_delivery_email("test1@zulip.com", self.user_profile.realm)
         self.assertEqual(new_user_profile.email, f"user{new_user_profile.id}@zulip.testserver")
 
         check_subscription_peer_add("events[3]", events[3])
+        check_subscription_peer_add("events[4]", events[4])
 
-        check_message("events[4]", events[4])
+        check_message("events[5]", events[5])
         self.assertIn(
             f'data-user-id="{new_user_profile.id}">test1_zulip.com</span> joined this organization',
-            events[4]["message"]["content"],
+            events[5]["message"]["content"],
         )
 
         check_user_group_add_members("events[1]", events[1])
@@ -1963,7 +2060,7 @@ class NormalActionsTest(BaseAction):
             events[2],
             {"away", "status_text", "emoji_name", "emoji_code", "reaction_type"},
         )
-        check_presence(
+        check_legacy_presence(
             "events[3]",
             events[3],
             has_email=True,
@@ -1991,7 +2088,7 @@ class NormalActionsTest(BaseAction):
             events[2],
             {"away", "status_text", "emoji_name", "emoji_code", "reaction_type"},
         )
-        check_presence(
+        check_legacy_presence(
             "events[3]",
             events[3],
             has_email=True,
@@ -2015,7 +2112,7 @@ class NormalActionsTest(BaseAction):
         check_user_settings_update("events[0]", events[0])
         check_update_global_notifications("events[1]", events[1], not away_val)
         check_user_status("events[2]", events[2], {"away"})
-        check_presence(
+        check_legacy_presence(
             "events[3]",
             events[3],
             has_email=True,
@@ -2072,7 +2169,7 @@ class NormalActionsTest(BaseAction):
                 reaction_type=None,
                 client_id=client.id,
             )
-        check_presence(
+        check_legacy_presence(
             "events[0]",
             events[0],
             has_email=True,
@@ -2090,7 +2187,9 @@ class NormalActionsTest(BaseAction):
             )
         check_user_group_add("events[0]", events[0])
         nobody_group = NamedUserGroup.objects.get(
-            name=SystemGroups.NOBODY, realm=self.user_profile.realm, is_system_group=True
+            name=SystemGroups.NOBODY,
+            realm_for_sharding=self.user_profile.realm,
+            is_system_group=True,
         )
         self.assertEqual(events[0]["group"]["can_join_group"], nobody_group.id)
         self.assertEqual(
@@ -2098,11 +2197,15 @@ class NormalActionsTest(BaseAction):
             UserGroupMembersDict(direct_members=[12], direct_subgroups=[]),
         )
         everyone_group = NamedUserGroup.objects.get(
-            name=SystemGroups.EVERYONE, realm=self.user_profile.realm, is_system_group=True
+            name=SystemGroups.EVERYONE,
+            realm_for_sharding=self.user_profile.realm,
+            is_system_group=True,
         )
         self.assertEqual(events[0]["group"]["can_mention_group"], everyone_group.id)
         moderators_group = NamedUserGroup.objects.get(
-            name=SystemGroups.MODERATORS, realm=self.user_profile.realm, is_system_group=True
+            name=SystemGroups.MODERATORS,
+            realm_for_sharding=self.user_profile.realm,
+            is_system_group=True,
         )
         user_group = self.create_or_update_anonymous_group_for_setting(
             [othello], [moderators_group]
@@ -2215,14 +2318,26 @@ class NormalActionsTest(BaseAction):
             remove_subgroups_from_user_group(backend, [api_design], acting_user=None)
         check_user_group_remove_subgroups("events[0]", events[0])
 
-        # Test deactivate event
+        # Test deactivate and reactivate events
         with self.verify_action() as events:
             do_deactivate_user_group(backend, acting_user=None)
         check_user_group_remove("events[0]", events[0])
 
+        with self.verify_action() as events:
+            do_reactivate_user_group(backend, acting_user=None)
+        check_user_group_add("events[0]", events[0])
+
         with self.verify_action(include_deactivated_groups=True) as events:
             do_deactivate_user_group(api_design, acting_user=None)
         check_user_group_update("events[0]", events[0], {"deactivated"})
+        self.assertTrue(events[0]["data"]["deactivated"])
+
+        with self.verify_action(include_deactivated_groups=True) as events:
+            do_reactivate_user_group(api_design, acting_user=None)
+        check_user_group_update("events[0]", events[0], {"deactivated"})
+        self.assertFalse(events[0]["data"]["deactivated"])
+
+        do_deactivate_user_group(api_design, acting_user=None)
 
         with self.verify_action(num_events=0, state_change_expected=False):
             do_update_user_group_name(api_design, "api-deisgn-team", acting_user=None)
@@ -2282,7 +2397,7 @@ class NormalActionsTest(BaseAction):
             check_user_group_remove_subgroups("events[0]", events[0])
 
         nobody_group = NamedUserGroup.objects.get(
-            name=SystemGroups.NOBODY, realm=othello.realm, is_system_group=True
+            name=SystemGroups.NOBODY, realm_for_sharding=othello.realm, is_system_group=True
         )
         do_change_stream_group_based_setting(
             stream, setting_name, nobody_group, acting_user=othello
@@ -3089,7 +3204,7 @@ class NormalActionsTest(BaseAction):
                 )
             check_user_settings_update("events[0]", events[0])
             check_update_global_notifications("events[1]", events[1], val)
-            check_presence(
+            check_legacy_presence(
                 "events[2]", events[2], has_email=True, presence_key="website", status="active"
             )
 
@@ -3180,7 +3295,9 @@ class NormalActionsTest(BaseAction):
 
     def test_realm_update_plan_type(self) -> None:
         realm = self.user_profile.realm
-        members_group = NamedUserGroup.objects.get(name=SystemGroups.MEMBERS, realm=realm)
+        members_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MEMBERS, realm_for_sharding=realm
+        )
         do_change_realm_permission_group_setting(
             realm, "can_access_all_users_group", members_group, acting_user=None
         )
@@ -3436,8 +3553,38 @@ class NormalActionsTest(BaseAction):
             interface_type=Service.GENERIC,
         )
         with self.verify_action() as events:
-            do_update_outgoing_webhook_service(bot, 2, "http://hostname.domain2.com")
+            do_update_outgoing_webhook_service(
+                bot,
+                interface=2,
+                base_url="http://hostname.domain2.com",
+                acting_user=self.user_profile,
+            )
+
         check_realm_bot_update("events[0]", events[0], "services")
+
+        # Check the updated Service data we send as event on commit.
+        bot_service = get_bot_services(bot.id)[0]
+        event_data_service = events[0]["bot"]["services"][0]
+        self.assertEqual(
+            {
+                "base_url": bot_service.base_url,
+                "interface": bot_service.interface,
+                "token": bot_service.token,
+            },
+            event_data_service,
+        )
+
+        with self.verify_action(num_events=0, state_change_expected=False) as events:
+            do_update_outgoing_webhook_service(bot, acting_user=self.user_profile)
+
+        # Trying to update with the same value as existing value results in no op.
+        with self.verify_action(num_events=0, state_change_expected=False) as events:
+            do_update_outgoing_webhook_service(
+                bot,
+                interface=2,
+                base_url="http://hostname.domain2.com",
+                acting_user=self.user_profile,
+            )
 
     def test_do_deactivate_bot(self) -> None:
         bot = self.create_bot("test")
@@ -3449,7 +3596,7 @@ class NormalActionsTest(BaseAction):
     def test_do_deactivate_user(self) -> None:
         user_profile = self.example_user("cordelia")
         members_group = NamedUserGroup.objects.get(
-            name=SystemGroups.MEMBERS, realm=user_profile.realm, is_system_group=True
+            name=SystemGroups.MEMBERS, realm_for_sharding=user_profile.realm, is_system_group=True
         )
         setting_group = self.create_or_update_anonymous_group_for_setting(
             [user_profile], [members_group]
@@ -3461,9 +3608,10 @@ class NormalActionsTest(BaseAction):
             acting_user=None,
         )
         hamletcharacters_group = NamedUserGroup.objects.get(
-            name="hamletcharacters", realm=self.user_profile.realm
+            name="hamletcharacters", realm_for_sharding=self.user_profile.realm
         )
         hamlet = self.example_user("hamlet")
+        self.user_profile = hamlet
         setting_group = self.create_or_update_anonymous_group_for_setting(
             [user_profile, hamlet], [members_group]
         )
@@ -3471,9 +3619,10 @@ class NormalActionsTest(BaseAction):
             hamletcharacters_group, "can_mention_group", setting_group, acting_user=None
         )
 
-        with self.verify_action(num_events=1) as events:
+        with self.verify_action(num_events=2) as events:
             do_deactivate_user(user_profile, acting_user=None)
-        check_realm_user_update("events[0]", events[0], "is_active")
+        check_subscription_peer_remove("events[0]", events[0])
+        check_realm_user_update("events[1]", events[1], "is_active")
 
         do_reactivate_user(user_profile, acting_user=None)
         self.set_up_db_for_testing_user_access()
@@ -3482,9 +3631,10 @@ class NormalActionsTest(BaseAction):
         # Test that users who can access the deactivated user
         # do not receive the 'user_group/remove_members' event.
         user_profile = self.example_user("cordelia")
-        with self.verify_action(num_events=1) as events:
+        with self.verify_action(num_events=2) as events:
             do_deactivate_user(user_profile, acting_user=None)
-        check_realm_user_update("events[0]", events[0], "is_active")
+        check_subscription_peer_remove("events[0]", events[0])
+        check_realm_user_update("events[1]", events[1], "is_active")
 
         do_reactivate_user(user_profile, acting_user=None)
 
@@ -3554,15 +3704,21 @@ class NormalActionsTest(BaseAction):
         # Guest loses access to deactivated user if the user
         # was not involved in DMs.
         user_profile = self.example_user("hamlet")
-        with self.verify_action(num_events=5) as events:
+        # User is in the same channel as guest, but not in DMs.
+        self.make_stream("Test new stream")
+        self.subscribe(user_profile, "Test new stream")
+        self.subscribe(self.user_profile, "Test new stream")
+        with self.verify_action(num_events=7) as events:
             do_deactivate_user(user_profile, acting_user=None)
-        check_user_group_remove_members("events[0]", events[0])
-        check_user_group_remove_members("events[1]", events[1])
+        check_subscription_peer_remove("events[0]", events[0])
+        check_subscription_peer_remove("events[1]", events[1])
         check_user_group_remove_members("events[2]", events[2])
-        check_user_group_update("events[3]", events[3], {"can_mention_group"})
-        check_realm_user_remove("events[4]]", events[4])
+        check_user_group_remove_members("events[3]", events[3])
+        check_user_group_remove_members("events[4]", events[4])
+        check_user_group_update("events[5]", events[5], {"can_mention_group"})
+        check_realm_user_remove("events[6]]", events[6])
         self.assertEqual(
-            events[3]["data"]["can_mention_group"],
+            events[5]["data"]["can_mention_group"],
             UserGroupMembersDict(direct_members=[], direct_subgroups=[members_group.id]),
         )
 
@@ -3612,10 +3768,10 @@ class NormalActionsTest(BaseAction):
 
         user_profile = self.example_user("cordelia")
         members_group = NamedUserGroup.objects.get(
-            name=SystemGroups.MEMBERS, realm=user_profile.realm, is_system_group=True
+            name=SystemGroups.MEMBERS, realm_for_sharding=user_profile.realm, is_system_group=True
         )
         hamletcharacters_group = NamedUserGroup.objects.get(
-            name="hamletcharacters", realm=self.user_profile.realm
+            name="hamletcharacters", realm_for_sharding=self.user_profile.realm
         )
 
         setting_group = self.create_or_update_anonymous_group_for_setting(
@@ -3751,7 +3907,19 @@ class NormalActionsTest(BaseAction):
                 include_streams=include_streams, archived_channels=True
             ) as events:
                 do_deactivate_stream(stream, acting_user=None)
+            check_stream_update("events[0]", events[0])
+            self.assertEqual(events[0]["stream_id"], stream.id)
+            self.assertEqual(events[0]["property"], "is_archived")
+            self.assertEqual(events[0]["value"], True)
+
+            do_unarchive_stream(stream, stream.name, acting_user=None)
+
+            with self.verify_action(
+                include_streams=include_streams, archived_channels=False
+            ) as events:
+                do_deactivate_stream(stream, acting_user=None)
             check_stream_delete("events[0]", events[0])
+            self.assertEqual(events[0]["stream_ids"], [stream.id])
 
     def test_admin_deactivate_unsubscribed_stream(self) -> None:
         self.set_up_db_for_testing_user_access()
@@ -3768,7 +3936,37 @@ class NormalActionsTest(BaseAction):
 
         with self.verify_action(num_events=1, archived_channels=True) as events:
             do_deactivate_stream(stream, acting_user=iago)
+        check_stream_update("events[0]", events[0])
+        self.assertEqual(events[0]["stream_id"], stream.id)
+        self.assertEqual(events[0]["property"], "is_archived")
+        self.assertEqual(events[0]["value"], True)
+
+        do_unarchive_stream(stream, stream.name, acting_user=iago)
+
+        with self.verify_action(num_events=1, archived_channels=False) as events:
+            do_deactivate_stream(stream, acting_user=iago)
         check_stream_delete("events[0]", events[0])
+        self.assertEqual(events[0]["stream_ids"], [stream.id])
+
+    def test_unarchiving_stream(self) -> None:
+        iago = self.example_user("iago")
+        stream = self.make_stream("test_stream")
+        do_deactivate_stream(stream, acting_user=iago)
+
+        with self.verify_action(num_events=1, archived_channels=False) as events:
+            do_unarchive_stream(stream, stream.name, acting_user=iago)
+        check_stream_create("events[0]", events[0])
+        self.assert_length(events[0]["streams"], 1)
+        self.assertEqual(events[0]["streams"][0]["stream_id"], stream.id)
+
+        do_deactivate_stream(stream, acting_user=iago)
+
+        with self.verify_action(num_events=1, archived_channels=True) as events:
+            do_unarchive_stream(stream, stream.name, acting_user=iago)
+        check_stream_update("events[0]", events[0])
+        self.assertEqual(events[0]["stream_id"], stream.id)
+        self.assertEqual(events[0]["property"], "is_archived")
+        self.assertEqual(events[0]["value"], False)
 
     def test_user_losing_access_on_deactivating_stream(self) -> None:
         self.set_up_db_for_testing_user_access()
@@ -3784,7 +3982,7 @@ class NormalActionsTest(BaseAction):
 
         with self.verify_action(num_events=2, archived_channels=True) as events:
             do_deactivate_stream(stream, acting_user=None)
-        check_stream_delete("events[0]", events[0])
+        check_stream_update("events[0]", events[0])
 
         # Test that if the subscribers of deactivated stream are involved in
         # DMs with guest, then the guest does not get "remove" event for them.
@@ -3798,7 +3996,7 @@ class NormalActionsTest(BaseAction):
 
         with self.verify_action(num_events=2, archived_channels=True) as events:
             do_deactivate_stream(stream, acting_user=None)
-        check_stream_delete("events[0]", events[0])
+        check_stream_update("events[0]", events[0])
 
     def test_subscribe_other_user_never_subscribed(self) -> None:
         for i, include_streams in enumerate([True, False]):
@@ -3820,7 +4018,10 @@ class NormalActionsTest(BaseAction):
         hamlet = self.example_user("hamlet")
         msg_id = self.send_stream_message(hamlet, "Verona")
         msg_id_2 = self.send_stream_message(hamlet, "Verona")
-        messages = [Message.objects.get(id=msg_id), Message.objects.get(id=msg_id_2)]
+        # Pass messages in reverse sorted order, so we can test that
+        # the backend is sorting the messages_ids sent in the delete
+        # event.
+        messages = [Message.objects.get(id=msg_id_2), Message.objects.get(id=msg_id)]
         with self.verify_action(state_change_expected=True) as events:
             do_delete_messages(self.user_profile.realm, messages, acting_user=None)
         check_delete_message(
@@ -3830,6 +4031,7 @@ class NormalActionsTest(BaseAction):
             num_message_ids=2,
             is_legacy=False,
         )
+        self.assertEqual(events[0]["message_ids"], sorted(events[0]["message_ids"]))
 
     def test_do_delete_message_stream_legacy(self) -> None:
         """
@@ -4045,6 +4247,35 @@ class NormalActionsTest(BaseAction):
         self.assertEqual(audit_log.acting_user, self.user_profile)
         self.assertEqual(audit_log.extra_data["realm_export_id"], export_row_id)
 
+    def test_push_device_registration_failure(self) -> None:
+        hamlet = self.example_user("hamlet")
+        self.login_user(hamlet)
+
+        push_device = PushDevice.objects.create(
+            user=hamlet,
+            token_kind=PushDevice.TokenKind.FCM,
+            push_account_id=2408,
+            push_public_key="dummy-push-public-key",
+        )
+
+        queue_item: RegisterPushDeviceToBouncerQueueItem = {
+            "user_profile_id": push_device.user.id,
+            "push_account_id": push_device.push_account_id,
+            "bouncer_public_key": "bouncer-public-key",
+            "encrypted_push_registration": "encrypted-push-registration",
+        }
+        with (
+            mock.patch(
+                "zerver.lib.push_registration.do_register_remote_push_device",
+                side_effect=InvalidBouncerPublicKeyError,
+            ),
+            self.verify_action(state_change_expected=True, num_events=1) as events,
+        ):
+            handle_register_push_device_to_bouncer(queue_item)
+        check_push_device("events[0]", events[0])
+        self.assertEqual(events[0]["status"], "failed")
+        self.assertEqual(events[0]["error_code"], "INVALID_BOUNCER_PUBLIC_KEY")
+
     def test_notify_realm_export_on_failure(self) -> None:
         do_change_user_role(
             self.user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None
@@ -4132,6 +4363,10 @@ class RealmPropertyActionTest(BaseAction):
         bool_tests: list[bool] = [True, False, True]
         test_values: dict[str, Any] = dict(
             default_language=["es", "de", "en"],
+            welcome_message_custom_text=[
+                "Welcome Bot Custom Message",
+                "New Welcome Bot Custom Message",
+            ],
             description=["Realm description", "New description"],
             digest_weekday=[0, 1, 2],
             message_edit_history_visibility_policy=Realm.MESSAGE_EDIT_HISTORY_VISIBILITY_POLICY_TYPES,
@@ -4150,6 +4385,7 @@ class RealmPropertyActionTest(BaseAction):
             message_content_edit_limit_seconds=[1000, 1100, 1200, None],
             move_messages_within_stream_limit_seconds=[1000, 1100, 1200, None],
             move_messages_between_streams_limit_seconds=[1000, 1100, 1200, None],
+            topics_policy=Realm.REALM_TOPICS_POLICY_TYPES,
         )
 
         vals = test_values.get(name)
@@ -4217,6 +4453,7 @@ class RealmPropertyActionTest(BaseAction):
             if name in [
                 "allow_message_editing",
                 "message_content_edit_limit_seconds",
+                "topics_policy",
             ]:
                 check_realm_update_dict("events[0]", events[0])
             else:
@@ -4224,7 +4461,7 @@ class RealmPropertyActionTest(BaseAction):
 
     def do_test_allow_system_group(self, setting_name: str) -> None:
         all_system_user_groups = NamedUserGroup.objects.filter(
-            realm=self.user_profile.realm,
+            realm_for_sharding=self.user_profile.realm,
             is_system_group=True,
         )
 
@@ -4470,6 +4707,7 @@ class RealmPropertyActionTest(BaseAction):
             realm_name_in_email_notifications_policy=UserProfile.REALM_NAME_IN_EMAIL_NOTIFICATIONS_POLICY_CHOICES,
             automatically_follow_topics_policy=UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_CHOICES,
             automatically_unmute_topics_in_muted_streams_policy=UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_CHOICES,
+            resolved_topic_notice_auto_read_policy=UserProfile.RESOLVED_TOPIC_NOTICE_AUTO_READ_POLICY_TYPES,
         )
 
         vals = test_values.get(name)
@@ -4506,7 +4744,12 @@ class RealmPropertyActionTest(BaseAction):
                     acting_user=self.user_profile,
                 )
 
-            old_value = vals[count]
+            if isinstance(val, Enum):
+                old_value = vals[count].value
+                new_value = val.value
+            else:
+                old_value = vals[count]
+                new_value = val
             self.assertEqual(
                 RealmAuditLog.objects.filter(
                     realm=self.user_profile.realm,
@@ -4515,7 +4758,7 @@ class RealmPropertyActionTest(BaseAction):
                     acting_user=self.user_profile,
                     extra_data={
                         RealmAuditLog.OLD_VALUE: old_value,
-                        RealmAuditLog.NEW_VALUE: val,
+                        RealmAuditLog.NEW_VALUE: new_value,
                         "property": name,
                     },
                 ).count(),
@@ -4589,7 +4832,7 @@ class UserDisplayActionTest(BaseAction):
             web_home_view=["all_messages", "inbox", "recent_topics"],
             demote_inactive_streams=[2, 3, 1],
             web_mark_read_on_scroll_policy=[2, 3, 1],
-            web_channel_default_view=[2, 1],
+            web_channel_default_view=[2, 1, 3, 4],
             user_list_style=[1, 2, 3],
             web_animate_image_previews=["always", "on_hover", "never"],
             web_stream_unreads_count_display_policy=[1, 2, 3],
@@ -4597,6 +4840,7 @@ class UserDisplayActionTest(BaseAction):
             web_line_height_percent=[105, 120, 160],
             color_scheme=[2, 3, 1],
             email_address_visibility=[5, 4, 1, 2, 3],
+            resolved_topic_notice_auto_read_policy=UserProfile.RESOLVED_TOPIC_NOTICE_AUTO_READ_POLICY_TYPES,
         )
 
         user_settings_object = True
@@ -4862,6 +5106,19 @@ class SubscribeActionTest(BaseAction):
         check_stream_update("events[0]", events[0])
         check_message("events[1]", events[1])
 
+        channel_folder = check_add_channel_folder(realm, "Frontend", "", acting_user=iago)
+        with self.verify_action(include_subscribers=include_subscribers) as events:
+            do_change_stream_folder(stream, channel_folder, acting_user=iago)
+        check_stream_update("events[0]", events[0])
+        self.assertEqual(events[0]["property"], "folder_id")
+        self.assertEqual(events[0]["value"], channel_folder.id)
+
+        with self.verify_action(include_subscribers=include_subscribers) as events:
+            do_change_stream_folder(stream, None, acting_user=iago)
+        check_stream_update("events[0]", events[0])
+        self.assertEqual(events[0]["property"], "folder_id")
+        self.assertIsNone(events[0]["value"])
+
         # Update stream privacy - make stream web-public
         with self.verify_action(include_subscribers=include_subscribers, num_events=2) as events:
             do_change_stream_permission(
@@ -4919,9 +5176,50 @@ class SubscribeActionTest(BaseAction):
                 acting_user=iago,
             )
 
+        # Check updating description, stream permission for an unsubscribed streams.
+        self.user_profile = self.example_user("hamlet")
+        self.unsubscribe(self.example_user("hamlet"), stream.name)
+        with self.verify_action(include_subscribers=include_subscribers, num_events=1) as events:
+            do_change_stream_description(
+                stream, "description", acting_user=self.example_user("hamlet")
+            )
+        check_stream_update("events[0]", events[0])
+
+        with self.verify_action(include_subscribers=include_subscribers, num_events=1) as events:
+            do_change_stream_permission(
+                stream,
+                invite_only=False,
+                history_public_to_subscribers=True,
+                is_web_public=True,
+                acting_user=iago,
+            )
+        check_stream_update("events[0]", events[0])
+
+        with self.verify_action(include_subscribers=include_subscribers, num_events=1) as events:
+            do_change_stream_permission(
+                stream,
+                invite_only=True,
+                history_public_to_subscribers=False,
+                is_web_public=False,
+                acting_user=iago,
+            )
+        check_stream_update("events[0]", events[0])
+
+        # Subscribe the user again for further tests.
+        self.subscribe(self.example_user("hamlet"), stream.name)
+
         self.user_profile = self.example_user("hamlet")
         with self.verify_action(include_subscribers=include_subscribers, num_events=2) as events:
             do_change_stream_message_retention_days(stream, self.example_user("hamlet"), -1)
+        check_stream_update("events[0]", events[0])
+
+        with self.verify_action(include_subscribers=include_subscribers, num_events=2) as events:
+            do_set_stream_property(
+                stream,
+                "topics_policy",
+                StreamTopicsPolicyEnum.allow_empty_topic.value,
+                self.example_user("hamlet"),
+            )
         check_stream_update("events[0]", events[0])
 
         for setting_name in Stream.stream_permission_group_settings:
@@ -4932,7 +5230,7 @@ class SubscribeActionTest(BaseAction):
         # Subscribe to a totally new invite-only stream, so it's just Hamlet on it
         stream = self.make_stream("private", self.user_profile.realm, invite_only=True)
         stream.message_retention_days = 10
-        stream.save()
+        stream.save(update_fields=["message_retention_days"])
 
         user_profile = self.example_user("hamlet")
         with self.verify_action(include_subscribers=include_subscribers, num_events=2) as events:
@@ -4956,7 +5254,7 @@ class SubscribeActionTest(BaseAction):
         check_stream_delete("events[1]", events[1])
 
         stream.invite_only = False
-        stream.save()
+        stream.save(update_fields=["invite_only"])
 
         # Test events for guest user.
         self.user_profile = self.example_user("polonius")
@@ -5046,7 +5344,7 @@ class SubscribeActionTest(BaseAction):
         moderators_group = NamedUserGroup.objects.get(
             name=SystemGroups.MODERATORS,
             is_system_group=True,
-            realm=self.user_profile.realm,
+            realm_for_sharding=self.user_profile.realm,
         )
 
         num_events = 1
@@ -5326,3 +5624,83 @@ class ScheduledMessagesEventsTest(BaseAction):
         with self.verify_action() as events:
             delete_scheduled_message(self.user_profile, scheduled_message_id)
         check_scheduled_message_remove("events[0]", events[0])
+
+
+class ChannelFolderActionTest(BaseAction):
+    def test_channel_folder_creation_event(self) -> None:
+        folder_name = "Frontend"
+        folder_description = "Channels for **frontend** discussions"
+        with self.verify_action() as events:
+            check_add_channel_folder(
+                self.user_profile.realm,
+                folder_name,
+                folder_description,
+                acting_user=self.user_profile,
+            )
+        check_channel_folder_add("events[0]", events[0])
+
+    def test_channel_folder_update_event(self) -> None:
+        channel_folder = check_add_channel_folder(
+            self.user_profile.realm,
+            "Frontend",
+            "Channels for frontend discussion",
+            acting_user=self.user_profile,
+        )
+        iago = self.example_user("iago")
+
+        with self.verify_action() as events:
+            do_change_channel_folder_name(channel_folder, "Web frontend", acting_user=iago)
+        check_channel_folder_update("events[0]", events[0], {"name"})
+        self.assertEqual(events[0]["channel_folder_id"], channel_folder.id)
+        self.assertEqual(events[0]["data"]["name"], "Web frontend")
+
+        with self.verify_action() as events:
+            do_change_channel_folder_description(
+                channel_folder, "Channels for **frontend** discussions", acting_user=iago
+            )
+        check_channel_folder_update("events[0]", events[0], {"description", "rendered_description"})
+        self.assertEqual(events[0]["channel_folder_id"], channel_folder.id)
+        self.assertEqual(events[0]["data"]["description"], "Channels for **frontend** discussions")
+        self.assertEqual(
+            events[0]["data"]["rendered_description"],
+            "<p>Channels for <strong>frontend</strong> discussions</p>",
+        )
+
+        with self.verify_action() as events:
+            do_archive_channel_folder(channel_folder, acting_user=iago)
+        check_channel_folder_update("events[0]", events[0], {"is_archived"})
+        self.assertEqual(events[0]["channel_folder_id"], channel_folder.id)
+        self.assertTrue(events[0]["data"]["is_archived"])
+
+        with self.verify_action() as events:
+            do_unarchive_channel_folder(channel_folder, acting_user=iago)
+        check_channel_folder_update("events[0]", events[0], {"is_archived"})
+        self.assertEqual(events[0]["channel_folder_id"], channel_folder.id)
+        self.assertFalse(events[0]["data"]["is_archived"])
+
+    def test_channel_folders_reordering_event(self) -> None:
+        frontend_folder = check_add_channel_folder(
+            self.user_profile.realm,
+            "Frontend",
+            "Channels for frontend discussion",
+            acting_user=self.user_profile,
+        )
+        backend_folder = check_add_channel_folder(
+            self.user_profile.realm,
+            "Backend",
+            "Channels for backend discussion",
+            acting_user=self.user_profile,
+        )
+        engineering_folder = check_add_channel_folder(
+            self.user_profile.realm,
+            "Engineering",
+            "",
+            acting_user=self.user_profile,
+        )
+
+        new_order = [backend_folder.id, engineering_folder.id, frontend_folder.id]
+        with self.verify_action() as events:
+            try_reorder_realm_channel_folders(self.user_profile.realm, new_order)
+
+        check_channel_folder_reorder("events[0]", events[0])
+        self.assertEqual(events[0]["order"], new_order)

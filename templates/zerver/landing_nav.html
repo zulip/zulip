@@ -23,7 +23,7 @@
                             <li class="top-menu-submenu-list-item"><a
                             href="https://blog.zulip.com/2024/11/04/choosing-a-team-chat-app/">Choosing a team chat app</a></li>
                             <li class="top-menu-submenu-list-item"><a href="https://zulip.com/why-zulip/">Why Zulip</a></li>
-                            <li class="top-menu-submenu-list-item"><a href="https://zulip.com/try-zulip/">Try Zulip</a></li>
+                            <li class="top-menu-submenu-list-item"><a href="{{ 'https://chat.zulip.org' if not development_environment}}/?show_try_zulip_modal">Try Zulip</a></li>
                             <li class="top-menu-submenu-list-item"><a href="https://zulip.com/help/moving-to-zulip">Moving to Zulip</a></li>
                             <li class="top-menu-submenu-list-item"><a href="https://zulip.com/self-hosting/">Self-hosting</a></li>
                             <li class="top-menu-submenu-list-item"><a href="https://zulip.com/security/">Security</a></li>
@@ -73,6 +73,11 @@
                             <li class="top-menu-submenu-list-item">
                                 <a href="https://zulip.com/case-studies/end-point/">
                                 Managing hundreds of projects at End Point Dev
+                                </a>
+                            </li>
+                            <li class="top-menu-submenu-list-item">
+                                <a href="/case-studies/windborne/">
+                                Worldwide operations and AI at WindBorne
                                 </a>
                             </li>
                             <li class="top-menu-submenu-list-item">
@@ -146,22 +151,22 @@
                     <img class="top-menu-tab-user-img" src="{{ realm_icon }}" />
                     <span class="top-menu-tab-user-name">{{ realm_name }}</span>
                 </label>
-                <div class="top-menu-submenu singup-column">
+                <div class="top-menu-submenu signup-column">
                     <div class="top-menu-submenu-column">
                         <ul class="top-menu-submenu-list">
                             <li class="top-menu-submenu-list-item">
                                 <a href="/">Go to app</a>
                             </li>
-                            <div class="hidden">
-                                <form id="logout_form" action="/accounts/logout/" method="POST">{{ csrf_input }}
-                                </form>
-                            </div>
                             <li class="top-menu-submenu-list-item">
                                 <a class="logout_button">
                                 Log out
                                 </a>
                             </li>
                         </ul>
+                        <div class="hidden">
+                            <form id="logout_form" action="/accounts/logout/" method="POST">{{ csrf_input }}
+                            </form>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -191,7 +196,7 @@
                 <ul class="top-menu-submenu-list">
                     <li class="top-menu-submenu-list-item"><a href="https://blog.zulip.com/2024/11/04/choosing-a-team-chat-app/">Choosing a team chat app</a></li>
                     <li class="top-menu-submenu-list-item"><a href="https://zulip.com/why-zulip/">Why Zulip</a></li>
-                    <li class="top-menu-submenu-list-item"><a href="https://zulip.com/try-zulip/">Try Zulip</a></li>
+                    <li class="top-menu-submenu-list-item"><a href="{{ 'https://chat.zulip.org' if not development_environment}}/?show_try_zulip_modal">Try Zulip</a></li>
                     <li class="top-menu-submenu-list-item"><a href="https://zulip.com/help/moving-to-zulip">Moving to Zulip</a></li>
                     <li class="top-menu-submenu-list-item"><a href="https://zulip.com/self-hosting/">Self-hosting</a></li>
                     <li class="top-menu-submenu-list-item"><a href="https://zulip.com/security/">Security</a></li>
@@ -237,6 +242,11 @@
                     <li class="top-menu-submenu-list-item">
                         <a href="https://zulip.com/case-studies/end-point/">
                         Managing hundreds of projects at End Point Dev
+                        </a>
+                    </li>
+                    <li class="top-menu-submenu-list-item">
+                        <a href="/case-studies/windborne/">
+                        Worldwide operations and AI at WindBorne
                         </a>
                     </li>
                     <li class="top-menu-submenu-list-item">
@@ -301,16 +311,16 @@
                     <li class="top-menu-submenu-list-item">
                         <a href="/">Go to app</a>
                     </li>
-                    <div class="hidden">
-                        <form id="logout_form" action="/accounts/logout/" method="POST">{{ csrf_input }}
-                        </form>
-                    </div>
                     <li class="top-menu-submenu-list-item">
                         <a class="logout_button">
                         Log out
                         </a>
                     </li>
                 </ul>
+                <div class="hidden">
+                    <form id="logout_form" action="/accounts/logout/" method="POST">{{ csrf_input }}
+                    </form>
+                </div>
             </div>
         </details>
         {% else %}

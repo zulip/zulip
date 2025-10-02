@@ -64,7 +64,7 @@ as follows:
     if a user was present 1 minute before a message was sent, and then
     closed their laptop, the user will not be in
     `presence_idle_user_ids` (because it takes a
-    [few minutes](presence.md) of being idle for Zulip
+    [few minutes](https://zulip.com/api/update-presence) of being idle for Zulip
     clients to declare to the server that the user is actually idle),
     and so without an additional mechanism, messages sent shortly after
     a user leaves would never trigger a notification (!).

@@ -1,6 +1,8 @@
 import re
 import zoneinfo
 from collections.abc import Collection
+from enum import Enum
+from typing import TypeVar
 
 from django.core.exceptions import ValidationError
 from django.core.validators import URLValidator
@@ -8,6 +10,7 @@ from django.utils.translation import gettext as _
 from pydantic import AfterValidator, BeforeValidator, NonNegativeInt
 from pydantic_core import PydanticCustomError
 
+from zerver.lib.exceptions import JsonableError
 from zerver.lib.timezone import canonicalize_timezone
 
 # The Pydantic.StringConstraints does not have validation for the string to be
@@ -105,3 +108,17 @@ def check_color(var_name: str, val: object) -> str:
     if not matched_results:
         raise ValueError(_("{var_name} is not a valid hex color code").format(var_name=var_name))
     return s
+
+
+EnumT = TypeVar("EnumT", bound=Enum)
+
+
+def parse_enum_from_string_value(
+    val: str,
+    setting_name: str,
+    enum: type[EnumT],
+) -> EnumT:
+    try:
+        return enum[val]
+    except KeyError:
+        raise JsonableError(_("Invalid {setting_name}").format(setting_name=setting_name))

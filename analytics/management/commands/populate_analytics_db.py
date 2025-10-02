@@ -18,15 +18,16 @@ from analytics.models import (
     UserCount,
 )
 from zerver.actions.create_realm import do_create_realm
-from zerver.actions.users import do_change_user_role
 from zerver.lib.create_user import create_user
 from zerver.lib.management import ZulipBaseCommand
 from zerver.lib.storage import static_path
 from zerver.lib.stream_color import STREAM_ASSIGNMENT_COLORS
+from zerver.lib.stream_subscription import create_stream_subscription
 from zerver.lib.streams import get_default_values_for_stream_permission_group_settings
 from zerver.lib.timestamp import floor_to_day
 from zerver.lib.upload import upload_message_attachment_from_request
-from zerver.models import Client, Realm, RealmAuditLog, Recipient, Stream, Subscription, UserProfile
+from zerver.models import Client, Realm, RealmAuditLog, Recipient, Stream, UserProfile
+from zerver.models.groups import NamedUserGroup, SystemGroups, UserGroupMembership
 from zerver.models.realm_audit_logs import AuditLogEventType
 
 
@@ -86,6 +87,13 @@ class Command(ZulipBaseCommand):
             string_id="analytics", name="Analytics", date_created=installation_time
         )
 
+        owners_system_group = NamedUserGroup.objects.get(
+            name=SystemGroups.OWNERS, realm_for_sharding=realm, is_system_group=True
+        )
+        guests_system_group = NamedUserGroup.objects.get(
+            name=SystemGroups.EVERYONE, realm_for_sharding=realm, is_system_group=True
+        )
+
         shylock = create_user(
             "shylock@analytics.ds",
             "Shylock",
@@ -94,10 +102,10 @@ class Command(ZulipBaseCommand):
             role=UserProfile.ROLE_REALM_OWNER,
             force_date_joined=installation_time,
         )
-        do_change_user_role(shylock, UserProfile.ROLE_REALM_OWNER, acting_user=None)
+        UserGroupMembership.objects.create(user_profile=shylock, user_group=owners_system_group)
 
         # Create guest user for set_guest_users_statistic.
-        create_user(
+        bassanio = create_user(
             "bassanio@analytics.ds",
             "Bassanio",
             realm,
@@ -105,6 +113,7 @@ class Command(ZulipBaseCommand):
             role=UserProfile.ROLE_GUEST,
             force_date_joined=installation_time,
         )
+        UserGroupMembership.objects.create(user_profile=bassanio, user_group=guests_system_group)
 
         stream = Stream.objects.create(
             name="all",
@@ -117,10 +126,10 @@ class Command(ZulipBaseCommand):
         stream.save(update_fields=["recipient"])
 
         # Subscribe shylock to the stream to avoid invariant failures.
-        Subscription.objects.create(
-            recipient=recipient,
+        create_stream_subscription(
             user_profile=shylock,
-            is_user_active=shylock.is_active,
+            recipient=recipient,
+            stream=stream,
             color=STREAM_ASSIGNMENT_COLORS[0],
         )
         RealmAuditLog.objects.create(
@@ -267,21 +276,21 @@ class Command(ZulipBaseCommand):
             property=stat.property, end_time=last_end_time, state=FillState.DONE
         )
 
-        website, created = Client.objects.get_or_create(name="website")
-        old_desktop, created = Client.objects.get_or_create(name="desktop app Linux 0.3.7")
-        android, created = Client.objects.get_or_create(name="ZulipAndroid")
-        iOS, created = Client.objects.get_or_create(name="ZulipiOS")
-        react_native, created = Client.objects.get_or_create(name="ZulipMobile")
-        flutter, created = Client.objects.get_or_create(name="ZulipFlutter")
-        API, created = Client.objects.get_or_create(name="API: Python")
-        zephyr_mirror, created = Client.objects.get_or_create(name="zephyr_mirror")
-        unused, created = Client.objects.get_or_create(name="unused")
-        long_webhook, created = Client.objects.get_or_create(name="ZulipLooooooooooongNameWebhook")
+        website, _created = Client.objects.get_or_create(name="website")
+        old_desktop, _created = Client.objects.get_or_create(name="desktop app Linux 0.3.7")
+        android, _created = Client.objects.get_or_create(name="ZulipAndroid")
+        iOS, _created = Client.objects.get_or_create(name="ZulipiOS")
+        react_native, _created = Client.objects.get_or_create(name="ZulipMobile")
+        flutter, _created = Client.objects.get_or_create(name="ZulipFlutter")
+        API, _created = Client.objects.get_or_create(name="API: Python")
+        irc_mirror, _created = Client.objects.get_or_create(name="irc_mirror")
+        unused, _created = Client.objects.get_or_create(name="unused")
+        long_webhook, _created = Client.objects.get_or_create(name="ZulipLooooooooooongNameWebhook")
 
         stat = COUNT_STATS["messages_sent:client:day"]
         user_data = {
             website.id: self.generate_fixture_data(stat, 2, 1, 1.5, 0.6, 8),
-            zephyr_mirror.id: self.generate_fixture_data(stat, 0, 0.3, 1.5, 0.6, 8),
+            irc_mirror.id: self.generate_fixture_data(stat, 0, 0.3, 1.5, 0.6, 8),
         }
         insert_fixture_data(stat, user_data, UserCount)
         realm_data = {
@@ -292,7 +301,7 @@ class Command(ZulipBaseCommand):
             react_native.id: self.generate_fixture_data(stat, 5, 5, 10, 0.6, 3),
             flutter.id: self.generate_fixture_data(stat, 5, 5, 10, 0.6, 3),
             API.id: self.generate_fixture_data(stat, 5, 5, 5, 0.6, 3),
-            zephyr_mirror.id: self.generate_fixture_data(stat, 1, 1, 3, 0.6, 3),
+            irc_mirror.id: self.generate_fixture_data(stat, 1, 1, 3, 0.6, 3),
             unused.id: self.generate_fixture_data(stat, 0, 0, 0, 0, 0),
             long_webhook.id: self.generate_fixture_data(stat, 5, 5, 2, 0.6, 3),
         }
@@ -305,7 +314,7 @@ class Command(ZulipBaseCommand):
             flutter.id: self.generate_fixture_data(stat, 5, 5, 10, 0.6, 3),
             react_native.id: self.generate_fixture_data(stat, 5, 5, 10, 0.6, 3),
             API.id: self.generate_fixture_data(stat, 50, 50, 5, 0.6, 3),
-            zephyr_mirror.id: self.generate_fixture_data(stat, 10, 10, 3, 0.6, 3),
+            irc_mirror.id: self.generate_fixture_data(stat, 10, 10, 3, 0.6, 3),
             unused.id: self.generate_fixture_data(stat, 0, 0, 0, 0, 0),
             long_webhook.id: self.generate_fixture_data(stat, 50, 50, 2, 0.6, 3),
         }

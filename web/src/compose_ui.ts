@@ -11,7 +11,7 @@ import {
     setFieldText,
     wrapFieldSelection,
 } from "text-field-edit";
-import {z} from "zod";
+import * as z from "zod/mini";
 
 import type {Typeahead} from "./bootstrap_typeahead.ts";
 import * as bulleted_numbered_list_util from "./bulleted_numbered_list_util.ts";
@@ -26,7 +26,7 @@ import * as people from "./people.ts";
 import {postprocess_content} from "./postprocess_content.ts";
 import * as rendered_markdown from "./rendered_markdown.ts";
 import * as rtl from "./rtl.ts";
-import {current_user, realm} from "./state_data.ts";
+import {current_user} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import * as user_status from "./user_status.ts";
 import * as util from "./util.ts";
@@ -35,6 +35,7 @@ export const DEFAULT_COMPOSE_PLACEHOLDER = $t({defaultMessage: "Compose your mes
 
 export type ComposeTriggeredOptions = {
     trigger: string;
+    defer_focus?: boolean | undefined;
 } & (
     | {
           message_type: "stream";
@@ -43,7 +44,7 @@ export type ComposeTriggeredOptions = {
       }
     | {
           message_type: "private";
-          private_message_recipient: string;
+          private_message_recipient_ids: number[];
       }
 );
 export type ComposePlaceholderOptions =
@@ -207,14 +208,18 @@ function get_focus_area(opts: ComposeTriggeredOptions): string {
         opts.message_type === "stream" &&
         opts.stream_id &&
         !opts.topic &&
-        realm.realm_mandatory_topics
+        !stream_data.can_use_empty_topic(opts.stream_id)
     ) {
         return "input#stream_message_recipient_topic";
     } else if (
         (opts.message_type === "stream" && opts.stream_id !== undefined) ||
-        (opts.message_type === "private" && opts.private_message_recipient)
+        (opts.message_type === "private" && opts.private_message_recipient_ids.length > 0)
     ) {
-        if (opts.trigger === "clear topic button" || opts.trigger === "compose_hotkey") {
+        if (
+            opts.trigger === "clear topic button" ||
+            opts.trigger === "compose_hotkey" ||
+            opts.trigger === "inbox_nofocus"
+        ) {
             return "input#stream_message_recipient_topic";
         }
         return "textarea#compose-textarea";
@@ -432,11 +437,13 @@ export function compute_placeholder_text(opts: ComposePlaceholderOptions): strin
             }
         }
 
+        // The following block of code will do nothing if the channel is
+        // not selected as the placeholder in that case will be "Compose your message here".
         let topic_display_name: string | undefined;
         if (opts.topic !== "") {
             topic_display_name = opts.topic;
         } else if (
-            !realm.realm_mandatory_topics &&
+            stream_data.can_use_empty_topic(opts.stream_id) &&
             !$("input#stream_message_recipient_topic").is(":focus")
         ) {
             topic_display_name = util.get_final_topic_display_name(opts.topic);
@@ -451,7 +458,11 @@ export function compute_placeholder_text(opts: ComposePlaceholderOptions): strin
             return $t({defaultMessage: "Message #{channel_name}"}, {channel_name: stream_name});
         }
     } else if (opts.direct_message_user_ids.length > 0) {
-        const users = people.get_users_from_ids(opts.direct_message_user_ids);
+        const user_ids = opts.direct_message_user_ids;
+        if (people.is_direct_message_conversation_with_self(user_ids)) {
+            return $t({defaultMessage: "Write yourself a note"});
+        }
+        const users = people.get_users_from_ids(user_ids);
         const recipient_parts = users.map((user) => {
             if (people.should_add_guest_user_indicator(user.user_id)) {
                 return $t({defaultMessage: "{name} (guest)"}, {name: user.full_name});

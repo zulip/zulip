@@ -150,8 +150,13 @@
     }
 
     #recent_view_filter_buttons {
-        padding: 12px 10px 0;
+        /* This padding-top value aligns the recents filters
+           with the filters in the left and right sidebars.
+           TODO: As part of the recents redesign, these filters
+           should match the height of the sidebar filters. */
+        padding: 10px 10px 0;
         display: flex;
+        gap: var(--recent-topics-filters-gap);
         /* Search box has no height without this in safari. */
         flex: 0 0 auto;
         flex-wrap: wrap;
@@ -159,24 +164,15 @@
         background: var(--color-background);
     }
 
-    .search_group {
-        display: grid;
-        grid-template: "search-input clear-search" auto / minmax(0, 1fr) 30px;
+    #recent_filters_group {
+        display: flex;
+        flex-flow: row wrap;
+        gap: var(--recent-topics-filters-gap);
+    }
+
+    #recent-view-search-wrapper {
         flex-grow: 1;
-        margin: 0 0 10px;
-    }
-
-    #recent_view_search:placeholder-shown + #recent_view_search_clear {
-        visibility: hidden;
-    }
-
-    #recent_view_search {
-        grid-column: search-input-start / clear-search-end;
-        grid-row: search-input;
-        padding-right: 28px;
-        white-space: nowrap;
-        text-overflow: ellipsis;
-        overflow: hidden;
+        margin-bottom: var(--recent-topics-filters-gap);
     }
 
     .button-recent-filters {
@@ -184,12 +180,14 @@
         background-color: var(--color-background-zulip-button);
         border: 1px solid var(--color-border-zulip-button);
         border-radius: 40px;
-        /* Legacy 5px 10px at 14px/1em. */
-        margin: 0 0.3571em 0.7142em 0;
-        /* Legacy 6px 12px at 14px/1em. */
-        padding: 0.4285em 0.8571em;
-        line-height: 100%;
-        display: inline-flex;
+        /* Matching to the height of the filter search box. */
+        height: var(--recent-topics-filters-height);
+        /* Legacy 12px at 14px/1em. */
+        padding: 0 0.8571em;
+
+        flex: 0 0 auto;
+        display: flex;
+        align-items: center;
 
         &:hover {
             background-color: var(--color-background-zulip-button-hover);
@@ -279,6 +277,10 @@
         margin-left: 5px;
         display: flex;
         flex-flow: row nowrap;
+        /* Preserve space for the actions even on archived
+           channels, especially those with unreads. The
+           width is 16px at 16px/1em. */
+        min-width: 1em;
     }
 
     .mention_in_unread {
@@ -402,22 +404,30 @@
         border-bottom: 1px solid hsl(0deg 0% 0% / 20%) !important;
         z-index: 1;
 
-        &.active::after,
-        &[data-sort]:hover::after {
-            content: " \f0d8";
-            white-space: pre;
-            padding-top: 3px;
-            font: normal normal normal 12px/1 FontAwesome;
-            font-size: inherit;
+        .table-sortable-arrow {
+            /* Sub alignment works perfectly in this context,
+               where the table header is a text node. */
+            vertical-align: sub;
+            transform: rotate(180deg);
+            opacity: 0;
+            transition: opacity 100ms ease-out;
+        }
+
+        &.descend .table-sortable-arrow {
+            transform: rotate(0deg);
+        }
+
+        &:not(.active)[data-sort]:hover .table-sortable-arrow {
+            opacity: 0.3;
+        }
+
+        &.active .table-sortable-arrow {
+            opacity: 1;
         }
 
         &.active {
             opacity: 1;
             transition: opacity 100ms ease-out;
-
-            &.descend::after {
-                content: " \f0d7";
-            }
         }
 
         &[data-sort]:hover {
@@ -426,10 +436,6 @@
                 --color-background-recent-view-table-thead-sort-header
             );
             transition: background-color 100ms ease-in-out;
-
-            &:not(.active)::after {
-                opacity: 0.3;
-            }
         }
     }
 
@@ -501,6 +507,18 @@
             -webkit-line-clamp: 2;
             -webkit-box-orient: vertical;
             overflow: hidden;
+        }
+
+        /* We don't want to apply line clamping to 1:1 DMs,
+           as that causes an odd problem with Safari collapsing
+           the grid on .user-status-microlayout so that usernames
+           always have an ellipsis--no matter how short they are,
+           nor how much space is available in the Topic column.
+
+           `display: inherit` here will set the value to what is
+           already established on .recent_view_focusable. */
+        .line_clamp:has(.recent-view-dm) {
+            display: inherit;
         }
     }
 
@@ -600,15 +618,26 @@
 #recent-view-filter_widget {
     display: inline-flex;
     width: 10.7142em; /* 150px at 14px em */
-    /* Legacy 5px 10px at 14px/1em. */
-    margin: 0 0.3571em 0.7142em 0;
+    /* 1.5px 6px at 16px/1em */
+    padding: 0 0.375em;
+    /* Matching to the height of the filter search box. */
+    height: var(--recent-topics-filters-height);
+    /* Matching to the input styles otherwise defined on
+       .input-element in inputs.css */
+    color: var(--color-text-input);
+    background: var(--color-background-input);
+    border: none;
+    outline: 1px solid var(--color-outline-input);
+    outline-offset: -1px;
 
     &:hover {
-        background-color: var(--color-background-inbox-search-hover);
+        outline-color: var(--color-outline-input-hover);
     }
 
     &:focus {
-        outline: 2px solid var(--color-outline-focus);
+        background-color: var(--color-background-input-focus);
+        outline-color: var(--color-outline-input-focus);
+        box-shadow: 0 0 5px var(--color-box-shadow-input-focus);
     }
 }
 

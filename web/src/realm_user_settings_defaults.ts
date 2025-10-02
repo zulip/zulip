@@ -1,4 +1,4 @@
-import {z} from "zod";
+import * as z from "zod/mini";
 
 import type {StateData} from "./state_data.ts";
 
@@ -46,6 +46,7 @@ export const realm_default_settings_schema = z.object({
     presence_enabled: z.boolean(),
     realm_name_in_email_notifications_policy: z.number(),
     receives_typing_notifications: z.boolean(),
+    resolved_topic_notice_auto_read_policy: z.enum(["always", "except_followed", "never"]),
     send_private_typing_notifications: z.boolean(),
     send_read_receipts: z.boolean(),
     send_stream_typing_notifications: z.boolean(),
@@ -58,6 +59,8 @@ export const realm_default_settings_schema = z.object({
     web_escape_navigates_to_home_view: z.boolean(),
     web_font_size_px: z.number(),
     web_home_view: z.string(),
+    web_left_sidebar_show_channel_folders: z.boolean(),
+    web_left_sidebar_unreads_count_summary: z.boolean(),
     web_line_height_percent: z.number(),
     web_mark_read_on_scroll_policy: z.number(),
     web_navigate_to_sent_message: z.boolean(),

@@ -13,6 +13,7 @@ from django.utils.http import urlsafe_base64_encode
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import get_language
 
+from zerver.actions.streams import send_peer_remove_events
 from zerver.actions.user_groups import (
     do_send_user_group_members_update_event,
     update_users_in_full_members_system_group,
@@ -21,6 +22,7 @@ from zerver.lib.avatar import get_avatar_field
 from zerver.lib.bot_config import ConfigError, get_bot_config, get_bot_configs, set_bot_config
 from zerver.lib.cache import bot_dict_fields
 from zerver.lib.create_user import create_user
+from zerver.lib.event_types import BotServicesOutgoing
 from zerver.lib.invites import revoke_invites_generated_by_user
 from zerver.lib.remote_server import maybe_enqueue_audit_log_upload
 from zerver.lib.send_email import (
@@ -31,6 +33,7 @@ from zerver.lib.send_email import (
 )
 from zerver.lib.sessions import delete_user_sessions
 from zerver.lib.soft_deactivation import queue_soft_reactivation
+from zerver.lib.stream_subscription import update_all_subscriber_counts_for_user
 from zerver.lib.stream_traffic import get_streams_traffic
 from zerver.lib.streams import (
     get_anonymous_group_membership_dict_for_streams,
@@ -79,9 +82,6 @@ from zerver.tornado.django_api import send_event_on_commit
 
 
 def do_delete_user(user_profile: UserProfile, *, acting_user: UserProfile | None) -> None:
-    if user_profile.realm.is_zephyr_mirror_realm:
-        raise AssertionError("Deleting zephyr mirror users is not supported")
-
     do_deactivate_user(user_profile, acting_user=acting_user)
 
     to_resubscribe_recipient_ids = set(
@@ -184,9 +184,6 @@ def do_delete_user_preserving_messages(user_profile: UserProfile) -> None:
       space of user IDs that contain actual users.
 
     """
-    if user_profile.realm.is_zephyr_mirror_realm:
-        raise AssertionError("Deleting zephyr mirror users is not supported")
-
     do_deactivate_user(user_profile, acting_user=None)
 
     user_id = user_profile.id
@@ -272,12 +269,15 @@ def change_user_is_active(user_profile: UserProfile, value: bool) -> None:
     Helper function for changing the .is_active field. Not meant as a standalone function
     in production code as properly activating/deactivating users requires more steps.
     This changes the is_active value and saves it, while ensuring
-    Subscription.is_user_active values are updated in the same db transaction.
+    Subscription.is_user_active and Stream.subscriber_count values are updated in the same db transaction.
     """
     with transaction.atomic(savepoint=False):
         user_profile.is_active = value
         user_profile.save(update_fields=["is_active"])
         Subscription.objects.filter(user_profile=user_profile).update(is_user_active=value)
+        update_all_subscriber_counts_for_user(
+            user_profile=user_profile, direction=1 if value else -1
+        )
 
 
 def send_group_update_event_for_anonymous_group_setting(
@@ -354,9 +354,9 @@ def send_update_events_for_anonymous_group_settings(
         group_setting_query |= Q(**{f"{setting_name}__in": setting_group_ids})
 
     named_groups_using_setting_groups_dict = {}
-    named_groups_using_setting_groups = NamedUserGroup.objects.filter(realm=realm).filter(
-        group_setting_query
-    )
+    named_groups_using_setting_groups = NamedUserGroup.objects.filter(
+        realm_for_sharding=realm
+    ).filter(group_setting_query)
     for group in named_groups_using_setting_groups:
         for setting_name in NamedUserGroup.GROUP_PERMISSION_SETTINGS:
             setting_value_id = getattr(group, setting_name + "_id")
@@ -383,6 +383,19 @@ def send_update_events_for_anonymous_group_settings(
 
 
 def send_events_for_user_deactivation(user_profile: UserProfile) -> None:
+    subscribed_streams = get_streams_for_user(
+        user_profile,
+        include_public=False,
+        include_subscribed=True,
+    )
+    altered_user_dict: dict[int, set[int]] = defaultdict(set)
+    streams: list[Stream] = []
+    for stream in subscribed_streams:
+        altered_user_dict[stream.id].add(user_profile.id)
+        streams.append(stream)
+
+    send_peer_remove_events(user_profile.realm, streams, altered_user_dict)
+
     event_deactivate_user = dict(
         type="realm_user",
         op="update",
@@ -501,19 +514,9 @@ def do_deactivate_user(
             do_deactivate_user(profile, _cascade=False, acting_user=acting_user)
 
     with transaction.atomic(savepoint=False):
-        if user_profile.realm.is_zephyr_mirror_realm:  # nocoverage
-            # For zephyr mirror users, we need to make them a mirror dummy
-            # again; otherwise, other users won't get the correct behavior
-            # when trying to send messages to this person inside Zulip.
-            #
-            # Ideally, we need to also ensure their zephyr mirroring bot
-            # isn't running, but that's a separate issue.
-            user_profile.is_mirror_dummy = True
-            user_profile.save(update_fields=["is_mirror_dummy"])
-
         change_user_is_active(user_profile, False)
 
-        clear_scheduled_emails(user_profile.id)
+        clear_scheduled_emails([user_profile.id])
         revoke_invites_generated_by_user(user_profile)
 
         event_time = timezone_now()
@@ -763,14 +766,42 @@ def do_change_can_change_user_emails(user_profile: UserProfile, value: bool) -> 
 
 @transaction.atomic(durable=True)
 def do_update_outgoing_webhook_service(
-    bot_profile: UserProfile, service_interface: int, service_payload_url: str
+    bot_profile: UserProfile,
+    *,
+    interface: int | None = None,
+    base_url: str | None = None,
+    acting_user: UserProfile | None,
 ) -> None:
-    # TODO: First service is chosen because currently one bot can only have one service.
-    # Update this once multiple services are supported.
+    update_fields: dict[str, str | int] = {}
+    if interface is not None:
+        update_fields["interface"] = interface
+    if base_url is not None:
+        update_fields["base_url"] = base_url
+
+    if len(update_fields) < 1:
+        return
+
+    # TODO: First service is chosen because currently one bot can only
+    # have one service. Update this once multiple services are supported.
     service = get_bot_services(bot_profile.id)[0]
-    service.base_url = service_payload_url
-    service.interface = service_interface
-    service.save()
+    updated_fields = []
+    for field, new_value in update_fields.items():
+        if getattr(service, field) != new_value:
+            setattr(service, field, new_value)
+            updated_fields.append(field)
+
+    if len(updated_fields) < 1:
+        return
+
+    service.save(update_fields=updated_fields)
+
+    # Keep the event payload of the updated bot service in sync with the
+    # schema expected by `bot_data.update()` method.
+    updated_service: dict[str, str | int] = BotServicesOutgoing(
+        base_url=service.base_url,
+        interface=service.interface,
+        token=service.token,
+    ).model_dump()
     send_event_on_commit(
         bot_profile.realm,
         dict(
@@ -778,11 +809,7 @@ def do_update_outgoing_webhook_service(
             op="update",
             bot=dict(
                 user_id=bot_profile.id,
-                services=[
-                    dict(
-                        base_url=service.base_url, interface=service.interface, token=service.token
-                    )
-                ],
+                services=[updated_service],
             ),
         ),
         bot_owner_user_ids(bot_profile),
@@ -958,7 +985,9 @@ def do_send_password_reset_email(
             delivery_email__iexact=email, is_active=True
         )
         if active_accounts_in_other_realms:
-            context["active_accounts_in_other_realms"] = active_accounts_in_other_realms
+            context["other_realm_urls"] = [
+                active_account.realm.url for active_account in active_accounts_in_other_realms
+            ]
         language = get_language()
 
         send_email(

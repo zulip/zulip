@@ -14,12 +14,11 @@ import * as settings_config from "./settings_config.ts";
 import * as settings_data from "./settings_data.ts";
 import type {CurrentUser, GroupSettingValue, StateData} from "./state_data.ts";
 import {current_user, realm} from "./state_data.ts";
-import type {StreamPermissionGroupSetting} from "./stream_types.ts";
+import type {APIStream, StreamPermissionGroupSetting, StreamTopicsPolicy} from "./stream_types.ts";
 import * as sub_store from "./sub_store.ts";
 import type {
     ApiStreamSubscription,
     NeverSubscribedStream,
-    Stream,
     StreamSpecificNotificationSettings,
     StreamSubscription,
 } from "./sub_store.ts";
@@ -110,6 +109,11 @@ class BinaryDict<T> {
         this.trues.delete(k);
         this.falses.set(k, v);
     }
+
+    delete(k: number): void {
+        this.trues.delete(k);
+        this.falses.delete(k);
+    }
 }
 
 // The stream_info variable maps stream ids to stream properties objects
@@ -119,15 +123,19 @@ let stream_info: BinaryDict<StreamSubscription>;
 const stream_ids_by_name = new FoldDict<number>();
 const stream_ids_by_old_names = new FoldDict<number>();
 const default_stream_ids = new Set<number>();
+const realm_web_public_stream_ids = new Set<number>();
 
-export function clear_subscriptions(): void {
+export function clear_subscriptions(for_tests = true): void {
     // This function is only used once at page load, and then
     // it should only be used in tests.
     stream_info = new BinaryDict((sub) => sub.subscribed);
     sub_store.clear();
+    if (for_tests) {
+        peer_data.clear_subscriber_counts_for_tests();
+    }
 }
 
-clear_subscriptions();
+clear_subscriptions(false);
 
 export function rename_sub(sub: StreamSubscription, new_name: string): void {
     const old_name = sub.name;
@@ -156,13 +164,17 @@ export function unsubscribe_myself(sub: StreamSubscription): void {
     stream_info.set_false(sub.stream_id, sub);
 }
 
-export function add_sub(sub: StreamSubscription): void {
-    // This function is currently used only by tests.
+export function add_sub_for_tests(sub: StreamSubscription, subscriber_count = 0): void {
+    // This function is used only by tests.
     // We use create_sub_from_server_data at page load.
     // We use create_streams for new streams in live-update events.
     stream_info.set(sub.stream_id, sub);
     stream_ids_by_name.set(sub.name, sub.stream_id);
+    if (sub.is_web_public) {
+        realm_web_public_stream_ids.add(sub.stream_id);
+    }
     sub_store.add_hydrated_sub(sub.stream_id, sub);
+    peer_data.set_subscriber_count(sub.stream_id, subscriber_count);
 }
 
 export function get_sub(stream_name: string): StreamSubscription | undefined {
@@ -204,11 +216,7 @@ export function get_stream_id(name: string): number | undefined {
     // Note: Only use this function for situations where
     // you are comfortable with a user dealing with an
     // old name of a stream (from prior to a rename).
-    let stream_id = stream_ids_by_name.get(name);
-    if (!stream_id) {
-        stream_id = stream_ids_by_old_names.get(name);
-    }
-    return stream_id;
+    return stream_ids_by_name.get(name) ?? stream_ids_by_old_names.get(name);
 }
 
 export function get_stream_name_from_id(stream_id: number): string {
@@ -219,10 +227,7 @@ export let get_sub_by_name = (name: string): StreamSubscription | undefined => {
     // Note: Only use this function for situations where
     // you are comfortable with a user dealing with an
     // old name of a stream (from prior to a rename).
-    let stream_id = stream_ids_by_name.get(name);
-    if (!stream_id) {
-        stream_id = stream_ids_by_old_names.get(name);
-    }
+    const stream_id = stream_ids_by_name.get(name) ?? stream_ids_by_old_names.get(name);
     if (!stream_id) {
         return undefined;
     }
@@ -303,13 +308,33 @@ export function slug_to_stream_id(slug: string): number | undefined {
     return undefined;
 }
 
-export function delete_sub(stream_id: number): void {
+export function mark_archived(stream_id: number): void {
     const sub = get_sub_by_id(stream_id);
-    if (sub === undefined || !stream_info.get(stream_id)) {
+    if (sub === undefined) {
         blueslip.warn("Failed to archive stream " + stream_id.toString());
         return;
     }
     sub.is_archived = true;
+}
+
+export function mark_unarchived(stream_id: number): void {
+    const sub = get_sub_by_id(stream_id);
+    if (sub === undefined) {
+        blueslip.warn("Failed to unarchive stream " + stream_id.toString());
+        return;
+    }
+    sub.is_archived = false;
+}
+
+export function delete_sub(stream_id: number): void {
+    if (!stream_info.get(stream_id)) {
+        blueslip.warn("Failed to archive stream " + stream_id.toString());
+        return;
+    }
+
+    sub_store.delete_sub(stream_id);
+    realm_web_public_stream_ids.delete(stream_id);
+    stream_info.delete(stream_id);
 }
 
 export function get_non_default_stream_names(): {name: string; unique_id: number}[] {
@@ -356,6 +381,10 @@ export function get_archived_subs(): StreamSubscription[] {
     return [...stream_info.values()].filter((sub) => sub.is_archived);
 }
 
+export function realm_has_web_public_streams(): boolean {
+    return realm_web_public_stream_ids.size > 0;
+}
+
 export function muted_stream_ids(): number[] {
     return subscribed_subs()
         .filter((sub) => sub.is_muted)
@@ -378,7 +407,9 @@ export function get_streams_for_user(user_id: number): {
             // subscribers (which would trigger a warning).
             continue;
         }
-        if (is_user_subscribed(sub.stream_id, user_id)) {
+        // TODO: Before calling this, we should get this user's subscriptions
+        // and add them to the peer_data's stream_subscribers. #35341
+        if (is_user_loaded_and_subscribed(sub.stream_id, user_id)) {
             subscribed_subs.push(sub);
         } else if (can_subscribe_user(sub, user_id)) {
             can_subscribe_subs.push(sub);
@@ -417,6 +448,11 @@ export function update_stream_privacy(
     sub.invite_only = values.invite_only;
     sub.history_public_to_subscribers = values.history_public_to_subscribers;
     sub.is_web_public = values.is_web_public;
+    if (sub.is_web_public) {
+        realm_web_public_stream_ids.add(sub.stream_id);
+    } else {
+        realm_web_public_stream_ids.delete(sub.stream_id);
+    }
 }
 
 export function update_message_retention_setting(
@@ -426,12 +462,23 @@ export function update_message_retention_setting(
     sub.message_retention_days = message_retention_days;
 }
 
+export function update_topics_policy_setting(
+    sub: StreamSubscription,
+    topics_policy: StreamTopicsPolicy,
+): void {
+    sub.topics_policy = topics_policy;
+}
+
 export function update_stream_permission_group_setting(
     setting_name: StreamPermissionGroupSetting,
     sub: StreamSubscription,
     group_setting: GroupSettingValue,
 ): void {
     sub[setting_name] = group_setting;
+}
+
+export function update_channel_folder(sub: StreamSubscription, folder_id: number | null): void {
+    sub.folder_id = folder_id;
 }
 
 export function receives_notifications(
@@ -453,10 +500,10 @@ export function all_subscribed_streams_are_in_home_view(): boolean {
 }
 
 export function canonicalized_name(stream_name: string): string {
-    return stream_name.toString().toLowerCase();
+    return stream_name.toLowerCase();
 }
 
-export let get_color = (stream_id: number | undefined): string => {
+export function get_color(stream_id: number | undefined): string {
     if (stream_id === undefined) {
         return DEFAULT_COLOR;
     }
@@ -465,10 +512,6 @@ export let get_color = (stream_id: number | undefined): string => {
         return DEFAULT_COLOR;
     }
     return sub.color;
-};
-
-export function rewire_get_color(value: typeof get_color): void {
-    get_color = value;
 }
 
 export function is_muted(stream_id: number): boolean {
@@ -595,7 +638,7 @@ export function rewire_has_content_access(value: typeof has_content_access): voi
     has_content_access = value;
 }
 
-function can_administer_channel(sub: StreamSubscription): boolean {
+export function can_administer_channel(sub: StreamSubscription): boolean {
     // Note that most callers should use wrappers like
     // can_change_permissions_requiring_content_access, since actions
     // that can grant access to message content require content access
@@ -609,6 +652,42 @@ function can_administer_channel(sub: StreamSubscription): boolean {
         "can_administer_channel_group",
         "stream",
     );
+}
+
+export function user_can_set_delete_message_policy(sub?: StreamSubscription): boolean {
+    if (current_user.is_admin) {
+        return true;
+    }
+
+    const user_can_set_delete_message_policy = settings_data.user_has_permission_for_group_setting(
+        realm.realm_can_set_delete_message_policy_group,
+        "can_set_delete_message_policy_group",
+        "realm",
+    );
+
+    // This handles the case when the stream is being created.
+    if (sub === undefined) {
+        return user_can_set_delete_message_policy;
+    }
+    return user_can_set_delete_message_policy && can_administer_channel(sub);
+}
+
+export function user_can_set_topics_policy(sub?: StreamSubscription): boolean {
+    if (current_user.is_admin) {
+        return true;
+    }
+
+    const user_can_set_topics_policy = settings_data.user_has_permission_for_group_setting(
+        realm.realm_can_set_topics_policy_group,
+        "can_set_topics_policy_group",
+        "realm",
+    );
+
+    // This handles the case when the stream is being created.
+    if (sub === undefined) {
+        return user_can_set_topics_policy;
+    }
+    return user_can_set_topics_policy && can_administer_channel(sub);
 }
 
 export function can_toggle_subscription(sub: StreamSubscription): boolean {
@@ -711,6 +790,24 @@ export function can_subscribe_others(sub: StreamSubscription): boolean {
     );
 }
 
+export function can_resolve_topics(sub: StreamSubscription | undefined): boolean {
+    if (settings_data.user_can_resolve_topic()) {
+        return true;
+    }
+
+    if (sub === undefined) {
+        // If we're in a context without a channel, only the global
+        // permission is relevant.
+        return false;
+    }
+
+    return settings_data.user_has_permission_for_group_setting(
+        sub.can_resolve_topics_group,
+        "can_resolve_topics_group",
+        "stream",
+    );
+}
+
 export function can_subscribe_user(sub: StreamSubscription, user_id: number): boolean {
     if (people.is_my_user_id(user_id)) {
         return can_toggle_subscription(sub);
@@ -783,6 +880,64 @@ export function rewire_can_post_messages_in_stream(
     can_post_messages_in_stream = value;
 }
 
+export function user_can_move_messages_out_of_channel(stream: StreamSubscription): boolean {
+    if (page_params.is_spectator) {
+        return false;
+    }
+
+    if (stream.is_archived) {
+        return false;
+    }
+
+    const user_can_administer_channel = settings_data.user_has_permission_for_group_setting(
+        stream.can_administer_channel_group,
+        "can_administer_channel_group",
+        "stream",
+    );
+
+    if (user_can_administer_channel) {
+        return true;
+    }
+
+    return (
+        settings_data.user_can_move_messages_between_streams() ||
+        settings_data.user_has_permission_for_group_setting(
+            stream.can_move_messages_out_of_channel_group,
+            "can_move_messages_out_of_channel_group",
+            "stream",
+        )
+    );
+}
+
+export function user_can_move_messages_within_channel(stream: StreamSubscription): boolean {
+    if (page_params.is_spectator) {
+        return false;
+    }
+
+    if (stream.is_archived) {
+        return false;
+    }
+
+    const user_can_administer_channel = settings_data.user_has_permission_for_group_setting(
+        stream.can_administer_channel_group,
+        "can_administer_channel_group",
+        "stream",
+    );
+
+    if (user_can_administer_channel) {
+        return true;
+    }
+
+    return (
+        settings_data.user_can_move_messages_to_another_topic() ||
+        settings_data.user_has_permission_for_group_setting(
+            stream.can_move_messages_within_channel_group,
+            "can_move_messages_within_channel_group",
+            "stream",
+        )
+    );
+}
+
 export function is_subscribed(stream_id: number): boolean {
     const sub = sub_store.get(stream_id);
     return sub ? sub.subscribed : false;
@@ -803,7 +958,9 @@ export function get_stream_privacy_policy(stream_id: number): string {
     return settings_config.stream_privacy_policy_values.private_with_public_history.code;
 }
 
-export function is_stream_archived(stream_id: number): boolean {
+export function is_stream_archived_by_id(stream_id: number): boolean {
+    // If you've already got a channel object, you can just use
+    // `sub.is_archived` directly instead of calling this function.
     const sub = sub_store.get(stream_id);
     return sub ? sub.is_archived : false;
 }
@@ -845,7 +1002,7 @@ export function is_default_stream_id(stream_id: number): boolean {
     return default_stream_ids.has(stream_id);
 }
 
-export let is_user_subscribed = (stream_id: number, user_id: number): boolean => {
+export function is_user_loaded_and_subscribed(stream_id: number, user_id: number): boolean {
     const sub = sub_store.get(stream_id);
     if (sub === undefined || !can_view_subscribers(sub)) {
         // If we don't know about the stream, or we ourselves cannot access subscriber list,
@@ -855,24 +1012,37 @@ export let is_user_subscribed = (stream_id: number, user_id: number): boolean =>
         );
         return false;
     }
-    if (user_id === undefined) {
-        blueslip.warn("Undefined user_id passed to function is_user_subscribed");
-        return false;
-    }
 
-    return peer_data.is_user_subscribed(stream_id, user_id);
-};
-
-export function rewire_is_user_subscribed(value: typeof is_user_subscribed): void {
-    is_user_subscribed = value;
+    return peer_data.is_user_loaded_and_subscribed(stream_id, user_id);
 }
 
-export function create_streams(streams: Stream[]): void {
+// This function parallels `is_user_subscribed` but fetches subscriber data for the
+// `stream_id` if we don't have complete data yet.
+export async function maybe_fetch_is_user_subscribed(
+    stream_id: number,
+    user_id: number,
+    retry_on_failure: boolean,
+): Promise<boolean> {
+    const sub = sub_store.get(stream_id);
+    if (sub === undefined || !can_view_subscribers(sub)) {
+        // If we don't know about the stream, or we ourselves cannot access subscriber list,
+        // so we return false.
+        blueslip.warn(
+            "We got a maybe_fetch_is_user_subscribed call for a non-existent or inaccessible stream.",
+        );
+        return false;
+    }
+    return (
+        (await peer_data.maybe_fetch_is_user_subscribed(stream_id, user_id, retry_on_failure)) ??
+        false
+    );
+}
+
+export function create_streams(streams: APIStream[]): void {
     for (const stream of streams) {
         // We handle subscriber stuff in other events.
 
         const attrs = {
-            stream_weekly_traffic: null,
             subscribers: [],
             ...stream,
         };
@@ -887,16 +1057,16 @@ export function clean_up_description(sub: StreamSubscription): void {
 }
 
 export function create_sub_from_server_data(
-    attrs: ApiGenericStreamSubscription,
+    server_attrs: ApiGenericStreamSubscription,
     subscribed: boolean,
     previously_subscribed: boolean,
 ): StreamSubscription {
-    if (!attrs.stream_id) {
+    if (!server_attrs.stream_id) {
         // fail fast
         throw new Error("We cannot create a sub without a stream_id");
     }
 
-    let sub = sub_store.get(attrs.stream_id);
+    let sub = sub_store.get(server_attrs.stream_id);
     if (sub !== undefined) {
         // We've already created this subscription, no need to continue.
         return sub;
@@ -909,12 +1079,18 @@ export function create_sub_from_server_data(
     // a copy of the object with `_.omit(attrs, 'subscribers')`, but `_.omit` is
     // slow enough to show up in timings when you have 1000s of streams.
 
-    const subscriber_user_ids = attrs.subscribers;
+    const full_data = server_attrs.partial_subscribers === undefined;
+    const subscriber_user_ids = full_data
+        ? server_attrs.subscribers
+        : server_attrs.partial_subscribers;
 
-    delete attrs.subscribers;
+    // Omit properties not used for the sub object
+    const {subscribers, subscriber_count, partial_subscribers, ...attrs} = server_attrs;
+
+    assert(server_attrs.subscriber_count !== undefined);
+    peer_data.set_subscriber_count(server_attrs.stream_id, server_attrs.subscriber_count);
 
     sub = {
-        render_subscribers: !realm.realm_is_zephyr_mirror_realm || attrs.invite_only,
         newly_subscribed: false,
         is_muted: false,
         pin_to_top: false,
@@ -923,19 +1099,22 @@ export function create_sub_from_server_data(
         push_notifications: null,
         email_notifications: null,
         wildcard_mentions_notify: null,
-        color: "color" in attrs ? attrs.color : color_data.pick_color(),
+        color: "color" in server_attrs ? server_attrs.color : color_data.pick_color(),
         subscribed,
         previously_subscribed,
         ...attrs,
     };
 
-    peer_data.set_subscribers(sub.stream_id, subscriber_user_ids ?? []);
-
     clean_up_description(sub);
 
     stream_info.set(sub.stream_id, sub);
+    if (sub.is_web_public) {
+        realm_web_public_stream_ids.add(sub.stream_id);
+    }
     stream_ids_by_name.set(sub.name, sub.stream_id);
     sub_store.add_hydrated_sub(sub.stream_id, sub);
+
+    peer_data.set_subscribers(sub.stream_id, subscriber_user_ids ?? [], full_data);
 
     return sub;
 }
@@ -951,6 +1130,46 @@ export function get_streams_for_admin(): StreamSubscription[] {
     subs.sort(by_name);
 
     return subs;
+}
+
+// Since whether or not you can use general chat depends on the
+// channel, if we don't know what channel is involved, we do not
+// consider general chat permitted. This generally comes up in
+// situations like drafts without a specified recipient or compose box
+// placeholders when looking at a view that does not indicate a specific
+// channel.
+export function can_use_empty_topic(stream_id: number | undefined): boolean {
+    if (stream_id === undefined) {
+        return false;
+    }
+    const sub = sub_store.get(stream_id);
+    assert(sub !== undefined);
+
+    let topics_policy = sub.topics_policy;
+    if (sub.topics_policy === settings_config.get_stream_topics_policy_values().inherit.code) {
+        topics_policy = realm.realm_topics_policy;
+    }
+    return (
+        topics_policy ===
+            settings_config.get_stream_topics_policy_values().allow_empty_topic.code ||
+        topics_policy === settings_config.get_stream_topics_policy_values().empty_topic_only.code
+    );
+}
+
+export function is_empty_topic_only_channel(stream_id: number | undefined): boolean {
+    if (stream_id === undefined) {
+        return false;
+    }
+    const sub = sub_store.get(stream_id);
+    assert(sub !== undefined);
+
+    let topics_policy = sub.topics_policy;
+    if (sub.topics_policy === settings_config.get_stream_topics_policy_values().inherit.code) {
+        topics_policy = realm.realm_topics_policy;
+    }
+    return (
+        topics_policy === settings_config.get_stream_topics_policy_values().empty_topic_only.code
+    );
 }
 
 /*
@@ -1031,4 +1250,22 @@ export function get_options_for_dropdown_widget(): (dropdown_widget.Option & {
             stream,
         }))
         .sort((a, b) => util.strcmp(a.name.toLowerCase(), b.name.toLowerCase()));
+}
+
+export function get_streams_for_move_messages_widget(): (dropdown_widget.Option & {
+    stream: StreamSubscription;
+})[] {
+    return get_unsorted_subs_with_content_access()
+        .filter((stream) => !stream.is_archived)
+        .sort((a, b) => {
+            if (a.subscribed !== b.subscribed) {
+                return a.subscribed ? -1 : 1;
+            }
+            return util.strcmp(a.name.toLowerCase(), b.name.toLowerCase());
+        })
+        .map((stream) => ({
+            name: stream.name,
+            unique_id: stream.stream_id,
+            stream,
+        }));
 }

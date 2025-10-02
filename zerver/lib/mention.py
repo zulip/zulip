@@ -3,21 +3,25 @@ import re
 from collections import defaultdict
 from dataclasses import dataclass
 from re import Match
+from typing import Literal
 
 from django.conf import settings
 from django.db.models import Q
 from django_stubs_ext import StrPromise
 
 from zerver.lib.streams import get_content_access_streams
-from zerver.lib.topic import get_first_message_for_user_in_topic
+from zerver.lib.topic import get_latest_message_for_user_in_topic
+from zerver.lib.types import UserDisplayRecipient
 from zerver.lib.user_groups import (
     UserGroupMembershipDetails,
     get_root_id_annotated_recursive_subgroups_for_groups,
+    user_has_permission_for_group_setting,
 )
 from zerver.lib.users import get_inaccessible_user_ids
 from zerver.models import NamedUserGroup, UserProfile
 from zerver.models.groups import SystemGroups
 from zerver.models.streams import Stream
+from zerver.models.users import is_cross_realm_bot_email
 
 BEFORE_MENTION_ALLOWED_REGEX = r"(?<![^\s\'\"\(\{\[\/<])"
 
@@ -251,7 +255,21 @@ class MentionBackend:
             topic_name = channel_topic.topic_name
             history_public_to_subscribers = channel_info.history_public_to_subscribers
 
-            topic_latest_message = get_first_message_for_user_in_topic(
+            # Any message in the topic is a valid choice for the
+            # /with/ anchor. There are two risks to manage here:
+            # - The target message could be deleted or be a mispost that
+            #   is off-topic and moved shortly.
+            # - The topic could be split into two topics.
+            #
+            # Originally, we picked the oldest message because that
+            # message is least likely to be deleted/moved for being a
+            # mispost/error -- i.e., trying to do a bit better in rare
+            # corner cases. We switched to preferring the latest
+            # message in API feature level 400. The "latest" algorithm
+            # is better when linking to an active conversation in a
+            # long topic that's a follow-up/tangent and ends up being
+            # moved/split, which users do constantly.
+            topic_latest_message = get_latest_message_for_user_in_topic(
                 self.realm_id,
                 acting_user,
                 recipient_id,
@@ -304,8 +322,22 @@ def possible_mentions(content: str) -> PossibleMentions:
     )
 
 
-def possible_user_group_mentions(content: str) -> set[str]:
-    return {m.group("match") for m in USER_GROUP_MENTIONS_RE.finditer(content)}
+def possible_user_group_mentions(content: str) -> dict[str, Literal["silent", "non-silent"]]:
+    # maps each group name to its mention type, silent or non-silent.
+    mentions: dict[str, Literal["silent", "non-silent"]] = {}
+
+    for mention in USER_GROUP_MENTIONS_RE.finditer(content):
+        group_mention = mention.group("match")
+
+        # non-silent mention can override silent.
+        if not mention.group("silent"):
+            mentions[group_mention] = "non-silent"
+
+        # silent mention should NOT override non-silent.
+        if mention.group("silent") and group_mention not in mentions:
+            mentions[group_mention] = "silent"
+
+    return mentions
 
 
 def get_possible_mentions_info(
@@ -362,40 +394,36 @@ class MentionData:
     def init_user_group_data(self, realm_id: int, content: str) -> None:
         self.user_group_name_info: dict[str, NamedUserGroup] = {}
         self.user_group_members: dict[int, set[int]] = defaultdict(set)
-        user_group_names = possible_user_group_mentions(content)
-        if user_group_names:
+        user_group_names_mentions = possible_user_group_mentions(content)
+        if user_group_names_mentions:
             named_user_groups = NamedUserGroup.objects.filter(
-                realm_id=realm_id, name__in=user_group_names
+                realm_for_sharding_id=realm_id, name__in=user_group_names_mentions
             )
-            # we need user_group_name_info for both groups, deactivated and non-deactivated.
+
+            # No filter here as we need user_group_name_info for all groups mentions.
             self.user_group_name_info = {group.name.lower(): group for group in named_user_groups}
 
-            non_deactivated_group_ids = [
-                group.id for group in named_user_groups if not group.deactivated
+            # We only fetch group membership mentions that can
+            # possibly trigger notifications.
+            filtered_group_ids = [
+                group.id
+                for group in named_user_groups
+                if not group.deactivated
+                and user_group_names_mentions.get(group.name) == "non-silent"
             ]
 
-            # If there are no matching non_deactivated_group_ids
-            # (e.g non-existent user_group_names or only deactivated-groups were mentioned)
-            # then no need to execute the relatively expensive recursive CTE query
-            # triggered by get_root_id_annotated_recursive_subgroups_for_groups.
-            # Also the base case for the recursive CTE requires non-empty matching rows.
-            if len(non_deactivated_group_ids) == 0:
+            # Avoid doing a database query if there's nothing to fetch.
+            #
+            # This isn't quite optimal -- we've not checked our user
+            # has permission to mention the group yet.
+            if len(filtered_group_ids) == 0:
                 return
 
-            # Here we fetch membership for non-deactivated groups in a
-            # single, efficient bulk query. Deactivated group mentions
-            # are non-operative, so we don't need to waste resources
-            # collecting membership data for them. Further possible
-            # optimizations include, in order of value:
-            #
-            # - Skipping fetching membership data for silent mention syntax.
-            # - Filtering groups the current user doesn't have permission to mention
-            #   from what we fetch membership for. This requires care to avoid race bugs
-            #   if the user's permissions change while the message is being sent.
+            # Fetch membership for the groups filtered above in a
+            # single, efficient bulk query, mapping each group to its
+            # direct and indirect members.
             for group_root_id, member_id in (
-                get_root_id_annotated_recursive_subgroups_for_groups(
-                    non_deactivated_group_ids, realm_id
-                )
+                get_root_id_annotated_recursive_subgroups_for_groups(filtered_group_ids, realm_id)
                 .filter(direct_members__is_active=True)
                 .values_list("root_id", "direct_members")  # type: ignore[misc]  # root_id is an annotated field.
             ):
@@ -436,8 +464,11 @@ class MentionData:
         return self.mention_backend.get_topic_info_map(channel_topics, acting_user=acting_user)
 
 
-def silent_mention_syntax_for_user(user_profile: UserProfile) -> str:
-    return f"@_**{user_profile.full_name}|{user_profile.id}**"
+def silent_mention_syntax_for_user(user_profile: UserProfile | UserDisplayRecipient) -> str:
+    if isinstance(user_profile, UserProfile):
+        return f"@_**{user_profile.full_name}|{user_profile.id}**"
+    else:
+        return f"@_**{user_profile['full_name']}|{user_profile['id']}**"
 
 
 def silent_mention_syntax_for_user_group(user_group: NamedUserGroup) -> str:
@@ -449,3 +480,25 @@ def get_user_group_mention_display_name(user_group: NamedUserGroup) -> StrPromis
         return SystemGroups.GROUP_DISPLAY_NAME_MAP[user_group.name]
 
     return user_group.name
+
+
+def sender_can_mention_group(sender: UserProfile | None, named_group: NamedUserGroup) -> bool:
+    can_mention_group = named_group.can_mention_group
+
+    if (
+        hasattr(can_mention_group, "named_user_group")
+        and can_mention_group.named_user_group.name == SystemGroups.EVERYONE
+    ):
+        return True
+
+    assert sender is not None
+
+    if is_cross_realm_bot_email(sender.delivery_email):
+        return False
+
+    return user_has_permission_for_group_setting(
+        can_mention_group.id,
+        sender,
+        NamedUserGroup.GROUP_PERMISSION_SETTINGS["can_mention_group"],
+        direct_member_only=False,
+    )

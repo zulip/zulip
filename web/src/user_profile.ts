@@ -4,7 +4,7 @@ import $ from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
 import type * as tippy from "tippy.js";
-import {z} from "zod";
+import * as z from "zod/mini";
 
 import render_profile_access_error_model from "../templates/profile_access_error_modal.hbs";
 import render_admin_human_form from "../templates/settings/admin_human_form.hbs";
@@ -21,6 +21,7 @@ import * as avatar from "./avatar.ts";
 import * as bot_data from "./bot_data.ts";
 import * as browser_history from "./browser_history.ts";
 import * as buddy_data from "./buddy_data.ts";
+import * as buttons from "./buttons.ts";
 import * as channel from "./channel.ts";
 import * as components from "./components.ts";
 import {show_copied_confirmation} from "./copied_tooltip.ts";
@@ -54,6 +55,7 @@ import * as subscriber_api from "./subscriber_api.ts";
 import * as timerender from "./timerender.ts";
 import type {HTMLSelectOneElement} from "./types.ts";
 import * as ui_report from "./ui_report.ts";
+import * as ui_util from "./ui_util.ts";
 import type {UploadWidget} from "./upload_widget.ts";
 import * as user_deactivation_ui from "./user_deactivation_ui.ts";
 import * as user_group_edit_members from "./user_group_edit_members.ts";
@@ -233,19 +235,13 @@ function change_state_of_subscribe_button(
     assert(user_profile_subscribe_widget !== undefined);
     user_profile_subscribe_widget.render();
     const $subscribe_button = $("#user-profile-modal .add-subscription-button");
-    const $element: (tippy.ReferenceElement & HTMLElement) | undefined =
-        $subscribe_button.parent()[0];
-    assert($element !== undefined);
-    $element._tippy?.destroy();
-    $subscribe_button.prop("disabled", false);
+    ui_util.enable_element_and_remove_tooltip($subscribe_button);
 }
 
 function reset_subscribe_widget(): void {
-    $("#user-profile-modal .add-subscription-button").prop("disabled", true);
-    settings_components.initialize_disable_button_hint_popover(
-        $("#user-profile-modal .add-subscription-button-wrapper"),
+    ui_util.disable_element_and_add_tooltip(
+        $("#user-profile-modal .add-subscription-button"),
         $t({defaultMessage: "Select a channel to subscribe"}),
-        {},
     );
     $("#user_profile_subscribe_widget .dropdown_widget_value").text(
         $t({defaultMessage: "Select a channel"}),
@@ -820,6 +816,7 @@ export function show_edit_bot_info_modal(user_id: number, $container: JQuery): v
         disable_role_dropdown: !current_user.is_admin || (bot.is_owner && !current_user.is_owner),
         bot_avatar_url: bot.avatar_url,
         is_incoming_webhook_bot: bot.bot_type === INCOMING_WEBHOOK_BOT_TYPE,
+        max_bot_name_length: people.MAX_USER_NAME_LENGTH,
     });
     $container.append($(html_body));
     let avatar_widget: UploadWidget;
@@ -1011,7 +1008,7 @@ export function show_edit_bot_info_modal(user_id: number, $container: JQuery): v
             $(".edit_bot_avatar_file_input").trigger("input");
         });
 
-        $("#bot-edit-form").on("click", ".deactivate_bot_button", (e) => {
+        $("#bot-edit-form").on("click", ".deactivate-bot-button", (e) => {
             e.preventDefault();
             e.stopPropagation();
             const bot_id = Number($("#bot-edit-form").attr("data-user-id"));
@@ -1023,7 +1020,7 @@ export function show_edit_bot_info_modal(user_id: number, $container: JQuery): v
         });
 
         // Handle reactivation
-        $("#bot-edit-form").on("click", ".reactivate_user_button", (e) => {
+        $("#bot-edit-form").on("click", ".reactivate-user-button", (e) => {
             e.preventDefault();
             e.stopPropagation();
             const user_id = Number($("#bot-edit-form").attr("data-user-id"));
@@ -1059,16 +1056,10 @@ function get_human_profile_data(fields_user_pills: Map<number, user_pill.UserPil
     */
     const new_profile_data = [];
     $("#edit-user-form .custom_user_field_value").each(function () {
-        // Remove duplicate datepicker input element generated flatpickr library
-        if (!$(this).hasClass("form-control")) {
-            new_profile_data.push({
-                id: Number.parseInt(
-                    $(this).closest(".custom_user_field").attr("data-field-id")!,
-                    10,
-                ),
-                value: $(this).val(),
-            });
-        }
+        new_profile_data.push({
+            id: Number.parseInt($(this).closest(".custom_user_field").attr("data-field-id")!, 10),
+            value: $(this).val(),
+        });
     });
     // Append user type field values also
     for (const [field_id, field_pills] of fields_user_pills) {
@@ -1088,7 +1079,7 @@ function get_current_values(
     $edit_form: JQuery,
 ): Record<string, unknown> & {user_id?: string | undefined} {
     const raw_current_values = dialog_widget.get_current_values(
-        $edit_form.find("input, select, textarea, button, .pill-container"),
+        $edit_form.find("input:not(.datepicker), select, textarea, button, .pill-container"),
     );
     const schema = z.intersection(
         z.object({
@@ -1136,6 +1127,7 @@ export function show_edit_user_info_modal(user_id: number, $container: JQuery): 
         disable_role_dropdown: person.is_owner && !current_user.is_owner,
         is_active,
         hide_deactivate_button,
+        max_user_name_length: people.MAX_USER_NAME_LENGTH,
     });
 
     $container.append($(html_body));
@@ -1155,7 +1147,10 @@ export function show_edit_user_info_modal(user_id: number, $container: JQuery): 
         custom_profile_field_form_selector,
         user_id,
     );
-    custom_profile_fields_ui.initialize_custom_date_type_fields(custom_profile_field_form_selector);
+    custom_profile_fields_ui.initialize_custom_date_type_fields(
+        custom_profile_field_form_selector,
+        user_id,
+    );
     custom_profile_fields_ui.initialize_custom_pronouns_type_fields(
         custom_profile_field_form_selector,
     );
@@ -1170,19 +1165,26 @@ export function show_edit_user_info_modal(user_id: number, $container: JQuery): 
     original_values = get_current_values($("#edit-user-form"));
 
     // Handle deactivation
-    $("#edit-user-form").on("click", ".deactivate_user_button", (e) => {
+    $("#edit-user-form").on("click", ".deactivate-user-button", (e) => {
         e.preventDefault();
         e.stopPropagation();
         const user_id = Number($("#edit-user-form").attr("data-user-id"));
         function handle_confirm(): void {
             const url = "/json/users/" + encodeURIComponent(user_id);
-            dialog_widget.submit_api_request(channel.del, url, {});
+            let data = {};
+            if ($(".send_email").is(":checked")) {
+                data = {
+                    deactivation_notification_comment: $(".email_field_textarea").val(),
+                };
+            }
+
+            dialog_widget.submit_api_request(channel.del, url, data);
         }
         user_deactivation_ui.confirm_deactivation(user_id, handle_confirm, true);
     });
 
     // Handle reactivation
-    $("#edit-user-form").on("click", ".reactivate_user_button", (e) => {
+    $("#edit-user-form").on("click", ".reactivate-user-button", (e) => {
         e.preventDefault();
         e.stopPropagation();
         const user_id = Number($("#edit-user-form").attr("data-user-id"));
@@ -1290,6 +1292,7 @@ export function initialize(): void {
         subscriber_api.add_user_ids_to_stream(
             [target_user_id],
             sub,
+            true,
             addition_success,
             addition_failure,
         );
@@ -1297,6 +1300,8 @@ export function initialize(): void {
 
     $("body").on("click", "#user-profile-modal .remove-subscription-button", (e) => {
         e.preventDefault();
+        const $remove_button = $(e.currentTarget).closest(".remove-subscription-button");
+        buttons.show_button_loading_indicator($remove_button);
         const $stream_row = $(e.currentTarget).closest("[data-stream-id]");
         const stream_id = Number.parseInt($stream_row.attr("data-stream-id")!, 10);
         const sub = sub_store.get(stream_id);
@@ -1360,6 +1365,8 @@ export function initialize(): void {
 
     $("body").on("click", "#user-profile-modal .remove-member-button", (e) => {
         e.preventDefault();
+        const $remove_button = $(e.currentTarget).closest(".remove-member-button");
+        buttons.show_button_loading_indicator($remove_button);
         const $group_row = $(e.currentTarget).closest("[data-group-id]");
         const group_id = Number.parseInt($group_row.attr("data-group-id")!, 10);
         const target_user_id = Number.parseInt($("#user-profile-modal").attr("data-user-id")!, 10);
@@ -1449,12 +1456,14 @@ export function initialize(): void {
         },
     );
 
+    $("body").on("click", "#user-profile-modal #name .user-profile-manage-own-edit-button", () => {
+        browser_history.go_to_location("#settings/profile");
+        hide_user_profile();
+    });
+
     /* These click handlers are implemented as just deep links to the
      * relevant part of the Zulip UI, so we don't want preventDefault,
      * but we do want to close the modal when you click them. */
-    $("body").on("click", "#user-profile-modal #name .user-profile-manage-own-edit-button", () => {
-        hide_user_profile();
-    });
 
     $("body").on("click", "#user-profile-modal .user-profile-channel-list-item", () => {
         hide_user_profile();
@@ -1484,7 +1493,7 @@ export function initialize(): void {
 
     new ClipboardJS(".copy-link-to-user-profile", {
         text(trigger) {
-            const user_id = $(trigger).attr("data-user-id");
+            const user_id = $(trigger).closest("#user-profile-modal").attr("data-user-id");
             const user_profile_link = window.location.origin + "/#user/" + user_id;
 
             return user_profile_link;

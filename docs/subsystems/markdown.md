@@ -85,7 +85,7 @@ testcases in `markdown_test_cases.json` that you want to ignore. This
 is a workaround due to lack of comments support in JSON. Revert your
 "ignore" changes before committing. After this, you can run the frontend
 tests with `tools/test-js-with-node markdown` and backend tests with
-`tools/test-backend zerver.tests.test_markdown.MarkdownTest.test_markdown_fixtures`.
+`tools/test-backend zerver.tests.test_markdown.MarkdownFixtureTest.test_markdown_fixtures`.
 
 ## Changing Zulip's Markdown processor
 
@@ -262,15 +262,13 @@ accurate.
 - Disable line-numbering within fenced code blocks -- the `<table>`
   output confused our web client code.
 
-### Other
+### Headings
 
-- Disable headings, both `# foo` and `== foo ==` syntax: they don't
-  make much sense for chat messages.
+- Enable headings with syntax `# foo` (syntax `== foo ==` is unsupported).
+
+### Other
 
 - Disabled images with `![]()` (images from links are shown as an inline
   preview).
-
-- Allow embedding any avatar as a tiny (list bullet size) image. This
-  is used primarily by version control integrations.
 
 - We added the `~~~ quote` block quote syntax.

@@ -20,16 +20,21 @@
     <td class="upload-size" >{{ size_str }}</td>
     <td class="actions">
         <span class="edit-attachment-buttons">
-            <a type="submit" href="/user_uploads/{{path_id}}" class="button rounded small sea-green tippy-zulip-delayed-tooltip download-attachment" data-tippy-content="{{t 'Download' }}" download>
-                <i class="fa fa-download sea-green" aria-hidden="true"></i>
-            </a>
+            <a type="submit" href="/user_uploads/{{path_id}}" class="hidden-attachment-download" download></a>
+            {{> ../components/icon_button
+              icon="download"
+              intent="info"
+              custom_classes="tippy-zulip-delayed-tooltip download-attachment"
+              data-tippy-content=(t "Download")
+              }}
         </span>
         <span class="edit-attachment-buttons">
-            <button type="submit"
-              class="button rounded small delete button-danger remove-attachment tippy-zulip-delayed-tooltip"
-              data-tippy-content="{{t 'Delete' }}" data-attachment="{{id}}">
-                <i class="fa fa-trash-o" aria-hidden="true"></i>
-            </button>
+            {{> ../components/icon_button
+              icon="trash"
+              custom_classes="tippy-zulip-delayed-tooltip delete remove-attachment"
+              intent="danger"
+              data-tippy-content=(t "Delete")
+              }}
         </span>
     </td>
 </tr>

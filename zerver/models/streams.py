@@ -1,4 +1,5 @@
 import secrets
+from enum import Enum
 from typing import Any
 
 from django.db import models
@@ -11,6 +12,7 @@ from typing_extensions import override
 
 from zerver.lib.cache import flush_stream
 from zerver.lib.types import GroupPermissionSetting
+from zerver.models.channel_folders import ChannelFolder
 from zerver.models.groups import SystemGroups, UserGroup
 from zerver.models.realms import Realm
 from zerver.models.recipients import Recipient
@@ -19,6 +21,13 @@ from zerver.models.users import UserProfile
 
 def generate_email_token_for_stream() -> str:
     return secrets.token_hex(16)
+
+
+class StreamTopicsPolicyEnum(Enum):
+    inherit = 1
+    allow_empty_topic = 2
+    disable_empty_topic = 3
+    empty_topic_only = 4
 
 
 class Stream(models.Model):
@@ -33,8 +42,15 @@ class Stream(models.Model):
     description = models.CharField(max_length=MAX_DESCRIPTION_LENGTH, default="")
     rendered_description = models.TextField(default="")
 
+    # Total number of non-deactivated users who are subscribed to the channel.
+    # It's obvious to be a positive field but also in case it becomes negative
+    # we know immediately that something is wrong as it raises IntegrityError.
+    subscriber_count = models.PositiveIntegerField(default=0, db_default=0)
+
     # Foreign key to the Recipient object for STREAM type messages to this stream.
     recipient = models.ForeignKey(Recipient, null=True, on_delete=models.SET_NULL)
+
+    folder = models.ForeignKey(ChannelFolder, null=True, on_delete=models.SET_NULL)
 
     # Various permission policy configurations
     PERMISSION_POLICIES: dict[str, dict[str, Any]] = {
@@ -61,14 +77,6 @@ class Stream(models.Model):
             "history_public_to_subscribers": False,
             "is_web_public": False,
             "policy_name": gettext_lazy("Private, protected history"),
-        },
-        # Public streams with protected history are currently only
-        # available in Zephyr realms
-        "public_protected_history": {
-            "invite_only": False,
-            "history_public_to_subscribers": False,
-            "is_web_public": False,
-            "policy_name": gettext_lazy("Public, protected history"),
         },
     }
     invite_only = models.BooleanField(default=False)
@@ -100,16 +108,6 @@ class Stream(models.Model):
         SystemGroups.MODERATORS: STREAM_POST_POLICY_MODERATORS,
     }
 
-    # The unique thing about Zephyr public streams is that we never list their
-    # users.  We may try to generalize this concept later, but for now
-    # we just use a concrete field.  (Zephyr public streams aren't exactly like
-    # invite-only streams--while both are private in terms of listing users,
-    # for Zephyr we don't even list users to stream members, yet membership
-    # is more public in the sense that you don't need a Zulip invite to join.
-    # This field is populated directly from UserProfile.is_zephyr_mirror_realm,
-    # and the reason for denormalizing field is performance.
-    is_in_zephyr_realm = models.BooleanField(default=False)
-
     # For old messages being automatically deleted.
     # Value NULL means "use retention policy of the realm".
     # Value -1 means "disable retention policy for this stream unconditionally".
@@ -131,11 +129,26 @@ class Stream(models.Model):
     can_administer_channel_group = models.ForeignKey(
         UserGroup, on_delete=models.RESTRICT, related_name="+"
     )
+    can_delete_any_message_group = models.ForeignKey(
+        UserGroup, on_delete=models.RESTRICT, related_name="+"
+    )
+    can_delete_own_message_group = models.ForeignKey(
+        UserGroup, on_delete=models.RESTRICT, related_name="+"
+    )
+    can_move_messages_out_of_channel_group = models.ForeignKey(
+        UserGroup, on_delete=models.RESTRICT, related_name="+"
+    )
+    can_move_messages_within_channel_group = models.ForeignKey(
+        UserGroup, on_delete=models.RESTRICT, related_name="+"
+    )
     can_remove_subscribers_group = models.ForeignKey(UserGroup, on_delete=models.RESTRICT)
     can_send_message_group = models.ForeignKey(
         UserGroup, on_delete=models.RESTRICT, related_name="+"
     )
     can_subscribe_group = models.ForeignKey(UserGroup, on_delete=models.RESTRICT, related_name="+")
+    can_resolve_topics_group = models.ForeignKey(
+        UserGroup, on_delete=models.RESTRICT, related_name="+"
+    )
 
     # The very first message ID in the stream.  Used to help clients
     # determine whether they might need to display "show all topics" for a
@@ -147,40 +160,57 @@ class Stream(models.Model):
     # Whether a message has been sent to this stream in the last X days.
     is_recently_active = models.BooleanField(default=True, db_default=True)
 
+    topics_policy = models.PositiveSmallIntegerField(default=StreamTopicsPolicyEnum.inherit.value)
+
     stream_permission_group_settings = {
         "can_add_subscribers_group": GroupPermissionSetting(
-            require_system_group=False,
-            allow_internet_group=False,
             allow_nobody_group=True,
             allow_everyone_group=False,
             default_group_name=SystemGroups.NOBODY,
         ),
         "can_administer_channel_group": GroupPermissionSetting(
-            require_system_group=False,
-            allow_internet_group=False,
             allow_nobody_group=True,
             allow_everyone_group=False,
-            default_group_name="stream_creator_or_nobody",
+            default_group_name="channel_creator",
+        ),
+        "can_delete_any_message_group": GroupPermissionSetting(
+            allow_nobody_group=True,
+            allow_everyone_group=True,
+            default_group_name=SystemGroups.NOBODY,
+        ),
+        "can_delete_own_message_group": GroupPermissionSetting(
+            allow_nobody_group=True,
+            allow_everyone_group=True,
+            default_group_name=SystemGroups.NOBODY,
+        ),
+        "can_move_messages_out_of_channel_group": GroupPermissionSetting(
+            allow_nobody_group=True,
+            allow_everyone_group=True,
+            default_group_name=SystemGroups.NOBODY,
+        ),
+        "can_move_messages_within_channel_group": GroupPermissionSetting(
+            allow_nobody_group=True,
+            allow_everyone_group=True,
+            default_group_name=SystemGroups.NOBODY,
         ),
         "can_remove_subscribers_group": GroupPermissionSetting(
-            require_system_group=False,
-            allow_internet_group=False,
             allow_nobody_group=True,
             allow_everyone_group=True,
             default_group_name=SystemGroups.ADMINISTRATORS,
         ),
         "can_send_message_group": GroupPermissionSetting(
-            require_system_group=False,
-            allow_internet_group=False,
             allow_nobody_group=True,
             allow_everyone_group=True,
             default_group_name=SystemGroups.EVERYONE,
         ),
         "can_subscribe_group": GroupPermissionSetting(
-            require_system_group=False,
-            allow_internet_group=False,
             allow_nobody_group=True,
             allow_everyone_group=False,
+            default_group_name=SystemGroups.NOBODY,
+        ),
+        "can_resolve_topics_group": GroupPermissionSetting(
+            allow_nobody_group=True,
+            allow_everyone_group=True,
             default_group_name=SystemGroups.NOBODY,
         ),
     }
@@ -212,8 +242,7 @@ class Stream(models.Model):
         return self.name
 
     def is_public(self) -> bool:
-        # All streams are private in Zephyr mirroring realms.
-        return not self.invite_only and not self.is_in_zephyr_realm
+        return not self.invite_only
 
     def is_history_realm_public(self) -> bool:
         return self.is_public()
@@ -224,7 +253,6 @@ class Stream(models.Model):
     # Stream fields included whenever a Stream object is provided to
     # Zulip clients via the API.  A few details worth noting:
     # * "id" is represented as "stream_id" in most API interfaces.
-    # * is_in_zephyr_realm is a backend-only optimization.
     # * "deactivated" streams are filtered from the API entirely.
     # * "realm" and "recipient" are not exposed to clients via the API.
     API_FIELDS = [
@@ -233,6 +261,7 @@ class Stream(models.Model):
         "deactivated",
         "description",
         "first_message_id",
+        "folder_id",
         "history_public_to_subscribers",
         "id",
         "invite_only",
@@ -240,12 +269,19 @@ class Stream(models.Model):
         "message_retention_days",
         "name",
         "rendered_description",
+        "subscriber_count",
         "can_add_subscribers_group_id",
         "can_administer_channel_group_id",
+        "can_delete_any_message_group_id",
+        "can_delete_own_message_group_id",
+        "can_move_messages_out_of_channel_group_id",
+        "can_move_messages_within_channel_group_id",
         "can_send_message_group_id",
         "can_remove_subscribers_group_id",
         "can_subscribe_group_id",
+        "can_resolve_topics_group_id",
         "is_recently_active",
+        "topics_policy",
     ]
 
 

@@ -1,5 +1,11 @@
-deb http://apt.postgresql.org/pub/repos/apt/ jammy-pgdg main
-deb-src http://apt.postgresql.org/pub/repos/apt/ jammy-pgdg main
+deb [signed-by=/etc/apt/keyrings/pgdg.asc] http://apt.postgresql.org/pub/repos/apt/ jammy-pgdg main
+deb-src [signed-by=/etc/apt/keyrings/pgdg.asc] http://apt.postgresql.org/pub/repos/apt/ jammy-pgdg main
 
-deb http://ppa.launchpad.net/groonga/ppa/ubuntu jammy main
-deb-src http://ppa.launchpad.net/groonga/ppa/ubuntu jammy main
+deb [signed-by=/etc/apt/keyrings/pgroonga-ppa.asc] http://ppa.launchpad.net/groonga/ppa/ubuntu jammy main
+deb-src [signed-by=/etc/apt/keyrings/pgroonga-ppa.asc] http://ppa.launchpad.net/groonga/ppa/ubuntu jammy main
+
+deb [signed-by=/etc/apt/keyrings/strukturag.asc] https://ppa.launchpadcontent.net/strukturag/libheif/ubuntu/ jammy main
+deb-src [signed-by=/etc/apt/keyrings/strukturag.asc] https://ppa.launchpadcontent.net/strukturag/libheif/ubuntu/ jammy main
+
+deb [signed-by=/etc/apt/keyrings/strukturag.asc] https://ppa.launchpadcontent.net/strukturag/libde265/ubuntu/ jammy main
+deb-src [signed-by=/etc/apt/keyrings/strukturag.asc] https://ppa.launchpadcontent.net/strukturag/libde265/ubuntu/ jammy main

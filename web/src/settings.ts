@@ -10,13 +10,13 @@ import * as common from "./common.ts";
 import * as flatpickr from "./flatpickr.ts";
 import {$t} from "./i18n.ts";
 import * as information_density from "./information_density.ts";
-import * as modals from "./modals.ts";
 import * as overlays from "./overlays.ts";
 import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
 import * as settings_bots from "./settings_bots.ts";
 import * as settings_config from "./settings_config.ts";
 import * as settings_data from "./settings_data.ts";
+import * as settings_org from "./settings_org.ts";
 import * as settings_panel_menu from "./settings_panel_menu.ts";
 import * as settings_preferences from "./settings_preferences.ts";
 import * as settings_sections from "./settings_sections.ts";
@@ -108,6 +108,8 @@ export function build_page(): void {
         web_channel_default_view_values: settings_config.web_channel_default_view_values,
         user_list_style_values: settings_config.user_list_style_values,
         web_animate_image_previews_values: settings_config.web_animate_image_previews_values,
+        resolved_topic_notice_auto_read_policy_values:
+            settings_config.resolved_topic_notice_auto_read_policy_values,
         web_stream_unreads_count_display_policy_values:
             settings_config.web_stream_unreads_count_display_policy_values,
         color_scheme_values: settings_config.color_scheme_values,
@@ -115,6 +117,8 @@ export function build_page(): void {
         twenty_four_hour_time_values: settings_config.twenty_four_hour_time_values,
         general_settings: settings_config.all_notifications(user_settings).general_settings,
         notification_settings: settings_config.all_notifications(user_settings).settings,
+        custom_stream_specific_notification_settings:
+            settings_config.get_custom_stream_specific_notifications_table_row_data(),
         email_notifications_batching_period_values:
             settings_config.email_notifications_batching_period_values,
         realm_name_in_email_notifications_policy_values:
@@ -148,6 +152,7 @@ export function build_page(): void {
             information_density.get_string_display_value_for_line_height(
                 user_settings.web_line_height_percent,
             ),
+        max_user_name_length: people.MAX_USER_NAME_LENGTH,
     });
 
     $(".settings-box").html(rendered_settings_tab);
@@ -163,6 +168,7 @@ export function open_settings_overlay(): void {
             browser_history.exit_overlay();
             flatpickr.close_all();
             settings_panel_menu.mobile_deactivate_section();
+            settings_org.maybe_store_unsaved_welcome_message_custom_text();
         },
     });
 }
@@ -191,21 +197,4 @@ export function initialize(): void {
             settings_data.user_can_invite_users_by_email(),
     });
     $("#settings_overlay_container").append($(rendered_settings_overlay));
-
-    $("#settings_overlay_container").on("click", (e) => {
-        if (!modals.any_active()) {
-            return;
-        }
-        if ($(e.target).closest(".micromodal").length > 0) {
-            return;
-        }
-        e.preventDefault();
-        e.stopPropagation();
-        // Whenever opening a modal(over settings overlay) in an event handler
-        // attached to a click event, make sure to stop the propagation of the
-        // event to the parent container otherwise the modal will not open. This
-        // is so because this event handler will get fired on any click in settings
-        // overlay and subsequently close any open modal.
-        modals.close_active();
-    });
 }

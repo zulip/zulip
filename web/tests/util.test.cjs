@@ -5,6 +5,7 @@ const assert = require("node:assert/strict");
 const _ = require("lodash");
 const MockDate = require("mockdate");
 
+const {make_realm} = require("./lib/example_realm.cjs");
 const {set_global, with_overrides, zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 
@@ -12,7 +13,7 @@ const blueslip = zrequire("blueslip");
 const {set_realm} = zrequire("state_data");
 const {initialize_user_settings} = zrequire("user_settings");
 
-const realm = {};
+const realm = make_realm();
 set_realm(realm);
 
 set_global("document", {});
@@ -369,16 +370,16 @@ run_test("format_array_as_list", () => {
     );
     assert.equal(
         util.format_array_as_list_with_highlighted_elements(array, "long", "conjunction"),
-        "<b>apple</b>, <b>banana</b>, and <b>orange</b>",
+        '<b class="highlighted-element">apple</b>, <b class="highlighted-element">banana</b>, and <b class="highlighted-element">orange</b>',
     );
 
     // Conjunction format
     assert.equal(
-        util.format_array_as_list_with_conjuction(array, "narrow"),
+        util.format_array_as_list_with_conjunction(array, "narrow"),
         "apple, banana, orange",
     );
     assert.equal(
-        util.format_array_as_list_with_conjuction(array, "long"),
+        util.format_array_as_list_with_conjunction(array, "long"),
         "apple, banana, and orange",
     );
 
@@ -391,15 +392,15 @@ run_test("format_array_as_list", () => {
         );
         assert.equal(
             util.format_array_as_list_with_highlighted_elements(array, "long", "conjunction"),
-            "<b>apple</b>, <b>banana</b>, <b>orange</b>",
+            '<b class="highlighted-element">apple</b>, <b class="highlighted-element">banana</b>, <b class="highlighted-element">orange</b>',
         );
 
         assert.equal(
-            util.format_array_as_list_with_conjuction(array, "narrow"),
+            util.format_array_as_list_with_conjunction(array, "narrow"),
             "apple, banana, orange",
         );
         assert.equal(
-            util.format_array_as_list_with_conjuction(array, "long"),
+            util.format_array_as_list_with_conjunction(array, "long"),
             "apple, banana, orange",
         );
     });
@@ -588,4 +589,14 @@ run_test("get_retry_backoff_seconds", () => {
     backoff = util.get_retry_backoff_seconds(xhr_rate_limit_error, 100);
     assert.ok(backoff >= 45);
     assert.ok(backoff <= 90);
+});
+
+run_test("sha256_hash", async ({override}) => {
+    const expected_hash = "f8e27cb511cd469712e3e0f2ac05a990481c0a39e11830b4f6aee729a894b769";
+    const data = "@*hamlet_and_cordelia* and #**channel>topic**";
+    let hash = await util.sha256_hash(data);
+    assert.equal(hash, undefined);
+    override(window, "isSecureContext", true);
+    hash = await util.sha256_hash(data);
+    assert.equal(hash, expected_hash);
 });

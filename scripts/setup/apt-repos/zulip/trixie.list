@@ -1,0 +1,2 @@
+deb [signed-by=/etc/apt/keyrings/pgdg.asc] http://apt.postgresql.org/pub/repos/apt/ trixie-pgdg main
+deb-src [signed-by=/etc/apt/keyrings/pgdg.asc] http://apt.postgresql.org/pub/repos/apt/ trixie-pgdg main

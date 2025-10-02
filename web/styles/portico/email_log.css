@@ -60,7 +60,7 @@
             font-size: 13px;
             line-height: 20px;
             word-break: break-all;
-            word-wrap: break-word;
+            overflow-wrap: break-word;
             white-space: pre-wrap;
             background-color: hsl(0deg 0% 96%);
             border: 1px solid hsl(0deg 0% 75%);

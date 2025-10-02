@@ -13,7 +13,8 @@
         },
         "email": null,
         "name": "John Doe",
-        "phone": null
+        "phone": null,
+        "tax_id": null
       },
       "card": {
         "brand": "visa",
@@ -36,6 +37,7 @@
           ],
           "preferred": null
         },
+        "regulated_status": "unregulated",
         "three_d_secure_usage": {
           "supported": true
         },
@@ -43,7 +45,7 @@
       },
       "created": 1000000000,
       "customer": "cus_NORMALIZED",
-      "id": "replace_payment_method--Customer.retrieve.6.json",
+      "id": "replace_payment_method--Customer.retrieve.7.json",
       "livemode": false,
       "metadata": {},
       "object": "payment_method",
@@ -62,7 +64,8 @@
         },
         "email": null,
         "name": "John Doe",
-        "phone": null
+        "phone": null,
+        "tax_id": null
       },
       "card": {
         "brand": "visa",
@@ -85,6 +88,7 @@
           ],
           "preferred": null
         },
+        "regulated_status": "unregulated",
         "three_d_secure_usage": {
           "supported": true
         },

@@ -6,8 +6,8 @@ requires-python = ">=3.10"
 [dependency-groups]
 prod = [
   # Django itself
-  "django[argon2]==5.1.*",
-  "asgiref", # https://github.com/django/asgiref/pull/494
+  "django[argon2]==5.2.*",
+  "asgiref",
 
   # needed for NotRequired, ParamSpec
   "typing-extensions",
@@ -23,7 +23,7 @@ prod = [
   "regex",
 
   # Needed for manage.py
-  "ipython",
+  "ipython<9",  # 9.0.0 requires Python ≥ 3.11
 
   # Needed for image processing and thumbnailing
   "pyvips",
@@ -91,8 +91,6 @@ prod = [
   # Needed for iOS push notifications
   "aioapns",
 
-  "python-twitter",
-
   # To parse po files
   "polib",
 
@@ -113,7 +111,7 @@ prod = [
 
   # Install Python Social Auth
   "social-auth-app-django",
-  "social-auth-core[azuread]", # https://github.com/python-social-auth/social-core/pull/1025
+  "social-auth-core[azuread,saml]",
   "python3-saml",
 
   # For encrypting a login token to the desktop app
@@ -194,10 +192,28 @@ prod = [
 
   # Used for monitoring memcached
   "prometheus-client",
+
+  # For captchas on unauth'd pages which can generate emails
+  "altcha",
+
+  # SMTP server for accepting incoming email
+  "aiosmtpd>=1.4.6",
+
+  # For using Missing sentinel
+  "pydantic-partials",
+
+  # For E2EE of push notifications
+  "pynacl",
+
+  # Character set detection for text/plain
+  "chardet>=5.1.0",
+
+  # Better compression than zlib
+  "zstd",
 ]
 docs = [
   # Needed to build RTD docs
-  "sphinx",
+  "sphinx<8.2",  # 8.2.0 requires Python ≥ 3.11
   "sphinx-rtd-theme",
   "sphinx-design",
 
@@ -259,11 +275,11 @@ dev = [
 
   "boto3-stubs[s3,ses,sns,sqs]",
   "django-stubs",
+  "google-re2-stubs",
   "lxml-stubs",
   "SQLAlchemy[mypy]",
   "types-beautifulsoup4",
   "types-boto",
-  "types-chardet",
   "types-decorator",
   "types-defusedxml",
   "types-jsonschema",
@@ -279,6 +295,9 @@ dev = [
   "types-redis",
   "types-regex",
   "types-requests",
+  "types-requests-oauthlib",
+  "types-uwsgi",
+  "types-zstd",
   "types-zxcvbn",
 
   # Needed for tools/check-thirdparty
@@ -301,9 +320,6 @@ dev = [
 no-binary-package = ["lxml", "xmlsec"]
 
 [tool.uv.sources]
-# https://github.com/django/asgiref/pull/494
-asgiref = { url = "https://github.com/andersk/asgiref/archive/8a2717c14bce1b8dd37371c675ee3728e66c3fe3.zip" }
-
 # Forked to avoid pulling in scipy: https://github.com/mailgun/talon/pull/200
 # and chardet, cchardet: https://github.com/mailgun/talon/pull/239
 # and fix invalid escape sequences: https://github.com/mailgun/talon/pull/245
@@ -315,11 +331,11 @@ talon-core = { url = "https://github.com/zulip/talon/archive/e87a64dccc3c5ee1b8e
 # version from Git rather than a PyPI release. Keeping everything in one
 # repository simplifies the process of implementing and documenting new bots for
 # new contributors.
-zulip = { url = "https://github.com/zulip/python-zulip-api/archive/9e131ac626976b9c3da6c11b6365b4939656f7c3.zip", subdirectory = "zulip" }
-zulip-bots = { url = "https://github.com/zulip/python-zulip-api/archive/0.9.0.zip", subdirectory = "zulip_bots" }
+zulip = { url = "https://github.com/zulip/python-zulip-api/archive/0.9.1.zip", subdirectory = "zulip" }
+zulip-bots = { url = "https://github.com/zulip/python-zulip-api/archive/0.9.1.zip", subdirectory = "zulip_bots" }
 
 # zulip's linting framework - zulint
-zulint = { url = "https://github.com/zulip/zulint/archive/9be0a32bf75a9d8738b005f0b880567fff64e943.zip" }
+zulint = { url = "https://github.com/zulip/zulint/archive/448e36a1e50e79c82257ed3d65fcf5c8591cdb61.zip" }
 
 [tool.black]
 line-length = 100
@@ -350,12 +366,14 @@ warn_return_any = false
 # Enable optional errors.
 enable_error_code = [
     "redundant-self",
+    "deprecated",
     "redundant-expr",
     "truthy-bool",
     "truthy-iterable",
     "ignore-without-code",
     "unused-awaitable",
     "explicit-override",
+    "exhaustive-match",
 ]
 
 # Display the codes needed for # type: ignore[code] annotations.
@@ -396,15 +414,11 @@ module = [
     "pyoembed.*",
     "pyuca.*",
     "pyvips.*",
-    "re2.*",
-    "requests_oauthlib.*", # https://github.com/requests/requests-oauthlib/issues/428
     "scim2_filter_parser.attr_paths",
     "social_django.*",
     "talon_core.*",
     "tlds.*",
-    "twitter.*",
     "two_factor.*",
-    "uwsgi",
 ]
 ignore_missing_imports = true
 
@@ -476,6 +490,7 @@ ignore = [
     "N806", # Variable in function should be lowercase
     "PERF203", # `try`-`except` within a loop incurs performance overhead
     "PLC0414", # Import alias does not rename original package
+    "PLC0415", # `import` should be at the top-level of a file
     "PLC1901", # `s == ""` can be simplified to `not s` as an empty string is falsey
     "PLR0911", # Too many return statements
     "PLR0912", # Too many branches
@@ -512,7 +527,7 @@ ignore = [
 ]
 
 [tool.ruff.lint.flake8-bandit]
-allowed-markup-calls = ["lxml.html.tostring"]
+allowed-markup-calls = ["bs4.BeautifulSoup.decode", "lxml.html.tostring"]
 
 [tool.ruff.lint.flake8-gettext]
 extend-function-names = ["gettext_lazy"]

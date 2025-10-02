@@ -1,6 +1,6 @@
 import $ from "jquery";
 import type * as tippy from "tippy.js";
-import {z} from "zod";
+import * as z from "zod/mini";
 
 import render_confirm_delete_data_export from "../templates/confirm_dialog/confirm_delete_data_export.hbs";
 import render_allow_private_data_export_banner from "../templates/modal_banner/allow_private_data_export_banner.hbs";
@@ -37,9 +37,9 @@ export const realm_export_schema = z.object({
     id: z.number(),
     export_time: z.number(),
     acting_user_id: z.number(),
-    export_url: z.string().nullable(),
-    deleted_timestamp: z.number().nullable(),
-    failed_timestamp: z.number().nullable(),
+    export_url: z.nullable(z.string()),
+    deleted_timestamp: z.nullable(z.number()),
+    failed_timestamp: z.nullable(z.number()),
     pending: z.boolean(),
     export_type: z.number(),
 });
@@ -256,6 +256,7 @@ export function populate_export_consents_table(): void {
         },
         $events_container: $("#data-exports"),
         default_id: filter_by_consent_options[0]!.unique_id,
+        hide_search_box: true,
     });
     filter_by_consent_dropdown_widget.setup();
 }
@@ -323,8 +324,11 @@ function show_start_export_modal(): void {
         $("#allow_private_data_export_stats").text(
             $t(
                 {
-                    defaultMessage:
-                        "Exporting private data for {users_consented_for_export_count} users ({total_users_count} users total).",
+                    defaultMessage: `
+                        Exporting private data for {users_consented_for_export_count,
+                        plural, one {# user} other {# users}} ({total_users_count,
+                        plural, one {# user} other {# users}} total).
+                    `,
                 },
                 {users_consented_for_export_count, total_users_count},
             ),
@@ -426,7 +430,9 @@ export function set_up(): void {
         e.preventDefault();
         e.stopPropagation();
         const $button = $(this);
-        const url = "/json/export/realm/" + encodeURIComponent($button.attr("data-export-id")!);
+        const url =
+            "/json/export/realm/" +
+            encodeURIComponent($button.closest("tr").attr("data-export-id")!);
         const html_body = render_confirm_delete_data_export();
 
         confirm_dialog.launch({
@@ -461,8 +467,11 @@ function update_start_export_modal_stats(): void {
         $("#allow_private_data_export_stats").text(
             $t(
                 {
-                    defaultMessage:
-                        "Exporting private data for {users_consented_for_export_count} users ({total_users_count} users total).",
+                    defaultMessage: `
+                        Exporting private data for {users_consented_for_export_count,
+                        plural, one {# user} other {# users}} ({total_users_count,
+                        plural, one {# user} other {# users}} total).
+                    `,
                 },
                 {users_consented_for_export_count, total_users_count},
             ),

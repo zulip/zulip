@@ -93,13 +93,13 @@ Note that an outgoing webhook bot can use the [Zulip REST
 API](/api/rest) with its API key in case your bot needs to do
 something else, like add an emoji reaction or upload a file.
 
-## Slack-format webhook format
+## Slack-compatible webhook format
 
-This interface translates Zulip's outgoing webhook's request into the
-format that Slack's outgoing webhook interface sends.  As a result,
-one should be able to use this to interact with third-party
-integrations designed to work with Slack's outgoing webhook interface.
-Here's how we fill in the fields that a Slack-format webhook expects:
+The Slack-compatible webhook format allows immediate integration with
+many third-party systems that already support Slack outgoing webhooks.
+
+The following table details how the Zulip server translates a Zulip
+message into the Slack-compatible webhook format.
 
 <table class="table">
     <thead>

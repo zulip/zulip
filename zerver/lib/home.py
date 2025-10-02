@@ -1,6 +1,8 @@
 import calendar
+import os
 import time
 from dataclasses import dataclass
+from urllib.parse import urlsplit
 
 from django.conf import settings
 from django.http import HttpRequest
@@ -35,7 +37,6 @@ class UserPermissionInfo:
     is_guest: bool
     is_realm_admin: bool
     is_realm_owner: bool
-    show_webathena: bool
 
 
 def get_furthest_read_time(user_profile: UserProfile | None) -> float | None:
@@ -65,7 +66,6 @@ def get_user_permission_info(user_profile: UserProfile | None) -> UserPermission
             is_guest=user_profile.is_guest,
             is_realm_owner=user_profile.is_realm_owner,
             is_realm_admin=user_profile.is_realm_admin,
-            show_webathena=user_profile.realm.webathena_enabled,
         )
     else:
         return UserPermissionInfo(
@@ -73,7 +73,6 @@ def get_user_permission_info(user_profile: UserProfile | None) -> UserPermission
             is_guest=False,
             is_realm_admin=False,
             is_realm_owner=False,
-            show_webathena=False,
         )
 
 
@@ -103,11 +102,13 @@ def build_page_params_for_home_page_load(
         include_deactivated_groups=True,
         archived_channels=True,
         empty_topic_name=True,
+        simplified_presence_events=True,
     )
 
     if user_profile is not None:
         client = RequestNotes.get_notes(request).client
         assert client is not None
+        partial_subscribers = os.environ.get("PARTIAL_SUBSCRIBERS") is not None
         state_data = do_events_register(
             user_profile,
             realm,
@@ -120,6 +121,7 @@ def build_page_params_for_home_page_load(
             client_capabilities=client_capabilities,
             narrow=narrow,
             include_streams=False,
+            include_subscribers="partial" if partial_subscribers else True,
         )
         queue_id = state_data["queue_id"]
         default_language = state_data["user_settings"]["default_language"]
@@ -132,16 +134,20 @@ def build_page_params_for_home_page_load(
 
     if user_profile is None:
         request_language = request.COOKIES.get(settings.LANGUAGE_COOKIE_NAME, default_language)
+        split_url = urlsplit(request.build_absolute_uri())
+        show_try_zulip_modal = (
+            settings.DEVELOPMENT or split_url.hostname == "chat.zulip.org"
+        ) and split_url.query == "show_try_zulip_modal"
     else:
         request_language = get_and_set_request_language(
             request,
             default_language,
             translation.get_language_from_path(request.path_info),
         )
+        show_try_zulip_modal = False
 
     furthest_read_time = get_furthest_read_time(user_profile)
     two_fa_enabled = settings.TWO_FACTOR_AUTHENTICATION_ENABLED and user_profile is not None
-    user_permission_info = get_user_permission_info(user_profile)
 
     # Pass parameters to the client-side JavaScript code.
     # These end up in a JavaScript Object named 'page_params'.
@@ -163,7 +169,6 @@ def build_page_params_for_home_page_load(
         two_fa_enabled=two_fa_enabled,
         apps_page_url=get_apps_page_url(),
         promote_sponsoring_zulip=promote_sponsoring_zulip_in_realm(realm),
-        show_webathena=user_permission_info.show_webathena,
         # Adding two_fa_enabled as condition saves us 3 queries when
         # 2FA is not enabled.
         two_fa_enabled_user=two_fa_enabled and bool(default_device(user_profile)),
@@ -172,6 +177,7 @@ def build_page_params_for_home_page_load(
         # There is no event queue for spectators since
         # events support for spectators is not implemented yet.
         no_event_queue=user_profile is None,
+        show_try_zulip_modal=show_try_zulip_modal,
     )
 
     page_params["state_data"] = state_data

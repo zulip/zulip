@@ -172,8 +172,8 @@
 /* Main geometry for this element is in zulip.css */
 #compose-content {
     background-color: var(--color-compose-box-background);
-    padding: 7px 7px 8px;
-    border: 1px solid hsl(0deg 0% 0% / 10%);
+    padding: 4px 4px 6px;
+    border: 1px solid var(--color-border-compose-content);
     border-radius: 9px 9px 0 0;
     box-shadow: 0 0 0 hsl(236deg 11% 28%);
     height: 100%;
@@ -196,8 +196,8 @@
         max-height: min(25vh, 240px);
         overflow-y: auto;
         /* Align to compose controls; that's 112px width,
-           plus 6px of grid gap for 118px here. */
-        margin-right: calc(var(--compose-send-controls-width) + 6px);
+           plus 4px of grid gap for 116px here. */
+        margin-right: calc(var(--compose-send-controls-width) + 4px);
     }
 }
 
@@ -205,18 +205,6 @@
     height: 100%;
     display: flex;
     flex-flow: column;
-
-    .stream-selection-header-colorblock {
-        box-shadow: none;
-        border: 1px solid hsl(0deg 0% 80%);
-        border-right: none;
-
-        &.message_header_private_message {
-            border-radius: 3px 0 0 3px;
-            border-bottom: 0;
-            background-color: hsl(0deg 0% 27%);
-        }
-    }
 
     #compose-recipient {
         &.compose-recipient-direct-selected {
@@ -228,6 +216,10 @@
 
             #compose_select_recipient_widget {
                 border-radius: 4px !important;
+                /* This height is necessary only for the
+                   DM picker, so that it does not stretch
+                   open taller with multiple rows of user
+                   pills. */
                 height: var(--compose-recipient-box-min-height);
             }
 
@@ -328,7 +320,7 @@
         grid-template-areas:
             "message-content-container message-send-controls-container"
             "message-formatting-controls-container message-send-controls-container";
-        gap: 0 6px;
+        gap: 0 4px;
     }
 
     .message_content {
@@ -345,7 +337,6 @@
     grid-template-areas: "message-content composebox-buttons";
     border-radius: 4px;
     border: 1px solid var(--color-message-content-container-border);
-    transition: border-color 0.2s ease;
 
     &:has(.new_message_textarea:focus) {
         border-color: var(--color-message-content-container-border-focus);
@@ -652,11 +643,11 @@
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    /* Matched to 6px grid-gap on .messagebox grid. */
-    padding-bottom: 6px;
+    /* Matched to 4px grid-gap on .messagebox grid. */
+    padding-bottom: 4px;
     /* Align to compose controls; that's 112px width,
-       plus 6px of grid gap for 118px here. */
-    margin-right: calc(var(--compose-send-controls-width) + 6px);
+       plus 4px of grid gap for 116px here. */
+    margin-right: calc(var(--compose-send-controls-width) + 4px);
 }
 
 #compose_close {
@@ -700,12 +691,18 @@
 }
 
 .main-view-banner {
-    margin-bottom: 20px;
+    /* This is same spatial value as the 4px of padding around
+       the edge of the compose box. */
+    margin-bottom: 4px;
     border-radius: 5px;
     border: 1px solid;
     display: flex;
     align-items: center;
     line-height: 1.2em; /* 18px at 15px/1em. */
+
+    .above_compose_banner_action_link {
+        color: var(--color-main-view-banner-action-link);
+    }
 
     .main-view-banner-elements-wrapper {
         display: flex;
@@ -846,32 +843,40 @@
     }
 
     &.success {
-        background-color: hsl(147deg 43% 92%);
-        border: 1px solid hsl(147deg 57% 25% / 40%);
-        color: hsl(147deg 57% 25%);
+        background-color: var(--color-background-success-main-view-banner);
+        border: 1px solid var(--color-border-success-main-view-banner);
+        color: var(--color-success-main-view-banner);
 
         .main-view-banner-close-button {
-            color: hsl(147deg 57% 25% / 50%);
+            color: var(--color-success-main-view-banner-close-button);
 
             &:hover {
-                color: hsl(147deg 57% 25%);
+                color: var(--color-success-main-view-banner-close-button-hover);
             }
 
             &:active {
-                color: hsl(147deg 57% 25% / 75%);
+                color: var(
+                    --color-success-main-view-banner-close-button-active
+                );
             }
         }
 
         .main-view-banner-action-button {
-            background-color: hsl(147deg 57% 25% / 10%);
+            background-color: var(
+                --color-background-success-main-view-banner-action-button
+            );
             color: inherit;
 
             &:hover {
-                background-color: hsl(147deg 57% 25% / 12%);
+                background-color: var(
+                    --color-background-success-main-view-banner-action-button-hover
+                );
             }
 
             &:active {
-                background-color: hsl(147deg 57% 25% / 15%);
+                background-color: var(
+                    --color-background-success-main-view-banner-action-button-active
+                );
             }
         }
     }
@@ -881,96 +886,116 @@
     for some of the banners, for which we use the warning-style class. */
     &.warning,
     &.warning-style {
-        background-color: hsl(50deg 75% 92%);
-        border-color: hsl(38deg 44% 27% / 40%);
-        color: hsl(38deg 44% 27%);
+        background-color: var(--color-background-warning-main-view-banner);
+        border-color: var(--color-border-warning-main-view-banner);
+        color: var(--color-warning-main-view-banner);
 
         .main-view-banner-close-button {
-            color: hsl(38deg 44% 27% / 50%);
+            color: var(--color-warning-main-view-banner-close-button);
 
             &:hover {
-                color: hsl(38deg 44% 27%);
+                color: var(--color-warning-main-view-banner-close-button-hover);
             }
 
             &:active {
-                color: hsl(38deg 44% 27% / 75%);
+                color: var(
+                    --color-warning-main-view-banner-close-button-active
+                );
             }
         }
 
         .main-view-banner-action-button {
-            background-color: hsl(38deg 44% 27% / 10%);
-            color: inherit;
+            background-color: var(
+                --color-background-warning-main-view-banner-action-button
+            );
+            color: var(--color-warning-main-view-banner-action-button);
 
             &:hover {
-                background-color: hsl(38deg 44% 27% / 12%);
+                background-color: var(
+                    --color-background-warning-main-view-banner-action-button-hover
+                );
             }
 
             &:active {
-                background-color: hsl(38deg 44% 27% / 15%);
+                background-color: var(
+                    --color-background-warning-main-view-banner-action-button-active
+                );
             }
         }
     }
 
     &.error {
-        background-color: hsl(4deg 35% 90%);
-        border-color: hsl(3deg 57% 33% / 40%);
-        color: hsl(4deg 58% 33%);
+        background-color: var(--color-background-error-main-view-banner);
+        border-color: var(--color-border-error-main-view-banner);
+        color: var(--color-error-main-view-banner);
 
         .main-view-banner-close-button {
-            color: hsl(4deg 58% 33% / 50%);
+            color: var(--color-error-main-view-banner-close-button);
 
             &:hover {
-                color: hsl(4deg 58% 33%);
+                color: var(--color-error-main-view-banner-close-button-hover);
             }
 
             &:active {
-                color: hsl(4deg 58% 33% / 75%);
+                color: var(--color-error-main-view-banner-close-button-active);
             }
         }
 
         .main-view-banner-action-button {
-            background-color: hsl(3deg 57% 33% / 10%);
-            color: inherit;
+            background-color: var(
+                --color-background-error-main-view-banner-action-button
+            );
+            color: var(--color-error-main-view-banner-action-button);
 
             &:hover {
-                background-color: hsl(3deg 57% 33% / 12%);
+                background-color: var(
+                    --color-background-error-main-view-banner-action-button-hover
+                );
             }
 
             &:active {
-                background-color: hsl(3deg 57% 33% / 15%);
+                background-color: var(
+                    --color-background-error-main-view-banner-action-button-active
+                );
             }
         }
     }
 
     &.info {
-        background-color: hsl(204deg 58% 92%);
-        border-color: hsl(204deg 49% 29% / 40%);
         position: relative;
-        color: hsl(204deg 49% 29%);
+        background-color: var(--color-background-info-main-view-banner);
+        border-color: var(--color-border-info-main-view-banner);
+        color: var(--color-info-main-view-banner);
 
         .main-view-banner-close-button {
-            color: hsl(204deg 49% 29% / 50%);
+            color: var(--color-info-main-view-banner-close-button);
 
             &:hover {
-                color: hsl(204deg 49% 29%);
+                color: var(--color-info-main-view-banner-close-button-hover);
             }
 
             &:active {
-                color: hsl(204deg 49% 29% / 75%);
+                color: var(--color-info-main-view-banner-close-button-active);
             }
         }
 
         .main-view-banner-action-button,
         .upload_banner_cancel_button {
-            background-color: hsl(204deg 49% 29% / 10%);
-            color: inherit;
+            background-color: var(
+                --color-background-info-main-view-banner-action-button
+            );
+            color: var(--color-info-main-view-banner-action-button);
 
             &:hover {
-                background-color: hsl(204deg 49% 29% / 12%);
+                background-color: var(
+                    --color-background-info-main-view-banner-action-button-hover
+                );
             }
 
             &:active {
-                background-color: hsl(204deg 49% 29% / 15%);
+                background-color: var(
+                    --color-background-info-main-view-banner-action-button-active
+                );
             }
         }
     }
@@ -989,7 +1014,7 @@
         /* The progress updates seem to come every second or so,
         so this is the smoothest it can probably get. */
         transition: width 1s ease-in-out; /* stylelint-disable-line plugin/no-low-performance-animation-properties */
-        background: hsl(204deg 63% 85%);
+        background: var(--color-background-main-view-banner-moving-bar);
         top: 0;
         bottom: 0;
     }
@@ -1063,8 +1088,11 @@ textarea.new_message_textarea {
     flex: 1 1 0;
     border: 1px solid var(--color-compose-recipient-box-border-color);
     border-radius: 4px;
-    transition: border-color 0.2s ease;
     background: var(--color-compose-recipient-box-background-color);
+
+    &:hover {
+        border-color: var(--color-compose-recipient-box-hover);
+    }
 
     /* Give the recipient box, a `<div>`, the
        correct styles when focus is in the
@@ -1077,12 +1105,23 @@ textarea.new_message_textarea {
     #recipient_box_clear_topic_button {
         background: none;
         border: none;
+
+        &:disabled {
+            cursor: default;
+            opacity: 1;
+        }
     }
 
     /* Styles for input in the recipient_box */
     #stream_message_recipient_topic {
         grid-area: topic;
         color: var(--color-compose-recipient-box-text-color);
+        /* Keep the line-height matched to the font-size
+           for a more predictable box height.
+           This will have to be watched very closely for
+           possible regressions, such as when Unicode emoji
+           appear in the topic box. */
+        line-height: 1;
         /* Override grid's effective `max-content` min-width */
         overflow: hidden;
         text-overflow: ellipsis;
@@ -1090,7 +1129,7 @@ textarea.new_message_textarea {
         box-shadow: none;
         outline: none;
 
-        padding: 4px 6px;
+        padding: 0 6px;
         /* Reset height to let `align-items: stretch` on the grid parent handle this. */
         height: auto;
 
@@ -1101,6 +1140,7 @@ textarea.new_message_textarea {
 
     #topic-not-mandatory-placeholder {
         grid-area: topic-box;
+        align-self: center;
         white-space: nowrap;
         overflow-x: hidden;
         text-overflow: ellipsis;
@@ -1143,9 +1183,20 @@ textarea.new_message_textarea {
         ~ #recipient_box_clear_topic_button {
         visibility: hidden;
     }
+
+    #stream_message_recipient_topic:disabled
+        ~ #recipient_box_clear_topic_button {
+        visibility: hidden;
+    }
     /* This will reset the bootstrap margin-bottom: 10px value for the inputs */
     & input {
         margin-bottom: 0;
+    }
+
+    &.disabled {
+        background-color: transparent;
+        border-color: transparent;
+        max-width: fit-content;
     }
 }
 
@@ -1162,8 +1213,15 @@ textarea.new_message_textarea {
     background-color: var(--color-compose-recipient-box-background-color);
     border-color: var(--color-compose-recipient-box-border-color);
 
+    &:hover,
+    &.widget-open {
+        border-color: var(--color-compose-recipient-box-hover);
+    }
+
     &.dropdown-widget-button {
-        padding: 0 6px;
+        /* We control the surrounding space through the
+           grid on `.dropdown_widget_value`. */
+        padding: 0;
         border-radius: 4px;
     }
 
@@ -1175,6 +1233,144 @@ textarea.new_message_textarea {
 
 #private_message_recipient.recipient_box {
     width: 100%;
+}
+
+#compose-direct-recipient .pill-container .pill {
+    /* This is necessary to avoid an otherwise unstyled
+       flash of outline around pills when focus shifts out
+       of the recipient row and transitions are in effect. */
+    outline-color: transparent;
+}
+
+/* We want transitions to run only on user interactions with
+   the mouse, once the compose box is open. Any keyboard
+   interactions (e.g., Shift-Tabbing from the compose textarea
+   to the topic box) show instant changes, so we don't need to
+   accommodate them here, which we prevent by applying the
+   transitions only when focus isn't within the recipient row,
+   or hasn't recently been within the topic box. */
+#compose.compose-box-open {
+    .low-attention-recipient-row:not(.recently-focused, :focus-within) {
+        #compose_select_recipient_widget,
+        #compose_recipient_box,
+        #compose-direct-recipient .pill-container {
+            transition: var(--compose-recipient-row-transition);
+            transition-delay: var(--compose-recipient-row-transition-delay);
+            transition-property: background-color, border-color;
+        }
+
+        #compose_select_recipient_widget .channel-privacy-type-icon {
+            transition: var(--compose-recipient-row-transition);
+            transition-delay: var(--compose-recipient-row-transition-delay);
+            transition-property: color;
+        }
+
+        #recipient_box_clear_topic_button {
+            transition: var(--compose-recipient-row-transition);
+            transition-delay: var(--compose-recipient-row-transition-delay);
+            transition-property: color, background-color, opacity;
+        }
+
+        #compose-direct-recipient .pill {
+            transition: var(--compose-recipient-row-transition);
+            transition-delay: var(--compose-recipient-row-transition-delay);
+            transition-property: outline-color;
+        }
+
+        &#compose-recipient {
+            .decorated-channel-name,
+            .zulip-icon-chevron-down,
+            .conversation-arrow,
+            #stream_message_recipient_topic {
+                transition: var(--compose-recipient-row-transition);
+                transition-delay: var(--compose-recipient-row-transition-delay);
+                transition-property: opacity;
+            }
+        }
+    }
+}
+
+/* For the sake of keyboard use, we do not want to apply
+   these styles when any element (the picker, user pills)
+   has focus. */
+.low-attention-recipient-row:not(:focus-within) {
+    &#compose-recipient {
+        .decorated-channel-name,
+        .conversation-arrow,
+        #stream_message_recipient_topic {
+            opacity: 0.9;
+        }
+
+        .zulip-icon-chevron-down {
+            opacity: 0;
+        }
+    }
+
+    #compose_select_recipient_widget,
+    #compose_recipient_box,
+    #compose-direct-recipient .pill-container {
+        background-color: transparent;
+        border-color: transparent;
+
+        /* Particularly in light mode, pill colors are almost identical
+           to the compose-box background. We place a higher-contrast
+           outline on them in the low-attention state. */
+        .pill {
+            outline: 1px solid var(--color-outline-low-attention-input-pill);
+            /* We offset the outline so that pills do not appear to touch,
+               especially in dark mode where the outline color is otherwise
+               the same as the pill color (the opacity makes it brighter
+               when so offset, too). */
+            outline-offset: -1px;
+        }
+
+        &:hover:not(.disabled) {
+            background-color: var(
+                --color-compose-recipient-box-background-color
+            );
+            border-color: var(--color-compose-recipient-box-border-color);
+            opacity: 1;
+
+            .decorated-channel-name,
+            .zulip-icon-chevron-down,
+            .conversation-arrow,
+            #stream_message_recipient_topic {
+                opacity: 1;
+            }
+
+            .pill {
+                outline-color: transparent;
+            }
+        }
+
+        #recipient_box_clear_topic_button:hover {
+            opacity: 1;
+        }
+    }
+
+    #compose_select_recipient_widget {
+        .channel-privacy-type-icon.zulip-icon {
+            color: var(--privacy-icon-color-modified);
+        }
+
+        &:hover .channel-privacy-type-icon.zulip-icon {
+            color: var(--privacy-icon-color-original);
+        }
+
+        &.widget-open {
+            background-color: var(--color-background-dropdown-widget-button);
+            border-color: var(--color-compose-recipient-box-border-color);
+
+            .channel-privacy-type-icon {
+                color: var(--privacy-icon-color-original);
+            }
+
+            .decorated-channel-name,
+            .zulip-icon-chevron-down {
+                opacity: 1;
+            }
+        }
+    }
 }
 
 .compose-send-or-save-button {
@@ -1355,10 +1551,9 @@ textarea.new_message_textarea {
 }
 
 #compose-recipient {
-    /* Enforce a shared, 'normal' line-height on
-       the recipient elements for baseline alignment,
-       and better use of the recipient-row space. */
-    line-height: normal;
+    /* Set a line-height equal to the font-size to
+       make a compact, predictably tall recipient row. */
+    line-height: 1;
     display: flex;
     flex: 1 1 0;
     /* Use this containing flex element to
@@ -1379,22 +1574,21 @@ textarea.new_message_textarea {
 .compose-control-buttons-container {
     display: flex;
     align-items: center;
+    /* 30px at 15px/1em */
+    height: var(--compose-formatting-buttons-row-height);
 
     .compose_control_button {
-        /* 22px at 14px/1em */
-        font-size: 1.5714em;
+        /* 22px at 15px/1em */
+        font-size: 1.4667em;
         /* Constrain icon fonts to a perfect
-           box (22px at 14px/1em) */
+           box (22px at 15px/1em) to sit centered
+           in the 30px by 30px button area. */
         line-height: 1;
         /* Coordinate with the value of
            --compose-formatting-buttons-row-height */
-        /* 28px at 22px/1em */
-        height: 1.2727em;
         /* 30px at 22px/1em */
+        height: 1.3636em;
         width: 1.3636em;
-        /* Adhere to the width of formatting buttons,
-           despite flexbox context. */
-        flex: 0 0 auto;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -1496,7 +1690,9 @@ textarea.new_message_textarea {
     /* Allow the contents wrapped here to
        expand the available space... */
     white-space: nowrap;
-    flex: 0 1 fit-content;
+    /* And follow the fitted content on the
+       flexbox. */
+    flex: 0 0 fit-content;
     /* But force an ellipsis here, rather than
        just on an inner element. */
     overflow: hidden;
@@ -1515,23 +1711,58 @@ textarea.new_message_textarea {
 
     .dropdown_widget_value {
         flex-grow: 1;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-        color: var(--color-text-default);
+        display: grid;
+        align-items: baseline;
+        /* This is a bit of eyeball work, based on balancing
+           out the size and spatial relationships between the
+           privacy icon and the channel name, and the
+           surrounding negative space. */
+        /* 7px at 20px/1em; 4px at 20px/1em. */
+        grid-template:
+            "lefthand-offset privacy-icon privacy-icon-gap channel-name righthand-offset" auto / 0.35em [select-label-start] auto 0.2em minmax(
+                0,
+                1fr
+            )
+            [select-label-end]
+            0.35em;
 
-        .stream-privacy-type-icon {
-            font-size: 0.9286em; /* 13px at 14px em */
+        .channel-privacy-type-icon {
+            grid-area: privacy-icon;
+            place-self: center;
+            font-size: 0.95em; /* 19px at 20px/1em */
+            margin-top: -0.0579em; /* Eyeball work; 1.1px at 19px/1em */
+            color: var(--privacy-icon-color-original);
+            /* Eliminate inherited component styles. */
+            position: static;
+            padding: 0;
             width: 1em;
             height: 1em;
-            position: relative;
-            top: 0.1538em; /* 2px at 13px/em */
+
+            &.zulip-icon-lock {
+                /* The lock looks better centered without
+                   a negative margin-top adjustment. */
+                margin-top: 0;
+            }
+        }
+
+        .select-channel-label,
+        .decorated-dm-label,
+        .decorated-channel-name {
+            grid-area: channel-name;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            color: var(--color-text-default);
+        }
+
+        .select-channel-label {
+            grid-area: select-label;
         }
     }
 
+    /* We suppress the chevron on the channel picker. */
     .zulip-icon-chevron-down {
-        padding-left: 5px;
-        color: var(--color-compose-chevron-arrow);
-        font-weight: lighter;
+        display: none;
     }
 }
 
@@ -1682,8 +1913,9 @@ textarea.new_message_textarea {
 
     .dropdown-list .dropdown-list-item-common-styles {
         padding: 0.3571em 0.7143em; /* 5px 10px at 14px/em */
-        display: flex;
-        flex-direction: column;
+        /* Make content appear more distinct from
+           the snippet name. */
+        border-bottom: solid 1px var(--color-border-popover-menu-separator);
 
         .dropdown-list-item-name {
             line-height: 1.2em;
@@ -1698,7 +1930,7 @@ textarea.new_message_textarea {
             overflow: hidden;
         }
 
-        .dropdown-list-bold-selected {
+        .dropdown-list-text-selected {
             font-weight: 500;
             max-width: 210px;
             display: inline-block;
@@ -1807,14 +2039,19 @@ textarea.new_message_textarea {
         }
     }
 
+    .message-textarea,
     .message-edit-textbox {
         /* In preview mode, we hide the message edit
            textbox to prevent it from appearing behind
            the preview container. We cannot set its
            display to none or visibility to hidden, as
            that would prevent us from modifying the
-           textarea's value. */
-        height: 0;
-        overflow: hidden;
+           textarea's value.
+
+           The !important use here in necessary to be sure
+           we override the inline styles set on the
+           compose textarea. */
+        height: 0 !important;
+        overflow: hidden !important;
     }
 }

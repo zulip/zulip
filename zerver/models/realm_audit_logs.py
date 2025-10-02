@@ -5,6 +5,7 @@ from django.db import models
 from django.db.models import CASCADE, Q
 from typing_extensions import override
 
+from zerver.models.channel_folders import ChannelFolder
 from zerver.models.groups import NamedUserGroup
 from zerver.models.realms import Realm
 from zerver.models.streams import Stream
@@ -65,6 +66,10 @@ class AuditLogEventType(IntEnum):
     REALM_EMOJI_ADDED = 226
     REALM_EMOJI_REMOVED = 227
     REALM_LINKIFIERS_REORDERED = 228
+
+    # This event for a realm means that this server processed exported data
+    # (either from another Zulip server or a 3rd party app such as Slack),
+    # and imported the data as the given realm.
     REALM_IMPORTED = 229
     REALM_EXPORT_DELETED = 230
 
@@ -95,6 +100,7 @@ class AuditLogEventType(IntEnum):
     CHANNEL_MESSAGE_RETENTION_DAYS_CHANGED = 605
     CHANNEL_PROPERTY_CHANGED = 607
     CHANNEL_GROUP_BASED_SETTING_CHANGED = 608
+    CHANNEL_FOLDER_CHANGED = 609
 
     USER_GROUP_CREATED = 701
     USER_GROUP_DELETED = 702
@@ -109,8 +115,19 @@ class AuditLogEventType(IntEnum):
     USER_GROUP_DESCRIPTION_CHANGED = 721
     USER_GROUP_GROUP_BASED_SETTING_CHANGED = 722
     USER_GROUP_DEACTIVATED = 723
+    USER_GROUP_REACTIVATED = 724
 
     SAVED_SNIPPET_CREATED = 800
+
+    NAVIGATION_VIEW_CREATED = 850
+    NAVIGATION_VIEW_UPDATED = 851
+    NAVIGATION_VIEW_DELETED = 852
+
+    CHANNEL_FOLDER_CREATED = 901
+    CHANNEL_FOLDER_NAME_CHANGED = 902
+    CHANNEL_FOLDER_DESCRIPTION_CHANGED = 903
+    CHANNEL_FOLDER_ARCHIVED = 904
+    CHANNEL_FOLDER_UNARCHIVED = 905
 
     # The following values are only for remote server/realm logs.
     # Values should be exactly 10000 greater than the corresponding
@@ -173,6 +190,7 @@ class AbstractRealmAuditLog(models.Model):
     HOW_REALM_CREATOR_FOUND_ZULIP_OPTIONS = {
         "existing_user": "At an organization that's using it",
         "search_engine": "Search engine",
+        "ai_chatbot": "AI/LLM",
         "review_site": "Review site",
         "personal_recommendation": "Personal recommendation",
         "hacker_news": "Hacker News",
@@ -229,6 +247,11 @@ class RealmAuditLog(AbstractRealmAuditLog):
     )
     modified_user_group = models.ForeignKey(
         NamedUserGroup,
+        null=True,
+        on_delete=CASCADE,
+    )
+    modified_channel_folder = models.ForeignKey(
+        ChannelFolder,
         null=True,
         on_delete=CASCADE,
     )

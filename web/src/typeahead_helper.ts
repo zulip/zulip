@@ -1,4 +1,3 @@
-import Handlebars from "handlebars/runtime.js";
 import _ from "lodash";
 import assert from "minimalistic-assert";
 
@@ -15,6 +14,7 @@ import type {
     TopicSuggestion,
 } from "./composebox_typeahead.ts";
 import type {InputPillContainer} from "./input_pill.ts";
+import * as peer_data from "./peer_data.ts";
 import * as people from "./people.ts";
 import type {PseudoMentionUser, User} from "./people.ts";
 import * as pm_conversations from "./pm_conversations.ts";
@@ -47,48 +47,6 @@ export type CombinedPillContainer = InputPillContainer<CombinedPill>;
 export type GroupSettingPill = UserGroupPill | UserPill;
 export type GroupSettingPillContainer = InputPillContainer<GroupSettingPill>;
 
-export function build_highlight_regex(query: string): RegExp {
-    const regex = new RegExp("(" + _.escapeRegExp(query) + ")", "ig");
-    return regex;
-}
-
-export function highlight_with_escaping_and_regex(regex: RegExp, item: string): string {
-    // if regex is empty return entire item escaped
-    if (regex.source === "()") {
-        return Handlebars.Utils.escapeExpression(item);
-    }
-
-    // We need to assemble this manually (as opposed to doing 'join') because we need to
-    // (1) escape all the pieces and (2) the regex is case-insensitive, and we need
-    // to know the case of the content we're replacing (you can't just use a bolded
-    // version of 'query')
-
-    const pieces = item.split(regex).filter(Boolean);
-    let result = "";
-
-    for (const [i, piece] of pieces.entries()) {
-        if (regex.test(piece) && (i === 0 || pieces[i - 1]!.endsWith(" "))) {
-            // only highlight if the matching part is a word prefix, ie
-            // if it is the 1st piece or if there was a space before it
-            result += "<strong>" + Handlebars.Utils.escapeExpression(piece) + "</strong>";
-        } else {
-            result += Handlebars.Utils.escapeExpression(piece);
-        }
-    }
-
-    return result;
-}
-
-export function make_query_highlighter(query: string): (phrase: string) => string {
-    query = query.toLowerCase();
-
-    const regex = build_highlight_regex(query);
-
-    return function (phrase) {
-        return highlight_with_escaping_and_regex(regex, phrase);
-    };
-}
-
 type StreamData = {
     invite_only: boolean;
     is_web_public: boolean;
@@ -113,6 +71,7 @@ export let render_typeahead_item = (args: {
     topic_object?: TopicSuggestion;
     is_stream_topic?: boolean;
     is_empty_string_topic?: boolean;
+    is_default_language?: boolean;
 }): string => {
     const has_image = args.img_src !== undefined;
     const has_status = args.status_emoji_info !== undefined;
@@ -172,6 +131,15 @@ export let render_person = (person: UserPillData | UserOrMentionPillData): strin
 
 export function rewire_render_person(value: typeof render_person): void {
     render_person = value;
+}
+
+export let render_topic_state = (state: string): string =>
+    render_typeahead_item({
+        primary: state,
+    });
+
+export function rewire_render_topic_state(value: typeof render_topic_state): void {
+    render_topic_state = value;
 }
 
 export let render_user_group = (user_group: {name: string; description: string}): string =>
@@ -301,8 +269,26 @@ export function compare_people_for_relevance(
     // Now handle actual people users.
     // give preference to subscribed users first
     if (current_stream_id !== undefined) {
-        const a_is_sub = stream_data.is_user_subscribed(current_stream_id, person_a.user.user_id);
-        const b_is_sub = stream_data.is_user_subscribed(current_stream_id, person_b.user.user_id);
+        // Fetch subscriber data if we don't have it yet, but don't wait for it.
+        // It's fine to use partial data for now, and hopefully on subsequent
+        // keystrokes, we'll have the full data to show more subscribers at the
+        // top of the list.
+        //
+        // (We will usually have it, since entering a channel triggers a fetch.)
+        if (!peer_data.has_full_subscriber_data(current_stream_id)) {
+            void peer_data.maybe_fetch_stream_subscribers(current_stream_id);
+        }
+
+        // If the client does not yet have complete subscriber data,
+        // "unknown" and "not subscribed" are both represented as false here.
+        const a_is_sub = stream_data.is_user_loaded_and_subscribed(
+            current_stream_id,
+            person_a.user.user_id,
+        );
+        const b_is_sub = stream_data.is_user_loaded_and_subscribed(
+            current_stream_id,
+            person_b.user.user_id,
+        );
 
         if (a_is_sub && !b_is_sub) {
             return -1;
@@ -434,8 +420,15 @@ function retain_unique_language_aliases(matches: string[]): string[] {
 
 export function sort_languages(matches: LanguageSuggestion[], query: string): LanguageSuggestion[] {
     const languages = matches.map((object) => object.language);
+    const default_language = realm.realm_default_code_block_language;
     const results = typeahead.triage(query, languages, (x) => x, compare_language);
-    const unique_languages = retain_unique_language_aliases([...results.matches, ...results.rest]);
+    let language_results;
+    if (default_language && results.matches.includes(default_language)) {
+        language_results = [default_language, ...results.matches, ...results.rest];
+    } else {
+        language_results = [...results.matches, ...results.rest];
+    }
+    const unique_languages = retain_unique_language_aliases(language_results);
     return unique_languages.map((language) => ({
         language,
         type: "syntax",
@@ -643,7 +636,7 @@ export function rewire_sort_recipients(value: typeof sort_recipients): void {
     sort_recipients = value;
 }
 
-export function compare_setting_options(
+export function compare_group_setting_options(
     option_a: UserPillData | UserGroupPillData,
     option_b: UserPillData | UserGroupPillData,
     target_group: UserGroup | undefined,
@@ -703,22 +696,31 @@ export function compare_setting_options(
     return 1;
 }
 
-export let sort_group_setting_options = ({
+export const sort_users_and_groups_options = ({
     users,
     query,
     groups,
+    compare_options,
     target_group,
+    for_stream_subscribers = false,
 }: {
     users: UserPillData[];
     query: string;
     groups: UserGroupPillData[];
+    compare_options: (
+        option_a: UserPillData | UserGroupPillData,
+        option_b: UserPillData | UserGroupPillData,
+        target_group: UserGroup | undefined,
+        for_stream_subscribers?: boolean,
+    ) => number;
     target_group: UserGroup | undefined;
+    for_stream_subscribers?: boolean;
 }): (UserPillData | UserGroupPillData)[] => {
-    function sort_group_setting_items(
+    function sort_items(
         objs: (UserPillData | UserGroupPillData)[],
     ): (UserPillData | UserGroupPillData)[] {
         objs.sort((option_a, option_b) =>
-            compare_setting_options(option_a, option_b, target_group),
+            compare_options(option_a, option_b, target_group, for_stream_subscribers),
         );
         return objs;
     }
@@ -739,13 +741,13 @@ export let sort_group_setting_options = ({
         return [user_groups.get_display_group_name(g.name)];
     });
 
-    const exact_matches = sort_group_setting_items([
+    const exact_matches = sort_items([
         ...groups_results.exact_matches,
         ...users_name_results.exact_matches,
         ...email_results.exact_matches,
     ]);
 
-    const prefix_matches = sort_group_setting_items([
+    const prefix_matches = sort_items([
         ...groups_results.begins_with_case_sensitive_matches,
         ...groups_results.begins_with_case_insensitive_matches,
         ...users_name_results.begins_with_case_sensitive_matches,
@@ -754,16 +756,13 @@ export let sort_group_setting_options = ({
         ...email_results.begins_with_case_insensitive_matches,
     ]);
 
-    const word_boundary_matches = sort_group_setting_items([
+    const word_boundary_matches = sort_items([
         ...groups_results.word_boundary_matches,
         ...users_name_results.word_boundary_matches,
         ...email_results.word_boundary_matches,
     ]);
 
-    const no_matches = sort_group_setting_items([
-        ...groups_results.no_matches,
-        ...email_results.no_matches,
-    ]);
+    const no_matches = sort_items([...groups_results.no_matches, ...email_results.no_matches]);
 
     const getters: {
         getter: (UserPillData | UserGroupPillData)[];
@@ -782,22 +781,138 @@ export let sort_group_setting_options = ({
         },
     ];
 
-    const setting_options: (UserPillData | UserGroupPillData)[] = [];
+    const options: (UserPillData | UserGroupPillData)[] = [];
 
     for (const getter of getters) {
-        if (setting_options.length >= MAX_ITEMS) {
+        if (options.length >= MAX_ITEMS) {
             break;
         }
         for (const item of getter.getter) {
-            setting_options.push(item);
+            options.push(item);
         }
     }
 
-    return setting_options.slice(0, MAX_ITEMS);
+    return options.slice(0, MAX_ITEMS);
 };
+
+export let sort_group_setting_options = ({
+    users,
+    query,
+    groups,
+    target_group,
+}: {
+    users: UserPillData[];
+    query: string;
+    groups: UserGroupPillData[];
+    target_group: UserGroup | undefined;
+}): (UserPillData | UserGroupPillData)[] =>
+    sort_users_and_groups_options({
+        users,
+        query,
+        groups,
+        compare_options: compare_group_setting_options,
+        target_group,
+    });
 
 export function rewire_sort_group_setting_options(value: typeof sort_group_setting_options): void {
     sort_group_setting_options = value;
+}
+
+export function compare_stream_or_group_members_options(
+    option_a: UserPillData | UserGroupPillData,
+    option_b: UserPillData | UserGroupPillData,
+    _target_group?: UserGroup,
+    for_stream_subscribers?: boolean,
+): number {
+    if (for_stream_subscribers) {
+        // "role:members" group is shown at the top only for stream
+        // subscribers typeahead and not for group members typeahead.
+        if (option_a.type === "user_group") {
+            const user_group_a = user_groups.get_user_group_from_id(option_a.id);
+            if (user_group_a.name === "role:members") {
+                return -1;
+            }
+        }
+        if (option_b.type === "user_group") {
+            const user_group_b = user_groups.get_user_group_from_id(option_b.id);
+            if (user_group_b.name === "role:members") {
+                return 1;
+            }
+        }
+    }
+
+    if (option_a.type === "user_group" && option_b.type === "user") {
+        const user_group_a = user_groups.get_user_group_from_id(option_a.id);
+
+        if (user_group_a.is_system_group) {
+            return 1;
+        }
+        return -1;
+    }
+
+    if (option_b.type === "user_group" && option_a.type === "user") {
+        const user_group_b = user_groups.get_user_group_from_id(option_b.id);
+        if (user_group_b.is_system_group) {
+            return -1;
+        }
+        return 1;
+    }
+
+    if (option_a.type === "user_group" && option_b.type === "user_group") {
+        const user_group_a = user_groups.get_user_group_from_id(option_a.id);
+        const user_group_b = user_groups.get_user_group_from_id(option_b.id);
+
+        if (user_group_a.is_system_group && !user_group_b.is_system_group) {
+            return 1;
+        }
+
+        if (user_group_b.is_system_group && !user_group_a.is_system_group) {
+            return -1;
+        }
+
+        if (user_group_a.name < user_group_b.name) {
+            return -1;
+        }
+
+        return 1;
+    }
+
+    assert(option_a.type === "user");
+    assert(option_b.type === "user");
+
+    if (option_a.user.full_name < option_b.user.full_name) {
+        return -1;
+    } else if (option_a.user.full_name === option_b.user.full_name) {
+        return 0;
+    }
+
+    return 1;
+}
+
+export let sort_stream_or_group_members_options = ({
+    users,
+    query,
+    groups,
+    for_stream_subscribers,
+}: {
+    users: UserPillData[];
+    query: string;
+    groups: UserGroupPillData[];
+    for_stream_subscribers: boolean;
+}): (UserPillData | UserGroupPillData)[] =>
+    sort_users_and_groups_options({
+        users,
+        query,
+        groups,
+        compare_options: compare_stream_or_group_members_options,
+        target_group: undefined,
+        for_stream_subscribers,
+    });
+
+export function rewire_sort_stream_or_group_members_options(
+    value: typeof sort_stream_or_group_members_options,
+): void {
+    sort_stream_or_group_members_options = value;
 }
 
 type SlashCommand = {
@@ -920,16 +1035,40 @@ export function rewire_sort_user_groups(value: typeof sort_user_groups): void {
 export function query_matches_person(
     query: string,
     person: UserPillData | UserOrMentionPillData,
+    should_remove_diacritics: boolean | undefined = undefined,
 ): boolean {
-    if (typeahead.query_matches_string_in_order(query, person.user.full_name, " ")) {
+    if (
+        person.type === "broadcast" &&
+        typeahead.query_matches_string_in_order(query, person.user.full_name, " ")
+    ) {
         return true;
     }
-    if (person.type === "user" && Boolean(person.user.delivery_email)) {
-        return typeahead.query_matches_string_in_order(
-            query,
-            people.get_visible_email(person.user),
-            " ",
+
+    if (person.type === "user") {
+        query = query.toLowerCase();
+        should_remove_diacritics ??= people.should_remove_diacritics_for_query(query);
+
+        const full_name = people.maybe_remove_diacritics_from_name(
+            person.user,
+            should_remove_diacritics,
         );
+        if (
+            typeahead.query_matches_string_in_order_assume_canonicalized(
+                query,
+                full_name.toLowerCase(),
+                " ",
+            )
+        ) {
+            return true;
+        }
+
+        if (person.user.delivery_email) {
+            return typeahead.query_matches_string_in_order(
+                query,
+                people.get_visible_email(person.user),
+                " ",
+            );
+        }
     }
     return false;
 }

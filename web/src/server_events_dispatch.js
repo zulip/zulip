@@ -1,5 +1,4 @@
 import $ from "jquery";
-import assert from "minimalistic-assert";
 
 import * as activity_ui from "./activity_ui.ts";
 import * as alert_words from "./alert_words.ts";
@@ -10,6 +9,7 @@ import * as blueslip from "./blueslip.ts";
 import * as bot_data from "./bot_data.ts";
 import * as browser_history from "./browser_history.ts";
 import {buddy_list} from "./buddy_list.ts";
+import * as channel_folders from "./channel_folders.ts";
 import * as compose_call from "./compose_call.ts";
 import * as compose_call_ui from "./compose_call_ui.ts";
 import * as compose_closed_ui from "./compose_closed_ui.ts";
@@ -22,6 +22,7 @@ import * as emoji from "./emoji.ts";
 import * as emoji_picker from "./emoji_picker.ts";
 import * as gear_menu from "./gear_menu.ts";
 import * as giphy from "./giphy.ts";
+import * as inbox_ui from "./inbox_ui.ts";
 import * as information_density from "./information_density.ts";
 import * as left_sidebar_navigation_area from "./left_sidebar_navigation_area.ts";
 import * as linkifiers from "./linkifiers.ts";
@@ -29,12 +30,13 @@ import * as message_edit from "./message_edit.ts";
 import * as message_events from "./message_events.ts";
 import * as message_lists from "./message_lists.ts";
 import * as message_live_update from "./message_live_update.ts";
+import * as message_reminder from "./message_reminder.ts";
+import * as message_store from "./message_store.ts";
 import * as message_view from "./message_view.ts";
-import * as message_view_header from "./message_view_header.ts";
 import * as muted_users_ui from "./muted_users_ui.ts";
-import * as narrow_state from "./narrow_state.ts";
 import * as narrow_title from "./narrow_title.ts";
 import * as navbar_alerts from "./navbar_alerts.ts";
+import * as navigation_views from "./navigation_views.ts";
 import * as onboarding_steps from "./onboarding_steps.ts";
 import * as overlays from "./overlays.ts";
 import * as peer_data from "./peer_data.ts";
@@ -45,7 +47,9 @@ import * as realm_icon from "./realm_icon.ts";
 import * as realm_logo from "./realm_logo.ts";
 import * as realm_playground from "./realm_playground.ts";
 import {realm_user_settings_defaults} from "./realm_user_settings_defaults.ts";
+import * as recent_view_ui from "./recent_view_ui.ts";
 import * as reload from "./reload.ts";
+import * as reminders_overlay_ui from "./reminders_overlay_ui.ts";
 import * as saved_snippets from "./saved_snippets.ts";
 import * as saved_snippets_ui from "./saved_snippets_ui.ts";
 import * as scheduled_messages from "./scheduled_messages.ts";
@@ -59,6 +63,7 @@ import * as settings_components from "./settings_components.ts";
 import * as settings_config from "./settings_config.ts";
 import * as settings_emoji from "./settings_emoji.ts";
 import * as settings_exports from "./settings_exports.ts";
+import * as settings_folders from "./settings_folders.ts";
 import * as settings_invites from "./settings_invites.ts";
 import * as settings_linkifiers from "./settings_linkifiers.ts";
 import * as settings_notifications from "./settings_notifications.ts";
@@ -78,6 +83,8 @@ import * as stream_data from "./stream_data.ts";
 import * as stream_events from "./stream_events.ts";
 import * as stream_list from "./stream_list.ts";
 import * as stream_list_sort from "./stream_list_sort.ts";
+import * as stream_settings_components from "./stream_settings_components.ts";
+import * as stream_settings_data from "./stream_settings_data.ts";
 import * as stream_settings_ui from "./stream_settings_ui.ts";
 import * as stream_topic_history from "./stream_topic_history.ts";
 import * as stream_ui_updates from "./stream_ui_updates.ts";
@@ -109,6 +116,43 @@ export function dispatch_normal_event(event) {
 
         case "attachment":
             attachments_ui.update_attachments(event);
+            break;
+
+        case "channel_folder":
+            switch (event.op) {
+                case "add": {
+                    channel_folders.add(event.channel_folder);
+                    inbox_ui.complete_rerender();
+                    settings_folders.populate_channel_folders();
+                    stream_ui_updates.update_folder_dropdown_visibility();
+                    break;
+                }
+                case "update":
+                    channel_folders.update(event);
+                    if (event.data.name !== undefined) {
+                        inbox_ui.complete_rerender();
+                        stream_list.update_streams_sidebar();
+                        stream_settings_ui.update_channel_folder_name(event.channel_folder_id);
+                    }
+
+                    if (event.data.is_archived !== undefined) {
+                        stream_settings_ui.reset_dropdown_set_to_archived_folder(
+                            event.channel_folder_id,
+                        );
+                        stream_ui_updates.update_folder_dropdown_visibility();
+                    }
+                    settings_folders.update_folder_row(event);
+                    break;
+                case "reorder":
+                    channel_folders.reorder(event.order);
+                    stream_list.update_streams_sidebar();
+                    settings_folders.populate_channel_folders();
+                    inbox_ui.complete_rerender();
+                    break;
+                default:
+                    blueslip.error("Unexpected event type channel_folder/" + event.op);
+                    break;
+            }
             break;
 
         case "custom_profile_fields":
@@ -171,8 +215,22 @@ export function dispatch_normal_event(event) {
             muted_users_ui.handle_user_updates(event.muted_users);
             break;
 
+        case "navigation_view":
+            switch (event.op) {
+                case "add":
+                    navigation_views.add_navigation_view(event.navigation_view);
+                    break;
+                case "update":
+                    navigation_views.update_navigation_view(event.fragment, event.data);
+                    break;
+                case "remove":
+                    navigation_views.remove_navigation_view(event.fragment);
+                    break;
+            }
+            break;
+
         case "presence":
-            activity_ui.update_presence_info(event.user_id, event.presence, event.server_timestamp);
+            activity_ui.update_presence_info(event.presences);
             break;
 
         case "restart":
@@ -216,23 +274,25 @@ export function dispatch_normal_event(event) {
                 allow_message_editing: noop,
                 avatar_changes_disabled: settings_account.update_avatar_change_display,
                 can_access_all_users_group: noop,
-                can_add_custom_emoji_group: noop,
+                can_add_custom_emoji_group: settings_emoji.update_custom_emoji_ui,
                 can_add_subscribers_group: noop,
-                can_create_bots_group: noop,
-                can_create_groups: noop,
+                can_create_bots_group: settings_bots.update_bot_permissions_ui,
+                can_create_groups: user_group_edit.update_group_creation_ui,
                 can_create_private_channel_group: noop,
                 can_create_public_channel_group: noop,
                 can_create_web_public_channel_group: noop,
-                can_create_write_only_bots_group: noop,
+                can_create_write_only_bots_group: settings_bots.update_bot_permissions_ui,
                 can_delete_any_message_group: noop,
                 can_delete_own_message_group: noop,
                 can_invite_users_group: noop,
-                can_manage_all_groups: noop,
+                can_manage_all_groups: user_group_edit.update_group_management_ui,
                 can_manage_billing_group: noop,
                 can_mention_many_users_group: noop,
                 can_move_messages_between_channels_group: noop,
                 can_move_messages_between_topics_group: noop,
                 can_resolve_topics_group: noop,
+                can_set_delete_message_policy_group: noop,
+                can_set_topics_policy_group: noop,
                 can_summarize_topics_group: noop,
                 create_multiuse_invite_group: noop,
                 default_code_block_language: noop,
@@ -247,7 +307,6 @@ export function dispatch_normal_event(event) {
                 inline_image_preview: noop,
                 inline_url_embed_preview: noop,
                 invite_required: noop,
-                mandatory_topics: noop,
                 message_content_edit_limit_seconds: noop,
                 message_content_delete_limit_seconds: noop,
                 message_edit_history_visibility_policy: noop,
@@ -261,6 +320,8 @@ export function dispatch_normal_event(event) {
                 push_notifications_enabled: noop,
                 require_unique_names: noop,
                 send_welcome_emails: noop,
+                topics_policy: noop,
+                require_e2ee_push_notifications: noop,
                 message_content_allowed_in_email_notifications: noop,
                 enable_spectator_access: noop,
                 signup_announcements_stream_id: noop,
@@ -271,6 +332,7 @@ export function dispatch_normal_event(event) {
                 giphy_rating: giphy.update_giphy_rating,
                 waiting_period_threshold: noop,
                 want_advertise_in_communities_directory: noop,
+                welcome_message_custom_text: noop,
                 enable_read_receipts: settings_account.update_send_read_receipts_tooltip,
                 enable_guest_user_dm_warning: compose_validate.warn_if_guest_in_dm_recipient,
                 enable_guest_user_indicator: noop,
@@ -291,11 +353,6 @@ export function dispatch_normal_event(event) {
                                 "can_create_web_public_channel_group",
                             );
                         }
-
-                        if (event.property === "mandatory_topics") {
-                            compose_recipient.update_topic_inputbox_on_mandatory_topics_change();
-                            compose_recipient.update_compose_area_placeholder_text();
-                        }
                     }
                     break;
                 case "update_dict":
@@ -308,8 +365,14 @@ export function dispatch_normal_event(event) {
                                     realm["realm_" + key] = value;
                                 }
 
+                                if (key === "topics_policy") {
+                                    compose_recipient.update_topic_inputbox_on_topics_policy_change();
+                                    compose_recipient.update_compose_area_placeholder_text();
+                                }
+
                                 if (Object.hasOwn(realm_settings, key)) {
                                     settings_org.sync_realm_settings(key);
+                                    realm_settings[key]();
                                 }
 
                                 if (
@@ -332,17 +395,6 @@ export function dispatch_normal_event(event) {
                                     gear_menu.rerender();
                                 }
 
-                                if (key === "can_add_custom_emoji_group") {
-                                    settings_emoji.update_custom_emoji_ui();
-                                }
-
-                                if (
-                                    key === "can_create_bots_group" ||
-                                    key === "can_create_write_only_bots_group"
-                                ) {
-                                    settings_bots.update_bot_permissions_ui();
-                                }
-
                                 if (
                                     key === "can_create_public_channel_group" ||
                                     key === "can_create_private_channel_group" ||
@@ -356,7 +408,7 @@ export function dispatch_normal_event(event) {
                                     key === "direct_message_permission_group"
                                 ) {
                                     settings_org.check_disable_direct_message_initiator_group_widget();
-                                    compose_closed_ui.update_buttons_for_private();
+                                    compose_closed_ui.maybe_update_buttons_for_dm_recipient();
                                     compose_recipient.check_posting_policy_for_compose_box();
                                 }
 
@@ -373,6 +425,20 @@ export function dispatch_normal_event(event) {
 
                                 if (key === "plan_type") {
                                     gear_menu.rerender();
+                                }
+
+                                if (
+                                    key === "can_add_subscribers_group" &&
+                                    overlays.streams_open()
+                                ) {
+                                    const active_stream_id =
+                                        stream_settings_components.get_active_data().id;
+                                    if (active_stream_id !== undefined) {
+                                        const slim_sub = sub_store.get(active_stream_id);
+                                        const sub =
+                                            stream_settings_data.get_sub_for_settings(slim_sub);
+                                        stream_ui_updates.update_add_subscriptions_elements(sub);
+                                    }
                                 }
                             }
                             if (event.data.authentication_methods !== undefined) {
@@ -534,7 +600,7 @@ export function dispatch_normal_event(event) {
                         event.person.user_id,
                     );
 
-                    people.add_active_user(event.person);
+                    people.add_active_user(event.person, "server_events");
                     settings_account.maybe_update_deactivate_account_button();
                     if (event.person.is_bot) {
                         settings_users.redraw_bots_list();
@@ -622,6 +688,24 @@ export function dispatch_normal_event(event) {
             }
             break;
 
+        case "reminders":
+            switch (event.op) {
+                case "add": {
+                    message_reminder.add_reminders(event.reminders);
+                    reminders_overlay_ui.rerender();
+                    left_sidebar_navigation_area.update_reminders_row();
+                    break;
+                }
+                case "remove": {
+                    message_reminder.remove_reminder(event.reminder_id);
+                    reminders_overlay_ui.remove_reminder_id(event.reminder_id);
+                    left_sidebar_navigation_area.update_reminders_row();
+                    break;
+                }
+                // No default
+            }
+            break;
+
         case "stream":
             switch (event.op) {
                 case "update":
@@ -646,13 +730,10 @@ export function dispatch_normal_event(event) {
                     break;
                 case "delete":
                     for (const stream_id of event.stream_ids) {
-                        const sub = sub_store.get(stream_id);
-                        const is_subscribed = sub.subscribed;
-                        const is_narrowed_to_stream = narrow_state.narrowed_to_stream_id(stream_id);
+                        const was_subscribed = sub_store.get(stream_id).subscribed;
                         stream_data.delete_sub(stream_id);
-                        stream_settings_ui.update_settings_for_archived(sub);
-                        message_view_header.maybe_rerender_title_area_for_stream(stream_id);
-                        if (is_subscribed) {
+                        stream_settings_ui.remove_stream(stream_id);
+                        if (was_subscribed) {
                             stream_list.remove_sidebar_row(stream_id);
                             if (stream_id === compose_state.selected_recipient_id) {
                                 compose_state.set_selected_recipient_id("");
@@ -662,25 +743,21 @@ export function dispatch_normal_event(event) {
                         settings_streams.update_default_streams_table();
                         stream_data.remove_default_stream(stream_id);
                         if (realm.realm_new_stream_announcements_stream_id === stream_id) {
-                            realm.realm_new_stream_announcements_stream_id = -1;
                             settings_org.sync_realm_settings("new_stream_announcements_stream_id");
                         }
                         if (realm.realm_signup_announcements_stream_id === stream_id) {
-                            realm.realm_signup_announcements_stream_id = -1;
                             settings_org.sync_realm_settings("signup_announcements_stream_id");
                         }
                         if (realm.realm_zulip_update_announcements_stream_id === stream_id) {
-                            realm.realm_zulip_update_announcements_stream_id = -1;
                             settings_org.sync_realm_settings(
                                 "zulip_update_announcements_stream_id",
                             );
                         }
-                        if (is_narrowed_to_stream) {
-                            assert(message_lists.current !== undefined);
-                            message_lists.current.update_trailing_bookend(true);
-                        }
+                        const message_ids = message_store.get_message_ids_in_stream(stream_id);
+                        unread_ops.process_read_messages_event(message_ids);
+                        message_events.remove_messages(message_ids);
+                        stream_topic_history.remove_history_for_stream(stream_id);
                     }
-                    message_live_update.rerender_messages_view();
                     stream_list.update_subscribe_to_more_streams_link();
                     break;
                 default:
@@ -846,6 +923,7 @@ export function dispatch_normal_event(event) {
                 "hide_ai_features",
                 "high_contrast_mode",
                 "receives_typing_notifications",
+                "resolved_topic_notice_auto_read_policy",
                 "starred_message_counts",
                 "timezone",
                 "translate_emoticons",
@@ -859,6 +937,8 @@ export function dispatch_normal_event(event) {
                 "web_navigate_to_sent_message",
                 "web_stream_unreads_count_display_policy",
                 "web_suggest_update_timezone",
+                "web_left_sidebar_unreads_count_summary",
+                "web_left_sidebar_show_channel_folders",
             ];
 
             const original_home_view = user_settings.web_home_view;
@@ -898,7 +978,7 @@ export function dispatch_normal_event(event) {
                 }
             }
             if (event.property === "high_contrast_mode") {
-                $("body").toggleClass("high-contrast");
+                $("body").toggleClass("high-contrast", event.value);
             }
             if (event.property === "demote_inactive_streams") {
                 stream_list_sort.set_filter_out_inactives();
@@ -911,7 +991,7 @@ export function dispatch_normal_event(event) {
                 }
             }
             if (event.property === "web_stream_unreads_count_display_policy") {
-                stream_list.update_dom_unread_counts_visibility();
+                stream_list.build_stream_list(true);
             }
             if (event.property === "user_list_style") {
                 settings_preferences.report_user_list_style_change(
@@ -942,6 +1022,12 @@ export function dispatch_normal_event(event) {
             }
             if (event.property === "starred_message_counts") {
                 starred_messages_ui.rerender_ui();
+            }
+            if (event.property === "web_left_sidebar_unreads_count_summary") {
+                stream_list.update_unread_counts_visibility();
+            }
+            if (event.property === "web_left_sidebar_show_channel_folders") {
+                stream_list.build_stream_list(true);
             }
             if (
                 event.property === "receives_typing_notifications" &&
@@ -975,10 +1061,28 @@ export function dispatch_normal_event(event) {
                 message_live_update.rerender_messages_view();
             }
             if (event.property === "web_escape_navigates_to_home_view") {
-                $("#go-to-home-view-hotkey-help").toggleClass("notdisplayed", !event.value);
+                $("#keyboard-shortcuts .go-to-home-view-hotkey-help").toggleClass(
+                    "notdisplayed",
+                    !event.value,
+                );
             }
             if (event.property === "web_suggest_update_timezone") {
                 $("#automatically_offer_update_time_zone").prop("checked", event.value);
+            }
+            if (event.property === "web_channel_default_view") {
+                // We need to rerender wherever `channel_url_by_user_setting` is used in the DOM.
+                // Left sidebar
+                const force_rerender = true;
+                stream_list.create_initial_sidebar_rows(force_rerender);
+                stream_list.update_streams_sidebar(force_rerender);
+                // Inbox View
+                inbox_ui.complete_rerender();
+                // Recent View
+                recent_view_ui.complete_rerender();
+                // Message feed
+                for (const msg_list of message_lists.all_rendered_message_lists()) {
+                    msg_list.rerender();
+                }
             }
             settings_preferences.update_page(event.property);
             break;

@@ -1,4 +1,5 @@
 from email.headerregistry import Address
+from enum import Enum
 from typing import TYPE_CHECKING, Any, Optional
 from uuid import uuid4
 
@@ -33,6 +34,13 @@ from zerver.models.constants import MAX_LANGUAGE_ID_LENGTH
 
 if TYPE_CHECKING:
     from zerver.models import Realm
+
+
+class ResolvedTopicNoticeAutoReadPolicyEnum(Enum):
+    # The case is used by Pydantic in the API
+    always = 1
+    except_followed = 2
+    never = 3
 
 
 class UserBaseSettings(models.Model):
@@ -104,6 +112,10 @@ class UserBaseSettings(models.Model):
     ]
     demote_inactive_streams = models.PositiveSmallIntegerField(default=DEMOTE_STREAMS_AUTOMATIC)
 
+    # UI setting to control showing channel folders in the left sidebar
+    # of the Zulip web app.
+    web_left_sidebar_show_channel_folders = models.BooleanField(default=True, db_default=True)
+
     # UI setting controlling whether or not the Zulip web app will
     # mark messages as read as it scrolls through the feed.
 
@@ -125,10 +137,14 @@ class UserBaseSettings(models.Model):
 
     WEB_CHANNEL_DEFAULT_VIEW_FIRST_TOPIC = 1
     WEB_CHANNEL_DEFAULT_VIEW_CHANNEL_FEED = 2
+    WEB_CHANNEL_DEFAULT_VIEW_TOPIC_LIST = 3
+    WEB_CHANNEL_DEFAULT_VIEW_TOP_UNREAD = 4
 
     WEB_CHANNEL_DEFAULT_VIEW_CHOICES = [
         WEB_CHANNEL_DEFAULT_VIEW_FIRST_TOPIC,
+        WEB_CHANNEL_DEFAULT_VIEW_TOPIC_LIST,
         WEB_CHANNEL_DEFAULT_VIEW_CHANNEL_FEED,
+        WEB_CHANNEL_DEFAULT_VIEW_TOP_UNREAD,
     ]
 
     web_channel_default_view = models.SmallIntegerField(
@@ -138,14 +154,12 @@ class UserBaseSettings(models.Model):
 
     # Emoji sets
     GOOGLE_EMOJISET = "google"
-    GOOGLE_BLOB_EMOJISET = "google-blob"
     TEXT_EMOJISET = "text"
     TWITTER_EMOJISET = "twitter"
     EMOJISET_CHOICES = (
         (GOOGLE_EMOJISET, "Google"),
         (TWITTER_EMOJISET, "Twitter"),
         (TEXT_EMOJISET, "Plain text"),
-        (GOOGLE_BLOB_EMOJISET, "Google blobs"),
     )
     emojiset = models.CharField(default=GOOGLE_EMOJISET, choices=EMOJISET_CHOICES, max_length=20)
 
@@ -172,6 +186,8 @@ class UserBaseSettings(models.Model):
     web_stream_unreads_count_display_policy = models.PositiveSmallIntegerField(
         default=WEB_STREAM_UNREADS_COUNT_DISPLAY_POLICY_UNMUTED_STREAMS
     )
+
+    web_left_sidebar_unreads_count_summary = models.BooleanField(default=True, db_default=True)
 
     # Setting to control whether to automatically go to the
     # conversation where message was sent.
@@ -260,6 +276,12 @@ class UserBaseSettings(models.Model):
         default=AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_SEND,
     )
     automatically_follow_topics_where_mentioned = models.BooleanField(default=True)
+
+    resolved_topic_notice_auto_read_policy = models.PositiveSmallIntegerField(
+        default=ResolvedTopicNoticeAutoReadPolicyEnum.except_followed.value,
+        db_default=ResolvedTopicNoticeAutoReadPolicyEnum.except_followed.value,
+    )
+    RESOLVED_TOPIC_NOTICE_AUTO_READ_POLICY_TYPES = list(ResolvedTopicNoticeAutoReadPolicyEnum)
 
     # Whether or not the user wants to sync their drafts.
     enable_drafts_synchronization = models.BooleanField(default=True)
@@ -362,6 +384,9 @@ class UserBaseSettings(models.Model):
         web_navigate_to_sent_message=bool,
         web_suggest_update_timezone=bool,
         hide_ai_features=bool,
+        resolved_topic_notice_auto_read_policy=ResolvedTopicNoticeAutoReadPolicyEnum,
+        web_left_sidebar_unreads_count_summary=bool,
+        web_left_sidebar_show_channel_folders=bool,
     )
 
     modern_notification_settings = dict(
@@ -388,6 +413,29 @@ class UserBaseSettings(models.Model):
         **modern_settings,
     }
 
+    # Settings where security policy may restrict the ability of
+    # organization administrators to change this setting for other
+    # accounts.
+    #
+    # Core account fields like name and email address are not part of
+    # the property_types framework and thus do not appear here.
+    SECURITY_SENSITIVE_USER_SETTINGS = frozenset(
+        {
+            # Data privacy controls
+            "allow_private_data_export",
+            "email_address_visibility",
+            # Email notification controls
+            "enable_digest_emails",
+            "enable_login_emails",
+            "enable_marketing_emails",
+            # Availability/presence privacy controls
+            "presence_enabled",
+            "send_private_typing_notifications",
+            "send_read_receipts",
+            "send_stream_typing_notifications",
+        }
+    )
+
     class Meta:
         abstract = True
 
@@ -409,7 +457,6 @@ class RealmUserDefault(UserBaseSettings):
 class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
     USERNAME_FIELD = "email"
     MAX_NAME_LENGTH = 100
-    MIN_NAME_LENGTH = 2
     API_KEY_LENGTH = 32
     NAME_INVALID_CHARS = ["*", "`", "\\", ">", '"', "@"]
 
@@ -564,13 +611,14 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
     last_active_message_id = models.IntegerField(null=True)
 
     # Mirror dummies are fake (!is_active) users used to provide
-    # message senders in our cross-protocol Zephyr<->Zulip content
-    # mirroring integration, so that we can display mirrored content
-    # like native Zulip messages (with a name + avatar, etc.).
+    # message senders in cross-protocol mirroring integrations, so
+    # that we can display mirrored content like native Zulip messages
+    # (with a name + avatar, etc.).  We also abuse this for data
+    # imports and deleted users.
     is_mirror_dummy = models.BooleanField(default=False)
 
     # Users with this flag set are allowed to forge messages as sent by another
-    # user and to send to private streams; also used for Zephyr/Jabber mirroring.
+    # user and to send to private streams; also used for Jabber mirroring.
     can_forge_sender = models.BooleanField(default=False, db_index=True)
     # Users with this flag set can create other users via API.
     can_create_users = models.BooleanField(default=False, db_index=True)
@@ -776,7 +824,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
 
     @property
     def is_moderator(self) -> bool:
-        return self.role == UserProfile.ROLE_MODERATOR
+        return self.is_realm_admin or self.role == UserProfile.ROLE_MODERATOR
 
     @is_moderator.setter
     def is_moderator(self, value: bool) -> None:
@@ -826,9 +874,9 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
             # the number of database queries by fetching the group
             # setting fields using select_related.
             realm = self.realm
-        allowed_user_group = getattr(realm, policy_name)
+        allowed_user_group_id = getattr(realm, policy_name).id
         setting_config = Realm.REALM_PERMISSION_GROUP_SETTINGS[policy_name]
-        return user_has_permission_for_group_setting(allowed_user_group, self, setting_config)
+        return user_has_permission_for_group_setting(allowed_user_group_id, self, setting_config)
 
     def can_create_public_streams(self, realm: Optional["Realm"] = None) -> bool:
         return self.has_permission("can_create_public_channel_group", realm)
@@ -877,11 +925,17 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
     def can_delete_own_message(self) -> bool:
         return self.has_permission("can_delete_own_message_group")
 
+    def can_set_delete_message_policy(self) -> bool:
+        return self.is_realm_admin or self.has_permission("can_set_delete_message_policy_group")
+
+    def can_set_topics_policy(self) -> bool:
+        return self.is_realm_admin or self.has_permission("can_set_topics_policy_group")
+
     def can_summarize_topics(self) -> bool:
         return self.has_permission("can_summarize_topics_group")
 
     def can_access_public_streams(self) -> bool:
-        return not (self.is_guest or self.realm.is_zephyr_mirror_realm)
+        return not self.is_guest
 
     def major_tos_version(self) -> int:
         if self.tos_version is not None:
@@ -922,15 +976,8 @@ post_save.connect(flush_user_profile, sender=UserProfile)
 
 
 def base_bulk_get_user_queryset() -> QuerySet[UserProfile]:
-    """Base select_related options for UserProfile for general user;
-    prefetches can_access_all_users_group, which is often necessary
-    for calculations of where events should be sent.
-    """
-    return UserProfile.objects.select_related(
-        "realm",
-        "realm__can_access_all_users_group",
-        "realm__can_access_all_users_group__named_user_group",
-    )
+    # Base select_related options for UserProfile for general user.
+    return UserProfile.objects.select_related("realm")
 
 
 def base_get_user_queryset() -> QuerySet[UserProfile]:
@@ -938,16 +985,7 @@ def base_get_user_queryset() -> QuerySet[UserProfile]:
     In contrast with base_bulk_get_user_queryset, additionally fetches
     fields that are relevant for this user sending a message.
     """
-    return UserProfile.objects.select_related(
-        "realm",
-        "realm__can_access_all_users_group",
-        "realm__can_access_all_users_group__named_user_group",
-        "realm__direct_message_initiator_group",
-        "realm__direct_message_initiator_group__named_user_group",
-        "realm__direct_message_permission_group",
-        "realm__direct_message_permission_group__named_user_group",
-        "bot_owner",
-    )
+    return UserProfile.objects.select_related("realm", "bot_owner")
 
 
 @cache_with_key(user_profile_by_id_cache_key, timeout=3600 * 24 * 7)
@@ -1115,6 +1153,36 @@ def get_realm_user_dicts(realm_id: int) -> list[RawUserDict]:
     )
 
 
+def get_partial_realm_user_dicts(
+    realm_id: int, user_profile: UserProfile | None
+) -> list[RawUserDict]:
+    """Returns a subset of the users in the realm, guaranteed to
+    include the current user as well as all bots in the realm.
+    """
+
+    # Currently, we send the minimum set of users permitted by the API.
+    user_selection_clause = Q(is_bot=True)
+    if user_profile is not None:
+        user_selection_clause |= Q(id=user_profile.id)
+
+    return list(
+        UserProfile.objects.filter(realm_id=realm_id)
+        .filter(
+            user_selection_clause,
+        )
+        .values(*realm_user_dict_fields)
+    )
+
+
+def get_realm_user_dicts_from_ids(realm_id: int, user_ids: list[int]) -> list[RawUserDict]:
+    return list(
+        UserProfile.objects.filter(
+            realm_id=realm_id,
+            id__in=user_ids,
+        ).values(*realm_user_dict_fields)
+    )
+
+
 @cache_with_key(active_user_ids_cache_key, timeout=3600 * 24 * 7)
 def active_user_ids(realm_id: int) -> list[int]:
     query = UserProfile.objects.filter(
@@ -1174,3 +1242,34 @@ def get_bot_dicts_in_realm(realm: "Realm") -> list[dict[str, Any]]:
 
 def is_cross_realm_bot_email(email: str) -> bool:
     return email.lower() in settings.CROSS_REALM_BOT_EMAILS
+
+
+class ExternalAuthID(models.Model):
+    user = models.ForeignKey(UserProfile, on_delete=CASCADE)
+    realm = models.ForeignKey("zerver.Realm", on_delete=CASCADE)
+    date_created = models.DateTimeField(default=timezone_now)
+    # TODO: We might want to add is_active and date_deactivated fields in the future.
+
+    external_auth_method_name = models.TextField(db_index=False)
+    external_auth_id = models.TextField(db_index=False)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=[
+                    "realm",
+                    "external_auth_method_name",
+                    "external_auth_id",
+                ],
+                name="zerver_externalauthid_uniq",
+            ),
+            # Each user should only have at most a single ExternalAuthID
+            # for any authentication method.
+            models.UniqueConstraint(
+                fields=[
+                    "user",
+                    "external_auth_method_name",
+                ],
+                name="zerver_user_externalauth_uniq",
+            ),
+        ]

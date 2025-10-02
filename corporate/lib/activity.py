@@ -4,7 +4,6 @@ from dataclasses import dataclass
 from datetime import datetime
 from decimal import Decimal
 from typing import Any
-from urllib.parse import urlencode
 
 from django.conf import settings
 from django.db import connection
@@ -16,9 +15,9 @@ from django.utils.timezone import now as timezone_now
 from markupsafe import Markup
 from psycopg2.sql import Composable
 
-from corporate.models import CustomerPlan, LicenseLedger
+from corporate.models.licenses import LicenseLedger
+from corporate.models.plans import CustomerPlan
 from zerver.lib.pysa import mark_sanitized
-from zerver.lib.url_encoding import append_url_query_string
 from zerver.models import Realm
 from zilencer.models import (
     RemoteCustomerUserCount,
@@ -138,16 +137,12 @@ def realm_stats_link(realm_str: str) -> Markup:
 
 
 def user_support_link(email: str) -> Markup:
-    support_url = reverse("support")
-    query = urlencode({"q": email})
-    url = append_url_query_string(support_url, query)
+    url = reverse("support", query={"q": email})
     return Markup('<a href="{url}"><i class="fa fa-gear"></i></a>').format(url=url)
 
 
 def realm_support_link(realm_str: str) -> Markup:
-    support_url = reverse("support")
-    query = urlencode({"q": realm_str})
-    url = append_url_query_string(support_url, query)
+    url = reverse("support", query={"q": realm_str})
     return Markup('<a href="{url}">{realm}</i></a>').format(url=url, realm=realm_str)
 
 
@@ -165,13 +160,17 @@ def remote_installation_stats_link(server_id: int) -> Markup:
 
 
 def remote_installation_support_link(hostname: str) -> Markup:
-    support_url = reverse("remote_servers_support")
-    query = urlencode({"q": hostname})
-    url = append_url_query_string(support_url, query)
+    url = reverse("remote_servers_support", query={"q": hostname})
     return Markup('<a href="{url}"><i class="fa fa-gear"></i></a>').format(url=url)
 
 
-def get_plan_rate_percentage(discount: str | None) -> str:
+def get_plan_rate_percentage(discount: str | None, has_fixed_price: bool) -> str:
+    # We want to clearly note plans with a fixed price, and not show
+    # them as paying 100%, as they are usually a special, negotiated
+    # rate with the customer.
+    if has_fixed_price:
+        return "Fixed"
+
     # CustomerPlan.discount is a string field that stores the discount.
     if discount is None or discount == "0":
         return "100%"
@@ -193,6 +192,7 @@ def get_remote_activity_plan_data(
 ) -> RemoteActivityPlanData:
     from corporate.lib.stripe import RemoteRealmBillingSession, RemoteServerBillingSession
 
+    has_fixed_price = plan.fixed_price is not None
     if plan.tier == CustomerPlan.TIER_SELF_HOSTED_LEGACY or plan.status in (
         CustomerPlan.DOWNGRADE_AT_END_OF_FREE_TRIAL,
         CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE,
@@ -206,13 +206,13 @@ def get_remote_activity_plan_data(
         renewal_cents = RemoteRealmBillingSession(
             remote_realm=remote_realm
         ).get_annual_recurring_revenue_for_support_data(plan, license_ledger)
-        current_rate = get_plan_rate_percentage(plan.discount)
+        current_rate = get_plan_rate_percentage(plan.discount, has_fixed_price)
     else:
         assert remote_server is not None
         renewal_cents = RemoteServerBillingSession(
             remote_server=remote_server
         ).get_annual_recurring_revenue_for_support_data(plan, license_ledger)
-        current_rate = get_plan_rate_percentage(plan.discount)
+        current_rate = get_plan_rate_percentage(plan.discount, has_fixed_price)
 
     return RemoteActivityPlanData(
         current_status=plan.get_plan_status_as_text(),
@@ -247,13 +247,16 @@ def get_estimated_arr_and_rate_by_realm() -> tuple[dict[str, int], dict[str, str
 
     for plan in plans:
         assert plan.customer.realm is not None
-        latest_ledger_entry = plan.latest_ledger_entry[0]  # type: ignore[attr-defined] # attribute from prefetch_related query
+        latest_ledger_entry = plan.latest_ledger_entry[0]
         assert latest_ledger_entry is not None
         renewal_cents = RealmBillingSession(
             realm=plan.customer.realm
         ).get_annual_recurring_revenue_for_support_data(plan, latest_ledger_entry)
         annual_revenue[plan.customer.realm.string_id] = renewal_cents
-        plan_rate[plan.customer.realm.string_id] = get_plan_rate_percentage(plan.discount)
+        has_fixed_price = plan.fixed_price is not None
+        plan_rate[plan.customer.realm.string_id] = get_plan_rate_percentage(
+            plan.discount, has_fixed_price
+        )
     return annual_revenue, plan_rate
 
 
@@ -282,7 +285,7 @@ def get_plan_data_by_remote_server() -> dict[int, RemoteActivityPlanData]:  # no
         server_id = plan.customer.remote_server.id
         assert server_id is not None
 
-        latest_ledger_entry = plan.latest_ledger_entry[0]  # type: ignore[attr-defined] # attribute from prefetch_related query
+        latest_ledger_entry = plan.latest_ledger_entry[0]
         assert latest_ledger_entry is not None
 
         plan_data = get_remote_activity_plan_data(
@@ -332,7 +335,7 @@ def get_plan_data_by_remote_realm() -> dict[int, dict[int, RemoteActivityPlanDat
         server_id = plan.customer.remote_realm.server_id
         assert server_id is not None
 
-        latest_ledger_entry = plan.latest_ledger_entry[0]  # type: ignore[attr-defined] # attribute from prefetch_related query
+        latest_ledger_entry = plan.latest_ledger_entry[0]
         assert latest_ledger_entry is not None
 
         plan_data = get_remote_activity_plan_data(

@@ -40,7 +40,7 @@ no matter how many other conversations are going on.
 If anything is out of place, it’s easy to move messages, rename and split
 topics, or even move a topic to a different channel.
 
-![Channels and topics](/static/images/help/channels-and-topics.png)
+![Channels and topics](/static/images/landing-page/why-zulip/channels-and-topics.png)
 
 <br />
 

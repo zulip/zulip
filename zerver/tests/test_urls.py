@@ -6,7 +6,6 @@ from django.test import Client
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.url_redirects import (
     API_DOCUMENTATION_REDIRECTS,
-    HELP_DOCUMENTATION_REDIRECTS,
     LANDING_PAGE_REDIRECTS,
     POLICY_DOCUMENTATION_REDIRECTS,
 )
@@ -29,27 +28,27 @@ class PublicURLTest(ZulipTestCase):
                 msg=f"Expected {expected_status}, received {response.status_code} for {method} to {url}",
             )
 
-    def test_help_pages(self) -> None:
-        # Test all files in help documentation directory (except for 'index.md',
-        # 'missing.md' and `help/include/` files).
+    def test_api_doc_pages(self) -> None:
+        # Test all files in api_docs documentation directory (except for 'index.md',
+        # 'missing.md', "api-doc-template.md", `api_docs/include/` and `api_docs/unmerged.d/` files).
 
-        help_urls = []
-        for doc in os.listdir("./help/"):
+        api_doc_urls = []
+        for doc in os.listdir("./api_docs/"):
             if doc.startswith(".") or "~" in doc or "#" in doc:
                 continue  # nocoverage -- just here for convenience
-            if doc in {"index.md", "include", "missing.md"}:
+            if doc in {"index.md", "include", "missing.md", "api-doc-template.md", "unmerged.d"}:
                 continue
-            url = "/help/" + os.path.splitext(doc)[0]  # Strip the extension.
-            help_urls.append(url)
+            url = "/api/" + os.path.splitext(doc)[0]  # Strip the extension.
+            api_doc_urls.append(url)
 
-        # We have lots of help files, so this will be expensive!
-        self.assertGreater(len(help_urls), 190)
+        # We have lots of api_docs files, so this will be expensive!
+        self.assertGreater(len(api_doc_urls), 25)
 
-        expected_tag = """<meta property="og:description" content="This is a help page" />"""
+        expected_tag = """<meta property="og:description" content="This is an API docs page" />"""
 
-        for url in help_urls:
+        for url in api_doc_urls:
             with mock.patch(
-                "zerver.lib.html_to_text.html_to_text", return_value="This is a help page"
+                "zerver.lib.html_to_text.html_to_text", return_value="This is an API docs page"
             ) as m:
                 response = self.client_get(url)
                 m.assert_called_once()
@@ -60,6 +59,7 @@ class PublicURLTest(ZulipTestCase):
         urls = {
             "/devtools/buttons/": "Button styles browser",
             "/devtools/banners/": "Banner styles browser",
+            "/devtools/inputs/": "Input styles browser",
         }
 
         for url, expected_content in urls.items():
@@ -83,7 +83,7 @@ class PublicURLTest(ZulipTestCase):
                 "/ru/accounts/home/",
                 "/en/accounts/login/",
                 "/ru/accounts/login/",
-                "/help/",
+                "/api/",
                 # Since web-public streams are enabled in this `zulip`
                 # instance, the public access experience is loaded directly.
                 "/",
@@ -100,10 +100,10 @@ class PublicURLTest(ZulipTestCase):
                 "/api/v1/streams",
             ],
             404: [
-                "/help/api-doc-template",
-                "/help/nonexistent",
-                "/help/include/admin",
-                "/help/" + "z" * 1000,
+                "/api/api-doc-template",
+                "/api/nonexistent",
+                "/api/include/admin",
+                "/api/" + "z" * 1000,
             ],
         }
 
@@ -186,11 +186,6 @@ class RedirectURLTest(ZulipTestCase):
             result = self.client_get(redirect.old_url, follow=True)
             self.assert_in_success_response(["Zulip homepage", "API documentation home"], result)
 
-    def test_help_redirects(self) -> None:
-        for redirect in HELP_DOCUMENTATION_REDIRECTS:
-            result = self.client_get(redirect.old_url, follow=True)
-            self.assert_in_success_response(["Zulip homepage", "Help center home"], result)
-
     def test_policy_redirects(self) -> None:
         for redirect in POLICY_DOCUMENTATION_REDIRECTS:
             result = self.client_get(redirect.old_url, follow=True)
@@ -198,8 +193,9 @@ class RedirectURLTest(ZulipTestCase):
 
     def test_landing_page_redirects(self) -> None:
         for redirect in LANDING_PAGE_REDIRECTS:
-            result = self.client_get(redirect.old_url, follow=True)
-            self.assert_in_success_response(["Download"], result)
+            if redirect.old_url != "/try-zulip/":
+                result = self.client_get(redirect.old_url, follow=True)
+                self.assert_in_success_response(["Download"], result)
 
             result = self.client_get(redirect.old_url)
             self.assertEqual(result.status_code, 301)

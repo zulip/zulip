@@ -4,7 +4,7 @@
 // (We should do bot updates here too.)
 import $ from "jquery";
 import assert from "minimalistic-assert";
-import {z} from "zod";
+import * as z from "zod/mini";
 
 import * as activity_ui from "./activity_ui.ts";
 import * as blueslip from "./blueslip.ts";
@@ -30,7 +30,8 @@ import * as stream_events from "./stream_events.ts";
 import * as user_group_edit from "./user_group_edit.ts";
 import * as user_profile from "./user_profile.ts";
 
-export const user_update_schema = z.object({user_id: z.number()}).and(
+export const user_update_schema = z.intersection(
+    z.object({user_id: z.number()}),
     z.union([
         z.object({
             avatar_source: z.string(),
@@ -109,7 +110,8 @@ export const update_person = function update(event: UserUpdate): void {
         user.is_owner = event.role === settings_config.user_role_values.owner.code;
         user.is_admin = event.role === settings_config.user_role_values.admin.code || user.is_owner;
         user.is_guest = event.role === settings_config.user_role_values.guest.code;
-        user.is_moderator = event.role === settings_config.user_role_values.moderator.code;
+        user.is_moderator =
+            user.is_admin || event.role === settings_config.user_role_values.moderator.code;
         settings_users.update_user_data(event.user_id, event);
         user_profile.update_profile_modal_ui(user, event);
 
@@ -150,7 +152,10 @@ export const update_person = function update(event: UserUpdate): void {
             current_user.avatar_url = url;
             current_user.avatar_url_medium = event.avatar_url_medium;
             $("#user-avatar-upload-widget .image-block").attr("src", event.avatar_url_medium);
-            $("#personal-menu .header-button-avatar").attr("src", `${event.avatar_url_medium}`);
+            $("#personal-menu-dropdown .avatar-image, .header-button-avatar-image").attr(
+                "src",
+                `${event.avatar_url_medium}`,
+            );
         }
 
         message_live_update.update_avatar(user.user_id, event.avatar_url);

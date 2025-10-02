@@ -156,20 +156,24 @@ export class SettingsPanelMenu {
     }
 
     prev(): boolean {
-        this.$curr_li.prevAll(":visible").first().trigger("focus").trigger("click");
+        const li = [...this.$curr_li.prevAll()].find((li) => li.getClientRects().length);
+        li?.focus();
+        li?.click();
         return true;
     }
 
     next(): boolean {
-        this.$curr_li.nextAll(":visible").first().trigger("focus").trigger("click");
+        const li = [...this.$curr_li.nextAll()].find((li) => li.getClientRects().length);
+        li?.focus();
+        li?.click();
         return true;
     }
 
     enter_panel(): boolean {
         const $panel = this.get_panel();
-        const $panel_elem = $panel.find("input:visible,button:visible,select:visible").first();
-
-        $panel_elem.trigger("focus");
+        [...$panel.find("input,button,select")]
+            .find((element) => element.getClientRects().length)
+            ?.focus();
         return true;
     }
 

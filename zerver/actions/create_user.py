@@ -66,7 +66,8 @@ from zerver.models import (
 )
 from zerver.models.groups import SystemGroups
 from zerver.models.realm_audit_logs import AuditLogEventType
-from zerver.models.users import active_user_ids, bot_owner_user_ids, get_system_bot
+from zerver.models.streams import StreamTopicsPolicyEnum
+from zerver.models.users import ExternalAuthID, active_user_ids, bot_owner_user_ids, get_system_bot
 from zerver.tornado.django_api import send_event_on_commit
 
 MAX_NUM_RECENT_MESSAGES = 1000
@@ -82,6 +83,11 @@ def send_message_to_signup_notification_stream(
 
     with override_language(realm.default_language):
         topic_name = _("signups")
+        if (
+            signup_announcements_stream.topics_policy
+            == StreamTopicsPolicyEnum.empty_topic_only.value
+        ):
+            topic_name = ""
 
     internal_send_stream_message(sender, signup_announcements_stream, topic_name, message)
 
@@ -266,6 +272,7 @@ def add_new_user_history(
 
 # Does the processing for a new user account:
 # * Subscribes to default/invitation streams
+# * Adds to initial user groups
 # * Fills in some recent historical messages
 # * Notifies other users in realm and Zulip about the signup
 # * Deactivates PreregistrationUser objects
@@ -277,7 +284,7 @@ def process_new_human_user(
     realm_creation: bool = False,
     add_initial_stream_subscriptions: bool = True,
 ) -> None:
-    # subscribe to default/invitation streams and
+    # subscribe to default/invitation streams, add to groups and
     # fill in some recent historical messages
     set_up_streams_and_groups_for_new_human_user(
         user_profile=user_profile,
@@ -288,12 +295,9 @@ def process_new_human_user(
     )
 
     realm = user_profile.realm
-    mit_beta_user = realm.is_zephyr_mirror_realm
 
-    # mit_beta_users don't have a referred_by field
     if (
-        not mit_beta_user
-        and prereg_user is not None
+        prereg_user is not None
         and prereg_user.referred_by is not None
         and prereg_user.referred_by.is_active
         and prereg_user.notify_referrer_on_join
@@ -344,10 +348,19 @@ def process_new_human_user(
 
     # We have an import loop here; it's intentional, because we want
     # to keep all the onboarding code in zerver/lib/onboarding.py.
-    from zerver.lib.onboarding import send_initial_direct_message
+    from zerver.lib.onboarding import send_initial_direct_messages_to_user
 
-    message_id = send_initial_direct_message(user_profile)
-    UserMessage.objects.filter(user_profile=user_profile, message_id=message_id).update(
+    welcome_message_custom_text = realm.welcome_message_custom_text
+    if prereg_user is not None and prereg_user.welcome_message_custom_text is not None:
+        welcome_message_custom_text = prereg_user.welcome_message_custom_text
+    initial_direct_message_ids = send_initial_direct_messages_to_user(
+        user_profile, welcome_message_custom_text=welcome_message_custom_text
+    )
+    message_id_list = [initial_direct_message_ids.welcome_bot_intro_message_id]
+    if initial_direct_message_ids.welcome_bot_custom_message_id is not None:
+        message_id_list.append(initial_direct_message_ids.welcome_bot_custom_message_id)
+
+    UserMessage.objects.filter(user_profile=user_profile, message_id__in=message_id_list).update(
         flags=F("flags").bitor(UserMessage.flags.starred)
     )
 
@@ -398,11 +411,6 @@ def notify_created_user(user_profile: UserProfile, notify_user_ids: list[int]) -
     else:
         active_realm_users = list(user_profile.realm.get_active_users())
 
-        # This call to user_access_restricted_in_realm results in
-        # one extra query in the user creation codepath to check
-        # "realm.can_access_all_users_group.name" because we do
-        # not prefetch realm and its related fields when fetching
-        # PreregistrationUser object.
         if user_access_restricted_in_realm(user_profile):
             for user in active_realm_users:
                 if user.is_guest:
@@ -499,7 +507,7 @@ def notify_created_bot(user_profile: UserProfile) -> None:
     send_event_on_commit(user_profile.realm, event, bot_owner_user_ids(user_profile))
 
 
-@transaction.atomic(durable=True)
+@transaction.atomic(savepoint=False)
 def do_create_user(
     email: str,
     password: str | None,
@@ -525,6 +533,7 @@ def do_create_user(
     enable_marketing_emails: bool = True,
     email_address_visibility: int | None = None,
     add_initial_stream_subscriptions: bool = True,
+    external_auth_id_dict: dict[str, str] | None = None,
 ) -> UserProfile:
     if settings.BILLING_ENABLED:
         from corporate.lib.stripe import RealmBillingSession
@@ -594,7 +603,7 @@ def do_create_user(
     if user_profile.role == UserProfile.ROLE_MEMBER and not user_profile.is_provisional_member:
         full_members_system_group = NamedUserGroup.objects.get(
             name=SystemGroups.FULL_MEMBERS,
-            realm=user_profile.realm,
+            realm_for_sharding=user_profile.realm,
             is_system_group=True,
         )
         UserGroupMembership.objects.create(
@@ -618,6 +627,15 @@ def do_create_user(
         do_send_user_group_members_update_event(
             "add_members", full_members_system_group, [user_profile.id]
         )
+
+    if external_auth_id_dict:
+        for external_auth_method_name, external_auth_id in external_auth_id_dict.items():
+            ExternalAuthID.objects.create(
+                user=user_profile,
+                realm=user_profile.realm,
+                external_auth_method_name=external_auth_method_name,
+                external_auth_id=external_auth_id,
+            )
 
     if prereg_realm is not None:
         prereg_realm.created_user = user_profile

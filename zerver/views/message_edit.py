@@ -23,12 +23,14 @@ from zerver.lib.message import (
 )
 from zerver.lib.request import RequestNotes
 from zerver.lib.response import json_success
+from zerver.lib.streams import can_delete_any_message_in_channel, can_delete_own_message_in_channel
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.topic import maybe_rename_empty_topic_to_general_chat
 from zerver.lib.typed_endpoint import OptionalTopic, PathOnly, typed_endpoint
 from zerver.lib.types import EditHistoryEvent, FormattedEditHistoryEvent
 from zerver.models import Message, UserProfile
 from zerver.models.realms import MessageEditHistoryVisibilityPolicyEnum
+from zerver.models.streams import Stream, get_stream_by_id_in_realm
 
 
 def fill_edit_history_entries(
@@ -44,10 +46,13 @@ def fill_edit_history_entries(
     """
     prev_content = message.content
     prev_rendered_content = message.rendered_content
-    is_channel_message = message.is_stream_message()
-    prev_topic_name = maybe_rename_empty_topic_to_general_chat(
-        message.topic_name(), is_channel_message, allow_empty_topic_name
-    )
+    is_channel_message = message.is_channel_message
+    if is_channel_message:
+        prev_topic_name = maybe_rename_empty_topic_to_general_chat(
+            message.topic_name(), is_channel_message, allow_empty_topic_name
+        )
+    else:
+        prev_topic_name = ""
 
     # Make sure that the latest entry in the history corresponds to the
     # message's last edit time
@@ -108,8 +113,8 @@ def get_message_edit_history(
     request: HttpRequest,
     user_profile: UserProfile,
     *,
-    message_id: PathOnly[NonNegativeInt],
     allow_empty_topic_name: Json[bool] = False,
+    message_id: PathOnly[NonNegativeInt],
 ) -> HttpResponse:
     user_realm_message_edit_history_visibility_policy = (
         user_profile.realm.message_edit_history_visibility_policy
@@ -146,13 +151,14 @@ def update_message_backend(
     request: HttpRequest,
     user_profile: UserProfile,
     *,
+    content: str | None = None,
     message_id: PathOnly[NonNegativeInt],
+    prev_content_sha256: str | None = None,
+    propagate_mode: Literal["change_later", "change_one", "change_all"] = "change_one",
+    send_notification_to_new_thread: Json[bool] = True,
+    send_notification_to_old_thread: Json[bool] = False,
     stream_id: Json[NonNegativeInt] | None = None,
     topic_name: OptionalTopic = None,
-    propagate_mode: Literal["change_later", "change_one", "change_all"] = "change_one",
-    send_notification_to_old_thread: Json[bool] = False,
-    send_notification_to_new_thread: Json[bool] = True,
-    content: str | None = None,
 ) -> HttpResponse:
     updated_message_result = check_update_message(
         user_profile,
@@ -163,6 +169,7 @@ def update_message_backend(
         send_notification_to_old_thread,
         send_notification_to_new_thread,
         content,
+        prev_content_sha256,
     )
 
     # Include the number of messages changed in the logs
@@ -176,12 +183,27 @@ def update_message_backend(
 def validate_can_delete_message(user_profile: UserProfile, message: Message) -> None:
     if user_profile.can_delete_any_message():
         return
+
+    stream: Stream | None = None
+    if message.is_channel_message:
+        stream = get_stream_by_id_in_realm(message.recipient.type_id, user_profile.realm)
+        if can_delete_any_message_in_channel(user_profile, stream):
+            return
+
     if message.sender != user_profile and message.sender.bot_owner_id != user_profile.id:
         # Users can only delete messages sent by them or by their bots.
         raise JsonableError(_("You don't have permission to delete this message"))
+
     if not user_profile.can_delete_own_message():
-        # Only user with roles as allowed by can_delete_own_message_group can delete message.
-        raise JsonableError(_("You don't have permission to delete this message"))
+        if not message.is_channel_message:
+            raise JsonableError(_("You don't have permission to delete this message"))
+
+        assert stream is not None
+        # For channel messages, users are required to have either the
+        # channel-level permission or the organization-level permission to delete
+        # their own messages.
+        if not can_delete_own_message_in_channel(user_profile, stream):
+            raise JsonableError(_("You don't have permission to delete this message"))
 
     deadline_seconds: int | None = user_profile.realm.message_content_delete_limit_seconds
     if deadline_seconds is None:
@@ -219,9 +241,9 @@ def json_fetch_raw_message(
     request: HttpRequest,
     maybe_user_profile: UserProfile | AnonymousUser,
     *,
-    message_id: PathOnly[NonNegativeInt],
-    apply_markdown: Json[bool] = True,
     allow_empty_topic_name: Json[bool] = False,
+    apply_markdown: Json[bool] = True,
+    message_id: PathOnly[NonNegativeInt],
 ) -> HttpResponse:
     if not maybe_user_profile.is_authenticated:
         realm = get_valid_realm_from_request(request)

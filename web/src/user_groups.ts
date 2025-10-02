@@ -1,5 +1,5 @@
 import assert from "minimalistic-assert";
-import {z} from "zod";
+import * as z from "zod/mini";
 
 import * as blueslip from "./blueslip.ts";
 import {FoldDict} from "./fold_dict.ts";
@@ -12,8 +12,8 @@ import * as util from "./util.ts";
 
 type UserGroupRaw = z.infer<typeof raw_user_group_schema>;
 
-export const user_group_schema = raw_user_group_schema.extend({
-    // These are delivered via the API as lists, but converted to sets
+export const user_group_schema = z.object({
+    ...raw_user_group_schema.shape, // These are delivered via the API as lists, but converted to sets
     // during initialization for more convenient manipulation.
     members: z.set(z.number()),
     direct_subgroup_ids: z.set(z.number()),
@@ -303,6 +303,19 @@ export function is_setting_group_empty(setting_group: GroupSettingValue): boolea
     }
 
     return true;
+}
+
+export function is_setting_group_set_to_nobody_group(setting_group: GroupSettingValue): boolean {
+    if (typeof setting_group === "number") {
+        const user_group = get_user_group_from_id(setting_group);
+        if (user_group.name === "role:nobody") {
+            return true;
+        }
+
+        return false;
+    }
+
+    return setting_group.direct_subgroups.length === 0 && setting_group.direct_members.length === 0;
 }
 
 export function get_user_groups_of_user(

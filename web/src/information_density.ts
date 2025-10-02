@@ -1,6 +1,6 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
-import {z} from "zod";
+import * as z from "zod/mini";
 
 import {$t} from "./i18n.ts";
 import * as resize from "./resize.ts";
@@ -291,12 +291,8 @@ export function update_information_density_settings(
     $elem: JQuery,
     changed_property: "web_font_size_px" | "web_line_height_percent",
     for_settings_ui = false,
-    new_value?: number,
+    new_value: number = get_new_value_for_information_density_settings($elem, changed_property),
 ): number {
-    if (new_value === undefined) {
-        new_value = get_new_value_for_information_density_settings($elem, changed_property);
-    }
-
     user_settings[changed_property] = new_value;
     $elem.closest(".button-group").find(".current-value").val(new_value);
     if (for_settings_ui) {

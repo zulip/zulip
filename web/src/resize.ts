@@ -7,6 +7,7 @@ import * as compose_state from "./compose_state.ts";
 import * as compose_ui from "./compose_ui.ts";
 import {media_breakpoints_num} from "./css_variables.ts";
 import * as message_viewport from "./message_viewport.ts";
+import {user_settings} from "./user_settings.ts";
 
 function get_bottom_whitespace_height(): number {
     return message_viewport.height() * 0.4;
@@ -23,8 +24,8 @@ function get_new_heights(): {
     let stream_filters_max_height =
         viewport_height -
         Number.parseInt($("#left-sidebar").css("paddingTop"), 10) -
-        ($("#left-sidebar-navigation-area").outerHeight(true) ?? 0) -
-        ($("#direct-messages-section-header").outerHeight(true) ?? 0) -
+        ($("#left-sidebar-navigation-area").not(".hidden-by-filters").outerHeight(true) ?? 0) -
+        ($("#direct-messages-section-header").not(".hidden-by-filters").outerHeight(true) ?? 0) -
         GAP;
 
     // Don't let us crush the stream sidebar completely out of view
@@ -83,6 +84,14 @@ export function watch_manual_resize_for_element(box: Element): (() => void)[] {
     return [box_handler, body_handler];
 }
 
+function height_of($element: JQuery): number {
+    return $element.get(0)!.getBoundingClientRect().height;
+}
+
+function width_of($element: JQuery): number {
+    return $element.get(0)!.getBoundingClientRect().width;
+}
+
 export function reset_compose_message_max_height(bottom_whitespace_height?: number): void {
     // If the compose-box is open, we set the `max-height` property of
     // `compose-textarea` and `preview-textarea`, so that the
@@ -95,10 +104,10 @@ export function reset_compose_message_max_height(bottom_whitespace_height?: numb
         bottom_whitespace_height = get_bottom_whitespace_height();
     }
 
-    const compose_height = $("#compose").get(0)!.getBoundingClientRect().height;
+    const compose_height = height_of($("#compose"));
     const compose_textarea_height = Math.max(
-        $("textarea#compose-textarea").get(0)!.getBoundingClientRect().height,
-        $("#preview_message_area").get(0)!.getBoundingClientRect().height,
+        height_of($("textarea#compose-textarea")),
+        height_of($("#preview_message_area")),
     );
     const compose_non_textarea_height = compose_height - compose_textarea_height;
 
@@ -117,7 +126,7 @@ export function reset_compose_message_max_height(bottom_whitespace_height?: numb
 
 export function resize_bottom_whitespace(): void {
     const bottom_whitespace_height = get_bottom_whitespace_height();
-    $("html").css("--max-unmaximized-compose-height", `${bottom_whitespace_height}px`);
+    $(":root").css("--max-unmaximized-compose-height", `${bottom_whitespace_height}px`);
     // The height of the compose box is tied to that of
     // bottom_whitespace, so update it if necessary.
     //
@@ -139,7 +148,7 @@ export function resize_stream_subscribers_list(): void {
         return;
     }
 
-    const $subscriptions_info = $("#subscription_overlay .subscriptions-container .right");
+    const $subscriptions_info = $("#subscription_overlay .two-pane-settings-container .right");
     const classes_above_subscribers_list = [
         ".display-type", // = stream_settings_title
         ".subscriber_list_settings_container .stream_settings_header",
@@ -165,7 +174,7 @@ export function resize_stream_subscribers_list(): void {
         total_height_of_classes_above_subscribers_list -
         subscribers_list_header_height -
         margin_between_tab_switcher_and_add_subscribers_title;
-    $("html").css("--stream-subscriber-list-max-height", `${subscribers_list_height}px`);
+    $(":root").css("--stream-subscriber-list-max-height", `${subscribers_list_height}px`);
 }
 
 export function resize_stream_filters_container(): void {
@@ -182,8 +191,6 @@ export function resize_sidebars(): void {
 
 export function update_recent_view(): void {
     const $recent_view_filter_container = $("#recent_view_filter_buttons");
-    const recent_view_filters_height = $recent_view_filter_container.outerHeight(true) ?? 0;
-    $("html").css("--recent-topics-filters-height", `${recent_view_filters_height}px`);
 
     // Update max avatars to prevent participant avatars from overflowing.
     // These numbers are just based on speculation.
@@ -194,9 +201,9 @@ export function update_recent_view(): void {
     const num_avatars_narrow_window = 2;
     const num_avatars_max = 4;
     if (recent_view_filters_width < media_breakpoints_num.md) {
-        $("html").css("--recent-view-max-avatars", num_avatars_narrow_window);
+        $(":root").css("--recent-view-max-avatars", num_avatars_narrow_window);
     } else {
-        $("html").css("--recent-view-max-avatars", num_avatars_max);
+        $(":root").css("--recent-view-max-avatars", num_avatars_max);
     }
 }
 
@@ -214,9 +221,89 @@ function resize_navbar_alerts(): void {
     }
 }
 
+// On narrow screens, the `right` panel is absolutely positioned, so its
+// height doesn't change the height of `left` and vice versa. Here we
+// first let subheaders on both sides attain their natural height as
+// per the content and then make both of them equal by setting the
+// height of subheader which is smaller to the height of subheader that
+// has larger height.
+// This feels a bit hacky and a cleaner solution would be nice to find.
+export function resize_settings_overlay_subheader_for_narrow_screens($container: JQuery): void {
+    const breakpoint_em =
+        (media_breakpoints_num.settings_overlay_sidebar_collapse_breakpoint / 14) *
+        user_settings.web_font_size_px;
+
+    const $left_subheader = $container.find(".two-pane-settings-subheader .left");
+    const $right_subheader = $container.find(".two-pane-settings-subheader .right");
+    if (width_of($container.find(".two-pane-settings-overlay")) > breakpoint_em) {
+        $left_subheader.css("height", "");
+        $right_subheader.css("height", "");
+        return;
+    }
+
+    $left_subheader.css("height", "");
+    $right_subheader.css("height", "");
+
+    const left_subheader_height = height_of($left_subheader);
+    const right_subheader_height = height_of($right_subheader);
+
+    if (left_subheader_height < right_subheader_height) {
+        $left_subheader.css("height", right_subheader_height);
+    } else {
+        $right_subheader.css("height", left_subheader_height);
+    }
+}
+
+export function resize_settings_overlay($container: JQuery): void {
+    if ($container.find(".two-pane-settings-overlay.show").length === 0) {
+        return;
+    }
+
+    resize_settings_overlay_subheader_for_narrow_screens($container);
+
+    $container
+        .find(".two-pane-settings-left-simplebar-container")
+        .css(
+            "height",
+            height_of($container.find(".two-pane-settings-container")) -
+                height_of($container.find(".two-pane-settings-header")) -
+                height_of($container.find(".two-pane-settings-subheader")) -
+                height_of($container.find(".two-pane-settings-search")),
+        );
+
+    $container
+        .find(".two-pane-settings-right-simplebar-container")
+        .css(
+            "height",
+            height_of($container.find(".two-pane-settings-container")) -
+                height_of($container.find(".two-pane-settings-header")) -
+                height_of($container.find(".two-pane-settings-subheader")),
+        );
+}
+
+export function resize_settings_creation_overlay($container: JQuery): void {
+    if ($container.find(".two-pane-settings-creation-simplebar-container").length === 0) {
+        return;
+    }
+
+    $container
+        .find(".two-pane-settings-creation-simplebar-container")
+        .css(
+            "height",
+            height_of($container.find(".two-pane-settings-container")) -
+                height_of($container.find(".two-pane-settings-header")) -
+                height_of($container.find(".two-pane-settings-subheader")) -
+                height_of($container.find(".settings-sticky-footer")),
+        );
+}
+
 export function resize_page_components(): void {
     resize_navbar_alerts();
     resize_sidebars();
     resize_bottom_whitespace();
     resize_stream_subscribers_list();
+    resize_settings_overlay($("#groups_overlay_container"));
+    resize_settings_overlay($("#channels_overlay_container"));
+    resize_settings_creation_overlay($("#groups_overlay_container"));
+    resize_settings_creation_overlay($("#channels_overlay_container"));
 }

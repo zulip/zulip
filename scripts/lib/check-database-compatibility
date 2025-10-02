@@ -64,10 +64,10 @@ if os.path.exists("/etc/init.d/postgresql") and os.path.exists("/etc/zulip/zulip
         )
         sys.exit(1)
 
-if django_pg_version < 13:
+if django_pg_version < 14:
     logging.critical("Unsupported PostgreSQL version: %d", postgresql_version)
     logging.info(
-        "Please upgrade to PostgreSQL 13 or newer first.\n"
+        "Please upgrade to PostgreSQL 14 or newer first.\n"
         "See https://zulip.readthedocs.io/en/stable/production/"
         "upgrade.html#upgrading-postgresql"
     )

@@ -4,7 +4,6 @@ from typing import TYPE_CHECKING
 
 from django.db import models, transaction
 from django.db.models import QuerySet
-from django_cte import CTEManager
 from typing_extensions import override
 
 from zerver.lib.display_recipient import get_display_recipient
@@ -52,8 +51,6 @@ class Recipient(models.Model):
     STREAM = 2
     # The type group direct messages.
     DIRECT_MESSAGE_GROUP = 3
-
-    objects = CTEManager()  # type: ignore[django-manager-missing] # django-stubs cannot resolve the custom CTEManager yet https://github.com/typeddjango/django-stubs/issues/1023
 
     class Meta:
         unique_together = ("type", "type_id")
@@ -191,3 +188,21 @@ def get_or_create_direct_message_group(id_list: list[int]) -> DirectMessageGroup
             ]
             Subscription.objects.bulk_create(subs_to_create)
         return direct_message_group
+
+
+def get_direct_message_group(id_list: list[int]) -> DirectMessageGroup | None:
+    """
+    Takes a list of user IDs and returns the DirectMessageGroup
+    object for the group consisting of these users if exists. If
+    the DirectMessageGroup object does not yet exist, it will
+    return None.
+    """
+
+    try:
+        direct_message_group_hash = get_direct_message_group_hash(id_list)
+        return DirectMessageGroup.objects.get(
+            huddle_hash=direct_message_group_hash,
+            group_size=len(id_list),
+        )
+    except DirectMessageGroup.DoesNotExist:
+        return None

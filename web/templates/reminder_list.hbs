@@ -1,0 +1,27 @@
+{{#each reminders_data}}
+    <div class="reminder-row overlay-message-row" data-reminder-id="{{reminder_id}}">
+        <div class="reminder-info-box overlay-message-info-box" tabindex="0">
+            <div class="message_header message_header_private_message overlay-message-header">
+                <div class="message-header-contents">
+                    <div class="message_label_clickable stream_label">
+                        <span class="private_message_header_icon"><i class="zulip-icon zulip-icon-user"></i></span>
+                        <span class="private_message_header_name">{{t "Notification Bot to you" }}</span>
+                    </div>
+                    {{> scheduled_message_stream_pm_common .}}
+                </div>
+            </div>
+            <div class="message_row{{#unless is_stream}} private-message{{/unless}}" role="listitem">
+                <div class="messagebox">
+                    <div class="messagebox-content">
+                        <div class="message_top_line">
+                            <div class="overlay_message_controls">
+                                {{> ./components/icon_button intent="danger" custom_classes="delete-overlay-message tippy-zulip-delayed-tooltip" icon="trash" data-tooltip-template-id="delete-reminder-tooltip-template" aria-label=(t "Delete") }}
+                            </div>
+                        </div>
+                        <div class="message_content rendered_markdown restore-overlay-message">{{rendered_markdown rendered_content}}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{{/each}}

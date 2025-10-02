@@ -188,7 +188,7 @@ def main() -> None:
 
     # STEP 4: We keep non-ascii (non-"English") characters in some emoji names if that's the correct
     # way to spell that word, but always add an alias for an ascii-only version of the word.
-    for emoji_code, emoji_names in all_emojis.items():
+    for emoji_names in all_emojis.values():
         for name in [emoji_names["canonical_name"]] + emoji_names["aliases"]:
             # These are known names where we don't have an ascii-only version and there are ascii aliases
             # that a user can still enter instead to get the same emoji.
@@ -200,7 +200,7 @@ def main() -> None:
                 # Now no other emoji can use this alias.
                 for code in alias_to_emoji_code[ascii_alias]:
                     all_emojis[code]["aliases"].remove(ascii_alias)
-                all_emojis[emoji_code]["aliases"].append(ascii_alias)
+                emoji_names["aliases"].append(ascii_alias)
 
     # STEP 5: Write final dictionary to `emoji_names.py`.
     with open(OUT_EMOJI_FILE, "w") as f:

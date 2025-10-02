@@ -1,7 +1,7 @@
 import json
 import os
 import re
-from collections.abc import Callable, Iterator
+from collections.abc import AsyncIterator, Callable, Iterator
 from urllib.parse import urlsplit
 
 import scrapy
@@ -45,10 +45,6 @@ VNU_IGNORE = [
     # Real errors that should be fixed.
     r"Attribute “markdown” not allowed on element “div” at this point\.",
     r"No “p” element in scope but a “p” end tag seen\.",
-    (
-        r"Element “div” not allowed as child of element “ul” in this context\."
-        r" \(Suppressing further errors from this subtree\.\)"
-    ),
     # Opinionated informational messages.
     r"Trailing slash on void elements has no effect and interacts badly with unquoted attribute values\.",
 ]
@@ -206,9 +202,10 @@ class BaseDocumentationSpider(scrapy.Spider):
         )
 
     @override
-    def start_requests(self) -> Iterator[Request]:
+    async def start(self) -> AsyncIterator[Request]:
         for url in self.start_urls:
-            yield from self._make_requests(url)
+            for request in self._make_requests(url):
+                yield request
 
     @override
     def parse(self, response: Response) -> Iterator[Request]:

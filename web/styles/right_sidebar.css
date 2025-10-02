@@ -49,7 +49,10 @@
 }
 
 .buddy-list-section-container {
-    margin-bottom: 10px;
+    /* This establishes better visual concord with
+       the left sidebar's spacing between a last
+       channel/topic and the header that follows. */
+    margin-bottom: 3px;
 
     &.no-display {
         display: none;
@@ -79,14 +82,9 @@
         padding: 1px 0 0 1px;
         border-radius: 3px;
 
-        & i {
+        & .zulip-icon-more-vertical {
             /* 17px at 16px em */
             font-size: 1.0625em;
-            /* Ensure the icon takes the same baseline
-               as the rest of the row, for perfect
-               vertical alignment with the username and
-               status circle. */
-            line-height: inherit;
         }
 
         /*
@@ -212,23 +210,6 @@
         }
     }
 
-    .empty-list-message {
-        font-style: italic;
-        color: var(--color-text-empty-list-message);
-        /* Overwrite default empty list font size, to look better under the subheaders. */
-        /* 14px at 16px/1em */
-        font-size: 0.875em;
-        /* Override .empty-list-message !important styling */
-        padding: 0 !important;
-        text-align: left;
-
-        &:hover {
-            /* Prevent hover styles set on other rows. */
-            box-shadow: none;
-            background-color: inherit;
-        }
-    }
-
     /* Overwrite some stray list rules (including one in left_sidebar.css) to turn color
        back to the bootstrap default. */
     .view-all-subscribers-link,
@@ -243,6 +224,30 @@
             background-color: inherit;
             color: var(--color-text-url-hover);
         }
+    }
+}
+
+#left-sidebar-empty-list-message {
+    list-style-type: none;
+    padding-top: 10px;
+    text-align: center;
+}
+
+#left-sidebar-empty-list-message .empty-list-message,
+.buddy-list-section .empty-list-message {
+    font-style: italic;
+    color: var(--color-text-empty-list-message);
+    /* Overwrite default empty list font size, to look better under the subheaders. */
+    /* 14px at 16px/1em */
+    font-size: 0.875em;
+    /* Override .empty-list-message !important styling */
+    padding: 0 !important;
+    text-align: left;
+
+    &:hover {
+        /* Prevent hover styles set on other rows. */
+        box-shadow: none;
+        background-color: inherit;
     }
 }
 
@@ -335,8 +340,9 @@
         "row-content" auto / minmax(0, 1fr);
 
     .selectable_sidebar_block {
-        margin: 4px;
-        margin-left: calc(var(--right-sidebar-header-icon-toggle-width) / 2);
+        grid-template-rows: auto;
+        padding: 4px;
+        padding-left: calc(var(--right-sidebar-header-icon-toggle-width) / 2);
     }
 
     .avatar-preload-background {
@@ -353,6 +359,7 @@
 }
 
 .user-presence-link {
+    user-select: text;
     grid-area: row-content;
 
     &:hover,
@@ -500,51 +507,27 @@
 #userlist-header {
     cursor: pointer;
     display: grid;
-    grid-template-rows: var(--line-height-sidebar-row-prominent);
     grid-template-columns: minmax(0, 1fr) auto;
-    align-items: center;
-    padding-bottom: 10px;
     padding-left: var(--right-sidebar-heading-left-spacing);
     /* The scrollbar doesn't extend this high, but we want the three-dot
        menus to line up. */
     padding-right: var(--width-simplebar-scroll-hover);
+    padding-bottom: var(--sidebar-filter-bottom-spacing);
     background-color: var(--color-background);
-
-    #userlist-header-search {
-        display: grid;
-        grid-template-rows: var(--line-height-sidebar-row-prominent);
-        grid-template-columns: minmax(0, 1fr) 30px;
-        align-items: center;
-
-        & .user-list-filter {
-            grid-area: 1 / 1 / 2 / 3;
-            white-space: nowrap;
-            text-overflow: ellipsis;
-            overflow: hidden;
-            /* Prevent text from colliding with #clear_search_button */
-            padding-right: 28px;
-            height: var(--line-height-sidebar-row-prominent);
-            box-sizing: border-box;
-        }
-
-        .user-list-filter:placeholder-shown + #clear_search_people_button {
-            visibility: hidden;
-        }
-    }
 
     #buddy-list-menu-icon {
         color: var(--color-vdots-visible);
-        justify-content: center;
-        display: grid;
         width: var(--right-sidebar-vdots-width);
-        margin-left: 5px;
         /* Push back against default right-sidebar
            spacing for better vdots alignment. */
-        margin-right: 0;
-        padding-left: 0;
+        padding: 0;
+        /* No left/right margin to maintain vdots
+           alignment with user rows below. */
+        margin: 2px 0;
 
         &:hover {
             color: var(--color-vdots-hover);
+            background-color: var(--color-background-sidebar-action-hover);
         }
     }
 }
@@ -645,4 +628,10 @@
             grid-area: row-content;
         }
     }
+}
+
+#buddy-list-loading-subscribers {
+    margin: auto;
+    padding-right: var(--width-simplebar-scroll-hover);
+    padding-top: 30px;
 }

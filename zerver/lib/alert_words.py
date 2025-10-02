@@ -32,7 +32,7 @@ def get_alert_word_automaton(realm: Realm) -> ahocorasick.Automaton:
         for alert_word in alert_words:
             alert_word_lower = alert_word.lower()
             if alert_word_automaton.exists(alert_word_lower):
-                (key, user_ids_for_alert_word) = alert_word_automaton.get(alert_word_lower)
+                (_key, user_ids_for_alert_word) = alert_word_automaton.get(alert_word_lower)
                 user_ids_for_alert_word.add(user_id)
             else:
                 alert_word_automaton.add_word(alert_word_lower, (alert_word_lower, {user_id}))

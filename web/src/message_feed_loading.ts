@@ -25,7 +25,7 @@ export function show_loading_newer(): void {
     if (!loading_newer_messages_indicator_showing) {
         $(".bottom-messages-logo").show();
         $(".bottom-messages-logo").toggleClass("loading", true);
-        loading.make_indicator($("#loading_newer_messages_indicator"), {abs_positioned: true});
+        loading.make_indicator($("#loading_more_indicator"), {abs_positioned: true});
         loading_newer_messages_indicator_showing = true;
     }
 }
@@ -34,7 +34,7 @@ export function hide_loading_newer(): void {
     if (loading_newer_messages_indicator_showing) {
         $(".bottom-messages-logo").hide();
         $(".bottom-messages-logo").toggleClass("loading", false);
-        loading.destroy_indicator($("#loading_newer_messages_indicator"));
+        loading.destroy_indicator($("#loading_more_indicator"));
         loading_newer_messages_indicator_showing = false;
     }
 }

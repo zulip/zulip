@@ -1,6 +1,7 @@
 import $ from "jquery";
 
 import * as blueslip from "./blueslip.ts";
+import * as mouse_drag from "./mouse_drag.ts";
 import * as overlay_util from "./overlay_util.ts";
 
 type Hook = () => void;
@@ -71,6 +72,10 @@ export function drafts_open(): boolean {
 
 export function scheduled_messages_open(): boolean {
     return open_overlay_name === "scheduled";
+}
+
+export function reminders_open(): boolean {
+    return open_overlay_name === "reminders";
 }
 
 export function message_edit_history_open(): boolean {
@@ -146,6 +151,10 @@ export function close_overlay(name: string): void {
     $(".app").attr("aria-hidden", "false");
     $("#navbar-fixed-container").attr("aria-hidden", "false");
 
+    // Prevent a bug where a blank settings section appears
+    // when the settings panel is reopened.
+    $(".settings-section").removeClass("show");
+
     active_overlay.close_handler();
     overlay_util.enable_scrolling();
 }
@@ -169,7 +178,7 @@ export function initialize(): void {
     $("body").on("click", "div.overlay, div.overlay .exit", (e) => {
         let $target = $(e.target);
 
-        if (document.getSelection()?.type === "Range") {
+        if (mouse_drag.is_drag(e)) {
             return;
         }
 

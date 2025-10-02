@@ -5,32 +5,32 @@
                 <h1 class="modal__title user-profile-name-heading" id="name">
                     {{#unless is_bot}}
                         {{#if is_active}}
-                            <div class="tippy-zulip-tooltip user-status-icon-wrapper" data-tippy-content="{{last_seen}}">
+                            <span class="tippy-zulip-tooltip user-status-icon-wrapper" data-tippy-content="{{last_seen}}">
                                 <span class="zulip-icon zulip-icon-{{user_circle_class}} {{user_circle_class}} user-circle user_profile_presence" data-presence-indicator-user-id="{{user_id}}"></span>
-                            </div>
+                            </span>
                         {{else}}
-                            <div>
+                            <span>
                                 <i class="fa fa-ban deactivated-user-icon tippy-zulip-tooltip" data-tippy-content="Deactivated user"></i>
-                            </div>
+                            </span>
                         {{/if}}
                     {{/unless}}
                     {{#if is_bot}}
                         <i class="zulip-icon zulip-icon-bot" aria-hidden="true"></i>
                     {{/if}}
                     <span class="user-profile-name">{{> user_full_name name=full_name}}</span>
-                    <a class="copy-link-to-user-profile user-profile-manage-own-copy-link-button" tabindex="0" data-user-id="{{user_id}}">
-                        <i class="zulip-icon zulip-icon-link tippy-zulip-tooltip " data-tippy-content="{{t 'Copy link to profile' }}" aria-hidden="true"></i>
-                    </a>
-                    {{#if is_me}}
-                        <a class="user-profile-manage-own-edit-button" href="/#settings/profile">
-                            <i class="zulip-icon zulip-icon-edit tippy-zulip-tooltip" data-tippy-content="{{t 'Edit profile' }}" aria-hidden="true"></i>
-                        </a>
-                    {{/if}}
-                    {{#if can_manage_profile}}
-                        <div class="user-profile-manage-others-edit-button">
-                            <i class="zulip-icon zulip-icon-edit tippy-zulip-tooltip" data-tippy-content="{{#if is_bot}}{{t 'Manage bot'}}{{else}}{{t 'Manage user' }}{{/if}}" aria-hidden="true"></i>
-                        </div>
-                    {{/if}}
+                    <span class="user-profile-header-actions">
+                        {{> components/icon_button custom_classes="copy-link-to-user-profile tippy-zulip-delayed-tooltip" icon="link-alt" intent="neutral" data-tippy-content=(t "Copy link to profile") aria-label=(t "Copy link to profile") }}
+                        {{#if is_me}}
+                            {{> components/icon_button custom_classes="user-profile-manage-own-edit-button tippy-zulip-delayed-tooltip" icon="edit" intent="neutral" data-tippy-content=(t "Edit profile") aria-label=(t "Edit profile") }}
+                        {{/if}}
+                        {{#if can_manage_profile}}
+                            {{#if is_bot}}
+                                {{> components/icon_button custom_classes="user-profile-manage-others-edit-button tippy-zulip-delayed-tooltip" icon="edit" intent="neutral" data-tippy-content=(t "Manage bot") aria-label=(t "Manage bot") }}
+                            {{else}}
+                                {{> components/icon_button custom_classes="user-profile-manage-others-edit-button tippy-zulip-delayed-tooltip" icon="edit" intent="neutral" data-tippy-content=(t "Manage user") aria-label=(t 'Manage user') }}
+                            {{/if}}
+                        {{/if}}
+                    </span>
                 </h1>
                 <button class="modal__close" aria-label="{{t 'Close modal' }}" data-micromodal-close></button>
             </div>
@@ -146,11 +146,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div class="add-groups-button-wrapper">
-                                    <button type="button" name="subscribe" class="add-groups-button button small rounded">
-                                        {{t 'Add' }}
-                                    </button>
-                                </div>
+                                {{> components/action_button label=(t "Add") custom_classes="add-groups-button" attention="quiet" intent="brand" aria-label=(t "Add") }}
                             </div>
                         {{/if}}
                         <div class="group-list-top-section">
@@ -177,7 +173,7 @@
                     <button type="button" class="modal__button dialog_exit_button" aria-label="{{t 'Close this dialog window' }}" data-micromodal-close>{{t "Cancel" }}</button>
                     <button type="button" class="modal__button dialog_submit_button">
                         <span class="submit-button-text">{{t "Save changes"}}</span>
-                        <div class="modal__spinner"></div>
+                        <span class="modal__spinner"></span>
                     </button>
                 </footer>
             </div>

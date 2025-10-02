@@ -1,7 +1,7 @@
-<div class="hide" id="stream-creation" tabindex="-1" role="dialog"
+<div class="hide two-pane-settings-right-simplebar-container" id="stream-creation" tabindex="-1" role="dialog"
   aria-label="{{t 'Channel creation' }}">
     <form id="stream_creation_form">
-        <div class="stream-creation-simplebar-container" data-simplebar data-simplebar-tab-index="-1">
+        <div class="two-pane-settings-creation-simplebar-container" data-simplebar data-simplebar-tab-index="-1">
             <div class="alert stream_create_info"></div>
             <div id="stream_creating_indicator"></div>
             <div class="stream-creation-body">
@@ -25,25 +25,18 @@
                     </section>
                     <section id="make-invite-only">
                         <div class="stream-types">
-                            {{> stream_types .
+                            {{> stream_permissions .
                               is_stream_edit=false
-                              prefix="id_new_" }}
+                              prefix="id_new_"
+                              channel_folder_widget_name="new_channel_folder_id"}}
                         </div>
                     </section>
                 </div>
                 <div class="subscribers_container stream_creation_container">
                     <section class="stream_create_add_subscriber_container">
-                        <label class="choose-subscribers-label">
-                            <h4 class="stream_setting_subsection_title">{{t "Choose subscribers" }}</h4>
-                        </label>
-                        <span class="add_all_users_to_stream_button_container">
-                            {{> ../components/action_button
-                              label=(t "Add all users")
-                              custom_classes="add_all_users_to_stream inline-block"
-                              attention="quiet"
-                              intent="brand"
-                              }}
-                        </span>
+                        <h4 class="stream_setting_subsection_title">
+                            <label class="choose-subscribers-label">{{t "Choose subscribers" }}</label>
+                        </h4>
                         <div id="stream_subscription_error" class="stream_creation_error"></div>
                         <div class="controls" id="people_to_add"></div>
                     </section>

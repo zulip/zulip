@@ -1,4 +1,5 @@
 import $ from "jquery";
+import assert from "minimalistic-assert";
 import type * as tippy from "tippy.js";
 
 import * as activity_ui from "./activity_ui.ts";
@@ -39,8 +40,17 @@ export const COMMON_DROPDOWN_WIDGET_PARAMS = {
     disable_for_spectators: true,
 } satisfies Partial<dropdown_widget.DropdownWidgetOptions>;
 
+const ALL_TOPICS_OPTION_DESCRIPTION = $t({
+    defaultMessage: "Includes muted channels and topics",
+});
+
+const ALL_TOPICS_OPTION_DESCRIPTION_FOR_CHANNEL_VIEW = $t({
+    defaultMessage: "Includes muted topics",
+});
+
 export function filters_dropdown_options(
     current_value: string | number | undefined,
+    channel_view = false,
 ): dropdown_widget.Option[] {
     return [
         {
@@ -58,12 +68,18 @@ export function filters_dropdown_options(
         {
             unique_id: FILTERS.ALL_TOPICS,
             name: $t({defaultMessage: "All topics"}),
-            description: $t({
-                defaultMessage: "Includes muted channels and topics",
-            }),
+            description: channel_view
+                ? ALL_TOPICS_OPTION_DESCRIPTION_FOR_CHANNEL_VIEW
+                : ALL_TOPICS_OPTION_DESCRIPTION,
             bold_current_selection: current_value === FILTERS.ALL_TOPICS,
         },
     ];
+}
+
+export function handle_message_view_deactivated(highlight_current_view: () => void): void {
+    highlight_current_view();
+    stream_list.handle_message_view_deactivated();
+    pm_list.handle_message_view_deactivated();
 }
 
 export function show(opts: {
@@ -72,7 +88,7 @@ export function show(opts: {
     update_compose: () => void;
     is_visible: () => boolean;
     set_visible: (value: boolean) => void;
-    complete_rerender: () => void;
+    complete_rerender: (coming_from_other_views?: boolean) => void;
     is_recent_view?: boolean;
 }): void {
     if (opts.is_visible()) {
@@ -90,15 +106,13 @@ export function show(opts: {
 
     // Hide selected elements in the left sidebar.
     opts.highlight_view_in_left_sidebar();
-    stream_list.handle_message_view_deactivated();
-    pm_list.handle_message_view_deactivated();
 
     unread_ui.hide_unread_banner();
     opts.update_compose();
     narrow_title.update_narrow_title(narrow_state.filter());
     message_view_header.render_title_area();
     compose_recipient.handle_middle_pane_transition();
-    opts.complete_rerender();
+    opts.complete_rerender(true);
     compose_actions.on_show_navigation_view();
 
     // This has to happen after resetting the current narrow filter, so
@@ -142,8 +156,24 @@ export function is_in_focus(): boolean {
         !sidebar_ui.any_sidebar_expanded_as_overlay() &&
         !overlays.any_active() &&
         !modals.any_active_or_animating() &&
-        !$(".home-page-input").is(":focus") &&
+        !$(".input-element:not(#recent_view_search):not(#inbox-search)").is(":focus") &&
         !$("#search_query").is(":focus") &&
-        !$(".navbar-item:visible").is(":focus")
+        !$(".navbar-item").is(":focus")
     );
+}
+
+export function is_scroll_position_for_render(): boolean {
+    const scroll_position = window.scrollY;
+    const window_height = window.innerHeight;
+    // We allocate `--max-unmaximized-compose-height` in empty space
+    // below the last rendered row in recent view.
+    //
+    // We don't want user to see this empty space until there are no
+    // new rows to render when the user is scrolling to the bottom of
+    // the view. So, we render new rows when user has scrolled 2 / 3
+    // of (the total scrollable height - the empty space).
+    const compose_max_height = $(":root").css("--max-unmaximized-compose-height");
+    assert(typeof compose_max_height === "string");
+    const scroll_max = document.body.scrollHeight - Number.parseInt(compose_max_height, 10);
+    return scroll_position + window_height >= (2 / 3) * scroll_max;
 }

@@ -29,7 +29,7 @@ class NestedCodeBlocksRendererTreeProcessor(markdown.treeprocessors.Treeprocesso
         code_tags = walk_tree_with_family(root, self.get_code_tags)
         nested_code_blocks = self.get_nested_code_blocks(code_tags)
         for block in nested_code_blocks:
-            tag, text = block.result
+            _tag, text = block.result
             codehilite_block = self.get_codehilite_block(text)
             self.replace_element(block.family.grandparent, codehilite_block, block.family.parent)
 

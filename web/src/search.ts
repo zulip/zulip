@@ -1,8 +1,6 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
 
-import render_search_list_item from "../templates/search_list_item.hbs";
-
 import {Typeahead} from "./bootstrap_typeahead.ts";
 import type {TypeaheadInputElement} from "./bootstrap_typeahead.ts";
 import {Filter} from "./filter.ts";
@@ -75,7 +73,12 @@ function narrow_or_search_for_term({on_narrow_search}: {on_narrow_search: OnNarr
     // because convert_to_pill_on_enter is false.
     assert(search_pill_widget !== null);
     search_pill_widget.clear(true);
-    search_pill.set_search_bar_contents(terms, search_pill_widget, set_search_bar_text);
+    search_pill.set_search_bar_contents(
+        terms,
+        search_pill_widget,
+        search_typeahead.shown,
+        set_search_bar_text,
+    );
     on_narrow_search(terms, {trigger: "search"});
 
     // It's sort of annoying that this is not in a position to
@@ -188,9 +191,10 @@ export function initialize(opts: {on_narrow_search: OnNarrowSearch}): void {
         helpOnEmptyStrings: true,
         stopAdvance: true,
         requireHighlight: false,
-        highlighter_html(item: string): string {
+        item_html(item: string, query: string): string {
             const obj = search_map.get(item);
-            return render_search_list_item(obj);
+            assert(obj !== undefined);
+            return search_pill.generate_pills_html(obj, query);
         },
         // When the user starts typing new search operands,
         // we want to highlight the first typeahead row by default
@@ -220,6 +224,7 @@ export function initialize(opts: {on_narrow_search: OnNarrowSearch}): void {
                 search_pill.set_search_bar_contents(
                     search_terms,
                     search_pill_widget,
+                    search_typeahead.shown,
                     set_search_bar_text,
                 );
                 narrow_to_search_contents_with_search_bar_open();
@@ -281,11 +286,7 @@ export function initialize(opts: {on_narrow_search: OnNarrowSearch}): void {
 
             // Record this on keydown before the typeahead code closes the
             // typeahead, so we can use this information on keyup.
-            if (keydown_util.is_enter_event(e) && $("#searchbox_form .typeahead").is(":visible")) {
-                typeahead_was_open_on_enter = true;
-            } else {
-                typeahead_was_open_on_enter = false;
-            }
+            typeahead_was_open_on_enter = keydown_util.is_enter_event(e) && search_typeahead.shown;
         })
         .on("keyup", (e: JQuery.KeyUpEvent): void => {
             if (is_using_input_method) {
@@ -389,6 +390,7 @@ function reset_searchbox(clear = false): void {
         search_pill.set_search_bar_contents(
             narrow_state.search_terms(),
             search_pill_widget,
+            search_typeahead.shown,
             set_search_bar_text,
         );
     }

@@ -71,8 +71,7 @@
 
 .messagebox {
     grid-area: messagebox;
-    word-wrap: break-word;
-    cursor: pointer;
+    overflow-wrap: break-word;
     border: none;
     /* The left padding value accounts for a 2px
       unread marker, ensuring a uniform 5px of
@@ -80,10 +79,6 @@
     padding: 0 5px 0 3px;
 
     &:hover .message_controls {
-        .empty-star:hover {
-            cursor: pointer;
-        }
-
         > .message_control_button {
             opacity: 1;
             visibility: visible;
@@ -93,7 +88,7 @@
 
 .messagebox-content {
     display: grid;
-    align-items: baseline;
+    align-content: baseline;
     padding-left: 10px;
     /* Prevent the message column from overflowing the 1fr
        space allotted by specifying `minmax(0,1fr)`, which
@@ -105,7 +100,7 @@
         ensures the timestamp will always have enough space
         in the column. */
     grid-template:
-        var(--message-box-sender-line-height) repeat(3, auto) /
+        minmax(var(--message-box-sender-line-height), auto) repeat(3, auto) /
         var(--message-box-avatar-column-width) minmax(0, 1fr) max-content
         8px minmax(var(--message-box-timestamp-column-width), max-content);
     /* Named grid areas provide flexibility for positioning grid items
@@ -130,22 +125,27 @@
 
     .message_edit_notice {
         grid-area: edited;
+        align-self: center;
     }
 
     .edit-notifications {
         grid-area: edited;
+        align-self: center;
     }
 
     .slow-send-spinner {
         display: none;
-        justify-self: end;
+        place-self: center end;
+        position: unset;
+        margin-top: 1px;
         margin-right: 10px;
         text-align: end;
         grid-area: time;
     }
 
-    .message_content {
+    .message_content:not(.status-message) {
         grid-area: message;
+        padding: var(--message-box-markdown-aligned-vertical-space) 0 0;
         color: var(--color-text-message-default);
         /* We explicitly set line-height here so that
            the message area is not beholden to the legacy
@@ -155,6 +155,16 @@
         display: block;
         position: relative;
         overflow: hidden;
+
+        /* For the sake of paragraphs and lists that include
+           links, we adjust the vertical space here to keep
+           it uniform. */
+        &:has(> p:first-child, > ol:first-child, > ul:first-child) {
+            padding-top: calc(
+                var(--message-box-markdown-aligned-vertical-space) -
+                    var(--message-box-link-focus-ring-block-padding)
+            );
+        }
 
         &:empty {
             display: none;
@@ -283,6 +293,10 @@
                     --message-box-avatar-height
                 )
                 minmax(0, auto) repeat(3, auto);
+            /* We align items to the baseline on me messages,
+               and unset the align-content property. */
+            align-items: baseline;
+            align-content: unset;
 
             .message-avatar {
                 /* Set the line-height to match the height of the avatar image
@@ -308,6 +322,11 @@
                 align-self: center;
             }
 
+            .message_edit_notice {
+                /* Unset the margin on a typical sender line. */
+                margin-left: 0;
+            }
+
             .message_sender {
                 /* Don't display message sender as flexbox for me-messages. */
                 display: block;
@@ -319,6 +338,10 @@
                 padding-bottom: var(
                     --message-box-markdown-aligned-vertical-space
                 );
+                /* Don't allow an ellipsis to display on me-messages. This is
+                   an edge case that can happen with elements such as the
+                   inline audio player. */
+                overflow: visible;
 
                 /* Display message components inline, with wrapping white-space,
                    so the sender name and message display as a continuous line
@@ -366,7 +389,6 @@
         }
 
         .message_content {
-            padding: var(--message-box-markdown-aligned-vertical-space) 0 0;
             /* Pull message content up closer to sender to
                let the text baseline sit adjacent the bottom
                of the avatar. We also need to account for the
@@ -381,12 +403,6 @@
             grid-area: message;
         }
 
-        .slow-send-spinner {
-            align-self: center;
-            position: unset;
-            margin-top: 1px;
-        }
-
         .message_edit_notice {
             /* When the edit notice is inline, as on edited me-messages,
               the inline-block and accompanying vertical-align styles will
@@ -395,8 +411,9 @@
             vertical-align: baseline;
             /* A bit of margin here helps these not look associated with the name. */
             margin-left: 4px;
-            /* Unset the padding used on edited notices under the avatar. */
+            /* Unset the padding, align-self used on edited notices under the avatar. */
             padding-right: 0;
+            align-self: unset;
 
             &.hide {
                 display: none;
@@ -420,6 +437,11 @@
             .zulip-icon.zulip-icon-bot {
                 align-self: center;
                 margin-left: 5px;
+                /* The bot icon is center-aligned but appears
+                slightly misaligned with the bot name text due
+                to its shape. Adding a negative top margin ensures
+                it's proper alignment. */
+                margin-top: -0.12em;
             }
 
             .sender_name {
@@ -460,13 +482,11 @@
        of the row; inner flexboxes handle the
        centering of the icons. */
     align-self: stretch;
-    /* But to better set the height to the typical
-       sender-row line height for better centering
-       in all contexts. */
-    height: var(--message-box-sender-line-height);
+    /* Controls flex to the height of the top
+       row of the message box, and center
+       themselves within it. */
     display: flex;
-    /* The flexbox here matches the height set above. */
-    align-items: stretch;
+    align-items: center;
     /* Ensure square icons for better centering. */
     line-height: 1;
 
@@ -522,6 +542,7 @@
         }
 
         & .message-controls-icon {
+            cursor: pointer;
             /* The icon body is 16px square at 16px/1em; the clickable
                area for the icon is 26px wide by 25px tall, so these
                values ensure a 26px x 25px clickable area for the icon. */
@@ -567,15 +588,11 @@
     /* Tooltips should not follow the width restrictions of their parent element. */
     [data-tippy-root] {
         width: max-content;
-        word-wrap: unset;
+        overflow-wrap: unset;
     }
 
     .edit_content {
         width: var(--message-box-icon-width);
-
-        &:hover {
-            cursor: pointer;
-        }
 
         .move_message_button,
         .edit_content_button {
@@ -772,6 +789,10 @@
     }
 
     .message-edit-textbox {
+        /* Setting `position:relative` on this container ensures that .copy-button
+           (a possible immediate child with `position: absolute`) is positioned
+           relative to this container instead of <html>. */
+        position: relative;
         grid-area: message-edit-content;
 
         .textarea-over-limit {
@@ -970,6 +991,7 @@ of the base style defined for a read-only textarea in dark mode. */
     overflow-x: clip;
     text-overflow: ellipsis;
     padding-right: 5.5px;
+    cursor: pointer;
 }
 
 .fade-in-message {
@@ -1050,12 +1072,60 @@ of the base style defined for a read-only textarea in dark mode. */
         color: var(--color-date);
         /* Right padding matches time in message row and date in recipient row. */
         padding: 8px 6px 8px 4px;
+
+        &::before {
+            width: 100%;
+        }
+
+        &::after {
+            width: 6px;
+            left: 0.25em;
+            /* Align date with message time and recipient bar date. */
+            margin-right: -1px;
+        }
     }
 }
 
 .bookend {
     margin-top: 10px;
     background-color: transparent;
+    padding-bottom: 10px;
+    text-align: center;
+
+    .stream-status {
+        opacity: 0.6;
+
+        & i {
+            font-size: 0.7143em; /* 10px at 14px / em */
+            /* TODO: Don't use relative positioning here. */
+            position: relative;
+            top: 0.1em; /* 1px at 10px / em */
+            margin-left: 0.2em; /* 2px at 10px / em */
+        }
+
+        .zulip-icon.zulip-icon-lock {
+            font-size: 0.8571em; /* 12px at 14px / em */
+            top: 0.0833em; /* 1px at 12px / em */
+            margin-left: 0.1667em; /* 2px at 12px / em */
+        }
+    }
+}
+
+.bookend-label {
+    font-size: 1em;
+    display: block;
+    padding: 4px;
+    overflow: hidden;
+
+    &::before,
+    &::after {
+        width: 50%;
+    }
+
+    &::after {
+        left: 0.25em;
+        margin-right: -50%;
+    }
 }
 
 /* Only show links on the trailing bookend. */
@@ -1065,4 +1135,22 @@ of the base style defined for a read-only textarea in dark mode. */
 
 .trailing_bookend .bookend-channel-settings-link {
     display: inline;
+}
+
+.bookend-label::before,
+.bookend-label::after,
+.date_row .timerender-content::before,
+.date_row .timerender-content::after {
+    display: inline-block;
+    position: relative;
+    content: " ";
+    vertical-align: middle;
+    height: 0;
+    border-bottom: 1px solid var(--color-border-message-group-spacer-line);
+}
+
+.bookend-label::before,
+.date_row .timerender-content::before {
+    right: 0.25em;
+    margin-left: -50%;
 }

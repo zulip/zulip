@@ -38,7 +38,6 @@ class kandra::aws_tools {
       ],
       before  => Exec['Cleanup aws_signing_helper'],
     }
-    package { 'sqlite3': ensure => installed }
     file { '/usr/local/bin/teleport-aws-credentials':
       ensure  => file,
       require => [

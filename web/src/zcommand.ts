@@ -1,5 +1,5 @@
 import $ from "jquery";
-import {z} from "zod";
+import * as z from "zod/mini";
 
 import * as channel from "./channel.ts";
 import * as compose_banner from "./compose_banner.ts";
@@ -144,7 +144,7 @@ export function process(message_content: string): boolean {
     }
 
     // It is incredibly important here to return false
-    // if we don't see an actual zcommand, so that compose.js
+    // if we don't see an actual zcommand, so that compose.ts
     // knows this is a normal message.
     return false;
 }

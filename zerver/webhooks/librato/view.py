@@ -93,7 +93,7 @@ class LibratoWebhookHandler(LibratoWebhookParser):
         if self.attachments:
             return "Snapshots"
         topic_template = "Alert {alert_name}"
-        alert_id, alert_name, alert_url, alert_runbook_url = self.parse_alert()
+        _alert_id, alert_name, _alert_url, _alert_runbook_url = self.parse_alert()
         return topic_template.format(alert_name=alert_name)
 
     def handle_alert_clear_message(self) -> str:
@@ -101,7 +101,7 @@ class LibratoWebhookHandler(LibratoWebhookParser):
         trigger_time = datetime.fromtimestamp(
             self.payload["trigger_time"], tz=timezone.utc
         ).strftime("%Y-%m-%d %H:%M:%S")
-        alert_id, alert_name, alert_url, alert_runbook_url = self.parse_alert()
+        _alert_id, alert_name, alert_url, _alert_runbook_url = self.parse_alert()
         content = alert_clear_template.format(
             alert_name=alert_name, alert_url=alert_url, trigger_time=trigger_time
         )
@@ -123,7 +123,7 @@ class LibratoWebhookHandler(LibratoWebhookParser):
 
     def handle_alert_violation_message(self) -> str:
         alert_violation_template = "Alert [alert_name]({alert_url}) has triggered! "
-        alert_id, alert_name, alert_url, alert_runbook_url = self.parse_alert()
+        _alert_id, alert_name, alert_url, alert_runbook_url = self.parse_alert()
         content = alert_violation_template.format(alert_name=alert_name, alert_url=alert_url)
         if alert_runbook_url:
             alert_runbook_template = "[Reaction steps]({alert_runbook_url}):"

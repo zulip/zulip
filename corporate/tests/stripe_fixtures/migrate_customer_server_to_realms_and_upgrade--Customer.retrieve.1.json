@@ -3,10 +3,9 @@
   "balance": 0,
   "created": 1000000000,
   "currency": null,
-  "default_currency": null,
   "default_source": null,
   "delinquent": false,
-  "description": "zulip.testserver 3383e261-15a",
+  "description": "zulip.testserver 5ae8113e-cd0",
   "discount": null,
   "email": "hamlet@zulip.com",
   "id": "migrate_customer_server_to_realms_and_upgrade--Customer.create.1.json",
@@ -26,7 +25,8 @@
         },
         "email": null,
         "name": "John Doe",
-        "phone": null
+        "phone": null,
+        "tax_id": null
       },
       "card": {
         "brand": "visa",
@@ -49,6 +49,7 @@
           ],
           "preferred": null
         },
+        "regulated_status": "unregulated",
         "three_d_secure_usage": {
           "supported": true
         },
@@ -68,7 +69,7 @@
   "livemode": false,
   "metadata": {
     "remote_realm_host": "zulip.testserver",
-    "remote_realm_uuid": "3383e261-15a1-4f36-ae0c-4ecf80fab561"
+    "remote_realm_uuid": "5ae8113e-cd0a-4aaf-990c-a2ddb35b37d8"
   },
   "name": null,
   "next_invoice_sequence": 1,

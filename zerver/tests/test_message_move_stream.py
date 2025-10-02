@@ -9,7 +9,11 @@ from zerver.actions.realm_settings import (
     do_change_realm_permission_group_setting,
     do_set_realm_property,
 )
-from zerver.actions.streams import do_change_stream_group_based_setting, do_change_stream_permission
+from zerver.actions.streams import (
+    do_change_stream_group_based_setting,
+    do_change_stream_permission,
+    do_set_stream_property,
+)
 from zerver.actions.user_groups import check_add_user_group
 from zerver.lib.message import has_message_access
 from zerver.lib.streams import (
@@ -20,12 +24,12 @@ from zerver.lib.test_classes import ZulipTestCase, get_topic_messages
 from zerver.lib.test_helpers import queries_captured
 from zerver.lib.topic import RESOLVED_TOPIC_PREFIX
 from zerver.lib.types import UserGroupMembersData
-from zerver.lib.url_encoding import near_stream_message_url
+from zerver.lib.url_encoding import stream_message_url
 from zerver.lib.user_groups import UserGroupMembershipDetails
 from zerver.models import Message, NamedUserGroup, Stream, UserMessage, UserProfile
 from zerver.models.groups import SystemGroups
 from zerver.models.realms import get_realm
-from zerver.models.streams import get_stream
+from zerver.models.streams import StreamTopicsPolicyEnum, get_stream
 from zerver.tornado.django_api import send_event_on_commit
 
 
@@ -45,6 +49,37 @@ class MessageMoveStreamTest(ZulipTestCase):
             ).exists(),
             False,
         )
+
+    def assert_move_message(
+        self,
+        user: str,
+        orig_stream: Stream,
+        orig_topic_name: str = "test",
+        stream_id: int | None = None,
+        topic_name: str | None = None,
+        expected_error: str | None = None,
+    ) -> None:
+        user_profile = self.example_user(user)
+        self.subscribe(user_profile, orig_stream.name)
+        message_id = self.send_stream_message(
+            user_profile, orig_stream.name, topic_name=orig_topic_name
+        )
+
+        params_dict: dict[str, str | int] = {}
+        if stream_id is not None:
+            params_dict["stream_id"] = stream_id
+        if topic_name is not None:
+            params_dict["topic"] = topic_name
+
+        result = self.api_patch(
+            user_profile,
+            "/api/v1/messages/" + str(message_id),
+            params_dict,
+        )
+        if expected_error is not None:
+            self.assert_json_error(result, expected_error)
+        else:
+            self.assert_json_success(result)
 
     def prepare_move_topics(
         self,
@@ -103,7 +138,7 @@ class MessageMoveStreamTest(ZulipTestCase):
         self.assert_json_error(result, "Direct messages cannot be moved to channels.")
 
     def test_move_message_to_stream_with_content(self) -> None:
-        (user_profile, old_stream, new_stream, msg_id, msg_id_later) = self.prepare_move_topics(
+        (user_profile, old_stream, new_stream, msg_id, _msg_id_later) = self.prepare_move_topics(
             "iago", "test move stream", "new stream", "test"
         )
 
@@ -133,7 +168,7 @@ class MessageMoveStreamTest(ZulipTestCase):
         self.send_stream_message(user_profile, "Denmark", topic_name="topic1")
 
         members_system_group = NamedUserGroup.objects.get(
-            name=SystemGroups.MEMBERS, realm=realm, is_system_group=True
+            name=SystemGroups.MEMBERS, realm_for_sharding=realm, is_system_group=True
         )
 
         do_change_realm_permission_group_setting(
@@ -325,7 +360,7 @@ class MessageMoveStreamTest(ZulipTestCase):
         self.assert_length(messages, 5)
 
     def test_move_message_to_stream(self) -> None:
-        (user_profile, old_stream, new_stream, msg_id, msg_id_lt) = self.prepare_move_topics(
+        (user_profile, old_stream, new_stream, msg_id, _msg_id_lt) = self.prepare_move_topics(
             "iago",
             "test move stream",
             "new stream",
@@ -362,7 +397,7 @@ class MessageMoveStreamTest(ZulipTestCase):
         )
 
     def test_move_message_to_preexisting_topic(self) -> None:
-        (user_profile, old_stream, new_stream, msg_id, msg_id_lt) = self.prepare_move_topics(
+        (user_profile, old_stream, new_stream, msg_id, _msg_id_lt) = self.prepare_move_topics(
             "iago",
             "test move stream",
             "new stream",
@@ -593,7 +628,7 @@ class MessageMoveStreamTest(ZulipTestCase):
         )
 
     def test_move_message_to_stream_change_later_all_moved(self) -> None:
-        (user_profile, old_stream, new_stream, msg_id, msg_id_later) = self.prepare_move_topics(
+        (user_profile, old_stream, new_stream, msg_id, _msg_id_later) = self.prepare_move_topics(
             "iago", "test move stream", "new stream", "test"
         )
 
@@ -623,7 +658,7 @@ class MessageMoveStreamTest(ZulipTestCase):
         )
 
     def test_move_message_to_preexisting_topic_change_later_all_moved(self) -> None:
-        (user_profile, old_stream, new_stream, msg_id, msg_id_later) = self.prepare_move_topics(
+        (user_profile, old_stream, new_stream, msg_id, _msg_id_later) = self.prepare_move_topics(
             "iago", "test move stream", "new stream", "test"
         )
 
@@ -689,7 +724,7 @@ class MessageMoveStreamTest(ZulipTestCase):
             "display_recipient": new_stream.name,
             "topic": "test",
         }
-        moved_message_link = near_stream_message_url(messages[1].realm, message)
+        moved_message_link = stream_message_url(messages[1].realm, message)
         self.assert_length(messages, 2)
         self.assertEqual(messages[0].id, msg_id_later)
         self.assertEqual(
@@ -734,7 +769,7 @@ class MessageMoveStreamTest(ZulipTestCase):
             "display_recipient": new_stream.name,
             "topic": "test",
         }
-        moved_message_link = near_stream_message_url(messages[2].realm, message)
+        moved_message_link = stream_message_url(messages[2].realm, message)
         self.assert_length(messages, 3)
         self.assertEqual(messages[0].id, msg_id_later)
         self.assertEqual(
@@ -817,8 +852,8 @@ class MessageMoveStreamTest(ZulipTestCase):
         def check_move_message_according_to_permission(
             username: str, expect_fail: bool = False
         ) -> None:
-            (user_profile, old_stream, new_stream, msg_id, msg_id_later) = self.prepare_move_topics(
-                username, "old_stream", "new_stream", "test"
+            (user_profile, old_stream, new_stream, msg_id, _msg_id_later) = (
+                self.prepare_move_topics(username, "old_stream", "new_stream", "test")
             )
             result = self.client_patch(
                 "/json/messages/" + str(msg_id),
@@ -842,19 +877,19 @@ class MessageMoveStreamTest(ZulipTestCase):
                 self.assert_length(messages, 4)
 
         administrators_system_group = NamedUserGroup.objects.get(
-            name=SystemGroups.ADMINISTRATORS, realm=realm, is_system_group=True
+            name=SystemGroups.ADMINISTRATORS, realm_for_sharding=realm, is_system_group=True
         )
         full_members_system_group = NamedUserGroup.objects.get(
-            name=SystemGroups.FULL_MEMBERS, realm=realm, is_system_group=True
+            name=SystemGroups.FULL_MEMBERS, realm_for_sharding=realm, is_system_group=True
         )
         members_system_group = NamedUserGroup.objects.get(
-            name=SystemGroups.MEMBERS, realm=realm, is_system_group=True
+            name=SystemGroups.MEMBERS, realm_for_sharding=realm, is_system_group=True
         )
         moderators_system_group = NamedUserGroup.objects.get(
-            name=SystemGroups.MODERATORS, realm=realm, is_system_group=True
+            name=SystemGroups.MODERATORS, realm_for_sharding=realm, is_system_group=True
         )
         nobody_system_group = NamedUserGroup.objects.get(
-            name=SystemGroups.NOBODY, realm=realm, is_system_group=True
+            name=SystemGroups.NOBODY, realm_for_sharding=realm, is_system_group=True
         )
 
         # Check sending messages when nobody is allowed to move messages.
@@ -864,8 +899,10 @@ class MessageMoveStreamTest(ZulipTestCase):
             nobody_system_group,
             acting_user=None,
         )
-        check_move_message_according_to_permission("desdemona", expect_fail=True)
-        check_move_message_according_to_permission("iago", expect_fail=True)
+        check_move_message_according_to_permission("shiva", expect_fail=True)
+        # Iago can move messages between channels via channel-level
+        # `can_move_messages_out_of_channel_group` permission.
+        check_move_message_according_to_permission("iago")
 
         # Check sending messages when only administrators are allowed.
         do_change_realm_permission_group_setting(
@@ -922,8 +959,8 @@ class MessageMoveStreamTest(ZulipTestCase):
         check_move_message_according_to_permission("othello")
         check_move_message_according_to_permission("cordelia")
 
-        # Iago is not in the allowed user group, so cannot move messages.
-        check_move_message_according_to_permission("iago", expect_fail=True)
+        # Shiva is not in the allowed user group, so cannot move messages.
+        check_move_message_according_to_permission("shiva", expect_fail=True)
 
         # Test for checking the setting for anonymous user group.
         anonymous_user_group = self.create_or_update_anonymous_group_for_setting(
@@ -970,7 +1007,7 @@ class MessageMoveStreamTest(ZulipTestCase):
         self.send_stream_message(cordelia, test_stream_1.name, topic_name="test", content="third")
 
         members_system_group = NamedUserGroup.objects.get(
-            name=SystemGroups.MEMBERS, realm=realm, is_system_group=True
+            name=SystemGroups.MEMBERS, realm_for_sharding=realm, is_system_group=True
         )
 
         do_change_realm_permission_group_setting(
@@ -1038,13 +1075,13 @@ class MessageMoveStreamTest(ZulipTestCase):
         )
 
     def test_move_message_to_stream_based_on_can_send_message_group(self) -> None:
-        (user_profile, old_stream, new_stream, msg_id, msg_id_later) = self.prepare_move_topics(
+        (user_profile, old_stream, new_stream, msg_id, _msg_id_later) = self.prepare_move_topics(
             "othello", "old_stream", "new_stream", "test"
         )
         realm = user_profile.realm
 
         members_system_group = NamedUserGroup.objects.get(
-            name=SystemGroups.MEMBERS, realm=realm, is_system_group=True
+            name=SystemGroups.MEMBERS, realm_for_sharding=realm, is_system_group=True
         )
 
         do_change_realm_permission_group_setting(
@@ -1088,7 +1125,7 @@ class MessageMoveStreamTest(ZulipTestCase):
                 self.assert_length(messages, 4)
 
         nobody_group = NamedUserGroup.objects.get(
-            name=SystemGroups.NOBODY, realm=realm, is_system_group=True
+            name=SystemGroups.NOBODY, realm_for_sharding=realm, is_system_group=True
         )
         do_change_stream_group_based_setting(
             new_stream, "can_send_message_group", nobody_group, acting_user=desdemona
@@ -1098,7 +1135,7 @@ class MessageMoveStreamTest(ZulipTestCase):
         check_move_message_to_stream(iago, expect_fail=True)
 
         owners_group = NamedUserGroup.objects.get(
-            name=SystemGroups.OWNERS, realm=realm, is_system_group=True
+            name=SystemGroups.OWNERS, realm_for_sharding=realm, is_system_group=True
         )
         do_change_stream_group_based_setting(
             new_stream, "can_send_message_group", owners_group, acting_user=desdemona
@@ -1107,11 +1144,13 @@ class MessageMoveStreamTest(ZulipTestCase):
         check_move_message_to_stream(iago, expect_fail=True)
         check_move_message_to_stream(desdemona)
 
-        (user_profile, old_stream, new_stream, msg_id, msg_id_later) = self.prepare_move_topics(
+        (user_profile, old_stream, new_stream, msg_id, _msg_id_later) = self.prepare_move_topics(
             "othello", "old_stream", "new_stream", "test"
         )
 
-        hamletcharacters_group = NamedUserGroup.objects.get(name="hamletcharacters", realm=realm)
+        hamletcharacters_group = NamedUserGroup.objects.get(
+            name="hamletcharacters", realm_for_sharding=realm
+        )
         do_change_stream_group_based_setting(
             new_stream, "can_send_message_group", hamletcharacters_group, acting_user=desdemona
         )
@@ -1120,7 +1159,7 @@ class MessageMoveStreamTest(ZulipTestCase):
         check_move_message_to_stream(iago, expect_fail=True)
         check_move_message_to_stream(hamlet)
 
-        (user_profile, old_stream, new_stream, msg_id, msg_id_later) = self.prepare_move_topics(
+        (user_profile, old_stream, new_stream, msg_id, _msg_id_later) = self.prepare_move_topics(
             "othello", "old_stream", "new_stream", "test"
         )
 
@@ -1135,16 +1174,16 @@ class MessageMoveStreamTest(ZulipTestCase):
         check_move_message_to_stream(hamlet, expect_fail=True)
         check_move_message_to_stream(desdemona)
 
-        (user_profile, old_stream, new_stream, msg_id, msg_id_later) = self.prepare_move_topics(
+        (user_profile, old_stream, new_stream, msg_id, _msg_id_later) = self.prepare_move_topics(
             "othello", "old_stream", "new_stream", "test"
         )
         check_move_message_to_stream(othello)
 
-        (user_profile, old_stream, new_stream, msg_id, msg_id_later) = self.prepare_move_topics(
+        (user_profile, old_stream, new_stream, msg_id, _msg_id_later) = self.prepare_move_topics(
             "polonius", "old_stream", "new_stream", "test"
         )
         everyone_group = NamedUserGroup.objects.get(
-            name=SystemGroups.EVERYONE, realm=realm, is_system_group=True
+            name=SystemGroups.EVERYONE, realm_for_sharding=realm, is_system_group=True
         )
         do_change_stream_group_based_setting(
             new_stream, "can_send_message_group", everyone_group, acting_user=desdemona
@@ -1154,14 +1193,174 @@ class MessageMoveStreamTest(ZulipTestCase):
         )
         check_move_message_to_stream(hamlet)
 
+    def test_can_move_messages_out_of_channel_group(self) -> None:
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+        iago = self.example_user("iago")
+        realm = hamlet.realm
+
+        members_system_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MEMBERS, realm_for_sharding=realm, is_system_group=True
+        )
+        nobody_system_group = NamedUserGroup.objects.get(
+            name=SystemGroups.NOBODY, realm_for_sharding=realm, is_system_group=True
+        )
+
+        expected_error = "You don't have permission to move this message"
+
+        do_change_realm_permission_group_setting(
+            realm,
+            "can_move_messages_between_topics_group",
+            nobody_system_group,
+            acting_user=None,
+        )
+        do_change_realm_permission_group_setting(
+            realm,
+            "can_move_messages_between_channels_group",
+            nobody_system_group,
+            acting_user=None,
+        )
+
+        stream_1 = get_stream("Denmark", realm)
+        stream_2 = get_stream("Verona", realm)
+
+        # Nobody is allowed to move messages.
+        self.assert_move_message(
+            "hamlet", stream_1, stream_id=stream_2.id, expected_error=expected_error
+        )
+        # Realm admin can always move messages out of the channel.
+        self.assert_move_message("iago", stream_1, stream_id=stream_2.id)
+
+        do_change_stream_group_based_setting(
+            stream_1,
+            "can_move_messages_out_of_channel_group",
+            members_system_group,
+            acting_user=iago,
+        )
+        # Only members are allowed to move messages out of the channel.
+        self.assert_move_message("hamlet", stream_1, stream_id=stream_2.id)
+        self.assert_move_message("cordelia", stream_1, stream_id=stream_2.id)
+        # Guests are not allowed.
+        self.assert_move_message(
+            "polonius", stream_1, stream_id=stream_2.id, expected_error=expected_error
+        )
+
+        # Nobody is allowed to edit the topics when moving messages between the channels.
+        self.assert_move_message(
+            "hamlet",
+            stream_1,
+            stream_id=stream_2.id,
+            topic_name="new topic",
+            expected_error="You don't have permission to edit this message",
+        )
+
+        do_change_realm_permission_group_setting(
+            realm,
+            "can_move_messages_between_topics_group",
+            members_system_group,
+            acting_user=None,
+        )
+        # Now Hamlet is in `can_move_messages_between_topics_group`, so can edit topics.
+        self.assert_move_message("hamlet", stream_1, stream_id=stream_2.id, topic_name="new topic")
+
+        user_group = check_add_user_group(
+            realm, "new_group", [hamlet, cordelia], acting_user=hamlet
+        )
+        do_change_stream_group_based_setting(
+            stream_1, "can_move_messages_out_of_channel_group", user_group, acting_user=iago
+        )
+
+        # Hamlet and Cordelia are in the `can_move_messages_out_of_channel_group`,
+        # so they can move messages out of the channel.
+        self.assert_move_message("cordelia", stream_1, stream_id=stream_2.id)
+        self.assert_move_message("hamlet", stream_1, stream_id=stream_2.id)
+        # But Shiva is not, so he can't.
+        self.assert_move_message(
+            "shiva", stream_1, stream_id=stream_2.id, expected_error=expected_error
+        )
+
+        do_change_stream_group_based_setting(
+            stream_1, "can_administer_channel_group", members_system_group, acting_user=iago
+        )
+        # Channel administrators with content access can always move messages out of
+        # the channel even if they are not in `can_move_messages_out_of_channel_group`.
+        self.assert_move_message("shiva", stream_1, stream_id=stream_2.id)
+
+    def test_move_messages_to_channels_with_updated_topics_policy(self) -> None:
+        desdemona = self.example_user("desdemona")
+        realm = desdemona.realm
+
+        members_system_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MEMBERS, realm_for_sharding=realm, is_system_group=True
+        )
+
+        do_change_realm_permission_group_setting(
+            realm,
+            "can_move_messages_between_topics_group",
+            members_system_group,
+            acting_user=None,
+        )
+        do_change_realm_permission_group_setting(
+            realm,
+            "can_move_messages_between_channels_group",
+            members_system_group,
+            acting_user=None,
+        )
+
+        stream_1 = get_stream("Denmark", realm)
+        stream_2 = get_stream("Verona", realm)
+
+        self.assert_move_message("desdemona", stream_1, stream_id=stream_2.id, topic_name="")
+        self.assert_move_message(
+            "desdemona", stream_1, stream_id=stream_2.id, topic_name="new topic"
+        )
+
+        do_set_stream_property(
+            stream_2,
+            "topics_policy",
+            StreamTopicsPolicyEnum.disable_empty_topic.value,
+            acting_user=desdemona,
+        )
+        # Cannot move messages to empty topic as `topics_policy` is set to `disable_empty_topic`.
+        self.assert_move_message(
+            "desdemona",
+            stream_1,
+            stream_id=stream_2.id,
+            topic_name="",
+            expected_error="Sending messages to the general chat is not allowed in this channel.",
+        )
+        self.assert_move_message(
+            "desdemona", stream_1, stream_id=stream_2.id, topic_name="new topic"
+        )
+        # But can send messages to empty topic in "stream_1" as `topics_policy`
+        # is set to `allow_empty_topic`.
+        self.assert_move_message("desdemona", stream_2, stream_id=stream_1.id, topic_name="")
+
+        do_set_stream_property(
+            stream_2,
+            "topics_policy",
+            StreamTopicsPolicyEnum.empty_topic_only.value,
+            acting_user=desdemona,
+        )
+
+        # Cannot move messages to topics other than empty topic in the channels with
+        # `topics_policy` set to `empty_topic_only`.
+        self.assert_move_message(
+            "desdemona",
+            stream_1,
+            stream_id=stream_2.id,
+            expected_error="Only the general chat topic is allowed in this channel.",
+        )
+        self.assert_move_message("desdemona", stream_1, stream_id=stream_2.id, topic_name="")
+
     def test_move_message_to_stream_with_topic_editing_not_allowed(self) -> None:
-        (user_profile, old_stream, new_stream, msg_id, msg_id_later) = self.prepare_move_topics(
+        (user_profile, old_stream, new_stream, msg_id, _msg_id_later) = self.prepare_move_topics(
             "othello", "old_stream_1", "new_stream_1", "test"
         )
         realm = user_profile.realm
 
         administrators_system_group = NamedUserGroup.objects.get(
-            name=SystemGroups.ADMINISTRATORS, realm=realm, is_system_group=True
+            name=SystemGroups.ADMINISTRATORS, realm_for_sharding=realm, is_system_group=True
         )
 
         do_change_realm_permission_group_setting(
@@ -1174,7 +1373,7 @@ class MessageMoveStreamTest(ZulipTestCase):
         self.login("cordelia")
 
         members_system_group = NamedUserGroup.objects.get(
-            name=SystemGroups.MEMBERS, realm=realm, is_system_group=True
+            name=SystemGroups.MEMBERS, realm_for_sharding=realm, is_system_group=True
         )
 
         do_change_realm_permission_group_setting(
@@ -1208,11 +1407,11 @@ class MessageMoveStreamTest(ZulipTestCase):
         self.assert_length(messages, 4)
 
     def test_move_message_to_stream_and_topic(self) -> None:
-        (user_profile, old_stream, new_stream, msg_id, msg_id_later) = self.prepare_move_topics(
+        (user_profile, old_stream, new_stream, msg_id, _msg_id_later) = self.prepare_move_topics(
             "iago", "test move stream", "new stream", "test"
         )
 
-        with self.assert_database_query_count(61), self.assert_memcached_count(14):
+        with self.assert_database_query_count(59), self.assert_memcached_count(14):
             result = self.client_patch(
                 f"/json/messages/{msg_id}",
                 {
@@ -1239,7 +1438,7 @@ class MessageMoveStreamTest(ZulipTestCase):
         self.assert_json_success(result)
 
     def test_move_many_messages_to_stream_and_topic(self) -> None:
-        (user_profile, old_stream, new_stream, msg_id, msg_id_later) = self.prepare_move_topics(
+        (user_profile, _old_stream, new_stream, msg_id, _msg_id_later) = self.prepare_move_topics(
             "iago", "first origin stream", "first destination stream", "first topic"
         )
 
@@ -1257,7 +1456,7 @@ class MessageMoveStreamTest(ZulipTestCase):
 
         # Adding more messages should not increase the number of
         # queries
-        (user_profile, old_stream, new_stream, msg_id, msg_id_later) = self.prepare_move_topics(
+        (user_profile, _old_stream, new_stream, msg_id, _msg_id_later) = self.prepare_move_topics(
             "iago", "second origin stream", "second destination stream", "second topic"
         )
         for i in range(1, 5):
@@ -1281,7 +1480,7 @@ class MessageMoveStreamTest(ZulipTestCase):
 
     def test_inaccessible_msg_after_stream_change(self) -> None:
         """Simulates the case where message is moved to a stream where user is not a subscribed"""
-        (user_profile, old_stream, new_stream, msg_id, msg_id_lt) = self.prepare_move_topics(
+        (user_profile, old_stream, new_stream, msg_id, _msg_id_lt) = self.prepare_move_topics(
             "iago", "test move stream", "new stream", "test"
         )
 
@@ -1363,7 +1562,7 @@ class MessageMoveStreamTest(ZulipTestCase):
             )
 
     def test_no_notify_move_message_to_stream(self) -> None:
-        (user_profile, old_stream, new_stream, msg_id, msg_id_lt) = self.prepare_move_topics(
+        (user_profile, old_stream, new_stream, msg_id, _msg_id_lt) = self.prepare_move_topics(
             "iago", "test move stream", "new stream", "test"
         )
 
@@ -1386,7 +1585,7 @@ class MessageMoveStreamTest(ZulipTestCase):
         self.assert_length(messages, 3)
 
     def test_notify_new_thread_move_message_to_stream(self) -> None:
-        (user_profile, old_stream, new_stream, msg_id, msg_id_lt) = self.prepare_move_topics(
+        (user_profile, old_stream, new_stream, msg_id, _msg_id_lt) = self.prepare_move_topics(
             "iago", "test move stream", "new stream", "test"
         )
 
@@ -1413,7 +1612,7 @@ class MessageMoveStreamTest(ZulipTestCase):
         )
 
     def test_notify_old_thread_move_message_to_stream(self) -> None:
-        (user_profile, old_stream, new_stream, msg_id, msg_id_lt) = self.prepare_move_topics(
+        (user_profile, old_stream, new_stream, msg_id, _msg_id_lt) = self.prepare_move_topics(
             "iago", "test move stream", "new stream", "test"
         )
 
@@ -1474,7 +1673,7 @@ class MessageMoveStreamTest(ZulipTestCase):
             "display_recipient": stream.name,
             "topic": "edited",
         }
-        moved_message_link = near_stream_message_url(messages[1].realm, message)
+        moved_message_link = stream_message_url(messages[1].realm, message)
         self.assert_length(messages, 2)
         self.assertEqual(messages[0].content, "First")
         self.assertEqual(
@@ -1521,7 +1720,7 @@ class MessageMoveStreamTest(ZulipTestCase):
             "display_recipient": stream.name,
             "topic": "edited",
         }
-        moved_message_link = near_stream_message_url(messages[0].realm, message)
+        moved_message_link = stream_message_url(messages[0].realm, message)
         self.assert_length(messages, 2)
         self.assertEqual(messages[0].content, "First")
         self.assertEqual(
@@ -1535,8 +1734,8 @@ class MessageMoveStreamTest(ZulipTestCase):
             first_stream,
             second_stream,
             msg_id,
-            msg_id_later,
-        ) = self.prepare_move_topics("iago", "first stream", "second stream", "test")
+            _msg_id_later,
+        ) = self.prepare_move_topics("shiva", "first stream", "second stream", "test")
 
         # 'prepare_move_topics' sends 3 messages in the first_stream
         messages = get_topic_messages(user_profile, first_stream, "test")
@@ -1587,7 +1786,7 @@ class MessageMoveStreamTest(ZulipTestCase):
         new_stream = second_stream
 
         nobody_system_group = NamedUserGroup.objects.get(
-            name=SystemGroups.NOBODY, realm=realm, is_system_group=True
+            name=SystemGroups.NOBODY, realm_for_sharding=realm, is_system_group=True
         )
 
         do_change_realm_permission_group_setting(
@@ -2011,7 +2210,7 @@ class MessageMoveStreamTest(ZulipTestCase):
         )
 
     def test_move_message_update_stream_active_status(self) -> None:
-        (user_profile, old_stream, new_stream, msg_id, msg_id_later) = self.prepare_move_topics(
+        (user_profile, _old_stream, new_stream, _msg_id, msg_id_later) = self.prepare_move_topics(
             "iago", "test move stream", "new stream", "test"
         )
 
@@ -2057,7 +2256,7 @@ class MessageMoveStreamTest(ZulipTestCase):
 
     def test_move_message_update_private_stream_active_status(self) -> None:
         # Goal is to test that we only send the stream status update to subscribers.
-        (user_profile, old_stream, new_stream, msg_id, msg_id_later) = self.prepare_move_topics(
+        (user_profile, _old_stream, new_stream, _msg_id, msg_id_later) = self.prepare_move_topics(
             "iago", "test move stream", "new stream", "test"
         )
 

@@ -1,8 +1,24 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+args="$(getopt -o '' --long check -- "$@")"
+eval "set -- $args"
+check=false
+while true; do
+    case "$1" in
+        --check)
+            check=true
+            shift
+            ;;
+        --)
+            shift
+            break
+            ;;
+    esac
+done
+
 username="$1"
-ssh_secret_name="$2"
+shift
 
 homedir="$(getent passwd "$username" | cut -d: -f6)"
 sshdir="$homedir/.ssh"
@@ -15,20 +31,22 @@ trap cleanup EXIT
 
 umask 033
 
-keydata="$(/srv/zulip-aws-tools/bin/aws --output text \
-    secretsmanager get-secret-value \
-    --secret-id "$ssh_secret_name" \
-    --query SecretString)"
-for keyfile in $(jq -r 'keys[]' <<<"$keydata"); do
-    touch "$workdir/$keyfile"
-    if [[ "$keyfile" != *".pub" ]]; then
-        chmod 600 "$workdir/$keyfile"
-    fi
-    jq -r ".[\"$keyfile\"]" <<<"$keydata" | base64 -d >"$workdir/$keyfile"
-    chown "$username:$username" "$workdir/$keyfile"
+for ssh_secret_name in "$@"; do
+    keydata="$(/srv/zulip-aws-tools/bin/aws --output text \
+        secretsmanager get-secret-value \
+        --secret-id "$ssh_secret_name" \
+        --query SecretString)"
+    for keyfile in $(jq -r 'keys[]' <<<"$keydata"); do
+        touch "$workdir/$keyfile"
+        if [[ "$keyfile" != *".pub" ]]; then
+            chmod 600 "$workdir/$keyfile"
+        fi
+        jq -r ".[\"$keyfile\"]" <<<"$keydata" | base64 -d >"$workdir/$keyfile"
+        chown "$username:$username" "$workdir/$keyfile"
+    done
 done
 
-if [ "$#" -gt 2 ]; then
+if [ "$check" = "true" ]; then
     diff -rN -x config -x authorized_keys -x known_hosts \
         "$workdir/" "$sshdir/"
     exit 0

@@ -1,0 +1,72 @@
+import {Steps, TabItem, Tabs} from "@astrojs/starlight/components";
+
+import FlattenedSteps from "../../components/FlattenedSteps.astro";
+import NavigationSteps from "../../components/NavigationSteps.astro";
+import ZulipTip from "../../components/ZulipTip.astro";
+import AutomatedDmChannelSubscription from "../include/_AutomatedDmChannelSubscription.mdx";
+import ChannelMenuSubscribersTabTip from "../include/_ChannelMenuSubscribersTabTip.mdx";
+import DependsOnPermissions from "../include/_DependsOnPermissions.mdx";
+import RightSidebarViewProfile from "../include/_RightSidebarViewProfile.mdx";
+import SelectChannelViewSubscribers from "../include/_SelectChannelViewSubscribers.mdx";
+
+<DependsOnPermissions />
+
+<Tabs>
+  <TabItem label="Via channel settings">
+    <FlattenedSteps>
+      <NavigationSteps target="relative/channel/all" />
+
+      1. Select a channel.
+
+      <SelectChannelViewSubscribers />
+
+      1. Under **Add subscribers**, enter the user's name or email address. To
+         subscribe users in bulk, you can copy members from an existing channel or
+         [user group](/help/user-groups). The typeahead will only include users who
+         aren't already subscribed to the channel.
+      1. Configure **Send notification message to newly subscribed users** as desired.
+      1. Click **Add**.
+    </FlattenedSteps>
+
+    <ChannelMenuSubscribersTabTip />
+  </TabItem>
+
+  <TabItem label="Via user profile">
+    <FlattenedSteps>
+      <RightSidebarViewProfile />
+
+      1. Select the **Channels** tab.
+      1. Under **Subscribe user to channels**, select a channel from the
+         dropdown list. You can start typing to filter channels.
+      1. Click the **Subscribe** button.
+    </FlattenedSteps>
+  </TabItem>
+
+  <TabItem label="Via compose box">
+    <Steps>
+      1. Start a message in the channel you want to subscribe someone to, in a
+         [new](/help/introduction-to-topics#how-to-start-a-new-topic) or
+         [existing](/help/replying-to-messages) conversation.
+      1. [Mention](/help/mention-a-user-or-group#from-the-compose-box) the user you
+         want to subscribe.
+      1. Click the **Subscribe them** button on the banner that appears above the
+         compose box.
+    </Steps>
+
+    <ZulipTip>
+      You don't have to send the message you started composing.
+    </ZulipTip>
+  </TabItem>
+
+  <TabItem label="Mobile">
+    Access this feature by following the web app instructions in your
+    mobile device browser.
+
+    Implementation of this feature in the mobile app is tracked [on
+    GitHub](https://github.com/zulip/zulip-flutter/issues/1222). If
+    you're interested in this feature, please react to the issue's
+    description with 👍.
+  </TabItem>
+</Tabs>
+
+<AutomatedDmChannelSubscription />

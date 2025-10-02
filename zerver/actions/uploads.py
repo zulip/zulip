@@ -43,7 +43,13 @@ def do_claim_attachments(
         user_profile = message.sender
         is_message_realm_public = False
         is_message_web_public = False
-        if message.is_stream_message():
+        if isinstance(message, Message):
+            is_channel_message = message.is_channel_message
+        else:
+            assert isinstance(message, ScheduledMessage)
+            is_channel_message = message.is_channel_message()
+
+        if is_channel_message:
             stream = Stream.objects.get(id=message.recipient.type_id)
             is_message_realm_public = stream.is_public()
             is_message_web_public = stream.is_web_public

@@ -32,8 +32,9 @@ from zerver.lib.debug import maybe_tracemalloc_listen
 from zerver.lib.exceptions import ErrorCode, JsonableError, MissingAuthenticationError, WebhookError
 from zerver.lib.markdown import get_markdown_requests, get_markdown_time
 from zerver.lib.per_request_cache import flush_per_request_caches
+from zerver.lib.push_notifications import FailedToConnectBouncerError, InternalBouncerServerError
 from zerver.lib.rate_limiter import RateLimitResult
-from zerver.lib.request import RequestNotes, get_preferred_type
+from zerver.lib.request import RequestNotes
 from zerver.lib.response import (
     AsynchronousResponse,
     json_response,
@@ -118,8 +119,6 @@ def is_slow_query(time_delta: float, path: str) -> bool:
     is_exempt = path == "/activity" or path.startswith(("/realm_activity/", "/user_activity/"))
     if is_exempt:
         return time_delta >= 5
-    if "webathena_kerberos" in path:
-        return time_delta >= 10
     return True
 
 
@@ -377,7 +376,7 @@ class LogRequests(MiddlewareMixin):
 class JsonErrorHandler(MiddlewareMixin):
     def process_exception(self, request: HttpRequest, exception: Exception) -> HttpResponse | None:
         if isinstance(exception, MissingAuthenticationError):
-            if get_preferred_type(request, ["application/json", "text/html"]) == "text/html":
+            if request.get_preferred_type(["application/json", "text/html"]) == "text/html":
                 # If this looks like a request from a top-level page in a
                 # browser, send the user to the login page.
                 #
@@ -397,10 +396,16 @@ class JsonErrorHandler(MiddlewareMixin):
 
         if isinstance(exception, JsonableError):
             response = json_response_from_error(exception)
-            if response.status_code < 500 or isinstance(exception, WebhookError):
+            if response.status_code < 500 or isinstance(
+                exception, (FailedToConnectBouncerError | InternalBouncerServerError | WebhookError)
+            ):
                 # Webhook errors are handled in
                 # authenticated_rest_api_view / webhook_view, so we
                 # just return the response without logging further.
+                #
+                # Return the response when `FailedToConnectBouncerError` or
+                # `InternalBouncerServerError` raised (status code 502) as
+                # it helps the client to show the user a more accurate error message.
                 return response
         elif RequestNotes.get_notes(request).error_format == "JSON" and not settings.TEST_SUITE:
             response = json_response(

@@ -2,6 +2,8 @@
 
 const assert = require("node:assert/strict");
 
+const {make_user_group} = require("./lib/example_group.cjs");
+const {make_realm} = require("./lib/example_realm.cjs");
 const {mock_esm, with_overrides, zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 const {page_params} = require("./lib/zpage_params.cjs");
@@ -14,7 +16,7 @@ const {initialize_user_settings} = zrequire("user_settings");
 
 const current_user = {};
 set_current_user(current_user);
-const realm = {};
+const realm = make_realm();
 set_realm(realm);
 const user_settings = {};
 initialize_user_settings({user_settings});
@@ -26,7 +28,7 @@ initialize_user_settings({user_settings});
     test people.js.
 */
 
-const admins = {
+const admins = make_user_group({
     description: "Administrators",
     name: "role:administrators",
     id: 1,
@@ -39,8 +41,8 @@ const admins = {
     can_mention_group: 1,
     can_remove_members_group: 4,
     deactivated: false,
-};
-const moderators = {
+});
+const moderators = make_user_group({
     description: "Moderators",
     name: "role:moderators",
     id: 2,
@@ -54,8 +56,8 @@ const moderators = {
     can_mention_group: 1,
     can_remove_members_group: 4,
     deactivated: false,
-};
-const members = {
+});
+const members = make_user_group({
     description: "Members",
     name: "role:members",
     id: 3,
@@ -69,8 +71,8 @@ const members = {
     can_mention_group: 4,
     can_remove_members_group: 4,
     deactivated: false,
-};
-const nobody = {
+});
+const nobody = make_user_group({
     description: "Nobody",
     name: "role:nobody",
     id: 4,
@@ -84,8 +86,8 @@ const nobody = {
     can_mention_group: 2,
     can_remove_members_group: 4,
     deactivated: false,
-};
-const students = {
+});
+const students = make_user_group({
     description: "Students group",
     name: "Students",
     id: 5,
@@ -103,19 +105,21 @@ const students = {
     can_remove_members_group: 1,
     creator_id: 4,
     deactivated: false,
-};
-const deactivated_group = {
+});
+const deactivated_group = make_user_group({
     name: "Deactivated test group",
     id: 3,
     members: new Set([1, 2, 3]),
     is_system_group: false,
     direct_subgroup_ids: new Set([4, 5, 6]),
+    can_add_members_group: 4,
+    can_remove_members_group: 4,
     can_join_group: 1,
     can_leave_group: 1,
     can_manage_group: 1,
     can_mention_group: 1,
     deactivated: true,
-};
+});
 
 const group_permission_settings = mock_esm("../src/group_permission_settings", {});
 
@@ -274,20 +278,20 @@ function test_realm_group_settings(setting_name, validation_func) {
         const moderator_user_id = 2;
         const member_user_id = 3;
 
-        const admins = {
+        const admins = make_user_group({
             name: "Admins",
             id: 1,
             members: new Set([admin_user_id]),
             is_system_group: true,
             direct_subgroup_ids: new Set([]),
-        };
-        const moderators = {
+        });
+        const moderators = make_user_group({
             name: "Moderators",
             id: 2,
             members: new Set([moderator_user_id]),
             is_system_group: true,
             direct_subgroup_ids: new Set([1]),
-        };
+        });
 
         group_permission_settings.get_group_permission_setting_config = () => ({
             allow_everyone_group: false,
@@ -436,8 +440,8 @@ function test_user_group_permission_setting(override, setting_name, permission_f
     override(current_user, "user_id", 2);
     assert.ok(permission_func(students.id));
 
-    // Cannot perform any join, leave, add, remove if group is deactivated
-    assert.ok(!permission_func(deactivated_group.id));
+    // Can perform any join, leave, add, remove even if the group is deactivated
+    assert.ok(permission_func(deactivated_group.id));
 }
 
 run_test("can_join_user_group", ({override}) => {
@@ -534,20 +538,20 @@ run_test("user_can_access_all_other_users", ({override}) => {
     const guest_user_id = 1;
     const member_user_id = 2;
 
-    const members = {
+    const members = make_user_group({
         name: "role:members",
         id: 1,
         members: new Set([member_user_id]),
         is_system_group: true,
         direct_subgroup_ids: new Set([]),
-    };
-    const everyone = {
+    });
+    const everyone = make_user_group({
         name: "role:everyone",
         id: 2,
         members: new Set([guest_user_id]),
         is_system_group: true,
         direct_subgroup_ids: new Set([1]),
-    };
+    });
 
     user_groups.initialize({realm_user_groups: [members, everyone]});
     override(realm, "realm_can_access_all_users_group", members.id);
@@ -558,6 +562,10 @@ run_test("user_can_access_all_other_users", ({override}) => {
 
     page_params.is_spectator = false;
     override(current_user, "user_id", member_user_id);
+    override(current_user, "is_guest", false);
+    assert.ok(settings_data.user_can_access_all_other_users());
+    override(current_user, "is_guest", true);
+    // For coverage only: Here the is_guest optimization is skipped.
     assert.ok(settings_data.user_can_access_all_other_users());
 
     override(current_user, "user_id", guest_user_id);
@@ -601,13 +609,13 @@ run_test("user_can_create_web_public_streams", ({override}) => {
         settings_data.user_can_create_web_public_streams,
     );
     const owner_user_id = 4;
-    const owners = {
+    const owners = make_user_group({
         name: "Admins",
         id: 3,
         members: new Set([owner_user_id]),
         is_system_group: true,
         direct_subgroup_ids: new Set([]),
-    };
+    });
     override(current_user, "user_id", owner_user_id);
     user_groups.initialize({realm_user_groups: [owners]});
 
@@ -633,20 +641,20 @@ run_test("guests_can_access_all_other_users", () => {
     const guest_user_id = 1;
     const member_user_id = 2;
 
-    const members = {
+    const members = make_user_group({
         name: "role:members",
         id: 1,
         members: new Set([member_user_id]),
         is_system_group: true,
         direct_subgroup_ids: new Set([]),
-    };
-    const everyone = {
+    });
+    const everyone = make_user_group({
         name: "role:everyone",
         id: 2,
         members: new Set([guest_user_id]),
         is_system_group: true,
         direct_subgroup_ids: new Set([1]),
-    };
+    });
 
     user_groups.initialize({realm_user_groups: [members]});
     realm.realm_can_access_all_users_group = members.id;
@@ -666,4 +674,23 @@ run_test("user_can_summarize_topics", ({override}) => {
 
     override(realm, "server_can_summarize_topics", false);
     assert.ok(!settings_data.user_can_summarize_topics());
+});
+
+run_test("should_mask_unread_count", ({override}) => {
+    override(user_settings, "web_stream_unreads_count_display_policy", 3);
+    let sub_muted = false;
+    let unmuted_unread_count = 0;
+    assert.equal(settings_data.should_mask_unread_count(sub_muted, unmuted_unread_count), true);
+
+    override(user_settings, "web_stream_unreads_count_display_policy", 2);
+    assert.equal(settings_data.should_mask_unread_count(sub_muted, unmuted_unread_count), false);
+
+    sub_muted = true;
+    assert.equal(settings_data.should_mask_unread_count(sub_muted, unmuted_unread_count), true);
+
+    unmuted_unread_count = 2;
+    assert.equal(settings_data.should_mask_unread_count(sub_muted, unmuted_unread_count), false);
+
+    override(user_settings, "web_stream_unreads_count_display_policy", 1);
+    assert.equal(settings_data.should_mask_unread_count(sub_muted, unmuted_unread_count), false);
 });

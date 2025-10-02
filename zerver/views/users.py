@@ -91,6 +91,7 @@ from zerver.models.realms import (
     DomainNotAllowedForRealmError,
     EmailContainsPlusError,
     InvalidFakeEmailDomainError,
+    Realm,
 )
 from zerver.models.users import (
     get_user_by_delivery_email,
@@ -118,9 +119,9 @@ def deactivate_user_backend(
     request: HttpRequest,
     user_profile: UserProfile,
     *,
-    user_id: PathOnly[int],
     deactivation_notification_comment: Annotated[str, StringConstraints(max_length=2000)]
     | None = None,
+    user_id: PathOnly[int],
 ) -> HttpResponse:
     target = access_user_by_id(user_profile, user_id, for_admin=True)
     if target.is_realm_owner and not user_profile.is_realm_owner:
@@ -206,11 +207,11 @@ def update_user_by_id_api(
     request: HttpRequest,
     user_profile: UserProfile,
     *,
-    user_id: PathOnly[int],
     full_name: str | None = None,
-    role: Json[RoleParamType] | None = None,
-    profile_data: Json[list[ProfileDataElement]] | None = None,
     new_email: str | None = None,
+    profile_data: Json[list[ProfileDataElement]] | None = None,
+    role: Json[RoleParamType] | None = None,
+    user_id: PathOnly[int],
 ) -> HttpResponse:
     target = access_user_by_id(
         user_profile, user_id, allow_deactivated=True, allow_bots=True, for_admin=True
@@ -234,9 +235,9 @@ def update_user_by_email_api(
     *,
     email: PathOnly[str],
     full_name: str | None = None,
-    role: Json[RoleParamType] | None = None,
-    profile_data: Json[list[ProfileDataElement]] | None = None,
     new_email: str | None = None,
+    profile_data: Json[list[ProfileDataElement]] | None = None,
+    role: Json[RoleParamType] | None = None,
 ) -> HttpResponse:
     target = access_user_by_email(
         user_profile, email, allow_deactivated=True, allow_bots=True, for_admin=True
@@ -258,9 +259,9 @@ def update_user_backend(
     target: UserProfile,
     *,
     full_name: str | None = None,
-    role: Json[RoleParamType] | None = None,
-    profile_data: Json[list[ProfileDataElement]] | None = None,
     new_email: str | None = None,
+    profile_data: Json[list[ProfileDataElement]] | None = None,
+    role: Json[RoleParamType] | None = None,
 ) -> HttpResponse:
     if new_email is not None and (
         not user_profile.can_change_user_emails or not user_profile.is_realm_admin
@@ -327,6 +328,7 @@ def update_user_backend(
                 user_profile.realm,
                 new_email,
                 verbose=False,
+                allow_inactive_mirror_dummies=False,
             )
         except ValidationError as e:
             raise JsonableError(_("New email value error: {message}").format(message=e.message))
@@ -440,15 +442,15 @@ def patch_bot_backend(
     user_profile: UserProfile,
     *,
     bot_id: PathOnly[int],
-    full_name: str | None = None,
-    role: Json[RoleParamType] | None = None,
     bot_owner_id: Json[int] | None = None,
     config_data: Json[dict[str, str]] | None = None,
-    service_payload_url: Json[Annotated[str, AfterValidator(check_url)]] | None = None,
-    service_interface: Json[int] = 1,
-    default_sending_stream: str | None = None,
-    default_events_register_stream: str | None = None,
     default_all_public_streams: Json[bool] | None = None,
+    default_events_register_stream: str | None = None,
+    default_sending_stream: str | None = None,
+    full_name: str | None = None,
+    role: Json[RoleParamType] | None = None,
+    service_interface: Json[int] = 1,
+    service_payload_url: Json[Annotated[str, AfterValidator(check_url)]] | None = None,
 ) -> HttpResponse:
     bot = access_bot_by_id(user_profile, bot_id)
 
@@ -482,13 +484,13 @@ def patch_bot_backend(
         if default_sending_stream == "":
             stream: Stream | None = None
         else:
-            (stream, sub) = access_stream_by_name(user_profile, default_sending_stream)
+            (stream, _sub) = access_stream_by_name(user_profile, default_sending_stream)
         do_change_default_sending_stream(bot, stream, acting_user=user_profile)
     if default_events_register_stream is not None:
         if default_events_register_stream == "":
             stream = None
         else:
-            (stream, sub) = access_stream_by_name(user_profile, default_events_register_stream)
+            (stream, _sub) = access_stream_by_name(user_profile, default_events_register_stream)
         do_change_default_events_register_stream(bot, stream, acting_user=user_profile)
     if default_all_public_streams is not None:
         do_change_default_all_public_streams(
@@ -498,7 +500,12 @@ def patch_bot_backend(
     if service_payload_url is not None:
         check_valid_interface_type(service_interface)
         assert service_interface is not None
-        do_update_outgoing_webhook_service(bot, service_interface, service_payload_url)
+        do_update_outgoing_webhook_service(
+            bot,
+            interface=service_interface,
+            base_url=service_payload_url,
+            acting_user=user_profile,
+        )
 
     if config_data is not None:
         do_update_bot_config_data(bot, config_data)
@@ -554,20 +561,20 @@ def add_bot_backend(
     request: HttpRequest,
     user_profile: UserProfile,
     *,
-    full_name_raw: Annotated[str, ApiParamConfig("full_name")],
-    short_name_raw: Annotated[str, ApiParamConfig("short_name")],
     bot_type: Json[int] = UserProfile.DEFAULT_BOT,
-    payload_url: Json[Annotated[str, AfterValidator(check_url)]] = "",
-    service_name: str | None = None,
     config_data: Json[Mapping[str, str]] | None = None,
-    interface_type: Json[int] = Service.GENERIC,
-    default_sending_stream_name: Annotated[
-        str | None, ApiParamConfig("default_sending_stream")
-    ] = None,
+    default_all_public_streams: Json[bool] | None = None,
     default_events_register_stream_name: Annotated[
         str | None, ApiParamConfig("default_events_register_stream")
     ] = None,
-    default_all_public_streams: Json[bool] | None = None,
+    default_sending_stream_name: Annotated[
+        str | None, ApiParamConfig("default_sending_stream")
+    ] = None,
+    full_name_raw: Annotated[str, ApiParamConfig("full_name")],
+    interface_type: Json[int] = Service.GENERIC,
+    payload_url: Json[Annotated[str, AfterValidator(check_url)]] = "",
+    service_name: str | None = None,
+    short_name_raw: Annotated[str, ApiParamConfig("short_name")],
 ) -> HttpResponse:
     if config_data is None:
         config_data = {}
@@ -627,13 +634,13 @@ def add_bot_backend(
 
     default_sending_stream = None
     if default_sending_stream_name is not None:
-        (default_sending_stream, ignored_sub) = access_stream_by_name(
+        (default_sending_stream, _sub) = access_stream_by_name(
             user_profile, default_sending_stream_name
         )
 
     default_events_register_stream = None
     if default_events_register_stream_name is not None:
-        (default_events_register_stream, ignored_sub) = access_stream_by_name(
+        (default_events_register_stream, _sub) = access_stream_by_name(
             user_profile, default_events_register_stream_name
         )
 
@@ -722,10 +729,13 @@ def get_bots_backend(request: HttpRequest, user_profile: UserProfile) -> HttpRes
 
 
 def get_user_data(
-    user_profile: UserProfile,
+    user_profile: UserProfile | None,
     include_custom_profile_fields: bool,
     client_gravatar: bool,
+    *,
+    realm: Realm | None = None,
     target_user: UserProfile | None = None,
+    user_ids: list[int] | None = None,
 ) -> dict[str, Any]:
     """
     The client_gravatar field here is set to True by default assuming that clients
@@ -733,7 +743,9 @@ def get_user_data(
     an optimization than it might seem because gravatar URLs contain MD5 hashes that
     compress very poorly compared to other data.
     """
-    realm = user_profile.realm
+    if realm is None:
+        assert user_profile is not None
+        realm = user_profile.realm
 
     members = get_users_for_api(
         realm,
@@ -742,9 +754,11 @@ def get_user_data(
         client_gravatar=client_gravatar,
         user_avatar_url_field_optional=False,
         include_custom_profile_fields=include_custom_profile_fields,
+        user_ids=user_ids,
     )
 
     if target_user is not None:
+        assert user_ids is None
         data: dict[str, Any] = {"user": members[target_user.id]}
     else:
         data = {"members": [members[k] for k in members]}
@@ -753,22 +767,52 @@ def get_user_data(
 
 
 @typed_endpoint
-def get_members_backend(
+def get_member_backend(
     request: HttpRequest,
     user_profile: UserProfile,
-    user_id: int | None = None,
+    user_id: int,
     *,
-    include_custom_profile_fields: Json[bool] = False,
     client_gravatar: Json[bool] = True,
+    include_custom_profile_fields: Json[bool] = False,
 ) -> HttpResponse:
-    target_user = None
-    if user_id is not None:
-        target_user = access_user_by_id(
-            user_profile, user_id, allow_deactivated=True, allow_bots=True, for_admin=False
-        )
+    target_user = access_user_by_id(
+        user_profile, user_id, allow_deactivated=True, allow_bots=True, for_admin=False
+    )
+    data = get_user_data(
+        user_profile,
+        include_custom_profile_fields,
+        client_gravatar,
+        target_user=target_user,
+    )
+    return json_success(request, data)
 
-    data = get_user_data(user_profile, include_custom_profile_fields, client_gravatar, target_user)
 
+@typed_endpoint
+def get_members_backend(
+    request: HttpRequest,
+    maybe_user_profile: UserProfile | AnonymousUser,
+    *,
+    client_gravatar: Json[bool] = True,
+    include_custom_profile_fields: Json[bool] = False,
+    user_ids: Json[list[int]] | None = None,
+) -> HttpResponse:
+    if isinstance(maybe_user_profile, UserProfile):
+        user_profile = maybe_user_profile
+        realm = user_profile.realm
+    else:
+        realm = get_valid_realm_from_request(request)
+        if not realm.allow_web_public_streams_access():
+            raise MissingAuthenticationError
+
+        user_profile = None
+
+    data = get_user_data(
+        user_profile,
+        include_custom_profile_fields,
+        client_gravatar,
+        user_ids=user_ids,
+        realm=realm,
+    )
     return json_success(request, data)
 
 
@@ -855,11 +899,11 @@ def get_subscription_backend(
     request: HttpRequest,
     user_profile: UserProfile,
     *,
-    user_id: PathOnly[Json[int]],
     stream_id: PathOnly[Json[int]],
+    user_id: PathOnly[Json[int]],
 ) -> HttpResponse:
     target_user = access_user_by_id(user_profile, user_id, for_admin=False)
-    (stream, sub) = access_stream_by_id(user_profile, stream_id, require_content_access=False)
+    (_stream, _sub) = access_stream_by_id(user_profile, stream_id, require_content_access=False)
 
     subscription_status = {"is_subscribed": subscribed_to_stream(target_user, stream_id)}
 
@@ -871,13 +915,18 @@ def get_user_by_email(
     request: HttpRequest,
     user_profile: UserProfile,
     *,
+    client_gravatar: Json[bool] = True,
     email: PathOnly[str],
     include_custom_profile_fields: Json[bool] = False,
-    client_gravatar: Json[bool] = True,
 ) -> HttpResponse:
     target_user = access_user_by_email(
         user_profile, email, allow_deactivated=True, allow_bots=True, for_admin=False
     )
 
-    data = get_user_data(user_profile, include_custom_profile_fields, client_gravatar, target_user)
+    data = get_user_data(
+        user_profile,
+        include_custom_profile_fields,
+        client_gravatar,
+        target_user=target_user,
+    )
     return json_success(request, data)

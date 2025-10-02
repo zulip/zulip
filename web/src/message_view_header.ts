@@ -1,6 +1,7 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
 
+import render_inline_decorated_channel_name from "../templates/inline_decorated_channel_name.hbs";
 import render_message_view_header from "../templates/message_view_header.hbs";
 
 import type {Filter} from "./filter.ts";
@@ -18,7 +19,8 @@ import * as stream_data from "./stream_data.ts";
 import type {StreamSubscription} from "./sub_store.ts";
 
 type MessageViewHeaderContext = {
-    title: string;
+    title?: string | undefined;
+    title_html?: string | undefined;
     description?: string;
     link?: string;
     is_spectator?: boolean;
@@ -47,7 +49,7 @@ function get_message_view_header_context(filter: Filter | undefined): MessageVie
         };
     }
 
-    if (inbox_util.is_visible()) {
+    if (inbox_util.is_visible() && !inbox_util.is_channel_view()) {
         return {
             title: $t({defaultMessage: "Inbox"}),
             description: $t({
@@ -92,7 +94,7 @@ function get_message_view_header_context(filter: Filter | undefined): MessageVie
     const description = filter.get_description()?.description;
     const link = filter.get_description()?.link;
     assert(title !== undefined);
-    const context = filter.add_icon_data({
+    let context = filter.add_icon_data({
         title,
         description,
         link,
@@ -111,6 +113,22 @@ function get_message_view_header_context(filter: Filter | undefined): MessageVie
                 }),
             };
         }
+
+        if (inbox_util.is_visible() && inbox_util.is_channel_view()) {
+            const stream_name_with_privacy_symbol_html = render_inline_decorated_channel_name({
+                stream: current_stream,
+                show_colored_icon: true,
+            });
+            context = {
+                ...context,
+                title: undefined,
+                title_html: stream_name_with_privacy_symbol_html,
+                // We don't want to show an initial icon here.
+                icon: undefined,
+                zulip_icon: undefined,
+            };
+        }
+
         // We can now be certain that the narrow
         // involves a stream which exists and
         // the current user can access.

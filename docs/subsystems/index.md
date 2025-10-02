@@ -34,7 +34,6 @@ django-upgrades
 release-checklist
 api-release-checklist
 input-pills
-presence
 unread_messages
 billing
 widgets

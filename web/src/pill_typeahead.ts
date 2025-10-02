@@ -47,7 +47,7 @@ export function set_up_user(
         source(_query: string): UserPillData[] {
             return user_pill.typeahead_source(pills, exclude_bots);
         },
-        highlighter_html(item: UserPillData, _query: string): string {
+        item_html(item: UserPillData, _query: string): string {
             return typeahead_helper.render_person(item);
         },
         matcher(item: UserPillData, query: string): boolean {
@@ -96,7 +96,7 @@ export function set_up_stream(
         source(_query: string): StreamPillData[] {
             return stream_pill.typeahead_source(pills, opts.invite_streams);
         },
-        highlighter_html(item: StreamPillData, _query: string): string {
+        item_html(item: StreamPillData, _query: string): string {
             return typeahead_helper.render_stream(item);
         },
         matcher(item: StreamPillData, query: string): boolean {
@@ -147,7 +147,7 @@ export function set_up_user_group(
                 .user_group_source()
                 .map((user_group) => ({type: "user_group", ...user_group}));
         },
-        highlighter_html(item: UserGroupPillData, _query: string): string {
+        item_html(item: UserGroupPillData, _query: string): string {
             return typeahead_helper.render_user_group(item);
         },
         matcher(item: UserGroupPillData, query: string): boolean {
@@ -194,7 +194,7 @@ export function set_up_group_setting_typeahead(
 
             return source;
         },
-        highlighter_html(item: GroupSettingTypeaheadItem, _query: string): string {
+        item_html(item: GroupSettingTypeaheadItem, _query: string): string {
             if (item.type === "user_group") {
                 return typeahead_helper.render_user_group(item);
             }
@@ -264,6 +264,7 @@ export function set_up_combined(
         user_group_source?: () => UserGroup[];
         exclude_bots?: boolean;
         update_func?: () => void;
+        for_stream_subscribers: boolean;
     },
 ): void {
     if (!opts.user && !opts.user_group && !opts.stream) {
@@ -282,6 +283,8 @@ export function set_up_combined(
     };
     new Typeahead(bootstrap_typeahead_input, {
         dropup: true,
+        helpOnEmptyStrings: true,
+        hideOnEmptyAfterBackspace: true,
         source(query: string): TypeaheadItem[] {
             let source: TypeaheadItem[] = [];
             if (include_streams(query)) {
@@ -317,7 +320,7 @@ export function set_up_combined(
             }
             return source;
         },
-        highlighter_html(item: TypeaheadItem, query: string): string {
+        item_html(item: TypeaheadItem, query: string): string {
             if (include_streams(query) && item.type === "stream") {
                 return typeahead_helper.render_stream(item);
             }
@@ -380,20 +383,21 @@ export function set_up_combined(
                 }
             }
 
-            return typeahead_helper.sort_recipients({
+            return typeahead_helper.sort_stream_or_group_members_options({
                 users,
                 query,
-                current_stream_id: undefined,
-                current_topic: undefined,
                 groups,
-                max_num_items: undefined,
+                for_stream_subscribers: opts.for_stream_subscribers,
             });
         },
         updater(item: TypeaheadItem, query: string): undefined {
             if (include_streams(query) && item.type === "stream") {
                 stream_pill.append_stream(item, pills);
             } else if (include_user_groups && item.type === "user_group") {
-                user_group_pill.append_user_group(item, pills);
+                const show_expand_button =
+                    !opts.for_stream_subscribers &&
+                    (item.members.size > 0 || item.direct_subgroup_ids.size > 0);
+                user_group_pill.append_user_group(item, pills, true, show_expand_button);
             } else if (
                 include_users &&
                 item.type === "user" &&

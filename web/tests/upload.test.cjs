@@ -2,6 +2,7 @@
 
 const assert = require("node:assert/strict");
 
+const {make_realm} = require("./lib/example_realm.cjs");
 const {mock_esm, set_global, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
 const $ = require("./lib/zjquery.cjs");
@@ -36,7 +37,7 @@ const message_lists = mock_esm("../src/message_lists");
 const {set_realm} = zrequire("state_data");
 const compose_validate = zrequire("compose_validate");
 
-const realm = {};
+const realm = make_realm();
 set_realm(realm);
 
 message_lists.current = {
@@ -141,7 +142,6 @@ test("config", () => {
 });
 
 test("show_error_message", ({mock_template}) => {
-    $("#compose_banners .upload_banner .moving_bar").css = noop;
     $("#compose_banners .upload_banner").length = 0;
 
     let banner_shown = false;
@@ -167,7 +167,6 @@ test("show_error_message", ({mock_template}) => {
 
 test("upload_files", async ({mock_template, override, override_rewire}) => {
     $("#compose_banners .upload_banner").remove = noop;
-    $("#compose_banners .upload_banner .moving_bar").css = noop;
     $("#compose_banners .upload_banner").length = 0;
 
     let files = [
@@ -217,15 +216,6 @@ test("upload_files", async ({mock_template, override, override_rewire}) => {
     assert.ok(banner_shown);
 
     override(realm, "max_file_upload_size_mib", 25);
-    let on_click_close_button_callback;
-
-    $("#compose_banners .upload_banner.file_id_123 .upload_banner_cancel_button").one = (
-        event,
-        callback,
-    ) => {
-        assert.equal(event, "click");
-        on_click_close_button_callback = callback;
-    };
     let compose_ui_insert_syntax_and_focus_called = false;
     override_rewire(compose_ui, "insert_syntax_and_focus", () => {
         compose_ui_insert_syntax_and_focus_called = true;
@@ -240,7 +230,10 @@ test("upload_files", async ({mock_template, override, override_rewire}) => {
     });
     $("#compose-send-button").removeClass("disabled-message-send-controls");
     $("#compose_banners .upload_banner").remove();
-    $("#compose .undo_markdown_preview").show();
+    $("#compose .undo_markdown_preview").css = (property) => {
+        assert.equal(property, "display");
+        return "flex";
+    };
 
     banner_shown = false;
     mock_template("compose_banner/upload_banner.hbs", false, () => {
@@ -288,7 +281,7 @@ test("upload_files", async ({mock_template, override, override_rewire}) => {
         assert.equal(new_syntax, "");
         assert.equal($textarea, $("textarea#compose-textarea"));
     });
-    on_click_close_button_callback();
+    $("#compose_banners .upload_banner.file_id_123 .upload_banner_cancel_button").trigger("click");
     assert.ok(remove_file_called);
     assert.ok(hide_upload_banner_called);
     assert.ok(compose_ui_autosize_textarea_called);
@@ -298,7 +291,7 @@ test("upload_files", async ({mock_template, override, override_rewire}) => {
     remove_file_called = false;
     $("textarea#compose-textarea").val("user modified text");
 
-    on_click_close_button_callback();
+    $("#compose_banners .upload_banner.file_id_123 .upload_banner_cancel_button").trigger("click");
     assert.ok(remove_file_called);
     assert.ok(hide_upload_banner_called);
     assert.ok(compose_ui_autosize_textarea_called);
@@ -456,13 +449,20 @@ test("copy_paste", ({override, override_rewire}) => {
 });
 
 test("uppy_events", ({override_rewire, mock_template}) => {
-    $("#compose_banners .upload_banner .moving_bar").css = noop;
     $("#compose_banners .upload_banner").length = 0;
     override_rewire(compose_ui, "smart_insert_inline", noop);
     override_rewire(compose_validate, "validate_and_update_send_button_status", noop);
 
     const callbacks = {};
     let state = {};
+    const file = {
+        name: "copenhagen.png",
+        meta: {
+            name: "copenhagen.png",
+        },
+    };
+    let uppy_set_file_state_called = false;
+    let uppy_set_file_meta_called = false;
 
     uppy_stub = function () {
         return {
@@ -475,6 +475,21 @@ test("uppy_events", ({override_rewire, mock_template}) => {
             getFiles() {
                 return [];
             },
+            // This is currently only called in
+            // on_upload_success_callback, we return the modified name
+            // keeping in mind only that case. Although this isn't
+            // ideal, it seems better than the alternative of creating
+            // a file store in the tests.
+            getFile() {
+                return {
+                    ...file,
+                    name: "modified-name-copenhagen.png",
+                    meta: {
+                        ...file.meta,
+                        zulip_url: "/user_uploads/4/cb/rue1c-MlMUjDAUdkRrEM4BTJ/copenhagen.png",
+                    },
+                };
+            },
             getState: () => ({
                 info: [
                     {
@@ -484,21 +499,30 @@ test("uppy_events", ({override_rewire, mock_template}) => {
                     },
                 ],
             }),
+            setFileState(_file_id, {name}) {
+                uppy_set_file_state_called = true;
+                assert.equal(name, "modified-name-copenhagen.png");
+            },
+            setFileMeta(_file_id, {zulip_url}) {
+                uppy_set_file_meta_called = true;
+                assert.equal(
+                    zulip_url,
+                    "/user_uploads/4/cb/rue1c-MlMUjDAUdkRrEM4BTJ/copenhagen.png",
+                );
+            },
         };
     };
     upload.setup_upload(upload.compose_config);
-    assert.equal(Object.keys(callbacks).length, 5);
+    assert.equal(Object.keys(callbacks).length, 6);
 
     const on_upload_success_callback = callbacks["upload-success"];
-    const file = {
-        name: "copenhagen.png",
-    };
     let response = {
+        status: 200,
         body: {
             xhr: {
                 responseText: JSON.stringify({
                     url: "/user_uploads/4/cb/rue1c-MlMUjDAUdkRrEM4BTJ/copenhagen.png",
-                    filename: "copenhagen.png",
+                    filename: "modified-name-copenhagen.png",
                 }),
             },
         },
@@ -510,7 +534,7 @@ test("uppy_events", ({override_rewire, mock_template}) => {
         assert.equal(old_syntax, "[translated: Uploading copenhagen.png…]()");
         assert.equal(
             new_syntax,
-            "[copenhagen.png](/user_uploads/4/cb/rue1c-MlMUjDAUdkRrEM4BTJ/copenhagen.png)",
+            "[modified-name-copenhagen.png](/user_uploads/4/cb/rue1c-MlMUjDAUdkRrEM4BTJ/copenhagen.png)",
         );
         assert.equal($textarea, $("textarea#compose-textarea"));
     });
@@ -522,6 +546,8 @@ test("uppy_events", ({override_rewire, mock_template}) => {
 
     assert.ok(compose_ui_replace_syntax_called);
     assert.ok(compose_ui_autosize_textarea_called);
+    assert.ok(uppy_set_file_state_called);
+    assert.ok(uppy_set_file_meta_called);
 
     mock_template("compose_banner/upload_banner.hbs", false, (data) => {
         assert.equal(data.banner_type, "error");

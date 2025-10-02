@@ -6,6 +6,7 @@ const katex = require("katex");
 
 const markdown_test_cases = require("../../zerver/tests/fixtures/markdown_test_cases.json");
 
+const {make_realm} = require("./lib/example_realm.cjs");
 const markdown_assert = require("./lib/markdown_assert.cjs");
 const {mock_esm, set_global, zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
@@ -58,11 +59,14 @@ const pygments_data = zrequire("pygments_data");
 const {set_realm} = zrequire("state_data");
 const stream_data = zrequire("stream_data");
 const user_groups = zrequire("user_groups");
+const settings_config = zrequire("settings_config");
 const {initialize_user_settings} = zrequire("user_settings");
 
 const REALM_EMPTY_TOPIC_DISPLAY_NAME = "general chat";
-set_realm({realm_empty_topic_display_name: REALM_EMPTY_TOPIC_DISPLAY_NAME});
-const user_settings = {};
+set_realm(make_realm({realm_empty_topic_display_name: REALM_EMPTY_TOPIC_DISPLAY_NAME}));
+const user_settings = {
+    web_channel_default_view: settings_config.web_channel_default_view_values.channel_feed.code,
+};
 initialize_user_settings({user_settings});
 
 const emoji_params = {
@@ -202,13 +206,13 @@ const amp_stream = {
     stream_id: 5,
     is_muted: false,
 };
-stream_data.add_sub(denmark);
-stream_data.add_sub(social);
-stream_data.add_sub(edgecase_stream);
-stream_data.add_sub(edgecase_stream_2);
+stream_data.add_sub_for_tests(denmark);
+stream_data.add_sub_for_tests(social);
+stream_data.add_sub_for_tests(edgecase_stream);
+stream_data.add_sub_for_tests(edgecase_stream_2);
 // Note: edgecase_stream cannot be mentioned because it is caught by
 // streamTopicHandler and it would be parsed as edgecase_stream_2.
-stream_data.add_sub(amp_stream);
+stream_data.add_sub_for_tests(amp_stream);
 
 markdown.initialize(markdown_config.get_helpers());
 linkifiers.initialize(example_realm_linkifiers);
@@ -598,7 +602,7 @@ test("marked", ({override}) => {
         {
             input: ":)",
             expected:
-                '<p><span aria-label="smile" class="emoji emoji-1f642" role="img" title="smile">:smile:</span></p>',
+                '<p><span aria-label="slight smile" class="emoji emoji-1f642" role="img" title="slight smile">:slight_smile:</span></p>',
             translate_emoticons: true,
         },
         // Test HTML escaping in custom Zulip rules
@@ -990,7 +994,7 @@ test("translate_emoticons_to_names", () => {
 
     // Simple test
     const test_text = "Testing :)";
-    const expected = "Testing :smile:";
+    const expected = "Testing :slight_smile:";
     const result = translate_emoticons_to_names(test_text);
     assert.equal(result, expected);
 

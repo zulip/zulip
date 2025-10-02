@@ -9,10 +9,9 @@ from zerver.actions.message_send import send_rate_limited_pm_notification_to_bot
 from zerver.data_import.slack import check_token_access, get_slack_api_data
 from zerver.data_import.slack_message_conversion import (
     SLACK_USERMENTION_REGEX,
-    convert_link_format,
-    convert_mailto_format,
     convert_slack_formatting,
     convert_slack_workspace_mentions,
+    replace_links,
 )
 from zerver.decorator import webhook_view
 from zerver.lib.exceptions import JsonableError, UnsupportedWebhookEventTypeError
@@ -104,12 +103,6 @@ def convert_to_zulip_markdown(text: str, slack_app_token: str) -> str:
     return text
 
 
-def replace_links(text: str) -> str:
-    text, _ = convert_link_format(text)
-    text, _ = convert_mailto_format(text)
-    return text
-
-
 def convert_raw_file_data(file_dict: WildValue) -> SlackFileListT:
     files = [
         {
@@ -178,9 +171,8 @@ below to see if you're missing anything:
 
 Error: {error_message}
 
-Feel free to reach out to the [Zulip development community]
-(https://chat.zulip.org/#narrow/channel/127-integrations) if you need
-further help!
+Feel free to reach out to the [Zulip development community](https://chat.zulip.org/#narrow/channel/127-integrations)
+if you need further help!
 """
 
 
@@ -279,7 +271,7 @@ def api_slack_webhook(
         # for how to add support for this type of payload.
         raise UnsupportedWebhookEventTypeError(
             "integration bot message"
-            if event_dict["subtype"] == "bot_message"
+            if event_dict["subtype"].tame(check_string) == "bot_message"
             else "unknown Slack event"
         )
     sender = get_slack_sender_name(user_id, slack_app_token)

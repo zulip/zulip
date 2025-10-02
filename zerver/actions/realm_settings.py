@@ -16,6 +16,7 @@ from zerver.actions.custom_profile_fields import do_remove_realm_custom_profile_
 from zerver.actions.message_delete import do_delete_messages_by_sender
 from zerver.actions.user_groups import update_users_in_full_members_system_group
 from zerver.actions.user_settings import do_delete_avatar_image
+from zerver.lib.demo_organizations import demo_organization_owner_email_exists
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.message import parse_message_time_limit_setting, update_first_visible_message_id
 from zerver.lib.queue import queue_json_publish_rollback_unsafe
@@ -54,6 +55,7 @@ from zerver.models.groups import SystemGroups
 from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.realms import (
     MessageEditHistoryVisibilityPolicyEnum,
+    RealmTopicsPolicyEnum,
     get_default_max_invites_for_realm_plan_type,
     get_realm,
 )
@@ -110,6 +112,16 @@ def do_set_realm_property(
             op="update",
             property=name,
             value=MessageEditHistoryVisibilityPolicyEnum(value).name,
+        )
+    if name == "topics_policy":
+        event = dict(
+            type="realm",
+            op="update_dict",
+            property="default",
+            data={
+                name: RealmTopicsPolicyEnum(value).name,
+                "mandatory_topics": value == RealmTopicsPolicyEnum.disable_empty_topic.value,
+            },
         )
 
     send_event_on_commit(realm, event, active_user_ids(realm.id))
@@ -283,7 +295,7 @@ def get_realm_authentication_methods_for_page_params_api(
     # The rest of the function is only for the mechanism of restricting
     # certain backends based on the realm's plan type on Zulip Cloud.
 
-    from corporate.models import CustomerPlan
+    from corporate.models.plans import CustomerPlan
 
     for backend_name, backend_result in result_dict.items():
         available_for = AUTH_BACKEND_NAME_MAP[backend_name].available_for_cloud_plans
@@ -489,13 +501,20 @@ def do_set_realm_zulip_update_announcements_stream(
 def do_set_realm_user_default_setting(
     realm_user_default: RealmUserDefault,
     name: str,
-    value: Any,
+    raw_value: Any,
     *,
     acting_user: UserProfile | None,
 ) -> None:
     old_value = getattr(realm_user_default, name)
     realm = realm_user_default.realm
     event_time = timezone_now()
+
+    if isinstance(raw_value, Enum):
+        value = raw_value.value
+        event_value = raw_value.name
+    else:
+        value = raw_value
+        event_value = raw_value
 
     setattr(realm_user_default, name, value)
     realm_user_default.save(update_fields=[name])
@@ -516,7 +535,7 @@ def do_set_realm_user_default_setting(
         type="realm_user_settings_defaults",
         op="update",
         property=name,
-        value=value,
+        value=event_value,
     )
     send_event_on_commit(realm, event, active_user_ids(realm.id))
 
@@ -526,6 +545,7 @@ RealmDeactivationReasonType = Literal[
     "tos_violation",
     "inactivity",
     "self_hosting_migration",
+    "demo_expired",
     # When we change the subdomain of a realm, we leave
     # behind a deactivated gravestone realm.
     "subdomain_change",
@@ -616,6 +636,26 @@ def do_deactivate_realm(
     # do not email active organization owners.
     if email_owners:
         do_send_realm_deactivation_email(realm, acting_user, deletion_delay_days)
+
+
+def delete_expired_demo_organizations() -> None:
+    demo_organizations_to_delete = Realm.objects.filter(
+        deactivated=False, demo_organization_scheduled_deletion_date__lte=timezone_now()
+    )
+    for demo_organization in demo_organizations_to_delete:
+        email_owners = False
+        if demo_organization_owner_email_exists(demo_organization):
+            email_owners = True
+        # By setting deletion_delay_days to zero, we send an event to
+        # the deferred work queue to scrub the realm data when
+        # deactivating the realm.
+        do_deactivate_realm(
+            realm=demo_organization,
+            acting_user=None,
+            deactivation_reason="demo_expired",
+            deletion_delay_days=0,
+            email_owners=email_owners,
+        )
 
 
 def do_reactivate_realm(realm: Realm) -> None:
@@ -782,7 +822,7 @@ def do_change_realm_max_invites(realm: Realm, max_invites: int, acting_user: Use
         new_max = get_default_max_invites_for_realm_plan_type(realm.plan_type)
     else:
         new_max = max_invites
-    realm.max_invites = new_max  # type: ignore[assignment] # https://github.com/python/mypy/issues/3004
+    realm.max_invites = new_max
     realm.save(update_fields=["_max_invites"])
 
     RealmAuditLog.objects.create(
@@ -820,7 +860,7 @@ def do_change_realm_plan_type(
         # can_access_all_users_group, set it back to the default
         # value.
         everyone_system_group = NamedUserGroup.objects.get(
-            name=SystemGroups.EVERYONE, realm=realm, is_system_group=True
+            name=SystemGroups.EVERYONE, realm_for_sharding=realm, is_system_group=True
         )
         if realm.can_access_all_users_group_id != everyone_system_group.id:
             do_change_realm_permission_group_setting(
@@ -850,7 +890,7 @@ def do_change_realm_plan_type(
         extra_data={"old_value": old_value, "new_value": plan_type},
     )
 
-    realm.max_invites = get_default_max_invites_for_realm_plan_type(plan_type)  # type: ignore[assignment] # https://github.com/python/mypy/issues/3004
+    realm.max_invites = get_default_max_invites_for_realm_plan_type(plan_type)
     if plan_type == Realm.PLAN_TYPE_LIMITED:
         realm.message_visibility_limit = Realm.MESSAGE_VISIBILITY_LIMITED
     else:

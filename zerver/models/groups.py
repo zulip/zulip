@@ -2,8 +2,8 @@ from django.db import models
 from django.db.models import CASCADE
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext_lazy
-from django_cte import CTEManager
 
+from zerver.lib.cache import cache_with_key, get_realm_system_groups_cache_key
 from zerver.lib.types import GroupPermissionSetting
 from zerver.models.users import UserProfile
 
@@ -30,8 +30,7 @@ class SystemGroups:
     }
 
 
-class UserGroup(models.Model):  # type: ignore[django-manager-missing] # django-stubs cannot resolve the custom CTEManager yet https://github.com/typeddjango/django-stubs/issues/1023
-    objects: CTEManager = CTEManager()
+class UserGroup(models.Model):
     direct_members = models.ManyToManyField(
         UserProfile, through="zerver.UserGroupMembership", related_name="direct_groups"
     )
@@ -45,7 +44,7 @@ class UserGroup(models.Model):  # type: ignore[django-manager-missing] # django-
     realm = models.ForeignKey("zerver.Realm", on_delete=CASCADE)
 
 
-class NamedUserGroup(UserGroup):  # type: ignore[django-manager-missing] # django-stubs cannot resolve the custom CTEManager yet https://github.com/typeddjango/django-stubs/issues/1023
+class NamedUserGroup(UserGroup):
     MAX_NAME_LENGTH = 100
     INVALID_NAME_PREFIXES = ["@", "role:", "user:", "stream:", "channel:"]
 
@@ -115,48 +114,36 @@ class NamedUserGroup(UserGroup):  # type: ignore[django-manager-missing] # djang
 
     GROUP_PERMISSION_SETTINGS = {
         "can_add_members_group": GroupPermissionSetting(
-            require_system_group=False,
-            allow_internet_group=False,
             allow_nobody_group=True,
             allow_everyone_group=False,
             default_group_name="group_creator",
             default_for_system_groups=SystemGroups.NOBODY,
         ),
         "can_join_group": GroupPermissionSetting(
-            require_system_group=False,
-            allow_internet_group=False,
             allow_nobody_group=True,
             allow_everyone_group=False,
             default_group_name=SystemGroups.NOBODY,
             default_for_system_groups=SystemGroups.NOBODY,
         ),
         "can_leave_group": GroupPermissionSetting(
-            require_system_group=False,
-            allow_internet_group=False,
             allow_nobody_group=True,
             allow_everyone_group=True,
             default_group_name=SystemGroups.EVERYONE,
             default_for_system_groups=SystemGroups.NOBODY,
         ),
         "can_manage_group": GroupPermissionSetting(
-            require_system_group=False,
-            allow_internet_group=False,
             allow_nobody_group=True,
             allow_everyone_group=False,
             default_group_name="group_creator",
             default_for_system_groups=SystemGroups.NOBODY,
         ),
         "can_mention_group": GroupPermissionSetting(
-            require_system_group=False,
-            allow_internet_group=False,
             allow_nobody_group=True,
             allow_everyone_group=True,
             default_group_name=SystemGroups.EVERYONE,
             default_for_system_groups=SystemGroups.NOBODY,
         ),
         "can_remove_members_group": GroupPermissionSetting(
-            require_system_group=False,
-            allow_internet_group=False,
             allow_nobody_group=True,
             allow_everyone_group=False,
             default_group_name=SystemGroups.NOBODY,
@@ -186,3 +173,11 @@ class GroupGroupMembership(models.Model):
                 fields=["supergroup", "subgroup"], name="zerver_groupgroupmembership_uniq"
             )
         ]
+
+
+@cache_with_key(get_realm_system_groups_cache_key, timeout=3600 * 24 * 7)
+def get_realm_system_groups_name_dict(realm_id: int) -> dict[int, str]:
+    system_groups = NamedUserGroup.objects.filter(
+        realm_for_sharding_id=realm_id, is_system_group=True
+    ).values_list("id", "name")
+    return dict(system_groups)

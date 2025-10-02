@@ -4,9 +4,11 @@ priority.
 
 ## Security basics
 
-- All Zulip clients (web, mobile, desktop, terminal, and integrations)
-  require TLS encryption and authentication over HTTPS for all data
-  transmission between clients and the server, both on LAN and the Internet.
+- All Zulip clients (web, mobile, desktop, terminal, and integrations) require
+  TLS encryption and authentication over HTTPS for all data transmission between
+  clients and the server, both on LAN and the Internet. By default, all Zulip
+  services talk to each other either via a localhost connection or using an
+  encrypted SSL connection.
 - All Zulip Cloud customer data is encrypted at rest. Self-hosted Zulip can be
   configured for encryption at rest via your hosting provider, or by setting up
   hardware and software disk encryption of the database and other data storage
@@ -20,6 +22,8 @@ priority.
   [deployed on multiple servers](https://zulip.readthedocs.io/en/latest/production/deployment.html),
   all connections between parts of the Zulip infrastructure can be secured
   with TLS or SSH.
+- Zulip requires CSRF tokens in all interactions with the web API to
+  prevent CSRF attacks.
 - Message content can be
   [excluded from mobile push notifications][redact-content],
   to avoid displaying message content on locked mobile screens, and to

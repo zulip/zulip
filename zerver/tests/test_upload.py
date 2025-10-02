@@ -1,5 +1,6 @@
 import os
 import re
+import tempfile
 from datetime import timedelta
 from io import StringIO
 from unittest import mock
@@ -188,6 +189,17 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         self.assertEqual(result["Content-Type"], "application/octet-stream")
         consume_response(result)
 
+        # Old files may be stored without a content-type in the
+        # database, in which case we try to guess at download time.
+        attachment = Attachment.objects.get(file_name="somefile")
+        self.assertEqual(attachment.content_type, "application/octet-stream")
+        attachment.content_type = None
+        attachment.save(update_fields=["content_type"])
+        result = self.client_get(url)
+        self.assertEqual(result.status_code, 200)
+        self.assertEqual(result["Content-Type"], "application/octet-stream")
+        consume_response(result)
+
         uploaded_file = SimpleUploadedFile("somefile.txt", b"zulip!", content_type="")
         result = self.api_post(
             self.example_user("hamlet"), "/api/v1/user_uploads", {"file": uploaded_file}
@@ -198,21 +210,76 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         url = response_dict["url"]
         result = self.client_get(url)
         self.assertEqual(result.status_code, 200)
-        self.assertEqual(result["Content-Type"], "text/plain")
+        self.assertEqual(result["Content-Type"], 'text/plain; charset="ascii"')
         consume_response(result)
 
-    def test_preserve_provided_content_type(self) -> None:
-        uploaded_file = SimpleUploadedFile("somefile.txt", b"zulip!", content_type="image/png")
-        result = self.api_post(
-            self.example_user("hamlet"), "/api/v1/user_uploads", {"file": uploaded_file}
-        )
+        # As above, test without a stored content_type
+        attachment = Attachment.objects.get(file_name="somefile.txt")
+        self.assertEqual(attachment.content_type, 'text/plain; charset="ascii"')
+        attachment.content_type = None
+        attachment.save(update_fields=["content_type"])
+        result = self.client_get(url)
+        self.assertEqual(result.status_code, 200)
+        self.assertEqual(result["Content-Type"], 'text/plain; charset="ascii"')
+        consume_response(result)
+
+    def test_guess_content_type_charset(self) -> None:
+        tests = [
+            ("No high bytes in this string", "ascii", "ascii"),  # Explicit ASCII encoding
+            ("नाम में क्या रक्खा हे", "utf-8", "utf-8"),  # Enough to get 99% confidence UTF-8
+            ("日本語", "iso2022_jp", "ISO-2022-JP"),  # Non-UTF-8 99% confidence
+            ("日本語", "utf-8", "utf-8"),  # UTF-8 is only 87% confident
+            (
+                "Min svävare är full av ålar.",
+                "iso-8859-1",
+                "ISO-8859-1",
+            ),  # iso-8859-1 maxes out at 73%, but we'll still guess it
+            ("Aucune idée", "mac-roman", None),  # Short text in obscure formats is left unguessed
+        ]
+        self.login("hamlet")
+        for test_string, encoded_in, found_encoding in tests:
+            with self.subTest(msg=f"Encoding '{test_string}' in {encoded_in}"):
+                uploaded_file = SimpleUploadedFile(
+                    "somefile.txt", test_string.encode(encoded_in), content_type="text/plain"
+                )
+                result = self.api_post(
+                    self.example_user("hamlet"), "/api/v1/user_uploads", {"file": uploaded_file}
+                )
+
+                response_dict = self.assert_json_success(result)
+                url = response_dict["url"]
+                result = self.client_get(url)
+                self.assertEqual(result.status_code, 200)
+                expected = "text/plain"
+                if found_encoding is not None:
+                    expected += f'; charset="{found_encoding}"'
+                self.assertEqual(result["Content-Type"], expected)
+                consume_response(result)
+
+    def test_content_type_charset_specified(self) -> None:
+        # Setting the charset requires a NamedTemporaryFile, as
+        # SimpleUploadedFile does not transmit a charset even if it's
+        # provided as part of the content_type
+        with tempfile.NamedTemporaryFile() as uploaded_file:
+            uploaded_file.write("नाम में क्या रक्खा हे".encode())
+            uploaded_file.seek(0)
+            # We intentionally provide the _wrong_ charset on this, so
+            # that we verify that the charset detection code is not
+            # overriding the value that the user claims.
+            uploaded_file.content_type = "text/plain; test-key=test_value; charset=big5"  # type: ignore[attr-defined]
+
+            result = self.api_post(
+                self.example_user("hamlet"), "/api/v1/user_uploads", {"file": uploaded_file}
+            )
 
         self.login("hamlet")
         response_dict = self.assert_json_success(result)
         url = response_dict["url"]
         result = self.client_get(url)
         self.assertEqual(result.status_code, 200)
-        self.assertEqual(result["Content-Type"], "image/png")
+        self.assertEqual(
+            result["Content-Type"], 'text/plain; test-key="test_value"; charset="big5"'
+        )
         consume_response(result)
 
     # This test will go through the code path for uploading files onto LOCAL storage
@@ -803,7 +870,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
 
         # Owner user should be able to view file
         self.login_user(hamlet)
-        with self.assert_database_query_count(6):
+        with self.assert_database_query_count(5):
             response = self.client_get(url)
             self.assertEqual(response.status_code, 200)
             self.assertEqual(response.getvalue(), b"zulip!")
@@ -811,7 +878,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
 
         # Subscribed user who received the message should be able to view file
         self.login_user(cordelia)
-        with self.assert_database_query_count(9):
+        with self.assert_database_query_count(8):
             response = self.client_get(url)
             self.assertEqual(response.status_code, 200)
             self.assertEqual(response.getvalue(), b"zulip!")
@@ -864,7 +931,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
 
         # Owner user should be able to view file
         self.login_user(user)
-        with self.assert_database_query_count(6):
+        with self.assert_database_query_count(5):
             response = self.client_get(url)
             self.assertEqual(response.status_code, 200)
             self.assertEqual(response.getvalue(), b"zulip!")
@@ -872,7 +939,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
 
         # Originally subscribed user should be able to view file
         self.login_user(polonius)
-        with self.assert_database_query_count(9):
+        with self.assert_database_query_count(8):
             response = self.client_get(url)
             self.assertEqual(response.status_code, 200)
             self.assertEqual(response.getvalue(), b"zulip!")
@@ -880,7 +947,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
 
         # Subscribed user who did not receive the message should also be able to view file
         self.login_user(late_subscribed_user)
-        with self.assert_database_query_count(10):
+        with self.assert_database_query_count(9):
             response = self.client_get(url)
             self.assertEqual(response.status_code, 200)
             self.assertEqual(response.getvalue(), b"zulip!")
@@ -890,7 +957,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         def assert_cannot_access_file(user: UserProfile) -> None:
             self.login_user(user)
             # It takes a few extra queries to verify lack of access with shared history.
-            with self.assert_database_query_count(9):
+            with self.assert_database_query_count(10):
                 response = self.client_get(url)
             self.assertEqual(response.status_code, 403)
             self.assert_in_response("You are not authorized to view this file.", response)
@@ -931,7 +998,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
 
         user = self.example_user("aaron")
         self.login_user(user)
-        with self.assert_database_query_count(9):
+        with self.assert_database_query_count(10):
             response = self.client_get(url)
             self.assertEqual(response.status_code, 403)
             self.assert_in_response("You are not authorized to view this file.", response)
@@ -940,12 +1007,12 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         self.subscribe(user, "test-subscribe 2")
 
         # If we were accidentally one query per message, this would be 20+
-        with self.assert_database_query_count(10):
+        with self.assert_database_query_count(9):
             response = self.client_get(url)
             self.assertEqual(response.status_code, 200)
             self.assertEqual(response.getvalue(), b"zulip!")
 
-        with self.assert_database_query_count(6):
+        with self.assert_database_query_count(5):
             self.assertTrue(validate_attachment_request(user, fp_path_id)[0])
 
         self.logout()
@@ -994,7 +1061,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
             with self.settings(DEVELOPMENT=False):
                 response = self.client_get(url)
             assert settings.LOCAL_UPLOADS_DIR is not None
-            test_run, worker = os.path.split(os.path.dirname(settings.LOCAL_UPLOADS_DIR))
+            _test_run, _worker = os.path.split(os.path.dirname(settings.LOCAL_UPLOADS_DIR))
             self.assertEqual(
                 response["X-Accel-Redirect"],
                 "/internal/local/uploads/" + fp_path + "/" + name_str_for_test,

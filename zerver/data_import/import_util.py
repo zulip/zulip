@@ -38,6 +38,17 @@ from zproject.backends import all_default_backend_names
 # stubs
 ZerverFieldsT: TypeAlias = dict[str, Any]
 
+DATA_IMPORT_CLIENTS = {
+    # Match low ID clients in zerver/lib/server_initialization.py.
+    # This has no functional impact other than ensuring low IDs.
+    "Internal": 1,
+    "website": 2,
+    "ZulipMobile": 3,
+    "ZulipElectron": 4,
+    # Special client key to be used for data import messages.
+    "ZulipDataImport": 5,
+}
+
 
 class SubscriberHandler:
     def __init__(self) -> None:
@@ -348,13 +359,12 @@ def build_recipients(
 
 
 def build_realm(
-    zerver_realm: list[ZerverFieldsT], realm_id: int, domain_name: str
+    zerver_realm: list[ZerverFieldsT], realm_id: int, domain_name: str, import_source: str
 ) -> ZerverFieldsT:
     realm = dict(
         zerver_client=[
-            {"name": "populate_db", "id": 1},
-            {"name": "website", "id": 2},
-            {"name": "API", "id": 3},
+            {"name": client_name, "id": client_id}
+            for client_name, client_id in DATA_IMPORT_CLIENTS.items()
         ],
         zerver_customprofilefield=[],
         zerver_customprofilefieldvalue=[],
@@ -376,6 +386,7 @@ def build_realm(
             {"realm": realm_id, "name": name, "id": i}
             for i, name in enumerate(all_default_backend_names(), start=1)
         ],
+        import_source=import_source,
     )
     return realm
 
@@ -514,13 +525,13 @@ def build_message(
         has_link=has_link,
     )
     if is_direct_message_type:
-        topic_name = ""
+        topic_name = Message.DM_TOPIC
     zulip_message.set_topic_name(topic_name)
     zulip_message_dict = model_to_dict(
         zulip_message, exclude=["recipient", "sender", "sending_client"]
     )
     zulip_message_dict["sender"] = user_id
-    zulip_message_dict["sending_client"] = 1
+    zulip_message_dict["sending_client"] = DATA_IMPORT_CLIENTS["ZulipDataImport"]
     zulip_message_dict["recipient"] = recipient_id
     zulip_message_dict["date_sent"] = date_sent
 

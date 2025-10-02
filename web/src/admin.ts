@@ -25,6 +25,7 @@ import * as settings_toggle from "./settings_toggle.ts";
 import * as settings_users from "./settings_users.ts";
 import {current_user, realm} from "./state_data.ts";
 import {the} from "./util.ts";
+import * as util from "./util.ts";
 
 const admin_settings_label = {
     // Organization profile
@@ -32,7 +33,6 @@ const admin_settings_label = {
         defaultMessage: "Advertise organization in the Zulip communities directory",
     }),
     // Organization settings
-    realm_mandatory_topics: $t({defaultMessage: "Require topics in channel messages"}),
     realm_new_stream_announcements_stream: $t({defaultMessage: "New channel announcements"}),
     realm_signup_announcements_stream: $t({defaultMessage: "New user announcements"}),
     realm_zulip_update_announcements_stream: $t({defaultMessage: "Zulip update announcements"}),
@@ -41,6 +41,9 @@ const admin_settings_label = {
     }),
     realm_inline_url_embed_preview: $t({defaultMessage: "Show previews of linked websites"}),
     realm_send_welcome_emails: $t({defaultMessage: "Send emails introducing Zulip to new users"}),
+    realm_require_e2ee_push_notifications: $t({
+        defaultMessage: "Require end-to-end encryption for push notification content",
+    }),
     realm_message_content_allowed_in_email_notifications: $t({
         defaultMessage: "Allow message content in message notification emails",
     }),
@@ -51,6 +54,9 @@ const admin_settings_label = {
         defaultMessage: "Send weekly digest emails to inactive users",
     }),
     realm_default_code_block_language: $t({defaultMessage: "Default language for code blocks"}),
+    realm_enable_welcome_message_custom_text: $t({
+        defaultMessage: "Send a custom Welcome Bot message to new users",
+    }),
 
     // Organization permissions
     realm_require_unique_names: $t({defaultMessage: "Require unique names"}),
@@ -92,6 +98,8 @@ function insert_tip_box(): void {
         .not("#admin-bot-list")
         .not("#admin-invites-list")
         .not("#admin-user-list")
+        .not("#admin-active-users-list")
+        .not("#admin-deactivated-users-list")
         .prepend($(tip_box_html));
 }
 
@@ -156,6 +164,14 @@ export function build_page(): void {
             settings_components.get_realm_time_limits_in_minutes(
                 "realm_message_content_edit_limit_seconds",
             ),
+        realm_move_messages_between_streams_limit_minutes:
+            settings_components.get_realm_time_limits_in_minutes(
+                "realm_move_messages_between_streams_limit_seconds",
+            ),
+        realm_move_messages_within_stream_limit_minutes:
+            settings_components.get_realm_time_limits_in_minutes(
+                "realm_move_messages_within_stream_limit_seconds",
+            ),
         realm_message_content_delete_limit_minutes:
             settings_components.get_realm_time_limits_in_minutes(
                 "realm_message_content_delete_limit_seconds",
@@ -182,8 +198,14 @@ export function build_page(): void {
         realm_logo_url: realm.realm_logo_url,
         realm_night_logo_source: realm.realm_night_logo_source,
         realm_night_logo_url,
-        realm_mandatory_topics: realm.realm_mandatory_topics,
+        realm_topics_policy: realm.realm_topics_policy,
+        realm_topics_policy_values: settings_config.get_realm_topics_policy_values(),
+        empty_string_topic_display_name: util.get_final_topic_display_name(""),
         realm_send_welcome_emails: realm.realm_send_welcome_emails,
+        realm_enable_welcome_message_custom_text:
+            realm.realm_welcome_message_custom_text.length > 0,
+        realm_welcome_message_custom_text: realm.realm_welcome_message_custom_text,
+        realm_require_e2ee_push_notifications: realm.realm_require_e2ee_push_notifications,
         realm_message_content_allowed_in_email_notifications:
             realm.realm_message_content_allowed_in_email_notifications,
         realm_enable_spectator_access: realm.realm_enable_spectator_access,
@@ -206,7 +228,6 @@ export function build_page(): void {
         can_create_multiuse_invite: settings_data.user_can_create_multiuse_invite(),
         can_invite_users_by_email: settings_data.user_can_invite_users_by_email(),
         realm_invite_required: realm.realm_invite_required,
-        can_create_user_groups: settings_data.user_can_create_user_groups(),
         policy_values: settings_config.common_policy_values,
         ...settings_org.get_organization_settings_options(),
         demote_inactive_streams_values: settings_config.demote_inactive_streams_values,
@@ -217,6 +238,8 @@ export function build_page(): void {
         web_stream_unreads_count_display_policy_values:
             settings_config.web_stream_unreads_count_display_policy_values,
         web_animate_image_previews_values: settings_config.web_animate_image_previews_values,
+        resolved_topic_notice_auto_read_policy_values:
+            settings_config.resolved_topic_notice_auto_read_policy_values,
         color_scheme_values: settings_config.color_scheme_values,
         web_home_view_values: settings_config.web_home_view_values,
         settings_object: realm_user_settings_defaults,

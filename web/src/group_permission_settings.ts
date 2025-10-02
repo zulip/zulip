@@ -1,4 +1,5 @@
-import {z} from "zod";
+import assert from "minimalistic-assert";
+import * as z from "zod/mini";
 
 import * as blueslip from "./blueslip.ts";
 import type * as dropdown_widget from "./dropdown_widget.ts";
@@ -40,15 +41,13 @@ export function get_group_permission_settings(): GroupGroupSettingName[] {
         .parse(Object.keys(realm.server_supported_permission_settings.group));
 }
 
-export const realm_group_setting_name_schema = z.enum([
-    "can_access_all_users_group",
+const realm_group_setting_names_supporting_anonymous_groups = [
     "can_add_custom_emoji_group",
     "can_add_subscribers_group",
     "can_create_groups",
     "can_create_bots_group",
     "can_create_public_channel_group",
     "can_create_private_channel_group",
-    "can_create_web_public_channel_group",
     "can_create_write_only_bots_group",
     "can_delete_any_message_group",
     "can_delete_own_message_group",
@@ -59,19 +58,39 @@ export const realm_group_setting_name_schema = z.enum([
     "can_move_messages_between_channels_group",
     "can_move_messages_between_topics_group",
     "can_resolve_topics_group",
+    "can_set_delete_message_policy_group",
+    "can_set_topics_policy_group",
     "can_summarize_topics_group",
     "create_multiuse_invite_group",
     "direct_message_initiator_group",
     "direct_message_permission_group",
+] as const;
+
+export const realm_group_setting_name_schema = z.enum([
+    ...realm_group_setting_names_supporting_anonymous_groups,
+    "can_access_all_users_group",
+    "can_create_web_public_channel_group",
 ]);
 export type RealmGroupSettingName = z.infer<typeof realm_group_setting_name_schema>;
+
+export const realm_group_setting_name_supporting_anonymous_groups_schema = z.enum(
+    realm_group_setting_names_supporting_anonymous_groups,
+);
+export type RealmGroupSettingNameSupportingAnonymousGroups = z.infer<
+    typeof realm_group_setting_name_supporting_anonymous_groups_schema
+>;
 
 export const stream_group_setting_name_schema = z.enum([
     "can_add_subscribers_group",
     "can_administer_channel_group",
+    "can_delete_any_message_group",
+    "can_delete_own_message_group",
+    "can_move_messages_out_of_channel_group",
+    "can_move_messages_within_channel_group",
     "can_remove_subscribers_group",
     "can_send_message_group",
     "can_subscribe_group",
+    "can_resolve_topics_group",
 ]);
 export type StreamGroupSettingName = z.infer<typeof stream_group_setting_name_schema>;
 
@@ -160,6 +179,7 @@ export function get_assigned_permission_object(
     setting_name: RealmGroupSettingName | StreamGroupSettingName | GroupGroupSettingName,
     group_id: number,
     can_edit_settings: boolean,
+    setting_type: "realm" | "stream" | "group",
 ): AssignedGroupPermission | undefined {
     // This function returns an object of type AssignedGroupPermission
     // containing details about whether the user can edit the setting,
@@ -192,6 +212,18 @@ export function get_assigned_permission_object(
             // The group has permission directly, so the user can remove
             // the permission for this particular group, and there is no
             // need to show a tooltip.
+            const permission_config = get_group_permission_setting_config(
+                setting_name,
+                setting_type,
+            );
+            assert(permission_config !== undefined);
+            if (!permission_config.allow_nobody_group) {
+                assigned_permission_object.can_edit = false;
+                assigned_permission_object.tooltip_message = $t({
+                    defaultMessage:
+                        "This permission cannot be removed, as it would mean that nobody is allowed to take this action.",
+                });
+            }
             return assigned_permission_object;
         }
 
@@ -215,6 +247,23 @@ export function get_assigned_permission_object(
     if (direct_subgroup_ids.includes(group_id)) {
         // The group is one of the groups that has permission and can be
         // changed to not have permission.
+        if (
+            setting_value.direct_subgroups.length === 1 &&
+            setting_value.direct_members.length === 0
+        ) {
+            const permission_config = get_group_permission_setting_config(
+                setting_name,
+                setting_type,
+            );
+            assert(permission_config !== undefined);
+            if (!permission_config.allow_nobody_group) {
+                assigned_permission_object.can_edit = false;
+                assigned_permission_object.tooltip_message = $t({
+                    defaultMessage:
+                        "This permission cannot be removed, as it would mean that nobody is allowed to take this action.",
+                });
+            }
+        }
         return assigned_permission_object;
     }
 

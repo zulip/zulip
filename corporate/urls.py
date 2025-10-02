@@ -91,9 +91,6 @@ from zerver.lib.rest import rest_path
 from zerver.lib.url_redirects import LANDING_PAGE_REDIRECTS
 
 i18n_urlpatterns: Any = [
-    # Zephyr/MIT
-    path("zephyr/", TemplateView.as_view(template_name="corporate/zephyr.html")),
-    path("zephyr-mirror/", TemplateView.as_view(template_name="corporate/zephyr-mirror.html")),
     path("jobs/", TemplateView.as_view(template_name="corporate/jobs.html")),
     # Billing
     path("billing/", billing_page, name="billing_page"),
@@ -147,10 +144,10 @@ landing_page_urls = [
     path("team/", team_view),
     path("history/", landing_view, {"template_name": "corporate/history.html"}),
     path("values/", landing_view, {"template_name": "corporate/values.html"}),
+    path("partners/", landing_view, {"template_name": "corporate/partners.html"}),
     path("why-zulip/", landing_view, {"template_name": "corporate/why-zulip.html"}),
     path("self-hosting/", landing_view, {"template_name": "corporate/self-hosting.html"}),
     path("security/", landing_view, {"template_name": "corporate/security.html"}),
-    path("try-zulip/", landing_view, {"template_name": "corporate/try-zulip.html"}),
     # /for pages
     path("use-cases/", landing_view, {"template_name": "corporate/for/use-cases.html"}),
     path(
@@ -223,6 +220,11 @@ landing_page_urls = [
         "case-studies/rush-stack/",
         landing_view,
         {"template_name": "corporate/case-studies/rush-stack-case-study.html"},
+    ),
+    path(
+        "case-studies/windborne/",
+        landing_view,
+        {"template_name": "corporate/case-studies/windborne-case-study.html"},
     ),
     path("communities/", communities_view),
 ]

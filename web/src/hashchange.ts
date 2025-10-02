@@ -1,15 +1,16 @@
 import $ from "jquery";
+import * as z from "zod/mini";
 
 import * as about_zulip from "./about_zulip.ts";
 import * as admin from "./admin.ts";
 import * as blueslip from "./blueslip.ts";
 import * as browser_history from "./browser_history.ts";
 import * as drafts_overlay_ui from "./drafts_overlay_ui.ts";
+import {Filter} from "./filter.ts";
 import * as hash_parser from "./hash_parser.ts";
 import * as hash_util from "./hash_util.ts";
 import {$t_html} from "./i18n.ts";
 import * as inbox_ui from "./inbox_ui.ts";
-import * as inbox_util from "./inbox_util.ts";
 import * as info_overlay from "./info_overlay.ts";
 import * as message_fetch from "./message_fetch.ts";
 import * as message_view from "./message_view.ts";
@@ -20,7 +21,7 @@ import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
 import * as popovers from "./popovers.ts";
 import * as recent_view_ui from "./recent_view_ui.ts";
-import * as recent_view_util from "./recent_view_util.ts";
+import * as reminders_overlay_ui from "./reminders_overlay_ui.ts";
 import * as scheduled_messages_overlay_ui from "./scheduled_messages_overlay_ui.ts";
 import * as settings from "./settings.ts";
 import * as settings_panel_menu from "./settings_panel_menu.ts";
@@ -53,27 +54,11 @@ declare global {
     }
 }
 
-function maybe_hide_recent_view(): boolean {
-    if (recent_view_util.is_visible()) {
-        recent_view_ui.hide();
-        return true;
-    }
-    return false;
-}
-
-function maybe_hide_inbox(): boolean {
-    if (inbox_util.is_visible()) {
-        inbox_ui.hide();
-        return true;
-    }
-    return false;
-}
-
 function show_all_message_view(): void {
     // Don't export this function outside of this module since
     // `change_hash` is false here which means it is should only
     // be called after hash is updated in the URL.
-    const current_state = browser_history.state_data_schema.nullable().parse(window.history.state);
+    const current_state = z.nullable(browser_history.state_data_schema).parse(window.history.state);
     message_view.show([{operator: "in", operand: "home"}], {
         trigger: "hashchange",
         change_hash: false,
@@ -143,7 +128,6 @@ function show_home_view(): void {
     // rendered without a hash.
     switch (user_settings.web_home_view) {
         case "recent_topics": {
-            maybe_hide_inbox();
             recent_view_ui.show();
             break;
         }
@@ -153,7 +137,6 @@ function show_home_view(): void {
             break;
         }
         case "inbox": {
-            maybe_hide_recent_view();
             inbox_ui.show();
             break;
         }
@@ -179,6 +162,7 @@ function do_hashchange_normal(from_reload: boolean, restore_selected_id: boolean
     const hash = window.location.hash.split("/");
 
     switch (hash[0]) {
+        case "#topics":
         case "#narrow": {
             let terms;
             try {
@@ -201,6 +185,16 @@ function do_hashchange_normal(from_reload: boolean, restore_selected_id: boolean
                 show_home_view();
                 return false;
             }
+
+            // Show inbox style topics list for #topics narrow.
+            if (hash[0] === "#topics" && terms.length === 1) {
+                const channel_id_string = hash[2];
+                if (channel_id_string) {
+                    inbox_ui.show(new Filter(terms));
+                    return true;
+                }
+            }
+
             const narrow_opts: message_view.ShowMessageViewOpts = {
                 change_hash: false, // already set
                 trigger: "hash change",
@@ -214,8 +208,8 @@ function do_hashchange_normal(from_reload: boolean, restore_selected_id: boolean
                 }
             }
 
-            const data_for_hash = browser_history.state_data_schema
-                .nullable()
+            const data_for_hash = z
+                .nullable(browser_history.state_data_schema)
                 .parse(window.history.state);
             if (restore_selected_id && data_for_hash) {
                 narrow_opts.then_select_id = data_for_hash.narrow_pointer;
@@ -241,11 +235,9 @@ function do_hashchange_normal(from_reload: boolean, restore_selected_id: boolean
             window.location.replace("#recent");
             break;
         case "#recent":
-            maybe_hide_inbox();
             recent_view_ui.show();
             break;
         case "#inbox":
-            maybe_hide_recent_view();
             inbox_ui.show();
             break;
         case "#all_messages":
@@ -270,6 +262,7 @@ function do_hashchange_normal(from_reload: boolean, restore_selected_id: boolean
         case "#settings":
         case "#about-zulip":
         case "#scheduled":
+        case "#reminders":
             blueslip.error("overlay logic skipped for: " + hash[0]);
             break;
         default:
@@ -349,6 +342,17 @@ function do_hashchange_overlay(old_hash: string | undefined): void {
     // the new overlay.
     if (coming_from_overlay && base === old_base) {
         if (base === "channels") {
+            if (hash_parser.get_current_nth_hash_section(1) === "folders") {
+                const folder_id = hash_parser.get_current_nth_hash_section(2);
+                stream_settings_ui.change_state(
+                    "new",
+                    undefined,
+                    "",
+                    Number.parseInt(folder_id, 10),
+                );
+                return;
+            }
+
             // e.g. #channels/29/social/subscribers
             const right_side_tab = hash_parser.get_current_nth_hash_section(3);
             stream_settings_ui.change_state(section, undefined, right_side_tab);
@@ -421,6 +425,12 @@ function do_hashchange_overlay(old_hash: string | undefined): void {
     }
 
     if (base === "channels") {
+        if (hash_parser.get_current_nth_hash_section(1) === "folders") {
+            const folder_id = hash_parser.get_current_nth_hash_section(2);
+            stream_settings_ui.launch("new", undefined, "", Number.parseInt(folder_id, 10));
+            return;
+        }
+
         // e.g. #channels/29/social/subscribers
         const right_side_tab = hash_parser.get_current_nth_hash_section(3);
 
@@ -489,11 +499,19 @@ function do_hashchange_overlay(old_hash: string | undefined): void {
 
     if (base === "about-zulip") {
         about_zulip.launch();
+        return;
     }
 
     if (base === "scheduled") {
         scheduled_messages_overlay_ui.launch();
+        return;
     }
+
+    if (base === "reminders") {
+        reminders_overlay_ui.launch();
+        return;
+    }
+
     if (base === "user") {
         const user_id = Number.parseInt(hash_parser.get_current_hash_section(), 10);
         if (!people.is_known_user_id(user_id)) {
@@ -502,6 +520,7 @@ function do_hashchange_overlay(old_hash: string | undefined): void {
             const user = people.get_by_user_id(user_id);
             user_profile.show_user_profile(user);
         }
+        return;
     }
 }
 

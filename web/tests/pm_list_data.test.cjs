@@ -2,6 +2,8 @@
 
 const assert = require("node:assert/strict");
 
+const {make_realm} = require("./lib/example_realm.cjs");
+const {make_message_list} = require("./lib/message_list.cjs");
 const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 const blueslip = require("./lib/zblueslip.cjs");
@@ -24,7 +26,6 @@ mock_esm("../src/user_status", {
     }),
 });
 
-const {Filter} = zrequire("filter");
 const narrow_state = zrequire("narrow_state");
 const people = zrequire("people");
 const pm_conversations = zrequire("pm_conversations");
@@ -33,7 +34,7 @@ const message_lists = zrequire("message_lists");
 const {set_realm} = zrequire("state_data");
 const {initialize_user_settings} = zrequire("user_settings");
 
-set_realm({});
+set_realm(make_realm());
 initialize_user_settings({user_settings: {}});
 
 const alice = {
@@ -91,12 +92,7 @@ function test(label, f) {
 }
 
 function set_pm_with_filter(emails) {
-    const active_filter = new Filter([{operator: "dm", operand: emails}]);
-    message_lists.set_current({
-        data: {
-            filter: active_filter,
-        },
-    });
+    message_lists.set_current(make_message_list([{operator: "dm", operand: emails}]));
 }
 
 function check_list_info(list, length, more_unread, recipients_array) {
@@ -119,6 +115,7 @@ test("get_conversations", ({override}) => {
     const expected_data = [
         {
             is_bot: false,
+            is_current_user: true,
             is_active: false,
             is_deactivated: false,
             is_group: false,
@@ -135,6 +132,7 @@ test("get_conversations", ({override}) => {
         },
         {
             recipients: "Alice, Bob",
+            is_current_user: false,
             user_ids_string: "101,102",
             unread: 1,
             is_zero: false,
@@ -171,6 +169,7 @@ test("get_conversations", ({override}) => {
         is_zero: true,
         is_active: true,
         is_deactivated: false,
+        is_current_user: false,
         url: "#narrow/dm/106-Iago",
         status_emoji_info: {emoji_code: "20"},
         user_circle_class: "user-circle-offline",
@@ -208,6 +207,7 @@ test("get_conversations bot", ({override}) => {
         {
             recipients: "Outgoing webhook",
             user_ids_string: "314",
+            is_current_user: false,
             unread: 1,
             is_zero: false,
             is_active: false,
@@ -222,6 +222,7 @@ test("get_conversations bot", ({override}) => {
         {
             recipients: "Alice, Bob",
             user_ids_string: "101,102",
+            is_current_user: false,
             unread: 1,
             is_zero: false,
             is_active: false,
@@ -242,12 +243,7 @@ test("get_conversations bot", ({override}) => {
 test("get_active_user_ids_string", () => {
     assert.equal(pm_list_data.get_active_user_ids_string(), undefined);
 
-    const stream_filter = new Filter([{operator: "stream", operand: "test"}]);
-    message_lists.set_current({
-        data: {
-            filter: stream_filter,
-        },
-    });
+    message_lists.set_current(make_message_list([{operator: "stream", operand: "test"}]));
     assert.equal(pm_list_data.get_active_user_ids_string(), undefined);
 
     set_pm_with_filter("bob@zulip.com,alice@zulip.com");

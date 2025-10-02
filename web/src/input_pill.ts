@@ -58,6 +58,7 @@ type InputPillStore<ItemType> = {
     on_pill_exit: InputPillCreateOptions<ItemType>["on_pill_exit"];
     onPillCreate?: () => void;
     onPillRemove?: (pill: InputPill<ItemType>, trigger: RemovePillTrigger) => void;
+    onPillExpand?: (pill: JQuery) => void;
     createPillonPaste?: () => void;
     split_text_on_comma: boolean;
     convert_to_pill_on_enter: boolean;
@@ -78,6 +79,7 @@ export type InputPillContainer<ItemType> = {
     onPillRemove: (
         callback: (pill: InputPill<ItemType>, trigger: RemovePillTrigger) => void,
     ) => void;
+    onPillExpand: (callback: (pill: JQuery) => void) => void;
     onTextInputHook: (callback: () => void) => void;
     createPillonPaste: (callback: () => void) => void;
     clear: (quiet?: boolean) => void;
@@ -469,6 +471,15 @@ export function create<ItemType extends {type: string}>(
             store.$input.trigger("focus");
         });
 
+        store.$parent.on("click", ".expand", function (this: HTMLElement, e) {
+            assert(store.onPillExpand !== undefined);
+            e.stopPropagation();
+            store.onPillExpand($(this).closest(".pill"));
+            const pill = util.the($(this).closest(".pill"));
+            funcs.removePill(pill, "close");
+            store.$input.trigger("focus");
+        });
+
         store.$parent.on("click", function (e) {
             if ($(e.target).is(".pill-container")) {
                 $(this).find(".input").trigger("focus");
@@ -499,6 +510,10 @@ export function create<ItemType extends {type: string}>(
 
         onPillRemove(callback) {
             store.onPillRemove = callback;
+        },
+
+        onPillExpand(callback) {
+            store.onPillExpand = callback;
         },
 
         onTextInputHook(callback) {

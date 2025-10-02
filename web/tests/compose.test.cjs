@@ -6,6 +6,8 @@ const MockDate = require("mockdate");
 
 const {mock_banners} = require("./lib/compose_banner.cjs");
 const {FakeComposeBox} = require("./lib/compose_helpers.cjs");
+const {make_user_group} = require("./lib/example_group.cjs");
+const {make_realm} = require("./lib/example_realm.cjs");
 const {mock_esm, set_global, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
 const $ = require("./lib/zjquery.cjs");
@@ -44,14 +46,12 @@ const narrow_state = mock_esm("../src/narrow_state");
 const rendered_markdown = mock_esm("../src/rendered_markdown");
 const resize = mock_esm("../src/resize");
 const sent_messages = mock_esm("../src/sent_messages");
-const server_events = mock_esm("../src/server_events");
+const server_events_state = mock_esm("../src/server_events_state");
 const transmit = mock_esm("../src/transmit");
 const upload = mock_esm("../src/upload");
 const onboarding_steps = mock_esm("../src/onboarding_steps");
-mock_esm("../src/group_permission_settings", {
-    get_group_permission_setting_config: () => ({
-        allow_everyone_group: true,
-    }),
+mock_esm("../src/settings_data", {
+    user_has_permission_for_group_setting: () => true,
 });
 
 const compose_ui = zrequire("compose_ui");
@@ -69,7 +69,7 @@ const stream_data = zrequire("stream_data");
 const compose_validate = zrequire("compose_validate");
 const {initialize_user_settings} = zrequire("user_settings");
 
-const realm = {};
+const realm = make_realm({realm_topics_policy: "allow_empty_topic"});
 set_realm(realm);
 const current_user = {};
 set_current_user(current_user);
@@ -128,23 +128,24 @@ const social = {
     name: "social",
     subscribed: true,
     can_send_message_group: 2,
+    topics_policy: "inherit",
 };
-stream_data.add_sub(social);
+stream_data.add_sub_for_tests(social);
 
-const nobody = {
+const nobody = make_user_group({
     name: "role:nobody",
     id: 1,
     members: new Set([]),
     is_system_group: true,
     direct_subgroup_ids: new Set([]),
-};
-const everyone = {
+});
+const everyone = make_user_group({
     name: "role:everyone",
     id: 2,
     members: new Set([30, 101]),
     is_system_group: true,
     direct_subgroup_ids: new Set([]),
-};
+});
 
 user_groups.initialize({realm_user_groups: [nobody, everyone]});
 
@@ -157,11 +158,16 @@ function initialize_handlers({override}) {
     override(realm, "realm_available_video_chat_providers", {disabled: {id: 0}});
     override(realm, "realm_video_chat_provider", 0);
     override(resize, "watch_manual_resize", noop);
+    disable_window_triggers(override);
     compose_setup.initialize();
 }
 
 function disable_document_triggers(override) {
     override(document, "to_$", () => $("document-stub"));
+}
+
+function disable_window_triggers(override) {
+    override(window, "to_$", () => $("window-stub"));
 }
 
 function on_compose_finished_trigger_do(f) {
@@ -195,8 +201,8 @@ test_ui("send_message_success", ({override, override_rewire}) => {
     reset();
 
     const draft_model = drafts.draft_model;
-    override(draft_model, "deleteDraft", (draft_id) => {
-        assert.equal(draft_id, 100);
+    override(draft_model, "deleteDrafts", (draft_ids) => {
+        assert.deepEqual(draft_ids, [100]);
         draft_deleted = true;
     });
     override_rewire(echo, "reify_message_id", (local_id, message_id) => {
@@ -286,7 +292,7 @@ test_ui("send_message", ({override, override_rewire, mock_template}) => {
 
     override_rewire(drafts, "update_compose_draft_count", noop);
 
-    override(server_events, "assert_get_events_running", () => {
+    override(server_events_state, "assert_get_events_running", () => {
         stub_state.get_events_running_called += 1;
     });
 
@@ -303,15 +309,17 @@ test_ui("send_message", ({override, override_rewire, mock_template}) => {
         compose_state.set_message_type("private");
         override(current_user, "user_id", new_user.user_id);
         override(compose_pm_pill, "get_emails", () => "alice@example.com");
+        override(compose_pm_pill, "get_user_ids", () => [alice.user_id]);
 
         const server_message_id = 127;
         override(markdown, "render", noop);
 
         override_rewire(echo, "try_deliver_locally", (message_request) => {
             const local_id_float = 123.04;
-            return echo.insert_local_message(message_request, local_id_float, (messages) => {
-                assert.equal(messages[0].timestamp, fake_now);
-                return messages;
+            return echo.insert_local_message(message_request, local_id_float, (messages_data) => {
+                assert.equal(messages_data.type, "local_message");
+                assert.equal(messages_data.raw_messages[0].timestamp, fake_now);
+                return messages_data.raw_messages;
             });
         });
 
@@ -452,6 +460,7 @@ test_ui("handle_enter_key_with_preview_open", ({override, override_rewire}) => {
     override_rewire(compose, "send_message", () => {
         send_message_called = true;
     });
+    override(realm, "realm_topics_policy", "allow_empty_topic");
 
     compose.handle_enter_key_with_preview_open();
     fake_compose_box.assert_preview_mode_is_off();
@@ -519,9 +528,8 @@ test_ui("finish", ({override, override_rewire}) => {
 
         override_rewire(compose_ui, "compose_spinner_visible", false);
         compose_state.set_message_type("private");
-        override(compose_pm_pill, "get_emails", () => "bob@example.com");
-        override(compose_pm_pill, "get_user_ids", () => []);
-        override(realm, "realm_direct_message_permission_group", nobody.id);
+        override(compose_pm_pill, "get_user_ids", () => [bob.user_id]);
+        override(realm, "realm_direct_message_permission_group", everyone.id);
         override(realm, "realm_direct_message_initiator_group", everyone.id);
 
         let compose_finished_event_checked = false;
@@ -544,6 +552,8 @@ test_ui("finish", ({override, override_rewire}) => {
 });
 
 test_ui("initialize", ({override}) => {
+    disable_window_triggers(override);
+
     let compose_actions_expected_opts;
     let compose_actions_start_checked;
 
@@ -842,51 +852,25 @@ test_ui("on_events", ({override, override_rewire}) => {
     })();
 });
 
-test_ui("create_message_object", ({override, override_rewire}) => {
-    mock_banners();
-
-    const fake_compose_box = new FakeComposeBox();
-
-    compose_state.set_stream_id(social.stream_id);
-
-    fake_compose_box.set_topic_val("lunch");
-    fake_compose_box.set_textarea_val("burrito");
-
-    compose_state.set_message_type("stream");
-
-    let message = compose.create_message_object();
-    assert.equal(message.to, social.stream_id);
-    assert.equal(message.topic, "lunch");
-    assert.equal(message.content, "burrito");
-
-    compose_state.set_message_type("private");
-    override(compose_pm_pill, "get_emails", () => "alice@example.com,bob@example.com");
-
-    message = compose.create_message_object();
-    assert.deepEqual(message.to, [alice.user_id, bob.user_id]);
-    assert.equal(message.to_user_ids, "31,32");
-    assert.equal(message.content, "burrito");
-
-    override_rewire(people, "email_list_to_user_ids_string", () => undefined);
-    message = compose.create_message_object();
-    assert.deepEqual(message.to, [alice.email, bob.email]);
-});
-
-test_ui("DM policy disabled", ({override, override_rewire}) => {
-    // Disable dms in the organisation
+test_ui("DM policy disabled", ({override}) => {
+    // Disable sending direct messages in the organisation
     override(realm, "realm_direct_message_permission_group", nobody.id);
     override(realm, "realm_direct_message_initiator_group", everyone.id);
-    let reply_disabled = false;
-    override_rewire(compose_closed_ui, "update_reply_button_state", (disabled = false) => {
-        reply_disabled = disabled;
-    });
+    // For no specified direct message recipient, the "Message X"button
+    // is not disabled
+    override(narrow_state, "pm_ids_string", () => undefined);
+    let reply_disabled = compose_closed_ui.should_disable_compose_reply_button_for_direct_message();
+    assert.ok(!reply_disabled);
     // For single bot recipient, Bot, the "Message X" button is not disabled
     override(narrow_state, "pm_ids_string", () => "33");
-    compose_closed_ui.update_buttons_for_private();
+    reply_disabled = compose_closed_ui.should_disable_compose_reply_button_for_direct_message();
     assert.ok(!reply_disabled);
     // For human user, Alice, the "Message X" button is disabled
-    override(narrow_state, "pm_ids_string", () => "31");
-    compose_closed_ui.update_buttons_for_private();
+    override(narrow_state, "pm_ids_string", () => "31,33");
+    reply_disabled = compose_closed_ui.should_disable_compose_reply_button_for_direct_message();
+    assert.ok(reply_disabled);
+    // For human user and bot user, the "Message X" button is disabled
+    reply_disabled = compose_closed_ui.should_disable_compose_reply_button_for_direct_message();
     assert.ok(reply_disabled);
 });
 

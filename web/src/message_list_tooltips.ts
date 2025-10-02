@@ -3,7 +3,7 @@ import assert from "minimalistic-assert";
 import * as tippy from "tippy.js";
 
 import render_message_edit_notice_tooltip from "../templates/message_edit_notice_tooltip.hbs";
-import render_message_inline_image_tooltip from "../templates/message_inline_image_tooltip.hbs";
+import render_message_media_preview_tooltip from "../templates/message_media_preview_tooltip.hbs";
 import render_narrow_tooltip from "../templates/narrow_tooltip.hbs";
 
 import * as compose_validate from "./compose_validate.ts";
@@ -310,19 +310,28 @@ export function initialize(): void {
         },
     );
 
-    message_list_tooltip("#message_feed_container .change_visibility_policy > i", {
-        ...topic_visibility_policy_tooltip_props,
-    });
-
     message_list_tooltip(
-        "#message_feed_container .recipient_bar_icon:not(.recipient-row-topic-menu)",
+        "#message_feed_container .change_visibility_policy > .recipient-bar-control-icon",
         {
-            delay: LONG_HOVER_DELAY,
-            onHidden(instance) {
-                instance.destroy();
-            },
+            ...topic_visibility_policy_tooltip_props,
         },
     );
+
+    message_list_tooltip("#message_feed_container .recipient-bar-control-icon", {
+        delay: LONG_HOVER_DELAY,
+        onShow(instance) {
+            const $reference = $(instance.reference);
+            if ($reference.hasClass("loading-resolve-topic-state")) {
+                // Don't show tooltip when the loading indicator is being
+                // displayed while resolving/unresolving a topic.
+                return false;
+            }
+            return undefined;
+        },
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
 
     message_list_tooltip(".rendered_markdown time", {
         // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
@@ -332,17 +341,29 @@ export function initialize(): void {
         },
     });
 
-    message_list_tooltip(".message_inline_image > a > img", {
+    message_list_tooltip(".media-image-element", {
         // Add a short delay so the user can mouseover several inline images without
         // tooltips showing and hiding rapidly
         delay: [300, 20],
         onShow(instance) {
-            // Some message_inline_images aren't actually images with a title,
-            // for example youtube videos, so we default to the actual href
+            // Some message images do not include a title, such as YouTube
+            // video previews, so we fall back to displaying the href value
             const title =
                 $(instance.reference).parent().attr("aria-label") ??
                 $(instance.reference).parent().attr("href");
-            instance.setContent(parse_html(render_message_inline_image_tooltip({title})));
+            instance.setContent(parse_html(render_message_media_preview_tooltip({title})));
+        },
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
+    message_list_tooltip(".media-audio-download", {
+        delay: LONG_HOVER_DELAY,
+        onShow(instance) {
+            const title = $(instance.reference).attr("aria-label");
+            assert(title !== undefined);
+            instance.setContent(title);
         },
         onHidden(instance) {
             instance.destroy();

@@ -50,6 +50,10 @@ class PreregistrationRealm(models.Model):
         UserProfile, null=True, related_name="+", on_delete=models.SET_NULL
     )
 
+    IMPORT_FROM_CHOICES = [
+        ("none", "Don't import"),
+        ("slack", "Import from Slack"),
+    ]
     data_import_metadata = models.JSONField(default=dict, encoder=DjangoJSONEncoder)
 
 
@@ -77,6 +81,10 @@ class PreregistrationUser(models.Model):
     groups = models.ManyToManyField("zerver.NamedUserGroup")
     invited_at = models.DateTimeField(auto_now=True)
     realm_creation = models.BooleanField(default=False)
+
+    # Custom text to be sent to created users in a welcome bot message.
+    welcome_message_custom_text = models.TextField(null=True)
+
     # Indicates whether the user needs a password.  Users who were
     # created via SSO style auth (e.g. GitHub/Google) generally do not.
     password_required = models.BooleanField(default=True)
@@ -140,6 +148,9 @@ class MultiuseInvite(models.Model):
     invited_as = models.PositiveSmallIntegerField(default=PreregistrationUser.INVITE_AS["MEMBER"])
     include_realm_default_subscriptions = models.BooleanField(default=True)
 
+    # Custom text to be sent to created users in a welcome bot message.
+    welcome_message_custom_text = models.TextField(null=True)
+
     # status for tracking whether the invite has been revoked.
     # If revoked, set to confirmation.settings.STATUS_REVOKED.
     # STATUS_USED is not supported, because these objects are supposed
@@ -166,3 +177,14 @@ class RealmReactivationStatus(models.Model):
     status = models.IntegerField(default=0)
 
     realm = models.ForeignKey(Realm, on_delete=CASCADE)
+
+
+class RealmCreationStatus(models.Model):
+    # status: whether an object has been confirmed.
+    #   if confirmed, set to confirmation.settings.STATUS_USED
+    status = models.IntegerField(default=0)
+    date_created = models.DateTimeField(default=timezone_now)
+
+    # True just if we should presume the email address the user enters
+    # is theirs, and skip sending mail to it to confirm that.
+    presume_email_valid = models.BooleanField(default=False)

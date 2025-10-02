@@ -5,7 +5,7 @@ import {unresolve_name} from "../shared/src/resolved_topic.ts";
 import render_add_poll_modal from "../templates/add_poll_modal.hbs";
 import render_add_todo_list_modal from "../templates/add_todo_list_modal.hbs";
 
-import * as compose from "./compose.js";
+import * as compose from "./compose.ts";
 import * as compose_actions from "./compose_actions.ts";
 import * as compose_banner from "./compose_banner.ts";
 import * as compose_call from "./compose_call.ts";
@@ -18,6 +18,7 @@ import * as compose_state from "./compose_state.ts";
 import * as compose_ui from "./compose_ui.ts";
 import * as compose_validate from "./compose_validate.ts";
 import * as dialog_widget from "./dialog_widget.ts";
+import * as drafts from "./drafts.ts";
 import * as flatpickr from "./flatpickr.ts";
 import {$t_html} from "./i18n.ts";
 import * as message_edit from "./message_edit.ts";
@@ -74,7 +75,11 @@ export function initialize() {
         if ($("#compose").hasClass("preview_mode")) {
             compose.render_preview_area();
         }
-        compose_validate.warn_if_topic_resolved(false);
+        const recipient_widget_hidden =
+            $(".compose_select_recipient-dropdown-list-container").length === 0;
+        if (recipient_widget_hidden) {
+            compose_validate.warn_if_topic_resolved(false);
+        }
         const compose_text_length = compose_validate.check_overflow_text($("#send_message_form"));
 
         // Change compose close button tooltip as per condition.
@@ -89,11 +94,7 @@ export function initialize() {
         }
 
         // The poll widget requires an empty compose box.
-        if (compose_text_length > 0) {
-            $(".needs-empty-compose").parent().addClass("disabled-on-hover");
-        } else {
-            $(".needs-empty-compose").parent().removeClass("disabled-on-hover");
-        }
+        $(".needs-empty-compose").toggleClass("disabled-on-hover", compose_text_length > 0);
 
         if (compose_state.get_is_content_unedited_restored_draft()) {
             compose_state.set_is_content_unedited_restored_draft(false);
@@ -137,9 +138,9 @@ export function initialize() {
             if (is_edit_input) {
                 message_edit.save_message_row_edit($row);
             } else if (event.target.dataset.validationTrigger === "schedule") {
-                compose_send_menu_popover.open_send_later_menu();
+                compose_send_menu_popover.open_schedule_message_menu();
 
-                // We need to set this flag to true here because `open_send_later_menu` validates the message and sets
+                // We need to set this flag to true here because `open_schedule_message_menu` validates the message and sets
                 // the user acknowledged wildcard flag back to 'false' and we don't want that to happen because then it
                 // would again show the wildcard warning banner when we actually send the message from 'send-later' modal.
                 compose_validate.set_user_acknowledged_stream_wildcard_flag(true);
@@ -299,7 +300,7 @@ export function initialize() {
 
             const sub = sub_store.get(stream_id);
 
-            subscriber_api.add_user_ids_to_stream([user_id], sub, success, xhr_failure);
+            subscriber_api.add_user_ids_to_stream([user_id], sub, true, success, xhr_failure);
         },
     );
 
@@ -575,6 +576,12 @@ export function initialize() {
     });
 
     $("textarea#compose-textarea").on("focus", () => {
+        // To shortcut a delay otherwise introduced when the topic
+        // input is blurred, we immediately update the topic's
+        // displayed text and compose-area placeholder when the
+        // compose textarea is focused.
+        const $input = $("input#stream_message_recipient_topic");
+        compose_recipient.update_topic_displayed_text($input.val());
         compose_recipient.update_compose_area_placeholder_text();
         compose_fade.do_update_all();
         if (narrow_state.narrowed_by_reply()) {
@@ -593,24 +600,80 @@ export function initialize() {
 
     $("#compose_recipient_box").on("click", "#recipient_box_clear_topic_button", () => {
         const $input = $("input#stream_message_recipient_topic");
+        // This should work similar to just manually deleting the
+        // topic
         $input.val("");
         $input.trigger("focus");
+        // However, we should take care to update the conversation
+        // arrow, which would otherwise go missing when *general
+        // chat* is permitted.
+        compose_recipient.update_narrow_to_recipient_visibility();
         compose_validate.validate_and_update_send_button_status();
     });
 
+    // To track delayed effects originating from the "blur" event
+    // and its use of setTimeout, we need to set up a variable to
+    // reference the timeout's ID across events.
+    let recipient_focused_timeout;
     $("input#stream_message_recipient_topic").on("focus", () => {
+        // We don't want the `recently-focused` class removed via
+        // a setTimeout from the "blur" event, if we're suddenly
+        // focused again.
+        clearTimeout(recipient_focused_timeout);
+        const $compose_recipient = $("#compose-recipient");
         const $input = $("input#stream_message_recipient_topic");
         compose_recipient.update_topic_displayed_text($input.val(), true);
         compose_recipient.update_compose_area_placeholder_text();
-
-        $("input#stream_message_recipient_topic").one("blur", () => {
-            compose_recipient.update_topic_displayed_text($input.val());
-            compose_recipient.update_compose_area_placeholder_text();
-        });
+        // When the topic input is focused, we no longer treat
+        // the recipient row as low attention, as we assume the user
+        // is doing something that requires keeping attention called
+        // to the recipient row.
+        compose_recipient.set_high_attention_recipient_row();
+        $compose_recipient.addClass("recently-focused");
     });
 
     $("input#stream_message_recipient_topic").on("input", () => {
+        compose_recipient.update_placeholder_visibility();
         compose_recipient.update_compose_area_placeholder_text();
+    });
+
+    $("#private_message_recipient").on("focus", () => {
+        // We don't want the `.recently-focused` class removed via
+        // setTimeout from the "blur" event, if we're suddenly
+        // focused again.
+        clearTimeout(recipient_focused_timeout);
+        const $compose_recipient = $("#compose-recipient");
+        // When the DM input is focused, we no longer treat
+        // the recipient row as low attention, as we assume the user
+        // is doing something that requires keeping attention called
+        // to the recipient row
+        compose_recipient.set_high_attention_recipient_row();
+        $compose_recipient.addClass("recently-focused");
+    });
+
+    $("input#stream_message_recipient_topic, #private_message_recipient").on("blur", () => {
+        const $compose_recipient = $("#compose-recipient");
+        const $input = $("input#stream_message_recipient_topic");
+        // To correct for an edge case when clearing the topic box
+        // via the left sidebar, we do the following actions after a
+        // delay; these will not have an effect for DMs, and so can
+        // safely be referenced here. Note, too, that if focus shifts
+        // immediately from the topic box to the compose textarea,
+        // we update these things immediately so that no delay is
+        // apparent on the topic's displayed text or the placeholder
+        // in the empty compose textarea.
+        recipient_focused_timeout = setTimeout(() => {
+            compose_recipient.update_topic_displayed_text($input.val());
+            compose_recipient.update_compose_area_placeholder_text();
+            $compose_recipient.removeClass("recently-focused");
+        }, 500);
+        compose_recipient.update_recipient_row_attention_level();
+    });
+
+    $(window).on("blur", () => {
+        // Save drafts when the window loses focus to help
+        // ensure no work is lost
+        drafts.update_draft();
     });
 
     $("body").on("click", ".formatting_button", function (e) {

@@ -1,5 +1,3 @@
-import assert from "minimalistic-assert";
-
 import * as buddy_data from "./buddy_data.ts";
 import * as hash_util from "./hash_util.ts";
 import * as narrow_state from "./narrow_state.ts";
@@ -35,9 +33,10 @@ export function get_active_user_ids_string(): string | undefined {
     return people.sorted_other_user_ids(users_ids_array).join(",");
 }
 
-type DisplayObject = {
+export type DisplayObject = {
     recipients: string;
     user_ids_string: string;
+    is_current_user: boolean;
     unread: number;
     is_zero: boolean;
     is_active: boolean;
@@ -78,8 +77,6 @@ export function get_conversations(search_string = ""): DisplayObject[] {
             continue;
         }
 
-        const reply_to = people.user_ids_string_to_emails_string(user_ids_string);
-        assert(reply_to !== undefined);
         const recipients_string = people.format_recipients(user_ids_string, "narrow");
 
         const num_unread = unread.num_unread_for_user_ids_string(user_ids_string);
@@ -94,6 +91,7 @@ export function get_conversations(search_string = ""): DisplayObject[] {
         let user_circle_class;
         let status_emoji_info;
         let is_bot = false;
+        let is_current_user = false;
 
         if (!is_group) {
             const user_id = Number.parseInt(user_ids_string, 10);
@@ -104,6 +102,7 @@ export function get_conversations(search_string = ""): DisplayObject[] {
                 // We display the bot icon rather than a user circle for bots.
                 is_bot = true;
             } else {
+                is_current_user = people.is_my_user_id(user_id);
                 status_emoji_info = user_status.get_status_emoji(user_id);
             }
         }
@@ -114,13 +113,14 @@ export function get_conversations(search_string = ""): DisplayObject[] {
             unread: num_unread,
             is_zero: num_unread === 0,
             is_active,
-            url: hash_util.pm_with_url(reply_to),
+            url: hash_util.pm_with_url(user_ids_string),
             status_emoji_info,
             user_circle_class,
             is_group,
             is_bot,
             has_unread_mention,
             is_deactivated,
+            is_current_user,
         };
         display_objects.push(display_object);
     }

@@ -18,6 +18,8 @@
 * [Mark messages in a channel as read](/api/mark-stream-as-read)
 * [Mark messages in a topic as read](/api/mark-topic-as-read)
 * [Get a message's read receipts](/api/get-read-receipts)
+* [Get temporary URL for an uploaded file](/api/get-file-temporary-url)
+* [Report a message](/api/report-message)
 
 #### Scheduled messages
 
@@ -25,6 +27,12 @@
 * [Create a scheduled message](/api/create-scheduled-message)
 * [Edit a scheduled message](/api/update-scheduled-message)
 * [Delete a scheduled message](/api/delete-scheduled-message)
+
+#### Message reminders
+
+* [Create a message reminder](/api/create-message-reminder)
+* [Get reminders](/api/get-reminders)
+* [Delete a reminder](/api/delete-reminder)
 
 #### Drafts
 
@@ -37,6 +45,13 @@
 * [Edit a saved snippet](/api/edit-saved-snippet)
 * [Delete a saved snippet](/api/delete-saved-snippet)
 
+#### Navigation views
+
+* [Get all navigation views](/api/get-navigation-views)
+* [Add a navigation view](/api/add-navigation-view)
+* [Update the navigation view](/api/edit-navigation-view)
+* [Remove a navigation view](/api/remove-navigation-view)
+
 #### Channels
 
 * [Get subscribed channels](/api/get-subscriptions)
@@ -48,7 +63,7 @@
 * [Get all channels](/api/get-streams)
 * [Get a channel by ID](/api/get-stream-by-id)
 * [Get channel ID](/api/get-stream-id)
-* [Create a channel](/api/create-stream)
+* [Create a channel](/api/create-channel)
 * [Update a channel](/api/update-stream)
 * [Archive a channel](/api/archive-stream)
 * [Get channel's email address](/api/get-stream-email-address)
@@ -58,13 +73,17 @@
 * [Delete a topic](/api/delete-topic)
 * [Add a default channel](/api/add-default-stream)
 * [Remove a default channel](/api/remove-default-stream)
+* [Create a channel folder](/api/create-channel-folder)
+* [Get channel folders](/api/get-channel-folders)
+* [Reorder channel folders](/api/patch-channel-folders)
+* [Update a channel folder](/api/update-channel-folder)
 
 #### Users
 
 * [Get a user](/api/get-user)
 * [Get a user by email](/api/get-user-by-email)
 * [Get own user](/api/get-own-user)
-* [Get all users](/api/get-users)
+* [Get users](/api/get-users)
 * [Create a user](/api/create-user)
 * [Update a user](/api/update-user)
 * [Update a user by email](/api/update-user-by-email)
@@ -73,6 +92,7 @@
 * [Reactivate a user](/api/reactivate-user)
 * [Get a user's status](/api/get-user-status)
 * [Update your status](/api/update-status)
+* [Update user status](/api/update-status-for-user)
 * [Set "typing" status](/api/set-typing-status)
 * [Set "typing" status for message editing](/api/set-typing-status-for-message-edit)
 * [Get a user's presence](/api/get-user-presence)
@@ -125,6 +145,7 @@
 * [Get all data exports](/api/get-realm-exports)
 * [Create a data export](/api/export-realm)
 * [Get data export consent state](/api/get-realm-export-consents)
+* [Test welcome bot custom message](/api/test-welcome-bot-custom-message)
 
 #### Real-time events
 
@@ -137,6 +158,10 @@
 
 * [Fetch an API key (production)](/api/fetch-api-key)
 * [Fetch an API key (development only)](/api/dev-fetch-api-key)
+* [Send an E2EE test notification to mobile device(s)](/api/e2ee-test-notify)
+* [Register E2EE push device](/api/register-push-device)
+* [Register E2EE push device to bouncer](/api/register-remote-push-device)
+* [Mobile notifications](/api/mobile-notifications)
 * [Send a test notification to mobile device(s)](/api/test-notify)
 * [Add an APNs device token](/api/add-apns-token)
 * [Remove an APNs device token](/api/remove-apns-token)

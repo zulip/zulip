@@ -1,4 +1,4 @@
-import type {z} from "zod";
+import type * as z from "zod/mini";
 
 import {realm} from "./state_data.ts";
 import type {thumbnail_format_schema} from "./state_data.ts";

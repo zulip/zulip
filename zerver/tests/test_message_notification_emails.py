@@ -1,6 +1,7 @@
 import random
 import re
 from collections.abc import Sequence
+from datetime import timedelta
 from email.headerregistry import Address
 from unittest import mock
 from unittest.mock import patch
@@ -11,9 +12,11 @@ from django.conf import settings
 from django.core import mail
 from django.core.mail.message import EmailMultiAlternatives
 from django.test import override_settings
+from django.utils.timezone import now as timezone_now
 from django_stubs_ext import StrPromise
 
 from zerver.actions.create_user import do_create_user
+from zerver.actions.message_send import internal_send_private_message
 from zerver.actions.user_groups import add_subgroups_to_user_group, check_add_user_group
 from zerver.actions.user_settings import do_change_user_setting
 from zerver.actions.user_topics import do_set_user_topic_visibility_policy
@@ -31,6 +34,7 @@ from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import Message, UserMessage, UserProfile, UserTopic
 from zerver.models.realm_emoji import get_name_keyed_dict_for_active_realm_emoji
 from zerver.models.realms import get_realm
+from zerver.models.recipients import get_or_create_direct_message_group
 from zerver.models.scheduled_jobs import NotificationTriggers
 from zerver.models.streams import get_stream
 
@@ -85,6 +89,35 @@ class TestMessageNotificationEmails(ZulipTestCase):
         ) as m:
             handle_missedmessage_emails(
                 hamlet.id,
+                {message.id: MissedMessageData(trigger=NotificationTriggers.DIRECT_MESSAGE)},
+            )
+        m.assert_not_called()
+
+    def test_demo_organization_owner_email_not_set(self) -> None:
+        realm = get_realm("zulip")
+        realm.demo_organization_scheduled_deletion_date = timezone_now() + timedelta(days=30)
+        realm.save()
+
+        # Demo organization owner's don't have an email address set initially
+        desdemona = self.example_user("desdemona")
+        desdemona.delivery_email = ""
+        desdemona.save()
+
+        notification_bot = self.notification_bot(realm)
+        internal_send_private_message(
+            sender=notification_bot,
+            recipient_user=desdemona,
+            content="Notification bot message",
+        )
+        message = self.get_last_message()
+        self.assertEqual(message.sender.id, notification_bot.id)
+        self.assertEqual(message.content, "Notification bot message")
+
+        with mock.patch(
+            "zerver.lib.email_notifications.do_send_missedmessage_events_reply_in_zulip"
+        ) as m:
+            handle_missedmessage_emails(
+                desdemona.id,
                 {message.id: MissedMessageData(trigger=NotificationTriggers.DIRECT_MESSAGE)},
             )
         m.assert_not_called()
@@ -190,8 +223,8 @@ class TestMessageNotificationEmails(ZulipTestCase):
         else:
             # Test in case if message content in missed email message are disabled.
             verify_body_include = [
-                "This email does not include message content because you have disabled message ",
-                "http://zulip.testserver/help/dm-mention-alert-notifications ",
+                "This email does not include message content because you have chosen to ",
+                "http://zulip.testserver/help/email-notifications#hide-message-content ",
                 "View or reply in Zulip Dev Zulip",
                 " Manage email preferences: http://zulip.testserver/#settings/notifications",
             ]
@@ -250,8 +283,8 @@ class TestMessageNotificationEmails(ZulipTestCase):
         else:
             # Test in case if message content in missed email message are disabled.
             verify_body_include = [
-                "This email does not include message content because you have disabled message ",
-                "http://zulip.testserver/help/dm-mention-alert-notifications ",
+                "This email does not include message content because you have chosen to ",
+                "http://zulip.testserver/help/email-notifications#hide-message-content ",
                 "View or reply in Zulip Dev Zulip",
                 " Manage email preferences: http://zulip.testserver/#settings/notifications",
             ]
@@ -290,8 +323,8 @@ class TestMessageNotificationEmails(ZulipTestCase):
         else:
             # Test in case if message content in missed email message are disabled.
             verify_body_include = [
-                "This email does not include message content because you have disabled message ",
-                "http://zulip.testserver/help/dm-mention-alert-notifications ",
+                "This email does not include message content because you have chosen to ",
+                "http://zulip.testserver/help/email-notifications#hide-message-content ",
                 "View or reply in Zulip Dev Zulip",
                 " Manage email preferences: http://zulip.testserver/#settings/notifications",
             ]
@@ -349,8 +382,8 @@ class TestMessageNotificationEmails(ZulipTestCase):
         else:
             # Test in case if message content in missed email message are disabled.
             verify_body_include = [
-                "This email does not include message content because you have disabled message ",
-                "http://zulip.testserver/help/dm-mention-alert-notifications ",
+                "This email does not include message content because you have chosen to ",
+                "http://zulip.testserver/help/email-notifications#hide-message-content ",
                 "View or reply in Zulip Dev Zulip",
                 " Manage email preferences: http://zulip.testserver/#settings/notifications",
             ]
@@ -389,8 +422,8 @@ class TestMessageNotificationEmails(ZulipTestCase):
         else:
             # Test in case if message content in missed email message are disabled.
             verify_body_include = [
-                "This email does not include message content because you have disabled message ",
-                "http://zulip.testserver/help/dm-mention-alert-notifications ",
+                "This email does not include message content because you have chosen to ",
+                "http://zulip.testserver/help/email-notifications#hide-message-content ",
                 "View or reply in Zulip Dev Zulip",
                 " Manage email preferences: http://zulip.testserver/#settings/notifications",
             ]
@@ -497,15 +530,15 @@ class TestMessageNotificationEmails(ZulipTestCase):
         else:
             if message_content_disabled_by_realm:
                 verify_body_include = [
-                    "This email does not include message content because your organization has disabled",
+                    "This email does not include message content because your organization",
                     "http://zulip.testserver/help/hide-message-content-in-emails",
                     "View or reply in Zulip Dev Zulip",
                     " Manage email preferences: http://zulip.testserver/#settings/notifications",
                 ]
             elif message_content_disabled_by_user:
                 verify_body_include = [
-                    "This email does not include message content because you have disabled message ",
-                    "http://zulip.testserver/help/dm-mention-alert-notifications ",
+                    "This email does not include message content because you have chosen to ",
+                    "http://zulip.testserver/help/email-notifications#hide-message-content ",
                     "View or reply in Zulip Dev Zulip",
                     " Manage email preferences: http://zulip.testserver/#settings/notifications",
                 ]
@@ -565,8 +598,8 @@ class TestMessageNotificationEmails(ZulipTestCase):
             verify_body_does_not_include: list[str] = []
         else:
             verify_body_include = [
-                "This email does not include message content because you have disabled message ",
-                "http://zulip.testserver/help/dm-mention-alert-notifications ",
+                "This email does not include message content because you have chosen to ",
+                "http://zulip.testserver/help/email-notifications#hide-message-content ",
                 "View or reply in Zulip Dev Zulip",
                 " Manage email preferences: http://zulip.testserver/#settings/notifications",
             ]
@@ -1247,6 +1280,42 @@ class TestMessageNotificationEmails(ZulipTestCase):
         email_subject = "DMs with Cordelia, Lear's daughter"
         self._test_cases(msg_id, verify_body_include, email_subject)
 
+    def test_pm_link_in_missed_message_header_with_multiple_user_with_the_same_name(self) -> None:
+        hamlet = self.example_user("hamlet")
+        iago = self.example_user("iago")
+        iago_2 = self.example_user("ZOE")
+        iago_2.full_name = "iago"
+        iago_2.save()
+
+        msg_id = self.send_group_direct_message(
+            iago,
+            [hamlet, iago_2],
+            "Group personal message!",
+        )
+
+        verify_body_include = ["Iago: > Group personal message! -- Reply"]
+        email_subject = "Group DMs with iago and Iago"
+        self._test_cases(msg_id, verify_body_include, email_subject)
+
+    def test_pm_link_in_missed_message_header_using_direct_message_group(self) -> None:
+        cordelia = self.example_user("cordelia")
+        hamlet = self.example_user("hamlet")
+
+        get_or_create_direct_message_group(id_list=[cordelia.id, hamlet.id])
+
+        msg_id = self.send_personal_message(
+            cordelia,
+            hamlet,
+            "Let's test a direct message link in email notifications",
+        )
+
+        encoded_name = "Cordelia,-Lear's-daughter"
+        verify_body_include = [
+            f"view it in Zulip Dev Zulip: http://zulip.testserver/#narrow/dm/{cordelia.id}-{encoded_name}"
+        ]
+        email_subject = "DMs with Cordelia, Lear's daughter"
+        self._test_cases(msg_id, verify_body_include, email_subject)
+
     def test_sender_name_in_missed_message(self) -> None:
         hamlet = self.example_user("hamlet")
         msg_id_1 = self.send_stream_message(
@@ -1289,6 +1358,102 @@ class TestMessageNotificationEmails(ZulipTestCase):
         self.assertIn(
             ">\n                    \n                        <div><p>Hello</p></div>\n",
             mail.outbox[2].alternatives[0][0],
+        )
+
+    def test_sender_name_in_missed_pm_using_direct_message_group(self) -> None:
+        hamlet = self.example_user("hamlet")
+        iago = self.example_user("iago")
+
+        get_or_create_direct_message_group(id_list=[hamlet.id, iago.id])
+
+        msg_id = self.send_personal_message(iago, hamlet, "Hello")
+
+        self.handle_missedmessage_emails(
+            hamlet.id,
+            {msg_id: MissedMessageData(trigger=NotificationTriggers.DIRECT_MESSAGE)},
+        )
+
+        assert isinstance(mail.outbox[0], EmailMultiAlternatives)
+        assert isinstance(mail.outbox[0].alternatives[0][0], str)
+        # Sender name is not appended for missed 1:1 direct messages
+        self.assertEqual("> Hello\n\n--\n\nReply", mail.outbox[0].body[:18])
+        self.assertIn(
+            ">\n                    \n                        <div><p>Hello</p></div>\n",
+            mail.outbox[0].alternatives[0][0],
+        )
+
+    def test_your_name_in_missed_pm_to_self_using_direct_message_group(self) -> None:
+        hamlet = self.example_user("hamlet")
+
+        get_or_create_direct_message_group(id_list=[hamlet.id])
+
+        msg_id = self.send_personal_message(hamlet, hamlet, "Hello", read_by_sender=False)
+
+        self.handle_missedmessage_emails(
+            hamlet.id,
+            {msg_id: MissedMessageData(trigger=NotificationTriggers.DIRECT_MESSAGE)},
+        )
+
+        assert isinstance(mail.outbox[0], EmailMultiAlternatives)
+        self.assertEqual(mail.outbox[0].subject, "DMs with King Hamlet")
+        assert isinstance(mail.outbox[0].alternatives[0][0], str)
+        # Sender name is not appended for missed 1:1 direct messages
+        self.assertEqual("> Hello\n\n--\n\nReply", mail.outbox[0].body[:18])
+        self.assertIn(
+            ">\n                    \n                        <div><p>Hello</p></div>\n",
+            mail.outbox[0].alternatives[0][0],
+        )
+
+    def test_datetime_conversion_in_missed_message_content(self) -> None:
+        hamlet = self.example_user("hamlet")
+
+        get_or_create_direct_message_group(id_list=[hamlet.id])
+
+        # Normal message with timestamp.
+        msg_id = self.send_personal_message(
+            hamlet, hamlet, "Meeting at <time:2025-09-30T09:30:00-07:00>", read_by_sender=False
+        )
+
+        self.handle_missedmessage_emails(
+            hamlet.id,
+            {msg_id: MissedMessageData(trigger=NotificationTriggers.DIRECT_MESSAGE)},
+        )
+
+        assert isinstance(mail.outbox[0], EmailMultiAlternatives)
+        self.assertEqual(mail.outbox[0].subject, "DMs with King Hamlet")
+        assert isinstance(mail.outbox[0].alternatives[0][0], str)
+        # Sender name is not appended for missed 1:1 direct messages
+        self.assertEqual(
+            "> Meeting at <time:2025-09-30T09:30:00-07:00>\n\n--\n\nReply", mail.outbox[0].body[:56]
+        )
+        self.assertIn(
+            '<p>Meeting at <time datetime="2025-09-30T16:30:00Z">Tuesday, September 30, 2025 at 04:30 PM UTC</time></p>',
+            mail.outbox[0].alternatives[0][0],
+        )
+
+        # The timestamp is not formatted correctly.
+        msg_id = self.send_personal_message(
+            hamlet, hamlet, "Meeting at <time:2025-09-30T09:30:00-07:00>", read_by_sender=False
+        )
+
+        with (
+            mock.patch(
+                "zerver.lib.email_notifications.format_datetime_to_string",
+                side_effect=ValueError("Invalid datetime format"),
+            ),
+            self.assertLogs(level="WARNING") as m,
+        ):
+            self.handle_missedmessage_emails(
+                hamlet.id,
+                {msg_id: MissedMessageData(trigger=NotificationTriggers.DIRECT_MESSAGE)},
+            )
+
+        self.assertEqual(
+            m.output,
+            [
+                "WARNING:zerver.lib.email_notifications:Failed to convert time element "
+                "'2025-09-30T16:30:00Z': Invalid datetime format",
+            ],
         )
 
     def test_multiple_missed_personal_messages(self) -> None:

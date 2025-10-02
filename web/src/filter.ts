@@ -1,7 +1,7 @@
-import Handlebars from "handlebars/runtime.js";
 import _ from "lodash";
 import assert from "minimalistic-assert";
 
+import * as internal_url from "../shared/src/internal_url.ts";
 import * as resolved_topic from "../shared/src/resolved_topic.ts";
 import render_search_description from "../templates/search_description.hbs";
 
@@ -16,14 +16,16 @@ import {page_params} from "./page_params.ts";
 import type {User} from "./people.ts";
 import * as people from "./people.ts";
 import type {UserPillItem} from "./search_suggestion.ts";
-import {current_user, realm} from "./state_data.ts";
+import {current_user} from "./state_data.ts";
 import type {NarrowTerm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
+import * as sub_store from "./sub_store.ts";
 import * as user_topics from "./user_topics.ts";
 import * as util from "./util.ts";
 
 type IconData = {
-    title: string;
+    title?: string | undefined;
+    title_html?: string | undefined;
     is_spectator: boolean;
 } & (
     | {
@@ -44,6 +46,11 @@ type Part =
           channel: string;
           topic_display_name: string;
           is_empty_string_topic: boolean;
+      }
+    | {
+          type: "channel";
+          prefix_for_operator: string;
+          operand: string;
       }
     | {
           type: "is_operator";
@@ -70,53 +77,7 @@ type ValidOrInvalidUser =
     | {valid_user: true; user_pill_context: UserPillItem}
     | {valid_user: false; operand: string};
 
-function zephyr_stream_name_match(
-    message: Message & {type: "stream"},
-    stream_name: string,
-): boolean {
-    // Zephyr users expect narrowing to "social" to also show messages to /^(un)*social(.d)*$/
-    // (unsocial, ununsocial, social.d, etc)
-    // TODO: hoist the regex compiling out of the closure
-    const m = /^(?:un)*(.+?)(?:\.d)*$/i.exec(stream_name);
-    let base_stream_name = stream_name;
-    if (m?.[1] !== undefined) {
-        base_stream_name = m[1];
-    }
-    const related_regexp = new RegExp(
-        /^(un)*/.source + _.escapeRegExp(base_stream_name) + /(\.d)*$/.source,
-        "i",
-    );
-    const message_stream_name = stream_data.get_stream_name_from_id(message.stream_id);
-    return related_regexp.test(message_stream_name);
-}
-
-function zephyr_topic_name_match(message: Message & {type: "stream"}, operand: string): boolean {
-    // Zephyr users expect narrowing to topic "foo" to also show messages to /^foo(.d)*$/
-    // (foo, foo.d, foo.d.d, etc)
-    // TODO: hoist the regex compiling out of the closure
-    const m = /^(.*?)(?:\.d)*$/i.exec(operand);
-    // m should never be null because any string matches that regex.
-    assert(m !== null);
-    const base_topic = m[1]!;
-    let related_regexp;
-
-    // Additionally, Zephyr users expect the empty instance and
-    // instance "personal" to be the same.
-    if (
-        base_topic === "" ||
-        base_topic.toLowerCase() === "personal" ||
-        base_topic.toLowerCase() === '(instance "")'
-    ) {
-        related_regexp = /^(|personal|\(instance ""\))(\.d)*$/i;
-    } else {
-        related_regexp = new RegExp(
-            /^/.source + _.escapeRegExp(base_topic) + /(\.d)*$/.source,
-            "i",
-        );
-    }
-
-    return related_regexp.test(message.topic);
-}
+const channels_operands = new Set(["public", "web-public"]);
 
 function message_in_home(message: Message): boolean {
     // The home view contains messages not sent to muted channels,
@@ -199,12 +160,22 @@ function message_matches_search_term(message: Message, operator: string, operand
                 return false;
             }
 
-            if (realm.realm_is_zephyr_mirror_realm) {
-                const stream = stream_data.get_sub_by_id_string(operand);
-                return zephyr_stream_name_match(message, stream?.name ?? "");
-            }
-
             return message.stream_id.toString() === operand;
+        }
+
+        case "channels": {
+            if (message.type !== "stream") {
+                return false;
+            }
+            const stream_privacy_policy = stream_data.get_stream_privacy_policy(message.stream_id);
+            switch (operand) {
+                case "public":
+                    return ["public", "web-public"].includes(stream_privacy_policy);
+                case "web-public":
+                    return stream_privacy_policy === "web-public";
+                default:
+                    return false;
+            }
         }
 
         case "topic":
@@ -213,9 +184,6 @@ function message_matches_search_term(message: Message, operator: string, operand
             }
 
             operand = operand.toLowerCase();
-            if (realm.realm_is_zephyr_mirror_realm) {
-                return zephyr_topic_name_match(message, operand);
-            }
             return message.topic.toLowerCase() === operand;
 
         case "sender":
@@ -260,7 +228,7 @@ export function create_user_pill_context(user: User): UserPillItem {
 
     return {
         id: user.user_id,
-        display_value: new Handlebars.SafeString(user.full_name),
+        display_value: user.full_name,
         has_image: true,
         img_src: avatar_url,
         should_add_guest_user_indicator: people.should_add_guest_user_indicator(user.user_id),
@@ -346,13 +314,13 @@ export class Filter {
                 break;
             case "sender":
             case "dm":
-                operand = operand.toString().toLowerCase();
+                operand = operand.toLowerCase();
                 if (operand === "me") {
                     operand = people.my_current_email();
                 }
                 break;
             case "dm-including":
-                operand = operand.toString().toLowerCase();
+                operand = operand.toLowerCase();
                 break;
             case "search":
                 // The mac app automatically substitutes regular quotes with curly
@@ -360,13 +328,10 @@ export class Filter {
                 // phrase search behavior, however.  So, we replace all instances of
                 // curly quotes with regular quotes when doing a search.  This is
                 // unlikely to cause any problems and is probably what the user wants.
-                operand = operand
-                    .toString()
-                    .toLowerCase()
-                    .replaceAll(/[\u201C\u201D]/g, '"');
+                operand = operand.replaceAll(/[\u201C\u201D]/g, '"');
                 break;
             default:
-                operand = operand.toString().toLowerCase();
+                operand = operand.toLowerCase();
         }
 
         // We may want to consider allowing mixed-case operators at some point
@@ -511,11 +476,7 @@ export class Filter {
                     }
                 }
 
-                if (
-                    for_pills &&
-                    operator === "sender" &&
-                    operand.toString().toLowerCase() === "me"
-                ) {
+                if (for_pills && operator === "sender" && operand.toLowerCase() === "me") {
                     operand = people.my_current_email();
                 }
 
@@ -573,7 +534,7 @@ export class Filter {
                 return stream_data.get_sub_by_id_string(term.operand) !== undefined;
             case "channels":
             case "streams":
-                return term.operand === "public";
+                return channels_operands.has(term.operand);
             case "topic":
                 return true;
             case "sender":
@@ -618,9 +579,7 @@ export class Filter {
                 return term.operand;
             }
             const operator = Filter.canonicalize_operator(term.operator);
-            return (
-                sign + operator + ":" + Filter.encodeOperand(term.operand.toString(), term.operator)
-            );
+            return sign + operator + ":" + Filter.encodeOperand(term.operand, term.operator);
         });
         return term_strings.join(" ");
     }
@@ -645,6 +604,7 @@ export class Filter {
         const levels = [
             "in",
             "channels-public",
+            "channels-web-public",
             "channel",
             "topic",
             "dm",
@@ -697,9 +657,9 @@ export class Filter {
 
         switch (operator) {
             case "channel":
-                return verb + "channel";
+                return verb + "messages in a specific channel";
             case "channels":
-                return verb + "channels";
+                return verb + "channel type";
             case "near":
                 return verb + "messages around";
 
@@ -806,6 +766,12 @@ export class Filter {
                     };
                 }
             }
+            if (canonicalized_operator === "channels" && channels_operands.has(operand)) {
+                return {
+                    type: "plain_text",
+                    content: this.describe_channels_operator(term.negated ?? false, operand),
+                };
+            }
             const prefix_for_operator = Filter.operator_to_prefix(
                 canonicalized_operator,
                 term.negated,
@@ -834,10 +800,11 @@ export class Filter {
             if (prefix_for_operator !== "") {
                 if (canonicalized_operator === "channel") {
                     const stream = stream_data.get_sub_by_id_string(operand);
+                    const verb = term.negated ? "exclude " : "";
                     if (stream) {
                         return {
-                            type: "prefix_for_operator",
-                            prefix_for_operator,
+                            type: "channel",
+                            prefix_for_operator: verb + "messages in #",
                             operand: stream.name,
                         };
                     }
@@ -864,6 +831,20 @@ export class Filter {
             };
         });
         return [...parts, ...more_parts];
+    }
+
+    static describe_channels_operator(negated: boolean, operand: string): string {
+        const possible_prefix = negated ? "exclude " : "";
+        assert(channels_operands.has(operand));
+        if ((page_params.is_spectator || current_user.is_guest) && operand === "public") {
+            return possible_prefix + "all public channels that you can view";
+        }
+        switch (operand) {
+            case "web-public":
+                return possible_prefix + "all web-public channels";
+            default:
+                return possible_prefix + "all public channels";
+        }
     }
 
     static search_description_as_html(
@@ -1008,9 +989,7 @@ export class Filter {
     }
 
     predicate(): (message: Message) => boolean {
-        if (this._predicate === undefined) {
-            this._predicate = this._build_predicate();
-        }
+        this._predicate ??= this._build_predicate();
         return this._predicate;
     }
 
@@ -1099,7 +1078,7 @@ export class Filter {
         return this.has_operator("dm") && this.operands("dm")[0]!.split(",").length === 1;
     }
 
-    supports_collapsing_recipients(): boolean {
+    contains_no_partial_conversations(): boolean {
         // Determines whether a view is guaranteed, by construction,
         // to contain consecutive messages in a given topic, and thus
         // it is appropriate to collapse recipient/sender headings.
@@ -1144,7 +1123,7 @@ export class Filter {
     }
 
     calc_can_mark_messages_read(): boolean {
-        // Arguably this should match supports_collapsing_recipients.
+        // Arguably this should match contains_no_partial_conversations.
         // We may want to standardize on that in the future.  (At
         // present, this function does not allow combining valid filters).
         if (this.single_term_type_returns_all_messages_of_conversation()) {
@@ -1154,9 +1133,7 @@ export class Filter {
     }
 
     can_mark_messages_read(): boolean {
-        if (this._can_mark_messages_read === undefined) {
-            this._can_mark_messages_read = this.calc_can_mark_messages_read();
-        }
+        this._can_mark_messages_read ??= this.calc_can_mark_messages_read();
         return this._can_mark_messages_read;
     }
 
@@ -1188,6 +1165,10 @@ export class Filter {
         }
 
         if (_.isEqual(term_types, ["is-dm"])) {
+            return true;
+        }
+
+        if (_.isEqual(term_types, ["not-is-dm"])) {
             return true;
         }
 
@@ -1235,6 +1216,9 @@ export class Filter {
         if (_.isEqual(term_types, ["channels-public"])) {
             return true;
         }
+        if (_.isEqual(term_types, ["channels-web-public"])) {
+            return true;
+        }
         if (_.isEqual(term_types, ["sender"])) {
             return true;
         }
@@ -1273,12 +1257,12 @@ export class Filter {
             if (!sub) {
                 return "#";
             }
-            return (
-                "/#narrow/channel/" +
-                stream_data.id_to_slug(sub.stream_id) +
-                "/topic/" +
-                this.operands("topic")[0]
-            );
+
+            return `/${internal_url.by_stream_topic_url(
+                sub.stream_id,
+                this.operands("topic")[0]!,
+                sub_store.maybe_get_stream_name,
+            )}`;
         }
 
         // eliminate "complex filters"
@@ -1294,7 +1278,10 @@ export class Filter {
                     if (!sub) {
                         return "#";
                     }
-                    return "/#narrow/channel/" + stream_data.id_to_slug(sub.stream_id);
+                    return `/${internal_url.by_stream_url(
+                        sub.stream_id,
+                        sub_store.maybe_get_stream_name,
+                    )}`;
                 }
                 case "is-dm":
                     return "/#narrow/is/dm";
@@ -1304,6 +1291,8 @@ export class Filter {
                     return "/#narrow/is/mentioned";
                 case "channels-public":
                     return "/#narrow/channels/public";
+                case "channels-web-public":
+                    return "/#narrow/channels/web-public";
                 case "dm":
                     return "/#narrow/dm/" + people.emails_to_slug(this.operands("dm").join(","));
                 case "is-resolved":
@@ -1321,7 +1310,8 @@ export class Filter {
     }
 
     add_icon_data(context: {
-        title: string;
+        title?: string;
+        title_html?: string;
         description?: string | undefined;
         link?: string | undefined;
         is_spectator: boolean;
@@ -1414,6 +1404,12 @@ export class Filter {
             (term_types.length === 1 && _.isEqual(term_types, ["dm"]))
         ) {
             const emails = this.operands("dm")[0]!.split(",");
+            if (emails.length === 1) {
+                const user = people.get_by_email(emails[0]!);
+                if (user && people.is_direct_message_conversation_with_self([user.user_id])) {
+                    return $t({defaultMessage: "Messages with yourself"});
+                }
+            }
             const names = emails.map((email) => {
                 const person = people.get_by_email(email);
                 if (!person) {
@@ -1437,19 +1433,18 @@ export class Filter {
         if (term_types.length === 1 && _.isEqual(term_types, ["sender"])) {
             const email = this.operands("sender")[0]!;
             const user = people.get_by_email(email);
-            let sender = email;
-            if (user) {
-                if (people.is_my_user_id(user.user_id)) {
-                    return $t({defaultMessage: "Messages sent by you"});
-                }
-
-                if (people.should_add_guest_user_indicator(user.user_id)) {
-                    sender = $t({defaultMessage: "{name} (guest)"}, {name: user.full_name});
-                } else {
-                    sender = user.full_name;
-                }
+            if (user === undefined) {
+                return $t({defaultMessage: "Messages sent by unknown user"});
             }
-
+            if (people.is_my_user_id(user.user_id)) {
+                return $t({defaultMessage: "Messages sent by you"});
+            }
+            let sender: string;
+            if (people.should_add_guest_user_indicator(user.user_id)) {
+                sender = $t({defaultMessage: "{name} (guest)"}, {name: user.full_name});
+            } else {
+                sender = user.full_name;
+            }
             return $t(
                 {defaultMessage: "Messages sent by {sender}"},
                 {
@@ -1464,7 +1459,14 @@ export class Filter {
                 case "in-all":
                     return $t({defaultMessage: "All messages including muted channels"});
                 case "channels-public":
+                    if (page_params.is_spectator || current_user.is_guest) {
+                        return $t({
+                            defaultMessage: "Messages in all public channels that you can view",
+                        });
+                    }
                     return $t({defaultMessage: "Messages in all public channels"});
+                case "channels-web-public":
+                    return $t({defaultMessage: "Messages in all web-public channels"});
                 case "is-starred":
                     return $t({defaultMessage: "Starred messages"});
                 case "is-mentioned":
@@ -1532,7 +1534,10 @@ export class Filter {
     }
 
     allow_use_first_unread_when_narrowing(): boolean {
-        return this.can_mark_messages_read() || this.has_operator("is");
+        return (
+            this.can_mark_messages_read() ||
+            (this.has_operator("is") && !this.has_operand("is", "starred"))
+        );
     }
 
     contains_only_private_messages(): boolean {
@@ -1574,12 +1579,6 @@ export class Filter {
             // rendered by the backend; links, attachments, and images
             // are not handled properly by the local echo Markdown
             // processor.
-            return false;
-        }
-
-        // TODO: It's not clear why `channels:` filters would not be
-        // applicable locally.
-        if (this.has_operator("channels") || this.has_negated_operand("channels", "public")) {
             return false;
         }
 
@@ -1772,6 +1771,14 @@ export class Filter {
         return false;
     }
 
+    is_channel_view(): boolean {
+        return (
+            this._terms.length === 1 &&
+            this._terms[0] !== undefined &&
+            Filter.term_type(this._terms[0]) === "channel"
+        );
+    }
+
     may_contain_multiple_conversations(): boolean {
         return !(
             (this.has_operator("channel") && this.has_operator("topic")) ||
@@ -1852,6 +1859,8 @@ export class Filter {
             "not-is-resolved",
             "channels-public",
             "not-channels-public",
+            "channels-web-public",
+            "not-channels-web-public",
             "is-muted",
             "not-is-muted",
             "in-home",

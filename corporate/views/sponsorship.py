@@ -24,6 +24,14 @@ def sponsorship_page(request: HttpRequest) -> HttpResponse:
     assert user.is_authenticated
 
     billing_session = RealmBillingSession(user)
+    if billing_session.realm.demo_organization_scheduled_deletion_date is not None:
+        return render(
+            request,
+            "corporate/billing/demo_organization_billing_disabled.html",
+            context={
+                "sponsorship_request": True,
+            },
+        )
     context = billing_session.get_sponsorship_request_context()
     if context is None or not user.has_billing_access:
         return HttpResponseRedirect(reverse("billing_page"))

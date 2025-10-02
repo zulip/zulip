@@ -24,7 +24,7 @@ from django.core.mail.backends.smtp import EmailBackend
 from django.core.mail.message import sanitize_address
 from django.core.management import CommandError
 from django.db import transaction
-from django.db.models import QuerySet
+from django.db.models import Exists, OuterRef, QuerySet
 from django.db.models.functions import Lower
 from django.http import HttpRequest
 from django.template import loader
@@ -257,7 +257,7 @@ class NoEmailArgumentError(CommandError):
 
 # When changing the arguments to this function, you may need to write a
 # migration to change or remove any emails in ScheduledEmail.
-def send_email(
+def send_immediate_email(
     template_prefix: str,
     to_user_ids: list[int] | None = None,
     to_emails: list[str] | None = None,
@@ -326,6 +326,60 @@ def send_email(
         raise EmailNotDeliveredError
 
 
+def send_email(
+    template_prefix: str,
+    to_user_ids: list[int] | None = None,
+    to_emails: list[str] | None = None,
+    from_name: str | None = None,
+    from_address: str | None = None,
+    reply_to_email: str | None = None,
+    language: str | None = None,
+    date: str | None = None,
+    context: Mapping[str, Any] = {},
+    realm: Realm | None = None,
+    connection: BaseEmailBackend | None = None,
+    dry_run: bool = False,
+    request: HttpRequest | None = None,
+) -> None:
+    if settings.EMAIL_ALWAYS_ENQUEUED and not dry_run:
+        queue_event_on_commit(
+            "email_senders",
+            dict(
+                template_prefix=template_prefix,
+                to_user_ids=to_user_ids,
+                to_emails=to_emails,
+                from_name=from_name,
+                from_address=from_address,
+                reply_to_email=reply_to_email,
+                language=language,
+                date=date,
+                context=context,
+                realm_id=realm.id if realm is not None else None,
+            ),
+        )
+    else:
+        if settings.TEST_SUITE:
+            # In tests, verify that the context object is
+            # JSON-serializable, as may happen in production using
+            # EMAIL_ALWAYS_ENQUEUED, above.
+            context = orjson.loads(orjson.dumps(context))
+        send_immediate_email(
+            template_prefix,
+            to_user_ids,
+            to_emails,
+            from_name,
+            from_address,
+            reply_to_email,
+            language,
+            date,
+            context,
+            realm,
+            connection,
+            dry_run,
+            request,
+        )
+
+
 @backoff.on_exception(backoff.expo, OSError, max_tries=MAX_CONNECTION_TRIES, logger=None)
 def initialize_connection(connection: BaseEmailBackend | None = None) -> BaseEmailBackend:
     if not connection:
@@ -382,7 +436,7 @@ def send_future_email(
     }
 
     if settings.DEVELOPMENT_LOG_EMAILS:
-        send_email(
+        send_immediate_email(
             template_prefix,
             to_user_ids=to_user_ids,
             to_emails=to_emails,
@@ -476,25 +530,27 @@ def clear_scheduled_invitation_emails(email: str) -> None:
 
 
 @transaction.atomic(savepoint=False)
-def clear_scheduled_emails(user_id: int, email_type: int | None = None) -> None:
+def clear_scheduled_emails(user_ids: list[int], email_type: int | None = None) -> None:
     # We need to obtain a FOR UPDATE lock on the selected rows to keep a concurrent
     # execution of this function (or something else) from deleting them before we access
     # the .users attribute.
-    items = (
-        ScheduledEmail.objects.filter(users__in=[user_id])
-        .prefetch_related("users")
-        .select_for_update()
-    )
+    items = ScheduledEmail.objects.filter(users__in=user_ids).select_for_update()
     if email_type is not None:
         items = items.filter(type=email_type)
+    item_ids = list(items.values_list("id", flat=True))
+    if not item_ids:
+        return
 
-    for item in items:
-        item.users.remove(user_id)
-        if not item.users.all().exists():
-            # Due to our transaction holding the row lock we have a guarantee
-            # that the obtained COUNT is accurate, thus we can reliably use it
-            # to decide whether to delete the ScheduledEmail row.
-            item.delete()
+    through_model = ScheduledEmail.users.through
+    through_model.objects.filter(
+        scheduledemail_id__in=item_ids, userprofile_id__in=user_ids
+    ).delete()
+
+    # Due to our transaction holding the row lock we have a guarantee
+    # that the obtained COUNT is accurate, thus we can reliably use it
+    # to decide whether to delete the ScheduledEmail row.
+    subquery = through_model.objects.filter(scheduledemail_id=OuterRef("id"))
+    ScheduledEmail.objects.filter(id__in=item_ids).exclude(Exists(subquery)).delete()
 
 
 def handle_send_email_format_changes(job: dict[str, Any]) -> None:
@@ -603,7 +659,7 @@ def custom_email_sender(
     ) -> None:
         assert to_user_id is not None or to_email is not None
         with suppress(EmailNotDeliveredError):
-            send_email(
+            send_immediate_email(
                 email_id,
                 to_user_ids=[to_user_id] if to_user_id is not None else None,
                 to_emails=[to_email] if to_email is not None else None,
@@ -723,6 +779,9 @@ def maybe_remove_from_suppression_list(email: str) -> None:
 
     import boto3
     import botocore
+
+    if boto3.session.Session().get_credentials() is None:
+        return
 
     with contextlib.suppress(botocore.exceptions.ClientError):
         boto3.client("sesv2", region_name=maybe_aws[1]).delete_suppressed_destination(

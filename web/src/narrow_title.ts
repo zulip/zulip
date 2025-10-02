@@ -1,4 +1,3 @@
-import _ from "lodash";
 import assert from "minimalistic-assert";
 
 import {electron_bridge} from "./electron_bridge.ts";
@@ -59,29 +58,6 @@ export function compute_narrow_title(filter?: Filter): string {
         }
         if (emails.includes(",")) {
             return $t({defaultMessage: "Invalid users"});
-        }
-        return $t({defaultMessage: "Invalid user"});
-    }
-
-    if (
-        _.isEqual(filter._sorted_term_types, ["sender", "has-reaction"]) &&
-        filter.operands("sender")[0] === people.my_current_email()
-    ) {
-        return $t({defaultMessage: "Reactions"});
-    }
-
-    if (filter.has_operator("sender")) {
-        const user = people.get_by_email(filter.operands("sender")[0]!);
-        if (user) {
-            if (people.is_my_user_id(user.user_id)) {
-                return $t({defaultMessage: "Messages sent by you"});
-            }
-            return $t(
-                {defaultMessage: "Messages sent by {sender}"},
-                {
-                    sender: user.full_name,
-                },
-            );
         }
         return $t({defaultMessage: "Invalid user"});
     }

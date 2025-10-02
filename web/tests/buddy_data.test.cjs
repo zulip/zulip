@@ -4,6 +4,8 @@ const assert = require("node:assert/strict");
 
 const _ = require("lodash");
 
+const {make_realm} = require("./lib/example_realm.cjs");
+const {make_message_list} = require("./lib/message_list.cjs");
 const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {noop, run_test} = require("./lib/test.cjs");
 const {page_params} = require("./lib/zpage_params.cjs");
@@ -21,19 +23,17 @@ mock_esm("../src/buddy_list", {
 const compose_fade_helper = zrequire("compose_fade_helper");
 const activity_ui = zrequire("activity_ui");
 const muted_users = zrequire("muted_users");
-const narrow_state = zrequire("narrow_state");
 const peer_data = zrequire("peer_data");
 const people = zrequire("people");
 const presence = zrequire("presence");
 const stream_data = zrequire("stream_data");
 const user_status = zrequire("user_status");
 const buddy_data = zrequire("buddy_data");
-const {Filter} = zrequire("filter");
 const message_lists = zrequire("message_lists");
 const {set_current_user, set_realm} = zrequire("state_data");
 const {initialize_user_settings} = zrequire("user_settings");
 
-const realm = {};
+const realm = make_realm();
 set_realm(realm);
 const current_user = {};
 set_current_user(current_user);
@@ -369,9 +369,10 @@ test("always show me", () => {
     assert.deepEqual(buddy_data.get_filtered_and_sorted_user_ids(""), [me.user_id]);
 });
 
-test("always show pm users", ({override_rewire}) => {
+test("always show pm users", () => {
     people.add_active_user(selma);
-    override_rewire(narrow_state, "pm_ids_set", () => new Set([selma.user_id]));
+    message_lists.set_current(make_message_list([{operator: "dm", operand: selma.email}]));
+
     assert.deepEqual(buddy_data.get_filtered_and_sorted_user_ids(""), [me.user_id, selma.user_id]);
 });
 
@@ -401,7 +402,7 @@ test("show offline channel subscribers for small channels", ({override_rewire}) 
 
     const stream_id = 1001;
     const sub = {name: "Rome", subscribed: true, stream_id};
-    stream_data.add_sub(sub);
+    stream_data.add_sub_for_tests(sub);
     peer_data.set_subscribers(stream_id, [
         selma.user_id,
         alice.user_id,
@@ -410,7 +411,11 @@ test("show offline channel subscribers for small channels", ({override_rewire}) 
         me.user_id,
     ]);
 
-    override_rewire(narrow_state, "stream_id", () => stream_id);
+    const filter_terms = [
+        {operator: "channel", operand: sub.stream_id},
+        {operator: "topic", operand: "Foo"},
+    ];
+    message_lists.set_current(make_message_list(filter_terms));
     assert.deepEqual(buddy_data.get_filtered_and_sorted_user_ids(""), [
         me.user_id,
         alice.user_id,
@@ -424,27 +429,22 @@ test("show offline channel subscribers for small channels", ({override_rewire}) 
     assert.deepEqual(buddy_data.get_filtered_and_sorted_user_ids(""), [me.user_id, alice.user_id]);
 });
 
-test("get_conversation_participants", ({override_rewire}) => {
+test("get_conversation_participants", () => {
     people.add_active_user(selma);
 
     const rome_sub = {name: "Rome", subscribed: true, stream_id: 1001};
-    stream_data.add_sub(rome_sub);
+    stream_data.add_sub_for_tests(rome_sub);
     peer_data.set_subscribers(rome_sub.stream_id, [selma.user_id, me.user_id]);
 
-    const filter = new Filter([
-        {operator: "channel", operand: rome_sub.channel_id},
+    const filter_terms = [
+        {operator: "channel", operand: rome_sub.stream_id},
         {operator: "topic", operand: "Foo"},
-    ]);
-    message_lists.set_current({
-        data: {
-            filter,
-            participants: {
-                visible: () => new Set([selma.user_id]),
-            },
-        },
-    });
-    override_rewire(narrow_state, "stream_id", () => rome_sub.stream_id);
-    override_rewire(narrow_state, "topic", () => "Foo");
+    ];
+    message_lists.set_current(
+        make_message_list(filter_terms, {
+            visible_participants: [selma.user_id],
+        }),
+    );
 
     activity_ui.rerender_user_sidebar_participants();
     assert.deepEqual(
@@ -462,10 +462,8 @@ test("level", ({override}) => {
 
     const server_time = 9999;
     const info = {
-        website: {
-            status: "active",
-            timestamp: server_time,
-        },
+        active_timestamp: 9999,
+        idle_timestamp: 9999,
     };
     presence.update_info_from_event(me.user_id, info, server_time);
     presence.update_info_from_event(selma.user_id, info, server_time);
@@ -488,7 +486,7 @@ test("compare_function", () => {
 
     const stream_id = 1001;
     const sub = {name: "Rome", subscribed: true, stream_id};
-    stream_data.add_sub(sub);
+    stream_data.add_sub_for_tests(sub);
     people.add_active_user(alice);
     people.add_active_user(fred);
 
@@ -571,12 +569,6 @@ test("user_last_seen_time_status", ({override}) => {
 
     assert.equal(buddy_data.user_last_seen_time_status(selma.user_id), "translated: Active now");
 
-    override(realm, "realm_is_zephyr_mirror_realm", true);
-    assert.equal(
-        buddy_data.user_last_seen_time_status(old_user.user_id),
-        "translated: Activity unknown",
-    );
-    override(realm, "realm_is_zephyr_mirror_realm", false);
     assert.equal(
         buddy_data.user_last_seen_time_status(old_user.user_id),
         "translated: Not active in the last year",

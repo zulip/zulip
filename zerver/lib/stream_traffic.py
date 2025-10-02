@@ -9,10 +9,6 @@ from zerver.models import Realm
 
 
 def get_streams_traffic(stream_ids: set[int], realm: Realm) -> dict[int, int] | None:
-    if realm.is_zephyr_mirror_realm:
-        # We do not need traffic data for streams in zephyr mirroring realm.
-        return None
-
     stat = COUNT_STATS["messages_in_stream:is_bot:day"]
     traffic_from = timezone_now() - timedelta(days=28)
 
@@ -24,10 +20,10 @@ def get_streams_traffic(stream_ids: set[int], realm: Realm) -> dict[int, int] | 
         end_time__gt=traffic_from,
     )
 
-    traffic_list = query.values("stream_id").annotate(value=Sum("value"))
+    traffic_list = query.values("stream_id").annotate(sum_value=Sum("value"))
     traffic_dict = {}
     for traffic in traffic_list:
-        traffic_dict[traffic["stream_id"]] = traffic["value"]
+        traffic_dict[traffic["stream_id"]] = traffic["sum_value"]
 
     return traffic_dict
 

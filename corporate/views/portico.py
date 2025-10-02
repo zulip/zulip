@@ -1,6 +1,5 @@
 from dataclasses import asdict, dataclass
 from typing import TYPE_CHECKING
-from urllib.parse import urlencode
 
 import orjson
 from django.conf import settings
@@ -14,7 +13,8 @@ from corporate.lib.decorator import (
     authenticated_remote_realm_management_endpoint,
     authenticated_remote_server_management_endpoint,
 )
-from corporate.models import CustomerPlan, get_current_plan_by_customer, get_customer_by_realm
+from corporate.models.customers import get_customer_by_realm
+from corporate.models.plans import CustomerPlan, get_current_plan_by_customer
 from zerver.context_processors import get_realm_from_request, latest_info_context
 from zerver.decorator import add_google_analytics, zulip_login_required
 from zerver.lib.github import (
@@ -103,7 +103,7 @@ def plans_view(request: HttpRequest) -> HttpResponse:
     )
     if is_subdomain_root_or_alias(request):
         # If we're on the root domain, we make this link first ask you which organization.
-        context.sponsorship_url = f"/accounts/go/?{urlencode({'next': context.sponsorship_url})}"
+        context.sponsorship_url = reverse("realm_redirect", query={"next": context.sponsorship_url})
 
     if realm is not None:
         if realm.plan_type == Realm.PLAN_TYPE_SELF_HOSTED and settings.PRODUCTION:

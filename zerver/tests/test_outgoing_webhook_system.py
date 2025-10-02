@@ -17,7 +17,7 @@ from zerver.lib.outgoing_webhook import (
 )
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.topic import TOPIC_NAME
-from zerver.lib.url_encoding import near_message_url
+from zerver.lib.url_encoding import message_link_url
 from zerver.lib.users import add_service
 from zerver.models import Recipient, Service, UserProfile
 from zerver.models.realms import get_realm
@@ -518,7 +518,7 @@ class TestOutgoingWebhookMessaging(ZulipTestCase):
                 "id": message_id,
                 "type": "",
             }
-            message_url = near_message_url(realm, message)
+            message_url = message_link_url(realm, message)
 
             last_message = self.get_last_message()
             self.assertEqual(
@@ -602,7 +602,7 @@ class TestOutgoingWebhookMessaging(ZulipTestCase):
             "id": sent_message_id,
             "type": "stream",
         }
-        message_url = near_message_url(realm, message_dict)
+        message_url = message_link_url(realm, message_dict)
         self.assertEqual(
             last_message.content,
             f"[A message]({message_url}) to your bot @_**{bot.full_name}** triggered an outgoing webhook.\n"

@@ -1,4 +1,4 @@
-from typing import Annotated, TypeAlias
+from typing import Annotated, Literal, TypeAlias
 
 from annotated_types import Len
 from django.conf import settings
@@ -16,6 +16,7 @@ from zerver.lib.request import RequestNotes
 from zerver.lib.response import json_success
 from zerver.lib.typed_endpoint import ApiParamConfig, DocumentationStatus, typed_endpoint
 from zerver.models import Stream, UserProfile
+from zerver.views.streams import parse_include_subscribers
 
 
 def _default_all_public_streams(user_profile: UserProfile, all_public_streams: bool | None) -> bool:
@@ -40,19 +41,19 @@ def events_register_backend(
     request: HttpRequest,
     maybe_user_profile: UserProfile | AnonymousUser,
     *,
-    apply_markdown: Json[bool] = False,
-    client_gravatar_raw: Annotated[Json[bool | None], ApiParamConfig("client_gravatar")] = None,
-    slim_presence: Json[bool] = False,
-    presence_history_limit_days: Json[int] | None = None,
     all_public_streams: Json[bool] | None = None,
-    include_subscribers: Json[bool] = False,
+    apply_markdown: Json[bool] = False,
     client_capabilities: Json[ClientCapabilities] = DEFAULT_CLIENT_CAPABILITIES,
+    client_gravatar_raw: Annotated[Json[bool | None], ApiParamConfig("client_gravatar")] = None,
     event_types: Json[list[str]] | None = None,
     fetch_event_types: Json[list[str]] | None = None,
+    include_subscribers: Literal["true", "false", "partial"] = "false",
     narrow: Json[NarrowT] | None = None,
+    presence_history_limit_days: Json[int] | None = None,
     queue_lifespan_secs: Annotated[
         Json[int], ApiParamConfig(documentation_status=DocumentationStatus.DOCUMENTATION_PENDING)
     ] = 0,
+    slim_presence: Json[bool] = False,
 ) -> HttpResponse:
     if narrow is None:
         narrow = []
@@ -60,6 +61,8 @@ def events_register_backend(
         client_gravatar = maybe_user_profile.is_authenticated
     else:
         client_gravatar = client_gravatar_raw
+
+    parsed_include_subscribers = parse_include_subscribers(include_subscribers)
 
     if maybe_user_profile.is_authenticated:
         user_profile = maybe_user_profile
@@ -84,7 +87,7 @@ def events_register_backend(
             raise JsonableError(
                 _("Invalid '{key}' parameter for anonymous request").format(key="client_gravatar")
             )
-        if include_subscribers:
+        if parsed_include_subscribers:
             raise JsonableError(
                 _("Invalid '{key}' parameter for anonymous request").format(
                     key="include_subscribers"
@@ -123,7 +126,7 @@ def events_register_backend(
         queue_lifespan_secs,
         all_public_streams,
         narrow=modern_narrow,
-        include_subscribers=include_subscribers,
+        include_subscribers=parsed_include_subscribers,
         include_streams=include_streams,
         client_capabilities=client_capabilities,
         fetch_event_types=fetch_event_types,

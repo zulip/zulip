@@ -2,6 +2,7 @@
 import logging
 import os
 import sys
+import time
 from argparse import ArgumentParser, BooleanOptionalAction, RawTextHelpFormatter, _ActionsContainer
 from dataclasses import dataclass
 from functools import reduce, wraps
@@ -14,6 +15,7 @@ from django.core.management.base import BaseCommand, CommandError, CommandParser
 from django.db.models import Q, QuerySet
 from typing_extensions import override
 
+from scripts.lib.zulip_tools import LOCK_DIR as DEPLOYMENT_LOCK_DIR
 from zerver.lib.context_managers import lockfile_nonblocking
 from zerver.lib.initial_password import initial_password
 from zerver.models import Client, Realm, UserProfile
@@ -62,6 +64,26 @@ def abort_unless_locked(handle_func: HandleMethod) -> HandleMethod:
                 )
                 sys.exit(1)
             handle_func(self, *args, **kwargs)
+
+    return our_handle
+
+
+def abort_cron_during_deploy(handle_func: HandleMethod) -> HandleMethod:
+    @wraps(handle_func)
+    def our_handle(self: BaseCommand, *args: Any, **kwargs: Any) -> None:
+        # For safety, we only trust the lock directory if it was
+        # created within the last hour -- otherwise, a spurious
+        # deploy lock could linger and block all hourly crons.
+        if (
+            os.environ.get("RUNNING_UNDER_CRON")
+            and os.path.exists(DEPLOYMENT_LOCK_DIR)
+            and time.time() - os.path.getctime(DEPLOYMENT_LOCK_DIR) < 3600
+        ):  # nocoverage
+            self.stdout.write(
+                self.style.ERROR("Deployment in process; aborting cron management command.")
+            )
+            sys.exit(1)
+        handle_func(self, *args, **kwargs)
 
     return our_handle
 

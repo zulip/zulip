@@ -1,4 +1,4 @@
-import type {z} from "zod";
+import type * as z from "zod/mini";
 
 import * as blueslip from "./blueslip.ts";
 import {FoldDict} from "./fold_dict.ts";
@@ -39,6 +39,10 @@ export let first_unread_unmuted_message_id = Number.POSITIVE_INFINITY;
 
 export function clear_old_unreads_missing(): void {
     old_unreads_missing = false;
+}
+
+export function set_old_unreads_missing_for_tests(value: boolean): void {
+    old_unreads_missing = value;
 }
 
 export const unread_mentions_counter = new Set<number>();
@@ -354,10 +358,10 @@ class UnreadTopicCounter {
         stream_id: number;
         topic_dict: FoldDict<TopicHistoryEntry>;
     }): {pretty_name: string; message_id: number}[] {
-        /* Clients have essentially complete unread data, but
-         * stream_topic_history.is_complete_for_stream_id() can be
-         * false. In that situation, this function helps ensure that
-         * we include all topics with unread messages in data that.
+        /* Clients have essentially complete unread data. If we don't
+         * yet have full topic history for the channel, we need to
+         * display the union of topics with unread messages and locally
+         * available topic history data.
          *
          * It will return all topics in the provided stream with a
          * nonzero unread count that are not already present in the
@@ -912,6 +916,8 @@ export type FullUnreadCountsData = {
     stream_unread_messages: number;
     followed_topic_unread_messages_count: number;
     followed_topic_unread_messages_with_mention_count: number;
+    unfollowed_topic_unread_messages_count: number;
+    muted_topic_unread_messages_count: number;
     stream_count: Map<number, StreamCountInfo>;
     streams_with_mentions: number[];
     streams_with_unmuted_mentions: number[];
@@ -938,6 +944,10 @@ export function get_counts(): FullUnreadCountsData {
         followed_topic_unread_messages_count: topic_res.followed_topic_unread_messages,
         followed_topic_unread_messages_with_mention_count:
             unread_topic_counter.get_followed_topic_unread_mentions(),
+        unfollowed_topic_unread_messages_count:
+            unread_messages.size - topic_res.followed_topic_unread_messages - pm_res.total_count,
+        muted_topic_unread_messages_count:
+            unread_messages.size - topic_res.stream_unread_messages - pm_res.total_count,
         stream_count: topic_res.stream_count,
         streams_with_mentions: [...unread_topic_counter.get_streams_with_unread_mentions()],
         streams_with_unmuted_mentions: [
@@ -1000,6 +1010,14 @@ export function unread_count_info_for_stream(stream_id: number): StreamCountInfo
 
 export function num_unread_for_topic(stream_id: number, topic_name: string): number {
     return unread_topic_counter.get(stream_id, topic_name);
+}
+
+export function get_channels_with_unread_mentions(): Set<number> {
+    return unread_topic_counter.get_streams_with_unread_mentions();
+}
+
+export function get_channels_with_unmuted_mentions(): Set<number> {
+    return unread_topic_counter.get_streams_with_unmuted_mentions();
 }
 
 export function stream_has_any_unread_mentions(stream_id: number): boolean {

@@ -2,6 +2,7 @@
 
 const assert = require("node:assert/strict");
 
+const {make_message_list} = require("./lib/message_list.cjs");
 const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
 
@@ -11,7 +12,6 @@ mock_esm("../src/people.ts", {
 
 const all_messages_data = zrequire("../src/all_messages_data");
 
-const {Filter} = zrequire("../src/filter");
 const {MessageListData} = zrequire("../src/message_list_data");
 const narrow_state = zrequire("narrow_state");
 const message_view = zrequire("message_view");
@@ -19,12 +19,9 @@ const message_lists = zrequire("message_lists");
 const resolved_topic = zrequire("../shared/src/resolved_topic");
 
 function verify_fixture(fixture, override_rewire) {
-    const filter = new Filter(fixture.filter_terms);
-    message_lists.set_current({
-        data: {
-            filter,
-        },
-    });
+    const msg_list = make_message_list(fixture.filter_terms);
+    const filter = msg_list.data.filter;
+    message_lists.set_current(msg_list);
 
     // Make sure our simulated tests data satisfies the
     // invariant that the first unread message we find
@@ -91,7 +88,7 @@ function test_fixture(label, fixture) {
 test_fixture("near after unreads", {
     // Current near: behavior is to ignore the unreads and take you
     // to the target message, with reading disabled.
-    filter_terms: [{operator: "near", operand: 42}],
+    filter_terms: [{operator: "near", operand: "42"}],
     target_id: 42,
     unread_info: {
         flavor: "found",
@@ -114,7 +111,7 @@ test_fixture("near after unreads", {
 test_fixture("near not in message list", {
     // Current behavior is to ignore the unreads and take you
     // to the closest messages, with reading disabled.
-    filter_terms: [{operator: "near", operand: 42}],
+    filter_terms: [{operator: "near", operand: "42"}],
     target_id: 42,
     unread_info: {
         flavor: "found",
@@ -135,7 +132,7 @@ test_fixture("near not in message list", {
 });
 
 test_fixture("near before unreads", {
-    filter_terms: [{operator: "near", operand: 42}],
+    filter_terms: [{operator: "near", operand: "42"}],
     target_id: 42,
     unread_info: {
         flavor: "found",
@@ -156,7 +153,7 @@ test_fixture("near before unreads", {
 });
 
 test_fixture("near with no unreads", {
-    filter_terms: [{operator: "near", operand: 42}],
+    filter_terms: [{operator: "near", operand: "42"}],
     target_id: 42,
     unread_info: {
         flavor: "not_found",
@@ -331,7 +328,7 @@ test_fixture("search", {
 test_fixture("search near", {
     filter_terms: [
         {operator: "search", operand: "whatever"},
-        {operator: "near", operand: 22},
+        {operator: "near", operand: "22"},
     ],
     target_id: 22,
     unread_info: {

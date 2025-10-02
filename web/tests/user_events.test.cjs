@@ -2,10 +2,10 @@
 
 const assert = require("node:assert/strict");
 
+const {make_realm} = require("./lib/example_realm.cjs");
 const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
 const blueslip = require("./lib/zblueslip.cjs");
-const $ = require("./lib/zjquery.cjs");
 
 const message_live_update = mock_esm("../src/message_live_update");
 const navbar_alerts = mock_esm("../src/navbar_alerts");
@@ -71,7 +71,7 @@ const user_events = zrequire("user_events");
 
 const current_user = {};
 set_current_user(current_user);
-set_realm({});
+set_realm(make_realm());
 
 const me = {
     email: "me@example.com",
@@ -130,7 +130,7 @@ run_test("updates", ({override}) => {
     });
     person = people.get_by_email(isaac.email);
     assert.equal(person.full_name, "Isaac Newton");
-    assert.equal(person.is_moderator, false);
+    assert.equal(person.is_moderator, true);
     assert.equal(person.is_admin, true);
     assert.equal(person.role, settings_config.user_role_values.admin.code);
 
@@ -219,8 +219,6 @@ run_test("updates", ({override}) => {
     assert.equal(person.full_name, "Sir Isaac");
     assert.equal(user_id, isaac.user_id);
     assert.equal(person.avatar_url, avatar_url);
-
-    $("#personal-menu .header-button-avatar").css = noop;
 
     user_events.update_person({user_id: me.user_id, avatar_url: "http://gravatar.com/789456"});
     person = people.get_by_email(me.email);

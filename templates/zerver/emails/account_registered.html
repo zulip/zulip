@@ -30,18 +30,20 @@
 
 <p>
     {% trans apps_page_link="https://zulip.com/apps/" %}You will use the following info to log into the Zulip web, <a href="{{ apps_page_link }}">mobile and desktop</a> apps:{% endtrans %}
-    <ul>
-        <li>{% trans organization_url=macros.link_tag(realm_url) %}Organization URL: {{ organization_url }}{% endtrans %}<br /></li>
-        {% if ldap %}
-            {% if ldap_username %}
-            <li>{% trans %}Your username: {{ ldap_username }}{% endtrans %}<br /></li>
-            {% else %}
-            <li>{{ _('Use your LDAP account to log in') }}<br /></li>
-            {% endif %}
+</p>
+<ul>
+    <li>{% trans organization_url=macros.link_tag(realm_url) %}Organization URL: {{ organization_url }}{% endtrans %}<br /></li>
+    {% if ldap %}
+        {% if ldap_username %}
+        <li>{% trans %}Your username: {{ ldap_username }}{% endtrans %}<br /></li>
         {% else %}
-            <li>{% trans email=macros.email_tag(email) %}Your account email: {{ email }}{% endtrans %}<br /></li>
+        <li>{{ _('Use your LDAP account to log in') }}<br /></li>
         {% endif %}
-    </ul>
+    {% else %}
+        <li>{% trans email=macros.email_tag(email) %}Your account email: {{ email }}{% endtrans %}<br /></li>
+    {% endif %}
+</ul>
+<p>
     <a class="button" href="{{ realm_url }}">{{ _('Go to organization') }}</a>
 </p>
 

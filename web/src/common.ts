@@ -11,6 +11,8 @@ export function phrase_match(query: string, phrase: string): boolean {
     return (" " + phrase.toLowerCase()).includes(" " + query.toLowerCase());
 }
 
+// Any changes to this function should be followed by a check for changes needed
+// to adjust_mac_kbd_tags of starlight_help/src/scripts/adjust_mac_kbd_tags.ts.
 const keys_map = new Map([
     ["Backspace", "Delete"],
     ["Enter", "Return"],
@@ -18,6 +20,8 @@ const keys_map = new Map([
     ["Alt", "⌥"],
 ]);
 
+// Any changes to this function should be followed by a check for changes needed
+// to adjust_mac_kbd_tags of starlight_help/src/scripts/adjust_mac_kbd_tags.ts.
 export function has_mac_keyboard(): boolean {
     // eslint-disable-next-line @typescript-eslint/no-deprecated
     return /mac/i.test(navigator.platform);
@@ -25,6 +29,8 @@ export function has_mac_keyboard(): boolean {
 
 // We convert the <kbd> tags used for keyboard shortcuts to mac equivalent
 // key combinations, when we detect that the user is using a mac-style keyboard.
+// Any changes to this function should be followed by a check for changes needed
+// to adjust_mac_kbd_tags of starlight_help/src/scripts/adjust_mac_kbd_tags.ts.
 export function adjust_mac_kbd_tags(kbd_elem_class: string): void {
     if (!has_mac_keyboard()) {
         return;
@@ -96,6 +102,13 @@ export function adjust_shift_hotkey(hotkeys: string[]): boolean {
         }
     }
     return false;
+}
+
+export function is_printable_ascii(key: string): boolean {
+    // ASCII printable characters (character code 32-126) -> " " to "~".
+    // It includes letters, digits, punctuation marks, and a few
+    // miscellaneous symbols.
+    return key.length === 1 && key >= " " && key <= "~";
 }
 
 // See https://zulip.readthedocs.io/en/latest/development/authentication.html#password-form-implementation

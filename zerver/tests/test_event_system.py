@@ -11,9 +11,11 @@ from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 from typing_extensions import override
 
+from zerver.actions.channel_folders import check_add_channel_folder
 from zerver.actions.custom_profile_fields import try_update_realm_custom_profile_field
 from zerver.actions.message_send import check_send_message
 from zerver.actions.presence import do_update_user_presence
+from zerver.actions.streams import do_change_stream_folder
 from zerver.actions.user_settings import do_change_user_setting
 from zerver.actions.users import do_change_user_role
 from zerver.lib.event_schema import check_web_reload_client_event
@@ -197,6 +199,32 @@ class EventsEndpointTest(ZulipTestCase):
             "Invalid 'include_subscribers' parameter for anonymous request",
             status_code=400,
         )
+
+    def test_channel_folders_for_spectators(self) -> None:
+        realm = get_realm("zulip")
+        iago = self.example_user("iago")
+
+        frontend_folder = check_add_channel_folder(realm, "Frontend", "", acting_user=iago)
+        backend_folder = check_add_channel_folder(realm, "Backend", "", acting_user=iago)
+
+        result = self.client_post("/json/register")
+        self.assertEqual(result.status_code, 200)
+
+        channel_folders_data = orjson.loads(result.content)["channel_folders"]
+        self.assert_length(channel_folders_data, 0)
+
+        web_public_stream = get_stream("Rome", realm)
+        do_change_stream_folder(web_public_stream, frontend_folder, acting_user=iago)
+
+        public_stream = get_stream("Verona", realm)
+        do_change_stream_folder(public_stream, backend_folder, acting_user=iago)
+
+        result = self.client_post("/json/register")
+        self.assertEqual(result.status_code, 200)
+
+        channel_folders_data = orjson.loads(result.content)["channel_folders"]
+        self.assert_length(channel_folders_data, 1)
+        self.assertEqual(channel_folders_data[0]["name"], "Frontend")
 
     def test_events_register_endpoint_all_public_streams_access(self) -> None:
         guest_user = self.example_user("polonius")
@@ -1213,22 +1241,26 @@ class FetchQueriesTest(ZulipTestCase):
         self.login_user(user)
 
         with (
-            self.assert_database_query_count(44),
+            self.assert_database_query_count(48),
             mock.patch("zerver.lib.events.always_want") as want_mock,
         ):
             fetch_initial_state_data(user, realm=user.realm)
 
         expected_counts = dict(
             alert_words=1,
+            channel_folders=1,
             custom_profile_fields=1,
             default_streams=1,
             default_stream_groups=1,
             drafts=1,
+            giphy=0,
             message=1,
             muted_topics=1,
             muted_users=1,
+            navigation_views=1,
             onboarding_steps=1,
             presence=1,
+            push_device=1,
             # 2 of the 3 queries here are a single query that is used
             # for all the 'realm', 'stream', 'subscription'
             # and 'realm_user_groups' event types.
@@ -1247,6 +1279,7 @@ class FetchQueriesTest(ZulipTestCase):
             realm_user_groups=2,
             realm_user_settings_defaults=1,
             recent_private_conversations=1,
+            reminders=1,
             saved_snippets=1,
             scheduled_messages=1,
             starred_messages=1,
@@ -1264,7 +1297,6 @@ class FetchQueriesTest(ZulipTestCase):
             user_status=1,
             user_topic=1,
             video_calls=0,
-            giphy=0,
         )
 
         wanted_event_types = {item[0][0] for item in want_mock.call_args_list}

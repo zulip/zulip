@@ -1,8 +1,11 @@
 import $ from "jquery";
 import _ from "lodash";
 
+import * as drafts from "./drafts.ts";
 import type {Filter} from "./filter.ts";
 import {localstorage} from "./localstorage.ts";
+import * as message_reminder from "./message_reminder.ts";
+import * as navigation_views from "./navigation_views.ts";
 import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
 import * as resize from "./resize.ts";
@@ -20,7 +23,7 @@ const STATES = {
     CONDENSED: "condensed",
 };
 
-function restore_views_state(): void {
+export function restore_views_state(): void {
     if (page_params.is_spectator) {
         // Spectators should always see the expanded view.
         return;
@@ -51,15 +54,18 @@ export function update_starred_count(count: number, hidden: boolean): void {
 export function update_scheduled_messages_row(): void {
     const $scheduled_li = $(".top_left_scheduled_messages");
     const count = scheduled_messages.get_count();
-    if (count > 0) {
-        $scheduled_li.addClass("show-with-scheduled-messages");
-    } else {
-        $scheduled_li.removeClass("show-with-scheduled-messages");
-    }
+    $scheduled_li.toggleClass("hidden-by-filters", count === 0);
     ui_util.update_unread_count_in_dom($scheduled_li, count);
 }
 
-export function update_dom_with_unread_counts(
+export function update_reminders_row(): void {
+    const $reminders_li = $(".top_left_reminders");
+    const count = message_reminder.get_count();
+    $reminders_li.toggleClass("hidden-by-filters", count === 0);
+    ui_util.update_unread_count_in_dom($reminders_li, count);
+}
+
+export let update_dom_with_unread_counts = function (
     counts: unread.FullUnreadCountsData,
     skip_animations: boolean,
 ): void {
@@ -68,23 +74,23 @@ export function update_dom_with_unread_counts(
     // mentioned/home views have simple integer counts
     const $mentioned_li = $(".top_left_mentions");
     const $home_view_li = $(".selected-home-view");
-    const $streams_header = $("#streams_header");
+    const $condensed_view_li = $(".top_left_condensed_unread_marker");
     const $back_to_streams = $("#topics_header");
 
     ui_util.update_unread_count_in_dom($mentioned_li, counts.mentioned_message_count);
     ui_util.update_unread_count_in_dom($home_view_li, counts.home_unread_messages);
-    ui_util.update_unread_count_in_dom($streams_header, counts.stream_unread_messages);
+    ui_util.update_unread_count_in_dom($condensed_view_li, counts.home_unread_messages);
     ui_util.update_unread_count_in_dom($back_to_streams, counts.stream_unread_messages);
-
-    if (counts.home_unread_messages === 0) {
-        $home_view_li.find(".sidebar-menu-icon").addClass("hide");
-    } else {
-        $home_view_li.find(".sidebar-menu-icon").removeClass("hide");
-    }
 
     if (!skip_animations) {
         animate_mention_changes($mentioned_li, counts.mentioned_message_count);
     }
+};
+
+export function rewire_update_dom_with_unread_counts(
+    value: typeof update_dom_with_unread_counts,
+): void {
+    update_dom_with_unread_counts = value;
 }
 
 export let select_top_left_corner_item = function (narrow_to_activate: string): void {
@@ -137,6 +143,13 @@ export function handle_narrow_activated(filter: Filter): void {
     select_top_left_corner_item("");
 }
 
+export function expand_views($views_label_container: JQuery, $views_label_icon: JQuery): void {
+    $views_label_container.addClass("showing-expanded-navigation");
+    $views_label_container.removeClass("showing-condensed-navigation");
+    $views_label_icon.addClass("rotate-icon-down");
+    $views_label_icon.removeClass("rotate-icon-right");
+}
+
 function toggle_condensed_navigation_area(): void {
     const $views_label_container = $("#views-label-container");
     const $views_label_icon = $("#toggle-top-left-navigation-area-icon");
@@ -154,11 +167,7 @@ function toggle_condensed_navigation_area(): void {
         $views_label_icon.removeClass("rotate-icon-down");
         save_state(STATES.CONDENSED);
     } else {
-        // Toggle into the expanded state
-        $views_label_container.addClass("showing-expanded-navigation");
-        $views_label_container.removeClass("showing-condensed-navigation");
-        $views_label_icon.addClass("rotate-icon-down");
-        $views_label_icon.removeClass("rotate-icon-right");
+        expand_views($views_label_container, $views_label_icon);
         save_state(STATES.EXPANDED);
     }
     resize.resize_stream_filters_container();
@@ -166,22 +175,9 @@ function toggle_condensed_navigation_area(): void {
 
 export function animate_mention_changes($li: JQuery, new_mention_count: number): void {
     if (new_mention_count > last_mention_count) {
-        do_new_messages_animation($li);
+        ui_util.do_new_unread_animation($li);
     }
     last_mention_count = new_mention_count;
-}
-
-function do_new_messages_animation($li: JQuery): void {
-    $li.addClass("new_messages");
-    function mid_animation(): void {
-        $li.removeClass("new_messages");
-        $li.addClass("new_messages_fadeout");
-    }
-    function end_animation(): void {
-        $li.removeClass("new_messages_fadeout");
-    }
-    setTimeout(mid_animation, 3000);
-    setTimeout(end_animation, 6000);
 }
 
 export function highlight_inbox_view(): void {
@@ -227,7 +223,7 @@ export function reorder_left_sidebar_navigation_list(home_view: string): void {
     const $left_sidebar_condensed = $("#left-sidebar-navigation-list-condensed");
 
     // First, re-order the views back to the original default order, to preserve the relative order.
-    for (const key of Object.keys(settings_config.web_home_view_values).reverse()) {
+    for (const key of Object.keys(settings_config.web_home_view_values).toReversed()) {
         if (key !== home_view) {
             const $view = get_view_rows_by_view_name(key);
             $view.eq(1).prependTo($left_sidebar);
@@ -246,10 +242,6 @@ export function handle_home_view_changed(new_home_view: string): void {
     const $new_home_view = get_view_rows_by_view_name(new_home_view);
     const res = unread.get_counts();
 
-    if ($current_home_view.find(".sidebar-menu-icon").hasClass("hide")) {
-        $current_home_view.find(".sidebar-menu-icon").removeClass("hide");
-    }
-
     // Remove class from current home view
     $current_home_view.removeClass("selected-home-view");
 
@@ -260,7 +252,57 @@ export function handle_home_view_changed(new_home_view: string): void {
     update_dom_with_unread_counts(res, true);
 }
 
+export function get_built_in_primary_condensed_views(): navigation_views.BuiltInViewMetadata[] {
+    function score(view: navigation_views.BuiltInViewMetadata): number {
+        if (view.prioritize_in_condensed_view) {
+            return 1;
+        }
+        return 0;
+    }
+    // Get the top 5 prioritized views.
+    return navigation_views
+        .get_built_in_views()
+        .sort((view1, view2) => score(view2) - score(view1))
+        .slice(0, 5);
+    // TODO: Think about filtering out scheduled message and reminders views with UI to support less than 5 views.
+}
+
+export function get_built_in_popover_condensed_views(): navigation_views.BuiltInViewMetadata[] {
+    const visible_condensed_views = get_built_in_primary_condensed_views();
+    const all_views = navigation_views.get_built_in_views();
+    return all_views.filter((view) => {
+        if (view.fragment === "scheduled") {
+            const scheduled_message_count = scheduled_messages.get_count();
+            if (scheduled_message_count === 0) {
+                return false;
+            }
+            view.unread_count = scheduled_message_count;
+            return true;
+        }
+        if (view.fragment === "reminders") {
+            const reminders_count = message_reminder.get_count();
+            if (reminders_count === 0) {
+                return false;
+            }
+            view.unread_count = reminders_count;
+            return true;
+        }
+        if (view.fragment === "drafts") {
+            view.unread_count = drafts.draft_model.getDraftCount();
+        }
+        // Remove views that are already visible.
+        return !visible_condensed_views.some(
+            (visible_view) => visible_view.fragment === view.fragment,
+        );
+    });
+}
+
+export function get_built_in_views(): navigation_views.BuiltInViewMetadata[] {
+    return navigation_views.get_built_in_views();
+}
+
 export function initialize(): void {
+    update_reminders_row();
     update_scheduled_messages_row();
     restore_views_state();
 

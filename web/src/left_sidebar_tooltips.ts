@@ -1,9 +1,11 @@
 import $ from "jquery";
+import assert from "minimalistic-assert";
 import * as tippy from "tippy.js";
 
 import * as drafts from "./drafts.ts";
 import {$t} from "./i18n.ts";
 import * as scheduled_messages from "./scheduled_messages.ts";
+import * as settings_data from "./settings_data.ts";
 import * as starred_messages from "./starred_messages.ts";
 import {
     EXTRA_LONG_HOVER_DELAY,
@@ -136,11 +138,22 @@ export function initialize(): void {
     });
 
     tippy.delegate("body", {
-        target: [
-            "#streams_header .streams-tooltip-target",
-            "#add_streams_tooltip",
-            "#filter_streams_tooltip",
-        ].join(","),
+        target: ".stream-list-section-container .add-stream-tooltip",
+        appendTo: () => document.body,
+    });
+
+    tippy.delegate("body", {
+        target: "#add_streams_tooltip",
+        onShow(instance) {
+            const can_create_streams =
+                settings_data.user_can_create_private_streams() ||
+                settings_data.user_can_create_public_streams() ||
+                settings_data.user_can_create_web_public_streams();
+            const tooltip_text = can_create_streams
+                ? $t({defaultMessage: "Add channels"})
+                : $t({defaultMessage: "Browse channels"});
+            instance.setContent(tooltip_text);
+        },
         appendTo: () => document.body,
     });
 
@@ -193,7 +206,7 @@ export function initialize(): void {
         appendTo: () => document.body,
         onShow(instance) {
             let template = "show-left-sidebar-tooltip-template";
-            if ($("#left-sidebar-container").is(":visible")) {
+            if ($("#left-sidebar-container").css("display") !== "none") {
                 template = "hide-left-sidebar-tooltip-template";
             }
             $(instance.reference).attr("data-tooltip-template-id", template);
@@ -206,9 +219,30 @@ export function initialize(): void {
 
     tippy.delegate("body", {
         target: [
-            "#inbox-view .recipient_bar_icon",
+            "#inbox-view .visibility-policy-indicator .recipient_bar_icon",
             "#left-sidebar-container .visibility-policy-icon",
         ].join(","),
         ...topic_visibility_policy_tooltip_props,
+    });
+
+    tippy.delegate("body", {
+        target: ".stream-list-section-container .left-sidebar-title",
+        delay: LONG_HOVER_DELAY,
+        appendTo: () => document.body,
+        onShow(instance) {
+            const folder_name_element = instance.reference;
+            assert(folder_name_element instanceof HTMLElement);
+
+            if (folder_name_element.offsetWidth < folder_name_element.scrollWidth) {
+                const folder_name = folder_name_element.textContent ?? "";
+                instance.setContent(folder_name);
+                return undefined;
+            }
+
+            return false;
+        },
+        onHidden(instance) {
+            instance.destroy();
+        },
     });
 }

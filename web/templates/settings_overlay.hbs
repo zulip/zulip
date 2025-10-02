@@ -109,6 +109,11 @@
                         <div class="text">{{t "Default user settings" }}</div>
                         <i class="locked fa fa-lock tippy-zulip-tooltip" {{#if is_admin}}style="display: none;"{{/if}} data-tippy-content="{{t 'Only organization administrators can edit these settings.' }}"></i>
                     </li>
+                    <li class="sidebar-item collapse-org-settings {{#unless is_admin}}hide-org-settings{{/unless}}" tabindex="0" data-section="channel-folders">
+                        <i class="sidebar-item-icon zulip-icon zulip-icon-folder"></i>
+                        <div class="text">{{t "Channel folders" }}</div>
+                        <i class="locked fa fa-lock tippy-zulip-tooltip" {{#if is_admin}}style="display: none;"{{/if}} data-tippy-content="{{t 'Only organization administrators can edit these settings.' }}"></i>
+                    </li>
                     {{#unless is_guest}}
                     <li class="sidebar-item collapse-org-settings {{#unless is_admin}}hide-org-settings{{/unless}}" tabindex="0" data-section="default-channels-list">
                         <i class="sidebar-item-icon fa fa-exchange" aria-hidden="true"></i>

@@ -1,0 +1,36 @@
+---
+import EmojiCodes from "../../../static/generated/emoji/emoji_codes.json";
+
+const nameToCodePoint: Record<string, string> = EmojiCodes.name_to_codepoint;
+const rowHTML = (emoticon: string, codepoint: string, name: string) => `
+<tr>
+    <td><code>${emoticon}</code></td>
+    <td>
+        <img
+            src="/static/generated/emoji/images-google-64/${codepoint}.png"
+            alt="${name}"
+            class="emoji-big">
+    </td>
+</tr>
+`;
+
+let body = "";
+const emoticonConversions: Record<string, string> =
+    EmojiCodes.emoticon_conversions;
+for (const name of Object.keys(emoticonConversions)) {
+    const emoticon: string = emoticonConversions[name]!;
+    body += rowHTML(name, nameToCodePoint[emoticon.slice(1, -1)]!, emoticon);
+}
+---
+
+<table>
+    <thead>
+        <tr>
+            <th>Emoticon</th>
+            <th>Emoji</th>
+        </tr>
+    </thead>
+    <tbody>
+        <Fragment set:html={body} />
+    </tbody>
+</table>

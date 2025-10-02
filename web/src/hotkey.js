@@ -6,7 +6,7 @@ import * as activity_ui from "./activity_ui.ts";
 import * as browser_history from "./browser_history.ts";
 import * as color_picker_popover from "./color_picker_popover.ts";
 import * as common from "./common.ts";
-import * as compose from "./compose.js";
+import * as compose from "./compose.ts";
 import * as compose_actions from "./compose_actions.ts";
 import * as compose_banner from "./compose_banner.ts";
 import * as compose_recipient from "./compose_recipient.ts";
@@ -47,6 +47,7 @@ import * as reactions from "./reactions.ts";
 import * as read_receipts from "./read_receipts.ts";
 import * as recent_view_ui from "./recent_view_ui.ts";
 import * as recent_view_util from "./recent_view_util.ts";
+import * as reminders_overlay_ui from "./reminders_overlay_ui.ts";
 import * as scheduled_messages_overlay_ui from "./scheduled_messages_overlay_ui.ts";
 import * as search from "./search.ts";
 import {message_edit_history_visibility_policy_values} from "./settings_config.ts";
@@ -89,6 +90,23 @@ const color_picker_hotkeys = new Set([
     "enter",
 ]);
 
+// A set of characters that, on many keyboard layouts, require 'Shift' modifier key
+// to type, or where pressing the key with a 'Shift' modifier is expected to produce
+// a different character. We ignore the 'Shift' modifier when processing these keys,
+// and disallow assigning hotkeys that involve 'Shift' modifier combined with them.
+const KNOWN_IGNORE_SHIFT_MODIFIER_KEYS = new Set([
+    "*",
+    "+",
+    "=",
+    "-",
+    "/",
+    ":",
+    "<",
+    ">",
+    "?",
+    "@",
+]);
+
 // Note that multiple keys can map to the same event_name, which
 // we'll do in cases where they have the exact same semantics.
 // DON'T FORGET: update keyboard_shortcuts.html
@@ -99,57 +117,93 @@ const color_picker_hotkeys = new Set([
 // in the main message view with a selected message.
 // `message_view_only` hotkeys, as a group, are not processed if any
 // overlays are open (e.g. settings, streams, etc.).
-
-const keydown_shift_mappings = {
-    // these can be triggered by Shift + key only
-    9: {name: "shift_tab", message_view_only: false}, // Tab
-    32: {name: "shift_spacebar", message_view_only: true}, // space bar
-    37: {name: "left_arrow", message_view_only: false}, // left arrow
-    39: {name: "right_arrow", message_view_only: false}, // right arrow
-    38: {name: "up_arrow", message_view_only: false}, // up arrow
-    40: {name: "down_arrow", message_view_only: false}, // down arrow
-    72: {name: "view_edit_history", message_view_only: true}, // 'H'
-    78: {name: "narrow_to_next_unread_followed_topic", message_view_only: false}, // 'N'
-    86: {name: "toggle_read_receipts", message_view_only: true}, // 'V'
-};
-
-const keydown_unshift_mappings = {
-    // these can be triggered by key only (without Shift)
-    9: {name: "tab", message_view_only: false}, // Tab
-    27: {name: "escape", message_view_only: false}, // Esc
-    32: {name: "spacebar", message_view_only: true}, // space bar
-    33: {name: "page_up", message_view_only: true}, // PgUp
-    34: {name: "page_down", message_view_only: true}, // PgDn
-    35: {name: "end", message_view_only: true}, // End
-    36: {name: "home", message_view_only: true}, // Home
-    37: {name: "left_arrow", message_view_only: false}, // left arrow
-    39: {name: "right_arrow", message_view_only: false}, // right arrow
-    38: {name: "up_arrow", message_view_only: false}, // up arrow
-    40: {name: "down_arrow", message_view_only: false}, // down arrow
-};
-
-const keydown_ctrl_mappings = {
-    219: {name: "escape", message_view_only: false}, // '['
-};
-
-const keydown_cmd_or_ctrl_mappings = {
-    13: {name: "action_with_enter", message_view_only: true}, // 'Enter'
-    67: {name: "copy_with_c", message_view_only: false}, // 'C'
-    75: {name: "search_with_k", message_view_only: false}, // 'K'
-    83: {name: "star_message", message_view_only: true}, // 'S'
-    190: {name: "narrow_to_compose_target", message_view_only: true}, // '.'
-    222: {name: "open_saved_snippet_dropdown", message_view_only: true}, // '''
-};
-
-const keydown_alt_mappings = {
-    80: {name: "toggle_compose_preview", message_view_only: true}, // 'P'
-};
-
-const keydown_either_mappings = {
+const KEYDOWN_MAPPINGS = {
+    "Alt+P": {name: "toggle_compose_preview", message_view_only: true},
+    "Ctrl+[": {name: "escape", message_view_only: false},
+    "Cmd+Enter": {name: "action_with_enter", message_view_only: true},
+    "Cmd+C": {name: "copy_with_c", message_view_only: false},
+    "Cmd+K": {name: "search_with_k", message_view_only: false},
+    "Cmd+S": {name: "star_message", message_view_only: true},
+    "Cmd+.": {name: "narrow_to_compose_target", message_view_only: true},
+    "Cmd+'": {name: "open_saved_snippet_dropdown", message_view_only: true},
+    "Ctrl+Enter": {name: "action_with_enter", message_view_only: true},
+    "Ctrl+C": {name: "copy_with_c", message_view_only: false},
+    "Ctrl+K": {name: "search_with_k", message_view_only: false},
+    "Ctrl+S": {name: "star_message", message_view_only: true},
+    "Ctrl+.": {name: "narrow_to_compose_target", message_view_only: true},
+    "Ctrl+'": {name: "open_saved_snippet_dropdown", message_view_only: true},
+    "Shift+A": {name: "stream_cycle_backward", message_view_only: true},
+    "Shift+C": {name: "C_deprecated", message_view_only: true},
+    "Shift+D": {name: "stream_cycle_forward", message_view_only: true},
+    "Shift+G": {name: "G_end", message_view_only: true},
+    "Shift+H": {name: "view_edit_history", message_view_only: true},
+    "Shift+I": {name: "open_inbox", message_view_only: true},
+    "Shift+J": {name: "vim_page_down", message_view_only: true},
+    "Shift+K": {name: "vim_page_up", message_view_only: true},
+    "Shift+M": {name: "toggle_topic_visibility_policy", message_view_only: true},
+    "Shift+N": {name: "narrow_to_next_unread_followed_topic", message_view_only: false},
+    "Shift+P": {name: "narrow_private", message_view_only: true},
+    "Shift+R": {name: "respond_to_author", message_view_only: true},
+    "Shift+S": {name: "toggle_stream_subscription", message_view_only: true},
+    "Shift+U": {name: "mark_unread", message_view_only: true},
+    "Shift+V": [
+        {name: "view_selected_stream", message_view_only: false},
+        {name: "toggle_read_receipts", message_view_only: true},
+    ],
+    "Shift+Tab": {name: "shift_tab", message_view_only: false},
+    "Shift+ ": {name: "shift_spacebar", message_view_only: true},
+    "Shift+ArrowLeft": {name: "left_arrow", message_view_only: false},
+    "Shift+ArrowRight": {name: "right_arrow", message_view_only: false},
+    "Shift+ArrowUp": {name: "up_arrow", message_view_only: false},
+    "Shift+ArrowDown": {name: "down_arrow", message_view_only: false},
+    // The shortcut "A" dates from when this was called "All messages".
+    A: {name: "open_combined_feed", message_view_only: true},
+    C: {name: "compose", message_view_only: true},
+    D: {name: "open_drafts", message_view_only: true},
+    E: {name: "edit_message", message_view_only: true},
+    G: {name: "gear_menu", message_view_only: true},
+    H: {name: "vim_left", message_view_only: true},
+    I: {name: "message_actions", message_view_only: true},
+    J: {name: "vim_down", message_view_only: true},
+    K: {name: "vim_up", message_view_only: true},
+    L: {name: "vim_right", message_view_only: true},
+    M: {name: "move_message", message_view_only: true},
+    N: {name: "n_key", message_view_only: false},
+    P: {name: "p_key", message_view_only: false},
+    Q: {name: "query_streams", message_view_only: true},
+    R: {name: "reply_message", message_view_only: true},
+    S: {name: "toggle_conversation_view", message_view_only: true},
+    T: {name: "open_recent_view", message_view_only: true},
+    U: {name: "toggle_sender_info", message_view_only: true},
+    V: {name: "show_lightbox", message_view_only: true},
+    W: {name: "query_users", message_view_only: true},
+    X: {name: "compose_private_message", message_view_only: true},
+    Y: {name: "list_of_channel_topics", message_view_only: true},
+    Z: {name: "zoom_to_message_near", message_view_only: true},
+    Tab: {name: "tab", message_view_only: false},
+    Escape: {name: "escape", message_view_only: false},
+    " ": {name: "spacebar", message_view_only: true},
+    PageUp: {name: "page_up", message_view_only: true},
+    PageDown: {name: "page_down", message_view_only: true},
+    End: {name: "end", message_view_only: true},
+    Home: {name: "home", message_view_only: true},
+    ArrowLeft: {name: "left_arrow", message_view_only: false},
+    ArrowRight: {name: "right_arrow", message_view_only: false},
+    ArrowUp: {name: "up_arrow", message_view_only: false},
+    ArrowDown: {name: "down_arrow", message_view_only: false},
+    "*": {name: "open_starred_message_view", message_view_only: true},
+    "+": {name: "thumbs_up_emoji", message_view_only: true},
+    "=": {name: "upvote_first_emoji", message_view_only: true},
+    "-": {name: "toggle_message_collapse", message_view_only: true},
+    "/": {name: "search", message_view_only: false},
+    ":": {name: "toggle_reactions_popover", message_view_only: true},
+    "<": {name: "compose_forward_message", message_view_only: true},
+    ">": {name: "compose_quote_message", message_view_only: true},
+    "?": {name: "show_shortcuts", message_view_only: false},
+    "@": {name: "compose_reply_with_mention", message_view_only: true},
     // these can be triggered by key or Shift + key
-    // Note that codes for letters are still case sensitive!
     //
-    // We may want to revisit both of these.  For Backspace, we don't
+    // We may want to revisit both of these. For Backspace, we don't
     // have any specific mapping behavior; we are just trying to disable
     // the normal browser features for certain OSes when we are in the
     // compose box, and the little bit of Backspace-related code here is
@@ -157,112 +211,155 @@ const keydown_either_mappings = {
     // For Enter, there is some possibly that Shift-Enter is intended to
     // have special behavior for folks that are used to Shift-Enter behavior
     // in other apps, but that's also slightly dubious.
-    8: {name: "backspace", message_view_only: true}, // Backspace
-    13: {name: "enter", message_view_only: false}, // Enter
-    46: {name: "delete", message_view_only: false}, // Delete
+    Backspace: {name: "backspace", message_view_only: true},
+    Enter: {name: "enter", message_view_only: false},
+    Delete: {name: "delete", message_view_only: false},
+    "Shift+Backspace": {name: "backspace", message_view_only: true},
+    "Shift+Enter": {name: "enter", message_view_only: false},
+    "Shift+Delete": {name: "delete", message_view_only: false},
 };
 
-const keypress_mappings = {
-    42: {name: "open_starred_message_view", message_view_only: true}, // '*'
-    43: {name: "thumbs_up_emoji", message_view_only: true}, // '+'
-    61: {name: "upvote_first_emoji", message_view_only: true}, // '='
-    45: {name: "toggle_message_collapse", message_view_only: true}, // '-'
-    47: {name: "search", message_view_only: false}, // '/'
-    58: {name: "toggle_reactions_popover", message_view_only: true}, // ':'
-    60: {name: "compose_forward_message", message_view_only: true}, // '<'
-    62: {name: "compose_quote_message", message_view_only: true}, // '>'
-    63: {name: "show_shortcuts", message_view_only: false}, // '?'
-    64: {name: "compose_reply_with_mention", message_view_only: true}, // '@'
-    65: {name: "stream_cycle_backward", message_view_only: true}, // 'A'
-    67: {name: "C_deprecated", message_view_only: true}, // 'C'
-    68: {name: "stream_cycle_forward", message_view_only: true}, // 'D'
-    71: {name: "G_end", message_view_only: true}, // 'G'
-    73: {name: "open_inbox", message_view_only: true}, // 'I'
-    74: {name: "vim_page_down", message_view_only: true}, // 'J'
-    75: {name: "vim_page_up", message_view_only: true}, // 'K'
-    77: {name: "toggle_topic_visibility_policy", message_view_only: true}, // 'M'
-    80: {name: "narrow_private", message_view_only: true}, // 'P'
-    82: {name: "respond_to_author", message_view_only: true}, // 'R'
-    83: {name: "toggle_stream_subscription", message_view_only: true}, // 'S'
-    85: {name: "mark_unread", message_view_only: true}, // 'U'
-    86: {name: "view_selected_stream", message_view_only: false}, // 'V'
-    // The shortcut "a" dates from when this was called "All messages".
-    97: {name: "open_combined_feed", message_view_only: true}, // 'a'
-    99: {name: "compose", message_view_only: true}, // 'c'
-    100: {name: "open_drafts", message_view_only: true}, // 'd'
-    101: {name: "edit_message", message_view_only: true}, // 'e'
-    103: {name: "gear_menu", message_view_only: true}, // 'g'
-    104: {name: "vim_left", message_view_only: true}, // 'h'
-    105: {name: "message_actions", message_view_only: true}, // 'i'
-    106: {name: "vim_down", message_view_only: true}, // 'j'
-    107: {name: "vim_up", message_view_only: true}, // 'k'
-    108: {name: "vim_right", message_view_only: true}, // 'l'
-    109: {name: "move_message", message_view_only: true}, // 'm'
-    110: {name: "n_key", message_view_only: false}, // 'n'
-    112: {name: "p_key", message_view_only: false}, // 'p'
-    113: {name: "query_streams", message_view_only: true}, // 'q'
-    114: {name: "reply_message", message_view_only: true}, // 'r'
-    115: {name: "toggle_conversation_view", message_view_only: true}, // 's'
-    116: {name: "open_recent_view", message_view_only: true}, // 't'
-    117: {name: "toggle_sender_info", message_view_only: true}, // 'u'
-    118: {name: "show_lightbox", message_view_only: true}, // 'v'
-    119: {name: "query_users", message_view_only: true}, // 'w'
-    120: {name: "compose_private_message", message_view_only: true}, // 'x'
-    122: {name: "zoom_to_message_near", message_view_only: true}, // 'z'
+const KNOWN_NAMED_KEY_ATTRIBUTE_VALUES = new Set([
+    "Alt",
+    "ArrowDown",
+    "ArrowLeft",
+    "ArrowRight",
+    "ArrowUp",
+    "Backspace",
+    "Control",
+    "Delete",
+    "End",
+    "Enter",
+    "Escape",
+    "Home",
+    "Meta",
+    "PageDown",
+    "PageUp",
+    "Shift",
+    "Tab",
+]);
+
+const CODE_TO_QWERTY_CHAR = {
+    KeyA: "a",
+    KeyB: "b",
+    KeyC: "c",
+    KeyD: "d",
+    KeyE: "e",
+    KeyF: "f",
+    KeyG: "g",
+    KeyH: "h",
+    KeyI: "i",
+    KeyJ: "j",
+    KeyK: "k",
+    KeyL: "l",
+    KeyM: "m",
+    KeyN: "n",
+    KeyO: "o",
+    KeyP: "p",
+    KeyQ: "q",
+    KeyR: "r",
+    KeyS: "s",
+    KeyT: "t",
+    KeyU: "u",
+    KeyV: "v",
+    KeyW: "w",
+    KeyX: "x",
+    KeyY: "y",
+    KeyZ: "z",
+    "Shift+KeyA": "A",
+    "Shift+KeyB": "B",
+    "Shift+KeyC": "C",
+    "Shift+KeyD": "D",
+    "Shift+KeyE": "E",
+    "Shift+KeyF": "F",
+    "Shift+KeyG": "G",
+    "Shift+KeyH": "H",
+    "Shift+KeyI": "I",
+    "Shift+KeyJ": "J",
+    "Shift+KeyK": "K",
+    "Shift+KeyL": "L",
+    "Shift+KeyM": "M",
+    "Shift+KeyN": "N",
+    "Shift+KeyO": "O",
+    "Shift+KeyP": "P",
+    "Shift+KeyQ": "Q",
+    "Shift+KeyR": "R",
+    "Shift+KeyS": "S",
+    "Shift+KeyT": "T",
+    "Shift+KeyU": "U",
+    "Shift+KeyV": "V",
+    "Shift+KeyW": "W",
+    "Shift+KeyX": "X",
+    "Shift+KeyY": "Y",
+    "Shift+KeyZ": "Z",
+    BracketLeft: "[",
+    Equal: "=",
+    Minus: "-",
+    Period: ".",
+    Quote: "'",
+    "Shift+Comma": "<",
+    "Shift+Digit2": "@",
+    "Shift+Digit8": "*",
+    "Shift+Equal": "+",
+    "Shift+Period": ">",
+    "Shift+Semicolon": ":",
+    "Shift+Slash": "?",
+    Slash: "/",
+    Space: " ",
 };
 
+// Keyboard Event Viewer tool:
+// https://w3c.github.io/uievents/tools/key-event-viewer.html
 export function get_keydown_hotkey(e) {
-    let hotkey;
+    // Determine the key pressed in a consistent way.
+    //
+    // For keyboard layouts (e.g. QWERTY) where `e.key` results
+    // in printable ASCII characters or named key attribute values
+    // like "Tab", "Enter", etc., we use `e.key` directly.
+    //
+    // However, for layouts where the character defined for a hotkey
+    // can't be typed directly (e.g. 'a' in Cyrillic), users press
+    // the same physical key combination that a QWERTY user would
+    // use (e.g. 'ф' on Cyrillic maps to 'a' on QWERTY). In such cases,
+    // we derive the QWERTY equivalent using `e.code` and the `CODE_TO_QWERTY_CHAR` map.
+    const use_event_key =
+        common.is_printable_ascii(e.key) || KNOWN_NAMED_KEY_ATTRIBUTE_VALUES.has(e.key);
+    let key = e.key;
+    if (!use_event_key) {
+        const code = `${e.shiftKey ? "Shift+" : ""}${e.code}`;
+        key = CODE_TO_QWERTY_CHAR[code];
+    }
 
+    if (common.has_mac_keyboard() && e.ctrlKey && key !== "[") {
+        // On macOS, Cmd is used instead of Ctrl. Except 'Ctrl + ['.
+        return undefined;
+    }
+    if (!common.has_mac_keyboard() && e.metaKey) {
+        return undefined;
+    }
+
+    // Make lowercase a-z uppercase; leave others unchanged.
+    // We distinguish between 'a' and 'A' as 'A' vs 'Shift+A'.
+    // This helps to avoid Caps Lock affecting shortcuts.
+    if (/^[a-z]$/.test(key)) {
+        key = key.toUpperCase();
+    }
+
+    if (e.shiftKey && !KNOWN_IGNORE_SHIFT_MODIFIER_KEYS.has(key)) {
+        key = "Shift+" + key;
+    }
     if (e.altKey) {
-        hotkey = keydown_alt_mappings[e.which];
-        if (hotkey) {
-            return hotkey;
-        }
-        return undefined;
+        key = "Alt+" + key;
+    }
+    if (e.ctrlKey) {
+        key = "Ctrl+" + key;
+    }
+    if (e.metaKey) {
+        assert(common.has_mac_keyboard());
+        key = "Cmd+" + key;
     }
 
-    if (e.ctrlKey && !e.shiftKey) {
-        hotkey = keydown_ctrl_mappings[e.which];
-        if (hotkey) {
-            return hotkey;
-        }
-    }
-
-    const isCmdOrCtrl = common.has_mac_keyboard() ? e.metaKey : e.ctrlKey;
-    if (isCmdOrCtrl && !e.shiftKey) {
-        hotkey = keydown_cmd_or_ctrl_mappings[e.which];
-        if (hotkey) {
-            return hotkey;
-        }
-        return undefined;
-    } else if (e.metaKey || e.ctrlKey) {
-        return undefined;
-    }
-
-    if (e.shiftKey) {
-        hotkey = keydown_shift_mappings[e.which];
-        if (hotkey) {
-            return hotkey;
-        }
-    }
-
-    if (!e.shiftKey) {
-        hotkey = keydown_unshift_mappings[e.which];
-        if (hotkey) {
-            return hotkey;
-        }
-    }
-
-    return keydown_either_mappings[e.which];
-}
-
-export function get_keypress_hotkey(e) {
-    if (e.metaKey || e.ctrlKey || e.altKey) {
-        return undefined;
-    }
-
-    return keypress_mappings[e.which];
+    return KEYDOWN_MAPPINGS[key];
 }
 
 export let processing_text = () => {
@@ -335,7 +432,7 @@ export function process_escape_key(e) {
         }
 
         if (stream_list.searching()) {
-            stream_list.clear_and_hide_search();
+            stream_list.clear_search();
             return true;
         }
 
@@ -355,8 +452,9 @@ export function process_escape_key(e) {
 
         // When the input is focused, we blur and clear the input. A second "Esc"
         // will zoom out, handled below.
-        if (stream_list.is_zoomed_in() && $("#filter-topic-input").is(":focus")) {
+        if (stream_list.is_zoomed_in() && $("#topic_filter_query").is(":focus")) {
             topic_list.clear_topic_search(e);
+            $("#topic_filter_query").trigger("blur");
             return true;
         }
 
@@ -407,7 +505,7 @@ export function process_escape_key(e) {
 
     /* The Ctrl+[ hotkey navigates to the home view
      * unconditionally; Esc's behavior depends on a setting. */
-    if (user_settings.web_escape_navigates_to_home_view || e.which === 219) {
+    if (user_settings.web_escape_navigates_to_home_view || e.key === "[") {
         const triggered_by_escape_key = true;
         hashchange.set_hash_to_home_view(triggered_by_escape_key);
         return true;
@@ -425,6 +523,17 @@ function handle_popover_events(event_name) {
     }
 
     if (popover_menu_visible_instance) {
+        if (
+            // Allow all hotkeys except for `down_arrow` and `up_arrow`
+            // to be handled by the browser.
+            // Added to handle `schedule-reminder-note` textarea.
+            processing_text() &&
+            event_name !== "down_arrow" &&
+            event_name !== "up_arrow"
+        ) {
+            return false;
+        }
+
         popover_menus.sidebar_menu_instance_handle_keyboard(
             popover_menu_visible_instance,
             event_name,
@@ -462,6 +571,14 @@ function handle_popover_events(event_name) {
 
 // Returns true if we handled it, false if the browser should.
 export function process_enter_key(e) {
+    if ($(e.target).hasClass("trigger-click-on-enter")) {
+        // If the target has the class "trigger-click-on-enter", explicitly
+        // trigger a click event on it to call the associated click handler.
+        e.preventDefault();
+        $(e.target).trigger("click");
+        return true;
+    }
+
     if (popovers.any_active() && $(e.target).hasClass("navigate-link-on-enter")) {
         // If a popover is open and we pressed Enter on a menu item,
         // call click directly on the item to navigate to the `href`.
@@ -491,14 +608,6 @@ export function process_enter_key(e) {
     }
 
     if (processing_text()) {
-        if (stream_list.searching()) {
-            // This is sort of funny behavior, but I think
-            // the intention is that we want it super easy
-            // to close stream search.
-            stream_list.clear_and_hide_search();
-            return true;
-        }
-
         // Don't send the message if topic box is focused.
         if (compose.is_topic_input_focused()) {
             return true;
@@ -516,6 +625,11 @@ export function process_enter_key(e) {
 
     if (overlays.scheduled_messages_open()) {
         scheduled_messages_overlay_ui.handle_keyboard_events("enter");
+        return true;
+    }
+
+    if (overlays.reminders_open()) {
+        reminders_overlay_ui.handle_keyboard_events("enter");
         return true;
     }
 
@@ -550,7 +664,7 @@ export function process_enter_key(e) {
         return false;
     }
 
-    if ($("#preview_message_area").is(":visible")) {
+    if ($("#compose").hasClass("preview_mode")) {
         compose.handle_enter_key_with_preview_open();
         return true;
     }
@@ -582,7 +696,7 @@ export function process_enter_key(e) {
     // For search views, renarrow to the current message's
     // conversation.
     const current_filter = narrow_state.filter();
-    if (current_filter !== undefined && !current_filter.supports_collapsing_recipients()) {
+    if (current_filter !== undefined && !current_filter.contains_no_partial_conversations()) {
         assert(message_lists.current !== undefined);
         const message = message_lists.current.selected_message();
 
@@ -600,7 +714,7 @@ export function process_enter_key(e) {
 }
 
 export function process_cmd_or_ctrl_enter_key() {
-    if ($("#preview_message_area").is(":visible")) {
+    if ($("#compose").hasClass("preview_mode")) {
         const cmd_or_ctrl_pressed = true;
         compose.handle_enter_key_with_preview_open(cmd_or_ctrl_pressed);
         return true;
@@ -679,7 +793,7 @@ export function process_shift_tab_key() {
     return false;
 }
 
-// Process a keydown or keypress event.
+// Process a keydown event.
 //
 // Returns true if we handled it, false if the browser should.
 export function process_hotkey(e, hotkey) {
@@ -775,6 +889,10 @@ export function process_hotkey(e, hotkey) {
                 scheduled_messages_overlay_ui.handle_keyboard_events(event_name);
                 return true;
             }
+            if (overlays.reminders_open()) {
+                reminders_overlay_ui.handle_keyboard_events(event_name);
+                return true;
+            }
             if (overlays.message_edit_history_open()) {
                 message_edit_history.handle_keyboard_events(event_name);
                 return true;
@@ -849,10 +967,10 @@ export function process_hotkey(e, hotkey) {
         }
 
         if (compose_state.composing()) {
-            if ($("#compose .markdown_preview").is(":visible")) {
-                compose.show_preview_area();
-            } else {
+            if ($("#compose").hasClass("preview_mode")) {
                 compose.clear_preview_area();
+            } else {
+                compose.show_preview_area();
             }
             return true;
         }
@@ -994,6 +1112,7 @@ export function process_hotkey(e, hotkey) {
     }
 
     // Shortcuts that don't require a message
+    let list_of_channel_topics_channel_id;
     switch (event_name) {
         case "narrow_private":
             message_view.show(
@@ -1008,14 +1127,17 @@ export function process_hotkey(e, hotkey) {
             return true;
         case "query_streams":
             if (pm_list.is_zoomed_in()) {
-                pm_list.focus_pm_search_filter();
+                sidebar_ui.focus_pm_search_filter();
             } else if (stream_list.is_zoomed_in()) {
-                topic_list.focus_topic_search_filter();
+                sidebar_ui.focus_topic_search_filter();
             } else {
-                stream_list.initiate_search();
+                sidebar_ui.initiate_search();
             }
             return true;
         case "query_users":
+            if (page_params.is_spectator) {
+                return false;
+            }
             activity_ui.initiate_search();
             return true;
         case "search":
@@ -1062,11 +1184,51 @@ export function process_hotkey(e, hotkey) {
                     user_topics_ui.toggle_topic_visibility_policy(recent_msg);
                     return true;
                 }
-                return false;
             }
             if (inbox_ui.is_in_focus()) {
                 return inbox_ui.toggle_topic_visibility_policy();
             }
+            if (message_lists.current.selected_message()) {
+                user_topics_ui.toggle_topic_visibility_policy(
+                    message_lists.current.selected_message(),
+                );
+                return true;
+            }
+            return false;
+        case "list_of_channel_topics":
+            if (recent_view_ui.is_in_focus()) {
+                const msg = recent_view_ui.get_focused_row_message();
+                if (msg !== undefined && msg.type === "stream") {
+                    list_of_channel_topics_channel_id = msg.stream_id;
+                }
+            }
+            if (inbox_ui.is_in_focus()) {
+                const msg = inbox_ui.get_focused_row_message();
+                if (msg !== undefined && msg.msg_type === "stream") {
+                    list_of_channel_topics_channel_id = msg.stream_id;
+                }
+            }
+            if (message_lists.current !== undefined) {
+                const selected_message = message_lists.current.selected_message();
+                if (selected_message === undefined) {
+                    const only_valid_id = true;
+                    list_of_channel_topics_channel_id = narrow_state.stream_id(
+                        narrow_state.filter(),
+                        only_valid_id,
+                    );
+                } else if (selected_message.type === "stream") {
+                    list_of_channel_topics_channel_id = selected_message.stream_id;
+                }
+            }
+
+            if (list_of_channel_topics_channel_id === undefined) {
+                return false;
+            }
+
+            browser_history.go_to_location(
+                hash_util.by_channel_topic_list_url(list_of_channel_topics_channel_id),
+            );
+            return true;
     }
 
     // Shortcuts that are useful with an empty message feed, like opening compose.
@@ -1147,7 +1309,13 @@ export function process_hotkey(e, hotkey) {
     if (
         // Allow UI only features for spectators which they can perform.
         page_params.is_spectator &&
-        !["toggle_conversation_view", "show_lightbox", "toggle_sender_info"].includes(event_name)
+        ![
+            "toggle_conversation_view",
+            "show_lightbox",
+            "toggle_sender_info",
+            "edit_message",
+            "copy_with_c",
+        ].includes(event_name)
     ) {
         spectators.login_to_access();
         return true;
@@ -1192,7 +1360,10 @@ export function process_hotkey(e, hotkey) {
             const $row = message_lists.current.selected_row();
             const $emoji_icon = $row.find(".emoji-message-control-button-container");
             let emoji_picker_reference;
-            if ($emoji_icon.is(":visible")) {
+            if (
+                $emoji_icon?.length !== 0 &&
+                $emoji_icon.closest(".message_control_button").css("display") !== "none"
+            ) {
                 emoji_picker_reference = $emoji_icon[0];
             } else {
                 emoji_picker_reference = $row.find(".message-actions-menu-button")[0];
@@ -1231,9 +1402,6 @@ export function process_hotkey(e, hotkey) {
             reactions.toggle_emoji_reaction(msg, canonical_name ?? first_reaction.emoji_name);
             return true;
         }
-        case "toggle_topic_visibility_policy":
-            user_topics_ui.toggle_topic_visibility_policy(msg);
-            return true;
         case "toggle_message_collapse":
             condense.toggle_collapse(msg);
             return true;
@@ -1283,7 +1451,7 @@ export function process_hotkey(e, hotkey) {
                     message_view.show(
                         [
                             {operator: "dm", operand: msg.reply_to},
-                            {operator: "near", operand: msg.id},
+                            {operator: "near", operand: String(msg.id)},
                         ],
                         {trigger: "hotkey"},
                     );
@@ -1296,7 +1464,7 @@ export function process_hotkey(e, hotkey) {
                                 operand: msg.stream_id.toString(),
                             },
                             {operator: "topic", operand: msg.topic},
-                            {operator: "near", operand: msg.id},
+                            {operator: "near", operand: String(msg.id)},
                         ],
                         {trigger: "hotkey"},
                     );
@@ -1308,42 +1476,30 @@ export function process_hotkey(e, hotkey) {
     return false;
 }
 
-/* We register both a keydown and a keypress function because
-   we want to intercept PgUp/PgDn, Esc, etc, and process them
-   as they happen on the keyboard. However, if we processed
-   letters/numbers in keydown, we wouldn't know what the case of
-   the letters were.
-
-   We want case-sensitive hotkeys (such as in the case of r vs R)
-   so we bail in .keydown if the event is a letter or number and
-   instead just let keypress go for it. */
-
 export function process_keydown(e) {
     activity.set_new_user_input(true);
-    const hotkey = get_keydown_hotkey(e);
-    if (!hotkey) {
+    const result = get_keydown_hotkey(e);
+    if (!result) {
         return false;
     }
-    return process_hotkey(e, hotkey);
-}
 
-export function process_keypress(e) {
-    const hotkey = get_keypress_hotkey(e);
-    if (!hotkey) {
-        return false;
+    if (Array.isArray(result)) {
+        return result.some((hotkey) => process_hotkey(e, hotkey));
     }
-    return process_hotkey(e, hotkey);
+    return process_hotkey(e, result);
 }
 
 export function initialize() {
     $(document).on("keydown", (e) => {
-        if (process_keydown(e)) {
-            e.preventDefault();
+        if (e.key === undefined) {
+            /* Some browsers trigger a 'keydown' event with `key === undefined`
+            on selecting autocomplete suggestion. These are not real keypresses
+            and can be safely ignored.
+            See: https://issues.chromium.org/issues/41425904
+            */
+            return;
         }
-    });
-
-    $(document).on("keypress", (e) => {
-        if (process_keypress(e)) {
+        if (process_keydown(e)) {
             e.preventDefault();
         }
     });

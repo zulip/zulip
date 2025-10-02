@@ -32,7 +32,8 @@ type PopoverName =
     | "help_menu"
     | "buddy_list"
     | "stream_actions_popover"
-    | "color_picker_popover";
+    | "color_picker_popover"
+    | "show_channels_sidebar";
 
 export const popover_instances: Record<PopoverName, tippy.Instance | null> = {
     compose_control_buttons: null,
@@ -54,6 +55,7 @@ export const popover_instances: Record<PopoverName, tippy.Instance | null> = {
     buddy_list: null,
     stream_actions_popover: null,
     color_picker_popover: null,
+    show_channels_sidebar: null,
 };
 
 // Font size in em for popover derived from popover font size being
@@ -66,9 +68,9 @@ export function popover_items_handle_keyboard(key: string, $items?: JQuery): voi
         return;
     }
 
-    let index = $items.index($items.filter(":focus"));
+    const index = $items.index($items.filter(":focus"));
 
-    if (key === "enter" && index >= 0 && index < $items.length) {
+    if (key === "enter") {
         // This is not enough for some elements which need to trigger
         // natural click for them to work like ClipboardJS and follow
         // the link for anchor tags. For those elements, we need to
@@ -77,14 +79,17 @@ export function popover_items_handle_keyboard(key: string, $items?: JQuery): voi
         return;
     }
 
-    if (index === -1) {
-        index = 0;
-    } else if ((key === "down_arrow" || key === "vim_down") && index < $items.length - 1) {
-        index += 1;
-    } else if ((key === "up_arrow" || key === "vim_up") && index > 0) {
-        index -= 1;
+    if (key === "down_arrow" || key === "vim_down") {
+        [...$items]
+            .slice(index === -1 ? 0 : index + 1)
+            .find((item) => item.getClientRects().length)
+            ?.focus();
+    } else if (key === "up_arrow" || key === "vim_up") {
+        [...$items]
+            .slice(0, index === -1 ? $items.length : index)
+            .findLast((item) => item.getClientRects().length)
+            ?.focus();
     }
-    $items.eq(index).trigger("focus");
 }
 
 export function focus_first_popover_item($items: JQuery | undefined, index = 0): void {
@@ -173,7 +178,7 @@ export function get_popover_items_for_instance(instance: tippy.Instance): JQuery
         return undefined;
     }
 
-    return $current_elem.find("a, [tabindex='0']").filter(":visible");
+    return $current_elem.find("a, [tabindex='0']");
 }
 
 export function hide_current_popover_if_visible(instance: tippy.Instance | null): void {
@@ -191,10 +196,6 @@ export const default_popover_props: Partial<tippy.Props> = {
     trigger: "click",
     interactive: true,
     hideOnClick: true,
-    /* The light-border TippyJS theme is a bit of a misnomer; it
-       is a popover styling similar to Bootstrap.  We've also customized
-       its CSS to support Zulip's dark theme. */
-    theme: "light-border",
     // The maxWidth has been set to "none" to avoid the default value of 300px.
     maxWidth: "none",
     touch: true,
@@ -314,7 +315,7 @@ export const left_sidebar_tippy_options: Partial<tippy.Props> = {
             {
                 name: "flip",
                 options: {
-                    fallbackPlacements: "bottom",
+                    fallbackPlacements: ["bottom", "top", "left"],
                 },
             },
         ],
@@ -418,6 +419,12 @@ export function toggle_popover_menu(
 ): tippy.Instance {
     const instance = target._tippy;
     if (instance) {
+        // Ideally, we'd check that the _tippy object is a
+        // popover. For elements that host both a Tippy tooltip and a
+        // popover, this can incorrectly return early after hiding the
+        // Tippy tooltip.
+        //
+        // If we fix this, we can remove a few popovers.hide_all calls.
         hide_current_popover_if_visible(instance);
         return instance;
     }

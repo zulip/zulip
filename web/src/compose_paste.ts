@@ -5,11 +5,15 @@ import assert from "minimalistic-assert";
 import {insertTextIntoField} from "text-field-edit";
 import TurndownService from "turndown";
 
+import * as compose_banner from "./compose_banner.ts";
 import * as compose_ui from "./compose_ui.ts";
 import * as hash_util from "./hash_util.ts";
+import {$t} from "./i18n.ts";
 import * as stream_data from "./stream_data.ts";
 import * as topic_link_util from "./topic_link_util.ts";
 import * as util from "./util.ts";
+
+const MINIMUM_PASTE_SIZE_FOR_FILE_TREATMENT = 2000;
 
 declare global {
     // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
@@ -158,6 +162,38 @@ function is_from_excel(html_fragment: HTMLBodyElement): boolean {
     return true;
 }
 
+// There might be some false positives while pasting only tables from
+// something like LibreOffice Writer.
+function is_from_libreoffice_calc(body_tag: HTMLBodyElement): boolean {
+    const html_tag = body_tag.parentElement;
+    if (!html_tag || html_tag.nodeName !== "HTML") {
+        return false;
+    }
+
+    const has_libreoffice_metadata = [...html_tag.querySelectorAll("meta")].some(
+        (meta) => meta.name === "generator" && meta.content.startsWith("LibreOffice"),
+    );
+    if (!has_libreoffice_metadata) {
+        return false;
+    }
+
+    // This is done to narrow the possible false positives such as pasting
+    // text from LibreOffice Writer, that also contains the same meta data.
+    if (
+        !body_tag ||
+        // Check that <body> has only one child element to avoid
+        // misclassification. Multiple children may appear when
+        // pasting mixed content from something like LibreOffice
+        // Writer,but Calc always pastes a single <table> element.
+        body_tag.children.length > 1 ||
+        body_tag.firstElementChild?.tagName !== "TABLE"
+    ) {
+        return false;
+    }
+
+    return true;
+}
+
 export function is_single_image(paste_html: string): boolean {
     const html_fragment = new DOMParser()
         .parseFromString(paste_html, "text/html")
@@ -165,6 +201,7 @@ export function is_single_image(paste_html: string): boolean {
     assert(html_fragment !== null);
     return (
         is_from_excel(html_fragment) ||
+        is_from_libreoffice_calc(html_fragment) ||
         (html_fragment.childNodes.length === 1 &&
             html_fragment.firstElementChild !== null &&
             html_fragment.firstElementChild.nodeName === "IMG")
@@ -377,9 +414,13 @@ export function paste_handler_converter(
 
     turndownService.addRule("zulipImagePreview", {
         filter(node) {
-            // select image previews in Zulip messages
+            // select image previews in Zulip messages; we continue to check for
+            // message_inline_image to handle content pasted in from older
+            // versions of Zulip
             return (
-                node.classList.contains("message_inline_image") && node.firstChild?.nodeName === "A"
+                (node.classList.contains("message_inline_image") ||
+                    node.classList.contains("message-media-preview-image")) &&
+                node.firstChild?.nodeName === "A"
             );
         },
 
@@ -388,16 +429,17 @@ export function paste_handler_converter(
             // present, always comes before the preview in the copied html) is also there.
 
             // If the 1st element with the same image link in the copied html
-            // does not have the `message_inline_image` class, it means it is the generating
-            // link, and not the preview, meaning the generating link is copied as well.
+            // does not have a `message-media-preview-image` or `message_inline_image`
+            // class, it means it is the generating link, and not the preview, meaning
+            // the generating link is copied as well.
             const copied_html = new DOMParser().parseFromString(paste_html, "text/html");
-            let href;
+            const href = node.firstElementChild?.getAttribute("href") ?? "";
+            const anchor_element = copied_html.querySelector("a[href='" + CSS.escape(href) + "']");
             if (
                 node.firstElementChild === null ||
-                (href = node.firstElementChild.getAttribute("href")) === null ||
-                !copied_html
-                    .querySelector("a[href='" + CSS.escape(href) + "']")
-                    ?.parentElement?.classList.contains("message_inline_image")
+                href === "" ||
+                !anchor_element?.parentElement?.classList.contains("message_inline_image") ||
+                !anchor_element?.parentElement?.classList.contains("message-media-preview-image")
             ) {
                 // We skip previews which have their generating link copied too, to avoid
                 // double pasting the same link.
@@ -505,7 +547,7 @@ export function paste_handler_converter(
     return markdown_text;
 }
 
-function is_safe_url_paste_target($textarea: JQuery<HTMLTextAreaElement>): boolean {
+function can_paste_url_over_range($textarea: JQuery<HTMLTextAreaElement>): boolean {
     const range = $textarea.range();
 
     if (!range.text) {
@@ -515,19 +557,6 @@ function is_safe_url_paste_target($textarea: JQuery<HTMLTextAreaElement>): boole
 
     if (isUrl(range.text.trim())) {
         // Don't engage our URL paste logic over existing URLs
-        return false;
-    }
-
-    if (range.start <= 2) {
-        // The range opens too close to the start of the textarea
-        // to have to worry about Markdown link syntax
-        return true;
-    }
-
-    // Look at the two characters before the start of the original
-    // range in search of the tell-tale `](` from existing Markdown
-    // link syntax
-    if (cursor_at_markdown_link_marker($textarea)) {
         return false;
     }
 
@@ -606,7 +635,16 @@ export function try_stream_topic_syntax_text(text: string): string | null {
     return syntax_text;
 }
 
-export function paste_handler(this: HTMLTextAreaElement, event: JQuery.TriggeredEvent): void {
+function create_text_file(text: string, filename: string): File {
+    const blob = new Blob([text], {type: "text/plain"});
+    return new File([blob], filename, {type: "text/plain"});
+}
+
+export function paste_handler(
+    this: HTMLTextAreaElement,
+    event: JQuery.TriggeredEvent,
+    upload_pasted_file: (textarea: HTMLTextAreaElement, pasted_file: File) => void,
+): void {
     assert(event.originalEvent instanceof ClipboardEvent);
     const clipboardData = event.originalEvent.clipboardData;
     if (!clipboardData) {
@@ -620,27 +658,59 @@ export function paste_handler(this: HTMLTextAreaElement, event: JQuery.Triggered
 
     if (clipboardData.getData) {
         const $textarea = $(this);
+        const existing_text = $textarea.val() ?? "";
         const paste_text = clipboardData.getData("text");
         let paste_html = clipboardData.getData("text/html");
         // Trim the paste_text to accommodate sloppy copying
         const trimmed_paste_text = paste_text.trim();
+        const pasted_text_length = paste_text.length;
+
+        // Idea: We could consider having two thresholds: Very large
+        // files could prompt before running the paste handler and
+        // putting the content into the compose box.
+        const is_paste_large_enough_for_file =
+            pasted_text_length >= MINIMUM_PASTE_SIZE_FOR_FILE_TREATMENT;
+
+        // If the pasted or combined text is too large, present a
+        // banner offering to upload as a file.
+        if (is_paste_large_enough_for_file) {
+            const filename = `${$t({defaultMessage: "PastedText"})}.txt`;
+            const pasted_file = create_text_file(paste_text, filename);
+            const $banner = compose_banner.show_convert_pasted_text_to_file_banner(() => {
+                // Important: This undo mechanism is only correct if
+                // the compose area hasn't changed since the banner
+                // was created.
+                $textarea.val(existing_text);
+                upload_pasted_file(this, pasted_file);
+            });
+            setTimeout(() => {
+                $("textarea#compose-textarea").one("input", () => {
+                    // The banner only displays until the user does
+                    // some further input. This is both reasonable UI
+                    // and also is required for undo, see above.
+                    $banner.remove();
+                });
+            }, 0);
+        }
 
         // Only intervene to generate formatted links when dealing
         // with a URL and a URL-safe range selection.
         if (isUrl(trimmed_paste_text)) {
-            if (is_safe_url_paste_target($textarea)) {
+            if (cursor_at_markdown_link_marker($textarea)) {
+                // When pasting a link after the link marker syntax, we want to
+                // avoid inserting markdown syntax text and instead just paste
+                // the raw text, possibly replacing any selection. In other words,
+                // let the browser handle it.
+                return;
+            }
+            if (can_paste_url_over_range($textarea)) {
                 event.preventDefault();
                 event.stopPropagation();
                 const url = trimmed_paste_text;
                 compose_ui.format_text($textarea, "linked", url);
                 return;
             }
-
-            if (
-                !compose_ui.cursor_inside_code_block($textarea) &&
-                !cursor_at_markdown_link_marker($textarea) &&
-                !compose_ui.shift_pressed
-            ) {
+            if (!compose_ui.cursor_inside_code_block($textarea) && !compose_ui.shift_pressed) {
                 // Try to transform the url to #**stream>topic** syntax
                 // if it is a valid url.
                 const syntax_text = try_stream_topic_syntax_text(trimmed_paste_text);
@@ -685,7 +755,23 @@ export function paste_handler(this: HTMLTextAreaElement, event: JQuery.Triggered
     }
 }
 
-export function initialize(): void {
-    $<HTMLTextAreaElement>("textarea#compose-textarea").on("paste", paste_handler);
-    $("body").on("paste", "textarea.message_edit_content", paste_handler);
+export function initialize({
+    upload_pasted_file,
+}: {
+    upload_pasted_file: (textarea: HTMLTextAreaElement, pasted_file: File) => void;
+}): void {
+    $<HTMLTextAreaElement>("textarea#compose-textarea").on(
+        "paste",
+        function (this: HTMLTextAreaElement, event: JQuery.TriggeredEvent) {
+            paste_handler.call(this, event, upload_pasted_file);
+        },
+    );
+
+    $("body").on(
+        "paste",
+        "textarea.message_edit_content",
+        function (this: HTMLTextAreaElement, event: JQuery.TriggeredEvent) {
+            paste_handler.call(this, event, upload_pasted_file);
+        },
+    );
 }

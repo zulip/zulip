@@ -12,17 +12,15 @@
         {{/tr}}
     {{/if}}
 </p>
-<p>
-    <div>
-        {{#if (eq deleted_options_count 1)}}
-            {{t "Deleted option:" }}
-        {{else}}
-            {{t "Deleted options:" }}
-        {{/if}}
-    </div>
-    <ul>
-        {{#each deleted_values}}
-            <li>{{this}}</li>
-        {{/each}}
-    </ul>
-</p>
+<div>
+    {{#if (eq deleted_options_count 1)}}
+        {{t "Deleted option:" }}
+    {{else}}
+        {{t "Deleted options:" }}
+    {{/if}}
+</div>
+<ul>
+    {{#each deleted_values}}
+        <li>{{this}}</li>
+    {{/each}}
+</ul>

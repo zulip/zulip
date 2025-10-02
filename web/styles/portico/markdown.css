@@ -8,7 +8,7 @@
     --color-copy-button-hover: hsl(229deg 9% 36%);
     --color-copy-button-active: color-mix(
         in oklch,
-        hsla(229deg 9% 36%) 70%,
+        hsl(229deg 9% 36%) 70%,
         transparent
     );
     --color-copy-button-success: hsl(146deg 90% 27%);
@@ -246,6 +246,10 @@
         vertical-align: middle;
     }
 
+    & i.zulip-icon.mobile-help {
+        color: hsl(244deg 69% 62%);
+    }
+
     & a {
         color: hsl(176deg 46% 41%);
         font-weight: 600;
@@ -398,7 +402,7 @@
         white-space: initial;
         padding: 0 4px;
         background-color: hsl(0deg 0% 93%);
-        word-wrap: break-word;
+        overflow-wrap: break-word;
     }
 
     .codehilite {

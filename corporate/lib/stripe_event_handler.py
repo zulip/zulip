@@ -13,14 +13,9 @@ from corporate.lib.stripe import (
     RemoteServerBillingSession,
     get_configured_fixed_price_plan_offer,
 )
-from corporate.models import (
-    Customer,
-    CustomerPlan,
-    Event,
-    Invoice,
-    Session,
-    get_current_plan_by_customer,
-)
+from corporate.models.customers import Customer
+from corporate.models.plans import CustomerPlan, get_current_plan_by_customer
+from corporate.models.stripe_state import Event, Invoice, Session
 from zerver.lib.send_email import FromAddress, send_email
 from zerver.models.users import get_active_user_profile_by_id_in_realm
 

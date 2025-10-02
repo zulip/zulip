@@ -1,15 +1,18 @@
+import asyncio
 import base64
 import os
 import re
 import shutil
 import subprocess
 import tempfile
-from collections.abc import Callable, Collection, Iterator, Mapping, Sequence
+from collections.abc import Callable, Collection, Iterable, Iterator, Mapping, Sequence
 from contextlib import contextmanager
 from typing import TYPE_CHECKING, Any, Union, cast
 from unittest import TestResult, mock, skipUnless
 from urllib.parse import parse_qs, quote, urlencode
 
+import aioapns
+import firebase_admin.messaging as firebase_messaging
 import lxml.html
 import orjson
 import responses
@@ -34,12 +37,15 @@ from django.utils import translation
 from django.utils.module_loading import import_string
 from django.utils.timezone import now as timezone_now
 from fakeldap import MockLDAP
+from firebase_admin import exceptions as firebase_exceptions
 from openapi_core.contrib.django import DjangoOpenAPIRequest, DjangoOpenAPIResponse
 from requests import PreparedRequest
 from two_factor.plugins.phonenumber.models import PhoneDevice
 from typing_extensions import override
 
-from corporate.models import Customer, CustomerPlan, LicenseLedger
+from corporate.models.customers import Customer
+from corporate.models.licenses import LicenseLedger
+from corporate.models.plans import CustomerPlan
 from zerver.actions.message_send import check_send_message, check_send_stream_message
 from zerver.actions.realm_settings import do_change_realm_permission_group_setting
 from zerver.actions.streams import bulk_add_subscriptions, bulk_remove_subscriptions
@@ -51,6 +57,7 @@ from zerver.lib.mdiff import diff_strings
 from zerver.lib.message import access_message
 from zerver.lib.notification_data import UserMessageNotificationsData
 from zerver.lib.per_request_cache import flush_per_request_caches
+from zerver.lib.push_notifications import APNsContext
 from zerver.lib.redis_utils import bounce_redis_key_prefix_for_testing
 from zerver.lib.response import MutableJsonResponse
 from zerver.lib.sessions import get_session_dict_user
@@ -88,6 +95,7 @@ from zerver.models import (
     Client,
     Message,
     NamedUserGroup,
+    PushDevice,
     PushDeviceToken,
     Reaction,
     Realm,
@@ -101,14 +109,21 @@ from zerver.models import (
     UserProfile,
     UserStatus,
 )
+from zerver.models.clients import get_client
 from zerver.models.realms import clear_supported_auth_backends_cache, get_realm
-from zerver.models.streams import get_realm_stream, get_stream
+from zerver.models.streams import StreamTopicsPolicyEnum, get_realm_stream, get_stream
 from zerver.models.users import get_system_bot, get_user, get_user_by_delivery_email
 from zerver.openapi.openapi import validate_test_request, validate_test_response
 from zerver.tornado.event_queue import clear_client_event_queues_for_testing
 
 if settings.ZILENCER_ENABLED:
-    from zilencer.models import RemoteZulipServer, get_remote_server_by_uuid
+    from zilencer.models import (
+        RemotePushDevice,
+        RemotePushDeviceToken,
+        RemoteRealm,
+        RemoteZulipServer,
+        get_remote_server_by_uuid,
+    )
 
 if TYPE_CHECKING:
     from django.test.client import _MonkeyPatchedWSGIResponse as TestHttpResponse
@@ -322,11 +337,13 @@ Output:
         self,
         url: str,
         info: Mapping[str, Any] = {},
+        *,
         skip_user_agent: bool = False,
         follow: bool = False,
         secure: bool = False,
         intentionally_undocumented: bool = False,
         headers: Mapping[str, Any] | None = None,
+        query_params: Mapping[str, Any] | None = None,
         **extra: str,
     ) -> "TestHttpResponse":
         """
@@ -342,6 +359,7 @@ Output:
             follow=follow,
             secure=secure,
             headers=headers,
+            query_params=query_params,
             intentionally_undocumented=intentionally_undocumented,
             **extra,
         )
@@ -351,10 +369,12 @@ Output:
         self,
         url: str,
         info: Mapping[str, Any] = {},
+        *,
         skip_user_agent: bool = False,
         follow: bool = False,
         secure: bool = False,
         headers: Mapping[str, Any] | None = None,
+        query_params: Mapping[str, Any] | None = None,
         intentionally_undocumented: bool = False,
         **extra: str,
     ) -> "TestHttpResponse":
@@ -376,6 +396,7 @@ Output:
             follow=follow,
             secure=secure,
             headers=headers,
+            query_params=query_params,
             intentionally_undocumented=intentionally_undocumented,
             **extra,
         )
@@ -384,9 +405,12 @@ Output:
         self,
         url: str,
         payload: Mapping[str, Any] = {},
+        *,
         skip_user_agent: bool = False,
         follow: bool = False,
         secure: bool = False,
+        headers: Mapping[str, Any] | None = None,
+        query_params: Mapping[str, Any] | None = None,
         **extra: str,
     ) -> "TestHttpResponse":
         data = orjson.dumps(payload)
@@ -398,7 +422,8 @@ Output:
             content_type="application/json",
             follow=follow,
             secure=secure,
-            headers=None,
+            headers=headers,
+            query_params=query_params,
             **extra,
         )
 
@@ -407,10 +432,12 @@ Output:
         self,
         url: str,
         info: Mapping[str, Any] = {},
+        *,
         skip_user_agent: bool = False,
         follow: bool = False,
         secure: bool = False,
         headers: Mapping[str, Any] | None = None,
+        query_params: Mapping[str, Any] | None = None,
         **extra: str,
     ) -> "TestHttpResponse":
         encoded = urlencode(info)
@@ -418,17 +445,25 @@ Output:
         django_client = self.client  # see WRAPPER_COMMENT
         self.set_http_headers(extra, skip_user_agent)
         return django_client.put(
-            url, encoded, follow=follow, secure=secure, headers=headers, **extra
+            url,
+            encoded,
+            follow=follow,
+            secure=secure,
+            headers=headers,
+            query_params=query_params,
+            **extra,
         )
 
     def json_put(
         self,
         url: str,
         payload: Mapping[str, Any] = {},
+        *,
         skip_user_agent: bool = False,
         follow: bool = False,
         secure: bool = False,
         headers: Mapping[str, Any] | None = None,
+        query_params: Mapping[str, Any] | None = None,
         **extra: str,
     ) -> "TestHttpResponse":
         data = orjson.dumps(payload)
@@ -441,6 +476,7 @@ Output:
             follow=follow,
             secure=secure,
             headers=headers,
+            query_params=query_params,
             **extra,
         )
 
@@ -449,10 +485,12 @@ Output:
         self,
         url: str,
         info: Mapping[str, Any] = {},
+        *,
         skip_user_agent: bool = False,
         follow: bool = False,
         secure: bool = False,
         headers: Mapping[str, Any] | None = None,
+        query_params: Mapping[str, Any] | None = None,
         intentionally_undocumented: bool = False,
         **extra: str,
     ) -> "TestHttpResponse":
@@ -469,6 +507,7 @@ Output:
                 "Content-Type": "application/x-www-form-urlencoded",  # https://code.djangoproject.com/ticket/33230
                 **(headers or {}),
             },
+            query_params=query_params,
             intentionally_undocumented=intentionally_undocumented,
             **extra,
         )
@@ -478,16 +517,24 @@ Output:
         self,
         url: str,
         info: Mapping[str, Any] = {},
+        *,
         skip_user_agent: bool = False,
         follow: bool = False,
         secure: bool = False,
         headers: Mapping[str, Any] | None = None,
+        query_params: Mapping[str, Any] | None = None,
         **extra: str,
     ) -> "TestHttpResponse":
         django_client = self.client  # see WRAPPER_COMMENT
         self.set_http_headers(extra, skip_user_agent)
         return django_client.options(
-            url, dict(info), follow=follow, secure=secure, headers=headers, **extra
+            url,
+            dict(info),
+            follow=follow,
+            secure=secure,
+            headers=headers,
+            query_params=query_params,
+            **extra,
         )
 
     @instrument_url
@@ -495,25 +542,37 @@ Output:
         self,
         url: str,
         info: Mapping[str, Any] = {},
+        *,
         skip_user_agent: bool = False,
         follow: bool = False,
         secure: bool = False,
         headers: Mapping[str, Any] | None = None,
+        query_params: Mapping[str, Any] | None = None,
         **extra: str,
     ) -> "TestHttpResponse":
         django_client = self.client  # see WRAPPER_COMMENT
         self.set_http_headers(extra, skip_user_agent)
-        return django_client.head(url, info, follow=follow, secure=secure, headers=headers, **extra)
+        return django_client.head(
+            url,
+            info,
+            follow=follow,
+            secure=secure,
+            headers=headers,
+            query_params=query_params,
+            **extra,
+        )
 
     @instrument_url
     def client_post(
         self,
         url: str,
         info: str | bytes | Mapping[str, Any] = {},
+        *,
         skip_user_agent: bool = False,
         follow: bool = False,
         secure: bool = False,
         headers: Mapping[str, Any] | None = None,
+        query_params: Mapping[str, Any] | None = None,
         intentionally_undocumented: bool = False,
         content_type: str | None = None,
         **extra: str,
@@ -541,6 +600,7 @@ Output:
                 "Content-Type": content_type,  # https://code.djangoproject.com/ticket/33230
                 **(headers or {}),
             },
+            query_params=query_params,
             content_type=content_type,
             intentionally_undocumented=intentionally_undocumented,
             **extra,
@@ -569,6 +629,7 @@ Output:
         follow: bool = False,
         secure: bool = False,
         headers: Mapping[str, Any] | None = None,
+        query_params: Mapping[str, Any] | None = None,
         intentionally_undocumented: bool = False,
         **extra: str,
     ) -> "TestHttpResponse":
@@ -580,6 +641,7 @@ Output:
             follow=follow,
             secure=secure,
             headers=headers,
+            query_params=query_params,
             intentionally_undocumented=intentionally_undocumented,
             **extra,
         )
@@ -733,6 +795,7 @@ Output:
             follow=False,
             secure=False,
             headers=None,
+            query_params=None,
             intentionally_undocumented=False,
             **extra,
         )
@@ -876,6 +939,7 @@ Output:
             follow=False,
             secure=False,
             headers=None,
+            query_params=None,
             intentionally_undocumented=False,
             **extra,
         )
@@ -889,6 +953,8 @@ Output:
         realm_type: int = Realm.ORG_TYPES["business"]["id"],
         realm_default_language: str = "en",
         realm_in_root_domain: str | None = None,
+        captcha: str | None = None,
+        import_from: str = "none",
     ) -> "TestHttpResponse":
         payload = {
             "email": email,
@@ -896,7 +962,10 @@ Output:
             "realm_type": realm_type,
             "realm_default_language": realm_default_language,
             "realm_subdomain": realm_subdomain,
+            "import_from": import_from,
         }
+        if captcha is not None:
+            payload["captcha"] = captcha
         if realm_in_root_domain is not None:
             payload["realm_in_root_domain"] = realm_in_root_domain
         return self.client_post(
@@ -977,6 +1046,7 @@ Output:
             follow=False,
             secure=False,
             headers=None,
+            query_params=None,
             intentionally_undocumented=False,
             **extra,
         )
@@ -996,6 +1066,7 @@ Output:
             follow=False,
             secure=False,
             headers=None,
+            query_params=None,
             intentionally_undocumented=False,
             **extra,
         )
@@ -1011,6 +1082,7 @@ Output:
             follow=False,
             secure=False,
             headers=None,
+            query_params=None,
             intentionally_undocumented=False,
             **extra,
         )
@@ -1020,6 +1092,7 @@ Output:
         user: UserProfile,
         url: str,
         info: str | bytes | Mapping[str, Any] = {},
+        *,
         intentionally_undocumented: bool = False,
         **extra: str,
     ) -> "TestHttpResponse":
@@ -1031,6 +1104,7 @@ Output:
             follow=False,
             secure=False,
             headers=None,
+            query_params=None,
             intentionally_undocumented=intentionally_undocumented,
             **extra,
         )
@@ -1046,6 +1120,7 @@ Output:
             follow=False,
             secure=False,
             headers=None,
+            query_params=None,
             intentionally_undocumented=False,
             **extra,
         )
@@ -1061,6 +1136,7 @@ Output:
             follow=False,
             secure=False,
             headers=None,
+            query_params=None,
             intentionally_undocumented=False,
             **extra,
         )
@@ -1107,7 +1183,7 @@ Output:
         read_by_sender: bool = True,
     ) -> int:
         to_user_ids = [u.id for u in to_users]
-        assert len(to_user_ids) >= 2
+        assert len(to_user_ids) >= 1
 
         (sending_client, _) = Client.objects.get_or_create(name="test suite")
 
@@ -1194,6 +1270,22 @@ Output:
     ) -> list[dict[str, Any]]:
         data = self.get_messages_response(anchor, num_before, num_after, use_first_unread_anchor)
         return data["messages"]
+
+    def get_user_ids_for_whom_message_read(self, message_id: int) -> set[int]:
+        user_ids = set(
+            UserMessage.objects.filter(message_id=message_id)
+            .extra(where=[UserMessage.where_read()])  # noqa: S610
+            .values_list("user_profile_id", flat=True)
+        )
+        return user_ids
+
+    def get_user_ids_for_whom_message_unread(self, message_id: int) -> set[int]:
+        user_ids = set(
+            UserMessage.objects.filter(message_id=message_id)
+            .extra(where=[UserMessage.where_unread()])  # noqa: S610
+            .values_list("user_profile_id", flat=True)
+        )
+        return user_ids
 
     def users_subscribed_to_stream(self, stream_name: str, realm: Realm) -> list[UserProfile]:
         stream = Stream.objects.get(name=stream_name, realm=realm)
@@ -1282,7 +1374,9 @@ Output:
             for item in items:
                 print(item)
             print(f"\nexpected length: {count}\nactual length: {actual_count}")
-            raise AssertionError(f"{type(items)} is of unexpected size!")
+            raise AssertionError(
+                f"{type(items)} is of unexpected size! Expected count: {count}, actual count: {actual_count}."
+            )
 
     @contextmanager
     def assert_memcached_count(self, count: int) -> Iterator[None]:
@@ -1366,6 +1460,31 @@ Output:
         self.assertEqual(stream.recipient_id, message.recipient_id)
         self.assertEqual(stream.name, stream_name)
 
+    def assert_stream_subscriber_count(
+        self,
+        counts_before: dict[int, int],
+        counts_after: dict[int, int],
+        expected_difference: int,
+    ) -> None:
+        # Normally they should always be equal,
+        # but just in case this was called in some test where user/s streams have changed
+        # and we forgot to update streams,
+        # so this assertion catches that.
+        self.assertEqual(
+            set(counts_before),
+            set(counts_after),
+            msg="Different streams! You should compare subscriber_count for the same streams.",
+        )
+
+        for stream_id, count_before in counts_before.items():
+            self.assertEqual(
+                count_before + expected_difference,
+                counts_after[stream_id],
+                msg=f"""
+                stream of ID ({stream_id}) should have a subscriber_count of {count_before + expected_difference}.
+                """,
+            )
+
     def webhook_fixture_data(self, type: str, action: str, file_type: str = "json") -> str:
         fn = os.path.join(
             os.path.dirname(__file__),
@@ -1392,6 +1511,7 @@ Output:
         invite_only: bool = False,
         is_web_public: bool = False,
         history_public_to_subscribers: bool | None = None,
+        topics_policy: int = StreamTopicsPolicyEnum.inherit.value,
     ) -> Stream:
         if realm is None:
             realm = get_realm("zulip")
@@ -1407,6 +1527,7 @@ Output:
                 invite_only=invite_only,
                 is_web_public=is_web_public,
                 history_public_to_subscribers=history_public_to_subscribers,
+                topics_policy=topics_policy,
                 **get_default_values_for_stream_permission_group_settings(realm),
             )
         except IntegrityError:  # nocoverage -- this is for bugs in the tests
@@ -1446,7 +1567,7 @@ Output:
         try:
             stream = get_stream(stream_name, user_profile.realm)
         except Stream.DoesNotExist:
-            stream, from_stream_creation = create_stream_if_needed(
+            stream, _from_stream_creation = create_stream_if_needed(
                 realm,
                 stream_name,
                 invite_only=invite_only,
@@ -1485,10 +1606,7 @@ Output:
             "invite_only": orjson.dumps(invite_only).decode(),
         }
         post_data.update(extra_post_data)
-        # We wrap the API call with a 'transaction.atomic' context
-        # manager as it helps us with NOT rolling back the entire
-        # test transaction due to error responses.
-        with transaction.atomic(savepoint=True):
+        with self.artificial_transaction_savepoint():
             result = self.api_post(
                 user,
                 "/api/v1/users/me/subscriptions",
@@ -1498,6 +1616,39 @@ Output:
             )
         if not allow_fail:
             self.assert_json_success(result)
+        return result
+
+    # Create a stream by making an API request
+    def create_channel_via_post(
+        self,
+        user: UserProfile,
+        subscribers: list[int] | None = None,
+        name: str | None = None,
+        extra_post_data: Mapping[str, Any] = {},
+        invite_only: bool = False,
+        is_web_public: bool = False,
+        **extra: str,
+    ) -> "TestHttpResponse":
+        if subscribers is None:
+            subscribers = [user.id]
+
+        post_data = {
+            "name": name,
+            "subscribers": orjson.dumps(subscribers).decode(),
+            "is_web_public": orjson.dumps(is_web_public).decode(),
+            "invite_only": orjson.dumps(invite_only).decode(),
+        }
+
+        post_data.update(extra_post_data)
+        with self.artificial_transaction_savepoint():
+            result = self.api_post(
+                user,
+                "/api/v1/channels/create",
+                post_data,
+                intentionally_undocumented=False,
+                **extra,
+            )
+
         return result
 
     def subscribed_stream_name_list(self, user: UserProfile) -> str:
@@ -1566,6 +1717,7 @@ Output:
             follow=False,
             secure=False,
             headers=None,
+            query_params=None,
             intentionally_undocumented=False,
             **extra,
         )
@@ -1765,6 +1917,23 @@ Output:
             realm, licenses, licenses_at_next_renewal, CustomerPlan.BILLING_SCHEDULE_MONTHLY
         )
 
+    def register_push_device(self, user_profile_id: int) -> None:
+        PushDevice.objects.create(
+            user_id=user_profile_id,
+            push_account_id=10,
+            bouncer_device_id=1,
+            token_kind=PushDevice.TokenKind.FCM,
+            push_public_key="n4WTVqj8KH6u0vScRycR4TqRaHhFeJ0POvMb8LCu8iI=",
+        )
+
+    def register_push_device_token(self, user_profile_id: int) -> None:
+        PushDeviceToken.objects.create(
+            user_id=user_profile_id,
+            kind=PushDeviceToken.APNS,
+            token="test-token",
+            ios_app_id="com.zulip.flutter",
+        )
+
     def create_user_notifications_data_object(
         self, *, user_id: int, **kwargs: Any
     ) -> UserMessageNotificationsData:
@@ -1927,7 +2096,7 @@ Output:
         self.send_personal_message(shiva, polonius)
         self.send_group_direct_message(aaron, [polonius, zoe])
 
-        members_group = NamedUserGroup.objects.get(name="role:members", realm=realm)
+        members_group = NamedUserGroup.objects.get(name="role:members", realm_for_sharding=realm)
         do_change_realm_permission_group_setting(
             realm, "can_access_all_users_group", members_group, acting_user=None
         )
@@ -1964,6 +2133,16 @@ Output:
             with open(attach_file.name, "rb") as fp:
                 file_path = upload_message_attachment_from_request(UploadedFile(fp), user)[0]
                 return file_path
+
+    @contextmanager
+    def artificial_transaction_savepoint(self) -> Iterator[None]:
+        # Sometimes we need to wrap some test code, such as an API call with a
+        # 'transaction.atomic' context manager as it helps us with NOT rolling
+        # back the entire test transaction due to errors expected by the test.
+        # Otherwise, those errors can prevent the test from continuing, and throw
+        # TransactionManagementError instead.
+        with transaction.atomic(savepoint=True):
+            yield
 
 
 class ZulipTestCase(ZulipTestCaseMixin, TestCase):
@@ -2147,8 +2326,22 @@ class ZulipTestCase(ZulipTestCaseMixin, TestCase):
         with self.captureOnCommitCallbacks(execute=True):
             handle_missedmessage_emails(user_profile_id, message_ids)
 
+    def build_streams_subscriber_count(self, streams: Iterable[Stream]) -> dict[int, int]:
+        """
+        Callers MUST pass a new db-fetched version of streams each time.
+        """
+        return {stream.id: stream.subscriber_count for stream in streams}
 
-def get_row_ids_in_all_tables() -> Iterator[tuple[str, set[int]]]:
+    def fetch_streams_subscriber_count(self, stream_ids: set[int]) -> dict[int, int]:
+        return self.build_streams_subscriber_count(streams=Stream.objects.filter(id__in=stream_ids))
+
+    def fetch_other_streams_subscriber_count(self, stream_ids: set[int]) -> dict[int, int]:
+        return self.build_streams_subscriber_count(
+            streams=Stream.objects.exclude(id__in=stream_ids)
+        )
+
+
+def get_row_pks_in_all_tables() -> Iterator[tuple[str, set[int]]]:
     all_models = apps.get_models(include_auto_created=True)
     ignored_tables = {"django_session"}
 
@@ -2156,8 +2349,8 @@ def get_row_ids_in_all_tables() -> Iterator[tuple[str, set[int]]]:
         table_name = model._meta.db_table
         if table_name in ignored_tables:
             continue
-        ids = model._default_manager.all().values_list("id", flat=True)
-        yield table_name, set(ids)
+        pks = model._default_manager.all().values_list("pk", flat=True)
+        yield table_name, set(pks)
 
 
 class ZulipTransactionTestCase(ZulipTestCaseMixin, TransactionTestCase):
@@ -2185,7 +2378,7 @@ class ZulipTransactionTestCase(ZulipTestCaseMixin, TransactionTestCase):
     @override
     def setUp(self) -> None:
         super().setUp()
-        self.models_ids_set = dict(get_row_ids_in_all_tables())
+        self.models_pks_set = dict(get_row_pks_in_all_tables())
 
     @override
     def tearDown(self) -> None:
@@ -2195,11 +2388,11 @@ class ZulipTransactionTestCase(ZulipTestCaseMixin, TransactionTestCase):
         test database.
         """
         super().tearDown()
-        for table_name, ids in get_row_ids_in_all_tables():
+        for table_name, pks in get_row_pks_in_all_tables():
             self.assertSetEqual(
-                self.models_ids_set[table_name],
-                ids,
-                f"{table_name} got a different set of ids after this test",
+                self.models_pks_set[table_name],
+                pks,
+                f"{table_name} got a different set of primary key values after this test",
             )
 
     def _fixture_teardown(self) -> None:
@@ -2574,3 +2767,256 @@ class BouncerTestCase(ZulipTestCase):
         token_kind = PushDeviceToken.FCM
 
         return {"user_id": user_id, "token": token, "token_kind": token_kind}
+
+
+class PushNotificationTestCase(BouncerTestCase):
+    @override
+    def setUp(self) -> None:
+        super().setUp()
+        self.user_profile = self.example_user("hamlet")
+        self.sending_client = get_client("test")
+        self.sender = self.example_user("hamlet")
+        self.personal_recipient_user = self.example_user("othello")
+
+    def get_message(self, type: int, type_id: int, realm_id: int) -> Message:
+        recipient, _ = Recipient.objects.get_or_create(
+            type_id=type_id,
+            type=type,
+        )
+
+        message = Message(
+            sender=self.sender,
+            recipient=recipient,
+            realm_id=realm_id,
+            content="This is test content",
+            rendered_content="This is test content",
+            date_sent=timezone_now(),
+            sending_client=self.sending_client,
+            is_channel_message=type == Recipient.STREAM,
+        )
+        message.set_topic_name("Test topic")
+        message.save()
+
+        return message
+
+    @contextmanager
+    def mock_apns(self) -> Iterator[tuple[APNsContext, mock.AsyncMock]]:
+        apns = mock.Mock(spec=aioapns.APNs)
+        apns.send_notification = mock.AsyncMock()
+        apns_context = APNsContext(
+            apns=apns,
+            loop=asyncio.new_event_loop(),
+        )
+        try:
+            with mock.patch("zerver.lib.push_notifications.get_apns_context") as mock_get:
+                mock_get.return_value = apns_context
+                yield apns_context, apns.send_notification
+        finally:
+            apns_context.loop.close()
+
+    def setup_apns_tokens(self) -> None:
+        self.tokens = [("aAAa", "org.zulip.Zulip"), ("bBBb", "com.zulip.flutter")]
+        for token, appid in self.tokens:
+            PushDeviceToken.objects.create(
+                kind=PushDeviceToken.APNS,
+                token=token,
+                user=self.user_profile,
+                ios_app_id=appid,
+            )
+
+        self.remote_tokens = [
+            ("cCCc", "dDDd", "org.zulip.Zulip"),
+            ("eEEe", "fFFf", "com.zulip.flutter"),
+        ]
+        for id_token, uuid_token, appid in self.remote_tokens:
+            # We want to set up both types of RemotePushDeviceToken here:
+            # the legacy one with user_id and the new with user_uuid.
+            # This allows tests to work with either, without needing to
+            # do their own setup.
+            RemotePushDeviceToken.objects.create(
+                kind=RemotePushDeviceToken.APNS,
+                token=id_token,
+                ios_app_id=appid,
+                user_id=self.user_profile.id,
+                server=self.server,
+            )
+            RemotePushDeviceToken.objects.create(
+                kind=RemotePushDeviceToken.APNS,
+                token=uuid_token,
+                ios_app_id=appid,
+                user_uuid=self.user_profile.uuid,
+                server=self.server,
+            )
+
+    @contextmanager
+    def mock_fcm(self) -> Iterator[tuple[mock.MagicMock, mock.MagicMock]]:
+        with (
+            mock.patch("zerver.lib.push_notifications.fcm_app") as mock_fcm_app,
+            mock.patch("zerver.lib.push_notifications.firebase_messaging") as mock_fcm_messaging,
+        ):
+            yield mock_fcm_app, mock_fcm_messaging
+
+    def setup_fcm_tokens(self) -> None:
+        self.fcm_tokens = ["1111", "2222"]
+        for token in self.fcm_tokens:
+            PushDeviceToken.objects.create(
+                kind=PushDeviceToken.FCM,
+                token=token,
+                user=self.user_profile,
+                ios_app_id=None,
+            )
+
+        self.remote_fcm_tokens = [("dddd", "eeee")]
+        for id_token, uuid_token in self.remote_fcm_tokens:
+            RemotePushDeviceToken.objects.create(
+                kind=RemotePushDeviceToken.FCM,
+                token=id_token,
+                user_id=self.user_profile.id,
+                server=self.server,
+            )
+            RemotePushDeviceToken.objects.create(
+                kind=RemotePushDeviceToken.FCM,
+                token=uuid_token,
+                user_uuid=self.user_profile.uuid,
+                server=self.server,
+            )
+
+    def make_fcm_success_response(self, tokens: list[str]) -> firebase_messaging.BatchResponse:
+        responses = [
+            firebase_messaging.SendResponse(exception=None, resp=dict(name=str(idx)))
+            for idx, _ in enumerate(tokens)
+        ]
+        return firebase_messaging.BatchResponse(responses)
+
+    def make_fcm_error_response(
+        self, token: str, exception: firebase_exceptions.FirebaseError
+    ) -> firebase_messaging.BatchResponse:
+        error_response = firebase_messaging.SendResponse(exception=exception, resp=None)
+        return firebase_messaging.BatchResponse([error_response])
+
+
+class E2EEPushNotificationTestCase(BouncerTestCase):
+    def register_push_devices_for_notification(
+        self, is_server_self_hosted: bool = False
+    ) -> tuple[RemotePushDevice, RemotePushDevice]:
+        hamlet = self.example_user("hamlet")
+        realm = hamlet.realm
+
+        # Hamlet registers both an Android and an Apple device for push notification.
+        PushDevice.objects.create(
+            user=hamlet,
+            push_account_id=10,
+            bouncer_device_id=1,
+            token_kind=PushDevice.TokenKind.APNS,
+            push_public_key="9VvW7k59AET0v3+VFCkKTrNm5DJQ7JTKdvUjZInZZ0Y=",
+        )
+        PushDevice.objects.create(
+            user=hamlet,
+            push_account_id=20,
+            bouncer_device_id=2,
+            token_kind=PushDevice.TokenKind.FCM,
+            push_public_key="n4WTVqj8KH6u0vScRycR4TqRaHhFeJ0POvMb8LCu8iI=",
+        )
+
+        realm_and_remote_realm_fields: dict[str, Realm | RemoteRealm | None] = {
+            "realm": realm,
+            "remote_realm": None,
+        }
+        if is_server_self_hosted:
+            remote_realm = RemoteRealm.objects.get(uuid=realm.uuid)
+            realm_and_remote_realm_fields = {"realm": None, "remote_realm": remote_realm}
+
+        registered_device_apple = RemotePushDevice.objects.create(
+            push_account_id=10,
+            device_id=1,
+            token_kind=RemotePushDevice.TokenKind.APNS,
+            token="push-device-token-1",
+            ios_app_id="abc",
+            **realm_and_remote_realm_fields,
+        )
+        registered_device_android = RemotePushDevice.objects.create(
+            push_account_id=20,
+            device_id=2,
+            token_kind=RemotePushDevice.TokenKind.FCM,
+            token="push-device-token-3",
+            **realm_and_remote_realm_fields,
+        )
+
+        return registered_device_apple, registered_device_android
+
+    def register_old_push_devices_for_notification(self) -> tuple[PushDeviceToken, PushDeviceToken]:
+        hamlet = self.example_user("hamlet")
+
+        registered_device_android = PushDeviceToken.objects.create(
+            kind=PushDeviceToken.FCM,
+            token="token-fcm",
+            user=hamlet,
+            ios_app_id=None,
+        )
+        registered_device_apple = PushDeviceToken.objects.create(
+            kind=PushDeviceToken.APNS,
+            token="token-apns",
+            user=hamlet,
+            ios_app_id="abc",
+        )
+        return registered_device_apple, registered_device_android
+
+    @contextmanager
+    def mock_fcm(self, for_legacy: bool = False) -> Iterator[mock.MagicMock]:
+        if for_legacy:
+            with (
+                mock.patch("zerver.lib.push_notifications.fcm_app"),
+                mock.patch(
+                    "zerver.lib.push_notifications.firebase_messaging"
+                ) as mock_fcm_messaging,
+            ):
+                yield mock_fcm_messaging
+        else:
+            with (
+                mock.patch("zilencer.lib.push_notifications.fcm_app"),
+                mock.patch(
+                    "zilencer.lib.push_notifications.firebase_messaging"
+                ) as mock_fcm_messaging,
+            ):
+                yield mock_fcm_messaging
+
+    @contextmanager
+    def mock_apns(self, for_legacy: bool = False) -> Iterator[mock.AsyncMock]:
+        apns = mock.Mock(spec=aioapns.APNs)
+        apns.send_notification = mock.AsyncMock()
+        apns_context = APNsContext(
+            apns=apns,
+            loop=asyncio.new_event_loop(),
+        )
+        target = (
+            "zerver.lib.push_notifications.get_apns_context"
+            if for_legacy
+            else "zilencer.lib.push_notifications.get_apns_context"
+        )
+        try:
+            with mock.patch(target) as mock_get:
+                mock_get.return_value = apns_context
+                yield apns.send_notification
+        finally:
+            apns_context.loop.close()
+
+    def make_fcm_success_response(
+        self, for_legacy: bool = False
+    ) -> firebase_messaging.BatchResponse:
+        if for_legacy:
+            device_ids_count = PushDeviceToken.objects.filter(kind=PushDeviceToken.FCM).count()
+        else:
+            device_ids_count = RemotePushDevice.objects.filter(
+                token_kind=RemotePushDevice.TokenKind.FCM
+            ).count()
+        responses = [
+            firebase_messaging.SendResponse(exception=None, resp=dict(name=str(idx)))
+            for idx in range(device_ids_count)
+        ]
+        return firebase_messaging.BatchResponse(responses)
+
+    def make_fcm_error_response(
+        self, exception: firebase_exceptions.FirebaseError
+    ) -> firebase_messaging.BatchResponse:
+        error_response = firebase_messaging.SendResponse(exception=exception, resp=None)
+        return firebase_messaging.BatchResponse([error_response])

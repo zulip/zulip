@@ -17,6 +17,7 @@ from scripts.lib.supervisor import list_supervisor_processes
 from scripts.lib.zulip_tools import (
     DEPLOYMENTS_DIR,
     ENDC,
+    LOCK_DIR,
     OKGREEN,
     WARNING,
     get_config,
@@ -50,6 +51,10 @@ elif username != "zulip":
     logging.error("Must be run as user 'zulip'.")
     sys.exit(1)
 
+
+if os.environ.get("RUNNING_UNDER_CRON") and os.path.exists(LOCK_DIR):
+    logging.info("Skipping cron-triggered restart during deploy.")
+    sys.exit(1)
 
 if not args.skip_checks:
     logging.info("Running syntax and database checks")
@@ -110,6 +115,8 @@ if has_application_server():
     # the restart is fine, as clients will transparently retry.
     workers.append("zulip-tus")
 
+    workers.extend(list_supervisor_processes(["zulip-email-server"]))
+
 if has_process_fts_updates():
     workers.append("process-fts-updates")
 
@@ -138,7 +145,20 @@ if action == "restart" and len(running_services) == 0:
 elif action == "start":
     existing_services = list_supervisor_processes(check_services)
     if existing_services == running_services:
-        logging.info("Zulip is already started; nothing to do!")
+        # Check if the version we're trying to start is the version
+        # that we would have started.  We do this via checking the CWD
+        # of the oldest uwsgi worker.
+        oldest_pid = subprocess.check_output(
+            ["pgrep", "--oldest", "--full", "zulip-django uWSGI worker"], text=True
+        ).strip()
+        running_cwd = os.readlink(f"/proc/{oldest_pid}/cwd")
+        if deploy_path != running_cwd:
+            logging.warning("Mismatch between 'current' symlink and currently-running code!")
+            logging.warning("Already-running deploy: %s", running_cwd)
+            logging.warning("We would have started:  %s", deploy_path)
+            logging.warning("To restart, call %s/scripts/restart-server", deploy_path)
+        else:
+            logging.info("Zulip is already started; nothing to do!")
         sys.exit(0)
 
 
@@ -243,7 +263,8 @@ if (action == "start" or args.less_graceful) and not args.only_django:
 if has_application_server() and not args.skip_client_reloads and not args.only_django:
     # All of the servers have been (re)started; now enqueue events in
     # the Tornado servers to tell clients to reload.
-    subprocess.check_call(["./scripts/reload-clients"])
+    logging.info("Sending reload events to clients in the background")
+    subprocess.check_call(["./scripts/reload-clients", "--background"])
 
 logging.info("Done!")
 print(OKGREEN + f"Zulip {action}ed successfully!" + ENDC)

@@ -19,6 +19,7 @@ from zerver.actions.users import do_change_can_create_users, do_change_user_role
 from zerver.lib.bot_config import ConfigError, get_bot_config
 from zerver.lib.bot_lib import get_bot_handler
 from zerver.lib.integrations import EMBEDDED_BOTS, WebhookIntegration
+from zerver.lib.request import RequestNotes
 from zerver.lib.test_classes import UploadSerializeMixin, ZulipTestCase
 from zerver.lib.test_helpers import avatar_disk_path, get_test_image_file
 from zerver.lib.utils import assert_is_not_none
@@ -38,17 +39,18 @@ def _check_string(var_name: str, val: str) -> str | None:
     return None
 
 
-stripe_sample_config_options = [
+test_sample_config_options = [
     WebhookIntegration(
         "stripe",
         ["financial"],
         display_name="Stripe",
         config_options=[
             WebhookConfigOption(
-                name="stripe_api_key", description="Stripe API key", validator=_check_string
+                name="stripe_api_key", label="Stripe API key", validator=_check_string
             )
         ],
     ),
+    WebhookIntegration("helloworld", ["misc"], display_name="Hello World"),
 ]
 
 
@@ -133,11 +135,11 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         self.login("hamlet")
         self.assert_num_bots_equal(0)
         bot_info = dict(
-            full_name="a",
+            full_name="",
             short_name="bot",
         )
         result = self.client_post("/json/bots", bot_info)
-        self.assert_json_error(result, "Name too short!")
+        self.assert_json_error(result, "Name must not be empty!")
         self.assert_num_bots_equal(0)
 
     def test_json_users_with_bots(self) -> None:
@@ -842,13 +844,13 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         cordelia = self.example_user("cordelia")
 
         administrators_system_group = NamedUserGroup.objects.get(
-            name=SystemGroups.ADMINISTRATORS, realm=realm, is_system_group=True
+            name=SystemGroups.ADMINISTRATORS, realm_for_sharding=realm, is_system_group=True
         )
         moderators_system_group = NamedUserGroup.objects.get(
-            name=SystemGroups.MODERATORS, realm=realm, is_system_group=True
+            name=SystemGroups.MODERATORS, realm_for_sharding=realm, is_system_group=True
         )
         members_system_group = NamedUserGroup.objects.get(
-            name=SystemGroups.MEMBERS, realm=realm, is_system_group=True
+            name=SystemGroups.MEMBERS, realm_for_sharding=realm, is_system_group=True
         )
 
         do_change_realm_permission_group_setting(
@@ -967,13 +969,13 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         cordelia = self.example_user("cordelia")
 
         administrators_system_group = NamedUserGroup.objects.get(
-            name=SystemGroups.ADMINISTRATORS, realm=realm, is_system_group=True
+            name=SystemGroups.ADMINISTRATORS, realm_for_sharding=realm, is_system_group=True
         )
         moderators_system_group = NamedUserGroup.objects.get(
-            name=SystemGroups.MODERATORS, realm=realm, is_system_group=True
+            name=SystemGroups.MODERATORS, realm_for_sharding=realm, is_system_group=True
         )
         members_system_group = NamedUserGroup.objects.get(
-            name=SystemGroups.MEMBERS, realm=realm, is_system_group=True
+            name=SystemGroups.MEMBERS, realm_for_sharding=realm, is_system_group=True
         )
 
         do_change_realm_permission_group_setting(
@@ -1791,12 +1793,24 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
             "method": "PATCH",
         }
         email = "hambot-bot@zulip.testserver"
-        # Important: We intentionally use the wrong method, post, here.
-        result = self.client_post(f"/json/bots/{self.get_bot_user(email).id}", bot_info)
+
+        with self.assertLogs(level="WARN") as m:
+            # Important: We intentionally use the wrong method, post, here.
+            result = self.client_post(f"/json/bots/{self.get_bot_user(email).id}", bot_info)
 
         # TODO: The "method" parameter is not currently tracked as a processed parameter
         # by typed_endpoint. Assert it is returned as an ignored parameter.
         response_dict = self.assert_json_success(result, ignored_parameters=["method"])
+
+        request_notes = RequestNotes.get_notes(result.wsgi_request)
+
+        self.assertEqual(
+            m.output,
+            [
+                "WARNING:root:Overriding HTTP method via 'method' parameter: "
+                f"original={result.request['REQUEST_METHOD']}, override={bot_info['method']}, client={request_notes.client_name}"
+            ],
+        )
 
         self.assertEqual("Fred", response_dict["full_name"])
 
@@ -2030,7 +2044,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
 
         self.assertEqual(bot_owner_user_ids(new_bot), set())
 
-    @patch("zerver.lib.integrations.WEBHOOK_INTEGRATIONS", stripe_sample_config_options)
+    @patch("zerver.lib.integrations.WEBHOOK_INTEGRATIONS", test_sample_config_options)
     def test_create_incoming_webhook_bot_with_service_name_and_with_keys(self) -> None:
         self.login("hamlet")
         bot_metadata = {
@@ -2047,7 +2061,21 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
             config_data, {"integration_id": "stripe", "stripe_api_key": "sample-api-key"}
         )
 
-    @patch("zerver.lib.integrations.WEBHOOK_INTEGRATIONS", stripe_sample_config_options)
+    @patch("zerver.lib.integrations.WEBHOOK_INTEGRATIONS", test_sample_config_options)
+    def test_create_incoming_webhook_bot_with_service_name_and_no_config_options(self) -> None:
+        self.login("hamlet")
+        bot_metadata = {
+            "full_name": "My Hello World Bot",
+            "short_name": "my-helloworld",
+            "bot_type": UserProfile.INCOMING_WEBHOOK_BOT,
+            "service_name": "helloworld",
+        }
+        self.create_bot(**bot_metadata)
+        new_bot = UserProfile.objects.get(full_name="My Hello World Bot")
+        config_data = get_bot_config(new_bot)
+        self.assertEqual(config_data, {"integration_id": "helloworld"})
+
+    @patch("zerver.lib.integrations.WEBHOOK_INTEGRATIONS", test_sample_config_options)
     def test_create_incoming_webhook_bot_with_service_name_incorrect_keys(self) -> None:
         self.login("hamlet")
         bot_metadata = {
@@ -2064,7 +2092,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         with self.assertRaises(UserProfile.DoesNotExist):
             UserProfile.objects.get(full_name="My Stripe Bot")
 
-    @patch("zerver.lib.integrations.WEBHOOK_INTEGRATIONS", stripe_sample_config_options)
+    @patch("zerver.lib.integrations.WEBHOOK_INTEGRATIONS", test_sample_config_options)
     def test_create_incoming_webhook_bot_with_service_name_without_keys(self) -> None:
         self.login("hamlet")
         bot_metadata = {
@@ -2080,7 +2108,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         with self.assertRaises(UserProfile.DoesNotExist):
             UserProfile.objects.get(full_name="My Stripe Bot")
 
-    @patch("zerver.lib.integrations.WEBHOOK_INTEGRATIONS", stripe_sample_config_options)
+    @patch("zerver.lib.integrations.WEBHOOK_INTEGRATIONS", test_sample_config_options)
     def test_create_incoming_webhook_bot_without_service_name(self) -> None:
         self.login("hamlet")
         bot_metadata = {
@@ -2093,7 +2121,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         with self.assertRaises(ConfigError):
             get_bot_config(new_bot)
 
-    @patch("zerver.lib.integrations.WEBHOOK_INTEGRATIONS", stripe_sample_config_options)
+    @patch("zerver.lib.integrations.WEBHOOK_INTEGRATIONS", test_sample_config_options)
     def test_create_incoming_webhook_bot_with_incorrect_service_name(self) -> None:
         self.login("hamlet")
         bot_metadata = {

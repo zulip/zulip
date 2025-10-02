@@ -84,6 +84,7 @@ class ClientDescriptor:
         include_deactivated_groups: bool,
         archived_channels: bool,
         empty_topic_name: bool,
+        simplified_presence_events: bool,
     ) -> None:
         # TODO: We eventually want to upstream this code to the caller, but
         # serialization concerns make it a bit difficult.
@@ -118,6 +119,7 @@ class ClientDescriptor:
         self.include_deactivated_groups = include_deactivated_groups
         self.archived_channels = archived_channels
         self.empty_topic_name = empty_topic_name
+        self.simplified_presence_events = simplified_presence_events
 
         # Default for lifespan_secs is DEFAULT_EVENT_QUEUE_TIMEOUT_SECS;
         # but users can set it as high as MAX_QUEUE_TIMEOUT_SECS.
@@ -151,6 +153,7 @@ class ClientDescriptor:
             include_deactivated_groups=self.include_deactivated_groups,
             archived_channels=self.archived_channels,
             empty_topic_name=self.empty_topic_name,
+            simplified_presence_events=self.simplified_presence_events,
         )
 
     @override
@@ -191,6 +194,7 @@ class ClientDescriptor:
             include_deactivated_groups=d.get("include_deactivated_groups", False),
             archived_channels=d.get("archived_channels", False),
             empty_topic_name=d.get("empty_topic_name", False),
+            simplified_presence_events=d.get("simplified_presence_events", False),
         )
         ret.last_connection_time = d["last_connection_time"]
         return ret
@@ -254,10 +258,20 @@ class ClientDescriptor:
                 # cannot filter out deactivated groups by themselves.
                 return not self.include_deactivated_groups
             if event["op"] == "update" and "deactivated" in event["data"]:
-                # 'update' events for group deactivation are only sent to
-                # clients who can filter out deactivated groups by themselves.
-                # Other clients receive 'remove' event.
+                # 'update' events for group deactivation and reactivation
+                # are only sent to clients who can filter out deactivated
+                # groups by themselves. Other clients receive 'remove' and
+                # 'add' event.
                 return self.include_deactivated_groups
+        if (
+            event["type"] == "stream"
+            and event["op"] == "update"
+            and event["property"] == "is_archived"
+        ):
+            # 'update' events for archiving and unarchiving streams are
+            # only sent to clients that can process archived channels.
+            # Other clients receive "create" and "delete" events.
+            return self.archived_channels
         return True
 
     # TODO: Refactor so we don't need this function
@@ -1114,6 +1128,16 @@ def process_message_event(
     )
     realm_host = event_template.get("realm_host", "")
 
+    # TODO/compatibility: We need to set `push_device_registered_user_ids` to None
+    # for message events prior to the introduction of `push_device_registered_user_ids`
+    # field in the event.
+    #
+    # Simplify this block to `push_device_registered_user_ids = set(event_template.get("push_device_registered_user_ids", []))`
+    # when one can no longer directly upgrade from 11.x to main.
+    push_device_registered_user_ids = event_template.get("push_device_registered_user_ids", None)
+    if push_device_registered_user_ids is not None:
+        push_device_registered_user_ids = set(push_device_registered_user_ids)
+
     wide_dict: dict[str, Any] = event_template["message_dict"]
 
     # Temporary transitional code: Zulip servers that have message
@@ -1178,6 +1202,7 @@ def process_message_event(
             stream_wildcard_mention_in_followed_topic_user_ids=stream_wildcard_mention_in_followed_topic_user_ids,
             muted_sender_user_ids=muted_sender_user_ids,
             all_bot_user_ids=all_bot_user_ids,
+            push_device_registered_user_ids=push_device_registered_user_ids,
         )
 
         # Calling asdict would be slow, as it does a deep copy; pull
@@ -1231,7 +1256,7 @@ def process_message_event(
             is_incoming_1_to_1=wide_dict["recipient_id"] == client.user_recipient_id,
         )
 
-        # Make sure Zephyr mirroring bots know whether stream is invite-only
+        # Make sure mirroring bots know whether stream is invite-only
         if "mirror" in client.client_type_name and event_template.get("invite_only"):
             message_dict = message_dict.copy()
             message_dict["invite_only_stream"] = True
@@ -1248,7 +1273,7 @@ def process_message_event(
         if not client.accepts_event(user_event):
             continue
 
-        # The below prevents (Zephyr) mirroring loops.
+        # The below prevents mirroring loops.
         if "mirror" in sending_client and sending_client.lower() == client.client_type_name.lower():
             continue
 
@@ -1266,7 +1291,7 @@ def process_presence_event(event: Mapping[str, Any], users: Iterable[int]) -> No
         type="presence",
         user_id=event["user_id"],
         server_timestamp=event["server_timestamp"],
-        presence=event["presence"],
+        presence=event["legacy_presence"],
     )
 
     legacy_event = dict(
@@ -1274,13 +1299,20 @@ def process_presence_event(event: Mapping[str, Any], users: Iterable[int]) -> No
         user_id=event["user_id"],
         email=event["email"],
         server_timestamp=event["server_timestamp"],
-        presence=event["presence"],
+        presence=event["legacy_presence"],
+    )
+
+    modern_event = dict(
+        type="presence",
+        presences={str(event["user_id"]): event["modern_presence"]},
     )
 
     for user_profile_id in users:
         for client in get_client_descriptors_for_user(user_profile_id):
             if client.accepts_event(event):
-                if client.slim_presence:
+                if client.simplified_presence_events:
+                    client.add_event(modern_event)
+                elif client.slim_presence:
                     client.add_event(slim_event)
                 else:
                     client.add_event(legacy_event)
@@ -1386,6 +1418,16 @@ def process_message_update_event(
     message_id = event_template["message_id"]
     rendering_only_update = event_template["rendering_only"]
 
+    # TODO/compatibility: We need to set `push_device_registered_user_ids` to None
+    # for update_message events prior to the introduction of `push_device_registered_user_ids`
+    # field in the event.
+    #
+    # Simplify this block to `push_device_registered_user_ids = set(event_template.pop("push_device_registered_user_ids", []))`
+    # when one can no longer directly upgrade from 11.x to main.
+    push_device_registered_user_ids = event_template.pop("push_device_registered_user_ids", None)
+    if push_device_registered_user_ids is not None:
+        push_device_registered_user_ids = set(push_device_registered_user_ids)
+
     for user_data in users:
         user_profile_id = user_data["id"]
 
@@ -1424,6 +1466,7 @@ def process_message_update_event(
                 stream_wildcard_mention_in_followed_topic_user_ids=stream_wildcard_mention_in_followed_topic_user_ids,
                 muted_sender_user_ids=muted_sender_user_ids,
                 all_bot_user_ids=all_bot_user_ids,
+                push_device_registered_user_ids=push_device_registered_user_ids,
             )
 
             maybe_enqueue_notifications_for_message_update(
@@ -1544,6 +1587,21 @@ def maybe_enqueue_notifications_for_message_update(
     )
 
 
+def process_user_group_creation_event(event: Mapping[str, Any], users: Iterable[int]) -> None:
+    group_creation_event = dict(event)
+    # 'for_reactivation' field is no longer needed and can be popped, as we now
+    # know whether this event was sent for creating the group or reactivating
+    # the group and we can avoid sending the reactivation event to client with
+    # `include_deactivated_groups` client capability set to true.
+    event_for_reactivation = group_creation_event.pop("for_reactivation", False)
+    for user_profile_id in users:
+        for client in get_client_descriptors_for_user(user_profile_id):
+            if client.accepts_event(group_creation_event):
+                if event_for_reactivation and client.include_deactivated_groups:
+                    continue
+                client.add_event(group_creation_event)
+
+
 def process_user_group_name_update_event(event: Mapping[str, Any], users: Iterable[int]) -> None:
     user_group_event = dict(event)
     # 'deactivated' field is no longer needed and can be popped, as we now
@@ -1557,6 +1615,28 @@ def process_user_group_name_update_event(event: Mapping[str, Any], users: Iterab
                 if event_for_deactivated_group and not client.include_deactivated_groups:
                     continue
                 client.add_event(user_group_event)
+
+
+def process_stream_creation_event(event: Mapping[str, Any], users: Iterable[int]) -> None:
+    stream_create_event = dict(event)
+    event_for_unarchiving_stream = stream_create_event.pop("for_unarchiving", False)
+    for user_profile_id in users:
+        for client in get_client_descriptors_for_user(user_profile_id):
+            if client.accepts_event(stream_create_event):
+                if event_for_unarchiving_stream and client.archived_channels:
+                    continue
+                client.add_event(stream_create_event)
+
+
+def process_stream_deletion_event(event: Mapping[str, Any], users: Iterable[int]) -> None:
+    stream_delete_event = dict(event)
+    event_for_archiving_stream = stream_delete_event.pop("for_archiving", False)
+    for user_profile_id in users:
+        for client in get_client_descriptors_for_user(user_profile_id):
+            if client.accepts_event(stream_delete_event):
+                if event_for_archiving_stream and client.archived_channels:
+                    continue
+                client.add_event(stream_delete_event)
 
 
 def process_user_topic_event(event: Mapping[str, Any], users: Iterable[int]) -> None:
@@ -1640,6 +1720,8 @@ def process_notification(notice: Mapping[str, Any]) -> None:
         # event sent for updating name separately for clients with different
         # capabilities.
         process_user_group_name_update_event(event, cast(list[int], users))
+    elif event["type"] == "user_group" and event["op"] == "add":
+        process_user_group_creation_event(event, cast(list[int], users))
     elif event["type"] == "user_topic":
         process_user_topic_event(event, cast(list[int], users))
     elif event["type"] == "typing" and event["message_type"] == "stream":
@@ -1650,6 +1732,10 @@ def process_notification(notice: Mapping[str, Any]) -> None:
         and event["flag"] == "read"
     ):
         process_mark_message_unread_event(event, cast(list[int], users))
+    elif event["type"] == "stream" and event["op"] == "create":
+        process_stream_creation_event(event, cast(list[int], users))
+    elif event["type"] == "stream" and event["op"] == "delete":
+        process_stream_deletion_event(event, cast(list[int], users))
     elif event["type"] == "cleanup_queue":
         # cleanup_event_queue may generate this event to forward cleanup
         # requests to the right shard.

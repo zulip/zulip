@@ -8,7 +8,7 @@ from zerver.lib.management import ZulipBaseCommand
 
 if settings.BILLING_ENABLED:
     from corporate.lib.stripe import RealmBillingSession
-    from corporate.models import CustomerPlan
+    from corporate.models.plans import CustomerPlan
 
 
 class Command(ZulipBaseCommand):

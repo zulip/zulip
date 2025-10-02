@@ -58,6 +58,21 @@ class AbstractMessage(models.Model):
         db_default=MessageType.NORMAL,
     )
 
+    # Direct messages do not have topics in the API. Originally, all
+    # DMs had a topic of "" in the database. When we started using ""
+    # as the topic for "general chat", this caused problems with the
+    # PostgreSQL query planner. Because a large portion of all
+    # messages are DMs, PostgreSQL could do very inefficient table
+    # scans to fetch messages in general chat, ignoring the topic
+    # index, because it assumed most messages were in general chat.
+    #
+    # To avoid that query planner statistics problem, we use an
+    # unprintable character, which isn't permitted in actual topics,
+    # as the topic for DMs in the database. The "BEL" character is an
+    # arbitrary choice, but feels suitable given DMs trigger a
+    # notification sound.
+    DM_TOPIC = "\x07"
+
     # The message's topic.
     #
     # Early versions of Zulip called this concept a "subject", as in an email
@@ -105,6 +120,9 @@ class AbstractMessage(models.Model):
 
     @override
     def __str__(self) -> str:
+        if not self.is_channel_message:
+            return f"{self.recipient.label()} /  / {self.sender!r}"
+
         return f"{self.recipient.label()} / {self.subject} / {self.sender!r}"
 
 
@@ -200,7 +218,7 @@ class Message(AbstractMessage):
                 name="zerver_message_realm_sender_recipient",
             ),
             models.Index(
-                # For analytics queries
+                # For analytics and retention queries
                 "realm_id",
                 "date_sent",
                 name="zerver_message_realm_date_sent",
@@ -227,9 +245,8 @@ class Message(AbstractMessage):
                 condition=Q(is_channel_message=True),
             ),
             models.Index(
-                # Used by already_sent_mirrored_message_id, and when
-                # determining recent topics (we post-process to merge
-                # and show the most recent case)
+                # Used when determining recent topics (we post-process
+                # to merge and show the most recent case)
                 "realm_id",
                 "recipient_id",
                 "subject",
@@ -244,7 +261,11 @@ class Message(AbstractMessage):
                 name="zerver_message_realm_id",
             ),
             models.Index(
-                # Used by 0680_rename_general_chat_to_empty_string_topic
+                # Potentially useful for migrations that rewrite
+                # message edit history. Originally added for
+                # 0680_rename_general_chat_to_empty_string_topic,
+                # though that migration was adjusted in a way that no
+                # longer uses this.
                 fields=["id"],
                 condition=Q(edit_history__isnull=False),
                 name="zerver_message_edit_history_id",
@@ -260,16 +281,6 @@ class Message(AbstractMessage):
 
     def set_topic_name(self, topic_name: str) -> None:
         self.subject = topic_name
-
-    def is_stream_message(self) -> bool:
-        """
-        Find out whether a message is a stream message by
-        looking up its recipient.type.  TODO: Make this
-        an easier operation by denormalizing the message
-        type onto Message, either explicitly (message.type)
-        or implicitly (message.stream_id is not None).
-        """
-        return self.recipient.type == Recipient.STREAM
 
     def get_realm(self) -> Realm:
         return self.realm
@@ -613,6 +624,15 @@ class UserMessage(AbstractUserMessage):
                 "message",
                 condition=Q(flags__andnz=AbstractUserMessage.flags.is_private.mask),
                 name="zerver_usermessage_is_private_message_id",
+            ),
+            models.Index(
+                "user_profile",
+                "message",
+                condition=(
+                    Q(flags__andnz=AbstractUserMessage.flags.is_private.mask)
+                    & Q(flags__andz=AbstractUserMessage.flags.read.mask)
+                ),
+                name="zerver_usermessage_is_private_unread_message_id",
             ),
             models.Index(
                 "user_profile",

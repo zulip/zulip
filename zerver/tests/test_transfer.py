@@ -13,7 +13,7 @@ from zerver.lib.test_helpers import (
     get_test_image_file,
     read_test_image_file,
 )
-from zerver.lib.thumbnail import resize_emoji
+from zerver.lib.thumbnail import ThumbnailFormat, resize_emoji
 from zerver.lib.transfer import (
     transfer_avatars_to_s3,
     transfer_emoji_to_s3,
@@ -69,15 +69,61 @@ class TransferUploadsToS3Test(ZulipTestCase):
 
         upload_message_attachment("dummy1.txt", "text/plain", b"zulip1!", hamlet)
         upload_message_attachment("dummy2.txt", "text/plain", b"zulip2!", othello)
+        with (
+            self.thumbnail_formats(ThumbnailFormat("webp", 100, 75, animated=False)),
+            self.captureOnCommitCallbacks(execute=True),
+        ):
+            access_path, _ = upload_message_attachment(
+                "img.png", "image/png", read_test_image_file("img.png"), hamlet
+            )
+        self.assertTrue(access_path.startswith("/user_uploads/"))
+        image_path_id = access_path.removeprefix("/user_uploads/")
+        assert settings.LOCAL_FILES_DIR is not None
+        thumbnail_path = os.path.join(
+            settings.LOCAL_FILES_DIR, "thumbnail", image_path_id, "100x75.webp"
+        )
+        self.assertTrue(os.path.exists(thumbnail_path))
 
         with self.assertLogs(level="INFO"):
             transfer_message_files_to_s3(1)
 
         attachments = Attachment.objects.all().order_by("id")
 
-        self.assert_length(list(bucket.objects.all()), 2)
-        self.assertEqual(bucket.Object(attachments[0].path_id).get()["Body"].read(), b"zulip1!")
-        self.assertEqual(bucket.Object(attachments[1].path_id).get()["Body"].read(), b"zulip2!")
+        self.assert_length(list(bucket.objects.all()), 4)
+
+        s3_dummy1 = bucket.Object(attachments[0].path_id).get()
+        self.assertEqual(s3_dummy1["Body"].read(), b"zulip1!")
+        self.assertEqual(
+            s3_dummy1["Metadata"],
+            {"realm_id": str(attachments[0].realm_id), "user_profile_id": str(hamlet.id)},
+        )
+
+        s3_dummy2 = bucket.Object(attachments[1].path_id).get()
+        self.assertEqual(s3_dummy2["Body"].read(), b"zulip2!")
+        self.assertEqual(
+            s3_dummy2["Metadata"],
+            {"realm_id": str(attachments[1].realm_id), "user_profile_id": str(othello.id)},
+        )
+
+        s3_image = bucket.Object(attachments[2].path_id).get()
+        self.assertEqual(
+            s3_image["Body"].read(),
+            read_test_image_file("img.png"),
+        )
+        self.assertEqual(
+            s3_image["Metadata"],
+            {"realm_id": str(attachments[2].realm_id), "user_profile_id": str(hamlet.id)},
+        )
+
+        s3_image_thumbnail = bucket.Object(
+            os.path.join("thumbnail", attachments[2].path_id, "100x75.webp")
+        ).get()
+        self.assertEqual(s3_image_thumbnail["Metadata"], {})
+        with open(thumbnail_path, "rb") as thumbnail_file:
+            self.assertEqual(
+                s3_image_thumbnail["Body"].read(),
+                thumbnail_file.read(),
+            )
 
     @mock_aws
     def test_transfer_emoji_to_s3(self) -> None:

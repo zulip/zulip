@@ -2,7 +2,9 @@
 
 const assert = require("node:assert/strict");
 
-const {zrequire} = require("./lib/namespace.cjs");
+const {make_user_group} = require("./lib/example_group.cjs");
+const {make_realm} = require("./lib/example_realm.cjs");
+const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 
 const settings_config = zrequire("settings_config");
@@ -24,9 +26,13 @@ const th = zrequire("typeahead_helper");
 const user_groups = zrequire("user_groups");
 const {initialize_user_settings} = zrequire("user_settings");
 
+mock_esm("../src/channel", {
+    get: () => ({subscribers: []}),
+});
+
 const current_user = {};
 set_current_user(current_user);
-const realm = {};
+const realm = make_realm();
 set_realm(realm);
 const user_settings = {};
 initialize_user_settings({user_settings});
@@ -125,62 +131,80 @@ const dev_sub = {
     name: "Dev",
     color: "blue",
     stream_id: 1,
+    subscriber_count: 0,
 };
 
 const linux_sub = {
     name: "Linux",
     color: "red",
     stream_id: 2,
+    subscriber_count: 0,
 };
 stream_data.create_streams([dev_sub, linux_sub]);
-stream_data.add_sub(dev_sub);
-stream_data.add_sub(linux_sub);
+stream_data.add_sub_for_tests(dev_sub);
+stream_data.add_sub_for_tests(linux_sub);
 
-const bob_system_group = {
+const bob_system_group = make_user_group({
     id: 1,
     name: "Bob system group",
     description: "",
     members: new Set([]),
     is_system_group: true,
-};
+});
 const bob_system_group_item = user_group_item(bob_system_group);
 
-const bob_group = {
+const bob_group = make_user_group({
     id: 2,
     name: "Bob group",
     description: "",
     members: new Set([]),
     is_system_group: false,
-};
+});
 const bob_group_item = user_group_item(bob_group);
 
-const second_bob_group = {
+const second_bob_group = make_user_group({
     id: 3,
     name: "bob 2 group",
     description: "",
     members: new Set([b_user_2.user_id]),
     is_system_group: false,
-};
+});
 
-const admins_group = {
+const admins_group = make_user_group({
     id: 4,
     name: "Admins of zulip",
     description: "",
     members: new Set([]),
     is_system_group: false,
-};
+});
 const admins_group_item = user_group_item(admins_group);
 
-const members_group = {
+const members_group = make_user_group({
     id: 5,
     name: "role:members",
     description: "",
     members: new Set([]),
     is_system_group: true,
-};
+});
+const members_group_item = user_group_item(members_group);
+
+const everyone_group = make_user_group({
+    id: 6,
+    name: "role:everyone",
+    description: "",
+    members: new Set([]),
+    is_system_group: true,
+});
 
 user_groups.initialize({
-    realm_user_groups: [bob_system_group, bob_group, second_bob_group, admins_group, members_group],
+    realm_user_groups: [
+        bob_system_group,
+        bob_group,
+        second_bob_group,
+        admins_group,
+        members_group,
+        everyone_group,
+    ],
 });
 
 function test(label, f) {
@@ -190,13 +214,12 @@ function test(label, f) {
         peer_data.clear_for_testing();
         people.clear_recipient_counts_for_testing();
         helpers.override(current_user, "is_admin", false);
-        helpers.override(realm, "realm_is_zephyr_mirror_realm", false);
 
         f(helpers);
     });
 }
 
-test("sort_streams", ({override, override_rewire}) => {
+test("sort_streams", ({override}) => {
     let test_streams = [
         {
             stream_id: 101,
@@ -261,7 +284,7 @@ test("sort_streams", ({override, override_rewire}) => {
     );
 
     stream_list_sort.set_filter_out_inactives();
-    override_rewire(compose_state, "stream_name", () => "Dev");
+    compose_state.set_selected_recipient_id(dev_sub.stream_id);
 
     test_streams = th.sort_streams(test_streams, "d");
     assert.deepEqual(test_streams[0].name, "Dev"); // Stream being composed to
@@ -280,7 +303,8 @@ test("sort_streams", ({override, override_rewire}) => {
     assert.deepEqual(test_streams[4].name, "Dev");
     assert.deepEqual(test_streams[5].name, "Docs");
 
-    override_rewire(compose_state, "stream_name", () => "Different");
+    compose_state.set_selected_recipient_id(linux_sub.stream_id);
+
     // Test sort streams with description
     test_streams = [
         {
@@ -378,12 +402,15 @@ test("sort_streams", ({override, override_rewire}) => {
 
 function language_items(languages) {
     return languages.map((language) => ({
-        type: "syntax",
         language,
+        type: "syntax",
     }));
 }
 
-test("sort_languages", ({override_rewire}) => {
+test("sort_languages", ({override, override_rewire}) => {
+    override(realm, "realm_default_code_block_language", "dart");
+    const default_language = realm.realm_default_code_block_language;
+
     override_rewire(pygments_data, "langs", {
         python: {priority: 26},
         javascript: {priority: 27},
@@ -391,20 +418,52 @@ test("sort_languages", ({override_rewire}) => {
         pascal: {priority: 15},
         perl: {priority: 3},
         css: {priority: 21},
+        spoiler: {priority: 29},
+        text: {priority: 31},
+        quote: {priority: 30},
+        math: {priority: 28},
     });
 
-    let test_langs = language_items(["pascal", "perl", "php", "python", "javascript"]);
+    let test_langs = language_items(["pascal", "perl", "php", "python", "spoiler", "javascript"]);
     test_langs = th.sort_languages(test_langs, "p");
 
     // Sort languages by matching first letter, and then by popularity
-    assert.deepEqual(test_langs, language_items(["python", "php", "pascal", "perl", "javascript"]));
+    assert.deepEqual(
+        test_langs,
+        language_items(["python", "php", "pascal", "perl", "spoiler", "javascript"]),
+    );
 
     // Test if popularity between two languages are the same
     pygments_data.langs.php = {priority: 26};
-    test_langs = language_items(["pascal", "perl", "php", "python", "javascript"]);
+    test_langs = language_items(["pascal", "perl", "php", "python", "spoiler", "javascript"]);
     test_langs = th.sort_languages(test_langs, "p");
 
-    assert.deepEqual(test_langs, language_items(["php", "python", "pascal", "perl", "javascript"]));
+    assert.deepEqual(
+        test_langs,
+        language_items(["php", "python", "pascal", "perl", "spoiler", "javascript"]),
+    );
+
+    test_langs = language_items([
+        default_language,
+        "text",
+        "quote",
+        "math",
+        "python",
+        "javascript",
+    ]);
+    const test_langs_for_default = th.sort_languages(test_langs, "d");
+
+    assert.deepEqual(
+        test_langs_for_default,
+        language_items([default_language, "text", "quote", "math", "javascript", "python"]),
+    );
+
+    test_langs = th.sort_languages(test_langs, "t");
+
+    assert.deepEqual(
+        test_langs,
+        language_items(["text", "quote", "math", "javascript", "python", default_language]),
+    );
 });
 
 test("sort_languages on actual data", () => {
@@ -791,7 +850,7 @@ test("sort broadcast mentions for stream message type", () => {
     // actually had a bug where the sort would
     // randomly rearrange them)
     compose_state.set_message_type("stream");
-    const mentions = ct.broadcast_mentions().reverse();
+    const mentions = ct.broadcast_mentions().toReversed();
     const broadcast_items = mentions.map((broadcast) => broadcast_item(broadcast));
     const results = th.sort_people_for_relevance(broadcast_items, "", "");
 
@@ -808,7 +867,7 @@ test("sort broadcast mentions for stream message type", () => {
         ...ct
             .broadcast_mentions()
             .map((broadcast) => broadcast_item(broadcast))
-            .reverse(),
+            .toReversed(),
         a_user_item,
     ];
     const results2 = th.sort_people_for_relevance(user_or_mention_items, "", "");
@@ -821,7 +880,7 @@ test("sort broadcast mentions for stream message type", () => {
 
 test("sort broadcast mentions for direct message type", () => {
     compose_state.set_message_type("private");
-    const mentions = ct.broadcast_mentions().reverse();
+    const mentions = ct.broadcast_mentions().toReversed();
     const broadcast_items = mentions.map((broadcast) => broadcast_item(broadcast));
     const results = th.sort_people_for_relevance(broadcast_items, "", "");
 
@@ -835,7 +894,7 @@ test("sort broadcast mentions for direct message type", () => {
         ...ct
             .broadcast_mentions()
             .map((broadcast) => broadcast_item(broadcast))
-            .reverse(),
+            .toReversed(),
         a_user_item,
     ];
     const results2 = th.sort_people_for_relevance(user_or_mention_items, "", "");
@@ -867,36 +926,6 @@ test("test compare directly for direct message", () => {
     assert.equal(th.compare_people_for_relevance(all_obj_item, all_obj_item), 0);
     assert.equal(th.compare_people_for_relevance(all_obj_item, zman_item), 1);
     assert.equal(th.compare_people_for_relevance(zman_item, all_obj_item), -1);
-});
-
-test("highlight_with_escaping", () => {
-    function highlight(query, item) {
-        return th.make_query_highlighter(query)(item);
-    }
-
-    let item = "Denmark";
-    let query = "Den";
-    let expected = "<strong>Den</strong>mark";
-    let result = highlight(query, item);
-    assert.equal(result, expected);
-
-    item = "w3IrD_naMe";
-    query = "w3IrD_naMe";
-    expected = "<strong>w3IrD_naMe</strong>";
-    result = highlight(query, item);
-    assert.equal(result, expected);
-
-    item = "development help";
-    query = "development h";
-    expected = "<strong>development h</strong>elp";
-    result = highlight(query, item);
-    assert.equal(result, expected);
-
-    item = "Prefix notprefix prefix";
-    query = "pre";
-    expected = "<strong>Pre</strong>fix notprefix <strong>pre</strong>fix";
-    result = highlight(query, item);
-    assert.equal(result, expected);
 });
 
 test("render_person when emails hidden", ({mock_template, override}) => {
@@ -1137,6 +1166,7 @@ test("sort_group_setting_options", ({override_rewire}) => {
         b_user_2.full_name,
         b_user_1.full_name,
         b_user_3.full_name,
+        everyone_group.name,
         members_group.name,
         admins_group.name,
         a_user.full_name,
@@ -1150,6 +1180,7 @@ test("sort_group_setting_options", ({override_rewire}) => {
         b_user_2.full_name,
         b_user_1.full_name,
         b_user_3.full_name,
+        everyone_group.name,
         members_group.name,
         admins_group.name,
         a_user.full_name,
@@ -1161,6 +1192,7 @@ test("sort_group_setting_options", ({override_rewire}) => {
         admins_group.name,
         a_user.full_name,
         bob_system_group.name,
+        everyone_group.name,
         members_group.name,
         bob_group.name,
         second_bob_group.name,
@@ -1172,6 +1204,7 @@ test("sort_group_setting_options", ({override_rewire}) => {
     assert.deepEqual(get_group_setting_typeahead_result("me", second_bob_group), [
         members_group.name,
         bob_system_group.name,
+        everyone_group.name,
         admins_group.name,
         bob_group.name,
         second_bob_group.name,
@@ -1183,6 +1216,7 @@ test("sort_group_setting_options", ({override_rewire}) => {
     ]);
 
     assert.deepEqual(get_group_setting_typeahead_result("ever", second_bob_group), [
+        everyone_group.name,
         members_group.name,
         bob_system_group.name,
         admins_group.name,
@@ -1198,6 +1232,7 @@ test("sort_group_setting_options", ({override_rewire}) => {
     assert.deepEqual(get_group_setting_typeahead_result("translated: members", second_bob_group), [
         members_group.name,
         bob_system_group.name,
+        everyone_group.name,
         admins_group.name,
         bob_group.name,
         second_bob_group.name,
@@ -1219,30 +1254,413 @@ test("sort_group_setting_options", ({override_rewire}) => {
     ]);
 });
 
-test("compare_setting_options", () => {
+test("compare_group_setting_options", () => {
     // User group has higher priority than user.
-    assert.equal(th.compare_setting_options(a_user_item, bob_group_item, bob_group), 1);
-    assert.equal(th.compare_setting_options(bob_group_item, a_user_item, bob_group), -1);
+    assert.equal(th.compare_group_setting_options(a_user_item, bob_group_item, bob_group), 1);
+    assert.equal(th.compare_group_setting_options(bob_group_item, a_user_item, bob_group), -1);
 
     // System user group has higher priority than other user groups.
-    assert.equal(th.compare_setting_options(bob_group_item, bob_system_group_item, bob_group), 1);
-    assert.equal(th.compare_setting_options(bob_system_group_item, bob_group_item, bob_group), -1);
     assert.equal(
-        th.compare_setting_options(admins_group_item, bob_system_group_item, bob_group),
+        th.compare_group_setting_options(bob_group_item, bob_system_group_item, bob_group),
+        1,
+    );
+    assert.equal(
+        th.compare_group_setting_options(bob_system_group_item, bob_group_item, bob_group),
+        -1,
+    );
+    assert.equal(
+        th.compare_group_setting_options(admins_group_item, bob_system_group_item, bob_group),
         1,
     );
 
     // In case both groups are not system groups, alphabetical order is used to decide priority.
-    assert.equal(th.compare_setting_options(bob_group_item, admins_group_item, bob_group), 1);
-    assert.equal(th.compare_setting_options(admins_group_item, bob_group_item, bob_group), -1);
+    assert.equal(th.compare_group_setting_options(bob_group_item, admins_group_item, bob_group), 1);
+    assert.equal(
+        th.compare_group_setting_options(admins_group_item, bob_group_item, bob_group),
+        -1,
+    );
 
     // A user who is a member of the group being changed has higher priority.
     // If both the users are not members of the group being changed, alphabetical order
     // is used to decide priority.
-    assert.equal(th.compare_setting_options(b_user_1_item, b_user_2_item, bob_group), -1);
-    assert.equal(th.compare_setting_options(b_user_1_item, b_user_2_item, second_bob_group), 1);
+    assert.equal(th.compare_group_setting_options(b_user_1_item, b_user_2_item, bob_group), -1);
+    assert.equal(
+        th.compare_group_setting_options(b_user_1_item, b_user_2_item, second_bob_group),
+        1,
+    );
 
     // Get coverage for case where two users have same names. Original order is preserved
     // in such cases.
-    assert.equal(th.compare_setting_options(b_user_1_item, b_user_1_item, bob_group), 0);
+    assert.equal(th.compare_group_setting_options(b_user_1_item, b_user_1_item, bob_group), 0);
+});
+
+test("sort_stream_or_group_members_options", ({override_rewire}) => {
+    function get_stream_or_group_members_typeahead_result(query) {
+        const users = people.get_realm_active_human_users().map((user) => ({type: "user", user}));
+        const groups = user_groups.get_all_realm_user_groups().map((group) => ({
+            type: "user_group",
+            ...group,
+        }));
+        const result = th.sort_stream_or_group_members_options({
+            users,
+            query,
+            groups,
+            for_stream_subscribers: true,
+        });
+        return result.map((item) => {
+            if (item.type === "user") {
+                return item.user.full_name;
+            }
+
+            return item.name;
+        });
+    }
+
+    assert.deepEqual(get_stream_or_group_members_typeahead_result("Bo"), [
+        bob_group.name,
+        second_bob_group.name,
+        b_user_1.full_name,
+        b_user_2.full_name,
+        b_user_3.full_name,
+        bob_system_group.name,
+        members_group.name,
+        admins_group.name,
+        a_user.full_name,
+        zman.full_name,
+        everyone_group.name,
+    ]);
+
+    assert.deepEqual(get_stream_or_group_members_typeahead_result("bo"), [
+        bob_group.name,
+        second_bob_group.name,
+        b_user_1.full_name,
+        b_user_2.full_name,
+        b_user_3.full_name,
+        bob_system_group.name,
+        members_group.name,
+        admins_group.name,
+        a_user.full_name,
+        zman.full_name,
+        everyone_group.name,
+    ]);
+
+    assert.deepEqual(get_stream_or_group_members_typeahead_result("Z"), [
+        zman.full_name,
+        admins_group.name,
+        a_user.full_name,
+        members_group.name,
+        bob_group.name,
+        second_bob_group.name,
+        b_user_1.full_name,
+        b_user_2.full_name,
+        b_user_3.full_name,
+        bob_system_group.name,
+        everyone_group.name,
+    ]);
+
+    assert.deepEqual(get_stream_or_group_members_typeahead_result("me"), [
+        members_group.name,
+        admins_group.name,
+        bob_group.name,
+        second_bob_group.name,
+        a_user.full_name,
+        b_user_1.full_name,
+        b_user_2.full_name,
+        b_user_3.full_name,
+        zman.full_name,
+        bob_system_group.name,
+        everyone_group.name,
+    ]);
+
+    assert.deepEqual(get_stream_or_group_members_typeahead_result("ever"), [
+        members_group.name,
+        everyone_group.name,
+        admins_group.name,
+        bob_group.name,
+        second_bob_group.name,
+        a_user.full_name,
+        b_user_1.full_name,
+        b_user_2.full_name,
+        b_user_3.full_name,
+        zman.full_name,
+        bob_system_group.name,
+    ]);
+
+    assert.deepEqual(get_stream_or_group_members_typeahead_result("translated: members"), [
+        members_group.name,
+        admins_group.name,
+        bob_group.name,
+        second_bob_group.name,
+        a_user.full_name,
+        b_user_1.full_name,
+        b_user_2.full_name,
+        b_user_3.full_name,
+        zman.full_name,
+        bob_system_group.name,
+        everyone_group.name,
+    ]);
+
+    override_rewire(bootstrap_typeahead, "MAX_ITEMS", 6);
+    assert.deepEqual(get_stream_or_group_members_typeahead_result("Bo"), [
+        bob_group.name,
+        second_bob_group.name,
+        b_user_1.full_name,
+        b_user_2.full_name,
+        b_user_3.full_name,
+        bob_system_group.name,
+    ]);
+});
+
+test("compare_stream_or_group_members_options", () => {
+    // Non system user group has higher priority than user for both streams and groups UI.
+    assert.equal(
+        th.compare_stream_or_group_members_options(a_user_item, bob_group_item, undefined, true),
+        1,
+    );
+    assert.equal(
+        th.compare_stream_or_group_members_options(a_user_item, bob_group_item, undefined, false),
+        1,
+    );
+    assert.equal(
+        th.compare_stream_or_group_members_options(bob_group_item, a_user_item, undefined, true),
+        -1,
+    );
+    assert.equal(
+        th.compare_stream_or_group_members_options(bob_group_item, a_user_item, undefined, false),
+        -1,
+    );
+    // User has higher priority than non `role:members` system user group for streams UI.
+    assert.equal(
+        th.compare_stream_or_group_members_options(
+            a_user_item,
+            bob_system_group_item,
+            undefined,
+            true,
+        ),
+        -1,
+    );
+    assert.equal(
+        th.compare_stream_or_group_members_options(
+            bob_system_group_item,
+            a_user_item,
+            undefined,
+            true,
+        ),
+        1,
+    );
+    // System user group has lower priority than other user groups for both streams and groups UI.
+    assert.equal(
+        th.compare_stream_or_group_members_options(
+            bob_group_item,
+            bob_system_group_item,
+            undefined,
+            true,
+        ),
+        -1,
+    );
+    assert.equal(
+        th.compare_stream_or_group_members_options(
+            bob_group_item,
+            bob_system_group_item,
+            undefined,
+            false,
+        ),
+        -1,
+    );
+    assert.equal(
+        th.compare_stream_or_group_members_options(
+            bob_system_group_item,
+            bob_group_item,
+            undefined,
+            true,
+        ),
+        1,
+    );
+    assert.equal(
+        th.compare_stream_or_group_members_options(
+            bob_system_group_item,
+            bob_group_item,
+            undefined,
+            false,
+        ),
+        1,
+    );
+    assert.equal(
+        th.compare_stream_or_group_members_options(
+            admins_group_item,
+            bob_system_group_item,
+            undefined,
+            true,
+        ),
+        -1,
+    );
+    assert.equal(
+        th.compare_stream_or_group_members_options(
+            admins_group_item,
+            bob_system_group_item,
+            undefined,
+            false,
+        ),
+        -1,
+    );
+
+    // Members group always takes priority against any other group for stream subscribers UI.
+    assert.equal(
+        th.compare_stream_or_group_members_options(
+            bob_group_item,
+            members_group_item,
+            undefined,
+            true,
+        ),
+        1,
+    );
+    assert.equal(
+        th.compare_stream_or_group_members_options(
+            members_group_item,
+            bob_group_item,
+            undefined,
+            true,
+        ),
+        -1,
+    );
+    assert.equal(
+        th.compare_stream_or_group_members_options(
+            admins_group_item,
+            members_group_item,
+            undefined,
+            true,
+        ),
+        1,
+    );
+    assert.equal(
+        th.compare_stream_or_group_members_options(
+            members_group_item,
+            admins_group_item,
+            undefined,
+            true,
+        ),
+        -1,
+    );
+    // For group members UI, members group does not take priority.
+    assert.equal(
+        th.compare_stream_or_group_members_options(
+            bob_group_item,
+            members_group_item,
+            undefined,
+            false,
+        ),
+        -1,
+    );
+    assert.equal(
+        th.compare_stream_or_group_members_options(
+            members_group_item,
+            bob_group_item,
+            undefined,
+            false,
+        ),
+        1,
+    );
+    assert.equal(
+        th.compare_stream_or_group_members_options(
+            admins_group_item,
+            members_group_item,
+            undefined,
+            false,
+        ),
+        -1,
+    );
+    assert.equal(
+        th.compare_stream_or_group_members_options(
+            members_group_item,
+            admins_group_item,
+            undefined,
+            false,
+        ),
+        1,
+    );
+    assert.equal(
+        th.compare_stream_or_group_members_options(
+            a_user_item,
+            members_group_item,
+            undefined,
+            false,
+        ),
+        -1,
+    );
+    assert.equal(
+        th.compare_stream_or_group_members_options(
+            members_group_item,
+            a_user_item,
+            undefined,
+            false,
+        ),
+        1,
+    );
+
+    // In case both groups are not system groups, alphabetical order is used to decide priority.
+    assert.equal(
+        th.compare_stream_or_group_members_options(
+            bob_group_item,
+            admins_group_item,
+            undefined,
+            true,
+        ),
+        1,
+    );
+    assert.equal(
+        th.compare_stream_or_group_members_options(
+            bob_group_item,
+            admins_group_item,
+            undefined,
+            false,
+        ),
+        1,
+    );
+    assert.equal(
+        th.compare_stream_or_group_members_options(
+            admins_group_item,
+            bob_group_item,
+            undefined,
+            true,
+        ),
+        -1,
+    );
+    assert.equal(
+        th.compare_stream_or_group_members_options(
+            admins_group_item,
+            bob_group_item,
+            undefined,
+            false,
+        ),
+        -1,
+    );
+
+    // Use alphabetical order to compare two users.
+    assert.equal(
+        th.compare_stream_or_group_members_options(b_user_1_item, b_user_2_item, undefined, true),
+        -1,
+    );
+    assert.equal(
+        th.compare_stream_or_group_members_options(b_user_1_item, b_user_2_item, undefined, false),
+        -1,
+    );
+    assert.equal(
+        th.compare_stream_or_group_members_options(b_user_2_item, b_user_1_item, undefined, true),
+        1,
+    );
+    assert.equal(
+        th.compare_stream_or_group_members_options(b_user_2_item, b_user_1_item, undefined, false),
+        1,
+    );
+
+    // Get coverage for case where two users have same names. Original order is preserved
+    // in such cases.
+    assert.equal(
+        th.compare_stream_or_group_members_options(b_user_1_item, b_user_1_item, undefined, true),
+        0,
+    );
+    assert.equal(
+        th.compare_stream_or_group_members_options(b_user_1_item, b_user_1_item, undefined, false),
+        0,
+    );
 });

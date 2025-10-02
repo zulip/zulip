@@ -3,6 +3,7 @@ import Micromodal from "micromodal";
 import assert from "minimalistic-assert";
 
 import * as blueslip from "./blueslip.ts";
+import * as mouse_drag from "./mouse_drag.ts";
 import * as overlay_util from "./overlay_util.ts";
 import * as overlays from "./overlays.ts";
 
@@ -157,7 +158,7 @@ export function open(
            input inside the modal too far will weirdly close the modal.
            See https://github.com/ghosh/Micromodal/issues/505.
            Work around this with our own implementation. */
-        if (document.getSelection()?.type === "Range") {
+        if (mouse_drag.is_drag(e)) {
             return;
         }
         close(modal_id);

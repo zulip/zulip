@@ -3,7 +3,6 @@
   "balance": 0,
   "created": 1000000000,
   "currency": null,
-  "default_currency": null,
   "default_source": null,
   "delinquent": false,
   "description": "test-realm-3 (test-realm-3)",

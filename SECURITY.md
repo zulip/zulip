@@ -11,7 +11,7 @@ response within 24 hours.
 Please include details on the issue and how you'd like to be credited
 in our release notes when we publish the fix.
 
-Our [security model][security-model] document may be a helpful
+Our [security model][securing-your-zulip-server] document may be a helpful
 resource.
 
 ## Security announcements
@@ -32,6 +32,6 @@ reason to run older major releases.
 See also our documentation on the [Zulip release
 lifecycle][release-lifecycle].
 
-[security-model]: https://zulip.readthedocs.io/en/latest/production/security-model.html
+[securing-your-zulip-server]: https://zulip.readthedocs.io/en/latest/production/security-model.html
 [upgrades]: https://zulip.readthedocs.io/en/stable/production/upgrade.html#upgrading-to-a-release
 [release-lifecycle]: https://zulip.readthedocs.io/en/latest/overview/release-lifecycle.html

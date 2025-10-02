@@ -32,7 +32,7 @@ your internship experience with the Zulip project will be highly interactive.
 
 As part of our commitment to mentorship, Zulip has over 160,000 words of
 [documentation for
-developers](../index.md#welcome-to-the-zulip-documentation), much of it
+developers](../index.md#zulip-documentation-overview), much of it
 designed to explain not just how Zulip works, but why Zulip works the way that
 it does. To learn more about our mission and values, check out [this blog
 post](https://blog.zulip.com/2021/04/28/why-zulip-is-on-github-sponsors/)!

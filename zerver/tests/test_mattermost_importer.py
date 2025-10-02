@@ -1,5 +1,6 @@
 import filecmp
 import os
+import sys
 from typing import Any
 from unittest.mock import call, patch
 
@@ -52,7 +53,7 @@ class MatterMostImporter(ZulipTestCase):
         self.assertEqual(mattermost_data["user"][1]["username"], "harry")
         self.assert_length(mattermost_data["user"][1]["teams"], 1)
 
-        self.assert_length(mattermost_data["post"]["channel_post"], 20)
+        self.assert_length(mattermost_data["post"]["channel_post"], 21)
         self.assertEqual(mattermost_data["post"]["channel_post"][0]["team"], "gryffindor")
         self.assertEqual(mattermost_data["post"]["channel_post"][0]["channel"], "dumbledores-army")
         self.assertEqual(mattermost_data["post"]["channel_post"][0]["user"], "harry")
@@ -224,6 +225,9 @@ class MatterMostImporter(ZulipTestCase):
         user_id_mapper = IdMapper[str]()
         team_name = "gryffindor"
 
+        mock_realm_dict: ZerverFieldsT = dict(zerver_realm=[dict()])
+        zerver_realm = mock_realm_dict["zerver_realm"]
+
         convert_user_data(
             user_handler=user_handler,
             user_id_mapper=user_id_mapper,
@@ -232,15 +236,20 @@ class MatterMostImporter(ZulipTestCase):
             team_name=team_name,
         )
 
-        zerver_stream = convert_channel_data(
-            channel_data=mattermost_data["channel"],
-            user_data_map=username_to_user,
-            subscriber_handler=subscriber_handler,
-            stream_id_mapper=stream_id_mapper,
-            user_id_mapper=user_id_mapper,
-            realm_id=3,
-            team_name=team_name,
-        )
+        with patch(
+            "zerver.data_import.mattermost.MATTERMOST_DEFAULT_ANNOUNCEMENTS_CHANNEL_NAME",
+            "Gryffindor common room",
+        ):
+            zerver_stream = convert_channel_data(
+                realm=mock_realm_dict,
+                channel_data=mattermost_data["channel"],
+                user_data_map=username_to_user,
+                subscriber_handler=subscriber_handler,
+                stream_id_mapper=stream_id_mapper,
+                user_id_mapper=user_id_mapper,
+                realm_id=3,
+                team_name=team_name,
+            )
 
         self.assert_length(zerver_stream, 3)
 
@@ -251,6 +260,11 @@ class MatterMostImporter(ZulipTestCase):
         )
         self.assertEqual(zerver_stream[0]["rendered_description"], "")
         self.assertEqual(zerver_stream[0]["realm"], 3)
+
+        self.assertEqual(
+            zerver_realm[0]["zulip_update_announcements_stream"], zerver_stream[0]["id"]
+        )
+        self.assertEqual(zerver_realm[0]["new_stream_announcements_stream"], zerver_stream[0]["id"])
 
         self.assertEqual(zerver_stream[1]["name"], "Gryffindor quidditch team")
         self.assertEqual(zerver_stream[1]["invite_only"], False)
@@ -293,7 +307,9 @@ class MatterMostImporter(ZulipTestCase):
 
         # Converting channel data when a user's `teams` value is `null`.
         username_to_user["ron"].update(teams=None)
+        mock_realm_dict = dict(zerver_realm=[dict()])
         zerver_stream = convert_channel_data(
+            realm=mock_realm_dict,
             channel_data=mattermost_data["channel"],
             user_data_map=username_to_user,
             subscriber_handler=subscriber_handler,
@@ -320,7 +336,9 @@ class MatterMostImporter(ZulipTestCase):
         )
 
         team_name = "slytherin"
+        mock_realm_dict = dict(zerver_realm=[dict()])
         zerver_stream = convert_channel_data(
+            realm=mock_realm_dict,
             channel_data=mattermost_data["channel"],
             user_data_map=username_to_user,
             subscriber_handler=subscriber_handler,
@@ -688,6 +706,15 @@ class MatterMostImporter(ZulipTestCase):
             warn_log.output,
             [
                 "WARNING:root:Skipping importing direct message groups and DMs since there are multiple teams in the export",
+                *(
+                    [
+                        # Check error log when trying to process a message with faulty HTML.
+                        "WARNING:root:Error converting HTML to text for message: 'This will crash html2text!!! <g:brand><![CDATSALOMON NORTH AMERICA, IN}}]]></g:brand>'; continuing",
+                        "WARNING:root:{'sender_id': 2, 'content': 'This will crash html2text!!! <g:brand><![CDATSALOMON NORTH AMERICA, IN}}]]></g:brand>', 'date_sent': 1553166657, 'reactions': [], 'channel_name': 'dumbledores-army'}",
+                    ]
+                    if sys.version_info < (3, 13)
+                    else []
+                ),
                 "WARNING:root:Skipping importing direct message groups and DMs since there are multiple teams in the export",
             ],
         )
@@ -874,11 +901,11 @@ class MatterMostImporter(ZulipTestCase):
         messages = Message.objects.filter(realm=realm)
         for message in messages:
             self.assertIsNotNone(message.rendered_content)
-        self.assert_length(messages, 12)
+        self.assert_length(messages, 24)
 
         stream_messages = messages.filter(recipient__type=Recipient.STREAM).order_by("date_sent")
         stream_recipients = stream_messages.values_list("recipient", flat=True)
-        self.assert_length(stream_messages, 4)
+        self.assert_length(stream_messages, 13)
         self.assert_length(set(stream_recipients), 2)
         self.assertEqual(stream_messages[0].sender.email, "ron@zulip.com")
         self.assertEqual(stream_messages[0].content, "ron joined the channel.\n\n")
@@ -902,20 +929,20 @@ class MatterMostImporter(ZulipTestCase):
         self.assertEqual(
             group_direct_messages[0].content, "Who is going to Hogsmeade this weekend?\n\n"
         )
-        self.assertEqual(group_direct_messages[0].topic_name(), "")
+        self.assertEqual(group_direct_messages[0].topic_name(), Message.DM_TOPIC)
 
         personal_messages = messages.filter(recipient__type=Recipient.PERSONAL).order_by(
             "date_sent"
         )
         personal_recipients = personal_messages.values_list("recipient", flat=True)
-        self.assert_length(personal_messages, 5)
-        self.assert_length(set(personal_recipients), 3)
+        self.assert_length(personal_messages, 8)
+        self.assert_length(set(personal_recipients), 4)
         self.assertEqual(personal_messages[0].sender.email, "ron@zulip.com")
         self.assertRegex(personal_messages[0].content, "hey harry\n\n\\[harry-ron.jpg\\]\\(.*\\)")
         self.assertTrue(personal_messages[0].has_attachment)
         self.assertTrue(personal_messages[0].has_image)
         self.assertTrue(personal_messages[0].has_link)
-        self.assertEqual(personal_messages[0].topic_name(), "")
+        self.assertEqual(personal_messages[0].topic_name(), Message.DM_TOPIC)
 
     def test_do_convert_data_with_masking(self) -> None:
         mattermost_data_dir = self.fixture_file_name("", "mattermost_fixtures")
@@ -935,6 +962,14 @@ class MatterMostImporter(ZulipTestCase):
             warn_log.output,
             [
                 "WARNING:root:Skipping importing direct message groups and DMs since there are multiple teams in the export",
+                *(
+                    [
+                        "WARNING:root:Error converting HTML to text for message: 'Xxxx xxxx xxxxx xxxx2xxxx!!! <x:xxxxx><![XXXXXXXXXXX XXXXX XXXXXXX, XX}}]]></x:xxxxx>'; continuing",
+                        "WARNING:root:{'sender_id': 2, 'content': 'Xxxx xxxx xxxxx xxxx2xxxx!!! <x:xxxxx><![XXXXXXXXXXX XXXXX XXXXXXX, XX}}]]></x:xxxxx>', 'date_sent': 1553166657, 'reactions': [], 'channel_name': 'dumbledores-army'}",
+                    ]
+                    if sys.version_info < (3, 13)
+                    else []
+                ),
                 "WARNING:root:Skipping importing direct message groups and DMs since there are multiple teams in the export",
             ],
         )
@@ -962,6 +997,14 @@ class MatterMostImporter(ZulipTestCase):
             warn_log.output,
             [
                 "WARNING:root:Skipping importing direct message groups and DMs since there are multiple teams in the export",
+                *(
+                    [
+                        "WARNING:root:Error converting HTML to text for message: 'Xxxx xxxx xxxxx xxxx2xxxx!!! <x:xxxxx><![XXXXXXXXXXX XXXXX XXXXXXX, XX}}]]></x:xxxxx>'; continuing",
+                        "WARNING:root:{'sender_id': 2, 'content': 'Xxxx xxxx xxxxx xxxx2xxxx!!! <x:xxxxx><![XXXXXXXXXXX XXXXX XXXXXXX, XX}}]]></x:xxxxx>', 'date_sent': 1553166657, 'reactions': [], 'channel_name': 'dumbledores-army'}",
+                    ]
+                    if sys.version_info < (3, 13)
+                    else []
+                ),
                 "WARNING:root:Skipping importing direct message groups and DMs since there are multiple teams in the export",
             ],
         )

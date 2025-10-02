@@ -1,9 +1,14 @@
+// @ts-check
+
 import {FlatCompat} from "@eslint/eslintrc";
 import js from "@eslint/js";
 import confusingBrowserGlobals from "confusing-browser-globals";
+import {defineConfig} from "eslint/config";
 import prettier from "eslint-config-prettier";
+import {configs as astroConfigs} from "eslint-plugin-astro";
 import formatjs from "eslint-plugin-formatjs";
 import importPlugin from "eslint-plugin-import";
+import * as mdx from "eslint-plugin-mdx";
 import noJquery from "eslint-plugin-no-jquery";
 import unicorn from "eslint-plugin-unicorn";
 import globals from "globals";
@@ -11,10 +16,7 @@ import tseslint from "typescript-eslint";
 
 const compat = new FlatCompat({baseDirectory: import.meta.dirname});
 
-export default tseslint.config(
-    {
-        files: ["tools/check-openapi"],
-    },
+export default defineConfig(
     {
         // This is intended for generated files and vendored third-party files.
         // For our source code, instead of adding files here, consider using
@@ -30,11 +32,13 @@ export default tseslint.config(
     },
     js.configs.recommended,
     importPlugin.flatConfigs.recommended,
-    compat.extends("plugin:no-jquery/recommended", "plugin:no-jquery/deprecated"),
+    compat.config(noJquery.configs.recommended),
+    compat.config(noJquery.configs.deprecated),
     unicorn.configs.recommended,
     prettier,
     tseslint.configs.strictTypeChecked,
     tseslint.configs.stylisticTypeChecked,
+    mdx.flat,
     {
         files: ["**/*.cts", "**/*.mts", "**/*.ts"],
         extends: [importPlugin.flatConfigs.typescript],
@@ -83,6 +87,10 @@ export default tseslint.config(
             "@typescript-eslint/no-loop-func": "error",
             "@typescript-eslint/no-misused-spread": "off",
             "@typescript-eslint/no-non-null-assertion": "off",
+            "@typescript-eslint/no-restricted-imports": [
+                "error",
+                {paths: [{name: "zod", message: "Use zod/mini."}]},
+            ],
             "@typescript-eslint/no-unnecessary-condition": "off",
             "@typescript-eslint/no-unnecessary-qualifier": "error",
             "@typescript-eslint/no-unused-vars": [
@@ -131,6 +139,7 @@ export default tseslint.config(
             "no-jquery/no-append-html": "error",
             "no-jquery/no-constructor-attributes": "error",
             "no-jquery/no-parse-html-literal": "error",
+            "no-jquery/no-sizzle": ["error", {}],
             "no-label-var": "error",
             "no-labels": "error",
             "no-multi-str": "error",
@@ -179,6 +188,7 @@ export default tseslint.config(
         ignores: ["**/*.cts", "**/*.mts", "**/*.ts"],
         extends: [tseslint.configs.disableTypeChecked],
         rules: {
+            "@typescript-eslint/consistent-type-imports": "off",
             "@typescript-eslint/explicit-function-return-type": "off",
             "@typescript-eslint/no-require-imports": "off",
             "consistent-return": "error",
@@ -191,6 +201,16 @@ export default tseslint.config(
         files: ["**/*.cjs"],
         languageOptions: {
             sourceType: "commonjs",
+        },
+    },
+    {
+        files: ["**/*.mdx"],
+        rules: {
+            "@typescript-eslint/no-unused-vars": "off",
+            "comma-spacing": "error",
+            "import/extensions": "off",
+            "import/unambiguous": "off",
+            quotes: "error",
         },
     },
     {
@@ -270,6 +290,18 @@ export default tseslint.config(
         },
     },
     {
+        files: ["starlight_help/src/scripts/client/**"],
+        rules: {
+            "unicorn/prefer-module": "off",
+        },
+        languageOptions: {
+            globals: {
+                ...globals.browser,
+            },
+            sourceType: "script",
+        },
+    },
+    {
         files: ["web/shared/**"],
         languageOptions: {
             globals: globals["shared-node-browser"],
@@ -288,6 +320,22 @@ export default tseslint.config(
                 },
             ],
             "unicorn/prefer-string-replace-all": "off",
+        },
+    },
+    astroConfigs.recommended,
+    {
+        files: ["starlight_help/src/components/ZulipNote.astro"],
+        rules: {
+            "import/unambiguous": "off",
+        },
+    },
+    {
+        files: ["starlight_help/src/content/include/*"],
+        rules: {
+            // We need to turn off this rule since we want import statements
+            // to be easily copy-paste-able between content/include and
+            // content/docs.
+            "import/no-useless-path-segments": "off",
         },
     },
 );

@@ -29,12 +29,13 @@ from zerver.lib.thumbnail import (
     MEDIUM_AVATAR_SIZE,
     THUMBNAIL_OUTPUT_FORMATS,
     BadImageError,
+    ThumbnailFormat,
     resize_avatar,
     resize_emoji,
 )
 from zerver.lib.upload import (
     all_message_attachments,
-    attachment_vips_source,
+    attachment_source,
     delete_export_tarball,
     delete_message_attachment,
     delete_message_attachments,
@@ -71,6 +72,32 @@ class S3Test(ZulipTestCase):
         self.send_stream_message(self.example_user("hamlet"), "Denmark", body, "test")
 
     @use_s3_backend
+    def test_upload_message_attachment_thumbnail(self) -> None:
+        bucket = create_s3_buckets(settings.S3_AUTH_UPLOADS_BUCKET)[0]
+        user_profile = self.example_user("hamlet")
+        with (
+            self.thumbnail_formats(ThumbnailFormat("webp", 100, 75, animated=False)),
+            self.captureOnCommitCallbacks(execute=True),
+        ):
+            url = upload_message_attachment(
+                "img.png", "image/png", read_test_image_file("img.png"), user_profile
+            )[0]
+        self.assertTrue(url.startswith("/user_uploads/"))
+        path_id = url.removeprefix("/user_uploads/")
+        s3_image = bucket.Object(path_id).get()
+        self.assertEqual(s3_image["Body"].read(), read_test_image_file("img.png"))
+        self.assertEqual(
+            s3_image["Metadata"],
+            {"realm_id": str(user_profile.realm_id), "user_profile_id": str(user_profile.id)},
+        )
+
+        s3_thumbnail_image = bucket.Object(f"thumbnail/{path_id}/100x75.webp").get()
+        resized_image = pyvips.Image.new_from_buffer(s3_thumbnail_image["Body"].read(), "")
+        self.assertEqual(75, resized_image.width)
+        self.assertEqual(75, resized_image.height)
+        self.assertEqual(s3_thumbnail_image["Metadata"], {})
+
+    @use_s3_backend
     def test_save_attachment_contents(self) -> None:
         create_s3_buckets(settings.S3_AUTH_UPLOADS_BUCKET)
         user_profile = self.example_user("hamlet")
@@ -82,7 +109,7 @@ class S3Test(ZulipTestCase):
         self.assertEqual(output.getvalue(), b"zulip!")
 
     @use_s3_backend
-    def test_attachment_vips_source(self) -> None:
+    def test_attachment_source(self) -> None:
         create_s3_buckets(settings.S3_AUTH_UPLOADS_BUCKET)
         user_profile = self.example_user("hamlet")
         url = upload_message_attachment(
@@ -90,10 +117,10 @@ class S3Test(ZulipTestCase):
         )[0]
         path_id = re.sub(r"/user_uploads/", "", url)
 
-        source = attachment_vips_source(path_id)
+        source = attachment_source(path_id)
         self.assertIsInstance(source, StreamingSourceWithSize)
         self.assertEqual(source.size, len(read_test_image_file("img.png")))
-        image = pyvips.Image.new_from_source(source.source, "", access="sequential")
+        image = pyvips.Image.new_from_source(source.vips_source, "", access="sequential")
         self.assertEqual(128, image.height)
         self.assertEqual(128, image.width)
 
@@ -280,6 +307,31 @@ class S3Test(ZulipTestCase):
         self.subscribe(hamlet, "Denmark")
         body = f"First message ...[zulip.txt](http://{hamlet.realm.host}" + url + ")"
         self.send_stream_message(hamlet, "Denmark", body, "test")
+
+    @use_s3_backend
+    def test_user_uploads_empty_file(self) -> None:
+        bucket = create_s3_buckets(settings.S3_AUTH_UPLOADS_BUCKET)[0]
+
+        self.login("hamlet")
+        fp = StringIO("")
+        fp.name = "empty-file.txt"
+
+        result = self.client_post("/json/user_uploads", {"file": fp})
+        response_dict = self.assert_json_success(result)
+        self.assertIn("url", response_dict)
+        url = response_dict["url"]
+
+        # Despite S3 being configured, we serve the 0-byte file directly
+        response = self.client_get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.headers["Content-Type"], "text/plain")
+        self.assertEqual(response.headers["Content-Length"], "0")
+        self.assertEqual(
+            response.headers["Content-Disposition"], 'inline; filename="empty-file.txt"'
+        )
+        self.assertEqual(response.headers["Cache-Control"], "private, immutable")
+        key = url.removeprefix("/user_uploads/")
+        self.assertEqual(b"", bucket.Object(key).get()["Body"].read())
 
     @use_s3_backend
     def test_user_avatars_base(self) -> None:

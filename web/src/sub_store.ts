@@ -1,4 +1,4 @@
-import {z} from "zod";
+import * as z from "zod/mini";
 
 import * as blueslip from "./blueslip.ts";
 import type {
@@ -18,26 +18,22 @@ export type StreamProperties = z.infer<typeof stream_properties_schema>;
 export type ApiStreamSubscription = z.infer<typeof api_stream_subscription_schema>;
 
 // This is the actual type of subscription objects we use in the app.
-export const stream_subscription_schema = api_stream_subscription_schema
-    .omit({
+export const stream_subscription_schema = z.object({
+    ...z.omit(api_stream_subscription_schema, {
         subscribers: true,
-    })
-    .extend({
-        // These properties are added in `stream_data` when hydrating the streams and are not present in the data we get from the server.
-        render_subscribers: z.boolean(),
-        newly_subscribed: z.boolean(),
-        subscribed: z.boolean(),
-        previously_subscribed: z.boolean(),
-    });
+        subscriber_count: true,
+    }).shape,
+    // These properties are added in `stream_data` when hydrating the streams and are not present in the data we get from the server.
+    newly_subscribed: z.boolean(),
+    subscribed: z.boolean(),
+    previously_subscribed: z.boolean(),
+});
 export type StreamSubscription = z.infer<typeof stream_subscription_schema>;
 
 const subs_by_stream_id = new Map<number, StreamSubscription>();
 
-export let get = (stream_id: number): StreamSubscription | undefined =>
-    subs_by_stream_id.get(stream_id);
-
-export function rewire_get(value: typeof get): void {
-    get = value;
+export function get(stream_id: number): StreamSubscription | undefined {
+    return subs_by_stream_id.get(stream_id);
 }
 
 export function validate_stream_ids(stream_ids: number[]): number[] {
@@ -61,6 +57,10 @@ export function validate_stream_ids(stream_ids: number[]): number[] {
 
 export function clear(): void {
     subs_by_stream_id.clear();
+}
+
+export function delete_sub(stream_id: number): void {
+    subs_by_stream_id.delete(stream_id);
 }
 
 export function add_hydrated_sub(stream_id: number, sub: StreamSubscription): void {

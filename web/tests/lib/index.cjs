@@ -87,7 +87,6 @@ const noop = function () {};
 require("../../src/templates.ts"); // register Zulip extensions
 
 async function run_one_module(file) {
-    zjquery.clear_initialize_function();
     zjquery.clear_all_elements();
     console.info("running test " + path.basename(file, ".test.cjs"));
     test.set_current_file_name(file);
@@ -100,6 +99,10 @@ async function run_one_module(file) {
 }
 
 test.set_verbose(files.length === 1);
+
+// In case someone mistakenly vanishes the async task with something like `await
+// new Promise(() => {})`, assume failure until we establish otherwise.
+process.exitCode = 1;
 
 (async () => {
     let exit_code = 0;
@@ -144,8 +147,7 @@ test.set_verbose(files.length === 1);
         namespace.finish();
     }
 
-    process.exit(exit_code);
+    process.exitCode = exit_code;
 })().catch((error) => /* istanbul ignore next */ {
     console.error(error);
-    process.exit(1);
 });

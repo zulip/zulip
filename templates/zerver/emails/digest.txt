@@ -1,3 +1,4 @@
+{% if show_message_content %}
 {% if hot_conversations %}
 {% for convo in hot_conversations %}{% for recipient_block in convo.first_few_messages %}{{ recipient_block.header.plain }}
 {% for sender_block in recipient_block.senders %}
@@ -8,8 +9,27 @@
 {% if new_channels.plain %}** {% trans %}New channels{% endtrans %} **
     {{ new_channels.plain|display_list(1000) }}.
 {% endif %}
+{% else %}
+{% if new_messages_count > 0 and new_streams_count > 0 %}
+{% trans %}You have {{ new_messages_count }} new messages, and there are {{ new_streams_count }} new channels in {{ realm_name }}.{% endtrans %}
+{% elif new_messages_count > 0 and new_streams_count == 0 %}
+{% trans %}You have {{ new_messages_count }} new messages in {{ realm_name }}.{% endtrans %}
+{% else %}
+{% trans %}There are {{ new_streams_count }} new channels in {{ realm_name }}.{% endtrans %}
+{% endif %}
 
-{% trans organization_url=realm_url %}Click here to log in to Zulip and catch up: {{ organization_url }}.{% endtrans %}
+{% if message_content_disabled_by_realm %}
+{% trans hide_content_url=realm_url + "/help/hide-message-content-in-emails" %}
+This email does not include message content because your organization hides message content in email notifications. See {{ hide_content_url }} for more details.
+{% endtrans %}
+{% elif message_content_disabled_by_user %}
+{% trans help_url=realm_url + "/help/email-notifications#hide-message-content" %}
+This email does not include message content because you have chosen to hide message content in email notifications. See {{ help_url }} for more details.
+{% endtrans %}
+{% endif %}
+{% endif %}
+
+{% trans organization_url=realm_url %}Log in to Zulip to catch up: {{ organization_url }}.{% endtrans %}
 
 --
 {% trans %}Manage email preferences:{% endtrans %}

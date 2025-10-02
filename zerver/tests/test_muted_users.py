@@ -208,11 +208,11 @@ class MutedUsersTests(ZulipTestCase):
         self.assertEqual(set(), cache_get(get_muting_users_cache_key(cordelia.id))[0])
 
     def assert_usermessage_read_flag(self, user: UserProfile, message: int, flag: bool) -> None:
-        usermesaage = UserMessage.objects.get(
+        usermessage = UserMessage.objects.get(
             user_profile=user,
             message=message,
         )
-        self.assertTrue(usermesaage.flags.read == flag)
+        self.assertTrue(usermessage.flags.read == flag)
 
     def test_new_messages_from_muted_user_marked_as_read(self) -> None:
         hamlet = self.example_user("hamlet")
