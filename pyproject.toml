@@ -210,6 +210,9 @@ prod = [
 
   # Better compression than zlib
   "zstd",
+
+  # Internationalization
+  "pyicu",
 ]
 docs = [
   # Needed to build RTD docs
@@ -406,6 +409,7 @@ module = [
     "fakeldap.*",
     "firebase_admin.*",
     "gitlint.*",
+    "icu.*", # https://gitlab.pyicu.org/main/pyicu/-/issues/156
     "integrations.*",
     "jsonref.*",
     "ldap.*", # https://github.com/python-ldap/python-ldap/issues/368
