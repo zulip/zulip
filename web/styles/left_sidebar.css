@@ -1791,6 +1791,11 @@ li.active-sub-filter {
        bracket's bottom line. Its value must less than
        the z-index set on .stream-list-subsection-header */
     z-index: 1;
+    /* To correct an edge case where a resolved topic is
+       the last in a list of topics, we set the app background
+       color on it to keep the closing topic bracket from
+       getting too close to the checkmark. */
+    background-color: var(--color-background);
 }
 
 .left-sidebar-controls {
