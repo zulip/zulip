@@ -16,6 +16,8 @@ from zerver.lib.webhooks.common import (
     validate_extract_webhook_http_header,
 )
 from zerver.lib.webhooks.git import (
+    CONTENT_MESSAGE_TEMPLATE,
+    PULL_REQUEST_COMMENT_TEMPLATE,
     REMOVE_BRANCH_MESSAGE_TEMPLATE,
     REMOVE_BRANCH_TOPIC_TEMPLATE,
     REMOVE_TAG_MESSAGE_TEMPLATE,
@@ -239,31 +241,59 @@ def handle_issues_event(helper: Helper) -> tuple[str | None, str | None]:
     return topic_name, body
 
 
-def handle_issue_comment_event(helper: Helper) -> tuple[str | None, str | None]:
-    if helper.event_type == "pull_request_comment":
-        action = helper.payload["action"].tame(check_string)
-        if action == "created":
-            action_text = "[commented]"
-        else:
-            action_text = f"{action} a [comment]"
-        action_text += "({}) on".format(helper.payload["comment"]["html_url"].tame(check_string))
+def handle_pr_comment(helper: Helper) -> tuple[str | None, str | None]:
+    action = helper.payload["action"].tame(check_string)
+    pr_url = helper.payload["issue"]["html_url"].tame(check_string)
+    user_name = helper.payload["sender"]["login"].tame(check_string)
+    comment_url = helper.payload["comment"]["html_url"].tame(check_string)
+    comment_body = helper.payload["comment"]["body"].tame(check_string)
+    pr_number = helper.payload["issue"]["number"].tame(check_int)
+    pr_title = f'"{helper.payload["issue"]["title"].tame(check_string)}"'
+    changes = helper.payload.get("changes", {}).get("body", {}).get("from", None)
 
-        body = get_pull_request_event_message(
-            user_name=helper.payload["sender"]["login"].tame(check_string),
-            action=action_text,
-            url=helper.payload["issue"]["html_url"].tame(check_string),
-            number=helper.payload["issue"]["number"].tame(check_int),
-            message=helper.payload["comment"]["body"].tame(check_string),
-            type="PR",
-            title=helper.payload["issue"]["title"].tame(check_string),
-        )
-        topic_type = "PR"  # Set topic_type for pull request comments
+    if action == "created":
+        action_text = "commented"
+        message = comment_body
+    elif action == "deleted":
+        action_text = "deleted a comment"
+        message = comment_body
+    elif action == "edited":
+        action_text = "edited a comment"
+        from_text = changes.tame(check_string).strip() if changes else "unknown"
+        message = f'from "{from_text}" to "{comment_body}"'
     else:
-        body = format_issue_comment_event(
-            helper.payload,
-            include_title=helper.user_specified_topic is not None,
-        )
-        topic_type = "issue"
+        action_text = f"{action} a comment"
+        message = comment_body or "[No message]"
+
+    # Pass empty assignee since it's not used in the Gitea payload for comments
+    body = PULL_REQUEST_COMMENT_TEMPLATE.format(
+        user_name=f"{user_name}",
+        action=action_text,
+        type="PR",
+        id=f" #{pr_number}",
+        title=pr_title,
+        comment_url=comment_url,
+        url=pr_url,
+    )
+
+    if message:
+        body += CONTENT_MESSAGE_TEMPLATE.format(message=message)
+
+    topic_type = "PR comment"
+    topic_name = TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
+        repo=helper.payload["repository"]["name"].tame(check_string),
+        type=topic_type,
+        id=pr_number,
+        title="",  # Omit title from topic for simplicity
+    )
+    return topic_name, body
+
+def handle_issue_comment_event(helper: Helper) -> tuple[str | None, str | None]:
+    body = format_issue_comment_event(
+        helper.payload,
+        include_title=helper.user_specified_topic is not None,
+    )
+    topic_type = "issue"
 
     topic_name = TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
         repo=helper.payload["repository"]["name"].tame(check_string),
@@ -301,7 +331,7 @@ def handle_delete_event(helper: Helper) -> tuple[str | None, str | None]:
             repo=repo_name,
             branch_name=ref,
         )
-    elif helper.payload["ref_type"] == "tag":
+    elif helper.payload["ref_type"].tame(check_string) == "tag":
         body = get_remove_tag_event_message(
             user_name=user_name,
             tag_name=ref,
@@ -321,6 +351,7 @@ GOGS_EVENT_FUNCTION_MAPPER: dict[str, Callable[[Helper], tuple[str | None, str |
     "issue_comment": handle_issue_comment_event,
     "release": handle_release_event,
     "delete": handle_delete_event,
+    "pull_request_comment": handle_pr_comment,
 }
 
 ALL_EVENT_TYPES = list(GOGS_EVENT_FUNCTION_MAPPER.keys())
@@ -364,20 +395,13 @@ def gogs_webhook_main(
 ) -> HttpResponse:
     repo = payload["repository"]["name"].tame(check_string)
     event = validate_extract_webhook_http_header(request, http_header_name, integration_name)
-    try:
-        event_type = validate_extract_webhook_http_header(
-            request, "x-gitea-event-type", integration_name
-        )
-    except (
-        MissingHTTPEventHeaderError
-    ):  # Raised when header is not present(mostly in test case). Set it to a default value
-        event_type = "default_event_type"
+
     helper = Helper(
         payload=payload,
         branches=branches,
         user_specified_topic=user_specified_topic,
         repo=repo,
-        event_type=event_type,
+        event_type=event,
         format_pull_request_event=format_pull_request_event,
     )
 
