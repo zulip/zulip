@@ -993,8 +993,15 @@ li.active-sub-filter {
     color: var(--color-text-active-narrow-filter);
     background-color: var(--color-background-active-narrow-filter);
 
+    /* These hover styles effectively push back on non-active-filter
+       styles, which would otherwise present the less-intense
+       --color-background-hover-narrow-filter colors. */
     &:hover {
         background-color: var(--color-background-active-narrow-filter);
+
+        .sidebar-topic-check {
+            background-color: var(--color-background-active-narrow-filter);
+        }
     }
 
     .sidebar-topic-check {
