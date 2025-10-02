@@ -1482,11 +1482,6 @@ input.invalid-input {
 }
 
 #uppy-editor {
-    .uppy-Dashboard-close,
-    .uppy-DashboardContent-bar {
-        display: none;
-    }
-
     .modal__title {
         overflow: hidden;
         text-overflow: ellipsis;
@@ -1509,9 +1504,13 @@ input.invalid-input {
         margin: 0 1.5em 1.5em;
     }
 
-    .uppy-Dashboard-FileCard,
-    .uppy-Dashboard-files {
-        display: none;
+    .image-cropper-container {
+        height: 550px;
+    }
+
+    .uppy-Root {
+        height: 100%;
+        overflow: hidden;
     }
 
     .uppy-ImageCropper-controls {

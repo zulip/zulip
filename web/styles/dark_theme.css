@@ -319,6 +319,25 @@
     .help_link_widget:hover {
         color: inherit;
     }
+
+    #uppy-editor .uppy-ImageCropper {
+        /* This CSS is to handle cropper canvas in dark theme as we are not using uppy dashboard.
+
+        Link for source - https://github.com/transloadit/uppy/blob/b7605df9402e4db9b02828bf24558e21eae76637/packages/%40uppy/image-editor/src/style.scss#L123
+        and https://github.com/transloadit/uppy/blob/b7605df9402e4db9b02828bf24558e21eae76637/packages/%40uppy/image-editor/src/style.scss#L133 */
+        .cropper-modal {
+            opacity: 0.7;
+            background-color: hsl(0deg 0% 0%);
+        }
+
+        .cropper-view-box {
+            background: repeating-conic-gradient(
+                    hsl(0deg 1.18% 16.67%) 0% 25%,
+                    hsl(0deg 0% 0%) 0% 50%
+                )
+                50%/16px 16px;
+        }
+    }
 }
 
 @media screen {

@@ -1,17 +1,12 @@
 import Uppy from "@uppy/core";
 import type {Body, Meta} from "@uppy/core";
-import Dashboard from "@uppy/dashboard";
 import ImageEditor from "@uppy/image-editor";
-import $ from "jquery";
 import assert from "minimalistic-assert";
 
 import render_image_editor_modal from "../templates/image_editor_modal.hbs";
 
 import * as dialog_widget from "./dialog_widget.ts";
 import {$t, $t_html} from "./i18n.ts";
-import * as loading from "./loading.ts";
-import * as scroll_util from "./scroll_util.ts";
-import * as settings_data from "./settings_data.ts";
 import * as util from "./util.ts";
 
 export type UploadWidget = {
@@ -165,30 +160,22 @@ function set_up_uppy_widget(): void {
             allowedFileTypes: supported_types,
             maxNumberOfFiles: 1,
         },
-    })
-        .use(Dashboard, {
-            target: scroll_util.get_content_element($("#uppy-editor .modal__content"))[0]!,
-            inline: true,
-            theme: settings_data.using_dark_theme() ? "dark" : "light",
-            autoOpen: "imageEditor",
-            hideUploadButton: true,
-            singleFileFullScreen: true,
-        })
-        .use(ImageEditor, {
-            id: "ImageEditor",
-            quality: 1,
-            actions: {
-                cropSquare: false,
-                cropWidescreen: false,
-                cropWidescreenVertical: false,
-                zoomIn: true,
-                zoomOut: true,
-                revert: false,
-                rotate: false,
-                granularRotate: false,
-                flip: false,
-            },
-        });
+    }).use(ImageEditor, {
+        target: "#uppy-editor .image-cropper-container",
+        id: "ImageEditor",
+        quality: 1,
+        actions: {
+            cropSquare: false,
+            cropWidescreen: false,
+            cropWidescreenVertical: false,
+            zoomIn: true,
+            zoomOut: true,
+            revert: false,
+            rotate: false,
+            granularRotate: false,
+            flip: false,
+        },
+    });
 }
 
 function open_uppy_editor(
@@ -222,13 +209,15 @@ function open_uppy_editor(
                 });
             }
 
-            uppy_widget.addFile({
+            const uppy_file_id = uppy_widget.addFile({
                 name: file.name,
                 type: "image/png",
                 data: file,
                 source: "Local",
                 isRemote: false,
             });
+            const uppy_file = uppy_widget.getFile(uppy_file_id);
+            uppy_widget.getPlugin<ImageEditor<Meta, Body>>("ImageEditor")!.selectFile(uppy_file);
 
             uppy_widget.once("file-editor:complete", (file) => {
                 const updated_image_blob = file.data;
@@ -245,21 +234,9 @@ function open_uppy_editor(
                     upload_function(updated_image_file, null, true);
                 }
             });
-
-            // We keep the uppy-Root element hidden initially and show the
-            // loading indicator so that we do not show uppy dashboard UI
-            // momentarily before showing the image editor.
-            $("#uppy-editor .modal__content .uppy-Root").css("visibility", "hidden");
-            loading.make_indicator($("#uppy-editor .loading-placeholder"));
-
-            setTimeout(() => {
-                loading.destroy_indicator($("#uppy-editor .loading-placeholder"));
-                $("#uppy-editor .modal__content .uppy-Root").css("visibility", "");
-            }, 1000);
         },
         on_hidden() {
             assert(uppy_widget !== undefined);
-            uppy_widget.getPlugin<Dashboard<Meta, Body>>("Dashboard")!.hideAllPanels();
             uppy_widget.destroy();
             $file_input.val("");
         },
