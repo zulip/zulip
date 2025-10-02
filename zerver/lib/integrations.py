@@ -700,6 +700,8 @@ NO_SCREENSHOT_WEBHOOKS = (
     {"beeminder"}
     # Meta integrations - Docs won't have a screenshot
     | {"ifttt", "slack_incoming", "zapier"}
+    # Integrations that calls external API endpoints.
+    | {"slack"}
 )
 
 hubot_integration_names = {integration.name for integration in HUBOT_INTEGRATIONS}
@@ -848,7 +850,6 @@ WEBHOOK_SCREENSHOT_CONFIG: dict[str, list[WebhookScreenshotConfig]] = {
     "rundeck": [WebhookScreenshotConfig("start.json")],
     "semaphore": [WebhookScreenshotConfig("pull_request.json")],
     "sentry": [WebhookScreenshotConfig("event_for_exception_python.json")],
-    "slack": [WebhookScreenshotConfig("message_with_normal_text.json")],
     "sonarqube": [WebhookScreenshotConfig("error.json")],
     "sonarr": [WebhookScreenshotConfig("sonarr_episode_grabbed.json")],
     "splunk": [WebhookScreenshotConfig("search_one_result.json")],
