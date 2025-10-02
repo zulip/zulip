@@ -2209,6 +2209,15 @@ li.topic-list-item {
             box-shadow: none;
             background-color: var(--color-background);
         }
+
+        /* We avoid putting the box-shadow around both
+           the channel row and the filter input it contains,
+           as there is no hover effect on channel rows when
+           zoomed in, making a preserve-the-hover-outline
+           effect here moot. */
+        &:has(.left_sidebar_menu_icon_visible) {
+            box-shadow: none;
+        }
     }
 
     /* When zooming in on a channel that's serving as an
