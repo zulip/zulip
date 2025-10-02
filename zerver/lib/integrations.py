@@ -46,6 +46,7 @@ META_CATEGORY: dict[str, StrPromise] = {
 
 CATEGORIES: dict[str, StrPromise] = {
     **META_CATEGORY,
+    "video-calling": gettext_lazy("Video calling"),
     "continuous-integration": gettext_lazy("Continuous integration"),
     "customer-support": gettext_lazy("Customer support"),
     "deployment": gettext_lazy("Deployment"),
@@ -607,7 +608,7 @@ WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
 INTEGRATIONS: dict[str, Integration] = {
     "asana": Integration("asana", ["project-management"]),
     "big-blue-button": Integration(
-        "big-blue-button", ["communication"], display_name="BigBlueButton"
+        "big-blue-button", ["video-calling", "communication"], display_name="BigBlueButton"
     ),
     "capistrano": Integration("capistrano", ["deployment"], display_name="Capistrano"),
     "discourse": Integration("discourse", ["communication"]),
@@ -622,13 +623,13 @@ INTEGRATIONS: dict[str, Integration] = {
     ),
     "hubot": Integration("hubot", ["meta-integration", "bots"]),
     "jenkins": Integration("jenkins", ["continuous-integration"]),
-    "jitsi": Integration("jitsi", ["communication"], display_name="Jitsi Meet"),
+    "jitsi": Integration("jitsi", ["video-calling", "communication"], display_name="Jitsi Meet"),
     "mastodon": Integration("mastodon", ["communication"]),
     "notion": Integration("notion", ["productivity"]),
     "onyx": Integration("onyx", ["productivity"], logo="images/integrations/logos/onyx.png"),
     "puppet": Integration("puppet", ["deployment"]),
     "redmine": Integration("redmine", ["project-management"]),
-    "zoom": Integration("zoom", ["communication"]),
+    "zoom": Integration("zoom", ["video-calling", "communication"]),
 }
 
 PYTHON_API_INTEGRATIONS: list[PythonAPIIntegration] = [
