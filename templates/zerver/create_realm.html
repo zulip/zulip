@@ -20,7 +20,7 @@
                   action="{{ current_url() }}" method="post">
                     {{ csrf_input }}
 
-                    {% include 'zerver/realm_creation_form.html' %}
+                    {% include 'zerver/realm_creation_base_form_fields.html' %}
 
                     <div class="input-box horizontal">
                         <div class="inline-block relative">
