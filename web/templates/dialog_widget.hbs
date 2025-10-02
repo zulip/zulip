@@ -2,17 +2,19 @@
     <div class="modal__overlay {{#unless close_on_overlay_click}}ignore-overlay-click{{/unless}}" tabindex="-1">
         <div {{#if id}}id="{{id}}" {{/if}}class="modal__container" role="dialog" aria-modal="true" aria-labelledby="dialog_title">
             <header class="modal__header">
-                <h1 class="modal__title dialog_heading">
-                    {{#if heading_html}}
-                        {{{ heading_html }}}
-                    {{else}}
-                        {{ text_heading }}
-                    {{/if}}
-                    {{#if link}}
-                    {{> help_link_widget . }}
-                    {{/if}}
-                </h1>
-                <button class="modal__close" aria-label="{{t 'Close modal' }}" data-micromodal-close></button>
+                <div class="modal__header-content">
+                    <h1 class="modal__title dialog_heading">
+                        {{#if heading_html}}
+                            {{{ heading_html }}}
+                        {{else}}
+                            {{ text_heading }}
+                        {{/if}}
+                        {{#if link}}
+                        {{> help_link_widget . }}
+                        {{/if}}
+                    </h1>
+                </div>
+                {{> components/icon_button icon="close" intent="neutral" custom_classes="modal__close" aria-label=(t 'Close modal') data-micromodal-close=true }}
             </header>
             <main class="modal__content {{#if hide_footer}} footer-hidden {{/if}}" data-simplebar data-simplebar-tab-index="-1" {{#if always_visible_scrollbar}}data-simplebar-auto-hide="false"{{/if}}>
                 <div class="alert" id="dialog_error"></div>
