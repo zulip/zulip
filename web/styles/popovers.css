@@ -435,15 +435,6 @@ ul.popover-group-menu-member-list {
         }
     }
 
-    .modal__header {
-        justify-items: center;
-    }
-
-    .modal__close {
-        position: absolute;
-        right: 20px;
-    }
-
     #tab-toggle {
         font-weight: initial;
         padding: 0 16px 6px;
@@ -808,9 +799,6 @@ ul.popover-group-menu-member-list {
     }
 
     .modal__title {
-        /* Grid defined in modal.css */
-        grid-area: heading;
-
         .channel-privacy-type-icon {
             padding-left: 3px;
             padding-right: 5px;
