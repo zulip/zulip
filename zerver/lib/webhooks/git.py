@@ -62,7 +62,9 @@ PULL_REQUEST_OR_ISSUE_MESSAGE_TEMPLATE = "{user_name} {action}{assignee} [{type}
 PULL_REQUEST_OR_ISSUE_ASSIGNEE_INFO_TEMPLATE = "(assigned to {assignee})"
 PULL_REQUEST_REVIEWER_INFO_TEMPLATE = "(assigned reviewers: {reviewer})"
 PULL_REQUEST_BRANCH_INFO_TEMPLATE = "from `{target}` to `{base}`"
-PULL_REQUEST_COMMENT_TEMPLATE = "{user_name} [{action}]({comment_url}) on [{type}{id}{title}]({url})"
+PULL_REQUEST_COMMENT_TEMPLATE = (
+    "{user_name} [{action}]({comment_url}) on [{type}{id}{title}]({url})"
+)
 
 CONTENT_MESSAGE_TEMPLATE = "\n~~~ quote\n{message}\n~~~"
 

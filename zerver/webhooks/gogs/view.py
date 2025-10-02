@@ -9,7 +9,6 @@ from zerver.lib.response import json_success
 from zerver.lib.typed_endpoint import JsonBodyPayload, typed_endpoint
 from zerver.lib.validator import WildValue, check_bool, check_int, check_string
 from zerver.lib.webhooks.common import (
-    MissingHTTPEventHeaderError,
     OptionalUserSpecifiedTopicStr,
     check_send_webhook_message,
     get_http_headers_from_filename,
@@ -261,9 +260,6 @@ def handle_pr_comment(helper: Helper) -> tuple[str | None, str | None]:
         action_text = "edited a comment"
         from_text = changes.tame(check_string).strip() if changes else "unknown"
         message = f'from "{from_text}" to "{comment_body}"'
-    else:
-        action_text = f"{action} a comment"
-        message = comment_body or "[No message]"
 
     # Pass empty assignee since it's not used in the Gitea payload for comments
     body = PULL_REQUEST_COMMENT_TEMPLATE.format(
@@ -287,6 +283,7 @@ def handle_pr_comment(helper: Helper) -> tuple[str | None, str | None]:
         title="",  # Omit title from topic for simplicity
     )
     return topic_name, body
+
 
 def handle_issue_comment_event(helper: Helper) -> tuple[str | None, str | None]:
     body = format_issue_comment_event(
@@ -412,7 +409,8 @@ def gogs_webhook_main(
             check_send_webhook_message(request, user_profile, topic_name, body, event)
             return json_success(request)
         elif event == "push":
-            return json_success(request)  # Specific handling for push with ignored branch
+            # Specific handling for push with ignored branch
+            return json_success(request)
         else:
             raise UnsupportedWebhookEventTypeError(event)
     else:
