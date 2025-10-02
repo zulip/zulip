@@ -70,6 +70,7 @@ FIXTURELESS_INTEGRATIONS_WITH_SCREENSHOTS: list[str] = [
     "capistrano",
     "codebase",
     "discourse",
+    "git",
     "github-actions",
     "google-calendar",
     "jenkins",
@@ -749,8 +750,6 @@ NO_SCREENSHOT_CONFIG = (
         # the integration is planned to be removed
         "twitter",
     }
-    # Python API Integrations that do not currently have screenshots in docs
-    | {"git"}
     | NO_SCREENSHOT_WEBHOOKS
     | hubot_integration_names
 )

@@ -14,9 +14,11 @@ THREE_DIGIT_NUMBER = "492"
 
 # Example user content
 BO_NAME = "Bo Williams"
+BO_EMAIL = "bwilliams@example.com"
 BO_GIT_NAME = "bo-williams"
 
 KEVIN_NAME = "Kevin Lin"
+KEVIN_EMAIL = "klin@example.com"
 
 # Example project content
 PROJECT_NAME = "Example Project"
@@ -83,6 +85,14 @@ DISCOURSE = ScreenshotContent(
     topic="chat",
     content=f"""**@{BO_NAME}** posted in [Example channel]()
 > {COMMIT_BODY_A}""",
+)
+
+GIT = ScreenshotContent(
+    topic=BRANCH_GIT,
+    content=f"""`{DEPLOYMENT_HASH[:12]}` was deployed to `{BRANCH_GIT}` with:
+* {KEVIN_EMAIL} - {COMMIT_HASH_A[:7]}: {COMMIT_MESSAGE_A}
+* {BO_EMAIL} - {COMMIT_HASH_B[:7]}: {COMMIT_MESSAGE_B}
+""",
 )
 
 GITHUB_ACTIONS = ScreenshotContent(
