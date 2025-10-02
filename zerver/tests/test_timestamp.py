@@ -1,6 +1,8 @@
-from datetime import timedelta, timezone
+from datetime import datetime, timedelta, timezone
+from zoneinfo import ZoneInfo
 
 from dateutil import parser
+from django.utils.translation import override as override_language
 
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.timestamp import (
@@ -10,6 +12,7 @@ from zerver.lib.timestamp import (
     datetime_to_timestamp,
     floor_to_day,
     floor_to_hour,
+    format_datetime_to_string,
     timestamp_to_datetime,
 )
 
@@ -45,3 +48,21 @@ class TestTimestamp(ZulipTestCase):
         for function in [floor_to_hour, floor_to_day, ceiling_to_hour, ceiling_to_hour]:
             with self.assertRaises(TimeZoneNotUTCError):
                 function(non_utc_datetime)
+
+    def test_format_datetime_to_string(self) -> None:
+        dt = datetime(2001, 2, 3, 4, 5, 6, tzinfo=timezone.utc)
+        self.assertEqual(format_datetime_to_string(dt, True), "Sat, Feb 3, 2001, 04:05 GMT")
+        dt = datetime(2001, 2, 3, 4, 5, 6, tzinfo=timezone(timedelta(hours=7, minutes=8)))
+        self.assertEqual(format_datetime_to_string(dt, True), "Sat, Feb 3, 2001, 04:05 GMT+7:08")
+        dt = datetime(2001, 2, 3, 4, 5, 6, tzinfo=timezone(-timedelta(hours=7, minutes=8)))
+        self.assertEqual(format_datetime_to_string(dt, True), "Sat, Feb 3, 2001, 04:05 GMT-7:08")
+        dt = datetime(2001, 2, 3, 4, 5, 6, tzinfo=ZoneInfo("America/Los_Angeles"))
+        self.assertEqual(format_datetime_to_string(dt, True), "Sat, Feb 3, 2001, 04:05 PST")
+        self.assertRegex(
+            format_datetime_to_string(dt, False), r"^Sat, Feb 3, 2001, 4:05[ \u202f]AM PST$"
+        )
+        with override_language("ja-JP"):
+            self.assertEqual(format_datetime_to_string(dt, True), "2001年2月3日(土) 4:05 GMT-8")
+            self.assertEqual(
+                format_datetime_to_string(dt, False), "2001年2月3日(土) 午前4:05 GMT-8"
+            )

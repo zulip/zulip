@@ -1,4 +1,3 @@
-import zoneinfo
 from collections.abc import Sequence
 from datetime import datetime, timedelta, timezone
 
@@ -14,7 +13,6 @@ from zerver.actions.streams import do_set_stream_property
 from zerver.actions.user_settings import do_change_user_setting
 from zerver.lib.initial_password import initial_password
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.timezone import canonicalize_timezone
 from zerver.models import Message, Recipient, Stream, UserProfile
 from zerver.models.realms import get_realm
 from zerver.models.recipients import get_direct_message_group_user_ids
@@ -53,9 +51,7 @@ class SendLoginEmailTest(ZulipTestCase):
             firefox_windows = (
                 "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:47.0) Gecko/20100101 Firefox/47.0"
             )
-            user_tz = zoneinfo.ZoneInfo(canonicalize_timezone(user.timezone))
             mock_time = datetime(year=2018, month=1, day=1, tzinfo=timezone.utc)
-            reference_time = mock_time.astimezone(user_tz).strftime("%A, %B %d, %Y at %I:%M %p %Z")
             with time_machine.travel(mock_time, tick=False):
                 self.client_post(
                     "/accounts/login/", info=login_info, HTTP_USER_AGENT=firefox_windows
@@ -66,7 +62,7 @@ class SendLoginEmailTest(ZulipTestCase):
             subject = "New login from Firefox on Windows"
             self.assertEqual(mail.outbox[0].subject, subject)
             # local time is correct and in email's body
-            self.assertIn(reference_time, mail.outbox[0].body)
+            self.assertRegex(str(mail.outbox[0].body), r"Sun, Dec 31, 2017, 4:00[ \u202f]PM PST")
 
             # Try again with the 24h time format setting enabled for this user
             self.logout()  # We just logged in, we'd be redirected without this
@@ -77,7 +73,7 @@ class SendLoginEmailTest(ZulipTestCase):
                     "/accounts/login/", info=login_info, HTTP_USER_AGENT=firefox_windows
                 )
 
-            reference_time = mock_time.astimezone(user_tz).strftime("%A, %B %d, %Y at %H:%M %Z")
+            reference_time = "Sun, Dec 31, 2017, 16:00 PST"
             self.assertIn(reference_time, mail.outbox[1].body)
 
     def test_dont_send_login_emails_if_send_login_emails_is_false(self) -> None:

@@ -3506,6 +3506,12 @@ wheels = [
 ]
 
 [[package]]
+name = "pyicu"
+version = "2.15.3"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/88/b0/c8b61bac55424e2ff80e20d7251c3f002baff3c07c34cee3849e3505d8f5/pyicu-2.15.3.tar.gz", hash = "sha256:f32e78e1cb64d0aeb14f027e037a8944861d3114548818a6adf0081ef51aefc3", size = 267569, upload-time = "2025-09-15T20:58:50.936Z" }
+
+[[package]]
 name = "pyinotify"
 version = "0.9.6"
 source = { registry = "https://pypi.org/simple" }
@@ -5830,6 +5836,7 @@ dev = [
     { name = "pydantic" },
     { name = "pydantic-partials" },
     { name = "pygments" },
+    { name = "pyicu" },
     { name = "pyinotify" },
     { name = "pyjwt" },
     { name = "pymongo" },
@@ -5954,6 +5961,7 @@ prod = [
     { name = "pydantic" },
     { name = "pydantic-partials" },
     { name = "pygments" },
+    { name = "pyicu" },
     { name = "pyjwt" },
     { name = "pymongo" },
     { name = "pynacl" },
@@ -6057,6 +6065,7 @@ dev = [
     { name = "pydantic" },
     { name = "pydantic-partials" },
     { name = "pygments" },
+    { name = "pyicu" },
     { name = "pyinotify" },
     { name = "pyjwt" },
     { name = "pymongo" },
@@ -6182,6 +6191,7 @@ prod = [
     { name = "pydantic" },
     { name = "pydantic-partials" },
     { name = "pygments" },
+    { name = "pyicu" },
     { name = "pyjwt" },
     { name = "pymongo" },
     { name = "pynacl" },

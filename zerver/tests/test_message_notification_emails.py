@@ -1426,9 +1426,9 @@ class TestMessageNotificationEmails(ZulipTestCase):
         self.assertEqual(
             "> Meeting at <time:2025-09-30T09:30:00-07:00>\n\n--\n\nReply", mail.outbox[0].body[:56]
         )
-        self.assertIn(
-            '<p>Meeting at <time datetime="2025-09-30T16:30:00Z">Tuesday, September 30, 2025 at 04:30 PM UTC</time></p>',
+        self.assertRegex(
             mail.outbox[0].alternatives[0][0],
+            r'<p>Meeting at <time datetime="2025-09-30T16:30:00Z">Tue, Sep 30, 2025, 4:30[ \u202f]PM UTC</time></p>',
         )
 
         # The timestamp is not formatted correctly.
