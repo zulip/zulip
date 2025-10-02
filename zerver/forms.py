@@ -389,6 +389,7 @@ class CaptchaRealmCreationForm(RealmCreationForm):
 
     @override
     def clean(self) -> None:
+        super().clean()
         if not self.data.get("captcha"):
             self.add_error("captcha", _("Validation failed, please try again."))
 
