@@ -2,9 +2,11 @@
     <div class="modal__overlay" tabindex="-1">
         <div class="modal__container" role="dialog" aria-modal="true" aria-labelledby="profile_access_error_modal_label">
             <header class="modal__header">
-                <h1 class="modal__title" id="profile_access_error_modal_label">
-                    {{t "No user found" }}
-                </h1>
+                <div class="modal__header-content">
+                    <h1 class="modal__title" id="profile_access_error_modal_label">
+                        {{t "No user found" }}
+                    </h1>
+                </div>
                 <button class="modal__close" aria-label="{{t 'Close modal' }}" data-micromodal-close></button>
             </header>
             <main class="modal__content">
