@@ -9,7 +9,7 @@ from multiprocessing import current_process
 
 from django.db import connection
 
-from zerver.lib.parallel import _disconnect, run_parallel
+from zerver.lib.parallel import _disconnect, run_parallel, run_parallel_queue
 from zerver.lib.partial import partial
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import Realm
@@ -117,6 +117,39 @@ class RunNotParallelTest(ZulipTestCase):
                 # We "completed" the one which raised an exception,
                 # despite it not having output
                 "Completed 5",
+            ],
+        )
+
+    def test_not_parallel_queue(self) -> None:
+        events = []
+
+        with run_parallel_queue(
+            lambda item: events.append(f"Item: {item}"),
+            processes=1,
+            report_every=3,
+            report=lambda n: events.append(f"Completed {n}"),
+            initializer=lambda a, b: events.append(f"Init: {a}, {b}"),
+            initargs=("alpha", "bravo"),
+        ) as do_work:
+            self.assertEqual(events, ["Init: alpha, bravo"])
+            do_work(100)
+            self.assertEqual(
+                events,
+                [
+                    "Init: alpha, bravo",
+                    "Item: 100",
+                ],
+            )
+            do_work(101)
+            do_work(102)
+        self.assertEqual(
+            events,
+            [
+                "Init: alpha, bravo",
+                "Item: 100",
+                "Item: 101",
+                "Item: 102",
+                "Completed 3",
             ],
         )
 

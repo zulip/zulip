@@ -1,6 +1,7 @@
 import logging
-from collections.abc import Callable, Iterable
-from concurrent.futures import ProcessPoolExecutor, as_completed
+from collections.abc import Callable, Iterable, Iterator
+from concurrent.futures import BrokenExecutor, Future, ProcessPoolExecutor
+from contextlib import contextmanager
 from multiprocessing import current_process
 from typing import Any, TypeVar
 
@@ -48,30 +49,78 @@ def run_parallel(
     catch: bool = False,
     report_every: int = 1000,
     report: Callable[[int], None] | None = None,
-) -> None:  # nocoverage
+) -> None:
+    with run_parallel_queue(
+        func,
+        processes,
+        initializer=initializer,
+        initargs=initargs,
+        catch=catch,
+        report_every=report_every,
+        report=report,
+    ) as submit:
+        for record in records:
+            submit(record)
+
+
+@contextmanager
+def run_parallel_queue(
+    func: Callable[[ParallelRecordType], None],
+    processes: int,
+    *,
+    initializer: Callable[..., None] | None = None,
+    initargs: tuple[Any, ...] = tuple(),
+    catch: bool = False,
+    report_every: int = 1000,
+    report: Callable[[int], None] | None = None,
+) -> Iterator[Callable[[ParallelRecordType], None]]:  # nocoverage
     assert processes > 0
     if settings.TEST_SUITE and current_process().daemon:
         assert processes == 1, "Only one process possible under parallel tests"
 
     wrapped_func = partial(func_with_catch, func) if catch else func
 
+    completed = 0
     if processes == 1:
+
+        def func_with_notify(item: ParallelRecordType) -> None:
+            wrapped_func(item)
+            nonlocal completed
+            completed += 1
+            if report is not None and completed % report_every == 0:
+                report(completed)
+
         if initializer is not None:
             initializer(*initargs)
-        for count, record in enumerate(records, 1):
-            wrapped_func(record)
-            if report is not None and count % report_every == 0:
-                report(count)
+        yield func_with_notify
         return
 
     _disconnect()
 
-    with ProcessPoolExecutor(
-        max_workers=processes, initializer=initializer, initargs=initargs
-    ) as executor:
-        for count, future in enumerate(
-            as_completed(executor.submit(wrapped_func, record) for record in records), 1
-        ):
-            future.result()
-            if report is not None and count % report_every == 0:
-                report(count)
+    exceptions = []
+    try:
+        with ProcessPoolExecutor(
+            max_workers=processes, initializer=initializer, initargs=initargs
+        ) as executor:
+
+            def report_callback(future: Future[None]) -> None:
+                if exc := future.exception():
+                    exceptions.append(exc)
+                    return
+
+                nonlocal completed
+                completed += 1
+                if report is not None and completed % report_every == 0:
+                    report(completed)
+
+            def future_with_notify(item: ParallelRecordType) -> None:
+                if exceptions:
+                    executor.shutdown(cancel_futures=True)
+                    raise BrokenExecutor
+                future = executor.submit(wrapped_func, item)
+                future.add_done_callback(report_callback)
+
+            yield future_with_notify
+    finally:
+        if exceptions:
+            raise exceptions[0]
