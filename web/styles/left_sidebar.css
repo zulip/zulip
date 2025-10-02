@@ -2211,6 +2211,17 @@ li.topic-list-item {
         }
     }
 
+    /* When zooming in on a channel that's serving as an
+       active filter, keep the background colors in line
+       with the active-narrow-filter colors. */
+    .narrow-filter.active-filter > .bottom_left_row {
+        background-color: var(--color-background-active-narrow-filter);
+
+        &:hover {
+            background-color: var(--color-background-active-narrow-filter);
+        }
+    }
+
     #subscribe-to-more-streams,
     #login-to-more-streams,
     .show-more-topics {
