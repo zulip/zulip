@@ -11,6 +11,7 @@ import zipfile
 from collections import defaultdict
 from collections.abc import Iterator
 from datetime import datetime, timezone
+from email.errors import HeaderDefect
 from email.headerregistry import Address
 from typing import Any, TypeAlias
 from urllib.parse import SplitResult, urlsplit
@@ -124,6 +125,18 @@ class SlackBotEmail:
             username=slack_bot_name.replace("Bot", "").replace(" ", "").lower() + "-bot",
             domain=domain_name,
         ).addr_spec
+        # The address formed above may not be a valid email format - e.g. containing
+        # non-ASCII characters in the local part, if the slack_bot_name contains them.
+        # Only Address(addr_spec=...) triggers the necessary validation.
+        # Thus we call it here, and if issues are detected, we fall back to forming the
+        # email address in a safer way - using the bot id string.
+        try:
+            Address(addr_spec=email)
+        except HeaderDefect:
+            email = Address(
+                username=slack_bot_id + "-bot",
+                domain=domain_name,
+            ).addr_spec
 
         if email in cls.duplicate_email_count:
             cls.duplicate_email_count[email] += 1
