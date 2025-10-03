@@ -262,7 +262,7 @@ export function get_built_in_primary_condensed_views(): navigation_views.BuiltIn
     // Get the top 5 prioritized views.
     return navigation_views
         .get_built_in_views()
-        .sort((view1, view2) => score(view2) - score(view1))
+        .toSorted((view1, view2) => score(view2) - score(view1))
         .slice(0, 5);
     // TODO: Think about filtering out scheduled message and reminders views with UI to support less than 5 views.
 }

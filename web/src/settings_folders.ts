@@ -29,8 +29,8 @@ function update_folder_order(this: HTMLElement): void {
     });
     const archived_folders = channel_folders
         .get_channel_folders(true)
-        .filter((folder) => folder.is_archived)
-        .sort((a, b) => util.strcmp(a.name.toLowerCase(), b.name.toLowerCase()));
+        .filter((folder) => folder.is_archived);
+    archived_folders.sort((a, b) => util.strcmp(a.name.toLowerCase(), b.name.toLowerCase()));
     for (const folder of archived_folders) {
         order.push(folder.id);
     }

@@ -164,7 +164,10 @@ run_test("user_groups", () => {
     const groups_of_users_via_subgroup = user_groups.get_user_groups_of_user(
         user_id_associated_via_subgroup,
     );
-    assert.deepEqual(groups_of_users_via_subgroup.map((group) => group.id).sort(), [2, 4, 5, 6]);
+    assert.deepEqual(
+        groups_of_users_via_subgroup.map((group) => group.id).toSorted(),
+        [2, 4, 5, 6],
+    );
     assert.equal(groups_of_users_via_subgroup.length, 4);
 
     const groups_of_users_nomatch = user_groups.get_user_groups_of_user(user_id_not_in_any_group);
@@ -314,22 +317,22 @@ run_test("get_recursive_group_members", () => {
     // when determining recursive subgroups.
     // A test case that can occur in practice and would be problematic without this
     // optimization is a tree where each layer connects to every node in the next layer.
-    assert.deepEqual([...user_groups.get_recursive_group_members(admins)].sort(), [1, 6, 7]);
+    assert.deepEqual([...user_groups.get_recursive_group_members(admins)].toSorted(), [1, 6, 7]);
     assert.deepEqual(
-        [...user_groups.get_recursive_group_members(all)].sort(),
+        [...user_groups.get_recursive_group_members(all)].toSorted(),
         [1, 2, 3, 4, 5, 6, 7],
     );
     assert.deepEqual(
-        [...user_groups.get_recursive_group_members(test)].sort(),
+        [...user_groups.get_recursive_group_members(test)].toSorted(),
         [1, 2, 3, 4, 5, 6, 7],
     );
-    assert.deepEqual([...user_groups.get_recursive_group_members(foo)].sort(), [6, 7]);
+    assert.deepEqual([...user_groups.get_recursive_group_members(foo)].toSorted(), [6, 7]);
 
     user_groups.add_subgroups(foo.id, [9999]);
     const foo_group = user_groups.get_user_group_from_id(foo.id);
     blueslip.expect("error", "Could not find subgroup", 2);
-    assert.deepEqual([...user_groups.get_recursive_group_members(foo_group)].sort(), [6, 7]);
-    assert.deepEqual([...user_groups.get_recursive_group_members(test)].sort(), [3, 4, 5]);
+    assert.deepEqual([...user_groups.get_recursive_group_members(foo_group)].toSorted(), [6, 7]);
+    assert.deepEqual([...user_groups.get_recursive_group_members(test)].toSorted(), [3, 4, 5]);
 });
 
 run_test("get_associated_subgroups", () => {
@@ -380,7 +383,7 @@ run_test("get_associated_subgroups", () => {
 
     associated_subgroups = user_groups.get_associated_subgroups(all_group, 1);
     assert.deepEqual(associated_subgroups.length, 2);
-    assert.deepEqual(associated_subgroups.map((group) => group.id).sort(), [1, 3]);
+    assert.deepEqual(associated_subgroups.map((group) => group.id).toSorted(), [1, 3]);
 
     associated_subgroups = user_groups.get_associated_subgroups(admins, 2);
     assert.deepEqual(associated_subgroups.length, 0);
@@ -695,7 +698,7 @@ run_test("get_potential_subgroups", () => {
         return user_groups
             .get_potential_subgroups(group_id)
             .map((subgroup) => subgroup.id)
-            .sort();
+            .toSorted();
     }
 
     assert.deepEqual(get_potential_subgroup_ids(all.id), [teachers.id, science.id]);

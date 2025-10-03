@@ -139,7 +139,7 @@ test("subscribers", async () => {
 
     function potential_subscriber_ids() {
         const users = peer_data.potential_subscribers(stream_id);
-        return users.map((u) => u.user_id).sort();
+        return users.map((u) => u.user_id).toSorted();
     }
 
     blueslip.expect(
