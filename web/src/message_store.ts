@@ -236,24 +236,23 @@ export function get_pm_emails(
     message: Message | MessageWithBooleans | LocalMessageWithBooleans,
 ): string {
     const user_ids = people.pm_with_user_ids(message) ?? [];
-    const emails = user_ids
-        .map((user_id) => {
-            const person = people.maybe_get_user_by_id(user_id);
-            if (!person) {
-                blueslip.error("Unknown user id", {user_id});
-                return "?";
-            }
-            return person.email;
-        })
-        .sort();
+    const emails = user_ids.map((user_id) => {
+        const person = people.maybe_get_user_by_id(user_id);
+        if (!person) {
+            blueslip.error("Unknown user id", {user_id});
+            return "?";
+        }
+        return person.email;
+    });
+    emails.sort();
 
     return emails.join(", ");
 }
 
 export function get_pm_full_names(user_ids: number[]): string {
     user_ids = people.sorted_other_user_ids(user_ids);
-    const names = people.get_display_full_names(user_ids);
-    const sorted_names = names.sort(util.make_strcmp());
+    const sorted_names = people.get_display_full_names(user_ids);
+    sorted_names.sort(util.make_strcmp());
 
     return sorted_names.join(", ");
 }

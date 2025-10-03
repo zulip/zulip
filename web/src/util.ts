@@ -105,7 +105,7 @@ export function normalize_recipients(recipients: string): string {
         .split(",")
         .map((s) => s.trim().toLowerCase())
         .filter((s) => s.length > 0)
-        .sort()
+        .toSorted()
         .join(",");
 }
 
