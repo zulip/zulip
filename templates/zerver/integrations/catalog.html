@@ -103,7 +103,7 @@
 
                     <div class="integration-lozenges">
                         {% for integration in visible_integrations %}
-                        <a href="/integrations/doc/{{ integration.name }}">
+                        <a href="/integrations/doc/{{ integration.name }}{% if selected_category_slug != 'all' %}?category={{ selected_category_slug }}{% endif %}">
                             {{ integration_macros.render_integration_lozenge(integration) }}
                         </a>
                         {% endfor %}
