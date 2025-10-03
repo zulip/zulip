@@ -436,13 +436,16 @@ def get_categories_for_integration(integration: Integration) -> list[tuple[str, 
     return result
 
 
-def add_doc_integrations_context(request: HttpRequest, integration: Integration) -> dict[str, Any]:
+def add_doc_integrations_context(
+    request: HttpRequest, integration: Integration, return_category_slug: str
+) -> dict[str, Any]:
     context = add_base_integrations_context(request)
     context.update(
         {
             "selected_integration": integration,
             "integration_doc_html": build_integration_doc_html(integration, request),
             "integration_categories": get_categories_for_integration(integration),
+            "return_category_slug": return_category_slug,
         }
     )
     return context
@@ -475,9 +478,15 @@ def integrations_doc(
     if integration is None or not integration.is_enabled():
         return TemplateResponse(request, "404.html", status=404)
 
+    return_category_slug = request.GET.get("category", "all")
+    categorie_slugs = [category[0] for category in get_categories_for_integration(integration)]
+    # If we have an invalid slug, back to list points to the root integrations page.
+    if return_category_slug != "all" and return_category_slug not in categorie_slugs:
+        return_category_slug = "all"
+
     return TemplateResponse(
         request,
         "zerver/integrations/doc.html",
-        context=add_doc_integrations_context(request, integration),
+        context=add_doc_integrations_context(request, integration, return_category_slug),
         status=200,
     )

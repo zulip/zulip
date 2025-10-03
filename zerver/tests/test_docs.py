@@ -402,6 +402,34 @@ class DocPageTest(ZulipTestCase):
         )
         self.assertEqual(result.status_code, 404)
 
+        result = self._test(
+            "/integrations/doc/asana?category=project-management",
+            expected_strings=[
+                '<a href="/integrations/project-management" id="integration-list-link" class="no-underline">'
+            ],
+        )
+
+        result = self.client_get(
+            "/integrations/doc/asana?category=nonexistent_category",
+        )
+        self.assert_not_in_success_response(
+            [
+                '<a href="/integrations/project-management" id="integration-list-link" class="no-underline">'
+            ],
+            response,
+        )
+
+        # Mis-matched category should also return back to all.
+        result = self.client_get(
+            "/integrations/doc/asana?category=communication",
+        )
+        self.assert_not_in_success_response(
+            [
+                '<a href="/integrations/project-management" id="integration-list-link" class="no-underline">'
+            ],
+            response,
+        )
+
         for integration in INTEGRATIONS:
             url = f"/integrations/doc/{integration}"
             response = self._test(url, expected_strings=[])
