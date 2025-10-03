@@ -974,11 +974,10 @@ class TestCreateStreams(ZulipTestCase):
             channel_creator = self.example_user("desdemona")
             subdomain = "zulip"
 
-            self.login_user(channel_creator)
             new_channel_name = f"New {policy_key} channel"
             result = self.api_post(
                 channel_creator,
-                "/json/users/me/subscriptions",
+                "/api/v1/users/me/subscriptions",
                 {
                     "subscriptions": orjson.dumps([{"name": new_channel_name}]).decode(),
                     "is_web_public": orjson.dumps(policy_dict["is_web_public"]).decode(),
