@@ -17,8 +17,8 @@
         &:has(+ ul, + ol) {
             /* When a paragraph is immediately followed
                by a list sibling, we reduce the paragraph's
-               ordinary bottom space by half. */
-            margin-bottom: calc(var(--markdown-interelement-space-px) / 2);
+               ordinary bottom space to a quarter. */
+            margin-bottom: calc(var(--markdown-interelement-space-px) / 4);
         }
     }
 
