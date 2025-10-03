@@ -29,9 +29,7 @@ async function navigate_to_settings(page: Page): Promise<void> {
     const profile_section_tab_selector = "li[data-section='profile']";
     await page.waitForSelector(profile_section_tab_selector, {visible: true});
     await page.click(profile_section_tab_selector);
-    await page.waitForFunction(
-        () => document.activeElement?.getAttribute("data-section") === "profile",
-    );
+    await page.waitForSelector(`${profile_section_tab_selector}:focus`, {visible: true});
 
     await page.click("#settings_page .content-wrapper .exit");
     // Wait until the overlay is completely closed.
