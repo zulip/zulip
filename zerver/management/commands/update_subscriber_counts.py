@@ -88,7 +88,7 @@ accurate; this command is run as a daily cron job to ensure the number is accura
                 changed_subs.distinct("modified_stream_id")
                 .order_by("modified_stream_id")
                 .annotate(stream_id=F("modified_stream_id"))
-                .union(streams_from_users.annotate(stream_id="id"))
+                .union(streams_from_users.annotate(stream_id=F("id")))
                 .values_list("stream_id", flat=True)
             )
         elif realm := self.get_realm(options):
