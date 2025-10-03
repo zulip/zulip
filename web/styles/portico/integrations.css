@@ -28,7 +28,6 @@
         margin: 0 auto;
         border-radius: 10px;
         background-color: hsl(0deg 0% 100%);
-        visibility: hidden;
 
         & img {
             box-shadow: none;
@@ -333,10 +332,6 @@
             border-color: var(--color-integrations-border-green);
         }
 
-        &.legacy {
-            display: none !important;
-        }
-
         .integration-secondary-line-text {
             margin: 0;
             line-height: 10px;
@@ -459,9 +454,10 @@
 
     #integration-instructions-group {
         padding: 0 50px;
-        display: none;
+        display: flex;
 
         .integration-instruction-block {
+            display: flex;
             flex-direction: column;
 
             .integration-lozenge {
