@@ -56,9 +56,8 @@ function get_user_group_members(group: UserGroup): (User | UserGroup)[] {
     people.sort_but_pin_current_user_on_top(member_users);
 
     const subgroup_ids = [...group.direct_subgroup_ids];
-    const subgroups = subgroup_ids
-        .map((group_id) => user_groups.get_user_group_from_id(group_id))
-        .sort(user_group_components.sort_group_member_name);
+    const subgroups = subgroup_ids.map((group_id) => user_groups.get_user_group_from_id(group_id));
+    subgroups.sort(user_group_components.sort_group_member_name);
 
     return [...subgroups, ...member_users];
 }

@@ -270,7 +270,7 @@ export function get_user_unsub_streams(user_id: number): dropdown_widget.Option[
             unique_id: stream.stream_id,
             stream,
         }))
-        .sort((a, b) => {
+        .toSorted((a, b) => {
             if (a.name.toLowerCase() < b.name.toLowerCase()) {
                 return -1;
             }
@@ -307,7 +307,8 @@ function format_user_group_list_item_html(group: UserGroup, user: User): string 
     const can_leave_user_group = is_me && settings_data.can_leave_user_group(group.id);
     const subgroups_name = [];
     if (!is_direct_member) {
-        const subgroups = user_groups.get_direct_subgroups_of_group(group).sort(compare_by_name);
+        const subgroups = user_groups.get_direct_subgroups_of_group(group);
+        subgroups.sort(compare_by_name);
         subgroups_name.push(
             ...subgroups
                 .filter((subgroup) =>

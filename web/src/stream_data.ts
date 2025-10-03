@@ -1249,7 +1249,7 @@ export function get_options_for_dropdown_widget(): (dropdown_widget.Option & {
             unique_id: stream.stream_id,
             stream,
         }))
-        .sort((a, b) => util.strcmp(a.name.toLowerCase(), b.name.toLowerCase()));
+        .toSorted((a, b) => util.strcmp(a.name.toLowerCase(), b.name.toLowerCase()));
 }
 
 export function get_streams_for_move_messages_widget(): (dropdown_widget.Option & {
@@ -1257,7 +1257,7 @@ export function get_streams_for_move_messages_widget(): (dropdown_widget.Option 
 })[] {
     return get_unsorted_subs_with_content_access()
         .filter((stream) => !stream.is_archived)
-        .sort((a, b) => {
+        .toSorted((a, b) => {
             if (a.subscribed !== b.subscribed) {
                 return a.subscribed ? -1 : 1;
             }

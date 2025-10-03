@@ -569,9 +569,12 @@ export function get_last_restorable_draft_based_on_compose_state():
             id: draft_id,
         }),
     );
-    return drafts_for_compose_state
-        .sort((draft_a, draft_b) => draft_a.updatedAt - draft_b.updatedAt)
-        .findLast((draft) => !draft.is_sending_saving && draft.drafts_version >= 1);
+    return _.maxBy(
+        drafts_for_compose_state.filter(
+            (draft) => !draft.is_sending_saving && draft.drafts_version >= 1,
+        ),
+        (draft) => draft.updatedAt,
+    );
 }
 
 export type FormattedDraft =

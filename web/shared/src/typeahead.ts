@@ -176,7 +176,8 @@ export function query_matches_string_in_any_order(
     // return value of this function should anyway be false, as s1 would be the sole match
     // for q1 too; while we need unique matches for each search word.
 
-    search_words.sort().reverse();
+    search_words.sort();
+    search_words.reverse();
     source_words.sort();
     for (const word of search_words) {
         // `match_index` is the index of the best possible match of `word`.
@@ -356,14 +357,14 @@ export function triage<T>(
         const beginning_matches_sorted = [
             ...begins_with_case_sensitive_matches,
             ...begins_with_case_insensitive_matches,
-        ].sort(sorting_comparator);
+        ].toSorted(sorting_comparator);
         return {
             matches: [
-                ...exact_matches.sort(sorting_comparator),
+                ...exact_matches.toSorted(sorting_comparator),
                 ...beginning_matches_sorted,
-                ...word_boundary_matches.sort(sorting_comparator),
+                ...word_boundary_matches.toSorted(sorting_comparator),
             ],
-            rest: no_matches.sort(sorting_comparator),
+            rest: no_matches.toSorted(sorting_comparator),
         };
     }
 

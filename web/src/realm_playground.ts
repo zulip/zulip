@@ -37,9 +37,8 @@ export function get_playground_info_for_languages(lang: string): RealmPlayground
 function sort_pygments_pretty_names_by_priority(
     comparator_func: (a: string, b: string) => number,
 ): void {
-    const priority_sorted_pygments_data = Object.entries(pygments_data.langs).sort(([a], [b]) =>
-        comparator_func(a, b),
-    );
+    const priority_sorted_pygments_data = Object.entries(pygments_data.langs);
+    priority_sorted_pygments_data.sort(([a], [b]) => comparator_func(a, b));
     for (const [alias, data] of priority_sorted_pygments_data) {
         const pretty_name = data.pretty_name;
         // JS Map remembers the original order of insertion of keys.

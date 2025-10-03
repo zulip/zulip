@@ -75,10 +75,9 @@ export const keyboard_handling_context = {
 };
 
 function sort_scheduled_messages(scheduled_messages: ScheduledMessage[]): ScheduledMessage[] {
-    const sorted_scheduled_messages = scheduled_messages.sort(
+    return scheduled_messages.toSorted(
         (msg1, msg2) => msg1.scheduled_delivery_timestamp - msg2.scheduled_delivery_timestamp,
     );
-    return sorted_scheduled_messages;
 }
 
 export function handle_keyboard_events(event_key: string): void {

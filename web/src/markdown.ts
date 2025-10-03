@@ -474,9 +474,8 @@ export function get_topic_links(topic: string): TopicLink[] {
     }
     // We need to sort applied_matches again because the links were previously ordered by precedence,
     // so that the links are displayed in the order their patterns are matched.
-    return applied_matches
-        .sort((a, b) => a.index - b.index)
-        .map((match) => ({url: match.url, text: match.text}));
+    applied_matches.sort((a, b) => a.index - b.index);
+    return applied_matches.map((match) => ({url: match.url, text: match.text}));
 }
 
 export function is_status_message(raw_content: string): boolean {

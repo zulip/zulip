@@ -56,7 +56,7 @@ export function process_message(msg: Message): boolean {
 function get_sorted_conversations(): Map<string | undefined, ConversationData> {
     // Sort all recent conversations by last message time.
     return new Map(
-        [...conversations.entries()].sort((a, b) => b[1].last_msg_id - a[1].last_msg_id),
+        [...conversations.entries()].toSorted((a, b) => b[1].last_msg_id - a[1].last_msg_id),
     );
 }
 
