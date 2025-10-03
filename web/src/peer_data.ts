@@ -57,7 +57,7 @@ export async function maybe_fetch_stream_subscribers_with_retry(
     if (subscribers === null) {
         num_attempts += 1;
         const retry_delay_secs = util.get_retry_backoff_seconds(undefined, num_attempts);
-        await new Promise((resolve) => setTimeout(resolve, retry_delay_secs));
+        await new Promise((resolve) => setTimeout(resolve, retry_delay_secs * 1000));
         return maybe_fetch_stream_subscribers_with_retry(stream_id, num_attempts);
     }
     return subscribers;
