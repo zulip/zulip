@@ -31,8 +31,6 @@ if TYPE_CHECKING:
 
 class DocPageTest(ZulipTestCase):
     def get_doc(self, url: str, subdomain: str) -> "TestHttpResponse":
-        if url[0:23] == "/integrations/doc-html/":
-            return self.client_get(url, subdomain=subdomain, HTTP_X_REQUESTED_WITH="XMLHttpRequest")
         return self.client_get(url, subdomain=subdomain)
 
     def print_msg_if_error(self, url: str, response: "TestHttpResponse") -> None:  # nocoverage
@@ -68,11 +66,6 @@ class DocPageTest(ZulipTestCase):
         expected_strings: Sequence[str],
         allow_robots: bool,
     ) -> "TestHttpResponse":
-        # For whatever reason, we have some urls that don't follow
-        # the same policies as the majority of our urls.
-        if url.startswith("/integrations/doc-html"):
-            allow_robots = True
-
         if url.startswith("/attribution/"):
             allow_robots = False
 
@@ -144,7 +137,6 @@ class DocPageTest(ZulipTestCase):
             "/errors/5xx/",
             "/integrations/",
             "/integrations/bots",
-            "/integrations/doc-html/asana",
             "/integrations/doc/github",
             "/team/",
         ]
@@ -398,19 +390,24 @@ class DocPageTest(ZulipTestCase):
         for image in re.findall(r"/static/images/integrations/(logos/.*)\"", page):
             images_in_docs.add(image)
 
+        result = self.client_get(
+            "/integrations/nonexistent_category",
+            follow=True,
+        )
+        self.assertEqual(result.status_code, 404)
+
+        result = self.client_get(
+            "/integrations/doc/nonexistent_integration",
+            follow=True,
+        )
+        self.assertEqual(result.status_code, 404)
+
         for integration in INTEGRATIONS:
-            url = f"/integrations/doc-html/{integration}"
+            url = f"/integrations/doc/{integration}"
             response = self._test(url, expected_strings=[])
             doc = response.content.decode("utf-8")
             for image in re.findall(r"/static/images/integrations/(.*)\"", doc):
                 images_in_docs.add(image)
-
-        result = self.client_get(
-            "/integrations/doc-html/nonexistent_integration",
-            follow=True,
-            HTTP_X_REQUESTED_WITH="XMLHttpRequest",
-        )
-        self.assertEqual(result.status_code, 404)
 
         directory = "static/images/integrations"
         images_in_dir = {
@@ -475,19 +472,19 @@ class DocPageTest(ZulipTestCase):
         # We don't need to test all the pages for 404
         for integration in list(INTEGRATIONS.keys())[5]:
             with self.settings(ROOT_DOMAIN_LANDING_PAGE=True):
-                url = f"/en/integrations/doc-html/{integration}"
+                url = f"/en/integrations/doc/{integration}"
                 result = self.client_get(url, subdomain="", follow=True)
                 self.assertEqual(result.status_code, 404)
                 result = self.client_get(url, subdomain="zephyr", follow=True)
                 self.assertEqual(result.status_code, 404)
 
-            url = f"/en/integrations/doc-html/{integration}"
+            url = f"/en/integrations/doc/{integration}"
             result = self.client_get(url, subdomain="", follow=True)
             self.assertEqual(result.status_code, 404)
             result = self.client_get(url, subdomain="zephyr", follow=True)
             self.assertEqual(result.status_code, 404)
 
-        result = self.client_get("/integrations/doc-html/nonexistent_integration", follow=True)
+        result = self.client_get("/integrations/doc/nonexistent_integration", follow=True)
         self.assertEqual(result.status_code, 404)
 
     def test_electron_detection(self) -> None:

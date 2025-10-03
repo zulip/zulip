@@ -1,0 +1,27 @@
+{% macro render_integration_lozenge(integration, is_doc_view=false) -%}
+    <div
+      class="integration-lozenge{% if is_doc_view %} without-category{% endif %} integration-{{ integration.name }}"
+      data-categories='{{ integration.get_translated_categories()|tojson }}'
+      data-name="{{ integration.name }}">
+        <img class="integration-logo" src="{{ integration.logo_url }}"
+          alt="{{ integration.display_name }} logo"/>
+        {% if integration.secondary_line_text %}
+        <h3 class="integration-name with-secondary">{{ integration.display_name }}</h3>
+        <h4 class="integration-secondary-line-text">
+            {{ integration.secondary_line_text }}
+        </h4>
+        {% else %}
+        <h3 class="integration-name">{{ integration.display_name }}</h3>
+        {% endif %}
+        <h4 class="integration-category">{{ integration.categories[0] }}</h4>
+    </div>
+{%- endmacro %}
+
+{% macro render_logos_disclaimer() -%}
+    <p class="logos_disclaimer">
+        Logos are trademarks of their respective owners.
+        None of the integrations on this page are created by,
+        affiliated with, or supported by the companies
+        represented by the logos.
+    </p>
+{%- endmacro %}

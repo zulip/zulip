@@ -62,7 +62,7 @@ from zerver.views.custom_profile_fields import (
     update_user_custom_profile_data,
 )
 from zerver.views.digest import digest_page
-from zerver.views.documentation import IntegrationView, MarkdownDirectoryView, integration_doc
+from zerver.views.documentation import MarkdownDirectoryView, integrations_catalog, integrations_doc
 from zerver.views.drafts import create_drafts, delete_draft, edit_draft, fetch_drafts
 from zerver.views.events_register import events_register_backend
 from zerver.views.health import health
@@ -593,8 +593,6 @@ v1_api_and_json_patterns = [
     rest_path("export/realm/consents", GET=get_users_export_consents),
 ]
 
-integrations_view = IntegrationView.as_view()
-
 # These views serve pages (HTML). As such, their internationalization
 # must depend on the URL.
 #
@@ -718,10 +716,10 @@ i18n_urls = [
     path("calls/zoom/deauthorize", deauthorize_zoom_user),
     # Used to join a BigBlueButton video call
     path("calls/bigbluebutton/join", join_bigbluebutton),
-    # API and integrations documentation
-    path("integrations/doc-html/<integration_name>", integration_doc),
-    path("integrations/", integrations_view),
-    path("integrations/<path:path>", integrations_view),
+    # Integrations documentation
+    path("integrations/doc/<str:integration_name>", integrations_doc),
+    path("integrations/", integrations_catalog, {"category_slug": "all"}),
+    path("integrations/<str:category_slug>", integrations_catalog),
 ]
 
 # Make a copy of i18n_urls so that they appear without prefix for english
