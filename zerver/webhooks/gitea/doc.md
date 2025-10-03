@@ -22,6 +22,8 @@ Receive Gitea notifications in Zulip!
 
 ![](/static/images/integrations/gitea/001.png)
 
+{!event-filtering-additional-feature.md!}
+
 ### Related documentation
 
 {!webhooks-url-specification.md!}
