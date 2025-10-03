@@ -256,11 +256,23 @@ def render_block(block: WildValue) -> str:
     # https://api.slack.com/reference/block-kit/blocks
     block_type = block["type"].tame(
         check_string_in(
-            ["actions", "context", "divider", "header", "image", "input", "section", "rich_text"]
+            [
+                "actions",
+                "context",
+                "call",
+                "condition",
+                "divider",
+                "header",
+                "image",
+                "input",
+                "section",
+                "rich_text",
+            ]
         )
     )
 
     unhandled_types = [
+        "call",
         # The "actions" block is used to format literal in-message clickable
         # buttons and similar elements, which Zulip currently doesn't support.
         # https://docs.slack.dev/reference/block-kit/blocks/actions-block
