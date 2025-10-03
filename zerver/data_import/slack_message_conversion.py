@@ -256,11 +256,29 @@ def render_block(block: WildValue) -> str:
     # https://api.slack.com/reference/block-kit/blocks
     block_type = block["type"].tame(
         check_string_in(
-            ["actions", "context", "divider", "header", "image", "input", "section", "rich_text"]
+            [
+                "actions",
+                "context",
+                "call",
+                "condition",
+                "divider",
+                "header",
+                "image",
+                "input",
+                "section",
+                "rich_text",
+            ]
         )
     )
 
     unhandled_types = [
+        # `call` is a block type we've observed in the wild in a Slack export,
+        # despite not being documented in
+        # https://docs.slack.dev/reference/block-kit/blocks/
+        # It likes maps to a request for a Slack call. If we can verify that,
+        # probably it would be worth replacing with a string indicating a Slack
+        # call occurred.
+        "call",
         # The "actions" block is used to format literal in-message clickable
         # buttons and similar elements, which Zulip currently doesn't support.
         # https://docs.slack.dev/reference/block-kit/blocks/actions-block
