@@ -552,7 +552,6 @@ function edit_message($row: JQuery, raw_content: string): void {
     assert(message_lists.current !== undefined);
     const message = message_lists.current.get(rows.id($row));
     assert(message !== undefined);
-    $row.find(".message_reactions").hide();
     condense.hide_message_length_toggle($row);
 
     // We potentially got to this function by clicking a button that implied the
@@ -1079,7 +1078,6 @@ export function end_message_row_edit($row: JQuery): void {
             condense.show_message_condenser($row);
         }
     }
-    $row.find(".message_reactions").show();
 
     // We have to blur out text fields, or else hotkeys.js
     // thinks we are still editing.
