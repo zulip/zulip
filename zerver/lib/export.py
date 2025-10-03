@@ -2220,16 +2220,17 @@ def export_files_from_s3(
                 if int(key.metadata["user_profile_id"]) not in user_id_to_email:
                     continue
 
-                # This can happen if an email address has moved realms
-                if key.metadata["realm_id"] != str(realm.id):
-                    if email_gateway_bot is None or key.metadata["user_profile_id"] != str(
-                        email_gateway_bot.id
-                    ):
-                        raise AssertionError(
-                            f"Key metadata problem: {key.key} / {key.metadata} / {realm.id}"
-                        )
-                    # Email gateway bot sends messages, potentially including attachments, cross-realm.
-                    print(f"File uploaded by email gateway bot: {key.key} / {key.metadata}")
+                if key.metadata["realm_id"] == str(realm.id):
+                    pass
+                elif email_gateway_bot and key.metadata["user_profile_id"] == str(
+                    email_gateway_bot.id
+                ):
+                    # Our one expected cross-realm source of attachments
+                    pass
+                else:
+                    raise AssertionError(
+                        f"Key metadata problem: {key.key} / {key.metadata} / {realm.id}"
+                    )
 
             record = _get_exported_s3_record(
                 bucket_name, key, processing_emoji, user_id_to_email, realm.id
