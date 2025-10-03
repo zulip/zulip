@@ -8,7 +8,7 @@ from typing import Any
 
 import werkzeug
 from django.conf import settings
-from django.http import HttpRequest, HttpResponse, HttpResponseNotFound
+from django.http import HttpRequest, HttpResponse
 from django.template import loader
 from django.template.response import TemplateResponse
 from django.views.generic import TemplateView
@@ -25,6 +25,7 @@ from zerver.lib.integrations import (
     INTEGRATIONS,
     META_CATEGORY,
     HubotIntegration,
+    Integration,
     PythonAPIIntegration,
     WebhookIntegration,
     get_all_event_types_for_integration,
@@ -331,18 +332,6 @@ class MarkdownDirectoryView(ApiURLView):
         return result
 
 
-def add_integrations_context(context: dict[str, Any]) -> None:
-    alphabetical_sorted_categories = OrderedDict(sorted(CATEGORIES.items()))
-    alphabetical_sorted_integration = OrderedDict(sorted(INTEGRATIONS.items()))
-    enabled_integrations_count = sum(v.is_enabled() for v in INTEGRATIONS.values())
-    # Subtract 1 so saying "Over X integrations" is correct. Then,
-    # round down to the nearest multiple of 10.
-    integrations_count_display = ((enabled_integrations_count - 1) // 10) * 10
-    context["categories_dict"] = alphabetical_sorted_categories
-    context["integrations_dict"] = alphabetical_sorted_integration
-    context["integrations_count_display"] = integrations_count_display
-
-
 def add_integrations_open_graph_context(context: dict[str, Any], request: HttpRequest) -> None:
     path_name = request.path.rstrip("/").split("/")[-1]
     description = (
@@ -369,30 +358,7 @@ def add_integrations_open_graph_context(context: dict[str, Any], request: HttpRe
         context["PAGE_DESCRIPTION"] = description
 
 
-class IntegrationView(ApiURLView):
-    template_name = "zerver/integrations/index.html"
-
-    @override
-    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
-        context: dict[str, Any] = super().get_context_data(**kwargs)
-        add_integrations_context(context)
-        add_integrations_open_graph_context(context, self.request)
-        add_canonical_link_context(context, self.request)
-        add_google_analytics_context(context)
-        return context
-
-
-@typed_endpoint
-def integration_doc(request: HttpRequest, *, integration_name: PathOnly[str]) -> HttpResponse:
-    # FIXME: This check is jQuery-specific.
-    if request.headers.get("x-requested-with") != "XMLHttpRequest":
-        return HttpResponseNotFound()
-
-    try:
-        integration = INTEGRATIONS[integration_name]
-    except KeyError:
-        return HttpResponseNotFound()
-
+def build_integration_doc_html(integration: Integration, request: HttpRequest) -> str:
     context: dict[str, Any] = {}
     add_api_url_context(context, request)
 
@@ -414,6 +380,104 @@ def integration_doc(request: HttpRequest, *, integration_name: PathOnly[str]) ->
             f"/usr/local/share/zulip/integrations/{integration.directory_name}"
         )
 
-    doc_html_str = render_markdown_path(integration.doc, context, integration_doc=True)
+    return render_markdown_path(integration.doc, context, integration_doc=True)
 
-    return HttpResponse(doc_html_str)
+
+def add_base_integrations_context(request: HttpRequest) -> dict[str, Any]:
+    context: dict[str, Any] = {}
+    add_integrations_open_graph_context(context, request)
+    add_canonical_link_context(context, request)
+    add_google_analytics_context(context)
+    return context
+
+
+def get_visible_integrations_for_category(category_slug: str) -> list[Integration]:
+    enabled = sorted(
+        (
+            integration
+            for integration in INTEGRATIONS.values()
+            if integration.is_enabled() and not integration.legacy
+        ),
+        key=lambda integration: integration.name,
+    )
+    if category_slug == "all":
+        return enabled
+
+    category = CATEGORIES.get(category_slug)
+    return [integration for integration in enabled if category in integration.categories]
+
+
+def add_catalog_integrations_context(request: HttpRequest, category_slug: str) -> dict[str, Any]:
+    enabled_integrations_count = sum(v.is_enabled() for v in INTEGRATIONS.values())
+    # Subtract 1 so saying "Over X integrations" is correct. Then,
+    # round down to the nearest multiple of 10.
+    integrations_count_display = ((enabled_integrations_count - 1) // 10) * 10
+
+    context = add_base_integrations_context(request)
+    context.update(
+        {
+            "categories_dict": OrderedDict(sorted(CATEGORIES.items())),
+            "integrations_count_display": integrations_count_display,
+            "selected_category_slug": category_slug,
+            "visible_integrations": get_visible_integrations_for_category(category_slug),
+        }
+    )
+    return context
+
+
+def get_categories_for_integration(integration: Integration) -> list[tuple[str, str]]:
+    display_to_slug = {str(display): slug for slug, display in CATEGORIES.items()}
+    result = []
+    for display_name in integration.get_translated_categories():
+        slug = display_to_slug.get(display_name)
+        assert slug is not None
+        result.append((slug, display_name))
+
+    return result
+
+
+def add_doc_integrations_context(request: HttpRequest, integration: Integration) -> dict[str, Any]:
+    context = add_base_integrations_context(request)
+    context.update(
+        {
+            "selected_integration": integration,
+            "integration_doc_html": build_integration_doc_html(integration, request),
+            "integration_categories": get_categories_for_integration(integration),
+        }
+    )
+    return context
+
+
+@typed_endpoint
+def integrations_catalog(
+    request: HttpRequest,
+    *,
+    category_slug: PathOnly[str],
+) -> HttpResponse:
+    if category_slug != "all" and category_slug not in CATEGORIES:
+        return TemplateResponse(request, "404.html", status=404)
+
+    return TemplateResponse(
+        request,
+        "zerver/integrations/catalog.html",
+        context=add_catalog_integrations_context(request, category_slug),
+        status=200,
+    )
+
+
+@typed_endpoint
+def integrations_doc(
+    request: HttpRequest,
+    *,
+    integration_name: PathOnly[str],
+) -> HttpResponse:
+    integration = INTEGRATIONS.get(integration_name)
+    if integration is None or not integration.is_enabled():
+        return TemplateResponse(request, "404.html", status=404)
+
+    return TemplateResponse(
+        request,
+        "zerver/integrations/doc.html",
+        context=add_doc_integrations_context(request, integration),
+        status=200,
+    )
