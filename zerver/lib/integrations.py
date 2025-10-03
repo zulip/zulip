@@ -581,6 +581,12 @@ WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
     WebhookIntegration("zapier", ["meta-integration"]),
     WebhookIntegration("zendesk", ["customer-support"]),
     WebhookIntegration("zabbix", ["monitoring"]),
+    WebhookIntegration(
+        "redmine",
+        ["project-management"],
+        display_name="Redmine",
+        logo="images/integrations/logos/redmine.svg",
+    ),
 ]
 
 INTEGRATIONS: dict[str, Integration] = {
@@ -603,7 +609,6 @@ INTEGRATIONS: dict[str, Integration] = {
     "notion": Integration("notion", ["productivity"]),
     "onyx": Integration("onyx", ["productivity"], logo="images/integrations/logos/onyx.png"),
     "puppet": Integration("puppet", ["deployment"]),
-    "redmine": Integration("redmine", ["project-management"]),
     "zoom": Integration("zoom", ["communication"]),
 }
 
@@ -697,6 +702,7 @@ NO_SCREENSHOT_WEBHOOKS = {
     "ifttt",  # Docs don't have a screenshot
     "slack_incoming",  # Docs don't have a screenshot
     "zapier",  # Docs don't have a screenshot
+    "redmine",  # Redmine intentionally has no screenshot
 }
 
 
@@ -852,6 +858,14 @@ DOC_SCREENSHOT_CONFIG: dict[
 ] = {
     **WEBHOOK_SCREENSHOT_CONFIG,
     **FIXTURELESS_SCREENSHOT_CONFIG,
+    "redmine": [
+        FixturelessScreenshotConfig(
+            message="Sample Redmine webhook message.",
+            topic="Redmine integration screenshot",
+            image_name="001.png",
+            image_dir="redmine",
+        ),
+    ],
 }
 
 
