@@ -130,6 +130,12 @@
                 var(--message-box-timestamp-column-width),
                 max-content
             );
+
+        /* Hide reactions, scheduled reminders in edit mode. */
+        .message_reactions,
+        .message-reminders {
+            display: none;
+        }
     }
 
     .message_edit_notice {
