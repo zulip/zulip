@@ -41,6 +41,9 @@ import * as user_topics from "./user_topics.ts";
 import * as util from "./util.ts";
 import * as widget_modal from "./widget_modal.ts";
 
+const DRAFT_AUTO_SAVE_INTERVAL_MS = 60 * 1000;
+let last_compose_draft_autosave_ms;
+
 export function abort_xhr() {
     upload.compose_upload_cancel();
 }
@@ -57,6 +60,8 @@ function setup_compose_actions_hooks() {
 export function initialize() {
     // Register hooks for compose_actions.
     setup_compose_actions_hooks();
+
+    last_compose_draft_autosave_ms = undefined;
 
     $(".compose-control-buttons-container .video_link").toggle(
         compose_call.compute_show_video_chat_button(),
@@ -99,6 +104,16 @@ export function initialize() {
 
         if (compose_state.get_is_content_unedited_restored_draft()) {
             compose_state.set_is_content_unedited_restored_draft(false);
+        }
+
+        if (compose_state.composing()) {
+            const now = Date.now();
+            if (last_compose_draft_autosave_ms === undefined) {
+                last_compose_draft_autosave_ms = now;
+            } else if (now - last_compose_draft_autosave_ms > DRAFT_AUTO_SAVE_INTERVAL_MS) {
+                drafts.update_draft({no_notify: true});
+                last_compose_draft_autosave_ms = now;
+            }
         }
     });
 
