@@ -1021,6 +1021,17 @@ input.settings_text_input {
     }
 }
 
+.overlay-messages-container.drafts-container {
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr);
+
+    .overlay-messages-list {
+        overflow: unset;
+        padding-bottom: 0;
+        height: auto;
+    }
+}
+
 .overlay-messages-container .overlay-message-row {
     padding: 5px 0;
 
