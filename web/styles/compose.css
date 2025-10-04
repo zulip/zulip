@@ -1677,8 +1677,6 @@ textarea.new_message_textarea {
 .preview_message_area {
     padding: 5px 5px 0;
     overflow: auto;
-
-    border-radius: 3px 3px 0 0;
 }
 
 .markdown_preview_spinner {

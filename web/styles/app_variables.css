@@ -1023,6 +1023,28 @@
         0 0 2px hsl(3deg 57% 33%),
         0 0 2px hsl(3deg 73% 74%)
     );
+    --color-background-white-box: light-dark(
+        hsl(0deg 0% 100%),
+        hsl(0deg 0% 0% / 20%)
+    );
+    --color-stream-group-row-checked-icon: hsl(240deg 96% 68%);
+    --color-stream-group-row-checked-icon-hover: hsl(240deg 41% 50%);
+    --color-stream-group-row-checked-icon-disabled: light-dark(
+        hsl(240deg 96% 68% / 100%),
+        hsl(240deg 96% 68% / 50%)
+    );
+    --color-stream-group-row-plus-icon: light-dark(
+        hsl(0deg 0% 72%),
+        hsl(218deg 14% 33%)
+    );
+    --color-stream-group-row-plus-icon-hover: light-dark(
+        hsl(0deg 0% 27%),
+        hsl(230deg 11% 67%)
+    );
+    --color-stream-group-row-plus-icon-disabled: light-dark(
+        hsl(0deg 0% 87% / 100%),
+        hsl(218deg 14% 33% / 50%)
+    );
 
     /* Recent view */
     --recent-view-max-avatars: 4;
@@ -1560,7 +1582,18 @@
         hsl(0deg 0% 20%),
         hsl(236deg 33% 90%)
     );
-
+    --color-background-stream-email: light-dark(
+        hsl(0deg 0% 98%),
+        hsl(0deg 0% 0% / 20%)
+    );
+    --color-background-integration-url: light-dark(
+        transparent,
+        hsl(0deg 0% 0% / 20%)
+    );
+    --color-background-tbody-th-odd: light-dark(
+        transparent,
+        hsl(0deg 0% 0% / 20%)
+    );
     /* Markdown colors */
     --color-background-rendered-markdown-thead: light-dark(
         hsl(0deg 0% 93%),
@@ -2783,6 +2816,10 @@
     --color-box-shadow-input-focus: light-dark(
         color-mix(in oklch, hsl(228deg 10% 20%) 30%, transparent),
         color-mix(in oklch, hsl(0deg 0% 100%) 40%, transparent)
+    );
+    --color-border-settings-radio-input-parent: light-dark(
+        hsl(0deg 0% 87%),
+        hsl(0deg 0% 0% / 20%)
     );
 
     /* .main-view-banner colors */
