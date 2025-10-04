@@ -1605,7 +1605,7 @@ def do_convert_zipfile(
     original_path: str,
     output_dir: str,
     token: str,
-    threads: int = 6,
+    processes: int = 6,
     convert_slack_threads: bool = False,
 ) -> None:
     assert original_path.endswith(".zip")
@@ -1648,7 +1648,7 @@ def do_convert_zipfile(
 
             zipObj.extractall(slack_data_dir)
 
-        do_convert_directory(slack_data_dir, output_dir, token, threads, convert_slack_threads)
+        do_convert_directory(slack_data_dir, output_dir, token, processes, convert_slack_threads)
     finally:
         # Always clean up the uncompressed directory
         rm_tree(slack_data_dir)
@@ -1661,7 +1661,7 @@ def do_convert_directory(
     slack_data_dir: str,
     output_dir: str,
     token: str,
-    threads: int = 6,
+    processes: int = 6,
     convert_slack_threads: bool = False,
 ) -> None:
     check_token_access(token, SLACK_IMPORT_TOKEN_SCOPES)
@@ -1727,18 +1727,20 @@ def do_convert_directory(
 
     emoji_folder = os.path.join(output_dir, "emoji")
     os.makedirs(emoji_folder, exist_ok=True)
-    emoji_records = process_emojis(realm["zerver_realmemoji"], emoji_folder, emoji_url_map, threads)
+    emoji_records = process_emojis(
+        realm["zerver_realmemoji"], emoji_folder, emoji_url_map, processes
+    )
 
     avatar_folder = os.path.join(output_dir, "avatars")
     avatar_realm_folder = os.path.join(avatar_folder, str(realm_id))
     os.makedirs(avatar_realm_folder, exist_ok=True)
     avatar_records = process_avatars(
-        avatar_list, avatar_folder, realm_id, threads, size_url_suffix="-512"
+        avatar_list, avatar_folder, realm_id, processes, size_url_suffix="-512"
     )
 
     uploads_folder = os.path.join(output_dir, "uploads")
     os.makedirs(os.path.join(uploads_folder, str(realm_id)), exist_ok=True)
-    uploads_records = process_uploads(uploads_list, uploads_folder, threads)
+    uploads_records = process_uploads(uploads_list, uploads_folder, processes)
     attachment = {"zerver_attachment": zerver_attachment}
 
     team_info_dict = get_slack_api_data("https://slack.com/api/team.info", "team", token=token)

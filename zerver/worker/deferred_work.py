@@ -173,7 +173,7 @@ class DeferredWorker(QueueProcessingWorker):
                 export_realm_wrapper(
                     export_row=export_row,
                     output_dir=output_dir,
-                    threads=1 if self.threaded else 6,
+                    processes=1 if self.threaded else 6,
                     upload=True,
                 )
             except Exception:
