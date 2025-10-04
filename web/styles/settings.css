@@ -309,6 +309,45 @@ h3,
         margin-right: 10px;
     }
 }
+/* Modal stream name error styling */
+#stream_name_error_modal {
+    color: hsl(4deg 80% 51%);
+    margin-top: 0;
+    margin-bottom: 10px;
+    display: none;
+}
+
+#archived_stream_rename {
+    color: hsl(200deg 100% 40%);
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+#archived_stream_rename:hover {
+    color: hsl(200deg 100% 30%);
+}
+
+.stream-settings-link {
+    color: hsl(200deg 100% 40%);
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.stream-settings-link:hover {
+    color: hsl(200deg 100% 30%);
+    text-decoration: underline;
+}
+
+#stream_name_error_modal .stream-settings-link {
+    color: hsl(200deg 100% 40%);
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+#stream_name_error_modal .stream-settings-link:hover {
+    color: hsl(200deg 100% 30%);
+    text-decoration: underline;
+}
 
 /* Make this one less wide because it's indented, so that the right
    edge lines up with other dropdown menus. Usual 33px plus 23px extra
