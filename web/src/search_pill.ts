@@ -46,7 +46,7 @@ type SearchPill =
 export type SearchPillWidget = InputPillContainer<SearchPill>;
 
 // These operator types use user pills as operands.
-const user_pill_operators = new Set(["dm", "dm-including", "sender"]);
+const user_pill_operators = new Set(["dm", "dm-with", "dm-including", "sender"]);
 
 export function create_item_from_search_string(search_string: string): SearchPill | undefined {
     const search_term = util.the(Filter.parse(search_string));
