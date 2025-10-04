@@ -2,6 +2,7 @@ import md5 from "blueimp-md5";
 import assert from "minimalistic-assert";
 import * as z from "zod/mini";
 
+import * as internal_url from "../shared/src/internal_url.ts";
 import * as typeahead from "../shared/src/typeahead.ts";
 
 import * as blueslip from "./blueslip.ts";
@@ -678,7 +679,7 @@ export function pm_with_url(message: Message | MessageWithBooleans): string | un
         }
     }
 
-    const slug = user_ids.join(",") + "-" + suffix;
+    const slug = user_ids.join(",") + "-" + internal_url.encodeHashComponent(suffix);
     const url = "#narrow/dm/" + slug;
     return url;
 }
@@ -763,7 +764,7 @@ export function emails_to_slug(emails_string: string): string | undefined {
     if (emails.length === 1 && emails[0] !== undefined) {
         const person = get_by_email(emails[0]);
         assert(person !== undefined, "Unknown person in emails_to_slug");
-        slug += get_slug_from_full_name(person.full_name);
+        slug += internal_url.encodeHashComponent(get_slug_from_full_name(person.full_name));
     } else {
         slug += "group";
     }
@@ -778,7 +779,7 @@ export function user_ids_string_to_slug(user_ids_string: string): string | undef
     if (user_ids.length === 1 && user_ids[0] !== undefined) {
         const person = get_by_user_id(user_ids[0]);
         assert(person !== undefined, "Unknown person in user_ids_string_to_slug");
-        slug += get_slug_from_full_name(person.full_name);
+        slug += internal_url.encodeHashComponent(get_slug_from_full_name(person.full_name));
     } else {
         slug += "group";
     }
