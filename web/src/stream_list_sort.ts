@@ -219,8 +219,16 @@ export function sort_groups(
         }
     }
 
-    const folder_sections_sorted = [...folder_sections.values()].sort(
-        (section_a, section_b) => section_a.order! - section_b.order!,
+    function sort_by_order(folder_sections: StreamListSection[]): StreamListSection[] {
+        return folder_sections.sort((section_a, section_b) => section_a.order! - section_b.order!);
+    }
+
+    const non_empty_folder_sections = sort_by_order(
+        [...folder_sections.values()].filter((section) => section.streams.length > 0),
+    );
+    // These appear empty because all channels are muted or inactive.
+    const empty_folder_sections = sort_by_order(
+        [...folder_sections.values()].filter((section) => section.streams.length === 0),
     );
 
     if (
@@ -233,7 +241,12 @@ export function sort_groups(
     }
 
     // This needs to have the same ordering as the order they're displayed in the sidebar.
-    const new_sections = [pinned_section, ...folder_sections_sorted, normal_section];
+    const new_sections = [
+        pinned_section,
+        ...non_empty_folder_sections,
+        normal_section,
+        ...empty_folder_sections,
+    ];
 
     for (const section of new_sections) {
         section.streams.sort(compare_function);
