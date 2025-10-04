@@ -10,6 +10,7 @@ import time
 import zipfile
 from collections import defaultdict
 from collections.abc import Iterator
+from dataclasses import dataclass
 from datetime import datetime, timezone
 from email.headerregistry import Address
 from typing import Any, TypeAlias
@@ -55,6 +56,7 @@ from zerver.lib.message import truncate_content
 from zerver.lib.mime_types import guess_type
 from zerver.lib.storage import static_path
 from zerver.lib.thumbnail import THUMBNAIL_ACCEPT_IMAGE_TYPES, resize_realm_icon
+from zerver.lib.topic_link_util import get_stream_topic_link_syntax
 from zerver.lib.upload import sanitize_name
 from zerver.models import (
     CustomProfileField,
@@ -72,6 +74,7 @@ AddedChannelsT: TypeAlias = dict[str, tuple[str, int]]
 AddedMPIMsT: TypeAlias = dict[str, tuple[str, int]]
 DMMembersT: TypeAlias = dict[str, tuple[str, str]]
 SlackToZulipRecipientT: TypeAlias = dict[str, int]
+
 
 # We can look up unicode codepoints for Slack emoji using iamcal emoji
 # data. https://emojipedia.org/slack/, documents Slack's emoji names
@@ -135,6 +138,14 @@ class SlackBotEmail:
 
         cls.assigned_email[slack_bot_id] = email
         return email
+
+
+@dataclass
+class ThreadMetadata:
+    topic_name: str
+    topic_link_syntax: str
+    thread_length: int
+    first_thread_message_index: int
 
 
 def rm_tree(path: str) -> None:
@@ -1023,7 +1034,7 @@ def channel_message_to_zerver_message(
     4. uploads_list, which is a list of uploads to be mapped in uploads records.json
     5. reaction_list, which is a list of all user reactions
     """
-    zerver_message = []
+    zerver_message: list[ZerverFieldsT] = []
     zerver_usermessage: list[ZerverFieldsT] = []
     uploads_list: list[ZerverFieldsT] = []
     zerver_attachment: list[ZerverFieldsT] = []
@@ -1032,7 +1043,7 @@ def channel_message_to_zerver_message(
     total_user_messages = 0
     total_skipped_user_messages = 0
     thread_counter: dict[str, int] = defaultdict(int)
-    thread_map: dict[str, str] = {}
+    thread_map: dict[str, ThreadMetadata] = {}
     for message in all_messages:
         slack_user_id = get_message_sending_user(message)
         if not slack_user_id:
@@ -1074,6 +1085,7 @@ def channel_message_to_zerver_message(
         if "channel_name" in message:
             is_direct_message_type = False
             recipient_id = slack_recipient_name_to_zulip_recipient_id[message["channel_name"]]
+            channel_name = message["channel_name"]
         elif "mpim_name" in message:
             is_direct_message_type = True
             recipient_id = slack_recipient_name_to_zulip_recipient_id[message["mpim_name"]]
@@ -1137,15 +1149,37 @@ def channel_message_to_zerver_message(
         topic_name = "imported from Slack"
         if convert_slack_threads and not is_direct_message_type and "thread_ts" in message:
             thread_ts = datetime.fromtimestamp(float(message["thread_ts"]), tz=timezone.utc)
+            message_ts = datetime.fromtimestamp(float(message["ts"]), tz=timezone.utc)
             thread_ts_str = thread_ts.strftime(r"%Y/%m/%d %H:%M:%S")
             parent_user_id = get_parent_user_id_from_thread_message(message, subtype)
             thread_key = f"{thread_ts_str}-{parent_user_id}"
 
-            if thread_key in thread_map:
-                topic_name = thread_map[thread_key]
+            if thread_ts == message_ts:
+                # The first thread message has a `thread_ts` that matches its
+                # `message_ts`. We want to send this message to the main import
+                # channel and add a cross-linking notification message to the
+                # thread topic.
+                thread_topic_name = get_zulip_thread_topic_name(content, thread_ts, thread_counter)
+
+                thread_map[thread_key] = ThreadMetadata(
+                    topic_name=thread_topic_name,
+                    topic_link_syntax=get_stream_topic_link_syntax(
+                        recipient_id,
+                        channel_name,
+                        thread_topic_name,
+                    ),
+                    thread_length=0,
+                    first_thread_message_index=len(zerver_message),
+                )
+            elif thread_key in thread_map:
+                thread_metadata: ThreadMetadata = thread_map[thread_key]
+                topic_name = thread_metadata.topic_name
+                # TODO: Append quote-and-reply to the original message for the first thread message
+                thread_metadata.thread_length += 1
             else:
-                topic_name = get_zulip_thread_topic_name(content, thread_ts, thread_counter)
-                thread_map[thread_key] = topic_name
+                # This occurs when the original thread message isn't imported,
+                # such as when only a slice of the chat history is imported.
+                topic_name = f"{thread_ts_str} No channel message"
 
         if is_direct_message_type:
             topic_name = ""
@@ -1191,6 +1225,23 @@ def channel_message_to_zerver_message(
             )
             total_user_messages += num_created
             total_skipped_user_messages += num_skipped
+
+    # Link the original thread message to its branched off thread topic
+    for thread_metadata in thread_map.values():
+        index: int = thread_metadata.first_thread_message_index
+        number_of_replies: int = thread_metadata.thread_length
+
+        if number_of_replies < 1:
+            continue
+
+        thread_topic_link_syntax = thread_metadata.topic_link_syntax
+        reply_string = "replies" if number_of_replies > 1 else "reply"
+        complete_notification_message = (
+            f"\n\n*{number_of_replies} {reply_string} in {thread_topic_link_syntax}*"
+        )
+        # e.g "3 replies in #**channel>2023-05-23 foobar**"
+
+        zerver_message[index]["content"] += complete_notification_message
 
     logging.debug(
         "Created %s UserMessages; deferred %s due to long-term idle",
