@@ -313,6 +313,7 @@ export default defineConfig({
                         "view-a-messages-edit-history",
                         "collapse-a-message",
                         "read-receipts",
+                        "report-a-message",
                     ],
                 },
                 {
