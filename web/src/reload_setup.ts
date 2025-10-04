@@ -5,16 +5,18 @@ import * as activity from "./activity.ts";
 import * as blueslip from "./blueslip.ts";
 import * as compose from "./compose.ts";
 import * as compose_actions from "./compose_actions.ts";
+import * as drafts from "./drafts.ts";
 import {localstorage} from "./localstorage.ts";
 import * as message_fetch from "./message_fetch.ts";
 import * as message_view from "./message_view.ts";
 import * as people from "./people.ts";
+import {reload_metadata_schema} from "./reload.ts";
 
 // Check if we're doing a compose-preserving reload.  This must be
 // done before the first call to get_events
 
-// See `reload.preserve_state` for context on how this is built.
-const reload_vars_schema = z.intersection(
+// See history of `reload.preserve_state` for context on how this is built.
+const legacy_reload_vars_schema = z.intersection(
     z.object({
         oldhash: z.string(),
         narrow_pointer: z.optional(z.string()),
@@ -42,7 +44,6 @@ export function initialize(): void {
         return;
     }
     const hash_fragment = window.location.hash.slice("#".length);
-    const trigger = "reload";
 
     // Using the token, recover the saved pre-reload data from local
     // storage.  Afterwards, we clear the reload entry from local
@@ -55,11 +56,57 @@ export function initialize(): void {
         // exist, but be log it so that it's available for future
         // debugging if an exception happens later.
         blueslip.info("Invalid hash change reload token");
-        message_view.changehash("", trigger);
+        message_view.changehash("", "reload");
         return;
     }
     ls.remove(hash_fragment);
 
+    const parsed = reload_metadata_schema.safeParse(fragment);
+    if (parsed.success) {
+        // IMPORTANT: Most changes to this function's behavior should
+        // also update load_from_legacy_data.
+        const data = parsed.data;
+        if (data.compose_active_draft_id !== undefined) {
+            const draft = drafts.draft_model.getDraft(data.compose_active_draft_id);
+            if (draft === false) {
+                blueslip.warn("Tried to restore a draft that didn't exist.");
+            } else {
+                compose_actions.start({...draft, message_type: draft.type});
+                if (data.compose_active_draft_send_immediately) {
+                    compose.finish();
+                }
+            }
+        }
+
+        // We only restore pointer and offset for the current narrow, even if
+        // there are narrows that were cached before the reload, they are no
+        // longer cached after the reload. We could possibly store the pointer
+        // and offset for these narrows but it might lead to a confusing
+        // experience if the user gets back to these narrow much later (maybe days)
+        // and finds them at a random position in the narrow which they didn't
+        // navigate to while they were trying to just get to the latest unread
+        // message in that narrow which will now take more effort to find.
+        message_fetch.set_initial_pointer_and_offset({
+            narrow_pointer: data.message_view_pointer,
+            narrow_offset: data.message_view_scroll_offset,
+        });
+
+        activity.set_new_user_input(false);
+        message_view.changehash(data.hash, "reload");
+    } else {
+        load_from_legacy_data(fragment);
+    }
+}
+
+function load_from_legacy_data(fragment: unknown): void {
+    // IMPORTANT: This function mostly duplicates initialize with
+    // different parsing logic. Be careful to avoid fixing only one
+    // code path.
+    //
+    // TODO/compatibility(12.0): This legacy code path can be deleted
+    // once it is no longer possible to directly upgrade from 11.x to
+    // main.
+    //
     // TODO/compatibility: `fragment` was changed from a string
     // to a map containing the string and a timestamp. For now we'll
     // delete all tokens that only contain the url. Remove the
@@ -85,7 +132,7 @@ export function initialize(): void {
         raw_vars[pair[0]!] = decodeURIComponent(pair[1]!);
     }
 
-    const vars = reload_vars_schema.parse(raw_vars);
+    const vars = legacy_reload_vars_schema.parse(raw_vars);
     if (vars.msg !== undefined) {
         const send_now = vars.send_after_reload === "1";
 
@@ -134,5 +181,5 @@ export function initialize(): void {
     });
 
     activity.set_new_user_input(false);
-    message_view.changehash(vars.oldhash, trigger);
+    message_view.changehash(vars.oldhash, "reload");
 }
