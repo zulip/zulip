@@ -65,8 +65,16 @@ import * as user_card_popover from "./user_card_popover.ts";
 import * as user_group_popover from "./user_group_popover.ts";
 import {user_settings} from "./user_settings.ts";
 import * as user_topics_ui from "./user_topics_ui.ts";
+import * as util from "./util.ts";
 
-function do_narrow_action(action) {
+function do_narrow_action(
+    action: (
+        target_id: number,
+        opts: {
+            trigger: string;
+        },
+    ) => void,
+): boolean {
     if (message_lists.current === undefined) {
         return false;
     }
@@ -107,6 +115,11 @@ const KNOWN_IGNORE_SHIFT_MODIFIER_KEYS = new Set([
     "@",
 ]);
 
+type Hotkey = {
+    name: string;
+    message_view_only: boolean;
+};
+
 // Note that multiple keys can map to the same event_name, which
 // we'll do in cases where they have the exact same semantics.
 // DON'T FORGET: update keyboard_shortcuts.html
@@ -117,7 +130,7 @@ const KNOWN_IGNORE_SHIFT_MODIFIER_KEYS = new Set([
 // in the main message view with a selected message.
 // `message_view_only` hotkeys, as a group, are not processed if any
 // overlays are open (e.g. settings, streams, etc.).
-const KEYDOWN_MAPPINGS = {
+const KEYDOWN_MAPPINGS: Record<string, Hotkey | Hotkey[]> = {
     "Alt+P": {name: "toggle_compose_preview", message_view_only: true},
     "Ctrl+[": {name: "escape", message_view_only: false},
     "Cmd+Enter": {name: "action_with_enter", message_view_only: true},
@@ -239,7 +252,7 @@ const KNOWN_NAMED_KEY_ATTRIBUTE_VALUES = new Set([
     "Tab",
 ]);
 
-const CODE_TO_QWERTY_CHAR = {
+const CODE_TO_QWERTY_CHAR: Record<string, string> = {
     KeyA: "a",
     KeyB: "b",
     KeyC: "c",
@@ -310,7 +323,7 @@ const CODE_TO_QWERTY_CHAR = {
 
 // Keyboard Event Viewer tool:
 // https://w3c.github.io/uievents/tools/key-event-viewer.html
-export function get_keydown_hotkey(e) {
+export function get_keydown_hotkey(e: JQuery.KeyDownEvent): Hotkey | Hotkey[] | undefined {
     // Determine the key pressed in a consistent way.
     //
     // For keyboard layouts (e.g. QWERTY) where `e.key` results
@@ -327,7 +340,11 @@ export function get_keydown_hotkey(e) {
     let key = e.key;
     if (!use_event_key) {
         const code = `${e.shiftKey ? "Shift+" : ""}${e.code}`;
-        key = CODE_TO_QWERTY_CHAR[code];
+        if (CODE_TO_QWERTY_CHAR[code]) {
+            key = CODE_TO_QWERTY_CHAR[code];
+        } else {
+            return undefined;
+        }
     }
 
     if (common.has_mac_keyboard() && e.ctrlKey && key !== "[") {
@@ -362,7 +379,7 @@ export function get_keydown_hotkey(e) {
     return KEYDOWN_MAPPINGS[key];
 }
 
-export let processing_text = () => {
+export let processing_text = (): boolean => {
     const $focused_elt = $(":focus");
     return (
         $focused_elt.is("input") ||
@@ -374,16 +391,13 @@ export let processing_text = () => {
     );
 };
 
-export function rewire_processing_text(value) {
+export function rewire_processing_text(value: typeof processing_text): void {
     processing_text = value;
 }
 
-export function in_content_editable_widget(e) {
-    return $(e.target).is(".editable-section");
-}
-
 // Returns true if we handled it, false if the browser should.
-export function process_escape_key(e) {
+function process_escape_key(e: JQuery.KeyDownEvent): boolean {
+    assert(e.target instanceof HTMLElement);
     if (
         recent_view_ui.is_in_focus() &&
         // This will return false if `e.target` is not
@@ -514,7 +528,7 @@ export function process_escape_key(e) {
     return false;
 }
 
-function handle_popover_events(event_name) {
+function handle_popover_events(event_name: string): boolean {
     const popover_menu_visible_instance = popover_menus.get_visible_instance();
 
     if (popover_menus.is_stream_actions_popover_displayed()) {
@@ -570,7 +584,7 @@ function handle_popover_events(event_name) {
 }
 
 // Returns true if we handled it, false if the browser should.
-export function process_enter_key(e) {
+function process_enter_key(e: JQuery.KeyDownEvent): boolean {
     if ($(e.target).hasClass("trigger-click-on-enter")) {
         // If the target has the class "trigger-click-on-enter", explicitly
         // trigger a click event on it to call the associated click handler.
@@ -583,6 +597,7 @@ export function process_enter_key(e) {
         // If a popover is open and we pressed Enter on a menu item,
         // call click directly on the item to navigate to the `href`.
         // trigger("click") doesn't work for them to navigate to `href`.
+        assert(e.target instanceof HTMLElement);
         e.target.click();
         e.preventDefault();
         popovers.hide_all();
@@ -636,6 +651,7 @@ export function process_enter_key(e) {
     // Transfer the enter keypress from button to the `<i>` tag inside
     // it since it is the trigger for the popover. <button> is already used
     // to trigger the tooltip so it cannot be used to trigger the popover.
+    assert(e.target instanceof HTMLElement);
     if (e.target.id === "send_later") {
         compose_send_menu_popover.toggle();
         return true;
@@ -705,7 +721,7 @@ export function process_enter_key(e) {
             return false;
         }
 
-        window.location = hash_util.by_conversation_and_time_url(message);
+        window.location.href = hash_util.by_conversation_and_time_url(message);
         return true;
     }
 
@@ -713,7 +729,7 @@ export function process_enter_key(e) {
     return true;
 }
 
-export function process_cmd_or_ctrl_enter_key() {
+export function process_cmd_or_ctrl_enter_key(): boolean {
     if ($("#compose").hasClass("preview_mode")) {
         const cmd_or_ctrl_pressed = true;
         compose.handle_enter_key_with_preview_open(cmd_or_ctrl_pressed);
@@ -723,7 +739,7 @@ export function process_cmd_or_ctrl_enter_key() {
     return false;
 }
 
-export function process_tab_key() {
+export function process_tab_key(): boolean {
     // Returns true if we handled it, false if the browser should.
     // TODO: See if browsers like Safari can now handle tabbing correctly
     // without our intervention.
@@ -752,7 +768,7 @@ export function process_tab_key() {
     return false;
 }
 
-export function process_shift_tab_key() {
+export function process_shift_tab_key(): boolean {
     // Returns true if we handled it, false if the browser should.
     // TODO: See if browsers like Safari can now handle tabbing correctly
     // without our intervention.
@@ -796,7 +812,7 @@ export function process_shift_tab_key() {
 // Process a keydown event.
 //
 // Returns true if we handled it, false if the browser should.
-export function process_hotkey(e, hotkey) {
+function process_hotkey(e: JQuery.KeyDownEvent, hotkey: Hotkey): boolean {
     const event_name = hotkey.name;
 
     // This block needs to be before the `Tab` handler.
@@ -815,6 +831,7 @@ export function process_hotkey(e, hotkey) {
         case "shift_tab":
         case "open_recent_view":
             if (recent_view_ui.is_in_focus()) {
+                assert(e.target instanceof HTMLElement);
                 return recent_view_ui.change_focused_element($(e.target), event_name);
             }
     }
@@ -844,7 +861,7 @@ export function process_hotkey(e, hotkey) {
         case "enter":
             return process_enter_key(e);
         case "action_with_enter":
-            return process_cmd_or_ctrl_enter_key(e);
+            return process_cmd_or_ctrl_enter_key();
         case "tab":
             return process_tab_key();
         case "shift_tab":
@@ -952,9 +969,11 @@ export function process_hotkey(e, hotkey) {
     }
 
     if (event_name === "toggle_compose_preview") {
-        const $last_focused_compose_type_input = $(
-            compose_state.get_last_focused_compose_type_input(),
-        );
+        const last_focused_compose_type_input = compose_state.get_last_focused_compose_type_input();
+        if (last_focused_compose_type_input === undefined) {
+            return false;
+        }
+        const $last_focused_compose_type_input = $(last_focused_compose_type_input);
 
         if ($last_focused_compose_type_input.hasClass("message_edit_content")) {
             if ($last_focused_compose_type_input.closest(".preview_mode").length > 0) {
@@ -1011,7 +1030,7 @@ export function process_hotkey(e, hotkey) {
         if (event_name === "open_saved_snippet_dropdown") {
             const $messagebox = $(":focus").parents(".messagebox");
             if ($messagebox.length === 1) {
-                $messagebox.find(".saved_snippets_widget")[0].click();
+                util.the($messagebox.find(".saved_snippets_widget")).click();
             }
         }
 
@@ -1029,7 +1048,7 @@ export function process_hotkey(e, hotkey) {
         if (event_name === "up_arrow" && $(":focus").attr("id") === "search_query") {
             $("#search_query").trigger("blur");
             message_scroll_state.set_keyboard_triggered_current_scroll(true);
-            navigate.up(true);
+            navigate.up();
         }
 
         if (
@@ -1047,7 +1066,7 @@ export function process_hotkey(e, hotkey) {
                     return true;
                 case "page_down": {
                     // so that it always goes to the end of the text box.
-                    const height = $(":focus")[0].scrollHeight;
+                    const height = util.the($(":focus")).scrollHeight;
                     $(":focus")
                         .caret(Number.POSITIVE_INFINITY)
                         .animate({scrollTop: height}, "fast");
@@ -1188,9 +1207,9 @@ export function process_hotkey(e, hotkey) {
             if (inbox_ui.is_in_focus()) {
                 return inbox_ui.toggle_topic_visibility_policy();
             }
-            if (message_lists.current.selected_message()) {
+            if (message_lists.current!.selected_message()) {
                 user_topics_ui.toggle_topic_visibility_policy(
-                    message_lists.current.selected_message(),
+                    message_lists.current!.selected_message()!,
                 );
                 return true;
             }
@@ -1322,6 +1341,7 @@ export function process_hotkey(e, hotkey) {
     }
 
     const msg = message_lists.current.selected_message();
+    assert(msg !== undefined);
 
     // Shortcuts that operate on a message
     switch (event_name) {
@@ -1364,9 +1384,9 @@ export function process_hotkey(e, hotkey) {
                 $emoji_icon?.length !== 0 &&
                 $emoji_icon.closest(".message_control_button").css("display") !== "none"
             ) {
-                emoji_picker_reference = $emoji_icon[0];
+                emoji_picker_reference = util.the($emoji_icon);
             } else {
-                emoji_picker_reference = $row.find(".message-actions-menu-button")[0];
+                emoji_picker_reference = util.the($row.find(".message-actions-menu-button"));
             }
 
             emoji_picker.toggle_emoji_popover(emoji_picker_reference, msg.id, {
@@ -1378,7 +1398,7 @@ export function process_hotkey(e, hotkey) {
             // '+': reacts with thumbs up emoji on selected message
             // Use canonical name.
             const thumbs_up_emoji_code = "1f44d";
-            const canonical_name = emoji.get_emoji_name(thumbs_up_emoji_code);
+            const canonical_name = emoji.get_emoji_name(thumbs_up_emoji_code)!;
             reactions.toggle_emoji_reaction(msg, canonical_name);
             return true;
         }
@@ -1434,8 +1454,13 @@ export function process_hotkey(e, hotkey) {
             if (!message_edit.can_move_message(msg)) {
                 return false;
             }
-
-            stream_popover.build_move_topic_to_stream_popover(msg.stream_id, msg.topic, false, msg);
+            assert(msg.type === "stream");
+            void stream_popover.build_move_topic_to_stream_popover(
+                msg.stream_id,
+                msg.topic,
+                false,
+                msg,
+            );
             return true;
         }
         case "toggle_read_receipts": {
@@ -1476,7 +1501,7 @@ export function process_hotkey(e, hotkey) {
     return false;
 }
 
-export function process_keydown(e) {
+export function process_keydown(e: JQuery.KeyDownEvent): boolean {
     activity.set_new_user_input(true);
     const result = get_keydown_hotkey(e);
     if (!result) {
@@ -1489,7 +1514,7 @@ export function process_keydown(e) {
     return process_hotkey(e, result);
 }
 
-export function initialize() {
+export function initialize(): void {
     $(document).on("keydown", (e) => {
         if (e.key === undefined) {
             /* Some browsers trigger a 'keydown' event with `key === undefined`
