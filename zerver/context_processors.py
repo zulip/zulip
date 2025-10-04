@@ -287,6 +287,12 @@ def is_realm_import_enabled() -> bool:
     return settings.MAX_WEB_DATA_IMPORT_SIZE_MB != 0
 
 
+def are_demo_organizations_enabled() -> bool:
+    # TODO: Remove settings.DEVELOPMENT when demo organization feature ready
+    # to be fully implemented.
+    return settings.OPEN_REALM_CREATION and settings.DEVELOPMENT
+
+
 def get_realm_create_form_context() -> dict[str, Any]:
     context = {
         "language_list": get_language_list(),
@@ -296,5 +302,6 @@ def get_realm_create_form_context() -> dict[str, Any]:
         "sorted_realm_types": sorted(Realm.ORG_TYPES.values(), key=lambda d: d["display_order"]),
         "is_realm_import_enabled": is_realm_import_enabled(),
         "import_from_choices": PreregistrationRealm.IMPORT_FROM_CHOICES,
+        "demo_organizations_enabled": are_demo_organizations_enabled(),
     }
     return context

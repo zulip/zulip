@@ -126,6 +126,7 @@ class RealmDetailsForm(forms.Form):
     )
     realm_default_language = forms.ChoiceField(choices=[])
     realm_name = forms.CharField(max_length=Realm.MAX_REALM_NAME_LENGTH)
+    create_demo = forms.BooleanField(required=False)
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         # Since the superclass doesn't accept random extra kwargs, we
@@ -138,26 +139,48 @@ class RealmDetailsForm(forms.Form):
             choices=[(lang["code"], lang["name"]) for lang in get_language_list()],
         )
 
+    @override
+    def clean(self) -> None:
+        super().clean()
+        if not self.realm_creation:
+            # This form is used both for creating new realms and for
+            # registering new users in existing realms. The validation
+            # below only needs to happen when we are creating a new
+            # realm as part of the registration process.
+            return
+
+        # Checking for an available subdomain depends on the value of
+        # the cleaned `create_demo` field. If the user is creating a
+        # demo organization, then there is no subdomain to validate
+        # from user input during the registration process. Otherwise,
+        # we need to check the user input for `realm_subdomain` for
+        # any errors and to confirm it's not currently in use.
+        create_demo = self.cleaned_data.get("create_demo", False)
+        subdomain = self.cleaned_data.get("realm_subdomain", "")
+        if not create_demo:
+            try:
+                check_subdomain_available(subdomain)
+            except ValidationError as e:
+                self.add_error("realm_subdomain", e)
+
     def clean_realm_subdomain(self) -> str:
         if not self.realm_creation:
-            # This field is only used if realm_creation
+            # This field is only used for realm creation.
             return ""
 
         subdomain = self.cleaned_data["realm_subdomain"]
         if "realm_in_root_domain" in self.data:
             subdomain = Realm.SUBDOMAIN_FOR_ROOT_DOMAIN
 
-        check_subdomain_available(subdomain)
         return subdomain
 
 
 class RegistrationForm(RealmDetailsForm):
     MAX_PASSWORD_LENGTH = 100
-    full_name = forms.CharField(max_length=UserProfile.MAX_NAME_LENGTH)
+    full_name = forms.CharField(max_length=UserProfile.MAX_NAME_LENGTH, required=False)
     # The required-ness of the password field gets overridden if it isn't
     # actually required for a realm
     password = forms.CharField(widget=forms.PasswordInput, max_length=MAX_PASSWORD_LENGTH)
-    is_demo_organization = forms.BooleanField(required=False)
     enable_marketing_emails = forms.BooleanField(required=False)
     email_address_visibility = forms.TypedChoiceField(
         required=False,
@@ -169,7 +192,6 @@ class RegistrationForm(RealmDetailsForm):
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         # Since the superclass doesn't except random extra kwargs, we
         # remove it from the kwargs dict before initializing.
-        self.realm_creation = kwargs["realm_creation"]
         self.realm = kwargs.pop("realm", None)
 
         super().__init__(*args, **kwargs)
@@ -207,13 +229,24 @@ class RegistrationForm(RealmDetailsForm):
             max_length=100, required=False
         )
 
-    def clean_full_name(self) -> str:
-        try:
-            return check_full_name(
-                full_name_raw=self.cleaned_data["full_name"], user_profile=None, realm=self.realm
-            )
-        except JsonableError as e:
-            raise ValidationError(e.msg)
+    @override
+    def clean(self) -> None:
+        super().clean()
+
+        # Checking for a valid user full name depends on the value of
+        # the cleaned `create_demo` field. If the user is creating a
+        # demo organization, then there is no full name to validate
+        # from user input during the registration process. Otherwise,
+        # we need to check the user input for `full_name` for any
+        # errors.
+        create_demo = self.cleaned_data.get("create_demo", False)
+        full_name = self.cleaned_data.get("full_name", "")
+        if not create_demo:
+            try:
+                check_full_name(full_name_raw=full_name, user_profile=None, realm=self.realm)
+            except JsonableError as e:
+                self.add_error("full_name", e.msg)
+                raise ValidationError(e.msg)
 
     def clean_password(self) -> str:
         password = self.cleaned_data["password"]
@@ -321,7 +354,9 @@ class ImportRealmOwnerSelectionForm(forms.Form):
 
 class RealmCreationForm(RealmDetailsForm):
     # This form determines whether users can create a new realm.
-    email = forms.EmailField(validators=[email_not_system_bot, email_is_not_disposable])
+    email = forms.EmailField(
+        validators=[email_not_system_bot, email_is_not_disposable], required=False
+    )
     import_from = forms.ChoiceField(
         choices=PreregistrationRealm.IMPORT_FROM_CHOICES,
         required=False,
@@ -330,6 +365,31 @@ class RealmCreationForm(RealmDetailsForm):
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         kwargs["realm_creation"] = True
         super().__init__(*args, **kwargs)
+
+    @override
+    def clean(self) -> None:
+        super().clean()
+
+        # Valid cleaned values for `email` depend on the value of the
+        # the cleaned `create_demo` field. We expect neither case
+        # below to be possible in the registration UI.
+        create_demo = self.cleaned_data.get("create_demo", False)
+        email = self.cleaned_data.get("email")
+        if create_demo:
+            # TODO: Remove settings.DEVELOPMENT when demo organization feature ready
+            # to be fully implemented.
+            assert settings.DEVELOPMENT
+            # If the user is creating a demo organization, then the
+            # cleaned `email` value should be an empty string.
+            if email != "":
+                raise ValidationError(_("Email address not required for demo organizations."))
+        else:
+            # When creating a permanent organization, if the cleaned
+            # `email` value is None or an empty string, then an error
+            # should have been raised when validating the field. If
+            # not, then we add an error string to the `email` field.
+            if (email == "" or email is None) and not self.has_error("email"):  # nocoverage
+                self.add_error("email", (_("Enter a valid email address.")))
 
     def clean_import_from(self) -> str:
         # Convert "" to "none".
@@ -383,6 +443,7 @@ class CaptchaRealmCreationForm(RealmCreationForm):
 
     @override
     def clean(self) -> None:
+        super().clean()
         if not self.data.get("captcha"):
             self.add_error("captcha", _("Validation failed, please try again."))
 

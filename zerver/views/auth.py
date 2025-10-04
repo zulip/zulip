@@ -152,6 +152,7 @@ def create_preregistration_realm(
     org_type: int,
     default_language: str,
     import_from: str | None = None,
+    demo_organization: bool = False,
 ) -> PreregistrationRealm:
     return PreregistrationRealm.objects.create(
         email=email,
@@ -160,6 +161,7 @@ def create_preregistration_realm(
         org_type=org_type,
         default_language=default_language,
         data_import_metadata={"import_from": import_from},
+        demo_organization=demo_organization,
     )
 
 

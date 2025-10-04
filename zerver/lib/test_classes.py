@@ -880,7 +880,7 @@ Output:
 
     def submit_reg_form_for_user(
         self,
-        email: str,
+        email: str | None,
         password: str | None,
         realm_name: str = "Zulip Test",
         realm_subdomain: str = "zuliptest",
@@ -895,7 +895,7 @@ Output:
         realm_default_language: str = "en",
         enable_marketing_emails: bool | None = None,
         email_address_visibility: int | None = None,
-        is_demo_organization: bool = False,
+        create_demo: bool = False,
         **extra: str,
     ) -> "TestHttpResponse":
         """
@@ -906,24 +906,29 @@ Output:
 
         You can pass the HTTP_HOST variable for subdomains via extra.
         """
-        if full_name is None:
-            full_name = email.replace("@", "_")
+        if key is None:
+            assert email is not None
+            key = find_key_by_email(email)
         payload = {
-            "full_name": full_name,
             "realm_name": realm_name,
             "realm_subdomain": realm_subdomain,
             "realm_type": realm_type,
             "realm_default_language": realm_default_language,
-            "key": key if key is not None else find_key_by_email(email),
+            "key": key,
             "timezone": timezone,
             "terms": True,
             "from_confirmation": from_confirmation,
             "default_stream_group": default_stream_groups,
             "source_realm_id": source_realm_id,
-            "is_demo_organization": is_demo_organization,
             "how_realm_creator_found_zulip": "other",
             "how_realm_creator_found_zulip_extra_context": "I found it on the internet.",
+            "create_demo": create_demo,
         }
+        if not create_demo:
+            if full_name is None:
+                assert email is not None
+                full_name = email.replace("@", "_")
+            payload["full_name"] = full_name
         if enable_marketing_emails is not None:
             payload["enable_marketing_emails"] = enable_marketing_emails
         if email_address_visibility is not None:
@@ -946,24 +951,29 @@ Output:
 
     def submit_realm_creation_form(
         self,
-        email: str,
+        email: str | None,
         *,
-        realm_subdomain: str,
         realm_name: str,
         realm_type: int = Realm.ORG_TYPES["business"]["id"],
         realm_default_language: str = "en",
+        realm_subdomain: str | None = None,
         realm_in_root_domain: str | None = None,
         captcha: str | None = None,
         import_from: str = "none",
+        create_demo: bool = False,
     ) -> "TestHttpResponse":
         payload = {
-            "email": email,
             "realm_name": realm_name,
             "realm_type": realm_type,
             "realm_default_language": realm_default_language,
-            "realm_subdomain": realm_subdomain,
             "import_from": import_from,
+            "create_demo": create_demo,
         }
+        if not create_demo:
+            assert email is not None
+            payload["email"] = email
+        if realm_subdomain is not None:
+            payload["realm_subdomain"] = realm_subdomain
         if captcha is not None:
             payload["captcha"] = captcha
         if realm_in_root_domain is not None:
