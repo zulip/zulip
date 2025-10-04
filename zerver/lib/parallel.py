@@ -1,7 +1,8 @@
 import logging
 from collections.abc import Callable, Iterable, Iterator
-from concurrent.futures import Future, ProcessPoolExecutor
+from concurrent.futures import BrokenExecutor, Future, ProcessPoolExecutor
 from contextlib import contextmanager
+from multiprocessing import current_process
 from typing import Any, TypeVar
 
 import bmemcached
@@ -15,25 +16,27 @@ from zerver.lib.queue import get_queue_client
 ParallelRecordType = TypeVar("ParallelRecordType")
 
 
-def _disconnect() -> None:
+def _disconnect() -> None:  # nocoverage
     # Close our database, cache, and RabbitMQ connections, so our
     # forked children do not share them.  Django will transparently
     # re-open them as needed.
     connection.close()
     _cache = cache._cache  # type: ignore[attr-defined] # not in stubs
-    assert isinstance(_cache, bmemcached.Client)
-    _cache.disconnect_all()
+    if isinstance(_cache, bmemcached.Client):
+        # In tests, this is an OrderedDict
+        _cache.disconnect_all()
 
-    rabbitmq_client = get_queue_client()
-    if rabbitmq_client.connection and rabbitmq_client.connection.is_open:
-        rabbitmq_client.close()
+    if settings.USING_RABBITMQ:
+        rabbitmq_client = get_queue_client()
+        if rabbitmq_client.connection and rabbitmq_client.connection.is_open:
+            rabbitmq_client.close()
 
 
 def func_with_catch(func: Callable[[ParallelRecordType], None], item: ParallelRecordType) -> None:
     try:
         return func(item)
     except Exception:
-        logging.exception("Error processing item: %s", item, stack_info=True)
+        logging.exception("Error processing item: %s", item)
 
 
 def run_parallel(
@@ -46,7 +49,7 @@ def run_parallel(
     catch: bool = False,
     report_every: int = 1000,
     report: Callable[[int], None] | None = None,
-) -> None:  # nocoverage
+) -> None:
     with run_parallel_queue(
         func,
         processes,
@@ -72,8 +75,8 @@ def run_parallel_queue(
     report: Callable[[int], None] | None = None,
 ) -> Iterator[Callable[[ParallelRecordType], None]]:  # nocoverage
     assert processes > 0
-    if settings.TEST_SUITE:
-        assert processes == 1
+    if settings.TEST_SUITE and current_process().daemon:
+        assert processes == 1, "Only one process possible under parallel tests"
 
     wrapped_func = partial(func_with_catch, func) if catch else func
 
@@ -94,22 +97,30 @@ def run_parallel_queue(
 
     _disconnect()
 
-    with ProcessPoolExecutor(
-        max_workers=processes, initializer=initializer, initargs=initargs
-    ) as executor:
+    exceptions = []
+    try:
+        with ProcessPoolExecutor(
+            max_workers=processes, initializer=initializer, initargs=initargs
+        ) as executor:
 
-        def report_callback(future: Future[None]) -> None:
-            future.result()
-            nonlocal completed
-            completed += 1
-            if report is not None and completed % report_every == 0:
-                report(completed)
+            def report_callback(future: Future[None]) -> None:
+                if exc := future.exception():
+                    exceptions.append(exc)
+                    return
 
-        def future_with_notify(item: ParallelRecordType) -> None:
-            future = executor.submit(wrapped_func, item)
-            future.add_done_callback(report_callback)
+                nonlocal completed
+                completed += 1
+                if report is not None and completed % report_every == 0:
+                    report(completed)
 
-        try:
+            def future_with_notify(item: ParallelRecordType) -> None:
+                if exceptions:
+                    executor.shutdown(cancel_futures=True)
+                    raise BrokenExecutor
+                future = executor.submit(wrapped_func, item)
+                future.add_done_callback(report_callback)
+
             yield future_with_notify
-        finally:
-            executor.shutdown()
+    finally:
+        if exceptions:
+            raise exceptions[0]
