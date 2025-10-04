@@ -14,9 +14,11 @@ THREE_DIGIT_NUMBER = "492"
 
 # Example user content
 BO_NAME = "Bo Williams"
+BO_EMAIL = "bwilliams@example.com"
 BO_GIT_NAME = "bo-williams"
 
 KEVIN_NAME = "Kevin Lin"
+KEVIN_EMAIL = "klin@example.com"
 
 # Example project content
 PROJECT_NAME = "Example Project"
@@ -85,6 +87,14 @@ DISCOURSE = ScreenshotContent(
 > {COMMIT_BODY_A}""",
 )
 
+GIT = ScreenshotContent(
+    topic=BRANCH_GIT,
+    content=f"""`{DEPLOYMENT_HASH[:12]}` was deployed to `{BRANCH_GIT}` with:
+* {KEVIN_EMAIL} - {COMMIT_HASH_A[:7]}: {COMMIT_MESSAGE_A}
+* {BO_EMAIL} - {COMMIT_HASH_B[:7]}: {COMMIT_MESSAGE_B}
+""",
+)
+
 GITHUB_ACTIONS = ScreenshotContent(
     topic="scheduled backups",
     content=f"""Backup [failed]() at {DATETIME_STAMP}.
@@ -102,6 +112,13 @@ GOOGLE_CALENDAR = ScreenshotContent(
 JENKINS = ScreenshotContent(
     topic=PROJECT_NAME,
     content=f"**Build:** [#{REVISION_NUMBER}](): FAILURE :cross_mark:",
+)
+
+JIRA_PLUGIN = ScreenshotContent(
+    topic=f"{TICKET_NUMBER}: {TASK_TITLE}",
+    content=f"""{BO_NAME} **created** [{TICKET_NUMBER}]() - priority Medium, assigned to @**{KEVIN_NAME}**:
+
+> {TASK_DESCRIPTION}""",
 )
 
 MASTODON = ScreenshotContent(
