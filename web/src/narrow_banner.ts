@@ -317,6 +317,23 @@ export function pick_empty_narrow_banner(current_filter: Filter): NarrowBannerDa
                 if (stream_sub && stream_data.can_toggle_subscription(stream_sub)) {
                     return default_banner;
                 }
+
+                // This is a special case for administrators viewing a private
+                // channel they are not subscribed to. They have metadata access
+                // but not content access, so we show a special banner.
+                if (
+                    stream_sub &&
+                    stream_sub.invite_only &&
+                    stream_data.can_administer_channel(stream_sub)
+                ) {
+                    return {
+                        title: $t({
+                            defaultMessage:
+                                "You are not allowed to view messages in this private channel.",
+                        }),
+                    };
+                }
+
                 return {
                     title: $t({
                         defaultMessage:
