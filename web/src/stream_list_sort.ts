@@ -14,6 +14,8 @@ import * as util from "./util.ts";
 let first_render_completed = false;
 let current_sections: StreamListSection[] = [];
 let all_rows: number[] = [];
+// Will normal section be visible if search_term is empty with "other" title?
+let other_section_visible_without_search_term = false;
 
 // Because we need to check whether we are filtering inactive streams
 // in a loop over all streams to render the left sidebar, and the
@@ -115,15 +117,43 @@ export function sort_groups(
     all_subscribed_stream_ids: number[],
     search_term: string,
 ): StreamListSortResult {
+    const pinned_section: StreamListSection = {
+        id: "pinned-streams",
+        folder_id: null,
+        section_title: $t({defaultMessage: "PINNED CHANNELS"}),
+        streams: [],
+        muted_streams: [],
+        inactive_streams: [],
+    };
+    const normal_section: StreamListSection = {
+        id: "normal-streams",
+        folder_id: null,
+        section_title: $t({defaultMessage: "CHANNELS"}),
+        streams: [],
+        muted_streams: [],
+        inactive_streams: [],
+    };
+    const NORMAL_SECTION_TITLE_WITH_OTHER_FOLDERS = $t({defaultMessage: "OTHER"});
+
+    const show_all_channels = util.prefix_match({value: normal_section.section_title, search_term});
+    const include_all_pinned_channels =
+        show_all_channels || util.prefix_match({value: pinned_section.section_title, search_term});
+    const search_term_prefix_matches_other_section_title =
+        search_term &&
+        other_section_visible_without_search_term &&
+        util.prefix_match({value: NORMAL_SECTION_TITLE_WITH_OTHER_FOLDERS, search_term});
+
     const stream_id_to_name = (stream_id: number): string => sub_store.get(stream_id)!.name;
     // Use -, _, : and / as word separators apart from the default space character
     const word_separator_regex = /[\s/:_-]/;
-    let matching_stream_ids = util.filter_by_word_prefix_match(
-        all_subscribed_stream_ids,
-        search_term,
-        stream_id_to_name,
-        word_separator_regex,
-    );
+    let matching_stream_ids = show_all_channels
+        ? all_subscribed_stream_ids
+        : util.filter_by_word_prefix_match(
+              all_subscribed_stream_ids,
+              search_term,
+              stream_id_to_name,
+              word_separator_regex,
+          );
 
     const current_channel_id = narrow_state.stream_id(narrow_state.filter(), true);
     if (
@@ -153,24 +183,29 @@ export function sort_groups(
         ];
     }
 
-    const pinned_section: StreamListSection = {
-        id: "pinned-streams",
-        folder_id: null,
-        section_title: $t({defaultMessage: "PINNED CHANNELS"}),
-        streams: [],
-        muted_streams: [],
-        inactive_streams: [],
-    };
-    const normal_section: StreamListSection = {
-        id: "normal-streams",
-        folder_id: null,
-        section_title: $t({defaultMessage: "CHANNELS"}),
-        streams: [],
-        muted_streams: [],
-        inactive_streams: [],
-    };
-
     const folder_sections = new Map<number, StreamListSection>();
+
+    if (!show_all_channels && include_all_pinned_channels) {
+        matching_stream_ids = [
+            ...matching_stream_ids,
+            ...all_subscribed_stream_ids.filter(
+                (stream_id) => sub_store.get(stream_id)!.pin_to_top,
+            ),
+        ];
+    }
+
+    if (!show_all_channels && search_term_prefix_matches_other_section_title) {
+        matching_stream_ids = [
+            ...matching_stream_ids,
+            ...all_subscribed_stream_ids.filter((stream_id) => {
+                const is_pinned = sub_store.get(stream_id)!.pin_to_top;
+                const is_in_folder =
+                    user_settings.web_left_sidebar_show_channel_folders &&
+                    sub_store.get(stream_id)!.folder_id !== null;
+                return !is_pinned && !is_in_folder;
+            }),
+        ];
+    }
 
     for (const stream_id of matching_stream_ids) {
         const sub = sub_store.get(stream_id);
@@ -227,9 +262,18 @@ export function sort_groups(
         pinned_section.streams.length > 0 ||
         pinned_section.muted_streams.length > 0 ||
         pinned_section.inactive_streams.length > 0 ||
-        folder_sections.size > 0
+        folder_sections.size > 0 ||
+        // To meet the user's expectation, we show "Other" as
+        // section title if it matches the search term.
+        search_term_prefix_matches_other_section_title
     ) {
-        normal_section.section_title = $t({defaultMessage: "OTHER"});
+        normal_section.section_title = NORMAL_SECTION_TITLE_WITH_OTHER_FOLDERS;
+
+        if (search_term === "") {
+            other_section_visible_without_search_term = true;
+        }
+    } else if (search_term === "") {
+        other_section_visible_without_search_term = false;
     }
 
     // This needs to have the same ordering as the order they're displayed in the sidebar.

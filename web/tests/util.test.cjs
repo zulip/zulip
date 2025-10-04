@@ -337,6 +337,11 @@ run_test("filter_by_word_prefix_match", () => {
     assert.deepEqual(util.filter_by_word_prefix_match(values, "unders", item_to_string, /\s/), []);
 });
 
+run_test("prefix_match", () => {
+    assert.ok(util.prefix_match({value: "VIEWS", search_term: "V"}));
+    assert.ok(!util.prefix_match({value: "VIEWS", search_term: "I"}));
+});
+
 run_test("get_string_diff", () => {
     assert.deepEqual(
         util.get_string_diff("#ann is for updates", "#**announce** is for updates"),
