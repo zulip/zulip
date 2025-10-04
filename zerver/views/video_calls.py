@@ -3,6 +3,7 @@ import json
 import logging
 import random
 from base64 import b64encode
+from typing import Any
 from urllib.parse import quote, urlencode, urljoin
 
 import requests
@@ -45,6 +46,71 @@ from zerver.models.realms import get_realm
 class VideoCallSession(OutgoingSession):
     def __init__(self) -> None:
         super().__init__(role="video_calls", timeout=5)
+
+
+class ConstructorGroupsService:
+    def __init__(self) -> None:
+        if not self._is_configured():
+            raise JsonableError(_("Failed to create video call"))
+
+        self.access_key = settings.CONSTRUCTOR_GROUPS_ACCESS_KEY
+        self.secret_key = settings.CONSTRUCTOR_GROUPS_SECRET_KEY
+        self.base_url = (
+            settings.CONSTRUCTOR_GROUPS_URL.rstrip("/") if settings.CONSTRUCTOR_GROUPS_URL else ""
+        )
+
+    @staticmethod
+    def _is_configured() -> bool:
+        return (
+            settings.CONSTRUCTOR_GROUPS_URL is not None
+            and settings.CONSTRUCTOR_GROUPS_ACCESS_KEY is not None
+            and settings.CONSTRUCTOR_GROUPS_SECRET_KEY is not None
+        )
+
+    def _make_authenticated_request(
+        self, method: str, endpoint: str, data: dict[str, Any] | None = None
+    ) -> dict[str, Any]:
+        """Make authenticated request to Constructor Groups XAPI"""
+        url = f"{self.base_url}{endpoint}"
+
+        # Construct authentication token: ACCESS_KEY|SHA256(ACCESS_KEY|SECRET_KEY)
+        combined_string = f"{self.access_key}|{self.secret_key}"
+        hash_hex = hashlib.sha256(combined_string.encode("utf-8")).hexdigest()
+        auth_token = f"{self.access_key}|{hash_hex}"
+
+        headers = {
+            "Authorization": f"Bearer {auth_token}",
+            "Content-Type": "application/json",
+        }
+
+        try:
+            session = VideoCallSession()
+            if method.upper() == "GET":
+                response = session.get(url, headers=headers, params=data or {})
+            elif method.upper() == "POST":
+                response = session.post(url, headers=headers, json=data or {})
+            else:
+                raise ValueError(f"Unsupported HTTP method: {method}")
+
+            response.raise_for_status()
+            return response.json()
+
+        except Exception:
+            logging.exception("Constructor Groups API request failed")
+            raise JsonableError(_("Failed to create video call"))
+
+    def search_rooms(self, keyword: str, user_email: str) -> list[dict[str, Any]]:
+        """Search for rooms containing keyword for specific user"""
+        params = {"query": keyword, "creator_email": user_email, "page": 1, "size": 1}
+
+        response_data = self._make_authenticated_request("GET", "/room/search", params)
+        return response_data.get("data", [])
+
+    def create_room(self, name: str, user_email: str) -> dict[str, Any]:
+        """Create new room with specified name"""
+        data = {"name": name, "creator_email": user_email}
+
+        return self._make_authenticated_request("POST", "/room", data)
 
 
 class InvalidZoomTokenError(JsonableError):
@@ -406,3 +472,27 @@ def join_bigbluebutton(request: HttpRequest, *, bigbluebutton: str) -> HttpRespo
         settings.BIG_BLUE_BUTTON_URL + "api/join", join_params
     )
     return redirect(append_url_query_string(redirect_url_base, "checksum=" + checksum))
+
+
+@typed_endpoint_without_parameters
+def make_constructor_groups_video_call(
+    request: HttpRequest,
+    user_profile: UserProfile,
+) -> HttpResponse:
+    service = ConstructorGroupsService()
+
+    room_name_pattern = f"{user_profile.full_name}'s Zulip Videoconferencing Room"
+    existing_rooms = service.search_rooms(room_name_pattern, user_profile.delivery_email)
+
+    if existing_rooms:
+        room_url = existing_rooms[0].get("url", "")
+        if not room_url:
+            raise JsonableError(_("Invalid room data received from Constructor Groups."))
+    else:
+        room_data = service.create_room(room_name_pattern, user_profile.delivery_email)
+        room_url = room_data.get("url", "")
+
+        if not room_url:
+            raise JsonableError(_("Failed to get room URL from Constructor Groups."))
+
+    return json_success(request, {"url": room_url})
