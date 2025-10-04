@@ -302,7 +302,7 @@ export function update_expanded_views_for_search(search_value: string): void {
     }
 
     let any_view_visible = false;
-    const expanded_views = left_sidebar_navigation_area.get_built_in_views();
+    const expanded_views = left_sidebar_navigation_area.get_built_for_expanded_views();
     for (const view of expanded_views) {
         let show_view = search_util.vanilla_match({
             val: view.name,
@@ -327,7 +327,11 @@ export function update_expanded_views_for_search(search_value: string): void {
 export function initialize_left_sidebar(): void {
     const primary_condensed_views =
         left_sidebar_navigation_area.get_built_in_primary_condensed_views();
-    const expanded_views = left_sidebar_navigation_area.get_built_in_views();
+    const all_built_in_views = left_sidebar_navigation_area.get_built_for_expanded_views();
+    const expanded_views = all_built_in_views.filter((view) => view.is_pinned);
+    const has_unpinned_views = all_built_in_views.length > expanded_views.length;
+    const is_condensed = left_sidebar_navigation_area.is_condensed();
+    const should_hide_menu = !is_condensed && !has_unpinned_views;
 
     const rendered_sidebar = render_left_sidebar({
         is_guest: current_user.is_guest,
@@ -341,6 +345,7 @@ export function initialize_left_sidebar(): void {
         is_spectator: page_params.is_spectator,
         primary_condensed_views,
         expanded_views,
+        should_hide_menu,
     });
 
     $("#left-sidebar-container").html(rendered_sidebar);
