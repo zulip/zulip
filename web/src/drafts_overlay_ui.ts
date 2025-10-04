@@ -206,11 +206,8 @@ export function handle_keyboard_events(event_key: string): void {
 }
 
 function format_drafts(data: Record<string, LocalStorageDraft>): FormattedDraft[] {
-    const unsorted_raw_drafts = Object.entries(data).map(([id, draft]) => ({...draft, id}));
-
-    const sorted_raw_drafts = unsorted_raw_drafts.sort(
-        (draft_a, draft_b) => draft_b.updatedAt - draft_a.updatedAt,
-    );
+    const sorted_raw_drafts = Object.entries(data).map(([id, draft]) => ({...draft, id}));
+    sorted_raw_drafts.sort((draft_a, draft_b) => draft_b.updatedAt - draft_a.updatedAt);
 
     const sorted_formatted_drafts = sorted_raw_drafts
         .map((draft_row) => drafts.format_draft(draft_row))

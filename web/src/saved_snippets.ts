@@ -31,9 +31,8 @@ export function remove_saved_snippet(saved_snippet_id: number): void {
 }
 
 export function get_options_for_dropdown_widget(): Option[] {
-    const saved_snippets = [...saved_snippets_dict.values()].sort((a, b) =>
-        util.strcmp(a.title.toLowerCase(), b.title.toLowerCase()),
-    );
+    const saved_snippets = [...saved_snippets_dict.values()];
+    saved_snippets.sort((a, b) => util.strcmp(a.title.toLowerCase(), b.title.toLowerCase()));
     const options = saved_snippets.map((saved_snippet) => ({
         unique_id: saved_snippet.id,
         name: saved_snippet.title,

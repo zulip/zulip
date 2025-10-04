@@ -474,7 +474,7 @@ function format_dm(
             name: people.get_display_full_name(recipient_id),
             status_emoji_info: user_status.get_status_emoji(recipient_id),
         }))
-        .sort((a, b) => util.strcmp(a.name, b.name))
+        .toSorted((a, b) => util.strcmp(a.name, b.name))
         .map((user_info) => render_user_with_status_icon(user_info));
 
     let user_circle_class: string | false | undefined;
@@ -812,7 +812,7 @@ function get_sorted_stream_keys(channel_folder_id: number | undefined = undefine
         return util.strcmp(stream_name_a, stream_name_b);
     }
 
-    return [...topics_dict.keys()].sort(compare_function);
+    return [...topics_dict.keys()].toSorted(compare_function);
 }
 
 function get_sorted_stream_topic_dict(): Map<string, Map<string, TopicContext>> {
@@ -828,11 +828,12 @@ function get_sorted_stream_topic_dict(): Map<string, Map<string, TopicContext>> 
 function get_sorted_row_dict<T extends DirectMessageContext | TopicContext>(
     row_dict: Map<string, T>,
 ): Map<string, T> {
-    return new Map([...row_dict].sort(([, a], [, b]) => b.latest_msg_id - a.latest_msg_id));
+    return new Map([...row_dict].toSorted(([, a], [, b]) => b.latest_msg_id - a.latest_msg_id));
 }
 
 function sort_channel_folders(): void {
-    const sorted_channel_folders = [...channel_folders_dict.values()].sort((a, b) => {
+    const sorted_channel_folders = [...channel_folders_dict.values()];
+    sorted_channel_folders.sort((a, b) => {
         // Sort OTHER_CHANNELS_FOLDER_ID last, then by order with PINNED_CHANNEL_FOLDER_ID first.
         if (a.id === OTHER_CHANNELS_FOLDER_ID) {
             return 1;

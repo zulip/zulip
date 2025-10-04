@@ -85,6 +85,7 @@ EMOJI_NAME_MAPS: dict[str, dict[str, Any]] = {
     "1f1e8-1f1f3": {"canonical_name": "flag_china", "aliases": []},
     "1f1e8-1f1f4": {"canonical_name": "flag_colombia", "aliases": []},
     "1f1e8-1f1f5": {"canonical_name": "flag_clipperton_island", "aliases": []},
+    "1f1e8-1f1f6": {"canonical_name": "flag_sark", "aliases": []},
     "1f1e8-1f1f7": {"canonical_name": "flag_costa_rica", "aliases": []},
     "1f1e8-1f1fa": {"canonical_name": "flag_cuba", "aliases": []},
     "1f1e8-1f1fb": {"canonical_name": "flag_cape_verde", "aliases": []},
@@ -393,7 +394,6 @@ EMOJI_NAME_MAPS: dict[str, dict[str, Any]] = {
             "spore",
             "toppings",
             "truffle",
-            "vegetarian",
         ],
     },
     "1f344": {"canonical_name": "mushroom", "aliases": []},
@@ -655,7 +655,7 @@ EMOJI_NAME_MAPS: dict[str, dict[str, Any]] = {
     "1f41b": {"canonical_name": "bug", "aliases": ["caterpillar"]},
     "1f41c": {"canonical_name": "ant", "aliases": []},
     "1f41d": {"canonical_name": "bee", "aliases": ["buzz", "honeybee"]},
-    "1f41e": {"canonical_name": "lady_beetle", "aliases": ["garden", "ladybird", "ladybug"]},
+    "1f41e": {"canonical_name": "lady_beetle", "aliases": ["ladybird", "ladybug"]},
     "1f41f": {"canonical_name": "fish", "aliases": []},
     "1f420": {"canonical_name": "tropical_fish", "aliases": []},
     "1f421": {"canonical_name": "blowfish", "aliases": []},
@@ -1454,10 +1454,7 @@ EMOJI_NAME_MAPS: dict[str, dict[str, Any]] = {
     "1f6f4": {"canonical_name": "kick_scooter", "aliases": []},
     "1f6f5": {"canonical_name": "scooter", "aliases": ["motor_bike"]},
     "1f6f6": {"canonical_name": "canoe", "aliases": []},
-    "1f6f7": {
-        "canonical_name": "sled",
-        "aliases": ["luge", "sledge", "sleigh", "snow", "toboggan"],
-    },
+    "1f6f7": {"canonical_name": "sled", "aliases": ["luge", "sledge", "sleigh", "toboggan"]},
     "1f6f8": {
         "canonical_name": "flying_saucer",
         "aliases": ["aliens", "extra", "saucer", "terrestrial"],
@@ -1656,7 +1653,7 @@ EMOJI_NAME_MAPS: dict[str, dict[str, Any]] = {
     "1f970": {"canonical_name": "smiling_face_with_hearts", "aliases": ["3", "adore", "crush"]},
     "1f971": {
         "canonical_name": "yawning_face",
-        "aliases": ["bedtime", "bored", "nap", "sleep", "yawn", "yawning"],
+        "aliases": ["bedtime", "nap", "sleep", "yawn", "yawning"],
     },
     "1f972": {
         "canonical_name": "smiling_face_with_tear",
@@ -1988,13 +1985,14 @@ EMOJI_NAME_MAPS: dict[str, dict[str, Any]] = {
             "fife",
             "flautist",
             "marching",
-            "orchestra",
             "piccolo",
             "pipe",
             "recorder",
             "woodwind",
         ],
     },
+    "1fa89": {"canonical_name": "harp", "aliases": []},
+    "1fa8f": {"canonical_name": "shovel", "aliases": ["bury", "dig", "scoop", "spade"]},
     "1fa90": {
         "canonical_name": "ringed_planet",
         "aliases": ["planet", "ringed", "saturn", "saturnine"],
@@ -2116,6 +2114,10 @@ EMOJI_NAME_MAPS: dict[str, dict[str, Any]] = {
         "canonical_name": "wing",
         "aliases": ["angelic", "aviation", "heavenly", "mythology"],
     },
+    "1fabe": {
+        "canonical_name": "leafless_tree",
+        "aliases": ["bare", "barren", "branches", "drought", "leafless", "trunk", "winter"],
+    },
     "1fabf": {
         "canonical_name": "goose",
         "aliases": ["flock", "fowl", "gaggle", "gander", "geese", "honk", "silly"],
@@ -2138,6 +2140,10 @@ EMOJI_NAME_MAPS: dict[str, dict[str, Any]] = {
         "canonical_name": "person_with_crown",
         "aliases": ["monarch", "noble", "regal", "royal", "royalty"],
     },
+    "1fac6": {
+        "canonical_name": "fingerprint",
+        "aliases": ["crime", "forensics", "identity", "mystery", "print", "trace"],
+    },
     "1face": {"canonical_name": "moose", "aliases": ["alces", "antlers", "elk"]},
     "1facf": {"canonical_name": "donkey", "aliases": ["ass", "burro", "hinny", "mule", "stubborn"]},
     "1fad0": {
@@ -2153,16 +2159,18 @@ EMOJI_NAME_MAPS: dict[str, dict[str, Any]] = {
     "1fad4": {"canonical_name": "tamale", "aliases": ["mexican", "pamonha", "wrapped"]},
     "1fad5": {"canonical_name": "fondue", "aliases": ["melted"]},
     "1fad6": {"canonical_name": "teapot", "aliases": ["brew"]},
-    "1fad7": {
-        "canonical_name": "pouring_liquid",
-        "aliases": ["accident", "pour", "pouring", "spill"],
-    },
+    "1fad7": {"canonical_name": "pouring_liquid", "aliases": ["accident", "pour", "pouring"]},
     "1fad8": {"canonical_name": "beans", "aliases": ["kidney"]},
     "1fad9": {"canonical_name": "jar", "aliases": ["container", "nothing", "sauce", "store"]},
-    "1fada": {"canonical_name": "ginger_root", "aliases": ["ginger", "natural", "root", "spice"]},
+    "1fada": {"canonical_name": "ginger_root", "aliases": ["ginger", "natural", "spice"]},
     "1fadb": {
         "canonical_name": "pea_pod",
         "aliases": ["beanstalk", "edamame", "pea", "pod", "soybean"],
+    },
+    "1fadc": {"canonical_name": "root_vegetable", "aliases": ["beet", "radish", "turnip"]},
+    "1fadf": {
+        "canonical_name": "splatter",
+        "aliases": ["drip", "holi", "ink", "mess", "paint", "stain"],
     },
     "1fae0": {"canonical_name": "melting_face", "aliases": ["dissolve", "haha", "melt", "melting"]},
     "1fae1": {
@@ -2193,6 +2201,10 @@ EMOJI_NAME_MAPS: dict[str, dict[str, Any]] = {
     "1fae8": {
         "canonical_name": "shaking_face",
         "aliases": ["daze", "earthquake", "panic", "vibrate"],
+    },
+    "1fae9": {
+        "canonical_name": "face_with_bags_under_eyes",
+        "aliases": ["bags", "fatigued", "late"],
     },
     "1faf0": {
         "canonical_name": "hand_with_index_finger_and_thumb_crossed",

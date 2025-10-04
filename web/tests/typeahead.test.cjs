@@ -36,7 +36,7 @@ function emoji_matches(query) {
 
 function assert_emoji_matches(query, expected) {
     const names = emoji_matches(query).map((emoji) => emoji.emoji_name);
-    assert.deepEqual(names.sort(), expected);
+    assert.deepEqual(names.toSorted(), expected);
 }
 
 run_test("get_emoji_matcher: nonmatches", () => {

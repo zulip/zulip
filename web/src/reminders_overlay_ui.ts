@@ -47,7 +47,8 @@ export const keyboard_handling_context = {
 };
 
 function sort_reminders(reminders: Map<number, Reminder>): Reminder[] {
-    const sorted_reminders = [...reminders.values()].sort(
+    const sorted_reminders = [...reminders.values()];
+    sorted_reminders.sort(
         (reminder1, reminder2) =>
             reminder1.scheduled_delivery_timestamp - reminder2.scheduled_delivery_timestamp,
     );

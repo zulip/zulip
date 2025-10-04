@@ -722,8 +722,8 @@ function format_conversation(conversation_data: ConversationData): ConversationC
                     name: people.get_display_full_name(user.id),
                     status_emoji_info: user_status.get_status_emoji(user.id),
                 }),
-            )
-            .sort();
+            );
+        rendered_pm_with_html.sort();
         const pm_url = last_msg.pm_with_url;
         const is_group = last_msg.display_recipient.length > 2;
         const has_unread_mention =
