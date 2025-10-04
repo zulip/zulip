@@ -1002,3 +1002,59 @@ test("queries_with_spaces", () => {
     expected = [`channel:${dev_help_id}`];
     assert.deepEqual(suggestions.strings, expected);
 });
+
+test("people_suggestion_sorting", ({override}) => {
+    override(narrow_state, "stream_id", () => undefined);
+
+    const active_user = {
+        email: "active@zulip.com",
+        user_id: 998,
+        full_name: "User A",
+    };
+    people.add_active_user(active_user);
+
+    const deactivated_user = {
+        email: "deactivate@zulip.com",
+        user_id: 999,
+        full_name: "User B",
+    };
+    people._add_user(deactivated_user);
+    people.deactivate(deactivated_user);
+
+    let query = "user";
+    let suggestions = get_suggestions(query);
+    let expected = [
+        "user",
+        "dm:active@zulip.com",
+        "sender:active@zulip.com",
+        "dm-including:active@zulip.com",
+        "dm:deactivate@zulip.com",
+        "sender:deactivate@zulip.com",
+        "dm-including:deactivate@zulip.com",
+    ];
+    assert.deepEqual(suggestions.strings, expected);
+
+    // test with 3 users
+    const another_active_user = {
+        email: "another@zulip.com",
+        user_id: 1000,
+        full_name: "User C",
+    };
+    people.add_active_user(another_active_user);
+
+    query = "user";
+    suggestions = get_suggestions(query);
+    expected = [
+        "user",
+        "dm:active@zulip.com",
+        "dm:another@zulip.com",
+        "sender:active@zulip.com",
+        "sender:another@zulip.com",
+        "dm-including:active@zulip.com",
+        "dm-including:another@zulip.com",
+        "dm:deactivate@zulip.com",
+        "sender:deactivate@zulip.com",
+        "dm-including:deactivate@zulip.com",
+    ];
+    assert.deepEqual(suggestions.strings, expected);
+});
