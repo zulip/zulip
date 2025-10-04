@@ -64,7 +64,22 @@ def get_slack_sender_name(user_id: str, token: str) -> str:
         token=token,
         user=user_id,
     )
-    return slack_user_data["name"]
+
+    user = slack_user_data.get("user", {}) or {}
+    profile = user.get("profile", {}) or {}
+
+    candidates = [
+        profile.get("display_name_normalized"),
+        profile.get("display_name"),
+        profile.get("real_name_normalized"),
+        profile.get("real_name"),
+        user.get("name"),
+    ]
+    for name in candidates:
+        if name and str(name).strip():
+            return str(name).strip()
+
+    return "Slack user"
 
 
 def convert_slack_user_and_channel_mentions(text: str, app_token: str) -> str:
