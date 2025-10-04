@@ -1,0 +1,14 @@
+[
+  {
+    "Id": "19:bHoJg8DQLm4F6EoU_SUNlBGuMO1pjeeUSgDTEgk3XtE1@thread.tacv2",
+    "CreatedDateTime": "2025-09-25T14:34:12.503Z",
+    "DisplayName": "hello!",
+    "Description": "this is an \u0022org wide\u0022 teams, everyone will automatically be added to this teams",
+    "IsFavoriteByDefault": null,
+    "Email": "Newmembers@lemonstand.onmicrosoft.com",
+    "TenantId": "5caa9117-09e5-47f0-b85b-6e013617af34",
+    "WebUrl": "https://teams.cloud.microsoft/l/channel/19%3AbHoJg8DQLm4F6EoU_SUNlBGuMO1pjeeUSgDTEgk3XtE1%40thread.tacv2/New%20members?groupId=d608b92d-8ae6-4898-bd76-4b13e3d48469\u0026tenantId=5caa9117-09e5-47f0-b85b-6e013617af34\u0026allowXTenantAccess=True\u0026ngc=True",
+    "MembershipType": "standard",
+    "IsArchived": false
+  }
+]
