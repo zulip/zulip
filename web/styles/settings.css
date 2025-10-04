@@ -1473,7 +1473,7 @@ label.preferences-radio-choice-label {
     .sidebar {
         height: calc(100% - var(--settings-overlay-header-height));
         overflow-y: auto;
-        border-right: 1px solid var(--color-border-modal);
+        border-right: 1px solid var(--color-border-modal-bar);
 
         .header {
             height: auto;
@@ -1503,7 +1503,7 @@ label.preferences-radio-choice-label {
             transition:
                 background-color 0.2s ease,
                 border-bottom 0.2s ease;
-            border-bottom: 1px solid var(--color-border-modal);
+            border-bottom: 1px solid var(--color-border-modal-bar);
 
             &:last-of-type .text {
                 border-bottom: none;
