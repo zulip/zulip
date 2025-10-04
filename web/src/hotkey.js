@@ -863,15 +863,6 @@ export function process_hotkey(e, hotkey) {
     const is_any_modal_active = modals.any_active();
     const active_modal = is_any_modal_active ? modals.active_modal() : null;
 
-    // `list_util` will process the event in send later modal.
-    if (is_any_modal_active && active_modal !== "#send_later_modal") {
-        if (event_name === "toggle_read_receipts" && active_modal === "#read_receipts_modal") {
-            read_receipts.hide_user_list();
-            return true;
-        }
-        return false;
-    }
-
     // TODO: break out specific handlers for up_arrow,
     //       down_arrow, and backspace
     switch (event_name) {
@@ -949,6 +940,15 @@ export function process_hotkey(e, hotkey) {
     if (event_name === "down_arrow" && list_util.inside_list(e)) {
         list_util.go_down(e);
         return true;
+    }
+
+    // `list_util` will process the event in send later modal.
+    if (is_any_modal_active && active_modal !== "#send_later_modal") {
+        if (event_name === "toggle_read_receipts" && active_modal === "#read_receipts_modal") {
+            read_receipts.hide_user_list();
+            return true;
+        }
+        return false;
     }
 
     if (event_name === "toggle_compose_preview") {
