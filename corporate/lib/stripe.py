@@ -102,7 +102,7 @@ CARD_CAPITALIZATION = {
 }
 
 # The version of Stripe API the billing system supports.
-STRIPE_API_VERSION = "2025-04-30.basil"
+STRIPE_API_VERSION = "2025-07-30.basil"
 
 stripe.api_version = STRIPE_API_VERSION
 
