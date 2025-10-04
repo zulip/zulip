@@ -18,6 +18,7 @@ from zerver.lib.event_types import (
     AuthenticationData,
     BaseEvent,
     BotServicesEmbedded,
+    BotServicesIncoming,
     BotServicesOutgoing,
     EventAlertWords,
     EventAttachmentAdd,
@@ -387,6 +388,9 @@ def check_realm_bot_add(
     elif bot_type == UserProfile.EMBEDDED_BOT:
         assert len(services) == 1
         validate_with_model(services[0], BotServicesEmbedded)
+    elif bot_type == UserProfile.INCOMING_WEBHOOK_BOT:
+        assert len(services) == 1
+        validate_with_model(services[0], BotServicesIncoming)
     else:
         raise AssertionError(f"Unknown bot_type: {bot_type}")
 

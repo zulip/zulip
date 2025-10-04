@@ -25,9 +25,14 @@ const embedded_service_schema = z.object({
     service_name: z.string(),
 });
 
+const incoming_service_schema = z.object({
+    integration_name: z.string(),
+});
+
 export const services_schema = z.union([
     z.array(outgoing_service_schema),
     z.array(embedded_service_schema),
+    z.array(incoming_service_schema),
 ]);
 
 export const server_update_bot_schema = z.object({
