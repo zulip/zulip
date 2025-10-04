@@ -262,6 +262,7 @@ exports.finish = function () {
         delete global[name];
     }
     new_globals.clear();
+    console.log("CLEARED GLOBALS")
 };
 
 exports.with_overrides = function (test_function) {

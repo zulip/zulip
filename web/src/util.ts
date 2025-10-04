@@ -609,6 +609,10 @@ export function get_retry_backoff_seconds(
     return Math.max(backoff_delay_secs, rate_limit_delay_secs);
 }
 
+export function rewire_get_retry_backoff_seconds(value: typeof get_retry_backoff_seconds): void {
+    get_retry_backoff_seconds = value;
+}
+
 export async function sha256_hash(text: string): Promise<string | undefined> {
     // The Web Crypto API is only available in secure contexts (HTTPS or localhost).
     if (!window.isSecureContext) {

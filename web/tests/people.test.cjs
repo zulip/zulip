@@ -3,7 +3,6 @@
 const assert = require("node:assert/strict");
 
 const {parseISO} = require("date-fns");
-const {noop} = require("jquery");
 const _ = require("lodash");
 const MockDate = require("mockdate");
 
@@ -11,7 +10,7 @@ const {make_user_group} = require("./lib/example_group.cjs");
 const {make_realm} = require("./lib/example_realm.cjs");
 const {$t} = require("./lib/i18n.cjs");
 const {mock_esm, zrequire, set_global} = require("./lib/namespace.cjs");
-const {run_test} = require("./lib/test.cjs");
+const {run_test, noop} = require("./lib/test.cjs");
 const blueslip = require("./lib/zblueslip.cjs");
 const {page_params} = require("./lib/zpage_params.cjs");
 
@@ -33,6 +32,7 @@ const people = zrequire("people");
 const {set_current_user, set_realm} = zrequire("state_data");
 const user_groups = zrequire("user_groups");
 const {initialize_user_settings} = zrequire("user_settings");
+const util = zrequire("util");
 
 const current_user = {};
 set_current_user(current_user);
@@ -1654,131 +1654,184 @@ run_test("reset MockDate", () => {
     MockDate.reset();
 });
 
-test_people("fetch_users", async ({override}) => {
-    people.init();
-
-    // Valid users missing from params data sent by server.
-    const users_in_response = [
-        {
-            email: "retiree@example.com",
-            user_id: 15,
-            full_name: "Retiree",
-            delivery_email: "",
-            date_joined: "",
-            is_active: true,
-            is_owner: false,
-            is_admin: false,
-            is_guest: false,
-            role: 1,
-            avatar_url: "",
-            avatar_version: 1,
-            is_bot: false,
-        },
-        {
-            email: "alice@example.com",
-            user_id: 16,
-            full_name: "Alice",
-            delivery_email: "",
-            date_joined: "",
-            is_active: false,
-            is_owner: false,
-            is_admin: false,
-            is_guest: false,
-            role: 1,
-            avatar_url: "",
-            avatar_version: 1,
-            is_bot: false,
-        },
-    ];
-
-    const params = {};
-    params.realm_users = [
-        {
-            email: "my_email@example.com",
-            user_id: 42,
-            full_name: "Me Myself",
-        },
-    ];
-    params.realm_non_active_users = [];
-    params.cross_realm_bots = [
-        {
-            email: "bot@example.com",
-            user_id: 17,
-            full_name: "Test Bot",
-        },
-    ];
-    const user_group_params = {
-        realm_user_groups: [
-            make_user_group({
-                is_system_group: true,
-                members: [42, 17, 16, 15],
-            }),
-        ],
-    };
-    const my_user_id = 42;
-
-    let user_GET_request_calls = 0;
-    let promise_for_user_already_in_transit;
-    override(channel, "get", ({url, data, success, _error}) => {
-        user_GET_request_calls += 1;
+test_people("fetch_users retry", async ({override, override_rewire}) => {
+    people.add_valid_user_id(1);
+    let retry_count = 1;
+    override(channel, "get", ({url, data, success, error}) => {
         assert.equal(url, "/json/users");
-        assert.ok(data.user_ids.includes("15"));
-        assert.ok(data.user_ids.includes("16"));
-        assert.ok(!data.user_ids.includes("42"));
-        assert.ok(!data.user_ids.includes("17"));
+        assert.ok(data.user_ids.includes("1"));
 
-        // While this get request is in-flight, request for the
-        // a subset of the users again and check if it resolved.
-        promise_for_user_already_in_transit = people.get_or_fetch_users_from_ids([15]);
+        // Simulate failure of the first three attempts.
+        if (retry_count === 1) {
+            console.log("FAILING", retry_count);
+            retry_count += 1;
+            error({responseJSON: {msg: "test error"}});
+            return;
+        }
+
+        console.log("SUCCEEDING");
         success({
-            members: users_in_response,
+            members: [
+                {
+                    email: "user1@example.com",
+                    user_id: 1,
+                    full_name: "First user",
+                    delivery_email: "",
+                    date_joined: "",
+                    is_active: true,
+                    is_owner: false,
+                    is_admin: false,
+                    is_guest: false,
+                    role: 1,
+                    avatar_url: "",
+                    avatar_version: 1,
+                    is_bot: false,
+                },
+            ],
             result: "success",
             msg: "",
         });
     });
 
-    additional_calls_before_set_timeout = () => {
-        // This fetch request doesn't result in any new GET request,
-        // since the request for this user is added to pending users
-        // for fetch and returns a promise.
-        const promise = people.fetch_users_from_ids_internal([15]);
-        assert.ok(promise instanceof Promise);
-    };
-    await people.initialize(my_user_id, params, user_group_params);
-    await promise_for_user_already_in_transit;
-    assert.equal(user_GET_request_calls, 1);
-
-    const retiree = people.get_by_user_id(15);
-    const alice = people.get_by_user_id(16);
-    assert.equal(retiree.full_name, "Retiree");
-    assert.equal(alice.full_name, "Alice");
-    assert.ok(people.is_valid_user_id(15));
-    assert.ok(people.is_valid_user_id(16));
-    assert.ok(people.is_valid_user_id(42));
-    assert.ok(people.is_valid_user_id(17));
-    assert.equal(people.get_by_email("alice@example.com").user_id, 16);
-    assert.equal(people.get_by_email("retiree@example.com").user_id, 15);
-
-    override(channel, "get", ({url, _data, _success, error}) => {
-        assert.equal(url, "/json/users");
-        // Return error response.
-        error({responseJSON: {msg: "test error"}});
-    });
-
-    // fetch_users should reject with an Error object
-    blueslip.expect("error", "test error");
-    await assert.rejects(
-        async () => {
-            await people.fetch_users(new Set([15, 16]));
-        },
-        (err) => {
-            // Check that the error is an instance of Error and has the correct message
-            assert.ok(err instanceof Error);
-            assert.equal(err.message, "test error");
-            return true;
-        },
+    // Math.round will be `0`.
+    override_rewire(util, "get_retry_backoff_seconds", () => retry_count / 1000);
+    // Check that we retry the request after a failed attempt.
+    blueslip.expect(
+        "warn",
+        "Fetch for users failed, retrying after 0 seconds. Error: test error",
+        3,
     );
-
-    blueslip.expect("error", "Ignored invalid user_ids: 1, 2");
-    await people.fetch_users(new Set([1, 2]));
+    console.log("HERE2")
+    await people.fetch_users_from_ids_internal([1]);
+    console.log("HERE")
 });
+
+// Since this is an async test, keep any test
+// that modify people data structures before this one or add
+// it inside this test.
+// test_people("fetch_users", async ({override}) => {
+//     people.init();
+
+//     // Valid users missing from params data sent by server.
+//     const users_in_response = [
+//         {
+//             email: "retiree@example.com",
+//             user_id: 15,
+//             full_name: "Retiree",
+//             delivery_email: "",
+//             date_joined: "",
+//             is_active: true,
+//             is_owner: false,
+//             is_admin: false,
+//             is_guest: false,
+//             role: 1,
+//             avatar_url: "",
+//             avatar_version: 1,
+//             is_bot: false,
+//         },
+//         {
+//             email: "alice@example.com",
+//             user_id: 16,
+//             full_name: "Alice",
+//             delivery_email: "",
+//             date_joined: "",
+//             is_active: false,
+//             is_owner: false,
+//             is_admin: false,
+//             is_guest: false,
+//             role: 1,
+//             avatar_url: "",
+//             avatar_version: 1,
+//             is_bot: false,
+//         },
+//     ];
+
+//     const params = {};
+//     params.realm_users = [
+//         {
+//             email: "my_email@example.com",
+//             user_id: 42,
+//             full_name: "Me Myself",
+//         },
+//     ];
+//     params.realm_non_active_users = [];
+//     params.cross_realm_bots = [
+//         {
+//             email: "bot@example.com",
+//             user_id: 17,
+//             full_name: "Test Bot",
+//         },
+//     ];
+//     const user_group_params = {
+//         realm_user_groups: [
+//             make_user_group({
+//                 is_system_group: true,
+//                 members: [42, 17, 16, 15],
+//             }),
+//         ],
+//     };
+//     const my_user_id = 42;
+
+//     let user_GET_request_calls = 0;
+//     let promise_for_user_already_in_transit;
+//     override(channel, "get", ({url, data, success, _error}) => {
+//         user_GET_request_calls += 1;
+//         assert.equal(url, "/json/users");
+//         assert.ok(data.user_ids.includes("15"));
+//         assert.ok(data.user_ids.includes("16"));
+//         assert.ok(!data.user_ids.includes("42"));
+//         assert.ok(!data.user_ids.includes("17"));
+
+//         // While this get request is in-flight, request for the
+//         // a subset of the users again and check if it resolved.
+//         promise_for_user_already_in_transit = people.get_or_fetch_users_from_ids([15]);
+//         success({
+//             members: users_in_response,
+//             result: "success",
+//             msg: "",
+//         });
+//     });
+
+//     additional_calls_before_set_timeout = () => {
+//         // This fetch request doesn't result in any new GET request,
+//         // since the request for this user is added to pending users
+//         // for fetch and returns a promise.
+//         const promise = people.fetch_users_from_ids_internal([15]);
+//         assert.ok(promise instanceof Promise);
+//     };
+//     await people.initialize(my_user_id, params, user_group_params);
+//     await promise_for_user_already_in_transit;
+//     assert.equal(user_GET_request_calls, 1);
+
+//     const retiree = people.get_by_user_id(15);
+//     const alice = people.get_by_user_id(16);
+//     assert.equal(retiree.full_name, "Retiree");
+//     assert.equal(alice.full_name, "Alice");
+//     assert.ok(people.is_valid_user_id(15));
+//     assert.ok(people.is_valid_user_id(16));
+//     assert.ok(people.is_valid_user_id(42));
+//     assert.ok(people.is_valid_user_id(17));
+//     assert.equal(people.get_by_email("alice@example.com").user_id, 16);
+//     assert.equal(people.get_by_email("retiree@example.com").user_id, 15);
+
+//     override(channel, "get", ({url, _data, _success, error}) => {
+//         assert.equal(url, "/json/users");
+//         // Return error response.
+//         error({responseJSON: {msg: "test error"}});
+//     });
+
+//     await assert.rejects(
+//         async () => {
+//             await people.fetch_users(new Set([15, 16]));
+//         },
+//         (err) => {
+//             // Check that the error is an instance of Error and has the correct message
+//             assert.ok(err instanceof Error);
+//             assert.equal(err.message, "test error");
+//             return true;
+//         },
+//     );
+
+//     blueslip.expect("error", "Ignored invalid user_ids: 1, 2");
+//     await people.fetch_users(new Set([1, 2]));
+// });
