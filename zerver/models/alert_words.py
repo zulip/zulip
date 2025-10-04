@@ -1,6 +1,7 @@
 from django.db import models
 from django.db.models import CASCADE
 from django.db.models.signals import post_delete, post_save
+from django.utils.timezone import now
 
 from zerver.lib.cache import (
     cache_delete,
@@ -9,6 +10,18 @@ from zerver.lib.cache import (
 )
 from zerver.models.realms import Realm
 from zerver.models.users import UserProfile
+
+
+class AlertWordRemoval(models.Model):
+    realm = models.ForeignKey(Realm, db_index=True, on_delete=CASCADE)
+    user_profile = models.ForeignKey(UserProfile, on_delete=CASCADE, db_index=True)
+    word = models.TextField()  # case-preserving, just like AlertWord.word
+    removed_at = models.DateTimeField(default=now, db_index=True)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=["user_profile", "removed_at"]),
+        ]
 
 
 class AlertWord(models.Model):
