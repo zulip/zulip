@@ -30,5 +30,4 @@ instance of Jitsi Meet.
 ## Related documentation
 
 - [How to start a call](/help/start-a-call)
-- [Zoom integration](/integrations/doc/zoom)
-- [BigBlueButton integration](/integrations/doc/big-blue-button)
+- [Video and audio call integrations](/integrations/calling)
