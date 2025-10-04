@@ -1365,6 +1365,16 @@ export function set_up_click_handlers(): void {
         e.stopPropagation();
         e.preventDefault();
     });
+
+    $("#groups_overlay").on("click", ".view-all-groups-button", (e) => {
+        e.preventDefault();
+        group_list_toggler.goto("all-groups");
+    });
+
+    $("#groups_overlay").on("click", ".create-user-group-button", (e) => {
+        e.preventDefault();
+        open_create_user_group();
+    });
 }
 
 function create_user_group_clicked(): void {
@@ -1722,11 +1732,17 @@ export function update_empty_left_panel_message(): void {
         is_your_groups_tab_active,
     );
 
+    let groups_count = 0;
+    if (is_your_groups_tab_active) {
+        groups_count = user_groups.get_realm_user_groups(true).length;
+    }
+
     const args = {
         empty_user_group_list_message,
         can_create_user_groups:
             settings_data.user_can_create_user_groups() && realm.zulip_plan_is_not_limited,
         all_groups_tab: !is_your_groups_tab_active,
+        groups_count,
     };
 
     $(".no-groups-to-show").html(render_user_group_settings_empty_notice(args)).show();
@@ -1737,8 +1753,17 @@ function get_empty_user_group_list_message(
     is_your_groups_tab_active: boolean,
 ): string {
     const is_searching = $("#search_group_name").val() !== "";
+    let groups_count = 0;
+    if (is_your_groups_tab_active) {
+        groups_count = user_groups.get_realm_user_groups(true).length;
+    }
+
     if (is_searching || current_group_filter !== FILTERS.ACTIVE_AND_DEACTIVATED_GROUPS) {
         return $t({defaultMessage: "There are no groups matching your filters."});
+    }
+
+    if (groups_count === 0) {
+        return $t({defaultMessage: "There are no user groups you can view in this organization."});
     }
 
     if (is_your_groups_tab_active) {
