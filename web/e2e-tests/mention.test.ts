@@ -6,6 +6,9 @@ import * as common from "./lib/common.ts";
 
 async function test_mention(page: Page): Promise<void> {
     await common.log_in(page);
+    await page.waitForSelector("#left-sidebar-navigation-list .top_left_all_messages", {
+        visible: true,
+    });
     await page.click("#left-sidebar-navigation-list .top_left_all_messages");
     let message_list_id = await common.get_current_msg_list_id(page, true);
     await page.waitForSelector(
@@ -31,6 +34,7 @@ async function test_mention(page: Page): Promise<void> {
         return zulip_test.wildcard_mention_threshold;
     });
     assert.ok(stream_size > threshold);
+    await page.waitForSelector("#compose-send-button", {visible: true});
     await page.click("#compose-send-button");
 
     await page.waitForSelector("#compose_banners .wildcard_warning", {visible: true});

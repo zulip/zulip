@@ -1,5 +1,7 @@
 from typing import Any
 
+from django.db.models import Count
+
 from zerver.actions.user_topics import do_set_user_topic_visibility_policy
 from zerver.lib.emoji import check_emoji_request, get_emoji_data
 from zerver.lib.exceptions import ReactionExistsError
@@ -183,3 +185,17 @@ def do_remove_reaction(
     reaction.delete()
 
     notify_reaction_update(user_profile, message, reaction, "remove")
+
+
+# This function is used to get the top 6 reactions for a user.
+def get_reaction_data(user_profile: UserProfile) -> list[dict[str, Any]]:
+    fields = [
+        "emoji_code",
+    ]
+    query = (
+        Reaction.objects.filter(user_profile_id=user_profile.id)
+        .values(*fields)
+        .annotate(count=Count("emoji_code"))
+    )
+    query = query.order_by("-count")[:6]  # Limit to top 6 reactions
+    return list(query.values("emoji_code"))  # exclude "count" from the final output

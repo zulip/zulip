@@ -143,6 +143,9 @@ async function copy_paste_test(page: Page): Promise<void> {
         {stream_name: "Verona", topic: "copy-paste-topic #3", content: "copy paste test G"},
     ]);
 
+    await page.waitForSelector("#left-sidebar-navigation-list .top_left_all_messages", {
+        visible: true,
+    });
     await page.click("#left-sidebar-navigation-list .top_left_all_messages");
     const message_list_id = await common.get_current_msg_list_id(page, true);
     await common.check_messages_sent(page, message_list_id, [

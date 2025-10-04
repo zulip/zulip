@@ -4,23 +4,45 @@ const assert = require("node:assert/strict");
 
 const _ = require("lodash");
 
-const {zrequire, set_global} = require("./lib/namespace.cjs");
+const {make_user} = require("./lib/example_user.cjs");
+const {zrequire, mock_esm} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 
 const emoji = zrequire("emoji");
 const emoji_picker = zrequire("emoji_picker");
 
 const emoji_codes = zrequire("../../static/generated/emoji/emoji_codes.json");
+const people = zrequire("people");
+const {set_current_user} = zrequire("state_data");
 
-set_global("document", "document-stub");
+function noop() {}
 
-run_test("initialize", () => {
+const reactions = mock_esm("../../web/src/reactions", {
+    get_frequently_used_emojis_for_user_ajax: noop,
+});
+
+people.init(); // Sometimes necessary to reset state for each test
+
+const user = make_user({
+    user_id: 22,
+    email: "alice@example.com",
+    full_name: "Alice",
+});
+people.add_active_user(user);
+
+set_current_user(user);
+
+people.add_valid_user_id(user.user_id);
+
+run_test("initialize", async () => {
+    reactions.get_frequently_used_emojis_for_user_ajax = () =>
+        Promise.resolve(["+1", "tada", "slight_smile", "heart", "working_on_it", "octopus"]);
     emoji.initialize({
         realm_emoji: {},
         emoji_codes,
     });
-    emoji_picker.initialize();
 
+    await emoji_picker.initialize();
     const complete_emoji_catalog = _.sortBy(emoji_picker.complete_emoji_catalog, "name");
     assert.equal(complete_emoji_catalog.length, 11);
     assert.equal(emoji.emojis_by_name.size, 1876);
@@ -44,17 +66,23 @@ run_test("initialize", () => {
     }
     const popular_emoji_count = 6;
     const zulip_emoji_count = 1;
-    assert_emoji_category(complete_emoji_catalog.pop(), "fa-car", 195);
-    assert_emoji_category(complete_emoji_catalog.pop(), "fa-hashtag", 223);
-    assert_emoji_category(complete_emoji_catalog.pop(), "fa-smile-o", 168);
-    assert_emoji_category(complete_emoji_catalog.pop(), "fa-star-o", popular_emoji_count);
-    assert_emoji_category(complete_emoji_catalog.pop(), "fa-thumbs-o-up", 385);
-    assert_emoji_category(complete_emoji_catalog.pop(), "fa-lightbulb-o", 262);
-    assert_emoji_category(complete_emoji_catalog.pop(), "fa-cutlery", 135);
-    assert_emoji_category(complete_emoji_catalog.pop(), "fa-flag", 269);
-    assert_emoji_category(complete_emoji_catalog.pop(), "fa-cog", 1);
-    assert_emoji_category(complete_emoji_catalog.pop(), "fa-leaf", 153);
-    assert_emoji_category(complete_emoji_catalog.pop(), "fa-soccer-ball-o", 85);
+    function assert_category(icon, expected_count) {
+        const category = complete_emoji_catalog.find((cat) => cat.icon === icon);
+        assert.ok(category, `Category with icon ${icon} not found`);
+        assert_emoji_category(category, icon, expected_count);
+    }
+
+    assert_category("fa-car", 195);
+    assert_category("fa-hashtag", 223);
+    assert_category("fa-smile-o", 168);
+    assert_category("fa-star-o", popular_emoji_count);
+    assert_category("fa-thumbs-o-up", 385);
+    assert_category("fa-lightbulb-o", 262);
+    assert_category("fa-cutlery", 135);
+    assert_category("fa-flag", 269);
+    assert_category("fa-cog", 1);
+    assert_category("fa-leaf", 153);
+    assert_category("fa-soccer-ball-o", 85);
 
     // The popular emoji appear twice in the picker, and the zulip emoji is special
     assert.equal(

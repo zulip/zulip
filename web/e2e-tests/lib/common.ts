@@ -270,9 +270,7 @@ export async function log_in(
         password: credentials.password,
     };
     await fill_form(page, "form#login_form", params);
-    await page.$eval("form#login_form", (form) => {
-        form.submit();
-    });
+    await page.click("form#login_form button[type='submit']");
 
     await page.waitForSelector("#inbox-main", {visible: true});
 }
@@ -567,6 +565,8 @@ export async function open_personal_menu(page: Page): Promise<void> {
     const menu_selector = "#personal-menu";
     await page.waitForSelector(menu_selector, {visible: true});
     await page.click(menu_selector);
+    // Wait for the popover to be visible
+    await page.waitForSelector("#personal-menu-dropdown", {visible: true});
 }
 
 export async function manage_organization(page: Page): Promise<void> {
