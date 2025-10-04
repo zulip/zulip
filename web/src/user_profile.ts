@@ -338,18 +338,10 @@ function render_user_stream_list(streams: StreamSubscription[], user: User): voi
         modifier_html(item) {
             return format_user_stream_list_item_html(item, user);
         },
-        callback_after_render() {
-            $container.parent().removeClass("empty-list");
-        },
         filter: {
             $element: $("#user-profile-streams-tab .stream-search"),
             predicate(item, value) {
                 return item?.name.toLocaleLowerCase().includes(value);
-            },
-            onupdate() {
-                if ($container.find(".empty-table-message").length > 0) {
-                    $container.parent().addClass("empty-list");
-                }
             },
         },
         $simplebar_container: $("#user-profile-modal .modal__body"),
@@ -363,9 +355,6 @@ function render_user_group_list(groups: UserGroup[], user: User): void {
     user_groups_list_widget = ListWidget.create($container, groups, {
         name: `user-${user.user_id}-group-list`,
         get_item: ListWidget.default_get_item,
-        callback_after_render() {
-            $container.parent().removeClass("empty-list");
-        },
         modifier_html(item) {
             return format_user_group_list_item_html(item, user);
         },
@@ -373,11 +362,6 @@ function render_user_group_list(groups: UserGroup[], user: User): void {
             $element: $("#user-profile-groups-tab .group-search"),
             predicate(item, value) {
                 return item?.name.toLocaleLowerCase().includes(value);
-            },
-            onupdate() {
-                if ($container.find(".empty-table-message").length > 0) {
-                    $container.parent().addClass("empty-list");
-                }
             },
         },
         $simplebar_container: $("#user-profile-modal .modal__body"),
@@ -1300,6 +1284,7 @@ export function initialize(): void {
 
     $("body").on("click", "#user-profile-modal .remove-subscription-button", (e) => {
         e.preventDefault();
+        e.stopPropagation();
         const $remove_button = $(e.currentTarget).closest(".remove-subscription-button");
         buttons.show_button_loading_indicator($remove_button);
         const $stream_row = $(e.currentTarget).closest("[data-stream-id]");
@@ -1363,8 +1348,26 @@ export function initialize(): void {
         handle_remove_stream_subscription(target_user_id, sub, removal_success, removal_failure);
     });
 
+    $("body").on("click", "#user-profile-modal .stream-list-item", (e) => {
+        const $stream_row = $(e.currentTarget).closest(".stream-list-item");
+        const stream_id = Number.parseInt($stream_row.attr("data-stream-id")!, 10);
+        const sub = sub_store.get(stream_id);
+
+        assert(sub !== undefined);
+        browser_history.go_to_location(hash_util.channels_settings_edit_url(sub, "general"));
+    });
+
+    $("body").on("click", "#user-profile-modal .group-list-item", (e) => {
+        const $group_row = $(e.currentTarget).closest(".group-list-item");
+        const group_id = Number.parseInt($group_row.attr("data-group-id")!, 10);
+        const user_group = user_groups.get_user_group_from_id(group_id);
+
+        browser_history.go_to_location(hash_util.group_edit_url(user_group, "general"));
+    });
+
     $("body").on("click", "#user-profile-modal .remove-member-button", (e) => {
         e.preventDefault();
+        e.stopPropagation();
         const $remove_button = $(e.currentTarget).closest(".remove-member-button");
         buttons.show_button_loading_indicator($remove_button);
         const $group_row = $(e.currentTarget).closest("[data-group-id]");
