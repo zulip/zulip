@@ -62,6 +62,9 @@ PULL_REQUEST_OR_ISSUE_MESSAGE_TEMPLATE = "{user_name} {action}{assignee} [{type}
 PULL_REQUEST_OR_ISSUE_ASSIGNEE_INFO_TEMPLATE = "(assigned to {assignee})"
 PULL_REQUEST_REVIEWER_INFO_TEMPLATE = "(assigned reviewers: {reviewer})"
 PULL_REQUEST_BRANCH_INFO_TEMPLATE = "from `{target}` to `{base}`"
+PULL_REQUEST_COMMENT_TEMPLATE = (
+    "{user_name} [{action}]({comment_url}) on [{type}{id}{title}]({url})"
+)
 
 CONTENT_MESSAGE_TEMPLATE = "\n~~~ quote\n{message}\n~~~"
 
@@ -78,6 +81,11 @@ RELEASE_MESSAGE_TEMPLATE_WITHOUT_USER_NAME = (
 RELEASE_MESSAGE_TEMPLATE_WITHOUT_USER_NAME_WITHOUT_URL = (
     "Release {release_name} for tag {tagname} was {action}."
 )
+REMOVE_BRANCH_MESSAGE_TEMPLATE = "{user_name} deleted branch {branch_name}."
+REMOVE_BRANCH_TOPIC_TEMPLATE = "{repo}: Deleted branch {branch_name}"
+
+REMOVE_TAG_MESSAGE_TEMPLATE = "{user_name} deleted tag {tag_name}."
+REMOVE_TAG_TOPIC_TEMPLATE = "{repo}: Deleted tag {tag_name}"
 
 
 def get_assignee_string(assignees: list[dict[str, Any]]) -> str:
