@@ -7,12 +7,14 @@ import type {
     QuestionOutboundData,
     VoteOutboundData,
 } from "../shared/src/poll_data.ts";
+import render_message_hidden_dialog from "../templates/message_hidden_dialog.hbs";
 import render_widgets_poll_widget from "../templates/widgets/poll_widget.hbs";
 import render_widgets_poll_widget_results from "../templates/widgets/poll_widget_results.hbs";
 
 import * as blueslip from "./blueslip.ts";
 import {$t} from "./i18n.ts";
 import * as keydown_util from "./keydown_util.ts";
+import * as message_lists from "./message_lists.ts";
 import type {Message} from "./message_store.ts";
 import * as people from "./people.ts";
 
@@ -49,6 +51,7 @@ export function activate({
         comma_separated_names: people.get_full_names_for_poll_option,
         report_error_function: blueslip.warn,
     });
+    const message_container = message_lists.current?.view.message_containers.get(message.id);
 
     function update_edit_controls(): void {
         const has_question =
@@ -230,6 +233,12 @@ export function activate({
     }
 
     const handle_events = function (events: Event[]): void {
+        // We don't have to handle events now since we go through
+        // handle_event loop again when we unmute the message.
+        if (message_container?.is_hidden) {
+            return;
+        }
+
         for (const event of events) {
             poll_data.handle_event(event.sender_id, event.data);
         }
@@ -238,9 +247,14 @@ export function activate({
         render_results();
     };
 
-    build_widget();
-    render_question();
-    render_results();
+    if (message_container?.is_hidden) {
+        const html = render_message_hidden_dialog();
+        $elem.html(html);
+    } else {
+        build_widget();
+        render_question();
+        render_results();
+    }
 
     return handle_events;
 }
