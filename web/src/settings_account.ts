@@ -817,7 +817,7 @@ export function set_up(): void {
         e.preventDefault();
 
         const user = people.get_by_user_id(people.my_current_user_id());
-        user_profile.show_user_profile(user);
+        void user_profile.show_user_profile(user);
     });
 
     // When the personal settings overlay is opened, we reset

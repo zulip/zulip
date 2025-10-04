@@ -482,7 +482,7 @@ export function set_up(): void {
         const $li = $(e.currentTarget).closest("li");
         const bot_id = Number.parseInt($li.find(".bot-card-info").attr("data-user-id")!, 10);
         const bot = people.get_by_user_id(bot_id);
-        user_profile.show_user_profile(bot, "manage-profile-tab");
+        void user_profile.show_user_profile(bot, "manage-profile-tab");
     });
 
     $("#active_bots_list").on("click", "a.download_bot_zuliprc", function () {
@@ -496,7 +496,7 @@ export function set_up(): void {
         e.stopPropagation();
         const bot_id = Number.parseInt($(this).attr("data-user-id")!, 10);
         const bot = people.get_by_user_id(bot_id);
-        user_profile.show_user_profile(bot, "user-profile-streams-tab");
+        void user_profile.show_user_profile(bot, "user-profile-streams-tab");
     });
 
     $("#active_bots_list").on("click", "button.open-generate-integration-url-modal", function (e) {
