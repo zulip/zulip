@@ -1,9 +1,9 @@
 <div class="message_reaction_container {{#if is_archived}}disabled{{/if}}">
     <div class="{{this.class}} {{#if is_archived}}disabled{{/if}}" aria-label="{{this.label}}" data-reaction-id="{{this.local_id}}">
-        {{#if this.emoji_alt_code}}
+        {{#if this.emoji_alt_code.value}}
             <div class="emoji_alt_code">&nbsp;:{{this.emoji_name}}:</div>
         {{else if this.is_realm_emoji}}
-            <img src="{{this.url}}" class="emoji" />
+            <img src="{{this.url}}" class="emoji" {{#if this.still_url}}data-still-url="{{this.still_url}}" data-animated-url="{{this.url}}"{{/if}}/>
         {{else}}
             <div class="emoji emoji-{{this.emoji_code}}"></div>
         {{/if}}
