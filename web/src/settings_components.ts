@@ -2017,3 +2017,42 @@ export function get_channel_folder_value_from_dropdown_widget($elem: JQuery): nu
     }
     return value;
 }
+
+export function resize_textareas_in_section($section: JQuery): void {
+    const $subsections = $section.find(".settings-subsection-parent");
+    if ($subsections.length === 0) {
+        return;
+    }
+
+    $subsections.each(function () {
+        resize_textareas_in_subsection($(this));
+    });
+}
+
+export let resize_textareas_in_subsection = ($subsection: JQuery): void => {
+    const $textareas = $subsection.find("textarea");
+
+    if ($textareas.length === 0) {
+        return;
+    }
+
+    $textareas.each(function () {
+        const $el = $<HTMLTextAreaElement>(this);
+
+        const min_rows = 2;
+        const max_rows = 5;
+        $el.attr("rows", min_rows);
+        const scrollheight = util.the($el).scrollHeight;
+        const line_height = Number.parseFloat($el.css("line-height"));
+        const needed_rows = Math.ceil(scrollheight / line_height) - 1;
+
+        const new_rows = Math.min(Math.max(needed_rows, min_rows), max_rows);
+        $el.attr("rows", new_rows);
+    });
+};
+
+export function rewire_resize_textareas_in_subsection(
+    value: typeof resize_textareas_in_subsection,
+): void {
+    resize_textareas_in_subsection = value;
+}
