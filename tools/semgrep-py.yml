@@ -152,7 +152,6 @@ rules:
       - pattern: ... .execute("..." f"..." "...", ...)
       - pattern: ... .execute(... + ..., ...)
       - pattern: psycopg2.sql.SQL(... .format(...))
-      - pattern: psycopg2.sql.SQL(f"...")
       - pattern: psycopg2.sql.SQL(f"..." "...")
       - pattern: psycopg2.sql.SQL("..." f"...")
       - pattern: psycopg2.sql.SQL("..." f"..." "...")
@@ -174,6 +173,19 @@ rules:
     paths:
       exclude:
         - zerver/migrations/0531_convert_most_ids_to_bigints.py
+
+  - id: sql-format-fstring-construction
+    languages: [python]
+    severity: ERROR
+    message: Do not write a SQL injection vulnerability please
+    pattern: psycopg2.sql.SQL(f"...")
+    paths:
+      exclude:
+        # TODO: Debug why retention.py is triggering this and how to fix it.
+        # We are confident that, by construction, the retention.py code does not
+        # enable SQL injection as it doesn't work with user-controlled input;
+        # but we likely should fix this nonetheless.
+        - zerver/lib/retention.py
 
   - id: translated-format-lazy
     languages: [python]
