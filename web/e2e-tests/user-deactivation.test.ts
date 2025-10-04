@@ -59,6 +59,9 @@ async function test_deactivate_user(page: Page): Promise<void> {
         "Deactivate button has incorrect text.",
     );
     await page.click(".micromodal .dialog_submit_button");
+    await page.waitForSelector(cordelia_user_row + ".deactivated_user", {
+        visible: true,
+    });
     await common.wait_for_micromodal_to_close(page);
 }
 
