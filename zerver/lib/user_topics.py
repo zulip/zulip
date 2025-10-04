@@ -5,7 +5,7 @@ from datetime import datetime
 from typing import TypedDict
 
 from django.db import connection, transaction
-from django.db.models import QuerySet
+from django.db.models import Exists, OuterRef, QuerySet
 from django.utils.timezone import now as timezone_now
 from psycopg2.sql import SQL, Literal
 from sqlalchemy.sql import ClauseElement, and_, column, not_, or_
@@ -352,3 +352,31 @@ def get_users_with_user_topic_visibility_policy(
     return UserTopic.objects.filter(
         stream_id=stream_id, topic_name__iexact=topic_name
     ).select_related("user_profile", "user_profile__realm")
+
+
+def get_moved_messages_senders_to_follow_target_topic(
+    orig_stream_id: int,
+    orig_topic: str,
+    target_stream_id: int,
+    target_topic: str,
+    sender_ids: list[int],
+) -> QuerySet[UserTopic]:
+    return (
+        UserTopic.objects.filter(
+            user_profile_id__in=sender_ids,
+            stream_id=orig_stream_id,
+            topic_name__iexact=orig_topic,
+            visibility_policy=UserTopic.VisibilityPolicy.FOLLOWED,
+        )
+        .exclude(
+            Exists(
+                UserTopic.objects.filter(
+                    user_profile=OuterRef("user_profile"),
+                    stream_id=target_stream_id,
+                    topic_name__iexact=target_topic,
+                    visibility_policy=UserTopic.VisibilityPolicy.FOLLOWED,
+                )
+            )
+        )
+        .select_related("user_profile")
+    )
