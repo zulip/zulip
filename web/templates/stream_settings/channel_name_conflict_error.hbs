@@ -1,0 +1,5 @@
+{{#if is_archived}}
+An {{#if can_view_channel}}<a href="#channels/{{stream_id}}/general" class="stream-settings-link">archived channel</a>{{else}}archived channel{{/if}} with this name already exists.{{#if show_rename}} <span id="archived_stream_rename" data-stream-id="{{stream_id}}">Rename it</span>{{/if}}
+{{else}}
+A {{#if can_view_channel}}<a href="#channels/{{stream_id}}/general" class="stream-settings-link">channel</a>{{else}}channel{{/if}} with this name already exists.
+{{/if}}
