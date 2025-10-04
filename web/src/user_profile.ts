@@ -1109,6 +1109,41 @@ function toggle_submit_button($edit_form: JQuery): void {
     $submit_button.prop("disabled", false);
 }
 
+function display_avatar_upload_complete(): void {
+    $("#edit-user-form #user-avatar-upload-widget .upload-spinner-background").css({
+        visibility: "hidden",
+    });
+    $("#edit-user-form #user-avatar-upload-widget .image-upload-text").show();
+    $("#edit-user-form #user-avatar-upload-widget .image-delete-button").show();
+}
+
+function display_avatar_upload_started(): void {
+    $("#edit-user-form #user-avatar-source").hide();
+    $("#edit-user-form #user-avatar-upload-widget .upload-spinner-background").css({
+        visibility: "visible",
+    });
+    $("#edit-user-form #user-avatar-upload-widget .image-upload-text").hide();
+    $("#edit-user-form #user-avatar-upload-widget .image-delete-button").hide();
+}
+
+function upload_avatar($file_input: JQuery<HTMLInputElement>): void {
+    const form_data = new FormData();
+
+    assert(csrf_token !== undefined);
+    form_data.append("csrfmiddlewaretoken", csrf_token);
+    const files = util.the($file_input).files;
+    assert(files !== null);
+    for (const [i, file] of [...files].entries()) {
+        form_data.append("file-" + i, file);
+    }
+    if (files[0]) {
+        display_avatar_upload_started();
+        const file_url = URL.createObjectURL(files[0]);
+        $("#edit-user-form #user-avatar-upload-widget .image-block").attr("src", file_url);
+        display_avatar_upload_complete();
+    }
+}
+
 export function show_edit_user_info_modal(user_id: number, $container: JQuery): void {
     const person = people.maybe_get_user_by_id(user_id);
     const is_active = people.is_person_active(user_id);
@@ -1128,9 +1163,17 @@ export function show_edit_user_info_modal(user_id: number, $container: JQuery): 
         is_active,
         hide_deactivate_button,
         max_user_name_length: people.MAX_USER_NAME_LENGTH,
+        user_is_guest: person.is_guest,
+        user_is_bot: person.is_bot,
+        user_avatar: person.avatar_url,
+        user_can_change_avatar: current_user.is_admin,
     });
 
     $container.append($(html_body));
+
+    // Update avatar widget to support admin-based updates
+    avatar.build_user_avatar_widget_by_id(upload_avatar);
+
     // Set role dropdown and fields user pills
     $("#user-role-select").val(person.role);
     if (!current_user.is_owner) {
@@ -1209,11 +1252,24 @@ export function show_edit_user_info_modal(user_id: number, $container: JQuery): 
         const profile_data = get_human_profile_data(fields_user_pills);
 
         const url = "/json/users/" + encodeURIComponent(user_id);
-        const data = {
-            full_name: $full_name.val(),
-            role: JSON.stringify(role),
-            profile_data: JSON.stringify(profile_data),
-        };
+
+        // Create FormData object
+        const formData = new FormData();
+        formData.append("full_name", $full_name.val()?.toString() ?? "");
+        formData.append("role", JSON.stringify(role));
+        formData.append("profile_data", JSON.stringify(profile_data));
+
+        // Add avatar file if it exists
+        const $file_input = $<HTMLInputElement>(
+            "#edit-user-form #user-avatar-upload-widget input.image_file_input",
+        ).expectOne();
+        const files = util.the($file_input).files;
+        if (files && files.length > 0) {
+            const file = files[0];
+            if (file) {
+                formData.append("avatar_file", file);
+            }
+        }
 
         const $submit_button = $("#user-profile-modal .dialog_submit_button");
         const $cancel_button = $("#user-profile-modal .dialog_exit_button");
@@ -1222,7 +1278,9 @@ export function show_edit_user_info_modal(user_id: number, $container: JQuery): 
 
         void channel.patch({
             url,
-            data,
+            data: formData,
+            processData: false,
+            contentType: false,
             success() {
                 $("#edit-user-form-error").hide();
                 hide_button_spinner($submit_button);
