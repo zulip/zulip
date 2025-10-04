@@ -1,5 +1,5 @@
 from datetime import timedelta
-from typing import Annotated
+from typing import Annotated, Any
 
 from django.db import transaction
 from django.http import HttpRequest, HttpResponse
@@ -86,16 +86,28 @@ def export_realm(
             )
         )
 
-    if (
-        export_type == RealmExport.EXPORT_FULL_WITH_CONSENT
-        and not check_export_with_consent_is_usable(realm)
-    ):
-        raise JsonableError(
-            _(
-                "Make sure at least one Organization Owner is consenting to the export "
-                "or contact {email} for help."
-            ).format(email=FromAddress.SUPPORT)
+    warnings = []
+
+    if export_type == RealmExport.EXPORT_FULL_WITH_CONSENT:
+        # Only modify consent check to warning instead of error
+        if not check_export_with_consent_is_usable(realm):
+            warnings.append(
+                _("Warning: No organization owners have consented to export their data.")
+            )
+
+        # Add email visibility check
+        users_missing_email = UserProfile.objects.filter(
+            realm=realm,
+            allow_private_data_export=True,
+            email_address_visibility__gt=UserProfile.EMAIL_ADDRESS_VISIBILITY_ADMINS,
+            is_active=True,
         )
+
+        if users_missing_email.exists():
+            warnings.append(
+                _("Note: Some users will be unable to log in due to hidden email addresses.")
+            )
+
     elif export_type == RealmExport.EXPORT_PUBLIC and not check_public_export_is_usable(realm):
         raise JsonableError(
             _(
@@ -124,7 +136,11 @@ def export_realm(
         "realm_export_id": row.id,
     }
     queue_event_on_commit("deferred_work", event)
-    return json_success(request, data={"id": row.id})
+    data: dict[str, Any] = {"id": row.id}
+    if warnings:
+        data["warnings"] = warnings
+
+    return json_success(request, data)
 
 
 @require_realm_admin
