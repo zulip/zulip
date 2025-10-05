@@ -12,6 +12,7 @@ from zerver.models.groups import GroupGroupMembership as GroupGroupMembership
 from zerver.models.groups import NamedUserGroup as NamedUserGroup
 from zerver.models.groups import UserGroup as UserGroup
 from zerver.models.groups import UserGroupMembership as UserGroupMembership
+from zerver.models.idempotent_requests import IdempotentRequest as IdempotentRequest
 from zerver.models.linkifiers import RealmFilter as RealmFilter
 from zerver.models.messages import AbstractAttachment as AbstractAttachment
 from zerver.models.messages import AbstractEmoji as AbstractEmoji

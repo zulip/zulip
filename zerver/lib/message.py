@@ -1,8 +1,8 @@
 import re
 from collections.abc import Callable, Collection, Mapping, Sequence
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field
 from datetime import datetime, timedelta
-from typing import Any, TypedDict
+from typing import TYPE_CHECKING, Any, TypedDict
 
 from django.conf import settings
 from django.db import connection
@@ -59,6 +59,10 @@ from zerver.models.constants import MAX_TOPIC_NAME_LENGTH
 from zerver.models.messages import get_usermessage_by_message_id
 from zerver.models.realms import MessageEditHistoryVisibilityPolicyEnum
 from zerver.models.recipients import DirectMessageGroup
+
+if TYPE_CHECKING:
+    # This specific import is only for typing. Importing it otherwise causes circular dependency.
+    from zerver.actions.message_send import SentMessageResult
 
 
 class MessageDetailsDict(TypedDict, total=False):
@@ -1757,3 +1761,19 @@ def is_message_to_self(message: Message) -> bool:
         return message.recipient == message.sender.recipient
 
     return False
+
+
+def message_response_serializer(sent_message_result: list["SentMessageResult"]) -> dict[str, Any]:
+    """
+    Serialize SentMessageResult to a cached_result dict.
+    """
+    return asdict(sent_message_result[0])
+
+
+def message_response_deserializer(cached_result: dict[str, Any]) -> list["SentMessageResult"]:
+    from zerver.actions.message_send import SentMessageResult
+
+    """
+    Deserialize cached_result dict back to SentMessageResult.
+    """
+    return [SentMessageResult(**cached_result)]
