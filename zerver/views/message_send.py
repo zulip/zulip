@@ -18,6 +18,7 @@ from zerver.actions.message_send import (
     extract_stream_indicator,
 )
 from zerver.lib.exceptions import JsonableError
+from zerver.lib.idempotent_request import idempotent_endpoint
 from zerver.lib.markdown import render_message_markdown
 from zerver.lib.request import RequestNotes
 from zerver.lib.response import json_success
@@ -103,6 +104,7 @@ def same_realm_jabber_user(user_profile: UserProfile, email: str) -> bool:
 
 
 @typed_endpoint
+@idempotent_endpoint
 def send_message_backend(
     request: HttpRequest,
     user_profile: UserProfile,
