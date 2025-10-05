@@ -1,5 +1,7 @@
 import $ from "jquery";
 
+import * as util from "../util.ts";
+
 function handle_submit_for_server_login_form(form: HTMLFormElement): void {
     // Get value of zulip_org_id.
     const zulip_org_id = $<HTMLInputElement>("input#zulip-org-id").val();
@@ -10,12 +12,7 @@ function handle_submit_for_server_login_form(form: HTMLFormElement): void {
     }
 
     // Check if zulip_org_id is in UUID4 format.
-    // https://melvingeorge.me/blog/check-if-string-valid-uuid-regex-javascript
-    // Regex was modified by linter after copying from above link according to this rule:
-    // https://github.com/sindresorhus/eslint-plugin-unicorn/blob/main/docs/rules/better-regex.md
-    const is_valid_uuid = /^[\da-f]{8}(?:\b-[\da-f]{4}){3}\b-[\da-f]{12}$/gi;
-    // Check if zulip_org_id is in UUID4 format.
-    if (!is_valid_uuid.test(zulip_org_id)) {
+    if (!util.is_valid_uuid.test(zulip_org_id)) {
         $error_field.text(
             "Wrong zulip_org_id format. Check to make sure zulip_org_id and zulip_org_key are not swapped.",
         );
