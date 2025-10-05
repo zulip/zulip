@@ -36,6 +36,12 @@ PAGER_DUTY_EVENT_NAMES_V3 = {
     "incident.unacknowledged": "unacknowledged",
     "incident.resolved": "resolved",
     "incident.reassigned": "reassigned",
+    "incident.reopened": "reopened",
+    "incident.priority_updated": "priority updated",
+    "incident.annotated": "annotated",
+    "incident.delegated": "delegated",
+    "incident.escalated": "escalated",
+    "incident.status_update_published": "status update published",
 }
 
 ALL_EVENT_TYPES = [
