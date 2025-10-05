@@ -217,3 +217,48 @@ run_test("reply_message_errors", () => {
 
     transmit.reply_message(bogus_message, "");
 });
+
+run_test("test_idempotency_key", () => {
+    const message_states = {};
+
+    // Fake existing/non-existing local_id
+    sent_messages.get_message_state = (local_id) => {
+        if (local_id === "non-existent") {
+            return undefined;
+        }
+        if (!message_states[local_id]) {
+            message_states[local_id] = {};
+        }
+        return message_states[local_id];
+    };
+
+    // access idempotencyKeyManager.
+    let channel_post_opts;
+    channel.post = (opts) => {
+        channel_post_opts = opts;
+    };
+
+    const first_request = {local_id: "1"};
+
+    transmit.send_message(first_request, noop, noop);
+    const key_from_first_request = channel_post_opts.idempotencyKeyManager.getKey();
+
+    transmit.send_message(first_request, noop, noop);
+    const key_from_second_request = channel_post_opts.idempotencyKeyManager.getKey();
+
+    // idempotency key should persist across requests
+    // for the same message.
+    assert.equal(key_from_first_request, key_from_second_request);
+
+    const second_request = {local_id: "2"};
+    // idempotency key should be different for different messages.
+    transmit.send_message(second_request, noop, noop);
+    assert.notEqual(channel_post_opts.idempotencyKeyManager.getKey(), key_from_first_request);
+
+    // Re-send first_request to make sure key is NOT overridden.
+    transmit.send_message(first_request, noop, noop);
+    assert.equal(channel_post_opts.idempotencyKeyManager.getKey(), key_from_first_request);
+
+    transmit.send_message({local_id: "non-existent"}, noop, noop);
+    assert.equal(channel_post_opts.idempotencyKeyManager.getKey(), undefined);
+});

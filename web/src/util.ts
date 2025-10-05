@@ -627,3 +627,21 @@ export async function sha256_hash(text: string): Promise<string | undefined> {
     const hashHex = hashArray.map((byte) => byte.toString(16).padStart(2, "0")).join("");
     return hashHex;
 }
+
+export function generate_idempotency_key(): string {
+    // The Web Crypto API is only available in secure contexts (HTTPS or localhost).
+    if (!window.isSecureContext) {
+        // A custom lower-entropy UUID V4
+        return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replaceAll(/[xy]/g, (c) => {
+            /* eslint-disable no-bitwise, unicorn/prefer-math-trunc */
+            const r = (Math.random() * 16) | 0;
+            // (r & 0x3 | 0x8) limits r to be on of (8, 9, 10, 11) only
+            // for the position y, this conforms to the UUID V4 spec.
+            const decimal_character = c === "x" ? r : (r & 0x3) | 0x8;
+            // To Hexadecimal
+            return decimal_character.toString(16);
+        });
+    }
+    /* istanbul ignore next */
+    return crypto.randomUUID();
+}

@@ -600,3 +600,16 @@ run_test("sha256_hash", async ({override}) => {
     hash = await util.sha256_hash(data);
     assert.equal(hash, expected_hash);
 });
+
+run_test("generate_idempotency_key", async () => {
+    // By default window.isSecureContext is false during tests,
+    // as a result generate_idempotency_key generates
+    // a custom UUID V4, so we must validate it.
+
+    // Since each call returns a different random value,
+    // we call it multiple times for better coverage.
+    // Not bullet-proof but definitely better than a single call.
+    for (let i = 0; i < 5; i += 1) {
+        assert.ok(util.is_valid_uuid.test(util.generate_idempotency_key()));
+    }
+});
