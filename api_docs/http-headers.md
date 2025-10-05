@@ -97,7 +97,92 @@ When the Zulip server has configured multiple rate limits that apply
 to a given request, the values returned will be for the strictest
 limit.
 
+## The `Idempotency-Key` request header
+
+This header is used as the identifier of a request in our idempotency
+system; its use is optional.
+
+The goal of this system is to ensure idempotency for non-idempotent
+HTTP methods (i.e., `POST` requests).  While [RFC
+9110][rfc9110-retries] states that "a proxy MUST NOT automatically
+retry non-idempotent requests," proxies regularly do so, leading to
+problems like double-sent messages.
+
+A request is uniquely identified by its realm, user, and idempotency
+key.  The client generates a UUID and includes it in the
+`Idempotency-Key` request header; the server validates that the value
+is a well-formed UUID and rejects malformed values with a `400 Bad
+Request` response.  A matching request from that user with that same
+header will see the same response body, and the server will perform
+the work at most once.
+
+### Supported endpoints
+
+Only endpoints which explicitly document support for this protocol
+honor the `Idempotency-Key` header; all such endpoints use the `POST`
+method.  The `Idempotency-Key` header is silently ignored on all other
+requests.
+
+### Replayed responses
+
+When a request is served from the idempotency cache, the server
+replays the original response body and status code.  Response headers
+are regenerated for each request and may differ from the original --
+in particular, rate-limiting headers reflect the current state, and
+repeated requests count against rate limits as normal.
+
+### Concurrent requests
+
+If a request with the same `Idempotency-Key` is already being
+concurrently processed, but its results are not yet available, the
+client receives a `409 Conflict` response.  This use of `409` is
+specific to the idempotency system and indicates a duplicate in-flight
+key, not a resource state conflict.  Clients _may_ retry the request
+with the same `Idempotency-Key` to see the results of the request (or
+a `409` again if it is still not complete).
+
+If a backend processing a request crashes before producing a result,
+a subsequent request with the same key will begin processing from
+scratch rather than receiving a `409`.
+
+### Error results
+
+Except for `409 Conflict` responses, a client _must_ retry 4xx results
+with a new `Idempotency-Key`, even if no parameters are changed -- for
+instance, the user's authorization may have changed on the server.
+The server caches 4xx results for the same 24-hour window as
+successful results (see [Expiration](#expiration)), in order to absorb
+network-level retries of the same key and save server-side work.
+
+A client _should_ retry 5xx results with the same `Idempotency-Key`,
+as the server may or may not have completed the work.  If the original
+work did complete, the retry returns the cached result; if it did not,
+the retry begins processing from scratch.
+
+### Key reuse across requests
+
+The server does not currently compare the endpoint or request
+parameters associated with an `Idempotency-Key`, and will return the
+cached response for the original request even if a subsequent request
+with the same key targets a different endpoint or carries different
+parameters -- which may be nonsensical in the new context.  This
+behavior is not guaranteed: the server may begin validating endpoint
+and parameter consistency in the future, at which point mismatched
+reuse will return an error.
+
+Clients _must_ therefore generate a new `Idempotency-Key` for every
+request that is not an intentional retry of a prior `409` or 5xx
+response.
+
+### Expiration
+
+The server caches the results for a given `Idempotency-Key` for at
+least 24 hours after the first request referencing that key is
+received; servers may opt to cache them for longer.
+
+
 [rate-limiting-rules]: https://zulip.readthedocs.io/en/latest/production/securing-your-zulip-server.html#rate-limiting
 [integrations-channel]: https://chat.zulip.org/#narrow/channel/127-integrations/
 [mdn-auth-headers]: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Authorization
 [mdn-basic-auth]: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Authorization#basic_authentication_2
+[rfc9110-retries]: https://www.rfc-editor.org/rfc/rfc9110#section-9.2.2
