@@ -10,7 +10,7 @@ from typing import Any, TypedDict, cast
 import orjson
 from django.conf import settings
 from django.core.exceptions import ValidationError
-from django.db import IntegrityError, transaction
+from django.db import IntegrityError
 from django.db.models import Exists, F, OuterRef, Q, QuerySet
 from django.utils.html import escape
 from django.utils.timezone import now as timezone_now
@@ -39,12 +39,15 @@ from zerver.lib.exceptions import (
     TopicsNotAllowedError,
     TopicWildcardMentionNotAllowedError,
 )
+from zerver.lib.idempotent_request import idempotent_work
 from zerver.lib.markdown import MessageRenderingResult, render_message_markdown
 from zerver.lib.markdown import version as markdown_version
 from zerver.lib.mention import MentionBackend, MentionData, silent_mention_syntax_for_user
 from zerver.lib.message import (
     SendMessageRequest,
     check_user_group_mention_allowed,
+    message_response_deserializer,
+    message_response_serializer,
     normalize_body,
     set_visibility_policy_possible,
     stream_wildcard_mention_allowed,
@@ -81,7 +84,7 @@ from zerver.lib.thumbnail import manifest_and_get_user_upload_previews, rewrite_
 from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.lib.topic import get_topic_display_name, participants_for_topic
 from zerver.lib.topic_link_util import get_stream_link_syntax
-from zerver.lib.types import UserProfileChangeDict
+from zerver.lib.types import SentMessageResult, UserProfileChangeDict
 from zerver.lib.url_preview.types import UrlEmbedData
 from zerver.lib.user_groups import (
     check_any_user_has_permission_by_role,
@@ -230,12 +233,6 @@ class ActiveUserDict(TypedDict):
 
 class UserProfileAnnotations(TypedDict):
     has_push_device_registered: bool
-
-
-@dataclass
-class SentMessageResult:
-    message_id: int
-    automatic_new_visibility_policy: int | None = None
 
 
 def get_recipient_info(
@@ -898,11 +895,17 @@ def get_active_presence_idle_user_ids(
     return filter_presence_idle_user_ids(user_ids)
 
 
-@transaction.atomic(savepoint=False)
+@idempotent_work(
+    transactional=True,
+    savepoint=False,
+    cached_result_serializer=message_response_serializer,
+    cached_result_deserializer=message_response_deserializer,
+)
 def do_send_messages(
     send_message_requests_maybe_none: Sequence[SendMessageRequest | None],
     *,
     mark_as_read: Sequence[int] = [],
+    acting_user: UserProfile | None = None,
 ) -> list[SentMessageResult]:
     """See
     https://zulip.readthedocs.io/en/latest/subsystems/sending-messages.html
@@ -1470,6 +1473,7 @@ def check_send_message(
     return do_send_messages(
         [message_request],
         mark_as_read=[sender.id] if read_by_sender else [],
+        acting_user=sender,
     )[0]
 
 

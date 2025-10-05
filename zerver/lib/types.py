@@ -442,3 +442,15 @@ class DirectMessageEditRequest:
     content: str
     orig_content: str
     is_content_edited: bool
+
+
+@dataclass
+class SentMessageResult:
+    """Changes to this class must be done carefully to
+    support message_response_deserializer correctly
+    deserializing values previously serialized by
+    message_response_serializer in previous versions of the server.
+    """
+
+    message_id: int
+    automatic_new_visibility_policy: int | None = None

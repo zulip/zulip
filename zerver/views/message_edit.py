@@ -14,6 +14,7 @@ from zerver.actions.message_edit import check_update_message
 from zerver.context_processors import get_valid_realm_from_request
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.html_diff import highlight_html_differences
+from zerver.lib.idempotent_request import idempotent_endpoint
 from zerver.lib.message import (
     access_message,
     access_message_and_usermessage,
@@ -147,6 +148,7 @@ def get_message_edit_history(
 
 
 @typed_endpoint
+@idempotent_endpoint
 def update_message_backend(
     request: HttpRequest,
     user_profile: UserProfile,

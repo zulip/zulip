@@ -2588,6 +2588,11 @@ def privacy_clean_markdown(content: str) -> str:
     return repr(_privacy_re.sub("x", content))
 
 
+from threading import Lock
+
+mutex = Lock()
+
+
 def do_convert(
     content: str,
     realm_alert_words_automaton: ahocorasick.Automaton | None = None,
