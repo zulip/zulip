@@ -9,6 +9,11 @@ import type {UpdateMessageEvent} from "./server_event_types.ts";
 import {realm} from "./state_data.ts";
 import {user_settings} from "./user_settings.ts";
 
+// https://melvingeorge.me/blog/check-if-string-valid-uuid-regex-javascript
+// Regex was modified by linter after copying from above link according to this rule:
+// https://github.com/sindresorhus/eslint-plugin-unicorn/blob/main/docs/rules/better-regex.md
+export const is_valid_uuid = /^[\da-f]{8}(?:\b-[\da-f]{4}){3}\b-[\da-f]{12}$/i;
+
 // From MDN: https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Math/random
 export function random_int(min: number, max: number): number {
     return Math.floor(Math.random() * (max - min + 1)) + min;
