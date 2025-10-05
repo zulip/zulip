@@ -1981,6 +1981,17 @@ function get_combined_promise_for_user_ids(user_ids: Set<number>): {
 } {
     const promises: Promise<void>[] = [];
     let user_ids_pending_fetch = new Set<number>(user_ids);
+    // Check if we an ongoing fetch for the exact same users or a subset of them.
+    // This avoids us waiting for promises whose fetch contains additional users.
+    for (const [user_ids_set, promise_data] of fetch_users_storage.promise_for_in_transit) {
+        if (user_ids_set.difference(user_ids_pending_fetch).size === 0) {
+            user_ids_pending_fetch = user_ids_pending_fetch.difference(user_ids_set);
+            promises.push(promise_data.promise);
+        }
+    }
+
+    // Check if we have an ongoing fetch for a subset of request users even if they contain
+    // additional non-requested users.
     for (const [user_ids_set, promise_data] of fetch_users_storage.promise_for_in_transit) {
         if (user_ids_set.intersection(user_ids_pending_fetch).size > 0) {
             user_ids_pending_fetch = user_ids_pending_fetch.difference(user_ids_set);

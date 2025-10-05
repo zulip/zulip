@@ -80,6 +80,7 @@ const isaac = {
 const unknown_user = people.make_user(1500, "unknown@example.com", "Unknown user");
 
 function initialize() {
+    additional_calls_before_set_timeout = noop;
     people.init();
     people.add_active_user({...me});
     people.initialize_current_user(me.user_id);
@@ -1871,4 +1872,139 @@ run_test("fetch_users", async ({override}) => {
 
     blueslip.expect("error", "Ignored invalid user_ids: 1, 2");
     await people.fetch_users(new Set([1, 2]));
+});
+
+run_test("fetch_users corner case", async ({override, override_rewire}) => {
+    // We test here for the following sequence of fetches:
+    // 1st request for [1, 2].
+    // 2nd request for [1, 2, 3] while the first one is in-flight.
+    // 3rd request for [3] while the first one is in-flight.
+    //
+    // We should end up with two GET requests:
+    // - The first for [1, 2].
+    // - The second for [3].
+    //
+    // If the request for [3] finished first, we should resolve the 3rd
+    // request without waiting for the 1st request to finish.
+    initialize();
+    people.add_valid_user_id(1);
+    people.add_valid_user_id(2);
+    people.add_valid_user_id(3);
+
+    const first_request_response = [
+        {
+            email: "retiree@example.com",
+            user_id: 1,
+            full_name: "Retiree",
+            delivery_email: "",
+            date_joined: "",
+            is_active: true,
+            is_owner: false,
+            is_admin: false,
+            is_guest: false,
+            role: 1,
+            avatar_url: "",
+            avatar_version: 1,
+            is_bot: false,
+        },
+        {
+            email: "alice@example.com",
+            user_id: 2,
+            full_name: "Alice",
+            delivery_email: "",
+            date_joined: "",
+            is_active: false,
+            is_owner: false,
+            is_admin: false,
+            is_guest: false,
+            role: 1,
+            avatar_url: "",
+            avatar_version: 1,
+            is_bot: false,
+        },
+    ];
+    const second_request_response = [
+        {
+            email: "third@example.com",
+            user_id: 3,
+            full_name: "Third user",
+            delivery_email: "",
+            date_joined: "",
+            is_active: true,
+            is_owner: false,
+            is_admin: false,
+            is_guest: false,
+            role: 1,
+            avatar_url: "",
+            avatar_version: 1,
+            is_bot: false,
+        },
+    ];
+
+    let sent_success_response_for_third_user = false;
+
+    override(channel, "get", ({url, data, success, error}) => {
+        assert.equal(url, "/json/users");
+
+        // There shouldn't be a fetch for [1, 2, 3].
+        assert.ok(data.user_ids !== "[1,2,3]");
+
+        if (data.user_ids === "[3]") {
+            sent_success_response_for_third_user = true;
+            success({
+                members: second_request_response,
+                result: "success",
+                msg: "",
+            });
+            return;
+        } else if (data.user_ids === "[1,2]") {
+            if (!sent_success_response_for_third_user) {
+                error({responseJSON: {msg: "Network error"}});
+                return;
+            }
+            success({
+                members: first_request_response,
+                result: "success",
+                msg: "",
+            });
+            return;
+        }
+    });
+
+    override_rewire(util, "get_retry_backoff_seconds", () => 0);
+    // Check that we retry the request after a failed attempt.
+    blueslip.expect(
+        "warn",
+        "Fetch for users failed, retrying after 0 seconds. Error: Network error",
+    );
+    // We need to check that third promise resolves before the first promise.
+    let third_promise_resolved = false;
+    let first_promise_resolved = false;
+
+    const promise_first = people.get_or_fetch_users_from_ids([1, 2]);
+    promise_first.then(() => {
+        first_promise_resolved = true;
+        assert.ok(third_promise_resolved);
+    });
+    const promise_second = people.get_or_fetch_users_from_ids([1, 2, 3]);
+    promise_second.then(() => {
+        assert.ok(first_promise_resolved);
+        assert.ok(third_promise_resolved);
+    });
+    const promise_third = people.get_or_fetch_users_from_ids([3]);
+    promise_third.then(() => {
+        third_promise_resolved = true;
+        assert.ok(!first_promise_resolved);
+    });
+
+    // Only wait for second promise as we expect it be resolved at last.
+    await promise_second;
+    assert.ok(third_promise_resolved);
+
+    const user1 = people.get_by_user_id(1);
+    const user2 = people.get_by_user_id(2);
+    const user3 = people.get_by_user_id(3);
+    assert.equal(user1.full_name, "Retiree");
+    assert.equal(user2.full_name, "Alice");
+    assert.equal(user3.full_name, "Third user");
 });
