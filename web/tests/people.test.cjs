@@ -32,6 +32,7 @@ const people = zrequire("people");
 const {set_current_user, set_realm} = zrequire("state_data");
 const user_groups = zrequire("user_groups");
 const {initialize_user_settings} = zrequire("user_settings");
+const util = zrequire("util");
 
 const current_user = {};
 set_current_user(current_user);
@@ -1695,6 +1696,55 @@ run_test("reset MockDate", () => {
     MockDate.reset();
 });
 
+run_test("fetch_users retry", async ({override, override_rewire}) => {
+    initialize();
+    people.add_valid_user_id(1);
+    let retry_count = 1;
+    override(channel, "get", ({url, data, success, error}) => {
+        assert.equal(url, "/json/users");
+        assert.ok(data.user_ids.includes("1"));
+
+        // Simulate failure of the first two attempts.
+        if (retry_count < 3) {
+            retry_count += 1;
+            error({responseJSON: {msg: "test error"}});
+            return;
+        }
+
+        success({
+            members: [
+                {
+                    email: "user1@example.com",
+                    user_id: 1,
+                    full_name: "First user",
+                    delivery_email: "",
+                    date_joined: "",
+                    is_active: true,
+                    is_owner: false,
+                    is_admin: false,
+                    is_guest: false,
+                    role: 1,
+                    avatar_url: "",
+                    avatar_version: 1,
+                    is_bot: false,
+                },
+            ],
+            result: "success",
+            msg: "",
+        });
+    });
+
+    // Math.round will be `0`.
+    override_rewire(util, "get_retry_backoff_seconds", () => retry_count / 1000);
+    // Check that we retry the request after a failed attempt.
+    blueslip.expect(
+        "warn",
+        "Fetch for users failed, retrying after 0 seconds. Error: test error",
+        2,
+    );
+    await people.fetch_users_from_ids_internal([1]);
+});
+
 run_test("fetch_users", async ({override}) => {
     initialize();
     people.init();
@@ -1807,8 +1857,6 @@ run_test("fetch_users", async ({override}) => {
         error({responseJSON: {msg: "test error"}});
     });
 
-    // fetch_users should reject with an Error object
-    blueslip.expect("error", "test error");
     await assert.rejects(
         async () => {
             await people.fetch_users(new Set([15, 16]));
