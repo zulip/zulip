@@ -10,7 +10,7 @@ from typing import Any, TypedDict, cast
 import orjson
 from django.conf import settings
 from django.core.exceptions import ValidationError
-from django.db import IntegrityError, transaction
+from django.db import IntegrityError
 from django.db.models import Exists, F, OuterRef, Q, QuerySet
 from django.utils.html import escape
 from django.utils.timezone import now as timezone_now
@@ -39,12 +39,15 @@ from zerver.lib.exceptions import (
     TopicsNotAllowedError,
     TopicWildcardMentionNotAllowedError,
 )
+from zerver.lib.idempotent_request import idempotent_work_transaction
 from zerver.lib.markdown import MessageRenderingResult, render_message_markdown
 from zerver.lib.markdown import version as markdown_version
 from zerver.lib.mention import MentionBackend, MentionData
 from zerver.lib.message import (
     SendMessageRequest,
     check_user_group_mention_allowed,
+    message_response_deserializer,
+    message_response_serializer,
     normalize_body,
     set_visibility_policy_possible,
     stream_wildcard_mention_allowed,
@@ -895,11 +898,19 @@ def get_active_presence_idle_user_ids(
     return filter_presence_idle_user_ids(user_ids)
 
 
-@transaction.atomic(savepoint=False)
+@idempotent_work_transaction(
+    savepoint=False,
+    cached_result_serializer=message_response_serializer,
+    cached_result_deserializer=message_response_deserializer,
+)
 def do_send_messages(
     send_message_requests_maybe_none: Sequence[SendMessageRequest | None],
     *,
     mark_as_read: Sequence[int] = [],
+    # user is not named sender because it's only accessed inside
+    # idempotent_work_transaction which is generic.
+    user: UserProfile | None = None,
+    idempotency_key: str | None = None,
 ) -> list[SentMessageResult]:
     """See
     https://zulip.readthedocs.io/en/latest/subsystems/sending-messages.html
@@ -1448,6 +1459,7 @@ def check_send_message(
     *,
     skip_stream_access_check: bool = False,
     read_by_sender: bool = False,
+    idempotency_key: str | None = None,
 ) -> SentMessageResult:
     addressee = Addressee.legacy_build(sender, recipient_type_name, message_to, topic_name)
     message_request = check_message(
@@ -1464,7 +1476,12 @@ def check_send_message(
         widget_content,
         skip_stream_access_check=skip_stream_access_check,
     )
-    return do_send_messages([message_request], mark_as_read=[sender.id] if read_by_sender else [])[0]
+    return do_send_messages(
+        [message_request],
+        mark_as_read=[sender.id] if read_by_sender else [],
+        user=sender,
+        idempotency_key=idempotency_key,
+    )[0]
 
 
 def send_rate_limited_pm_notification_to_bot_owner(
