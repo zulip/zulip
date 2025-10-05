@@ -2604,6 +2604,11 @@ def privacy_clean_markdown(content: str) -> str:
     return repr(_privacy_re.sub("x", content))
 
 
+from threading import Lock
+
+mutex = Lock()
+
+
 def do_convert(
     content: str,
     realm_alert_words_automaton: ahocorasick.Automaton | None = None,
@@ -2716,6 +2721,7 @@ def do_convert(
         # extremely inefficient in corner cases) as well as user
         # errors (e.g. a linkifier that makes some syntax
         # infinite-loop).
+
         rendering_result.rendered_content = unsafe_timeout(5, lambda: _md_engine.convert(content))
 
         # Post-process the result with the rendered image previews:
