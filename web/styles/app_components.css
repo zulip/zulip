@@ -1164,7 +1164,7 @@ div.overlay .flex.overlay-content > .overlay-container,
     .setting-disabled-option-icon {
         align-self: center;
         /* Values set to match text alignment in stream dropdown. */
-        padding: 0 5px 0 2px;
+        padding-right: 5px;
     }
 }
 
