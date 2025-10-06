@@ -2645,16 +2645,24 @@ class PushBouncerSignupTest(ZulipTestCase):
 
         request["contact_email"] = "server-admin"
         result = self.client_post("/api/v1/remotes/server/register", request)
-        self.assert_json_error(result, "Enter a valid email address.")
+        self.assert_json_error(
+            result, "Invalid server administrator email address: Enter a valid email address."
+        )
 
         request["contact_email"] = "admin@example.com"
         result = self.client_post("/api/v1/remotes/server/register", request)
-        self.assert_json_error(result, "Invalid email address.")
+        self.assert_json_error(
+            result,
+            "Invalid server administrator email address: Invalid email address.",
+        )
 
         # An example disposable domain.
         request["contact_email"] = "admin@mailnator.com"
         result = self.client_post("/api/v1/remotes/server/register", request)
-        self.assert_json_error(result, "Please use your real email address.")
+        self.assert_json_error(
+            result,
+            "Invalid server administrator email address: Please use your real email address.",
+        )
 
         request["contact_email"] = "admin@zulip.com"
         with mock.patch("zilencer.views.dns_resolver.Resolver") as resolver:
@@ -2662,14 +2670,17 @@ class PushBouncerSignupTest(ZulipTestCase):
             resolver.return_value.resolve_name.return_value = ["whee"]
             result = self.client_post("/api/v1/remotes/server/register", request)
             self.assert_json_error(
-                result, "zulip.com is invalid because it does not have any MX records"
+                result,
+                "Invalid server administrator email address: zulip.com is invalid because it does not have any MX records",
             )
 
         with mock.patch("zilencer.views.dns_resolver.Resolver") as resolver:
             resolver.return_value.resolve.side_effect = DNSNoAnswer
             resolver.return_value.resolve_name.side_effect = DNSNoAnswer
             result = self.client_post("/api/v1/remotes/server/register", request)
-            self.assert_json_error(result, "zulip.com does not exist")
+            self.assert_json_error(
+                result, "Invalid server administrator email address: zulip.com does not exist"
+            )
 
         with mock.patch("zilencer.views.dns_resolver.Resolver") as resolver:
             resolver.return_value.resolve.return_value = ["whee"]
