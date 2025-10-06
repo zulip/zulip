@@ -19,7 +19,11 @@ from zerver.actions.invites import do_create_multiuse_invite_link, do_invite_use
 from zerver.actions.message_send import RecipientInfoResult, get_recipient_info
 from zerver.actions.muted_users import do_mute_user
 from zerver.actions.realm_settings import do_set_realm_property
-from zerver.actions.user_settings import bulk_regenerate_api_keys, do_change_user_setting
+from zerver.actions.user_settings import (
+    bulk_regenerate_api_keys,
+    do_change_full_name,
+    do_change_user_setting,
+)
 from zerver.actions.user_topics import do_set_user_topic_visibility_policy
 from zerver.actions.users import (
     change_user_is_active,
@@ -258,7 +262,7 @@ class PermissionTest(ZulipTestCase):
         self.assertFalse(othello_dict["is_owner"])
 
         req = dict(role=UserProfile.ROLE_REALM_OWNER)
-        with self.capture_send_event_calls(expected_num_events=6) as events:
+        with self.capture_send_event_calls(expected_num_events=7) as events:
             result = self.client_patch(f"/json/users/{othello.id}", req)
         self.assert_json_success(result)
         owner_users = realm.get_human_owner_users()
@@ -268,7 +272,7 @@ class PermissionTest(ZulipTestCase):
         self.assertEqual(person["role"], UserProfile.ROLE_REALM_OWNER)
 
         req = dict(role=UserProfile.ROLE_MEMBER)
-        with self.capture_send_event_calls(expected_num_events=5) as events:
+        with self.capture_send_event_calls(expected_num_events=6) as events:
             result = self.client_patch(f"/json/users/{othello.id}", req)
         self.assert_json_success(result)
         owner_users = realm.get_human_owner_users()
@@ -280,7 +284,7 @@ class PermissionTest(ZulipTestCase):
         # Cannot take away from last owner
         self.login("desdemona")
         req = dict(role=UserProfile.ROLE_MEMBER)
-        with self.capture_send_event_calls(expected_num_events=4) as events:
+        with self.capture_send_event_calls(expected_num_events=5) as events:
             result = self.client_patch(f"/json/users/{iago.id}", req)
         self.assert_json_success(result)
         owner_users = realm.get_human_owner_users()
@@ -319,7 +323,7 @@ class PermissionTest(ZulipTestCase):
         # Giveth
         req = dict(role=orjson.dumps(UserProfile.ROLE_REALM_ADMINISTRATOR).decode())
 
-        with self.capture_send_event_calls(expected_num_events=6) as events:
+        with self.capture_send_event_calls(expected_num_events=7) as events:
             result = self.client_patch(f"/json/users/{othello.id}", req)
         self.assert_json_success(result)
         admin_users = realm.get_human_admin_users()
@@ -330,7 +334,7 @@ class PermissionTest(ZulipTestCase):
 
         # Taketh away
         req = dict(role=orjson.dumps(UserProfile.ROLE_MEMBER).decode())
-        with self.capture_send_event_calls(expected_num_events=5) as events:
+        with self.capture_send_event_calls(expected_num_events=6) as events:
             result = self.client_patch(f"/json/users/{othello.id}", req)
         self.assert_json_success(result)
         admin_users = realm.get_human_admin_users()
@@ -645,9 +649,9 @@ class PermissionTest(ZulipTestCase):
         req = dict(role=orjson.dumps(new_role).decode())
 
         # The basic events sent in all cases on changing role are - one event
-        # for changing role and one event each for adding and removing user
-        # from system user group.
-        num_events = 3
+        # for changing role, one event each for adding and removing user
+        # from system user group and one event for sending a private notifications.
+        num_events = 4
 
         if UserProfile.ROLE_MEMBER in [old_role, new_role]:
             # There is one additional event for adding/removing user from
@@ -3452,3 +3456,93 @@ class TestBulkRegenerateAPIKey(ZulipTestCase):
         self.assertNotEqual(cordelia_old_api_key, cordelia.api_key)
 
         self.assertEqual(othello_old_api_key, othello.api_key)
+
+
+class UserProfileUpdateNotificationTest(ZulipTestCase):
+    """Test notifications sent when admins modify user profiles."""
+
+    def test_notification_sent_when_admin_changes_full_name(self) -> None:
+        """Test that notification is sent when admin changes user's full name."""
+        admin = self.example_user("hamlet")
+        user = self.example_user("desdemona")
+
+        old_name = user.full_name
+        new_name = "New Name"
+
+        do_change_full_name(user, new_name, admin)
+
+        # Check that notification was sent
+        notification_bot = get_system_bot(settings.NOTIFICATION_BOT, user.realm_id)
+        messages = Message.objects.filter(
+            realm=user.realm,
+            sender=notification_bot,
+            recipient=user.recipient,
+        )
+        self.assert_length(messages, 1)
+        message = messages[0]
+        self.assertEqual(message.recipient.type_id, user.id)
+        self.assertIn(admin.full_name, message.content)  # Admin name
+        self.assertIn(old_name, message.content)
+        self.assertIn(new_name, message.content)
+        self.assertIn("full name", message.content)
+
+    def test_no_notification_when_user_changes_own_full_name(self) -> None:
+        """Test that no notification is sent when user changes their own name."""
+        user = self.example_user("hamlet")
+
+        message_count_before = Message.objects.filter(
+            realm=user.realm, sender__email=settings.NOTIFICATION_BOT
+        ).count()
+
+        do_change_full_name(user, "New Name", user)
+
+        message_count_after = Message.objects.filter(
+            realm=user.realm, sender__email=settings.NOTIFICATION_BOT
+        ).count()
+
+        # No new notification should be sent
+        self.assertEqual(message_count_before, message_count_after)
+
+    def test_notification_sent_when_admin_changes_role(self) -> None:
+        """Test that notification is sent when admin changes user's role."""
+        admin = self.example_user("hamlet")
+        user = self.example_user("iago")
+
+        old_role = user.get_role_name()
+        new_role = UserProfile.ROLE_MODERATOR
+
+        do_change_user_role(user, new_role, acting_user=admin)
+
+        notification_bot = get_system_bot(settings.NOTIFICATION_BOT, user.realm_id)
+        messages = Message.objects.filter(
+            realm=user.realm,
+            sender=notification_bot,
+            recipient=user.recipient,
+        )
+
+        self.assert_length(messages, 1)
+        message = messages[0]
+        self.assertEqual(message.recipient.type_id, user.id)
+        self.assertIn(admin.full_name, message.content)
+        self.assertIn("role", message.content.lower())
+        self.assertIn(old_role, message.content)  # Old role
+        self.assertIn("Moderator", message.content)  # New role
+
+    def test_no_notification_when_role_unchanged(self) -> None:
+        """Test that no notification is sent when role doesn't actually change."""
+        admin = self.example_user("hamlet")
+        user = self.example_user("iago")
+
+        message_count_before = Message.objects.filter(
+            realm=user.realm, sender__email=settings.NOTIFICATION_BOT
+        ).count()
+
+        # Try to set same role
+        do_change_user_role(user, user.role, acting_user=admin)
+
+        message_count_after = Message.objects.filter(
+            realm=user.realm, sender__email=settings.NOTIFICATION_BOT
+        ).count()
+
+        # No notification should be sent
+        self.assertEqual(message_count_before, message_count_after)

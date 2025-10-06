@@ -80,6 +80,7 @@ from zerver.lib.test_helpers import (
     HostRequestMock,
     create_s3_buckets,
     load_subdomain_token,
+    most_recent_message,
     ratelimit_rule,
     read_test_image_file,
     use_s3_backend,
@@ -105,6 +106,7 @@ from zerver.lib.validator import (
 from zerver.models import (
     CustomProfileField,
     CustomProfileFieldValue,
+    Message,
     MultiuseInvite,
     NamedUserGroup,
     PreregistrationUser,
@@ -115,7 +117,12 @@ from zerver.models import (
 )
 from zerver.models.groups import SystemGroups, UserGroupMembership
 from zerver.models.realms import clear_supported_auth_backends_cache, get_realm
-from zerver.models.users import ExternalAuthID, PasswordTooWeakError, get_user_by_delivery_email
+from zerver.models.users import (
+    ExternalAuthID,
+    PasswordTooWeakError,
+    get_system_bot,
+    get_user_by_delivery_email,
+)
 from zerver.signals import JUST_CREATED_THRESHOLD
 from zerver.views.auth import log_into_subdomain, maybe_send_to_registration
 from zproject.backends import (
@@ -7447,6 +7454,11 @@ class TestZulipLDAPUserPopulator(ZulipLDAPTestCase):
         self.perform_ldap_sync(self.example_user("hamlet"))
         hamlet = self.example_user("hamlet")
         self.assertEqual(hamlet.full_name, "New Name")
+        message = most_recent_message(hamlet)
+        self.assertIn("The following changes have been made to your account", message.content)
+        self.assertIn("full name", message.content)
+        self.assertIn("King Hamlet", message.content)  # old name
+        self.assertIn("New Name", message.content)  # new name
 
     def test_update_with_hidden_emails(self) -> None:
         hamlet = self.example_user("hamlet")
@@ -7756,6 +7768,19 @@ class TestZulipLDAPUserPopulator(ZulipLDAPTestCase):
                 user_profile=hamlet, field=field
             ).value
             self.assertEqual(field_value, test_case["expected_value"])
+        # Verify that notification was sent for custom profile field updates
+        notification_bot = get_system_bot(settings.NOTIFICATION_BOT, hamlet.realm_id)
+        messages = Message.objects.filter(
+            realm=hamlet.realm,
+            sender=notification_bot,
+        )
+        message = messages[0]
+        self.assertIn("The following changes have been made to your account", message.content)
+        # Check that both fields are mentioned in the notification
+        self.assertIn("Phone number", message.content)
+        self.assertIn("123456789", message.content)
+        self.assertIn("Birthday", message.content)
+        self.assertIn("1900-09-08", message.content)
 
     def test_update_non_existent_profile_field(self) -> None:
         with (
