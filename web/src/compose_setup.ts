@@ -684,6 +684,12 @@ export function initialize(): void {
         // we update these things immediately so that no delay is
         // apparent on the topic's displayed text or the placeholder
         // in the empty compose textarea.
+        // Also, in case a user quickly opens and closes the compose
+        // box, we need to clear a previously set timeout before
+        // setting a new one. Otherwise, the compose box can open
+        // in a strange state displaying *general chat* and italicizing
+        // the topic input.
+        clearTimeout(recipient_focused_timeout);
         recipient_focused_timeout = setTimeout(() => {
             compose_recipient.update_topic_displayed_text($input.val());
             compose_recipient.update_compose_area_placeholder_text();
