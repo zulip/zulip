@@ -1,5 +1,5 @@
 from collections.abc import Callable
-from typing import Protocol
+from typing import Optional, Protocol
 
 from django.http import HttpRequest, HttpResponse
 
@@ -223,6 +223,14 @@ def handle_issues_event(helper: Helper) -> tuple[str | None, str | None]:
 
 
 def handle_issue_comment_event(helper: Helper) -> tuple[str | None, str | None]:
+    # Used for handling comments in PR
+    url = helper.payload["comment"]["html_url"].tame(check_string)
+    pr_url = helper.payload["comment"]["html_url"].tame(check_string).split("#")[0]
+    if (url.split('/')[-2] == "pulls"):
+        topic, body = handle_pr_comment(helper, pr_url)
+        return topic, body
+
+    # Used for handling comments in issue
     body = format_issue_comment_event(
         helper.payload,
         include_title=helper.user_specified_topic is not None,
@@ -245,6 +253,65 @@ def handle_release_event(helper: Helper) -> tuple[str | None, str | None]:
         repo=helper.repo,
         tag=helper.payload["release"]["tag_name"].tame(check_string),
         title=helper.payload["release"]["name"].tame(check_string),
+    )
+    return topic_name, body
+
+
+def handle_pr_comment(
+    helper: Helper, pr_url: Optional[str] = None
+) -> tuple[str | None, str | None]:
+    """
+    Handle a comment from a GOGS webhook payload to determine if it's a pull request or issue comment.
+
+    Args:
+        helper: Helper object providing access to the JSON payload.
+        pr_url: Optional pull request URL to override or validate the comment's context.
+
+    Returns:
+        Tuple containing:
+        - Comment type ("pull_request" or "issue") or None if undetermined.
+        - Relevant URL (pull request or issue URL) or None if not available.
+    """
+    action = helper.payload["action"].tame(check_string)
+    pr_url = pr_url if pr_url else helper.payload["issue"]["html_url"].tame(check_string)
+    user_name = helper.payload["sender"]["login"].tame(check_string)
+    comment_url = helper.payload["comment"]["html_url"].tame(check_string)
+    comment_body = helper.payload["comment"]["body"].tame(check_string)
+    pr_number = helper.payload["issue"]["number"].tame(check_int)
+    pr_title = f'"{helper.payload["issue"]["title"].tame(check_string)}"'
+    changes = helper.payload.get("changes", {}).get("body", {}).get("from", None)
+
+    if action == "created":
+        action_text = "commented"
+        message = comment_body
+    elif action == "deleted":
+        action_text = "deleted a comment"
+        message = comment_body
+    elif action == "edited":
+        action_text = "edited a comment"
+        from_text = changes.tame(check_string).strip() if changes else "unknown"
+        message = f'from "{from_text}" to "{comment_body}"'
+
+    # Pass empty assignee since it's not used in the Gitea payload for comments
+    body = PULL_REQUEST_COMMENT_TEMPLATE.format(
+        user_name=f"{user_name}",
+        action=action_text,
+        type="PR",
+        id=f" #{pr_number}",
+        title=pr_title,
+        comment_url=comment_url,
+        url=pr_url,
+    )
+
+    if message:
+        body += CONTENT_MESSAGE_TEMPLATE.format(message=message)
+
+    topic_type = "PR comment"
+    topic_name = TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
+        repo=helper.payload["repository"]["name"].tame(check_string),
+        type=topic_type,
+        id=pr_number,
+        title="",  # Omit title from topic for simplicity
     )
     return topic_name, body
 
