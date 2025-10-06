@@ -449,6 +449,7 @@ WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
     WebhookIntegration("clubhouse", ["project-management"]),
     WebhookIntegration("codeship", ["continuous-integration", "deployment"]),
     WebhookIntegration("crashlytics", ["monitoring"]),
+    WebhookIntegration("dbt", ["deployment"], display_name="DBT"),
     WebhookIntegration("dialogflow", ["customer-support"]),
     WebhookIntegration("delighted", ["customer-support", "marketing"]),
     WebhookIntegration("dropbox", ["productivity"]),
@@ -741,6 +742,7 @@ WEBHOOK_SCREENSHOT_CONFIG: dict[str, list[WebhookScreenshotConfig]] = {
     "clubhouse": [WebhookScreenshotConfig("story_create.json")],
     "codeship": [WebhookScreenshotConfig("error_build.json")],
     "crashlytics": [WebhookScreenshotConfig("issue_message.json")],
+    "dbt": [WebhookScreenshotConfig("job_run_completed_but_errored.json")],
     "delighted": [WebhookScreenshotConfig("survey_response_updated_promoter.json")],
     "dialogflow": [
         WebhookScreenshotConfig("weather_app.json", extra_params={"email": "iago@zulip.com"})
