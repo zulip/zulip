@@ -938,7 +938,7 @@ integration](../production/scim.md).
 
 ### Using Authentik as a SAML IdP
 
-1. Make sure you reviewed [this article](https://goauthentik.io/integrations/services/zulip/), which
+1. Make sure you reviewed [this article](https://integrations.goauthentik.io/chat-communication-collaboration/zulip/), which
    details how to integrate Zulip with Authentik.
 1. Verify that `SOCIAL_AUTH_SAML_ENABLED_IDPS[{idp_name}]['entity_id']` and
    `SOCIAL_AUTH_SAML_ENABLED_IDPS[{idp_name}]['url']` are correct in your Zulip
