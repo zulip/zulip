@@ -33,6 +33,13 @@ server as follows:
    outgoing HTTP proxy](deployment.md#customizing-the-outgoing-http-proxy)
    first.
 
+1. Make sure that the `ZULIP_ADMINISTRATOR` setting in your
+   `/etc/zulip/settings.py` file is a real email address which you
+   monitor. If the Mobile Push Notification Service needs to contact
+   you regarding your server, and will use this email address. [See
+   below](#updating-your-servers-registration) for instructions if
+   this contact needs to be updated later.
+
 1. Set `ZULIP_SERVICE_PUSH_NOTIFICATIONS = True` in your
    `/etc/zulip/settings.py` file. Simply uncomment the appropriate line [in
    settings.py][update-settings-docs] by deleting the initial `# `.
