@@ -245,7 +245,7 @@ def register_remote_server(
 
     contact_email_domain = Address(addr_spec=contact_email).domain.lower()
     if contact_email_domain == "example.com":
-        raise ServerAdminEmailError(_("Invalid email address."))
+        raise ServerAdminEmailError(_("example.com is not a valid email domain."))
 
     # Check if the domain has an MX record
     resolver = dns_resolver.Resolver()
