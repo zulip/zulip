@@ -2667,7 +2667,16 @@ class PushBouncerSignupTest(ZulipTestCase):
         request["contact_email"] = "admin@zulip.com"
         with mock.patch("zilencer.views.dns_resolver.Resolver") as resolver:
             resolver.return_value.resolve.side_effect = DNSNoAnswer
-            resolver.return_value.resolve_name.return_value = ["whee"]
+            resolver.return_value.resolve_name.return_value = ["A/AAAA response"]
+            result = self.client_post("/api/v1/remotes/server/register", request)
+            self.assert_json_error(
+                result,
+                "Invalid server administrator email address: zulip.com is invalid because it does not have any MX records",
+            )
+
+        with mock.patch("zilencer.views.dns_resolver.Resolver") as resolver:
+            resolver.return_value.resolve.side_effect = [DNSNoAnswer, "NS response"]
+            resolver.return_value.resolve_name.side_effect = DNSNoAnswer
             result = self.client_post("/api/v1/remotes/server/register", request)
             self.assert_json_error(
                 result,
@@ -2683,7 +2692,7 @@ class PushBouncerSignupTest(ZulipTestCase):
             )
 
         with mock.patch("zilencer.views.dns_resolver.Resolver") as resolver:
-            resolver.return_value.resolve.return_value = ["whee"]
+            resolver.return_value.resolve.return_value = ["MX response"]
             result = self.client_post("/api/v1/remotes/server/register", request)
             self.assert_json_success(result)
 
