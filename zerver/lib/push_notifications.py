@@ -1639,7 +1639,7 @@ def handle_push_notification(user_profile_id: int, missed_message: dict[str, Any
         # BUG: Investigate why it's possible to get here.
         return  # nocoverage
 
-    with transaction.atomic(savepoint=False):
+    with transaction.atomic(durable=True):
         try:
             (message, user_message) = access_message_and_usermessage(
                 user_profile,
