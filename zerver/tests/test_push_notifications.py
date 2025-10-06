@@ -2663,7 +2663,7 @@ class PushBouncerSignupTest(ZulipTestCase):
         result = self.client_post("/api/v1/remotes/server/register", request)
         self.assert_json_error(
             result,
-            "Invalid server administrator email address: Invalid email address.",
+            "Invalid server administrator email address: example.com is not a valid email domain.",
         )
 
         # An example disposable domain.
