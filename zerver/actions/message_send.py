@@ -79,6 +79,7 @@ from zerver.lib.thumbnail import get_user_upload_previews, rewrite_thumbnailed_i
 from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.lib.topic import get_topic_display_name, participants_for_topic
 from zerver.lib.topic_link_util import get_stream_link_syntax
+from zerver.lib.types import UserProfileChangeDict
 from zerver.lib.url_preview.types import UrlEmbedData
 from zerver.lib.user_groups import (
     check_any_user_has_permission_by_role,
@@ -2169,3 +2170,29 @@ def internal_send_group_direct_message(
 
     sent_message_result = do_send_messages([message])[0]
     return sent_message_result.message_id
+
+
+def send_user_profile_update_notification(
+    user_profile: UserProfile,
+    acting_user: UserProfile | None,
+    changes: list[UserProfileChangeDict],
+) -> None:
+    if acting_user is None or acting_user.id == user_profile.id:
+        return
+
+    notification_bot = get_system_bot(settings.NOTIFICATION_BOT, user_profile.realm_id)
+
+    with override_language(user_profile.default_language):
+        message = _(
+            "@_**{user_full_name}** has made the following changes to your account."
+        ).format(user_full_name=acting_user.full_name)
+        for change in changes:
+            message += _(
+                "\n- **Old {field_name}:** {old_value}\n- **New {field_name}:** {new_value}\n\n"
+            ).format(
+                field_name=change["field_name"],
+                old_value=change["old_value"],
+                new_value=change["new_value"],
+            )
+
+    internal_send_private_message(notification_bot, user_profile, message)
