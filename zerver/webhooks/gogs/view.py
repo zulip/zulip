@@ -15,6 +15,10 @@ from zerver.lib.webhooks.common import (
     get_event_header,
 )
 from zerver.lib.webhooks.git import (
+    REMOVE_BRANCH_MESSAGE_TEMPLATE,
+    REMOVE_BRANCH_TOPIC_TEMPLATE,
+    REMOVE_TAG_MESSAGE_TEMPLATE,
+    REMOVE_TAG_TOPIC_TEMPLATE,
     TOPIC_WITH_BRANCH_TEMPLATE,
     TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE,
     TOPIC_WITH_RELEASE_TEMPLATE,
@@ -316,6 +320,42 @@ def handle_pr_comment(
     return topic_name, body
 
 
+def get_remove_branch_event_message(user_name: str, branch_name: str) -> str:
+    return REMOVE_BRANCH_MESSAGE_TEMPLATE.format(
+        user_name=user_name, branch_name=f"`{branch_name}`"
+    )
+
+
+def get_remove_tag_event_message(user_name: str, tag_name: str) -> str:
+    return REMOVE_TAG_MESSAGE_TEMPLATE.format(user_name=user_name, tag_name=f"`{tag_name}`")
+
+
+def handle_delete_event(helper: Helper) -> tuple[str | None, str | None]:
+    user_name = helper.payload["sender"]["login"].tame(check_string)
+    ref = helper.payload["ref"].tame(check_string)
+    repo_name = helper.repo
+
+    if helper.payload["ref_type"].tame(check_string) == "branch":
+        body = get_remove_branch_event_message(
+            user_name=user_name,
+            branch_name=ref,
+        )
+        topic_name = REMOVE_BRANCH_TOPIC_TEMPLATE.format(
+            repo=repo_name,
+            branch_name=ref,
+        )
+    elif helper.payload["ref_type"].tame(check_string) == "tag":
+        body = get_remove_tag_event_message(
+            user_name=user_name,
+            tag_name=ref,
+        )
+        topic_name = REMOVE_TAG_TOPIC_TEMPLATE.format(
+            repo=repo_name,
+            tag_name=ref,
+        )
+    return topic_name, body
+
+
 GOGS_EVENT_FUNCTION_MAPPER: dict[str, Callable[[Helper], tuple[str | None, str | None]]] = {
     "push": handle_push_event,
     "create": handle_create_event,
@@ -323,6 +363,7 @@ GOGS_EVENT_FUNCTION_MAPPER: dict[str, Callable[[Helper], tuple[str | None, str |
     "issues": handle_issues_event,
     "issue_comment": handle_issue_comment_event,
     "release": handle_release_event,
+    "delete": handle_delete_event,
 }
 
 ALL_EVENT_TYPES = list(GOGS_EVENT_FUNCTION_MAPPER.keys())

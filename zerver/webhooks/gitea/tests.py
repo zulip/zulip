@@ -98,6 +98,16 @@ class GiteaHookTests(WebhookTestCase):
 
         self.check_webhook("issue_comment__edited", expected_topic_name, expected_message)
 
+    def test_delete_branch(self) -> None:
+        expected_topic_name = "test-repo / Deleted branch test-branch-to-delete"
+        expected_message = "Aneesh-Hegde deleted branch `test-branch-to-delete`."
+        self.check_webhook("delete__branch", expected_topic_name, expected_message)
+
+    def test_delete_tag(self) -> None:
+        expected_topic_name = "test-repo / Deleted tag v1.0.0-test"
+        expected_message = "Aneesh-Hegde deleted tag `v1.0.0-test`."
+        self.check_webhook("delete__tag", expected_topic_name, expected_message)
+
     @patch("zerver.webhooks.gogs.view.check_send_webhook_message")
     def test_push_filtered_by_branches_ignore(
         self, check_send_webhook_message_mock: MagicMock
