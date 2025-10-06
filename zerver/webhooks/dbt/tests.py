@@ -25,3 +25,27 @@ Job #123 was kicked off from the ui by test@test.com at <time:2025-10-05T19:15:5
         expected_message = """:cross_mark: Daily Job (dbt build) deployment failed in Production at <time:2023-01-31T21:15:20Z>.
 Job #123 was kicked off from the ui by test@test.com at <time:2023-01-31T21:14:41Z>."""
         self.check_webhook("job_run_errored", "Example Project", expected_message)
+
+
+class DBTHookWithValidAccessUrlTests(WebhookTestCase):
+    CHANNEL_NAME = "DBT"
+    URL_TEMPLATE = "/api/v1/external/dbt?&api_key={api_key}&stream={stream}&access_url=https://example.example.dbt.com"
+    WEBHOOK_DIR_NAME = "dbt"
+
+    def test_dbt_webhook_with_valid_access_url(self) -> None:
+        expected_message = """:yellow_circle: Daily Job (dbt build) [deployment](https://example.example.dbt.com/deploy/1/projects/167194/runs/12345) started in Production.
+[Job #123](https://example.example.dbt.com/deploy/1/projects/167194/jobs/123) was kicked off from the ui by test@test.com at <time:2023-01-31T19:28:07Z>."""
+        self.check_webhook("job_run_started", "Example Project", expected_message)
+
+
+class DBTHookWithInvalidAccessUrlTests(WebhookTestCase):
+    CHANNEL_NAME = "DBT"
+    URL_TEMPLATE = (
+        "/api/v1/external/dbt?&api_key={api_key}&stream={stream}&access_url=https://example.dbt.com"
+    )
+    WEBHOOK_DIR_NAME = "dbt"
+
+    def test_dbt_webhook_with_invalid_access_url(self) -> None:
+        expected_message = """:yellow_circle: Daily Job (dbt build) deployment started in Production.
+Job #123 was kicked off from the ui by test@test.com at <time:2023-01-31T19:28:07Z>."""
+        self.check_webhook("job_run_started", "Example Project", expected_message)

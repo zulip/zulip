@@ -12,7 +12,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django_stubs_ext import StrPromise
 
 from zerver.lib.storage import static_path
-from zerver.lib.validator import check_bool
+from zerver.lib.validator import check_bool, check_string
 from zerver.lib.webhooks.common import PresetUrlOption, WebhookConfigOption, WebhookUrlOption
 
 """This module declares all of the (documented) integrations available
@@ -449,7 +449,14 @@ WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
     WebhookIntegration("clubhouse", ["project-management"]),
     WebhookIntegration("codeship", ["continuous-integration", "deployment"]),
     WebhookIntegration("crashlytics", ["monitoring"]),
-    WebhookIntegration("dbt", ["deployment"], display_name="DBT"),
+    WebhookIntegration(
+        "dbt",
+        ["deployment"],
+        display_name="DBT",
+        url_options=[
+            WebhookUrlOption(name="access_url", label="DBT access url", validator=check_string)
+        ],
+    ),
     WebhookIntegration("dialogflow", ["customer-support"]),
     WebhookIntegration("delighted", ["customer-support", "marketing"]),
     WebhookIntegration("dropbox", ["productivity"]),
