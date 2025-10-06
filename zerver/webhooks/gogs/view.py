@@ -1,5 +1,5 @@
 from collections.abc import Callable
-from typing import Optional, Protocol
+from typing import Protocol
 
 from django.http import HttpRequest, HttpResponse
 
@@ -15,6 +15,8 @@ from zerver.lib.webhooks.common import (
     get_event_header,
 )
 from zerver.lib.webhooks.git import (
+    CONTENT_MESSAGE_TEMPLATE,
+    PULL_REQUEST_COMMENT_TEMPLATE,
     REMOVE_BRANCH_MESSAGE_TEMPLATE,
     REMOVE_BRANCH_TOPIC_TEMPLATE,
     REMOVE_TAG_MESSAGE_TEMPLATE,
@@ -230,7 +232,7 @@ def handle_issue_comment_event(helper: Helper) -> tuple[str | None, str | None]:
     # Used for handling comments in PR
     url = helper.payload["comment"]["html_url"].tame(check_string)
     pr_url = helper.payload["comment"]["html_url"].tame(check_string).split("#")[0]
-    if (url.split('/')[-2] == "pulls"):
+    if url.split("/")[-2] == "pulls":
         topic, body = handle_pr_comment(helper, pr_url)
         return topic, body
 
@@ -261,9 +263,7 @@ def handle_release_event(helper: Helper) -> tuple[str | None, str | None]:
     return topic_name, body
 
 
-def handle_pr_comment(
-    helper: Helper, pr_url: Optional[str] = None
-) -> tuple[str | None, str | None]:
+def handle_pr_comment(helper: Helper, pr_url: str | None = None) -> tuple[str | None, str | None]:
     """
     Handle a comment from a GOGS webhook payload to determine if it's a pull request or issue comment.
 
@@ -278,6 +278,7 @@ def handle_pr_comment(
     """
     action = helper.payload["action"].tame(check_string)
     pr_url = pr_url if pr_url else helper.payload["issue"]["html_url"].tame(check_string)
+    action = helper.payload["action"].tame(check_string)
     user_name = helper.payload["sender"]["login"].tame(check_string)
     comment_url = helper.payload["comment"]["html_url"].tame(check_string)
     comment_body = helper.payload["comment"]["body"].tame(check_string)
@@ -364,6 +365,7 @@ GOGS_EVENT_FUNCTION_MAPPER: dict[str, Callable[[Helper], tuple[str | None, str |
     "issue_comment": handle_issue_comment_event,
     "release": handle_release_event,
     "delete": handle_delete_event,
+    "pull_request_comment": handle_pr_comment,
 }
 
 ALL_EVENT_TYPES = list(GOGS_EVENT_FUNCTION_MAPPER.keys())

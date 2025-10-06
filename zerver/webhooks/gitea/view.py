@@ -12,7 +12,7 @@ from zerver.models import UserProfile
 # Gitea is a fork of Gogs, and so the webhook implementation is nearly the same.
 from zerver.webhooks.gogs.view import gogs_webhook_main
 
-fixture_to_headers = default_fixture_to_headers("HTTP_X_GITEA_EVENT")
+fixture_to_headers = default_fixture_to_headers("HTTP_X_GITEA_EVENT_TYPE")
 
 
 def format_pull_request_event(payload: WildValue, include_title: bool = False) -> str:
@@ -62,7 +62,7 @@ def api_gitea_webhook(
 ) -> HttpResponse:
     return gogs_webhook_main(
         "Gitea",
-        "X-Gitea-Event",
+        "X-Gitea-Event-Type",
         format_pull_request_event,
         request,
         user_profile,
