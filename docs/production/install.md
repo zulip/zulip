@@ -192,7 +192,8 @@ Learning more:
   server administrators. This extremely low-traffic list is for
   important announcements, including [new
   releases](../overview/release-lifecycle.md) and security issues.
-- Follow [Zulip on Twitter](https://twitter.com/zulip).
+- Follow us on [Mastodon](https://fosstodon.org/@zulip) or
+  [X/Twitter](https://x.com/zulip).
 - Learn how to [configure your Zulip server settings](settings.md).
 - Learn about [Backups, export and import](export-and-import.md)
   and [upgrading](upgrade.md) a production Zulip
