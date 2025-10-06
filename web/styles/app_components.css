@@ -1158,8 +1158,6 @@ input.settings_text_input {
 
     .setting-disabled-option-icon {
         align-self: center;
-        /* Values set to match text alignment in stream dropdown. */
-        padding-right: 5px;
     }
 }
 
