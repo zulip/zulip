@@ -266,9 +266,17 @@ def register_remote_server(
                 )
             )
         except DNSException:
-            raise ServerAdminEmailError(
-                _("{domain} does not exist").format(domain=contact_email_domain)
-            )
+            try:
+                resolver.resolve(contact_email_domain, rdtype="NS")
+                raise ServerAdminEmailError(
+                    _("{domain} is invalid because it does not have any MX records").format(
+                        domain=contact_email_domain
+                    )
+                )
+            except DNSException:
+                raise ServerAdminEmailError(
+                    _("{domain} does not exist").format(domain=contact_email_domain)
+                )
 
     try:
         validate_uuid(zulip_org_id)
