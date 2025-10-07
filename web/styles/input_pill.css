@@ -232,7 +232,7 @@
 
     &.invalid {
         border-color: var(--color-invalid-input-border);
-        box-shadow: var(--color-invalid-input-box-shadow);
+        box-shadow: var(--invalid-input-box-shadow);
     }
 }
 
