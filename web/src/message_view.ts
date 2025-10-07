@@ -336,8 +336,12 @@ export function try_rendering_locally_for_same_narrow(
     // is just a `near` operator, or just the value of a `near` operator,
     // we can render the new filter without a rerender of the message list
     // if the target message in the `near` operator is already rendered.
+    //
+    // NOTE that we need to compare the terms without ignoring the case
+    // of channel / topic operand, since we need a rerender to update
+    // message header if they differ just in cases.
     const excluded_operators = ["near"];
-    if (!filter.equals(current_filter, excluded_operators)) {
+    if (!filter.equals(current_filter, excluded_operators, true)) {
         return false;
     }
 
