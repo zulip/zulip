@@ -1289,6 +1289,15 @@ export function set_event_handlers({
         on_sidebar_channel_click(stream_id, e, show_channel_feed);
     });
 
+    $("#stream_filters").on("mousedown", "li .subscription_block", (e) => {
+        // Prevent default behavior of text selection upon multiple clicks
+        // to allow toggling in #topics narrows.
+        // https://developer.mozilla.org/en-US/docs/Web/API/UIEvent/detail
+        if (e.detail > 1) {
+            e.preventDefault();
+        }
+    });
+
     $("#stream_filters").on("click", ".channel-new-topic-button", function (this: HTMLElement, e) {
         e.stopPropagation();
         e.preventDefault();
