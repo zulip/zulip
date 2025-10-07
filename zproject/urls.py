@@ -158,6 +158,7 @@ from zerver.views.registration import (
     accounts_home,
     accounts_home_from_multiuse_invite,
     accounts_register,
+    create_demo_organization,
     create_realm,
     find_account,
     get_prereg_key_and_redirect,
@@ -710,6 +711,7 @@ i18n_urls = [
     # Realm creation
     path("json/antispam_challenge", get_challenge),
     path("new/", create_realm),
+    path("new/demo/", create_demo_organization),
     path("new/<confirmation_key>", create_realm, name="create_realm"),
     # Realm reactivation
     path("reactivate/", realm_reactivation, name="realm_reactivation"),

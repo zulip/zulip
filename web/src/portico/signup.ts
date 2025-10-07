@@ -61,7 +61,7 @@ $(() => {
         "#id_new_password2 ~ .password_visibility_toggle",
     );
 
-    $("#registration, #password_reset, #create_realm").validate({
+    $("#registration, #password_reset, #create_realm, #create_demo_realm").validate({
         rules: {
             password: {
                 password_strength: {
@@ -122,6 +122,10 @@ $(() => {
         }
 
         $("#timezone").val(new Intl.DateTimeFormat().resolvedOptions().timeZone);
+    }
+
+    if ($("#demo-realm-creation").length > 0) {
+        $("#demo-creator-timezone").val(new Intl.DateTimeFormat().resolvedOptions().timeZone);
     }
 
     $("#registration").on("submit", () => {
