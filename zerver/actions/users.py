@@ -387,6 +387,7 @@ def send_events_for_user_deactivation(user_profile: UserProfile) -> None:
         user_profile,
         include_public=False,
         include_subscribed=True,
+        exclude_archived=False,
     )
     altered_user_dict: dict[int, set[int]] = defaultdict(set)
     streams: list[Stream] = []

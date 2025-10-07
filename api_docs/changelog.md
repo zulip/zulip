@@ -20,6 +20,12 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 12.0
 
+**Feature level 428**
+
+* [`GET /events`](/api/get-events): When a user is deactivated,
+  `peer_remove` events are now sent for archived streams as well,
+  not just unarchived ones.
+
 **Feature level 427**
 
 * [`POST /register`](/api/register-queue): `stream_creator_or_nobody`

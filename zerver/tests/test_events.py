@@ -3636,6 +3636,17 @@ class NormalActionsTest(BaseAction):
         check_subscription_peer_remove("events[0]", events[0])
         check_realm_user_update("events[1]", events[1], "is_active")
 
+        # Send peer_remove events for archived streams.
+        do_reactivate_user(user_profile, acting_user=None)
+        stream = self.make_stream("Stream to be archived")
+        self.subscribe(user_profile, "Stream to be archived")
+        do_deactivate_stream(stream, acting_user=None)
+        with self.verify_action(num_events=2) as events:
+            do_deactivate_user(user_profile, acting_user=None)
+        self.assertIn(stream.id, events[0]["stream_ids"])
+        check_subscription_peer_remove("events[0]", events[0])
+        check_realm_user_update("events[1]", events[1], "is_active")
+
         do_reactivate_user(user_profile, acting_user=None)
 
         # Test that guest users receive 'user_group/remove_members'
