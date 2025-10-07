@@ -973,6 +973,29 @@ Output:
             payload,
         )
 
+    def submit_demo_creation_form(
+        self,
+        demo_name: str,
+        *,
+        org_type: int = Realm.ORG_TYPES["business"]["id"],
+        language: str = "en",
+        captcha: str | None = None,
+    ) -> "TestHttpResponse":
+        payload = {
+            "realm_name": demo_name,
+            "realm_type": org_type,
+            "realm_default_language": language,
+            "how_realm_creator_found_zulip": "other",
+            "how_realm_creator_found_zulip_extra_context": "test",
+            "terms": True,
+        }
+        if captcha is not None:
+            payload["captcha"] = captcha
+        return self.client_post(
+            "/new/demo/",
+            payload,
+        )
+
     def get_confirmation_url_from_outbox(
         self,
         email_address: str,
