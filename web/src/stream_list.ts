@@ -1399,6 +1399,15 @@ export function set_event_handlers({
         },
     );
 
+    $("#stream_filters").on("mousedown", "li .subscription_block", (e) => {
+        // Prevent default behavior of text selection upon multiple clicks
+        // to allow toggling in #topics narrows.
+        // https://developer.mozilla.org/en-US/docs/Web/API/UIEvent/detail
+        if (e.detail > 1) {
+            e.preventDefault();
+        }
+    });
+
     function toggle_pm_header_icon(): void {
         if (pm_list.is_private_messages_collapsed()) {
             return;
