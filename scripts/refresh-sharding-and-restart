@@ -12,7 +12,7 @@ if ! [ -e /etc/zulip/nginx_sharding_map.conf.tmp ] || ! [ -e /etc/zulip/sharding
     exit 1
 fi
 
-chown root:root /etc/zulip/nginx_sharding_map.conf.tmp
+chown zulip:zulip /etc/zulip/nginx_sharding_map.conf.tmp
 chmod 644 /etc/zulip/nginx_sharding_map.conf.tmp
 chown zulip:zulip /etc/zulip/sharding.json.tmp
 chmod 644 /etc/zulip/sharding.json.tmp
