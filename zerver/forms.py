@@ -227,6 +227,25 @@ class RegistrationForm(HowFoundZulipFormMixin, RealmDetailsForm):
         return password
 
 
+class DemoRegistrationForm(HowFoundZulipFormMixin, forms.Form):
+    terms = forms.BooleanField(required=False)
+    realm_name = forms.CharField(max_length=Realm.MAX_REALM_NAME_LENGTH)
+    realm_type = forms.TypedChoiceField(
+        coerce=int, choices=[(t["id"], t["name"]) for t in Realm.ORG_TYPES.values()]
+    )
+    realm_default_language = forms.ChoiceField(choices=[])
+
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        self.realm_creation = True
+        super().__init__(*args, **kwargs)
+        if settings.TERMS_OF_SERVICE_VERSION is not None:
+            self.fields["terms"] = forms.BooleanField(required=True)
+
+        self.fields["realm_default_language"] = forms.ChoiceField(
+            choices=[(lang["code"], lang["name"]) for lang in get_language_list()],
+        )
+
+
 class ToSForm(forms.Form):
     terms = forms.BooleanField(required=False)
     enable_marketing_emails = forms.BooleanField(required=False)
@@ -400,6 +419,31 @@ def validate_captcha_payload(request: HttpRequest, captcha_payload: str) -> None
 
 
 class CaptchaRealmCreationForm(RealmCreationForm):
+    captcha = forms.CharField(required=True, widget=AltchaWidget)
+
+    def __init__(
+        self,
+        *,
+        request: HttpRequest,
+        data: dict[str, Any] | None = None,
+        initial: dict[str, Any] | None = None,
+    ) -> None:
+        super().__init__(data=data, initial=initial)
+        self.request = request
+
+    @override
+    def clean(self) -> None:
+        super().clean()
+        if not self.data.get("captcha"):
+            self.add_error("captcha", _("Validation failed, please try again."))
+
+    def clean_captcha(self) -> str:
+        payload = self.data.get("captcha", "")
+        validate_captcha_payload(self.request, payload)
+        return payload
+
+
+class CaptchaDemoRegistrationForm(DemoRegistrationForm):
     captcha = forms.CharField(required=True, widget=AltchaWidget)
 
     def __init__(

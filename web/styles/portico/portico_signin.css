@@ -364,6 +364,22 @@ html {
     }
 }
 
+#demo-realm-creation {
+    .terms-of-service.input-group {
+        width: 330px;
+        margin: 25px auto 10px;
+    }
+
+    .input-box .register-button {
+        margin-top: 0;
+
+        &[disabled] {
+            cursor: default;
+            opacity: 0.6;
+        }
+    }
+}
+
 .register-account #registration {
     .terms-of-service,
     .input-group .marketing-emails,
@@ -934,7 +950,8 @@ button#register_auth_button_gitlab {
 #sponsorship-form,
 #sponsorship-status-page-details,
 #registration,
-#new-realm-creation {
+#new-realm-creation,
+#demo-realm-creation {
     width: auto;
     padding: 0;
     margin: 30px;
@@ -1649,10 +1666,12 @@ button#register_auth_button_gitlab {
     }
 }
 
+#demo-realm-creation .new-organization-button,
 #new-realm-creation .new-organization-button {
     margin-bottom: 0;
 }
 
+#demo-realm-creation #demo-submit-button-container,
 #new-realm-creation #altcha-submit-button-container {
     margin-bottom: 30px;
 }
