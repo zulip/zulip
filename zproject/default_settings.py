@@ -342,6 +342,13 @@ DEFAULT_RATE_LIMITING_RULES = {
         # 10 emails per day
         (86400, 10),
     ],
+    # Limits how many demo organizations can be created per IP
+    # address. This is important to prevent abuse of the demo
+    # organization feature.
+    "demo_realm_creation_by_ip": [
+        # 10 demos per day
+        (86400, 10),
+    ],
 }
 # Rate limiting defaults can be individually overridden by adding
 # entries in this object, which is merged with
