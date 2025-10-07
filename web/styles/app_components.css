@@ -431,7 +431,7 @@ input.settings_text_input {
 .grey-box {
     margin: 0;
     padding: 5px 10px;
-    background-color: var(--color-background-grey-box);
+    background-color: var(--color-background-modal-bar);
     border: 1px solid var(--color-border-modal-bar);
     border-radius: 4px;
 
