@@ -50,10 +50,10 @@ run_test("initialize", () => {
     assert_emoji_category(complete_emoji_catalog.pop(), "fa-star-o", popular_emoji_count);
     assert_emoji_category(complete_emoji_catalog.pop(), "fa-thumbs-o-up", 385);
     assert_emoji_category(complete_emoji_catalog.pop(), "fa-lightbulb-o", 262);
-    assert_emoji_category(complete_emoji_catalog.pop(), "fa-cutlery", 135);
+    assert_emoji_category(complete_emoji_catalog.pop(), "fa-cutlery", 130);
     assert_emoji_category(complete_emoji_catalog.pop(), "fa-flag", 269);
     assert_emoji_category(complete_emoji_catalog.pop(), "fa-cog", 1);
-    assert_emoji_category(complete_emoji_catalog.pop(), "fa-leaf", 153);
+    assert_emoji_category(complete_emoji_catalog.pop(), "fa-leaf", 158);
     assert_emoji_category(complete_emoji_catalog.pop(), "fa-soccer-ball-o", 85);
 
     // The popular emoji appear twice in the picker, and the zulip emoji is special
