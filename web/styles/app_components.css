@@ -1396,7 +1396,7 @@ input.invalid-input {
     border-color: var(--color-invalid-input-border) !important;
 
     &:focus {
-        box-shadow: var(--color-invalid-input-box-shadow);
+        box-shadow: var(--invalid-input-box-shadow);
     }
 }
 
