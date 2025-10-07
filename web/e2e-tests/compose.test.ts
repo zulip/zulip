@@ -35,6 +35,9 @@ async function test_send_messages(page: Page): Promise<void> {
         {recipient: "cordelia@zulip.com", content: "Compose direct message reply test"},
     ]);
 
+    await page.waitForSelector("#left-sidebar-navigation-list .top_left_all_messages", {
+        visible: true,
+    });
     await page.click("#left-sidebar-navigation-list .top_left_all_messages");
     const message_list_id = await common.get_current_msg_list_id(page, true);
     await page.waitForSelector(
@@ -140,6 +143,9 @@ async function test_send_multirecipient_pm_from_cordelia_pm_narrow(page: Page): 
     });
 
     // Go back to the combined feed view and make sure all messages are loaded.
+    await page.waitForSelector("#left-sidebar-navigation-list .top_left_all_messages", {
+        visible: true,
+    });
     await page.click("#left-sidebar-navigation-list .top_left_all_messages");
     const message_list_id = await common.get_current_msg_list_id(page, true);
     await page.waitForSelector(
@@ -182,6 +188,7 @@ async function test_markdown_preview_buttons_visibility(page: Page): Promise<voi
 }
 
 async function test_markdown_preview_without_any_content(page: Page): Promise<void> {
+    await page.waitForSelector("#compose .markdown_preview", {visible: true});
     await page.click("#compose .markdown_preview");
     await page.waitForSelector("#compose .undo_markdown_preview", {visible: true});
     const markdown_preview_element = await page.$("#compose .preview_content");
@@ -223,6 +230,9 @@ async function test_markdown_preview(page: Page): Promise<void> {
 
 async function compose_tests(page: Page): Promise<void> {
     await common.log_in(page);
+    await page.waitForSelector("#left-sidebar-navigation-list .top_left_all_messages", {
+        visible: true,
+    });
     await page.click("#left-sidebar-navigation-list .top_left_all_messages");
     const message_list_id = await common.get_current_msg_list_id(page, true);
     await page.waitForSelector(
