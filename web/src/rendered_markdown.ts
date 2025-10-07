@@ -12,6 +12,7 @@ import render_topic_link from "../templates/topic_link.hbs";
 
 import * as blueslip from "./blueslip.ts";
 import {show_copied_confirmation} from "./copied_tooltip.ts";
+import * as emoji from "./emoji.ts";
 import * as hash_util from "./hash_util.ts";
 import {$t} from "./i18n.ts";
 import * as message_store from "./message_store.ts";
@@ -20,6 +21,7 @@ import * as people from "./people.ts";
 import * as realm_playground from "./realm_playground.ts";
 import * as rows from "./rows.ts";
 import * as rtl from "./rtl.ts";
+import * as settings_config from "./settings_config.ts";
 import * as sub_store from "./sub_store.ts";
 import * as timerender from "./timerender.ts";
 import * as user_groups from "./user_groups.ts";
@@ -395,5 +397,34 @@ export const update_elements = ($content: JQuery): void => {
             })
             .contents()
             .unwrap();
+    } else if (
+        user_settings.web_animate_image_previews !==
+        settings_config.web_animate_image_previews_values.always.code
+    ) {
+        $content.find("img.emoji").each(function (): void {
+            const $emoji = $(this);
+            const emoji_url = $emoji.attr("src") ?? "";
+            const emoji_obj = emoji.all_realm_emojis_by_url.get(emoji_url);
+            if (
+                emoji_obj?.still_url &&
+                user_settings.web_animate_image_previews ===
+                    settings_config.web_animate_image_previews_values.on_hover.code
+            ) {
+                const $still_emoji = $("<img>");
+
+                $still_emoji.addClass("emoji still-emoji");
+                $still_emoji.attr("src", emoji_obj.still_url);
+                $still_emoji.attr("alt", `:${emoji_obj.emoji_name}:`);
+                $still_emoji.attr("title", emoji_obj.emoji_name);
+                $emoji.addClass("animated-emoji");
+                $emoji.after($still_emoji);
+            } else if (
+                emoji_obj?.still_url &&
+                user_settings.web_animate_image_previews ===
+                    settings_config.web_animate_image_previews_values.never.code
+            ) {
+                $emoji.attr("src", emoji_obj.still_url);
+            }
+        });
     }
 };
