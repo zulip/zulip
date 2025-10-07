@@ -229,6 +229,45 @@ class RegistrationForm(RealmDetailsForm):
         return password
 
 
+class DemoRegistrationForm(forms.Form):
+    terms = forms.BooleanField(required=False)
+    realm_name = forms.CharField(max_length=Realm.MAX_REALM_NAME_LENGTH)
+    realm_type = forms.TypedChoiceField(
+        coerce=int, choices=[(t["id"], t["name"]) for t in Realm.ORG_TYPES.values()]
+    )
+    realm_default_language = forms.ChoiceField(choices=[])
+    how_realm_creator_found_zulip = forms.ChoiceField(choices=[])
+
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        super().__init__(*args, **kwargs)
+
+        if settings.TERMS_OF_SERVICE_VERSION is not None:
+            self.fields["terms"] = forms.BooleanField(required=True)
+
+        self.fields["realm_default_language"] = forms.ChoiceField(
+            choices=[(lang["code"], lang["name"]) for lang in get_language_list()],
+        )
+
+        self.fields["how_realm_creator_found_zulip"] = forms.ChoiceField(
+            choices=RealmAuditLog.HOW_REALM_CREATOR_FOUND_ZULIP_OPTIONS.items(),
+        )
+        self.fields["how_realm_creator_found_zulip_other_text"] = forms.CharField(
+            max_length=100, required=False
+        )
+        self.fields["how_realm_creator_found_zulip_where_ad"] = forms.CharField(
+            max_length=100, required=False
+        )
+        self.fields["how_realm_creator_found_zulip_which_organization"] = forms.CharField(
+            max_length=100, required=False
+        )
+        self.fields["how_realm_creator_found_zulip_review_site"] = forms.CharField(
+            max_length=100, required=False
+        )
+        self.fields["how_realm_creator_found_zulip_which_ai_chatbot"] = forms.CharField(
+            max_length=100, required=False
+        )
+
+
 class ToSForm(forms.Form):
     terms = forms.BooleanField(required=False)
     enable_marketing_emails = forms.BooleanField(required=False)
@@ -375,6 +414,56 @@ class AltchaWidget(forms.TextInput):
 
 
 class CaptchaRealmCreationForm(RealmCreationForm):
+    captcha = forms.CharField(required=True, widget=AltchaWidget)
+
+    def __init__(
+        self,
+        *,
+        request: HttpRequest,
+        data: dict[str, Any] | None = None,
+        initial: dict[str, Any] | None = None,
+    ) -> None:
+        super().__init__(data=data, initial=initial)
+        self.request = request
+
+    @override
+    def clean(self) -> None:
+        super().clean()
+        if not self.data.get("captcha"):
+            self.add_error("captcha", _("Validation failed, please try again."))
+
+    def clean_captcha(self) -> str:
+        payload = self.data.get("captcha", "")
+        if not settings.USING_CAPTCHA or not settings.ALTCHA_HMAC_KEY:  # nocoverage
+            raise forms.ValidationError(_("Challenges are not enabled."))
+
+        try:
+            ok, err = verify_solution(payload, settings.ALTCHA_HMAC_KEY, check_expires=True)
+            if not ok:
+                logging.warning("Invalid altcha solution: %s", err)
+                raise forms.ValidationError(_("Validation failed, please try again."))
+        except forms.ValidationError:
+            raise
+        except Exception as e:
+            logging.exception(e)
+            raise forms.ValidationError(_("Validation failed, please try again."))
+
+        payload = orjson.loads(base64.b64decode(payload))
+        challenge = payload["challenge"]
+        session_challenges = [e[0] for e in self.request.session.get("altcha_challenges", [])]
+        if challenge not in session_challenges:
+            logging.warning("Expired or replayed altcha solution")
+            raise forms.ValidationError(_("Validation failed, please try again."))
+
+        # Remove the successful solve from the session, to prevent replay
+        self.request.session["altcha_challenges"] = [
+            e for e in self.request.session.get("altcha_challenges", []) if e[0] != challenge
+        ]
+
+        return payload
+
+
+class CaptchaDemoRegistrationForm(DemoRegistrationForm):
     captcha = forms.CharField(required=True, widget=AltchaWidget)
 
     def __init__(

@@ -129,6 +129,10 @@ $(() => {
         $("#timezone").val(new Intl.DateTimeFormat().resolvedOptions().timeZone);
     }
 
+    if ($("#demo-realm-creation").length > 0) {
+        $("#demo-creator-timezone").val(new Intl.DateTimeFormat().resolvedOptions().timeZone);
+    }
+
     $("#registration").on("submit", () => {
         if ($("#registration").valid()) {
             $(".register-button .loader").css("display", "inline-block");

@@ -366,6 +366,17 @@ html {
     }
 }
 
+#demo-realm-creation {
+    .terms-of-service .input-group {
+        width: 330px;
+        margin: 25px auto 10px;
+    }
+
+    .input-box .register-button {
+        margin-top: 0;
+    }
+}
+
 .register-account {
     .terms-of-service .input-group,
     .default-stream-groups .input-group,
@@ -935,7 +946,8 @@ button#register_auth_button_gitlab {
 #sponsorship-form,
 #sponsorship-status-page-details,
 #registration,
-#new-realm-creation {
+#new-realm-creation,
+#demo-realm-creation {
     width: auto;
     padding: 0;
     margin: 30px;
