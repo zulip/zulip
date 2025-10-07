@@ -696,6 +696,11 @@ def start_arg_parser(action: str, add_help: bool = False) -> argparse.ArgumentPa
         action="store_true",
         help=f"Only {action} Django (not Tornado or workers)",
     )
+    which_services.add_argument(
+        "--tornado-reshard",
+        action="store_true",
+        help="Restart changed Tornado shards",
+    )
     if action == "restart":
         parser.add_argument(
             "--less-graceful",
