@@ -145,9 +145,9 @@ if action == "restart" and len(running_services) == 0:
 elif action == "start":
     existing_services = list_supervisor_processes(check_services)
     if existing_services == running_services:
-        # Check if the version we're trying to start is the version
-        # that we would have started.  We do this via checking the CWD
-        # of the oldest uwsgi worker.
+        # Check if the version that is currently running is the
+        # version that we would have started.  We do this via
+        # comparing our CWD to the CWD of the oldest uwsgi worker.
         oldest_pid = subprocess.check_output(
             ["pgrep", "--oldest", "--full", "zulip-django uWSGI worker"], text=True
         ).strip()
