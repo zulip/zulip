@@ -539,6 +539,19 @@ function set_text_search_value($table: JQuery, value: string): void {
     $table.closest(".settings-section-table").find(".search").val(value);
 }
 
+export function predicate_for_bot_filtering(item: BotInfo, section: BotSettingsSection): boolean {
+    if (!item) {
+        return false;
+    }
+    const search_query = section.filters.text_search.toLowerCase();
+    const filter_searches =
+        item.full_name.toLowerCase().includes(search_query) ||
+        item.display_email.toLowerCase().includes(search_query);
+
+    const filter_status = item.status_code === section.filters.status_code;
+    return filter_searches && filter_status;
+}
+
 function bots_create_table(): void {
     loading.make_indicator($("#admin_page_bots_loading_indicator"), {
         text: $t({defaultMessage: "Loading…"}),
