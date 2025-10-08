@@ -148,28 +148,34 @@ try:
         )
 
     # Generate the deployment directory via git worktree from our local repository.
-    try:
-        fullref = f"refs/tags/{refname}"
-        commit_hash = subprocess.check_output(
-            ["git", "rev-parse", "--verify", fullref],
+    try_refs = [
+        f"refs/tags/{refname}",
+        f"refs/heads/{refname}" if args.local_ref else f"refs/remotes/origin/{refname}",
+    ]
+    commit_hash: str | None = None
+    fullref: str | None = None
+    for ref in try_refs:
+        result = subprocess.run(
+            ["git", "rev-parse", "--verify", ref],
             preexec_fn=su_to_zulip,
             text=True,
             stderr=subprocess.DEVNULL,
-        ).strip()
-    except subprocess.CalledProcessError as e:
-        if e.returncode == 128:
-            # Try in the origin namespace, or local heads if --local-ref
-            if args.local_ref:
-                fullref = f"refs/heads/{refname}"
-            else:
-                fullref = f"refs/remotes/origin/{refname}"
-            commit_hash = subprocess.check_output(
-                ["git", "rev-parse", "--verify", fullref],
-                preexec_fn=su_to_zulip,
-                text=True,
-                stderr=subprocess.DEVNULL,
-            ).strip()
-    refname = fullref
+            check=False,
+        )
+        if result.returncode == 0:
+            fullref = ref
+            commit_hash = result.stdout.strip()
+            break
+        elif result.returncode != 128:
+            result.check_returncode()
+    if not commit_hash or not fullref:
+        logging.error(
+            "Failed to resolve %s as a tag or %s branch name!",
+            refname,
+            "local" if args.local_ref else "remote",
+        )
+        sys.exit(1)
+
     subprocess.check_call(
         ["git", "worktree", "add", "--detach", deploy_path, refname],
         stdout=subprocess.DEVNULL,
