@@ -1,7 +1,7 @@
 {
   "data": [
     {
-      "api_version": "2025-04-30.basil",
+      "api_version": "2025-09-30.clover",
       "created": 1000000000,
       "data": {
         "object": {
@@ -156,7 +156,7 @@
           "total_excluding_tax": 56000,
           "total_pretax_credit_amounts": [],
           "total_taxes": [],
-          "webhooks_delivered_at": 1000000000
+          "webhooks_delivered_at": null
         }
       },
       "id": "validate_licenses_for_manual_plan_management--Event.list.3.json",

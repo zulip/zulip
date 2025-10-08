@@ -1,7 +1,7 @@
 {
   "data": [
     {
-      "api_version": "2025-04-30.basil",
+      "api_version": "2025-09-30.clover",
       "created": 1000000000,
       "data": {
         "object": {
@@ -107,7 +107,7 @@
           "livemode": false,
           "metadata": {
             "billing_schedule": "1",
-            "current_plan_id": "1",
+            "current_plan_id": "42",
             "license_management": "manual",
             "licenses": "123",
             "on_free_trial": "True",
@@ -162,7 +162,7 @@
       "id": "free_trial_upgrade_by_invoice_with_additional_users_after_payment--Event.list.3.json",
       "livemode": false,
       "object": "event",
-      "pending_webhooks": 0,
+      "pending_webhooks": 2,
       "request": {
         "id": "free_trial_upgrade_by_invoice_with_additional_users_after_payment--Event.list.3.json",
         "idempotency_key": "00000000-0000-0000-0000-000000000000"
@@ -170,7 +170,7 @@
       "type": "invoice.paid"
     },
     {
-      "api_version": "2025-04-30.basil",
+      "api_version": "2025-09-30.clover",
       "created": 1000000000,
       "data": {
         "object": {
@@ -276,7 +276,7 @@
           "livemode": false,
           "metadata": {
             "billing_schedule": "1",
-            "current_plan_id": "1",
+            "current_plan_id": "42",
             "license_management": "manual",
             "licenses": "123",
             "on_free_trial": "True",
@@ -340,7 +340,7 @@
       "id": "free_trial_upgrade_by_invoice_with_additional_users_after_payment--Event.list.3.json",
       "livemode": false,
       "object": "event",
-      "pending_webhooks": 0,
+      "pending_webhooks": 1,
       "request": {
         "id": "free_trial_upgrade_by_invoice_with_additional_users_after_payment--Event.list.3.json",
         "idempotency_key": "00000000-0000-0000-0000-000000000000"
@@ -348,7 +348,7 @@
       "type": "invoice.updated"
     },
     {
-      "api_version": "2025-04-30.basil",
+      "api_version": "2025-09-30.clover",
       "created": 1000000000,
       "data": {
         "object": {
@@ -370,6 +370,7 @@
           "currency": "usd",
           "customer": "cus_NORMALIZED",
           "description": "Payment for Invoice",
+          "excluded_payment_method_types": null,
           "id": "free_trial_upgrade_by_invoice_with_additional_users_after_payment--Event.list.3.json",
           "last_payment_error": null,
           "latest_charge": null,
@@ -411,7 +412,7 @@
       "id": "free_trial_upgrade_by_invoice_with_additional_users_after_payment--Event.list.3.json",
       "livemode": false,
       "object": "event",
-      "pending_webhooks": 1,
+      "pending_webhooks": 0,
       "request": {
         "id": "free_trial_upgrade_by_invoice_with_additional_users_after_payment--Event.list.3.json",
         "idempotency_key": "00000000-0000-0000-0000-000000000000"

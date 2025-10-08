@@ -50,4 +50,4 @@ API_FEATURE_LEVEL = 427
 #   historical commits sharing the same major version, in which case a
 #   minor version bump suffices.
 
-PROVISION_VERSION = (354, 0)  # bumped 2025-10-23 to upgrade Python requirements
+PROVISION_VERSION = (355, 0)  # bumped 2025-10-28 to upgrade stripe
