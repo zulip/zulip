@@ -25,7 +25,9 @@
     max-width: calc(100% - 32px);
     max-height: 96%;
     width: 37.1428em; /* 520px at 14px em */
-    border-radius: 4px;
+    overflow: hidden;
+    border: 1px solid var(--color-border-modal);
+    border-radius: 7px;
     box-sizing: border-box;
 }
 
