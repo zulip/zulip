@@ -2,7 +2,7 @@ import $ from "jquery";
 import assert from "minimalistic-assert";
 import type * as tippy from "tippy.js";
 
-import render_left_sidebar_channels_folder_setting_popover from "../templates/popovers/left_sidebar/left_sidebar_channels_folder_setting_popover.hbs";
+import render_channel_folder_setting_popover from "../templates/popovers/channel_folder_setting_popover.hbs";
 
 import * as channel from "./channel.ts";
 import * as popover_menus from "./popover_menus.ts";
@@ -38,9 +38,7 @@ export function initialize(): void {
             // prep the instance for showing
             popover_menus.popover_instances.show_folders_sidebar = instance;
             instance.setContent(
-                parse_html(
-                    render_left_sidebar_channels_folder_setting_popover({show_channel_folders}),
-                ),
+                parse_html(render_channel_folder_setting_popover({show_channel_folders})),
             );
             popover_menus.on_show_prep(instance);
 
