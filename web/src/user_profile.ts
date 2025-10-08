@@ -353,7 +353,7 @@ function render_user_stream_list(streams: StreamSubscription[], user: User): voi
                 }
             },
         },
-        $simplebar_container: $("#user-profile-modal .modal__body"),
+        $simplebar_container: $("#user-profile-modal .modal__content"),
     });
 }
 
@@ -381,7 +381,7 @@ function render_user_group_list(groups: UserGroup[], user: User): void {
                 }
             },
         },
-        $simplebar_container: $("#user-profile-modal .modal__body"),
+        $simplebar_container: $("#user-profile-modal .modal__content"),
     });
 }
 
@@ -389,7 +389,7 @@ function render_manage_profile_content(user: User): void {
     // Since we want the height of the profile modal to remain consistent when switching tabs,
     // we need to restrict the height of the main body. This will ensure that the footer of
     // the "Manage User" tab can adjust within the provided height without expanding the modal.
-    $("#user-profile-modal .modal__body").addClass("modal__body__manage_profile_height");
+    $("#user-profile-modal .modal__content").addClass("modal__content__manage_profile_height");
     $("#user-profile-modal .manage-profile-tab-footer").addClass("modal__footer_wrapper");
     const $container = $("#manage-profile-tab");
     $container.empty();
@@ -705,7 +705,9 @@ export function show_user_profile(user: User, default_tab_key = "profile-tab"): 
             $(".tabcontent").hide();
             $(`#${CSS.escape(key)}`).show();
             $("#user-profile-modal .modal__footer").hide();
-            $("#user-profile-modal .modal__body").removeClass("modal__body__manage_profile_height");
+            $("#user-profile-modal .modal__content").removeClass(
+                "modal__content__manage_profile_height",
+            );
             $("#user-profile-modal .manage-profile-tab-footer").removeClass(
                 "modal__footer_wrapper",
             );

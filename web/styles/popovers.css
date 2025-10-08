@@ -402,7 +402,7 @@ ul.popover-group-menu-member-list {
 }
 
 #user-profile-modal {
-    .modal__body {
+    .modal__content {
         box-sizing: border-box;
         height: 60vh;
         padding-left: 16px;
@@ -415,7 +415,7 @@ ul.popover-group-menu-member-list {
             the height of the main body to 52vh - 1px (border radius of the footer)
             and add a footer of 8vh.
         */
-        &.modal__body__manage_profile_height {
+        &.modal__content__manage_profile_height {
             height: calc(52vh - 1px);
         }
     }
