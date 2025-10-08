@@ -898,10 +898,6 @@ input.new-organization-button {
 }
 
 .input-group {
-    &.margin {
-        margin: 10px 0;
-    }
-
     .progress {
         margin: 0;
         margin-top: 5px;
