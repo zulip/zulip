@@ -631,6 +631,21 @@ paths:
                                           type: boolean
                                           description: |
                                             A boolean describing whether the user account has been deactivated.
+                                    - type: object
+                                      additionalProperties: false
+                                      description: |
+                                        When an imported user logs into the organization for
+                                        the first time.
+
+                                        **Changes**: New in Zulip 12.0 (feature level ZF-547f86).
+                                      properties:
+                                        user_id:
+                                          type: integer
+                                          description: |
+                                            The ID of the user affected by this change.
+                                        is_imported_stub:
+                                          type: boolean
+                                          description: This value is always `false`.
                               additionalProperties: false
                               example:
                                 {

@@ -744,6 +744,18 @@ class HomeTest(ZulipTestCase):
             user.email_address_visibility, UserProfile.EMAIL_ADDRESS_VISIBILITY_MODERATORS
         )
 
+        # Test is_imported_stub is set to False when user accepts terms of service.
+        user.tos_version = "-1"
+        user.is_imported_stub = True
+        user.save()
+
+        result = self.client_post("/accounts/accept_terms/", {"terms": True})
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(result["Location"], "/")
+
+        user = self.example_user("hamlet")
+        self.assertFalse(user.is_imported_stub)
+
     def test_set_email_address_visibility_without_terms_of_service(self) -> None:
         self.login("hamlet")
         user = self.example_user("hamlet")

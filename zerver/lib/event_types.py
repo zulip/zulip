@@ -752,6 +752,11 @@ class PersonIsActive(BaseModel):
     is_active: bool
 
 
+class PersonIsImportedStub(BaseModel):
+    user_id: int
+    is_imported_stub: bool
+
+
 class EventRealmUserUpdate(BaseEvent):
     type: Literal["realm_user"]
     op: Literal["update"]
@@ -765,6 +770,7 @@ class EventRealmUserUpdate(BaseEvent):
         | PersonRole
         | PersonTimezone
         | PersonIsActive
+        | PersonIsImportedStub
     )
 
 
