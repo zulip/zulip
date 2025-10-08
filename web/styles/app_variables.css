@@ -2017,7 +2017,7 @@
     );
 
     /* Inbox view constants - Values from Figma design */
-    --width-inbox-search: 29.0625em; /* 465px / 16px em */
+    --width-inbox-search: calc(27.4375em); /* 439px / 16px em */
     --width-inbox-filters-dropdown: 10.7142em; /* 150px / 14px em */
     --color-background-inbox-no-unreads-illustration: light-dark(
         hsl(147deg 57% 25%),

@@ -451,6 +451,26 @@
     .hidden_by_filters {
         display: none !important;
     }
+
+    .channel-folders-inbox-menu-icon {
+        display: grid;
+        /* width excluding left & right margin */
+        width: calc(var(--left-sidebar-vdots-width) - 3px);
+        cursor: pointer;
+        place-items: center center;
+        border-radius: 3px;
+        margin: 2px 2px 2px 1px;
+        color: var(--color-vdots-visible);
+
+        i.zulip-icon {
+            font-size: 1.0625em;
+        }
+
+        &:hover {
+            color: var(--color-vdots-hover);
+            background-color: var(--color-background-sidebar-action-hover);
+        }
+    }
 }
 
 .inbox-container #inbox-pane #inbox-empty-without-search {

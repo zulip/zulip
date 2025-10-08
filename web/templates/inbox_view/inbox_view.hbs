@@ -9,6 +9,9 @@
         {{#> input_wrapper . input_type="filter-input" custom_classes="inbox-search-wrapper" icon="search" input_button_icon="close"}}
             <input type="text" id="{{INBOX_SEARCH_ID}}" class="input-element" value="{{search_val}}" autocomplete="off" placeholder="{{t 'Filter' }}" />
         {{/input_wrapper}}
+        {{#if show_channel_folder_toggle}}
+        <span class="sidebar-menu-icon channel-folders-inbox-menu-icon hidden-for-spectators"><i class="zulip-icon zulip-icon-more-vertical" aria-label="{{t 'Show channel folders'}}"></i></span>
+        {{/if}}
     </div>
     <div id="inbox-empty-with-search" class="inbox-empty-text empty-list-message">
         {{t "No conversations match your filters."}}
