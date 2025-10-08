@@ -107,12 +107,6 @@
         border-color: hsl(0deg 0% 0% / 90%);
     }
 
-    & div.overlay .flex.overlay-content > .overlay-container,
-    #settings_page,
-    .informational-overlays .overlay-content {
-        box-shadow: 0 0 30px hsl(212deg 32% 7%);
-    }
-
     .popover hr,
     hr {
         opacity: 0.2;

@@ -404,6 +404,9 @@
     */
     --message-area-max-width: 57.4125em;
 
+    /* Box shadow for overlays across the web app */
+    --box-shadow-overlay: none;
+
     /* Shared sidebar typography and effects values. */
     --font-weight-sidebar-heading: 600;
     --font-weight-sidebar-action-heading: 370;
@@ -3008,6 +3011,9 @@
        don't apply negative margin that would otherwise pull
        the unread marker to the left. */
     --unread-marker-left: 0;
+
+    /* Box shadow for overlays across the web app */
+    --box-shadow-overlay: 0 0 30px hsl(212deg 32% 7%);
 
     /* Colors used across the app */
     --color-recipient-bar-controls-spinner: hsl(0deg 0% 100%);
