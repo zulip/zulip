@@ -1118,6 +1118,12 @@ input.settings_text_input {
     }
 }
 
+div.overlay .flex.overlay-content > .overlay-container,
+#settings_page,
+.informational-overlays .overlay-content {
+    box-shadow: var(--box-shadow-overlay);
+}
+
 .delete-selected-drafts-button-container {
     display: flex;
 }
