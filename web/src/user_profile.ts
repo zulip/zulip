@@ -458,11 +458,7 @@ function render_user_group_list(groups: UserGroup[], user: User): void {
 }
 
 function render_manage_profile_content(user: User): void {
-    // Since we want the height of the profile modal to remain consistent when switching tabs,
-    // we need to restrict the height of the main body. This will ensure that the footer of
-    // the "Manage User" tab can adjust within the provided height without expanding the modal.
-    $("#user-profile-modal .modal__content").addClass("modal__content__manage_profile_height");
-    $("#user-profile-modal .manage-profile-tab-footer").addClass("modal__footer_wrapper");
+    $("#user-profile-modal .manage-profile-tab-footer").addClass("manage-profile-tab-active");
     const $container = $("#manage-profile-tab");
     $container.empty();
     if (user.is_bot) {
@@ -774,12 +770,8 @@ export function show_user_profile(user: User, default_tab_key = "profile-tab"): 
         callback(_name: string | undefined, key: string) {
             $(".tabcontent").hide();
             $(`#${CSS.escape(key)}`).show();
-            $("#user-profile-modal .modal__footer").hide();
-            $("#user-profile-modal .modal__content").removeClass(
-                "modal__content__manage_profile_height",
-            );
             $("#user-profile-modal .manage-profile-tab-footer").removeClass(
-                "modal__footer_wrapper",
+                "manage-profile-tab-active",
             );
             switch (key) {
                 case "profile-tab":
@@ -797,7 +789,6 @@ export function show_user_profile(user: User, default_tab_key = "profile-tab"): 
                     break;
                 }
                 case "manage-profile-tab":
-                    $("#user-profile-modal .modal__footer").show();
                     render_manage_profile_content(user);
                     break;
             }

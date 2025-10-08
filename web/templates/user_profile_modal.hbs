@@ -186,16 +186,14 @@
                     <div class="tabcontent" id="manage-profile-tab"></div>
                 </div>
             </main>
-            <div class="manage-profile-tab-footer">
-                <footer class="modal__footer">
-                    <div class="save-success"></div>
-                    <button type="button" class="modal__button dialog_exit_button" aria-label="{{t 'Close this dialog window' }}" data-micromodal-close>{{t "Cancel" }}</button>
-                    <button type="button" class="modal__button dialog_submit_button">
-                        <span class="submit-button-text">{{t "Save changes"}}</span>
-                        <span class="modal__spinner"></span>
-                    </button>
-                </footer>
-            </div>
+            <footer class="modal__footer manage-profile-tab-footer">
+                <div class="save-success"></div>
+                <button type="button" class="modal__button dialog_exit_button" aria-label="{{t 'Close this dialog window' }}" data-micromodal-close>{{t "Cancel" }}</button>
+                <button type="button" class="modal__button dialog_submit_button">
+                    <span class="submit-button-text">{{t "Save changes"}}</span>
+                    <span class="modal__spinner"></span>
+                </button>
+            </footer>
         </div>
     </div>
 </div>
