@@ -61,6 +61,7 @@
     align-items: center;
     /* 20px 24px at 16px/1em */
     padding: 1.25em 1.5em;
+    background-color: var(--color-background-modal-bar);
 }
 
 .modal__title {
@@ -136,6 +137,10 @@
     /* Set a max-width, less the 1em of left and right
        padding specified above. */
     max-width: calc(100% - 2em);
+
+    & + .modal__footer {
+        border-top: 1px solid var(--color-border-modal-bar);
+    }
 
     &.simplebar-scrollable-y + .modal__footer {
         border-top: 1px solid var(--color-border-modal-footer);
