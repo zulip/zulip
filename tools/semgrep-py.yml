@@ -52,6 +52,19 @@ rules:
     languages: [python]
     severity: ERROR
 
+  - id: use-wrapped-mimetypes
+    pattern-either:
+      - pattern: mimetypes.guess_type
+      - pattern: mimetypes.guess_file_type
+      - pattern: mimetypes.guess_all_extensions
+      - pattern: mimetypes.guess_extension
+    message: Use zerver.lib.mime_types (to ensure our EXTRA_MIME_TYPES are added)
+    languages: [python]
+    severity: ERROR
+    paths:
+      exclude:
+        - zerver/lib/mime_types.py
+
   - id: dont-import-models-in-migrations
     patterns:
       - pattern-not: from zerver.lib.migrate import $X
