@@ -870,10 +870,6 @@
         hsl(0deg 0% 76%),
         color-mix(in oklch, hsl(0deg 0% 100%) 12%, transparent)
     );
-    --color-border-modal-footer: light-dark(
-        hsl(0deg 0% 87%),
-        hsl(0deg 0% 100% / 20%)
-    );
     --color-modal-selectable-icon: light-dark(
         hsl(240deg 30% 40%),
         hsl(240deg 35% 68%)
