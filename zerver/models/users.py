@@ -622,6 +622,9 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
     # imports and deleted users.
     is_mirror_dummy = models.BooleanField(default=False)
 
+    # Flag used for imported users who have not activated their account.
+    is_imported_stub = models.BooleanField(default=False)
+
     # Users with this flag set are allowed to forge messages as sent by another
     # user and to send to private streams; also used for Jabber mirroring.
     can_forge_sender = models.BooleanField(default=False, db_index=True)
