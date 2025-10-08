@@ -853,11 +853,11 @@
         hsl(0deg 0% 100% / 90%),
         hsl(212deg 28% 8% / 75%)
     );
-    --color-background-modal: light-dark(#ededed, #242424);
+    --color-background-modal: light-dark(hsl(0deg 0% 93%), hsl(0deg 0% 14%));
     --color-background-modal-bar: light-dark(#f5f5f5, #333);
     --color-border-modal: light-dark(
-        color-mix(in srgb, #8c8c8c 25%, transparent),
-        color-mix(in srgb, #fff 8%, transparent)
+        hsl(0deg 0% 55%),
+        color-mix(in oklch, hsl(0deg 0% 100%) 15%, transparent)
     );
     --color-border-modal-bar: light-dark(
         color-mix(in srgb, #c2c2c2 80%, transparent),
