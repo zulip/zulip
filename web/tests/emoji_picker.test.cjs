@@ -9,6 +9,7 @@ const {run_test} = require("./lib/test.cjs");
 
 const emoji = zrequire("emoji");
 const emoji_picker = zrequire("emoji_picker");
+const typeahead = zrequire("../shared/src/typeahead");
 
 const emoji_codes = zrequire("../../static/generated/emoji/emoji_codes.json");
 
@@ -19,6 +20,7 @@ run_test("initialize", () => {
         realm_emoji: {},
         emoji_codes,
     });
+    typeahead.set_frequently_used_emojis(typeahead.popular_emojis);
     emoji_picker.initialize();
 
     const complete_emoji_catalog = _.sortBy(emoji_picker.complete_emoji_catalog, "name");
@@ -47,9 +49,9 @@ run_test("initialize", () => {
     assert_emoji_category(complete_emoji_catalog.pop(), "fa-car", 195);
     assert_emoji_category(complete_emoji_catalog.pop(), "fa-hashtag", 224);
     assert_emoji_category(complete_emoji_catalog.pop(), "fa-smile-o", 169);
-    assert_emoji_category(complete_emoji_catalog.pop(), "fa-star-o", popular_emoji_count);
     assert_emoji_category(complete_emoji_catalog.pop(), "fa-thumbs-o-up", 386);
     assert_emoji_category(complete_emoji_catalog.pop(), "fa-lightbulb-o", 264);
+    assert_emoji_category(complete_emoji_catalog.pop(), "fa-star-o", popular_emoji_count);
     assert_emoji_category(complete_emoji_catalog.pop(), "fa-cutlery", 131);
     assert_emoji_category(complete_emoji_catalog.pop(), "fa-flag", 270);
     assert_emoji_category(complete_emoji_catalog.pop(), "fa-cog", 1);
