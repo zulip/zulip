@@ -61,6 +61,13 @@
     align-items: center;
     /* 20px 24px at 16px/1em */
     padding: 1.25em 1.5em;
+    background-color: var(--color-background-modal-bar);
+}
+
+.modal__content + .modal__footer {
+    /* These styles apply only when the modal content
+       is present in the modal. */
+    border-top: 1px solid var(--color-border-modal-bar);
 }
 
 .modal__title {
