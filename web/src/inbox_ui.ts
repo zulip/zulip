@@ -568,6 +568,9 @@ function get_channel_folder_id(info: {folder_id: number | null; is_pinned: boole
     if (info.folder_id === null) {
         return OTHER_CHANNELS_FOLDER_ID;
     }
+    if (!user_settings.web_inbox_show_channel_folders) {
+        return OTHER_CHANNELS_FOLDER_ID;
+    }
     return info.folder_id;
 }
 
