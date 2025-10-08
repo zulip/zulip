@@ -2177,15 +2177,19 @@ def send_user_profile_update_notification(
     acting_user: UserProfile | None,
     changes: list[UserProfileChangeDict],
 ) -> None:
-    if acting_user is None or acting_user.id == user_profile.id:
-        return
-
-    notification_bot = get_system_bot(settings.NOTIFICATION_BOT, user_profile.realm_id)
-
     with override_language(user_profile.default_language):
-        message = _(
-            "@_**{user_full_name}** has made the following changes to your account."
-        ).format(user_full_name=acting_user.full_name)
+        if acting_user is not None and acting_user.id == user_profile.id:
+            return
+
+        notification_bot = get_system_bot(settings.NOTIFICATION_BOT, user_profile.realm_id)
+
+        if acting_user is None:
+            message = _("The following changes have been made to your account.")
+        else:
+            message = _(
+                "@_**{user_full_name}** has made the following changes to your account."
+            ).format(user_full_name=acting_user.full_name)
+
         for change in changes:
             message += _(
                 "\n- **Old {field_name}:** {old_value}\n- **New {field_name}:** {new_value}\n\n"

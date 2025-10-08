@@ -609,7 +609,7 @@ def send_stream_events_for_role_update(
 
 @transaction.atomic(savepoint=False)
 def do_change_user_role(
-    user_profile: UserProfile, value: int, *, acting_user: UserProfile | None
+    user_profile: UserProfile, value: int, *, acting_user: UserProfile | None, notify: bool = True
 ) -> None:
     # We want to both (a) take a lock on the UserProfile row, and (b)
     # modify the passed-in UserProfile object, so that callers see the
@@ -660,18 +660,19 @@ def do_change_user_role(
         type="realm_user", op="update", person=dict(user_id=user_profile.id, role=user_profile.role)
     )
 
-    changes: list[UserProfileChangeDict] = [
-        UserProfileChangeDict(
-            field_name="role",
-            old_value=old_role_name,
-            new_value=user_profile.get_role_name(),
-        )
-    ]
-
     send_event_on_commit(user_profile.realm, event, get_user_ids_who_can_access_user(user_profile))
-    send_user_profile_update_notification(
-        user_profile=user_profile, acting_user=acting_user, changes=changes
-    )
+
+    if notify:
+        changes: list[UserProfileChangeDict] = [
+            UserProfileChangeDict(
+                field_name="role",
+                old_value=old_role_name,
+                new_value=user_profile.get_role_name(),
+            )
+        ]
+        send_user_profile_update_notification(
+            user_profile=user_profile, acting_user=acting_user, changes=changes
+        )
 
     UserGroupMembership.objects.filter(
         user_profile=user_profile, user_group=old_system_group

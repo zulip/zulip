@@ -175,6 +175,7 @@ def do_update_user_custom_profile_data_if_changed(
     user_profile: UserProfile,
     data: list[ProfileDataElementUpdateDict],
     acting_user: UserProfile | None = None,
+    notify: bool = True,
 ) -> None:
     changes: list[UserProfileChangeDict] = []
 
@@ -225,7 +226,7 @@ def do_update_user_custom_profile_data_if_changed(
             )
         )
 
-    if changes and acting_user is not None:
+    if changes and notify:
         send_user_profile_update_notification(
             user_profile=user_profile, acting_user=acting_user, changes=changes
         )

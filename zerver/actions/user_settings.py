@@ -224,7 +224,7 @@ def do_change_password(user_profile: UserProfile, password: str, commit: bool = 
 
 @transaction.atomic(savepoint=False)
 def do_change_full_name(
-    user_profile: UserProfile, full_name: str, acting_user: UserProfile | None
+    user_profile: UserProfile, full_name: str, acting_user: UserProfile | None, notify: bool = True
 ) -> None:
     old_name = user_profile.full_name
     if old_name == full_name:
@@ -254,15 +254,17 @@ def do_change_full_name(
             dict(type="realm_bot", op="update", bot=payload),
             bot_owner_user_ids(user_profile),
         )
-    changes: list[UserProfileChangeDict] = [
-        UserProfileChangeDict(
-            field_name="full name",
-            old_value=old_name,
-            new_value=full_name,
-        )
-    ]
 
-    send_user_profile_update_notification(user_profile, acting_user, changes)
+    if notify:
+        changes: list[UserProfileChangeDict] = [
+            UserProfileChangeDict(
+                field_name="full name",
+                old_value=old_name,
+                new_value=full_name,
+            )
+        ]
+
+        send_user_profile_update_notification(user_profile, acting_user, changes)
 
 
 def check_change_full_name(
