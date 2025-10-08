@@ -65,7 +65,7 @@
                 <h3>{{t "Onboarding" }}</h3>
                 {{> settings_save_discard_widget section_name="onboarding" }}
             </div>
-            <div class="inline-block organization-settings-parent">
+            <div class="organization-settings-parent">
                 {{> settings_checkbox
                   setting_name="realm_enable_welcome_message_custom_text"
                   prefix="id_"
@@ -78,7 +78,7 @@
                     </label>
                     <textarea id="id_realm_welcome_message_custom_text" name="welcome_message_custom_text"
                       class="admin-realm-welcome-message-custom-text setting-widget prop-element settings_textarea display-block" maxlength="8000"
-                      data-setting-widget-type="string" rows="3">{{ realm_welcome_message_custom_text }}</textarea>
+                      data-setting-widget-type="string">{{ realm_welcome_message_custom_text }}</textarea>
                     <div id="welcome_message_custom_text_buttons_container">
                         {{> ../components/action_button attention="quiet" intent="neutral" label=(t "Send me a test message") id="send_test_welcome_bot_custom_message"}}
                     </div>
