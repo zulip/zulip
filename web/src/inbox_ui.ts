@@ -1157,6 +1157,7 @@ function render_channel_view(channel_id: number): void {
             normal_view: false,
             search_val: search_keyword,
             INBOX_SEARCH_ID,
+            show_channel_folder_toggle: channel_folders.user_has_folders(),
         }),
     );
     // Hide any empty inbox text by default.
@@ -1197,6 +1198,7 @@ export function complete_rerender(coming_from_other_views = false): void {
                     $("#inbox-pane").html(
                         render_inbox_view({
                             unknown_channel: true,
+                            show_channel_folder_toggle: channel_folders.user_has_folders(),
                         }),
                     );
                     return;
@@ -1218,6 +1220,7 @@ export function complete_rerender(coming_from_other_views = false): void {
                     topics_dict,
                     streams_dict,
                     channel_folders_dict,
+                    show_channel_folder_toggle: channel_folders.user_has_folders(),
                     ...additional_context,
                 }),
             );
