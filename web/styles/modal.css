@@ -126,15 +126,15 @@
 .modal__content {
     display: flex;
     flex-direction: column;
-    /* 2px 24px at 16px/1em */
-    padding: 0.125em 1.5em;
+    /* 14px 16px at 16px/1em */
+    padding: 0.875em 1em;
     /* Prevent the appearance of a horizontal
        native scrollbar at certain
        info-density/zoom levels. */
     overflow: hidden auto;
-    /* Set a max-width, less the 1.5em of left and right
+    /* Set a max-width, less the 1em of left and right
        padding specified above. */
-    max-width: calc(100% - 3em);
+    max-width: calc(100% - 2em);
 
     > .simplebar-wrapper {
         /* Compensate the 3em reduced in modal_content so it positions
