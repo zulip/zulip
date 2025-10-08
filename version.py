@@ -49,4 +49,4 @@ API_FEATURE_LEVEL = 421
 #   historical commits sharing the same major version, in which case a
 #   minor version bump suffices.
 
-PROVISION_VERSION = (341, 0)  # bumped 2025-09-15 to downgrade sharp
+PROVISION_VERSION = (342, 0)  # bumped 2025-10-01 to remove emoji-datasource-google-blob
