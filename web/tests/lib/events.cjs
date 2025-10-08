@@ -1250,6 +1250,13 @@ exports.fixtures = {
         value: "recent_topics",
     },
 
+    user_settings__web_inbox_show_channel_folders: {
+        type: "user_settings",
+        op: "update",
+        property: "web_inbox_show_channel_folders",
+        value: false,
+    },
+
     user_settings__web_left_sidebar_show_channel_folders: {
         type: "user_settings",
         op: "update",

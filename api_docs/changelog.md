@@ -20,6 +20,14 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 12.0
 
+**Feature level 431**
+
+* [`POST /register`](/api/register-queue), [`PATCH /settings`](/api/update-settings),
+  [`PATCH /realm/user_settings_defaults`](/api/update-realm-user-settings-defaults):
+  Added new `web_inbox_show_channel_folders` display setting,
+  controlling whether any [channel folders](/help/channel-folders)
+  configured by the organization are displayed in the Inbox view.
+
 **Feature level 430**
 
 * [`GET /export/realm/consents`](/api/get-realm-export-consents): Added an
