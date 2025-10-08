@@ -113,14 +113,6 @@
         box-shadow: 0 0 30px hsl(212deg 32% 7%);
     }
 
-    #draft_overlay,
-    #scheduled_messages_overlay_container,
-    #message-edit-history-overlay-container {
-        .flex.overlay-content > .overlay-container {
-            box-shadow: 0 0 30px hsl(213deg 31% 0%);
-        }
-    }
-
     .popover hr,
     hr {
         opacity: 0.2;
