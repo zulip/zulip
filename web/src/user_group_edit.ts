@@ -18,7 +18,6 @@ import render_user_group_settings from "../templates/user_group_settings/user_gr
 import render_user_group_settings_empty_notice from "../templates/user_group_settings/user_group_settings_empty_notice.hbs";
 import render_user_group_settings_overlay from "../templates/user_group_settings/user_group_settings_overlay.hbs";
 
-import type {Banner} from "./banners.ts";
 import * as blueslip from "./blueslip.ts";
 import * as browser_history from "./browser_history.ts";
 import * as buttons from "./buttons.ts";
@@ -1535,7 +1534,6 @@ export function update_group(event: UserGroupUpdateEvent, group: UserGroup): voi
             // update settings title
             $("#groups_overlay .user-group-info-title .group-name-text")
                 .text(user_groups.get_display_group_name(group.name))
-            $("#groups_overlay .user-group-info-title")
                 .addClass("showing-info-title");
         }
 
@@ -1847,30 +1845,30 @@ function setup_dropdown_filters_widget(): void {
 function update_filter_widget_visibility(): void {
     const tab_key = get_active_data().$tabs.first().attr("data-tab-key");
     let groups_list_data;
-    
+
     if (tab_key === "all-groups") {
         groups_list_data = user_groups.get_realm_user_groups(true);
     } else if (tab_key === "your-groups") {
         groups_list_data = user_groups.get_user_groups_of_user(people.my_current_user_id(), true);
     }
-    
+
     const $filterDropdown = $("#user-group-edit-filter-options");
     const $searchBox = $("#group_filter");
-    
+
     // Hide both filter dropdown AND search box if there are no groups at all
     if (!groups_list_data || groups_list_data.length === 0) {
         $filterDropdown.hide();
-        $searchBox.hide(); // Hide the entire search box container
+        $searchBox.hide();
         update_displayed_groups(FILTERS.ACTIVE_GROUPS);
         if (filters_dropdown_widget) {
             filters_dropdown_widget.render(FILTERS.ACTIVE_GROUPS);
         }
         return;
     }
-    
+
     // Show search box when there are groups
     $searchBox.show();
-    
+
     // Show filter dropdown only if there are deactivated groups
     if (user_groups.realm_has_deactivated_user_groups()) {
         $filterDropdown.show();

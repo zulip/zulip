@@ -491,7 +491,7 @@ h4.user_group_setting_subsection_title {
         .right-section {
             position: absolute;
             font-size: 1.5em;
-            right: 25px;   
+            right: 25px;
             top: 50%;
             transform: translateY(-50%);
         }
