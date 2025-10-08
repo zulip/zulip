@@ -3374,7 +3374,7 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
             # super().auth_complete expects to have RelayState set to the idp_name,
             # so we need to replace this param.
             post_params = self.strategy.request.POST.copy()
-            post_params["RelayState"] = idp_name
+            post_params["RelayState"] = orjson.dumps({"idp": idp_name}).decode()
             self.strategy.request.POST = post_params
 
             # Call the auth_complete method of SocialAuthMixIn
