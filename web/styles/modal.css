@@ -59,8 +59,8 @@
     display: flex;
     justify-content: flex-end;
     align-items: center;
-    /* 20px 24px at 16px/1em */
-    padding: 1.25em 1.5em;
+    /* 12px 16px at 16px/1em */
+    padding: 0.75em 1em;
     background-color: var(--color-background-modal-bar);
 }
 
