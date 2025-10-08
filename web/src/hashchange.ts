@@ -74,7 +74,7 @@ function is_somebody_else_profile_open(): boolean {
     );
 }
 
-function handle_invalid_users_section_url(user_settings_tab: string): string {
+function handle_invalid_section_url(user_settings_tab: string): string {
     const valid_user_settings_tab_values = new Set(["active", "deactivated", "invitations"]);
     if (!valid_user_settings_tab_values.has(user_settings_tab)) {
         const valid_users_section_url = "#organization/users/active";
@@ -84,10 +84,10 @@ function handle_invalid_users_section_url(user_settings_tab: string): string {
     return user_settings_tab;
 }
 
-function get_user_settings_tab(section: string): string | undefined {
+function get_settings_tab(section: string): string | undefined {
     if (section === "users") {
         const current_user_settings_tab = hash_parser.get_current_nth_hash_section(2);
-        return handle_invalid_users_section_url(current_user_settings_tab);
+        return handle_invalid_section_url(current_user_settings_tab);
     }
     return undefined;
 }
@@ -387,7 +387,7 @@ function do_hashchange_overlay(old_hash: string | undefined): void {
             }
             settings_panel_menu.org_settings.activate_section_or_default(
                 section,
-                get_user_settings_tab(section),
+                get_settings_tab(section),
             );
             return;
         }
@@ -409,7 +409,7 @@ function do_hashchange_overlay(old_hash: string | undefined): void {
             settings_panel_menu.normal_settings.set_current_tab(section);
         } else {
             settings_panel_menu.org_settings.set_current_tab(section);
-            settings_panel_menu.org_settings.set_user_settings_tab(get_user_settings_tab(section));
+            settings_panel_menu.org_settings.set_user_settings_tab(get_settings_tab(section));
         }
         settings_toggle.goto(base);
         return;
@@ -483,7 +483,7 @@ function do_hashchange_overlay(old_hash: string | undefined): void {
     if (base === "organization") {
         settings.build_page();
         admin.build_page();
-        admin.launch(section, get_user_settings_tab(section));
+        admin.launch(section, get_settings_tab(section));
         return;
     }
 
