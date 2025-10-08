@@ -34,6 +34,7 @@ type PopoverName =
     | "stream_actions_popover"
     | "color_picker_popover"
     | "show_folders_sidebar"
+    | "show_folders_inbox"
     | "send_later_options";
 
 export const popover_instances: Record<PopoverName, tippy.Instance | null> = {
@@ -57,6 +58,7 @@ export const popover_instances: Record<PopoverName, tippy.Instance | null> = {
     stream_actions_popover: null,
     color_picker_popover: null,
     show_folders_sidebar: null,
+    show_folders_inbox: null,
     send_later_options: null,
 };
 
