@@ -43,6 +43,11 @@
         "heading close-button" 1.8em "heading ." auto / minmax(0, 1fr)
         1.8125em;
     column-gap: 4px;
+    background-color: var(--color-background-modal-bar);
+
+    &:has(+ .modal__content) {
+        border-bottom: 1px solid var(--color-border-modal-bar);
+    }
 }
 
 .modal__footer {
@@ -62,6 +67,7 @@
     line-height: 1.25;
     overflow: hidden;
     overflow-wrap: break-word;
+    color: var(--color-modal-heading-text);
 
     .channel-privacy-type-icon {
         /* This pushes back on suspect styles
