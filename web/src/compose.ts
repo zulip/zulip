@@ -435,6 +435,7 @@ function schedule_message_to_custom_date(): void {
         no_notify: true,
         update_count: false,
         is_sending_saving: true,
+        force_save: true,
     });
     assert(draft_id !== undefined);
 
