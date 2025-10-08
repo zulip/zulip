@@ -1,7 +1,42 @@
 {
   "data": [
     {
-      "api_version": "2025-04-30.basil",
+      "api_version": "2025-09-30.clover",
+      "created": 1000000000,
+      "data": {
+        "object": {
+          "amount_paid": 48000,
+          "amount_requested": 48000,
+          "created": 1000000000,
+          "currency": "usd",
+          "id": "customer_minimum_licenses_for_plan--Event.list.3.json",
+          "invoice": "in_NORMALIZED",
+          "is_default": true,
+          "livemode": false,
+          "object": "invoice_payment",
+          "payment": {
+            "payment_intent": "pi_NORMALIZED",
+            "type": "payment_intent"
+          },
+          "status": "paid",
+          "status_transitions": {
+            "canceled_at": null,
+            "paid_at": 1000000000
+          }
+        }
+      },
+      "id": "customer_minimum_licenses_for_plan--Event.list.3.json",
+      "livemode": false,
+      "object": "event",
+      "pending_webhooks": 0,
+      "request": {
+        "id": null,
+        "idempotency_key": null
+      },
+      "type": "invoice_payment.paid"
+    },
+    {
+      "api_version": "2025-09-30.clover",
       "created": 1000000000,
       "data": {
         "object": {
@@ -170,7 +205,7 @@
       "type": "invoice.payment_succeeded"
     },
     {
-      "api_version": "2025-04-30.basil",
+      "api_version": "2025-09-30.clover",
       "created": 1000000000,
       "data": {
         "object": {

@@ -1,7 +1,7 @@
 {
   "data": [
     {
-      "api_version": "2025-04-30.basil",
+      "api_version": "2025-09-30.clover",
       "created": 1000000000,
       "data": {
         "object": {
@@ -171,7 +171,7 @@
       "id": "upgrade_user_to_fixed_price_monthly_basic_plan--Event.list.2.json",
       "livemode": false,
       "object": "event",
-      "pending_webhooks": 0,
+      "pending_webhooks": 2,
       "request": {
         "id": "upgrade_user_to_fixed_price_monthly_basic_plan--Event.list.2.json",
         "idempotency_key": "00000000-0000-0000-0000-000000000000"
@@ -179,7 +179,7 @@
       "type": "invoice.updated"
     },
     {
-      "api_version": "2025-04-30.basil",
+      "api_version": "2025-09-30.clover",
       "created": 1000000000,
       "data": {
         "object": {
@@ -201,6 +201,7 @@
           "currency": "usd",
           "customer": "upgrade_user_to_fixed_price_monthly_basic_plan--Customer.create.1.json",
           "description": "Payment for Invoice",
+          "excluded_payment_method_types": null,
           "id": "upgrade_user_to_fixed_price_monthly_basic_plan--Event.list.2.json",
           "last_payment_error": null,
           "latest_charge": "upgrade_user_to_fixed_price_monthly_basic_plan--Event.list.2.json",
@@ -250,7 +251,7 @@
       "type": "payment_intent.succeeded"
     },
     {
-      "api_version": "2025-04-30.basil",
+      "api_version": "2025-09-30.clover",
       "created": 1000000000,
       "data": {
         "object": {
@@ -311,7 +312,7 @@
           "payment_method_details": {
             "card": {
               "amount_authorized": 10000,
-              "authorization_code": null,
+              "authorization_code": "832068",
               "brand": "visa",
               "checks": {
                 "address_line1_check": "pass",
@@ -369,7 +370,7 @@
       "id": "upgrade_user_to_fixed_price_monthly_basic_plan--Event.list.2.json",
       "livemode": false,
       "object": "event",
-      "pending_webhooks": 0,
+      "pending_webhooks": 2,
       "request": {
         "id": "upgrade_user_to_fixed_price_monthly_basic_plan--Event.list.2.json",
         "idempotency_key": "00000000-0000-0000-0000-000000000000"
@@ -377,7 +378,7 @@
       "type": "charge.succeeded"
     },
     {
-      "api_version": "2025-04-30.basil",
+      "api_version": "2025-09-30.clover",
       "created": 1000000000,
       "data": {
         "object": {
@@ -545,7 +546,7 @@
       "type": "invoice.finalized"
     },
     {
-      "api_version": "2025-04-30.basil",
+      "api_version": "2025-09-30.clover",
       "created": 1000000000,
       "data": {
         "object": {
@@ -729,7 +730,7 @@
       "type": "invoice.updated"
     },
     {
-      "api_version": "2025-04-30.basil",
+      "api_version": "2025-09-30.clover",
       "created": 1000000000,
       "data": {
         "object": {
@@ -751,6 +752,7 @@
           "currency": "usd",
           "customer": "upgrade_user_to_fixed_price_monthly_basic_plan--Customer.create.1.json",
           "description": "Payment for Invoice",
+          "excluded_payment_method_types": null,
           "id": "upgrade_user_to_fixed_price_monthly_basic_plan--Event.list.2.json",
           "last_payment_error": null,
           "latest_charge": null,
@@ -800,7 +802,7 @@
       "type": "payment_intent.created"
     },
     {
-      "api_version": "2025-04-30.basil",
+      "api_version": "2025-09-30.clover",
       "created": 1000000000,
       "data": {
         "object": {
@@ -954,7 +956,7 @@
           "total_excluding_tax": 10000,
           "total_pretax_credit_amounts": [],
           "total_taxes": [],
-          "webhooks_delivered_at": 1000000000
+          "webhooks_delivered_at": null
         },
         "previous_attributes": {
           "amount_due": 0,
@@ -980,7 +982,7 @@
       "type": "invoice.updated"
     },
     {
-      "api_version": "2025-04-30.basil",
+      "api_version": "2025-09-30.clover",
       "created": 1000000000,
       "data": {
         "object": {
@@ -995,6 +997,7 @@
           "invoice": "upgrade_user_to_fixed_price_monthly_basic_plan--Event.list.2.json",
           "livemode": false,
           "metadata": {},
+          "net_amount": 10000,
           "object": "invoiceitem",
           "parent": null,
           "period": {
@@ -1026,7 +1029,7 @@
       "type": "invoiceitem.created"
     },
     {
-      "api_version": "2025-04-30.basil",
+      "api_version": "2025-09-30.clover",
       "created": 1000000000,
       "data": {
         "object": {
@@ -1139,7 +1142,7 @@
           "total_excluding_tax": 0,
           "total_pretax_credit_amounts": [],
           "total_taxes": [],
-          "webhooks_delivered_at": 1000000000
+          "webhooks_delivered_at": null
         }
       },
       "id": "upgrade_user_to_fixed_price_monthly_basic_plan--Event.list.2.json",
@@ -1153,7 +1156,7 @@
       "type": "invoice.created"
     },
     {
-      "api_version": "2025-04-30.basil",
+      "api_version": "2025-09-30.clover",
       "created": 1000000000,
       "data": {
         "object": {
@@ -1163,7 +1166,7 @@
           "currency": "usd",
           "default_source": null,
           "delinquent": false,
-          "description": "zulip.testserver 5ae8113e-cd0",
+          "description": "zulip.testserver 1b9e1a25-900",
           "discount": null,
           "email": "hamlet@zulip.com",
           "id": "upgrade_user_to_fixed_price_monthly_basic_plan--Customer.create.1.json",
@@ -1177,7 +1180,7 @@
           "livemode": false,
           "metadata": {
             "remote_realm_host": "zulip.testserver",
-            "remote_realm_uuid": "5ae8113e-cd0a-4aaf-990c-a2ddb35b37d8"
+            "remote_realm_uuid": "1b9e1a25-9000-419d-bb13-59cab3446e68"
           },
           "name": null,
           "next_invoice_sequence": 1,

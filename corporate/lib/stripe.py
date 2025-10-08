@@ -102,7 +102,7 @@ CARD_CAPITALIZATION = {
 }
 
 # The version of Stripe API the billing system supports.
-STRIPE_API_VERSION = "2025-04-30.basil"
+STRIPE_API_VERSION = "2025-09-30.clover"
 
 stripe.api_version = STRIPE_API_VERSION
 
@@ -777,7 +777,7 @@ class BillingSession(ABC):
         assert customer is not None and customer.stripe_customer_id is not None
 
         # Check if customer has any $0 invoices.
-        list_params = stripe.Invoice.ListParams(
+        list_params = stripe.params.InvoiceListParams(
             customer=customer.stripe_customer_id,
             limit=1,
             status="paid",
@@ -854,7 +854,7 @@ class BillingSession(ABC):
         plan_tier: int,
         billing_schedule: int,
         charge_automatically: bool,
-        invoice_period: stripe.InvoiceItem.CreateParamsPeriod,
+        invoice_period: stripe.params.InvoiceItemCreateParamsPeriod,
         license_management: str | None = None,
         days_until_due: int | None = None,
         on_free_trial: bool = False,
@@ -892,7 +892,7 @@ class BillingSession(ABC):
         # If automatic charge fails, we simply void the invoice.
         # https://stripe.com/docs/invoicing/integration/automatic-advancement-collection
         auto_advance = not charge_automatically
-        invoice_params = stripe.Invoice.CreateParams(
+        invoice_params = stripe.params.InvoiceCreateParams(
             auto_advance=auto_advance,
             collection_method=collection_method,
             customer=customer.stripe_customer_id,
@@ -3249,12 +3249,12 @@ class BillingSession(ABC):
             need_to_invoice = False
 
             # Track if we added renewal invoice item which is possibly eligible for discount.
-            renewal_invoice_period: stripe.InvoiceItem.CreateParamsPeriod | None = None
+            renewal_invoice_period: stripe.params.InvoiceItemCreateParamsPeriod | None = None
             for ledger_entry in LicenseLedger.objects.filter(
                 plan=plan, id__gt=invoiced_through_id, event_time__lte=event_time
             ).order_by("id"):
                 # InvoiceItem variables.
-                invoice_item_params = stripe.InvoiceItem.CreateParams(
+                invoice_item_params = stripe.params.InvoiceItemCreateParams(
                     customer=plan.customer.stripe_customer_id
                 )
 
@@ -3312,7 +3312,7 @@ class BillingSession(ABC):
                     else:
                         collection_method = "send_invoice"
                         days_until_due = DEFAULT_INVOICE_DAYS_UNTIL_DUE
-                    invoice_params = stripe.Invoice.CreateParams(
+                    invoice_params = stripe.params.InvoiceCreateParams(
                         auto_advance=True,
                         collection_method=collection_method,
                         customer=plan.customer.stripe_customer_id,
@@ -3323,7 +3323,7 @@ class BillingSession(ABC):
                     stripe_invoice = stripe.Invoice.create(**invoice_params)
 
                 if invoice_item_params.get("description") is not None:
-                    invoice_period = stripe.InvoiceItem.CreateParamsPeriod(
+                    invoice_period = stripe.params.InvoiceItemCreateParamsPeriod(
                         start=datetime_to_timestamp(ledger_entry.event_time),
                         end=datetime_to_timestamp(
                             get_plan_renewal_or_end_date(plan, ledger_entry.event_time)
