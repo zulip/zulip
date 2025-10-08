@@ -639,7 +639,7 @@
        See 1c6bed55e4e800b5bad7150f6bdd274cd7f6504e for more context. */
     --width-dropdown-widget-button: 206px;
     /* User profile modal */
-    --user-profile-modal-body-height: 60vh;
+    --user-profile-modal-height: 75dvh;
     --user-profile-modal-body-margin-bottom: 20px;
 
     /* Height of the button for filter dropdown in stream settings UI.
