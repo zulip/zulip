@@ -22,7 +22,7 @@
                         {% if integration_categories %}
                         <div class="categories">
                             {% for slug, display_name in integration_categories %}
-                            <a href="/integrations/{{ slug }}">
+                            <a href="/integrations/category/{{ slug }}">
                                 <h3 class="integration-category" data-category="{{ slug }}">
                                     {{ display_name }}
                                 </h3>
@@ -31,7 +31,7 @@
                         </div>
                         {% endif %}
                         {{ integration_macros.render_integration_lozenge(selected_integration, is_doc_view=true) }}
-                        <a href="/integrations/{% if return_category_slug != 'all' %}{{ return_category_slug }}{% endif %}" id="integration-list-link" class="no-underline">
+                        <a href="/integrations/{% if return_category_slug != 'all' %}category/{{ return_category_slug }}{% endif %}" id="integration-list-link" class="no-underline">
                             <i class="fa fa-arrow-circle-left" aria-hidden="true"></i><span class="integrations-back-to-list-label">Back to list</span>
                         </a>
                     </div>

@@ -51,14 +51,14 @@ result like this:
 
 * [GitHub repository for Zulip Hubot adapter][hubot-zulip]
 
-* Zulip Integrations using Hubot: [Assembla](/integrations/doc/assembla) |
-  [Bonusly](/integrations/doc/bonusly) |
-  [Chartbeat](/integrations/doc/chartbeat) |
-  [Dark Sky](/integrations/doc/darksky) |
-  [Instagram](/integrations/doc/instagram) |
-  [Google Translate](/integrations/doc/google-translate) |
-  [MailChimp](/integrations/doc/mailchimp) |
-  [YouTube](/integrations/doc/youtube)
+* Zulip Integrations using Hubot: [Assembla](/integrations/assembla) |
+  [Bonusly](/integrations/bonusly) |
+  [Chartbeat](/integrations/chartbeat) |
+  [Dark Sky](/integrations/darksky) |
+  [Instagram](/integrations/instagram) |
+  [Google Translate](/integrations/google-translate) |
+  [MailChimp](/integrations/mailchimp) |
+  [YouTube](/integrations/youtube)
 
 * [Other Hubot adapters][other-adapters]
 

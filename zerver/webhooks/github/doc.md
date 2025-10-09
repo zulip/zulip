@@ -30,7 +30,7 @@ Get GitHub notifications in Zulip!
 
 - [GitHub's webhook events documentation][github-webhook-events]
 
-- [Zulip GitHub Actions integration](/integrations/doc/github-actions)
+- [Zulip GitHub Actions integration](/integrations/github-actions)
 
 {!webhooks-url-specification.md!}
 

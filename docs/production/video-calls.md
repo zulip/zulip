@@ -5,10 +5,10 @@ call](https://zulip.com/help/start-a-call) with the click of a button, using the
 call provider of your choice. The call providers
 supported by Zulip are:
 
-- [Jitsi Meet](https://zulip.com/integrations/doc/jitsi), a fully-encrypted,
+- [Jitsi Meet](https://zulip.com/integrations/jitsi), a fully-encrypted,
   100% open source video conferencing solution.
-- [Zoom](https://zulip.com/integrations/doc/zoom)
-- [BigBlueButton](https://zulip.com/integrations/doc/big-blue-button)
+- [Zoom](https://zulip.com/integrations/zoom)
+- [BigBlueButton](https://zulip.com/integrations/big-blue-button)
 
 By default, Zulip uses the [cloud version of Jitsi Meet](https://meet.jit.si/)
 as its call provider. This page documents the configurations required to support
