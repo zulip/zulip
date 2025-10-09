@@ -16,6 +16,7 @@ from zerver.context_processors import get_apps_page_url
 from zerver.lib.integrations import CATEGORIES, INTEGRATIONS, META_CATEGORY
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import HostRequestMock
+from zerver.lib.url_redirects import INTEGRATION_CATEGORY_SLUGS
 from zerver.models import Realm
 from zerver.models.realms import get_realm
 from zerver.views.documentation import add_api_url_context
@@ -136,8 +137,8 @@ class DocPageTest(ZulipTestCase):
             "/errors/404/",
             "/errors/5xx/",
             "/integrations/",
-            "/integrations/bots",
-            "/integrations/doc/github",
+            "/integrations/category/bots",
+            "/integrations/github",
             "/team/",
         ]
 
@@ -391,47 +392,66 @@ class DocPageTest(ZulipTestCase):
             images_in_docs.add(image)
 
         result = self.client_get(
-            "/integrations/nonexistent_category",
+            "/integrations/category/nonexistent_category",
             follow=True,
         )
         self.assertEqual(result.status_code, 404)
 
+        for category_name in INTEGRATION_CATEGORY_SLUGS:
+            legacy_category_response = self.client_get(
+                f"/integrations/{category_name}",
+                follow=False,
+            )
+            self.assertEqual(legacy_category_response.status_code, 301)
+            self.assertEqual(
+                legacy_category_response["Location"], f"/integrations/category/{category_name}"
+            )
+
+        legacy_doc_response = self.client_get(
+            "/integrations/doc/asana?category=project-management",
+            follow=False,
+        )
+        self.assertEqual(legacy_doc_response.status_code, 301)
+        self.assertEqual(
+            legacy_doc_response["Location"], "/integrations/asana?category=project-management"
+        )
+
         result = self.client_get(
-            "/integrations/doc/nonexistent_integration",
+            "/integrations/nonexistent_integration",
             follow=True,
         )
         self.assertEqual(result.status_code, 404)
 
         result = self._test(
-            "/integrations/doc/asana?category=project-management",
+            "/integrations/asana?category=project-management",
             expected_strings=[
-                '<a href="/integrations/project-management" id="integration-list-link" class="no-underline">'
+                '<a href="/integrations/category/project-management" id="integration-list-link" class="no-underline">'
             ],
         )
 
         result = self.client_get(
-            "/integrations/doc/asana?category=nonexistent_category",
+            "/integrations/asana?category=nonexistent_category",
         )
         self.assert_not_in_success_response(
             [
-                '<a href="/integrations/project-management" id="integration-list-link" class="no-underline">'
+                '<a href="/integrations/category/project-management" id="integration-list-link" class="no-underline">'
             ],
             response,
         )
 
         # Mis-matched category should also return back to all.
         result = self.client_get(
-            "/integrations/doc/asana?category=communication",
+            "/integrations/asana?category=communication",
         )
         self.assert_not_in_success_response(
             [
-                '<a href="/integrations/project-management" id="integration-list-link" class="no-underline">'
+                '<a href="/integrations/category/project-management" id="integration-list-link" class="no-underline">'
             ],
             response,
         )
 
         for integration in INTEGRATIONS:
-            url = f"/integrations/doc/{integration}"
+            url = f"/integrations/{integration}"
             response = self._test(url, expected_strings=[])
             doc = response.content.decode("utf-8")
             for image in re.findall(r"/static/images/integrations/(.*)\"", doc):
@@ -475,14 +495,14 @@ class DocPageTest(ZulipTestCase):
         og_description = '<meta property="og:description" content="Zulip comes with over'
 
         # Test a particular integration page
-        url = "/integrations/doc/github"
+        url = "/integrations/github"
         title = '<meta property="og:title" content="GitHub | Zulip integrations" />'
         description = '<meta property="og:description" content="Zulip comes with over'
         self._test(url, [title, description, get_canonical_url(url)])
 
         # Test category pages
         for category in CATEGORIES:
-            url = f"/integrations/{category}"
+            url = f"/integrations/category/{category}"
             if category in META_CATEGORY:
                 title = f"<title>{CATEGORIES[category]} | Zulip integrations</title>"
                 og_title = f'<meta property="og:title" content="{CATEGORIES[category]} | Zulip integrations" />'
@@ -500,19 +520,19 @@ class DocPageTest(ZulipTestCase):
         # We don't need to test all the pages for 404
         for integration in list(INTEGRATIONS.keys())[5]:
             with self.settings(ROOT_DOMAIN_LANDING_PAGE=True):
-                url = f"/en/integrations/doc/{integration}"
+                url = f"/en/integrations/{integration}"
                 result = self.client_get(url, subdomain="", follow=True)
                 self.assertEqual(result.status_code, 404)
                 result = self.client_get(url, subdomain="zephyr", follow=True)
                 self.assertEqual(result.status_code, 404)
 
-            url = f"/en/integrations/doc/{integration}"
+            url = f"/en/integrations/{integration}"
             result = self.client_get(url, subdomain="", follow=True)
             self.assertEqual(result.status_code, 404)
             result = self.client_get(url, subdomain="zephyr", follow=True)
             self.assertEqual(result.status_code, 404)
 
-        result = self.client_get("/integrations/doc/nonexistent_integration", follow=True)
+        result = self.client_get("/integrations/nonexistent_integration", follow=True)
         self.assertEqual(result.status_code, 404)
 
     def test_electron_detection(self) -> None:

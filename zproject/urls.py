@@ -17,7 +17,7 @@ from django.views.generic import RedirectView
 from zerver.forms import LoggingSetPasswordForm
 from zerver.lib.integrations import WEBHOOK_INTEGRATIONS
 from zerver.lib.rest import rest_path
-from zerver.lib.url_redirects import DOCUMENTATION_REDIRECTS
+from zerver.lib.url_redirects import DOCUMENTATION_REDIRECTS, get_integration_category_redirects
 from zerver.tornado.views import (
     cleanup_event_queue,
     get_events,
@@ -278,6 +278,14 @@ from zproject import dev_urls
 if settings.TWO_FACTOR_AUTHENTICATION_ENABLED:  # nocoverage
     from two_factor.gateways.twilio.urls import urlpatterns as tf_twilio_urls
     from two_factor.urls import urlpatterns as tf_urls
+
+INTEGRATION_CATEGORY_REDIRECT_PATHS = [
+    path(
+        redirect.old_url.lstrip("/"),
+        RedirectView.as_view(url=redirect.new_url, permanent=True, query_string=True),
+    )
+    for redirect in get_integration_category_redirects()
+]
 
 # NB: There are several other pieces of code which route requests by URL:
 #
@@ -717,9 +725,27 @@ i18n_urls = [
     # Used to join a BigBlueButton video call
     path("calls/bigbluebutton/join", join_bigbluebutton),
     # Integrations documentation
-    path("integrations/doc/<str:integration_name>", integrations_doc),
-    path("integrations/", integrations_catalog, {"category_slug": "all"}),
-    path("integrations/<str:category_slug>", integrations_catalog),
+    path(
+        "integrations/",
+        integrations_catalog,
+        {"category_slug": "all"},
+        name="integrations_home",
+    ),
+    path(
+        "integrations/category/<str:category_slug>",
+        integrations_catalog,
+        name="integrations_category",
+    ),
+    *INTEGRATION_CATEGORY_REDIRECT_PATHS,
+    path(
+        "integrations/doc/<str:integration_name>",
+        RedirectView.as_view(pattern_name="integration_doc", permanent=True, query_string=True),
+    ),
+    path(
+        "integrations/<str:integration_name>",
+        integrations_doc,
+        name="integration_doc",
+    ),
 ]
 
 # Make a copy of i18n_urls so that they appear without prefix for english
