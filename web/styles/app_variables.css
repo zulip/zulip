@@ -853,6 +853,11 @@
         hsl(0deg 0% 100% / 90%),
         hsl(212deg 28% 8% / 75%)
     );
+    --color-background-modal-overlay: color-mix(
+        in oklch,
+        hsl(0deg 0% 0%) 25%,
+        transparent
+    );
     --color-modal-heading-text: light-dark(
         hsl(0deg 0% 15%),
         color-mix(in oklch, hsl(0deg 0% 100%) 85%, transparent)
