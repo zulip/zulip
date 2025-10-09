@@ -220,7 +220,7 @@ export function postprocess_content(html: string): string {
                         // If we're showing a still thumbnail, show a play
                         // button so that users that it can be played.
                         message_media_image
-                            .closest(".message-media-preview-image")!
+                            .closest(".message-media-preview-image, .message-media-inline-image")!
                             .classList.add("message_inline_animated_image_still");
                     }
                 }
