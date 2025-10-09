@@ -955,7 +955,7 @@ WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
     ),
 ]
 
-INTEGRATIONS: dict[str, Integration] = {
+OTHER_INTEGRATIONS: dict[str, Integration] = {
     "asana": Integration("asana", ["project-management"]),
     "big-blue-button": Integration(
         "big-blue-button", ["video-calling", "communication"], display_name="BigBlueButton"
@@ -1066,6 +1066,8 @@ HUBOT_INTEGRATIONS: list[HubotIntegration] = [
         logo="images/integrations/logos/youtub_e.svg",
     ),
 ]
+
+INTEGRATIONS: dict[str, Integration] = {**OTHER_INTEGRATIONS}
 
 for python_api_integration in PYTHON_API_INTEGRATIONS:
     INTEGRATIONS[python_api_integration.name] = python_api_integration
