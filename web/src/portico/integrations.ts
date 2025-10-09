@@ -107,7 +107,11 @@ function integration_events(): void {
 
 // init
 $(() => {
-    const is_doc_view = window.location.pathname.startsWith("/integrations/doc/");
+    const path = window.location.pathname;
+    const is_doc_view =
+        path !== "/integrations/" &&
+        !path.startsWith("/integrations/category/") &&
+        path.startsWith("/integrations/");
 
     if (!is_doc_view) {
         integration_events();

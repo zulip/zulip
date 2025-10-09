@@ -9,10 +9,10 @@ Zulip:
   or cases where the third-party tool wants to control the formatting
   of the messages in Zulip.
 * Use one of our supported [integration
-  frameworks](/integrations/meta-integration), such as the
-  [Slack-compatible incoming webhook](/integrations/doc/slack_incoming),
-  [Zapier integration](/integrations/doc/zapier), or
-  [IFTTT integration](/integrations/doc/ifttt).
+  frameworks](/integrations/category/meta-integration), such as the
+  [Slack-compatible incoming webhook](/integrations/slack_incoming),
+  [Zapier integration](/integrations/zapier), or
+  [IFTTT integration](/integrations/ifttt).
 * Implementing an incoming webhook integration (detailed on this page),
   where all the logic for formatting the Zulip messages lives in the
   Zulip server.  This is how most of [Zulip's official
@@ -36,7 +36,7 @@ process.
 * Set up the
   [Zulip development environment](https://zulip.readthedocs.io/en/latest/development/overview.html).
 
-* Use [Zulip's JSON integration](/integrations/doc/json),
+* Use [Zulip's JSON integration](/integrations/json),
   <https://webhook.site/>, or a similar site to capture an example
   webhook payload from the third-party service. Create a
   `zerver/webhooks/<mywebhook>/fixtures/` directory, and add the
