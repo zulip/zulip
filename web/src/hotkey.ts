@@ -1207,9 +1207,9 @@ function process_hotkey(e: JQuery.KeyDownEvent, hotkey: Hotkey): boolean {
             if (inbox_ui.is_in_focus()) {
                 return inbox_ui.toggle_topic_visibility_policy();
             }
-            if (message_lists.current!.selected_message()) {
+            if (message_lists.current?.selected_message()) {
                 user_topics_ui.toggle_topic_visibility_policy(
-                    message_lists.current!.selected_message()!,
+                    message_lists.current.selected_message()!,
                 );
                 return true;
             }
