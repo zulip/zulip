@@ -7,6 +7,7 @@ import type {StateData} from "./state_data.ts";
 type PMConversation = {
     user_ids_string: string;
     max_message_id: number;
+    count: number;
 };
 
 const partners = new Set<number>();
@@ -57,6 +58,7 @@ class RecentDirectMessages {
             conversation = {
                 user_ids_string,
                 max_message_id: message_id,
+                count: 1,
             };
             this.recent_message_ids.set(user_ids_string, conversation);
 
@@ -75,6 +77,7 @@ class RecentDirectMessages {
 
             // update our latest message_id
             conversation.max_message_id = message_id;
+            conversation.count += 1;
         }
 
         this.recent_private_messages.sort((a, b) => b.max_message_id - a.max_message_id);
@@ -103,8 +106,46 @@ class RecentDirectMessages {
 
     initialize(params: StateData["pm_conversations"]): void {
         for (const conversation of params.recent_private_conversations) {
-            this.insert(conversation.user_ids, conversation.max_message_id);
+            let user_ids = conversation.user_ids;
+            if (user_ids.length === 0) {
+                user_ids = [people.my_current_user_id()];
+            }
+            user_ids.sort((a, b) => a - b);
+            const user_ids_string = user_ids.join(",");
+
+            // Initialize with count: 0,
+            // The count will be built up as messages are processed during
+            // message_fetch.initialize(), which happens after this initialization.
+            const pm_conversation = {
+                user_ids_string,
+                max_message_id: conversation.max_message_id,
+                count: 0,
+            };
+
+            this.recent_message_ids.set(user_ids_string, pm_conversation);
+            this.recent_private_messages.push(pm_conversation);
         }
+
+        this.recent_private_messages.sort((a, b) => b.max_message_id - a.max_message_id);
+    }
+
+    maybe_remove(user_ids_string: string, num_messages: number): void {
+        // Remove a PM conversation if it's now empty after deleting messages.
+        const conversation = this.recent_message_ids.get(user_ids_string);
+        if (!conversation) {
+            // We don't have this conversation tracked, nothing to do.
+            return;
+        }
+
+        // If count drops to zero or below, remove the conversation
+        if (conversation.count <= num_messages) {
+            this.recent_message_ids.delete(user_ids_string);
+            this.recent_private_messages = this.recent_private_messages.filter(
+                (pm) => pm.user_ids_string !== user_ids_string,
+            );
+            return;
+        }
+        conversation.count -= num_messages;
     }
 }
 

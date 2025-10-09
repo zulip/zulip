@@ -7,7 +7,7 @@ import {topic_link_schema} from "./types.ts";
 import type {UserStatusEmojiInfo} from "./user_status.ts";
 import * as util from "./util.ts";
 
-const stored_messages = new Map<number, Message>();
+export const stored_messages = new Map<number, Message>();
 
 const matched_message_schema = z.object({
     match_content: z.optional(z.string()),
