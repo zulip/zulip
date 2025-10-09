@@ -183,12 +183,20 @@ export type Message = (
     // `convert_raw_message_to_message_with_booleans`
     flags?: string[];
 
-    small_avatar_url?: string | null; // Used in `message_avatar.hbs`
-    status_emoji_info?: UserStatusEmojiInfo | undefined; // Used in `message_body.hbs`
+    // Used in `message_avatar.hbs` to render sender avatar in
+    // message list.
+    small_avatar_url?: string | null;
 
-    local_edit_timestamp?: number; // Used for edited messages
+    // Used in `message_body.hbs` to show sender status emoji alongside
+    // their name in message list.
+    status_emoji_info?: UserStatusEmojiInfo | undefined;
 
-    notification_sent?: boolean; // Used in message_notifications
+    // Used for edited messages to show their last edit time.
+    local_edit_timestamp?: number;
+
+    // Used in message_notifications to track if a notification has already
+    // been sent for this message.
+    notification_sent?: boolean;
 } & (
         | {
               type: "private";
