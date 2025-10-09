@@ -68,6 +68,11 @@ DEACTIVATED_ACCOUNT_ERROR = gettext_lazy(
 )
 PASSWORD_TOO_WEAK_ERROR = gettext_lazy("The password is too weak.")
 
+# Set Form.EmailField to match the default max_length on Model.EmailField,
+# can be removed when https://code.djangoproject.com/ticket/35119 is
+# completed.
+EMAIL_MAX_LENGTH = 254
+
 
 class OverridableValidationError(ValidationError):
     pass
@@ -242,7 +247,7 @@ class ToSForm(forms.Form):
 
 
 class HomepageForm(forms.Form):
-    email = forms.EmailField()
+    email = forms.EmailField(max_length=EMAIL_MAX_LENGTH)
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         self.realm = kwargs.pop("realm", None)
@@ -321,7 +326,9 @@ class ImportRealmOwnerSelectionForm(forms.Form):
 
 class RealmCreationForm(RealmDetailsForm):
     # This form determines whether users can create a new realm.
-    email = forms.EmailField(validators=[email_not_system_bot, email_is_not_disposable])
+    email = forms.EmailField(
+        validators=[email_not_system_bot, email_is_not_disposable], max_length=EMAIL_MAX_LENGTH
+    )
     import_from = forms.ChoiceField(
         choices=PreregistrationRealm.IMPORT_FROM_CHOICES,
         required=False,
@@ -539,7 +546,7 @@ def rate_limit_password_reset_form_by_email(email: str) -> None:
 
 class CreateUserForm(forms.Form):
     full_name = forms.CharField(max_length=100)
-    email = forms.EmailField()
+    email = forms.EmailField(max_length=EMAIL_MAX_LENGTH)
 
 
 class OurAuthenticationForm(AuthenticationForm):
