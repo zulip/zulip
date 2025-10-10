@@ -9,7 +9,7 @@ import * as google_analytics from "./google-analytics.ts";
 // name -> display name
 const INTEGRATIONS = new Map<string, string>();
 
-function load_data(): void {
+function load_integration_names_from_catalog(): void {
     for (const integration of $(".integration-lozenge")) {
         const name = $(integration).attr("data-name");
         const display_name = $(integration).find(".integration-name").text().trim();
@@ -44,7 +44,7 @@ function adjust_font_sizing(): void {
     }
 }
 
-const update_integrations = _.debounce(() => {
+const filter_integrations = _.debounce(() => {
     const max_scrollY = window.scrollY;
 
     for (const integration of $(".integration-lozenges").find(".integration-lozenge")) {
@@ -63,7 +63,7 @@ const update_integrations = _.debounce(() => {
 function render(query: string): void {
     if (search_query !== query) {
         search_query = query;
-        update_integrations();
+        filter_integrations();
     }
 }
 
@@ -72,11 +72,15 @@ function toggle_categories_dropdown(): void {
     $dropdown_list.slideToggle(250);
 }
 
-function integration_events(): void {
-    $<HTMLInputElement>('#integration-search input[type="text"]').on("keydown", function (e) {
-        if (e.key === "Enter" && this.value !== "") {
+function setup_integration_catalog_events(): void {
+    const $search_input = $<HTMLInputElement>(".integrations .searchbar .search_input");
+    $search_input.on("keydown", function (e) {
+        if (e.key === "Enter" && this.value.trim() !== "") {
             $(".integration-lozenges .integration-lozenge:not([hidden])")[0]?.closest("a")?.click();
         }
+    });
+    $search_input.on("input", function () {
+        render(this.value.toLowerCase());
     });
 
     $(".integration-categories-dropdown .integration-toggle-categories-dropdown").on(
@@ -85,12 +89,6 @@ function integration_events(): void {
             toggle_categories_dropdown();
         },
     );
-
-    // combine selector use for both focusing the integrations searchbar and adding
-    // the input event.
-    $<HTMLInputElement>(".integrations .searchbar input[type='text']").on("input", function () {
-        render(this.value.toLowerCase());
-    });
 
     $(window).on("scroll", () => {
         if (document.body.scrollTop > 330) {
@@ -114,10 +112,10 @@ $(() => {
         path.startsWith("/integrations/");
 
     if (!is_doc_view) {
-        integration_events();
-        load_data();
+        setup_integration_catalog_events();
+        load_integration_names_from_catalog();
         render(search_query);
-        $(".integrations .searchbar input[type='text']").trigger("focus");
+        $(".integrations .searchbar .search_input").trigger("focus");
     }
 
     google_analytics.config({page_path: window.location.pathname});
