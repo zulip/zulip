@@ -1,0 +1,24 @@
+<div class="input-group input-box" id="how-realm-creator-found-zulip">
+    <label for="how_realm_creator_found_zulip">
+        {{ _('How did you first hear about Zulip?') }}
+        {% if not corporate_enabled %}
+        <i class="fa fa-question-circle-o" aria-hidden="true" data-tippy-content="{% trans %}This value is used only if you sign up for a plan, in which case it will be sent to the Zulip team.{% endtrans %}"></i>
+        {% endif %}
+    </label>
+    <select name="how_realm_creator_found_zulip" class="required" required>
+        <option value="" selected disabled>{{ _('Select an option') }}</option>
+        {% for option_id, option_name in how_realm_creator_found_zulip_options %}
+        <option value="{{ option_id }}">{{ option_name }}</option>
+        {% endfor %}
+    </select>
+    <input id="how-realm-creator-found-zulip-other" class="how-found-zulip-extra-data-input" type="text" placeholder="{{ _('Please describe') }}" name="how_realm_creator_found_zulip_other_text" maxlength="100"/>
+    <input id="how-realm-creator-found-zulip-where-ad" class="how-found-zulip-extra-data-input" type="text" placeholder="{{ _('Where did you see the ad?') }}" name="how_realm_creator_found_zulip_where_ad" maxlength="100"/>
+    <input id="how-realm-creator-found-zulip-which-organization" class="how-found-zulip-extra-data-input" type="text" placeholder="{{ _('Which organization?') }}" name="how_realm_creator_found_zulip_which_organization" maxlength="100"/>
+    <input id="how-realm-creator-found-zulip-review-site" class="how-found-zulip-extra-data-input" type="text" placeholder="{{ _('Which one?') }}" name="how_realm_creator_found_zulip_review_site" maxlength="100"/>
+    <input id="how-realm-creator-found-zulip-which-ai-chatbot" class="how-found-zulip-extra-data-input" type="text" placeholder="{{ _('Which one?') }}" name="how_realm_creator_found_zulip_which_ai_chatbot" maxlength="100"/>
+    {% if form.how_realm_creator_found_zulip.errors %}
+        {% for error in form.how_realm_creator_found_zulip.errors %}
+        <p class="error help-inline alert alert-error">{{ error }}</p>
+        {% endfor %}
+    {% endif %}
+</div>
