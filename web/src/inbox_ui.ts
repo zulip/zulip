@@ -859,6 +859,12 @@ function get_folder_name_from_id(folder_id: number): string {
     }
 
     if (folder_id === OTHER_CHANNELS_FOLDER_ID) {
+        if (channel_folders_dict.get(OTHER_CHANNELS_FOLDER_ID)?.name !== undefined) {
+            // To avoid unnecessary UI updates, we return the existing name as we
+            // update the name at the end when we have data for all the channels.
+            // See `update_name_of_other_channels_folder`.
+            return channel_folders_dict.get(OTHER_CHANNELS_FOLDER_ID)!.name;
+        }
         return $t({defaultMessage: "OTHER CHANNELS"});
     }
 
@@ -896,6 +902,40 @@ function update_channel_folder_data(channel_context: StreamContext): void {
             folder_context.is_header_visible || !channel_context.is_hidden;
         folder_context.has_unread_mention =
             folder_context.has_unread_mention || channel_context.mention_in_unread;
+    }
+}
+
+function update_name_of_other_channels_folder({
+    should_update_ui,
+}: {
+    should_update_ui: boolean;
+}): void {
+    // Update name of OTHER_CHANNELS_FOLDER_ID in case
+    // `is_other_channels_only_visible_folder` changed.
+    const other_channels_folder = channel_folders_dict.get(OTHER_CHANNELS_FOLDER_ID);
+    if (other_channels_folder !== undefined) {
+        let updated_name = $t({defaultMessage: "OTHER CHANNELS"});
+        if (is_other_channels_only_visible_folder()) {
+            updated_name = $t({defaultMessage: "CHANNELS"});
+        }
+
+        if (other_channels_folder.name === updated_name) {
+            // No changes needed.
+            return;
+        }
+
+        other_channels_folder.name = updated_name;
+    }
+
+    if (should_update_ui) {
+        const $other_channels_folder_header = $(
+            `#${CSS.escape(get_channel_folder_header_id(OTHER_CHANNELS_FOLDER_ID))}`,
+        );
+        if ($other_channels_folder_header.length > 0) {
+            $other_channels_folder_header
+                .find(".inbox-header-name-text")
+                .text(other_channels_folder!.name);
+        }
     }
 }
 
@@ -959,12 +999,9 @@ function reset_data(): {
         update_channel_folder_data(channel_context);
     }
 
-    if (is_other_channels_only_visible_folder()) {
-        const other_channels_folder = channel_folders_dict.get(OTHER_CHANNELS_FOLDER_ID);
-        if (other_channels_folder !== undefined) {
-            other_channels_folder.name = $t({defaultMessage: "CHANNELS"});
-        }
-    }
+    update_name_of_other_channels_folder({
+        should_update_ui: false,
+    });
 
     sort_channel_folders();
 
@@ -2079,13 +2116,9 @@ export function update(): void {
 
     bulk_insert_channel_folders(channel_folders_to_insert);
 
-    // Set name of other channels folder to CHANNELS if it is the only folder.
-    if (is_other_channels_only_visible_folder()) {
-        const channel_folder = channel_folders_dict.get(OTHER_CHANNELS_FOLDER_ID)!;
-        channel_folder.name = $t({defaultMessage: "CHANNELS"});
-        const $channel_folder_header = $(`#${CSS.escape(OTHER_CHANNEL_HEADER_ID)}`);
-        $channel_folder_header.find(".inbox-header-name a").text(channel_folder.name);
-    }
+    update_name_of_other_channels_folder({
+        should_update_ui: true,
+    });
 
     const has_visible_unreads = has_dms_post_filter || has_topics_post_filter;
     show_empty_inbox_text(has_visible_unreads);
