@@ -635,6 +635,7 @@ class SendPushNotificationTest(E2EEPushNotificationTestCase):
 
         time_now = now()
         self.subscribe(aaron, "Denmark")
+        self.register_push_devices_for_notification()
         with time_machine.travel(time_now, tick=False):
             message_id = self.send_stream_message(
                 sender=aaron,
@@ -677,6 +678,7 @@ class SendPushNotificationTest(E2EEPushNotificationTestCase):
         realm = get_realm("zulip")
 
         time_now = now()
+        self.register_push_devices_for_notification()
         with time_machine.travel(time_now, tick=False):
             message_id = self.send_personal_message(
                 from_user=aaron, to_user=hamlet, skip_capture_on_commit_callbacks=True
@@ -792,6 +794,7 @@ class RemovePushNotificationTest(E2EEPushNotificationTestCase):
         aaron = self.example_user("aaron")
         realm = get_realm("zulip")
 
+        self.register_push_devices_for_notification()
         message_id_one = self.send_personal_message(
             from_user=aaron, to_user=hamlet, skip_capture_on_commit_callbacks=True
         )
