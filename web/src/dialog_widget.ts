@@ -110,6 +110,11 @@ export function show_dialog_spinner(): void {
     loading.show_spinner($(".dialog_submit_button"), $spinner);
 }
 
+export function current_dialog_submit_button(): JQuery {
+    const dialog_widget_selector = current_dialog_widget_selector();
+    return $(`${dialog_widget_selector} .dialog_submit_button`);
+}
+
 // Supports a callback to be called once the modal finishes closing.
 export function close(on_hidden_callback?: () => void): void {
     modals.close(current_dialog_widget_id(), {on_hidden: on_hidden_callback});
