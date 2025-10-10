@@ -25,7 +25,7 @@ integrations when migrating your organization from Slack to Zulip.
 
 - [Slack's incoming webhook documentation][1]
 
-- [Forward Slack messages into Zulip](/integrations/doc/slack)
+- [Forward Slack messages into Zulip](/integrations/slack)
 
 - [Forward messages Slack <-> Zulip][2] (both directions)
 

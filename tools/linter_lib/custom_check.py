@@ -740,7 +740,6 @@ html_rules: list["Rule"] = [
             "templates/zerver/confirm_continue_registration.html",
             "templates/zerver/register.html",
             "templates/zerver/accounts_send_confirm.html",
-            "templates/zerver/integrations/index.html",
             "templates/zerver/documentation_main.html",
         },
         "good_lines": ["#my-style {color: blue;}", 'style="display: none"', "style='display: none"],
