@@ -60,7 +60,9 @@ let window_focused = document.hasFocus();
 
 // Since there's a database index on is:unread, it's a fast
 // search query and thus worth including here as an optimization.),
-const all_unread_messages_narrow = [{operator: "is", operand: "unread", negated: false}];
+const all_unread_messages_narrow: NarrowTerm[] = [
+    {operator: "is", operand: "unread", negated: false},
+];
 
 export function is_window_focused(): boolean {
     return window_focused;
