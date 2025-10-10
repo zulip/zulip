@@ -3311,7 +3311,9 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
         idp_name = saml_document.get_issuing_idp()
         if idp_name is None:
             self.logger.info(
-                "/complete/saml/: No valid IdP as issuer of the %s.", saml_document.document_type()
+                "/complete/saml/: No valid IdP as issuer of the %s; got %s",
+                saml_document.document_type(),
+                saml_document.get_issuers(),
             )
             return None
 
