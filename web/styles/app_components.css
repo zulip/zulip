@@ -1118,6 +1118,12 @@ input.settings_text_input {
     }
 }
 
+div.overlay .flex.overlay-content > .overlay-container,
+#settings_page,
+.informational-overlays .overlay-content {
+    box-shadow: var(--box-shadow-overlay);
+}
+
 .delete-selected-drafts-button-container {
     display: flex;
 }
@@ -1396,7 +1402,7 @@ input.invalid-input {
     border-color: var(--color-invalid-input-border) !important;
 
     &:focus {
-        box-shadow: var(--color-invalid-input-box-shadow);
+        box-shadow: var(--invalid-input-box-shadow);
     }
 }
 

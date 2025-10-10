@@ -506,10 +506,10 @@ run_test("compare_a_b", () => {
     };
     const unsorted = [user2, user1, user4, user3];
 
-    const sorted_by_id = [...unsorted].sort((a, b) => util.compare_a_b(a.id, b.id));
+    const sorted_by_id = unsorted.toSorted((a, b) => util.compare_a_b(a.id, b.id));
     assert.deepEqual(sorted_by_id, [user1, user2, user3, user4]);
 
-    const sorted_by_name = [...unsorted].sort((a, b) => util.compare_a_b(a.name, b.name));
+    const sorted_by_name = unsorted.toSorted((a, b) => util.compare_a_b(a.name, b.name));
     assert.deepEqual(sorted_by_name, [user2, user4, user3, user1]);
 });
 

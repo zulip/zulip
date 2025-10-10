@@ -16,7 +16,8 @@ import tseslint from "typescript-eslint";
 
 const compat = new FlatCompat({baseDirectory: import.meta.dirname});
 
-export default defineConfig(
+/** @type {import("eslint").Linter.Config[]} */
+export const config = defineConfig(
     {
         // This is intended for generated files and vendored third-party files.
         // For our source code, instead of adding files here, consider using
@@ -339,3 +340,4 @@ export default defineConfig(
         },
     },
 );
+export default config;

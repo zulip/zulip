@@ -118,7 +118,11 @@ test("process_new_message", () => {
         raw_message: message,
     }).message;
 
-    assert.deepEqual(message_user_ids.user_ids().sort(), [me.user_id, bob.user_id, cindy.user_id]);
+    assert.deepEqual(message_user_ids.user_ids().toSorted(), [
+        me.user_id,
+        bob.user_id,
+        cindy.user_id,
+    ]);
 
     assert.equal(message.is_private, true);
     assert.equal(message.reply_to, "bob@example.com,cindy@example.com");
@@ -170,7 +174,7 @@ test("process_new_message", () => {
     assert.deepEqual(message.flags, undefined);
     assert.equal(message.alerted, false);
 
-    assert.deepEqual(message_user_ids.user_ids().sort(), [
+    assert.deepEqual(message_user_ids.user_ids().toSorted(), [
         me.user_id,
         bob.user_id,
         cindy.user_id,

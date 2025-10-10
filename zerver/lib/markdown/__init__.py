@@ -1,7 +1,6 @@
 # Zulip's main Markdown implementation.  See docs/subsystems/markdown.md for
 # detailed documentation on our Markdown syntax.
 import logging
-import mimetypes
 import re
 import time
 from collections import deque
@@ -1032,7 +1031,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         if not self.zmd.image_preview_enabled:
             return False
 
-        url_type = mimetypes.guess_type(url)[0]
+        url_type = guess_type(url)[0]
         # Support only video formats (containers) that are supported cross-browser and cross-device. As per
         # https://developer.mozilla.org/en-US/docs/Web/Media/Formats/Containers#index_of_media_container_formats_file_types
         # MP4 and WebM are the only formats that are widely supported.

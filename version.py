@@ -49,4 +49,4 @@ API_FEATURE_LEVEL = 427
 #   historical commits sharing the same major version, in which case a
 #   minor version bump suffices.
 
-PROVISION_VERSION = (351, 2)  # bumped 2025-10-01 to add vite to starlight_help
+PROVISION_VERSION = (353, 0)  # bumped 2025-10-07 to rebuild emoji_names

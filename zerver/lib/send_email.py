@@ -654,10 +654,18 @@ def custom_email_sender(
     with open(subject_path, "w") as f:
         f.write(get_header(subject, parsed_email_template.get("subject"), "subject"))
 
+    already_printed_once = False
+
     def send_one_email(
         context: dict[str, Any], to_user_id: int | None = None, to_email: str | None = None
     ) -> None:
         assert to_user_id is not None or to_email is not None
+        if dry_run:
+            nonlocal already_printed_once
+            if already_printed_once:
+                return
+            else:
+                already_printed_once = True
         with suppress(EmailNotDeliveredError):
             send_immediate_email(
                 email_id,
@@ -715,9 +723,6 @@ def send_custom_email(
             to_user_id=user_profile.id,
             context=context,
         )
-
-        if dry_run:
-            break
     return users
 
 
@@ -752,9 +757,6 @@ def send_custom_server_email(
             to_email=server.contact_email,
             context=context,
         )
-
-        if dry_run:
-            break
 
 
 def log_email_config_errors() -> None:

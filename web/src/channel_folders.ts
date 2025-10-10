@@ -50,7 +50,7 @@ export function get_channel_folders(include_archived = false): ChannelFolder[] {
 
             return true;
         })
-        .sort((folder_a, folder_b) => folder_a.order - folder_b.order);
+        .toSorted((folder_a, folder_b) => folder_a.order - folder_b.order);
 }
 
 export function get_active_folder_ids(): Set<number> {
