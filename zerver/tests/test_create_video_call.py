@@ -533,3 +533,226 @@ class BigBlueButtonVideoCallTest(ZulipTestCase):
                 {"bigbluebutton": self.signed_bbb_a_object},
             )
             self.assert_json_error(response, "BigBlueButton is not configured.")
+
+
+class ConstructorGroupsVideoCallTest(ZulipTestCase):
+    @override
+    def setUp(self) -> None:
+        super().setUp()
+        self.user_profile = self.example_user("hamlet")
+        self.login_user(self.user_profile)
+
+        self.base_api_url = "https://constructor.example.app/api/groups/xapi"
+
+        self.test_room_guid = "a13b8686-d383-4763-b3b7-d2d4dd7f34ec"
+        self.test_room_name = "King Hamlet's Zulip Videoconferencing Room"
+        self.test_room_url = f"https://constructor.example.app/groups/room/{self.test_room_name}"
+
+        self.mock_valid_room = {
+            "room_guid": self.test_room_guid,
+            "name": self.test_room_name,
+            "url": self.test_room_url,
+        }
+
+        self.mock_room_missing_url = {
+            "room_guid": self.test_room_guid,
+            "name": self.test_room_name,
+        }
+
+    def test_missing_constructor_groups_settings(self) -> None:
+        for setting_name in [
+            "CONSTRUCTOR_GROUPS_URL",
+            "CONSTRUCTOR_GROUPS_ACCESS_KEY",
+            "CONSTRUCTOR_GROUPS_SECRET_KEY",
+        ]:
+            with self.settings(**{setting_name: None}):
+                response = self.client_post("/json/calls/constructorgroups/create")
+                self.assert_json_error(
+                    response, "Failed to create Constructor Groups video call room"
+                )
+
+    @responses.activate
+    def test_existing_room_reuse(self) -> None:
+        responses.add(
+            responses.GET,
+            f"{self.base_api_url}/room/search",
+            json={"data": [self.mock_valid_room]},
+            status=200,
+        )
+
+        response = self.client_post("/json/calls/constructorgroups/create")
+
+        response_dict = self.assert_json_success(response)
+        self.assertEqual(response_dict["url"], self.test_room_url)
+
+    @responses.activate
+    def test_create_new_room(self) -> None:
+        responses.add(
+            responses.GET,
+            f"{self.base_api_url}/room/search",
+            json={"data": []},
+            status=200,
+        )
+        responses.add(
+            responses.POST,
+            f"{self.base_api_url}/room",
+            json=self.mock_valid_room,
+            status=200,
+        )
+
+        response = self.client_post("/json/calls/constructorgroups/create")
+
+        response_dict = self.assert_json_success(response)
+        self.assertEqual(response_dict["url"], self.test_room_url)
+
+    def test_api_error_handling(self) -> None:
+        with self.settings(CONSTRUCTOR_GROUPS_URL=None):
+            response = self.client_post("/json/calls/constructorgroups/create")
+
+            self.assert_json_error(response, "Failed to create Constructor Groups video call room")
+
+    @responses.activate
+    def test_missing_url_on_existing_room(self) -> None:
+        responses.add(
+            responses.GET,
+            f"{self.base_api_url}/room/search",
+            json={"data": [self.mock_room_missing_url]},
+            status=200,
+        )
+
+        with self.assertLogs(level="ERROR") as logs:
+            response = self.client_post("/json/calls/constructorgroups/create")
+
+        self.assert_json_error(response, "Failed to create Constructor Groups video call room.")
+        self.assertIn("Constructor Groups API returned room without URL", logs.output[0])
+
+    @responses.activate
+    def test_missing_url_on_new_room(self) -> None:
+        """Test handling when API returns room data without URL"""
+        responses.add(
+            responses.GET,
+            f"{self.base_api_url}/room/search",
+            json={"data": []},
+            status=200,
+        )
+        responses.add(
+            responses.POST,
+            f"{self.base_api_url}/room",
+            json=self.mock_room_missing_url,
+            status=200,
+        )
+
+        with self.assertLogs(level="ERROR") as logs:
+            response = self.client_post("/json/calls/constructorgroups/create")
+
+        self.assert_json_error(response, "Failed to create Constructor Groups video call room.")
+        self.assertIn("Constructor Groups API returned room without URL", logs.output[0])
+
+    @responses.activate
+    def test_http_request_error_handling(self) -> None:
+        responses.add(responses.GET, f"{self.base_api_url}/room/search", status=500)
+
+        with self.assertLogs(level="ERROR") as error_log:
+            response = self.client_post("/json/calls/constructorgroups/create")
+            self.assertIn("Constructor Groups API request failed", error_log.output[0])
+        self.assert_json_error(response, "Failed to create Constructor Groups video call room")
+
+    @responses.activate
+    def test_room_name_conflict_handling(self) -> None:
+        """Test handling when room name conflicts and fallback name is used"""
+        responses.add(
+            responses.GET,
+            f"{self.base_api_url}/room/search",
+            json={"data": []},
+            status=200,
+        )
+
+        # First create attempt returns 409 conflict
+        responses.add(
+            responses.POST,
+            f"{self.base_api_url}/room",
+            status=409,
+        )
+
+        # Second create attempt with fallback name succeeds
+        responses.add(
+            responses.POST,
+            f"{self.base_api_url}/room",
+            json=self.mock_valid_room,
+            status=200,
+        )
+
+        with self.assertLogs(level="ERROR") as error_log:
+            response = self.client_post("/json/calls/constructorgroups/create")
+
+        response_dict = self.assert_json_success(response)
+        self.assertEqual(response_dict["url"], self.test_room_url)
+        self.assert_length(responses.calls, 3)  # search + 2 create attempts
+        self.assertIn("Constructor Groups API request failed", error_log.output[0])
+
+    @responses.activate
+    def test_api_response_json_error(self) -> None:
+        responses.add(
+            responses.GET,
+            f"{self.base_api_url}/room/search",
+            body="invalid json",
+            status=200,
+        )
+
+        with self.assertLogs(level="ERROR") as error_log:
+            response = self.client_post("/json/calls/constructorgroups/create")
+            self.assertIn("Constructor Groups API request failed", error_log.output[0])
+        self.assert_json_error(response, "Failed to create Constructor Groups video call room")
+
+    @responses.activate
+    def test_create_room_with_http_post_request(self) -> None:
+        responses.add(
+            responses.GET,
+            f"{self.base_api_url}/room/search",
+            json={"data": []},
+            status=200,
+        )
+
+        responses.add(
+            responses.POST,
+            f"{self.base_api_url}/room",
+            json=self.mock_valid_room,
+            status=200,
+        )
+
+        response = self.client_post("/json/calls/constructorgroups/create")
+        self.assert_json_success(response)
+
+    @responses.activate
+    def test_create_room_post_request_error(self) -> None:
+        responses.add(
+            responses.GET,
+            f"{self.base_api_url}/room/search",
+            json={"data": []},
+            status=200,
+        )
+
+        responses.add(
+            responses.POST,
+            f"{self.base_api_url}/room",
+            status=500,
+        )
+
+        with self.assertLogs(level="ERROR") as error_log:
+            response = self.client_post("/json/calls/constructorgroups/create")
+            self.assertIn("Constructor Groups API request failed", error_log.output[0])
+        self.assert_json_error(response, "Failed to create Constructor Groups video call room")
+
+    def test_unsupported_http_method(self) -> None:
+        from zerver.lib.exceptions import JsonableError
+        from zerver.views.video_calls import ConstructorGroupsService
+
+        service = ConstructorGroupsService()
+
+        with self.assertLogs(level="ERROR") as error_log:
+            with self.assertRaises(JsonableError) as cm:
+                service._make_authenticated_request("DELETE", "/room")
+            self.assertEqual(
+                str(cm.exception.msg), "Failed to create Constructor Groups video call room"
+            )
+            self.assertIn("Constructor Groups API request failed", error_log.output[0])

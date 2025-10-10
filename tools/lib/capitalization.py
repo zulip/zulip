@@ -56,6 +56,7 @@ IGNORED_PHRASES = [
     r"Zulip Cloud Plus",
     r"Zulip Desktop",
     r"BigBlueButton",
+    r"Constructor Groups",
     # Code things
     r"\.zuliprc",
     # BeautifulSoup will remove <z-user> which is horribly confusing,
