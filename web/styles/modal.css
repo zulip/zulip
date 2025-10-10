@@ -628,14 +628,6 @@
         padding-bottom: 0;
     }
 
-    & hr {
-        margin: 10px 0;
-    }
-
-    .modal__content {
-        padding: 0 24px 8px;
-    }
-
     .loading_indicator {
         margin: auto;
     }
