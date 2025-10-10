@@ -370,9 +370,9 @@ def build_integration_doc_html(integration: Integration, request: HttpRequest) -
         all_event_types = get_all_event_types_for_integration(integration)
         if all_event_types is not None:
             context["all_event_types"] = all_event_types
-    if isinstance(integration, HubotIntegration):
+    elif isinstance(integration, HubotIntegration):
         context["hubot_docs_url"] = integration.hubot_docs_url
-    if isinstance(integration, PythonAPIIntegration):
+    elif isinstance(integration, PythonAPIIntegration):
         context["config_file_path"] = (
             f"/usr/local/share/zulip/integrations/{integration.directory_name}/zulip_{integration.directory_name}_config.py"
         )
