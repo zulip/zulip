@@ -828,11 +828,16 @@ run_test("realm settings", ({override}) => {
 run_test("realm_bot add", ({override}) => {
     const event = event_fixtures.realm_bot__add;
     const bot_stub = make_stub();
+    const rerender_stub = make_stub();
+
     override(bot_data, "add", bot_stub.f);
-    override(settings_bots, "render_bots", noop);
+    override(settings_users, "rerender_bot_section", rerender_stub.f);
+
     dispatch(event);
 
     assert.equal(bot_stub.num_calls, 1);
+    assert.equal(rerender_stub.num_calls, 1);
+
     const args = bot_stub.get_args("bot");
     assert_same(args.bot, event.bot);
 });
@@ -841,7 +846,6 @@ run_test("realm_bot delete", ({override}) => {
     const event = event_fixtures.realm_bot__delete;
     const bot_stub = make_stub();
     override(bot_data, "del", bot_stub.f);
-    override(settings_bots, "render_bots", noop);
 
     dispatch(event);
     assert.equal(bot_stub.num_calls, 1);
@@ -853,7 +857,6 @@ run_test("realm_bot update", ({override}) => {
     const event = event_fixtures.realm_bot__update;
     const bot_stub = make_stub();
     override(bot_data, "update", bot_stub.f);
-    override(settings_bots, "render_bots", noop);
 
     dispatch(event);
 
@@ -982,7 +985,7 @@ run_test("realm_user", ({override}) => {
     // Test bot related functions are being called.
     const add_bot_stub = make_stub();
     event = event_fixtures.realm_user__add_bot;
-    override(settings_users, "redraw_bots_list", add_bot_stub.f);
+    override(settings_users, "rerender_bot_section", add_bot_stub.f);
     dispatch({...event});
     assert.equal(add_bot_stub.num_calls, 1);
 
