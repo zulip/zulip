@@ -24,6 +24,7 @@ from zerver.actions.user_groups import check_add_user_group
 from zerver.actions.user_settings import do_change_user_setting
 from zerver.actions.user_topics import do_set_user_topic_visibility_policy
 from zerver.lib.message import truncate_topic
+from zerver.lib.stream_topic import StreamTopicTarget
 from zerver.lib.test_classes import ZulipTestCase, get_topic_messages
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.topic import RESOLVED_TOPIC_PREFIX
@@ -1207,6 +1208,114 @@ class MessageMoveTopicTest(ZulipTestCase):
             target_topic="Topic4 edited",
             original_topic_state=UserTopic.VisibilityPolicy.UNMUTED,
         )
+
+    def test_automatic_follow_target_topic_when_orig_topic_followed(self) -> None:
+        self.login("iago")
+        iago = self.example_user("iago")
+        cordelia = self.example_user("cordelia")
+        hamlet = self.example_user("hamlet")
+        shiva = self.example_user("shiva")
+
+        users = [shiva, cordelia, iago, hamlet]
+
+        for user in users:
+            do_change_user_setting(
+                user,
+                "automatically_follow_topics_policy",
+                UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_NEVER,
+                acting_user=None,
+            )
+
+        orig_stream = self.make_stream("demo")
+        orig_topic = "original"
+        stream_topic_target_original = StreamTopicTarget(orig_stream.id, orig_topic)
+
+        for user in users:
+            self.subscribe(user, orig_stream.name)
+
+        target_stream = self.make_stream(
+            "core", invite_only=True, history_public_to_subscribers=False
+        )
+        target_topic = "post-move"
+        stream_topic_target_post_move = StreamTopicTarget(target_stream.id, target_topic)
+
+        self.subscribe(iago, target_stream.name)
+        self.subscribe(cordelia, target_stream.name)
+        self.subscribe(shiva, target_stream.name)
+
+        self.send_stream_message(shiva, target_stream.name, target_topic)
+
+        msg_ids = [
+            self.send_stream_message(
+                sender=sender,
+                stream_name=orig_stream.name,
+                topic_name=orig_topic,
+                content=f"Message sent by {sender.full_name}",
+            )
+            for sender in users
+        ]
+
+        do_set_user_topic_visibility_policy(
+            user_profile=iago,
+            stream=orig_stream,
+            topic_name=orig_topic,
+            visibility_policy=UserTopic.VisibilityPolicy.FOLLOWED,
+        )
+
+        do_set_user_topic_visibility_policy(
+            user_profile=hamlet,
+            stream=orig_stream,
+            topic_name=orig_topic,
+            visibility_policy=UserTopic.VisibilityPolicy.FOLLOWED,
+        )
+
+        do_set_user_topic_visibility_policy(
+            user_profile=shiva,
+            stream=orig_stream,
+            topic_name=orig_topic,
+            visibility_policy=UserTopic.VisibilityPolicy.FOLLOWED,
+        )
+
+        user_ids_with_orig_topic_followed = (
+            stream_topic_target_original.user_ids_with_visibility_policy(
+                UserTopic.VisibilityPolicy.FOLLOWED
+            )
+        )
+
+        self.assertEqual(user_ids_with_orig_topic_followed, {iago.id, hamlet.id, shiva.id})
+
+        check_update_message(
+            user_profile=iago,
+            message_id=msg_ids[1],
+            stream_id=target_stream.id,
+            topic_name=target_topic,
+            propagate_mode="change_later",
+            send_notification_to_old_thread=False,
+            send_notification_to_new_thread=False,
+            content=None,
+        )
+
+        user_ids_with_target_topic_followed = (
+            stream_topic_target_post_move.user_ids_with_visibility_policy(
+                UserTopic.VisibilityPolicy.FOLLOWED
+            )
+        )
+
+        # If original topic is followed by sender of a moved message, and target
+        # topic is accessible to user, then target topic is also followed.
+        self.assertIn(iago.id, user_ids_with_target_topic_followed)
+
+        # If original topic is followed by sender of a moved message, and target
+        # topic is not accessible to user, then target topic is not followed.
+        self.assertNotIn(hamlet.id, user_ids_with_target_topic_followed)
+
+        # If original topic is not followed by sender of a moved message, and
+        # target topic is accessible to user, then target topic is not followed.
+        self.assertNotIn(cordelia.id, user_ids_with_target_topic_followed)
+
+        # If original topic is followed by user, but none of the messages sent
+        # by user are being moved, then target topic is not followed by user.
+        self.assertNotIn(shiva.id, user_ids_with_target_topic_followed)
 
     def test_topic_edit_history_saved_in_all_message(self) -> None:
         self.login("hamlet")
