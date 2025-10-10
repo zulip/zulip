@@ -9,6 +9,7 @@ from django.utils.timezone import now as timezone_now
 
 from confirmation.models import Confirmation, create_confirmation_link
 from confirmation.settings import STATUS_REVOKED, STATUS_USED
+from zerver.actions.message_send import send_user_profile_update_notification
 from zerver.actions.presence import do_update_user_presence
 from zerver.lib.avatar import avatar_url
 from zerver.lib.cache import (
@@ -22,6 +23,7 @@ from zerver.lib.i18n import get_language_name
 from zerver.lib.queue import queue_event_on_commit
 from zerver.lib.send_email import FromAddress, clear_scheduled_emails, send_email
 from zerver.lib.timezone import canonicalize_timezone
+from zerver.lib.types import UserProfileChangeDict
 from zerver.lib.upload import delete_avatar_image
 from zerver.lib.users import (
     can_access_delivery_email,
@@ -222,7 +224,7 @@ def do_change_password(user_profile: UserProfile, password: str, commit: bool = 
 
 @transaction.atomic(savepoint=False)
 def do_change_full_name(
-    user_profile: UserProfile, full_name: str, acting_user: UserProfile | None
+    user_profile: UserProfile, full_name: str, acting_user: UserProfile | None, notify: bool = True
 ) -> None:
     old_name = user_profile.full_name
     if old_name == full_name:
@@ -240,6 +242,7 @@ def do_change_full_name(
         extra_data={RealmAuditLog.OLD_VALUE: old_name, RealmAuditLog.NEW_VALUE: full_name},
     )
     payload = dict(user_id=user_profile.id, full_name=user_profile.full_name)
+
     send_event_on_commit(
         user_profile.realm,
         dict(type="realm_user", op="update", person=payload),
@@ -251,6 +254,17 @@ def do_change_full_name(
             dict(type="realm_bot", op="update", bot=payload),
             bot_owner_user_ids(user_profile),
         )
+
+    if notify:
+        changes: list[UserProfileChangeDict] = [
+            UserProfileChangeDict(
+                field_name="full name",
+                old_value=old_name,
+                new_value=full_name,
+            )
+        ]
+
+        send_user_profile_update_notification(user_profile, acting_user, changes)
 
 
 def check_change_full_name(

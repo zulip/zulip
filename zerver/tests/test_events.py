@@ -1762,7 +1762,7 @@ class NormalActionsTest(BaseAction):
             "id": field_id,
             "value": "New value",
         }
-        with self.verify_action() as events:
+        with self.verify_action(num_events=2) as events:
             do_update_user_custom_profile_data_if_changed(self.user_profile, [field])
         check_realm_user_update("events[0]", events[0], "custom_profile_field")
         self.assertEqual(
@@ -1777,7 +1777,7 @@ class NormalActionsTest(BaseAction):
             "id": field_id,
             "value": [self.example_user("ZOE").id],
         }
-        with self.verify_action() as events:
+        with self.verify_action(num_events=2) as events:
             do_update_user_custom_profile_data_if_changed(self.user_profile, [field])
         check_realm_user_update("events[0]", events[0], "custom_profile_field")
         self.assertEqual(events[0]["person"]["custom_profile_field"].keys(), {"id", "value"})
@@ -2885,7 +2885,7 @@ class NormalActionsTest(BaseAction):
         # We accept one less validator since `check_realm_user_update`
         # has a different shape of arguments and that check will always
         # be required.
-        num_events = len(validators) + 1
+        num_events = len(validators) + 2
         do_change_user_role(self.user_profile, current_role, acting_user=None)
 
         with self.verify_action(num_events=num_events) as events:
@@ -2897,7 +2897,7 @@ class NormalActionsTest(BaseAction):
             # We accept one less validator since `check_realm_user_update`
             # has a different shape of arguments and that check will always
             # be required.
-            validator(f"events[{i + 1}]", events[i + 1])
+            validator(f"events[{i + 2}]", events[i + 2])
 
         # Revert the role back to it's original state.
         do_change_user_role(self.user_profile, current_role, acting_user=None)

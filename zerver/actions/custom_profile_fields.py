@@ -4,10 +4,11 @@ import orjson
 from django.db import transaction
 from django.utils.translation import gettext as _
 
+from zerver.actions.message_send import send_user_profile_update_notification
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.external_accounts import DEFAULT_EXTERNAL_ACCOUNTS
 from zerver.lib.streams import render_stream_description
-from zerver.lib.types import ProfileDataElementUpdateDict, ProfileFieldData
+from zerver.lib.types import ProfileDataElementUpdateDict, ProfileFieldData, UserProfileChangeDict
 from zerver.lib.users import get_user_ids_who_can_access_user
 from zerver.models import CustomProfileField, CustomProfileFieldValue, Realm, UserProfile
 from zerver.models.custom_profile_fields import custom_profile_fields_for_realm
@@ -173,7 +174,11 @@ def notify_user_update_custom_profile_data(
 def do_update_user_custom_profile_data_if_changed(
     user_profile: UserProfile,
     data: list[ProfileDataElementUpdateDict],
+    acting_user: UserProfile | None = None,
+    notify: bool = True,
 ) -> None:
+    changes: list[UserProfileChangeDict] = []
+
     for custom_profile_field in data:
         field_value, created = CustomProfileFieldValue.objects.get_or_create(
             user_profile=user_profile, field_id=custom_profile_field["id"]
@@ -190,6 +195,8 @@ def do_update_user_custom_profile_data_if_changed(
             # If the field value isn't actually being changed to a different one,
             # we have nothing to do here for this field.
             continue
+
+        old_value = get_custom_profile_field_display_value(field_value)
 
         field_value.value = custom_profile_field_value_string
         if field_value.field.is_renderable():
@@ -208,6 +215,48 @@ def do_update_user_custom_profile_data_if_changed(
                 "type": field_value.field.field_type,
             },
         )
+
+        new_value = get_custom_profile_field_display_value(field_value)
+
+        changes.append(
+            UserProfileChangeDict(
+                field_name=field_value.field.name,
+                old_value=old_value,
+                new_value=new_value,
+            )
+        )
+
+    if changes and notify:
+        send_user_profile_update_notification(
+            user_profile=user_profile, acting_user=acting_user, changes=changes
+        )
+
+
+def get_custom_profile_field_display_value(field_value: CustomProfileFieldValue) -> str:
+    """Convert custom profile field value to human-readable string based on field type."""
+    type = field_value.field.field_type
+
+    if type == CustomProfileField.SELECT:
+        field_data_dict = orjson.loads(field_value.field.field_data)
+        value_key = field_value.value
+        if value_key in field_data_dict:
+            return field_data_dict[value_key]["text"]
+        else:
+            return field_value.value
+
+    elif type == CustomProfileField.USER:
+        if not field_value.value:
+            return ""
+        try:
+            user_ids = orjson.loads(field_value.value)
+            users_names = UserProfile.objects.filter(id__in=user_ids).values_list(
+                "full_name", flat=True
+            )
+            return (", ").join(users_names)
+        except (orjson.JSONDecodeError, TypeError):
+            return field_value.value
+    else:
+        return field_value.value
 
 
 @transaction.atomic(savepoint=False)
