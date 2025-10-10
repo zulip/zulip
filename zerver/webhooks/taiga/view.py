@@ -9,7 +9,11 @@ should be in bold.
 
 from typing import TypeAlias
 
-from django.http import HttpRequest, HttpResponse
+import hashlib
+import hmac 
+
+from django.conf import settings #changed this too
+from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest, HttpResponseForbidden 
 
 from zerver.decorator import webhook_view
 from zerver.lib.response import json_success
@@ -30,15 +34,25 @@ def api_taiga_webhook(
     *,
     message: JsonBodyPayload[WildValue],
 ) -> HttpResponse:
-    parsed_events = parse_message(message)
-    content = "".join(sorted(generate_content(event) + "\n" for event in parsed_events))
-    topic_name = "General"
-    if message["data"].get("milestone") and "name" in message["data"]["milestone"]:
-        topic_name = message["data"]["milestone"]["name"].tame(check_string)
-    check_send_webhook_message(request, user_profile, topic_name, content)
+    
+    key = request.GET.get('api_key')
+    data = request.body
+    signature = request.headers.get('X-TAIGA-WEBHOOK-SIGNATURE')
 
-    return json_success(request)
+    if 'Content-Type' not in request.headers or 'X-TAIGA-WEBHOOK-SIGNATURE' not in request.headers:
+        return HttpResponseBadRequest("Missing appropriate headers.")
+    
+    if (verify_signature(key, data, signature)):
+        parsed_events = parse_message(message)
+        content = "".join(sorted(generate_content(event) + "\n" for event in parsed_events))
+        topic_name = "General"
+        if message["data"].get("milestone") and "name" in message["data"]["milestone"]:
+            topic_name = message["data"]["milestone"]["name"].tame(check_string)
+        check_send_webhook_message(request, user_profile, topic_name, content)
 
+        return json_success(request)
+    else:
+        return HttpResponseBadRequest("Invalid signature.")
 
 templates = {
     "epic": {
@@ -153,6 +167,9 @@ templates = {
     },
 }
 
+def verify_signature(key, data, signature):
+    mac = hmac.new(key.encode("utf-8"), msg=data, digestmod=hashlib.sha1)
+    return mac.hexdigest() == signature
 
 def get_old_and_new_values(change_type: str, message: WildValue) -> ReturnType:
     """Parses the payload and finds previous and current value of change_type."""
