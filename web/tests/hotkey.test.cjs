@@ -107,7 +107,7 @@ message_lists.current = {
     selected_row() {
         const $row = $.create("selected-row-stub");
         $row.set_find_results(".message-actions-menu-button", ["<menu-button-stub>"]);
-        $row.set_find_results(".emoji-message-control-button-container", {
+        $row.set_find_results(".message_controls .emoji-message-control-button-container", {
             closest: () => ({css: () => "none"}),
         });
         return $row;
