@@ -20,6 +20,9 @@ class AlertWord(models.Model):
     user_profile = models.ForeignKey(UserProfile, on_delete=CASCADE)
     # Case-insensitive name for the alert word.
     word = models.TextField()
+    # marked as deactivated if the user has removed the alert word
+    # used to retain historical data for more accurate highlighting logic.
+    deactivated = models.BooleanField(default=False)
 
     class Meta:
         unique_together = ("user_profile", "word")
