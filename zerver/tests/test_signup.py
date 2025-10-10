@@ -4709,6 +4709,8 @@ class UserSignUpTest(ZulipTestCase):
             days=settings.DEMO_ORG_DEADLINE_DAYS
         )
         self.assertEqual(realm.demo_organization_scheduled_deletion_date, expected_deletion_date)
+        self.assertIn("Demo organization", realm.name)
+        self.assertIn("demo-", realm.string_id)
 
         # Make sure the correct Welcome Bot direct message is sent.
         welcome_msg = Message.objects.filter(

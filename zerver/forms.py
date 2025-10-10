@@ -190,7 +190,6 @@ class RegistrationForm(HowFoundZulipFormMixin, RealmDetailsForm):
     # The required-ness of the password field gets overridden if it isn't
     # actually required for a realm
     password = forms.CharField(widget=forms.PasswordInput, max_length=MAX_PASSWORD_LENGTH)
-    is_demo_organization = forms.BooleanField(required=False)
     enable_marketing_emails = forms.BooleanField(required=False)
     email_address_visibility = forms.TypedChoiceField(
         required=False,
