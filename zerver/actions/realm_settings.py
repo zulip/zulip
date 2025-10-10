@@ -756,7 +756,7 @@ def do_scrub_realm(realm: Realm, *, acting_user: UserProfile | None) -> None:
             realm=realm,
         ).values_list("id", flat=True)
     )
-    move_messages_to_archive(cross_realm_bot_message_ids)
+    move_messages_to_archive(cross_realm_bot_message_ids, realm=realm)
 
     do_remove_realm_custom_profile_fields(realm)
     do_delete_all_realm_attachments(realm)
