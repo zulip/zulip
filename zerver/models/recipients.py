@@ -51,6 +51,18 @@ class Recipient(models.Model):
     STREAM = 2
     # The type group direct messages.
     DIRECT_MESSAGE_GROUP = 3
+    # The type for whisper conversations.
+    WHISPER = 4
+
+    # Reference to parent recipient for whisper conversations
+    # This field is null for regular recipients and non-null for whisper recipients
+    parent_recipient = models.ForeignKey(
+        'self',
+        null=True,
+        blank=True,
+        on_delete=CASCADE,
+        related_name='whisper_recipients'
+    )
 
     class Meta:
         unique_together = ("type", "type_id")
@@ -60,6 +72,7 @@ class Recipient(models.Model):
         PERSONAL: "personal",
         STREAM: "stream",
         DIRECT_MESSAGE_GROUP: "direct_message_group",
+        WHISPER: "whisper",
     }
 
     @override

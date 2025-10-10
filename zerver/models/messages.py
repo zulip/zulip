@@ -115,6 +115,16 @@ class AbstractMessage(models.Model):
     # If the message is a channel message (as opposed to a DM or group-DM)
     is_channel_message = models.BooleanField(default=True, db_index=True)
 
+    # Reference to whisper conversation if this message is part of a whisper
+    # This field is null for regular messages and non-null for whisper messages
+    whisper_conversation = models.ForeignKey(
+        'whispers.WhisperConversation',
+        null=True,
+        blank=True,
+        on_delete=CASCADE,
+        db_index=True
+    )
+
     class Meta:
         abstract = True
 

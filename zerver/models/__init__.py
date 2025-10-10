@@ -75,3 +75,6 @@ from zerver.models.user_topics import UserTopic as UserTopic
 from zerver.models.users import RealmUserDefault as RealmUserDefault
 from zerver.models.users import UserBaseSettings as UserBaseSettings
 from zerver.models.users import UserProfile as UserProfile
+from zerver.models.whispers import WhisperConversation as WhisperConversation
+from zerver.models.whispers import WhisperParticipant as WhisperParticipant
+from zerver.models.whispers import WhisperRequest as WhisperRequest
