@@ -28,6 +28,7 @@ import type {UploadWidget} from "./upload_widget.ts";
 import * as user_deactivation_ui from "./user_deactivation_ui.ts";
 import * as user_profile from "./user_profile.ts";
 
+const GENERIC_BOT_TYPE = 1;
 const INCOMING_WEBHOOK_BOT_TYPE = 2;
 const OUTGOING_WEBHOOK_BOT_TYPE = "3";
 const OUTGOING_WEBHOOK_BOT_TYPE_INT = 3;
@@ -41,7 +42,7 @@ type BotInfo = {
     avatar_url: string;
     api_key: string;
     is_active: boolean;
-    is_incoming_webhook_bot: boolean;
+    show_generate_integration_url_button: boolean;
     zuliprc: string;
 };
 
@@ -64,6 +65,9 @@ function is_local_part(value: string): boolean {
     return /^[\w!#$%&'*+/=?^`{|}~-]+(\.[\w!#$%&'*+/=?^`{|}~-]+)*$/i.test(value);
 }
 
+function should_show_generate_integration_url_button(bot_type: number): boolean {
+    return [INCOMING_WEBHOOK_BOT_TYPE, GENERIC_BOT_TYPE].includes(bot_type);
+}
 export function render_bots(): void {
     $("#active_bots_list").empty();
     $("#inactive_bots_list").empty();
@@ -82,7 +86,9 @@ export function render_bots(): void {
             avatar_url: elem.avatar_url,
             api_key: elem.api_key,
             is_active: elem.is_active,
-            is_incoming_webhook_bot: elem.bot_type === INCOMING_WEBHOOK_BOT_TYPE,
+            show_generate_integration_url_button: should_show_generate_integration_url_button(
+                elem.bot_type,
+            ),
             zuliprc: "zuliprc", // Most browsers do not allow filename starting with `.`
         });
         user_owns_an_active_outgoing_webhook_bot =
