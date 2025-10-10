@@ -69,9 +69,11 @@ FIXTURELESS_INTEGRATIONS_WITH_SCREENSHOTS: list[str] = [
     "capistrano",
     "codebase",
     "discourse",
+    "git",
     "github-actions",
     "google-calendar",
     "jenkins",
+    "jira-plugin",
     "mastodon",
     "mercurial",
     "nagios",
@@ -105,7 +107,6 @@ class Integration:
         secondary_line_text: str | None = None,
         display_name: str | None = None,
         doc: str | None = None,
-        stream_name: str | None = None,
         legacy: bool = False,
         config_options: Sequence[WebhookConfigOption] = [],
         url_options: Sequence[WebhookUrlOption] = [],
@@ -144,10 +145,6 @@ class Integration:
         if doc is None:
             doc = self.DEFAULT_DOC_PATH.format(name=self.name)
         self.doc = doc
-
-        if stream_name is None:
-            stream_name = self.name
-        self.stream_name = stream_name
 
     def is_enabled(self) -> bool:
         return True
@@ -233,7 +230,6 @@ class PythonAPIIntegration(Integration):
         display_name: str | None = None,
         directory_name: str | None = None,
         doc: str | None = None,
-        stream_name: str | None = None,
         legacy: bool = False,
     ) -> None:
         if directory_name is None:
@@ -253,7 +249,6 @@ class PythonAPIIntegration(Integration):
             secondary_line_text=secondary_line_text,
             display_name=display_name,
             doc=doc,
-            stream_name=stream_name,
             legacy=legacy,
         )
 
@@ -275,7 +270,6 @@ class WebhookIntegration(Integration):
         url: str | None = None,
         display_name: str | None = None,
         doc: str | None = None,
-        stream_name: str | None = None,
         legacy: bool = False,
         config_options: Sequence[WebhookConfigOption] = [],
         url_options: Sequence[WebhookUrlOption] = [],
@@ -290,7 +284,6 @@ class WebhookIntegration(Integration):
             logo=logo,
             secondary_line_text=secondary_line_text,
             display_name=display_name,
-            stream_name=stream_name,
             legacy=legacy,
             config_options=config_options,
             url_options=url_options,
@@ -340,6 +333,7 @@ class WebhookScreenshotConfig:
     image_name: str = "001.png"
     image_dir: str | None = None
     bot_name: str | None = None
+    channel: str | None = None
     payload_as_query_param: bool = False
     payload_param_name: str = "payload"
     extra_params: dict[str, str] = field(default_factory=dict)
@@ -445,7 +439,7 @@ WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
         display_name="AzureDevOps",
         url_options=[WebhookUrlOption.build_preset_config(PresetUrlOption.BRANCHES)],
     ),
-    WebhookIntegration("beanstalk", ["version-control"], stream_name="commits"),
+    WebhookIntegration("beanstalk", ["version-control"]),
     WebhookIntegration("basecamp", ["project-management"]),
     WebhookIntegration("beeminder", ["misc"], display_name="Beeminder"),
     WebhookIntegration(
@@ -453,7 +447,6 @@ WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
         ["version-control"],
         logo="images/integrations/logos/bitbucket.svg",
         display_name="Bitbucket Server",
-        stream_name="bitbucket",
         url_options=[WebhookUrlOption.build_preset_config(PresetUrlOption.BRANCHES)],
     ),
     WebhookIntegration(
@@ -461,7 +454,6 @@ WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
         ["version-control"],
         logo="images/integrations/logos/bitbucket.svg",
         display_name="Bitbucket",
-        stream_name="bitbucket",
         url_options=[WebhookUrlOption.build_preset_config(PresetUrlOption.BRANCHES)],
     ),
     WebhookIntegration(
@@ -469,7 +461,6 @@ WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
         ["version-control"],
         display_name="Bitbucket",
         secondary_line_text="(Enterprise)",
-        stream_name="commits",
         legacy=True,
     ),
     WebhookIntegration("buildbot", ["continuous-integration"]),
@@ -490,7 +481,6 @@ WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
     WebhookIntegration(
         "gitea",
         ["version-control"],
-        stream_name="commits",
         url_options=[WebhookUrlOption.build_preset_config(PresetUrlOption.BRANCHES)],
     ),
     WebhookIntegration(
@@ -498,7 +488,6 @@ WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
         ["version-control"],
         display_name="GitHub",
         function="zerver.webhooks.github.view.api_github_webhook",
-        stream_name="github",
         url_options=[
             WebhookUrlOption.build_preset_config(PresetUrlOption.BRANCHES),
             WebhookUrlOption.build_preset_config(PresetUrlOption.IGNORE_PRIVATE_REPOSITORIES),
@@ -512,7 +501,6 @@ WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
         dir_name="github",
         function="zerver.webhooks.github.view.api_github_webhook",
         doc="github/githubsponsors.md",
-        stream_name="github",
     ),
     WebhookIntegration(
         "gitlab",
@@ -524,7 +512,6 @@ WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
     WebhookIntegration(
         "gogs",
         ["version-control"],
-        stream_name="commits",
         url_options=[WebhookUrlOption.build_preset_config(PresetUrlOption.BRANCHES)],
     ),
     WebhookIntegration("gosquared", ["marketing"], display_name="GoSquared"),
@@ -623,10 +610,7 @@ INTEGRATIONS: dict[str, Integration] = {
     "errbot": Integration("errbot", ["meta-integration", "bots"]),
     "giphy": Integration("giphy", ["misc"], display_name="GIPHY"),
     "github-actions": Integration(
-        "github-actions",
-        ["continuous-integration"],
-        display_name="GitHub Actions",
-        stream_name="github-actions updates",
+        "github-actions", ["continuous-integration"], display_name="GitHub Actions"
     ),
     "hubot": Integration("hubot", ["meta-integration", "bots"]),
     "jenkins": Integration("jenkins", ["continuous-integration"]),
@@ -641,7 +625,7 @@ INTEGRATIONS: dict[str, Integration] = {
 
 PYTHON_API_INTEGRATIONS: list[PythonAPIIntegration] = [
     PythonAPIIntegration("codebase", ["version-control"]),
-    PythonAPIIntegration("git", ["version-control"], stream_name="commits"),
+    PythonAPIIntegration("git", ["version-control"]),
     PythonAPIIntegration(
         "google-calendar", ["productivity"], display_name="Google Calendar", directory_name="google"
     ),
@@ -655,21 +639,14 @@ PYTHON_API_INTEGRATIONS: list[PythonAPIIntegration] = [
         secondary_line_text="(locally installed)",
         display_name="Jira",
         directory_name="jira",
-        stream_name="jira",
         legacy=True,
     ),
     PythonAPIIntegration("matrix", ["communication"], directory_name="bridge_with_matrix"),
     PythonAPIIntegration(
-        "mercurial",
-        ["version-control"],
-        display_name="Mercurial (hg)",
-        stream_name="commits",
-        directory_name="hg",
+        "mercurial", ["version-control"], display_name="Mercurial (hg)", directory_name="hg"
     ),
     PythonAPIIntegration("nagios", ["monitoring"]),
-    PythonAPIIntegration(
-        "openshift", ["deployment"], display_name="OpenShift", stream_name="deployments"
-    ),
+    PythonAPIIntegration("openshift", ["deployment"], display_name="OpenShift"),
     PythonAPIIntegration("perforce", ["version-control"]),
     PythonAPIIntegration("rss", ["communication"], display_name="RSS"),
     PythonAPIIntegration("svn", ["version-control"], display_name="Subversion"),
@@ -723,13 +700,39 @@ for webhook_integration in WEBHOOK_INTEGRATIONS:
 for bot_integration in BOT_INTEGRATIONS:
     INTEGRATIONS[bot_integration.name] = bot_integration
 
-# Add integrations that don't have automated screenshots here
+# Add webhook integrations that don't have automated screenshots here
 NO_SCREENSHOT_WEBHOOKS = {
     "beeminder",  # FIXME: fixture's goal.losedate needs to be modified dynamically
-    "ifttt",  # Docs don't have a screenshot
-    "slack_incoming",  # Docs don't have a screenshot
-    "zapier",  # Docs don't have a screenshot
+    "ifttt",  # Doc doesn't have a screenshot because it's a platform for integrations
+    "slack_incoming",  # Doc doesn't have a screenshot because it's a type of integration
+    "zapier",  # Doc doesn't have a screenshot because it's a platform for integrations
 }
+
+hubot_integration_names = {integration.name for integration in HUBOT_INTEGRATIONS}
+
+# Add fixtureless integrations that don't have automated screenshots here
+NO_SCREENSHOT_CONFIG = (
+    {
+        "giphy",  # Doc doesn't have a screenshot
+        "twitter",  # the integration is planned to be removed
+        # Outgoing integrations - Docs won't have a screenshot
+        "email",
+        "onyx",
+        # Video call integrations - Docs won't have a screenshot
+        "zoom",
+        "jitsi",
+        "big-blue-button",
+        # Integrations that require screenshots of message threads - support is yet to be added
+        "errbot",
+        "hubot",
+        "github_detail",
+        "irc",
+        "matrix",  # Also requires a screenshot on the Matrix side of the bridge
+        "xkcd",
+    }
+    | NO_SCREENSHOT_WEBHOOKS
+    | hubot_integration_names
+)
 
 
 WEBHOOK_SCREENSHOT_CONFIG: dict[str, list[WebhookScreenshotConfig]] = {
@@ -745,18 +748,26 @@ WEBHOOK_SCREENSHOT_CONFIG: dict[str, list[WebhookScreenshotConfig]] = {
     "basecamp": [WebhookScreenshotConfig("doc_active.json")],
     "beanstalk": [
         WebhookScreenshotConfig(
-            "git_multiple.json", use_basic_auth=True, payload_as_query_param=True
+            "git_multiple.json", channel="commits", use_basic_auth=True, payload_as_query_param=True
         )
     ],
     # 'beeminder': [WebhookScreenshotConfig('derail_worried.json')],
     "bitbucket": [
         WebhookScreenshotConfig(
-            "push.json", "002.png", use_basic_auth=True, payload_as_query_param=True
+            "push.json",
+            "002.png",
+            channel="commits",
+            use_basic_auth=True,
+            payload_as_query_param=True,
         )
     ],
     "bitbucket2": [
         WebhookScreenshotConfig(
-            "issue_created.json", "003.png", "bitbucket", bot_name="Bitbucket Bot"
+            "issue_created.json",
+            "003.png",
+            "bitbucket",
+            bot_name="Bitbucket Bot",
+            channel="bitbucket",
         )
     ],
     "bitbucket3": [
@@ -765,6 +776,7 @@ WEBHOOK_SCREENSHOT_CONFIG: dict[str, list[WebhookScreenshotConfig]] = {
             "004.png",
             "bitbucket",
             bot_name="Bitbucket Server Bot",
+            channel="bitbucket",
         )
     ],
     "buildbot": [WebhookScreenshotConfig("started.json")],
@@ -786,12 +798,12 @@ WEBHOOK_SCREENSHOT_CONFIG: dict[str, list[WebhookScreenshotConfig]] = {
     "freshping": [WebhookScreenshotConfig("freshping_check_unreachable.json")],
     "freshstatus": [WebhookScreenshotConfig("freshstatus_incident_open.json")],
     "front": [WebhookScreenshotConfig("inbound_message.json")],
-    "gitea": [WebhookScreenshotConfig("pull_request__merged.json")],
+    "gitea": [WebhookScreenshotConfig("pull_request__merged.json", channel="commits")],
     "github": [WebhookScreenshotConfig("push__1_commit.json")],
-    "githubsponsors": [WebhookScreenshotConfig("created.json")],
+    "githubsponsors": [WebhookScreenshotConfig("created.json", channel="github")],
     "gitlab": [WebhookScreenshotConfig("push_hook__push_local_branch_without_commits.json")],
     "gocd": [WebhookScreenshotConfig("pipeline_with_mixed_job_result.json")],
-    "gogs": [WebhookScreenshotConfig("pull_request__opened.json")],
+    "gogs": [WebhookScreenshotConfig("pull_request__opened.json", channel="commits")],
     "gosquared": [WebhookScreenshotConfig("traffic_spike.json")],
     "grafana": [WebhookScreenshotConfig("alert_values_v11.json")],
     "greenhouse": [WebhookScreenshotConfig("candidate_stage_change.json")],
@@ -885,9 +897,13 @@ for integration, screenshots_contents in FIXTURELESS_SCREENSHOT_CONTENT.items():
     ]
 
 FIXTURELESS_SCREENSHOT_CONFIG_OPTIONAL_FIELDS = {
-    "mercurial": {"image_dir": "hg"},
-    "jenkins": {"image_name": "004.png"},
+    "git": {"channel": "commits"},
+    "github-actions": {"channel": "github-actions updates"},
     "google-calendar": {"image_name": "003.png", "image_dir": "google/calendar"},
+    "jenkins": {"image_name": "004.png"},
+    "jira-plugin": {"channel": "jira"},
+    "mercurial": {"image_dir": "hg", "channel": "commits"},
+    "openshift": {"channel": "deployments"},
 }
 
 for integration, fields in FIXTURELESS_SCREENSHOT_CONFIG_OPTIONAL_FIELDS.items():
