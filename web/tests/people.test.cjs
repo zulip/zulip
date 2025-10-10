@@ -22,6 +22,7 @@ const channel = mock_esm("../src/channel");
 
 const muted_users = zrequire("muted_users");
 const people = zrequire("people");
+const settings_config = zrequire("../src/settings_config.ts");
 const {set_current_user, set_realm} = zrequire("state_data");
 const user_groups = zrequire("user_groups");
 const {initialize_user_settings} = zrequire("user_settings");
@@ -1636,6 +1637,40 @@ test_people("sort_by_username", () => {
         leo.email,
         maria.email,
     ]);
+});
+
+test_people("get_users_that_match_role_ids", () => {
+    people.add_active_user(realm_admin);
+    people.add_active_user(realm_owner);
+    people.add_active_user(moderator);
+    people.add_active_user(guest);
+
+    const user_ids = new Set([
+        realm_admin.user_id,
+        realm_owner.user_id,
+        moderator.user_id,
+        guest.user_id,
+    ]);
+    let users = people.get_users_that_match_role_ids(
+        user_ids,
+        new Set([settings_config.user_role_values.admin.code]),
+    );
+    assert.deepEqual(new Set(users), new Set([realm_admin]));
+
+    users = people.get_users_that_match_role_ids(
+        user_ids,
+        new Set([settings_config.user_role_values.moderator.code]),
+    );
+    assert.deepEqual(new Set(users), new Set([moderator]));
+
+    users = people.get_users_that_match_role_ids(
+        user_ids,
+        new Set([
+            settings_config.user_role_values.admin.code,
+            settings_config.user_role_values.owner.code,
+        ]),
+    );
+    assert.deepEqual(new Set(users), new Set([realm_owner, realm_admin]));
 });
 
 // reset to native Date()
