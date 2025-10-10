@@ -22,7 +22,6 @@ IGNORED_PHRASES = [
     r"GCM",
     r"GitHub",
     r"Gravatar",
-    r"Help Center",
     r"HTTP",
     r"ID",
     r"IDs",
@@ -31,7 +30,6 @@ IGNORED_PHRASES = [
     r"JSON",
     r"Jitsi",
     r"Jotform",
-    r"Kerberos",
     r"LinkedIn",
     r"LDAP",
     r"Markdown",
@@ -47,9 +45,7 @@ IGNORED_PHRASES = [
     r"Tuesday",
     r"URL",
     r"UUID",
-    r"Webathena",
     r"WordPress",
-    r"Zephyr",
     r"Zoom",
     r"Zulip",
     r"Zulip Server",
@@ -194,6 +190,8 @@ IGNORED_PHRASES = [
     r"everyone except guests can subscribe to any public channel",
     # Used in branch-filtering label in the integration-url-modal.
     r"comma-separated list",
+    # Used in info_overlay.
+    r"then",
 ]
 
 # Sort regexes in descending order of their lengths. As a result, the

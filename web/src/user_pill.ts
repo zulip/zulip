@@ -121,8 +121,8 @@ export function get_user_ids(
 }
 
 export function has_unconverted_data(pill_widget: UserPillWidget): boolean {
-    // This returns true if we either have text that hasn't been
-    // turned into pills or email-only pills (for Zephyr).
+    // This returns true if we have text that hasn't been
+    // turned into pills.
     if (pill_widget.is_pending()) {
         return true;
     }

@@ -30,7 +30,7 @@ Our API documentation is defined by a few sets of files:
   [OpenAPI description](openapi.md) at
   `zerver/openapi/zulip.yaml`.
 - The documentation is written the same Markdown framework that powers
-  our [help center docs](helpcenter.md), with some special
+  our [integration docs](integrations.md), with some special
   extensions for rendering nice code blocks and example
   responses. Most API endpoints share a common template,
   `api_docs/api-doc-template.md`, which renders the
@@ -356,6 +356,52 @@ above.
    all links! Unmerged changelog entries are conveniently previewed on
    `/api/changelog`.
 
+## Redirecting an existing article
+
+From time to time, we might want to rename an article in the REST API
+documentation. This change will break incoming links, including links
+in published Zulip blog posts, links in other branches of the
+repository that haven't been rebased, and more importantly links from
+previous versions of Zulip.
+
+To fix these broken links, you can easily add a URL redirect in:
+`zerver/lib/url_redirects.py`.
+
+For REST API documentation, you will either need to rename the file,
+or you will need to update the endpoint's `operationId` in
+`zerver/openapi/zulip.yaml`. Then, you need to add a new `URLRedirect`
+to the `API_DOCUMENTATION_REDIRECTS` list in `url_redirects.py`:
+
+```python
+API_DOCUMENTATION_REDIRECTS: List[URLRedirect] = [
+    # Add URL redirects for REST API documentation here:
+    URLRedirect("/api/delete-stream", "/api/archive-stream"),
+    ...
+```
+
+You should still check for references to the old URL in your branch
+and replace those with the new URL (e.g., `git grep "/api/foo"`).
+One exception to this are links with the old URL that were included
+in the content of `zulip_update_announcements`, which can be found
+in `zerver/lib/zulip_update_announcements.py`. It's preferable to
+have the source code accurately reflect what was sent to users in
+those [Zulip update announcements][zulip-updates], so these should
+not be replaced with the new URL.
+
+If you have the Zulip development environment set up, you can manually
+test your changes by loading the old URL in your browser (e.g.,
+`http://localhost:9991/api/foo`), and confirming that it redirects to
+the new url (e.g., `http://localhost:9991/api`/bar`).
+
+There is also an automated test in `zerver/tests/test_urls.py` that
+checks all the URL redirects, which you can run from the command line:
+
+```console
+./tools/test-backend zerver.tests.test_urls.URLRedirectTest
+```
+
+[zulip-updates]: https://zulip.com/help/configure-automated-notices#zulip-update-announcements
+
 ## Why a custom system?
 
 Given that our documentation is written in large part using the
@@ -370,7 +416,7 @@ it? There's several major benefits to this system:
   version, with the key variables (like the Zulip server URL) already
   pre-substituted for the user.
 - We're able to share implementation language and visual styling with
-  our Help Center, which is especially useful for the extensive
+  our help center, which is especially useful for the extensive
   non-REST API documentation pages (e.g., our bot framework).
 
 Using the standard OpenAPI format gives us flexibility, though; if we

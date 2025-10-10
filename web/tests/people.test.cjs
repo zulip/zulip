@@ -356,7 +356,7 @@ test_people("basics", ({override}) => {
     realm_persons = people.get_realm_users();
     assert.equal(realm_persons.length, 2);
 
-    const active_user_ids = people.get_active_user_ids().sort();
+    const active_user_ids = people.get_active_user_ids().toSorted();
     assert.deepEqual(active_user_ids, [me.user_id, isaac.user_id]);
     assert.equal(people.is_active_user_for_popover(isaac.user_id), true);
     assert.ok(people.is_valid_email_for_compose(isaac.email));
@@ -406,7 +406,7 @@ test_people("basics", ({override}) => {
         people
             .get_realm_users()
             .map((u) => u.user_id)
-            .sort(),
+            .toSorted(),
         [me.user_id, bot_botson.user_id],
     );
 
@@ -448,10 +448,7 @@ test_people("basics", ({override}) => {
     people.add_active_user(isaac);
     const active_humans = people.get_realm_active_human_user_ids();
     assert.equal(active_humans.length, 2);
-    assert.deepEqual(
-        active_humans.sort((p) => p.user_id),
-        [me.user_id, isaac.user_id],
-    );
+    assert.deepEqual(active_humans.toSorted(), [me.user_id, isaac.user_id]);
 
     // get_users_from_ids
     assert.deepEqual(people.get_users_from_ids([me.user_id, isaac.user_id]), [me, isaac]);
@@ -1755,7 +1752,6 @@ test_people("fetch_users", async ({override}) => {
         },
     );
 
-    // Just for coverage, not actually checked by blueslip.
     blueslip.expect("error", "Ignored invalid user_ids: 1, 2");
     await people.fetch_users(new Set([1, 2]));
 });

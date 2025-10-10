@@ -6,10 +6,9 @@ import {TabItem, Tabs} from "@astrojs/starlight/components";
 
 import FlattenedSteps from "../../components/FlattenedSteps.astro";
 import ZulipTip from "../../components/ZulipTip.astro";
-
-import MessageActions from "./include/_MessageActions.mdx";
-import MessageActionsMenu from "./include/_MessageActionsMenu.mdx";
-import MessageLongPressMenu from "./include/_MessageLongPressMenu.mdx";
+import MessageActions from "../include/_MessageActions.mdx";
+import MessageActionsMenu from "../include/_MessageActionsMenu.mdx";
+import MessageLongPressMenu from "../include/_MessageLongPressMenu.mdx";
 
 import EditIcon from "~icons/zulip-icon/edit";
 
@@ -82,6 +81,16 @@ you also delete the message.
       1. Select **Delete message**. If you do not see the **Delete message** option,
          you do not have permission to delete this message completely.
       1. Approve by clicking **Confirm**.
+    </FlattenedSteps>
+  </TabItem>
+
+  <TabItem label="Mobile">
+    <FlattenedSteps>
+      <MessageLongPressMenu />
+
+      1. Tap **Delete message**. If you do not see the **Delete message** option,
+         you do not have permission to delete this message completely.
+      1. Approve by tapping **Delete**.
     </FlattenedSteps>
   </TabItem>
 </Tabs>

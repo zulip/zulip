@@ -5,16 +5,15 @@ title: Import from Mattermost
 import {Steps, TabItem, Tabs} from "@astrojs/starlight/components";
 
 import FlattenedSteps from "../../components/FlattenedSteps.astro";
-
-import ImportGetYourOrganizationStarted from "./include/_ImportGetYourOrganizationStarted.mdx";
-import ImportHowUsersWillLogIn from "./include/_ImportHowUsersWillLogIn.mdx";
-import ImportIntoASelfHostedServerDescription from "./include/_ImportIntoASelfHostedServerDescription.mdx";
-import ImportIntoASelfHostedServerInstructions from "./include/_ImportIntoASelfHostedServerInstructions.mdx";
-import ImportIntoAZulipCloudOrganization from "./include/_ImportIntoAZulipCloudOrganization.mdx";
-import ImportSelfHostedServerTips from "./include/_ImportSelfHostedServerTips.mdx";
-import ImportWorkspaceToZulip from "./include/_ImportWorkspaceToZulip.mdx";
-import ImportYourDataIntoZulip from "./include/_ImportYourDataIntoZulip.mdx";
-import ImportZulipCloudOrganizationWarning from "./include/_ImportZulipCloudOrganizationWarning.mdx";
+import ImportGetYourOrganizationStarted from "../include/_ImportGetYourOrganizationStarted.mdx";
+import ImportHowUsersWillLogIn from "../include/_ImportHowUsersWillLogIn.mdx";
+import ImportIntoASelfHostedServerDescription from "../include/_ImportIntoASelfHostedServerDescription.mdx";
+import ImportIntoASelfHostedServerInstructions from "../include/_ImportIntoASelfHostedServerInstructions.mdx";
+import ImportIntoAZulipCloudOrganization from "../include/_ImportIntoAZulipCloudOrganization.mdx";
+import ImportSelfHostedServerTips from "../include/_ImportSelfHostedServerTips.mdx";
+import ImportWorkspaceToZulip from "../include/_ImportWorkspaceToZulip.mdx";
+import ImportYourDataIntoZulip from "../include/_ImportYourDataIntoZulip.mdx";
+import ImportZulipCloudOrganizationWarning from "../include/_ImportZulipCloudOrganizationWarning.mdx";
 
 <ImportWorkspaceToZulip />
 
@@ -273,7 +272,13 @@ keep in mind about the import process:
 
 ## Decide how users will log in
 
-<ImportHowUsersWillLogIn />
+<ImportHowUsersWillLogIn>
+  ### Allow users to log in with non-password authentication
+
+  ### Send password reset emails to all users
+
+  ### Manual password resets
+</ImportHowUsersWillLogIn>
 
 ## Related articles
 

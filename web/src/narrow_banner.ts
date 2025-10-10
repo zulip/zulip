@@ -373,8 +373,7 @@ export function pick_empty_narrow_banner(current_filter: Filter): NarrowBannerDa
                 if (people.is_my_user_id(recipient_user.user_id)) {
                     return {
                         title: $t({
-                            defaultMessage:
-                                "You have not sent any direct messages to yourself yet!",
+                            defaultMessage: "You haven't sent yourself any notes yet!",
                         }),
                         html: $t_html({
                             defaultMessage:
@@ -447,7 +446,10 @@ export function pick_empty_narrow_banner(current_filter: Filter): NarrowBannerDa
                 };
             }
             return {
-                title: $t({defaultMessage: "This user does not exist!"}),
+                title: $t({
+                    defaultMessage:
+                        "This user doesn't exist, or you are not allowed to view any of their messages.",
+                }),
             };
         }
         case "dm-including": {

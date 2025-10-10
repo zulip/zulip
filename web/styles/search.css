@@ -215,6 +215,15 @@
         }
     }
 
+    /* for both input container and search suggestions */
+    .user-pill-container {
+        > .pill-label {
+            min-width: fit-content;
+            white-space: nowrap;
+            width: fit-content;
+        }
+    }
+
     #searchbox-input-container {
         display: grid;
         /* The next two styles override .input-append style from app_components.js */
@@ -224,7 +233,7 @@
         border: none;
         grid-template:
             "search-icon search-pills search-close" var(--search-box-height)
-            ". search-pills ." auto / auto minmax(0, 1fr)
+            ". search-pills ." auto / var(--search-left-padding) minmax(0, 1fr)
             1.75em; /* 28px at 16px em */
         align-content: center;
         cursor: pointer;
@@ -232,8 +241,7 @@
         /* Override styles for .pill-container that aren't relevant for search. */
         &.pill-container {
             background: inherit;
-            /* Maintain only a column gap. */
-            gap: 0 0.3125em; /* 5px at 16px em */
+            gap: 0;
             /* Override padding. */
             padding: 0;
         }
@@ -280,9 +288,6 @@
             }
 
             > .pill-label {
-                min-width: fit-content;
-                white-space: nowrap;
-                width: fit-content;
                 /* Replaced by the 5px gap. */
                 margin-right: 0;
                 /* Don't inherit large line-height for user pill labels. */
@@ -382,7 +387,7 @@
     }
 
     .typeahead-menu .simplebar-content > li > a {
-        padding: 3px 40px;
+        padding: 3px var(--search-left-padding);
         /* Override white-space: nowrap from zulip.css */
         white-space: normal;
 
@@ -419,9 +424,18 @@
                     1fr
                 );
 
+            /* We don't show a border for focused pills
+               in the search typeahead */
             &:focus {
-                /* Keep the border the same color, there's no user interaction for users in the typeahead menu */
+                /* Regular pills use box-shadow. */
+                box-shadow: none;
+
+                /* User pills use border */
                 border-color: var(--color-background-input-pill);
+
+                .pill-image-border {
+                    border-color: var(--color-border-input-pill-image);
+                }
             }
 
             .exit {

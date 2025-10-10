@@ -49,7 +49,7 @@ const denmark = {
     name: "Denmark",
     stream_id: 101,
 };
-stream_data.add_sub(denmark);
+stream_data.add_sub_for_tests(denmark);
 
 function test_helper(side_effects) {
     const events = [];
@@ -80,9 +80,15 @@ run_test("update_messages", ({override, override_rewire}) => {
         stream_id: denmark.stream_id,
         topic: "lunch",
         type: "stream",
+        reactions: [],
+        submessages: [],
+        avatar_url: `/avatar/${alice.user_id}`,
     };
 
-    const original_message = message_helper.process_new_message(raw_message);
+    const original_message = message_helper.process_new_message({
+        type: "server_message",
+        raw_message,
+    }).message;
 
     assert.equal(original_message.mentioned, true);
     assert.equal(original_message.unread, true);
@@ -140,6 +146,7 @@ run_test("update_messages", ({override, override_rewire}) => {
 
     assert.deepEqual(rendered_mgs, [
         {
+            avatar_url: `/avatar/${alice.user_id}`,
             display_reply_to: undefined,
             alerted: false,
             clean_reactions: new Map(),
@@ -165,6 +172,7 @@ run_test("update_messages", ({override, override_rewire}) => {
             status_emoji_info: undefined,
             stream_id: denmark.stream_id,
             stream: "Denmark",
+            submessages: [],
             topic: "lunch",
             type: "stream",
             unread: true,

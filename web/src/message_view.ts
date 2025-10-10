@@ -585,7 +585,7 @@ export let show = (raw_terms: NarrowTerm[], show_opts: ShowMessageViewOpts): voi
                         // message locally available and then call
                         // message_view.show recursively, setting a flag to
                         // indicate we've already done this.
-                        message_helper.process_new_message(data.message);
+                        message_helper.process_new_server_message(data.message);
                         show(raw_terms, {
                             ...opts,
                             fetched_target_message: true,
@@ -1506,11 +1506,11 @@ function handle_post_view_change(
     typing_events.render_notifications_for_narrow();
 
     if (filter.contains_only_private_messages()) {
-        compose_closed_ui.update_buttons_for_private();
+        compose_closed_ui.update_buttons("direct");
     } else if (filter.is_conversation_view() || filter.includes_full_stream_history()) {
-        compose_closed_ui.update_buttons_for_stream_views();
+        compose_closed_ui.update_buttons("stream");
     } else {
-        compose_closed_ui.update_buttons_for_non_specific_views();
+        compose_closed_ui.update_buttons();
     }
     compose_closed_ui.update_recipient_text_for_reply_button();
 

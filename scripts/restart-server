@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import contextlib
+import json
 import logging
 import os
 import pwd
@@ -51,10 +52,17 @@ elif username != "zulip":
     logging.error("Must be run as user 'zulip'.")
     sys.exit(1)
 
-
 if os.environ.get("RUNNING_UNDER_CRON") and os.path.exists(LOCK_DIR):
     logging.info("Skipping cron-triggered restart during deploy.")
     sys.exit(1)
+
+if args.tornado_reshard:
+    tornado_reshard_files = ["/etc/zulip/sharding.json", "/etc/zulip/nginx_sharding_map.conf"]
+    if not all(os.path.exists(f"{path}.tmp") for path in tornado_reshard_files):
+        logging.info(
+            "No resharding changes to apply!  Edit zulip.conf and run refresh-sharding-and-restart"
+        )
+        sys.exit(1)
 
 if not args.skip_checks:
     logging.info("Running syntax and database checks")
@@ -145,9 +153,9 @@ if action == "restart" and len(running_services) == 0:
 elif action == "start":
     existing_services = list_supervisor_processes(check_services)
     if existing_services == running_services:
-        # Check if the version we're trying to start is the version
-        # that we would have started.  We do this via checking the CWD
-        # of the oldest uwsgi worker.
+        # Check if the version that is currently running is the
+        # version that we would have started.  We do this via
+        # comparing our CWD to the CWD of the oldest uwsgi worker.
         oldest_pid = subprocess.check_output(
             ["pgrep", "--oldest", "--full", "zulip-django uWSGI worker"], text=True
         ).strip()
@@ -174,6 +182,36 @@ def restart_or_start(service: str) -> None:
     subprocess.check_call(["supervisorctl", our_verb, service])
 
 
+def ports_as_set(val: int | list[int]) -> frozenset[int]:
+    return frozenset(val) if isinstance(val, list) else frozenset([val])
+
+
+def update_tornado_sharding() -> list[int]:
+    with open("/etc/zulip/sharding.json") as old_shard_fh:
+        old_sharding = json.load(old_shard_fh)
+    with open("/etc/zulip/sharding.json.tmp") as new_shard_fh:
+        new_sharding = json.load(new_shard_fh)
+    affected_tornados: set[int] = set()
+    for realm in set().union(old_sharding["shard_map"], new_sharding["shard_map"]):
+        old_ports = ports_as_set(old_sharding["shard_map"].get(realm, []))
+        new_ports = ports_as_set(new_sharding["shard_map"].get(realm, []))
+        affected_tornados |= old_ports ^ new_ports
+    old_regex_set = {
+        (regex, ports_as_set(ports)) for (regex, ports) in old_sharding["shard_regexes"]
+    }
+    new_regex_set = {
+        (regex, ports_as_set(ports)) for (regex, ports) in new_sharding["shard_regexes"]
+    }
+    for regex, ports in old_regex_set ^ new_regex_set:
+        affected_tornados |= ports
+
+    tornado_reshard_files = ["/etc/zulip/sharding.json", "/etc/zulip/nginx_sharding_map.conf"]
+    for path in tornado_reshard_files:
+        os.rename(f"{path}.tmp", path)
+
+    return list(affected_tornados)
+
+
 if action == "restart" and len(workers) > 0:
     if args.less_graceful:
         # The less graceful form stops every worker now; we start them
@@ -190,6 +228,11 @@ if action == "restart" and len(workers) > 0:
             restart_or_start(worker)
 
 if has_application_server():
+    if args.tornado_reshard:
+        affected_tornado_ports = update_tornado_sharding()
+        logging.info("Tornado ports affected by this resharding: %s", affected_tornado_ports)
+    else:
+        affected_tornado_ports = tornado_ports
     if not args.only_django:
         # Next, we restart the Tornado processes sequentially, in order to
         # minimize downtime of the tornado service caused by too many
@@ -200,7 +243,7 @@ if has_application_server():
         # this before restarting Django, in case there are new event types
         # which it will need to know how to deal with.
         if len(tornado_ports) > 1:
-            for p in tornado_ports:
+            for p in affected_tornado_ports:
                 # Restart Tornado processes individually for a better rate of
                 # restarts.  This also avoids behavior with restarting a whole
                 # supervisord group where if any individual process is slow to

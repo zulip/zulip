@@ -19,7 +19,6 @@ export const post_presence_response_schema = z.object({
     // response. If we're fetching presence data however, they should
     // all be present, and send_presence_to_server() will validate that.
     server_timestamp: z.optional(z.number()),
-    zephyr_mirror_active: z.optional(z.boolean()),
     presences: z.optional(
         z.record(
             z.string(),
@@ -144,13 +143,6 @@ export let send_presence_to_server = (redraw?: () => void): void => {
         },
         success(response) {
             const data = post_presence_response_schema.parse(response);
-
-            // Update Zephyr mirror activity warning
-            if (data.zephyr_mirror_active === false) {
-                $("#zephyr-mirror-error").addClass("show");
-            } else {
-                $("#zephyr-mirror-error").removeClass("show");
-            }
 
             set_new_user_input(false);
 

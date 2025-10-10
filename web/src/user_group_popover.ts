@@ -97,7 +97,7 @@ export function toggle_user_group_info_popover(
                 const subgroups = user_groups.convert_name_to_display_name_for_groups(
                     user_groups
                         .get_direct_subgroups_of_group(group)
-                        .sort(user_group_components.sort_group_member_name),
+                        .toSorted(user_group_components.sort_group_member_name),
                 );
                 const members = sort_group_members(fetch_group_members([...group.members]));
                 const all_individual_members = [...user_groups.get_recursive_group_members(group)];
@@ -212,7 +212,7 @@ function fetch_group_members(member_ids: number[]): PopoverGroupMember[] {
 }
 
 function sort_group_members(members: PopoverGroupMember[]): PopoverGroupMember[] {
-    return members.sort((a: PopoverGroupMember, b: PopoverGroupMember) =>
+    return members.toSorted((a: PopoverGroupMember, b: PopoverGroupMember) =>
         util.strcmp(a.full_name, b.full_name),
     );
 }

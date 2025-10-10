@@ -7,10 +7,11 @@ import {TabItem, Tabs} from "@astrojs/starlight/components";
 import FlattenedSteps from "../../components/FlattenedSteps.astro";
 import KeyboardTip from "../../components/KeyboardTip.astro";
 import NavigationSteps from "../../components/NavigationSteps.astro";
+import ChannelActions from "../include/_ChannelActions.mdx";
+import ChannelLongPressMenu from "../include/_ChannelLongPressMenu.mdx";
+import MobileChannels from "../include/_MobileChannels.mdx";
 
-import ChannelActions from "./include/_ChannelActions.mdx";
-import ChannelLongPressMenu from "./include/_ChannelLongPressMenu.mdx";
-import MobileChannels from "./include/_MobileChannels.mdx";
+import SubscriberCheckIcon from "~icons/zulip-icon/subscriber-check";
 
 You can always unsubscribe from any channel in Zulip.
 
@@ -44,7 +45,7 @@ You can always unsubscribe from any channel in Zulip.
       <NavigationSteps target="relative/gear/channel-settings" />
 
       1. Click the **unsubscribe from channel**
-         (<img src="../../../../static/images/help/desktop-web-check-icon.svg" alt="checkmark" class="help-center-icon" />)
+         (<SubscriberCheckIcon class="zulip-unplugin-icon subscriber-check-icon" />)
          icon to the left of a channel to unsubscribe from it.
     </FlattenedSteps>
   </TabItem>

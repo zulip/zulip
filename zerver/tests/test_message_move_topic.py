@@ -437,7 +437,7 @@ class MessageMoveTopicTest(ZulipTestCase):
         users_notified_via_muted_topics_event: list[int] = []
         users_notified_via_user_topic_event: list[int] = []
         for call_args in mock_send_event_on_commit.call_args_list:
-            (arg_realm, arg_event, arg_notified_users) = call_args[0]
+            (_arg_realm, arg_event, arg_notified_users) = call_args[0]
             if arg_event["type"] == "user_topic":
                 users_notified_via_user_topic_event.append(*arg_notified_users)
             elif arg_event["type"] == "muted_topics":
@@ -699,7 +699,7 @@ class MessageMoveTopicTest(ZulipTestCase):
         users_notified_via_muted_topics_event: list[int] = []
         users_notified_via_user_topic_event: list[int] = []
         for call_args in mock_send_event_on_commit.call_args_list:
-            (arg_realm, arg_event, arg_notified_users) = call_args[0]
+            (_arg_realm, arg_event, arg_notified_users) = call_args[0]
             if arg_event["type"] == "user_topic":
                 users_notified_via_user_topic_event.append(*arg_notified_users)
             elif arg_event["type"] == "muted_topics":
@@ -1144,7 +1144,7 @@ class MessageMoveTopicTest(ZulipTestCase):
             # Delete the message in target topic to make it empty.
             self.login("hamlet")
             members_system_group = NamedUserGroup.objects.get(
-                name=SystemGroups.MEMBERS, realm=hamlet.realm, is_system_group=True
+                name=SystemGroups.MEMBERS, realm_for_sharding=hamlet.realm, is_system_group=True
             )
             do_change_realm_permission_group_setting(
                 hamlet.realm,
@@ -2310,7 +2310,7 @@ class MessageMoveTopicTest(ZulipTestCase):
 
         # Test resolving topics disabled by organization
         nobody_group = NamedUserGroup.objects.get(
-            name=SystemGroups.NOBODY, realm=admin_user.realm, is_system_group=True
+            name=SystemGroups.NOBODY, realm_for_sharding=admin_user.realm, is_system_group=True
         )
         do_change_realm_permission_group_setting(
             admin_user.realm,
@@ -2329,7 +2329,9 @@ class MessageMoveTopicTest(ZulipTestCase):
 
         # Test restrict resolving topics to admins only.
         admins_group = NamedUserGroup.objects.get(
-            name=SystemGroups.ADMINISTRATORS, realm=admin_user.realm, is_system_group=True
+            name=SystemGroups.ADMINISTRATORS,
+            realm_for_sharding=admin_user.realm,
+            is_system_group=True,
         )
         do_change_realm_permission_group_setting(
             admin_user.realm,
@@ -2494,7 +2496,7 @@ class MessageMoveTopicTest(ZulipTestCase):
 
         # Set resolving topics disabled by organization
         nobody_group = NamedUserGroup.objects.get(
-            name=SystemGroups.NOBODY, realm=admin_user.realm, is_system_group=True
+            name=SystemGroups.NOBODY, realm_for_sharding=admin_user.realm, is_system_group=True
         )
 
         do_change_realm_permission_group_setting(
@@ -2521,7 +2523,9 @@ class MessageMoveTopicTest(ZulipTestCase):
 
         # Test restrict resolving topics to admins only in a particular channel.
         admins_group = NamedUserGroup.objects.get(
-            name=SystemGroups.ADMINISTRATORS, realm=admin_user.realm, is_system_group=True
+            name=SystemGroups.ADMINISTRATORS,
+            realm_for_sharding=admin_user.realm,
+            is_system_group=True,
         )
         do_change_stream_group_based_setting(
             stream, "can_resolve_topics_group", admins_group, acting_user=admin_user
@@ -2703,13 +2707,13 @@ class MessageMoveTopicTest(ZulipTestCase):
         realm = hamlet.realm
 
         members_system_group = NamedUserGroup.objects.get(
-            name=SystemGroups.MEMBERS, realm=realm, is_system_group=True
+            name=SystemGroups.MEMBERS, realm_for_sharding=realm, is_system_group=True
         )
         moderators_system_group = NamedUserGroup.objects.get(
-            name=SystemGroups.MODERATORS, realm=realm, is_system_group=True
+            name=SystemGroups.MODERATORS, realm_for_sharding=realm, is_system_group=True
         )
         nobody_system_group = NamedUserGroup.objects.get(
-            name=SystemGroups.NOBODY, realm=realm, is_system_group=True
+            name=SystemGroups.NOBODY, realm_for_sharding=realm, is_system_group=True
         )
 
         expected_error = "You don't have permission to edit this message"
@@ -2817,7 +2821,7 @@ class MessageMoveTopicTest(ZulipTestCase):
         realm = desdemona.realm
 
         members_system_group = NamedUserGroup.objects.get(
-            name=SystemGroups.MEMBERS, realm=realm, is_system_group=True
+            name=SystemGroups.MEMBERS, realm_for_sharding=realm, is_system_group=True
         )
 
         do_change_realm_permission_group_setting(

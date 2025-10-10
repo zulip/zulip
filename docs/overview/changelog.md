@@ -19,6 +19,60 @@ _Unreleased_
 
 ## Zulip Server 11.x series
 
+### Zulip Server 11.2
+
+_Released 2025-09-16_
+
+- Fixed a crash with the nightly cron job added in 11.1 to catch race
+  conditions in subscriber counts.
+- Updated dependency for the new help center, to prevent potential
+  crashes when building.
+
+### Zulip Server 11.1
+
+_Released 2025-09-11_
+
+- Added upgrade instructions for Debian 12 → 13.
+- Fixed subscriber counts after data import being incorrect in the
+  database, which could cause removing channel subscribers to crash
+  after a data import. Also added a daily refresh to cached
+  subscriber counts, in case of race conditions.
+- Improved the label for channels not in a folder when channel folders
+  are in use.
+- Improved visual spacing and alignment in the web app left and right
+  sidebars.
+- Improved keyboard navigation in web app left and right sidebars.
+- Improved error handling for a SAML configuration error.
+- Improved dark theme colors for search suggestion pills.
+- Fixed a bug that could hide the left sidebar top search widget until
+  browser reload.
+- Fixed the compose box incorrectly closing when clicking links in the
+  message feed.
+- Fixed multiple annoying bugs where clicking/selecting didn’t work
+  properly.
+- Fixed a performance regression when loading the web app.
+- Fixed internals of message reminder body construction.
+- Fixed multiple minor issues generating Zulip internal links.
+- Fixed a buggy interaction with Smokescreen preventing client reload
+  requests from being sent.
+- Fixed broken deep links when serving redirects for a moved realm.
+- Fixed a broken lightbox keyboard shortcut.
+- Fixed hooks failing when upgrading the OS without having previously
+  upgraded Zulip.
+- Fixed the copy keyboard shortcut not working for logged-out access.
+- Fixed a bug introduced in 11.0 that could cause Notification Bot to
+  fail to notify about newly created channels (in the announcement
+  channel, as well as the new channel) when subscribing more than 100
+  users at once.
+- Fixed a bug resulting in useless extra suggestions in the search
+  typeahead.
+- Optimized performance for processing deleted messages slightly.
+- Backported several improvements to help center and API
+  documentation.
+- Added configuration options to allow webhooks to access to specific
+  local-network IP addresses.
+- Updated translations.
+
 ### Zulip Server 11.0
 
 _Released 2025-08-13_
@@ -1002,7 +1056,7 @@ _Released 2024-07-25_
 - Improved how desktop and mobile push notifications display quoted
   content to focus on the reply over the quoted content.
 - Improved filtering options for the GitHub integration.
-- Improved dozens of Help Center articles.
+- Improved dozens of help center articles.
 - Improved wording in various automated notices.
 - Improved new-organization defaults for various permissions settings.
 - Improved how users are displayed in settings to use clickable user
@@ -1680,7 +1734,7 @@ _Released 2023-05-31_
 - New compose box features: Scheduling a message to be sent later, a
   nicer stream picker, and the ability to switch between stream and
   private messages.
-- Numerous improvements to the Help Center, including documentation
+- Numerous improvements to the help center, including documentation
   for how to complete many common tasks in the Zulip mobile apps.
 - Redesigned the interface and permissions model for moving topics to
   be independent from message content editing, providing a cleaner
@@ -1797,8 +1851,8 @@ _Released 2023-05-31_
 - Removed the `application_server.no_serve_uploads` setting in
   `/etc/zulip/zulip.conf`, as all uploads requests go through Zulip now.
 - Installations using the previously undocumented [JWT authentication
-  feature](../production/authentication-methods.md#jwt) will need
-  to make minor adjustments in the format of JWT requests; see the
+  feature](../production/authentication-methods.md#json-web-tokens-jwt) will
+  need to make minor adjustments in the format of JWT requests; see the
   documentation for details on the new format.
 - High volume log files like `server.log` are now by default retained
   for 14 days, configured via the `access_log_retention_days`
@@ -1912,8 +1966,8 @@ _Released 2023-01-23_
   [Rocket.Chat imports](https://zulip.com/help/import-from-rocketchat).
 - Updated the Intercom integration to return success on `HEAD`
   requests, which it uses to verify its configuration.
-- Documented how each
-  [rate limit](../production/security-model.md#rate-limiting)
+- Documented how each [rate
+  limit](../production/securing-your-zulip-server.md#6-understand-zulips-rate-limiting-system)
   category is used.
 - Documented the `reset_authentication_attempt_count` command for when users
   lock themselves out.
@@ -2415,8 +2469,8 @@ _Released 2022-03-29_
 - Redesigned hover behavior for timestamps and time mentions.
 - Messages sent by muted users can now be rehidden after being
   revealed. One can also now mute deactivated users.
-- Rewrote Help Center guides for new organizations and users, and made
-  hundreds of other improvements to Help Center content and organization.
+- Rewrote help center guides for new organizations and users, and made
+  hundreds of other improvements to help center content and organization.
 - Reimplemented the image lightbox's pan/zoom functionality to be
   nicer, allowing us to enable it be default.
 - Added styled loading page for the web application.
@@ -3595,7 +3649,7 @@ _Released 2019-12-12_
   bot's owner.
 - Restructured "private messages" widget to have a cleaner design.
 - Significantly improved performance of the backend Markdown processor.
-- Significantly improved Help Center documentation of dozens of features.
+- Significantly improved help center documentation of dozens of features.
 - Simplified and internationalized some notification bot messages.
 - The compose box placeholder now shows users active status.
 - Clicking the "EDITED" text on a message now pops message edit history.
@@ -3849,7 +3903,7 @@ _Released 2019-03-01_
 - Expanded production documentation for more unusual deployment options.
 - Expanded set of characters allowed in custom linkifiers.
 - Optimized development provisioning; now takes 2s in the no-op case.
-- Zulip's Help Center now has nicely generated open graph tags.
+- Zulip's help center now has nicely generated open graph tags.
 - Fixed missing API authentication headers for mobile file access.
 - Fixed various select and copy-paste issues.
 - Fixed various back button bugs in settings UI.
@@ -4004,7 +4058,7 @@ _Released 2018-11-07_
 - Updated numerous pages within the /help/ site.
 - We no longer require re-authing to sign up after trying to log in with
   an OAuth authentication backend (GitHub or Google).
-- Made major improvements to the Help Center.
+- Made major improvements to the help center.
 - Improved system for configuring the S3 file uploads backend.
 - Improved emoji typeahead sorting.
 - Improved Zulip's layout for windows with a width around 1024px.

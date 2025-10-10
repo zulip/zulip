@@ -86,7 +86,6 @@ from zerver.lib.typed_endpoint_validators import (
 from zerver.lib.upload import all_message_attachments
 from zerver.lib.url_encoding import append_url_query_string
 from zerver.lib.users import get_accounts_for_email
-from zerver.lib.zephyr import compute_mit_user_fullname
 from zerver.models import (
     Message,
     MultiuseInvite,
@@ -562,18 +561,6 @@ def registration_helper(
             )
             request.session["authenticated_full_name"] = ldap_full_name
             name_validated = True
-        elif realm is not None and realm.is_zephyr_mirror_realm:
-            # For MIT users, we can get an authoritative name from Hesiod.
-            # Technically we should check that this is actually an MIT
-            # realm, but we can cross that bridge if we ever get a non-MIT
-            # zephyr mirroring realm.
-            hesiod_name = compute_mit_user_fullname(email)
-            form = RegistrationForm(
-                initial={"full_name": hesiod_name if "@" not in hesiod_name else ""},
-                realm_creation=realm_creation,
-                realm=realm,
-            )
-            name_validated = True
         elif prereg_user is not None and prereg_user.full_name:
             if prereg_user.full_name_validated:
                 request.session["authenticated_full_name"] = prereg_user.full_name
@@ -645,34 +632,20 @@ def registration_helper(
                 form.cleaned_data["how_realm_creator_found_zulip"]
             ]
             how_realm_creator_found_zulip_extra_context = ""
-            if (
-                how_realm_creator_found_zulip
-                == RealmAuditLog.HOW_REALM_CREATOR_FOUND_ZULIP_OPTIONS["other"]
-            ):
-                how_realm_creator_found_zulip_extra_context = form.cleaned_data[
-                    "how_realm_creator_found_zulip_other_text"
-                ]
-            elif (
-                how_realm_creator_found_zulip
-                == RealmAuditLog.HOW_REALM_CREATOR_FOUND_ZULIP_OPTIONS["ad"]
-            ):
-                how_realm_creator_found_zulip_extra_context = form.cleaned_data[
-                    "how_realm_creator_found_zulip_where_ad"
-                ]
-            elif (
-                how_realm_creator_found_zulip
-                == RealmAuditLog.HOW_REALM_CREATOR_FOUND_ZULIP_OPTIONS["existing_user"]
-            ):
-                how_realm_creator_found_zulip_extra_context = form.cleaned_data[
-                    "how_realm_creator_found_zulip_which_organization"
-                ]
-            elif (
-                how_realm_creator_found_zulip
-                == RealmAuditLog.HOW_REALM_CREATOR_FOUND_ZULIP_OPTIONS["review_site"]
-            ):  # nocoverage
-                how_realm_creator_found_zulip_extra_context = form.cleaned_data[
-                    "how_realm_creator_found_zulip_review_site"
-                ]
+            extra_context_options = {
+                "other": "how_realm_creator_found_zulip_other_text",
+                "ad": "how_realm_creator_found_zulip_where_ad",
+                "existing_user": "how_realm_creator_found_zulip_which_organization",
+                "review_site": "how_realm_creator_found_zulip_review_site",
+                "ai_chatbot": "how_realm_creator_found_zulip_which_ai_chatbot",
+            }
+            for option, field_name in extra_context_options.items():
+                if (
+                    how_realm_creator_found_zulip
+                    == RealmAuditLog.HOW_REALM_CREATOR_FOUND_ZULIP_OPTIONS[option]
+                ):
+                    how_realm_creator_found_zulip_extra_context = form.cleaned_data[field_name]
+                    break
 
             realm = do_create_realm(
                 string_id,

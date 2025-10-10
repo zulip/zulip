@@ -412,7 +412,7 @@ class RealmImportExportTest(ExportFile):
         if export_type == RealmExport.EXPORT_FULL_WITH_CONSENT:
             assert exportable_user_ids is not None
 
-        with patch("zerver.lib.export.create_soft_link"), self.assertLogs(level="INFO"):
+        with self.assertLogs(level="INFO"):
             do_export_realm(
                 realm=realm,
                 output_dir=output_dir,
@@ -849,11 +849,13 @@ class RealmImportExportTest(ExportFile):
         # Consented users:
         hamlet = self.example_user("hamlet")
         othello = self.example_user("othello")
+        cordelia = self.example_user("cordelia")
         # Iago will be non-consenting.
         iago = self.example_user("iago")
 
         do_change_user_setting(hamlet, "allow_private_data_export", True, acting_user=None)
         do_change_user_setting(othello, "allow_private_data_export", True, acting_user=None)
+        do_change_user_setting(cordelia, "allow_private_data_export", True, acting_user=None)
         do_change_user_setting(iago, "allow_private_data_export", False, acting_user=None)
 
         # Despite both hamlet and othello having consent enabled, in a public export
@@ -864,6 +866,9 @@ class RealmImportExportTest(ExportFile):
         a_message = Message.objects.get(id=a_message_id)
         a_message.sending_client = private_client
         a_message.save()
+
+        # Verify that a group DM between consenting users is not exported
+        self.send_group_direct_message(hamlet, [othello, cordelia])
 
         # SavedSnippets are private content - so in a public export, despite
         # hamlet having consent enabled, such objects should not be exported.
@@ -887,6 +892,9 @@ class RealmImportExportTest(ExportFile):
 
         exported_user_presence_ids = self.get_set(realm_data["zerver_userpresence"], "id")
         self.assertIn(iago_presence.id, exported_user_presence_ids)
+
+        exported_huddle_ids = self.get_set(realm_data["zerver_huddle"], "id")
+        self.assertEqual(exported_huddle_ids, set())
 
     def test_export_realm_with_member_consent(self) -> None:
         realm = Realm.objects.get(string_id="zulip")
@@ -2160,18 +2168,18 @@ class RealmImportExportTest(ExportFile):
 
         @getter
         def get_named_user_group_names(r: Realm) -> set[str]:
-            return {group.name for group in NamedUserGroup.objects.filter(realm=r)}
+            return {group.name for group in NamedUserGroup.objects.filter(realm_for_sharding=r)}
 
         @getter
         def get_user_membership(r: Realm) -> set[str]:
-            usergroup = NamedUserGroup.objects.get(realm=r, name="hamletcharacters")
+            usergroup = NamedUserGroup.objects.get(realm_for_sharding=r, name="hamletcharacters")
             usergroup_membership = UserGroupMembership.objects.filter(user_group=usergroup)
             users = {membership.user_profile.email for membership in usergroup_membership}
             return users
 
         @getter
         def get_group_group_membership(r: Realm) -> set[str]:
-            usergroup = NamedUserGroup.objects.get(realm=r, name="role:members")
+            usergroup = NamedUserGroup.objects.get(realm_for_sharding=r, name="role:members")
             group_group_membership = GroupGroupMembership.objects.filter(supergroup=usergroup)
             subgroups = {
                 membership.subgroup.named_user_group.name for membership in group_group_membership
@@ -2183,7 +2191,7 @@ class RealmImportExportTest(ExportFile):
             # We already check the members of the group through UserGroupMembership
             # objects, but we also want to check direct_members field is set
             # correctly since we do not include this in export data.
-            usergroup = NamedUserGroup.objects.get(realm=r, name="hamletcharacters")
+            usergroup = NamedUserGroup.objects.get(realm_for_sharding=r, name="hamletcharacters")
             direct_members = usergroup.direct_members.all()
             direct_member_emails = {user.email for user in direct_members}
             return direct_member_emails
@@ -2193,14 +2201,14 @@ class RealmImportExportTest(ExportFile):
             # We already check the subgroups of the group through GroupGroupMembership
             # objects, but we also want to check that direct_subgroups field is set
             # correctly since we do not include this in export data.
-            usergroup = NamedUserGroup.objects.get(realm=r, name="role:members")
+            usergroup = NamedUserGroup.objects.get(realm_for_sharding=r, name="role:members")
             direct_subgroups = usergroup.direct_subgroups.all()
             direct_subgroup_names = {group.named_user_group.name for group in direct_subgroups}
             return direct_subgroup_names
 
         @getter
         def get_user_group_can_mention_group_setting(r: Realm) -> str:
-            user_group = NamedUserGroup.objects.get(realm=r, name="hamletcharacters")
+            user_group = NamedUserGroup.objects.get(realm_for_sharding=r, name="hamletcharacters")
             return user_group.can_mention_group.named_user_group.name
 
         # test botstoragedata and botconfigdata
@@ -2259,7 +2267,7 @@ class RealmImportExportTest(ExportFile):
 
         @getter
         def get_user_group_mention(r: Realm) -> str:
-            user_group = NamedUserGroup.objects.get(realm=r, name="hamletcharacters")
+            user_group = NamedUserGroup.objects.get(realm_for_sharding=r, name="hamletcharacters")
             data_usergroup_id = f'data-user-group-id="{user_group.id}"'
             mention_message = get_stream_messages(r).get(
                 rendered_content__contains=data_usergroup_id

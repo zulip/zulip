@@ -66,16 +66,25 @@ parser.add_argument(
     help="Start app server in HTTPS mode, using reverse proxy",
 )
 parser.add_argument(
-    "--help-center", action="store_true", help="Build and host help center with search"
+    "--help-center-static-build",
+    action="store_true",
+    help="Host existing static build of help center with search",
 )
 parser.add_argument(
     "--help-center-dev-server",
     action="store_true",
-    help="Run dev server for help center. Hot reload will work for this mode, but search will not work in the generated website.",
+    help="Run dev server for help center alongside the Zulip app. Hot reload will work for this mode, but search will not work in the generated website.",
+)
+parser.add_argument(
+    "--only-help-center",
+    action="store_true",
+    help="Run help center dev server on port 9991 without running the Zulip web app and related services",
 )
 add_provision_check_override_param(parser)
 options = parser.parse_args()
-help_center_dev_server_enabled = options.help_center_dev_server and not options.help_center
+help_center_dev_server_enabled = (
+    options.help_center_dev_server and not options.help_center_static_build
+)
 
 assert_provisioning_status_ok(options.skip_provision_check)
 
@@ -113,6 +122,7 @@ else:
         "runtornado",
         "--autoreload",
         "--immediate-reloads",
+        "--automated",
     ]
 
 manage_args = [f"--settings={settings_module}"]
@@ -186,14 +196,14 @@ def server_processes() -> list[list[str]]:
         return main_cmds
 
     other_cmds = [
-        ["./manage.py", "process_queue", "--all", *manage_args],
+        ["./manage.py", "process_queue", "--all", *manage_args, "--automated"],
         [
             "env",
             "PGHOST=127.0.0.1",  # Force password authentication using .pgpass
             "./puppet/zulip/files/postgresql/process_fts_updates",
             "--quiet",
         ],
-        ["./manage.py", "deliver_scheduled_messages"],
+        ["./manage.py", "deliver_scheduled_messages", "--automated"],
         [
             "./manage.py",
             "runtusd",
@@ -293,17 +303,23 @@ async def forward(upstream_port: int, request: web.Request) -> web.StreamRespons
     return response
 
 
-def run_help_center_dev_server(external_host: str) -> "subprocess.Popen[bytes]":
+def run_help_center_dev_server(
+    external_host: str, port: int = help_center_port
+) -> "subprocess.Popen[bytes]":
+    env = os.environ.copy()
+    env["ZULIP_WEB_APP_PROXY_PORT"] = str(proxy_port)
+
     return subprocess.Popen(
         [
             "/usr/local/bin/corepack",
             "pnpm",
             "dev",
-            f"--port={help_center_port}",
+            f"--port={port}",
             "--host",
             f"--allowed-hosts={urlsplit(external_host).hostname}",
         ],
         cwd="starlight_help",
+        env=env,
     )
 
 
@@ -314,7 +330,7 @@ async def help_center_middleware(
     if request.path.startswith("/help"):
         try:
             filename = request.match_info["filename"]
-            name, ext = os.path.splitext(filename)
+            _name, ext = os.path.splitext(filename)
             if not ext:
                 filename = os.path.join(filename, "index.html")
             request.match_info["filename"] = filename
@@ -325,7 +341,7 @@ async def help_center_middleware(
 
 
 middlewares = []
-if options.help_center:
+if options.help_center_static_build:
     middlewares.append(help_center_middleware)
 
 app = web.Application(middlewares=middlewares)
@@ -367,6 +383,12 @@ build step and rerun `run-dev`.""")
 
 
 def print_listeners(external_host_url: str) -> None:
+    if options.only_help_center:
+        print(
+            f"\n{CYAN}Help center dev server running on:{ENDC} {external_host_url}/help\nZulip web app and other related services will not run in this mode."
+        )
+        return
+
     print(f"\nStarting Zulip on:\n\n\t{CYAN}{external_host_url}/{ENDC}\n\nInternal ports:")
     ports = [
         (proxy_port, "Development server proxy (connect here)"),
@@ -431,6 +453,11 @@ async def serve() -> None:
     http_protocol = "https" if options.behind_https_proxy else "http"
     external_host_url = f"{http_protocol}://{external_host}"
 
+    if options.only_help_center:
+        children.append(run_help_center_dev_server(external_host_url, proxy_port))
+        print_listeners(external_host_url)
+        return
+
     if options.test:
         do_one_time_webpack_compile()
     else:
@@ -439,7 +466,7 @@ async def serve() -> None:
     if help_center_dev_server_enabled:
         children.append(run_help_center_dev_server(external_host_url))
 
-    setup_routes(options.help_center, options.help_center_dev_server)
+    setup_routes(options.help_center_static_build, options.help_center_dev_server)
 
     children.extend(subprocess.Popen(cmd) for cmd in server_processes())
 

@@ -1827,10 +1827,14 @@ def sync_groups_for_prereg_user(
     ]
 
     groups_to_ensure_member = list(
-        NamedUserGroup.objects.filter(realm=realm, name__in=group_names_to_ensure_member)
+        NamedUserGroup.objects.filter(
+            realm_for_sharding=realm, name__in=group_names_to_ensure_member
+        )
     )
     groups_to_ensure_not_member = list(
-        NamedUserGroup.objects.filter(realm=realm, name__in=group_names_to_ensure_not_member)
+        NamedUserGroup.objects.filter(
+            realm_for_sharding=realm, name__in=group_names_to_ensure_not_member
+        )
     )
 
     prereg_user.groups.add(*groups_to_ensure_member)
@@ -1890,12 +1894,14 @@ def sync_groups(
 
     if to_add:
         logger.debug("Adding user %s to groups %s", user_id, to_add)
-        add_groups = list(NamedUserGroup.objects.filter(name__in=to_add, realm=realm))
+        add_groups = list(NamedUserGroup.objects.filter(name__in=to_add, realm_for_sharding=realm))
         bulk_add_members_to_user_groups(add_groups, [user_id], acting_user=None)
 
     if to_remove:
         logger.debug("Removing user %s from groups %s", user_id, to_remove)
-        remove_groups = list(NamedUserGroup.objects.filter(name__in=to_remove, realm=realm))
+        remove_groups = list(
+            NamedUserGroup.objects.filter(name__in=to_remove, realm_for_sharding=realm)
+        )
         bulk_remove_members_from_user_groups(remove_groups, [user_id], acting_user=None)
 
     logger.debug("Finished group sync for user %s", user_id)

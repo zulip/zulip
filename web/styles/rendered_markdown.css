@@ -505,7 +505,8 @@
     }
 
     .twitter-image,
-    .message_inline_image {
+    .message-media-preview-image,
+    .message-media-preview-video {
         /* Set a background for the image; the background will be visible
            behind the width of the transparent border. */
         border: solid 3px transparent;
@@ -595,7 +596,7 @@
         border: none !important;
     }
 
-    .message_inline_image .media-image-element {
+    .media-image-element {
         cursor: zoom-in;
     }
 

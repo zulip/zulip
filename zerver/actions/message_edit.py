@@ -570,6 +570,7 @@ def update_message_content(
     event["prior_mention_user_ids"] = list(prior_mention_user_ids)
     event["presence_idle_user_ids"] = filter_presence_idle_user_ids(info.active_user_ids)
     event["all_bot_user_ids"] = list(info.all_bot_user_ids)
+    event["push_device_registered_user_ids"] = list(info.push_device_registered_user_ids)
     if rendering_result.mentions_stream_wildcard:
         event["stream_wildcard_mention_user_ids"] = list(info.stream_wildcard_mention_user_ids)
         event["stream_wildcard_mention_in_followed_topic_user_ids"] = list(
@@ -1240,7 +1241,6 @@ def do_update_message(
     send_event_on_commit(user_profile.realm, event, users_to_be_notified)
 
     resolved_topic_message_id = None
-    resolved_topic_message_deleted = False
     # We calculate the users for which the resolved-topic notification
     # should be marked as unread using the topic visibility policy and
     # the `resolved_topic_notice_auto_read_policy` user setting.
@@ -1257,7 +1257,7 @@ def do_update_message(
         and not message_edit_request.is_content_edited
         and not message_edit_request.is_stream_edited
     ):
-        resolved_topic_message_id, resolved_topic_message_deleted = (
+        resolved_topic_message_id, _resolved_topic_message_deleted = (
             maybe_send_resolve_topic_notifications(
                 user_profile=user_profile,
                 message_edit_request=message_edit_request,

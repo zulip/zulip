@@ -127,7 +127,7 @@ function display_subscribe_toggle_spinner($stream_row: JQuery): void {
     $stream_row.find(".check").removeClass("sub_unsub_button");
 
     /* Hide the tick. */
-    const $tick = $stream_row.find("svg");
+    const $tick = $stream_row.find(".sub-unsub-icon");
     $tick.addClass("hide");
 
     /* Add a spinner to show the request is in process. */
@@ -142,7 +142,7 @@ function hide_subscribe_toggle_spinner($stream_row: JQuery): void {
     $stream_row.find(".check").addClass("sub_unsub_button");
 
     /* Show the tick. */
-    const $tick = $stream_row.find("svg");
+    const $tick = $stream_row.find(".sub-unsub-icon");
     $tick.removeClass("hide");
 
     /* Destroy the spinner. */

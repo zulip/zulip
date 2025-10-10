@@ -1,10 +1,8 @@
 import base64
 import logging
 import re
-from email.headerregistry import Address
 from typing import Any
 
-import dns.resolver
 import orjson
 from altcha import verify_solution
 from django import forms
@@ -70,18 +68,10 @@ DEACTIVATED_ACCOUNT_ERROR = gettext_lazy(
 )
 PASSWORD_TOO_WEAK_ERROR = gettext_lazy("The password is too weak.")
 
-
-def email_is_not_mit_mailing_list(email: str) -> None:
-    """Prevent MIT mailing lists from signing up for Zulip"""
-    address = Address(addr_spec=email)
-    if address.domain == "mit.edu":
-        # Check whether the user exists and can get mail.
-        try:
-            dns.resolver.resolve(f"{address.username}.pobox.ns.athena.mit.edu", "TXT")
-        except dns.resolver.NXDOMAIN:
-            # This error is Markup only because 1. it needs to render HTML
-            # 2. It's not formatted with any user input.
-            raise ValidationError(MIT_VALIDATION_ERROR)
+# Set Form.EmailField to match the default max_length on Model.EmailField,
+# can be removed when https://code.djangoproject.com/ticket/35119 is
+# completed.
+EMAIL_MAX_LENGTH = 254
 
 
 class OverridableValidationError(ValidationError):
@@ -218,6 +208,9 @@ class RegistrationForm(RealmDetailsForm):
         self.fields["how_realm_creator_found_zulip_review_site"] = forms.CharField(
             max_length=100, required=False
         )
+        self.fields["how_realm_creator_found_zulip_which_ai_chatbot"] = forms.CharField(
+            max_length=100, required=False
+        )
 
     def clean_full_name(self) -> str:
         try:
@@ -254,7 +247,7 @@ class ToSForm(forms.Form):
 
 
 class HomepageForm(forms.Form):
-    email = forms.EmailField()
+    email = forms.EmailField(max_length=EMAIL_MAX_LENGTH)
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         self.realm = kwargs.pop("realm", None)
@@ -307,9 +300,6 @@ class HomepageForm(forms.Form):
                 _("Email addresses containing + are not allowed in this organization.")
             )
 
-        if realm.is_zephyr_mirror_realm:
-            email_is_not_mit_mailing_list(email)
-
         if settings.BILLING_ENABLED:
             from corporate.lib.registration import (
                 check_spare_licenses_available_for_registering_new_user,
@@ -336,7 +326,9 @@ class ImportRealmOwnerSelectionForm(forms.Form):
 
 class RealmCreationForm(RealmDetailsForm):
     # This form determines whether users can create a new realm.
-    email = forms.EmailField(validators=[email_not_system_bot, email_is_not_disposable])
+    email = forms.EmailField(
+        validators=[email_not_system_bot, email_is_not_disposable], max_length=EMAIL_MAX_LENGTH
+    )
     import_from = forms.ChoiceField(
         choices=PreregistrationRealm.IMPORT_FROM_CHOICES,
         required=False,
@@ -554,7 +546,7 @@ def rate_limit_password_reset_form_by_email(email: str) -> None:
 
 class CreateUserForm(forms.Form):
     full_name = forms.CharField(max_length=100)
-    email = forms.EmailField()
+    email = forms.EmailField(max_length=EMAIL_MAX_LENGTH)
 
 
 class OurAuthenticationForm(AuthenticationForm):

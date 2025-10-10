@@ -269,8 +269,10 @@ DEFAULT_RATE_LIMITING_RULES = {
     ],
     # Limits total number of unauthenticated API requests (primarily
     # used by the public access option). Since these are
-    # unauthenticated requests, each IP address is a separate bucket.
+    # unauthenticated requests, each IPv4 address is a separate bucket.
+    # For IPv6, one bucket is used for each /64 subnet.
     "api_by_ip": [
+        # 100 requests per minute.
         (60, 100),
     ],
     # Limits total requests to the Mobile Push Notifications Service
@@ -318,6 +320,7 @@ DEFAULT_RATE_LIMITING_RULES = {
     # sending of an email, restricting the number per IP address. This
     # is a general anti-spam measure.
     "sends_email_by_ip": [
+        # 5 emails per day.
         (86400, 5),
     ],
     # Limits access to uploaded files, in web-public contexts, done by
@@ -508,10 +511,6 @@ ROOT_DOMAIN_LANDING_PAGE = False
 
 # Subdomain for serving endpoints to users from self-hosted deployments.
 SELF_HOSTING_MANAGEMENT_SUBDOMAIN: str | None = None
-
-# If using the Zephyr mirroring supervisord configuration, the
-# hostname to connect to in order to transfer credentials from webathena.
-PERSONAL_ZMIRROR_SERVER: str | None = None
 
 # When security-relevant links in emails expire.
 CONFIRMATION_LINK_DEFAULT_VALIDITY_DAYS = 1

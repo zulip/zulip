@@ -861,8 +861,12 @@ function suggestion_search_string(suggestion_line: SuggestionLine): string {
     return search_strings.join(" ");
 }
 
-function suggestions_for_current_filter(): SuggestionLine[] {
-    if (narrow_state.stream_id() && narrow_state.topic() !== undefined) {
+function suggestions_for_empty_search_query(): SuggestionLine[] {
+    // Since the context here is an **empty** search query, we assume
+    // that there is no `near:` operator. So it's safe to use
+    // functions like narrowed_by_topic_reply that return false on
+    // conversation views with `near` or `with` operators.
+    if (narrow_state.narrowed_by_topic_reply()) {
         return [
             get_default_suggestion_line([
                 {
@@ -873,7 +877,7 @@ function suggestions_for_current_filter(): SuggestionLine[] {
             get_default_suggestion_line(narrow_state.search_terms()),
         ];
     }
-    if (narrow_state.pm_emails_string()) {
+    if (narrow_state.narrowed_by_pm_reply()) {
         return [
             get_default_suggestion_line([
                 {
@@ -902,8 +906,8 @@ class Attacher {
         // of the list.
         if (search_query_is_empty && this.add_current_filter) {
             this.add_current_filter = false;
-            for (const current_filter_line of suggestions_for_current_filter()) {
-                this.push(current_filter_line);
+            for (const suggestion of suggestions_for_empty_search_query()) {
+                this.push(suggestion);
             }
         }
     }

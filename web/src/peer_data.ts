@@ -7,9 +7,14 @@ import {LazySet} from "./lazy_set.ts";
 import {page_params} from "./page_params.ts";
 import type {User} from "./people.ts";
 import * as people from "./people.ts";
-import type {StreamSubscription} from "./sub_store.ts";
 import * as sub_store from "./sub_store.ts";
 import * as util from "./util.ts";
+
+// Maps stream_id to the number of subscribers in that stream.
+// Note: These counts can sometimes be wrong due to races on the backend,
+// so we should fetch full subscriber data for a stream if we care about
+// its count being accurate.
+const subscriber_counts = new Map<number, number>();
 
 // This maps a stream_id to a LazySet of user_ids who are subscribed.
 // Make sure that when we have full subscriber data for a stream,
@@ -198,36 +203,56 @@ export function potential_subscribers(stream_id: number): User[] {
     return people.filter_all_users(is_potential_subscriber);
 }
 
-function increment_subscriber_count(sub: StreamSubscription, user_id: number): void {
-    const subscribers = get_loaded_subscriber_subset(sub.stream_id);
+function increment_subscriber_count(
+    subscribers: LazySet,
+    stream_id: number,
+    user_id: number,
+): void {
     if (subscribers.has(user_id)) {
         return;
     }
-    sub.subscriber_count += 1;
+    const subscriber_count = subscriber_counts.get(stream_id);
+    if (subscriber_count === undefined) {
+        blueslip.error(
+            `We called increment_subscriber_count for an untracked stream: ${stream_id}`,
+        );
+    } else {
+        subscriber_counts.set(stream_id, subscriber_count + 1);
+    }
 }
 
-function decrement_subscriber_count(sub: StreamSubscription, user_id: number): void {
-    const subscribers = get_loaded_subscriber_subset(sub.stream_id);
+function decrement_subscriber_count(
+    subscribers: LazySet,
+    stream_id: number,
+    user_id: number,
+): void {
     // If we don't have full subscriber data, we assume that even if didn't know
     // they were a subscriber, we still want to decrement the count.
-    if (fetched_stream_ids.has(sub.stream_id) && !subscribers.has(user_id)) {
+    if (fetched_stream_ids.has(stream_id) && !subscribers.has(user_id)) {
         return;
     }
-    sub.subscriber_count -= 1;
+    const subscriber_count = subscriber_counts.get(stream_id);
+    if (subscriber_count === undefined) {
+        blueslip.error(
+            `We called decrement_subscriber_count for an untracked stream: ${stream_id}`,
+        );
+    } else {
+        subscriber_counts.set(stream_id, subscriber_count - 1);
+    }
 }
 
 // Note: `subscriber_count` can sometimes be wrong due to races on the backend,
 // so we should fetch full subscriber data if we care about this number being
 // accurate.
 export let get_subscriber_count = (stream_id: number, include_bots = true): number => {
-    const sub = sub_store.get(stream_id);
-    if (sub === undefined) {
+    const count = subscriber_counts.get(stream_id);
+    if (count === undefined) {
         blueslip.warn(`We called get_subscriber_count for an untracked stream: ${stream_id}`);
         return 0;
     }
 
     if (include_bots) {
-        return sub.subscriber_count;
+        return count;
     }
 
     let bot_count = 0;
@@ -236,14 +261,30 @@ export let get_subscriber_count = (stream_id: number, include_bots = true): numb
             bot_count += 1;
         }
     }
-    return sub.subscriber_count - bot_count;
+    return count - bot_count;
 };
 
 export function rewire_get_subscriber_count(value: typeof get_subscriber_count): void {
     get_subscriber_count = value;
 }
 
-export function get_subscribers(stream_id: number): number[] {
+export function set_subscriber_count(stream_id: number, count: number): void {
+    subscriber_counts.set(stream_id, count);
+}
+
+export function clear_subscriber_counts_for_tests(): void {
+    subscriber_counts.clear();
+}
+
+export function get_subscriber_ids_assert_loaded(stream_id: number): number[] {
+    // TODO: Convert this to an `assert` once we can be more sure that this never
+    // happens.
+    if (!fetched_stream_ids.has(stream_id)) {
+        blueslip.error("Getting subscribers for stream without full subscriber data", {
+            stream_id,
+        });
+    }
+
     // This is our external interface for callers who just
     // want an array of user_ids who are subscribed to a stream.
     const subscribers = get_loaded_subscriber_subset(stream_id);
@@ -251,7 +292,7 @@ export function get_subscribers(stream_id: number): number[] {
     return [...subscribers.keys()];
 }
 
-export async function get_all_subscribers(
+export async function get_subscribers_with_possible_fetch(
     stream_id: number,
     retry_on_failure = true,
 ): Promise<number[] | null> {
@@ -273,7 +314,7 @@ export function set_subscribers(stream_id: number, user_ids: number[], full_data
     if (!sub) {
         blueslip.warn(`We called set_subscribers for an untracked stream: ${stream_id}`);
     } else if (full_data) {
-        sub.subscriber_count = subscribers.size;
+        subscriber_counts.set(stream_id, subscribers.size);
     }
     if (full_data) {
         fetched_stream_ids.add(stream_id);
@@ -288,23 +329,13 @@ export function add_subscriber(stream_id: number, user_id: number): void {
     if (person === undefined) {
         blueslip.warn(`We tried to add invalid subscriber: ${user_id}`);
     }
-    const sub = sub_store.get(stream_id);
-    // If the sub is undefined, we'll be raising a warning in
-    // `get_loaded_subscriber_subset`, so we don't need to here.
-    if (sub) {
-        increment_subscriber_count(sub, user_id);
-    }
+    increment_subscriber_count(subscribers, stream_id, user_id);
     subscribers.add(user_id);
 }
 
 export function remove_subscriber(stream_id: number, user_id: number): void {
-    const sub = sub_store.get(stream_id);
-    // If the sub is undefined, we'll be raising a warning in
-    // `get_loaded_subscriber_subset`, so we don't need to here.
-    if (sub) {
-        decrement_subscriber_count(sub, user_id);
-    }
     const subscribers = get_loaded_subscriber_subset(stream_id);
+    decrement_subscriber_count(subscribers, stream_id, user_id);
     subscribers.delete(user_id);
 }
 
@@ -323,7 +354,7 @@ export function bulk_add_subscribers({
             // If the sub is undefined, we'll be raising a warning in
             // `get_loaded_subscriber_subset`, so we don't need to here.
             if (sub) {
-                increment_subscriber_count(sub, user_id);
+                increment_subscriber_count(subscribers, sub.stream_id, user_id);
             }
             subscribers.add(user_id);
         }
@@ -352,7 +383,7 @@ export function bulk_remove_subscribers({
             // If the sub is undefined, we'll be raising a warning in
             // `get_loaded_subscriber_subset`, so we don't need to here.
             if (sub) {
-                decrement_subscriber_count(sub, user_id);
+                decrement_subscriber_count(subscribers, sub.stream_id, user_id);
             }
             subscribers.delete(user_id);
         }
@@ -366,8 +397,8 @@ export function bulk_remove_subscribers({
     }
 }
 
-export function is_user_subscribed(stream_id: number, user_id: number): boolean {
-    // Most callers should call stream_data.is_user_subscribed,
+export function is_user_loaded_and_subscribed(stream_id: number, user_id: number): boolean {
+    // Most callers should call stream_data.is_user_loaded_and_subscribed,
     // which does additional checks.
 
     const subscribers = get_loaded_subscriber_subset(stream_id);

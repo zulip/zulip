@@ -59,7 +59,6 @@ from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import (
     HostRequestMock,
     avatar_disk_path,
-    dns_txt_answer,
     find_key_by_email,
     get_test_image_file,
     load_subdomain_token,
@@ -1108,6 +1107,11 @@ class LoginTest(ZulipTestCase):
 
         self.assertEqual(result.status_code, 200)
         self.assertContains(result, "Enter a valid email address")
+
+        invalid_email = "a" * 260 + "@example.com"
+        result = self.client_post("/accounts/home/", {"email": invalid_email}, subdomain="zulip")
+        self.assertEqual(result.status_code, 200)
+        self.assertContains(result, "Ensure this value has at most 254 characters (it has 272).")
 
     def test_register_deactivated_partway_through(self) -> None:
         """
@@ -4359,14 +4363,7 @@ class UserSignUpTest(ZulipTestCase):
         mirror_dummy.refresh_from_db()
         self.assertEqual(mirror_dummy.role, UserProfile.ROLE_GUEST)
 
-    @patch(
-        "dns.resolver.resolve",
-        return_value=dns_txt_answer(
-            "sipbtest.passwd.ns.athena.mit.edu.",
-            "sipbtest:*:20922:101:Fred Sipb,,,:/mit/sipbtest:/bin/athena/tcsh",
-        ),
-    )
-    def test_registration_of_mirror_dummy_user(self, ignored: Any) -> None:
+    def test_registration_of_mirror_dummy_user(self) -> None:
         password = "test"
         subdomain = "zephyr"
         user_profile = self.mit_user("sipbtest")
@@ -4443,14 +4440,7 @@ class UserSignUpTest(ZulipTestCase):
         self.assertEqual(result.status_code, 302)
         self.assert_logged_in_user_id(user_profile.id)
 
-    @patch(
-        "dns.resolver.resolve",
-        return_value=dns_txt_answer(
-            "sipbtest.passwd.ns.athena.mit.edu.",
-            "sipbtest:*:20922:101:Fred Sipb,,,:/mit/sipbtest:/bin/athena/tcsh",
-        ),
-    )
-    def test_registration_of_active_mirror_dummy_user(self, ignored: Any) -> None:
+    def test_registration_of_active_mirror_dummy_user(self) -> None:
         """
         Trying to activate an already-active mirror dummy user should
         raise an AssertionError.
@@ -4757,6 +4747,33 @@ class TestFindMyTeam(ZulipTestCase):
         # Just for coverage on perhaps-unnecessary validation code.
         result = self.client_get("/accounts/find/", {"emails": "invalid"})
         self.assertEqual(result.status_code, 200)
+
+    def test_find_team_long_email_address(self) -> None:
+        # Emails over 320 characters are considered invalid.
+        data = {"emails": "a" * 320 + "@example.com"}
+        result = self.client_post("/accounts/find/", data)
+        self.assertEqual(result.status_code, 200)
+        self.assertIn(b"Enter a valid email", result.content)
+        from django.core.mail import outbox
+
+        self.assert_length(outbox, 0)
+
+        # Emails in the database are never over 254 characters,
+        # but searching for them does not cause an error.
+        # When https://code.djangoproject.com/ticket/35119 is
+        # resolved, Django's email validator will return this
+        # case as invalid, so this test will need to be updated.
+        data = {"emails": "a" * 260 + "@example.com"}
+        result = self.client_post("/accounts/find/", data)
+        self.assertEqual(result.status_code, 200)
+        content = result.content.decode()
+        self.assertIn("Emails sent! The addresses entered on", content)
+        self.assertIn("a@example.com", content)
+        from django.core.mail import outbox
+
+        self.assert_length(outbox, 1)
+        message = outbox[0]
+        self.assertIn("Unfortunately, no Zulip Cloud accounts", message.body)
 
     def test_find_team_zero_emails(self) -> None:
         data = {"emails": ""}

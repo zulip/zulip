@@ -1,7 +1,7 @@
 [project]
 name = "zulip-server"
 version = "0.1.0"
-requires-python = ">=3.10, <3.14"
+requires-python = ">=3.10"
 
 [dependency-groups]
 prod = [
@@ -210,6 +210,9 @@ prod = [
 
   # Better compression than zlib
   "zstd",
+
+  # Internationalization
+  "pyicu",
 ]
 docs = [
   # Needed to build RTD docs
@@ -331,8 +334,8 @@ talon-core = { url = "https://github.com/zulip/talon/archive/e87a64dccc3c5ee1b8e
 # version from Git rather than a PyPI release. Keeping everything in one
 # repository simplifies the process of implementing and documenting new bots for
 # new contributors.
-zulip = { url = "https://github.com/zulip/python-zulip-api/archive/9e131ac626976b9c3da6c11b6365b4939656f7c3.zip", subdirectory = "zulip" }
-zulip-bots = { url = "https://github.com/zulip/python-zulip-api/archive/0.9.0.zip", subdirectory = "zulip_bots" }
+zulip = { url = "https://github.com/zulip/python-zulip-api/archive/0.9.1.zip", subdirectory = "zulip" }
+zulip-bots = { url = "https://github.com/zulip/python-zulip-api/archive/0.9.1.zip", subdirectory = "zulip_bots" }
 
 # zulip's linting framework - zulint
 zulint = { url = "https://github.com/zulip/zulint/archive/448e36a1e50e79c82257ed3d65fcf5c8591cdb61.zip" }
@@ -406,6 +409,7 @@ module = [
     "fakeldap.*",
     "firebase_admin.*",
     "gitlint.*",
+    "icu.*", # https://gitlab.pyicu.org/main/pyicu/-/issues/156
     "integrations.*",
     "jsonref.*",
     "ldap.*", # https://github.com/python-ldap/python-ldap/issues/368

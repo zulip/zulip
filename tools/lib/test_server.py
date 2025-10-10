@@ -77,7 +77,7 @@ def test_server_running(
         if skip_provision_check:
             run_dev_server_command.append("--skip-provision-check")
         if enable_help_center:
-            run_dev_server_command.append("--help-center")
+            run_dev_server_command.append("--help-center-static-build")
         server = subprocess.Popen(run_dev_server_command, stdout=log, stderr=log)
 
         try:

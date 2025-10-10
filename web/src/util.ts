@@ -105,7 +105,7 @@ export function normalize_recipients(recipients: string): string {
         .split(",")
         .map((s) => s.trim().toLowerCase())
         .filter((s) => s.length > 0)
-        .sort()
+        .toSorted()
         .join(",");
 }
 
@@ -237,7 +237,7 @@ export function sorted_ids(ids: number[]): number[] {
     return id_list;
 }
 
-export function set_match_data(target: Message, source: MatchedMessage): void {
+export function set_match_data(target: Message, source: MatchedMessage | RawMessage): void {
     target.match_subject = source.match_subject;
     target.match_content = source.match_content;
 }

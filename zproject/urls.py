@@ -273,7 +273,6 @@ from zerver.views.video_calls import (
     register_zoom_user,
 )
 from zerver.views.welcome_bot_custom_message import send_test_welcome_bot_custom_message
-from zerver.views.zephyr import webathena_kerberos_login
 from zproject import dev_urls
 
 if settings.TWO_FACTOR_AUTHENTICATION_ENABLED:  # nocoverage
@@ -629,7 +628,6 @@ i18n_urls = [
     path("accounts/login/", login_page, {"template_name": "zerver/login.html"}, name="login_page"),
     path("accounts/login/", LoginView.as_view(template_name="zerver/login.html"), name="login"),
     path("accounts/logout/", logout_view),
-    path("accounts/webathena_kerberos_login/", webathena_kerberos_login),
     path("accounts/password/reset/", password_reset, name="password_reset"),
     path(
         "accounts/password/reset/done/",

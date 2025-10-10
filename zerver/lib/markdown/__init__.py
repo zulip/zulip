@@ -1,7 +1,6 @@
 # Zulip's main Markdown implementation.  See docs/subsystems/markdown.md for
 # detailed documentation on our Markdown syntax.
 import logging
-import mimetypes
 import re
 import time
 from collections import deque
@@ -586,7 +585,7 @@ class BacktickInlineProcessor(markdown.inlinepatterns.BacktickInlineProcessor):
         # just replace the text to not strip the group because it
         # makes it impossible to put leading/trailing whitespace in
         # an inline code span.
-        el, start, end = ret = super().handleMatch(m, data)
+        el, _start, _end = ret = super().handleMatch(m, data)
         if el is not None and m.group(3):
             assert isinstance(el, Element)
             # upstream's code here is: m.group(3).strip() rather than m.group(3).
@@ -966,7 +965,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         found_url: ResultWithFamily[tuple[str, str | None]],
     ) -> None:
         info = self.get_inlining_information(root, found_url)
-        (url, text) = found_url.result
+        (url, _text) = found_url.result
         actual_url = self.get_actual_image_url(url)
         self.add_a(
             info["parent"],
@@ -985,7 +984,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         yt_image: str,
     ) -> None:
         info = self.get_inlining_information(root, found_url)
-        (url, text) = found_url.result
+        (url, _text) = found_url.result
         yt_id = self.youtube_id(url)
         self.add_a(
             info["parent"],
@@ -1032,7 +1031,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         if not self.zmd.image_preview_enabled:
             return False
 
-        url_type = mimetypes.guess_type(url)[0]
+        url_type = guess_type(url)[0]
         # Support only video formats (containers) that are supported cross-browser and cross-device. As per
         # https://developer.mozilla.org/en-US/docs/Web/Media/Formats/Containers#index_of_media_container_formats_file_types
         # MP4 and WebM are the only formats that are widely supported.
@@ -2136,7 +2135,6 @@ def get_sub_registry(r: markdown.util.Registry[T], keys: list[str]) -> markdown.
 # These are used as keys ("linkifiers_keys") to md_engines and the respective
 # linkifier caches
 DEFAULT_MARKDOWN_KEY = -1
-ZEPHYR_MIRROR_MARKDOWN_KEY = -2
 
 
 class ZulipMarkdown(markdown.Markdown):
@@ -2184,7 +2182,6 @@ class ZulipMarkdown(markdown.Markdown):
         self.inlinePatterns = self.build_inlinepatterns()
         self.treeprocessors = self.build_treeprocessors()
         self.postprocessors = self.build_postprocessors()
-        self.handle_zephyr_mirror()
         return self
 
     def build_preprocessors(self) -> markdown.util.Registry[markdown.preprocessors.Preprocessor]:
@@ -2346,26 +2343,6 @@ class ZulipMarkdown(markdown.Markdown):
             markdown.postprocessors.AndSubstitutePostprocessor(), "amp_substitute", 15
         )
         return postprocessors
-
-    def handle_zephyr_mirror(self) -> None:
-        if self.linkifiers_key == ZEPHYR_MIRROR_MARKDOWN_KEY:
-            # Disable almost all inline patterns for zephyr mirror
-            # users' traffic that is mirrored.  Note that
-            # inline_interesting_links is a treeprocessor and thus is
-            # not removed
-            self.inlinePatterns = get_sub_registry(self.inlinePatterns, ["autolink"])
-            self.treeprocessors = get_sub_registry(
-                self.treeprocessors, ["inline_interesting_links", "rewrite_images_proxy"]
-            )
-            # insert new 'inline' processor because we have changed self.inlinePatterns
-            # but InlineProcessor copies md as self.md in __init__.
-            self.treeprocessors.register(
-                markdown.treeprocessors.InlineProcessor(self), "inline", 25
-            )
-            self.preprocessors = get_sub_registry(self.preprocessors, ["custom_text_notifications"])
-            self.parser.blockprocessors = get_sub_registry(
-                self.parser.blockprocessors, ["paragraph"]
-            )
 
 
 md_engines: dict[tuple[int, bool], ZulipMarkdown] = {}
@@ -2580,16 +2557,6 @@ def do_convert(
         logging_message_id = "id# " + str(message.id)
     else:
         logging_message_id = "unknown"
-
-    if (
-        message is not None
-        and message_realm is not None
-        and message_realm.is_zephyr_mirror_realm
-        and message.sending_client.name == "zephyr_mirror"
-    ):
-        # Use slightly customized Markdown processor for content
-        # delivered via zephyr_mirror
-        linkifiers_key = ZEPHYR_MIRROR_MARKDOWN_KEY
 
     maybe_update_markdown_engines(linkifiers_key, email_gateway)
     md_engine_key = (linkifiers_key, email_gateway)

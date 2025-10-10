@@ -10,10 +10,9 @@ from dataclasses import dataclass
 from typing import IO, TYPE_CHECKING, Any, TypeVar, Union, cast
 from unittest import mock
 from unittest.mock import patch
+from urllib.parse import urlsplit
 
 import boto3.session
-import dns.rdtypes.ANY.TXT
-import dns.resolver
 import fakeldap
 import ldap
 import orjson
@@ -21,11 +20,11 @@ from django.conf import settings
 from django.contrib.auth.models import AnonymousUser
 from django.contrib.sessions.backends.base import SessionBase
 from django.db.migrations.state import StateApps
-from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
+from django.http import HttpRequest, HttpResponse
 from django.http.request import QueryDict
 from django.http.response import HttpResponseBase
 from django.test import override_settings
-from django.urls import URLResolver
+from django.urls import URLResolver, resolve
 from moto.core.decorator import mock_aws
 from mypy_boto3_s3.service_resource import Bucket
 from typing_extensions import ParamSpec, override
@@ -47,6 +46,7 @@ from zerver.models.clients import clear_client_cache, get_client
 from zerver.models.realms import get_realm
 from zerver.models.streams import get_stream
 from zerver.tornado.handlers import AsyncDjangoHandler, allocate_handler_id
+from zerver.views.auth import log_into_subdomain
 from zilencer.models import RemoteZulipServer
 from zproject.backends import ExternalAuthDataDict, ExternalAuthResult
 
@@ -586,8 +586,10 @@ def write_instrumentation_reports(full_suite: bool, include_webhooks: bool) -> N
 
 
 def load_subdomain_token(response: Union["TestHttpResponse", HttpResponse]) -> ExternalAuthDataDict:
-    assert isinstance(response, HttpResponseRedirect)
-    token = response.url.rsplit("/", 1)[1]
+    assert response.status_code == 302
+    match = resolve(urlsplit(response["Location"]).path)
+    assert match.func == log_into_subdomain
+    token = match.kwargs["token"]
     data = ExternalAuthResult(
         request=mock.MagicMock(), login_token=token, delete_stored_data=False
     ).data_dict
@@ -796,16 +798,3 @@ def ratelimit_rule(
 def consume_response(response: HttpResponseBase) -> None:
     assert response.streaming
     collections.deque(response, maxlen=0)
-
-
-def dns_txt_answer(name_str: str, txt: str) -> dns.resolver.Answer:
-    name = dns.name.from_text(name_str)
-    rdclass = dns.rdataclass.IN
-    rdtype = dns.rdatatype.TXT
-    response = dns.message.make_query(
-        name, rdtype, rdclass, flags=dns.flags.QR | dns.flags.RA | dns.flags.RD
-    )
-    response.find_rrset(dns.message.ANSWER, name, rdclass, rdtype, create=True).add(
-        dns.rdtypes.ANY.TXT.TXT(rdclass, rdtype, txt)
-    )
-    return dns.resolver.Answer(name, rdtype, rdclass, response)

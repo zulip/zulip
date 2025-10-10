@@ -32,7 +32,7 @@ def migrate_realmcreationkey_to_realmcreationstatus(
     ContentType = apps.get_model("contenttypes", "ContentType")
     RealmCreationKey = apps.get_model("confirmation", "RealmCreationKey")
     RealmCreationStatus = apps.get_model("zerver", "RealmCreationStatus")
-    realm_creation_status_content_type, created = ContentType.objects.get_or_create(
+    realm_creation_status_content_type, _created = ContentType.objects.get_or_create(
         model="realmcreationstatus", app_label="zerver"
     )
 

@@ -9,6 +9,7 @@ import type {NarrowTerm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import type {StreamSubscription} from "./sub_store.ts";
 import * as unread from "./unread.ts";
+import * as util from "./util.ts";
 
 export function filter(): Filter | undefined {
     // We use Filter objects for message views as well as the list of
@@ -189,29 +190,7 @@ export function topic(current_filter: Filter | undefined = filter()): string | u
     return undefined;
 }
 
-export function pm_ids_string(filter?: Filter): string | undefined {
-    // If you are narrowed to a group direct message with
-    // users 4, 5, and 99, this will return "4,5,99"
-    const emails_string = pm_emails_string(filter);
-
-    if (!emails_string) {
-        return undefined;
-    }
-
-    const user_ids_string = people.reply_to_to_user_ids_string(emails_string);
-
-    return user_ids_string;
-}
-
-export function pm_ids_set(filter?: Filter): Set<number> {
-    const ids_string = pm_ids_string(filter);
-    const pm_ids_list = ids_string ? people.user_ids_string_to_ids_array(ids_string) : [];
-    return new Set(pm_ids_list);
-}
-
-export function pm_emails_string(
-    current_filter: Filter | undefined = filter(),
-): string | undefined {
+export function pm_ids_string(current_filter: Filter | undefined = filter()): string | undefined {
     if (current_filter === undefined) {
         return undefined;
     }
@@ -221,7 +200,18 @@ export function pm_emails_string(
         return undefined;
     }
 
-    return operands[0];
+    // If you are narrowed to a group direct message with users 4, 5, and 99,
+    // this will return "4,5,99". Will return undefined when the value of the
+    // operand string does not translate to a comma-separated list of valid
+    // user emails.
+    const emails_string = util.the(operands);
+    return people.reply_to_to_user_ids_string(emails_string);
+}
+
+export function pm_ids_set(filter?: Filter): Set<number> {
+    const ids_string = pm_ids_string(filter);
+    const pm_ids_list = ids_string ? people.user_ids_string_to_ids_array(ids_string) : [];
+    return new Set(pm_ids_list);
 }
 
 // We expect get_first_unread_info and therefore _possible_unread_message_ids

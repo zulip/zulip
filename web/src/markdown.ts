@@ -37,7 +37,7 @@ function contains_preview_link(content: string): boolean {
     return preview_regexes.some((re) => re.test(content));
 }
 
-let web_app_helpers: MarkdownHelpers | undefined;
+export let web_app_helpers: MarkdownHelpers | undefined;
 
 export type AbstractMap<K, V> = {
     keys: () => IterableIterator<K>;
@@ -474,9 +474,8 @@ export function get_topic_links(topic: string): TopicLink[] {
     }
     // We need to sort applied_matches again because the links were previously ordered by precedence,
     // so that the links are displayed in the order their patterns are matched.
-    return applied_matches
-        .sort((a, b) => a.index - b.index)
-        .map((match) => ({url: match.url, text: match.text}));
+    applied_matches.sort((a, b) => a.index - b.index);
+    return applied_matches.map((match) => ({url: match.url, text: match.text}));
 }
 
 export function is_status_message(raw_content: string): boolean {
@@ -862,7 +861,10 @@ export function initialize(helper_config: MarkdownHelpers): void {
     web_app_helpers = helper_config;
 }
 
-export function render(raw_content: string): {
+export function render(
+    raw_content: string,
+    helper_config?: MarkdownHelpers,
+): {
     content: string;
     flags: string[];
     is_me_message: boolean;
@@ -870,7 +872,7 @@ export function render(raw_content: string): {
     // This is generally only intended to be called by the web app. Most
     // other platforms should call parse().
     assert(web_app_helpers !== undefined);
-    const {content, flags} = parse({raw_content, helper_config: web_app_helpers});
+    const {content, flags} = parse({raw_content, helper_config: helper_config ?? web_app_helpers});
     return {
         content,
         flags,

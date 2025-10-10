@@ -26,15 +26,15 @@ import * as channel_folders_popover from "./channel_folders_popover.ts";
 import * as click_handlers from "./click_handlers.ts";
 import * as color_picker_popover from "./color_picker_popover.ts";
 import * as common from "./common.ts";
-import * as compose from "./compose.js";
+import * as compose from "./compose.ts";
 import * as compose_closed_ui from "./compose_closed_ui.ts";
 import * as compose_notifications from "./compose_notifications.ts";
 import * as compose_paste from "./compose_paste.ts";
 import * as compose_pm_pill from "./compose_pm_pill.ts";
 import * as compose_recipient from "./compose_recipient.ts";
 import * as compose_reply from "./compose_reply.ts";
-import * as compose_send_menu_popover from "./compose_send_menu_popover.js";
-import * as compose_setup from "./compose_setup.js";
+import * as compose_send_menu_popover from "./compose_send_menu_popover.ts";
+import * as compose_setup from "./compose_setup.ts";
 import * as compose_textarea from "./compose_textarea.ts";
 import * as compose_tooltips from "./compose_tooltips.ts";
 import * as compose_validate from "./compose_validate.ts";
@@ -55,7 +55,7 @@ import * as giphy from "./giphy.ts";
 import * as giphy_state from "./giphy_state.ts";
 import * as group_permission_settings from "./group_permission_settings.ts";
 import * as hashchange from "./hashchange.ts";
-import * as hotkey from "./hotkey.js";
+import * as hotkey from "./hotkey.ts";
 import * as i18n from "./i18n.ts";
 import * as inbox_ui from "./inbox_ui.ts";
 import * as information_density from "./information_density.ts";
@@ -155,7 +155,7 @@ import * as timerender from "./timerender.ts";
 import * as tippyjs from "./tippyjs.ts";
 import * as topic_list from "./topic_list.ts";
 import * as topic_popover from "./topic_popover.ts";
-import * as transmit from "./transmit.js";
+import * as transmit from "./transmit.ts";
 import * as typeahead_helper from "./typeahead_helper.ts";
 import * as typing from "./typing.ts";
 import * as unread from "./unread.ts";
@@ -355,7 +355,7 @@ export function initialize_kitchen_sink_stuff() {
                         message_lists.current
                             .all_messages()
                             .map((message) => message.id)
-                            .sort(),
+                            .toSorted(),
                     ),
                     found_in_dom: $row_from_dom.length,
                 });
@@ -776,9 +776,6 @@ $(() => {
     }
 
     if (page_params.is_spectator) {
-        if (page_params.show_try_zulip_modal) {
-            show_try_zulip_modal();
-        }
         const data = {
             apply_markdown: true,
             client_capabilities: JSON.stringify({
@@ -798,6 +795,9 @@ $(() => {
             success(response_data) {
                 const state_data = state_data_schema.parse(response_data);
                 initialize_everything(state_data);
+                if (page_params.show_try_zulip_modal) {
+                    show_try_zulip_modal();
+                }
             },
             error() {
                 $("#app-loading-middle-content").hide();

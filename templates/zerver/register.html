@@ -169,9 +169,9 @@ Form is validated both client-side using jquery-validation (see signup.js) and s
             {% if default_stream_groups %}
             <hr />
             <div class="default-stream-groups">
-                <p class="margin">{{ _('What are you interested in?') }}</p>
+                <p>{{ _('What are you interested in?') }}</p>
                 {% for default_stream_group in default_stream_groups %}
-                <div class="input-group margin">
+                <div class="input-group">
                     <label for="id_default_stream_group__{{ default_stream_group.id }}"
                       class="inline-block checkbox">
                         <input class="inline-block" type="checkbox"
@@ -180,13 +180,13 @@ Form is validated both client-side using jquery-validation (see signup.js) and s
                           {% if "default_stream_group" in form.data and default_stream_group.id in form.data.getlist('default_stream_group') %} checked {% endif %} />
                         <span class="rendered-checkbox"></span>
                         {% set comma = joiner(", ") %}
-                        <div class="default_stream_group_name inline-block"
+                        <span class="default_stream_group_name inline-block"
                           title="{{ default_stream_group.description }}">
                             {{ default_stream_group.name }}
-                        </div>
+                        </span>
                         (
                         {%- for stream in default_stream_group.streams.all() -%}
-                            {{- comma() -}} <div class="stream_name inline-block">#{{ stream.name }}</div>
+                            {{- comma() -}} <span class="stream_name inline-block">#{{ stream.name }}</span>
                         {%- endfor -%}
                         )
                     </label>
@@ -214,10 +214,11 @@ Form is validated both client-side using jquery-validation (see signup.js) and s
                 <input id="how-realm-creator-found-zulip-where-ad" class="how-found-zulip-extra-data-input" type="text" placeholder="{{ _('Where did you see the ad?') }}" name="how_realm_creator_found_zulip_where_ad" maxlength="100"/>
                 <input id="how-realm-creator-found-zulip-which-organization" class="how-found-zulip-extra-data-input" type="text" placeholder="{{ _('Which organization?') }}" name="how_realm_creator_found_zulip_which_organization" maxlength="100"/>
                 <input id="how-realm-creator-found-zulip-review-site" class="how-found-zulip-extra-data-input" type="text" placeholder="{{ _('Which one?') }}" name="how_realm_creator_found_zulip_review_site" maxlength="100"/>
+                <input id="how-realm-creator-found-zulip-which-ai-chatbot" class="how-found-zulip-extra-data-input" type="text" placeholder="{{ _('Which one?') }}" name="how_realm_creator_found_zulip_which_ai_chatbot" maxlength="100"/>
             </div>
             {% endif %}
 
-            <div class="input-group margin terms-of-service">
+            <div class="input-group terms-of-service">
                 {% if terms_of_service %}
                 <div class="input-group">
                     {#

@@ -1,3 +1,5 @@
+// @ts-check
+
 // We are using remarkLintRulesLintRecommended and
 // remarkPresentLintMarkdownStyleGuide as our starting set of rules.
 // None of the rules were giving an error on the starting set, but some
@@ -6,7 +8,8 @@
 // required.
 
 /**
- * @import {Preset} from 'unified'
+ * @import {Root} from "mdast"
+ * @import {Preset, Processor} from "unified"
  */
 
 import {toMarkdown} from "mdast-util-to-markdown";
@@ -36,25 +39,40 @@ const stringifyOptions = {
     incrementListMarker: false,
 };
 
-// Make sure the linter fails if files need to be reformatted.  (The other rules
-// catch some but not all formatting issues, so this is needed to be sure we
-// don't silently ignore changes that would be made with --fix.)
+/**
+ * Make sure the linter fails if files need to be reformatted.  (The other rules
+ * catch some but not all formatting issues, so this is needed to be sure we
+ * don't silently ignore changes that would be made with --fix.)
+ *
+ * @this {Processor}
+ * @param {...unknown} args
+ */
 function remarkLintNeedsReformatting(...args) {
-    if (!this.data("settings").checkReformatting) {
+    const settings = this.data("settings");
+    if (
+        settings === undefined ||
+        !("checkReformatting" in settings) ||
+        !settings.checkReformatting
+    ) {
         return undefined;
     }
-    return lintRule("needs-reformatting", async (tree, file) => {
-        const formatted = toMarkdown(tree, {
-            ...this.data("settings"),
-            ...stringifyOptions,
-            extensions: this.data("toMarkdownExtensions") || [],
-        });
-        if (formatted !== file.value) {
-            file.message("Would be reformatted");
-        }
-    })(...args);
+    return lintRule(
+        "needs-reformatting",
+        /** @param {Root} tree */
+        (tree, file) => {
+            const formatted = toMarkdown(tree, {
+                ...settings,
+                ...stringifyOptions,
+                extensions: this.data("toMarkdownExtensions") || [],
+            });
+            if (formatted !== file.value) {
+                file.message("Would be reformatted");
+            }
+        },
+    )(...args);
 }
 
+/** @type {Preset} */
 const remarkLintRules = {
     plugins: [
         remarkPresetLintMarkdownStyleGuide,

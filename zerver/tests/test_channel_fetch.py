@@ -839,7 +839,7 @@ class GetSubscribersTest(ZulipTestCase):
             polonius.id,
         ]
 
-        with self.assert_database_query_count(55):
+        with self.assert_database_query_count(52):
             self.subscribe_via_post(
                 self.user_profile,
                 stream_names,
@@ -899,7 +899,7 @@ class GetSubscribersTest(ZulipTestCase):
         # Test query count when setting is set to anonymous group.
         stream = get_stream("stream_1", realm)
         admins_group = NamedUserGroup.objects.get(
-            name=SystemGroups.ADMINISTRATORS, realm=realm, is_system_group=True
+            name=SystemGroups.ADMINISTRATORS, realm_for_sharding=realm, is_system_group=True
         )
         setting_group_members_dict = UserGroupMembersData(
             direct_members=[hamlet.id], direct_subgroups=[admins_group.id]
@@ -966,13 +966,13 @@ class GetSubscribersTest(ZulipTestCase):
         )
 
         admins_group = NamedUserGroup.objects.get(
-            name=SystemGroups.ADMINISTRATORS, realm=realm, is_system_group=True
+            name=SystemGroups.ADMINISTRATORS, realm_for_sharding=realm, is_system_group=True
         )
         members_group = NamedUserGroup.objects.get(
-            name=SystemGroups.MEMBERS, realm=realm, is_system_group=True
+            name=SystemGroups.MEMBERS, realm_for_sharding=realm, is_system_group=True
         )
         full_members_group = NamedUserGroup.objects.get(
-            name=SystemGroups.FULL_MEMBERS, realm=realm, is_system_group=True
+            name=SystemGroups.FULL_MEMBERS, realm_for_sharding=realm, is_system_group=True
         )
 
         stream = get_stream("stream_1", realm)
@@ -990,7 +990,9 @@ class GetSubscribersTest(ZulipTestCase):
             stream, "can_send_message_group", full_members_group, acting_user=desdemona
         )
 
-        hamletcharacters_group = NamedUserGroup.objects.get(name="hamletcharacters", realm=realm)
+        hamletcharacters_group = NamedUserGroup.objects.get(
+            name="hamletcharacters", realm_for_sharding=realm
+        )
         stream = get_stream("stream_4", realm)
         do_change_stream_group_based_setting(
             stream, "can_send_message_group", hamletcharacters_group, acting_user=desdemona
@@ -1065,7 +1067,7 @@ class GetSubscribersTest(ZulipTestCase):
         ]
 
         nobody_group = NamedUserGroup.objects.get(
-            name="role:nobody", is_system_group=True, realm=realm
+            name="role:nobody", is_system_group=True, realm_for_sharding=realm
         )
 
         def create_public_streams() -> None:
@@ -1352,51 +1354,6 @@ class GetSubscribersTest(ZulipTestCase):
         self.assert_length(unsubscribed_streams, 1)
         self.assertEqual(unsubscribed_streams[0]["is_web_public"], True)
         self.assert_length(unsubscribed_streams[0]["subscribers"], 1)
-
-    def test_gather_subscriptions_mit(self) -> None:
-        """
-        gather_subscriptions returns correct results with only 3 queries
-        """
-        # Subscribe only ourself because invites are disabled on mit.edu
-        mit_user_profile = self.mit_user("starnine")
-        user_id = mit_user_profile.id
-        users_to_subscribe = [user_id, self.mit_user("espuser").id]
-        for email in users_to_subscribe:
-            stream = self.subscribe(mit_user_profile, "mit_stream")
-            self.assertTrue(stream.is_in_zephyr_realm)
-
-        self.subscribe_via_post(
-            mit_user_profile,
-            ["mit_invite_only"],
-            dict(principals=orjson.dumps(users_to_subscribe).decode()),
-            invite_only=True,
-            subdomain="zephyr",
-        )
-
-        with self.assert_database_query_count(8):
-            subscribed_streams, _ = gather_subscriptions(mit_user_profile, include_subscribers=True)
-
-        self.assertGreaterEqual(len(subscribed_streams), 2)
-        for sub in subscribed_streams:
-            if not sub["name"].startswith("mit_"):
-                raise AssertionError("Unexpected stream!")
-            if sub["name"] == "mit_invite_only":
-                self.assert_length(sub["subscribers"], len(users_to_subscribe))
-            else:
-                self.assert_length(sub["subscribers"], 0)
-            self.assertIsNone(sub["stream_weekly_traffic"])
-
-        # Create a web-public stream to test never_subscried data.
-        self.make_stream("mit_stream_2", realm=mit_user_profile.realm, is_web_public=True)
-        self.make_stream("mit_stream_3", realm=mit_user_profile.realm)
-
-        sub_info = gather_subscriptions_helper(mit_user_profile, include_subscribers=True)
-        never_subscribed_streams = sub_info.never_subscribed
-        # Users in zephyr mirror realm can only access web-public never subscribed streams.
-        self.assert_length(never_subscribed_streams, 1)
-        self.assertEqual(never_subscribed_streams[0]["name"], "mit_stream_2")
-        self.assertTrue(never_subscribed_streams[0]["is_web_public"])
-        self.assertIsNone(never_subscribed_streams[0]["stream_weekly_traffic"])
 
     def test_nonsubscriber(self) -> None:
         """

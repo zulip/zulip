@@ -443,7 +443,7 @@ export function initialize(): void {
 
     tippy.delegate("body", {
         target: [
-            "[data-tab-key='not-subscribed'].disabled",
+            "[data-tab-key='available'].disabled",
             "[data-tab-key='all-streams'].disabled",
         ].join(","),
         content: $t({

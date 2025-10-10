@@ -172,18 +172,22 @@ class UnreadCountTests(ZulipTestCase):
     @override
     def setUp(self) -> None:
         super().setUp()
-        with mock.patch(
-            "zerver.lib.push_notifications.push_notifications_configured", return_value=True
-        ) as mock_push_notifications_configured:
+        hamlet = self.example_user("hamlet")
+        self.register_push_device(hamlet.id)
+        with (
+            mock.patch(
+                "zerver.lib.push_notifications.send_push_notifications"
+            ) as mock_send_push_notifications,
+            mock.patch(
+                "zerver.lib.push_notifications.push_notifications_configured", return_value=True
+            ) as mock_push_notifications_configured,
+        ):
             self.unread_msg_ids = [
-                self.send_personal_message(
-                    self.example_user("iago"), self.example_user("hamlet"), "hello"
-                ),
-                self.send_personal_message(
-                    self.example_user("iago"), self.example_user("hamlet"), "hello2"
-                ),
+                self.send_personal_message(self.example_user("iago"), hamlet, "hello"),
+                self.send_personal_message(self.example_user("iago"), hamlet, "hello2"),
             ]
             mock_push_notifications_configured.assert_called()
+            mock_send_push_notifications.assert_called()
 
     # Sending a new message results in unread UserMessages being created
     # for users other than sender.
@@ -858,11 +862,13 @@ class PushNotificationMarkReadFlowsTest(ZulipTestCase):
             .values_list("message_id", flat=True)
         )
 
+    @mock.patch("zerver.lib.push_notifications.send_push_notifications")
     @mock.patch("zerver.lib.push_notifications.push_notifications_configured", return_value=True)
     def test_track_active_mobile_push_notifications(
-        self, mock_push_notifications: mock.MagicMock
+        self,
+        mock_push_notifications: mock.MagicMock,
+        mock_send_push_notifications: mock.MagicMock,
     ) -> None:
-        mock_push_notifications.return_value = True
         self.login("hamlet")
         user_profile = self.example_user("hamlet")
         cordelia = self.example_user("cordelia")
@@ -870,6 +876,7 @@ class PushNotificationMarkReadFlowsTest(ZulipTestCase):
         self.subscribe(cordelia, "test_stream")
         second_stream = self.subscribe(user_profile, "second_stream")
         self.subscribe(cordelia, "second_stream")
+        self.register_push_device(user_profile.id)
 
         property_name = "push_notifications"
         result = self.api_post(
@@ -942,6 +949,7 @@ class PushNotificationMarkReadFlowsTest(ZulipTestCase):
             result = self.client_post("/json/mark_all_as_read", {})
         self.assertEqual(self.get_mobile_push_notification_ids(user_profile), [])
         mock_push_notifications.assert_called()
+        mock_send_push_notifications.assert_called()
 
 
 class MarkAllAsReadEndpointTest(ZulipTestCase):
@@ -1972,7 +1980,7 @@ class MessageAccessTests(ZulipTestCase):
         )
         self.assert_length(filtered_messages, 0)
         nobody_group = NamedUserGroup.objects.get(
-            name="role:nobody", is_system_group=True, realm=unsubscribed_user.realm
+            name="role:nobody", is_system_group=True, realm_for_sharding=unsubscribed_user.realm
         )
         do_change_stream_group_based_setting(
             stream,

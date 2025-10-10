@@ -2319,6 +2319,16 @@ class BillingSession(ABC):
                             microsecond=0
                         )
                         last_renewal_ledger_entry.save(update_fields=["event_time"])
+                        # Since we are skipping over processing license ledger
+                        # entries / RealmAuditLogs that are after `last_renewal_ledger_entry`,
+                        # we need to update `licenses_at_next_renewal` to reflect the current value.
+                        # It is okay to skip over them here since they were in free trial.
+                        licenses_at_next_renewal = max(
+                            self.get_billable_licenses_for_customer(
+                                plan.customer, plan.tier, licenses_at_next_renewal
+                            ),
+                            licenses_at_next_renewal,
+                        )
                     else:
                         # We end the free trial since customer hasn't paid.
                         plan.status = CustomerPlan.DOWNGRADE_AT_END_OF_FREE_TRIAL
@@ -4124,12 +4134,12 @@ class RealmBillingSession(BillingSession):
         if stripe_customer_id is not None:
             # Support requests do not set any stripe billing information.
             assert self.support_session is False
-            customer, created = Customer.objects.update_or_create(
+            customer, _created = Customer.objects.update_or_create(
                 realm=self.realm, defaults={"stripe_customer_id": stripe_customer_id}
             )
             return customer
         else:
-            customer, created = Customer.objects.update_or_create(
+            customer, _created = Customer.objects.update_or_create(
                 realm=self.realm, defaults=defaults
             )
             return customer

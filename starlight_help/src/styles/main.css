@@ -178,6 +178,18 @@
     color: var(--color-user-circle-deactivated);
 }
 
+.subscriber-check-icon {
+    /* This color is borrowed from subscriptions.css to make it look
+       the same as the web app. */
+    fill: hsl(240deg 96% 68%);
+}
+
+.subscriber-plus-icon {
+    /* This color is borrowed from subscriptions.css to make it look
+       the same as the web app. */
+    fill: hsl(0deg 0% 72%);
+}
+
 .sl-markdown-content {
     img {
         vertical-align: top;
@@ -240,4 +252,19 @@
 
 footer {
     font-size: 0.85em;
+}
+
+.external-icon-sidebar {
+    display: inline-flex;
+    align-items: center;
+}
+
+.external-icon-sidebar::after {
+    content: "";
+    width: 1em;
+    height: 1em;
+    margin-left: 0.4em;
+    background: currentcolor;
+    mask: url("../../../web/shared/icons/external-link.svg") no-repeat center /
+        contain;
 }

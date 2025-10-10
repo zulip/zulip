@@ -8,10 +8,9 @@ import FlattenedSteps from "../../components/FlattenedSteps.astro";
 import NavigationSteps from "../../components/NavigationSteps.astro";
 import ZulipNote from "../../components/ZulipNote.astro";
 import ZulipTip from "../../components/ZulipTip.astro";
-
-import EmojiAndEmoticonsExamples from "./include/_EmojiAndEmoticonsExamples.mdx";
-import EmojiAndEmoticonsIntro from "./include/_EmojiAndEmoticonsIntro.mdx";
-import StartComposing from "./include/_StartComposing.mdx";
+import EmojiAndEmoticonsExamples from "../include/_EmojiAndEmoticonsExamples.mdx";
+import EmojiAndEmoticonsIntro from "../include/_EmojiAndEmoticonsIntro.mdx";
+import StartComposing from "../include/_StartComposing.mdx";
 
 import SmileBiggerIcon from "~icons/zulip-icon/smile-bigger";
 
@@ -152,15 +151,8 @@ you send. Zulip emoji are compatible with screen readers and other accessibility
   <NavigationSteps target="settings/preferences" />
 
   1. Under **Emoji**, select **Google**,
-     **Twitter**, **Plain text**, or **Google blobs** for the emoji theme.
+     **Twitter**, or **Plain text** for the emoji theme.
 </FlattenedSteps>
-
-<ZulipNote>
-  **Google blobs** is an old style of Google emoji that has not been maintained
-  by Google since 2017, when they switched to a more modern style. Zulip allows
-  you to still use blob emoji, but any new emoji that have been released since
-  2017 will be displayed in the modern **Google** style.
-</ZulipNote>
 
 ## Related articles
 

@@ -1128,6 +1128,16 @@ def process_message_event(
     )
     realm_host = event_template.get("realm_host", "")
 
+    # TODO/compatibility: We need to set `push_device_registered_user_ids` to None
+    # for message events prior to the introduction of `push_device_registered_user_ids`
+    # field in the event.
+    #
+    # Simplify this block to `push_device_registered_user_ids = set(event_template.get("push_device_registered_user_ids", []))`
+    # when one can no longer directly upgrade from 11.x to main.
+    push_device_registered_user_ids = event_template.get("push_device_registered_user_ids", None)
+    if push_device_registered_user_ids is not None:
+        push_device_registered_user_ids = set(push_device_registered_user_ids)
+
     wide_dict: dict[str, Any] = event_template["message_dict"]
 
     # Temporary transitional code: Zulip servers that have message
@@ -1192,6 +1202,7 @@ def process_message_event(
             stream_wildcard_mention_in_followed_topic_user_ids=stream_wildcard_mention_in_followed_topic_user_ids,
             muted_sender_user_ids=muted_sender_user_ids,
             all_bot_user_ids=all_bot_user_ids,
+            push_device_registered_user_ids=push_device_registered_user_ids,
         )
 
         # Calling asdict would be slow, as it does a deep copy; pull
@@ -1245,7 +1256,7 @@ def process_message_event(
             is_incoming_1_to_1=wide_dict["recipient_id"] == client.user_recipient_id,
         )
 
-        # Make sure Zephyr mirroring bots know whether stream is invite-only
+        # Make sure mirroring bots know whether stream is invite-only
         if "mirror" in client.client_type_name and event_template.get("invite_only"):
             message_dict = message_dict.copy()
             message_dict["invite_only_stream"] = True
@@ -1262,7 +1273,7 @@ def process_message_event(
         if not client.accepts_event(user_event):
             continue
 
-        # The below prevents (Zephyr) mirroring loops.
+        # The below prevents mirroring loops.
         if "mirror" in sending_client and sending_client.lower() == client.client_type_name.lower():
             continue
 
@@ -1407,6 +1418,16 @@ def process_message_update_event(
     message_id = event_template["message_id"]
     rendering_only_update = event_template["rendering_only"]
 
+    # TODO/compatibility: We need to set `push_device_registered_user_ids` to None
+    # for update_message events prior to the introduction of `push_device_registered_user_ids`
+    # field in the event.
+    #
+    # Simplify this block to `push_device_registered_user_ids = set(event_template.pop("push_device_registered_user_ids", []))`
+    # when one can no longer directly upgrade from 11.x to main.
+    push_device_registered_user_ids = event_template.pop("push_device_registered_user_ids", None)
+    if push_device_registered_user_ids is not None:
+        push_device_registered_user_ids = set(push_device_registered_user_ids)
+
     for user_data in users:
         user_profile_id = user_data["id"]
 
@@ -1445,6 +1466,7 @@ def process_message_update_event(
                 stream_wildcard_mention_in_followed_topic_user_ids=stream_wildcard_mention_in_followed_topic_user_ids,
                 muted_sender_user_ids=muted_sender_user_ids,
                 all_bot_user_ids=all_bot_user_ids,
+                push_device_registered_user_ids=push_device_registered_user_ids,
             )
 
             maybe_enqueue_notifications_for_message_update(

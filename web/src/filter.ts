@@ -16,7 +16,7 @@ import {page_params} from "./page_params.ts";
 import type {User} from "./people.ts";
 import * as people from "./people.ts";
 import type {UserPillItem} from "./search_suggestion.ts";
-import {current_user, realm} from "./state_data.ts";
+import {current_user} from "./state_data.ts";
 import type {NarrowTerm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import * as sub_store from "./sub_store.ts";
@@ -78,54 +78,6 @@ type ValidOrInvalidUser =
     | {valid_user: false; operand: string};
 
 const channels_operands = new Set(["public", "web-public"]);
-
-function zephyr_stream_name_match(
-    message: Message & {type: "stream"},
-    stream_name: string,
-): boolean {
-    // Zephyr users expect narrowing to "social" to also show messages to /^(un)*social(.d)*$/
-    // (unsocial, ununsocial, social.d, etc)
-    // TODO: hoist the regex compiling out of the closure
-    const m = /^(?:un)*(.+?)(?:\.d)*$/i.exec(stream_name);
-    let base_stream_name = stream_name;
-    if (m?.[1] !== undefined) {
-        base_stream_name = m[1];
-    }
-    const related_regexp = new RegExp(
-        /^(un)*/.source + _.escapeRegExp(base_stream_name) + /(\.d)*$/.source,
-        "i",
-    );
-    const message_stream_name = stream_data.get_stream_name_from_id(message.stream_id);
-    return related_regexp.test(message_stream_name);
-}
-
-function zephyr_topic_name_match(message: Message & {type: "stream"}, operand: string): boolean {
-    // Zephyr users expect narrowing to topic "foo" to also show messages to /^foo(.d)*$/
-    // (foo, foo.d, foo.d.d, etc)
-    // TODO: hoist the regex compiling out of the closure
-    const m = /^(.*?)(?:\.d)*$/i.exec(operand);
-    // m should never be null because any string matches that regex.
-    assert(m !== null);
-    const base_topic = m[1]!;
-    let related_regexp;
-
-    // Additionally, Zephyr users expect the empty instance and
-    // instance "personal" to be the same.
-    if (
-        base_topic === "" ||
-        base_topic.toLowerCase() === "personal" ||
-        base_topic.toLowerCase() === '(instance "")'
-    ) {
-        related_regexp = /^(|personal|\(instance ""\))(\.d)*$/i;
-    } else {
-        related_regexp = new RegExp(
-            /^/.source + _.escapeRegExp(base_topic) + /(\.d)*$/.source,
-            "i",
-        );
-    }
-
-    return related_regexp.test(message.topic);
-}
 
 function message_in_home(message: Message): boolean {
     // The home view contains messages not sent to muted channels,
@@ -208,11 +160,6 @@ function message_matches_search_term(message: Message, operator: string, operand
                 return false;
             }
 
-            if (realm.realm_is_zephyr_mirror_realm) {
-                const stream = stream_data.get_sub_by_id_string(operand);
-                return zephyr_stream_name_match(message, stream?.name ?? "");
-            }
-
             return message.stream_id.toString() === operand;
         }
 
@@ -237,9 +184,6 @@ function message_matches_search_term(message: Message, operator: string, operand
             }
 
             operand = operand.toLowerCase();
-            if (realm.realm_is_zephyr_mirror_realm) {
-                return zephyr_topic_name_match(message, operand);
-            }
             return message.topic.toLowerCase() === operand;
 
         case "sender":
@@ -699,7 +643,7 @@ export class Filter {
             return util.strcmp(a, b);
         };
 
-        return [...term_types].sort(compare);
+        return term_types.toSorted(compare);
     }
 
     static operator_to_prefix(operator: string, negated?: boolean): string {
@@ -1026,16 +970,15 @@ export class Filter {
             );
         }
 
-        const sorted_simplified_terms = filter_terms
-            .map((term) => {
-                let operand = term.operand;
-                if (term.operator === "channel" || term.operator === "topic") {
-                    operand = operand.toLowerCase();
-                }
+        const sorted_simplified_terms = filter_terms.map((term) => {
+            let operand = term.operand;
+            if (term.operator === "channel" || term.operator === "topic") {
+                operand = operand.toLowerCase();
+            }
 
-                return `${term.negated ? "0" : "1"}-${term.operator}-${operand}`;
-            })
-            .sort(util.strcmp);
+            return `${term.negated ? "0" : "1"}-${term.operator}-${operand}`;
+        });
+        sorted_simplified_terms.sort(util.strcmp);
 
         if (!excluded_operators) {
             this.cached_sorted_terms_for_comparison = sorted_simplified_terms;
@@ -1489,19 +1432,18 @@ export class Filter {
         if (term_types.length === 1 && _.isEqual(term_types, ["sender"])) {
             const email = this.operands("sender")[0]!;
             const user = people.get_by_email(email);
-            let sender = email;
-            if (user) {
-                if (people.is_my_user_id(user.user_id)) {
-                    return $t({defaultMessage: "Messages sent by you"});
-                }
-
-                if (people.should_add_guest_user_indicator(user.user_id)) {
-                    sender = $t({defaultMessage: "{name} (guest)"}, {name: user.full_name});
-                } else {
-                    sender = user.full_name;
-                }
+            if (user === undefined) {
+                return $t({defaultMessage: "Messages sent by unknown user"});
             }
-
+            if (people.is_my_user_id(user.user_id)) {
+                return $t({defaultMessage: "Messages sent by you"});
+            }
+            let sender: string;
+            if (people.should_add_guest_user_indicator(user.user_id)) {
+                sender = $t({defaultMessage: "{name} (guest)"}, {name: user.full_name});
+            } else {
+                sender = user.full_name;
+            }
             return $t(
                 {defaultMessage: "Messages sent by {sender}"},
                 {
@@ -1683,10 +1625,8 @@ export class Filter {
         return new Filter(terms);
     }
 
-    has_topic(stream_id: number, topic: string): boolean {
-        return (
-            this.has_operand("channel", stream_id.toString()) && this.has_operand("topic", topic)
-        );
+    has_topic(stream_id: string, topic: string): boolean {
+        return this.has_operand("channel", stream_id) && this.has_operand("topic", topic);
     }
 
     sorted_term_types(): string[] {

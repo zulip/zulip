@@ -5,17 +5,18 @@ from collections.abc import Set as AbstractSet
 from dataclasses import dataclass
 from datetime import timedelta
 from email.headerregistry import Address
-from typing import Any, TypedDict
+from typing import Any, TypedDict, cast
 
 import orjson
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError, transaction
-from django.db.models import F, Q, QuerySet
+from django.db.models import Exists, F, OuterRef, Q, QuerySet
 from django.utils.html import escape
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from django.utils.translation import override as override_language
+from django_stubs_ext import WithAnnotations
 
 from zerver.actions.uploads import do_claim_attachments
 from zerver.actions.user_topics import (
@@ -37,7 +38,6 @@ from zerver.lib.exceptions import (
     StreamWithIDDoesNotExistError,
     TopicsNotAllowedError,
     TopicWildcardMentionNotAllowedError,
-    ZephyrMessageAlreadySentError,
 )
 from zerver.lib.markdown import MessageRenderingResult, render_message_markdown
 from zerver.lib.markdown import version as markdown_version
@@ -100,6 +100,8 @@ from zerver.lib.widget import do_widget_post_save_actions
 from zerver.models import (
     Client,
     Message,
+    PushDevice,
+    PushDeviceToken,
     Realm,
     Recipient,
     Stream,
@@ -209,6 +211,7 @@ class RecipientInfoResult:
     all_bot_user_ids: set[int]
     topic_participant_user_ids: set[int]
     sender_muted_stream: bool | None
+    push_device_registered_user_ids: set[int]
 
 
 class ActiveUserDict(TypedDict):
@@ -219,6 +222,11 @@ class ActiveUserDict(TypedDict):
     long_term_idle: bool
     is_bot: bool
     bot_type: int | None
+    has_push_device_registered: bool
+
+
+class UserProfileAnnotations(TypedDict):
+    has_push_device_registered: bool
 
 
 @dataclass
@@ -401,16 +409,40 @@ def get_recipient_info(
     user_ids = message_to_user_id_set | possibly_mentioned_user_ids
 
     if user_ids:
-        query: QuerySet[UserProfile, ActiveUserDict] = UserProfile.objects.filter(
-            is_active=True
-        ).values(
-            "id",
-            "enable_online_push_notifications",
-            "enable_offline_email_notifications",
-            "enable_offline_push_notifications",
-            "is_bot",
-            "bot_type",
-            "long_term_idle",
+        query: QuerySet[WithAnnotations[UserProfile, UserProfileAnnotations], ActiveUserDict] = (
+            # We use 'cast' because django-stubs says:
+            # Currently, the mypy plugin can recognize that specific names were passed to `QuerySet.annotate`
+            # and include them in the type, but does not record the types of these attributes.
+            #
+            # The knowledge of the specific annotated fields is not yet used in creating more specific types
+            # for `QuerySet`'s `values` method, however knowledge that the model was annotated _is_ used to
+            # create a broader type result type for `values`, and to allow `filter`ing on any field.
+            #
+            # ref: https://github.com/typeddjango/django-stubs/blob/de8e0b4dd6588129f0e02f601a71486f42799533/README.md?plain=1#L263
+            cast(
+                "QuerySet[WithAnnotations[UserProfile, UserProfileAnnotations], ActiveUserDict]",
+                UserProfile.objects.filter(is_active=True)
+                .annotate(
+                    # Uses index "zerver_pushdevice_user_bouncer_device_id_idx"
+                    # and "zerver_pushdevicetoken_user_id_015e5dc1".
+                    has_push_device_registered=Exists(
+                        PushDevice.objects.filter(
+                            user_id=OuterRef("id"), bouncer_device_id__isnull=False
+                        )
+                    )
+                    | Exists(PushDeviceToken.objects.filter(user_id=OuterRef("id")))
+                )
+                .values(
+                    "id",
+                    "enable_online_push_notifications",
+                    "enable_offline_email_notifications",
+                    "enable_offline_push_notifications",
+                    "is_bot",
+                    "bot_type",
+                    "long_term_idle",
+                    "has_push_device_registered",
+                ),
+            )
         )
 
         # query_for_ids is fast highly optimized for large queries, and we
@@ -488,6 +520,9 @@ def get_recipient_info(
     # where we determine notifiability of the message for users.
     all_bot_user_ids = {row["id"] for row in rows if row["is_bot"]}
 
+    # Users who have at least one push device registered to receive push notifications.
+    push_device_registered_user_ids = get_ids_for(lambda r: r["has_push_device_registered"])
+
     return RecipientInfoResult(
         active_user_ids=active_user_ids,
         online_push_user_ids=online_push_user_ids,
@@ -509,6 +544,7 @@ def get_recipient_info(
         all_bot_user_ids=all_bot_user_ids,
         topic_participant_user_ids=topic_participant_user_ids,
         sender_muted_stream=sender_muted_stream,
+        push_device_registered_user_ids=push_device_registered_user_ids,
     )
 
 
@@ -713,6 +749,7 @@ def build_message_send_dict(
         default_bot_user_ids=info.default_bot_user_ids,
         service_bot_tuples=info.service_bot_tuples,
         all_bot_user_ids=info.all_bot_user_ids,
+        push_device_registered_user_ids=info.push_device_registered_user_ids,
         topic_wildcard_mention_user_ids=topic_wildcard_mention_user_ids,
         stream_wildcard_mention_user_ids=stream_wildcard_mention_user_ids,
         topic_wildcard_mention_in_followed_topic_user_ids=topic_wildcard_mention_in_followed_topic_user_ids,
@@ -844,7 +881,7 @@ def get_active_presence_idle_user_ids(
           UserPresence table.
     """
 
-    if realm.presence_disabled:
+    if realm.presence_disabled:  # nocoverage
         return []
 
     user_ids = set()
@@ -1125,6 +1162,7 @@ def do_send_messages(
                 stream_wildcard_mention_in_followed_topic_user_ids=send_request.stream_wildcard_mention_in_followed_topic_user_ids,
                 muted_sender_user_ids=send_request.muted_sender_user_ids,
                 all_bot_user_ids=send_request.all_bot_user_ids,
+                push_device_registered_user_ids=send_request.push_device_registered_user_ids,
             )
             for user_id in send_request.active_user_ids
         ]
@@ -1168,6 +1206,7 @@ def do_send_messages(
             ),
             muted_sender_user_ids=list(send_request.muted_sender_user_ids),
             all_bot_user_ids=list(send_request.all_bot_user_ids),
+            push_device_registered_user_ids=list(send_request.push_device_registered_user_ids),
             disable_external_notifications=send_request.disable_external_notifications,
             realm_host=send_request.realm.host,
         )
@@ -1267,35 +1306,6 @@ def do_send_messages(
         for send_request in send_message_requests
     ]
     return sent_message_results
-
-
-def already_sent_mirrored_message_id(message: Message) -> int | None:
-    if message.recipient.type == Recipient.DIRECT_MESSAGE_GROUP:
-        # For group direct messages, we use a 10-second window because
-        # the timestamps aren't guaranteed to actually match between
-        # two copies of the same message.
-        time_window = timedelta(seconds=10)
-    else:
-        time_window = timedelta(seconds=0)
-
-    messages = Message.objects.filter(
-        # Uses index: zerver_message_realm_recipient_subject for
-        # channel messages or zerver_message_realm_sender_recipient for
-        # DMs
-        realm_id=message.realm_id,
-        sender=message.sender,
-        recipient=message.recipient,
-        subject=message.topic_name(),
-        is_channel_message=message.is_channel_message,
-        content=message.content,
-        sending_client=message.sending_client,
-        date_sent__gte=message.date_sent - time_window,
-        date_sent__lte=message.date_sent + time_window,
-    )
-
-    if messages.exists():
-        return messages[0].id
-    return None
 
 
 def extract_stream_indicator(s: str) -> str | int:
@@ -1440,23 +1450,20 @@ def check_send_message(
     read_by_sender: bool = False,
 ) -> SentMessageResult:
     addressee = Addressee.legacy_build(sender, recipient_type_name, message_to, topic_name)
-    try:
-        message = check_message(
-            sender,
-            client,
-            addressee,
-            message_content,
-            realm,
-            forged,
-            forged_timestamp,
-            forwarder_user_profile,
-            local_id,
-            sender_queue_id,
-            widget_content,
-            skip_stream_access_check=skip_stream_access_check,
-        )
-    except ZephyrMessageAlreadySentError as e:
-        return SentMessageResult(message_id=e.message_id)
+    message = check_message(
+        sender,
+        client,
+        addressee,
+        message_content,
+        realm,
+        forged,
+        forged_timestamp,
+        forwarder_user_profile,
+        local_id,
+        sender_queue_id,
+        widget_content,
+        skip_stream_access_check=skip_stream_access_check,
+    )
     return do_send_messages([message], mark_as_read=[sender.id] if read_by_sender else [])[0]
 
 
@@ -1467,7 +1474,7 @@ def send_rate_limited_pm_notification_to_bot_owner(
     Sends a direct message error notification to a bot's owner if one
     hasn't already been sent in the last 5 minutes.
     """
-    if sender.realm.is_zephyr_mirror_realm or sender.realm.deactivated:
+    if sender.realm.deactivated:
         return
 
     if not sender.is_bot or sender.bot_owner is None:
@@ -1799,7 +1806,6 @@ def check_message(
     elif addressee.is_private():
         user_profiles = addressee.user_profiles()
         mirror_message = client.name in [
-            "zephyr_mirror",
             "irc_mirror",
             "jabber_mirror",
             "JabberMirror",
@@ -1850,11 +1856,6 @@ def check_message(
 
     # We render messages later in the process.
     assert message.rendered_content is None
-
-    if client.name == "zephyr_mirror":
-        id = already_sent_mirrored_message_id(message)
-        if id is not None:
-            raise ZephyrMessageAlreadySentError(id)
 
     widget_content_dict = None
     if widget_content is not None:

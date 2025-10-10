@@ -860,7 +860,7 @@ def do_change_realm_plan_type(
         # can_access_all_users_group, set it back to the default
         # value.
         everyone_system_group = NamedUserGroup.objects.get(
-            name=SystemGroups.EVERYONE, realm=realm, is_system_group=True
+            name=SystemGroups.EVERYONE, realm_for_sharding=realm, is_system_group=True
         )
         if realm.can_access_all_users_group_id != everyone_system_group.id:
             do_change_realm_permission_group_setting(

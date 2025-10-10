@@ -294,7 +294,6 @@ def get_temp_user_group_id() -> dict[str, object]:
 
 @openapi_param_value_generator(["/user_groups/{user_group_id}/deactivate:post"])
 def get_temp_user_group_id_for_deactivation() -> dict[str, object]:
-    print(NamedUserGroup.objects.all())
     user_group, _ = NamedUserGroup.objects.get_or_create(
         name="temp-deactivation",
         realm=get_realm("zulip"),

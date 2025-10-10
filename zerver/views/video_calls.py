@@ -104,7 +104,7 @@ def register_zoom_user(request: HttpRequest) -> HttpResponse:
     assert request.user.is_authenticated
 
     oauth = get_zoom_session(request.user)
-    authorization_url, state = oauth.authorization_url(
+    authorization_url, _state = oauth.authorization_url(
         "https://zoom.us/oauth/authorize",
         state=json.dumps(
             {"realm": get_subdomain(request), "sid": get_zoom_sid(request)},

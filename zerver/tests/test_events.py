@@ -1372,7 +1372,7 @@ class NormalActionsTest(BaseAction):
         check_subscription_peer_add("events[1]", events[1])
 
         nobody_group = NamedUserGroup.objects.get(
-            name=SystemGroups.NOBODY, realm=iago.realm, is_system_group=True
+            name=SystemGroups.NOBODY, realm_for_sharding=iago.realm, is_system_group=True
         )
         private_stream = get_stream("private_stream", iago.realm)
         self.assertTrue(
@@ -1436,7 +1436,7 @@ class NormalActionsTest(BaseAction):
         self.assertEqual(event["stream_id"], private_stream.id)
 
         nobody_group = NamedUserGroup.objects.get(
-            name=SystemGroups.NOBODY, realm=iago.realm, is_system_group=True
+            name=SystemGroups.NOBODY, realm_for_sharding=iago.realm, is_system_group=True
         )
         private_stream = get_stream("private_stream", iago.realm)
         self.assertFalse(
@@ -2187,7 +2187,9 @@ class NormalActionsTest(BaseAction):
             )
         check_user_group_add("events[0]", events[0])
         nobody_group = NamedUserGroup.objects.get(
-            name=SystemGroups.NOBODY, realm=self.user_profile.realm, is_system_group=True
+            name=SystemGroups.NOBODY,
+            realm_for_sharding=self.user_profile.realm,
+            is_system_group=True,
         )
         self.assertEqual(events[0]["group"]["can_join_group"], nobody_group.id)
         self.assertEqual(
@@ -2195,11 +2197,15 @@ class NormalActionsTest(BaseAction):
             UserGroupMembersDict(direct_members=[12], direct_subgroups=[]),
         )
         everyone_group = NamedUserGroup.objects.get(
-            name=SystemGroups.EVERYONE, realm=self.user_profile.realm, is_system_group=True
+            name=SystemGroups.EVERYONE,
+            realm_for_sharding=self.user_profile.realm,
+            is_system_group=True,
         )
         self.assertEqual(events[0]["group"]["can_mention_group"], everyone_group.id)
         moderators_group = NamedUserGroup.objects.get(
-            name=SystemGroups.MODERATORS, realm=self.user_profile.realm, is_system_group=True
+            name=SystemGroups.MODERATORS,
+            realm_for_sharding=self.user_profile.realm,
+            is_system_group=True,
         )
         user_group = self.create_or_update_anonymous_group_for_setting(
             [othello], [moderators_group]
@@ -2391,7 +2397,7 @@ class NormalActionsTest(BaseAction):
             check_user_group_remove_subgroups("events[0]", events[0])
 
         nobody_group = NamedUserGroup.objects.get(
-            name=SystemGroups.NOBODY, realm=othello.realm, is_system_group=True
+            name=SystemGroups.NOBODY, realm_for_sharding=othello.realm, is_system_group=True
         )
         do_change_stream_group_based_setting(
             stream, setting_name, nobody_group, acting_user=othello
@@ -3289,7 +3295,9 @@ class NormalActionsTest(BaseAction):
 
     def test_realm_update_plan_type(self) -> None:
         realm = self.user_profile.realm
-        members_group = NamedUserGroup.objects.get(name=SystemGroups.MEMBERS, realm=realm)
+        members_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MEMBERS, realm_for_sharding=realm
+        )
         do_change_realm_permission_group_setting(
             realm, "can_access_all_users_group", members_group, acting_user=None
         )
@@ -3588,7 +3596,7 @@ class NormalActionsTest(BaseAction):
     def test_do_deactivate_user(self) -> None:
         user_profile = self.example_user("cordelia")
         members_group = NamedUserGroup.objects.get(
-            name=SystemGroups.MEMBERS, realm=user_profile.realm, is_system_group=True
+            name=SystemGroups.MEMBERS, realm_for_sharding=user_profile.realm, is_system_group=True
         )
         setting_group = self.create_or_update_anonymous_group_for_setting(
             [user_profile], [members_group]
@@ -3600,7 +3608,7 @@ class NormalActionsTest(BaseAction):
             acting_user=None,
         )
         hamletcharacters_group = NamedUserGroup.objects.get(
-            name="hamletcharacters", realm=self.user_profile.realm
+            name="hamletcharacters", realm_for_sharding=self.user_profile.realm
         )
         hamlet = self.example_user("hamlet")
         self.user_profile = hamlet
@@ -3760,10 +3768,10 @@ class NormalActionsTest(BaseAction):
 
         user_profile = self.example_user("cordelia")
         members_group = NamedUserGroup.objects.get(
-            name=SystemGroups.MEMBERS, realm=user_profile.realm, is_system_group=True
+            name=SystemGroups.MEMBERS, realm_for_sharding=user_profile.realm, is_system_group=True
         )
         hamletcharacters_group = NamedUserGroup.objects.get(
-            name="hamletcharacters", realm=self.user_profile.realm
+            name="hamletcharacters", realm_for_sharding=self.user_profile.realm
         )
 
         setting_group = self.create_or_update_anonymous_group_for_setting(
@@ -4453,7 +4461,7 @@ class RealmPropertyActionTest(BaseAction):
 
     def do_test_allow_system_group(self, setting_name: str) -> None:
         all_system_user_groups = NamedUserGroup.objects.filter(
-            realm=self.user_profile.realm,
+            realm_for_sharding=self.user_profile.realm,
             is_system_group=True,
         )
 
@@ -5336,7 +5344,7 @@ class SubscribeActionTest(BaseAction):
         moderators_group = NamedUserGroup.objects.get(
             name=SystemGroups.MODERATORS,
             is_system_group=True,
-            realm=self.user_profile.realm,
+            realm_for_sharding=self.user_profile.realm,
         )
 
         num_events = 1

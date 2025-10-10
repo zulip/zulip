@@ -69,6 +69,7 @@ from zerver.lib.stream_traffic import get_streams_traffic
 from zerver.lib.streams import (
     StreamDict,
     access_default_stream_group_by_id,
+    access_requested_group_permissions,
     access_stream_by_id,
     access_stream_by_name,
     access_stream_for_delete_or_update_requiring_metadata_access,
@@ -76,12 +77,10 @@ from zerver.lib.streams import (
     channel_events_topic_name,
     check_channel_creation_permissions,
     check_stream_name_available,
-    check_zephyr_realm_invite_conditions,
     create_stream_if_needed,
     do_get_streams,
     filter_stream_authorization_for_adding_subscribers,
     get_anonymous_group_membership_dict_for_streams,
-    get_stream_permission_default_group,
     get_stream_permission_policy_key,
     list_to_streams,
     stream_to_dict,
@@ -103,9 +102,7 @@ from zerver.lib.user_groups import (
     GroupSettingChangeRequest,
     UserGroupMembershipDetails,
     access_user_group_api_value_for_setting,
-    access_user_group_for_setting,
     get_group_setting_value_for_api,
-    get_role_based_system_groups_dict,
     get_system_user_group_by_name,
     parse_group_setting_value,
     validate_group_setting_value_change,
@@ -113,15 +110,7 @@ from zerver.lib.user_groups import (
 from zerver.lib.user_topics import get_users_with_user_topic_visibility_policy
 from zerver.lib.users import access_bot_by_id, bulk_access_users_by_email, bulk_access_users_by_id
 from zerver.lib.utils import assert_is_not_none
-from zerver.models import (
-    ChannelFolder,
-    Realm,
-    Stream,
-    UserGroup,
-    UserMessage,
-    UserProfile,
-    UserTopic,
-)
+from zerver.models import ChannelFolder, Stream, UserMessage, UserProfile, UserTopic
 from zerver.models.groups import SystemGroups
 from zerver.models.streams import StreamTopicsPolicyEnum
 from zerver.models.users import get_system_bot
@@ -168,7 +157,7 @@ def user_directly_controls_user(user_profile: UserProfile, target: UserProfile) 
 def deactivate_stream_backend(
     request: HttpRequest, user_profile: UserProfile, stream_id: int
 ) -> HttpResponse:
-    (stream, sub) = access_stream_for_delete_or_update_requiring_metadata_access(
+    (stream, _sub) = access_stream_for_delete_or_update_requiring_metadata_access(
         user_profile, stream_id
     )
     do_deactivate_stream(stream, acting_user=user_profile)
@@ -180,7 +169,7 @@ def deactivate_stream_backend(
 def add_default_stream(
     request: HttpRequest, user_profile: UserProfile, *, stream_id: Json[int]
 ) -> HttpResponse:
-    (stream, sub) = access_stream_by_id(user_profile, stream_id)
+    (stream, _sub) = access_stream_by_id(user_profile, stream_id)
     if stream.invite_only:
         raise JsonableError(_("Private channels cannot be made default."))
     do_add_default_stream(stream)
@@ -199,7 +188,7 @@ def create_default_stream_group(
 ) -> HttpResponse:
     streams = []
     for stream_name in stream_names:
-        (stream, sub) = access_stream_by_name(user_profile, stream_name)
+        (stream, _sub) = access_stream_by_name(user_profile, stream_name)
         streams.append(stream)
     do_create_default_stream_group(user_profile.realm, group_name, description, streams)
     return json_success(request)
@@ -239,7 +228,7 @@ def update_default_stream_group_streams(
     group = access_default_stream_group_by_id(user_profile.realm, group_id)
     streams = []
     for stream_name in stream_names:
-        (stream, sub) = access_stream_by_name(user_profile, stream_name)
+        (stream, _sub) = access_stream_by_name(user_profile, stream_name)
         streams.append(stream)
 
     if op == "add":
@@ -266,7 +255,7 @@ def remove_default_stream_group(
 def remove_default_stream(
     request: HttpRequest, user_profile: UserProfile, *, stream_id: Json[int]
 ) -> HttpResponse:
-    (stream, sub) = access_stream_by_id(
+    (stream, _sub) = access_stream_by_id(
         user_profile,
         stream_id,
         require_content_access=False,
@@ -347,11 +336,7 @@ def update_stream_backend(
         default_stream_ids = get_default_stream_ids_for_realm(stream.realm_id)
         proposed_is_default_stream = stream.id in default_stream_ids
 
-    if stream.realm.is_zephyr_mirror_realm:
-        # In the Zephyr mirroring model, history is unconditionally
-        # not public to subscribers, even for public streams.
-        proposed_history_public_to_subscribers = False
-    elif history_public_to_subscribers is not None:
+    if history_public_to_subscribers is not None:
         proposed_history_public_to_subscribers = history_public_to_subscribers
     elif is_private is not None:
         # By default, private streams have protected history while for
@@ -370,11 +355,7 @@ def update_stream_backend(
 
     # Public streams must be public to subscribers.
     if not proposed_is_private and not proposed_history_public_to_subscribers:
-        if stream.realm.is_zephyr_mirror_realm:
-            # All Zephyr realm streams violate this rule.
-            pass
-        else:
-            raise JsonableError(_("Invalid parameters"))
+        raise JsonableError(_("Invalid parameters"))
 
     # Ensure that a stream cannot be both a default stream for new users and private
     if proposed_is_private and proposed_is_default_stream:
@@ -668,50 +649,6 @@ def you_were_just_subscribed_message(
 RETENTION_DEFAULT: str | int = "realm_default"
 
 
-def access_requested_group_permissions(
-    user_profile: UserProfile,
-    realm: Realm,
-    request_settings_dict: dict[str, Any],
-) -> tuple[dict[str, UserGroup], dict[int, UserGroupMembersData]]:
-    anonymous_group_membership = {}
-    group_settings_map = {}
-    system_groups_name_dict = get_role_based_system_groups_dict(realm)
-    for setting_name, permission_configuration in Stream.stream_permission_group_settings.items():
-        assert setting_name in request_settings_dict
-        if request_settings_dict[setting_name] is not None:
-            setting_request_value = request_settings_dict[setting_name]
-            setting_value = parse_group_setting_value(
-                setting_request_value, system_groups_name_dict[SystemGroups.NOBODY]
-            )
-            group_settings_map[setting_name] = access_user_group_for_setting(
-                setting_value,
-                user_profile,
-                setting_name=setting_name,
-                permission_configuration=permission_configuration,
-            )
-            if (
-                setting_name in ["can_delete_any_message_group", "can_delete_own_message_group"]
-                and group_settings_map[setting_name].id
-                != system_groups_name_dict[SystemGroups.NOBODY].id
-                and not user_profile.can_set_delete_message_policy()
-            ):
-                raise JsonableError(_("Insufficient permission"))
-
-            if not isinstance(setting_value, int):
-                anonymous_group_membership[group_settings_map[setting_name].id] = setting_value
-        else:
-            group_settings_map[setting_name] = get_stream_permission_default_group(
-                setting_name, system_groups_name_dict, creator=user_profile
-            )
-            if permission_configuration.default_group_name == "stream_creator_or_nobody":
-                # Default for some settings like "can_administer_channel_group"
-                # is anonymous group with stream creator.
-                anonymous_group_membership[group_settings_map[setting_name].id] = (
-                    UserGroupMembersData(direct_subgroups=[], direct_members=[user_profile.id])
-                )
-    return group_settings_map, anonymous_group_membership
-
-
 @transaction.atomic(savepoint=False)
 @require_non_guest_user
 @typed_endpoint
@@ -765,8 +702,6 @@ def create_channel(
     is_subscribing_other_users = False
     if len(subscribers) > 0 and not all(user_id == user_profile.id for user_id in subscribers):
         is_subscribing_other_users = True
-
-    check_zephyr_realm_invite_conditions(is_subscribing_other_users, realm, invite_only)
 
     check_channel_creation_permissions(
         user_profile,
@@ -879,11 +814,6 @@ def add_subscriptions_backend(
         principals = []
 
     request_settings_dict = locals()
-    group_settings_map, anonymous_group_membership = access_requested_group_permissions(
-        user_profile,
-        realm,
-        request_settings_dict,
-    )
 
     folder: ChannelFolder | None = None
     if folder_id is not None:
@@ -910,32 +840,6 @@ def add_subscriptions_backend(
         validated_topics_policy = validate_topics_policy(topics_policy, user_profile)
         if validated_topics_policy is not None:
             stream_dict_copy["topics_policy"] = validated_topics_policy.value
-        stream_dict_copy["can_add_subscribers_group"] = group_settings_map[
-            "can_add_subscribers_group"
-        ]
-        stream_dict_copy["can_administer_channel_group"] = group_settings_map[
-            "can_administer_channel_group"
-        ]
-        stream_dict_copy["can_delete_any_message_group"] = group_settings_map[
-            "can_delete_any_message_group"
-        ]
-        stream_dict_copy["can_delete_own_message_group"] = group_settings_map[
-            "can_delete_own_message_group"
-        ]
-        stream_dict_copy["can_move_messages_out_of_channel_group"] = group_settings_map[
-            "can_move_messages_out_of_channel_group"
-        ]
-        stream_dict_copy["can_move_messages_within_channel_group"] = group_settings_map[
-            "can_move_messages_within_channel_group"
-        ]
-        stream_dict_copy["can_send_message_group"] = group_settings_map["can_send_message_group"]
-        stream_dict_copy["can_remove_subscribers_group"] = group_settings_map[
-            "can_remove_subscribers_group"
-        ]
-        stream_dict_copy["can_resolve_topics_group"] = group_settings_map[
-            "can_resolve_topics_group"
-        ]
-        stream_dict_copy["can_subscribe_group"] = group_settings_map["can_subscribe_group"]
         stream_dict_copy["folder"] = folder
 
         stream_dicts.append(stream_dict_copy)
@@ -952,7 +856,7 @@ def add_subscriptions_backend(
         user_profile,
         autocreate=True,
         is_default_stream=is_default_stream,
-        anonymous_group_membership=anonymous_group_membership,
+        request_settings_dict=request_settings_dict,
     )
 
     streams_categorized_by_permissions = filter_stream_authorization_for_adding_subscribers(
@@ -975,9 +879,6 @@ def add_subscriptions_backend(
 
     # Newly created streams are also authorized for the creator
     streams = authorized_streams + created_streams
-
-    for stream in streams:
-        check_zephyr_realm_invite_conditions(is_subscribing_other_users, realm, stream.invite_only)
 
     if is_subscribing_other_users:
         subscribers = bulk_principals_to_user_profiles(principals, user_profile)
@@ -1133,7 +1034,7 @@ def send_user_subscribed_and_new_channel_notifications(
             )
 
     # Send an initial "channel created" notification to newly created channel events topic.
-    if not user_profile.realm.is_zephyr_mirror_realm and len(created_streams) > 0:
+    if len(created_streams) > 0:
         sender = get_system_bot(settings.NOTIFICATION_BOT, user_profile.realm_id)
         for stream in created_streams:
             with override_language(stream.realm.default_language):
@@ -1149,8 +1050,6 @@ def send_user_subscribed_and_new_channel_notifications(
                 )
                 new_channel_message = None
 
-                # Policy `public_protected_history` is missing here as those channels don't get
-                # channel creation notification.
                 if policy_key == "web_public":
                     new_channel_message = _(
                         "**Web-public** channel created by {user_name}. **Description:**"
@@ -1192,7 +1091,7 @@ def get_subscribers_backend(
     *,
     stream_id: Annotated[NonNegativeInt, ApiParamConfig("stream", path_only=True)],
 ) -> HttpResponse:
-    (stream, sub) = access_stream_by_id(
+    (stream, _sub) = access_stream_by_id(
         user_profile,
         stream_id,
         require_content_access=False,
@@ -1242,7 +1141,7 @@ def get_stream_backend(
     *,
     stream_id: PathOnly[int],
 ) -> HttpResponse:
-    (stream, sub) = access_stream_by_id(user_profile, stream_id, require_content_access=False)
+    (stream, _sub) = access_stream_by_id(user_profile, stream_id, require_content_access=False)
 
     recent_traffic = get_streams_traffic({stream.id}, user_profile.realm)
     anonymous_group_membership = get_anonymous_group_membership_dict_for_streams([stream])
@@ -1281,7 +1180,7 @@ def get_topics_backend(
     else:
         assert user_profile is not None
 
-        (stream, sub) = access_stream_by_id(user_profile, stream_id)
+        (stream, _sub) = access_stream_by_id(user_profile, stream_id)
 
         assert stream.recipient_id is not None
         result = get_topic_history_for_stream(
@@ -1303,7 +1202,7 @@ def delete_in_topic(
     stream_id: PathOnly[NonNegativeInt],
     topic_name: str,
 ) -> HttpResponse:
-    stream, ignored_sub = access_stream_by_id(user_profile, stream_id)
+    stream, _sub = access_stream_by_id(user_profile, stream_id)
     topic_name = maybe_rename_general_chat_to_empty_topic(topic_name)
 
     messages = messages_for_topic(
@@ -1374,7 +1273,7 @@ def json_get_stream_id(
     *,
     stream_name: Annotated[str, ApiParamConfig("stream")],
 ) -> HttpResponse:
-    (stream, sub) = access_stream_by_name(user_profile, stream_name)
+    (stream, _sub) = access_stream_by_name(user_profile, stream_name)
     return json_success(request, data={"stream_id": stream.id})
 
 
@@ -1469,7 +1368,7 @@ def get_stream_email_address(
     sender_id: Json[NonNegativeInt] | None = None,
     stream_id: Annotated[NonNegativeInt, ApiParamConfig("stream", path_only=True)],
 ) -> HttpResponse:
-    (stream, sub) = access_stream_by_id(
+    (stream, _sub) = access_stream_by_id(
         user_profile,
         stream_id,
     )

@@ -642,14 +642,9 @@
     border-radius: 5px;
     border: 0.5px solid hsl(0deg 0% 0% / 13%);
     overflow: hidden;
-}
 
-.inbox-folder-components
-    .inbox-folder-channel:last-child
-    .inbox-topic-container,
-#inbox-direct-messages-container {
-    .inbox-row:last-child {
-        /* 8px at 16px / 1em */
+    &:has(.inbox-row:not(.hidden_by_filters)),
+    &:has(.inbox-header:not(.hidden_by_filters)) {
         margin-bottom: 0.5em;
     }
 }

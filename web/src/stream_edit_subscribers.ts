@@ -237,7 +237,7 @@ async function render_subscriber_list_widget(
 
     // Because we're using `retry_on_failure=true`, this will only return once it
     // succeeds, so we can't get `null`.
-    const user_ids = await peer_data.get_all_subscribers(sub.stream_id, true);
+    const user_ids = await peer_data.get_subscribers_with_possible_fetch(sub.stream_id, true);
     assert(user_ids !== null);
 
     // Make sure we're still editing this stream after waiting for subscriber data.
@@ -545,7 +545,7 @@ export function update_subscribers_list(sub: StreamSubscription): void {
         // inefficient for the single-user case, but using the big-hammer
         // approach is superior when you do things like add subscribers
         // from an existing stream or a user group.
-        const subscriber_ids = peer_data.get_subscribers(sub.stream_id);
+        const subscriber_ids = peer_data.get_subscriber_ids_assert_loaded(sub.stream_id);
         update_subscribers_list_widget(subscriber_ids);
     }
 }

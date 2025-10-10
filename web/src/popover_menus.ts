@@ -33,7 +33,8 @@ type PopoverName =
     | "buddy_list"
     | "stream_actions_popover"
     | "color_picker_popover"
-    | "show_channels_sidebar";
+    | "show_channels_sidebar"
+    | "send_later_options";
 
 export const popover_instances: Record<PopoverName, tippy.Instance | null> = {
     compose_control_buttons: null,
@@ -56,6 +57,7 @@ export const popover_instances: Record<PopoverName, tippy.Instance | null> = {
     stream_actions_popover: null,
     color_picker_popover: null,
     show_channels_sidebar: null,
+    send_later_options: null,
 };
 
 // Font size in em for popover derived from popover font size being
@@ -196,10 +198,6 @@ export const default_popover_props: Partial<tippy.Props> = {
     trigger: "click",
     interactive: true,
     hideOnClick: true,
-    /* The light-border TippyJS theme is a bit of a misnomer; it
-       is a popover styling similar to Bootstrap.  We've also customized
-       its CSS to support Zulip's dark theme. */
-    theme: "light-border",
     // The maxWidth has been set to "none" to avoid the default value of 300px.
     maxWidth: "none",
     touch: true,

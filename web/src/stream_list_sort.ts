@@ -219,9 +219,8 @@ export function sort_groups(
         }
     }
 
-    const folder_sections_sorted = [...folder_sections.values()].sort(
-        (section_a, section_b) => section_a.order! - section_b.order!,
-    );
+    const folder_sections_sorted = [...folder_sections.values()];
+    folder_sections_sorted.sort((section_a, section_b) => section_a.order! - section_b.order!);
 
     if (
         pinned_section.streams.length > 0 ||

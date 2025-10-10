@@ -231,7 +231,7 @@ function get_quote_target(opts: {message_id?: number; quote_content?: string | u
 }
 
 export function quote_message(opts: {
-    message_id: number;
+    message_id?: number;
     quote_content?: string | undefined;
     keep_composebox_empty?: boolean;
     reply_type?: "personal";

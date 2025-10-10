@@ -349,7 +349,7 @@ export function show(filter?: Filter): void {
                 pm_list.handle_narrow_activated(filter);
             },
             $view: $("#inbox-view"),
-            update_compose: compose_closed_ui.update_buttons_for_non_specific_views,
+            update_compose: compose_closed_ui.update_buttons,
             // We already did a check above for that.
             is_visible: () => false,
             set_visible: inbox_util.set_visible,
@@ -367,7 +367,7 @@ export function show(filter?: Filter): void {
             );
         },
         $view: $("#inbox-view"),
-        update_compose: compose_closed_ui.update_buttons_for_non_specific_views,
+        update_compose: compose_closed_ui.update_buttons,
         is_visible: () => normal_inbox_view_is_visible,
         set_visible: inbox_util.set_visible,
         complete_rerender,
@@ -474,7 +474,7 @@ function format_dm(
             name: people.get_display_full_name(recipient_id),
             status_emoji_info: user_status.get_status_emoji(recipient_id),
         }))
-        .sort((a, b) => util.strcmp(a.name, b.name))
+        .toSorted((a, b) => util.strcmp(a.name, b.name))
         .map((user_info) => render_user_with_status_icon(user_info));
 
     let user_circle_class: string | false | undefined;
@@ -812,7 +812,7 @@ function get_sorted_stream_keys(channel_folder_id: number | undefined = undefine
         return util.strcmp(stream_name_a, stream_name_b);
     }
 
-    return [...topics_dict.keys()].sort(compare_function);
+    return [...topics_dict.keys()].toSorted(compare_function);
 }
 
 function get_sorted_stream_topic_dict(): Map<string, Map<string, TopicContext>> {
@@ -828,11 +828,12 @@ function get_sorted_stream_topic_dict(): Map<string, Map<string, TopicContext>> 
 function get_sorted_row_dict<T extends DirectMessageContext | TopicContext>(
     row_dict: Map<string, T>,
 ): Map<string, T> {
-    return new Map([...row_dict].sort(([, a], [, b]) => b.latest_msg_id - a.latest_msg_id));
+    return new Map([...row_dict].toSorted(([, a], [, b]) => b.latest_msg_id - a.latest_msg_id));
 }
 
 function sort_channel_folders(): void {
-    const sorted_channel_folders = [...channel_folders_dict.values()].sort((a, b) => {
+    const sorted_channel_folders = [...channel_folders_dict.values()];
+    sorted_channel_folders.sort((a, b) => {
         // Sort OTHER_CHANNELS_FOLDER_ID last, then by order with PINNED_CHANNEL_FOLDER_ID first.
         if (a.id === OTHER_CHANNELS_FOLDER_ID) {
             return 1;
@@ -1171,7 +1172,7 @@ function inbox_view_dropdown_options(
     return views_util.filters_dropdown_options(current_value, inbox_util.is_channel_view());
 }
 
-export function complete_rerender(): void {
+export function complete_rerender(coming_from_other_views = false): void {
     if (!inbox_util.is_visible()) {
         return;
     }
@@ -1222,15 +1223,17 @@ export function complete_rerender(): void {
             first_filter = filters.values().next();
         }
 
-        // If the focus is not on the inbox rows, the inbox view scrolls
-        // down when moving from other views to the inbox view. To avoid
-        // this, we scroll to top before restoring focus via revive_current_focus.
-        if (!is_list_focused()) {
-            window.scrollTo(0, 0);
-        } else if (last_scroll_offset !== undefined) {
-            // It is important to restore the scroll position as soon
-            // as the rendering is complete to avoid scroll jumping.
-            window.scrollTo(0, last_scroll_offset);
+        if (coming_from_other_views) {
+            if (last_scroll_offset !== undefined) {
+                // It is important to restore the scroll position as soon
+                // as the rendering is complete to avoid scroll jumping.
+                window.scrollTo(0, last_scroll_offset);
+            } else {
+                // If the focus is not on the inbox rows, the inbox view scrolls
+                // down when moving from other views to the inbox view. To avoid
+                // this, we scroll to top before restoring focus via revive_current_focus.
+                window.scrollTo(0, 0);
+            }
         }
 
         revive_current_focus();

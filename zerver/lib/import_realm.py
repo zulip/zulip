@@ -5,7 +5,7 @@ import shutil
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from datetime import datetime, timedelta, timezone
 from difflib import unified_diff
-from typing import Any
+from typing import Any, TypeAlias
 
 import bmemcached
 import orjson
@@ -33,7 +33,7 @@ from zerver.actions.realm_settings import (
 from zerver.actions.user_settings import do_change_avatar_fields
 from zerver.lib.avatar_hash import user_avatar_base_path_from_ids
 from zerver.lib.bulk_create import bulk_set_users_or_streams_recipient_fields
-from zerver.lib.export import DATE_FIELDS, Field, Path, Record, TableData, TableName
+from zerver.lib.export import DATE_FIELDS, Field, Path, Record, TableName
 from zerver.lib.markdown import markdown_convert
 from zerver.lib.markdown import version as markdown_version
 from zerver.lib.message import get_last_message_id
@@ -117,6 +117,8 @@ from zerver.models.realms import get_realm
 from zerver.models.recipients import get_direct_message_group_hash
 from zerver.models.users import get_system_bot, get_user_profile_by_id
 from zproject.backends import AUTH_BACKEND_NAME_MAP
+
+ImportedTableData: TypeAlias = dict[str, list[Record]]
 
 realm_tables = [
     ("zerver_realmauthenticationmethod", RealmAuthenticationMethod, "realmauthenticationmethod"),
@@ -208,7 +210,7 @@ message_id_to_attachments: dict[str, dict[int, list[str]]] = {
 }
 
 
-def map_messages_to_attachments(data: TableData) -> None:
+def map_messages_to_attachments(data: ImportedTableData) -> None:
     for attachment in data["zerver_attachment"]:
         for message_id in attachment["messages"]:
             message_id_to_attachments["zerver_message"][message_id].append(attachment["path_id"])
@@ -231,14 +233,14 @@ def update_id_map(table: TableName, old_id: int, new_id: int) -> None:
     ID_MAP[table][old_id] = new_id
 
 
-def fix_datetime_fields(data: TableData, table: TableName) -> None:
+def fix_datetime_fields(data: ImportedTableData, table: TableName) -> None:
     for item in data[table]:
         for field_name in DATE_FIELDS[table]:
             if item[field_name] is not None:
                 item[field_name] = datetime.fromtimestamp(item[field_name], tz=timezone.utc)
 
 
-def fix_upload_links(data: TableData, message_table: TableName) -> None:
+def fix_upload_links(data: ImportedTableData, message_table: TableName) -> None:
     """
     Because the URLs for uploaded files encode the realm ID of the
     organization being imported (which is only determined at import
@@ -260,7 +262,7 @@ def fix_upload_links(data: TableData, message_table: TableName) -> None:
 
 
 def fix_stream_permission_group_settings(
-    data: TableData, system_groups_name_dict: dict[str, NamedUserGroup]
+    data: ImportedTableData, system_groups_name_dict: dict[str, NamedUserGroup]
 ) -> None:
     table = get_db_table(Stream)
     for stream in data[table]:
@@ -289,7 +291,7 @@ def fix_stream_permission_group_settings(
             )
 
 
-def create_subscription_events(data: TableData, realm_id: int) -> None:
+def create_subscription_events(data: ImportedTableData, realm_id: int) -> None:
     """
     When the export data doesn't contain the table `zerver_realmauditlog`,
     this function creates RealmAuditLog objects for `subscription_created`
@@ -332,7 +334,7 @@ def create_subscription_events(data: TableData, realm_id: int) -> None:
     RealmAuditLog.objects.bulk_create(all_subscription_logs)
 
 
-def fix_service_tokens(data: TableData, table: TableName) -> None:
+def fix_service_tokens(data: ImportedTableData, table: TableName) -> None:
     """
     The tokens in the services are created by 'generate_api_key'.
     As the tokens are unique, they should be re-created for the imports.
@@ -341,7 +343,7 @@ def fix_service_tokens(data: TableData, table: TableName) -> None:
         item["token"] = generate_api_key()
 
 
-def process_direct_message_group_hash(data: TableData, table: TableName) -> None:
+def process_direct_message_group_hash(data: ImportedTableData, table: TableName) -> None:
     """
     Build new direct message group hashes with the updated ids of the users
     """
@@ -350,7 +352,7 @@ def process_direct_message_group_hash(data: TableData, table: TableName) -> None
         direct_message_group["huddle_hash"] = get_direct_message_group_hash(user_id_list)
 
 
-def get_direct_message_groups_from_subscription(data: TableData, table: TableName) -> None:
+def get_direct_message_groups_from_subscription(data: ImportedTableData, table: TableName) -> None:
     """
     Extract the IDs of the user_profiles involved in a direct message group from
     the subscription object
@@ -369,7 +371,7 @@ def get_direct_message_groups_from_subscription(data: TableData, table: TableNam
             )
 
 
-def fix_customprofilefield(data: TableData) -> None:
+def fix_customprofilefield(data: ImportedTableData) -> None:
     """
     In CustomProfileField with 'field_type' like 'USER', the IDs need to be
     re-mapped.
@@ -530,7 +532,7 @@ def fix_message_edit_history(
         message["edit_history"] = orjson.dumps(edit_history).decode()
 
 
-def current_table_ids(data: TableData, table: TableName) -> list[int]:
+def current_table_ids(data: ImportedTableData, table: TableName) -> list[int]:
     """
     Returns the ids present in the current table
     """
@@ -560,7 +562,7 @@ def allocate_ids(model_class: Any, count: int) -> list[int]:
     return [item[0] for item in query]
 
 
-def convert_to_id_fields(data: TableData, table: TableName, field_name: Field) -> None:
+def convert_to_id_fields(data: ImportedTableData, table: TableName, field_name: Field) -> None:
     """
     When Django gives us dict objects via model_to_dict, the foreign
     key fields are `foo`, but we want `foo_id` for the bulk insert.
@@ -574,7 +576,7 @@ def convert_to_id_fields(data: TableData, table: TableName, field_name: Field) -
 
 
 def re_map_foreign_keys(
-    data: TableData,
+    data: ImportedTableData,
     table: TableName,
     field_name: Field,
     related_table: TableName,
@@ -585,7 +587,7 @@ def re_map_foreign_keys(
     """
     This is a wrapper function for all the realm data tables
     and only avatar and attachment records need to be passed through the internal function
-    because of the difference in data format (TableData corresponding to realm data tables
+    because of the difference in data format (ImportedTableData corresponding to realm data tables
     and List[Record] corresponding to the avatar and attachment records)
     """
 
@@ -653,7 +655,7 @@ def re_map_foreign_keys_internal(
             item[field_name] = new_id
 
 
-def re_map_realm_emoji_codes(data: TableData, *, table_name: str) -> None:
+def re_map_realm_emoji_codes(data: ImportedTableData, *, table_name: str) -> None:
     """
     Some tables, including Reaction and UserStatus, contain a form of
     foreign key reference to the RealmEmoji table in the form of
@@ -683,7 +685,7 @@ def re_map_realm_emoji_codes(data: TableData, *, table_name: str) -> None:
 
 
 def re_map_foreign_keys_many_to_many(
-    data: TableData,
+    data: ImportedTableData,
     table: TableName,
     field_name: Field,
     related_table: TableName,
@@ -733,13 +735,13 @@ def re_map_foreign_keys_many_to_many_internal(
     return new_id_list
 
 
-def fix_bitfield_keys(data: TableData, table: TableName, field_name: Field) -> None:
+def fix_bitfield_keys(data: ImportedTableData, table: TableName, field_name: Field) -> None:
     for item in data[table]:
         item[field_name] = item[field_name + "_mask"]
         del item[field_name + "_mask"]
 
 
-def remove_denormalized_recipient_column_from_data(data: TableData) -> None:
+def remove_denormalized_recipient_column_from_data(data: ImportedTableData) -> None:
     """
     The recipient column shouldn't be imported, we'll set the correct values
     when Recipient table gets imported.
@@ -762,7 +764,7 @@ def get_db_table(model_class: Any) -> str:
     return model_class._meta.db_table
 
 
-def update_model_ids(model: Any, data: TableData, related_table: TableName) -> None:
+def update_model_ids(model: Any, data: ImportedTableData, related_table: TableName) -> None:
     table = get_db_table(model)
 
     # Important: remapping usermessage rows is
@@ -777,7 +779,7 @@ def update_model_ids(model: Any, data: TableData, related_table: TableName) -> N
     re_map_foreign_keys(data, table, "id", related_table=related_table, id_field=True)
 
 
-def bulk_import_user_message_data(data: TableData, dump_file_id: int) -> None:
+def bulk_import_user_message_data(data: ImportedTableData, dump_file_id: int) -> None:
     model = UserMessage
     table = "zerver_usermessage"
     lst = data[table]
@@ -810,7 +812,7 @@ def bulk_import_user_message_data(data: TableData, dump_file_id: int) -> None:
     logging.info("Successfully imported %s from %s[%s].", model, table, dump_file_id)
 
 
-def bulk_import_model(data: TableData, model: Any, dump_file_id: str | None = None) -> None:
+def bulk_import_model(data: ImportedTableData, model: Any, dump_file_id: str | None = None) -> None:
     table = get_db_table(model)
     # TODO, deprecate dump_file_id
     model.objects.bulk_create(model(**item) for item in data[table])
@@ -820,7 +822,7 @@ def bulk_import_model(data: TableData, model: Any, dump_file_id: str | None = No
         logging.info("Successfully imported %s from %s[%s].", model, table, dump_file_id)
 
 
-def bulk_import_named_user_groups(data: TableData) -> None:
+def bulk_import_named_user_groups(data: ImportedTableData) -> None:
     vals = [
         (
             group["usergroup_ptr_id"],
@@ -854,7 +856,7 @@ def bulk_import_named_user_groups(data: TableData) -> None:
 # correctly import multiple realms into the same server, we need to
 # check if a Client object already exists, and so we need to support
 # remap all Client IDs to the values in the new DB.
-def bulk_import_client(data: TableData, model: Any, table: TableName) -> None:
+def bulk_import_client(data: ImportedTableData, model: Any, table: TableName) -> None:
     for item in data[table]:
         try:
             client = Client.objects.get(name=item["name"])
@@ -880,7 +882,7 @@ def set_subscriber_count_for_channels(realm: Realm) -> None:
 
 
 def fix_subscriptions_is_user_active_column(
-    data: TableData, user_profiles: list[UserProfile], crossrealm_user_ids: set[int]
+    data: ImportedTableData, user_profiles: list[UserProfile], crossrealm_user_ids: set[int]
 ) -> None:
     table = get_db_table(Subscription)
     user_id_to_active_status = {user.id: user.is_active for user in user_profiles}
@@ -1156,7 +1158,7 @@ def import_uploads(
                     future.result()
 
 
-def disable_restricted_authentication_methods(data: TableData) -> None:
+def disable_restricted_authentication_methods(data: ImportedTableData) -> None:
     """
     Should run only with settings.BILLING_ENABLED. Ensures that we only
     enable authentication methods that are available without needing a plan.
@@ -2105,7 +2107,7 @@ def import_message_data(realm: Realm, sender_map: dict[int, Record], import_dir:
         dump_file_id += 1
 
 
-def import_attachments(data: TableData) -> None:
+def import_attachments(data: ImportedTableData) -> None:
     # Clean up the data in zerver_attachment that is not
     # relevant to our many-to-many import.
     fix_datetime_fields(data, "zerver_attachment")
@@ -2146,7 +2148,7 @@ def import_attachments(data: TableData) -> None:
         ]
 
         # Create our table data for insert.
-        m2m_data: TableData = {m2m_table_name: m2m_rows}
+        m2m_data: ImportedTableData = {m2m_table_name: m2m_rows}
         convert_to_id_fields(m2m_data, m2m_table_name, parent_singular)
         convert_to_id_fields(m2m_data, m2m_table_name, child_singular)
         m2m_rows = m2m_data[m2m_table_name]
@@ -2193,7 +2195,7 @@ def import_attachments(data: TableData) -> None:
             logging.info("Successfully imported M2M table %s", m2m_table_name)
 
 
-def fix_attachments_data(attachment_data: TableData) -> None:
+def fix_attachments_data(attachment_data: ImportedTableData) -> None:
     for attachment in attachment_data["zerver_attachment"]:
         attachment["path_id"] = path_maps["old_attachment_path_to_new_path"][attachment["path_id"]]
 
@@ -2205,7 +2207,7 @@ def fix_attachments_data(attachment_data: TableData) -> None:
                 attachment["content_type"] = guessed_content_type
 
 
-def create_image_attachments(realm: Realm, attachment_data: TableData) -> None:
+def create_image_attachments(realm: Realm, attachment_data: ImportedTableData) -> None:
     for attachment in attachment_data["zerver_attachment"]:
         if attachment["content_type"] not in THUMBNAIL_ACCEPT_IMAGE_TYPES:
             continue
@@ -2260,7 +2262,7 @@ def add_users_to_system_user_groups(
 ) -> None:
     full_members_system_group = NamedUserGroup.objects.get(
         name=SystemGroups.FULL_MEMBERS,
-        realm=realm,
+        realm_for_sharding=realm,
         is_system_group=True,
     )
 

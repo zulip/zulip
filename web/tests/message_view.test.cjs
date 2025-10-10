@@ -279,7 +279,7 @@ run_test("show_empty_narrow_message", ({mock_template, override}) => {
 
     // for non-subbed public stream
     const rome_id = 99;
-    stream_data.add_sub({name: "ROME", stream_id: rome_id});
+    stream_data.add_sub_for_tests({name: "ROME", stream_id: rome_id});
     current_filter = set_filter([["stream", rome_id.toString()]]);
     narrow_banner.show_empty_narrow_message(current_filter);
     assert.equal(
@@ -317,7 +317,11 @@ run_test("show_empty_narrow_message", ({mock_template, override}) => {
 
     // for web-public stream for spectator
     const web_public_id = 1231;
-    stream_data.add_sub({name: "web-public-stream", stream_id: web_public_id, is_web_public: true});
+    stream_data.add_sub_for_tests({
+        name: "web-public-stream",
+        stream_id: web_public_id,
+        is_web_public: true,
+    });
     current_filter = set_filter([
         ["stream", web_public_id.toString()],
         ["topic", "foo"],
@@ -472,7 +476,7 @@ run_test("show_empty_narrow_message", ({mock_template, override}) => {
     assert.equal(
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
-            "translated: You have not sent any direct messages to yourself yet!",
+            "translated: You haven't sent yourself any notes yet!",
             "translated HTML: Use this space for personal notes, or to test out Zulip features.",
         ),
     );
@@ -555,7 +559,9 @@ run_test("show_empty_narrow_message", ({mock_template, override}) => {
     narrow_banner.show_empty_narrow_message(current_filter);
     assert.equal(
         $(".empty_feed_notice_main").html(),
-        empty_narrow_html("translated: This user does not exist!"),
+        empty_narrow_html(
+            "translated: This user doesn't exist, or you are not allowed to view any of their messages.",
+        ),
     );
 
     current_filter = set_filter([
@@ -583,7 +589,7 @@ run_test("show_empty_narrow_message", ({mock_template, override}) => {
         name: "my stream",
         stream_id: my_stream_id,
     };
-    stream_data.add_sub(my_stream);
+    stream_data.add_sub_for_tests(my_stream);
     stream_data.subscribe_myself(my_stream);
     current_filter = set_filter([["stream", my_stream_id.toString()]]);
     const list = new MessageList({
@@ -678,7 +684,7 @@ run_test("show_search_stopwords", ({mock_template, override}) => {
     );
 
     const streamA_id = 88;
-    stream_data.add_sub({name: "streamA", stream_id: streamA_id});
+    stream_data.add_sub_for_tests({name: "streamA", stream_id: streamA_id});
     current_filter = set_filter([
         ["stream", streamA_id.toString()],
         ["search", "what about grail"],
@@ -706,8 +712,8 @@ run_test("show_invalid_narrow_message", ({mock_template}) => {
 
     const streamA_id = 88;
     const streamB_id = 77;
-    stream_data.add_sub({name: "streamA", stream_id: streamA_id});
-    stream_data.add_sub({name: "streamB", stream_id: streamB_id});
+    stream_data.add_sub_for_tests({name: "streamA", stream_id: streamA_id});
+    stream_data.add_sub_for_tests({name: "streamB", stream_id: streamB_id});
 
     let current_filter = set_filter([
         ["stream", streamA_id.toString()],
@@ -775,7 +781,7 @@ run_test("narrow_to_compose_target streams", ({override, override_rewire}) => {
 
     compose_state.set_message_type("stream");
     const rome_id = 99;
-    stream_data.add_sub({name: "ROME", stream_id: rome_id, topics_policy: "inherit"});
+    stream_data.add_sub_for_tests({name: "ROME", stream_id: rome_id, topics_policy: "inherit"});
     compose_state.set_stream_id(99);
 
     // Test with existing topic
@@ -921,7 +927,7 @@ run_test("narrow_compute_title", () => {
         name: "Foo",
         stream_id: foo_stream_id,
     };
-    stream_data.add_sub(sub);
+    stream_data.add_sub_for_tests(sub);
 
     filter = new Filter([
         {operator: "stream", operand: foo_stream_id.toString()},

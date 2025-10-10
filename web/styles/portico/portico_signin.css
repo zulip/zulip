@@ -1499,6 +1499,10 @@ button#register_auth_button_gitlab {
     }
 }
 
+#realm-creation-import-from-wrapper #import_from[disabled] {
+    cursor: not-allowed;
+}
+
 #realm-creation-import-from-wrapper .extra-info-realm-creation-import-from {
     padding-top: 5px;
 }
@@ -1555,4 +1559,27 @@ button#register_auth_button_gitlab {
     text-overflow: ellipsis;
     overflow: hidden;
     white-space: nowrap;
+}
+
+#cancel-slack-import {
+    color: hsl(200deg 100% 40%);
+    text-decoration: none;
+
+    &:hover,
+    &:focus {
+        cursor: pointer;
+        color: hsl(200.16deg 100% 25.1%);
+        text-decoration: underline;
+    }
+}
+
+#realm-creation-form-slack-import .register-button {
+    &[disabled] {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+}
+
+.self-hosting-login-help-text {
+    margin-top: 10px;
 }

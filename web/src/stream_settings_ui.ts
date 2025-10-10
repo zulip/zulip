@@ -125,10 +125,6 @@ function selectText(element: Node): void {
     sel.addRange(range);
 }
 
-function should_list_all_streams(): boolean {
-    return !realm.realm_is_zephyr_mirror_realm;
-}
-
 export function toggle_pin_to_top_stream(sub: StreamSubscription): void {
     stream_settings_api.set_stream_property(sub, {property: "pin_to_top", value: !sub.pin_to_top});
 }
@@ -539,8 +535,12 @@ function triage_stream(left_panel_params: LeftPanelParams, sub: StreamSubscripti
         return "rejected";
     }
 
-    if (left_panel_params.show_not_subscribed && sub.subscribed) {
-        // reject subscribed streams
+    if (
+        left_panel_params.show_available &&
+        (sub.subscribed || !stream_data.can_toggle_subscription(sub))
+    ) {
+        // reject subscribed streams and unsubscribed streams
+        // that user does not have permission to subscribe to.
         return "rejected";
     }
 
@@ -627,7 +627,7 @@ export function update_empty_left_panel_message(): void {
         has_streams =
             stream_data.subscribed_subs().length > 0 ||
             $("#channels_overlay_container .stream-row:not(.notdisplayed)").length > 0;
-    } else if (stream_ui_updates.is_not_subscribed_stream_tab_active()) {
+    } else if (stream_ui_updates.is_available_stream_tab_active()) {
         has_streams =
             stream_data.unsubscribed_subs().length > 0 ||
             $("#channels_overlay_container .stream-row:not(.notdisplayed)").length > 0;
@@ -657,8 +657,8 @@ export function update_empty_left_panel_message(): void {
     $(".no-streams-to-show").children().hide();
     if (stream_ui_updates.is_subscribed_stream_tab_active()) {
         $(".subscribed_streams_tab_empty_text").show();
-    } else if (stream_ui_updates.is_not_subscribed_stream_tab_active()) {
-        $(".not_subscribed_streams_tab_empty_text").show();
+    } else if (stream_ui_updates.is_available_stream_tab_active()) {
+        $(".available_streams_tab_empty_text").show();
     } else {
         $(".all_streams_tab_empty_text").show();
     }
@@ -729,7 +729,7 @@ let sort_order = "by-stream-name";
 type LeftPanelParams = {
     input: string;
     show_subscribed: boolean;
-    show_not_subscribed: boolean;
+    show_available: boolean;
     sort_order: string;
 };
 
@@ -739,7 +739,7 @@ export function get_left_panel_params(): LeftPanelParams {
     return {
         input,
         show_subscribed: stream_ui_updates.show_subscribed,
-        show_not_subscribed: stream_ui_updates.show_not_subscribed,
+        show_available: stream_ui_updates.show_available,
         sort_order,
     };
 }
@@ -757,17 +757,17 @@ export function switch_stream_tab(tab_name: string): void {
     switch (tab_name) {
         case "all-streams": {
             stream_ui_updates.set_show_subscribed(false);
-            stream_ui_updates.set_show_not_subscribed(false);
+            stream_ui_updates.set_show_available(false);
             break;
         }
         case "subscribed": {
             stream_ui_updates.set_show_subscribed(true);
-            stream_ui_updates.set_show_not_subscribed(false);
+            stream_ui_updates.set_show_available(false);
             break;
         }
-        case "not-subscribed": {
+        case "available": {
             stream_ui_updates.set_show_subscribed(false);
-            stream_ui_updates.set_show_not_subscribed(true);
+            stream_ui_updates.set_show_available(true);
             break;
         }
         // No default
@@ -894,12 +894,12 @@ function setup_page(callback: () => void): void {
         // Reset our internal state to reflect that we're initially in
         // the "Subscribed" tab if we're reopening "Stream settings".
         stream_ui_updates.set_show_subscribed(true);
-        stream_ui_updates.set_show_not_subscribed(false);
+        stream_ui_updates.set_show_available(false);
         toggler = components.toggle({
             child_wants_focus: true,
             values: [
                 {label: $t({defaultMessage: "Subscribed"}), key: "subscribed"},
-                {label: $t({defaultMessage: "Not subscribed"}), key: "not-subscribed"},
+                {label: $t({defaultMessage: "Available"}), key: "available"},
                 {label: $t({defaultMessage: "All"}), key: "all-streams"},
             ],
             callback(_value, key) {
@@ -907,13 +907,11 @@ function setup_page(callback: () => void): void {
             },
         });
 
-        if (should_list_all_streams()) {
-            const $toggler_elem = toggler.get();
-            $("#channels_overlay_container .list-toggler-container").prepend($toggler_elem);
-        }
+        const $toggler_elem = toggler.get();
+        $("#channels_overlay_container .list-toggler-container").prepend($toggler_elem);
         if (current_user.is_guest) {
             toggler.disable_tab("all-streams");
-            toggler.disable_tab("not-subscribed");
+            toggler.disable_tab("available");
         }
 
         // show the "Stream settings" header by default.
@@ -939,7 +937,7 @@ function setup_page(callback: () => void): void {
                 settings_data.user_can_create_private_streams() ||
                 settings_data.user_can_create_public_streams() ||
                 settings_data.user_can_create_web_public_streams(),
-            can_view_all_streams: !current_user.is_guest && should_list_all_streams(),
+            can_view_all_streams: !current_user.is_guest,
             max_stream_name_length: realm.max_stream_name_length,
             max_stream_description_length: realm.max_stream_description_length,
             is_owner: current_user.is_owner,
@@ -988,8 +986,7 @@ function setup_page(callback: () => void): void {
         // When hitting Enter in the stream creation box, we open the
         // "create stream" UI with the stream name prepopulated.  This
         // is only useful if the user has permission to create
-        // streams, either explicitly via user_can_create_streams, or
-        // implicitly because realm.realm_is_zephyr_mirror_realm.
+        // streams via user_can_create_streams.
         $("#stream_filter input[type='text']").on("keydown", (e) => {
             if (!keydown_util.is_enter_event(e)) {
                 return;
@@ -998,8 +995,7 @@ function setup_page(callback: () => void): void {
             if (
                 settings_data.user_can_create_private_streams() ||
                 settings_data.user_can_create_public_streams() ||
-                settings_data.user_can_create_web_public_streams() ||
-                realm.realm_is_zephyr_mirror_realm
+                settings_data.user_can_create_web_public_streams()
             ) {
                 open_create_stream();
                 e.preventDefault();
@@ -1017,10 +1013,6 @@ function setup_page(callback: () => void): void {
     }
 
     populate_and_fill();
-
-    if (!should_list_all_streams()) {
-        $(".create_stream_button").val($t({defaultMessage: "Subscribe"}));
-    }
 }
 
 export function switch_to_stream_row(stream_id: number): void {
@@ -1061,8 +1053,8 @@ export function change_state(
         return;
     }
 
-    if (section === "notsubscribed") {
-        toggler.goto("not-subscribed");
+    if (section === "available") {
+        toggler.goto("available");
         stream_edit.empty_right_panel();
         return;
     }
@@ -1193,20 +1185,20 @@ export function toggle_view(event: string): void {
         case "right_arrow":
             switch (stream_filter_tab_key) {
                 case "subscribed":
-                    toggler.goto("not-subscribed");
+                    toggler.goto("available");
                     break;
-                case "not-subscribed":
+                case "available":
                     toggler.goto("all-streams");
                     break;
             }
             break;
         case "left_arrow":
             switch (stream_filter_tab_key) {
-                case "not-subscribed":
+                case "available":
                     toggler.goto("subscribed");
                     break;
                 case "all-streams":
-                    toggler.goto("not-subscribed");
+                    toggler.goto("available");
                     break;
             }
             break;
@@ -1228,14 +1220,6 @@ export function do_open_create_stream(folder_id?: number): void {
     // Prefer open_create_stream().
 
     const stream = $<HTMLInputElement>("input#search_stream_name").val()!;
-
-    if (!should_list_all_streams()) {
-        // Realms that don't allow listing streams should simply be subscribed to.
-        stream_create.set_name(stream.trim());
-        stream_settings_components.ajaxSubscribe(stream);
-        return;
-    }
-
     stream_create.new_stream_clicked(stream.trim(), folder_id);
 }
 

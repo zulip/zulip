@@ -131,16 +131,18 @@ const dev_sub = {
     name: "Dev",
     color: "blue",
     stream_id: 1,
+    subscriber_count: 0,
 };
 
 const linux_sub = {
     name: "Linux",
     color: "red",
     stream_id: 2,
+    subscriber_count: 0,
 };
 stream_data.create_streams([dev_sub, linux_sub]);
-stream_data.add_sub(dev_sub);
-stream_data.add_sub(linux_sub);
+stream_data.add_sub_for_tests(dev_sub);
+stream_data.add_sub_for_tests(linux_sub);
 
 const bob_system_group = make_user_group({
     id: 1,
@@ -212,7 +214,6 @@ function test(label, f) {
         peer_data.clear_for_testing();
         people.clear_recipient_counts_for_testing();
         helpers.override(current_user, "is_admin", false);
-        helpers.override(realm, "realm_is_zephyr_mirror_realm", false);
 
         f(helpers);
     });

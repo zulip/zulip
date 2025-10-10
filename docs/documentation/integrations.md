@@ -28,34 +28,42 @@ Typically, the documentation process involves the following steps:
   Zulip's pre-defined Markdown macros can be used for some of these steps.
   See [Markdown macros](#markdown-macros) for further details.
 
-- Make sure you've added your integration to
-  `zerver/lib/integrations.py` in both the `WEBHOOK_INTEGRATIONS`
-  section (or `INTEGRATIONS` if not a webhook), and the
-  `DOC_SCREENSHOT_CONFIG` sections. These registries configure your
-  integration to appear on the `/integrations` page and make it
-  possible to automatically generate the screenshot of a sample
-  message (which is important for the screenshots to be updated as
-  Zulip's design changes).
+- Make sure you've added your integration to `zerver/lib/integrations.py` in
+  both the `WEBHOOK_INTEGRATIONS` section (or `INTEGRATIONS` if not a
+  webhook), and the `DOC_SCREENSHOT_CONFIG` sections.
 
-- You'll need to add an SVG graphic
-  of your integration's logo under the
+  These registries configure your integration to appear on the
+  `/integrations` page, and make it possible to automatically generate the
+  screenshot of an example message, which is important for the screenshots
+  to be updated as Zulip's design changes.
+
+- You'll need to add an SVG graphic of your integration's logo under the
   `static/images/integrations/logos/<name>.svg`, where `<name>` is the
   name of the integration, all in lower case; you can usually find them in the
   product branding or press page. Make sure to optimize the SVG graphic by
   running `tools/setup/optimize-svg`. This will also run
   `tools/setup/generate_integration_bots_avatars.py` automatically to generate
-  a smaller version of the image you just added and optimized. This smaller image will be
-  used as the bot avatar in the documentation screenshot that will be generated
-  in the next step.
+  a smaller version of the image you just added and optimized. This smaller
+  image will be used as the bot avatar in the documentation screenshot that
+  will be generated in the next step.
 
   If you cannot find an SVG graphic of the logo, please find and include a PNG
   image of the logo instead.
 
-- Finally, generate a message sent by the integration and take a screenshot of
-  the message to provide an example message in the documentation.
+- Finally, you will need to generate a message sent by the integration, and
+  generate a screenshot of the message to provide an example message in the
+  integration's documentation.
 
-  If your new integration is an incoming webhook integration, you can generate
-  the screenshot using `tools/screenshots/generate-integration-docs-screenshot`:
+  If your new integration is not a webhook and does not have fixtures, add a
+  message template and topic to `zerver/webhooks/fixtureless_integrations.py`.
+  Then, add your integration's name to `FIXTURELESS_INTEGRATIONS_WITH_SCREENSHOTS`
+  in `zerver/lib/integrations.py`.
+
+  Otherwise, you should have already added your integration to
+  `WEBHOOK_SCREENSHOT_CONFIG`.
+
+  Generate the screenshot using `tools/screenshots/generate-integration-docs-screenshot`,
+  where `integrationname` is the name of the integration:
 
   ```bash
   ./tools/screenshots/generate-integration-docs-screenshot --integration integrationname
@@ -253,3 +261,99 @@ to find. A few things to keep in mind:
   the text is referring to that is difficult to locate.
 - Screenshots should never include the entirety of a third-party website’s page.
 - Each screenshot should come after the step that refers to it.
+
+## Markdown features
+
+Zulip's Markdown processor allows you to include several special features in
+your documentation to help improve its readability:
+
+- Since raw HTML is supported in Markdown, you can include arbitrary
+  HTML/CSS in your documentation as needed.
+
+- Code blocks allow you to highlight syntax, similar to
+  [Zulip's own Markdown](https://zulip.com/help/format-your-message-using-markdown).
+
+- Anchor tags can be used to link to headers in other documents.
+
+- Inline [icons](#icons) are used to refer to features in the Zulip UI.
+
+- Utilize [macros](#markdown-macros) to limit repeated content in the documentation.
+
+- Create special highlight warning blocks using
+  [tips and warnings](#tips-and-warnings).
+
+- Format instructions with tabs using
+  [Markdown tab switcher](#tab-switcher).
+
+### Icons
+
+See [icons documentation](../subsystems/icons.md). Icons should always be
+referred to with their in-app tooltip or a brief action name, _not_ the
+name of the icon in the code.
+
+### Tips and warnings
+
+A **tip** is any suggestion for the user that is not part of the main set of
+instructions. For instance, it may address a common problem users may
+encounter while following the instructions, or point to an option for power
+users.
+
+```md
+!!! tip ""
+
+    If you want notifications for issues, as well as events, you can
+    scroll down to **Webhooks** on the same page, and toggle the
+    **issue** checkbox.
+```
+
+A **keyboard tip** is a note for users to let them know that the same action
+can also be accomplished via a [keyboard shortcut](https://zulip.com/help/keyboard-shortcuts).
+
+```md
+!!! keyboard_tip ""
+
+    Use <kbd>D</kbd> to bring up your list of drafts.
+```
+
+A **warning** is a note on what happens when there is some kind of problem.
+Tips are more common than warnings.
+
+```md
+!!! warn ""
+
+    **Note**: Zulip also supports configuring this integration as a
+    webhook in Sentry.
+```
+
+All tips/warnings should appear inside tip/warning blocks. There
+should be only one tip/warning inside each block, and they usually
+should be formatted as a continuation of a numbered step.
+
+### Tab switcher
+
+Our Markdown processor supports easily creating a tab switcher widget
+design to easily show the instructions for different languages in API
+docs, etc. To create a tab switcher, write:
+
+```md
+{start_tabs}
+{tab|python}
+# First tab's content
+{tab|js}
+# Second tab's content
+{tab|curl}
+# Third tab's content
+{end_tabs}
+```
+
+The tab identifiers (e.g., `python` above) and their mappings to
+the tabs' labels are declared in
+[zerver/lib/markdown/tabbed_sections.py][tabbed-sections-code].
+
+This widget can also be used just to create a nice box around a set of
+instructions
+([example](https://zulip.com/help/deactivate-your-account)) by
+only declaring a single tab, which is often used for the main set of
+instructions for setting up an integration.
+
+[tabbed-sections-code]: https://github.com/zulip/zulip/blob/main/zerver/lib/markdown/tabbed_sections.py

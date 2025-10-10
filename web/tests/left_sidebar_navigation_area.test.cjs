@@ -86,11 +86,6 @@ run_test("narrowing", ({override_rewire}) => {
 });
 
 run_test("update_count_in_dom", () => {
-    // TODO/channel-folders: Re-enable this test.
-    if (Filter !== undefined) {
-        return;
-    }
-
     function make_elem($elem, count_selector) {
         const $count = $(count_selector);
         $elem.set_find_results(".unread_count", $count);
@@ -114,6 +109,8 @@ run_test("update_count_in_dom", () => {
 
     make_elem($(".selected-home-view"), "<home-count>");
 
+    make_elem($(".top_left_condensed_unread_marker"), "<condensed-unread-count>");
+
     make_elem($(".top_left_starred_messages"), "<starred-count>");
 
     make_elem($(".top_left_scheduled_messages"), "<scheduled-count>");
@@ -121,9 +118,6 @@ run_test("update_count_in_dom", () => {
     make_elem($(".top_left_reminders"), "<reminders-count>");
 
     make_elem($("#topics_header"), "<topics-count>");
-    make_elem($("#stream-list-pinned-streams-container .markers-and-unreads"), "<pinned-count>");
-    make_elem($("#stream-list-normal-streams-container .markers-and-unreads"), "<normal-count>");
-    make_elem($("#stream-list-dormant-streams-container .markers-and-unreads"), "<inactive-count>");
 
     left_sidebar_navigation_area.update_dom_with_unread_counts(counts, false);
     left_sidebar_navigation_area.update_starred_count(444, false);
@@ -132,14 +126,11 @@ run_test("update_count_in_dom", () => {
 
     assert.equal($("<mentioned-count>").text(), "222");
     assert.equal($("<home-count>").text(), "333");
+    assert.equal($("<condensed-unread-count>").text(), "333");
     assert.equal($("<starred-count>").text(), "444");
-    assert.equal($("<scheduled-count>").text(), "555");
-    assert.equal($("<reminders-count>").text(), "888");
+    assert.equal($("<scheduled-count>").text(), "");
+    assert.equal($("<reminders-count>").text(), "");
     assert.equal($("<topics-count>").text(), "666");
-    // TODO/channel-folders: Do proper data setup so these are a number.
-    assert.equal($("<pinned-count>").text(), "");
-    assert.equal($("<normal-count>").text(), "");
-    assert.equal($("<inactive-count>").text(), "");
 
     counts.mentioned_message_count = 0;
 

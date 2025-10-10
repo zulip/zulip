@@ -72,7 +72,7 @@ preparing a new release.
     - Update the `tag` in `kubernetes/chart/zulip/values.yaml`
     - Update the docs by running `helm-docs`
     - Update the `image` in `kubernetes/manual/zulip-rc.yml`
-  - Build the image: `docker build . -t zulip/docker-zulip:4.11-0 --no-cache`
+  - Build the image: `docker build --pull . -t zulip/docker-zulip:4.11-0 --no-cache`
   - Also tag it with `latest`: `docker build . -t zulip/docker-zulip:latest`
   - Push those tags: `docker push zulip/docker-zulip:4.11-0; docker push zulip/docker-zulip:latest`
   - Push the commits to `main`.
@@ -81,7 +81,7 @@ preparing a new release.
   - Email to [zulip-announce](https://groups.google.com/g/zulip-announce)
   - Email to [zulip-blog-announce](https://groups.google.com/a/zulip.com/g/zulip-blog-announce)
   - Message in [#announce](https://chat.zulip.org/#narrow/channel/1-announce)
-  - Tweet from [@zulip](https://twitter.com/zulip).
+  - Tweet from [@zulip](https://x.com/zulip).
   - Toot from [fosstodon.org/@zulip](https://fosstodon.org/@zulip)
 
 ### Post-release
@@ -106,7 +106,7 @@ preparing a new release.
     this component" on the Django release branch component.
   - In Weblate, remove the previous stable components.
   - Add a new CI production upgrade target:
-    - Build a docker image: `cd tools/ci && docker build . -f Dockerfile.prod --build-arg=BASE_IMAGE=zulip/ci:bookworm --build-arg=VERSION=7.0 --tag=zulip/ci:bookworm-7.0 && docker push zulip/ci:bookworm-7.0`
+    - Build a docker image: `cd tools/ci && docker build --pull . -f Dockerfile.prod --build-arg=BASE_IMAGE=zulip/ci:bookworm --build-arg=VERSION=7.0 --tag=zulip/ci:bookworm-7.0 && docker push zulip/ci:bookworm-7.0`
     - Add a new line to the `production_upgrade` matrix in
       `.github/workflows/production-suite.yml`.
   - Update /history page in `templates/corporate/history.md`.

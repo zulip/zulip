@@ -90,6 +90,7 @@ run_test("redraw_left_panel", ({override, mock_template}) => {
         can_subscribe_group: admins_group.id,
         date_created: 1691057093,
         creator_id: null,
+        subscriber_count: 0,
     };
     const poland = {
         elem: "poland",
@@ -106,6 +107,7 @@ run_test("redraw_left_panel", ({override, mock_template}) => {
         can_subscribe_group: admins_group.id,
         date_created: 1691057093,
         creator_id: null,
+        subscriber_count: 0,
     };
     const pomona = {
         elem: "pomona",
@@ -122,6 +124,7 @@ run_test("redraw_left_panel", ({override, mock_template}) => {
         can_subscribe_group: admins_group.id,
         date_created: 1691057093,
         creator_id: null,
+        subscriber_count: 0,
     };
     const cpp = {
         elem: "cpp",
@@ -138,6 +141,7 @@ run_test("redraw_left_panel", ({override, mock_template}) => {
         can_subscribe_group: admins_group.id,
         date_created: 1691057093,
         creator_id: null,
+        subscriber_count: 0,
     };
     const zzyzx = {
         elem: "zzyzx",
@@ -154,6 +158,7 @@ run_test("redraw_left_panel", ({override, mock_template}) => {
         can_subscribe_group: admins_group.id,
         date_created: 1691057093,
         creator_id: null,
+        subscriber_count: 0,
     };
     const abcd = {
         elem: "abcd",
@@ -170,6 +175,7 @@ run_test("redraw_left_panel", ({override, mock_template}) => {
         can_subscribe_group: admins_group.id,
         date_created: 1691057093,
         creator_id: null,
+        subscriber_count: 0,
     };
     const utopia = {
         elem: "utopia",
@@ -186,6 +192,7 @@ run_test("redraw_left_panel", ({override, mock_template}) => {
         can_subscribe_group: admins_group.id,
         date_created: 1691057093,
         creator_id: null,
+        subscriber_count: 0,
     };
     const jerry = {
         elem: "jerry",
@@ -202,6 +209,7 @@ run_test("redraw_left_panel", ({override, mock_template}) => {
         can_subscribe_group: admins_group.id,
         date_created: 1691057093,
         creator_id: null,
+        subscriber_count: 0,
     };
 
     const sub_row_data = [denmark, poland, pomona, cpp, zzyzx, abcd, utopia, jerry];
@@ -263,58 +271,46 @@ run_test("redraw_left_panel", ({override, mock_template}) => {
     }
 
     // Search with single keyword
-    test_filter({input: "Po", show_subscribed: false, show_not_subscribed: false}, [
-        poland,
-        pomona,
-    ]);
+    test_filter({input: "Po", show_subscribed: false, show_available: false}, [poland, pomona]);
     assert.ok(ui_called);
 
     // The denmark row is active, even though it's not displayed.
     assert.ok($denmark_row.hasClass("active"));
 
     // Search with multiple keywords
-    test_filter({input: "Denmark, Pol", show_subscribed: false, show_not_subscribed: false}, [
+    test_filter({input: "Denmark, Pol", show_subscribed: false, show_available: false}, [
         denmark,
         poland,
     ]);
-    test_filter({input: "Den, Pol", show_subscribed: false, show_not_subscribed: false}, [
+    test_filter({input: "Den, Pol", show_subscribed: false, show_available: false}, [
         denmark,
         poland,
     ]);
 
     // Search is case-insensitive
-    test_filter({input: "po", show_subscribed: false, show_not_subscribed: false}, [
-        poland,
-        pomona,
-    ]);
+    test_filter({input: "po", show_subscribed: false, show_available: false}, [poland, pomona]);
 
     // Search handles unusual characters like C++
-    test_filter({input: "c++", show_subscribed: false, show_not_subscribed: false}, [cpp]);
+    test_filter({input: "c++", show_subscribed: false, show_available: false}, [cpp]);
 
     // Search subscribed streams only
-    test_filter({input: "d", show_subscribed: true, show_not_subscribed: false}, [poland]);
+    test_filter({input: "d", show_subscribed: true, show_available: false}, [poland]);
 
     // Search unsubscribed streams only
-    test_filter({input: "d", show_subscribed: false, show_not_subscribed: true}, [abcd, denmark]);
+    test_filter({input: "d", show_subscribed: false, show_available: true}, [abcd, denmark]);
 
     // Search terms match stream description
-    test_filter({input: "Co", show_subscribed: false, show_not_subscribed: false}, [
-        denmark,
-        pomona,
-    ]);
+    test_filter({input: "Co", show_subscribed: false, show_available: false}, [denmark, pomona]);
 
     // Search names AND descriptions
-    test_filter({input: "Mon", show_subscribed: false, show_not_subscribed: false}, [
-        pomona,
-        poland,
-    ]);
+    test_filter({input: "Mon", show_subscribed: false, show_available: false}, [pomona, poland]);
 
     // Explicitly order streams by name
     test_filter(
         {
             input: "",
             show_subscribed: false,
-            show_not_subscribed: false,
+            show_available: false,
             sort_order: "by-stream-name",
         },
         [abcd, cpp, denmark, jerry, poland, pomona, utopia, zzyzx],
@@ -325,7 +321,7 @@ run_test("redraw_left_panel", ({override, mock_template}) => {
         {
             input: "",
             show_subscribed: false,
-            show_not_subscribed: false,
+            show_available: false,
             sort_order: "by-subscriber-count",
         },
         [utopia, abcd, poland, cpp, zzyzx, denmark, jerry, pomona],
@@ -336,7 +332,7 @@ run_test("redraw_left_panel", ({override, mock_template}) => {
         {
             input: "",
             show_subscribed: false,
-            show_not_subscribed: false,
+            show_available: false,
             sort_order: "by-weekly-traffic",
         },
         [poland, utopia, cpp, zzyzx, jerry, abcd, pomona, denmark],
@@ -347,7 +343,7 @@ run_test("redraw_left_panel", ({override, mock_template}) => {
         {
             input: "",
             show_subscribed: true,
-            show_not_subscribed: false,
+            show_available: false,
             sort_order: "by-subscriber-count",
         },
         [poland, cpp, zzyzx, pomona],
@@ -358,7 +354,7 @@ run_test("redraw_left_panel", ({override, mock_template}) => {
         {
             input: "",
             show_subscribed: false,
-            show_not_subscribed: true,
+            show_available: true,
             sort_order: "by-subscriber-count",
         },
         [utopia, abcd, denmark, jerry],

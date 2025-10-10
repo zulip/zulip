@@ -29,6 +29,7 @@ from nacl.public import PrivateKey, SealedBox
 from pydantic import BaseModel, ConfigDict, Json, StringConstraints, model_validator
 from pydantic import ValidationError as PydanticValidationError
 from pydantic.functional_validators import AfterValidator
+from typing_extensions import override
 
 from analytics.lib.counts import (
     BOUNCER_ONLY_REMOTE_COUNT_STAT_PROPERTIES,
@@ -190,6 +191,19 @@ def transfer_remote_server_registration(request: HttpRequest, *, hostname: str) 
     )
 
 
+class ServerAdminEmailError(JsonableError):
+    http_status_code = 400
+    data_fields = ["email_reason"]
+
+    def __init__(self, email_reason: str) -> None:
+        self.email_reason = email_reason
+
+    @staticmethod
+    @override
+    def msg_format() -> str:
+        return _("Invalid server administrator email address: {email_reason}")
+
+
 @csrf_exempt
 @require_post
 @typed_endpoint
@@ -221,17 +235,17 @@ def register_remote_server(
     try:
         validate_email(contact_email)
     except ValidationError as e:
-        raise JsonableError(e.message)
+        raise ServerAdminEmailError(str(e.message))
 
     # We don't want to allow disposable domains for contact_email either
     try:
         validate_is_not_disposable(contact_email)
     except DisposableEmailError:
-        raise JsonableError(_("Please use your real email address."))
+        raise ServerAdminEmailError(_("Please use your real email address."))
 
     contact_email_domain = Address(addr_spec=contact_email).domain.lower()
     if contact_email_domain == "example.com":
-        raise JsonableError(_("Invalid email address."))
+        raise ServerAdminEmailError(_("example.com is not a valid email domain."))
 
     # Check if the domain has an MX record
     resolver = dns_resolver.Resolver()
@@ -246,13 +260,23 @@ def register_remote_server(
         # Check if the A/AAAA exist, for better error reporting
         try:
             resolver.resolve_name(contact_email_domain)
-            raise JsonableError(
+            raise ServerAdminEmailError(
                 _("{domain} is invalid because it does not have any MX records").format(
                     domain=contact_email_domain
                 )
             )
         except DNSException:
-            raise JsonableError(_("{domain} does not exist").format(domain=contact_email_domain))
+            try:
+                resolver.resolve(contact_email_domain, rdtype="NS")
+                raise ServerAdminEmailError(
+                    _("{domain} is invalid because it does not have any MX records").format(
+                        domain=contact_email_domain
+                    )
+                )
+            except DNSException:
+                raise ServerAdminEmailError(
+                    _("{domain} does not exist").format(domain=contact_email_domain)
+                )
 
     try:
         validate_uuid(zulip_org_id)
@@ -652,7 +676,7 @@ def unregister_remote_push_device(
 
     update_remote_realm_last_request_datetime_helper(request, server, realm_uuid, user_uuid)
 
-    (num_deleted, ignored) = (
+    (num_deleted, _deletions) = (
         get_remote_push_device_token(token=token, kind=token_kind, server=server)
         .filter(user_identity.filter_q())
         .delete()

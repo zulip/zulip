@@ -64,7 +64,7 @@ with test_server_running(
 
     # Iago needs permission to manage all user groups.
     admins_group = NamedUserGroup.objects.get(
-        name=SystemGroups.ADMINISTRATORS, realm=realm, is_system_group=True
+        name=SystemGroups.ADMINISTRATORS, realm_for_sharding=realm, is_system_group=True
     )
     do_change_realm_permission_group_setting(
         realm, "can_manage_all_groups", admins_group, acting_user=None

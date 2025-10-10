@@ -467,7 +467,7 @@ class AuthBackendTest(ZulipTestCase):
             with self.artificial_transaction_savepoint():
                 return orig_authenticate(*args, **kwargs)
 
-        backend.authenticate = wrapped_authenticate
+        backend.authenticate = wrapped_authenticate  # type: ignore[method-assign]
 
         # Test LDAP auth fails when LDAP server rejects password
         self.assertIsNone(
@@ -7132,53 +7132,47 @@ class TestLDAP(ZulipLDAPTestCase):
 
     @override_settings(AUTHENTICATION_BACKENDS=("zproject.backends.ZulipLDAPAuthBackend",))
     def test_get_or_build_user_when_user_exists(self) -> None:
-        class _LDAPUser:
-            attrs = {"fn": ["Full Name"], "sn": ["Short Name"]}
-
         backend = self.backend
         email = self.example_email("hamlet")
-        user_profile, created = backend.get_or_build_user(str(email), _LDAPUser())
+        ldap_user = ZulipLDAPUser(backend, email, realm=backend._realm)
+        user_profile, created = backend.get_or_build_user(email, ldap_user)
         self.assertFalse(created)
         self.assertEqual(user_profile.delivery_email, email)
 
     @override_settings(AUTHENTICATION_BACKENDS=("zproject.backends.ZulipLDAPAuthBackend",))
     def test_get_or_build_user_when_user_does_not_exist(self) -> None:
-        class _LDAPUser:
-            attrs = {"fn": ["Full Name"]}
-
         ldap_user_attr_map = {"full_name": "fn"}
 
         with self.settings(AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map):
             backend = self.backend
             email = "newuser@zulip.com"
-            user_profile, created = backend.get_or_build_user(email, _LDAPUser())
+            ldap_user = ZulipLDAPUser(backend, email, realm=backend._realm)
+            ldap_user._user_attrs = {"fn": ["Full Name"]}
+            user_profile, created = backend.get_or_build_user(email, ldap_user)
             self.assertTrue(created)
             self.assertEqual(user_profile.delivery_email, email)
             self.assertEqual(user_profile.full_name, "Full Name")
 
     @override_settings(AUTHENTICATION_BACKENDS=("zproject.backends.ZulipLDAPAuthBackend",))
     def test_get_or_build_user_when_user_has_invalid_name(self) -> None:
-        class _LDAPUser:
-            attrs = {"fn": ["<invalid name>"]}
-
         ldap_user_attr_map = {"full_name": "fn"}
 
         with self.settings(AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map):
             backend = self.backend
             email = "nonexisting@zulip.com"
+            ldap_user = ZulipLDAPUser(backend, email, realm=backend._realm)
+            ldap_user._user_attrs = {"fn": ["<invalid name>"]}
             with self.assertRaisesRegex(Exception, "Invalid characters in name!"):
-                backend.get_or_build_user(email, _LDAPUser())
+                backend.get_or_build_user(email, ldap_user)
 
     @override_settings(AUTHENTICATION_BACKENDS=("zproject.backends.ZulipLDAPAuthBackend",))
     def test_get_or_build_user_when_realm_is_deactivated(self) -> None:
-        class _LDAPUser:
-            attrs = {"fn": ["Full Name"]}
-
         ldap_user_attr_map = {"full_name": "fn"}
 
         with self.settings(AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map):
             backend = self.backend
             email = "nonexisting@zulip.com"
+            ldap_user = ZulipLDAPUser(backend, email, realm=backend._realm)
             do_deactivate_realm(
                 backend._realm,
                 acting_user=None,
@@ -7186,27 +7180,23 @@ class TestLDAP(ZulipLDAPTestCase):
                 email_owners=False,
             )
             with self.assertRaisesRegex(Exception, "Realm has been deactivated"):
-                backend.get_or_build_user(email, _LDAPUser())
+                backend.get_or_build_user(email, ldap_user)
 
     @override_settings(AUTHENTICATION_BACKENDS=("zproject.backends.ZulipLDAPAuthBackend",))
     def test_get_or_build_user_when_ldap_has_no_email_attr(self) -> None:
-        class _LDAPUser:
-            attrs = {"fn": ["Full Name"], "sn": ["Short Name"]}
-
         nonexisting_attr = "email"
         with self.settings(LDAP_EMAIL_ATTR=nonexisting_attr):
             backend = self.backend
             email = "nonexisting@zulip.com"
+            ldap_user = ZulipLDAPUser(backend, email, realm=backend._realm)
+            ldap_user._user_attrs = {"fn": ["Full Name"], "sn": ["Short Name"]}
             with self.assertRaisesRegex(
                 Exception, "LDAP user doesn't have the needed email attribute"
             ):
-                backend.get_or_build_user(email, _LDAPUser())
+                backend.get_or_build_user(email, ldap_user)
 
     @override_settings(AUTHENTICATION_BACKENDS=("zproject.backends.ZulipLDAPAuthBackend",))
     def test_get_or_build_user_email(self) -> None:
-        class _LDAPUser:
-            attrs = {"fn": ["Test User"]}
-
         ldap_user_attr_map = {"full_name": "fn"}
 
         with self.settings(AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map):
@@ -7216,32 +7206,33 @@ class TestLDAP(ZulipLDAPTestCase):
             realm.save()
 
             email = "spam@mailnator.com"
+            ldap_user = ZulipLDAPUser(self.backend, email, realm=realm)
             with self.assertRaisesRegex(ZulipLDAPError, "Email validation failed."):
-                self.backend.get_or_build_user(email, _LDAPUser())
+                self.backend.get_or_build_user(email, ldap_user)
 
             realm.emails_restricted_to_domains = True
             realm.save(update_fields=["emails_restricted_to_domains"])
 
             email = "spam+spam@mailnator.com"
+            ldap_user = ZulipLDAPUser(self.backend, email, realm=realm)
             with self.assertRaisesRegex(ZulipLDAPError, "Email validation failed."):
-                self.backend.get_or_build_user(email, _LDAPUser())
+                self.backend.get_or_build_user(email, ldap_user)
 
             email = "spam@acme.com"
+            ldap_user = ZulipLDAPUser(self.backend, email, realm=realm)
             with self.assertRaisesRegex(
                 ZulipLDAPError, "This email domain isn't allowed in this organization."
             ):
-                self.backend.get_or_build_user(email, _LDAPUser())
+                self.backend.get_or_build_user(email, ldap_user)
 
     @override_settings(AUTHENTICATION_BACKENDS=("zproject.backends.ZulipLDAPAuthBackend",))
     def test_get_or_build_user_when_ldap_has_no_full_name_mapping(self) -> None:
-        class _LDAPUser:
-            attrs = {"fn": ["Full Name"], "sn": ["Short Name"]}
-
         with self.settings(AUTH_LDAP_USER_ATTR_MAP={}):
             backend = self.backend
             email = "nonexisting@zulip.com"
+            ldap_user = ZulipLDAPUser(backend, email, realm=backend._realm)
             with self.assertRaisesRegex(Exception, "Missing required mapping for user's full name"):
-                backend.get_or_build_user(email, _LDAPUser())
+                backend.get_or_build_user(email, ldap_user)
 
     @override_settings(AUTHENTICATION_BACKENDS=("zproject.backends.ZulipLDAPAuthBackend",))
     def test_login_failure_when_domain_does_not_match(self) -> None:
@@ -7487,8 +7478,8 @@ class TestZulipLDAPUserPopulator(ZulipLDAPTestCase):
             self.perform_ldap_sync(self.example_user("hamlet"))
             fn.assert_not_called()
 
-    def test_too_short_name(self) -> None:
-        self.change_ldap_user_attr("hamlet", "cn", "a")
+    def test_empty_name(self) -> None:
+        self.change_ldap_user_attr("hamlet", "cn", "")
 
         with (
             self.assertRaises(ZulipLDAPError),
@@ -7496,7 +7487,7 @@ class TestZulipLDAPUserPopulator(ZulipLDAPTestCase):
         ):
             self.perform_ldap_sync(self.example_user("hamlet"))
         self.assertIn(
-            "DEBUG:django_auth_ldap:Failed to populate user hamlet: Name too short!",
+            "DEBUG:django_auth_ldap:Failed to populate user hamlet: Name must not be empty!",
             debug_log.output,
         )
 
@@ -8522,7 +8513,9 @@ class LDAPGroupSyncTest(ZulipTestCase):
             self.assertLogs("zulip.ldap", "DEBUG") as zulip_ldap_log,
         ):
             self.assertFalse(
-                NamedUserGroup.objects.filter(realm=realm, name="cool_test_group").exists()
+                NamedUserGroup.objects.filter(
+                    realm_for_sharding=realm, name="cool_test_group"
+                ).exists()
             )
 
             create_user_group_in_database(
@@ -8530,10 +8523,14 @@ class LDAPGroupSyncTest(ZulipTestCase):
             )
 
             self.assertTrue(
-                NamedUserGroup.objects.filter(realm=realm, name="cool_test_group").exists()
+                NamedUserGroup.objects.filter(
+                    realm_for_sharding=realm, name="cool_test_group"
+                ).exists()
             )
 
-            user_group = NamedUserGroup.objects.get(realm=realm, name="cool_test_group")
+            user_group = NamedUserGroup.objects.get(
+                realm_for_sharding=realm, name="cool_test_group"
+            )
 
             self.assertFalse(
                 is_user_in_group(
@@ -8564,7 +8561,7 @@ class LDAPGroupSyncTest(ZulipTestCase):
 
             self.assertTrue(
                 is_user_in_group(
-                    NamedUserGroup.objects.get(realm=realm, name="cool_test_group").id,
+                    NamedUserGroup.objects.get(realm_for_sharding=realm, name="cool_test_group").id,
                     cordelia,
                     direct_member_only=True,
                 )
@@ -8575,7 +8572,7 @@ class LDAPGroupSyncTest(ZulipTestCase):
 
             self.assertFalse(
                 is_user_in_group(
-                    NamedUserGroup.objects.get(realm=realm, name="cool_test_group").id,
+                    NamedUserGroup.objects.get(realm_for_sharding=realm, name="cool_test_group").id,
                     cordelia,
                     direct_member_only=True,
                 )

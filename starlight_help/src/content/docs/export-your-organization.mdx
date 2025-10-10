@@ -7,11 +7,10 @@ import {Steps} from "@astrojs/starlight/components";
 import FlattenedSteps from "../../components/FlattenedSteps.astro";
 import NavigationSteps from "../../components/NavigationSteps.astro";
 import ZulipNote from "../../components/ZulipNote.astro";
-
-import AdminOnly from "./include/_AdminOnly.mdx";
-import ExportWithoutConsentRequirements from "./include/_ExportWithoutConsentRequirements.mdx";
-import NotHumanExportFormat from "./include/_NotHumanExportFormat.mdx";
-import OwnerOnly from "./include/_OwnerOnly.mdx";
+import AdminOnly from "../include/_AdminOnly.mdx";
+import ExportWithoutConsentRequirements from "../include/_ExportWithoutConsentRequirements.mdx";
+import NotHumanExportFormat from "../include/_NotHumanExportFormat.mdx";
+import OwnerOnly from "../include/_OwnerOnly.mdx";
 
 <ZulipNote>
   If you're self-hosting Zulip, you may want to check out the
@@ -92,6 +91,9 @@ Standard][plans] and [Zulip Cloud Plus][plans] customers:
   1. Import the tarball using [Zulip's logical data import tool][import-only].
 </Steps>
 
+If you self-host Zulip, a full export without member consent can be performed
+[by your server's administrator][export-and-import].
+
 ## Compliance export
 
 <OwnerOnly />
@@ -122,6 +124,9 @@ importing the export into a new Zulip organization.
      export has been verified.
 </Steps>
 
+If you self-host Zulip, a compliance export can be performed [by your server's
+administrator][compliance-exports-self-hosted].
+
 ## Configure whether administrators can export your private data
 
 <FlattenedSteps>
@@ -135,6 +140,7 @@ importing the export into a new Zulip organization.
 * [Change organization URL](/help/change-organization-url)
 * [Deactivate your organization](/help/deactivate-your-organization)
 * [Import organization into a self-hosted Zulip server][import-only]
+* [Data export for self-hosted organizations][export-and-import]
 * [Compliance exports for self-hosted organizations][compliance-exports-self-hosted]
 
 [production-backups]: https://zulip.readthedocs.io/en/stable/production/export-and-import.html#backups

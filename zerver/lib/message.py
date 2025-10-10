@@ -149,6 +149,7 @@ class SendMessageRequest:
     default_bot_user_ids: set[int]
     service_bot_tuples: list[tuple[int, int]]
     all_bot_user_ids: set[int]
+    push_device_registered_user_ids: set[int]
     # IDs of topic participants who should be notified of topic wildcard mention.
     # The 'user_allows_notifications_in_StreamTopic' with 'wildcard_mentions_notify'
     # setting ON should return True.
@@ -653,9 +654,7 @@ def event_recipient_ids_for_action_on_messages(
     #    * Users who were initially subscribed and later unsubscribed
     #      (usermessages exist for messages they received while subscribed).
     usermessage_rows = UserMessage.objects.filter(message_id__in=message_ids).exclude(
-        # Excluding guests here implements can_access_public_channels,
-        # since we already know realm.is_zephyr_mirror_realm is false,
-        # based on the value of is_history_public_to_subscribers.
+        # Excluding guests here implements can_access_public_channels.
         user_profile__role=UserProfile.ROLE_GUEST
     )
     if exclude_long_term_idle_users:

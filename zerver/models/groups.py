@@ -178,6 +178,6 @@ class GroupGroupMembership(models.Model):
 @cache_with_key(get_realm_system_groups_cache_key, timeout=3600 * 24 * 7)
 def get_realm_system_groups_name_dict(realm_id: int) -> dict[int, str]:
     system_groups = NamedUserGroup.objects.filter(
-        realm_id=realm_id, is_system_group=True
+        realm_for_sharding_id=realm_id, is_system_group=True
     ).values_list("id", "name")
     return dict(system_groups)

@@ -201,7 +201,7 @@ export function get_realm_default_setting_property_value(
 export function realm_authentication_methods_to_boolean_dict(): Record<string, boolean> {
     return Object.fromEntries(
         Object.entries(realm.realm_authentication_methods)
-            .sort()
+            .toSorted()
             .map(([auth_method_name, auth_method_info]) => [
                 auth_method_name,
                 auth_method_info.enabled,
@@ -964,10 +964,9 @@ export function get_group_setting_widget_value(
         return direct_subgroups[0];
     }
 
-    return {
-        direct_subgroups: direct_subgroups.sort(),
-        direct_members: direct_members.sort(),
-    };
+    direct_subgroups.sort();
+    direct_members.sort();
+    return {direct_subgroups, direct_members};
 }
 
 export function check_group_property_changed(elem: HTMLElement, group: UserGroup): boolean {
@@ -1829,7 +1828,7 @@ export function create_stream_group_setting_widget({
             setting_name,
             "stream",
         )!.default_group_name;
-        if (default_group_name === "stream_creator_or_nobody") {
+        if (default_group_name === "channel_creator") {
             set_group_setting_widget_value(pill_widget, {
                 direct_members: [current_user.user_id],
                 direct_subgroups: [],

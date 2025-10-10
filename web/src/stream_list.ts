@@ -445,11 +445,15 @@ export function rewire_update_stream_section_mention_indicators(
    channel, we show it too. If there's no highlighted topic within the
    channel, then we should treat this like an empty topic list and remove
    the left bracket. */
-export function maybe_hide_topic_bracket(section_id: string): void {
+export let maybe_hide_topic_bracket = function (section_id: string): void {
     const $container = $(`#stream-list-${section_id}-container`);
     const is_collapsed = collapsed_sections.has(section_id);
     const $highlighted_topic = $container.find(".topic-list-item.active-sub-filter");
     $container.toggleClass("hide-topic-bracket", is_collapsed && $highlighted_topic.length === 0);
+};
+
+export function rewire_maybe_hide_topic_bracket(value: typeof maybe_hide_topic_bracket): void {
+    maybe_hide_topic_bracket = value;
 }
 
 function toggle_section_collapse($container: JQuery): void {
@@ -743,6 +747,9 @@ type SectionUnreadCount = {
     // e.g. followed topics in a muted channel, which count towards
     // the unmuted count in the inactive/muted channels toggle.
     muted_channel_unmuted: number;
+    // Doesn't include muted topics in unmuted channels, which shouldn't
+    // contribute to the count for the inactive/muted channel toggle.
+    muted_channel_muted: number;
 };
 
 export let update_dom_with_unread_counts = function (counts: FullUnreadCountsData): void {
@@ -778,6 +785,7 @@ export let update_dom_with_unread_counts = function (counts: FullUnreadCountsDat
         inactive_unmuted: 0,
         inactive_muted: 0,
         muted_channel_unmuted: 0,
+        muted_channel_muted: 0,
     };
     const folder_unread_counts = new Map<number, SectionUnreadCount>();
     const normal_section_unread_counts: SectionUnreadCount = {
@@ -786,6 +794,7 @@ export let update_dom_with_unread_counts = function (counts: FullUnreadCountsDat
         inactive_unmuted: 0,
         inactive_muted: 0,
         muted_channel_unmuted: 0,
+        muted_channel_muted: 0,
     };
 
     for (const [stream_id, stream_count_info] of counts.stream_count.entries()) {
@@ -802,6 +811,7 @@ export let update_dom_with_unread_counts = function (counts: FullUnreadCountsDat
                     inactive_unmuted: 0,
                     inactive_muted: 0,
                     muted_channel_unmuted: 0,
+                    muted_channel_muted: 0,
                 });
             }
 
@@ -810,6 +820,7 @@ export let update_dom_with_unread_counts = function (counts: FullUnreadCountsDat
             unread_counts.muted += stream_count_info.muted_count;
             if (sub.is_muted) {
                 unread_counts.muted_channel_unmuted += stream_count_info.unmuted_count;
+                unread_counts.muted_channel_muted += stream_count_info.muted_count;
             }
             if (!stream_list_sort.has_recent_activity(sub)) {
                 unread_counts.inactive_unmuted += stream_count_info.unmuted_count;
@@ -821,6 +832,7 @@ export let update_dom_with_unread_counts = function (counts: FullUnreadCountsDat
             if (sub.is_muted) {
                 normal_section_unread_counts.muted_channel_unmuted +=
                     stream_count_info.unmuted_count;
+                normal_section_unread_counts.muted_channel_muted += stream_count_info.muted_count;
             }
             if (!stream_list_sort.has_recent_activity(sub)) {
                 normal_section_unread_counts.inactive_unmuted += stream_count_info.unmuted_count;
@@ -862,7 +874,8 @@ export let update_dom_with_unread_counts = function (counts: FullUnreadCountsDat
         $("#stream-list-normal-streams-container .show-inactive-or-muted-channels"),
         normal_section_unread_counts.inactive_unmuted +
             normal_section_unread_counts.muted_channel_unmuted,
-        normal_section_unread_counts.inactive_muted + normal_section_unread_counts.muted,
+        normal_section_unread_counts.inactive_muted +
+            normal_section_unread_counts.muted_channel_muted,
     );
 
     for (const folder_id of channel_folders.get_all_folder_ids()) {
@@ -872,6 +885,7 @@ export let update_dom_with_unread_counts = function (counts: FullUnreadCountsDat
             inactive_unmuted: 0,
             inactive_muted: 0,
             muted_channel_unmuted: 0,
+            muted_channel_muted: 0,
         };
         update_section_unread_count(
             $(`#stream-list-${folder_id}-container .stream-list-subsection-header`),
@@ -881,7 +895,7 @@ export let update_dom_with_unread_counts = function (counts: FullUnreadCountsDat
         update_section_unread_count(
             $(`#stream-list-${folder_id}-container .show-inactive-or-muted-channels`),
             unread_counts.inactive_unmuted + unread_counts.muted_channel_unmuted,
-            unread_counts.inactive_muted + unread_counts.muted,
+            unread_counts.inactive_muted + unread_counts.muted_channel_muted,
         );
     }
 };

@@ -422,10 +422,7 @@ def send_subscription_add_events(
     for sub_info in sub_info_list:
         stream = sub_info.stream
         if stream.id not in stream_subscribers_dict:
-            if stream.is_in_zephyr_realm and not stream.invite_only:
-                subscribers = []
-            else:
-                subscribers = list(subscriber_dict[stream.id])
+            subscribers = list(subscriber_dict[stream.id])
             stream_subscribers_dict[stream.id] = subscribers
 
     streams = [sub_info.stream for sub_info in sub_info_list]
@@ -602,9 +599,7 @@ def send_peer_subscriber_events(
         stream_id for stream_id in altered_user_dict if stream_dict[stream_id].invite_only
     ]
     public_stream_ids = [
-        stream_id
-        for stream_id in altered_user_dict
-        if not stream_dict[stream_id].invite_only and not stream_dict[stream_id].is_in_zephyr_realm
+        stream_id for stream_id in altered_user_dict if not stream_dict[stream_id].invite_only
     ]
     web_public_stream_ids = [
         stream_id for stream_id in public_stream_ids if stream_dict[stream_id].is_web_public

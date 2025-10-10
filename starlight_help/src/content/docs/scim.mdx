@@ -7,10 +7,9 @@ import {Steps, TabItem, Tabs} from "@astrojs/starlight/components";
 import FlattenedSteps from "../../components/FlattenedSteps.astro";
 import ZulipNote from "../../components/ZulipNote.astro";
 import ZulipTip from "../../components/ZulipTip.astro";
-
-import AdminOnly from "./include/_AdminOnly.mdx";
-import CloudPlusOnly from "./include/_CloudPlusOnly.mdx";
-import UpgradeToPlusIfNeeded from "./include/_UpgradeToPlusIfNeeded.mdx";
+import AdminOnly from "../include/_AdminOnly.mdx";
+import CloudPlusOnly from "../include/_CloudPlusOnly.mdx";
+import UpgradeToPlusIfNeeded from "../include/_UpgradeToPlusIfNeeded.mdx";
 
 <AdminOnly />
 
@@ -122,7 +121,7 @@ configure SCIM provisioning for Zulip.
          * Delete the other default entries leaving only the **active** and
            **name.formatted** mappings, until your list looks like the
            image below.
-           ![Attribute Mappings](../../../../static/images/help/entraid-scim-mappings.png)
+           ![Attribute Mappings](../../images/entraid-scim-mappings.png)
       1. Once your configuration is complete, set the **Provisioning
          Status** to **On** and then click **Save** to start the Microsoft
          Entra provisioning service.

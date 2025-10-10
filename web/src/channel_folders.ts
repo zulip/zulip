@@ -50,15 +50,13 @@ export function get_channel_folders(include_archived = false): ChannelFolder[] {
 
             return true;
         })
-        .sort((folder_a, folder_b) => folder_a.order - folder_b.order);
+        .toSorted((folder_a, folder_b) => folder_a.order - folder_b.order);
 }
 
 export function get_active_folder_ids(): Set<number> {
     return active_channel_folder_ids;
 }
 
-/* TODO/channel-folders: Remove when tests are restored */
-/* istanbul ignore next */
 export function get_all_folder_ids(): Set<number> {
     return new Set(channel_folder_by_id_dict.keys());
 }

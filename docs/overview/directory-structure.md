@@ -1,11 +1,10 @@
 # Directory structure
 
-This page documents the Zulip directory structure, where to find
-things, and how to decide where to put a file.
-
-You may also find the [new application feature
-tutorial](../tutorials/new-feature-tutorial.md) helpful for understanding the
-flow through these files.
+This page documents the directory structure of the [Zulip server and
+web app project](https://github.com/zulip/zulip). You may also find
+the [new application feature
+tutorial](../tutorials/new-feature-tutorial.md) helpful for
+understanding the flow through these files.
 
 ### Core Python files
 

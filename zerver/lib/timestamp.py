@@ -1,4 +1,8 @@
 from datetime import datetime, timedelta, timezone
+from functools import cache
+
+import icu
+from django.utils.translation import get_language
 
 
 class TimeZoneNotUTCError(Exception):
@@ -47,3 +51,37 @@ def timestamp_to_datetime(timestamp: float) -> datetime:
 def datetime_to_timestamp(dt: datetime) -> int:
     verify_UTC(dt)
     return int(dt.timestamp())
+
+
+@cache
+def get_date_time_pattern_generator(language: str) -> icu.DateTimePatternGenerator:
+    return icu.DateTimePatternGenerator.createInstance(icu.Locale(language))
+
+
+@cache
+def get_icu_time_zone(time_zone: str) -> icu.TimeZone:
+    return icu.TimeZone.createTimeZone(time_zone)
+
+
+@cache
+def get_date_time_format(language: str, use_twenty_four_hour_time: bool) -> icu.SimpleDateFormat:
+    skeleton = f"yMMMEd{'H' if use_twenty_four_hour_time else 'h'}mz"
+    pattern = get_date_time_pattern_generator(language).getBestPattern(skeleton)
+    return icu.SimpleDateFormat(pattern, icu.Locale(language))
+
+
+def format_datetime_to_string(dt: datetime, use_twenty_four_hour_time: bool) -> str:
+    assert dt.tzinfo is not None
+    time_zone = getattr(dt.tzinfo, "key", None)
+    if time_zone is None:
+        offset = dt.tzinfo.utcoffset(dt)
+        assert offset is not None
+        sign = "-" if offset < timedelta(0) else "+"
+        hours, rest = divmod(abs(offset), timedelta(hours=1))
+        minutes, rest = divmod(rest, timedelta(minutes=1))
+        assert rest == timedelta(0)
+        time_zone = f"GMT{sign}{hours:02}:{minutes:02}"
+    language = get_language()
+    calendar = icu.Calendar.createInstance(get_icu_time_zone(time_zone), icu.Locale(language))
+    calendar.setTime(dt)
+    return get_date_time_format(language, use_twenty_four_hour_time).format(calendar)

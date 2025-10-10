@@ -1,12 +1,78 @@
+// @ts-check
+
 import * as fs from "node:fs";
 
 import starlight from "@astrojs/starlight";
 import {defineConfig, envField} from "astro/config";
+import compressor from "astro-compressor";
 import Icons from "unplugin-icons/vite";
+
+/**
+ * @returns {import("vite").PluginOption}
+ */
+function createRedirectPlugin() {
+    const proxyPort = process.env.ZULIP_WEB_APP_PROXY_PORT || "9991";
+    // Astro and starlight middlewares run after astro's vite middleware,
+    // which gives error before our logic here could run, so the only option
+    // left with us was to use a vite plugin.
+    return {
+        name: "redirect-plugin",
+        enforce: "post",
+        /**
+         * configureServer only runs in development mode, we handle the redirects
+         * in production using nginx.
+         * @param {import("vite").ViteDevServer} server
+         */
+        configureServer(server) {
+            return () => {
+                // The method exposed by the connect app at server.middlewares is `use`.
+                // But `use` appends our middleware at the end of the stack, before which
+                // the trailingSlashMiddleware of astro runs and gives an error before it
+                // can reach our middleware. `stack.unshift` ensures our middleware runs
+                // first.
+                server.middlewares.stack.unshift({
+                    route: "",
+                    /**
+                     * @param {import("http").IncomingMessage} req
+                     * @param {import("http").ServerResponse} res
+                     * @param {Function} next
+                     */
+                    handle(req, res, next) {
+                        // Canonical URL for the root of the help center is /help/,
+                        // but for all other help URLs, there should be no trailingSlash.
+                        // We have set trailingSlash to never in astro. Setting it to ignore
+                        // will make our /help/ work, but it causes sidebar and other
+                        // components to generate links with a trailingSlash at the end. So
+                        // we manually handle this case.
+                        if (req.url === "/help/") {
+                            req.url = "/help";
+                        }
+
+                        // Help center dev server always runs on a port different than
+                        // the web app. We have relative URLs pointing to the web app
+                        // in the help center, but they are not on the port help center
+                        // is running on. We redirect here to our web app proxy port.
+                        if (req.url && !req.url.startsWith("/help")) {
+                            const host = req.headers.host || "localhost";
+                            const redirectUrl = new URL(req.url, `http://${host}`);
+                            redirectUrl.port = proxyPort;
+                            res.writeHead(302, {Location: redirectUrl.toString()});
+                            res.end();
+                            return;
+                        }
+
+                        next();
+                    },
+                });
+            };
+        },
+    };
+}
 
 // https://astro.build/config
 export default defineConfig({
     base: "help",
+    trailingSlash: "never",
     vite: {
         plugins: [
             // eslint-disable-next-line new-cap
@@ -43,6 +109,7 @@ export default defineConfig({
                     }
                 },
             }),
+            createRedirectPlugin(),
         ],
         ssr: {
             noExternal: ["zod"],
@@ -71,6 +138,11 @@ export default defineConfig({
         },
     },
     integrations: [
+        compressor({
+            gzip: true,
+            brotli: false,
+            zstd: false,
+        }),
         starlight({
             title: "Zulip help center",
             favicon: "../static/images/favicon.svg",
@@ -85,6 +157,11 @@ export default defineConfig({
                 {
                     label: "Zulip homepage",
                     link: "https://zulip.com",
+                    attrs: {
+                        class: "external-icon-sidebar",
+                        target: "_blank",
+                        rel: "noopener noreferrer",
+                    },
                 },
                 {
                     label: "Help center home",
@@ -93,14 +170,27 @@ export default defineConfig({
                 {
                     label: "Guides for getting started",
                     items: [
-                        "getting-started-with-zulip",
+                        {
+                            label: "Getting started",
+                            link: "/getting-started-with-zulip",
+                        },
                         {
                             label: "Choosing a team chat app",
                             link: "https://blog.zulip.com/2024/11/04/choosing-a-team-chat-app/",
+                            attrs: {
+                                class: "external-icon-sidebar",
+                                target: "_blank",
+                                rel: "noopener noreferrer",
+                            },
                         },
                         {
                             label: "Why Zulip",
                             link: "https://zulip.com/why-zulip/",
+                            attrs: {
+                                class: "external-icon-sidebar",
+                                target: "_blank",
+                                rel: "noopener noreferrer",
+                            },
                         },
                         "trying-out-zulip",
                         {
@@ -158,6 +248,7 @@ export default defineConfig({
                         "switching-between-organizations",
                         "import-your-settings",
                         "review-your-settings",
+                        "protect-your-account",
                         "deactivate-your-account",
                     ],
                 },
@@ -356,8 +447,13 @@ export default defineConfig({
                     label: "Apps",
                     items: [
                         {
-                            label: "Download apps for every platform",
+                            label: "Download apps",
                             link: "https://zulip.com/apps/",
+                            attrs: {
+                                class: "external-icon-sidebar",
+                                target: "_blank",
+                                rel: "noopener noreferrer",
+                            },
                         },
                         {
                             label: "Mobile app installation guides",

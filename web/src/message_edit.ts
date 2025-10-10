@@ -141,7 +141,7 @@ export function is_topic_editable(message: Message, edit_limit_seconds_buffer = 
 }
 
 function is_widget_message(message: Message): boolean {
-    if (message.submessages && message.submessages.length > 0) {
+    if (message.submessages.length > 0) {
         return true;
     }
     return false;

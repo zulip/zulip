@@ -218,7 +218,8 @@ export function sort_user_ids_by_username(user_ids: number[]): number[] {
         user_id: user_ids[index]!,
     }));
 
-    return name_id_dict.sort((a, b) => util.strcmp(a.name!, b.name!)).map(({user_id}) => user_id);
+    name_id_dict.sort((a, b) => util.strcmp(a.name!, b.name!));
+    return name_id_dict.map(({user_id}) => user_id);
 }
 
 // A function that sorts Email according to the user's full name
@@ -231,12 +232,8 @@ export function sort_emails_by_username(emails: string[]): (string | undefined)[
                 : "?",
         email: emails[index],
     }));
-
-    const sorted_emails = name_email_dict
-        .sort((a, b) => util.strcmp(a.name!, b.name!))
-        .map(({email}) => email);
-
-    return sorted_emails;
+    name_email_dict.sort((a, b) => util.strcmp(a.name!, b.name!));
+    return name_email_dict.map(({email}) => email);
 }
 
 export function get_visible_email(user: User): string {
@@ -379,15 +376,14 @@ export function reply_to_to_user_ids_string(emails_string: string): string | und
 }
 
 export function user_ids_to_full_names_string(user_ids: number[]): string {
-    const names = user_ids.map((user_id) => {
+    const sorted_names = user_ids.map((user_id) => {
         const person = maybe_get_user_by_id(user_id);
         if (person !== undefined) {
             return person.full_name;
         }
         return INACCESSIBLE_USER_NAME;
     });
-
-    const sorted_names = names.sort(util.make_strcmp());
+    sorted_names.sort(util.make_strcmp());
     return sorted_names.join(", ");
 }
 
@@ -426,7 +422,7 @@ export function emails_string_to_user_ids(emails_string: string): number[] {
     return user_ids_string ? user_ids_string_to_ids_array(user_ids_string) : [];
 }
 
-export let email_list_to_user_ids_string = (emails: string[]): string | undefined => {
+export function email_list_to_user_ids_string(emails: string[]): string | undefined {
     let user_ids = util.try_parse_as_truthy(
         emails.map((email) => {
             const person = get_by_email(email);
@@ -442,12 +438,6 @@ export let email_list_to_user_ids_string = (emails: string[]): string | undefine
     user_ids = util.sorted_ids(user_ids);
 
     return user_ids.join(",");
-};
-
-export function rewire_email_list_to_user_ids_string(
-    value: typeof email_list_to_user_ids_string,
-): void {
-    email_list_to_user_ids_string = value;
 }
 
 export function get_full_names_for_poll_option(user_ids: number[]): string {
@@ -500,8 +490,8 @@ export function get_recipients(user_ids_string: string): string[] {
         return [my_full_name()];
     }
 
-    const names = get_display_full_names(other_ids);
-    const sorted_names = names.sort(util.make_strcmp());
+    const sorted_names = get_display_full_names(other_ids);
+    sorted_names.sort(util.make_strcmp());
 
     return sorted_names;
 }
@@ -622,6 +612,12 @@ export function pm_with_user_ids(message: Message | MessageWithBooleans): number
         typeof message.display_recipient !== "string",
         "Private messages should have list of recipients",
     );
+    // Ideally display_recipient would be not optional in LocalMessage
+    // or MessageWithBooleans, ideally by refactoring the use of
+    // `build_display_recipient`, but that's complicated to type right now.
+    // When we have a new format for `display_recipient` in message objects in
+    // the API itself, we'll naturally clean this up.
+    assert(message.display_recipient !== undefined);
 
     if (message.display_recipient.length === 0) {
         blueslip.error("Empty recipient list in message");
@@ -745,7 +741,8 @@ export function filter_other_guest_ids(user_ids: number[]): number[] {
 }
 
 export function user_ids_to_full_names_array(user_ids: number[]): string[] {
-    const names = user_ids.map((user_id) => get_by_user_id(user_id).full_name).sort(util.strcmp);
+    const names = user_ids.map((user_id) => get_by_user_id(user_id).full_name);
+    names.sort(util.strcmp);
     return names;
 }
 
@@ -1564,8 +1561,8 @@ export function _add_user(person: User): void {
         // We eventually want to lock this down completely
         // and report an error and not update other the data
         // structures here, but we have a lot of edge cases
-        // with cross-realm bots, zephyr users, etc., deactivated
-        // users, where we are probably fine for now not to
+        // with cross-realm bots, deactivated users, etc.,
+        // where we are probably fine for now not to
         // find them via user_id lookups.
         blueslip.warn("No user_id provided", {email: person.email});
     }
@@ -1734,6 +1731,7 @@ function get_involved_people(message: MessageWithBooleans): DisplayRecipientUser
             typeof message.display_recipient !== "string",
             "Private messages should have list of recipients",
         );
+        assert(message.display_recipient !== undefined);
         involved_people = message.display_recipient;
     }
 
@@ -1816,6 +1814,8 @@ export function maybe_incr_recipient_count(
     if (!message.sent_by_me) {
         return;
     }
+
+    assert(message.display_recipient !== undefined);
 
     // Track the number of direct messages we've sent to this person
     // to improve autocomplete

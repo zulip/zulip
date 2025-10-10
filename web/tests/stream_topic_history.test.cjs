@@ -135,7 +135,7 @@ test("server_history", () => {
         stream_id: 66,
     };
     const stream_id = sub.stream_id;
-    stream_data.add_sub(sub);
+    stream_data.add_sub_for_tests(sub);
 
     assert.equal(topic_list.is_full_topic_history_available(stream_id), false);
 
@@ -250,7 +250,10 @@ test("test_unread_logic", () => {
         msg.type = "stream";
         msg.stream_id = stream_id;
         msg.unread = true;
-        message_store.update_message_cache(msg);
+        message_store.update_message_cache({
+            type: "server_message",
+            message: msg,
+        });
     }
 
     unread.process_loaded_messages(msgs);

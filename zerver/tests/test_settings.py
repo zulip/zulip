@@ -116,10 +116,8 @@ class ChangeSettingsTest(ZulipTestCase):
         self.assert_json_error(json_result, "Name too long!")
 
         # Now try too-short names
-        short_names = ["", "x"]
-        for name in short_names:
-            json_result = self.client_patch("/json/settings", dict(full_name=name))
-            self.assert_json_error(json_result, "Name too short!")
+        json_result = self.client_patch("/json/settings", dict(full_name=""))
+        self.assert_json_error(json_result, "Name must not be empty!")
 
     def test_illegal_characters_in_name_changes(self) -> None:
         self.login("hamlet")
@@ -514,8 +512,8 @@ class ChangeSettingsTest(ZulipTestCase):
 
     def test_emojiset(self) -> None:
         """Test banned emoji sets are not accepted."""
-        banned_emojisets = ["apple", "emojione"]
-        valid_emojisets = ["google", "google-blob", "text", "twitter"]
+        banned_emojisets = ["apple", "emojione", "google-blob"]
+        valid_emojisets = ["google", "text", "twitter"]
 
         for emojiset in banned_emojisets:
             result = self.do_change_emojiset(emojiset)

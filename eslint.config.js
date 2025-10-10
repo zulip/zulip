@@ -1,6 +1,9 @@
+// @ts-check
+
 import {FlatCompat} from "@eslint/eslintrc";
 import js from "@eslint/js";
 import confusingBrowserGlobals from "confusing-browser-globals";
+import {defineConfig} from "eslint/config";
 import prettier from "eslint-config-prettier";
 import {configs as astroConfigs} from "eslint-plugin-astro";
 import formatjs from "eslint-plugin-formatjs";
@@ -13,7 +16,8 @@ import tseslint from "typescript-eslint";
 
 const compat = new FlatCompat({baseDirectory: import.meta.dirname});
 
-export default tseslint.config(
+/** @type {import("eslint").Linter.Config[]} */
+export const config = defineConfig(
     {
         // This is intended for generated files and vendored third-party files.
         // For our source code, instead of adding files here, consider using
@@ -29,7 +33,8 @@ export default tseslint.config(
     },
     js.configs.recommended,
     importPlugin.flatConfigs.recommended,
-    compat.extends("plugin:no-jquery/recommended", "plugin:no-jquery/deprecated"),
+    compat.config(noJquery.configs.recommended),
+    compat.config(noJquery.configs.deprecated),
     unicorn.configs.recommended,
     prettier,
     tseslint.configs.strictTypeChecked,
@@ -318,11 +323,21 @@ export default tseslint.config(
             "unicorn/prefer-string-replace-all": "off",
         },
     },
-    ...astroConfigs.recommended,
+    astroConfigs.recommended,
     {
         files: ["starlight_help/src/components/ZulipNote.astro"],
         rules: {
             "import/unambiguous": "off",
         },
     },
+    {
+        files: ["starlight_help/src/content/include/*"],
+        rules: {
+            // We need to turn off this rule since we want import statements
+            // to be easily copy-paste-able between content/include and
+            // content/docs.
+            "import/no-useless-path-segments": "off",
+        },
+    },
 );
+export default config;

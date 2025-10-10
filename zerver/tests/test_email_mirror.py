@@ -189,10 +189,10 @@ class TestEncodeDecode(ZulipTestCase):
         address_prefer_text = f"Denmark.{email_token}.prefer-text@testserver"
         address_prefer_html = f"Denmark.{email_token}.prefer-html@testserver"
 
-        token, options = decode_email_address(address_prefer_text)
+        _token, options = decode_email_address(address_prefer_text)
         self._assert_options(options, prefer_text=True)
 
-        token, options = decode_email_address(address_prefer_html)
+        _token, options = decode_email_address(address_prefer_html)
         self._assert_options(options, prefer_text=False)
 
 
@@ -670,7 +670,7 @@ class TestChannelEmailMessagesPermissions(ZulipTestCase):
 
         do_change_user_role(hamlet, UserProfile.ROLE_MODERATOR, acting_user=None)
         moderators_group = NamedUserGroup.objects.get(
-            name=SystemGroups.MODERATORS, realm=realm, is_system_group=True
+            name=SystemGroups.MODERATORS, realm_for_sharding=realm, is_system_group=True
         )
         do_change_stream_group_based_setting(
             channel, "can_send_message_group", moderators_group, acting_user=hamlet
@@ -742,7 +742,7 @@ class TestChannelEmailMessagesPermissions(ZulipTestCase):
 
         do_change_user_role(hamlet, UserProfile.ROLE_MODERATOR, acting_user=None)
         admins_group = NamedUserGroup.objects.get(
-            name=SystemGroups.ADMINISTRATORS, realm=realm, is_system_group=True
+            name=SystemGroups.ADMINISTRATORS, realm_for_sharding=realm, is_system_group=True
         )
         do_change_stream_group_based_setting(
             channel, "can_send_message_group", admins_group, acting_user=hamlet
@@ -1400,7 +1400,9 @@ class TestMissedMessageEmailMessages(ZulipTestCase):
 
         stream = get_stream("announce", user_profile.realm)
         admins_group = NamedUserGroup.objects.get(
-            name=SystemGroups.ADMINISTRATORS, realm=user_profile.realm, is_system_group=True
+            name=SystemGroups.ADMINISTRATORS,
+            realm_for_sharding=user_profile.realm,
+            is_system_group=True,
         )
         do_change_stream_group_based_setting(
             stream, "can_send_message_group", admins_group, acting_user=user_profile
@@ -1584,6 +1586,43 @@ class TestMissedMessageEmailMessages(ZulipTestCase):
         # there is no longer a usage limit.  Ensure we can send multiple times.
         for i in range(5):
             process_missed_message(mm_address, incoming_valid_message)
+
+    def test_autoreply(self) -> None:
+        self.login("hamlet")
+        othello = self.example_user("othello")
+        result = self.client_post(
+            "/json/messages",
+            {
+                "type": "private",
+                "content": "test_receive_missed_message_email_messages",
+                "to": orjson.dumps([othello.id]).decode(),
+            },
+        )
+        self.assert_json_success(result)
+
+        usermessage = most_recent_usermessage(othello)
+
+        mm_address = create_missed_message_address(othello, usermessage.message)
+
+        incoming_autoreply = EmailMessage()
+        incoming_autoreply.set_content("An auto-reply")
+        incoming_autoreply["Subject"] = "TestMissedMessageEmailMessages subject"
+        incoming_autoreply["From"] = self.example_email("othello")
+        incoming_autoreply["To"] = mm_address
+        incoming_autoreply["Reply-to"] = self.example_email("othello")
+        incoming_autoreply["Auto-Submitted"] = "auto-replied"
+
+        hamlet = self.example_user("hamlet")
+        message = most_recent_message(hamlet)
+        with self.assert_database_query_count(0), self.assertLogs(logger_name, level="INFO") as m:
+            process_message(incoming_autoreply)
+        self.assertEqual(
+            m.output,
+            [f"INFO:{logger_name}:Dropping auto-replied message from othello@zulip.com"],
+        )
+
+        # It should get dropped, so the most recent message is unchanged
+        self.assertEqual(message, most_recent_message(hamlet))
 
 
 class TestEmptyGatewaySetting(ZulipTestCase):

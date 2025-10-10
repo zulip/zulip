@@ -31,7 +31,7 @@ function register_tabbed_section($tabbed_section: JQuery): void {
 }
 
 // Display the copy-to-clipboard button inside the .codehilite element
-// within the API and Help Center docs using clipboard.js
+// within the API and help center docs using clipboard.js
 function add_copy_to_clipboard_element($codehilite: JQuery): void {
     const $copy_button = $("<span>").addClass("copy-button copy-codeblock");
     $copy_button.html(zulip_copy_icon());

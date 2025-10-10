@@ -34,7 +34,7 @@ const get_events_params = {};
 let event_queue_expired = false;
 
 function get_events_success(events) {
-    let messages = [];
+    let raw_messages = [];
     const update_message_events = [];
     const post_message_events = [];
 
@@ -73,7 +73,7 @@ function get_events_success(events) {
                 if (event.local_message_id) {
                     msg.local_id = event.local_message_id;
                 }
-                messages.push(msg);
+                raw_messages.push(msg);
                 break;
             }
 
@@ -100,16 +100,16 @@ function get_events_success(events) {
         }
     }
 
-    if (messages.length > 0) {
+    if (raw_messages.length > 0) {
         // Sort by ID, so that if we get multiple messages back from
         // the server out-of-order, we'll still end up with our
         // message lists in order.
-        messages = _.sortBy(messages, "id");
+        raw_messages = _.sortBy(raw_messages, "id");
         try {
-            messages = echo.process_from_server(messages);
-            if (messages.length > 0) {
+            raw_messages = echo.process_from_server(raw_messages);
+            if (raw_messages.length > 0) {
                 let sent_by_this_client = false;
-                for (const msg of messages) {
+                for (const msg of raw_messages) {
                     if (sent_messages.messages.has(msg.local_id)) {
                         sent_by_this_client = true;
                     }
@@ -122,8 +122,11 @@ function get_events_success(events) {
                 // But in any case, insert_new_messages handles multiple
                 // messages, only one of which was sent by this client,
                 // correctly.
-
-                message_events.insert_new_messages(messages, sent_by_this_client, false);
+                message_events.insert_new_messages({
+                    type: "server_message",
+                    raw_messages,
+                    sent_by_this_client,
+                });
             }
         } catch (error) {
             blueslip.error("Failed to insert new messages", undefined, error);
