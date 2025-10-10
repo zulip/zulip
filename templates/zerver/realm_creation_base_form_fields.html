@@ -1,0 +1,56 @@
+<div class="realm-creation-editable-inputs {% if user_registration_form and not form.realm_subdomain.errors %}hide{% endif %}">
+    <div class="input-box">
+        <div class="inline-block relative">
+            <input id="id_team_name" class="required" type="text"
+              value="{% if form.realm_name.value() %}{{ form.realm_name.value() }}{% endif %}"
+              name="realm_name" maxlength="{{ MAX_REALM_NAME_LENGTH }}" required {% if not user_registration_form %}autofocus{% endif %} />
+        </div>
+        <label for="id_team_name" class="inline-block label-title">
+            {{ _('Organization name') }}
+            <a href="/help/create-your-organization-profile" target="_blank" rel="noopener noreferrer">
+                <i class="fa fa-question-circle-o" aria-hidden="true"></i>
+            </a>
+        </label>
+        {% if form.realm_name.errors %}
+            {% for error in form.realm_name.errors %}
+            <p class="help-inline text-error">{{ error }}</p>
+            {% endfor %}
+        {% endif %}
+    </div>
+
+    <div class="input-box">
+        <div class="inline-block relative">
+            <select name="realm_type" id="realm_type" required>
+                <option disabled selected value>-- {{ _("Select one") }} --</option>
+                {% for realm_type in sorted_realm_types %}
+                    {% if not realm_type.hidden %}
+                    <option value="{{ realm_type.id }}" {% if form.realm_type.value() == realm_type.id %}selected{% endif %} >{{ _(realm_type.name) }}</option>
+                    {% endif %}
+                {% endfor %}
+            </select>
+        </div>
+
+        <label for="realm_type" class="inline-block label-title">{{ _('Organization type') }}
+            <a href="/help/organization-type" target="_blank" rel="noopener noreferrer">
+                <i class="fa fa-question-circle-o" aria-hidden="true"></i>
+            </a>
+        </label>
+    </div>
+
+    <div class="input-box">
+        <div class="inline-block relative">
+            <select name="realm_default_language" id="realm_default_language">
+                {% for language in language_list %}
+                    <option value="{{ language.code }}" {% if form.realm_default_language.value() == language.code %}selected{% endif %} >{{ _(language.name) }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <label for="realm_default_language" class="inline-block label-title">
+            {{ _('Organization language') }}
+            <a href="/help/configure-organization-language" target="_blank" rel="noopener noreferrer">
+                <i class="fa fa-question-circle-o" aria-hidden="true"></i>
+            </a>
+        </label>
+    </div>
+</div>
