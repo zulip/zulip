@@ -1,0 +1,16 @@
+[
+    {
+        "text": "<@U066MTL5U> has joined the channel",
+        "subtype": "channel_join",
+        "user": "U066MTL5U",
+        "ts": "1434139102.000002",
+        "channel_name": "random"
+    },
+    {
+        "text": "<@U061A5N1G>: hey!",
+        "user": "U061A1R2R",
+        "ts": "1437868294.000006",
+        "has_image": true,
+        "channel_name": "random"
+    }
+]
