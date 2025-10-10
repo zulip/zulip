@@ -2332,7 +2332,10 @@ body:not(.spectator-view) {
 }
 
 .inbox-filter-dropdown-list-container,
-.recent-view-filter-dropdown-list-container {
+.recent-view-filter-dropdown-list-container,
+.folder-filter-dropdown-list-container,
+.stream_settings_filter-dropdown-list-container,
+.user_group_visibility_settings-dropdown-list-container {
     overflow: visible;
 
     .list-item {
@@ -2351,7 +2354,7 @@ body:not(.spectator-view) {
 }
 
 .dropdown-list-item-common-styles .dropdown-list-text-selected {
-    font-weight: 700;
+    font-weight: 600;
 }
 
 #scheduled_messages_overlay .error-icon-message-recipient {
