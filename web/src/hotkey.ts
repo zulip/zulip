@@ -1378,7 +1378,9 @@ function process_hotkey(e: JQuery.KeyDownEvent, hotkey: Hotkey): boolean {
         // ':': open reactions to message
         case "toggle_reactions_popover": {
             const $row = message_lists.current.selected_row();
-            const $emoji_icon = $row.find(".emoji-message-control-button-container");
+            const $emoji_icon = $row.find(
+                ".message_controls .emoji-message-control-button-container",
+            );
             let emoji_picker_reference;
             if (
                 $emoji_icon?.length !== 0 &&
