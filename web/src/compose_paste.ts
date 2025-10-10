@@ -39,10 +39,24 @@ function image_to_zulip_markdown(
         // For Zulip's custom emoji
         return node.getAttribute("alt") ?? "";
     }
-    const src = node.getAttribute("src") ?? node.getAttribute("href") ?? "";
-    const title = deduplicate_newlines(node.getAttribute("title") ?? "");
-    // Using Zulip's link like syntax for images
-    return src ? "[" + title + "](" + src + ")" : (node.getAttribute("alt") ?? "");
+    // For inline images presented in Markdown syntax, we need
+    // to grab the `data-original-src` attribute, rather than
+    // the thumbnailed image referenced on the `src` attribute
+    const src =
+        node.getAttribute("data-original-src") ??
+        node.getAttribute("src") ??
+        node.getAttribute("href") ??
+        "";
+    // We prioritize the alt attribute, which will be present on
+    // inline Markdown images
+    let alt = "";
+    if (node.classList.contains("inline-image")) {
+        alt = node.getAttribute("alt") ?? "";
+    } else {
+        alt = deduplicate_newlines(node.getAttribute("title") ?? "");
+    }
+    // Use Markdown syntax for images
+    return src ? "![" + alt + "](" + src + ")" : (node.getAttribute("alt") ?? "");
 }
 
 // Returns the count of valid text nodes in the tree.
@@ -475,6 +489,7 @@ export function paste_handler_converter(
             return image_to_zulip_markdown(content, node.firstElementChild);
         },
     });
+
     turndownService.addRule("images", {
         filter: "img",
 
