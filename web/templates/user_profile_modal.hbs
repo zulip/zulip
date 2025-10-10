@@ -21,7 +21,11 @@
                     <span class="user-profile-header-actions">
                         {{> components/icon_button custom_classes="copy-link-to-user-profile tippy-zulip-delayed-tooltip" icon="link-alt" intent="neutral" data-tippy-content=(t "Copy link to profile") aria-label=(t "Copy link to profile") }}
                         {{#if is_me}}
-                            {{> components/icon_button custom_classes="user-profile-manage-own-edit-button tippy-zulip-delayed-tooltip" icon="edit" intent="neutral" data-tippy-content=(t "Edit profile") aria-label=(t "Edit profile") }}
+                            {{#if can_manage_profile}}
+                                {{> components/icon_button custom_classes="user-profile-manage-others-edit-button tippy-zulip-delayed-tooltip" icon="edit" intent="neutral" data-tippy-content=(t "Manage user") aria-label=(t "Manage user") }}
+                            {{else}}
+                                {{> components/icon_button custom_classes="user-profile-manage-own-edit-button tippy-zulip-delayed-tooltip" icon="edit" intent="neutral" data-tippy-content=(t "Edit profile") aria-label=(t "Edit profile") }}
+                            {{/if}}
                         {{else if can_manage_profile}}
                             {{#if is_bot}}
                                 {{> components/icon_button custom_classes="user-profile-manage-others-edit-button tippy-zulip-delayed-tooltip" icon="edit" intent="neutral" data-tippy-content=(t "Manage bot") aria-label=(t "Manage bot") }}
