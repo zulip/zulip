@@ -102,3 +102,7 @@ export function scroll_element_into_container(
 
     $container.scrollTop(($container.scrollTop() ?? 0) + delta);
 }
+
+export function get_left_sidebar_scroll_container(): JQuery {
+    return get_scroll_element($("#left_sidebar_scroll_container"));
+}
