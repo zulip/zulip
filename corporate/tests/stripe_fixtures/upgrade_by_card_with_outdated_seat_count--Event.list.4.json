@@ -1,7 +1,7 @@
 {
   "data": [
     {
-      "api_version": "2025-04-30.basil",
+      "api_version": "2025-09-30.clover",
       "created": 1000000000,
       "data": {
         "object": {
@@ -162,7 +162,7 @@
       "type": "invoice.finalized"
     },
     {
-      "api_version": "2025-04-30.basil",
+      "api_version": "2025-09-30.clover",
       "created": 1000000000,
       "data": {
         "object": {
@@ -332,7 +332,7 @@
       "id": "upgrade_by_card_with_outdated_seat_count--Event.list.4.json",
       "livemode": false,
       "object": "event",
-      "pending_webhooks": 0,
+      "pending_webhooks": 2,
       "request": {
         "id": "upgrade_by_card_with_outdated_seat_count--Event.list.4.json",
         "idempotency_key": "00000000-0000-0000-0000-000000000000"
@@ -340,7 +340,7 @@
       "type": "invoice.updated"
     },
     {
-      "api_version": "2025-04-30.basil",
+      "api_version": "2025-09-30.clover",
       "created": 1000000000,
       "data": {
         "object": {
@@ -362,6 +362,7 @@
           "currency": "usd",
           "customer": "cus_NORMALIZED",
           "description": "Payment for Invoice",
+          "excluded_payment_method_types": null,
           "id": "upgrade_by_card_with_outdated_seat_count--Event.list.4.json",
           "last_payment_error": null,
           "latest_charge": null,
@@ -411,7 +412,7 @@
       "type": "payment_intent.created"
     },
     {
-      "api_version": "2025-04-30.basil",
+      "api_version": "2025-09-30.clover",
       "created": 1000000000,
       "data": {
         "object": {
@@ -584,7 +585,7 @@
       "type": "invoice.updated"
     },
     {
-      "api_version": "2025-04-30.basil",
+      "api_version": "2025-09-30.clover",
       "created": 1000000000,
       "data": {
         "object": {
@@ -599,6 +600,7 @@
           "invoice": "upgrade_by_card_with_outdated_seat_count--Event.list.4.json",
           "livemode": false,
           "metadata": {},
+          "net_amount": 136000,
           "object": "invoiceitem",
           "parent": null,
           "period": {
@@ -630,7 +632,7 @@
       "type": "invoiceitem.created"
     },
     {
-      "api_version": "2025-04-30.basil",
+      "api_version": "2025-09-30.clover",
       "created": 1000000000,
       "data": {
         "object": {
@@ -736,7 +738,7 @@
           "total_excluding_tax": 0,
           "total_pretax_credit_amounts": [],
           "total_taxes": [],
-          "webhooks_delivered_at": 1000000000
+          "webhooks_delivered_at": null
         }
       },
       "id": "upgrade_by_card_with_outdated_seat_count--Event.list.4.json",
