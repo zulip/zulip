@@ -1,8 +1,5 @@
-import random
-import string
 from typing import TYPE_CHECKING, Any, cast
 
-import orjson
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.views.decorators.csrf import csrf_exempt
@@ -11,8 +8,13 @@ from confirmation.models import Confirmation, create_confirmation_link
 from zerver.context_processors import get_realm_from_request
 from zerver.lib.response import json_success
 from zerver.models import Realm, UserProfile
-from zerver.views.auth import create_preregistration_realm, create_preregistration_user
-from zerver.views.registration import accounts_register
+from zerver.views.auth import (
+    create_preregistration_realm,
+    create_preregistration_user,
+    redirect_and_log_into_subdomain,
+)
+from zerver.views.registration import accounts_register, create_demo_helper
+from zproject.backends import ExternalAuthResult
 
 if TYPE_CHECKING:
     from django.http.request import _ImmutableQueryDict
@@ -29,13 +31,6 @@ def modify_postdata(request: HttpRequest, **kwargs: Any) -> None:
         new_post[key] = value
     new_post._mutable = False
     request.POST = cast("_ImmutableQueryDict", new_post)
-
-
-def generate_demo_realm_name() -> str:
-    letters = "".join(random.SystemRandom().choice(string.ascii_lowercase) for _ in range(4))
-    digits = "".join(random.SystemRandom().choice(string.digits) for _ in range(4))
-    demo_realm_name = f"demo-{letters}{digits}"
-    return demo_realm_name
 
 
 @csrf_exempt
@@ -95,35 +90,19 @@ def register_development_realm(request: HttpRequest) -> HttpResponse:
 
 @csrf_exempt
 def register_demo_development_realm(request: HttpRequest) -> HttpResponse:
-    # Demo organization owners are not required to provide a name or email.
-    name = "Your name"
-    email = ""
-    realm_default_language = "en"
-    realm_name = generate_demo_realm_name()
-    realm_type = Realm.ORG_TYPES["education"]["id"]
-    realm_subdomain = realm_name
-    email_address_visibility = orjson.dumps(UserProfile.EMAIL_ADDRESS_VISIBILITY_NOBODY)
-    prereg_realm = create_preregistration_realm(
-        email, realm_name, realm_subdomain, realm_type, realm_default_language
+    count = (
+        Realm.objects.filter(demo_organization_scheduled_deletion_date__isnull=False).count() + 1
     )
-    activation_url = create_confirmation_link(
-        prereg_realm, Confirmation.NEW_REALM_USER_REGISTRATION, no_associated_realm_object=True
-    )
-    key = activation_url.split("/")[-1]
-    # Need to add test data to POST request as it doesn't originally contain the required parameters
-    modify_postdata(
+    user_profile = create_demo_helper(
         request,
-        key=key,
-        realm_name=realm_name,
-        realm_type=realm_type,
-        realm_default_language=realm_default_language,
-        email_address_visibility=email_address_visibility,
-        full_name=name,
-        realm_subdomain=realm_subdomain,
-        terms="true",
-        is_demo_organization="true",
+        realm_name=f"Demo organization {count}",
+        realm_type=Realm.ORG_TYPES["education"]["id"],
+        realm_default_language="en",
         how_realm_creator_found_zulip="existing_user",
         how_realm_creator_found_zulip_extra_context="test",
+        timezone="US/Pacific",
     )
 
-    return accounts_register(request)
+    return redirect_and_log_into_subdomain(
+        ExternalAuthResult(user_profile=user_profile, data_dict={"is_realm_creation": True})
+    )
