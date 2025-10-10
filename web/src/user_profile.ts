@@ -1449,17 +1449,13 @@ export function initialize(): void {
         e.preventDefault();
     });
 
-    $("body").on(
-        "click",
-        "#user-profile-modal #name .user-profile-manage-others-edit-button",
-        (e) => {
-            show_manage_user_tab("manage-profile-tab");
-            e.stopPropagation();
-            e.preventDefault();
-        },
-    );
+    $("body").on("click", "#user-profile-modal #name .user-profile-update-user-tab-button", (e) => {
+        show_manage_user_tab("manage-profile-tab");
+        e.stopPropagation();
+        e.preventDefault();
+    });
 
-    $("body").on("click", "#user-profile-modal #name .user-profile-manage-own-edit-button", () => {
+    $("body").on("click", "#user-profile-modal #name .user-profile-profile-settings-button", () => {
         browser_history.go_to_location("#settings/profile");
         hide_user_profile();
     });
