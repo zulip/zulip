@@ -1164,6 +1164,18 @@ class IncludeHistoryTest(ZulipTestCase):
         ]
         self.assertFalse(ok_to_include_history(narrow, user_profile, False))
 
+        # channels:web-public searches should include history for non-guest members.
+        narrow = [
+            NarrowParameter(operator="channels", operand="web-public"),
+        ]
+        self.assertTrue(ok_to_include_history(narrow, user_profile, False))
+
+        # Negated -channels:web-public searches should not include history.
+        narrow = [
+            NarrowParameter(operator="channels", operand="web-public", negated=True),
+        ]
+        self.assertFalse(ok_to_include_history(narrow, user_profile, False))
+
         # Definitely forbid seeing history on private channels.
         self.make_stream("private_channel", realm=user_profile.realm, invite_only=True)
         subscribed_user_profile = self.example_user("cordelia")
