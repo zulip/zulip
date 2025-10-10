@@ -40,6 +40,7 @@ from zerver.actions.realm_settings import (
 from zerver.actions.users import do_delete_user_preserving_messages
 from zerver.decorator import require_server_admin, zulip_login_required
 from zerver.forms import check_subdomain_available
+from zerver.lib.exceptions import JsonableError
 from zerver.lib.rate_limiter import rate_limit_request_by_ip
 from zerver.lib.realm_icon import realm_icon_url
 from zerver.lib.send_email import FromAddress, send_email
@@ -49,6 +50,7 @@ from zerver.lib.typed_endpoint import (
     typed_endpoint,
     typed_endpoint_without_parameters,
 )
+from zerver.lib.users import check_group_permission_updates_for_deactivating_user
 from zerver.lib.validator import check_date
 from zerver.models import (
     MultiuseInvite,
@@ -574,8 +576,15 @@ def support(
             user_profile_for_deletion = get_user_profile_by_id(delete_user_by_id)
             user_email = user_profile_for_deletion.delivery_email
             assert user_profile_for_deletion.realm == realm
-            do_delete_user_preserving_messages(user_profile_for_deletion)
-            context["success_message"] = f"{user_email} in {realm.subdomain} deleted."
+            try:
+                group_setting_updates = check_group_permission_updates_for_deactivating_user(
+                    user_profile_for_deletion
+                )
+            except JsonableError as error:
+                context["error_message"] = error.msg
+            else:
+                do_delete_user_preserving_messages(user_profile_for_deletion, group_setting_updates)
+                context["success_message"] = f"{user_email} in {realm.subdomain} deleted."
 
         if support_view_request is not None:
             billing_session = RealmBillingSession(

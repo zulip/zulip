@@ -3,6 +3,7 @@ import re
 import unicodedata
 from collections import defaultdict
 from collections.abc import Iterable, Mapping, Sequence
+from dataclasses import dataclass
 from email.headerregistry import Address
 from operator import itemgetter
 from typing import Any, TypedDict
@@ -19,20 +20,36 @@ from zulip_bots.custom_exceptions import ConfigValidationError
 from zerver.lib.avatar import avatar_url, get_avatar_field, get_avatar_for_inaccessible_user
 from zerver.lib.cache import cache_with_key, get_cross_realm_dicts_key
 from zerver.lib.create_user import get_dummy_email_address_for_display_regex
-from zerver.lib.exceptions import JsonableError, OrganizationOwnerRequiredError
+from zerver.lib.exceptions import (
+    CannotDeactivateLastUserWithPermissionError,
+    JsonableError,
+    OrganizationOwnerRequiredError,
+)
 from zerver.lib.string_validation import check_string_is_printable
 from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.lib.timezone import canonicalize_timezone
-from zerver.lib.types import ProfileDataElementUpdateDict, ProfileDataElementValue, RawUserDict
-from zerver.lib.user_groups import user_has_permission_for_group_setting
+from zerver.lib.types import (
+    GroupPermissionSetting,
+    ProfileDataElementUpdateDict,
+    ProfileDataElementValue,
+    RawUserDict,
+    UserGroupMembersData,
+)
+from zerver.lib.user_groups import (
+    get_members_and_subgroups_of_groups,
+    user_has_permission_for_group_setting,
+)
 from zerver.models import (
     CustomProfileField,
     CustomProfileFieldValue,
     Message,
+    NamedUserGroup,
     Realm,
     Recipient,
     Service,
+    Stream,
     Subscription,
+    UserGroupMembership,
     UserMessage,
     UserProfile,
 )
@@ -1222,3 +1239,147 @@ def max_message_id_for_user(user_profile: UserProfile | None) -> int:
         return max_message.message_id
     else:
         return -1
+
+
+@dataclass
+class SettingToUpdate:
+    setting_name: str
+    group_setting_value: UserGroupMembersData
+
+
+@dataclass
+class StreamSettingToUpdate:
+    stream: Stream
+    settings: list[SettingToUpdate]
+
+
+@dataclass
+class GroupSettingToUpdate:
+    group: NamedUserGroup
+    settings: list[SettingToUpdate]
+
+
+@dataclass
+class GroupPermissionUpdates:
+    realm_settings_to_update: list[SettingToUpdate]
+    stream_settings_to_update: list[StreamSettingToUpdate]
+    group_settings_to_update: list[GroupSettingToUpdate]
+
+
+def check_updated_settings_after_deactivating_user(
+    setting_config_object: dict[str, GroupPermissionSetting],
+    setting_object: Realm | Stream | NamedUserGroup,
+    anonymous_group_ids: set[int],
+    group_members_dict: dict[int, UserGroupMembersData],
+) -> tuple[list[SettingToUpdate], list[str]]:
+    objection_settings: list[str] = []
+    settings_to_update: list[SettingToUpdate] = []
+    for setting_name, permission_configuration in setting_config_object.items():
+        setting_group_id = getattr(setting_object, setting_name + "_id")
+
+        if setting_group_id in anonymous_group_ids:
+            anonymous_group = group_members_dict[setting_group_id]
+            if (
+                len(anonymous_group.direct_members) == 1
+                and len(anonymous_group.direct_subgroups) == 0
+                and not permission_configuration.allow_nobody_group
+            ):
+                objection_settings.append(setting_name)
+                continue
+
+            settings_to_update.append(
+                SettingToUpdate(setting_name=setting_name, group_setting_value=anonymous_group)
+            )
+
+    return settings_to_update, objection_settings
+
+
+def check_group_permission_updates_for_deactivating_user(
+    user_profile: UserProfile,
+) -> GroupPermissionUpdates:
+    result = GroupPermissionUpdates(
+        realm_settings_to_update=[],
+        stream_settings_to_update=[],
+        group_settings_to_update=[],
+    )
+
+    user_anonymous_group_ids = UserGroupMembership.objects.filter(
+        user_profile=user_profile, user_group__named_user_group=None
+    ).values_list("user_group_id", flat=True)
+    if len(user_anonymous_group_ids) == 0:
+        return result
+
+    group_members_dict = get_members_and_subgroups_of_groups(set(user_anonymous_group_ids))
+
+    objections: list[dict[str, Any]] = []
+
+    realm = user_profile.realm
+    realm_settings_to_update, realm_objection_settings = (
+        check_updated_settings_after_deactivating_user(
+            Realm.REALM_PERMISSION_GROUP_SETTINGS,
+            realm,
+            set(user_anonymous_group_ids),
+            group_members_dict,
+        )
+    )
+
+    result.realm_settings_to_update = realm_settings_to_update
+    if len(realm_objection_settings) > 0:
+        objections.append(dict(type="realm", settings=realm_objection_settings))
+
+    stream_setting_query = Q()
+    for setting_name in Stream.stream_permission_group_settings:
+        stream_setting_query |= Q(**{f"{setting_name}__in": list(user_anonymous_group_ids)})
+
+    for stream in Stream.objects.filter(realm_id=user_profile.realm_id, deactivated=False).filter(
+        stream_setting_query
+    ):
+        stream_settings_to_update, stream_objection_settings = (
+            check_updated_settings_after_deactivating_user(
+                Stream.stream_permission_group_settings,
+                stream,
+                set(user_anonymous_group_ids),
+                group_members_dict,
+            )
+        )
+
+        if len(stream_settings_to_update) > 0:
+            result.stream_settings_to_update.append(
+                StreamSettingToUpdate(stream=stream, settings=stream_settings_to_update)
+            )
+
+        if len(stream_objection_settings) > 0:  # nocoverage
+            objections.append(
+                dict(type="channel", channel_id=stream.id, settings=stream_objection_settings)
+            )
+
+    group_setting_query = Q()
+    for setting_name in NamedUserGroup.GROUP_PERMISSION_SETTINGS:
+        group_setting_query |= Q(**{f"{setting_name}__in": list(user_anonymous_group_ids)})
+
+    for group in NamedUserGroup.objects.filter(
+        realm_id=user_profile.realm_id, deactivated=False
+    ).filter(group_setting_query):
+        group_settings_to_update, group_objection_settings = (
+            check_updated_settings_after_deactivating_user(
+                NamedUserGroup.GROUP_PERMISSION_SETTINGS,
+                group,
+                set(user_anonymous_group_ids),
+                group_members_dict,
+            )
+        )
+
+        if len(group_settings_to_update) > 0:
+            result.group_settings_to_update.append(
+                GroupSettingToUpdate(group=group, settings=group_settings_to_update)
+            )
+
+        if len(group_objection_settings) > 0:  # nocoverage
+            objections.append(
+                dict(type="group", group_id=group.id, settings=group_objection_settings)
+            )
+
+    if len(objections) > 0:
+        raise CannotDeactivateLastUserWithPermissionError(objections)
+
+    return result
