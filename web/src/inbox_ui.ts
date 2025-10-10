@@ -568,6 +568,9 @@ function get_channel_folder_id(info: {folder_id: number | null; is_pinned: boole
     if (info.folder_id === null) {
         return OTHER_CHANNELS_FOLDER_ID;
     }
+    if (!user_settings.web_inbox_show_channel_folders) {
+        return OTHER_CHANNELS_FOLDER_ID;
+    }
     return info.folder_id;
 }
 
@@ -1154,6 +1157,7 @@ function render_channel_view(channel_id: number): void {
             normal_view: false,
             search_val: search_keyword,
             INBOX_SEARCH_ID,
+            show_channel_folder_toggle: channel_folders.user_has_folders(),
         }),
     );
     // Hide any empty inbox text by default.
@@ -1194,6 +1198,7 @@ export function complete_rerender(coming_from_other_views = false): void {
                     $("#inbox-pane").html(
                         render_inbox_view({
                             unknown_channel: true,
+                            show_channel_folder_toggle: channel_folders.user_has_folders(),
                         }),
                     );
                     return;
@@ -1215,6 +1220,7 @@ export function complete_rerender(coming_from_other_views = false): void {
                     topics_dict,
                     streams_dict,
                     channel_folders_dict,
+                    show_channel_folder_toggle: channel_folders.user_has_folders(),
                     ...additional_context,
                 }),
             );
