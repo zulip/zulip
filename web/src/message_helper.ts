@@ -2,6 +2,7 @@ import _ from "lodash";
 import assert from "minimalistic-assert";
 
 import * as alert_words from "./alert_words.ts";
+import * as blueslip from "./blueslip.ts";
 import type {RawLocalMessage} from "./echo.ts";
 import {electron_bridge} from "./electron_bridge.ts";
 import * as message_store from "./message_store.ts";
@@ -74,7 +75,11 @@ export function process_new_message(opts: NewMessage): ProcessedMessage {
             opts.type === "server_message" &&
             util.get_match_topic(opts.raw_message) !== undefined
         ) {
-            assert(cached_msg_data.type === "server_message");
+            if (cached_msg_data.type !== "server_message") {
+                blueslip.error("Cached message should be server message", {
+                    message_data: cached_msg_data,
+                });
+            }
             util.set_match_data(cached_msg_data.message, opts.raw_message);
         }
         return cached_msg_data;
