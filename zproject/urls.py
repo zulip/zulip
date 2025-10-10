@@ -273,6 +273,17 @@ from zerver.views.video_calls import (
     register_zoom_user,
 )
 from zerver.views.welcome_bot_custom_message import send_test_welcome_bot_custom_message
+from zerver.views.whispers import (
+    add_whisper_participant_backend,
+    cancel_whisper_request_backend,
+    create_whisper_conversation_backend,
+    create_whisper_request_backend,
+    list_pending_whisper_requests_backend,
+    list_sent_whisper_requests_backend,
+    list_whisper_conversation_participants_backend,
+    list_whisper_conversations_backend,
+    respond_whisper_request_backend,
+)
 from zproject import dev_urls
 
 if settings.TWO_FACTOR_AUTHENTICATION_ENABLED:  # nocoverage
@@ -591,6 +602,12 @@ v1_api_and_json_patterns = [
     rest_path("export/realm", POST=export_realm, GET=get_realm_exports),
     rest_path("export/realm/<int:export_id>", DELETE=delete_realm_export),
     rest_path("export/realm/consents", GET=get_users_export_consents),
+    # whisper feature endpoints -> zerver.views.whispers
+    rest_path("whispers/requests", POST=create_whisper_request_backend, GET=list_pending_whisper_requests_backend),
+    rest_path("whispers/requests/sent", GET=list_sent_whisper_requests_backend),
+    rest_path("whispers/requests/<int:request_id>", POST=respond_whisper_request_backend, DELETE=cancel_whisper_request_backend),
+    rest_path("whispers/conversations", GET=list_whisper_conversations_backend, POST=create_whisper_conversation_backend),
+    rest_path("whispers/conversations/<int:conversation_id>/participants", GET=list_whisper_conversation_participants_backend, POST=add_whisper_participant_backend, DELETE=add_whisper_participant_backend),
 ]
 
 integrations_view = IntegrationView.as_view()
