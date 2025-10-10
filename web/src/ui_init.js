@@ -106,7 +106,7 @@ import * as realm_logo from "./realm_logo.ts";
 import * as realm_playground from "./realm_playground.ts";
 import * as realm_user_settings_defaults from "./realm_user_settings_defaults.ts";
 import * as recent_view_ui from "./recent_view_ui.ts";
-import * as reload_setup from "./reload_setup.js";
+import * as reload_setup from "./reload_setup.ts";
 import * as reminders_overlay_ui from "./reminders_overlay_ui.ts";
 import * as resize_handler from "./resize_handler.ts";
 import * as saved_snippets from "./saved_snippets.ts";
