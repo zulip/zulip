@@ -5702,7 +5702,9 @@ def customer_has_last_n_invoices_open(customer: Customer, n: int) -> bool:
 
 
 def downgrade_small_realms_behind_on_payments_as_needed() -> None:
-    customers = Customer.objects.all().exclude(stripe_customer_id=None).exclude(realm=None)
+    customers = (
+        Customer.objects.all().exclude(stripe_customer_id=None).exclude(realm=None).order_by("id")
+    )
     for customer in customers:
         realm = customer.realm
         assert realm is not None

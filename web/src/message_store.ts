@@ -391,7 +391,7 @@ export function reify_message_id({old_id, new_id}: {old_id: number; new_id: numb
     if (message_data !== undefined) {
         message_data.message.id = new_id;
         message_data.message.locally_echoed = false;
-        stored_messages.set(new_id, message_data);
+        stored_messages.set(new_id, {type: "server_message", message: message_data.message});
         stored_messages.delete(old_id);
     }
 }

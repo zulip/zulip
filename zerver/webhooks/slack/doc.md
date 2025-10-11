@@ -48,14 +48,14 @@ If you are looking to quickly move your Slack integrations to Zulip, check out
 1. Create a new [Slack app][4], and open it. Navigate to the **OAuth
    & Permissions** menu, and scroll down to the **Scopes** section.
 
-1. Make sure **Bot Token Scopes** includes `channels:read`,
-   `channels:history`, `emoji:read`, `team:read`, `users:read`, and
-   `users:read.email`.
+1. Make sure **Bot Token Scopes** includes `channels:history`, `channels:read`,
+   and `users:read`. If you're setting up a [bidirectional bridge][6], make sure
+   to also include the `chat:write` scope.
 
     !!! tip ""
 
-        See [Slack's Events API documentation][3] for details about
-        these scopes.
+        See the [required bot token scopes](#required-bot-token-scopes)
+        section for details about these scopes.
 
 1. Scroll to the **OAuth Tokens for Your Workspace** section in the
    same menu, and click **Install to Workspace**.
@@ -78,6 +78,26 @@ If you are looking to quickly move your Slack integrations to Zulip, check out
 {!congrats.md!}
 
 ![](/static/images/integrations/slack/001.png)
+
+### Required bot token scopes
+
+- `channels:history` is required by Slack's Event API's
+  [message.channels](https://api.slack.com/events/message.channels) event. This
+  is used to send new messages from Slack to Zulip.
+
+- `channels:read` is required for Slack's
+  [conversations.info](https://api.slack.com/methods/conversations.info)
+  endpoint. This is used to get the name of the Slack channel a message came
+  from.
+
+- For a [bidirectional bridge][6] setup, the `chat:write` is also required for
+  Slack's
+  [chat.postMessage](https://docs.slack.dev/reference/methods/chat.postMessage/)
+  method. This is used to send new messages from Zulip to Slack.
+
+- `users:read` is required to call
+  Slack's [users.info](https://api.slack.com/methods/users.info) endpoint. This
+  is used to get the name of the Slack message's sender.
 
 ### Related documentation
 
