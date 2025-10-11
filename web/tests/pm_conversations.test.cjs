@@ -155,3 +155,27 @@ test("has_conversation", ({override}) => {
     assert.ok(!pmc.recent.has_conversation("2"));
     assert.ok(!pmc.recent.has_conversation("72"));
 });
+
+test("maybe_remove", () => {
+    pmc.recent.initialize(params);
+
+    assert.deepEqual(pmc.recent.get().length, 5);
+
+    pmc.recent.insert([1], 101);
+    pmc.recent.insert([1], 102);
+
+    pmc.recent.maybe_remove("1", 1);
+    assert.equal(pmc.recent.get().find((c) => c.user_ids_string === "1").count, 1);
+    assert.ok(pmc.recent.has_conversation("1"));
+
+    pmc.recent.maybe_remove("1", 1);
+    assert.ok(!pmc.recent.has_conversation("1"));
+    assert.deepEqual(pmc.recent.get().length, 4);
+
+    // Try to remove non-existent conversation
+    pmc.recent.maybe_remove("999", 1);
+
+    pmc.recent.insert([3], 103);
+    pmc.recent.maybe_remove("3", 10);
+    assert.ok(!pmc.recent.has_conversation("3"));
+});

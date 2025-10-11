@@ -1536,6 +1536,72 @@ run_test("delete_message", ({override}) => {
     assert_same(args.opts.max_removed_msg_id, 1337);
 });
 
+run_test("delete_message - private", ({override}) => {
+    const people = zrequire("people");
+    const pm_conversations = zrequire("pm_conversations");
+    const pm_list = zrequire("pm_list");
+    const message_store = zrequire("message_store");
+
+    // Set up a private message by actually adding it to message_store
+    const alice = {user_id: 5, email: "alice@example.com", full_name: "Alice"};
+    people.add_active_user(alice);
+    people.initialize_current_user(15);
+
+    const private_message = {
+        id: 1001,
+        type: "private",
+        sender_id: alice.user_id,
+        display_recipient: [{id: alice.user_id, email: alice.email, full_name: alice.full_name}],
+        sender_email: alice.email,
+        sender_full_name: alice.full_name,
+        sender_realm_str: "zulip",
+        timestamp: 1500,
+        content: "test message",
+        reactions: [],
+        submessages: [],
+    };
+
+    // Actually add the message to message_store
+    message_store.update_message_cache(private_message);
+
+    pm_conversations.recent.insert([alice.user_id], 1001);
+
+    const message_events_stub = make_stub();
+    override(message_events, "remove_messages", message_events_stub.f);
+
+    const unread_ops_stub = make_stub();
+    override(unread_ops, "process_read_messages_event", unread_ops_stub.f);
+
+    const pm_conversations_stub = make_stub();
+    override(pm_conversations.recent, "maybe_remove", pm_conversations_stub.f);
+
+    const pm_list_stub = make_stub();
+    override(pm_list, "update_private_messages", pm_list_stub.f);
+
+    // Create and dispatch the event
+    const event = {
+        type: "delete_message",
+        message_ids: [1001],
+        message_type: "private",
+    };
+
+    dispatch(event);
+
+    let args;
+
+    args = message_events_stub.get_args("message_ids");
+    assert_same(args.message_ids, [1001]);
+
+    args = unread_ops_stub.get_args("message_ids");
+    assert_same(args.message_ids, [1001]);
+
+    args = pm_conversations_stub.get_args("user_ids_string", "num_messages");
+    assert.equal(args.user_ids_string, "5");
+    assert.equal(args.num_messages, 1);
+
+    assert.equal(pm_list_stub.num_calls, 1);
+});
+
 run_test("user_status", ({override}) => {
     let event = event_fixtures.user_status__set_status_emoji;
     {
