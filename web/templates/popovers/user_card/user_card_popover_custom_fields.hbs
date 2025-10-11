@@ -10,9 +10,9 @@
         {{else if this.is_external_account}}
             <a href="{{this.link}}" target="_blank" rel="noopener noreferrer" class="custom-profile-field-value custom-profile-field-link" data-tippy-content="{{this.name}}" tabindex="0">
                 {{#if (eq this.subtype "github") }}
-                    <i class="popover-menu-icon fa fa-github" aria-hidden="true"></i>
+                    <i class="popover-menu-icon zulip-icon zulip-icon-github" aria-hidden="true"></i>
                 {{else if (eq this.subtype "twitter") }}
-                    <i class="popover-menu-icon fa fa-twitter" aria-hidden="true"></i>
+                    <i class="popover-menu-icon zulip-icon zulip-icon-twitter" aria-hidden="true"></i>
                 {{/if}}
                 <span class="custom-profile-field-text">{{this.value}}</span>
             </a>

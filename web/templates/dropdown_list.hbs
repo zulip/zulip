@@ -30,14 +30,16 @@
             {{else if is_direct_message}}
                 <i class="zulip-icon zulip-icon-users channel-privacy-type-icon"></i> <span class="decorated-dm-name">{{name}}</span>
             {{else if is_setting_disabled}}
-                {{#if show_disabled_icon}}
-                    <i class="setting-disabled-option-icon zulip-icon zulip-icon-deactivated-circle" aria-hidden="true"></i>
-                {{/if}}
-                {{#if show_disabled_option_name}}
-                    <span class="setting-disabled-option-text dropdown-list-text-neutral">{{name}}</span>
-                {{else}}
-                    <span class="setting-disabled-option-text dropdown-list-text-neutral">{{t "Disable" }}</span>
-                {{/if}}
+                <span class="setting-disabled-option">
+                    {{#if show_disabled_icon}}
+                        <i class="setting-disabled-option-icon zulip-icon zulip-icon-circle-x" aria-hidden="true"></i>
+                    {{/if}}
+                    {{#if show_disabled_option_name}}
+                        <span class="dropdown-list-text-neutral">{{name}}</span>
+                    {{else}}
+                        <span class="dropdown-list-text-neutral">{{t "Disable" }}</span>
+                    {{/if}}
+                </span>
             {{else if (eq unique_id -2)}}
                 {{!-- This is the option for PresetUrlOption.MAPPING --}}
                 <i class="zulip-icon zulip-icon-equal channel-privacy-type-icon" aria-hidden="true"></i> <span class="dropdown-list-text-neutral">{{name}}</span>
