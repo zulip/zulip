@@ -6,7 +6,7 @@
                 <div class="popover-menu-user-presence user-circle zulip-icon zulip-icon-{{user_circle_class}} {{user_circle_class}} hidden-for-spectators" data-presence-indicator-user-id="{{user_id}}"></div>
             {{/if}}
             {{#if (not is_active)}}
-                <span class="popover-menu-user-presence conversation-partners-icon fa fa-ban fa-lg deactivated-user-icon user_circle"></span>
+                <span class="popover-menu-user-presence conversation-partners-icon zulip-icon zulip-icon-circle-x fa-lg deactivated-user-icon user_circle"></span>
             {{/if}}
         </div>
         <div class="popover-menu-user-info">
@@ -231,7 +231,7 @@
             {{#if can_unmute}}
                 <li role="none" class="popover-menu-list-item link-item">
                     <a role="menuitem" class="sidebar-popover-unmute-user popover-menu-link hidden-for-spectators" tabindex="0">
-                        <i class="popover-menu-icon fa fa-eye" aria-hidden="true"></i>
+                        <i class="popover-menu-icon zulip-icon zulip-icon-eye" aria-hidden="true"></i>
                         {{#if is_bot}}
                             <span class="popover-menu-label">{{t "Unmute this bot" }}</span>
                         {{else}}
