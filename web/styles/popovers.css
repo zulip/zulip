@@ -582,9 +582,9 @@ ul.popover-group-menu-member-list {
     .group-list-top-section,
     .stream-list-top-section {
         display: flex;
-        margin-top: 12px;
+        margin-top: 0.75em;
         align-items: center;
-        margin-bottom: 5px;
+        margin-bottom: 0.3125em;
 
         .group-search-container,
         .stream-search-container {
@@ -599,7 +599,7 @@ ul.popover-group-menu-member-list {
         .stream-search {
             grid-column: search-input-start / clear-search-end;
             grid-row: search-input;
-            padding-right: 28px;
+            padding-right: 1.75em;
             white-space: nowrap;
             text-overflow: ellipsis;
             overflow: hidden;
