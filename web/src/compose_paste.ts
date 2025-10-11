@@ -232,7 +232,12 @@ export function paste_handler_converter(
         // that such a text node exists in `has_single_textful_child_node`.
         const text_content = get_the_only_textful_child_content([...copied_html_fragment.children]);
         if (text_content) {
-            return text_content;
+            // Firefox preserves the wrapped newline characters in the textContent of <p>
+            // tags in `paste_html`, even when the original content does not contain newlines.
+            // This results in unexpected bad wrapping of paragraphs when copy-pasting
+            // text back into the compose box.
+            // This replace logic is used to handle that edge case.
+            return text_content.replaceAll(/\s*\n\s*/g, " ");
         }
         // Ideally, this should never happen.
         // Just for fallback in case it does.
