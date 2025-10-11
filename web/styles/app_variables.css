@@ -427,6 +427,7 @@
     --opacity-left-sidebar-muted-mentions: 0.3;
     --opacity-right-sidebar-subheading: 0.65;
     --opacity-right-sidebar-subheading-hover: 0.9;
+    --opacity-readonly-modal-input: 0.7;
 
     /*
     Message box elements and values.
@@ -842,6 +843,10 @@
     --background-color-modal-selectable-icon-hover: light-dark(
         hsl(240deg 100% 50% / 7%),
         hsl(240deg 100% 75% / 20%)
+    );
+    --background-color-readonly-modal-input: light-dark(
+        hsl(240deg 7% 93%),
+        hsl(240deg 7% 17%)
     );
     --color-background-pill-container-without-placeholder: light-dark(
         hsl(0deg 0% 100%),
