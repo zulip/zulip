@@ -259,7 +259,7 @@ class PythonAPIIntegration(Integration):
 
 
 class WebhookIntegration(Integration):
-    DEFAULT_FUNCTION_PATH = "zerver.webhooks.{name}.view.api_{name}_webhook"
+    DEFAULT_FUNCTION_PATH = "zerver.webhooks.{dir_name}.view.api_{dir_name}_webhook"
     DEFAULT_URL = "api/v1/external/{name}"
     DEFAULT_CLIENT_NAME = "Zulip{name}Webhook"
     DEFAULT_DOC_PATH = "{name}/doc.md"
@@ -296,8 +296,12 @@ class WebhookIntegration(Integration):
             url_options=url_options,
         )
 
+        if dir_name is None:
+            dir_name = self.name
+        self.dir_name = dir_name
+
         if function is None:
-            function = self.DEFAULT_FUNCTION_PATH.format(name=name)
+            function = self.DEFAULT_FUNCTION_PATH.format(dir_name=dir_name)
         self.function_name = function
 
         if url is None:
@@ -307,10 +311,6 @@ class WebhookIntegration(Integration):
         if doc is None:
             doc = self.DEFAULT_DOC_PATH.format(name=name)
         self.doc = doc
-
-        if dir_name is None:
-            dir_name = self.name
-        self.dir_name = dir_name
 
     def get_function(self) -> Callable[[HttpRequest], HttpResponseBase]:
         return import_string(self.function_name)
@@ -508,7 +508,6 @@ WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
         display_name="GitHub Sponsors",
         logo="images/integrations/logos/github.svg",
         dir_name="github",
-        function="zerver.webhooks.github.view.api_github_webhook",
         doc="github/githubsponsors.md",
         stream_name="github",
     ),
