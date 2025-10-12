@@ -255,6 +255,73 @@ button {
     }
 }
 
+/* Mac download button styles */
+.download-mac-primary {
+    display: inline-block;
+    margin-right: 12px;
+    padding: 12px 18px;
+    font-size: 16px;
+}
+
+.download-mac-secondary {
+    display: block;
+    margin-top: 8px;
+    font-size: 14px;
+    color: var(--color-text-secondary, #6b7280);
+}
+
+.mac-download-warning {
+    margin-top: 12px;
+    padding: 10px;
+    background-color: var(--color-warning-background, #fff4e5);
+    color: var(--color-warning-text, #663c00);
+    border-radius: 4px;
+    border: 1px solid #ffddb2;
+    display: none;
+}
+
+.recommended-badge {
+    display: inline-block;
+    margin-left: 8px;
+    padding: 2px 6px;
+    background-color: #e6ffed;
+    color: #006644;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+/* Loading state for architecture detection */
+.download-mac-primary.detecting-arch {
+    opacity: 0.7;
+    cursor: wait;
+}
+
+.download-mac-primary .button-text::after {
+    content: "";
+}
+
+.download-mac-primary.detecting-arch .button-text::after {
+    content: "...";
+    margin-left: 6px;
+    animation: ellipsis 1.5s steps(4, end) infinite;
+}
+
+@keyframes ellipsis {
+    0% {
+        content: "";
+    }
+    33% {
+        content: ".";
+    }
+    66% {
+        content: "..";
+    }
+    100% {
+        content: "...";
+    }
+}
+
 .portico-landing.hello .hero {
     position: relative;
     padding: 60px 50px 30px;
