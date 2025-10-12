@@ -3,8 +3,11 @@ import assert from "minimalistic-assert";
 import * as z from "zod/mini";
 
 import {page_params} from "../base_page_params.ts";
+import * as blueslip from "../blueslip.ts";
 import * as util from "../util.ts";
 
+import { trackMacArchDetection, trackMacDownloadClicked } from "./google-analytics.ts";
+import { type ArchitectureInfo, MacArchitectureDetector } from "./mac-architecture-detector.ts";
 import type {UserOS} from "./tabbed-instructions.ts";
 import {detect_user_os} from "./tabbed-instructions.ts";
 import render_tabs from "./team.ts";
@@ -167,9 +170,73 @@ const apps_events = function (): void {
         $download_from_apple_app_store.toggle(version === "ios");
         $download_from_microsoft_store.toggle(version === "windows");
         $download_mac_intel.toggle(version === "mac");
+
+    const shouldDetectArch = MacArchitectureDetector !== undefined && version === 'mac';
+        if (shouldDetectArch) {
+            const $primary = $('.download-mac-primary');
+            const $secondary = $('.download-mac-secondary');
+
+            // Show loading state
+            $primary.addClass('detecting-arch').prop('disabled', true);
+
+            void (async (): Promise<void> => {
+                try {
+                    const detector = MacArchitectureDetector.getInstance();
+                    const info: ArchitectureInfo = await detector.detectArchitecture();
+
+                    // Remove loading state
+                    $primary.removeClass('detecting-arch').prop('disabled', false);
+
+                    if (info.isAppleSilicon === null) {
+                        trackMacArchDetection('unknown', info.confidence, 'unknown');
+                        return;
+                    }
+
+                    if (!info.isAppleSilicon && info.confidence === 'high') {
+                        $primary.attr('href', '/apps/download/mac-intel');
+                        $primary.find('.button-text').text('Download for macOS (Intel)');
+                        $primary.attr('data-mac-arch', 'intel');
+
+                        $secondary.attr('href', '/apps/download/mac-arm64');
+                        $secondary.text('or download Apple Silicon build');
+                        $secondary.attr('data-mac-arch', 'arm64');
+
+                        $('.mac-download-warning').hide();
+                        trackMacArchDetection('Intel', info.confidence, 'user_agent_data');
+                    } else if (info.isAppleSilicon) {
+                        if (info.confidence === 'high') {
+                            const $text = $primary.find('.button-text');
+                            const $badge = $('<span>').addClass('recommended-badge').text(' ✓ Recommended');
+                            $text.append($badge);
+                        }
+                        $primary.attr('data-mac-arch', 'arm64');
+                        $secondary.attr('data-mac-arch', 'intel');
+                        trackMacArchDetection('Apple Silicon', info.confidence, info.confidence === 'high' ? 'user_agent_data' : 'webgl');
+                    }
+
+                    $primary.attr('data-detected-arch', detector.getArchitectureName(info));
+                    $primary.attr('data-confidence', info.confidence);
+
+                } catch (error) {
+                    // Remove loading state and surface error
+                    $('.download-mac-primary').removeClass('detecting-arch').prop('disabled', false);
+                    blueslip.error('Mac architecture detection failed', {error: String(error)});
+                    trackMacArchDetection('error', 'unknown', 'error');
+                }
+            })();
+
+            // Click tracking for downloads
+            $(document).on('click', '.download-mac-primary, .download-mac-secondary', function () {
+                const arch = $(this).attr('data-mac-arch') ?? 'unknown';
+                try {
+                    trackMacDownloadClicked(arch);
+                } catch {
+                    // ignore analytics failures
+                }
+            });
+        }
     };
 
-    // init
     version = get_version_from_path();
     update_page();
 };
@@ -181,7 +248,7 @@ const events = function (): void {
 };
 
 $(() => {
-    // Set up events / categories / search
+
     events();
 
     if (window.location.pathname === "/team/") {
@@ -194,20 +261,16 @@ $(() => {
 
     if (window.location.pathname.endsWith("/plans/")) {
         const tabs = ["#cloud", "#self-hosted"];
-        // Show the correct tab based on context.
+
         let tab_to_show = $(".portico-pricing").hasClass("showing-self-hosted")
             ? "#self-hosted"
             : "#cloud";
-        const target_hash = window.location.hash;
-
-        // Capture self-hosted-based fragments, such as
-        // #self-hosted-plan-comparison, and show the
-        // #self-hosted tab
+    const target_hash = window.location.hash;
         if (target_hash.startsWith("#self-hosted")) {
             tab_to_show = "#self-hosted";
         }
 
-        // Don't scroll to tab targets
+
         if (tabs.includes(target_hash)) {
             window.scroll({top: 0});
         }
@@ -216,28 +279,24 @@ $(() => {
         $pricing_wrapper.removeClass("showing-cloud showing-self-hosted");
         $pricing_wrapper.addClass(`showing-${tab_to_show.slice(1)}`);
 
-        // Make sure that links coming from elsewhere scroll
-        // to the comparison table
         if (target_hash.includes("plan-comparison")) {
             document.querySelector(target_hash)!.scrollIntoView();
         }
 
         const plans_columns_count = tab_to_show.slice(1) === "self-hosted" ? 4 : 3;
-        // Set the correct values for span and colspan
+
         $(".features-col-group").attr("span", plans_columns_count);
         $(".subheader-filler").attr("colspan", plans_columns_count);
     }
 
     if (window.location.pathname.endsWith("/features/")) {
-        // Default to Cloud and its three columns
+
         $(".features-col-group").attr("span", 3);
         $(".subheader-filler").attr("colspan", 3);
     }
 });
 
-// Scroll to anchor link when clicked. Note that help.js has a similar
-// function; this file and help.js are never included on the same
-// page.
+
 $(document).on("click", ".markdown h1, .markdown h2, .markdown h3", function () {
     window.location.hash = $(this).attr("id")!;
 });
@@ -258,16 +317,10 @@ $(document).on("click", ".pricing-tab", function () {
     const $comparison_table = $(".zulip-plans-comparison");
     const comparison_table_id = $comparison_table.attr(id);
 
-    // Not all pages that show plans include the comparison
-    // table, but when it's present, make sure to set the
-    // comparison table features to match the current active tab
-    // However, once a user has begun to interact with the
-    // comparison table, giving the `id` attribute a value, we
-    // no longer apply this logic
+
     if ($comparison_table.length > 0 && !comparison_table_id) {
         const plans_columns_count = id === "self-hosted" ? 4 : 3;
 
-        // Set the correct values for span and colspan
         $(".features-col-group").attr("span", plans_columns_count);
         $(".subheader-filler").attr("colspan", plans_columns_count);
     }
@@ -290,18 +343,14 @@ $(document).on("click", ".comparison-tab", function (this: HTMLElement, _event: 
 
     $(".zulip-plans-comparison").attr("id", visible_plans_id);
 
-    // Set the correct values for span and colspan
+
     $(".features-col-group").attr("span", plans_columns_count);
     $(".subheader-filler").attr("colspan", plans_columns_count);
 
-    // To accommodate the icons in the All view, we need to attach
-    // additional logic to handle the increased subheader-row size.
     if (visible_plans_id === "showing-tab-all") {
-        // We need to be aware of user scroll direction
+
         let previous_y_position = 0;
-        // We need to be aware of the y value of the
-        // entry record for the IntersectionObserver callback
-        // on subheaders of interest (those about to be sticky)
+
         let previous_entry_y = 0;
 
         const isScrollingUp = (): boolean => {
@@ -318,31 +367,15 @@ $(document).on("click", ".comparison-tab", function (this: HTMLElement, _event: 
         const observer = new IntersectionObserver(
             ([entries]) => {
                 assert(entries !== undefined);
-                // We want to stop an infinite jiggle when a change in subheader
-                // padding erroneously triggers the observer at just the right spot.
-                // There may be a momentary jiggle, but it will resolve almost
-                // immediately. Rounding to the nearest full pixel is precise enough;
-                // full values would cause the jiggle to continue.
+
                 const rounded_entry_y = Math.ceil(entries.boundingClientRect.y);
                 if (rounded_entry_y === previous_entry_y) {
-                    // Jiggles might end with the class being removed, which
-                    // is the poorer behavior, so always make sure the "stuck"
-                    // class is present on a jiggling element.
+
                     entries.target.classList.add("stuck");
                     return;
                 }
 
-                // `intersectionRatio` values are 0 when the element first comes into
-                // view at the bottom of the page, and then again at the top--which is
-                // what we care about. That why we only want to force the class toggle
-                // when dealing with subheader elements closer to the top of the page.
 
-                // But: once the "stuck" class has been applied, it can be removed
-                // too eagerly should a user scroll back down. So we want to determine
-                // whether a user is scrolling up, in which case we want to act below
-                // a certain y value. When they scroll down, we want them to scroll
-                // down a bit further, and check for a greater-than y value before
-                // removing it.
                 let force_class_toggle;
                 if (isScrollingUp()) {
                     force_class_toggle =
@@ -352,20 +385,11 @@ $(document).on("click", ".comparison-tab", function (this: HTMLElement, _event: 
                         entries.intersectionRatio < 1 && entries.boundingClientRect.y < 185;
                 }
 
-                // Rather than blindly toggle, we force `classList.toggle` to add
-                // (which may mean keeping the class on) or remove (keeping it off)
-                // depending on scroll direction, etc.
                 entries.target.classList.toggle("stuck", force_class_toggle);
 
-                // Track the entry's previous rounded y.
                 previous_entry_y = rounded_entry_y;
             },
-            // To better catch subtle changes on IntersectionObserver, we use
-            // an array of threshold values to detect exits (0) as well as
-            // full intersections (1).
-            // The -110px rootMargin value is arrived at from 60px worth of
-            // navigation menu, and the header-row height minus extra top
-            // padding.
+  
             {threshold: [0, 1], rootMargin: "-110px 0px 0px 0px"},
         );
 
