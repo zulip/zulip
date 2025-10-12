@@ -536,12 +536,7 @@ WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
     WebhookIntegration("helloworld", ["misc"], display_name="Hello World"),
     WebhookIntegration("heroku", ["deployment"]),
     WebhookIntegration("homeassistant", ["misc"], display_name="Home Assistant"),
-    WebhookIntegration(
-        "ifttt",
-        ["meta-integration"],
-        function="zerver.webhooks.ifttt.view.api_iftt_app_webhook",
-        display_name="IFTTT",
-    ),
+    WebhookIntegration("ifttt", ["meta-integration"], display_name="IFTTT"),
     WebhookIntegration("insping", ["monitoring"]),
     WebhookIntegration("intercom", ["customer-support"]),
     # Avoid collision with jira-plugin's doc "jira/doc.md".
