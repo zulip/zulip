@@ -152,13 +152,12 @@ try:
         f"refs/tags/{refname}",
         f"refs/heads/{refname}" if args.local_ref else f"refs/remotes/origin/{refname}",
     ]
-    commit_hash: str | None = None
-    fullref: str | None = None
     for ref in try_refs:
         result = subprocess.run(
             ["git", "rev-parse", "--verify", ref],
             preexec_fn=su_to_zulip,
             text=True,
+            stdout=subprocess.PIPE,
             stderr=subprocess.DEVNULL,
             check=False,
         )
@@ -168,13 +167,14 @@ try:
             break
         elif result.returncode != 128:
             result.check_returncode()
-    if not commit_hash or not fullref:
+    else:
         logging.error(
             "Failed to resolve %s as a tag or %s branch name!",
             refname,
             "local" if args.local_ref else "remote",
         )
         sys.exit(1)
+    refname = fullref
 
     subprocess.check_call(
         ["git", "worktree", "add", "--detach", deploy_path, refname],
