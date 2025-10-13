@@ -14,8 +14,8 @@ class AppveyorHookTests(WebhookTestCase):
         expected_message = """
 [Build Hubot-DSC-Resource 2.0.59 completed](https://ci.appveyor.com/project/joebloggs/hubot-dsc-resource/build/2.0.59):
 * **Commit**: [c06e208b47: Increment version number.](https://github.com/joebloggs/Hubot-DSC-Resource/commit/c06e208b47) by Joe Bloggs
-* **Started**: 9/9/2018 7:04 PM
-* **Finished**: 9/9/2018 7:06 PM
+* **Started**: <time:9/9/2018 7:04 PM>
+* **Finished**: <time:9/9/2018 7:06 PM>
 """.strip()
 
         self.check_webhook("appveyor_build_success", expected_topic_name, expected_message)
@@ -28,8 +28,8 @@ class AppveyorHookTests(WebhookTestCase):
         expected_message = """
 [Build Hubot-DSC-Resource 2.0.59 failed](https://ci.appveyor.com/project/joebloggs/hubot-dsc-resource/build/2.0.59):
 * **Commit**: [c06e208b47: Increment version number.](https://github.com/joebloggs/Hubot-DSC-Resource/commit/c06e208b47) by Joe Bloggs
-* **Started**: 9/9/2018 7:04 PM
-* **Finished**: 9/9/2018 7:06 PM
+* **Started**: <time:9/9/2018 7:04 PM>
+* **Finished**: <time:9/9/2018 7:06 PM>
 """.strip()
 
         self.check_webhook("appveyor_build_failure", expected_topic_name, expected_message)

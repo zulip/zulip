@@ -12,8 +12,8 @@ APPVEYOR_TOPIC_TEMPLATE = "{project_name}"
 APPVEYOR_MESSAGE_TEMPLATE = """
 [Build {project_name} {build_version} {status}]({build_url}):
 * **Commit**: [{commit_id}: {commit_message}]({commit_url}) by {committer_name}
-* **Started**: {started}
-* **Finished**: {finished}
+* **Started**: <time:{started}>
+* **Finished**: <time:{finished}>
 """.strip()
 
 
