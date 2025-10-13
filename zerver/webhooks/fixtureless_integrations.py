@@ -50,8 +50,7 @@ TICKET_NUMBER = THREE_DIGIT_NUMBER
 # Example datetime content
 _DT = datetime(2025, 5, 30, 2, 0, 0, tzinfo=timezone.utc)
 
-DATETIME_STAMP = _DT.strftime("%Y-%m-%d %H:%M:%S")
-DATETIME_GLOBAL = f"<time:{_DT.strftime('%Y-%m-%dT%H:%M:%S%z')}>"
+DATETIME_GLOBAL = f"<time:{_DT}>"
 
 DATE_ISO_8601 = _DT.strftime("%Y-%m-%d")
 DATE_LONG = _DT.strftime("%A, %B %d, %Y")
@@ -97,7 +96,7 @@ GIT = ScreenshotContent(
 
 GITHUB_ACTIONS = ScreenshotContent(
     topic="scheduled backups",
-    content=f"""Backup [failed]() at {DATETIME_STAMP}.
+    content=f"""Backup [failed]() at {DATETIME_GLOBAL}.
 > Unable to connect.""",
 )
 
@@ -155,7 +154,7 @@ Can we reschedule this to next week?""",
 
 OPENSHIFT = ScreenshotContent(
     topic=PROJECT_NAME,
-    content=f"""Deployment [{REVISION_NUMBER}]() triggered by a push to **{BRANCH_GIT}** by commit [{COMMIT_HASH_A[:7]}]() at {DATETIME_STAMP} has **failed**.""",
+    content=f"""Deployment [{REVISION_NUMBER}]() triggered by a push to **{BRANCH_GIT}** by commit [{COMMIT_HASH_A[:7]}]() at {DATETIME_GLOBAL} has **failed**.""",
 )
 
 PERFORCE = ScreenshotContent(
