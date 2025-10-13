@@ -6,6 +6,7 @@ from typing import Any
 from django.conf import settings
 
 from confirmation import settings as confirmation_settings
+from zerver.actions.create_realm import get_email_address_visibility_default
 from zerver.actions.realm_settings import do_delete_all_realm_attachments
 from zerver.actions.users import do_change_user_role
 from zerver.context_processors import is_realm_import_enabled
@@ -15,7 +16,7 @@ from zerver.lib.import_realm import do_import_realm
 from zerver.lib.upload import save_attachment_contents
 from zerver.models.prereg_users import PreregistrationRealm
 from zerver.models.realms import Realm
-from zerver.models.users import UserProfile, get_user_by_delivery_email
+from zerver.models.users import RealmUserDefault, UserProfile, get_user_by_delivery_email
 
 logger = logging.getLogger(__name__)
 
@@ -50,6 +51,20 @@ def import_slack_data(event: dict[str, Any]) -> None:
             realm.org_type = preregistration_realm.org_type
             realm.default_language = preregistration_realm.default_language
             realm.save()
+
+            realm_user_default = RealmUserDefault.objects.get(realm=realm)
+            realm_user_default.email_address_visibility = (
+                preregistration_realm.data_import_metadata.get(
+                    "email_address_visibility",
+                    get_email_address_visibility_default(realm.org_type),
+                )
+            )
+            realm_user_default.save(update_fields=["email_address_visibility"])
+
+            # Set email address visibility for all users in the realm.
+            UserProfile.objects.filter(realm=realm, is_bot=False).update(
+                email_address_visibility=realm_user_default.email_address_visibility
+            )
 
             # Try finding the user who imported this realm and make them owner.
             try:
