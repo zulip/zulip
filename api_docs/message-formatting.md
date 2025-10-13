@@ -136,11 +136,13 @@ generate an image preview element with the following format:
 </div>
 ```
 
+**Changes**: See [Changes to image formatting](#changes-to-image-formatting).
+
 ### Image-loading placeholders
 
-If the server has not yet generated thumbnails for the image yet at
-the time the message is sent, the `img` element will be a temporary
-loading indicator image and have the `image-loading-placeholder`
+If the server has yet to generate thumbnails for the image by
+the time the message is sent, the `img` element will temporarily
+reference a loading indicator image and have the `image-loading-placeholder`
 class, which clients can use to identify loading indicators and
 replace them with a more native loading indicator element if
 desired. For example:
