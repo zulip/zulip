@@ -128,10 +128,10 @@ generate an image preview element with the following format:
 
 ``` html
 <div class="message_inline_image">
-    <a href="/user_uploads/path/to/image.png" title="image.png">
+    <a href="/user_uploads/path/to/example.png" title="example.png">
         <img data-original-dimensions="1920x1080"
           data-original-content-type="image/png"
-          src="/user_uploads/thumbnail/path/to/image.png/840x560.webp">
+          src="/user_uploads/thumbnail/path/to/example.png/840x560.webp">
     </a>
 </div>
 ```
@@ -147,7 +147,7 @@ desired. For example:
 
 ``` html
 <div class="message_inline_image">
-    <a href="/user_uploads/path/to/image.png" title="image.png">
+    <a href="/user_uploads/path/to/example.png" title="example.png">
         <img class="image-loading-placeholder"
           data-original-dimensions="1920x1080"
           data-original-content-type="image/png"
