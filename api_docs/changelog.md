@@ -20,6 +20,12 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 12.0
 
+**Feature level 467**
+
+* [Message formatting](/api/message-formatting): The new Markdown
+  image syntax now only supports/permits uploaded images, not
+  third-party image URLs.
+
 **Feature level 466**
 
 * [`POST /register`](/api/register-queue): Added `realm_uuid`
@@ -247,6 +253,9 @@ element to plain escaped text.
   backwards-compatibility users in the format intended for clients
   using `POST /register` without the `user_list_incomplete` client
   capability.
+* [Message formatting](/api/message-formatting): Added support for
+  Markdown image syntax, in addition to the previous link-derived
+  image previews; these can be inserted into any block-level element.
 
 **Feature level 436**
 

@@ -184,8 +184,8 @@ the Zulip server's hostname:
 
 ## Images
 
-When a Zulip message is sent linking to an uploaded image, Zulip will
-generate an image preview element with the following format:
+When a Zulip message is sent with a link to an uploaded image, Zulip will
+also insert an image preview element with the following format:
 
 ``` html
 <div class="message_inline_image">
@@ -199,18 +199,59 @@ generate an image preview element with the following format:
 
 Clients can recognize if an image was thumbnailed by its `src`
 attribute starting with `/user_uploads/thumbnail/`.  The `href` will
-always link to the originally-uploaded file.
+always link to the originally-uploaded file, at its original
+resolution.
+
+When a Zulip message is sent referencing an **uploaded image** in Markdown
+image syntax, (e.g.,`![example image](/user_uploads/path/to/example.png)`),
+Zulip will generate an image element with the following format:
+
+```html
+<img alt="example image" class="inline-image"
+  data-original-dimensions="1050x700"
+  data-original-content-type="image/png"
+  data-original-src="/user_uploads/path/to/example.png"
+  src="/user_uploads/thumbnail/path/to/example.png/840x560.webp">
+```
+
+Note that the Markdown image syntax is only supported/permitted for
+uploaded images, not third-party image URLs.
+
+As with link-derived image previews, clients can recognize if an image
+was thumbnailed by its `src` attribute starting with
+`/user_uploads/thumbnail/`.  If an image is a thumbnail, the
+`data-original-src` attribute will always reference the
+originally-uploaded file, at its original resolution.
+
+Note that images generated using Markdown image syntax may appear
+inside arbitrary block-level elements, unlike the image previews from
+links, which will always be top-level elements.
+
+Regardless of which form (link-derived preview, or Markdown image
+syntax), the `data-original-dimensions` and
+`data-original-content-type` attributes will only be present if the
+image was thumbnailed and the message was sent (or last edited)
+after those attributes were added (see [Changes to image
+formatting](#changes-to-image-formatting)).  If the image is *not* a
+thumbnail, clients should make a best-effort attempt to render the
+given `src`, in a manner which minimizes layout shift when the
+resource is loaded -- see the next section for a special case of this.
 
 **Changes**: See [Changes to image formatting](#changes-to-image-formatting).
 
 ### Image-loading placeholders
 
-If the server has yet to generate thumbnails for the image by
-the time the message is sent, the `img` element will temporarily
-reference a loading indicator image and have the `image-loading-placeholder`
+If the server has yet to generate thumbnails for the image by the time
+the message is sent, the `img` element will temporarily reference a
+loading indicator image and have the `image-loading-placeholder`
 class, which clients can use to identify loading indicators and
-replace them with a more native loading indicator element if
-desired. For example:
+replace them with a more native loading indicator element if desired.
+This spinner placeholder will have `data-original-dimensions`
+and `data-original-content-type` attributes
+if the message was sent (or last edited) after those attributes were added
+(see [Changes to image formatting](#changes-to-image-formatting)).
+
+In link-derived image previews, the placeholder is structured like this:
 
 ``` html
 <div class="message_inline_image">
@@ -221,6 +262,18 @@ desired. For example:
           src="/path/to/spinner.png">
     </a>
 </div>
+```
+
+For image elements presented in Markdown image syntax, this placeholder
+structure is used:
+
+```html
+<img alt="example image"
+  class="inline-image image-loading-placeholder"
+  data-original-content-type="image/png"
+  data-original-dimensions="1050x700"
+  data-original-src="/user_uploads/path/to/example.png"
+  src="/path/to/spinner.png">
 ```
 
 Once the server has a working thumbnail, such messages will be updated
@@ -239,7 +292,7 @@ and triggers a message update.
 
 Clients displaying message-edit history should rewrite image-loading
 placeholder images in edit history to the generic deleted-file image
-(`/static/images/errors/file-not-exist.png`).
+(`/static/images/errors/image-not-exist.png`).
 
 ### Transcoded images
 
@@ -262,6 +315,17 @@ Transcoded images are presented with this structure in image previews:
           src="/user_uploads/thumbnail/path/to/example.heic/840x560.webp">
     </a>
 </div>
+```
+
+Transcoded images presented in Markdown image syntax are structured like this:
+
+```html
+<img alt="example HEIC image" class="inline-image"
+  data-original-dimensions="1920x1080"
+  data-original-content-type="image/heic"
+  data-original-src="/user_uploads/path/to/example.heic"
+  data-transcoded-image="1920x1080.webp"
+  src="/user_uploads/thumbnail/path/to/example.heic/840x560.webp">
 ```
 
 ### Recommended client processing of image previews
@@ -316,6 +380,14 @@ previews:
 - No other processing of the URLs is recommended.
 
 ### Changes to image formatting
+
+**In Zulip 12.0** (feature level 467), limited the Markdown
+image syntax to only support uploaded images, not linking to
+third-party image URLs.
+
+**In Zulip 12.0** (feature level 437), added support for Markdown
+image syntax, in addition to the previous link-derived image previews;
+these can be inserted into any block-level element.
 
 **In Zulip 10.0** (feature level 336), added
 `data-original-content-type` attribute to convey the type of the
