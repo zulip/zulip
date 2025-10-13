@@ -236,6 +236,30 @@ def delete_message_backend(
     return json_success(request)
 
 
+@transaction.atomic(durable=True)
+@typed_endpoint
+def delete_multiple_messages(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    *,
+    message_ids: Json[list[PathOnly[NonNegativeInt]]],
+) -> HttpResponse:
+    messages: list[Message] = []
+    for message_id in message_ids:
+        message = access_message(
+            user_profile, message_id, lock_message=True, is_modifying_message=True
+        )
+        validate_can_delete_message(user_profile, message)
+        messages.append(message)
+
+    try:
+        do_delete_messages(user_profile.realm, messages, acting_user=user_profile)
+    except (Message.DoesNotExist, IntegrityError):
+        raise JsonableError(_("One or more messages were already deleted."))
+
+    return json_success(request)
+
+
 @typed_endpoint
 def json_fetch_raw_message(
     request: HttpRequest,
