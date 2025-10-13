@@ -121,10 +121,10 @@ the href for those is the default behavior of the link that also
 encodes the channel alongside the data-stream-id field, but clients
 can override that default based on `web_channel_default_view` setting.
 
-## Image previews
+## Images
 
 When a Zulip message is sent linking to an uploaded image, Zulip will
-generate an image preview element with the following format.
+generate an image preview element with the following format:
 
 ``` html
 <div class="message_inline_image">
@@ -135,6 +135,8 @@ generate an image preview element with the following format.
     </a>
 </div>
 ```
+
+### Image-loading placeholders
 
 If the server has not yet generated thumbnails for the image yet at
 the time the message is sent, the `img` element will be a temporary
@@ -167,6 +169,8 @@ Note that in the uncommon situation that the thumbnailing system is
 backlogged, an individual message containing multiple image previews
 may be re-rendered multiple times as each image finishes thumbnailing
 and triggers a message update.
+
+### Recommended client processing of image previews
 
 Clients are recommended to do the following when processing image
 previews:
@@ -217,16 +221,18 @@ previews:
   format match what they requested.
 - No other processing of the URLs is recommended.
 
-**Changes**: In Zulip 10.0 (feature level 336), added
+### Changes to image formatting
+
+**In Zulip 10.0** (feature level 336), added
 `data-original-content-type` attribute to convey the type of the
 original image, and optional `data-transcoded-image` attribute for
 images with formats which are not widely supported by browsers.
 
-**Changes**: In Zulip 9.2 (feature levels 278-279, and 287+), added
+**In Zulip 9.2** (feature levels 278-279, and 287+), added
 `data-original-dimensions` to the `image-loading-placeholder` spinner
 images, containing the dimensions of the original image.
 
-In Zulip 9.0 (feature level 276), added `data-original-dimensions`
+**In Zulip 9.0** (feature level 276), added `data-original-dimensions`
 attribute to images that have been thumbnailed, containing the
 dimensions of the full-size version of the image. Thumbnailing itself
 was reintroduced at feature level 275.
