@@ -18,14 +18,14 @@ TOPIC_TEMPLATE = "{pipeline} / {stage}"
 SCHEDULED_BODY_TEMPLATE = """
 **Pipeline {status}**: {pipeline} / {stage}
 - **Commit**: {commit_details}
-- **Started**: {start_time}
+- **Started**: <time:{start_time}>
 """
 
 COMPLETED_BODY_TEMPLATE = """
 {emoji} **Build {status}**: {pipeline} / {stage}
 - **Commit**: {commit_details}
-- **Started**: {start_time}
-- **Finished**: {end_time}
+- **Started**: <time:{start_time}>
+- **Finished**: <time:{end_time}>
 """
 
 
