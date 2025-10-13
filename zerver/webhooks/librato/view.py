@@ -97,7 +97,9 @@ class LibratoWebhookHandler(LibratoWebhookParser):
         return topic_template.format(alert_name=alert_name)
 
     def handle_alert_clear_message(self) -> str:
-        alert_clear_template = "Alert [alert_name]({alert_url}) has cleared at {trigger_time} UTC!"
+        alert_clear_template = (
+            "Alert [alert_name]({alert_url}) has cleared at <time:{trigger_time} UTC>!"
+        )
         trigger_time = datetime.fromtimestamp(
             self.payload["trigger_time"], tz=timezone.utc
         ).strftime("%Y-%m-%d %H:%M:%S")
@@ -155,7 +157,7 @@ class LibratoWebhookHandler(LibratoWebhookParser):
         )
         if duration:
             content += f" by {duration}s"
-        content += f", recorded at {recorded_at} UTC."
+        content += f", recorded at <time:{recorded_at} UTC>."
         return content
 
 
