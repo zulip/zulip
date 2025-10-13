@@ -12,7 +12,7 @@ from zerver.models import UserProfile
 
 MATCHES_TEMPLATE = '[Search for "{name}"]({url}) found **{number}** matches:\n'
 SEARCH_TEMPLATE = """
-{timestamp} - {source} - {query}:
+<time:{timestamp}> - {source} - {query}:
 ``` quote
 {message}
 ```
