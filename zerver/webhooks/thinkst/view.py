@@ -73,7 +73,11 @@ def body(message: WildValue) -> str:
         body += f"**Kind:** {message['Description'].tame(check_string)}\n"
 
     if "Timestamp" in message:
-        body += f"**Timestamp:** {message['Timestamp'].tame(check_string)}\n"
+        timestamp = message["Timestamp"].tame(check_string)
+        # Thinkst datetime format: https://help.canary.tools/hc/en-gb/articles/360012727777-How-do-I-configure-notifications-for-a-Generic-Webhook#h_01K71QZ806C5D49RYB6RBXSZ1B
+        # Convert "YYYY-MM-DD HH:MM:SS (UTC)" -> "YYYY-MM-DD HH:MM:SSZ"
+        formatted_timestamp = timestamp.replace("(UTC)", "").strip() + "Z"
+        body += f"**Timestamp:** <time:{formatted_timestamp}>\n"
 
     if "CanaryIP" in message:
         body += f"**Canary IP:** `{message['CanaryIP'].tame(check_string)}`\n"
