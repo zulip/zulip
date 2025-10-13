@@ -9,6 +9,7 @@ import {$t, $t_html} from "./i18n.ts";
 import * as keydown_util from "./keydown_util.ts";
 import * as popovers from "./popovers.ts";
 import * as scroll_util from "./scroll_util.ts";
+import {resize_textareas_in_section} from "./settings_components.ts";
 import * as settings_sections from "./settings_sections.ts";
 import {redraw_active_users_list, redraw_deactivated_users_list} from "./settings_users.ts";
 import * as util from "./util.ts";
@@ -243,6 +244,7 @@ export class SettingsPanelMenu {
         }
 
         set_settings_header(section);
+        resize_textareas_in_section(this.get_panel());
     }
 
     get_panel(): JQuery {
