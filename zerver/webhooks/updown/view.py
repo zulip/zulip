@@ -58,12 +58,10 @@ def add_time_part_to_string_date_if_needed(value: int, text_name: str) -> str:
 
 
 def get_body_for_down_event(event: WildValue) -> str:
-    return "Service is `down`. It returned a {} error at {}.".format(
+    return "Service is `down`. It returned a {} error at <time:{}>.".format(
         event["downtime"]["error"].tame(check_none_or(check_string)),
-        event["downtime"]["started_at"]
-        .tame(check_string)  # started_at is not None in a "down" event.
-        .replace("T", " ")
-        .replace("Z", " UTC"),
+        # started_at is not None in a "down" event.
+        event["downtime"]["started_at"].tame(check_string),
     )
 
 
