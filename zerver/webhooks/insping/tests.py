@@ -12,7 +12,7 @@ class InspingHookTests(WebhookTestCase):
 State changed to **Available**:
 * **URL**: http://privisus.zulipdev.org:9991
 * **Response time**: 223 ms
-* **Timestamp**: Fri Dec 29 17:23:46 2017
+* **Timestamp**: <time:Fri Dec 29 17:23:46 2017>
 """.strip()
 
         self.check_webhook(
@@ -28,7 +28,7 @@ State changed to **Available**:
 State changed to **Not Responding**:
 * **URL**: http://privisus.zulipdev.org:9991
 * **Response time**: 942 ms
-* **Timestamp**: Fri Dec 29 17:13:46 2017
+* **Timestamp**: <time:Fri Dec 29 17:13:46 2017>
 """.strip()
 
         self.check_webhook(
