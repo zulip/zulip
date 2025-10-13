@@ -776,10 +776,6 @@ input#terminal:checked ~ #tab-terminal {
     margin-left: 10px;
 }
 
-.new-organization-button {
-    margin-top: 10px;
-}
-
 .login-form {
     margin: auto;
     /* plus input padding. */
