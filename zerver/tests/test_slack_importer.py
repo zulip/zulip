@@ -16,7 +16,8 @@ from requests.models import PreparedRequest
 
 from confirmation import settings as confirmation_settings
 from confirmation.models import Confirmation, get_object_from_key
-from zerver.actions.create_realm import do_create_realm
+from zerver.actions.create_realm import do_create_realm, get_email_address_visibility_default
+from zerver.actions.create_user import do_create_user
 from zerver.actions.data_import import import_slack_data
 from zerver.data_import.import_util import (
     ZerverFieldsT,
@@ -2212,6 +2213,8 @@ by Pieter
         prereg_realm.data_import_metadata["uploaded_import_file_name"] = "test_slack_importer.zip"
         prereg_realm.save()
 
+        # Set by the user performing the import.
+        importer_set_email_address_visibility = UserProfile.EMAIL_ADDRESS_VISIBILITY_NOBODY
         # Check that deferred_work for import is queued.
         with mock.patch("zerver.views.registration.queue_json_publish_rollback_unsafe") as m:
             result = self.client_post(
@@ -2219,11 +2222,16 @@ by Pieter
                 {
                     "key": confirmation_key,
                     "start_slack_import": "true",
+                    "email_address_visibility": importer_set_email_address_visibility,
                 },
             )
             self.assert_in_success_response(["Import progress"], result)
             prereg_realm.refresh_from_db()
             self.assertTrue(prereg_realm.data_import_metadata["is_import_work_queued"])
+            self.assertTrue(
+                prereg_realm.data_import_metadata["email_address_visibility"],
+                importer_set_email_address_visibility,
+            )
 
         m.assert_called_once_with(
             "deferred_work",
@@ -2241,6 +2249,26 @@ by Pieter
         realm = do_create_realm(
             string_id=prereg_realm.string_id,
             name=prereg_realm.name,
+        )
+
+        test_user = do_create_user("email1", "password", realm, "full_name", acting_user=None)
+        test_bot_user = do_create_user(
+            "bot_email",
+            "password",
+            realm,
+            "bot_full_name",
+            bot_type=UserProfile.DEFAULT_BOT,
+            acting_user=None,
+        )
+        self.assertEqual(
+            get_email_address_visibility_default(realm.org_type),
+            UserProfile.EMAIL_ADDRESS_VISIBILITY_ADMINS,
+        )
+        self.assertEqual(
+            test_user.email_address_visibility, UserProfile.EMAIL_ADDRESS_VISIBILITY_ADMINS
+        )
+        self.assertEqual(
+            test_bot_user.email_address_visibility, UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE
         )
         with (
             mock.patch(
@@ -2270,6 +2298,18 @@ by Pieter
         self.assertEqual(realm.default_language, prereg_realm.default_language)
         prereg_realm.refresh_from_db()
         self.assertTrue(prereg_realm.data_import_metadata["need_select_realm_owner"])
+
+        # Check that imported users have user provided email visibility setting.
+        test_user.refresh_from_db()
+        self.assertEqual(
+            test_user.email_address_visibility,
+            importer_set_email_address_visibility,
+        )
+        # Check that bots were not impacted by this setting.
+        test_bot_user.refresh_from_db()
+        self.assertEqual(
+            test_bot_user.email_address_visibility, UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE
+        )
 
         # Confirmation key at this point is marked, used but since we
         # are mocking the process, we need to do it manually here.
