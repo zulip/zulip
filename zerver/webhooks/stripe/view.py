@@ -363,5 +363,6 @@ def linkified_id(object_id: str, lower: bool = False) -> str:
 
 def stringify(value: object) -> str:
     if isinstance(value, int) and value > 1500000000 and value < 2000000000:
-        return timestamp_to_datetime(value).strftime("%b %d, %Y, %H:%M:%S %Z")
+        datetime_value = timestamp_to_datetime(value).strftime("%b %d, %Y, %H:%M:%S %Z")
+        return f"<time:{datetime_value}>"
     return str(value)
