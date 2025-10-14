@@ -13,6 +13,12 @@ Get Zulip notifications for your Jira projects!
 1. {!create-an-incoming-webhook.md!}
 
 1. {!generate-webhook-url-basic.md!}
+   By default, mentioned users in your Jira comment will appear as
+   `unknown Jira user (ACCOUNT ID...)` in Zulip. To get a mentioned
+   user's display name in your Zulip notifications, you can fill the
+   **Your Jira API token** and **Your Jira email** fields when
+   creating the **integration URL**. For instructions on generating
+   your `JIRA_API_TOKEN`, refer to this [Jira documentation][1].
 
 1. Go to your Jira **Site administration** page. Click on the menu icon
    ( <i class="fa fa-ellipsis-h"></i> ) under **Actions** for your
@@ -22,7 +28,7 @@ Get Zulip notifications for your Jira projects!
 
 1. Set **Name** to a name of your choice, such as `Zulip`. Set
    **Status** to **Enabled**, and set **URL** to the URL generated
-   above. Select the [events](#filtering-incoming-events) you'd like
+   above. Select the [events][2] you'd like
    to be notified about, and click **Create**.
 
 {end_tabs}
@@ -38,3 +44,6 @@ Get Zulip notifications for your Jira projects!
 - [Jira's webhook guide](https://developer.atlassian.com/server/jira/platform/webhooks/)
 
 {!webhooks-url-specification.md!}
+
+[1]: https://support.atlassian.com/atlassian-account/docs/manage-api-tokens-for-your-atlassian-account/
+[2]: #filtering-incoming-events
