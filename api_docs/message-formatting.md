@@ -172,6 +172,29 @@ backlogged, an individual message containing multiple image previews
 may be re-rendered multiple times as each image finishes thumbnailing
 and triggers a message update.
 
+### Transcoded images
+
+Image elements whose formats are not widely supported by web browsers
+(e.g., HEIC and TIFF) may contain a `data-transcoded-image` attribute,
+which specifies a high-resolution thumbnail format that clients may
+opt to present instead of the original image. If the
+`data-transcoded-image` attribute is present, clients should use the
+`data-original-content-type` attribute to decide whether to display the
+original image or use the transcoded version.
+
+Transcoded images are presented with this structure in image previews:
+
+``` html
+<div class="message_inline_image">
+    <a href="/user_uploads/path/to/example.heic" title="example.heic">
+        <img data-original-dimensions="1920x1080"
+          data-original-content-type="image/heic"
+          data-transcoded-image="1920x1080.webp"
+          src="/user_uploads/thumbnail/path/to/example.heic/840x560.webp">
+    </a>
+</div>
+```
+
 ### Recommended client processing of image previews
 
 Clients are recommended to do the following when processing image
