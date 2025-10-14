@@ -7,6 +7,7 @@ import render_settings_custom_user_profile_field from "../templates/settings/cus
 import {Typeahead} from "./bootstrap_typeahead.ts";
 import * as bootstrap_typeahead from "./bootstrap_typeahead.ts";
 import * as channel from "./channel.ts";
+import {get_first_day_of_week} from "./flatpickr.ts";
 import {$t} from "./i18n.ts";
 import * as people from "./people.ts";
 import * as pill_typeahead from "./pill_typeahead.ts";
@@ -296,6 +297,9 @@ export function initialize_custom_date_type_fields(element_id: string, user_id: 
         onChange(_selected_dates, date_str, instance) {
             update_date(instance, date_str);
         },
+        // Respect user's week_start_day preference
+        // 0=Sun .. 6=Sat
+        locale: {firstDayOfWeek: get_first_day_of_week()},
     });
 
     // This "change" event handler is needed to make sure that
