@@ -493,15 +493,19 @@ export class Typeahead<ItemType extends string | object> {
         return this;
     }
 
-    lookup(hideOnEmpty: boolean): this {
+    lookup(hideOnEmpty: boolean, force_lookup?: boolean): this {
         this.query =
             this.input_element.type === "contenteditable"
                 ? this.input_element.$element.text()
                 : (this.input_element.$element.val() ?? "");
 
+        // force_lookup option to show typeahead even if we have
+        // disabled empty query lookups in the typeahead config
+        // with helpOnEmptyStrings
         if (
             (!this.helpOnEmptyStrings || hideOnEmpty) &&
-            (!this.query || this.query.length < MIN_LENGTH)
+            (!this.query || this.query.length < MIN_LENGTH) &&
+            !force_lookup
         ) {
             return this.shown ? this.hide() : this;
         }
