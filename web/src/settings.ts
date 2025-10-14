@@ -115,6 +115,7 @@ export function build_page(): void {
         color_scheme_values: settings_config.color_scheme_values,
         web_home_view_values: settings_config.web_home_view_values,
         twenty_four_hour_time_values: settings_config.twenty_four_hour_time_values,
+        week_start_day_values: settings_config.week_start_day_values,
         general_settings: settings_config.all_notifications(user_settings).general_settings,
         notification_settings: settings_config.all_notifications(user_settings).settings,
         custom_stream_specific_notification_settings:
