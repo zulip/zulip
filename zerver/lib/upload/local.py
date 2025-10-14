@@ -27,7 +27,8 @@ def assert_is_local_storage_path(type: Literal["avatars", "files"], full_path: s
     defense in depth.
     """
     assert settings.LOCAL_UPLOADS_DIR is not None
-    type_path = os.path.join(settings.LOCAL_UPLOADS_DIR, type)
+    type_path = os.path.normpath(os.path.join(settings.LOCAL_UPLOADS_DIR, type))
+    full_path = os.path.normpath(full_path)
     assert os.path.commonpath([type_path, full_path]) == type_path
 
 
