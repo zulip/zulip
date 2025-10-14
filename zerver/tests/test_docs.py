@@ -20,6 +20,11 @@ from zerver.models import Realm
 from zerver.models.realms import get_realm
 from zerver.views.documentation import add_api_url_context
 
+
+def get_canonical_url(path: str) -> str:
+    return f'<link rel="canonical" href="https://zulip.com{path}" />'
+
+
 if TYPE_CHECKING:
     from django.test.client import _MonkeyPatchedWSGIResponse as TestHttpResponse
 
@@ -218,6 +223,8 @@ class DocPageTest(ZulipTestCase):
             with mock.patch(
                 "zerver.lib.html_to_text.html_to_text", return_value="This is an API doc"
             ) as m:
+                # Test that canonical URL points to zulip.com
+                expected_strings.append(get_canonical_url(url))
                 self._test(
                     url=url,
                     expected_strings=expected_strings,
@@ -430,7 +437,7 @@ class DocPageTest(ZulipTestCase):
         url = "/integrations/doc/github"
         title = '<meta property="og:title" content="GitHub | Zulip integrations" />'
         description = '<meta property="og:description" content="Zulip comes with over'
-        self._test(url, [title, description])
+        self._test(url, [title, description, get_canonical_url(url)])
 
         # Test category pages
         for category in CATEGORIES:
@@ -441,12 +448,12 @@ class DocPageTest(ZulipTestCase):
             else:
                 title = f"<title>{CATEGORIES[category]} tools | Zulip integrations</title>"
                 og_title = f'<meta property="og:title" content="{CATEGORIES[category]} tools | Zulip integrations" />'
-            self._test(url, [title, og_title, og_description])
+            self._test(url, [title, og_title, og_description, get_canonical_url(url)])
 
         # Test integrations index page
         url = "/integrations/"
         og_title = '<meta property="og:title" content="Zulip integrations" />'
-        self._test(url, [og_title, og_description])
+        self._test(url, [og_title, og_description, get_canonical_url(url)])
 
     def test_integration_404s(self) -> None:
         # We don't need to test all the pages for 404
@@ -744,6 +751,14 @@ class PrivacyTermsTest(ZulipTestCase):
             response = self.client_get("/policies/")
         self.assert_in_success_response(["Terms and policies"], response)
 
+        # Test that canonical URL points to zulip.com
+        self.assert_in_success_response([get_canonical_url("/policies/")], response)
+
+        # We don't add a rel-canonical link to self-hosted server policies docs.
+        with self.settings(POLICIES_DIRECTORY="corporate/policies", CORPORATE_ENABLED=False):
+            response = self.client_get("/policies/")
+        self.assert_not_in_success_response([get_canonical_url("/policies/")], response)
+
     def test_custom_terms_of_service_template(self) -> None:
         not_configured_message = "This server is an installation"
         with self.settings(POLICIES_DIRECTORY="zerver/policies_absent"):
@@ -753,6 +768,8 @@ class PrivacyTermsTest(ZulipTestCase):
         with self.settings(POLICIES_DIRECTORY="zerver/policies_minimal"):
             response = self.client_get("/policies/terms")
         self.assert_in_success_response(["These are the custom terms and conditions."], response)
+        # Test that canonical URL points to zulip.com
+        self.assert_in_success_response([get_canonical_url("/policies/terms")], response)
 
         with self.settings(POLICIES_DIRECTORY="corporate/policies"):
             response = self.client_get("/policies/terms")

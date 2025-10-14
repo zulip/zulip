@@ -517,6 +517,27 @@ feature highlights in Zulip Server 11.0, and other Zulip project updates.
             blog_post_11_0_url="https://blog.zulip.com/zulip-server-11-0",
         ),
     ),
+    ZulipUpdateAnnouncement(
+        level=22,
+        message="""
+The [help center]({help_url}) has a new, modernized design, complete with
+light and dark theme. A search bar makes it easier to find the information you
+need, whether it's how to get started, specific features, best practices, or
+administrative capabilities.
+
+**Mobile updates**
+- You can now [browse]({browse_and_subscribe_url}) channels you're not
+  subscribed to, and subscribe.
+- You can now [delete messages]({delete_message_completely}), if you have
+  permission to do so.
+- Android users can now paste an image into a message, or insert a sticker from
+  the keyboard.
+""".format(
+            browse_and_subscribe_url="/help/introduction-to-channels#browse-and-subscribe-to-channels",
+            delete_message_completely="/help/delete-a-message#delete-a-message-completely",
+            help_url="/help/",
+        ),
+    ),
 ]
 
 

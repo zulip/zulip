@@ -1566,16 +1566,17 @@ export function get_focused_row_message(): {message?: Message | undefined} & (
 }
 
 export function toggle_topic_visibility_policy(): boolean {
+    // Since this function is only called from `hotkey`, we don't
+    // need to move the focus as it is already on the correct row.
+
     const inbox_message = get_focused_row_message();
-    if (inbox_message.message !== undefined) {
-        user_topics_ui.toggle_topic_visibility_policy(inbox_message.message);
-        if (inbox_message.message.type === "stream") {
-            // means mute/unmute action is taken
-            const $elt = $(".inbox-header"); // Select the element with class "inbox-header"
-            const $focusElement = $elt.find(get_focus_class_for_header()).first();
-            focus_clicked_list_element($focusElement);
-            return true;
-        }
+    if (inbox_message.msg_type === "stream" && inbox_message.topic !== undefined) {
+        user_topics_ui.toggle_topic_visibility_policy({
+            stream_id: inbox_message.stream_id,
+            topic: inbox_message.topic,
+            type: "stream",
+        });
+        return true;
     }
     return false;
 }

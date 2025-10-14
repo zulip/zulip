@@ -82,7 +82,7 @@ priority.
 - Zulip uses the zxcvbn password strength checker by default, and supports
   customizing users’ password strength requirements. See our documentation
   on
-  [password strength](https://zulip.readthedocs.io/en/latest/production/security-model.html#passwords)
+  [password strength](https://zulip.readthedocs.io/en/latest/production/securing-your-zulip-server.html#passwords)
   for more detail.
 - Users can rotate their accounts’ credentials, blocking further access from
   any compromised Zulip credentials.  With Zulip on-premise, server
@@ -165,4 +165,4 @@ by security researchers outside the company.
 ## Further reading
 
 - Detailed
-  [security model documentation](https://zulip.readthedocs.io/en/latest/production/security-model.html)
+  [security model documentation](https://zulip.readthedocs.io/en/latest/production/securing-your-zulip-server.html)

@@ -36,7 +36,7 @@ export function initialize(): void {
             const show_channel_folders = user_settings.web_left_sidebar_show_channel_folders;
             // Assuming that the instance can be shown, track and
             // prep the instance for showing
-            popover_menus.popover_instances.show_channels_sidebar = instance;
+            popover_menus.popover_instances.show_folders_sidebar = instance;
             instance.setContent(
                 parse_html(
                     render_left_sidebar_channels_folder_setting_popover({show_channel_folders}),
@@ -48,7 +48,7 @@ export function initialize(): void {
         },
         onHidden(instance) {
             instance.destroy();
-            popover_menus.popover_instances.show_channels_sidebar = null;
+            popover_menus.popover_instances.show_folders_sidebar = null;
         },
     });
 }
