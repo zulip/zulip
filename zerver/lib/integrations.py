@@ -616,6 +616,12 @@ WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
         "crashlytics", ["monitoring"], [WebhookScreenshotConfig("issue_message.json")]
     ),
     WebhookIntegration(
+        "dbt",
+        ["deployment"],
+        [WebhookScreenshotConfig("job_run_completed_errored.json")],
+        display_name="DBT",
+    ),
+    WebhookIntegration(
         "dialogflow",
         ["customer-support"],
         [WebhookScreenshotConfig("weather_app.json", extra_params={"email": "iago@zulip.com"})],
