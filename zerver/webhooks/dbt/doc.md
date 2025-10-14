@@ -8,6 +8,9 @@ Get notifications about DBT cloud job runs in Zulip!
 
 1. {!generate-webhook-url-basic.md!}
 
+    The [**DBT Access URL**][DBT Access URLs] is required to include links
+    to your job runs in your notification.
+
 1. From your DBT Dashboard, navigate to **Account settings** by clicking on
     your account from the left side panel.
 
@@ -34,4 +37,7 @@ Get notifications about DBT cloud job runs in Zulip!
 ### Related documentation
 - [Create a webhook subscription in DBT](https://docs.getdbt.com/docs/deploy/webhooks#create-a-webhook-subscription)
 - [DBT's webhooks documentation](https://docs.getdbt.com/docs/deploy/webhooks)
+- [DBT Access URLs][DBT Access URLs]
 {!webhooks-url-specification.md!}
+
+[DBT Access URLs]: https://docs.getdbt.com/docs/cloud/about-cloud/access-regions-ip-addresses#api-access-urls
