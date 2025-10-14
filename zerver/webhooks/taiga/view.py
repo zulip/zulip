@@ -7,10 +7,9 @@ value should always be in bold; otherwise the subject of US/task
 should be in bold.
 """
 
-from typing import TypeAlias
-
 import hashlib
 import hmac
+from typing import TypeAlias
 
 from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest
 
@@ -23,7 +22,6 @@ from zerver.models import UserProfile
 
 EventType: TypeAlias = dict[str, str | dict[str, str | bool | None]]
 ReturnType: TypeAlias = tuple[WildValue, WildValue]
-
 
 @webhook_view("Taiga")
 @typed_endpoint
