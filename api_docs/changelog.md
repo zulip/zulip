@@ -20,6 +20,11 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 12.0
 
+**Feature level 432**
+
+* [`POST /mobile_push/register`](/api/register-push-device): Replaced
+  `push_public_key` parameter with `push_key`.
+
 **Feature level 431**
 
 * [`POST /register`](/api/register-queue), [`PATCH /settings`](/api/update-settings),

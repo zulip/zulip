@@ -28,7 +28,7 @@ from firebase_admin import initialize_app as firebase_initialize_app
 from firebase_admin import messaging as firebase_messaging
 from firebase_admin.messaging import UnregisteredError as FCMUnregisteredError
 from nacl.encoding import Base64Encoder
-from nacl.public import PublicKey, SealedBox
+from nacl.secret import SecretBox
 from pydantic import TypeAdapter
 from typing_extensions import TypedDict, override
 
@@ -1481,10 +1481,30 @@ class APNsPushRequest:
     payload: APNsPayload
 
 
-def get_encrypted_data(payload_data_to_encrypt: dict[str, Any], public_key_str: str) -> str:
-    public_key = PublicKey(public_key_str.encode("utf-8"), Base64Encoder)
-    sealed_box = SealedBox(public_key)
-    encrypted_data_bytes = sealed_box.encrypt(orjson.dumps(payload_data_to_encrypt), Base64Encoder)
+@dataclass
+class PushKey:
+    algorithm_type_byte: bytes
+    secret_bytes: bytes
+
+
+def parse_push_key(push_key_bytes: bytes) -> PushKey:
+    push_key = PushKey(
+        algorithm_type_byte=push_key_bytes[:1],
+        secret_bytes=push_key_bytes[1:],
+    )
+    return push_key
+
+
+def get_encrypted_data(payload_data_to_encrypt: dict[str, Any], push_key_bytes: bytes) -> str:
+    push_key = parse_push_key(push_key_bytes)
+    # The `algorithm_type_byte` will play a role in future
+    # when we'll potentially revise the cryptosystem we use.
+    assert push_key.algorithm_type_byte == bytes([0x31])
+
+    secret_box = SecretBox(push_key.secret_bytes)
+    encrypted_data_bytes = secret_box.encrypt(
+        orjson.dumps(payload_data_to_encrypt), encoder=Base64Encoder
+    )
     encrypted_data = encrypted_data_bytes.decode("utf-8")
     return encrypted_data
 
@@ -1509,7 +1529,7 @@ def send_push_notifications(
     push_requests: list[FCMPushRequest | APNsPushRequest] = []
     for push_device in push_devices:
         assert push_device.bouncer_device_id is not None  # for mypy
-        encrypted_data = get_encrypted_data(payload_data_to_encrypt, push_device.push_public_key)
+        encrypted_data = get_encrypted_data(payload_data_to_encrypt, bytes(push_device.push_key))
         if push_device.token_kind == PushDevice.TokenKind.APNS:
             apns_http_headers = APNsHTTPHeaders(
                 apns_priority=apns_priority,

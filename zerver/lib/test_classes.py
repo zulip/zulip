@@ -1927,7 +1927,7 @@ Output:
             push_account_id=10,
             bouncer_device_id=1,
             token_kind=PushDevice.TokenKind.FCM,
-            push_public_key="n4WTVqj8KH6u0vScRycR4TqRaHhFeJ0POvMb8LCu8iI=",
+            push_key=base64.b64decode("MTaUDJDMWypQ1WufZ1NRTHSSvgYtXh1qVNSjN3aBiEFt"),
         )
 
     def register_push_device_token(self, user_profile_id: int) -> None:
@@ -2912,14 +2912,14 @@ class E2EEPushNotificationTestCase(BouncerTestCase):
             push_account_id=10,
             bouncer_device_id=1,
             token_kind=PushDevice.TokenKind.APNS,
-            push_public_key="9VvW7k59AET0v3+VFCkKTrNm5DJQ7JTKdvUjZInZZ0Y=",
+            push_key=base64.b64decode("MXPC4WK2YfyfCBdK6ElnzSpKJtcpFSZrYiJto4YCETzx"),
         )
         PushDevice.objects.create(
             user=hamlet,
             push_account_id=20,
             bouncer_device_id=2,
             token_kind=PushDevice.TokenKind.FCM,
-            push_public_key="n4WTVqj8KH6u0vScRycR4TqRaHhFeJ0POvMb8LCu8iI=",
+            push_key=base64.b64decode("Mc3u6xraEI79aGk6Nd+boqi/ODfT+JcsEIATzG7C/m+V"),
         )
 
         realm_and_remote_realm_fields: dict[str, Realm | RemoteRealm | None] = {

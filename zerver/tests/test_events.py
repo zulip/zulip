@@ -4,6 +4,7 @@
 # This module is closely integrated with zerver/lib/event_schema.py
 # and zerver/lib/data_types.py systems for validating the schemas of
 # events; it also uses the OpenAPI tools to validate our documentation.
+import base64
 import copy
 import time
 from collections.abc import Callable, Iterator
@@ -4266,7 +4267,7 @@ class NormalActionsTest(BaseAction):
             user=hamlet,
             token_kind=PushDevice.TokenKind.FCM,
             push_account_id=2408,
-            push_public_key="dummy-push-public-key",
+            push_key=base64.b64decode("MbZ1JWx6YMHw1cZEgCPRQAgolV3lBRefP5qp/GNisiP+"),
         )
 
         queue_item: RegisterPushDeviceToBouncerQueueItem = {
