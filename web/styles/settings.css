@@ -1926,7 +1926,7 @@ label.preferences-radio-choice-label {
         }
     }
 
-    #settings_overlay_container {
+    #settings_content {
         /* this variable allows JavaScript to detect this media query */
         --single-column: yes;
     }
