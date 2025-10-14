@@ -29,7 +29,7 @@ from zerver.lib.push_notifications import (
     uses_notification_bouncer,
     validate_token,
 )
-from zerver.lib.push_registration import RegisterPushDeviceToBouncerQueueItem
+from zerver.lib.push_registration import RegisterPushDeviceToBouncerQueueItem, check_push_key
 from zerver.lib.queue import queue_event_on_commit
 from zerver.lib.remote_server import (
     SELF_HOSTING_REGISTRATION_TAKEOVER_CHALLENGE_TOKEN_REDIS_KEY,
@@ -297,9 +297,11 @@ def register_push_device(
     *,
     token_kind: Annotated[str, check_string_in_validator(PushDevice.TokenKind.values)],
     push_account_id: Json[int],
-    # Key that the client is requesting be used for
-    # encrypting push notifications for delivery to it.
-    push_public_key: str,
+    # Key that the client is requesting be used for encrypting
+    # push notifications for delivery to it.
+    # Consists of a 1-byte prefix identifying the symmetric
+    # cryptosystem in use, followed by the secret key.
+    push_key: str,
     # Key that the client claims was used to encrypt
     # `encrypted_push_registration`.
     bouncer_public_key: str,
@@ -308,6 +310,8 @@ def register_push_device(
 ) -> HttpResponse:
     if not (settings.ZILENCER_ENABLED or uses_notification_bouncer()):
         raise PushServiceNotConfiguredError
+
+    push_key_bytes = check_push_key(push_key)
 
     # Idempotency
     already_registered = PushDevice.objects.filter(
@@ -319,7 +323,7 @@ def register_push_device(
     PushDevice.objects.update_or_create(
         user=user_profile,
         push_account_id=push_account_id,
-        defaults={"token_kind": token_kind, "push_public_key": push_public_key, "error_code": None},
+        defaults={"token_kind": token_kind, "push_key": push_key_bytes, "error_code": None},
     )
 
     # We use a queue worker to make the request to the bouncer

@@ -93,7 +93,11 @@ class PushDevice(AbstractPushDevice):
     user = models.ForeignKey(UserProfile, on_delete=CASCADE)
 
     # Key to use to encrypt notifications for delivery to this device.
-    push_public_key = models.TextField()
+    # Consists of a 1-byte prefix identifying the symmetric cryptosystem
+    # in use, followed by the secret key.
+    # Prefix                 Cryptosystem
+    #  0x31        libsodium's `crypto_secretbox_easy`
+    push_key = models.BinaryField()
 
     # `device_id` of the corresponding `RemotePushDevice`
     # row created after successful registration to bouncer.
