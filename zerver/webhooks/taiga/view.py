@@ -12,8 +12,7 @@ from typing import TypeAlias
 import hashlib
 import hmac
 
-from django.conf import settings #changed this too
-from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest, HttpResponseForbidden
+from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest
 
 from zerver.decorator import webhook_view
 from zerver.lib.response import json_success
@@ -35,11 +34,11 @@ def api_taiga_webhook(
     message: JsonBodyPayload[WildValue],
 ) -> HttpResponse:
 
-    key = request.GET.get('api_key')
+    key = request.GET.get("api_key")
     data = request.body
-    signature = request.headers.get('X-TAIGA-WEBHOOK-SIGNATURE')
+    signature = request.headers.get("X-TAIGA-WEBHOOK-SIGNATURE")
 
-    if 'Content-Type' not in request.headers or 'X-TAIGA-WEBHOOK-SIGNATURE' not in request.headers:
+    if "Content-Type" not in request.headers or "X-TAIGA-WEBHOOK-SIGNATURE" not in request.headers:
         return HttpResponseBadRequest("Missing appropriate headers.")
 
     if (verify_signature(key, data, signature)):
