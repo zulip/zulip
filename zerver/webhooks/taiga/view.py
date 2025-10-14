@@ -167,7 +167,7 @@ templates = {
     },
 }
 
-def verify_signature(key, data, signature):
+def verify_signature(key: str, data: bytes, signature: str) -> bool:
     mac = hmac.new(key.encode("utf-8"), msg=data, digestmod=hashlib.sha1)
     return mac.hexdigest() == signature
 
