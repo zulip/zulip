@@ -3497,6 +3497,22 @@ wheels = [
 ]
 
 [[package]]
+name = "pygithub"
+version = "2.8.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "pyjwt", extra = ["crypto"] },
+    { name = "pynacl" },
+    { name = "requests" },
+    { name = "typing-extensions" },
+    { name = "urllib3" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/c1/74/e560bdeffea72ecb26cff27f0fad548bbff5ecc51d6a155311ea7f9e4c4c/pygithub-2.8.1.tar.gz", hash = "sha256:341b7c78521cb07324ff670afd1baa2bf5c286f8d9fd302c1798ba594a5400c9", size = 2246994, upload-time = "2025-09-02T17:41:54.674Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/07/ba/7049ce39f653f6140aac4beb53a5aaf08b4407b6a3019aae394c1c5244ff/pygithub-2.8.1-py3-none-any.whl", hash = "sha256:23a0a5bca93baef082e03411bf0ce27204c32be8bfa7abc92fe4a3e132936df0", size = 432709, upload-time = "2025-09-02T17:41:52.947Z" },
+]
+
+[[package]]
 name = "pygments"
 version = "2.19.2"
 source = { registry = "https://pypi.org/simple" }
@@ -4456,6 +4472,15 @@ wheels = [
 ]
 
 [[package]]
+name = "shellingham"
+version = "1.5.4"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/58/15/8b3609fd3830ef7b27b655beb4b4e9c62313a4e8da8c676e142cc210d58e/shellingham-1.5.4.tar.gz", hash = "sha256:8dbca0739d487e5bd35ab3ca4b36e11c4078f3a234bfce294b0a0291363404de", size = 10310, upload-time = "2023-10-24T04:13:40.426Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/e0/f9/0595336914c5619e5f28a1fb793285925a8cd4b432c9da0a987836c7f822/shellingham-1.5.4-py2.py3-none-any.whl", hash = "sha256:7ecfff8f2fd72616f7481040475a65b2bf8af90a56c89140852d1120324e8686", size = 9755, upload-time = "2023-10-24T04:13:38.866Z" },
+]
+
+[[package]]
 name = "six"
 version = "1.17.0"
 source = { registry = "https://pypi.org/simple" }
@@ -5039,6 +5064,21 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/13/0f/82716ed849bf7ea4984c21385597c949944f0f9b428b5710f79d0afc084d/twisted-25.5.0.tar.gz", hash = "sha256:1deb272358cb6be1e3e8fc6f9c8b36f78eb0fa7c2233d2dbe11ec6fee04ea316", size = 3545725, upload-time = "2025-06-07T09:52:24.858Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/eb/66/ab7efd8941f0bc7b2bd555b0f0471bff77df4c88e0cc31120c82737fec77/twisted-25.5.0-py3-none-any.whl", hash = "sha256:8559f654d01a54a8c3efe66d533d43f383531ebf8d81d9f9ab4769d91ca15df7", size = 3204767, upload-time = "2025-06-07T09:52:21.428Z" },
+]
+
+[[package]]
+name = "typer"
+version = "0.19.2"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "click" },
+    { name = "rich" },
+    { name = "shellingham" },
+    { name = "typing-extensions" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/21/ca/950278884e2ca20547ff3eb109478c6baf6b8cf219318e6bc4f666fad8e8/typer-0.19.2.tar.gz", hash = "sha256:9ad824308ded0ad06cc716434705f691d4ee0bfd0fb081839d2e426860e7fdca", size = 104755, upload-time = "2025-09-23T09:47:48.256Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/00/22/35617eee79080a5d071d0f14ad698d325ee6b3bf824fc0467c03b30e7fa8/typer-0.19.2-py3-none-any.whl", hash = "sha256:755e7e19670ffad8283db353267cb81ef252f595aa6834a0d1ca9312d9326cb9", size = 46748, upload-time = "2025-09-23T09:47:46.777Z" },
 ]
 
 [[package]]
@@ -5770,6 +5810,11 @@ version = "0.1.0"
 source = { virtual = "." }
 
 [package.dev-dependencies]
+ci = [
+    { name = "pygithub" },
+    { name = "requests" },
+    { name = "typer" },
+]
 dev = [
     { name = "aioapns" },
     { name = "aiohttp" },
@@ -5835,6 +5880,7 @@ dev = [
     { name = "pyasyncore" },
     { name = "pydantic" },
     { name = "pydantic-partials" },
+    { name = "pygithub" },
     { name = "pygments" },
     { name = "pyicu" },
     { name = "pyinotify" },
@@ -5873,6 +5919,7 @@ dev = [
     { name = "time-machine" },
     { name = "tlds" },
     { name = "tornado" },
+    { name = "typer" },
     { name = "types-beautifulsoup4" },
     { name = "types-boto" },
     { name = "types-decorator" },
@@ -5999,6 +6046,11 @@ prod = [
 [package.metadata]
 
 [package.metadata.requires-dev]
+ci = [
+    { name = "pygithub" },
+    { name = "requests" },
+    { name = "typer" },
+]
 dev = [
     { name = "aioapns" },
     { name = "aiohttp" },
@@ -6064,6 +6116,7 @@ dev = [
     { name = "pyasyncore" },
     { name = "pydantic" },
     { name = "pydantic-partials" },
+    { name = "pygithub" },
     { name = "pygments" },
     { name = "pyicu" },
     { name = "pyinotify" },
@@ -6082,6 +6135,7 @@ dev = [
     { name = "pyvips" },
     { name = "redis" },
     { name = "regex" },
+    { name = "requests" },
     { name = "requests", extras = ["security"] },
     { name = "requests-oauthlib" },
     { name = "responses" },
@@ -6103,6 +6157,7 @@ dev = [
     { name = "time-machine" },
     { name = "tlds" },
     { name = "tornado" },
+    { name = "typer" },
     { name = "types-beautifulsoup4" },
     { name = "types-boto" },
     { name = "types-decorator" },

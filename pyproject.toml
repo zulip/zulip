@@ -223,9 +223,15 @@ docs = [
   # Needed to build Markdown docs
   "myst-parser",
 ]
+ci = [
+   "PyGithub",
+   "requests",
+   "typer",
+]
 dev = [
   { include-group = "prod" },
   { include-group = "docs" },
+  { include-group = "ci" },
 
   # moto s3 mock
   "moto[s3]",
