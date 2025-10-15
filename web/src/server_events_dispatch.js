@@ -757,6 +757,9 @@ export function dispatch_normal_event(event) {
                         unread_ops.process_read_messages_event(message_ids);
                         message_events.remove_messages(message_ids);
                         stream_topic_history.remove_history_for_stream(stream_id);
+                        user_group_edit.update_group_permissions_panel_on_losing_stream_access(
+                            stream_id,
+                        );
                     }
                     stream_list.update_subscribe_to_more_streams_link();
                     break;
