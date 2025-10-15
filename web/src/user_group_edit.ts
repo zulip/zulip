@@ -123,9 +123,9 @@ function get_user_group_for_target(target: HTMLElement): UserGroup | undefined {
     return group;
 }
 
-export function get_edit_container(group: UserGroup): JQuery {
+export function get_edit_container(group_id: number): JQuery {
     return $(
-        `#groups_overlay .user_group_settings_wrapper[data-group-id='${CSS.escape(group.id.toString())}']`,
+        `#groups_overlay .user_group_settings_wrapper[data-group-id='${CSS.escape(group_id.toString())}']`,
     );
 }
 
@@ -222,7 +222,7 @@ function update_group_permission_settings_elements(group: UserGroup): void {
 }
 
 function show_membership_settings(group: UserGroup): void {
-    const $edit_container = get_edit_container(group);
+    const $edit_container = get_edit_container(group.id);
 
     const $member_container = $edit_container.find(".edit_members_for_user_group");
     user_group_edit_members.enable_member_management({
@@ -275,7 +275,7 @@ function update_deactivate_and_reactivate_buttons(group: UserGroup): void {
 }
 
 function update_general_panel_ui(group: UserGroup): void {
-    const $edit_container = get_edit_container(group);
+    const $edit_container = get_edit_container(group.id);
 
     if (settings_data.can_manage_user_group(group.id)) {
         $edit_container.find(".group-header .button-group").show();
@@ -288,7 +288,7 @@ function update_general_panel_ui(group: UserGroup): void {
 }
 
 function update_members_panel_ui(group: UserGroup): void {
-    const $edit_container = get_edit_container(group);
+    const $edit_container = get_edit_container(group.id);
     const $member_container = $edit_container.find(".edit_members_for_user_group");
 
     user_group_edit_members.rerender_members_list({
@@ -561,7 +561,7 @@ export function handle_member_edit_event(group_id: number, user_ids: number[]): 
 }
 
 export function update_group_details(group: UserGroup): void {
-    const $edit_container = get_edit_container(group);
+    const $edit_container = get_edit_container(group.id);
     $edit_container.find(".group-name").text(user_groups.get_display_group_name(group.name));
     $edit_container.find(".group-description").text(group.description);
 }
@@ -616,7 +616,7 @@ function get_membership_status_context(group: UserGroup): {
 function update_membership_status_text(group: UserGroup): void {
     const args = get_membership_status_context(group);
     const rendered_membership_status = render_user_group_membership_status(args);
-    const $edit_container = get_edit_container(group);
+    const $edit_container = get_edit_container(group.id);
     $edit_container.find(".membership-status").html(rendered_membership_status);
 }
 
@@ -1089,7 +1089,7 @@ export function show_settings_for(group: UserGroup): void {
     update_toggler_for_group_setting(group);
 
     toggler.get().prependTo("#user_group_settings .tab-container");
-    const $edit_container = get_edit_container(group);
+    const $edit_container = get_edit_container(group.id);
     $(".nothing-selected").hide();
 
     $edit_container.show();
