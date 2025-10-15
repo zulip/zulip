@@ -863,6 +863,26 @@ export function update_realm_setting_in_permissions_panel(
     );
 }
 
+export function update_group_permissions_panel_on_losing_stream_access(stream_id: number): void {
+    const active_group_id = get_active_data().id;
+    if (active_group_id === undefined) {
+        return;
+    }
+
+    const $edit_container = get_edit_container(active_group_id);
+    const $stream_subsection_elem = $edit_container.find(
+        `.channel-group-permissions .settings-subsection-parent[data-stream-id="${CSS.escape(stream_id.toString())}"]`,
+    );
+    if ($stream_subsection_elem.length > 0) {
+        const $stream_permissions_section = $stream_subsection_elem.closest(
+            ".group-permissions-section",
+        );
+        $stream_subsection_elem.remove();
+
+        hide_group_permissions_section_if_needed($stream_permissions_section);
+    }
+}
+
 export function update_stream_setting_in_permissions_panel(
     setting_name: StreamGroupSettingName,
     new_value: GroupSettingValue,

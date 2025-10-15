@@ -21,6 +21,7 @@ const stream_events = mock_esm("../src/stream_events");
 const stream_list = mock_esm("../src/stream_list");
 const stream_settings_ui = mock_esm("../src/stream_settings_ui");
 const unread_ops = mock_esm("../src/unread_ops");
+const user_group_edit = mock_esm("../src/user_group_edit");
 
 const compose_state = zrequire("compose_state");
 const peer_data = zrequire("peer_data");
@@ -231,6 +232,7 @@ test("stream delete (normal)", ({override}) => {
 
     override(unread_ops, "process_read_messages_event", noop);
     override(message_events, "remove_messages", noop);
+    override(user_group_edit, "update_group_permissions_panel_on_losing_stream_access", noop);
     dispatch(event);
 
     assert.deepEqual(removed_stream_ids, [event.stream_ids[0], event.stream_ids[1]]);
@@ -277,6 +279,7 @@ test("stream delete (special streams)", ({override}) => {
 
     override(unread_ops, "process_read_messages_event", noop);
     override(message_events, "remove_messages", noop);
+    override(user_group_edit, "update_group_permissions_panel_on_losing_stream_access", noop);
 
     dispatch(event);
 
@@ -326,6 +329,7 @@ test("stream delete (stream is selected in compose)", ({override}) => {
 
     override(unread_ops, "process_read_messages_event", noop);
     override(message_events, "remove_messages", noop);
+    override(user_group_edit, "update_group_permissions_panel_on_losing_stream_access", noop);
 
     dispatch(event);
 
