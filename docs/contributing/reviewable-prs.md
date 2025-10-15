@@ -181,6 +181,11 @@ review:
   Keep any videos as short as possible, so that the reviewer can
   quickly get to the relevant part.
 
+  In screencast videos, make sure a person watching your video
+  can see where on the screen you're touching or clicking.
+  Use the "show touches" or "include the mouse pointer" feature
+  of your screen-recording software.
+
 - For before and after images or videos of changes, using GithHub's table
   syntax renders them side-by-side for quick and clear comparison.
   While this works well for narrow or small images, it can be hard to
