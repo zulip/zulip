@@ -217,9 +217,21 @@ docs = [
   # Needed to build Markdown docs
   "myst-parser",
 ]
+
+# This group is for minimal CI / local release tooling; see tools/closed-by-commits
+release-tools = [
+   # Talks to GitHub
+   "PyGithub",
+   # And also to chat.zulip.org
+   "requests",
+   # For building a CLI
+   "typer",
+]
+
 dev = [
   { include-group = "prod" },
   { include-group = "docs" },
+  { include-group = "release-tools" },
 
   # moto s3 mock
   "moto[s3]",
