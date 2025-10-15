@@ -195,7 +195,12 @@ def update_tornado_sharding() -> list[int]:
     for realm in set().union(old_sharding["shard_map"], new_sharding["shard_map"]):
         old_ports = ports_as_set(old_sharding["shard_map"].get(realm, []))
         new_ports = ports_as_set(new_sharding["shard_map"].get(realm, []))
-        affected_tornados |= old_ports ^ new_ports
+        if old_ports != new_ports:
+            # A realm sharded across multiple ports gets requests at
+            # random from nginx, and each does an X-Accel-Redirect to
+            # the user's right Tornado instance. So all ports in the
+            # set need a restart when we add or remove ports.
+            affected_tornados |= old_ports | new_ports
     old_regex_set = {
         (regex, ports_as_set(ports)) for (regex, ports) in old_sharding["shard_regexes"]
     }
