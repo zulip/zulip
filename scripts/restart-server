@@ -303,7 +303,12 @@ if (action == "start" or args.less_graceful) and not args.only_django:
         logging.info("Starting workers")
         subprocess.check_call(["supervisorctl", "start", *workers])
 
-if has_application_server() and not args.skip_client_reloads and not args.only_django:
+if (
+    has_application_server()
+    and not args.skip_client_reloads
+    and not args.only_django
+    and not args.tornado_reshard
+):
     # All of the servers have been (re)started; now enqueue events in
     # the Tornado servers to tell clients to reload.
     logging.info("Sending reload events to clients in the background")
