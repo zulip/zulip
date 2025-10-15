@@ -778,6 +778,22 @@ export function add_assigned_permission_to_permissions_panel(
     }
 }
 
+function hide_group_permissions_section_if_needed($section: JQuery): void {
+    // Hide the "Organization permissions", "Channel permissions" or
+    // "User group permissions", if there are no assigned permissions
+    // for that section.
+    if ($section.find(".input-group").length === 0) {
+        $section.addClass("hide");
+    }
+
+    // Show the text mentioning group has no permissions if required.
+    if ($section.closest(".group-assigned-permissions").find(".input-group").length === 0) {
+        $section
+            .closest(".group-assigned-permissions")
+            .find(".no-permissions-for-group-text")
+            .removeClass("hide");
+    }
+}
 function remove_setting_checkbox_from_permissions_panel($setting_elem: JQuery): void {
     if ($setting_elem.length === 0) {
         return;
@@ -790,20 +806,7 @@ function remove_setting_checkbox_from_permissions_panel($setting_elem: JQuery): 
         $subsection.addClass("hide");
     }
 
-    // Hide the "Organization permissions", "Channel permissions" or
-    // "User group permissions", if there are no assigned permissions
-    // for that section.
-    if ($subsection.closest(".group-permissions-section").find(".input-group").length === 0) {
-        $subsection.closest(".group-permissions-section").addClass("hide");
-    }
-
-    // Show the text mentioning group has no permissions if required.
-    if ($subsection.closest(".group-assigned-permissions").find(".input-group").length === 0) {
-        $subsection
-            .closest(".group-assigned-permissions")
-            .find(".no-permissions-for-group-text")
-            .removeClass("hide");
-    }
+    hide_group_permissions_section_if_needed($subsection.closest(".group-permissions-section"));
 }
 
 export function update_realm_setting_in_permissions_panel(
