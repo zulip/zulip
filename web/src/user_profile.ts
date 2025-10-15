@@ -1126,6 +1126,21 @@ export function disable_user_role_dropdown_if_needed(user: User): void {
     }
 }
 
+function maybe_redirect_to_profile_panel(user_id: number, role: number): void {
+    // Redirect to profile panel if an admin changes their own role so
+    // that they are no longer an admin.
+    if (current_user.user_id !== user_id) {
+        return;
+    }
+
+    if (
+        role !== settings_config.user_role_values.owner.code &&
+        role !== settings_config.user_role_values.admin.code
+    ) {
+        browser_history.go_to_location("#settings/profile");
+    }
+}
+
 export function show_edit_user_info_modal(user_id: number, $container: JQuery): void {
     const person = people.maybe_get_user_by_id(user_id);
     const is_active = people.is_person_active(user_id);
@@ -1244,6 +1259,7 @@ export function show_edit_user_info_modal(user_id: number, $container: JQuery): 
                 $("#edit-user-form-error").hide();
                 hide_button_spinner($submit_button);
                 original_values = get_current_values($("#edit-user-form"));
+                maybe_redirect_to_profile_panel(user_id, role);
                 toggle_submit_button($("#edit-user-form"));
                 ui_report.success(
                     $t_html({defaultMessage: "Saved"}),
