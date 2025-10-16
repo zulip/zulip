@@ -13,6 +13,8 @@ that file in the future, below is a list of custom icons created in-house
 for the Zulip project:
 
 arrow-down.svg
+arrow-down-left.svg
+arrow-up-right.svg
 bold.svg
 bot.svg
 browse-channels.svg
