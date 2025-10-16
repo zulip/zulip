@@ -71,6 +71,14 @@
                 </a>
             </li>
             {{/if}}
+            {{#if has_topic_links}}
+            <li role="none" class="link-item popover-menu-list-item">
+                <a role="menuitem" class="sidebar-open-topic-links popover-menu-link" data-clipboard-text="{{ url }}" tabindex="0">
+                    <i class="popover-menu-icon zulip-icon zulip-icon-link-2" aria-hidden="true"></i>
+                    <span class="popover-menu-label">{{t "View links" }}</span>
+                </a>
+            </li>
+            {{/if}}
             <li role="none" class="link-item popover-menu-list-item">
                 <a role="menuitem" class="sidebar-popover-copy-link-to-topic popover-menu-link" data-clipboard-text="{{ url }}" tabindex="0">
                     <i class="popover-menu-icon zulip-icon zulip-icon-link-alt" aria-hidden="true"></i>
