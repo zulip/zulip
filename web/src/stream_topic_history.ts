@@ -1,5 +1,6 @@
 import assert from "minimalistic-assert";
 
+import * as internal_url from "../shared/src/internal_url.ts";
 import * as resolved_topics from "../shared/src/resolved_topic.ts";
 
 import * as echo_state from "./echo_state.ts";
@@ -360,6 +361,26 @@ export function get_latest_known_message_id_in_topic(
 ): number | undefined {
     const history = stream_dict.get(stream_id);
     return history?.topics.get(topic_name)?.message_id;
+}
+
+// We use the topic permalinks if we have access to the last message
+// id of the topic in the cache, by encoding it at the end of the
+// traditional channel-topic url using a `with` operator. If client
+// cache doesn't have a message, we use the traditional link format.
+export function channel_topic_permalink_hash(stream_id: number, topic: string): string {
+    // From an API perspective, any message ID in the topic is a valid
+    // choice. In the client code, we choose the latest message ID in
+    // the topic, since display in recent conversations, the left
+    // sidebar, and most other elements are placed in a way reflecting
+    // the recency of the latest message in the topic.
+    const target_message_id = get_latest_known_message_id_in_topic(stream_id, topic);
+
+    return internal_url.by_stream_topic_url(
+        stream_id,
+        topic,
+        sub_store.maybe_get_stream_name,
+        target_message_id,
+    );
 }
 
 export function reset(): void {

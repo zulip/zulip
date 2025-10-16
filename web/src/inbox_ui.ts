@@ -684,7 +684,7 @@ function format_topic(
         is_empty_string_topic: topic === "",
         unread_count: topic_unread_count,
         conversation_key: get_topic_key(stream_id, topic),
-        topic_url: hash_util.by_channel_topic_permalink(stream_id, topic),
+        topic_url: stream_topic_history.channel_topic_permalink_hash(stream_id, topic),
         latest_msg_id,
         mention_in_unread: unread.topic_has_any_unread_mentions(stream_id, topic),
         // The 'all_visibility_policies' field is not specific to this context,
