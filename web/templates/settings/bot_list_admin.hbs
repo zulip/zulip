@@ -11,42 +11,10 @@
           hidden=(not can_create_new_bots)
           }}
     </div>
-    <div class="settings_panel_list_header">
-        <h3>{{t "Bots"}}</h3>
-        <div class="alert-notification"></div>
-        <div class="bot-filters">
-            {{> ../dropdown_widget widget_name=all_bots_list_dropdown_widget_name}}
-            {{> filter_text_input placeholder=(t 'Filter') aria_label=(t 'Filter bots')}}
-        </div>
-    </div>
-
-    <div class="progressive-table-wrapper" data-simplebar data-simplebar-tab-index="-1">
-        <table class="table table-striped wrapped-table">
-            <thead class="table-sticky-headers">
-                <tr>
-                    <th class="active" data-sort="alphabetic" data-sort-prop="full_name">{{t "Name" }}
-                        <i class="table-sortable-arrow zulip-icon zulip-icon-sort-arrow-down"></i>
-                    </th>
-                    <th class="settings-email-column" data-sort="email">{{t "Email" }}
-                        <i class="table-sortable-arrow zulip-icon zulip-icon-sort-arrow-down"></i>
-                    </th>
-                    <th class="user_role" data-sort="role">{{t "Role" }}
-                        <i class="table-sortable-arrow zulip-icon zulip-icon-sort-arrow-down"></i>
-                    </th>
-                    <th data-sort="bot_owner">{{t "Owner" }}
-                        <i class="table-sortable-arrow zulip-icon zulip-icon-sort-arrow-down"></i>
-                    </th>
-                    <th data-sort="alphabetic" data-sort-prop="bot_type" class="bot_type">{{t "Bot type" }}
-                        <i class="table-sortable-arrow zulip-icon zulip-icon-sort-arrow-down"></i>
-                    </th>
-                    {{#if is_admin}}
-                    <th class="actions">{{t "Actions" }}</th>
-                    {{/if}}
-                </tr>
-            </thead>
-            <tbody id="admin_all_bots_table" class="admin_bot_table"
-              data-empty="{{t 'There are no active bots in this organization.' }}" data-search-results-empty="{{t 'No bots match your current filter.' }}"></tbody>
-        </table>
-    </div>
-    <div id="admin_page_all_bots_loading_indicator"></div>
+    {{> bot_list
+      section_name="all_bots"
+      section_title=(t "Bots")
+      dropdown_widget_name=all_bots_list_dropdown_widget_name
+      is_admin=is_admin
+      }}
 </div>
