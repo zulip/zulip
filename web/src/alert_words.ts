@@ -91,7 +91,7 @@ export function process_message(message: Message): void {
     }
 
     const updated_content = highlight_alert_words(message.content);
-    message_store.update_message_content(message, updated_content);
+    message_store.update_message_content(message, updated_content, false);
 }
 
 export function notifies(message: Message): boolean {
