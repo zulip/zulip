@@ -82,7 +82,7 @@ export function process_message(message: Message): void {
                 return before + "<span class='alert-word'>" + word + "</span>" + after;
             },
         );
-        message_store.update_message_content(message, updated_content);
+        message_store.update_message_content(message, updated_content, false);
     }
 }
 
