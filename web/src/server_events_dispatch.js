@@ -604,7 +604,7 @@ export function dispatch_normal_event(event) {
                     people.add_active_user(event.person, "server_events");
                     settings_account.maybe_update_deactivate_account_button();
                     if (event.person.is_bot) {
-                        settings_users.redraw_bots_list();
+                        settings_users.redraw_all_bots_list();
                     }
 
                     if (should_redraw) {
