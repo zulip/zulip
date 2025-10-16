@@ -1595,3 +1595,37 @@ ul.popover-menu-list {
     flex: 1;
     min-width: 0;
 }
+
+#topic-links-menu-popover {
+    color: var(--color-text-popover-menu) !important;
+    padding: 0.6666em;
+
+    .topic-links-menu-title {
+        font-weight: 600;
+        margin: 0;
+    }
+
+    .topic-links-menu-title,
+    .popover-topic-links-list a {
+        width: fit-content;
+        max-width: 85vw;
+        white-space: nowrap;
+    }
+
+    .popover-topic-links-list a {
+        display: block;
+        text-overflow: ellipsis;
+        overflow: hidden;
+    }
+
+    .topic-links-menu-link-list + .topic-links-menu-link-list {
+        .topic-links-menu-title {
+            padding-top: 0;
+        }
+    }
+
+    ul {
+        margin: 0;
+        list-style: none;
+    }
+}
