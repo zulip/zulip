@@ -1414,7 +1414,7 @@ export async function save_message_row_edit($row: JQuery): Promise<void> {
             }
         },
     });
-    // The message will automatically get replaced via message_list.update_message.
+    // The message will automatically get replaced via message_events.update_messages.
 }
 
 export function maybe_show_edit($row: JQuery, id: number): void {
