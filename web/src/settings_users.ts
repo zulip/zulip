@@ -73,9 +73,16 @@ const deactivated_section: UserSettingsSection = {
     list_widget: undefined,
 };
 
-const bots_section = {
+type BotSettingsSection = {
+    handle_events: () => void;
+    create_table: () => void;
+    list_widget: ListWidgetType<number, BotInfo> | undefined;
+};
+
+const bots_section: BotSettingsSection = {
     handle_events: bots_handle_events,
     create_table: bots_create_table,
+    list_widget: undefined,
 };
 
 function sort_bot_email(a: BotInfo, b: BotInfo): number {
@@ -473,8 +480,6 @@ function set_text_search_value($table: JQuery, value: string): void {
     $table.closest(".user-or-bot-settings-section").find(".search").val(value);
 }
 
-let bot_list_widget: ListWidgetType<number, BotInfo>;
-
 function bots_create_table(): void {
     loading.make_indicator($("#admin_page_bots_loading_indicator"), {
         text: $t({defaultMessage: "Loading…"}),
@@ -483,7 +488,7 @@ function bots_create_table(): void {
     $bots_table.hide();
     const bot_user_ids = people.get_bot_ids();
 
-    bot_list_widget = ListWidget.create($bots_table, bot_user_ids, {
+    bots_section.list_widget = ListWidget.create($bots_table, bot_user_ids, {
         name: "admin_bot_list",
         get_item: bot_info,
         modifier_html: render_settings_user_list_row,
@@ -605,11 +610,11 @@ function deactivated_create_table(deactivated_users: number[]): void {
 }
 
 export function update_bot_data(bot_user_id: number): void {
-    if (!bot_list_widget) {
+    if (!bots_section.list_widget) {
         return;
     }
 
-    bot_list_widget.render_item(bot_info(bot_user_id));
+    bots_section.list_widget.render_item(bot_info(bot_user_id));
 }
 
 export function update_user_data(
@@ -636,15 +641,15 @@ export function update_user_data(
 }
 
 export function redraw_bots_list(): void {
-    if (!bot_list_widget) {
+    if (!bots_section.list_widget) {
         return;
     }
 
     // In order to properly redraw after a user may have been added,
-    // we need to update the bot_list_widget with the new set of bot
-    // user IDs to display.
+    // we need to update the bots_section.list_widget with the new
+    // set of bot user IDs to display.
     const bot_user_ids = people.get_bot_ids();
-    bot_list_widget.replace_list_data(bot_user_ids);
+    bots_section.list_widget.replace_list_data(bot_user_ids);
 }
 
 function redraw_users_list(user_section: UserSettingsSection, user_list: number[]): void {
