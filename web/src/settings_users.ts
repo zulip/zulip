@@ -85,15 +85,15 @@ type BotSettingsSection = {
     list_widget: ListWidgetType<number, BotInfo> | undefined;
 };
 
-const bots_section: BotSettingsSection = {
+const all_bots_section: BotSettingsSection = {
     dropdown_widget_name: all_bots_list_dropdown_widget_name,
     filters: {
         text_search: "",
         // 0 status_code signifies Active status for our filter.
         status_code: 0,
     },
-    handle_events: bots_handle_events,
-    create_table: bots_create_table,
+    handle_events: all_bots_handle_events,
+    create_table: create_all_bots_table,
     list_widget: undefined,
 };
 
@@ -269,7 +269,7 @@ function status_selected_handler(
     event.stopPropagation();
 
     const status_code = Number($(event.currentTarget).attr("data-unique-id"));
-    add_value_to_filters(bots_section, "status_code", status_code);
+    add_value_to_filters(all_bots_section, "status_code", status_code);
 
     dropdown.hide();
     widget.render();
@@ -555,28 +555,28 @@ export function predicate_for_bot_filtering(item: BotInfo, section: BotSettingsS
     return filter_searches && filter_status;
 }
 
-function bots_create_table(): void {
-    loading.make_indicator($("#admin_page_bots_loading_indicator"), {
+function create_all_bots_table(): void {
+    loading.make_indicator($("#admin_page_all_bots_loading_indicator"), {
         text: $t({defaultMessage: "Loading…"}),
     });
-    const $bots_table = $("#admin_bots_table");
-    $bots_table.hide();
+    const $all_bots_table = $("#admin_all_bots_table");
+    $all_bots_table.hide();
     const bot_user_ids = people.get_bot_ids();
 
-    bots_section.list_widget = ListWidget.create($bots_table, bot_user_ids, {
+    all_bots_section.list_widget = ListWidget.create($all_bots_table, bot_user_ids, {
         name: "admin_bot_list",
         get_item: bot_info,
         modifier_html: render_settings_user_list_row,
         html_selector: (item) => $(`tr[data-user-id='${CSS.escape(item.user_id.toString())}']`),
         filter: {
             predicate(item) {
-                return predicate_for_bot_filtering(item, bots_section);
+                return predicate_for_bot_filtering(item, all_bots_section);
             },
             is_active() {
                 const $search_input = $("#admin-bots-list .search");
-                return are_filters_active(bots_section.filters, $search_input);
+                return are_filters_active(all_bots_section.filters, $search_input);
             },
-            onupdate: reset_scrollbar($bots_table),
+            onupdate: reset_scrollbar($all_bots_table),
         },
         $parent_container: $("#admin-bot-list").expectOne(),
         init_sort: "full_name_alphabetic",
@@ -588,10 +588,10 @@ function bots_create_table(): void {
         },
         $simplebar_container: $("#admin-bot-list .progressive-table-wrapper"),
     });
-    set_text_search_value($bots_table, bots_section.filters.text_search);
+    set_text_search_value($all_bots_table, all_bots_section.filters.text_search);
 
-    loading.destroy_indicator($("#admin_page_bots_loading_indicator"));
-    $bots_table.show();
+    loading.destroy_indicator($("#admin_page_all_bots_loading_indicator"));
+    $all_bots_table.show();
 }
 
 function active_create_table(active_users: number[]): void {
@@ -686,11 +686,11 @@ function deactivated_create_table(deactivated_users: number[]): void {
 }
 
 export function update_bot_data(bot_user_id: number): void {
-    if (!bots_section.list_widget) {
+    if (!all_bots_section.list_widget) {
         return;
     }
 
-    bots_section.list_widget.render_item(bot_info(bot_user_id));
+    all_bots_section.list_widget.render_item(bot_info(bot_user_id));
 }
 
 export function update_user_data(
@@ -716,12 +716,12 @@ export function update_user_data(
     }
 }
 
-export function redraw_bots_list(): void {
+export function redraw_all_bots_list(): void {
     // In order to properly redraw after a user may have been added,
-    // we need to update the bots_section.list_widget with the new
+    // we need to update the all_bots_section.list_widget with the new
     // set of bot user IDs to display.
     const bot_user_ids = people.get_bot_ids();
-    redraw_people_list(bots_section, bot_user_ids);
+    redraw_people_list(all_bots_section, bot_user_ids);
 }
 
 function redraw_people_list(
@@ -893,10 +893,10 @@ function deactivated_handle_events(): void {
     handle_clear_button_for_table_search_input($tbody);
 }
 
-function bots_handle_events(): void {
-    const $tbody = $("#admin_bots_table").expectOne();
+function all_bots_handle_events(): void {
+    const $tbody = $("#admin_all_bots_table").expectOne();
 
-    handle_filter_change($tbody, bots_section);
+    handle_filter_change($tbody, all_bots_section);
     handle_bot_deactivation($tbody);
     handle_reactivation($tbody);
     handle_edit_form($tbody);
@@ -911,15 +911,15 @@ export function set_up_humans(): void {
 }
 
 export function set_up_bots(): void {
-    bots_section.handle_events();
-    bots_section.create_table();
+    all_bots_section.handle_events();
+    all_bots_section.create_table();
 
     $("#admin-bot-list .add-a-new-bot").on("click", (e) => {
         e.preventDefault();
         e.stopPropagation();
         settings_bots.add_a_new_bot();
     });
-    create_status_filter_dropdown($("#admin-bot-list"), bots_section);
+    create_status_filter_dropdown($("#admin-bot-list"), all_bots_section);
 }
 
 type FetchPresenceUserSettingParams = {
