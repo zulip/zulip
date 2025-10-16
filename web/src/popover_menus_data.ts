@@ -10,6 +10,7 @@ import {$t} from "./i18n.ts";
 import * as message_delete from "./message_delete.ts";
 import * as message_edit from "./message_edit.ts";
 import * as message_lists from "./message_lists.ts";
+import * as message_store from "./message_store.ts";
 import * as narrow_state from "./narrow_state.ts";
 import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
@@ -69,6 +70,7 @@ type TopicPopoverContext = {
     all_visibility_policies: AllVisibilityPolicies;
     can_summarize_topics: boolean;
     show_ai_features: boolean;
+    has_topic_links: boolean;
 };
 
 type VisibilityChangePopoverContext = {
@@ -281,6 +283,9 @@ export function get_topic_popover_content_context({
     const all_visibility_policies = user_topics.all_visibility_policies;
     const is_spectator = page_params.is_spectator;
     const is_topic_empty = is_topic_definitely_empty(stream_id, topic_name);
+    const has_topic_links =
+        message_store.topic_links_from_narrow(stream_id, topic_name).length > 0 ||
+        message_store.topic_links_to_narrow(stream_id, topic_name).length > 0;
     return {
         stream_name: sub.name,
         stream_id: sub.stream_id,
@@ -303,6 +308,7 @@ export function get_topic_popover_content_context({
         all_visibility_policies,
         can_summarize_topics: settings_data.user_can_summarize_topics(),
         show_ai_features: !user_settings.hide_ai_features,
+        has_topic_links,
     };
 }
 

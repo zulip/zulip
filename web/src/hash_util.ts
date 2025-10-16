@@ -440,7 +440,8 @@ export function decode_stream_topic_from_url(
             return {stream_id, topic_name: terms[1].operand};
         }
         if (terms[2]?.operator === "with") {
-            // For with operators, we currently discard the message ID.
+            // For with operators, we currently discard the message ID unless
+            // otherwise specified.
             return {stream_id, topic_name: terms[1].operand};
         }
         if (terms[2]?.operator !== "near") {
