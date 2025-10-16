@@ -39,7 +39,7 @@ export async function copy_link_to_clipboard(link: string): Promise<void> {
             } else {
                 const stream = stream_data.get_sub_by_id(stream_topic_details.stream_id);
                 assert(stream !== undefined);
-                const {text} = topic_link_util.get_topic_link_content(
+                const {text} = topic_link_util.get_topic_link_content_with_stream_name(
                     stream.name,
                     stream_topic_details.topic_name,
                     stream_topic_details.message_id,
