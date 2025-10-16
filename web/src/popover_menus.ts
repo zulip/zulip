@@ -26,6 +26,7 @@ type PopoverName =
     | "stream_card_popover"
     | "stream_settings"
     | "topics_menu"
+    | "topic_links"
     | "send_later"
     | "change_visibility_policy"
     | "personal_menu"
@@ -50,6 +51,7 @@ export const popover_instances: Record<PopoverName, tippy.Instance | null> = {
     stream_card_popover: null,
     stream_settings: null,
     topics_menu: null,
+    topic_links: null,
     send_later: null,
     change_visibility_policy: null,
     personal_menu: null,
