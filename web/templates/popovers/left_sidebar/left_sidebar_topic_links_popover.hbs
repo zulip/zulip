@@ -1,0 +1,22 @@
+<div class="popover-menu no-auto-hide-left-sidebar-overlay" id="topic-links-menu-popover" data-simplebar data-simplebar-tab-index="-1">
+    {{#if links_from_narrow}}
+    <div class="topic-links-menu-link-list">
+        <p class="topic-links-menu-title">{{t "Links from this topic"}}</p>
+        <ul class="popover-topic-links-list">
+            {{#each links_from_narrow}}
+                <li><a href="{{this.url}}">{{{this.display_html}}}</a></li>
+            {{/each}}
+        </ul>
+    </div>
+    {{/if}}
+    {{#if links_to_narrow}}
+    <div class="topic-links-menu-link-list">
+        <p class="topic-links-menu-title">{{t "Links to this topic"}}</p>
+        <ul>
+            {{#each links_to_narrow}}
+                <li><a href="{{this.url}}">{{{this.display_html}}}</a></li>
+            {{/each}}
+        </ul>
+    </div>
+    {{/if}}
+</div>

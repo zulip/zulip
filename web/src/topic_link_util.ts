@@ -4,6 +4,7 @@ import assert from "minimalistic-assert";
 
 import * as hash_util from "./hash_util.ts";
 import * as stream_data from "./stream_data.ts";
+import type {StreamSubscription} from "./sub_store.ts";
 import * as util from "./util.ts";
 
 const invalid_stream_topic_regex = /[`>*&[\]]|(\$\$)/g;
@@ -60,8 +61,28 @@ export function get_topic_link_content_with_stream_name(
     message_id?: string,
 ): {display_html: string; url: string} {
     const stream = stream_data.get_sub(stream_name);
-    const stream_id = stream?.stream_id;
-    assert(stream_id !== undefined);
+    assert(stream !== undefined);
+    return _get_topic_link_content(stream, topic_name, message_id);
+}
+
+export function get_topic_link_content_with_stream_id(
+    stream_id: number,
+    topic_name?: string,
+    message_id?: string,
+): {display_html: string; url: string} {
+    const stream = stream_data.get_sub_by_id(stream_id);
+    assert(stream !== undefined);
+    return _get_topic_link_content(stream, topic_name, message_id);
+}
+
+function _get_topic_link_content(
+    stream: StreamSubscription,
+    topic_name?: string,
+    message_id?: string,
+): {display_html: string; url: string} {
+    const stream_name = stream.name;
+    const stream_id = stream.stream_id;
+
     const escape = html_escape_markdown_syntax_characters;
     if (topic_name !== undefined) {
         const stream_topic_url = hash_util.by_stream_topic_url(stream_id, topic_name);
