@@ -7,7 +7,6 @@ import render_left_sidebar_topic_actions_popover from "../templates/popovers/lef
 
 import * as clipboard_handler from "./clipboard_handler.ts";
 import * as confirm_dialog from "./confirm_dialog.ts";
-import * as hash_util from "./hash_util.ts";
 import {$t_html} from "./i18n.ts";
 import * as message_delete from "./message_delete.ts";
 import * as message_edit from "./message_edit.ts";
@@ -17,6 +16,7 @@ import * as popover_menus_data from "./popover_menus_data.ts";
 import * as starred_messages_ui from "./starred_messages_ui.ts";
 import {realm} from "./state_data.ts";
 import * as stream_popover from "./stream_popover.ts";
+import * as stream_topic_history from "./stream_topic_history.ts";
 import * as ui_util from "./ui_util.ts";
 import * as unread_ops from "./unread_ops.ts";
 import * as user_topics from "./user_topics.ts";
@@ -36,7 +36,10 @@ function get_conversation(instance: tippy.Instance): {
         const $message_header = $elt.closest(".message_header").expectOne();
         stream_id = Number.parseInt($message_header.attr("data-stream-id")!, 10);
         topic_name = $message_header.attr("data-topic-name")!;
-        const topic_narrow_url = hash_util.by_channel_topic_permalink(stream_id, topic_name);
+        const topic_narrow_url = stream_topic_history.channel_topic_permalink_hash(
+            stream_id,
+            topic_name,
+        );
         url = new URL(topic_narrow_url, realm.realm_url).href;
     } else if (!instance.reference.classList.contains("topic-sidebar-menu-icon")) {
         const $elt = $(instance.reference);
