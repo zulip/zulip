@@ -333,6 +333,10 @@ Files: web/shared/icons/link-alt.svg
 Copyright: 2013-2023 Cole Bemis, Lucide Contributors 2025 (https://lucide.dev/icons/link)
 License: ISC License
 
+Files: web/shared/icons/link-2.svg
+Copyright: 2013-2023 Cole Bemis, Lucide Contributors 2025 (https://lucide.dev/icons/link)
+License: ISC License
+
 Files: web/shared/icons/log-in-navbar.svg
 Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
 License: Expat
