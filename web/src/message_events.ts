@@ -447,7 +447,7 @@ export function update_messages(events: UpdateMessageEvent[]): void {
             message_store.update_booleans(anchor_message, event.flags);
 
             if (event.rendered_content !== undefined) {
-                anchor_message.content = event.rendered_content;
+                message_store.update_message_content(anchor_message, event.rendered_content);
             }
 
             if (event.is_me_message !== undefined) {
