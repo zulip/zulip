@@ -1,0 +1,32 @@
+<div class="popover-menu no-auto-hide-left-sidebar-overlay" id="topic-links-menu-popover" data-simplebar data-simplebar-tab-index="-1">
+    {{#if has_links_from_narrow}}
+    <div class="topic-links-menu-link-list">
+        <p class="topic-links-menu-title">
+            <i class="zulip-icon zulip-icon-arrow-up-right"></i>
+            {{t "Links to"}}
+            {{> ../../help_link_widget link="/help/link-to-a-message-or-conversation#view-links-to-and-from-a-conversation" }}
+        </p>
+        <div role="separator" class="popover-menu-separator"></div>
+        <ul class="popover-topic-links-list">
+            {{#each links_from_narrow}}
+                {{> ./cross_conversation_link this}}
+            {{/each}}
+        </ul>
+    </div>
+    {{/if}}
+    {{#if has_links_to_narrow}}
+    <div class="topic-links-menu-link-list">
+        <p class="topic-links-menu-title">
+            <i class="zulip-icon zulip-icon-arrow-down-left"></i>
+            {{t "Linked from"}}
+            {{> ../../help_link_widget link="/help/link-to-a-message-or-conversation#view-links-to-and-from-a-conversation" }}
+        </p>
+        <div role="separator" class="popover-menu-separator"></div>
+        <ul class="popover-topic-links-list">
+            {{#each links_to_narrow}}
+                {{> ./cross_conversation_link this}}
+            {{/each}}
+        </ul>
+    </div>
+    {{/if}}
+</div>
