@@ -61,6 +61,7 @@ export function get_topic_link_content_with_stream_name(opts: {
     stream_name: string;
     topic_name: string | undefined;
     message_id: string | undefined;
+    escape_for_markdown: boolean;
 }): {text: string; url: string} {
     const stream = stream_data.get_sub(opts.stream_name);
     assert(stream !== undefined);
@@ -71,6 +72,7 @@ export function get_topic_link_content_with_stream_id(opts: {
     stream_id: number;
     topic_name: string | undefined;
     message_id: string | undefined;
+    escape_for_markdown: boolean;
 }): {text: string; url: string} {
     const stream = stream_data.get_sub_by_id(opts.stream_id);
     assert(stream !== undefined);
@@ -81,27 +83,38 @@ function _get_topic_link_content(opts: {
     stream: StreamSubscription;
     topic_name: string | undefined;
     message_id: string | undefined;
+    escape_for_markdown: boolean;
 }): {text: string; url: string} {
-    const {stream, topic_name, message_id} = opts;
+    const {stream, topic_name, message_id, escape_for_markdown} = opts;
     const stream_name = stream.name;
     const stream_id = stream.stream_id;
+
     const escape = html_escape_markdown_syntax_characters;
     if (topic_name !== undefined) {
         const stream_topic_url = hash_util.by_stream_topic_url(stream_id, topic_name);
         const topic_display_name = util.get_final_topic_display_name(topic_name);
         if (message_id !== undefined) {
+            const text = escape_for_markdown
+                ? `#${escape(stream_name)} > ${escape(topic_display_name)} @ 💬`
+                : `#${stream_name} > ${topic_display_name} @ 💬`;
+
             return {
-                text: `#${escape(stream_name)} > ${escape(topic_display_name)} @ 💬`,
+                text,
                 url: `${stream_topic_url}/near/${message_id}`,
             };
         }
+        const text = escape_for_markdown
+            ? `#${escape(stream_name)} > ${escape(topic_display_name)}`
+            : `#${stream_name} > ${topic_display_name}`;
         return {
-            text: `#${escape(stream_name)} > ${escape(topic_display_name)}`,
+            text,
             url: stream_topic_url,
         };
     }
+
+    const text = escape_for_markdown ? `#${escape(stream_name)}` : `#${stream_name}`;
     return {
-        text: `#${escape(stream_name)}`,
+        text,
         url: hash_util.channel_url_by_user_setting(stream_id),
     };
 }
@@ -130,6 +143,7 @@ export function get_fallback_markdown_link(
         stream_name,
         topic_name,
         message_id,
+        escape_for_markdown: true,
     });
     return as_markdown_link_syntax(text, url);
 }
