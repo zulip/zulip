@@ -2198,7 +2198,7 @@ export function initialize(): void {
     $("#groups_overlay_container").on("click", ".fa-chevron-left", () => {
         $(".right").removeClass("show");
         $("#groups_overlay_container .two-pane-settings-header").removeClass("slide-left");
-        resize.resize_settings_overlay_subheader_for_narrow_screens($("#groups_overlay_container"));
+        resize.resize_settings_overlay_subheader($("#groups_overlay_container"));
     });
 
     $("#groups_overlay_container").on(

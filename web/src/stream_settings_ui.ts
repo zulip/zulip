@@ -1261,9 +1261,7 @@ export function initialize(): void {
     $("#channels_overlay_container").on("click", ".fa-chevron-left", () => {
         $(".right").removeClass("show");
         $("#channels_overlay_container .two-pane-settings-header").removeClass("slide-left");
-        resize.resize_settings_overlay_subheader_for_narrow_screens(
-            $("#channels_overlay_container"),
-        );
+        resize.resize_settings_overlay_subheader($("#channels_overlay_container"));
     });
 
     $("#channels_overlay_container").on("click", "#preview-stream-button", () => {
