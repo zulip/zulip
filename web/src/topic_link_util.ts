@@ -54,7 +54,7 @@ export function html_escape_markdown_syntax_characters(text: string): string {
     return text.replaceAll(invalid_stream_topic_regex, escape_invalid_stream_topic_characters);
 }
 
-export function get_topic_link_content(
+export function get_topic_link_content_with_stream_name(
     stream_name: string,
     topic_name?: string,
     message_id?: string,
@@ -103,7 +103,11 @@ export function get_fallback_markdown_link(
     // Generates the vanilla markdown link syntax for a stream/topic/message link, as
     // a fallback for cases where the nicer Zulip link syntax would not
     // render properly due to special characters in the channel or topic name.
-    const {text, url} = get_topic_link_content(stream_name, topic_name, message_id);
+    const {text, url} = get_topic_link_content_with_stream_name(
+        stream_name,
+        topic_name,
+        message_id,
+    );
     return as_markdown_link_syntax(text, url);
 }
 
