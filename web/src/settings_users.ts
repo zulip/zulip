@@ -717,23 +717,22 @@ export function update_user_data(
 }
 
 export function redraw_bots_list(): void {
-    if (!bots_section.list_widget) {
-        return;
-    }
-
     // In order to properly redraw after a user may have been added,
     // we need to update the bots_section.list_widget with the new
     // set of bot user IDs to display.
     const bot_user_ids = people.get_bot_ids();
-    bots_section.list_widget.replace_list_data(bot_user_ids);
+    redraw_people_list(bots_section, bot_user_ids);
 }
 
-function redraw_users_list(user_section: UserSettingsSection, user_list: number[]): void {
-    if (!user_section.list_widget) {
+function redraw_people_list(
+    section: UserSettingsSection | BotSettingsSection,
+    list: number[],
+): void {
+    if (!section.list_widget) {
         return;
     }
 
-    user_section.list_widget.replace_list_data(user_list);
+    section.list_widget.replace_list_data(list);
 }
 
 export function redraw_deactivated_users_list(): void {
@@ -741,7 +740,7 @@ export function redraw_deactivated_users_list(): void {
         return;
     }
     const deactivated_user_ids = people.get_non_active_human_ids();
-    redraw_users_list(deactivated_section, deactivated_user_ids);
+    redraw_people_list(deactivated_section, deactivated_user_ids);
     should_redraw_deactivated_users_list = false;
 }
 
@@ -750,7 +749,7 @@ export function redraw_active_users_list(): void {
         return;
     }
     const active_user_ids = people.get_realm_active_human_user_ids();
-    redraw_users_list(active_section, active_user_ids);
+    redraw_people_list(active_section, active_user_ids);
     should_redraw_active_users_list = false;
 }
 
