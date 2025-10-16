@@ -1,0 +1,17 @@
+<li>
+    {{~!-- Render each link identically to how it appears inline in
+    message content, reusing the markdown link templates. --~}}
+    {{~#if is_message_link~}}
+        {{> ../../channel_message_link stream=stream channel_name=channel_name topic_display_name_html=topic_display_name_html is_empty_string_topic=is_empty_string_topic href=url}}
+        {{~else if is_topic_link~}}
+        {{> ../../topic_link channel_id=channel_id stream=stream channel_name=channel_name topic_display_name_html=topic_display_name_html is_empty_string_topic=is_empty_string_topic href=url}}
+        {{~else~}}
+        <a class="stream" data-stream-id="{{channel_id}}" href="{{url}}">
+            {{~#if stream~}}
+            {{~> ../../decorated_channel_name stream=stream inline_with_text=true show_colored_icon=false~}}
+            {{~else~}}
+            #{{channel_name}}
+            {{~/if~}}
+        </a>
+    {{~/if~}}
+</li>
