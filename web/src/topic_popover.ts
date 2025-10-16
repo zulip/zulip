@@ -4,12 +4,14 @@ import type * as tippy from "tippy.js";
 
 import render_delete_topic_modal from "../templates/confirm_dialog/confirm_delete_topic.hbs";
 import render_left_sidebar_topic_actions_popover from "../templates/popovers/left_sidebar/left_sidebar_topic_actions_popover.hbs";
+import render_left_sidebar_topic_links_popover from "../templates/popovers/left_sidebar/left_sidebar_topic_links_popover.hbs";
 
 import * as clipboard_handler from "./clipboard_handler.ts";
 import * as confirm_dialog from "./confirm_dialog.ts";
 import {$t_html} from "./i18n.ts";
 import * as message_delete from "./message_delete.ts";
 import * as message_edit from "./message_edit.ts";
+import * as message_store from "./message_store.ts";
 import * as message_summary from "./message_summary.ts";
 import * as popover_menus from "./popover_menus.ts";
 import * as popover_menus_data from "./popover_menus_data.ts";
@@ -221,6 +223,20 @@ export function initialize(): void {
                         true,
                     );
                     popover_menus.hide_current_popover_if_visible(instance);
+                });
+
+                $popper.on("click", ".sidebar-open-topic-links", () => {
+                    const {stream_id, topic_name} = get_conversation(instance);
+                    const context = {
+                        links_from_narrow: message_store.topic_links_from_narrow(
+                            stream_id,
+                            topic_name,
+                        ),
+                        links_to_narrow: message_store.topic_links_to_narrow(stream_id, topic_name),
+                    };
+                    instance.setContent(
+                        ui_util.parse_html(render_left_sidebar_topic_links_popover(context)),
+                    );
                 });
 
                 $popper.on("click", ".sidebar-popover-copy-link-to-topic", (e) => {
