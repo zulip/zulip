@@ -4,12 +4,14 @@ import type * as tippy from "tippy.js";
 
 import render_delete_topic_modal from "../templates/confirm_dialog/confirm_delete_topic.hbs";
 import render_left_sidebar_topic_actions_popover from "../templates/popovers/left_sidebar/left_sidebar_topic_actions_popover.hbs";
+import render_left_sidebar_topic_links_popover from "../templates/popovers/left_sidebar/left_sidebar_topic_links_popover.hbs";
 
 import * as clipboard_handler from "./clipboard_handler.ts";
 import * as confirm_dialog from "./confirm_dialog.ts";
 import {$t_html} from "./i18n.ts";
 import * as message_delete from "./message_delete.ts";
 import * as message_edit from "./message_edit.ts";
+import * as message_store from "./message_store.ts";
 import * as message_summary from "./message_summary.ts";
 import * as popover_menus from "./popover_menus.ts";
 import * as popover_menus_data from "./popover_menus_data.ts";
@@ -17,6 +19,7 @@ import * as starred_messages_ui from "./starred_messages_ui.ts";
 import {realm} from "./state_data.ts";
 import * as stream_popover from "./stream_popover.ts";
 import * as stream_topic_history from "./stream_topic_history.ts";
+import * as tippyjs from "./tippyjs.ts";
 import * as ui_util from "./ui_util.ts";
 import * as unread_ops from "./unread_ops.ts";
 import * as user_topics from "./user_topics.ts";
@@ -55,6 +58,35 @@ function get_conversation(instance: tippy.Instance): {
     }
 
     return {stream_id, topic_name, url};
+}
+
+export function open_cross_topic_links(
+    stream_id: number,
+    topic_name: string,
+    placement: tippy.Placement,
+    target: tippy.ReferenceElement,
+): void {
+    popover_menus.toggle_popover_menu(target, {
+        theme: "popover-menu",
+        placement,
+        onShow(instance) {
+            popover_menus.popover_instances.topic_links = instance;
+            ui_util.show_left_sidebar_menu_icon(instance.reference);
+            popover_menus.on_show_prep(instance);
+
+            const context = {
+                links_from_narrow: message_store.topic_links_from_narrow(stream_id, topic_name),
+                links_to_narrow: message_store.topic_links_to_narrow(stream_id, topic_name),
+            };
+            instance.setContent(
+                ui_util.parse_html(render_left_sidebar_topic_links_popover(context)),
+            );
+        },
+        onHidden(instance) {
+            instance.destroy();
+            popover_menus.popover_instances.topic_links = null;
+        },
+    });
 }
 
 export function initialize(): void {
@@ -247,6 +279,15 @@ function register_popover_menu(target: string, placement: tippy.Placement): void
             $popper.one("click", ".sidebar-popover-rename-topic-messages", () => {
                 void stream_popover.build_move_topic_to_stream_popover(stream_id, topic_name, true);
                 popover_menus.hide_current_popover_if_visible(instance);
+            });
+
+            $popper.on("click", ".sidebar-open-topic-links", () => {
+                const {stream_id, topic_name} = get_conversation(instance);
+                // Keep the same placement when replacing the popover.
+                const placement = tippyjs.get_actual_placement(instance);
+                const reference = instance.reference;
+                popover_menus.hide_current_popover_if_visible(instance);
+                open_cross_topic_links(stream_id, topic_name, placement, reference);
             });
 
             $popper.on(

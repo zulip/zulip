@@ -1,6 +1,7 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
 import * as tippy from "tippy.js";
+import * as z from "zod/mini";
 
 import render_buddy_list_title_tooltip from "../templates/buddy_list/title_tooltip.hbs";
 import render_change_visibility_policy_button_tooltip from "../templates/change_visibility_policy_button_tooltip.hbs";
@@ -137,6 +138,34 @@ export const topic_visibility_policy_tooltip_props = {
         instance.destroy();
     },
 };
+
+// Ideally we could get this from `props.placement`, but it always returns
+// the default placement. If the popover flips and opens in another direction
+// due to size constraints, it doesn't return that new value of its actual
+// placement. There doesn't seem to be a way to get the real placement value
+// other than getting it from the DOM, so we're parsing it with zod.
+export function get_actual_placement(instance: tippy.Instance): tippy.Placement {
+    const raw_placement = $(instance.popper).find(".tippy-box").attr("data-placement");
+    return z
+        .enum([
+            "top",
+            "bottom",
+            "left",
+            "right",
+            "top-start",
+            "top-end",
+            "bottom-start",
+            "bottom-end",
+            "right-start",
+            "right-end",
+            "left-start",
+            "left-end",
+            "auto",
+            "auto-start",
+            "auto-end",
+        ])
+        .parse(raw_placement);
+}
 
 export function initialize(): void {
     $("#tooltip-templates-container").html(render_tooltip_templates());

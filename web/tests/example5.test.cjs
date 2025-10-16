@@ -91,8 +91,9 @@ function test_helper({override}) {
     };
 }
 
-run_test("insert_server_message", ({override}) => {
+run_test("insert_server_message", ({override, override_rewire}) => {
     message_store.clear_for_testing();
+    override_rewire(message_store, "save_topic_links", noop);
 
     override(pm_list, "update_private_messages", noop);
 
@@ -143,8 +144,9 @@ run_test("insert_server_message", ({override}) => {
     assert.equal(inserted_message.content, "example content");
 });
 
-run_test("insert_local_message", ({override}) => {
+run_test("insert_local_message", ({override, override_rewire}) => {
     message_store.clear_for_testing();
+    override_rewire(message_store, "save_topic_links", noop);
 
     override(pm_list, "update_private_messages", noop);
 

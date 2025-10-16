@@ -74,7 +74,9 @@ const denmark_stream = make_stream({
     subscribed: false,
 });
 
-run_test("unread_ops", ({override}) => {
+run_test("unread_ops", ({override, override_rewire}) => {
+    override_rewire(message_store, "save_topic_links", noop);
+
     $("#message_feed_container").css = (property) => {
         assert.equal(property, "display");
         return "block";
