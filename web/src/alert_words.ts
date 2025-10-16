@@ -1,6 +1,7 @@
 import _ from "lodash";
 
 import type {Message} from "./message_store.ts";
+import * as message_store from "./message_store.ts";
 import * as people from "./people.ts";
 import type {StateData} from "./state_data.ts";
 
@@ -56,7 +57,7 @@ export function process_message(message: Message): void {
         const after_punctuation = "(?=\\s)|$|<|[\\)\\\"\\?!:.,';\\]!]";
 
         const regex = new RegExp(`(${before_punctuation})(${clean})(${after_punctuation})`, "ig");
-        message.content = message.content.replace(
+        const updated_content = message.content.replace(
             regex,
             (
                 match: string,
@@ -81,6 +82,7 @@ export function process_message(message: Message): void {
                 return before + "<span class='alert-word'>" + word + "</span>" + after;
             },
         );
+        message_store.update_message_content(message, updated_content);
     }
 }
 
