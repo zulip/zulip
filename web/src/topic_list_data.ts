@@ -2,7 +2,6 @@ import assert from "minimalistic-assert";
 
 import * as resolved_topic from "../shared/src/resolved_topic.ts";
 
-import * as hash_util from "./hash_util.ts";
 import * as narrow_state from "./narrow_state.ts";
 import * as stream_topic_history from "./stream_topic_history.ts";
 import * as sub_store from "./sub_store.ts";
@@ -135,7 +134,7 @@ function choose_topics(
             is_followed: is_topic_followed,
             is_unmuted_or_followed: is_topic_unmuted_or_followed,
             is_active_topic,
-            url: hash_util.by_channel_topic_permalink(stream_id, topic_name),
+            url: stream_topic_history.channel_topic_permalink_hash(stream_id, topic_name),
             contains_unread_mention,
         };
 

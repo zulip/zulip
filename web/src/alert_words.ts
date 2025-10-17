@@ -1,6 +1,7 @@
 import _ from "lodash";
 
 import type {Message} from "./message_store.ts";
+import * as message_store from "./message_store.ts";
 import * as people from "./people.ts";
 import type {StateData} from "./state_data.ts";
 
@@ -56,30 +57,33 @@ export function process_message(message: Message): void {
         const after_punctuation = "(?=\\s)|$|<|[\\)\\\"\\?!:.,';\\]!]";
 
         const regex = new RegExp(`(${before_punctuation})(${clean})(${after_punctuation})`, "ig");
-        message.content = message.content.replace(
-            regex,
-            (
-                match: string,
-                before: string,
-                word: string,
-                after: string,
-                offset: number,
-                content: string,
-            ) => {
-                // Logic for ensuring that we don't muck up rendered HTML.
-                const pre_match = content.slice(0, offset);
-                // We want to find the position of the `<` and `>` only in the
-                // match and the string before it. So, don't include the last
-                // character of match in `check_string`. This covers the corner
-                // case when there is an alert word just before `<` or `>`.
-                const check_string = pre_match + match.slice(0, -1);
-                const in_tag = check_string.lastIndexOf("<") > check_string.lastIndexOf(">");
-                // Matched word is inside an HTML tag so don't perform any highlighting.
-                if (in_tag) {
-                    return before + word + after;
-                }
-                return before + "<span class='alert-word'>" + word + "</span>" + after;
-            },
+        message_store.update_message_content(
+            message,
+            message.content.replace(
+                regex,
+                (
+                    match: string,
+                    before: string,
+                    word: string,
+                    after: string,
+                    offset: number,
+                    content: string,
+                ) => {
+                    // Logic for ensuring that we don't muck up rendered HTML.
+                    const pre_match = content.slice(0, offset);
+                    // We want to find the position of the `<` and `>` only in the
+                    // match and the string before it. So, don't include the last
+                    // character of match in `check_string`. This covers the corner
+                    // case when there is an alert word just before `<` or `>`.
+                    const check_string = pre_match + match.slice(0, -1);
+                    const in_tag = check_string.lastIndexOf("<") > check_string.lastIndexOf(">");
+                    // Matched word is inside an HTML tag so don't perform any highlighting.
+                    if (in_tag) {
+                        return before + word + after;
+                    }
+                    return before + "<span class='alert-word'>" + word + "</span>" + after;
+                },
+            ),
         );
     }
 }

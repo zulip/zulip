@@ -1,10 +1,15 @@
+import $ from "jquery";
 import _ from "lodash";
 import * as z from "zod/mini";
 
+import * as internal_url from "../shared/src/internal_url.ts";
+
 import * as blueslip from "./blueslip.ts";
 import type {RawLocalMessage} from "./echo.ts";
+import * as hash_util from "./hash_util.ts";
 import type {NewMessage, ProcessedMessage} from "./message_helper.ts";
 import * as people from "./people.ts";
+import * as topic_link_util from "./topic_link_util.ts";
 import {topic_link_schema} from "./types.ts";
 import type {UserStatusEmojiInfo} from "./user_status.ts";
 import * as util from "./util.ts";
@@ -211,6 +216,7 @@ export type Message = (
 export function update_message_cache(message_data: ProcessedMessage): void {
     // You should only call this from message_helper (or in tests).
     stored_messages.set(message_data.message.id, message_data);
+    save_topic_links(message_data.message);
 }
 
 export function get_cached_message(message_id: number): ProcessedMessage | undefined {
@@ -389,15 +395,207 @@ export function update_status_emoji_info(
 export function reify_message_id({old_id, new_id}: {old_id: number; new_id: number}): void {
     const message_data = stored_messages.get(old_id);
     if (message_data !== undefined) {
-        message_data.message.id = new_id;
-        message_data.message.locally_echoed = false;
-        stored_messages.set(new_id, {type: "server_message", message: message_data.message});
+        const message = message_data.message;
+        message.id = new_id;
+        message.locally_echoed = false;
+        stored_messages.set(new_id, {type: "server_message", message});
         stored_messages.delete(old_id);
+        if (message.type === "stream") {
+            remove_topic_links(message.stream_id, message.topic, message.id);
+            save_topic_links(message);
+        }
     }
+}
+
+export type TopicLink = {
+    // Where the link occurs
+    from_message_id: number;
+    from_stream_id: number;
+    from_topic: string;
+    from_link: string;
+    // What's being linked to
+    to_stream_id: number;
+    to_topic: string | undefined;
+    to_message_id: number | undefined;
+    to_link: string;
+};
+
+const topic_links_by_from = new Map<number, Map<string, Set<TopicLink>>>();
+const topic_links_by_to = new Map<number, Map<string, Set<TopicLink>>>();
+
+function topic_links_has_stream_topic(
+    map: Map<number, Map<string, Set<TopicLink>>>,
+    stream_id: number,
+    topic: string,
+): boolean {
+    return map.get(stream_id)?.get(topic) !== undefined;
+}
+
+function get_topic_links(
+    map: Map<number, Map<string, Set<TopicLink>>>,
+    stream_id: number,
+    topic: string,
+): Set<TopicLink> {
+    if (!map.has(stream_id)) {
+        map.set(stream_id, new Map<string, Set<TopicLink>>());
+    }
+    if (!map.get(stream_id)!.get(topic)) {
+        map.get(stream_id)!.set(topic, new Set<TopicLink>());
+    }
+    return map.get(stream_id)!.get(topic)!;
+}
+
+function set_topic_links(
+    map: Map<number, Map<string, Set<TopicLink>>>,
+    stream_id: number,
+    topic: string,
+    topic_links: Set<TopicLink>,
+): void {
+    if (!map.has(stream_id)) {
+        map.set(stream_id, new Map<string, Set<TopicLink>>());
+    }
+    map.get(stream_id)!.set(topic, topic_links);
+}
+
+export function topic_links_from_narrow(
+    stream_id: number,
+    topic: string,
+): {
+    display_html: string;
+    url: string;
+}[] {
+    if (!topic_links_has_stream_topic(topic_links_by_from, stream_id, topic)) {
+        return [];
+    }
+    const topic_links = get_topic_links(topic_links_by_from, stream_id, topic).values();
+    return [...topic_links].map((topic_link) =>
+        topic_link_util.get_topic_link_content_with_stream_id(
+            topic_link.to_stream_id,
+            topic_link.to_topic,
+            topic_link.to_message_id?.toString(),
+        ),
+    );
+}
+
+export function topic_links_to_narrow(
+    stream_id: number,
+    topic: string,
+): {
+    display_html: string;
+    url: string;
+}[] {
+    if (!topic_links_has_stream_topic(topic_links_by_to, stream_id, topic)) {
+        return [];
+    }
+    const topic_links = get_topic_links(topic_links_by_to, stream_id, topic).values();
+    return [...topic_links].map((topic_link) =>
+        topic_link_util.get_topic_link_content_with_stream_id(
+            topic_link.from_stream_id,
+            topic_link.from_topic,
+            topic_link.from_message_id.toString(),
+        ),
+    );
+}
+
+function filter_set<T>(set: Set<T>, filter: (item: T) => boolean): Set<T> {
+    return new Set([...set].filter((item) => filter(item)));
+}
+
+function remove_topic_links(stream_id: number, topic: string, message_id: number): void {
+    if (topic_links_has_stream_topic(topic_links_by_from, stream_id, topic)) {
+        const filtered_links = filter_set(
+            get_topic_links(topic_links_by_from, stream_id, topic),
+            (link) => link.from_message_id !== message_id,
+        );
+        set_topic_links(topic_links_by_from, stream_id, topic, filtered_links);
+    }
+
+    if (topic_links_has_stream_topic(topic_links_by_to, stream_id, topic)) {
+        const filtered_links = filter_set(
+            get_topic_links(topic_links_by_to, stream_id, topic),
+            (link) => link.to_message_id !== message_id,
+        );
+        set_topic_links(topic_links_by_to, stream_id, topic, filtered_links);
+    }
+}
+
+function save_topic_links(message: Message): void {
+    if (message.type !== "stream") {
+        return;
+    }
+
+    const stream_topic_regex =
+        /#narrow\/channel\/(\d+)-[^/]*(?:\/topic\/([^/]*)(?:\/near\/(\d+))?)?/;
+    for (const link of $(message.content).children("a")) {
+        const match = stream_topic_regex.exec(link.href);
+        if (!match) {
+            continue;
+        }
+
+        const to_stream_id = Number.parseInt(match[1]!, 10);
+        const to_topic = match[2] ? internal_url.decodeHashComponent(match[2]) : undefined;
+        const to_message_id = match[3] ? Number.parseInt(match[3], 10) : undefined;
+
+        const topic_link: TopicLink = {
+            from_message_id: message.id,
+            from_stream_id: message.stream_id,
+            from_topic: message.topic,
+            from_link: hash_util.by_conversation_and_time_url(message),
+            to_stream_id,
+            to_topic,
+            to_message_id,
+            to_link: link.href,
+        };
+
+        const from_links = get_topic_links(topic_links_by_from, message.stream_id, message.topic);
+        from_links.add(topic_link);
+
+        if (to_topic !== undefined) {
+            const to_links = get_topic_links(topic_links_by_to, to_stream_id, to_topic);
+            to_links.add(topic_link);
+        }
+    }
+}
+
+export function process_topic_edit(opts: {
+    message_ids: number[];
+    old_stream_id: number;
+    old_topic: string;
+    new_stream_id: number;
+    new_topic: string;
+}): void {
+    const {message_ids, old_stream_id, old_topic, new_stream_id, new_topic} = opts;
+    for (const message_id of message_ids) {
+        remove_topic_links(old_stream_id, old_topic, message_id);
+        const message = get(message_id);
+        if (message?.type !== "stream") {
+            continue;
+        }
+        save_topic_links({
+            ...message,
+            stream_id: new_stream_id,
+            topic: new_topic,
+        });
+    }
+}
+
+export function update_message_content(message: Message, new_content: string): void {
+    message.content = new_content;
+    if (message.type !== "stream") {
+        return;
+    }
+    // The content might have a different set of message links, so reparse the content
+    // and update the map.
+    remove_topic_links(message.stream_id, message.topic, message.id);
+    save_topic_links(message);
 }
 
 export function remove(message_ids: number[]): void {
     for (const message_id of message_ids) {
+        const message = get(message_id);
+        if (message?.type === "stream") {
+            remove_topic_links(message.stream_id, message.topic, message.id);
+        }
         stored_messages.delete(message_id);
     }
 }

@@ -1590,3 +1590,26 @@ ul.popover-menu-list {
     flex: 1;
     min-width: 0;
 }
+
+#topic-links-menu-popover {
+    color: var(--color-text-popover-menu) !important;
+    padding: 0.6666em;
+
+    .topic-links-menu-title {
+        margin: 0;
+    }
+
+    .popover-topic-links-list {
+        width: 400px;
+        max-width: 95vw;
+    }
+
+    .topic-links-menu-link-list + .topic-links-menu-link-list {
+        margin-top: 10px;
+    }
+
+    ul {
+        margin: 0;
+        list-style: none;
+    }
+}
