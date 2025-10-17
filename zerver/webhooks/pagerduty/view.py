@@ -31,11 +31,30 @@ PAGER_DUTY_EVENT_NAMES_V2 = {
 }
 
 PAGER_DUTY_EVENT_NAMES_V3 = {
-    "incident.triggered": "triggered",
-    "incident.acknowledged": "acknowledged",
-    "incident.unacknowledged": "unacknowledged",
-    "incident.resolved": "resolved",
-    "incident.reassigned": "reassigned",
+"incident.acknowledged",
+"incident.annotated", 
+"incident.conference_bridge.updated",
+"incident.custom_field_values.updated",
+"incident.delegated",
+"incident.escalated",
+"incident.incident_type.changed",
+"incident.priority_updated",
+"incident.reassigned",
+"incident.reopened",
+"incident.resolved",
+"incident.responder.added",
+"incident.responder.replied",
+"incident.service_updated",
+"incident.status_update_published",
+"incident.triggered",
+"incident.unacknowledged",
+"incident.workflow.started",
+"incident.workflow.completed",
+ 
+"service.created",
+"service.custom_field_values.updated",
+"service.deleted",
+"service.updated"
 }
 
 ALL_EVENT_TYPES = [
