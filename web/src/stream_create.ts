@@ -4,6 +4,7 @@ import * as z from "zod/mini";
 
 import render_subscription_invites_warning_modal from "../templates/confirm_dialog/confirm_subscription_invites_warning.hbs";
 import render_change_stream_info_modal from "../templates/stream_settings/change_stream_info_modal.hbs";
+import render_channel_name_conflict_error from "../templates/stream_settings/channel_name_conflict_error.hbs";
 
 import * as channel from "./channel.ts";
 import * as confirm_dialog from "./confirm_dialog.ts";
@@ -106,6 +107,11 @@ class StreamNameError {
         $("#stream_name_error").show();
     }
 
+    report_already_exists_with_links(rendered_error_html: string): void {
+        $("#stream_name_error").html(rendered_error_html);
+        $("#stream_name_error").show();
+    }
+
     clear_errors(): void {
         $("#stream_name_error").hide();
         $("#archived_stream_rename").hide();
@@ -121,7 +127,7 @@ class StreamNameError {
     }
 
     rename_archived_stream(stream_id: number): void {
-        $("#archived_stream_rename").text($t({defaultMessage: "Rename archived channel"}));
+        $("#archived_stream_rename").text($t({defaultMessage: "Rename it"}));
         $("#archived_stream_rename").attr("data-stream-id", stream_id);
         $("#archived_stream_rename").show();
     }
@@ -136,17 +142,29 @@ class StreamNameError {
         // realize the stream already exists, I may want to cancel.)
         const stream = stream_data.get_sub(stream_name);
         if (stream_name && stream) {
-            let error;
             if (stream.is_archived) {
-                error = $t({defaultMessage: "An archived channel with this name already exists."});
-                if (stream_settings_data.get_sub_for_settings(stream).can_change_name_description) {
-                    this.rename_archived_stream(stream.stream_id);
-                }
+                const can_rename =
+                    stream_settings_data.get_sub_for_settings(stream).can_change_name_description;
+                const can_view = stream_data.has_metadata_access(stream);
+                const error = render_channel_name_conflict_error({
+                    stream_id: stream.stream_id,
+                    is_archived: true,
+                    show_rename: can_rename,
+                    can_view_channel: can_view,
+                });
+                this.report_already_exists_with_links(error);
+            } else {
+                const can_view = stream_data.has_metadata_access(stream);
+                const error = render_channel_name_conflict_error({
+                    stream_id: stream.stream_id,
+                    is_archived: false,
+                    show_rename: false,
+                    can_view_channel: can_view,
+                });
+                this.report_already_exists_with_links(error);
             }
-            this.report_already_exists(error);
             return;
         }
-
         this.clear_errors();
     }
 
@@ -159,11 +177,27 @@ class StreamNameError {
 
         const stream = stream_data.get_sub(stream_name);
         if (stream) {
-            let error;
             if (stream.is_archived) {
-                error = $t({defaultMessage: "An archived channel with this name already exists."});
+                const can_rename =
+                    stream_settings_data.get_sub_for_settings(stream).can_change_name_description;
+                const can_view = stream_data.has_metadata_access(stream);
+                const error = render_channel_name_conflict_error({
+                    stream_id: stream.stream_id,
+                    is_archived: true,
+                    show_rename: can_rename,
+                    can_view_channel: can_view,
+                });
+                this.report_already_exists_with_links(error);
+            } else {
+                const can_view = stream_data.has_metadata_access(stream);
+                const error = render_channel_name_conflict_error({
+                    stream_id: stream.stream_id,
+                    is_archived: false,
+                    show_rename: false,
+                    can_view_channel: can_view,
+                });
+                this.report_already_exists_with_links(error);
             }
-            this.report_already_exists(error);
             this.select();
             return false;
         }
