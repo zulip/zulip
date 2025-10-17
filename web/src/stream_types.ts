@@ -61,6 +61,7 @@ export const stream_schema = z.object({
     stream_id: z.number(),
     stream_post_policy: z.enum(StreamPostPolicy),
     topics_policy: stream_topics_policy_schema,
+    default_code_block_language: z.string(),
 });
 
 export const stream_specific_notification_settings_schema = z.object({
@@ -106,5 +107,6 @@ export const api_stream_subscription_schema = z.object({
 export const updatable_stream_properties_schema = z.object({
     ...api_stream_subscription_schema.shape,
     in_home_view: z.boolean(),
+    default_code_block_language: z.string(),
 });
 export type UpdatableStreamProperties = z.infer<typeof updatable_stream_properties_schema>;

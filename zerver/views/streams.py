@@ -33,6 +33,7 @@ from zerver.actions.message_send import (
 from zerver.actions.streams import (
     bulk_add_subscriptions,
     bulk_remove_subscriptions,
+    do_change_default_code_block_language,
     do_change_stream_description,
     do_change_stream_folder,
     do_change_stream_group_based_setting,
@@ -310,6 +311,7 @@ def update_stream_backend(
     new_name: str | None = None,
     stream_id: PathOnly[int],
     topics_policy: TopicsPolicy = None,
+    default_code_block_language: str | None = None,
 ) -> HttpResponse:
     # Most settings updates only require metadata access, not content
     # access. We will check for content access further when and where
@@ -501,6 +503,11 @@ def update_stream_backend(
                     old_setting_api_value=current_setting_api_value,
                     acting_user=user_profile,
                 )
+
+    if default_code_block_language is not None:
+        do_change_default_code_block_language(
+            stream, default_code_block_language, acting_user=user_profile
+        )
 
     return json_success(request)
 
@@ -805,6 +812,7 @@ def add_subscriptions_backend(
     send_new_subscription_messages: Json[bool] = True,
     streams_raw: Annotated[Json[list[AddSubscriptionData]], ApiParamConfig("subscriptions")],
     topics_policy: Json[TopicsPolicy] = None,
+    default_code_block_language: str = "",
 ) -> HttpResponse:
     realm = user_profile.realm
     stream_dicts = []
@@ -841,6 +849,7 @@ def add_subscriptions_backend(
         if validated_topics_policy is not None:
             stream_dict_copy["topics_policy"] = validated_topics_policy.value
         stream_dict_copy["folder"] = folder
+        stream_dict_copy["default_code_block_language"] = default_code_block_language
 
         stream_dicts.append(stream_dict_copy)
 
