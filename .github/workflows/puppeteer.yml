@@ -1,0 +1,114 @@
+name: Puppeteer
+on:
+  push:
+    paths:
+      - frontend_tests/puppeteer_lib/stress_test_version
+      - .github/workflows/puppeteer.yml
+  pull_request:
+    paths:
+      - frontend_tests/puppeteer_lib/stress_test_version
+      - .github/workflows/puppeteer.yml
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  stress_tests:
+    name: Puppeteer Stress Test ${{ matrix.test_num }}
+    runs-on: ubuntu-latest
+
+    # This docker image was created by a generated Dockerfile at:
+    #   tools/ci/images/bionic/Dockerfile
+    # Bionic ships with Python 3.6.
+    container: mepriyank/actions:bionic
+    env:
+      # GitHub Actions sets HOME to /github/home which causes
+      # problem later in provison and frontend test that runs
+      # tools/setup/postgres-init-dev-db because of the .pgpass
+      # location. Postgresql (psql) expects .pgpass to be at
+      # /home/github/.pgpass and setting home to `/home/github/`
+      # ensures it written there because we write it to ~/.pgpass.
+      HOME: /home/github/
+
+    # Don't run these tests on zulip/zulip pushes since it'll
+    # take long time to finish and will block other jobs
+    # causing a backlog of jobs to run.
+    if: ${{ github.event_name != 'push' || github.event.repository.full_name != 'zulip/zulip' }}
+
+    # We use a matrix just to run bunch of
+    # tests in parallel. Each job will run
+    # 100 tests each.
+    strategy:
+      matrix:
+        test_num: [1, 2, 3, 4]
+
+    steps:
+      - name: Add required permissions
+        run: |
+          # The checkout actions doesn't clone to ~/zulip or allow
+          # us to use the path option to clone outside the current
+          # /__w/zulip/zulip directory. Since this directory is owned
+          # by root we need to change it's ownership to allow the
+          # github user to clone the code here.
+          # Note: /__w/ is a docker volume mounted to $GITHUB_WORKSPACE
+          # which is /home/runner/work/.
+          sudo chown -R github .
+
+          # This is the GitHub Actions specific cache directory the
+          # the current github user must be able to access for the
+          # cache action to work. It is owned by root currently.
+          sudo chmod -R 0777 /__w/_temp/
+
+      - uses: actions/checkout@v2
+
+      - name: Create cache directories
+        run: |
+          dirs=(/srv/zulip-{npm,venv,emoji}-cache)
+          sudo mkdir -p "${dirs[@]}"
+          sudo chown -R github "${dirs[@]}"
+
+      - name: Restore node_modules cache
+        uses: actions/cache@v2
+        with:
+          path: /srv/zulip-npm-cache
+          key: v1-yarn-deps-${{ github.job }}-${{ hashFiles('package.json') }}-${{ hashFiles('yarn.lock') }}
+          restore-keys: v1-yarn-deps-${{ github.job }}
+
+      - name: Restore python cache
+        uses: actions/cache@v2
+        with:
+          path: /srv/zulip-venv-cache
+          key: v1-venv-${{ github.job }}-${{ hashFiles('requirements/thumbor-dev.txt') }}-${{ hashFiles('requirements/dev.txt') }}
+          restore-keys: v1-venv-${{ github.job }}
+
+      - name: Restore emoji cache
+        uses: actions/cache@v2
+        with:
+          path: /srv/zulip-emoji-cache
+          key: v1-emoji-${{ github.job }}-${{ hashFiles('tools/setup/emoji/emoji_map.json') }}-${{ hashFiles('tools/setup/emoji/build_emoji') }}-${{ hashFiles('tools/setup/emoji/emoji_setup_utils.py') }}-${{ hashFiles('tools/setup/emoji/emoji_names.py') }}-${{ hashFiles('package.json') }}
+          restore-keys: v1-emoji-${{ github.job }}
+
+      - name: Do Bionic hack
+        run: |
+          # Temporary hack till `sudo service redis-server start` gets fixes in Bionic. See
+          # https://chat.zulip.org/#narrow/stream/3-backend/topic/Ubuntu.20bionic.20CircleCI
+          sudo sed -i '/^bind/s/bind.*/bind 0.0.0.0/' /etc/redis/redis.conf
+
+      - name: Install dependencies
+        run: mispipe "tools/ci/setup-backend --skip-dev-db-build" ts
+
+      - name: Run puppeteer stress tests
+        run: |
+          . /srv/zulip-py3-venv/bin/activate
+          for i in {0..100}; do
+            echo Test run: $i
+            tools/test-js-with-puppeteer
+          done
+
+      - name: Store puppeteer artifacts
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v2
+        with:
+          name: puppeteer
+          path: ./var/puppeteer
