@@ -802,7 +802,7 @@ function register_click_handlers(): void {
         // as a modal rather than an overlay.
         if (is_overlay_hash(current_hash)) {
             const user = people.get_by_user_id(user_id);
-            user_profile.show_user_profile(user);
+            void user_profile.show_user_profile(user);
         } else {
             browser_history.go_to_location(`user/${user_id}`);
         }
@@ -952,7 +952,7 @@ function register_click_handlers(): void {
         hide_all();
         const user_id = elem_to_user_id($(this).parents("ul"));
         const user = people.get_by_user_id(user_id);
-        user_profile.show_user_profile(user, "manage-profile-tab");
+        void user_profile.show_user_profile(user, "manage-profile-tab");
     });
 
     $("body").on("click", ".edit-your-profile", () => {
