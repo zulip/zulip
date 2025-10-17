@@ -22,6 +22,15 @@ type AjaxRequestHandlerOptions = Omit<JQuery.AjaxSettings, "success"> & {
           ) => void)
         | undefined;
     error?: JQuery.Ajax.ErrorCallback<unknown>;
+    idempotencyKeyManager?: IdempotencyKeyManager;
+};
+
+// An idempotency manager for any request we want to make idempotent.
+// Idempotency-Key is included as HTTP header (if defined) inside
+// post() function below.
+// In future, we can add success() and error(), so we can handle each case separately.
+type IdempotencyKeyManager = {
+    getKey: () => string | undefined;
 };
 
 export type AjaxRequestHandler = typeof call;
@@ -176,6 +185,14 @@ export function get(options: AjaxRequestHandlerOptions): JQuery.jqXHR<unknown> |
 }
 
 export function post(options: AjaxRequestHandlerOptions): JQuery.jqXHR<unknown> | undefined {
+    const idempotency_key = options.idempotencyKeyManager?.getKey();
+    /* istanbul ignore next */
+    if (idempotency_key !== undefined) {
+        options.headers = {
+            ...options.headers, // Preserve any existing headers.
+            "Idempotency-Key": idempotency_key,
+        };
+    }
     const args = {type: "POST", dataType: "json", ...options};
     return call(args);
 }
