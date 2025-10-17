@@ -1,4 +1,6 @@
 import logging
+import random
+import string
 from collections.abc import Iterable
 from contextlib import suppress
 from typing import Annotated, Any, cast
@@ -49,13 +51,16 @@ from zerver.context_processors import (
 )
 from zerver.decorator import add_google_analytics, do_login, require_post
 from zerver.forms import (
+    CaptchaDemoRegistrationForm,
     CaptchaRealmCreationForm,
+    DemoRegistrationForm,
     FindMyTeamForm,
     HomepageForm,
     ImportRealmOwnerSelectionForm,
     RealmCreationForm,
     RealmRedirectForm,
     RegistrationForm,
+    check_subdomain_available,
 )
 from zerver.lib.email_validation import email_allowed_for_realm, validate_email_not_already_in_realm
 from zerver.lib.exceptions import JsonableError, RateLimitedError
@@ -264,7 +269,6 @@ def registration_helper(
     *,
     cancel_import: Json[bool] = False,
     form_full_name: Annotated[str | None, ApiParamConfig("full_name")] = None,
-    form_is_demo_organization: Annotated[str | None, ApiParamConfig("is_demo_organization")] = None,
     from_confirmation: str | None = None,
     key: str = "",
     slack_access_token: str | None = None,
@@ -408,32 +412,15 @@ def registration_helper(
         password_required = prereg_object.password_required
         role = prereg_object.invited_as
 
-    if form_is_demo_organization is None:
-        demo_organization_creation = False
-    else:
-        # Check the explicit strings that return false
-        # in django.forms.BooleanField.to_python.
-        false_strings = ("false", "0")
-        demo_organization_creation = form_is_demo_organization.strip().lower() not in false_strings
-
-    if email == "":
-        # Do not attempt to validate email for users without an email address.
-        # The assertions here are to help document the only circumstance under which
-        # this condition should be possible.
-        assert realm_creation and demo_organization_creation
-        # TODO: Remove settings.DEVELOPMENT when demo organization feature ready
-        # to be fully implemented.
-        assert settings.DEVELOPMENT
-    else:
-        try:
-            validators.validate_email(email)
-        except ValidationError:
-            return TemplateResponse(
-                request,
-                "zerver/invalid_email.html",
-                context={"invalid_email": True},
-                status=400,
-            )
+    try:
+        validators.validate_email(email)
+    except ValidationError:
+        return TemplateResponse(
+            request,
+            "zerver/invalid_email.html",
+            context={"invalid_email": True},
+            status=400,
+        )
 
     if realm_creation:
         # For creating a new realm, there is no existing realm or domain
@@ -602,12 +589,7 @@ def registration_helper(
                 pass
         form = RegistrationForm(postdata, realm_creation=realm_creation, realm=realm)
 
-    if realm_creation and demo_organization_creation:
-        # TODO: Remove settings.DEVELOPMENT when demo organization feature ready
-        # to be fully implemented.
-        assert settings.DEVELOPMENT
-        form["password"].field.required = False
-    elif not (password_auth_enabled(realm) and password_required):
+    if not (password_auth_enabled(realm) and password_required):
         form["password"].field.required = False
 
     if form.is_valid():
@@ -616,8 +598,7 @@ def registration_helper(
         else:
             # If the user wasn't prompted for a password when
             # completing the authentication form (because they're
-            # signing up with SSO and no password is required, or
-            # because they're creating a new demo organization), set
+            # signing up with SSO and no password is required), set
             # the password field to `None` (Which causes Django to
             # create an unusable password).
             password = None
@@ -627,7 +608,6 @@ def registration_helper(
             realm_name = form.cleaned_data["realm_name"]
             realm_type = form.cleaned_data["realm_type"]
             realm_default_language = form.cleaned_data["realm_default_language"]
-            is_demo_organization = form.cleaned_data["is_demo_organization"]
             how_realm_creator_found_zulip = RealmAuditLog.HOW_REALM_CREATOR_FOUND_ZULIP_OPTIONS[
                 form.cleaned_data["how_realm_creator_found_zulip"]
             ]
@@ -652,7 +632,6 @@ def registration_helper(
                 realm_name,
                 org_type=realm_type,
                 default_language=realm_default_language,
-                is_demo_organization=is_demo_organization,
                 prereg_realm=prereg_realm,
                 how_realm_creator_found_zulip=how_realm_creator_found_zulip,
                 how_realm_creator_found_zulip_extra_context=how_realm_creator_found_zulip_extra_context,
@@ -1358,6 +1337,169 @@ def create_realm(request: HttpRequest, confirmation_key: str | None = None) -> H
     return TemplateResponse(
         request,
         "zerver/create_realm.html",
+        context=context,
+    )
+
+
+def generate_demo_realm_subdomain() -> str:
+    available_subdomain = False
+    demo_subdomain = ""
+    while not available_subdomain:
+        letters = "".join(random.SystemRandom().choice(string.ascii_lowercase) for _ in range(4))
+        digits = "".join(random.SystemRandom().choice(string.digits) for _ in range(4))
+        demo_subdomain = f"demo-{letters}{digits}"
+        try:
+            check_subdomain_available(demo_subdomain)
+            available_subdomain = True
+        except ValidationError:  # nocoverage
+            continue
+    return demo_subdomain
+
+
+def create_demo_helper(
+    request: HttpRequest,
+    *,
+    realm_name: str,
+    realm_type: int,
+    realm_default_language: str,
+    how_realm_creator_found_zulip: str,
+    how_realm_creator_found_zulip_extra_context: str,
+    timezone: str,
+) -> UserProfile:
+    string_id = generate_demo_realm_subdomain()
+    realm = do_create_realm(
+        string_id,
+        realm_name,
+        org_type=realm_type,
+        default_language=realm_default_language,
+        is_demo_organization=True,
+        how_realm_creator_found_zulip=how_realm_creator_found_zulip,
+        how_realm_creator_found_zulip_extra_context=how_realm_creator_found_zulip_extra_context,
+    )
+    assert realm is not None
+    return do_create_user(
+        email="",
+        password=None,
+        realm=realm,
+        full_name="Your name",
+        prereg_user=None,
+        prereg_realm=None,
+        role=UserProfile.ROLE_REALM_OWNER,
+        tos_version=settings.TERMS_OF_SERVICE_VERSION,
+        timezone=timezone,
+        default_language=get_default_language_for_new_user(realm, request=request),
+        default_stream_groups=[],
+        source_profile=None,
+        realm_creation=True,
+        acting_user=None,
+        enable_marketing_emails=False,
+        email_address_visibility=RealmUserDefault.EMAIL_ADDRESS_VISIBILITY_NOBODY,
+    )
+
+
+@add_google_analytics
+@typed_endpoint
+def create_demo_organization(
+    request: HttpRequest, *, timezone: Annotated[str, timezone_or_empty_validator()] = ""
+) -> HttpResponse:
+    if not settings.OPEN_REALM_CREATION:
+        return TemplateResponse(
+            request,
+            "zerver/portico_error_pages/demo_creation_disabled.html",
+        )
+    if not settings.CORPORATE_ENABLED:
+        return TemplateResponse(
+            request,
+            "zerver/portico_error_pages/demo_creation_disabled.html",
+        )
+    # TODO: Remove settings.DEVELOPMENT when demo organization feature ready
+    # to be fully implemented.
+    if not settings.DEVELOPMENT:
+        return TemplateResponse(
+            request,
+            "zerver/portico_error_pages/demo_creation_disabled.html",
+        )
+    # When settings.OPEN_REALM_CREATION and settings.CORPORATE_ENABLED are true,
+    # anyone can create a demo organization.
+    if request.method == "POST":
+        if settings.USING_CAPTCHA and settings.ALTCHA_HMAC_KEY:
+            form: DemoRegistrationForm = CaptchaDemoRegistrationForm(
+                data=request.POST, request=request
+            )
+        else:
+            form = DemoRegistrationForm(request.POST)
+        if form.is_valid():
+            try:
+                rate_limit_request_by_ip(request, domain="demo_realm_creation_by_ip")
+            except RateLimitedError as e:
+                assert e.secs_to_freedom is not None
+                return TemplateResponse(
+                    request,
+                    "zerver/portico_error_pages/rate_limit_exceeded.html",
+                    context={"retry_after": int(e.secs_to_freedom)},
+                    status=429,
+                )
+            realm_name = form.cleaned_data["realm_name"]
+            realm_type = form.cleaned_data["realm_type"]
+            realm_default_language = form.cleaned_data["realm_default_language"]
+            how_realm_creator_found_zulip = RealmAuditLog.HOW_REALM_CREATOR_FOUND_ZULIP_OPTIONS[
+                form.cleaned_data["how_realm_creator_found_zulip"]
+            ]
+            how_realm_creator_found_zulip_extra_context = ""
+            extra_context_options = {
+                "other": "how_realm_creator_found_zulip_other_text",
+                "ad": "how_realm_creator_found_zulip_where_ad",
+                "existing_user": "how_realm_creator_found_zulip_which_organization",
+                "review_site": "how_realm_creator_found_zulip_review_site",
+                "ai_chatbot": "how_realm_creator_found_zulip_which_ai_chatbot",
+            }
+            for option, field_name in extra_context_options.items():
+                if (
+                    how_realm_creator_found_zulip
+                    == RealmAuditLog.HOW_REALM_CREATOR_FOUND_ZULIP_OPTIONS[option]
+                ):
+                    how_realm_creator_found_zulip_extra_context = form.cleaned_data[field_name]
+                    break
+            user_profile = create_demo_helper(
+                request,
+                realm_name=realm_name,
+                realm_type=realm_type,
+                realm_default_language=realm_default_language,
+                how_realm_creator_found_zulip=how_realm_creator_found_zulip,
+                how_realm_creator_found_zulip_extra_context=how_realm_creator_found_zulip_extra_context,
+                timezone=timezone,
+            )
+            # Because for realm creation, registration happens on the
+            # root domain, we need to log them into the subdomain for
+            # their new demo organization.
+            return redirect_and_log_into_subdomain(
+                ExternalAuthResult(user_profile=user_profile, data_dict={"is_realm_creation": True})
+            )
+    else:
+        default_language_code = get_browser_language_code(request)
+        if default_language_code is None:
+            default_language_code = "en"
+
+        initial_data = {
+            "realm_default_language": default_language_code,
+        }
+        if settings.USING_CAPTCHA and settings.ALTCHA_HMAC_KEY:
+            form = CaptchaDemoRegistrationForm(request=request, initial=initial_data)
+        else:
+            form = DemoRegistrationForm(initial=initial_data)
+
+    context = get_realm_create_form_context()
+    context.update(
+        {
+            "has_captcha": settings.USING_CAPTCHA,
+            "form": form,
+            "current_url": request.get_full_path,
+            "how_realm_creator_found_zulip_options": RealmAuditLog.HOW_REALM_CREATOR_FOUND_ZULIP_OPTIONS.items(),
+        }
+    )
+    return TemplateResponse(
+        request,
+        "zerver/create_demo_realm.html",
         context=context,
     )
 
