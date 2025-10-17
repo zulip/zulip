@@ -1163,9 +1163,13 @@ div.overlay .flex.overlay-content > .overlay-container,
 .setting-disabled-option {
     color: hsl(38deg 46% 54%);
 
+    .setting-disabled-option-text,
     .setting-disabled-option-icon {
-        /* Values set to match text alignment in stream dropdown. */
-        padding: 0 5px 0 1px;
+        color: hsl(38deg 46% 54%);
+    }
+
+    .setting-disabled-option-icon {
+        align-self: center;
     }
 }
 
