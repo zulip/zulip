@@ -47,9 +47,8 @@ When we discover a security issue in Zulip, we publish a security and
 bug fix release, transparently documenting the issue using the
 industry-standard [CVE advisory process](https://cve.mitre.org/).
 
-When new security releases are published, we simultaneously publish
-the fixes to the `main` and stable release branches, so
-that anyone using those branches can immediately upgrade as well.
+When new security releases are published, we simultaneously publish the fixes to
+the `main` branch and the release branch for the current major release series.
 
 See also our [security overview][security-overview], and our [guide on securing
 your Zulip server][securing-your-zulip-server].
