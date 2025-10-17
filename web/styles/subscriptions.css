@@ -646,16 +646,53 @@ h4.user_group_setting_subsection_title {
 .group_name_search_section {
     padding: 8px 10px;
     display: grid;
+    border-bottom: 1px solid var(--color-border-modal-bar);
+}
+
+.stream_name_search_section {
+    grid-template:
+        "folder-filter search-input clear-search dropdown-widget" auto / auto minmax(
+            0,
+            1fr
+        )
+        30px;
+}
+
+.group_name_search_section {
     grid-template:
         "search-input clear-search dropdown-widget" auto / minmax(0, 1fr)
         30px;
-    border-bottom: 1px solid var(--color-border-modal-bar);
 }
 
 #stream_settings_filter_widget {
     margin-left: 10px;
     gap: 3px;
     width: auto;
+}
+
+#clear_search_stream_name,
+#clear_search_group_name {
+    grid-area: clear-search;
+}
+
+#folder_filter_container {
+    grid-area: folder-filter;
+    display: flex;
+}
+
+#folder_filter_button {
+    font-size: calc(
+        1.5625 * var(--base-font-size-px)
+    ); /* 25px at 16px font size */
+    padding: 0;
+    height: var(--folder-filter-dropdown-widget-button-height);
+    /* To align the search input with privacy icon box in the stream row,
+    margin is set by subtracting the button width (which is equal to
+    its height) from total width of the checkbox container in stream row. */
+    margin-right: calc(
+        2.3125 * var(--base-font-size-px) -
+            var(--folder-filter-dropdown-widget-button-height)
+    );
 }
 
 .stream_settings_filter_container.hide_filter {

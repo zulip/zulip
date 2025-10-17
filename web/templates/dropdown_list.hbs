@@ -35,9 +35,17 @@
                         <i class="setting-disabled-option-icon fa fa-ban" aria-hidden="true"></i>
                     {{/if}}
                     {{#if show_disabled_option_name}}
-                        <span class="dropdown-list-text-neutral">{{name}}</span>
+                        {{#if bold_current_selection}}
+                            <span class="dropdown-list-text-selected">{{name}}</span>
+                        {{else}}
+                            <span class="dropdown-list-text-neutral">{{name}}</span>
+                        {{/if}}
                     {{else}}
-                        <span class="dropdown-list-text-neutral">{{t "Disable" }}</span>
+                        {{#if bold_current_selection}}
+                            <span class="dropdown-list-text-selected">{{t "Disable" }}</span>
+                        {{else}}
+                            <span class="dropdown-list-text-neutral">{{t "Disable" }}</span>
+                        {{/if}}
                     {{/if}}
                 </span>
             {{else if (eq unique_id -2)}}
