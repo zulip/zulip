@@ -117,7 +117,7 @@ run_test("get_unread_ids", () => {
     assert.equal(unread_ids, undefined);
     assert_unread_info({flavor: "cannot_compute"});
 
-    terms = [{operator: "bogus_operator", operand: "me@example.com"}];
+    terms = [{operator: "dm", operand: "123123"}];
     set_filter(terms);
     unread_ids = candidate_ids();
     assert.deepEqual(unread_ids, []);
@@ -270,7 +270,7 @@ run_test("defensive code", ({override_rewire}) => {
     // couldn't compute the unread message ids, but that
     // invariant is hard to future-proof.
     override_rewire(narrow_state, "_possible_unread_message_ids", () => undefined);
-    const terms = [{operator: "some-unhandled-case", operand: "whatever"}];
+    const terms = [{operator: "dm", operand: "12344"}];
     set_filter(terms);
     assert_unread_info({
         flavor: "cannot_compute",

@@ -369,7 +369,7 @@ test("left_sidebar_search", ({override}) => {
 
     function setup_search_around_stream(stream) {
         message_lists.set_current(
-            make_message_list([{operator: "stream", operand: stream.stream_id}]),
+            make_message_list([{operator: "stream", operand: stream.stream_id.toString()}]),
         );
         const history = stream_topic_history.find_or_create(stream.stream_id);
         history.add_or_update("an important topic", 1);

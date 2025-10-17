@@ -26,7 +26,7 @@ export type UserPillItem = {
 
 type TermPattern = Omit<NarrowTerm, "operand"> & Partial<Pick<NarrowTerm, "operand">>;
 
-const channel_incompatible_patterns = [
+const channel_incompatible_patterns: TermPattern[] = [
     {operator: "is", operand: "dm"},
     {operator: "channel"},
     {operator: "dm-including"},
@@ -208,7 +208,7 @@ function get_channel_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggest
         const description_html = verb + prefix + Handlebars.Utils.escapeExpression(channel_name);
         const channel = stream_data.get_sub_by_name(channel_name);
         assert(channel !== undefined);
-        const term = {
+        const term: NarrowTerm = {
             operator: "channel",
             operand: channel.stream_id.toString(),
             negated: last.negated,
@@ -310,7 +310,7 @@ function get_group_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggestio
     const prefix = Filter.operator_to_prefix("dm", negated);
 
     return persons.map((person) => {
-        const term = {
+        const term: NarrowTerm = {
             operator: "dm",
             operand: all_but_last_part + "," + person.email,
             negated,
@@ -361,7 +361,7 @@ function get_person_suggestions(
     people_getter: () => User[],
     last: NarrowTerm,
     terms: NarrowTerm[],
-    autocomplete_operator: string,
+    autocomplete_operator: NarrowTerm["operator"],
 ): Suggestion[] {
     if ((last.operator === "is" && last.operand === "dm") || last.operator === "pm-with") {
         // Interpret "is:dm" or "pm-with:" operator as equivalent to "dm:".
@@ -551,7 +551,7 @@ function get_topic_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggestio
     topics.sort();
 
     return topics.map((topic) => {
-        const topic_term = {operator: "topic", operand: topic, negated};
+        const topic_term: NarrowTerm = {operator: "topic", operand: topic, negated};
         const terms = [...suggest_terms, topic_term];
         return format_as_suggestion(terms);
     });
@@ -793,7 +793,7 @@ function get_operator_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Sugges
         last_operand = last_operand.slice(1);
     }
 
-    let choices;
+    let choices: NarrowTerm["operator"][];
 
     if (last.operator === "") {
         choices = ["channels", "channel", "streams", "stream"];
@@ -1047,7 +1047,7 @@ export function get_search_result(
     const people_getter = make_people_getter(last);
 
     function get_people(
-        flavor: string,
+        flavor: NarrowTerm["operator"],
     ): (last: NarrowTerm, base_terms: NarrowTerm[]) => Suggestion[] {
         return function (last: NarrowTerm, base_terms: NarrowTerm[]): Suggestion[] {
             return get_person_suggestions(people_getter, last, base_terms, flavor);
