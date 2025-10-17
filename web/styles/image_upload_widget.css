@@ -4,10 +4,22 @@
     border-radius: 5px;
     box-shadow: 0 0 10px hsl(0deg 0% 0% / 10%);
     overflow: hidden;
+    display: inline-flex;
+    flex-direction: column;
 
     .image-block {
         background-size: contain;
         height: 100%;
+    }
+
+    .image_upload_content {
+        position: relative;
+        display: inline-block;
+    }
+
+    .image_file_input_error {
+        position: static;
+        margin-top: 2px;
     }
 
     .image-hover-background {
