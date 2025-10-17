@@ -22,7 +22,7 @@ from zerver.models import UserProfile
 MISSING_FIELDS_NOTIFICATION = """
 :danger: A New Relic [incident]({url}) updated
 
-**Warning**: Unable to use the default notification format because at least one expected field was missing from the incident payload. See [New Relic integration documentation](/integrations/doc/newrelic).
+**Warning**: Unable to use the default notification format because at least one expected field was missing from the incident payload. See [New Relic integration documentation](/integrations/newrelic).
 
 **Missing fields**: {formatted_missing_fields}
 """

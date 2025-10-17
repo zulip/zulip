@@ -7,8 +7,8 @@ guide should help you find the API you need:
   [already has a native integration](/integrations/).
 * Next, check if [Zapier](https://zapier.com/apps) or
   [IFTTT](https://ifttt.com/search) has an integration.
-  [Zulip's Zapier integration](/integrations/doc/zapier) and
-  [Zulip's IFTTT integration](/integrations/doc/ifttt) often allow
+  [Zulip's Zapier integration](/integrations/zapier) and
+  [Zulip's IFTTT integration](/integrations/ifttt) often allow
   integrating a new service with Zulip without writing any code.
 * If you'd like to send content into Zulip, you can
   [write a native incoming webhook integration](/api/incoming-webhooks-overview)
