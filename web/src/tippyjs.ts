@@ -23,7 +23,11 @@ import * as util from "./util.ts";
 // For tooltips without data-tippy-content, we use the HTML content of
 // a <template> whose id is given by data-tooltip-template-id.
 export function get_tooltip_content(reference: Element): string | Element | DocumentFragment {
-    if (reference instanceof HTMLElement && reference.dataset.tooltipTemplateId !== undefined) {
+    if (
+        reference instanceof HTMLElement &&
+        reference.dataset.tooltipTemplateId !== undefined &&
+        reference.dataset.tooltipTemplateId !== ""
+    ) {
         const template = document.querySelector<HTMLTemplateElement>(
             `template#${CSS.escape(reference.dataset.tooltipTemplateId)}`,
         );
