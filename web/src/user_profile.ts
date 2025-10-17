@@ -638,11 +638,11 @@ export function show_user_profile(user: User, default_tab_key = "profile-tab"): 
         user_group_picker_pill.get_user_groups_allowed_to_add_members().length > 0 &&
         people.is_person_active(user.user_id);
     // We currently have the main UI for editing your own profile in
-    // settings, so can_manage_profile is artificially false for those.
+    // settings for non-admins, so can_manage_profile is artificially
+    // false for those.
     const can_manage_profile =
-        (people.can_admin_user(user) || current_user.is_admin) &&
-        !user.is_system_bot &&
-        !people.is_my_user_id(user.user_id);
+        (current_user.is_admin || (user.is_bot && people.can_admin_user(user))) &&
+        !user.is_system_bot;
     const args: Record<string, unknown> = {
         can_manage_profile,
         date_joined: timerender.get_localized_date_or_time_for_format(
@@ -750,7 +750,9 @@ export function show_user_profile(user: User, default_tab_key = "profile-tab"): 
     if (can_manage_profile) {
         const manage_profile_label = user.is_bot
             ? $t({defaultMessage: "Manage bot"})
-            : $t({defaultMessage: "Manage user"});
+            : people.is_my_user_id(user.user_id)
+              ? $t({defaultMessage: "Edit profile"})
+              : $t({defaultMessage: "Manage user"});
         const manage_profile_tab = {
             label: manage_profile_label,
             key: "manage-profile-tab",
@@ -1110,6 +1112,35 @@ function toggle_submit_button($edit_form: JQuery): void {
     $submit_button.prop("disabled", false);
 }
 
+export function disable_user_role_dropdown_if_needed(user: User): void {
+    if (user.is_owner && people.is_current_user_only_owner()) {
+        ui_util.disable_element_and_add_tooltip(
+            $("#user-role-select"),
+            "Because you are the only organization owner, you cannot change your role.",
+        );
+        return;
+    }
+
+    if (user.is_owner && !current_user.is_owner) {
+        $("#user-role-select").prop("disabled", true);
+    }
+}
+
+function maybe_redirect_to_profile_panel(user_id: number, role: number): void {
+    // Redirect to profile panel if an admin changes their own role so
+    // that they are no longer an admin.
+    if (current_user.user_id !== user_id) {
+        return;
+    }
+
+    if (
+        role !== settings_config.user_role_values.owner.code &&
+        role !== settings_config.user_role_values.admin.code
+    ) {
+        browser_history.go_to_location("#settings/profile");
+    }
+}
+
 export function show_edit_user_info_modal(user_id: number, $container: JQuery): void {
     const person = people.maybe_get_user_by_id(user_id);
     const is_active = people.is_person_active(user_id);
@@ -1125,7 +1156,6 @@ export function show_edit_user_info_modal(user_id: number, $container: JQuery): 
         email: person.delivery_email,
         full_name: person.full_name,
         user_role_values: settings_config.user_role_values,
-        disable_role_dropdown: person.is_owner && !current_user.is_owner,
         is_active,
         hide_deactivate_button,
         max_user_name_length: people.MAX_USER_NAME_LENGTH,
@@ -1141,6 +1171,7 @@ export function show_edit_user_info_modal(user_id: number, $container: JQuery): 
             )
             .hide();
     }
+    disable_user_role_dropdown_if_needed(person);
 
     const custom_profile_field_form_selector = "#edit-user-form .custom-profile-field-form";
     $(custom_profile_field_form_selector).empty();
@@ -1228,6 +1259,7 @@ export function show_edit_user_info_modal(user_id: number, $container: JQuery): 
                 $("#edit-user-form-error").hide();
                 hide_button_spinner($submit_button);
                 original_values = get_current_values($("#edit-user-form"));
+                maybe_redirect_to_profile_panel(user_id, role);
                 toggle_submit_button($("#edit-user-form"));
                 ui_report.success(
                     $t_html({defaultMessage: "Saved"}),
@@ -1447,17 +1479,13 @@ export function initialize(): void {
         e.preventDefault();
     });
 
-    $("body").on(
-        "click",
-        "#user-profile-modal #name .user-profile-manage-others-edit-button",
-        (e) => {
-            show_manage_user_tab("manage-profile-tab");
-            e.stopPropagation();
-            e.preventDefault();
-        },
-    );
+    $("body").on("click", "#user-profile-modal #name .user-profile-update-user-tab-button", (e) => {
+        show_manage_user_tab("manage-profile-tab");
+        e.stopPropagation();
+        e.preventDefault();
+    });
 
-    $("body").on("click", "#user-profile-modal #name .user-profile-manage-own-edit-button", () => {
+    $("body").on("click", "#user-profile-modal #name .user-profile-profile-settings-button", () => {
         browser_history.go_to_location("#settings/profile");
         hide_user_profile();
     });

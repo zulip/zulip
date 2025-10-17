@@ -93,6 +93,15 @@ export function update_email_change_display(): void {
     }
 }
 
+export function update_role_text(): void {
+    if ($("#user_role_details").length === 0) {
+        return;
+    }
+
+    const role_text = people.get_user_type(current_user.user_id)!;
+    $("#user_role_details .user-details-desc").text(role_text);
+}
+
 function display_avatar_upload_complete(): void {
     $("#user-avatar-upload-widget .upload-spinner-background").css({visibility: "hidden"});
     $("#user-avatar-upload-widget .image-upload-text").show();
@@ -236,6 +245,7 @@ export function add_custom_profile_fields_to_settings(): void {
     custom_profile_fields_ui.initialize_custom_date_type_fields(
         element_id,
         people.my_current_user_id(),
+        true,
     );
     custom_profile_fields_ui.initialize_custom_pronouns_type_fields(element_id);
 }
