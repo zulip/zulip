@@ -1119,7 +1119,7 @@ EMOJI_NAME_MAPS: dict[str, dict[str, Any]] = {
     "1f52c": {"canonical_name": "science", "aliases": ["microscope"]},
     "1f52d": {"canonical_name": "telescope", "aliases": []},
     "1f52e": {"canonical_name": "crystal_ball", "aliases": ["oracle", "future", "fortune_telling"]},
-    "1f52f": {"canonical_name": "dotted_six_pointed_star", "aliases": ["jewish", "six_pointed"]},
+    "1f52f": {"canonical_name": "dotted_six_pointed_star", "aliases": ["six_pointed"]},
     "1f530": {"canonical_name": "beginner", "aliases": []},
     "1f531": {"canonical_name": "trident", "aliases": []},
     "1f532": {"canonical_name": "white_and_black_square", "aliases": []},
@@ -2191,7 +2191,7 @@ EMOJI_NAME_MAPS: dict[str, dict[str, Any]] = {
     },
     "1fae5": {
         "canonical_name": "dotted_line_face",
-        "aliases": ["depressed", "introvert", "invisible", "line"],
+        "aliases": ["depressed", "dotted", "introvert", "invisible", "line"],
     },
     "1fae6": {
         "canonical_name": "biting_lip",
@@ -2371,7 +2371,7 @@ EMOJI_NAME_MAPS: dict[str, dict[str, Any]] = {
     "2714": {"canonical_name": "check_mark", "aliases": []},
     "2716": {"canonical_name": "multiplication", "aliases": ["multiply"]},
     "271d": {"canonical_name": "cross", "aliases": ["christianity"]},
-    "2721": {"canonical_name": "star_of_david", "aliases": ["judaism"]},
+    "2721": {"canonical_name": "star_of_david", "aliases": ["judaism", "jewish"]},
     "2728": {"canonical_name": "sparkles", "aliases": ["glamour"]},
     "2733": {"canonical_name": "eight_spoked_asterisk", "aliases": []},
     "2734": {"canonical_name": "eight_pointed_star", "aliases": []},
