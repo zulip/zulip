@@ -31,7 +31,11 @@ from confirmation.models import (
     get_object_from_key,
     render_confirmation_key_error,
 )
-from zerver.actions.create_realm import do_create_realm
+from zerver.actions.create_realm import (
+    DEFAULT_EMAIL_ADDRESS_VISIBILITY_FOR_REALM,
+    do_create_realm,
+    get_email_address_visibility_default,
+)
 from zerver.actions.create_user import do_activate_mirror_dummy_user, do_create_user
 from zerver.actions.default_streams import lookup_default_stream_groups
 from zerver.actions.user_settings import (
@@ -271,6 +275,9 @@ def registration_helper(
     source_realm_id: Annotated[NonNegativeInt | None, non_negative_int_or_none_validator()] = None,
     start_slack_import: Json[bool] = False,
     timezone: Annotated[str, timezone_or_empty_validator()] = "",
+    email_address_visibility: Annotated[
+        Json[int], check_int_in_validator(RealmUserDefault.EMAIL_ADDRESS_VISIBILITY_TYPES)
+    ] = DEFAULT_EMAIL_ADDRESS_VISIBILITY_FOR_REALM,
 ) -> HttpResponse:
     try:
         prereg_object, realm_creation = check_prereg_key(request, key)
@@ -326,6 +333,10 @@ def registration_helper(
             assert prereg_realm.data_import_metadata.get("uploaded_import_file_name") is not None
             assert prereg_realm.data_import_metadata.get("is_import_work_queued") is not True
             assert prereg_realm.created_realm is None
+
+            prereg_realm.data_import_metadata["email_address_visibility"] = email_address_visibility
+            prereg_realm.save(update_fields=["data_import_metadata"])
+
             queue_json_publish_rollback_unsafe(
                 "deferred_work",
                 {
@@ -358,6 +369,10 @@ def registration_helper(
             context: dict[str, Any] = {
                 "key": key,
                 "max_file_size": settings.MAX_WEB_DATA_IMPORT_SIZE_MB,
+                "email_address_visibility_options": RealmUserDefault.EMAIL_ADDRESS_VISIBILITY_ID_TO_NAME_MAP.items(),
+                "email_address_visibility_default": get_email_address_visibility_default(
+                    prereg_realm.org_type
+                ),
             }
 
             saved_slack_access_token = prereg_realm.data_import_metadata.get("slack_access_token")
