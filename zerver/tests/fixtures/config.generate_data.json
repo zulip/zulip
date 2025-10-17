@@ -45,8 +45,8 @@
       ],
 
       "images": [
-            "[whale](/static/images/features/whale.png)\n",
-            "[twitter](/static/images/features/twitter.png)\n",
+            "[whale](/static/images/landing-page/features/mock-conversation/whale.png)\n",
+            "[twitter](/static/images/landing-page/features/mock-conversation/twitter.png)\n",
             "[topics](/static/images/story-tutorial/zulip-topic.png)\n",
             "[On_it!](/static/images/story-tutorial/zulip-compose.png)\n",
             "[streams](/static/images/story-tutorial/zulip-streams.png)\n",
