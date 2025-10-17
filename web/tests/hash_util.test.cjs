@@ -99,18 +99,18 @@ run_test("test_is_same_server_message_link", () => {
     }
 });
 
-run_test("build_reload_url", () => {
+run_test("get_reload_hash", () => {
     window.location.hash = "#settings/profile";
-    assert.equal(hash_util.build_reload_url(), "+oldhash=settings%2Fprofile");
+    assert.equal(hash_util.get_reload_hash(), "settings/profile");
 
     window.location.hash = "#test";
-    assert.equal(hash_util.build_reload_url(), "+oldhash=test");
+    assert.equal(hash_util.get_reload_hash(), "test");
 
     window.location.hash = "#";
-    assert.equal(hash_util.build_reload_url(), "+oldhash=");
+    assert.equal(hash_util.get_reload_hash(), "");
 
     window.location.hash = "";
-    assert.equal(hash_util.build_reload_url(), "+oldhash=");
+    assert.equal(hash_util.get_reload_hash(), "");
 });
 
 run_test("test is_editing_stream", () => {
