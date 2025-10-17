@@ -53,28 +53,28 @@ class zulip::common {
   $versions = {
     # https://github.com/cactus/go-camo/releases
     'go-camo' => {
-      'version'   => '2.6.3',
-      'goversion' => '1242',
+      'version'   => '2.7.1',
+      'goversion' => '1252',
       'sha256'    => {
-        'amd64'   => '8ac2122a822366ba4c628fcd99d53e73ac0292456a4cf53548a711ca5500b6d3',
-        'aarch64' => 'a391d1686c604f7f930ac8d31fb3265a6f1841aab8b7ee426391f1bbf1617b15',
+        'amd64'   => 'dd90f226d9305fcea4a91e90710615ed20b44339e3c4f4425356c80c3203ed8a',
+        'aarch64' => 'a7f380eca870e0eb26774592271df9d8f2d325f8c45fec5cb989b5c3ef23135a',
       },
     },
 
     # https://go.dev/dl/
     'golang' => {
-      'version' => '1.24.4',
+      'version' => '1.25.3',
       'sha256'  => {
-        'amd64'   => '77e5da33bb72aeaef1ba4418b6fe511bc4d041873cbf82e5aa6318740df98717',
-        'aarch64' => 'd5501ee5aca0f258d5fe9bfaed401958445014495dc115f202d43d5210b45241',
+        'amd64'   => '0335f314b6e7bfe08c3d0cfaa7c19db961b7b99fb20be62b0a826c992ad14e0f',
+        'aarch64' => '1d42ebc84999b5e2069f5e31b67d6fc5d67308adad3e178d5a2ee2c9ff2001f5',
       },
     },
 
     # https://github.com/stripe/smokescreen/tags
     'smokescreen-src' => {
-      'version' => '1b618edf4d3dda409ab7a00cdf3f202e143b5289',
+      'version' => '3ec99c08f3a42840e6a5c9a47d0f85c6d591f52c',
       # Source code, so arch-invariant sha256
-      'sha256'  => '19ffe07eaab321b3ce33b64d893a09ffc9cb520c8672458b761d0a76147079e3',
+      'sha256'  => '32e18f5bb04001079a05996088ea33600bedd25b6abd0caf636049677a9e94a5',
     },
 
     # https://github.com/tus/tusd/releases
@@ -100,28 +100,28 @@ class zulip::common {
 
     # https://docs.aws.amazon.com/rolesanywhere/latest/userguide/credential-helper.html
     'aws_signing_helper' => {
-      'version' => '1.7.0',
+      'version' => '1.7.1',
       'sha256'  => {
-        'amd64'   => 'e932f029b73f97523c1dea2e78e9543d9e2753c387c4c46e77be8c1d9424db0f',
-        'aarch64' => '800fc208b74cdb64b8c7270c41aa0c9d2f9bf5bba498539513acb30f8eb8f164',
+        'amd64'   => '807f911124a7192bba23c6e8f37f6cb41e9defe4722fbeaf471e2c5951c6229c',
+        'aarch64' => '5413ea1c86c1747254fc14450f44013ccec32901fb2b70f9105f5679dd6eaa5d',
       },
     },
 
     # https://release-registry.services.sentry.io/apps/sentry-cli/latest
     'sentry-cli' => {
-      'version' => '2.46.0',
+      'version' => '2.56.1',
       'sha256'  => {
-        'amd64'   => 'a55b96a0d5391c5206c2bc028e52dd9797dc3646556291cca09d00a19707f85e',
-        'aarch64' => '00b292f4edc9c13b079123b574abe73c012b7357426d34bbbf0bd0a5ab59a491',
+        'amd64'   => 'be0bcbf4740c95330cf2d735769f31640d69fd297a2b74ad0cd9ed383814cafa',
+        'aarch64' => 'cc58bca49593cd6fcda4d934e1bf68f3bed9194156ba122cdb2e4cfd79a23878',
       },
     },
 
     # https://grafana.com/grafana/download?edition=oss
     'grafana' => {
-      'version' => '12.0.2',
+      'version' => '12.2.0',
       'sha256'  => {
-        'amd64'   => 'c1755b4da918edfd298d5c8d5f1ffce35982ad10e1640ec356570cfb8c34b3e8',
-        'aarch64' => 'bc0b186458cc91e2f96a06ecff2b3b4033b1a6ffd2449817e2a430a0b4ae4f12',
+        'amd64'   => 'c4f53551ed4887c792caeb9d02fa0c1a36e3db9ee8bdda32b1ced810cb135a93',
+        'aarch64' => 'ef84a75b6888e4674e3d2a21ae586cda61999ec202298e855c5de71fd242eb35',
       },
     },
 
@@ -145,17 +145,17 @@ class zulip::common {
 
     # https://github.com/prometheus-community/postgres_exporter/tags
     'postgres_exporter' => {
-      'version' => '0.17.1',
+      'version' => '0.18.1',
       'sha256'  => {
-        'amd64'   => '6da7d2edafd69ecceb08addec876786fa609849f6d5f903987c0d61c3fc89506',
-        'aarch64' => '405af4e838a3d094d575e5aaeac43bd0a1818aaf2c840a3c8fc2c6fcc77218dc',
+        'amd64'   => '1630965540d49a4907ad181cef5696306d7a481f87f43978538997e85d357272',
+        'aarch64' => '81c22dc2b6dcc58e9e2b5c0e557301dbf0ca0812ee3113d31984c1a37811d1cc',
       },
     },
 
     # https://github.com/prometheus-community/postgres_exporter/pull/843
     'postgres_exporter-src' => {
-      'version' => 'a90028d313e914d0736c94bb896c06818afcefb1',
-      'sha256'  => 'b52909bda1fc60bcdde1dd800e4d088a7a5027ecafa152e034d30e82329dba41',
+      'version' => '8067b51a82bba267497d64b8708e141aa493450c',
+      'sha256'  => '9b74d48019a46fafb88948c8209fa713ccd8d1c34a0d935593ddb301656f0871',
     },
 
     # https://github.com/ncabatoff/process-exporter/releases
@@ -169,19 +169,19 @@ class zulip::common {
 
     # https://prometheus.io/download/#prometheus
     'prometheus' => {
-      'version' => '3.4.1',
+      'version' => '3.7.1',
       'sha256'  => {
-        'amd64'   => '09203151c132f36b004615de1a3dea22117ad17e6d7a59962e34f3abf328f312',
-        'aarch64' => '2a85be1dff46238c0d799674e856c8629c8526168dd26c3de2cecfbfc6f9a0a2',
+        'amd64'   => 'a2e8a89c09b14b2277e6151e87fc8ed18858486cbf89372656d71fcd666b51da',
+        'aarch64' => '7ede3f3f0541b9bfd2ccca9cef57af80554f131b8e7af8900896c6e49ed2d4ef',
       },
     },
 
     # https://github.com/oliver006/redis_exporter/releases
     'redis_exporter' => {
-      'version' => '1.74.0',
+      'version' => '1.79.0',
       'sha256'  => {
-        'amd64'   => '481830d1a238cadfb84dacef9381012c7b2aa1d400baa9bc551995b8839f55a3',
-        'aarch64' => 'a864fed00d83c4f43257738abd0cd09343b075591eae2ee43a573e0c9693c36c',
+        'amd64'   => 'cd584b0ec12dfb539c5df0c9cac9ca277f4383022576182e9ecb1df8c45642f0',
+        'aarch64' => '278becb6e7343577846d76d7250a6c84bd18efb9fe893cf4f3d5ee9534b39496',
       },
     },
 
@@ -196,10 +196,10 @@ class zulip::common {
 
     # https://vector.dev/download/
     'vector' => {
-      'version' => '0.47.0',
+      'version' => '0.50.0',
       'sha256'  => {
-        'amd64'   => '478c1c85a0279e9f05a4253b518c8e93b6e2154e36e8cb3d8d77c2e496316682',
-        'aarch64' => '614ff0481a901ece8634e734c94c318bf63fca34d00d0605e456dbfa3b5f80b8',
+        'amd64'   => '951ceb14f2382c1438696552745221c5584d6895f9aa2b0e12ff0e30271d4b0e',
+        'aarch64' => 'ed73245a88638962093b9b5eb92ba3e17681a7b641e26eac674d07b137a605b8',
       },
     },
   }
