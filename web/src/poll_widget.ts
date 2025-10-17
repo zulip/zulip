@@ -1,4 +1,5 @@
 import $ from "jquery";
+import * as z from "zod/mini";
 
 import {PollData} from "../shared/src/poll_data.ts";
 import type {
@@ -15,13 +16,16 @@ import {$t} from "./i18n.ts";
 import * as keydown_util from "./keydown_util.ts";
 import type {Message} from "./message_store.ts";
 import * as people from "./people.ts";
+import type {WidgetExtraData} from "./widgetize.ts";
 
 export type Event = {sender_id: number; data: InboundData};
 
-export type PollWidgetExtraData = {
-    question?: string | undefined;
-    options?: string[] | undefined;
-};
+export const poll_widget_extra_data_schema = z.object({
+    question: z.optional(z.string()),
+    options: z.optional(z.array(z.string())),
+});
+
+export type PollWidgetExtraData = z.infer<typeof poll_widget_extra_data_schema>;
 
 export type PollWidgetOutboundData =
     | NewOptionOutboundData
@@ -31,21 +35,23 @@ export type PollWidgetOutboundData =
 export function activate({
     $elem,
     callback,
-    extra_data: {question = "", options = []} = {},
+    extra_data,
     message,
 }: {
     $elem: JQuery;
     callback: (data: PollWidgetOutboundData | undefined) => void;
-    extra_data: PollWidgetExtraData;
+    extra_data: WidgetExtraData;
     message: Message;
 }): (events: Event[]) => void {
     const is_my_poll = people.is_my_user_id(message.sender_id);
+    const parsed_extra_data = poll_widget_extra_data_schema.parse(extra_data);
+
     const poll_data = new PollData({
         message_sender_id: message.sender_id,
         current_user_id: people.my_current_user_id(),
         is_my_poll,
-        question,
-        options,
+        question: parsed_extra_data.question ?? "",
+        options: parsed_extra_data.options ?? [],
         comma_separated_names: people.get_full_names_for_poll_option,
         report_error_function: blueslip.warn,
     });
