@@ -24,6 +24,8 @@ import * as dialog_widget from "./dialog_widget.ts";
 import * as dropdown_widget from "./dropdown_widget.ts";
 import {$t, $t_html} from "./i18n.ts";
 import * as keydown_util from "./keydown_util.ts";
+import * as message_fetch from "./message_fetch.ts";
+import * as message_lists from "./message_lists.ts";
 import * as narrow_state from "./narrow_state.ts";
 import type {User} from "./people.ts";
 import * as people from "./people.ts";
@@ -523,6 +525,38 @@ export function initialize(): void {
         }
 
         stream_settings_components.sub_or_unsub(sub);
+    });
+
+    $("#main_div").on("click", ".load-updates-button", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        if (message_lists.current !== undefined) {
+            message_fetch.maybe_load_newer_messages({
+                msg_list: message_lists.current,
+            });
+        }
+    });
+
+    $("#main_div").on("click", ".subscribe-and-load-button", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const sub = narrow_state.stream_sub();
+
+        if (sub === undefined) {
+            return;
+        }
+
+        stream_settings_components.ajaxSubscribe(sub.name, sub.color);
+
+        setTimeout(() => {
+            if (message_lists.current !== undefined) {
+                message_fetch.maybe_load_newer_messages({
+                    msg_list: message_lists.current,
+                });
+            }
+        }, 500);
     });
 
     $("#channels_overlay_container").on(
