@@ -369,7 +369,7 @@ def do_create_realm(
         from corporate.lib.stripe import RealmBillingSession
 
         billing_session = RealmBillingSession(user=None, realm=realm)
-        billing_session.send_realm_created_internal_admin_message()
+        billing_session.send_realm_created_internal_admin_message(is_demo_organization)
 
     setup_realm_internal_bots(realm)
     return realm
