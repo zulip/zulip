@@ -52,7 +52,10 @@ from zerver.lib.exceptions import (
     OrganizationOwnerRequiredError,
 )
 from zerver.lib.integrations import EMBEDDED_BOTS
-from zerver.lib.rate_limiter import rate_limit_spectator_attachment_access_by_file
+from zerver.lib.rate_limiter import (
+    rate_limit_spectator_attachment_access_by_file,
+    should_rate_limit,
+)
 from zerver.lib.response import json_success
 from zerver.lib.send_email import FromAddress, send_email
 from zerver.lib.streams import access_stream_by_id, access_stream_by_name, subscribed_to_stream
@@ -353,7 +356,7 @@ def avatar_by_id(
         if not realm.allow_web_public_streams_access():
             raise MissingAuthenticationError
 
-        if settings.RATE_LIMITING:
+        if should_rate_limit(request):
             unique_avatar_key = f"{realm.id}/{user_id}/{medium}"
             rate_limit_spectator_attachment_access_by_file(unique_avatar_key)
     else:
