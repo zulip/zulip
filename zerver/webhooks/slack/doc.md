@@ -57,11 +57,12 @@ If you are looking to quickly move your Slack integrations to Zulip, check out
         See the [required bot token scopes](#required-bot-token-scopes)
         section for details about these scopes.
 
-1. Scroll to the **OAuth Tokens for Your Workspace** section in the
-   same menu, and click **Install to Workspace**.
+1. Scroll to the **OAuth Tokens** section in the same menu, and click **Install
+   to Workspace**.  Grant the app permission to access your workspace
+   by clicking **Allow** when prompted.
 
-1. Copy the Slack **Bot User OAuth Token**, and add it to the end of your
-   **integration URL** as `&slack_app_token=BOT_OAUTH_TOKEN`.
+1. You will immediately see a **Bot User OAuth Token**. Copy it and add it
+   to the end of your **integration URL** as `&slack_app_token=BOT_OAUTH_TOKEN`.
 
 1. Go to the **Event Subscriptions** menu, toggle **Enable Events**, and enter
    your updated **integration URL** in the **Request URL** field.
