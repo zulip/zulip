@@ -697,6 +697,10 @@ ul.popover-group-menu-member-list {
             padding: 3em 1em;
         }
     }
+
+    .modal_text_input:read-only {
+        opacity: 0.5;
+    }
 }
 
 @media (width < $md_min) {
