@@ -1352,14 +1352,16 @@ function should_show_all_folders_collapsed_note(): boolean {
         // Some DM content is visible.
         return false;
     }
+    // Defined just for code reading clarity.
+    const has_visible_but_collapsed_dm_folder = has_visible_dm_folder;
 
     const visible_folders = [...channel_folders_dict.values()].filter(
         (folder) => folder.is_header_visible,
     );
     if (visible_folders.length === 0) {
-        // Nothing at all is visible; the empty inbox message takes
-        // precedence.
-        return false;
+        // Nothing at all is visible; unless there is a visible but collapsed
+        // DM folder, we show the empty inbox message.
+        return has_visible_but_collapsed_dm_folder;
     }
 
     // At least one uncollapsed row is visible in some folder.
