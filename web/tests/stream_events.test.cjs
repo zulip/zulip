@@ -599,24 +599,6 @@ test("mark_unsubscribed (render_title_area)", ({override}) => {
     message_lists.current = undefined;
 });
 
-test("remove_deactivated_user_from_all_streams", () => {
-    stream_data.add_sub_for_tests(dev_help);
-    const subs_stub = make_stub();
-    stream_settings_ui.update_subscribers_ui = subs_stub.f;
-
-    // assert starting state
-    assert.ok(!stream_data.is_user_loaded_and_subscribed(dev_help.stream_id, george.user_id));
-
-    // verify that deactivating user should unsubscribe user from all streams
-    peer_data.add_subscriber(dev_help.stream_id, george.user_id);
-    assert.ok(stream_data.is_user_loaded_and_subscribed(dev_help.stream_id, george.user_id));
-
-    stream_events.remove_deactivated_user_from_all_streams(george.user_id);
-
-    // verify that we issue a call to update subscriber count/list UI
-    assert.equal(subs_stub.num_calls, 1);
-});
-
 test("process_subscriber_update", ({override, override_rewire}) => {
     const subsStub = make_stub();
     stream_settings_ui.update_subscribers_ui = subsStub.f;
