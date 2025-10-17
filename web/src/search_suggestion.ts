@@ -1,6 +1,8 @@
 import Handlebars from "handlebars/runtime.js";
 import assert from "minimalistic-assert";
 
+import {RESOLVED_TOPIC_PREFIX} from "../shared/src/resolved_topic.ts";
+
 import {MAX_ITEMS} from "./bootstrap_typeahead.ts";
 import * as common from "./common.ts";
 import * as direct_message_group_data from "./direct_message_group_data.ts";
@@ -13,6 +15,7 @@ import {type NarrowTerm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import * as stream_topic_history from "./stream_topic_history.ts";
 import * as stream_topic_history_util from "./stream_topic_history_util.ts";
+import {type StreamSubscription} from "./sub_store.ts";
 import * as typeahead_helper from "./typeahead_helper.ts";
 import * as util from "./util.ts";
 
@@ -464,6 +467,13 @@ export function get_topic_suggestions_from_candidates({
     return topics;
 }
 
+function ignore_resolved_topic_prefix(topic_name: string): string {
+    if (topic_name.startsWith(RESOLVED_TOPIC_PREFIX)) {
+        return topic_name.slice(2);
+    }
+    return topic_name;
+}
+
 function get_topic_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggestion[] {
     if (
         !check_validity(last, terms, ["channel", "topic", "search"], incompatible_patterns.topic!)
@@ -477,7 +487,6 @@ function get_topic_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggestio
     let channel_id: string | undefined;
     let guess: string | undefined;
     const filter = new Filter(terms);
-    const suggest_terms: NarrowTerm[] = [];
 
     // channel:Rome -> show all Rome topics
     // channel:Rome topic: -> show all Rome topics
@@ -486,7 +495,8 @@ function get_topic_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggestio
     // channel:Rome topic:f -> show all Rome topics with a word starting in f
 
     // When narrowed to a channel:
-    //   topic: -> show all topics in current channel
+    //   topic: -> show topics from all subscribed channels with the current channel's
+    //   matching topics listed first.
     //   foo -> show all topics in current channel with words starting with foo
 
     // If somebody explicitly types search:, then we might
@@ -494,37 +504,59 @@ function get_topic_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggestio
     // minor issue, and Filter.parse() is currently lossy
     // in terms of telling us whether they provided the operator,
     // i.e. "foo" and "search:foo" both become [{operator: 'search', operand: 'foo'}].
+
+    let show_topics_from_other_streams = true;
     switch (operator) {
         case "channel":
             guess = "";
             channel_id = operand;
-            suggest_terms.push(last);
             break;
         case "topic":
         case "search":
             guess = operand;
             if (filter.has_operator("channel")) {
                 channel_id = filter.operands("channel")[0];
+                // We want to show topics that belong only to the
+                // channel mentioned in the `channel` operator, if it exists.
+                show_topics_from_other_streams = false;
             } else {
                 channel_id = narrow_state.stream_id()?.toString();
-                if (channel_id) {
-                    suggest_terms.push({operator: "channel", operand: channel_id});
-                }
             }
             break;
     }
-
-    if (!channel_id) {
+    if (!channel_id && !show_topics_from_other_streams) {
         return [];
     }
 
-    const subscription = stream_data.get_sub_by_id_string(channel_id);
-    if (!subscription) {
+    let current_channel_subscription: StreamSubscription | undefined;
+    let other_channel_subscriptions: StreamSubscription[] | undefined;
+
+    if (channel_id) {
+        current_channel_subscription = stream_data.get_sub_by_id_string(channel_id)!;
+    }
+
+    if (show_topics_from_other_streams) {
+        other_channel_subscriptions = stream_data.get_streams_for_user(
+            people.my_current_user_id(),
+        ).subscribed;
+        if (current_channel_subscription) {
+            other_channel_subscriptions = other_channel_subscriptions.filter(
+                (sub) => sub.stream_id !== current_channel_subscription.stream_id,
+            );
+        }
+    }
+
+    if (!current_channel_subscription && !other_channel_subscriptions) {
         return [];
     }
 
-    if (stream_data.can_access_topic_history(subscription)) {
-        stream_topic_history_util.get_server_history(subscription.stream_id, () => {
+    let current_channel_topics: string[] = [];
+    const other_channel_topics: string[] = [];
+    if (
+        current_channel_subscription &&
+        stream_data.can_access_topic_history(current_channel_subscription)
+    ) {
+        stream_topic_history_util.get_server_history(current_channel_subscription.stream_id, () => {
             // Fetch topic history from the server, in case we will need it.
             // Note that we won't actually use the results from the server here
             // for this particular keystroke from the user, because we want to
@@ -533,27 +565,58 @@ function get_topic_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggestio
             // this function will get more candidates from calling
             // stream_topic_history.get_recent_topic_names.
         });
+        current_channel_topics = stream_topic_history.get_recent_topic_names(
+            current_channel_subscription.stream_id,
+        );
     }
 
-    const candidate_topics = stream_topic_history.get_recent_topic_names(subscription.stream_id);
-
-    if (!candidate_topics?.length) {
-        return [];
+    if (other_channel_subscriptions) {
+        for (const other_sub of other_channel_subscriptions) {
+            other_channel_topics.push(
+                ...stream_topic_history.get_recent_topic_names(other_sub.stream_id),
+            );
+        }
     }
 
     assert(guess !== undefined);
-    const topics = get_topic_suggestions_from_candidates({candidate_topics, guess});
 
-    // Just use alphabetical order.  While recency and read/unreadness of
-    // topics do matter in some contexts, you can get that from the left sidebar,
-    // and I'm leaning toward high scannability for autocompletion.  I also don't
-    // care about case.
-    topics.sort();
+    let current_channel_topic_suggestions = get_topic_suggestions_from_candidates({
+        candidate_topics: current_channel_topics,
+        guess,
+    });
+    let other_channel_topic_suggestions = get_topic_suggestions_from_candidates({
+        candidate_topics: other_channel_topics,
+        guess,
+    });
 
+    // When the guess is non-empty, we rely on `typeaheader_helper.sorter` to give the same
+    // experience as composebox_typeahead.
+    // Else we sort in a case-insensitive fashion.
+    if (guess.length > 0) {
+        current_channel_topic_suggestions = typeahead_helper.sorter(
+            guess,
+            current_channel_topic_suggestions,
+            ignore_resolved_topic_prefix,
+        );
+        other_channel_topic_suggestions = typeahead_helper.sorter(
+            guess,
+            other_channel_topic_suggestions,
+            ignore_resolved_topic_prefix,
+        );
+    } else {
+        current_channel_topic_suggestions = current_channel_topic_suggestions.sort((a, b) =>
+            ignore_resolved_topic_prefix(a).localeCompare(ignore_resolved_topic_prefix(b)),
+        );
+        other_channel_topic_suggestions = other_channel_topic_suggestions.sort((a, b) =>
+            ignore_resolved_topic_prefix(a).localeCompare(ignore_resolved_topic_prefix(b)),
+        );
+    }
+    // We want to rank topics from the current channel higher
+    const topics = [...current_channel_topic_suggestions, ...other_channel_topic_suggestions];
     return topics.map((topic) => {
         const topic_term = {operator: "topic", operand: topic, negated};
-        const terms = [...suggest_terms, topic_term];
-        return format_as_suggestion(terms);
+        const terms = [topic_term];
+        return {search_string: Filter.unparse(terms), description_html: undefined};
     });
 }
 
