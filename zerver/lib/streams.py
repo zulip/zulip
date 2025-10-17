@@ -964,6 +964,54 @@ def access_stream_by_id_for_message(
     return (stream, sub)
 
 
+def get_content_accessible_streams_without_protected_history_queryset(
+    user_profile: UserProfile, subscribed_stream_ids: QuerySet[Subscription, int]
+) -> QuerySet[Stream]:
+    realm = user_profile.realm
+    user_recursive_group_ids = set(
+        get_recursive_membership_groups(user_profile).values_list("id", flat=True)
+    )
+
+    private_stream_query_Set = get_subscribed_streams_without_protected_history_queryset(
+        user_profile, subscribed_stream_ids
+    )
+    public_streams_query_set = get_public_streams_queryset(realm)
+    permission_accessible_private_streams = Stream.objects.filter(
+        Q(realm=realm, invite_only=True, history_public_to_subscribers=True)
+        & (
+            Q(can_add_subscribers_group_id__in=user_recursive_group_ids)
+            | Q(can_subscribe_group_id__in=user_recursive_group_ids)
+        )
+    )
+    return public_streams_query_set.union(
+        permission_accessible_private_streams, private_stream_query_Set
+    )
+
+
+def get_subscribed_streams_without_protected_history_queryset(
+    user_profile: UserProfile, subscribed_stream_ids: QuerySet[Subscription, int]
+) -> QuerySet[Stream]:
+    return Stream.objects.filter(
+        realm=user_profile.realm, id__in=subscribed_stream_ids, history_public_to_subscribers=True
+    )
+
+
+def get_subscribed_streams_with_protected_history_queryset(
+    user_profile: UserProfile, subscribed_stream_ids: QuerySet[Subscription, int]
+) -> QuerySet[Stream]:
+    return Stream.objects.filter(
+        realm=user_profile.realm, id__in=subscribed_stream_ids, history_public_to_subscribers=False
+    )
+
+
+def is_user_subscribed_to_protected_history_stream(
+    user_profile: UserProfile, subscribed_stream_ids: QuerySet[Subscription, int]
+) -> bool:
+    return Stream.objects.filter(
+        realm=user_profile.realm, id__in=subscribed_stream_ids, history_public_to_subscribers=False
+    ).exists()
+
+
 def get_public_streams_queryset(realm: Realm) -> QuerySet[Stream]:
     return Stream.objects.filter(realm=realm, invite_only=False, history_public_to_subscribers=True)
 
