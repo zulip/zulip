@@ -23,7 +23,7 @@ run_test("initialize", () => {
 
     const complete_emoji_catalog = _.sortBy(emoji_picker.complete_emoji_catalog, "name");
     assert.equal(complete_emoji_catalog.length, 11);
-    assert.equal(emoji.emojis_by_name.size, 1876);
+    assert.equal(emoji.emojis_by_name.size, 1884);
 
     let total_emoji_in_categories = 0;
 
@@ -45,15 +45,15 @@ run_test("initialize", () => {
     const popular_emoji_count = 6;
     const zulip_emoji_count = 1;
     assert_emoji_category(complete_emoji_catalog.pop(), "fa-car", 195);
-    assert_emoji_category(complete_emoji_catalog.pop(), "fa-hashtag", 223);
-    assert_emoji_category(complete_emoji_catalog.pop(), "fa-smile-o", 168);
+    assert_emoji_category(complete_emoji_catalog.pop(), "fa-hashtag", 224);
+    assert_emoji_category(complete_emoji_catalog.pop(), "fa-smile-o", 169);
     assert_emoji_category(complete_emoji_catalog.pop(), "fa-star-o", popular_emoji_count);
-    assert_emoji_category(complete_emoji_catalog.pop(), "fa-thumbs-o-up", 385);
-    assert_emoji_category(complete_emoji_catalog.pop(), "fa-lightbulb-o", 262);
-    assert_emoji_category(complete_emoji_catalog.pop(), "fa-cutlery", 135);
-    assert_emoji_category(complete_emoji_catalog.pop(), "fa-flag", 269);
+    assert_emoji_category(complete_emoji_catalog.pop(), "fa-thumbs-o-up", 386);
+    assert_emoji_category(complete_emoji_catalog.pop(), "fa-lightbulb-o", 264);
+    assert_emoji_category(complete_emoji_catalog.pop(), "fa-cutlery", 131);
+    assert_emoji_category(complete_emoji_catalog.pop(), "fa-flag", 270);
     assert_emoji_category(complete_emoji_catalog.pop(), "fa-cog", 1);
-    assert_emoji_category(complete_emoji_catalog.pop(), "fa-leaf", 153);
+    assert_emoji_category(complete_emoji_catalog.pop(), "fa-leaf", 159);
     assert_emoji_category(complete_emoji_catalog.pop(), "fa-soccer-ball-o", 85);
 
     // The popular emoji appear twice in the picker, and the zulip emoji is special

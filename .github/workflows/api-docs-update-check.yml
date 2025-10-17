@@ -66,6 +66,8 @@ jobs:
       - name: Run tools/notify-if-api-docs-changed
         id: run_check
         run: ./tools/notify-if-api-docs-changed >> $GITHUB_OUTPUT
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Report status to CZO
         if: ${{github.repository == 'zulip/zulip'}}

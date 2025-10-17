@@ -16,6 +16,7 @@ import lxml.html
 from bs4 import BeautifulSoup
 from django.conf import settings
 from django.contrib.auth import get_backends
+from django.utils.timezone import get_current_timezone_name as timezone_get_current_timezone_name
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from django.utils.translation import override as override_language
@@ -32,6 +33,7 @@ from zerver.lib.queue import queue_event_on_commit
 from zerver.lib.send_email import EMAIL_DATE_FORMAT, FromAddress, send_future_email
 from zerver.lib.soft_deactivation import soft_reactivate_if_personal_notification
 from zerver.lib.tex import change_katex_to_raw_latex
+from zerver.lib.timestamp import format_datetime_to_string
 from zerver.lib.timezone import canonicalize_timezone
 from zerver.lib.topic import get_topic_display_name, get_topic_resolution_and_bare_name
 from zerver.lib.url_encoding import (
@@ -57,7 +59,7 @@ def relative_to_full_url(fragment: lxml.html.HtmlElement, base_url: str) -> None
     # 2: We also need to update the title attribute in the narrow links which
     # is not possible with `make_links_absolute()`.
     for link_info in fragment.iterlinks():
-        elem, attrib, link, pos = link_info
+        elem, attrib, link, _pos = link_info
         match = re.match(r"/?#narrow/", link)
         if match is not None:
             link = re.sub(r"^/?#narrow/", base_url + "/#narrow/", link)
@@ -183,6 +185,25 @@ def fix_spoilers_in_text(content: str, language: str) -> str:
     return "\n".join(output)
 
 
+def convert_time_to_local_timezone(fragment: lxml.html.HtmlElement, user: UserProfile) -> None:
+    user_tz = user.timezone or timezone_get_current_timezone_name()
+    time_elements = fragment.findall(".//time")
+
+    for time_elem in time_elements:
+        datetime_str = time_elem.get("datetime")
+        if not datetime_str:
+            # We expect there to always be a datetime attribute.
+            continue  # nocoverage
+        try:
+            dt_utc = timezone_now().strptime(datetime_str, "%Y-%m-%dT%H:%M:%S%z")
+            dt_local = dt_utc.astimezone(zoneinfo.ZoneInfo(canonicalize_timezone(user_tz)))
+            formatted_time = format_datetime_to_string(dt_local, user.twenty_four_hour_time)
+            time_elem.text = formatted_time
+        except Exception as e:
+            logger.warning("Failed to convert time element '%s': %s", datetime_str, e)
+            continue
+
+
 def add_quote_prefix_in_text(content: str) -> str:
     """
     We add quote prefix ">" to each line of the message in plain text
@@ -260,6 +281,7 @@ def build_message_list(
         fix_emojis(fragment, user.emojiset)
         fix_spoilers_in_html(fragment, user.default_language)
         change_katex_to_raw_latex(fragment)
+        convert_time_to_local_timezone(fragment, user)
 
         html = Markup(lxml.html.tostring(fragment, encoding="unicode"))
         if sender:

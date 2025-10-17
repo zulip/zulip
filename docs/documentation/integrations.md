@@ -28,34 +28,42 @@ Typically, the documentation process involves the following steps:
   Zulip's pre-defined Markdown macros can be used for some of these steps.
   See [Markdown macros](#markdown-macros) for further details.
 
-- Make sure you've added your integration to
-  `zerver/lib/integrations.py` in both the `WEBHOOK_INTEGRATIONS`
-  section (or `INTEGRATIONS` if not a webhook), and the
-  `DOC_SCREENSHOT_CONFIG` sections. These registries configure your
-  integration to appear on the `/integrations` page and make it
-  possible to automatically generate the screenshot of a sample
-  message (which is important for the screenshots to be updated as
-  Zulip's design changes).
+- Make sure you've added your integration to `zerver/lib/integrations.py` in
+  both the `WEBHOOK_INTEGRATIONS` section (or `INTEGRATIONS` if not a
+  webhook), and the `DOC_SCREENSHOT_CONFIG` sections.
 
-- You'll need to add an SVG graphic
-  of your integration's logo under the
+  These registries configure your integration to appear on the
+  `/integrations` page, and make it possible to automatically generate the
+  screenshot of an example message, which is important for the screenshots
+  to be updated as Zulip's design changes.
+
+- You'll need to add an SVG graphic of your integration's logo under the
   `static/images/integrations/logos/<name>.svg`, where `<name>` is the
   name of the integration, all in lower case; you can usually find them in the
   product branding or press page. Make sure to optimize the SVG graphic by
   running `tools/setup/optimize-svg`. This will also run
   `tools/setup/generate_integration_bots_avatars.py` automatically to generate
-  a smaller version of the image you just added and optimized. This smaller image will be
-  used as the bot avatar in the documentation screenshot that will be generated
-  in the next step.
+  a smaller version of the image you just added and optimized. This smaller
+  image will be used as the bot avatar in the documentation screenshot that
+  will be generated in the next step.
 
   If you cannot find an SVG graphic of the logo, please find and include a PNG
   image of the logo instead.
 
-- Finally, generate a message sent by the integration and take a screenshot of
-  the message to provide an example message in the documentation.
+- Finally, you will need to generate a message sent by the integration, and
+  generate a screenshot of the message to provide an example message in the
+  integration's documentation.
 
-  If your new integration is an incoming webhook integration, you can generate
-  the screenshot using `tools/screenshots/generate-integration-docs-screenshot`:
+  If your new integration is not a webhook and does not have fixtures, add a
+  message template and topic to `zerver/webhooks/fixtureless_integrations.py`.
+  Then, add your integration's name to `FIXTURELESS_INTEGRATIONS_WITH_SCREENSHOTS`
+  in `zerver/lib/integrations.py`.
+
+  Otherwise, you should have already added your integration to
+  `WEBHOOK_SCREENSHOT_CONFIG`.
+
+  Generate the screenshot using `tools/screenshots/generate-integration-docs-screenshot`,
+  where `integrationname` is the name of the integration:
 
   ```bash
   ./tools/screenshots/generate-integration-docs-screenshot --integration integrationname

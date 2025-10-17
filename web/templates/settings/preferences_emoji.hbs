@@ -6,16 +6,12 @@
 
     <div class="input-group">
         <label class="settings-field-label">{{t "Emoji theme" }}</label>
-        <div class="emojiset_choices grey-box prop-element" id="{{prefix}}emojiset" data-setting-widget-type="radio-group" data-setting-choice-type="string">
+        <div class="emojiset_choices settings-highlight-box prop-element" id="{{prefix}}emojiset" data-setting-widget-type="radio-group" data-setting-choice-type="string">
             {{#each settings_object.emojiset_choices}}
                 <label class="preferences-radio-choice-label">
                     <span class="radio-choice-controls">
                         <input type="radio" class="setting_emojiset_choice" name="emojiset" value="{{this.key}}"/>
                         <span class="preferences-radio-choice-text">{{this.text}}</span>
-                        {{#if (eq this.key "google-blob")}}
-                        <span>(<em>{{t "deprecated" }}</em>)</span>
-                        {{> ../help_link_widget link="/help/emoji-and-emoticons#change-your-emoji-set" }}
-                        {{/if}}
                     </span>
                     <span class="right">
                         {{#if (eq this.key "text") }}

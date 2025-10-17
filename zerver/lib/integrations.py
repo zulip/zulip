@@ -14,6 +14,7 @@ from django_stubs_ext import StrPromise
 from zerver.lib.storage import static_path
 from zerver.lib.validator import check_bool
 from zerver.lib.webhooks.common import PresetUrlOption, WebhookConfigOption, WebhookUrlOption
+from zerver.webhooks import fixtureless_integrations
 
 """This module declares all of the (documented) integrations available
 in the Zulip server.  The Integration class is used as part of
@@ -58,6 +59,34 @@ CATEGORIES: dict[str, StrPromise] = {
     "project-management": gettext_lazy("Project management"),
     "productivity": gettext_lazy("Productivity"),
     "version-control": gettext_lazy("Version control"),
+}
+
+# Can also be computed from INTEGRATIONS by removing entries from
+# WEBHOOK_INTEGRATIONS and NO_SCREENSHOT_CONFIG, but defined explicitly to
+# avoid circular dependency
+FIXTURELESS_INTEGRATIONS_WITH_SCREENSHOTS: list[str] = [
+    "asana",
+    "capistrano",
+    "codebase",
+    "discourse",
+    "github-actions",
+    "google-calendar",
+    "jenkins",
+    "mastodon",
+    "mercurial",
+    "nagios",
+    "notion",
+    "openshift",
+    "perforce",
+    "puppet",
+    "redmine",
+    "rss",
+    "svn",
+    "trac",
+]
+FIXTURELESS_SCREENSHOT_CONTENT: dict[str, list[fixtureless_integrations.ScreenshotContent]] = {
+    key: [getattr(fixtureless_integrations, key.upper().replace("-", "_"))]
+    for key in FIXTURELESS_INTEGRATIONS_WITH_SCREENSHOTS
 }
 
 
@@ -230,7 +259,7 @@ class PythonAPIIntegration(Integration):
 
 
 class WebhookIntegration(Integration):
-    DEFAULT_FUNCTION_PATH = "zerver.webhooks.{name}.view.api_{name}_webhook"
+    DEFAULT_FUNCTION_PATH = "zerver.webhooks.{dir_name}.view.api_{dir_name}_webhook"
     DEFAULT_URL = "api/v1/external/{name}"
     DEFAULT_CLIENT_NAME = "Zulip{name}Webhook"
     DEFAULT_DOC_PATH = "{name}/doc.md"
@@ -267,8 +296,12 @@ class WebhookIntegration(Integration):
             url_options=url_options,
         )
 
+        if dir_name is None:
+            dir_name = self.name
+        self.dir_name = dir_name
+
         if function is None:
-            function = self.DEFAULT_FUNCTION_PATH.format(name=name)
+            function = self.DEFAULT_FUNCTION_PATH.format(dir_name=dir_name)
         self.function_name = function
 
         if url is None:
@@ -278,10 +311,6 @@ class WebhookIntegration(Integration):
         if doc is None:
             doc = self.DEFAULT_DOC_PATH.format(name=name)
         self.doc = doc
-
-        if dir_name is None:
-            dir_name = self.name
-        self.dir_name = dir_name
 
     def get_function(self) -> Callable[[HttpRequest], HttpResponseBase]:
         return import_string(self.function_name)
@@ -468,8 +497,6 @@ WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
         "github",
         ["version-control"],
         display_name="GitHub",
-        function="zerver.webhooks.github.view.api_github_webhook",
-        stream_name="github",
         url_options=[
             WebhookUrlOption.build_preset_config(PresetUrlOption.BRANCHES),
             WebhookUrlOption.build_preset_config(PresetUrlOption.IGNORE_PRIVATE_REPOSITORIES),
@@ -481,7 +508,6 @@ WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
         display_name="GitHub Sponsors",
         logo="images/integrations/logos/github.svg",
         dir_name="github",
-        function="zerver.webhooks.github.view.api_github_webhook",
         doc="github/githubsponsors.md",
         stream_name="github",
     ),
@@ -507,12 +533,7 @@ WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
     WebhookIntegration("helloworld", ["misc"], display_name="Hello World"),
     WebhookIntegration("heroku", ["deployment"]),
     WebhookIntegration("homeassistant", ["misc"], display_name="Home Assistant"),
-    WebhookIntegration(
-        "ifttt",
-        ["meta-integration"],
-        function="zerver.webhooks.ifttt.view.api_iftt_app_webhook",
-        display_name="IFTTT",
-    ),
+    WebhookIntegration("ifttt", ["meta-integration"], display_name="IFTTT"),
     WebhookIntegration("insping", ["monitoring"]),
     WebhookIntegration("intercom", ["customer-support"]),
     # Avoid collision with jira-plugin's doc "jira/doc.md".
@@ -594,7 +615,10 @@ INTEGRATIONS: dict[str, Integration] = {
     "errbot": Integration("errbot", ["meta-integration", "bots"]),
     "giphy": Integration("giphy", ["misc"], display_name="GIPHY"),
     "github-actions": Integration(
-        "github-actions", ["continuous-integration"], display_name="GitHub Actions"
+        "github-actions",
+        ["continuous-integration"],
+        display_name="GitHub Actions",
+        stream_name="github-actions updates",
     ),
     "hubot": Integration("hubot", ["meta-integration", "bots"]),
     "jenkins": Integration("jenkins", ["continuous-integration"]),
@@ -846,6 +870,23 @@ WEBHOOK_SCREENSHOT_CONFIG: dict[str, list[WebhookScreenshotConfig]] = {
 }
 
 FIXTURELESS_SCREENSHOT_CONFIG: dict[str, list[FixturelessScreenshotConfig]] = {}
+for integration, screenshots_contents in FIXTURELESS_SCREENSHOT_CONTENT.items():
+    FIXTURELESS_SCREENSHOT_CONFIG[integration] = [
+        FixturelessScreenshotConfig(screenshot_content["content"], screenshot_content["topic"])
+        for screenshot_content in screenshots_contents
+    ]
+
+FIXTURELESS_SCREENSHOT_CONFIG_OPTIONAL_FIELDS = {
+    "mercurial": {"image_dir": "hg"},
+    "jenkins": {"image_name": "004.png"},
+    "google-calendar": {"image_name": "003.png", "image_dir": "google/calendar"},
+}
+
+for integration, fields in FIXTURELESS_SCREENSHOT_CONFIG_OPTIONAL_FIELDS.items():
+    assert integration in FIXTURELESS_SCREENSHOT_CONFIG
+    for field_name, value in fields.items():
+        # Assume a single screenshot config for each integration
+        setattr(FIXTURELESS_SCREENSHOT_CONFIG[integration][0], field_name, value)
 
 DOC_SCREENSHOT_CONFIG: dict[
     str, list[WebhookScreenshotConfig] | list[FixturelessScreenshotConfig]

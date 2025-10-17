@@ -75,22 +75,6 @@
         border-color: hsl(0deg 0% 0% / 60%);
     }
 
-    input:not(.input-element) {
-        &[type="text"],
-        &[type="email"],
-        &[type="password"],
-        &[type="number"],
-        &[type="url"],
-        &[type="date"] {
-            background-color: hsl(0deg 0% 0% / 20%);
-            border-color: hsl(0deg 0% 0% / 60%);
-
-            &:focus {
-                border-color: hsl(0deg 0% 0% / 90%);
-            }
-        }
-    }
-
     .popover-filter-input-wrapper .popover-filter-input:focus {
         background-color: hsl(225deg 6% 7%);
         border: 1px solid hsl(0deg 0% 100% / 50%);
@@ -123,28 +107,6 @@
         border-color: hsl(0deg 0% 0% / 90%);
     }
 
-    /* Not that .message_row (below) needs to be more contrast on dark theme */
-    .message-feed .recipient_row,
-    .message_row,
-    .overlay-message-row .overlay-message-info-box,
-    .preview_message_area {
-        border-color: hsl(0deg 0% 0% / 40%);
-    }
-
-    & div.overlay .flex.overlay-content > .overlay-container,
-    #settings_page,
-    .informational-overlays .overlay-content {
-        box-shadow: 0 0 30px hsl(212deg 32% 7%);
-    }
-
-    #draft_overlay,
-    #scheduled_messages_overlay_container,
-    #message-edit-history-overlay-container {
-        .flex.overlay-content > .overlay-container {
-            box-shadow: 0 0 30px hsl(213deg 31% 0%);
-        }
-    }
-
     .popover hr,
     hr {
         opacity: 0.2;
@@ -153,30 +115,6 @@
     .zoom-in {
         #topics_header {
             background-color: var(--color-background);
-        }
-    }
-
-    .group-row.active,
-    .stream-row.active {
-        background-color: hsl(0deg 0% 0% / 20%);
-    }
-
-    .stream-row,
-    .group-row {
-        /* This is for coluring the plus sign SVGs in stream-list UI */
-        /* public */
-        .check:not(.checked) svg {
-            fill: hsl(218deg 14% 33%);
-        }
-
-        /* private */
-        .disabled svg {
-            opacity: 0.5;
-        }
-
-        /* public :hover */
-        .check:not(.checked, .disabled):hover svg {
-            fill: hsl(230deg 11% 67%);
         }
     }
 
@@ -196,15 +134,6 @@
         background-color: hsl(228deg 11% 17%);
     }
 
-    & .overlay-messages-header,
-    .grey-box,
-    .white-box,
-    .stream-email,
-    #generate-integration-url-modal .integration-url,
-    .table-striped tbody tr:nth-child(odd) th {
-        background-color: hsl(0deg 0% 0% / 20%);
-    }
-
     .table-striped tbody tr:nth-child(even) td {
         border-color: hsl(0deg 0% 0% / 20%);
         background-color: color-mix(
@@ -212,14 +141,6 @@
             hsl(0deg 0% 0%) 20%,
             var(--color-background-modal)
         );
-    }
-
-    .subscriber-list-box,
-    .subscriber-list-box .subscriber_list_container .subscriber-list td,
-    .member-list-box,
-    .member-list-box .member_list_container .member-list td,
-    #subscription_overlay .settings-radio-input-parent {
-        border-color: hsl(0deg 0% 0% / 20%);
     }
 
     .overlay-message-row

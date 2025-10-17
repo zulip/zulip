@@ -148,7 +148,7 @@ test("fetch on search", async ({override}) => {
     stub_buddy_list_empty_list_message_lengths();
 
     const office = {stream_id: 23, name: "office", subscribed: true};
-    stream_data.add_sub(office);
+    stream_data.add_sub_for_tests(office);
     message_lists.set_current(make_message_list([{operator: "stream", operand: office.stream_id}]));
     let get_call_count = 0;
     channel.get = () => {
@@ -170,9 +170,9 @@ test("fetch on search", async ({override}) => {
     get_call_count = 0;
     populate_call_count = 0;
     const kitchen = {stream_id: 25, name: "kitchen", subscribed: true};
-    stream_data.add_sub(kitchen);
+    stream_data.add_sub_for_tests(kitchen);
     const living_room = {stream_id: 26, name: "living_room", subscribed: true};
-    stream_data.add_sub(living_room);
+    stream_data.add_sub_for_tests(living_room);
     message_lists.set_current(
         make_message_list([{operator: "stream", operand: kitchen.stream_id}]),
     );

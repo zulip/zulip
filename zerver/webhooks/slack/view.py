@@ -155,12 +155,12 @@ def is_retry_call_from_slack(request: HttpRequest) -> bool:
 
 
 SLACK_INTEGRATION_TOKEN_SCOPES = {
-    "channels:read",
-    "channels:history",
+    # For Slack's users.info endpoint: https://api.slack.com/methods/users.info
     "users:read",
-    "emoji:read",
-    "team:read",
-    "users:read.email",
+    # For Slack's conversations.info endpoint: https://api.slack.com/methods/conversations.info
+    "channels:read",
+    # For Slack's Event's API: https://api.slack.com/events/message.channels
+    "channels:history",
 }
 
 INVALID_SLACK_TOKEN_MESSAGE = """

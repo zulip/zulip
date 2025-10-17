@@ -8,13 +8,16 @@ import render_message_controls_failed_msg from "../templates/message_controls_fa
 import * as alert_words from "./alert_words.ts";
 import * as blueslip from "./blueslip.ts";
 import * as browser_history from "./browser_history.ts";
+import type * as compose from "./compose.ts";
 import * as compose_notifications from "./compose_notifications.ts";
 import * as compose_ui from "./compose_ui.ts";
 import * as echo_state from "./echo_state.ts";
 import * as hash_util from "./hash_util.ts";
 import * as local_message from "./local_message.ts";
 import * as markdown from "./markdown.ts";
+import type {InsertNewMessagesOpts} from "./message_events.ts";
 import * as message_events_util from "./message_events_util.ts";
+import type {LocalMessage} from "./message_helper.ts";
 import * as message_list_data_cache from "./message_list_data_cache.ts";
 import * as message_lists from "./message_lists.ts";
 import * as message_live_update from "./message_live_update.ts";
@@ -30,6 +33,7 @@ import {current_user} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import * as stream_list from "./stream_list.ts";
 import * as stream_topic_history from "./stream_topic_history.ts";
+import type * as transmit from "./transmit.ts";
 import type {TopicLink} from "./types.ts";
 import * as util from "./util.ts";
 
@@ -56,14 +60,14 @@ type PrivateMessageObject = {
     reply_to: string;
     private_message_recipient: string;
     to_user_ids: string | undefined;
+    display_recipient?: DisplayRecipientUser[];
 };
 
 type StreamMessageObject = {
     type: "stream";
     stream_id: number;
+    display_recipient?: string;
 };
-
-type MessageRequest = MessageRequestObject & (PrivateMessageObject | StreamMessageObject);
 
 type LocalEditRequest = Partial<{
     raw_content: string | undefined;
@@ -80,14 +84,14 @@ type LocalEditRequest = Partial<{
     mentioned_me_directly: boolean;
 }>;
 
-type LocalMessage = MessageRequestObject & {
+export type RawLocalMessage = MessageRequestObject & {
     raw_content: string;
     flags: string[];
     is_me_message: boolean;
     content_type: "text/html";
     sender_email: string;
     sender_full_name: string;
-    avatar_url?: string | null | undefined;
+    avatar_url: string;
     timestamp: number;
     local_id: string;
     locally_echoed: boolean;
@@ -95,12 +99,10 @@ type LocalMessage = MessageRequestObject & {
     id: number;
     topic_links: TopicLink[];
     reactions: MessageReaction[];
-} & (
-        | (StreamMessageObject & {display_recipient?: string})
-        | (PrivateMessageObject & {display_recipient?: DisplayRecipientUser[]})
-    );
+    draft_id: string;
+} & (StreamMessageObject | PrivateMessageObject);
 
-type PostMessageAPIData = z.output<typeof send_message_api_response_schema>;
+export type PostMessageAPIData = z.output<typeof send_message_api_response_schema>;
 
 // These retry spinner functions return true if and only if the
 // spinner already is in the requested state, which can be used to
@@ -150,18 +152,14 @@ function failed_message_success(message_id: number): void {
 }
 
 function resend_message(
-    message: Message,
+    message: LocalMessage,
     $row: JQuery,
     {
         on_send_message_success,
         send_message,
     }: {
-        on_send_message_success: (request: Message, data: PostMessageAPIData) => void;
-        send_message: (
-            request: Message,
-            on_success: (raw_data: unknown) => void,
-            error: (response: string, _server_error_code: string) => void,
-        ) => void;
+        on_send_message_success: typeof compose.send_message_success;
+        send_message: typeof transmit.send_message;
     },
 ): void {
     message.content = message.raw_content!;
@@ -195,7 +193,7 @@ function resend_message(
     send_message(message, on_success, on_error);
 }
 
-export function build_display_recipient(message: LocalMessage): DisplayRecipientUser[] | string {
+export function build_display_recipient(message: RawLocalMessage): DisplayRecipientUser[] | string {
     if (message.type === "stream") {
         return stream_data.get_stream_name_from_id(message.stream_id);
     }
@@ -244,20 +242,16 @@ export function build_display_recipient(message: LocalMessage): DisplayRecipient
     return display_recipient;
 }
 
-export function track_local_message(message: Message): void {
+export function track_local_message(message: LocalMessage): void {
     assert(message.local_id !== undefined);
     echo_state.set_message_waiting_for_id(message.local_id, message);
     echo_state.set_message_waiting_for_ack(message.local_id, message);
 }
 
 export function insert_local_message(
-    message_request: MessageRequest,
+    message_request: compose.SendMessageData,
     local_id_float: number,
-    insert_new_messages: (
-        messages: LocalMessage[],
-        send_by_this_client: boolean,
-        deliver_locally: boolean,
-    ) => Message[],
+    insert_new_messages: (opts: InsertNewMessagesOpts) => Message[],
 ): Message {
     // Shallow clone of message request object that is turned into something suitable
     // for zulip.js:add_message
@@ -265,14 +259,14 @@ export function insert_local_message(
     const raw_content = message_request.content;
     const topic = message_request.topic;
 
-    const local_message: LocalMessage = {
+    const raw_local_message: RawLocalMessage = {
         ...message_request,
         ...markdown.render(raw_content),
         raw_content,
         content_type: "text/html",
         sender_email: people.my_current_email(),
         sender_full_name: people.my_full_name(),
-        avatar_url: current_user.avatar_url,
+        avatar_url: people.small_avatar_url_for_person(current_user),
         timestamp: Date.now() / 1000,
         local_id: local_id_float.toString(),
         locally_echoed: true,
@@ -283,9 +277,13 @@ export function insert_local_message(
         reactions: [],
     };
 
-    local_message.display_recipient = build_display_recipient(local_message);
+    raw_local_message.display_recipient = build_display_recipient(raw_local_message);
 
-    const [message] = insert_new_messages([local_message], true, true);
+    const [message] = insert_new_messages({
+        type: "local_message",
+        raw_messages: [raw_local_message],
+        sent_by_this_client: true,
+    });
     assert(message !== undefined);
 
     return message;
@@ -296,12 +294,8 @@ export function is_slash_command(content: string): boolean {
 }
 
 export let try_deliver_locally = (
-    message_request: MessageRequest,
-    insert_new_messages: (
-        messages: LocalMessage[],
-        send_by_this_client: boolean,
-        deliver_locally: boolean,
-    ) => Message[],
+    message_request: compose.SendMessageData,
+    insert_new_messages: (opts: InsertNewMessagesOpts) => Message[],
 ): Message | undefined => {
     // Checks if the message request can be locally echoed, and if so,
     // adds a local echoed copy of the message to appropriate message lists.
@@ -661,28 +655,20 @@ export function initialize({
     on_send_message_success,
     send_message,
 }: {
-    on_send_message_success: (request: Message, data: PostMessageAPIData) => void;
-    send_message: (
-        request: Message,
-        on_success: (raw_data: unknown) => void,
-        error: (response: string, _server_error_code: string) => void,
-    ) => void;
+    on_send_message_success: typeof compose.send_message_success;
+    send_message: typeof transmit.send_message;
 }): void {
     function on_failed_action(
         selector: string,
         callback: (
-            message: Message,
+            message: LocalMessage,
             $row: JQuery,
             {
                 on_send_message_success,
                 send_message,
             }: {
-                on_send_message_success: (request: Message, data: PostMessageAPIData) => void;
-                send_message: (
-                    request: Message,
-                    on_success: (raw_data: unknown) => void,
-                    error: (response: string, _server_error_code: string) => void,
-                ) => void;
+                on_send_message_success: typeof compose.send_message_success;
+                send_message: typeof transmit.send_message;
             },
         ) => void,
     ): void {

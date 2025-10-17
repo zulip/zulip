@@ -9,7 +9,6 @@ Currently, Zulip supports these four display formats for emoji:
 - Google
 - Twitter
 - Plain text
-- Google blob (deprecated)
 
 ## Emoji codes
 

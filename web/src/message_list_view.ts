@@ -273,7 +273,8 @@ function get_users_for_recipient_row(message: Message): RecipientRowUser[] {
         return util.strcmp(a.full_name, b.full_name);
     }
 
-    return users.sort(compare_by_name);
+    users.sort(compare_by_name);
+    return users;
 }
 
 let message_id_to_focus_after_processing_message_events:
@@ -637,10 +638,7 @@ export class MessageListView {
             // mention (which is the only other option for `mentioned` being true).
             if (message.mentioned_me_directly && is_user_mention) {
                 // Highlight messages having personal mentions only in DMs and subscribed streams.
-                if (
-                    message.type === "private" ||
-                    stream_data.is_user_subscribed(message.stream_id, people.my_current_user_id())
-                ) {
+                if (message.type === "private" || stream_data.is_subscribed(message.stream_id)) {
                     mention_classname = "direct_mention";
                 } else {
                     mention_classname = undefined;
@@ -985,6 +983,11 @@ export class MessageListView {
                 update_group_date(second_group, curr_msg_container.msg, prev_msg_container?.msg);
                 // We could add an action to update the date row, but for now rerender the group.
                 message_actions.rerender_groups.push(second_group);
+            } else if (second_group.bookend_top) {
+                // We know there was no bookend_top before since we
+                // are adding messages to the top.
+                const rendered_bookend_html = render_bookend(second_group);
+                this.$list.prepend($(rendered_bookend_html));
             }
             message_actions.prepend_groups = new_message_groups;
             this._message_groups = [...new_message_groups, ...this._message_groups];

@@ -30,7 +30,7 @@ your internship experience with the Zulip project will be highly interactive.
 > and welcoming. You learn a lot just by watching others work and talk.”_ – Sai
 > Rohitth Chiluka, Zulip GSoC 2021 participant
 
-As part of our commitment to mentorship, Zulip has over 160,000 words of
+As part of our commitment to mentorship, Zulip has over 185,000 words of
 [documentation for
 developers](../index.md#zulip-documentation-overview), much of it
 designed to explain not just how Zulip works, but why Zulip works the way that

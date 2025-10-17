@@ -17,4 +17,8 @@ Get Zulip notifications for your Asana projects via Zapier!
 
 {end_tabs}
 
+{!congrats.md!}
+
+![](/static/images/integrations/asana/001.png)
+
 [1]: ./zapier

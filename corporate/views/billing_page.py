@@ -326,7 +326,7 @@ def remote_server_deactivate_page(
     request: HttpRequest,
     billing_session: "RemoteServerBillingSession",
     *,
-    confirmed: Literal[None, "true"] = None,
+    confirmed: Literal["true"] | None = None,
 ) -> HttpResponse:
     from corporate.lib.stripe import (
         ServerDeactivateWithExistingPlanError,

@@ -70,7 +70,7 @@ const denmark_stream = make_stream({
 run_test("verify stream_data persists stream color", () => {
     stream_data.clear_subscriptions();
     assert.equal(stream_data.get_sub_by_name("Denmark"), undefined);
-    stream_data.add_sub(denmark_stream);
+    stream_data.add_sub_for_tests(denmark_stream);
     const sub = stream_data.get_sub_by_name("Denmark");
     assert.equal(sub.color, "a1a1a1");
 });

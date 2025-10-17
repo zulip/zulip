@@ -49,10 +49,10 @@ const markdown_stream = {
     type: "stream",
 };
 
-stream_data.add_sub(sweden_stream);
-stream_data.add_sub(denmark_stream);
-stream_data.add_sub(dollar_stream);
-stream_data.add_sub(markdown_stream);
+stream_data.add_sub_for_tests(sweden_stream);
+stream_data.add_sub_for_tests(denmark_stream);
+stream_data.add_sub_for_tests(dollar_stream);
+stream_data.add_sub_for_tests(markdown_stream);
 
 run_test("stream_link_syntax_test", () => {
     assert.equal(topic_link_util.get_stream_link_syntax("Sweden"), "#**Sweden**");

@@ -230,10 +230,10 @@ export let complete_starting_tasks = (opts: ComposeActionsOpts): void => {
     if (is_new_topic_triggered) {
         compose_recipient.set_high_attention_recipient_row();
     }
-    // We explicitly call this function here apart from compose_setup.js
+    // We explicitly call this function here apart from compose_setup.ts
     // as this helps to show banner when responding in an interleaved view.
     // While responding, the compose box opens before fading resulting in
-    // the function call in compose_setup.js not displaying banner.
+    // the function call in compose_setup.ts not displaying banner.
     if (!narrow_state.narrowed_by_reply()) {
         compose_notifications.maybe_show_one_time_interleaved_view_messages_fading_banner();
     }

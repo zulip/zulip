@@ -1,4 +1,5 @@
 import $ from "jquery";
+import assert from "minimalistic-assert";
 import * as tippy from "tippy.js";
 
 import render_schedule_message_popover from "../templates/popovers/schedule_message_popover.hbs";
@@ -6,7 +7,7 @@ import render_send_later_popover from "../templates/popovers/send_later_popover.
 
 import * as blueslip from "./blueslip.ts";
 import * as channel from "./channel.ts";
-import * as compose from "./compose.js";
+import * as compose from "./compose.ts";
 import * as compose_state from "./compose_state.ts";
 import * as compose_validate from "./compose_validate.ts";
 import * as drafts from "./drafts.ts";
@@ -16,25 +17,27 @@ import * as popover_menus from "./popover_menus.ts";
 import * as scheduled_messages from "./scheduled_messages.ts";
 import {parse_html} from "./ui_util.ts";
 import {user_settings} from "./user_settings.ts";
+import * as util from "./util.ts";
 
 export const SCHEDULING_MODAL_UPDATE_INTERVAL_IN_MILLISECONDS = 60 * 1000;
 const ENTER_SENDS_SELECTION_DELAY = 600;
 
 let send_later_popover_keyboard_toggle = false;
 
-function set_compose_box_schedule(element) {
-    const selected_send_at_time = element.dataset.sendStamp / 1000;
+function set_compose_box_schedule(element: HTMLElement): number {
+    assert(element.dataset.sendStamp !== undefined);
+    const selected_send_at_time = Number.parseInt(element.dataset.sendStamp, 10) / 1000;
     return selected_send_at_time;
 }
 
 export function open_schedule_message_menu(
-    remind_message_id = undefined,
-    target = "#send_later i",
-) {
+    remind_message_id: number | undefined,
+    target: tippy.ReferenceElement,
+): void {
     if (remind_message_id === undefined && !compose_validate.validate(true)) {
         return;
     }
-    let interval;
+    let interval: ReturnType<typeof setTimeout>;
 
     popover_menus.toggle_popover_menu(target, {
         theme: "popover-menu",
@@ -79,12 +82,12 @@ export function open_schedule_message_menu(
                 );
             }
             const $popper = $(instance.popper);
-            const message_schedule_callback = (time) => {
+            const message_schedule_callback = (time: string | number): void => {
                 if (remind_message_id !== undefined) {
                     do_schedule_reminder(
                         time,
                         remind_message_id,
-                        $popper.find(".schedule-reminder-note").val(),
+                        $popper.find<HTMLTextAreaElement>("textarea.schedule-reminder-note").val()!,
                     );
                 } else {
                     do_schedule_message(time);
@@ -94,7 +97,7 @@ export function open_schedule_message_menu(
                 const $send_later_options_content = $popper.find(".popover-menu-list");
                 const current_time = new Date();
                 flatpickr.show_flatpickr(
-                    $(".send_later_custom")[0],
+                    util.the($(".send_later_custom")),
                     (send_at_time) => {
                         message_schedule_callback(send_at_time);
                         popover_menus.hide_current_popover_if_visible(instance);
@@ -109,7 +112,7 @@ export function open_schedule_message_menu(
                             // Return to normal state.
                             $send_later_options_content.css("pointer-events", "all");
                             const selected_date = selectedDates[0];
-
+                            assert(instance.config.minDate !== undefined);
                             if (selected_date && selected_date < instance.config.minDate) {
                                 scheduled_messages.set_minimum_scheduled_message_delay_minutes_note(
                                     true,
@@ -130,8 +133,8 @@ export function open_schedule_message_menu(
             $popper.one(
                 "click",
                 ".send_later_today, .send_later_tomorrow, .send_later_monday",
-                (e) => {
-                    const send_at_time = set_compose_box_schedule(e.currentTarget);
+                function (this: HTMLElement, e) {
+                    const send_at_time = set_compose_box_schedule(this);
                     message_schedule_callback(send_at_time);
                     e.preventDefault();
                     e.stopPropagation();
@@ -146,31 +149,35 @@ export function open_schedule_message_menu(
             }
             clearInterval(interval);
             instance.destroy();
-            popover_menus.popover_instances.send_later_options = undefined;
+            popover_menus.popover_instances.send_later_options = null;
         },
     });
 }
 
-function parse_sent_at_time(send_at_time) {
-    if (!Number.isInteger(send_at_time)) {
+function parse_sent_at_time(send_at_time: string | number): number {
+    if (typeof send_at_time !== "number") {
         // Convert to timestamp if this is not a timestamp.
         return Math.floor(Date.parse(send_at_time) / 1000);
     }
     return send_at_time;
 }
 
-export function do_schedule_message(send_at_time) {
+export function do_schedule_message(send_at_time: string | number): void {
     send_at_time = parse_sent_at_time(send_at_time);
     scheduled_messages.set_selected_schedule_timestamp(send_at_time);
     compose.finish(true);
 }
 
-export function do_schedule_reminder(send_at_time, remind_message_id, note_text) {
+export function do_schedule_reminder(
+    send_at_time: string | number,
+    remind_message_id: number,
+    note_text: string,
+): void {
     send_at_time = parse_sent_at_time(send_at_time);
     message_reminder.set_message_reminder(send_at_time, remind_message_id, note_text);
 }
 
-function get_send_later_menu_items() {
+function get_send_later_menu_items(): JQuery | undefined {
     const $send_later_options = $("#send_later_popover");
     if ($send_later_options.length === 0) {
         blueslip.error("Trying to get menu items when schedule popover is closed.");
@@ -180,19 +187,19 @@ function get_send_later_menu_items() {
     return $send_later_options.find("[tabindex='0']");
 }
 
-function focus_first_send_later_popover_item() {
+function focus_first_send_later_popover_item(): void {
     // It is recommended to only call this when the user opens the menu with a hotkey.
     // Our popup menus act kind of funny when you mix keyboard and mouse.
     const $items = get_send_later_menu_items();
     popover_menus.focus_first_popover_item($items);
 }
 
-export function toggle() {
+export function toggle(): void {
     send_later_popover_keyboard_toggle = true;
     $("#send_later i").trigger("click");
 }
 
-export function initialize() {
+export function initialize(): void {
     tippy.delegate("body", {
         ...popover_menus.default_popover_props,
         theme: "popover-menu",
@@ -228,20 +235,21 @@ export function initialize() {
             const $popper = $(instance.popper);
             $popper.one("click", ".send_later_selected_send_later_time", () => {
                 const send_at_timestamp = scheduled_messages.get_selected_send_later_timestamp();
+                assert(send_at_timestamp !== undefined);
                 do_schedule_message(send_at_timestamp);
                 popover_menus.hide_current_popover_if_visible(instance);
             });
             // Handle clicks on Enter-to-send settings
             $popper.one("click", ".enter_sends_choice", (e) => {
-                let selected_behaviour = $(e.currentTarget)
+                const selected_behaviour = $(e.currentTarget)
                     .find("input[type='radio']")
                     .attr("value");
-                selected_behaviour = selected_behaviour === "true"; // Convert to bool
-                user_settings.enter_sends = selected_behaviour;
+                const selected_behaviour_bool = selected_behaviour === "true";
+                user_settings.enter_sends = selected_behaviour_bool;
 
                 channel.patch({
                     url: "/json/settings",
-                    data: {enter_sends: selected_behaviour},
+                    data: {enter_sends: selected_behaviour_bool},
                 });
                 e.stopPropagation();
                 setTimeout(() => {
@@ -254,7 +262,7 @@ export function initialize() {
             // Handle Send later clicks
             $popper.one("click", ".open_send_later_modal", () => {
                 popover_menus.hide_current_popover_if_visible(instance);
-                open_schedule_message_menu();
+                open_schedule_message_menu(undefined, util.the($("#send_later i")));
             });
             $popper.one("click", ".compose_new_message", () => {
                 drafts.update_draft();
@@ -273,14 +281,14 @@ export function initialize() {
         },
         onHidden(instance) {
             instance.destroy();
-            popover_menus.popover_instances.send_later = undefined;
+            popover_menus.popover_instances.send_later = null;
             send_later_popover_keyboard_toggle = false;
         },
     });
 }
 
 // This function is exported for unit testing purposes.
-export function should_update_send_later_options(date) {
+export function should_update_send_later_options(date: Date): boolean {
     const current_minute = date.getMinutes();
     const current_hour = date.getHours();
 
@@ -295,7 +303,7 @@ export function should_update_send_later_options(date) {
     return current_minute === 60 - scheduled_messages.MINIMUM_SCHEDULED_MESSAGE_DELAY_SECONDS / 60;
 }
 
-export function update_send_later_options() {
+export function update_send_later_options(): void {
     const now = new Date();
     if (should_update_send_later_options(now)) {
         const filtered_send_opts = scheduled_messages.get_filtered_send_opts(now);

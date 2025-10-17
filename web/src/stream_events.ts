@@ -362,7 +362,9 @@ export function remove_deactivated_user_from_all_streams(user_id: number): void 
     const all_subs = stream_data.get_unsorted_subs();
 
     for (const sub of all_subs) {
-        if (stream_data.is_user_subscribed(sub.stream_id, user_id)) {
+        // If they're not loaded, we don't have to worry about unsubscribing
+        // them since they were never marked as subscribed to begin with.
+        if (stream_data.is_user_loaded_and_subscribed(sub.stream_id, user_id)) {
             peer_data.remove_subscriber(sub.stream_id, user_id);
             stream_settings_ui.update_subscribers_ui(sub);
         }

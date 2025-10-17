@@ -57,7 +57,7 @@ your Zulip server][security-guide], [security overview][security-overview],
 and the [Zulip help center](https://zulip.com/help/).
 
 [security-overview]: https://zulip.com/security/
-[security-guide]: ../production/security-model.md
+[security-guide]: ../production/securing-your-zulip-server.md
 
 ## Components
 

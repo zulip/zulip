@@ -91,11 +91,14 @@ of the failure, you can just rerun the script. For more information, see
 
 #### Installer options
 
-- `--email=it-team@example.com`: The email address for the **person or team who
-  maintains the Zulip installation**. Zulip users on your server will see this
-  as the contact email in automated emails, on help pages, on error pages, etc.
-  You can later configure a display name for your contact email with the
-  `ZULIP_ADMINISTRATOR` [setting][doc-settings].
+- `--email=it-team@example.com`: A **real email address for the person
+  or team who maintains the Zulip installation**. Zulip users on your
+  server will see this as the contact email in automated emails, on
+  help pages, on error pages, etc. If you use the [Mobile Push
+  Notification Service](mobile-push-notifications.md), this is used as
+  a point of contact. You can later configure a display name for your
+  contact email with the `ZULIP_ADMINISTRATOR`
+  [setting][doc-settings].
 
 - `--hostname=zulip.example.com`: The user-accessible domain name for this Zulip
   server, i.e., what users will type in their web browser. This becomes
@@ -189,7 +192,8 @@ Learning more:
   server administrators. This extremely low-traffic list is for
   important announcements, including [new
   releases](../overview/release-lifecycle.md) and security issues.
-- Follow [Zulip on Twitter](https://twitter.com/zulip).
+- Follow us on [Mastodon](https://fosstodon.org/@zulip) or
+  [X/Twitter](https://x.com/zulip).
 - Learn how to [configure your Zulip server settings](settings.md).
 - Learn about [Backups, export and import](export-and-import.md)
   and [upgrading](upgrade.md) a production Zulip

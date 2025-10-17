@@ -121,31 +121,35 @@ the href for those is the default behavior of the link that also
 encodes the channel alongside the data-stream-id field, but clients
 can override that default based on `web_channel_default_view` setting.
 
-## Image previews
+## Images
 
 When a Zulip message is sent linking to an uploaded image, Zulip will
-generate an image preview element with the following format.
+generate an image preview element with the following format:
 
 ``` html
 <div class="message_inline_image">
-    <a href="/user_uploads/path/to/image.png" title="image.png">
+    <a href="/user_uploads/path/to/example.png" title="example.png">
         <img data-original-dimensions="1920x1080"
           data-original-content-type="image/png"
-          src="/user_uploads/thumbnail/path/to/image.png/840x560.webp">
+          src="/user_uploads/thumbnail/path/to/example.png/840x560.webp">
     </a>
 </div>
 ```
 
-If the server has not yet generated thumbnails for the image yet at
-the time the message is sent, the `img` element will be a temporary
-loading indicator image and have the `image-loading-placeholder`
+**Changes**: See [Changes to image formatting](#changes-to-image-formatting).
+
+### Image-loading placeholders
+
+If the server has yet to generate thumbnails for the image by
+the time the message is sent, the `img` element will temporarily
+reference a loading indicator image and have the `image-loading-placeholder`
 class, which clients can use to identify loading indicators and
 replace them with a more native loading indicator element if
 desired. For example:
 
 ``` html
 <div class="message_inline_image">
-    <a href="/user_uploads/path/to/image.png" title="image.png">
+    <a href="/user_uploads/path/to/example.png" title="example.png">
         <img class="image-loading-placeholder"
           data-original-dimensions="1920x1080"
           data-original-content-type="image/png"
@@ -167,6 +171,31 @@ Note that in the uncommon situation that the thumbnailing system is
 backlogged, an individual message containing multiple image previews
 may be re-rendered multiple times as each image finishes thumbnailing
 and triggers a message update.
+
+### Transcoded images
+
+Image elements whose formats are not widely supported by web browsers
+(e.g., HEIC and TIFF) may contain a `data-transcoded-image` attribute,
+which specifies a high-resolution thumbnail format that clients may
+opt to present instead of the original image. If the
+`data-transcoded-image` attribute is present, clients should use the
+`data-original-content-type` attribute to decide whether to display the
+original image or use the transcoded version.
+
+Transcoded images are presented with this structure in image previews:
+
+``` html
+<div class="message_inline_image">
+    <a href="/user_uploads/path/to/example.heic" title="example.heic">
+        <img data-original-dimensions="1920x1080"
+          data-original-content-type="image/heic"
+          data-transcoded-image="1920x1080.webp"
+          src="/user_uploads/thumbnail/path/to/example.heic/840x560.webp">
+    </a>
+</div>
+```
+
+### Recommended client processing of image previews
 
 Clients are recommended to do the following when processing image
 previews:
@@ -217,16 +246,18 @@ previews:
   format match what they requested.
 - No other processing of the URLs is recommended.
 
-**Changes**: In Zulip 10.0 (feature level 336), added
+### Changes to image formatting
+
+**In Zulip 10.0** (feature level 336), added
 `data-original-content-type` attribute to convey the type of the
 original image, and optional `data-transcoded-image` attribute for
 images with formats which are not widely supported by browsers.
 
-**Changes**: In Zulip 9.2 (feature levels 278-279, and 287+), added
+**In Zulip 9.2** (feature levels 278-279, and 287+), added
 `data-original-dimensions` to the `image-loading-placeholder` spinner
 images, containing the dimensions of the original image.
 
-In Zulip 9.0 (feature level 276), added `data-original-dimensions`
+**In Zulip 9.0** (feature level 276), added `data-original-dimensions`
 attribute to images that have been thumbnailed, containing the
 dimensions of the full-size version of the image. Thumbnailing itself
 was reintroduced at feature level 275.

@@ -7,6 +7,7 @@ import render_message_reactions from "../templates/message_reactions.hbs";
 
 import * as blueslip from "./blueslip.ts";
 import * as channel from "./channel.ts";
+import type {RawLocalMessage} from "./echo.ts";
 import * as emoji from "./emoji.ts";
 import type {EmojiRenderingDetails} from "./emoji.ts";
 import {$t} from "./i18n.ts";
@@ -518,7 +519,9 @@ export function get_message_reactions(message: Message): MessageCleanReaction[] 
     return [...message.clean_reactions.values()];
 }
 
-export function generate_clean_reactions(message: RawMessage): Map<string, MessageCleanReaction> {
+export function generate_clean_reactions(
+    message: RawMessage | RawLocalMessage,
+): Map<string, MessageCleanReaction> {
     /*
       generate_clean_reactions processes the raw message.reactions object,
       which will contain one object for each individual reaction, even

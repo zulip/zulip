@@ -182,7 +182,7 @@ def get_chart_data_for_stream(
     start: Annotated[datetime | None, BeforeValidator(to_utc_datetime)] = None,
     end: Annotated[datetime | None, BeforeValidator(to_utc_datetime)] = None,
 ) -> HttpResponse:
-    stream, ignored_sub = access_stream_by_id(
+    stream, _sub = access_stream_by_id(
         user_profile,
         stream_id,
         require_content_access=False,

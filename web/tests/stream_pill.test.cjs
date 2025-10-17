@@ -80,7 +80,7 @@ const sweden_pill = {
 
 const subs = [denmark, sweden, germany];
 for (const sub of subs) {
-    stream_data.add_sub(sub);
+    stream_data.add_sub_for_tests(sub);
 }
 
 peer_data.set_subscribers(denmark.stream_id, [1, 2, 77]);

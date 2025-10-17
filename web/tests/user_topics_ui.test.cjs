@@ -17,7 +17,7 @@ const design = {
     is_muted: false,
 };
 
-stream_data.add_sub(design);
+stream_data.add_sub_for_tests(design);
 
 function test(label, f) {
     run_test(label, (helpers) => {

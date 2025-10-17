@@ -169,9 +169,9 @@ Form is validated both client-side using jquery-validation (see signup.js) and s
             {% if default_stream_groups %}
             <hr />
             <div class="default-stream-groups">
-                <p class="margin">{{ _('What are you interested in?') }}</p>
+                <p>{{ _('What are you interested in?') }}</p>
                 {% for default_stream_group in default_stream_groups %}
-                <div class="input-group margin">
+                <div class="input-group">
                     <label for="id_default_stream_group__{{ default_stream_group.id }}"
                       class="inline-block checkbox">
                         <input class="inline-block" type="checkbox"
@@ -218,7 +218,7 @@ Form is validated both client-side using jquery-validation (see signup.js) and s
             </div>
             {% endif %}
 
-            <div class="input-group margin terms-of-service">
+            <div class="input-group terms-of-service">
                 {% if terms_of_service %}
                 <div class="input-group">
                     {#

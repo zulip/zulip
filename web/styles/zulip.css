@@ -727,6 +727,12 @@ input:not(.input-element) {
     &[type="color"] {
         font-size: inherit;
         height: 1.4em;
+        background-color: var(--color-background-legacy-input);
+        border-color: var(--color-border-legacy-input);
+
+        &:focus {
+            border-color: var(--color-border-legacy-input-focus);
+        }
     }
 }
 
@@ -2460,7 +2466,8 @@ body:not(.spectator-view) {
 
 .default-language-display,
 .empty-topic-display,
-.empty-topic-placeholder-display::placeholder {
+.empty-topic-placeholder-display::placeholder,
+.drafts-unknown-msg-header-field {
     font-style: italic;
 }
 

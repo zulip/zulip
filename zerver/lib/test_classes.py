@@ -1074,6 +1074,7 @@ Output:
     def api_get(
         self, user: UserProfile, url: str, info: Mapping[str, Any] = {}, **extra: str
     ) -> "TestHttpResponse":
+        assert not url.startswith("/json/"), "Invalid URL for API authentication"
         extra["HTTP_AUTHORIZATION"] = self.encode_user(user)
         return self.client_get(
             url,
@@ -1096,6 +1097,7 @@ Output:
         intentionally_undocumented: bool = False,
         **extra: str,
     ) -> "TestHttpResponse":
+        assert not url.startswith("/json/"), "Invalid URL for API authentication"
         extra["HTTP_AUTHORIZATION"] = self.encode_user(user)
         return self.client_post(
             url,
@@ -1112,6 +1114,7 @@ Output:
     def api_patch(
         self, user: UserProfile, url: str, info: Mapping[str, Any] = {}, **extra: str
     ) -> "TestHttpResponse":
+        assert not url.startswith("/json/"), "Invalid URL for API authentication"
         extra["HTTP_AUTHORIZATION"] = self.encode_user(user)
         return self.client_patch(
             url,
@@ -1128,6 +1131,7 @@ Output:
     def api_delete(
         self, user: UserProfile, url: str, info: Mapping[str, Any] = {}, **extra: str
     ) -> "TestHttpResponse":
+        assert not url.startswith("/json/"), "Invalid URL for API authentication"
         extra["HTTP_AUTHORIZATION"] = self.encode_user(user)
         return self.client_delete(
             url,
@@ -1567,7 +1571,7 @@ Output:
         try:
             stream = get_stream(stream_name, user_profile.realm)
         except Stream.DoesNotExist:
-            stream, from_stream_creation = create_stream_if_needed(
+            stream, _from_stream_creation = create_stream_if_needed(
                 realm,
                 stream_name,
                 invite_only=invite_only,

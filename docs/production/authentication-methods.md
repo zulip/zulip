@@ -1,14 +1,34 @@
 # Authentication methods
 
-Zulip supports a wide variety of authentication methods. Some of them
-require configuration to set up.
+Zulip supports a wide variety of authentication methods:
+
+- [Email and password](#email-and-password), which is enabled by default.
+- [Social authentication](#social-authentication) with Google, GitHub,
+  and GitLab, which is easy to set up with a few lines of configuration.
+  Authentication with Apple additionally requires registering with Apple.
+- [Microsoft Entra ID](#microsoft-entra-id) (AzureAD), which is similarly easy to
+  configure.
+- [LDAP (including Active Directory)](#ldap-including-active-directory). Zulip
+  supports retrieving information about users via LDAP, and optionally using LDAP
+  as an authentication mechanism.
+- [SAML](#saml), which is supported by Okta, OneLogin, Entra ID (AzureAD),
+  Keycloak, Auth0 and many other identity providers.
+- [OpenID Connect](#openid-connect). Zulip can be integrated with any OpenID
+  Connect (OIDC) authentication provider.
+- [JSON Web Tokens (JWT)](#json-web-tokens-jwt)
+- [Apache-based SSO with `REMOTE_USER`](#apache-based-sso-with-remote_user)
 
 To configure or disable authentication methods on your Zulip server,
 edit the `AUTHENTICATION_BACKENDS` setting in
 `/etc/zulip/settings.py`, as well as any additional configuration your
 chosen authentication methods require; then restart the Zulip server.
 
-Details on each method below.
+If your authentication provider is not supported out-of-the-box, you can
+configure [custom authentication backends](#custom-authentication-backends). If
+you need help, best-effort community support is available in the [Zulip
+development community](https://zulip.com/development-community/). To inquire
+about options for custom development, [contact Zulip
+Sales](mailto:sales@zulip.com).
 
 ## Email and password
 
@@ -23,10 +43,7 @@ creating the initial realm and user. You can disable it after that.
 
 ### Passwords
 
-Zulip stores user passwords using the standard Argon2 and PBKDF2
-algorithms. Argon2 is used for all new and changed passwords as of
-Zulip Server 1.6.0, but legacy PBKDF2 passwords that were last changed
-before the 1.6.0 upgrade are still supported.
+Zulip stores user passwords using the standard Argon2 algorithm.
 
 When the user is choosing a password, Zulip checks the password's
 strength using the popular [zxcvbn][zxcvbn] library. Weak passwords
@@ -73,20 +90,74 @@ strength allowed is controlled by two settings in
 [zxcvbn-paper]: https://www.usenix.org/system/files/conference/usenixsecurity16/sec16_paper_wheeler.pdf
 [bon12]: http://ieeexplore.ieee.org/document/6234435/
 
-## Plug-and-play SSO (Google, GitHub, GitLab)
+## Social authentication
 
 With just a few lines of configuration, your Zulip server can
-authenticate users with any of several single-sign-on (SSO)
-authentication providers:
+authenticate users with:
 
 - Google accounts, with `GoogleAuthBackend`
 - GitHub accounts, with `GitHubAuthBackend`
 - GitLab accounts, with `GitLabAuthBackend`
-- Microsoft Entra ID (AzureAD), with `AzureADAuthBackend`
 
 Each of these requires one to a handful of lines of configuration in
 `settings.py`, as well as a secret in `zulip-secrets.conf`. Details
 are documented in your `settings.py`.
+
+### Sign in with Apple
+
+Zulip supports using the web flow for Sign in with Apple on
+self-hosted servers. To do so, you'll need to do the following:
+
+1. Visit [the Apple Developer site][apple-developer] and [Create a
+   Services ID][apple-create-services-id]. When prompted for a "Return
+   URL", enter `https://zulip.example.com/complete/apple/` (using the
+   domain for your server).
+
+1. Create a [Sign in with Apple private key][apple-create-private-key].
+
+1. Store the resulting private key at
+   `/etc/zulip/apple-auth-key.p8`. Be sure to set
+   permissions correctly:
+
+   ```bash
+   chown zulip:zulip /etc/zulip/apple-auth-key.p8
+   chmod 640 /etc/zulip/apple-auth-key.p8
+   ```
+
+1. Configure Apple authentication in `/etc/zulip/settings.py`:
+
+   - `SOCIAL_AUTH_APPLE_TEAM`: Your Team ID from Apple, which is a
+     string like "A1B2C3D4E5".
+   - `SOCIAL_AUTH_APPLE_SERVICES_ID`: The Services ID you created in
+     step 1, which might look like "com.example.services".
+   - `SOCIAL_AUTH_APPLE_APP_ID`: The App ID, or Bundle ID, of your
+     app that you used in step 1 to configure your Services ID.
+     This might look like "com.example.app".
+   - `SOCIAL_AUTH_APPLE_KEY`: Despite the name this is not a key, but
+     rather the Key ID of the key you created in step 2. This looks
+     like "F6G7H8I9J0".
+   - `AUTHENTICATION_BACKENDS`: Uncomment (or add) a line like
+     `'zproject.backends.AppleAuthBackend',` to enable Apple auth
+     using the created configuration.
+
+1. Register with Apple the email addresses or domains your Zulip
+   server sends email to users from. For instructions and background,
+   see the "Email Relay Service" subsection of
+   [this page][apple-get-started]. For details on what email
+   addresses Zulip sends from, see our
+   [outgoing email documentation][outgoing-email].
+
+[apple-create-services-id]: https://help.apple.com/developer-account/?lang=en#/dev1c0e25352
+[apple-developer]: https://developer.apple.com/account/resources/
+[apple-create-private-key]: https://help.apple.com/developer-account/?lang=en#/dev77c875b7e
+[apple-get-started]: https://developer.apple.com/sign-in-with-apple/get-started/
+[outgoing-email]: email.md
+
+## Microsoft Entra ID
+
+Set up authentication with Microsoft Entra ID (AzureAD) by modifying the
+`AzureADAuthBackend` configuration in `settings.py`, as well as a secret in
+`zulip-secrets.conf`. Details are documented in your `settings.py`.
 
 (ldap)=
 
@@ -97,10 +168,10 @@ optionally using LDAP as an authentication mechanism.
 
 In either configuration, you will need to do the following:
 
-1. These instructions assume you have an installed Zulip server and
-   are logged into a shell there. You can have created an
-   organization already using EmailAuthBackend, or plan to create the
-   organization using LDAP authentication.
+1. [Install a Zulip server](./install.md), and log into a shell.
+
+1. _(optional)_ Create an organization using EmailAuthBackend. Alternately, you
+   can plan to create the organization using LDAP authentication.
 
 1. Tell Zulip how to connect to your LDAP server:
 
@@ -867,7 +938,7 @@ integration](../production/scim.md).
 
 ### Using Authentik as a SAML IdP
 
-1. Make sure you reviewed [this article](https://goauthentik.io/integrations/services/zulip/), which
+1. Make sure you reviewed [this article](https://integrations.goauthentik.io/chat-communication-collaboration/zulip/), which
    details how to integrate Zulip with Authentik.
 1. Verify that `SOCIAL_AUTH_SAML_ENABLED_IDPS[{idp_name}]['entity_id']` and
    `SOCIAL_AUTH_SAML_ENABLED_IDPS[{idp_name}]['url']` are correct in your Zulip
@@ -1092,56 +1163,6 @@ to debug.
   sees the cookie, treats them as logged in, and proceeds to serve
   them the main app page normally.
 
-## Sign in with Apple
-
-Zulip supports using the web flow for Sign in with Apple on
-self-hosted servers. To do so, you'll need to do the following:
-
-1. Visit [the Apple Developer site][apple-developer] and [Create a
-   Services ID.][apple-create-services-id]. When prompted for a "Return
-   URL", enter `https://zulip.example.com/complete/apple/` (using the
-   domain for your server).
-
-1. Create a [Sign in with Apple private key][apple-create-private-key].
-
-1. Store the resulting private key at
-   `/etc/zulip/apple-auth-key.p8`. Be sure to set
-   permissions correctly:
-
-   ```bash
-   chown zulip:zulip /etc/zulip/apple-auth-key.p8
-   chmod 640 /etc/zulip/apple-auth-key.p8
-   ```
-
-1. Configure Apple authentication in `/etc/zulip/settings.py`:
-
-   - `SOCIAL_AUTH_APPLE_TEAM`: Your Team ID from Apple, which is a
-     string like "A1B2C3D4E5".
-   - `SOCIAL_AUTH_APPLE_SERVICES_ID`: The Services ID you created in
-     step 1, which might look like "com.example.services".
-   - `SOCIAL_AUTH_APPLE_APP_ID`: The App ID, or Bundle ID, of your
-     app that you used in step 1 to configure your Services ID.
-     This might look like "com.example.app".
-   - `SOCIAL_AUTH_APPLE_KEY`: Despite the name this is not a key, but
-     rather the Key ID of the key you created in step 2. This looks
-     like "F6G7H8I9J0".
-   - `AUTHENTICATION_BACKENDS`: Uncomment (or add) a line like
-     `'zproject.backends.AppleAuthBackend',` to enable Apple auth
-     using the created configuration.
-
-1. Register with Apple the email addresses or domains your Zulip
-   server sends email to users from. For instructions and background,
-   see the "Email Relay Service" subsection of
-   [this page][apple-get-started]. For details on what email
-   addresses Zulip sends from, see our
-   [outgoing email documentation][outgoing-email].
-
-[apple-create-services-id]: https://help.apple.com/developer-account/?lang=en#/dev1c0e25352
-[apple-developer]: https://developer.apple.com/account/resources/
-[apple-create-private-key]: https://help.apple.com/developer-account/?lang=en#/dev77c875b7e
-[apple-get-started]: https://developer.apple.com/sign-in-with-apple/get-started/
-[outgoing-email]: email.md
-
 ## OpenID Connect
 
 Zulip can be integrated with any OpenID Connect (OIDC) authentication
@@ -1175,7 +1196,7 @@ assumes the name is correct, and new users will not be presented with
 a registration form unless they need to accept Terms of Service for
 the server (i.e. `TERMS_OF_SERVICE_VERSION` is set).
 
-## JWT
+## JSON Web Tokens (JWT)
 
 Zulip supports using JSON Web Tokens (JWT) authentication in two ways:
 
@@ -1198,7 +1219,9 @@ configure the JWT secret and algorithm via `JWT_AUTH_KEYS` in
 `/etc/zulip/settings.py`; see the inline comment documentation in that
 file for details.
 
-## Configuring a custom Python wrapper around the `authenticate` mechanism
+## Custom authentication backends
+
+### Configuring a custom Python wrapper around the `authenticate` mechanism
 
 Zulip supports configuring a custom authentication function that will
 work as a wrapper around every login attempt to Zulip, enabling custom
@@ -1291,11 +1314,11 @@ request), this is where it should happen.
 
 [django-authenticate-details]: https://docs.djangoproject.com/en/5.0/topics/auth/customizing/#writing-an-authentication-backend
 
-## Adding more authentication backends
+### Adding more authentication backends
 
 Adding an integration with any of the more than 100 authentication
 providers supported by [python-social-auth][python-social-auth] (e.g.,
-Facebook, Twitter, etc.) is easy to do if you're willing to write a
+Facebook, X, etc.) is easy to do if you're willing to write a
 bit of code, and pull requests to add new backends are welcome.
 
 For example, the

@@ -5,13 +5,7 @@ import * as message_lists from "./message_lists.ts";
 import type {Message} from "./message_store.ts";
 import type {Event, PollWidgetExtraData, PollWidgetOutboundData} from "./poll_widget.ts";
 import type {TodoWidgetExtraData, TodoWidgetOutboundData} from "./todo_widget.ts";
-
-// TODO: This ZFormExtraData type should be moved to web/src/zform.js when it will be migrated
-type ZFormExtraData = {
-    type: string;
-    heading: string;
-    choices: {type: string; reply: string; long_name: string; short_name: string}[];
-};
+import type {ZFormExtraData} from "./zform.ts";
 
 type WidgetExtraData = PollWidgetExtraData | TodoWidgetExtraData | ZFormExtraData | null;
 

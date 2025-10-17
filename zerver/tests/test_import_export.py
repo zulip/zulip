@@ -412,7 +412,7 @@ class RealmImportExportTest(ExportFile):
         if export_type == RealmExport.EXPORT_FULL_WITH_CONSENT:
             assert exportable_user_ids is not None
 
-        with patch("zerver.lib.export.create_soft_link"), self.assertLogs(level="INFO"):
+        with self.assertLogs(level="INFO"):
             do_export_realm(
                 realm=realm,
                 output_dir=output_dir,
@@ -849,11 +849,13 @@ class RealmImportExportTest(ExportFile):
         # Consented users:
         hamlet = self.example_user("hamlet")
         othello = self.example_user("othello")
+        cordelia = self.example_user("cordelia")
         # Iago will be non-consenting.
         iago = self.example_user("iago")
 
         do_change_user_setting(hamlet, "allow_private_data_export", True, acting_user=None)
         do_change_user_setting(othello, "allow_private_data_export", True, acting_user=None)
+        do_change_user_setting(cordelia, "allow_private_data_export", True, acting_user=None)
         do_change_user_setting(iago, "allow_private_data_export", False, acting_user=None)
 
         # Despite both hamlet and othello having consent enabled, in a public export
@@ -864,6 +866,9 @@ class RealmImportExportTest(ExportFile):
         a_message = Message.objects.get(id=a_message_id)
         a_message.sending_client = private_client
         a_message.save()
+
+        # Verify that a group DM between consenting users is not exported
+        self.send_group_direct_message(hamlet, [othello, cordelia])
 
         # SavedSnippets are private content - so in a public export, despite
         # hamlet having consent enabled, such objects should not be exported.
@@ -887,6 +892,9 @@ class RealmImportExportTest(ExportFile):
 
         exported_user_presence_ids = self.get_set(realm_data["zerver_userpresence"], "id")
         self.assertIn(iago_presence.id, exported_user_presence_ids)
+
+        exported_huddle_ids = self.get_set(realm_data["zerver_huddle"], "id")
+        self.assertEqual(exported_huddle_ids, set())
 
     def test_export_realm_with_member_consent(self) -> None:
         realm = Realm.objects.get(string_id="zulip")

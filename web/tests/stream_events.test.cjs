@@ -131,7 +131,7 @@ test("update_property", ({override}) => {
     );
     override(user_group_edit, "update_stream_setting_in_permissions_panel", noop);
     const sub = {...frontend};
-    stream_data.add_sub(sub);
+    stream_data.add_sub_for_tests(sub);
 
     const stream_id = sub.stream_id;
 
@@ -445,7 +445,7 @@ test("marked_(un)subscribed (early return)", () => {
 
 test("marked_subscribed (normal)", ({override}) => {
     const sub = {...frontend};
-    stream_data.add_sub(sub);
+    stream_data.add_sub_for_tests(sub);
     override(stream_color_events, "update_stream_color", noop);
     override(buddy_list, "populate", noop);
     activity_ui.set_cursor_and_filter();
@@ -496,7 +496,7 @@ test("marked_subscribed (color)", ({override}) => {
         is_muted: true,
         invite_only: false,
     };
-    stream_data.add_sub(sub);
+    stream_data.add_sub_for_tests(sub);
 
     override(color_data, "pick_color", () => "green");
     override(user_profile, "update_user_profile_streams_list_for_users", noop);
@@ -519,7 +519,7 @@ test("marked_subscribed (color)", ({override}) => {
 
 test("marked_subscribed (emails)", ({override}) => {
     const sub = {...frontend};
-    stream_data.add_sub(sub);
+    stream_data.add_sub_for_tests(sub);
     override(stream_color_events, "update_stream_color", noop);
 
     // Test assigning subscriber emails
@@ -538,7 +538,10 @@ test("marked_subscribed (emails)", ({override}) => {
 
     const user_ids = [15, 20, 25, me.user_id];
     stream_events.mark_subscribed(sub, user_ids, "");
-    assert.deepEqual(new Set(peer_data.get_subscribers(sub.stream_id)), new Set(user_ids));
+    assert.deepEqual(
+        new Set(peer_data.get_subscriber_ids_assert_loaded(sub.stream_id)),
+        new Set(user_ids),
+    );
     assert.ok(stream_data.is_subscribed(sub.stream_id));
 
     const args = subs_stub.get_args("sub");
@@ -548,7 +551,7 @@ test("marked_subscribed (emails)", ({override}) => {
 test("mark_unsubscribed (update_settings_for_unsubscribed)", ({override}) => {
     // Test unsubscribe
     const sub = {...dev_help};
-    stream_data.add_sub(sub);
+    stream_data.add_sub_for_tests(sub);
     stream_data.subscribe_myself(sub);
 
     const stub = make_stub();
@@ -568,7 +571,7 @@ test("mark_unsubscribed (update_settings_for_unsubscribed)", ({override}) => {
 
 test("mark_unsubscribed (render_title_area)", ({override}) => {
     const sub = {...frontend, subscribed: true};
-    stream_data.add_sub(sub);
+    stream_data.add_sub_for_tests(sub);
 
     // Test update bookend and remove done event
     narrow_to_frontend();
@@ -597,16 +600,16 @@ test("mark_unsubscribed (render_title_area)", ({override}) => {
 });
 
 test("remove_deactivated_user_from_all_streams", () => {
-    stream_data.add_sub(dev_help);
+    stream_data.add_sub_for_tests(dev_help);
     const subs_stub = make_stub();
     stream_settings_ui.update_subscribers_ui = subs_stub.f;
 
     // assert starting state
-    assert.ok(!stream_data.is_user_subscribed(dev_help.stream_id, george.user_id));
+    assert.ok(!stream_data.is_user_loaded_and_subscribed(dev_help.stream_id, george.user_id));
 
     // verify that deactivating user should unsubscribe user from all streams
     peer_data.add_subscriber(dev_help.stream_id, george.user_id);
-    assert.ok(stream_data.is_user_subscribed(dev_help.stream_id, george.user_id));
+    assert.ok(stream_data.is_user_loaded_and_subscribed(dev_help.stream_id, george.user_id));
 
     stream_events.remove_deactivated_user_from_all_streams(george.user_id);
 
@@ -627,15 +630,15 @@ test("process_subscriber_update", ({override, override_rewire}) => {
     const userIds = [104, 2, 3];
     // Sample stream IDs
     const streamIds = [1, 2, 3];
-    stream_data.add_sub({
+    stream_data.add_sub_for_tests({
         stream_id: 1,
         name: "Rome",
     });
-    stream_data.add_sub({
+    stream_data.add_sub_for_tests({
         stream_id: 2,
         name: "Denmark",
     });
-    stream_data.add_sub({
+    stream_data.add_sub_for_tests({
         stream_id: 3,
         name: "Paris",
     });
@@ -657,7 +660,7 @@ test("process_subscriber_update", ({override, override_rewire}) => {
 test("marked_subscribed (new channel creation)", ({override}) => {
     stream_create.set_name(frontend.name);
     const sub = {...frontend};
-    stream_data.add_sub(sub);
+    stream_data.add_sub_for_tests(sub);
 
     const go_to_location_stub = make_stub();
     override(browser_history, "go_to_location", go_to_location_stub.f);

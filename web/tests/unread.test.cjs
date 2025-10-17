@@ -41,7 +41,7 @@ const social = {
     subscribed: true,
     is_muted: false,
 };
-stream_data.add_sub(social);
+stream_data.add_sub_for_tests(social);
 
 function assert_zero_counts(counts) {
     assert.equal(counts.direct_message_count, 0);
@@ -112,8 +112,14 @@ test("changing_topics", () => {
         topic: "lunCH",
         unread: true,
     };
-    message_store.update_message_cache(message);
-    message_store.update_message_cache(other_message);
+    message_store.update_message_cache({
+        type: "server_message",
+        message,
+    });
+    message_store.update_message_cache({
+        type: "server_message",
+        message: other_message,
+    });
 
     assert.deepEqual(unread.get_read_message_ids([15, 16]), [15, 16]);
     assert.deepEqual(unread.get_unread_message_ids([15, 16]), []);
@@ -191,9 +197,18 @@ test("changing_topics", () => {
         unread: true,
     };
 
-    message_store.update_message_cache(message);
-    message_store.update_message_cache(other_message);
-    message_store.update_message_cache(sticky_message);
+    message_store.update_message_cache({
+        type: "server_message",
+        message,
+    });
+    message_store.update_message_cache({
+        type: "server_message",
+        message: other_message,
+    });
+    message_store.update_message_cache({
+        type: "server_message",
+        message: sticky_message,
+    });
 
     unread.process_loaded_messages([sticky_message]);
     count = unread.num_unread_for_topic(stream_id, "sticky");
@@ -292,7 +307,10 @@ test("num_unread_for_topic", () => {
     let i;
     for (i = num_msgs; i > 0; i -= 1) {
         message.id = i;
-        message_store.update_message_cache(message);
+        message_store.update_message_cache({
+            type: "server_message",
+            message,
+        });
         unread.process_loaded_messages([message]);
     }
 
@@ -390,7 +408,10 @@ test("phantom_messages", () => {
         stream_id: 555,
         topic: "phantom",
     };
-    message_store.update_message_cache(message);
+    message_store.update_message_cache({
+        type: "server_message",
+        message,
+    });
     unread.mark_as_read(message.id);
     const counts = unread.get_counts();
     assert.equal(counts.home_unread_messages, 0);

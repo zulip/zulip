@@ -14,7 +14,7 @@ system-configuration
 mobile-push-notifications
 upgrade
 modify
-security-model
+securing-your-zulip-server
 authentication-methods
 export-and-import
 postgresql

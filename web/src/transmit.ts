@@ -1,5 +1,9 @@
+import assert from "minimalistic-assert";
+import * as z from "zod/mini";
+
 import * as blueslip from "./blueslip.ts";
 import * as channel from "./channel.ts";
+import type {Message} from "./message_store.ts";
 import * as people from "./people.ts";
 import * as reload from "./reload.ts";
 import * as reload_state from "./reload_state.ts";
@@ -8,11 +12,33 @@ import * as server_events_state from "./server_events_state.ts";
 import {current_user} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 
-export function send_message(request, on_success, error) {
+type SendMessageData = {
+    local_id: string;
+    sender_id: number;
+    queue_id: string | null;
+    to: string;
+    content: string;
+    resend?: boolean;
+    locally_echoed?: boolean;
+} & (
+    | {
+          type: "stream";
+          topic: string;
+      }
+    | {
+          type: "private";
+      }
+);
+
+export function send_message(
+    request: SendMessageData,
+    on_success: (raw_data: unknown) => void,
+    error: (response: string, code: string) => void,
+): void {
     if (!request.resend) {
         sent_messages.start_tracking_message({
             local_id: request.local_id,
-            locally_echoed: request.locally_echoed,
+            locally_echoed: request.locally_echoed ?? false,
         });
     }
     sent_messages.wrap_send(request.local_id, () => {
@@ -65,13 +91,14 @@ export function send_message(request, on_success, error) {
                 }
 
                 const response = channel.xhr_error_message("Error sending message", xhr);
-                error(response, xhr.responseJSON?.code);
+                const parsed = z.object({code: z.string()}).safeParse(xhr.responseJSON);
+                error(response, parsed.success ? parsed.data.code : "");
             },
         });
     });
 }
 
-export function reply_message(opts) {
+export function reply_message(message: Message, content: string): void {
     // This code does an application-triggered reply to a message (as
     // opposed to the user themselves doing it).  Its only use case
     // for now is experimental widget-aware bots, so treat this as
@@ -79,17 +106,15 @@ export function reply_message(opts) {
     // bot that wants to give users 3 or 4 canned replies to some
     // choice, but it wants to front-end each of these options
     // with a one-click button.  This function is part of that architecture.
-    const message = opts.message;
-    let content = opts.content;
 
-    function success() {
+    function success(): void {
         // TODO: If server response comes back before the message event,
         //       we could show it earlier, although that creates some
         //       complexity.  For now do nothing.  (Note that send_message
         //       already handles things like reporting times to the server.)
     }
 
-    function error(_response, _server_error_code) {
+    function error(_response: string, _server_error_code: string): void {
         // TODO: In our current use case, which is widgets, to meaningfully
         //       handle errors, we would want the widget to provide some
         //       kind of callback to us so it can do some appropriate UI.
@@ -99,11 +124,8 @@ export function reply_message(opts) {
     const locally_echoed = false;
     const local_id = sent_messages.get_new_local_id();
 
-    const reply = {
-        sender_id: current_user.user_id,
-        queue_id: server_events_state.queue_id,
-        local_id,
-    };
+    const sender_id = current_user.user_id;
+    const queue_id = server_events_state.queue_id;
 
     sent_messages.start_tracking_message({
         local_id,
@@ -117,10 +139,15 @@ export function reply_message(opts) {
 
         content = mention + " " + content;
 
-        reply.type = "stream";
-        reply.to = stream_name;
-        reply.content = content;
-        reply.topic = message.topic;
+        const reply: SendMessageData = {
+            type: "stream",
+            local_id,
+            sender_id,
+            queue_id,
+            to: stream_name,
+            content,
+            topic: message.topic,
+        };
 
         send_message(reply, success, error);
         return;
@@ -128,10 +155,16 @@ export function reply_message(opts) {
 
     if (message.type === "private") {
         const pm_recipient = people.pm_reply_to(message);
+        assert(pm_recipient !== undefined);
 
-        reply.type = "private";
-        reply.to = JSON.stringify(pm_recipient.split(","));
-        reply.content = content;
+        const reply: SendMessageData = {
+            type: "private",
+            local_id,
+            sender_id,
+            queue_id,
+            to: JSON.stringify(pm_recipient.split(",")),
+            content,
+        };
 
         send_message(reply, success, error);
         return;

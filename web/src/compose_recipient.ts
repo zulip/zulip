@@ -79,7 +79,7 @@ export let update_recipient_row_attention_level = (): void => {
     // row is focused, that puts users outside the low-attention
     // recipient-row state--including the `c` hotkey or the
     // Start new conversation button being clicked. But that
-    // logic is handled via the event handlers in compose_setup.js
+    // logic is handled via the event handlers in compose_setup.ts
     // that call set_high_attention_recipient_row().
     if (
         (composing_to_current_topic_narrow() ||

@@ -25,7 +25,8 @@ exports.buddy_list_add_other_user = (user_id, $stub) => {
     $("#buddy_list_wrapper").set_find_results(sel, $stub);
 };
 
-exports.override_user_matches_narrow = (user_id) => users_matching_view.includes(user_id);
+exports.override_user_matches_narrow_using_loaded_data = (user_id) =>
+    users_matching_view.includes(user_id);
 
 exports.clear_buddy_list = (buddy_list) => {
     buddy_list.populate({

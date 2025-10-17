@@ -323,8 +323,6 @@ html {
     }
 
     .new-organization-button {
-        margin-top: 25px;
-
         &[disabled] {
             cursor: default;
             opacity: 0.6;

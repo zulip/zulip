@@ -1151,7 +1151,7 @@ def find_first_unread_anchor(
     )
     query = query.add_columns(column("flags", Integer))
 
-    query, is_search, is_dm_narrow = add_narrow_conditions(
+    query, _is_search, is_dm_narrow = add_narrow_conditions(
         user_profile=user_profile,
         inner_msg_id_col=inner_msg_id_col,
         query=query,

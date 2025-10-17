@@ -27,7 +27,7 @@
     font-family: "Source Code Pro", monospace;
     padding: 10px;
     font-size: 0.85em; /* 13.6px at 16px/em (previously 0.85rem) */
-    background-color: hsl(0deg 0% 98%);
+    background-color: var(--color-background-stream-email);
     border: 1px solid hsl(0deg 0% 87%);
     border-radius: 4px;
 }
@@ -169,8 +169,8 @@ h4.user_group_setting_subsection_title {
 .member-list-box,
 .subscriber-list-box {
     text-align: center;
-    border-left: 1px solid hsl(0deg 0% 87%);
-    border-right: 1px solid hsl(0deg 0% 87%);
+    border-left: 1px solid var(--color-border-table-subscriber-list);
+    border-right: 1px solid var(--color-border-table-subscriber-list);
     border-radius: 4px;
 
     .member_list_container,
@@ -756,7 +756,7 @@ h4.user_group_setting_subsection_title {
             /* This color is used in .subscriber-check-icon of the help
                center to make the icon color same as the web app. Do change
                the color there when changing the color here */
-            color: hsl(0deg 0% 72%);
+            color: var(--color-stream-group-row-plus-icon);
             font-size: 1.0938em; /* 70% of 1.5625em */
 
             &.hide {
@@ -765,7 +765,7 @@ h4.user_group_setting_subsection_title {
         }
 
         &.checked:hover .sub-unsub-icon {
-            color: hsl(240deg 41% 50%);
+            color: var(--color-stream-group-row-checked-icon-hover);
         }
 
         &.not-direct-member {
@@ -776,10 +776,12 @@ h4.user_group_setting_subsection_title {
 
         &.disabled {
             &:not(.checked) .sub-unsub-icon {
-                color: hsl(0deg 0% 87%);
+                /* Change opacity to 50% in dark mode */
+                color: var(--color-stream-group-row-plus-icon-disabled);
             }
 
             .sub-unsub-icon {
+                color: var(--color-stream-group-row-checked-icon-disabled);
                 cursor: not-allowed;
             }
         }
@@ -806,7 +808,12 @@ h4.user_group_setting_subsection_title {
         /* This color is used in .subscriber-check-icon of the help
            center to make the icon color same as the web app. Do change
            the color there when changing the color here */
-        color: hsl(240deg 96% 68%);
+        color: var(--color-stream-group-row-checked-icon);
+    }
+
+    .check:not(.checked, .disabled):hover .sub-unsub-icon,
+    &.active .check:not(.checked, .disabled):hover .sub-unsub-icon {
+        color: var(--color-stream-group-row-plus-icon-hover);
     }
 
     .icon {
@@ -892,11 +899,6 @@ h4.user_group_setting_subsection_title {
 
     &.active {
         background-color: var(--color-active-row-modal);
-    }
-
-    .check:not(.checked, .disabled):hover .sub-unsub-icon,
-    &.active .check:not(.checked, .disabled):hover .sub-unsub-icon {
-        color: hsl(0deg 0% 27%);
     }
 
     &::selection,
@@ -1254,7 +1256,7 @@ h4.user_group_setting_subsection_title {
 }
 
 div.settings-radio-input-parent {
-    border-bottom: 1px solid hsl(0deg 0% 87%);
+    border-bottom: 1px solid var(--color-border-settings-radio-input-parent);
     margin: 2px 0 2px 5px;
     padding: 2px 0;
 
@@ -1337,13 +1339,9 @@ div.settings-radio-input-parent {
     /* Subtract 2 * (2px padding) + 2 * (1px border) */
     min-width: calc(var(--modal-input-width) - 6px);
 
-    .input {
-        flex-grow: 1;
-
-        &:first-child:empty::before {
-            opacity: 0.5;
-            content: attr(data-placeholder);
-        }
+    .input:first-child:empty::before {
+        opacity: 0.5;
+        content: attr(data-placeholder);
     }
 }
 

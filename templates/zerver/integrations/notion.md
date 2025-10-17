@@ -17,4 +17,8 @@ Get Zulip notifications for your Notion pages and databases via Zapier!
 
 {end_tabs}
 
+{!congrats.md!}
+
+![](/static/images/integrations/notion/001.png)
+
 [1]: ./zapier

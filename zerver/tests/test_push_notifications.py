@@ -1338,7 +1338,7 @@ class TestAPNs(PushNotificationTestCase):
     def test_success(self) -> None:
         self.setup_apns_tokens()
         with (
-            self.mock_apns() as (apns_context, send_notification),
+            self.mock_apns() as (_apns_context, send_notification),
             self.assertLogs("zerver.lib.push_notifications", level="INFO") as logger,
         ):
             send_notification.return_value.is_successful = True
@@ -1352,7 +1352,7 @@ class TestAPNs(PushNotificationTestCase):
     def test_http_retry_eventually_fails(self) -> None:
         self.setup_apns_tokens()
         with (
-            self.mock_apns() as (apns_context, send_notification),
+            self.mock_apns() as (_apns_context, send_notification),
             self.assertLogs("zerver.lib.push_notifications", level="INFO") as logger,
         ):
             send_notification.side_effect = aioapns.exceptions.ConnectionError()
@@ -1365,7 +1365,7 @@ class TestAPNs(PushNotificationTestCase):
     def test_other_exception(self) -> None:
         self.setup_apns_tokens()
         with (
-            self.mock_apns() as (apns_context, send_notification),
+            self.mock_apns() as (_apns_context, send_notification),
             self.assertLogs("zerver.lib.push_notifications", level="INFO") as logger,
         ):
             send_notification.side_effect = IOError
@@ -1378,7 +1378,7 @@ class TestAPNs(PushNotificationTestCase):
     def test_internal_server_error(self) -> None:
         self.setup_apns_tokens()
         with (
-            self.mock_apns() as (apns_context, send_notification),
+            self.mock_apns() as (_apns_context, send_notification),
             self.assertLogs("zerver.lib.push_notifications", level="INFO") as logger,
         ):
             send_notification.return_value.is_successful = False
@@ -1398,7 +1398,7 @@ class TestAPNs(PushNotificationTestCase):
             server=self.server,
         )
         with (
-            self.mock_apns() as (apns_context, send_notification),
+            self.mock_apns() as (_apns_context, send_notification),
             self.assertLogs("zerver.lib.push_notifications", level="INFO") as logger,
         ):
             send_notification.return_value.is_successful = True
@@ -2655,34 +2655,54 @@ class PushBouncerSignupTest(ZulipTestCase):
 
         request["contact_email"] = "server-admin"
         result = self.client_post("/api/v1/remotes/server/register", request)
-        self.assert_json_error(result, "Enter a valid email address.")
+        self.assert_json_error(
+            result, "Invalid server administrator email address: Enter a valid email address."
+        )
 
         request["contact_email"] = "admin@example.com"
         result = self.client_post("/api/v1/remotes/server/register", request)
-        self.assert_json_error(result, "Invalid email address.")
+        self.assert_json_error(
+            result,
+            "Invalid server administrator email address: example.com is not a valid email domain.",
+        )
 
         # An example disposable domain.
         request["contact_email"] = "admin@mailnator.com"
         result = self.client_post("/api/v1/remotes/server/register", request)
-        self.assert_json_error(result, "Please use your real email address.")
+        self.assert_json_error(
+            result,
+            "Invalid server administrator email address: Please use your real email address.",
+        )
 
         request["contact_email"] = "admin@zulip.com"
         with mock.patch("zilencer.views.dns_resolver.Resolver") as resolver:
             resolver.return_value.resolve.side_effect = DNSNoAnswer
-            resolver.return_value.resolve_name.return_value = ["whee"]
+            resolver.return_value.resolve_name.return_value = ["A/AAAA response"]
             result = self.client_post("/api/v1/remotes/server/register", request)
             self.assert_json_error(
-                result, "zulip.com is invalid because it does not have any MX records"
+                result,
+                "Invalid server administrator email address: zulip.com is invalid because it does not have any MX records",
+            )
+
+        with mock.patch("zilencer.views.dns_resolver.Resolver") as resolver:
+            resolver.return_value.resolve.side_effect = [DNSNoAnswer, "NS response"]
+            resolver.return_value.resolve_name.side_effect = DNSNoAnswer
+            result = self.client_post("/api/v1/remotes/server/register", request)
+            self.assert_json_error(
+                result,
+                "Invalid server administrator email address: zulip.com is invalid because it does not have any MX records",
             )
 
         with mock.patch("zilencer.views.dns_resolver.Resolver") as resolver:
             resolver.return_value.resolve.side_effect = DNSNoAnswer
             resolver.return_value.resolve_name.side_effect = DNSNoAnswer
             result = self.client_post("/api/v1/remotes/server/register", request)
-            self.assert_json_error(result, "zulip.com does not exist")
+            self.assert_json_error(
+                result, "Invalid server administrator email address: zulip.com does not exist"
+            )
 
         with mock.patch("zilencer.views.dns_resolver.Resolver") as resolver:
-            resolver.return_value.resolve.return_value = ["whee"]
+            resolver.return_value.resolve.return_value = ["MX response"]
             result = self.client_post("/api/v1/remotes/server/register", request)
             self.assert_json_success(result)
 

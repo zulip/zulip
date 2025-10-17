@@ -643,7 +643,7 @@ export class Filter {
             return util.strcmp(a, b);
         };
 
-        return [...term_types].sort(compare);
+        return term_types.toSorted(compare);
     }
 
     static operator_to_prefix(operator: string, negated?: boolean): string {
@@ -970,16 +970,15 @@ export class Filter {
             );
         }
 
-        const sorted_simplified_terms = filter_terms
-            .map((term) => {
-                let operand = term.operand;
-                if (term.operator === "channel" || term.operator === "topic") {
-                    operand = operand.toLowerCase();
-                }
+        const sorted_simplified_terms = filter_terms.map((term) => {
+            let operand = term.operand;
+            if (term.operator === "channel" || term.operator === "topic") {
+                operand = operand.toLowerCase();
+            }
 
-                return `${term.negated ? "0" : "1"}-${term.operator}-${operand}`;
-            })
-            .sort(util.strcmp);
+            return `${term.negated ? "0" : "1"}-${term.operator}-${operand}`;
+        });
+        sorted_simplified_terms.sort(util.strcmp);
 
         if (!excluded_operators) {
             this.cached_sorted_terms_for_comparison = sorted_simplified_terms;
@@ -1626,10 +1625,8 @@ export class Filter {
         return new Filter(terms);
     }
 
-    has_topic(stream_id: number, topic: string): boolean {
-        return (
-            this.has_operand("channel", stream_id.toString()) && this.has_operand("topic", topic)
-        );
+    has_topic(stream_id: string, topic: string): boolean {
+        return this.has_operand("channel", stream_id) && this.has_operand("topic", topic);
     }
 
     sorted_term_types(): string[] {

@@ -484,13 +484,13 @@ def patch_bot_backend(
         if default_sending_stream == "":
             stream: Stream | None = None
         else:
-            (stream, sub) = access_stream_by_name(user_profile, default_sending_stream)
+            (stream, _sub) = access_stream_by_name(user_profile, default_sending_stream)
         do_change_default_sending_stream(bot, stream, acting_user=user_profile)
     if default_events_register_stream is not None:
         if default_events_register_stream == "":
             stream = None
         else:
-            (stream, sub) = access_stream_by_name(user_profile, default_events_register_stream)
+            (stream, _sub) = access_stream_by_name(user_profile, default_events_register_stream)
         do_change_default_events_register_stream(bot, stream, acting_user=user_profile)
     if default_all_public_streams is not None:
         do_change_default_all_public_streams(
@@ -634,13 +634,13 @@ def add_bot_backend(
 
     default_sending_stream = None
     if default_sending_stream_name is not None:
-        (default_sending_stream, ignored_sub) = access_stream_by_name(
+        (default_sending_stream, _sub) = access_stream_by_name(
             user_profile, default_sending_stream_name
         )
 
     default_events_register_stream = None
     if default_events_register_stream_name is not None:
-        (default_events_register_stream, ignored_sub) = access_stream_by_name(
+        (default_events_register_stream, _sub) = access_stream_by_name(
             user_profile, default_events_register_stream_name
         )
 
@@ -903,7 +903,7 @@ def get_subscription_backend(
     user_id: PathOnly[Json[int]],
 ) -> HttpResponse:
     target_user = access_user_by_id(user_profile, user_id, for_admin=False)
-    (stream, sub) = access_stream_by_id(user_profile, stream_id, require_content_access=False)
+    (_stream, _sub) = access_stream_by_id(user_profile, stream_id, require_content_access=False)
 
     subscription_status = {"is_subscribed": subscribed_to_stream(target_user, stream_id)}
 

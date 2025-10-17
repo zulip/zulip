@@ -29,6 +29,10 @@ const stream_list = mock_esm("../src/stream_list");
 const unread_ui = mock_esm("../src/unread_ui");
 const activity = mock_esm("../src/activity");
 
+mock_esm("../src/electron_bridge", {
+    electron_bridge: {},
+});
+
 let added_message = false;
 message_lists.current = {
     data: {
@@ -87,7 +91,7 @@ function test_helper({override}) {
     };
 }
 
-run_test("insert_message", ({override}) => {
+run_test("insert_server_message", ({override}) => {
     message_store.clear_for_testing();
 
     override(pm_list, "update_private_messages", noop);
@@ -101,6 +105,8 @@ run_test("insert_message", ({override}) => {
         topic: "Foo",
         type: "stream",
         reactions: [],
+        avatar_url: `/avatar/${isaac.user_id}`,
+        display_recipient: "Bar",
     };
 
     assert.equal(message_store.get(new_message.id), undefined);
@@ -111,7 +117,10 @@ run_test("insert_message", ({override}) => {
     helper.redirect(unread_ui, "update_unread_counts");
     helper.redirect(activity, "set_received_new_messages");
 
-    message_events.insert_new_messages([new_message]);
+    message_events.insert_new_messages({
+        type: "server_message",
+        raw_messages: [new_message],
+    });
 
     // Even though we have stubbed a *lot* of code, our
     // tests can still verify the main "narrative" of how
@@ -120,6 +129,58 @@ run_test("insert_message", ({override}) => {
     assert.deepEqual(helper.events, [
         [direct_message_group_data, "process_loaded_messages"],
         [unread_ui, "update_unread_counts"],
+        [activity, "set_received_new_messages"],
+        [message_notifications, "received_messages"],
+        [stream_list, "update_streams_sidebar"],
+    ]);
+    assert.ok(added_message);
+
+    // Despite all of our stubbing/mocking, the call to
+    // insert_new_messages will have created a very important
+    // side effect that we can verify:
+    const inserted_message = message_store.get(new_message.id);
+    assert.equal(inserted_message.id, new_message.id);
+    assert.equal(inserted_message.content, "example content");
+});
+
+run_test("insert_local_message", ({override}) => {
+    message_store.clear_for_testing();
+
+    override(pm_list, "update_private_messages", noop);
+
+    const helper = test_helper({override});
+
+    const new_message = {
+        sender_id: isaac.user_id,
+        id: 1001,
+        content: "example content",
+        topic: "Foo",
+        type: "stream",
+        reactions: [],
+        avatar_url: `/avatar/${isaac.user_id}`,
+        display_recipient: "Bar",
+        draft_id: 1,
+        local_id: "1001.1",
+    };
+
+    assert.equal(message_store.get(new_message.id), undefined);
+
+    helper.redirect(direct_message_group_data, "process_loaded_messages");
+    helper.redirect(message_notifications, "received_messages");
+    helper.redirect(stream_list, "update_streams_sidebar");
+    helper.redirect(activity, "set_received_new_messages");
+
+    message_events.insert_new_messages({
+        type: "local_message",
+        raw_messages: [new_message],
+    });
+
+    // Even though we have stubbed a *lot* of code, our
+    // tests can still verify the main "narrative" of how
+    // the code invokes various objects when a new message
+    // comes in:
+    assert.deepEqual(helper.events, [
+        [direct_message_group_data, "process_loaded_messages"],
         [activity, "set_received_new_messages"],
         [message_notifications, "received_messages"],
         [stream_list, "update_streams_sidebar"],

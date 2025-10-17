@@ -1628,7 +1628,7 @@ class EditMessageTest(ZulipTestCase):
         # has been set properly.
         called = False
         for call_args in mock_send_event.call_args_list:
-            (arg_realm, arg_event, arg_notified_users) = call_args[0]
+            (_arg_realm, arg_event, arg_notified_users) = call_args[0]
             if arg_event["type"] == "update_message":
                 self.assertEqual(arg_event["type"], "update_message")
                 self.assertEqual(
@@ -1686,7 +1686,7 @@ class EditMessageTest(ZulipTestCase):
         # has been set properly.
         called = False
         for call_args in mock_send_event.call_args_list:
-            (arg_realm, arg_event, arg_notified_users) = call_args[0]
+            (_arg_realm, arg_event, arg_notified_users) = call_args[0]
             if arg_event["type"] == "update_message":
                 self.assertEqual(arg_event["type"], "update_message")
                 self.assertEqual(
@@ -1741,7 +1741,7 @@ class EditMessageTest(ZulipTestCase):
         # Here we assert topic_wildcard_mention_user_ids has been set properly.
         called = False
         for call_args in mock_send_event.call_args_list:
-            (arg_realm, arg_event, arg_notified_users) = call_args[0]
+            (_arg_realm, arg_event, arg_notified_users) = call_args[0]
             if arg_event["type"] == "update_message":
                 self.assertEqual(arg_event["type"], "update_message")
                 self.assertEqual(arg_event["topic_wildcard_mention_user_ids"], [hamlet.id])
@@ -1802,7 +1802,7 @@ class EditMessageTest(ZulipTestCase):
         # is removed.
         called = False
         for call_args in mock_send_event.call_args_list:
-            (arg_realm, arg_event, arg_notified_users) = call_args[0]
+            (_arg_realm, arg_event, arg_notified_users) = call_args[0]
             if arg_event["type"] == "update_message":
                 self.assertEqual(arg_event["type"], "update_message")
                 self.assertEqual(arg_event["stream_wildcard_mention_user_ids"], [])
@@ -1927,7 +1927,7 @@ class EditMessageTest(ZulipTestCase):
         # Here we assert 'stream_wildcard_mention_user_ids' has been set properly.
         called = False
         for call_args in mock_send_event.call_args_list:
-            (arg_realm, arg_event, arg_notified_users) = call_args[0]
+            (_arg_realm, arg_event, arg_notified_users) = call_args[0]
             if arg_event["type"] == "update_message":
                 self.assertEqual(arg_event["type"], "update_message")
                 self.assertEqual(
@@ -1990,7 +1990,7 @@ class EditMessageTest(ZulipTestCase):
         # is removed.
         called = False
         for call_args in mock_send_event.call_args_list:
-            (arg_realm, arg_event, arg_notified_users) = call_args[0]
+            (_arg_realm, arg_event, arg_notified_users) = call_args[0]
             if arg_event["type"] == "update_message":
                 self.assertEqual(arg_event["type"], "update_message")
                 self.assertEqual(arg_event["stream_wildcard_mention_user_ids"], [])

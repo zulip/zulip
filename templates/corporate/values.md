@@ -32,7 +32,7 @@ fully committed to helping bring up the next generation of open-source
 contributors from a wide range of backgrounds.
 
 We have invested into making Zulip’s code uniquely readable, well tested, and
-easy to modify. Beyond that, we have written an extraordinary 150K words of
+easy to modify. Beyond that, we have written an extraordinary 185K words of
 documentation on [how to contribute to
 Zulip](https://zulip.readthedocs.io/en/latest/overview/contributing.html), with
 topics ranging from [practical Git

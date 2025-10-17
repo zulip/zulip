@@ -431,7 +431,7 @@
     }
 
     &:hover {
-        background-color: var(--color-background-opaque-hover-narrow-filter);
+        background-color: var(--color-background-hover-narrow-filter);
         box-shadow: inset 0 0 0 1px var(--color-shadow-sidebar-row-hover);
         /* We only set the border radius on the hover/popover states,
            so as to prevent the background on highlighted channels
@@ -692,15 +692,24 @@
        state that might show a highlight. */
     border-radius: 4px;
 
+    /* Always show the box-shadow outline on hover and
+       an open left-sidebar menu (vdots) */
     &:hover,
     &:has(.left_sidebar_menu_icon_visible) {
-        background-color: var(--color-background-hover-narrow-filter);
         box-shadow: inset 0 0 0 1px var(--color-shadow-sidebar-row-hover);
+    }
 
-        .sidebar-topic-check {
-            background-color: var(
-                --color-background-opaque-hover-narrow-filter
-            );
+    /* However, only adjust the background colors outside of active
+       filters, whose colors are more intense in light and dark mode
+       than the hover-narrow-filter color values. */
+    &:not(.active-sub-filter) {
+        &:hover,
+        &:has(.left_sidebar_menu_icon_visible) {
+            background-color: var(--color-background-hover-narrow-filter);
+
+            .sidebar-topic-check {
+                background-color: var(--color-background-hover-narrow-filter);
+            }
         }
     }
 
@@ -995,14 +1004,14 @@ li.active-sub-filter {
     color: var(--color-text-active-narrow-filter);
     background-color: var(--color-background-active-narrow-filter);
 
+    /* These hover styles effectively push back on non-active-filter
+       styles, which would otherwise present the less-intense
+       --color-background-hover-narrow-filter colors. */
     &:hover {
         background-color: var(--color-background-active-narrow-filter);
 
         .sidebar-topic-check {
-            /* This variable is only set and used in dark mode. */
-            background-color: var(
-                --color-background-opaque-hover-active-narrow-filter
-            );
+            background-color: var(--color-background-active-narrow-filter);
         }
     }
 
@@ -1800,6 +1809,11 @@ li.active-sub-filter {
        bracket's bottom line. Its value must less than
        the z-index set on .stream-list-subsection-header */
     z-index: 1;
+    /* To correct an edge case where a resolved topic is
+       the last in a list of topics, we set the app background
+       color on it to keep the closing topic bracket from
+       getting too close to the checkmark. */
+    background-color: var(--color-background);
 }
 
 .left-sidebar-controls {
@@ -2194,6 +2208,26 @@ li.topic-list-item {
             /* Prevent hover styles set on other rows. */
             box-shadow: none;
             background-color: var(--color-background);
+        }
+
+        /* We avoid putting the box-shadow around both
+           the channel row and the filter input it contains,
+           as there is no hover effect on channel rows when
+           zoomed in, making a preserve-the-hover-outline
+           effect here moot. */
+        &:has(.left_sidebar_menu_icon_visible) {
+            box-shadow: none;
+        }
+    }
+
+    /* When zooming in on a channel that's serving as an
+       active filter, keep the background colors in line
+       with the active-narrow-filter colors. */
+    .narrow-filter.active-filter > .bottom_left_row {
+        background-color: var(--color-background-active-narrow-filter);
+
+        &:hover {
+            background-color: var(--color-background-active-narrow-filter);
         }
     }
 

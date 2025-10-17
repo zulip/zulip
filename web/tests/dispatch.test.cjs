@@ -170,7 +170,10 @@ people.add_active_user(me);
 people.add_active_user(test_user);
 people.initialize_current_user(me.user_id);
 
-message_store.update_message_cache(test_message);
+message_store.update_message_cache({
+    type: "server_message",
+    message: test_message,
+});
 
 const realm_emoji = {};
 const emoji_codes = zrequire("../../static/generated/emoji/emoji_codes.json");
@@ -1167,7 +1170,7 @@ run_test("user_settings", ({override}) => {
     event = event_fixtures.user_settings__web_escape_navigates_to_home_view;
     override(user_settings, "web_escape_navigates_to_home_view", false);
     let toggled = [];
-    $("#go-to-home-view-hotkey-help").toggleClass = (cls) => {
+    $("#keyboard-shortcuts .go-to-home-view-hotkey-help").toggleClass = (cls) => {
         toggled.push(cls);
     };
     dispatch(event);

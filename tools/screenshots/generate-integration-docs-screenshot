@@ -100,7 +100,7 @@ def create_integration_bot(integration: Integration, bot_name: str | None = None
 def create_integration_stream(integration: Integration, bot: UserProfile) -> None:
     assert isinstance(bot.bot_owner, UserProfile)
     realm = bot.bot_owner.realm
-    stream, created = create_stream_if_needed(realm, integration.stream_name)
+    stream, _created = create_stream_if_needed(realm, integration.stream_name)
     bulk_add_subscriptions(realm, [stream], [bot, bot.bot_owner], acting_user=bot)
 
 

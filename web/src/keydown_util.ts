@@ -1,5 +1,5 @@
 /*
-    See hotkey.js for handlers that are more app-wide.
+    See hotkey.ts for handlers that are more app-wide.
 */
 
 export const vim_left = "h";

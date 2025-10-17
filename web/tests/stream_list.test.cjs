@@ -180,8 +180,8 @@ test_ui("create_sidebar_row", ({override, override_rewire, mock_template}) => {
         normal_streams.push(stream);
     };
 
-    stream_data.add_sub(devel);
-    stream_data.add_sub(social);
+    stream_data.add_sub_for_tests(devel);
+    stream_data.add_sub_for_tests(social);
 
     create_devel_sidebar_row({mock_template});
     create_social_sidebar_row({mock_template});
@@ -249,8 +249,8 @@ test_ui("pinned_streams_never_inactive", ({mock_template, override_rewire}) => {
     override_rewire(stream_list, "update_dom_with_unread_counts", noop);
     override_rewire(left_sidebar_navigation_area, "update_dom_with_unread_counts", noop);
 
-    stream_data.add_sub(devel);
-    stream_data.add_sub(social);
+    stream_data.add_sub_for_tests(devel);
+    stream_data.add_sub_for_tests(social);
 
     create_devel_sidebar_row({mock_template});
     create_social_sidebar_row({mock_template});
@@ -285,7 +285,7 @@ test_ui("pinned_streams_never_inactive", ({mock_template, override_rewire}) => {
 });
 
 function add_row(sub) {
-    stream_data.add_sub(sub);
+    stream_data.add_sub_for_tests(sub);
     const row = {
         update_whether_active() {},
         get_li() {
@@ -666,7 +666,7 @@ test_ui("refresh_pin", ({override_rewire, mock_template}) => {
         can_send_message_group: everyone_group.id,
     };
 
-    stream_data.add_sub(sub);
+    stream_data.add_sub_for_tests(sub);
     // We need to populate current_sections; unclear if this is the best way.
     // stream_list.build_stream_list();
 

@@ -130,7 +130,7 @@ const social = {
     can_send_message_group: 2,
     topics_policy: "inherit",
 };
-stream_data.add_sub(social);
+stream_data.add_sub_for_tests(social);
 
 const nobody = make_user_group({
     name: "role:nobody",
@@ -316,9 +316,10 @@ test_ui("send_message", ({override, override_rewire, mock_template}) => {
 
         override_rewire(echo, "try_deliver_locally", (message_request) => {
             const local_id_float = 123.04;
-            return echo.insert_local_message(message_request, local_id_float, (messages) => {
-                assert.equal(messages[0].timestamp, fake_now);
-                return messages;
+            return echo.insert_local_message(message_request, local_id_float, (messages_data) => {
+                assert.equal(messages_data.type, "local_message");
+                assert.equal(messages_data.raw_messages[0].timestamp, fake_now);
+                return messages_data.raw_messages;
             });
         });
 

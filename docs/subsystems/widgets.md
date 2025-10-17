@@ -54,7 +54,7 @@ Some important code entities for the widget implementation are:
 - `web/src/submessage.js`
 - `web/src/poll_widget.js`
 - `web/src/widgetize.ts`
-- `web/src/zform.js`
+- `web/src/zform.ts`
 - `web/templates/widgets/`
 - `zerver/lib/widget.py`
 - `zerver/views/submessage.py`
@@ -308,7 +308,7 @@ widgets.todo = todo_widget;
 widgets.zform = zform;
 ```
 
-The code in `web/src/zform.js` renders the form (not
+The code in `web/src/zform.ts` renders the form (not
 shown here) and then sets up a click handler like below:
 
 ```js
@@ -322,10 +322,10 @@ shown here) and then sets up a click handler like below:
         // data structure.
         var reply_content = data.choices[idx].reply;
 
-        transmit.reply_message({
-            message: opts.message,
-            content: reply_content,
-        });
+        transmit.reply_message(
+            opts.message,
+            reply_content,
+        );
     });
 ```
 

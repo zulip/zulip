@@ -1624,7 +1624,7 @@ class StripeTest(StripeTestCase):
             plan.next_invoice_date = add_months(free_trial_end_date, 10)
             plan.save(update_fields=["next_invoice_date"])
             invoice_plans_as_needed(add_months(free_trial_end_date, 10))
-            [invoice0, invoice1] = iter(stripe.Invoice.list(customer=stripe_customer.id))
+            [invoice0, _invoice1] = iter(stripe.Invoice.list(customer=stripe_customer.id))
             invoice_params = {
                 "amount_due": 5172,
                 "auto_advance": True,
@@ -1647,7 +1647,9 @@ class StripeTest(StripeTestCase):
             plan.next_invoice_date = add_months(free_trial_end_date, 12)
             plan.save(update_fields=["next_invoice_date"])
             invoice_plans_as_needed(add_months(free_trial_end_date, 12))
-            [invoice0, invoice1, invoice2] = iter(stripe.Invoice.list(customer=stripe_customer.id))
+            [invoice0, _invoice1, _invoice2] = iter(
+                stripe.Invoice.list(customer=stripe_customer.id)
+            )
 
         # Check /billing/ has correct information for fixed price customers.
         plan.fixed_price = 127
@@ -3589,7 +3591,7 @@ class StripeTest(StripeTestCase):
         self.assertEqual(monthly_plan.next_invoice_date, None)
 
         assert customer.stripe_customer_id
-        [invoice0, invoice1, invoice2] = iter(
+        [invoice0, invoice1, _invoice2] = iter(
             stripe.Invoice.list(customer=customer.stripe_customer_id)
         )
 
@@ -3638,7 +3640,7 @@ class StripeTest(StripeTestCase):
             billing_session.update_license_ledger_if_needed(add_months(self.next_month, 1))
         invoice_plans_as_needed(add_months(self.next_month, 1))
 
-        [invoice0, invoice1, invoice2, invoice3] = iter(
+        [invoice0, invoice1, _invoice2, _invoice3] = iter(
             stripe.Invoice.list(customer=customer.stripe_customer_id)
         )
 
@@ -3661,7 +3663,7 @@ class StripeTest(StripeTestCase):
         annual_plan.save(update_fields=["next_invoice_date"])
         invoice_plans_as_needed(add_months(self.now, 13))
 
-        [invoice0, invoice1, invoice2, invoice3, invoice4] = iter(
+        [invoice0, invoice1, _invoice2, _invoice3, _invoice4] = iter(
             stripe.Invoice.list(customer=customer.stripe_customer_id)
         )
 
@@ -3755,7 +3757,7 @@ class StripeTest(StripeTestCase):
         self.assertEqual(annual_plan.invoicing_status, CustomerPlan.INVOICING_STATUS_DONE)
 
         assert customer.stripe_customer_id
-        [invoice0, invoice1] = iter(stripe.Invoice.list(customer=customer.stripe_customer_id))
+        [invoice0, _invoice1] = iter(stripe.Invoice.list(customer=customer.stripe_customer_id))
 
         [invoice_item] = iter(invoice0.lines)
         annual_plan_invoice_item_params = {
@@ -3773,7 +3775,7 @@ class StripeTest(StripeTestCase):
 
         invoice_plans_as_needed(add_months(self.now, 13))
 
-        [invoice0, invoice1, invoice2] = iter(
+        [invoice0, _invoice1, _invoice2] = iter(
             stripe.Invoice.list(customer=customer.stripe_customer_id)
         )
 
@@ -3864,7 +3866,7 @@ class StripeTest(StripeTestCase):
         customer = get_customer_by_realm(user.realm)
         assert customer is not None
         assert customer.stripe_customer_id
-        [invoice0, invoice1] = iter(stripe.Invoice.list(customer=customer.stripe_customer_id))
+        [invoice0, _invoice1] = iter(stripe.Invoice.list(customer=customer.stripe_customer_id))
         [invoice_item1, invoice_item2] = iter(invoice0.lines)
         annual_plan_invoice_item_params = {
             "amount": 7322 * 5,
@@ -3946,7 +3948,7 @@ class StripeTest(StripeTestCase):
         self.assertEqual(annual_plan.next_invoice_date, None)
 
         assert customer.stripe_customer_id
-        [invoice0, invoice1, invoice2] = iter(
+        [invoice0, _invoice1, _invoice2] = iter(
             stripe.Invoice.list(customer=customer.stripe_customer_id)
         )
 
@@ -6284,7 +6286,7 @@ class InvoiceTest(StripeTestCase):
         billing_session.invoice_plan(plan, self.now + timedelta(days=400))
         stripe_customer_id = plan.customer.stripe_customer_id
         assert stripe_customer_id is not None
-        [invoice0, invoice1] = iter(stripe.Invoice.list(customer=stripe_customer_id))
+        [invoice0, _invoice1] = iter(stripe.Invoice.list(customer=stripe_customer_id))
         self.assertIsNotNone(invoice0.status_transitions.finalized_at)
         [item0, item1, item2] = iter(invoice0.lines)
         line_item_params = {
@@ -6341,7 +6343,7 @@ class InvoiceTest(StripeTestCase):
         billing_session.invoice_plan(plan, self.next_year)
         stripe_customer_id = plan.customer.stripe_customer_id
         assert stripe_customer_id is not None
-        [invoice0, invoice1] = iter(stripe.Invoice.list(customer=stripe_customer_id))
+        [invoice0, _invoice1] = iter(stripe.Invoice.list(customer=stripe_customer_id))
         self.assertEqual(invoice0.collection_method, "send_invoice")
         [item] = iter(invoice0.lines)
         line_item_params = {
@@ -6535,7 +6537,7 @@ class InvoiceTest(StripeTestCase):
         self.assertEqual(plan.next_invoice_date, self.next_month + timedelta(days=29))
         stripe_customer_id = plan.customer.stripe_customer_id
         assert stripe_customer_id is not None
-        [invoice0, invoice1] = iter(stripe.Invoice.list(customer=stripe_customer_id))
+        [invoice0, _invoice1] = iter(stripe.Invoice.list(customer=stripe_customer_id))
         self.assertIsNotNone(invoice0.status_transitions.finalized_at)
         [item0] = iter(invoice0.lines)
         line_item_params = {
@@ -7302,7 +7304,7 @@ class TestRemoteRealmBillingFlow(StripeTestCase, RemoteRealmBillingTestCase):
             CustomerPlan.TIER_SELF_HOSTED_BUSINESS
         )
         self.assertEqual(min_licenses, 25)
-        flat_discount, flat_discounted_months = self.billing_session.get_flat_discount_info()
+        _flat_discount, flat_discounted_months = self.billing_session.get_flat_discount_info()
         self.assertEqual(flat_discounted_months, 12)
 
         self.assert_in_success_response(
@@ -8994,9 +8996,9 @@ class TestRemoteRealmBillingFlow(StripeTestCase, RemoteRealmBillingTestCase):
         self.assertFalse(plan.stale_audit_log_data_email_sent)
 
         assert customer.stripe_customer_id
-        [invoice0, invoice1] = iter(stripe.Invoice.list(customer=customer.stripe_customer_id))
+        [invoice0, _invoice1] = iter(stripe.Invoice.list(customer=customer.stripe_customer_id))
 
-        [invoice_item0, invoice_item1, invoice_item2] = iter(invoice0.lines)
+        [_invoice_item0, invoice_item1, invoice_item2] = iter(invoice0.lines)
         invoice_item_params = {
             "amount": 16 * 3.5 * 100,
             "description": "Zulip Basic - renewal",
@@ -10581,9 +10583,9 @@ class TestRemoteServerBillingFlow(StripeTestCase, RemoteServerTestCase):
         self.assertFalse(plan.stale_audit_log_data_email_sent)
 
         assert customer.stripe_customer_id
-        [invoice0, invoice1] = iter(stripe.Invoice.list(customer=customer.stripe_customer_id))
+        [invoice0, _invoice1] = iter(stripe.Invoice.list(customer=customer.stripe_customer_id))
 
-        [invoice_item0, invoice_item1, invoice_item2] = iter(invoice0.lines)
+        [_invoice_item0, invoice_item1, invoice_item2] = iter(invoice0.lines)
         invoice_item_params = {
             "amount": server_user_count * 3.5 * 100,
             "description": "Zulip Basic - renewal",

@@ -27,8 +27,13 @@ location /static/ {
     }
 }
 
-# Redirect to links without the trailing slash.
-location ~ ^(/help(?:/[^/]+)*)/+$ {
+# Canonical URL for the root is /help/.
+location = /help {
+    return 301 /help/;
+}
+
+# Redirect to links without the trailing slash except for root /help/.
+location ~ ^(/help(?:/[^/]+)+)/+$ {
     return 301 $1$is_args$args;
 }
 

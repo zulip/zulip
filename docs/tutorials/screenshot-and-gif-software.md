@@ -48,7 +48,7 @@ to check out your branch.
 
 - [QuickTime](https://support.apple.com/en-in/HT201066)
 - [GIPHY](https://giphy.com/apps/giphycapture)
-- [CloudApp](https://www.getcloudapp.com)
+- [Zight](https://zight.com)
 - [Kap](https://getkap.co)
 - [Gifski](https://sindresorhus.com/gifski)
 - [Gyazo GIF](https://gyazo.com/en)
@@ -57,7 +57,6 @@ to check out your branch.
 
 - [ScreenToGif](https://www.screentogif.com)
 - [Gyazo GIF](https://gyazo.com/en)
-- [Monosnap](https://monosnap.com)
 
 ### Linux
 

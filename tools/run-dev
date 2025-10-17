@@ -306,6 +306,9 @@ async def forward(upstream_port: int, request: web.Request) -> web.StreamRespons
 def run_help_center_dev_server(
     external_host: str, port: int = help_center_port
 ) -> "subprocess.Popen[bytes]":
+    env = os.environ.copy()
+    env["ZULIP_WEB_APP_PROXY_PORT"] = str(proxy_port)
+
     return subprocess.Popen(
         [
             "/usr/local/bin/corepack",
@@ -316,6 +319,7 @@ def run_help_center_dev_server(
             f"--allowed-hosts={urlsplit(external_host).hostname}",
         ],
         cwd="starlight_help",
+        env=env,
     )
 
 
@@ -326,7 +330,7 @@ async def help_center_middleware(
     if request.path.startswith("/help"):
         try:
             filename = request.match_info["filename"]
-            name, ext = os.path.splitext(filename)
+            _name, ext = os.path.splitext(filename)
             if not ext:
                 filename = os.path.join(filename, "index.html")
             request.match_info["filename"] = filename

@@ -93,7 +93,7 @@ function test(label, f) {
 
 test("unsubscribe", () => {
     const devel = {name: "devel", subscribed: false, stream_id: 1};
-    stream_data.add_sub(devel);
+    stream_data.add_sub_for_tests(devel);
 
     // verify clean slate
     assert.ok(!stream_data.is_subscribed(devel.stream_id));
@@ -126,7 +126,7 @@ test("subscribers", async () => {
         can_administer_channel_group: nobody_group.id,
         can_subscribe_group: nobody_group.id,
     };
-    stream_data.add_sub(sub);
+    stream_data.add_sub_for_tests(sub);
 
     people.add_active_user(fred);
     people.add_active_user(gail);
@@ -139,7 +139,7 @@ test("subscribers", async () => {
 
     function potential_subscriber_ids() {
         const users = peer_data.potential_subscribers(stream_id);
-        return users.map((u) => u.user_id).sort();
+        return users.map((u) => u.user_id).toSorted();
     }
 
     blueslip.expect(
@@ -166,10 +166,10 @@ test("subscribers", async () => {
     ]);
 
     peer_data.set_subscribers(stream_id, [me.user_id, fred.user_id, george.user_id]);
-    assert.ok(stream_data.is_user_subscribed(stream_id, me.user_id));
-    assert.ok(stream_data.is_user_subscribed(stream_id, fred.user_id));
-    assert.ok(stream_data.is_user_subscribed(stream_id, george.user_id));
-    assert.ok(!stream_data.is_user_subscribed(stream_id, gail.user_id));
+    assert.ok(stream_data.is_user_loaded_and_subscribed(stream_id, me.user_id));
+    assert.ok(stream_data.is_user_loaded_and_subscribed(stream_id, fred.user_id));
+    assert.ok(stream_data.is_user_loaded_and_subscribed(stream_id, george.user_id));
+    assert.ok(!stream_data.is_user_loaded_and_subscribed(stream_id, gail.user_id));
 
     assert.deepEqual(potential_subscriber_ids(), [gail.user_id]);
 
@@ -181,21 +181,21 @@ test("subscribers", async () => {
         user_id: 104,
     };
     people.add_active_user(brutus);
-    assert.ok(!stream_data.is_user_subscribed(stream_id, brutus.user_id));
+    assert.ok(!stream_data.is_user_loaded_and_subscribed(stream_id, brutus.user_id));
 
     // add
     peer_data.add_subscriber(stream_id, brutus.user_id);
-    assert.ok(stream_data.is_user_subscribed(stream_id, brutus.user_id));
+    assert.ok(stream_data.is_user_loaded_and_subscribed(stream_id, brutus.user_id));
     assert.equal(peer_data.get_subscriber_count(stream_id), 1);
 
     // verify that adding an already-added subscriber is a noop
     peer_data.add_subscriber(stream_id, brutus.user_id);
-    assert.ok(stream_data.is_user_subscribed(stream_id, brutus.user_id));
+    assert.ok(stream_data.is_user_loaded_and_subscribed(stream_id, brutus.user_id));
     assert.equal(peer_data.get_subscriber_count(stream_id), 1);
 
     // remove
     peer_data.remove_subscriber(stream_id, brutus.user_id);
-    assert.ok(!stream_data.is_user_subscribed(stream_id, brutus.user_id));
+    assert.ok(!stream_data.is_user_loaded_and_subscribed(stream_id, brutus.user_id));
     assert.equal(peer_data.get_subscriber_count(stream_id), 0);
 
     // Verify noop for bad stream when removing subscriber
@@ -204,28 +204,33 @@ test("subscribers", async () => {
         "warn",
         "We called get_loaded_subscriber_subset for an untracked stream: " + bad_stream_id,
     );
+    blueslip.expect(
+        "error",
+        "We called decrement_subscriber_count for an untracked stream: " + bad_stream_id,
+    );
     peer_data.remove_subscriber(bad_stream_id, brutus.user_id);
+    blueslip.reset();
 
     // verify that removing an already-removed subscriber is a noop
     peer_data.remove_subscriber(stream_id, brutus.user_id);
-    assert.ok(!stream_data.is_user_subscribed(stream_id, brutus.user_id));
+    assert.ok(!stream_data.is_user_loaded_and_subscribed(stream_id, brutus.user_id));
     assert.equal(peer_data.get_subscriber_count(stream_id), 0);
 
     // Verify defensive code in set_subscribers, where the second parameter
     // can be undefined.
-    stream_data.add_sub(sub);
+    stream_data.add_sub_for_tests(sub);
     peer_data.add_subscriber(stream_id, brutus.user_id);
     sub.subscribed = true;
-    assert.ok(stream_data.is_user_subscribed(stream_id, brutus.user_id));
+    assert.ok(stream_data.is_user_loaded_and_subscribed(stream_id, brutus.user_id));
 
     // Verify that we noop and don't crash when unsubscribed.
     sub.subscribed = false;
     peer_data.add_subscriber(stream_id, brutus.user_id);
-    assert.equal(stream_data.is_user_subscribed(stream_id, brutus.user_id), true);
+    assert.equal(stream_data.is_user_loaded_and_subscribed(stream_id, brutus.user_id), true);
     peer_data.remove_subscriber(stream_id, brutus.user_id);
-    assert.equal(stream_data.is_user_subscribed(stream_id, brutus.user_id), false);
+    assert.equal(stream_data.is_user_loaded_and_subscribed(stream_id, brutus.user_id), false);
     peer_data.add_subscriber(stream_id, brutus.user_id);
-    assert.equal(stream_data.is_user_subscribed(stream_id, brutus.user_id), true);
+    assert.equal(stream_data.is_user_loaded_and_subscribed(stream_id, brutus.user_id), true);
 
     blueslip.expect(
         "warn",
@@ -233,9 +238,9 @@ test("subscribers", async () => {
         2,
     );
     sub.invite_only = true;
-    assert.ok(!stream_data.is_user_subscribed(stream_id, brutus.user_id));
+    assert.ok(!stream_data.is_user_loaded_and_subscribed(stream_id, brutus.user_id));
     peer_data.remove_subscriber(stream_id, brutus.user_id);
-    assert.ok(!stream_data.is_user_subscribed(stream_id, brutus.user_id));
+    assert.ok(!stream_data.is_user_loaded_and_subscribed(stream_id, brutus.user_id));
     blueslip.reset();
 
     // Same test but for `maybe_fetch_is_user_subscribed`
@@ -255,6 +260,10 @@ test("subscribers", async () => {
         "warn",
         "We called get_loaded_subscriber_subset for an untracked stream: 9999999",
     );
+    blueslip.expect(
+        "error",
+        "We called increment_subscriber_count for an untracked stream: 9999999",
+    );
     peer_data.add_subscriber(9999999, brutus.user_id);
     blueslip.reset();
 
@@ -271,7 +280,7 @@ test("maybe_fetch_stream_subscribers", async () => {
         name: "India",
         subscribed: true,
     };
-    stream_data.add_sub(india);
+    stream_data.add_sub_for_tests(india);
     let channel_get_calls = 0;
     channel.get = (opts) => {
         assert.equal(opts.url, `/json/streams/${india.stream_id}/members`);
@@ -299,7 +308,11 @@ test("maybe_fetch_stream_subscribers", async () => {
         stream_ids: [india.stream_id],
         user_ids: [3],
     });
-    const subscribers_before_fetch_completes = peer_data.get_subscribers(india.stream_id);
+    blueslip.expect("error", "Getting subscribers for stream without full subscriber data");
+    const subscribers_before_fetch_completes = peer_data.get_subscriber_ids_assert_loaded(
+        india.stream_id,
+    );
+    blueslip.reset();
     assert.deepEqual(subscribers_before_fetch_completes, [7, 9]);
     const subscribers_after_fetch = await pending_promise;
     assert.deepEqual([...subscribers_after_fetch.keys()], [1, 2, 4, 7, 9]);
@@ -314,8 +327,13 @@ test("maybe_fetch_stream_subscribers", async () => {
     assert.equal(await peer_data.maybe_fetch_is_user_subscribed(india.stream_id, 5, false), false);
 
     peer_data.clear_for_testing();
-    assert.deepEqual(await peer_data.get_subscribers(india.stream_id), []);
-    assert.deepEqual(await peer_data.get_all_subscribers(india.stream_id), [1, 2, 3, 4]);
+    blueslip.expect("error", "Getting subscribers for stream without full subscriber data");
+    assert.deepEqual(await peer_data.get_subscriber_ids_assert_loaded(india.stream_id), []);
+    blueslip.reset();
+    assert.deepEqual(
+        await peer_data.get_subscribers_with_possible_fetch(india.stream_id),
+        [1, 2, 3, 4],
+    );
 
     peer_data.clear_for_testing();
     channel.get = () => {
@@ -323,7 +341,10 @@ test("maybe_fetch_stream_subscribers", async () => {
     };
     blueslip.expect("error", "Failure fetching channel subscribers");
     // retry is false, so we get null because there was an error
-    assert.deepEqual(await peer_data.get_all_subscribers(india.stream_id, false), null);
+    assert.deepEqual(
+        await peer_data.get_subscribers_with_possible_fetch(india.stream_id, false),
+        null,
+    );
     blueslip.reset();
 
     channel.get = () => {
@@ -390,8 +411,9 @@ test("get_subscriber_count", async () => {
 
     blueslip.expect("warn", "We called get_subscriber_count for an untracked stream: 102");
     assert.equal(peer_data.get_subscriber_count(india.stream_id), 0);
+    blueslip.reset();
 
-    stream_data.add_sub(india);
+    stream_data.add_sub_for_tests(india);
     assert.equal(peer_data.get_subscriber_count(india.stream_id), 0);
 
     peer_data.add_subscriber(india.stream_id, fred.user_id);
@@ -409,7 +431,7 @@ test("get_subscriber_count", async () => {
 
     // We don't have full data, so we assume this is a decrement even though gail isn't
     // in the subscriber list.
-    india.subscriber_count = 20;
+    peer_data.set_subscriber_count(india.stream_id, 20);
     assert.deepStrictEqual(peer_data.get_subscriber_count(india.stream_id), 20);
     peer_data.remove_subscriber(india.stream_id, gail.user_id);
     assert.deepStrictEqual(peer_data.get_subscriber_count(india.stream_id), 19);
@@ -431,7 +453,7 @@ test("is_subscriber_subset", async () => {
             stream_id,
             name: `stream ${stream_id}`,
         };
-        stream_data.add_sub(sub);
+        stream_data.add_sub_for_tests(sub);
         peer_data.set_subscribers(sub.stream_id, user_ids);
         return sub;
     }
@@ -491,7 +513,7 @@ test("is_subscriber_subset", async () => {
 
 test("get_unique_subscriber_count_for_streams", async () => {
     const sub = {name: "Rome", subscribed: true, stream_id: 1001};
-    stream_data.add_sub(sub);
+    stream_data.add_sub_for_tests(sub);
 
     people.add_active_user(fred);
     people.add_active_user(gail);

@@ -14,12 +14,11 @@ import * as settings_config from "./settings_config.ts";
 import * as settings_data from "./settings_data.ts";
 import type {CurrentUser, GroupSettingValue, StateData} from "./state_data.ts";
 import {current_user, realm} from "./state_data.ts";
-import type {StreamPermissionGroupSetting, StreamTopicsPolicy} from "./stream_types.ts";
+import type {APIStream, StreamPermissionGroupSetting, StreamTopicsPolicy} from "./stream_types.ts";
 import * as sub_store from "./sub_store.ts";
 import type {
     ApiStreamSubscription,
     NeverSubscribedStream,
-    Stream,
     StreamSpecificNotificationSettings,
     StreamSubscription,
 } from "./sub_store.ts";
@@ -126,14 +125,17 @@ const stream_ids_by_old_names = new FoldDict<number>();
 const default_stream_ids = new Set<number>();
 const realm_web_public_stream_ids = new Set<number>();
 
-export function clear_subscriptions(): void {
+export function clear_subscriptions(for_tests = true): void {
     // This function is only used once at page load, and then
     // it should only be used in tests.
     stream_info = new BinaryDict((sub) => sub.subscribed);
     sub_store.clear();
+    if (for_tests) {
+        peer_data.clear_subscriber_counts_for_tests();
+    }
 }
 
-clear_subscriptions();
+clear_subscriptions(false);
 
 export function rename_sub(sub: StreamSubscription, new_name: string): void {
     const old_name = sub.name;
@@ -162,8 +164,8 @@ export function unsubscribe_myself(sub: StreamSubscription): void {
     stream_info.set_false(sub.stream_id, sub);
 }
 
-export function add_sub(sub: StreamSubscription): void {
-    // This function is currently used only by tests.
+export function add_sub_for_tests(sub: StreamSubscription, subscriber_count = 0): void {
+    // This function is used only by tests.
     // We use create_sub_from_server_data at page load.
     // We use create_streams for new streams in live-update events.
     stream_info.set(sub.stream_id, sub);
@@ -172,6 +174,7 @@ export function add_sub(sub: StreamSubscription): void {
         realm_web_public_stream_ids.add(sub.stream_id);
     }
     sub_store.add_hydrated_sub(sub.stream_id, sub);
+    peer_data.set_subscriber_count(sub.stream_id, subscriber_count);
 }
 
 export function get_sub(stream_name: string): StreamSubscription | undefined {
@@ -404,7 +407,9 @@ export function get_streams_for_user(user_id: number): {
             // subscribers (which would trigger a warning).
             continue;
         }
-        if (is_user_subscribed(sub.stream_id, user_id)) {
+        // TODO: Before calling this, we should get this user's subscriptions
+        // and add them to the peer_data's stream_subscribers. #35341
+        if (is_user_loaded_and_subscribed(sub.stream_id, user_id)) {
             subscribed_subs.push(sub);
         } else if (can_subscribe_user(sub, user_id)) {
             can_subscribe_subs.push(sub);
@@ -997,7 +1002,7 @@ export function is_default_stream_id(stream_id: number): boolean {
     return default_stream_ids.has(stream_id);
 }
 
-export let is_user_subscribed = (stream_id: number, user_id: number): boolean => {
+export function is_user_loaded_and_subscribed(stream_id: number, user_id: number): boolean {
     const sub = sub_store.get(stream_id);
     if (sub === undefined || !can_view_subscribers(sub)) {
         // If we don't know about the stream, or we ourselves cannot access subscriber list,
@@ -1008,8 +1013,8 @@ export let is_user_subscribed = (stream_id: number, user_id: number): boolean =>
         return false;
     }
 
-    return peer_data.is_user_subscribed(stream_id, user_id);
-};
+    return peer_data.is_user_loaded_and_subscribed(stream_id, user_id);
+}
 
 // This function parallels `is_user_subscribed` but fetches subscriber data for the
 // `stream_id` if we don't have complete data yet.
@@ -1033,12 +1038,11 @@ export async function maybe_fetch_is_user_subscribed(
     );
 }
 
-export function create_streams(streams: Stream[]): void {
+export function create_streams(streams: APIStream[]): void {
     for (const stream of streams) {
         // We handle subscriber stuff in other events.
 
         const attrs = {
-            stream_weekly_traffic: null,
             subscribers: [],
             ...stream,
         };
@@ -1053,16 +1057,16 @@ export function clean_up_description(sub: StreamSubscription): void {
 }
 
 export function create_sub_from_server_data(
-    attrs: ApiGenericStreamSubscription,
+    server_attrs: ApiGenericStreamSubscription,
     subscribed: boolean,
     previously_subscribed: boolean,
 ): StreamSubscription {
-    if (!attrs.stream_id) {
+    if (!server_attrs.stream_id) {
         // fail fast
         throw new Error("We cannot create a sub without a stream_id");
     }
 
-    let sub = sub_store.get(attrs.stream_id);
+    let sub = sub_store.get(server_attrs.stream_id);
     if (sub !== undefined) {
         // We've already created this subscription, no need to continue.
         return sub;
@@ -1075,11 +1079,16 @@ export function create_sub_from_server_data(
     // a copy of the object with `_.omit(attrs, 'subscribers')`, but `_.omit` is
     // slow enough to show up in timings when you have 1000s of streams.
 
-    const full_data = attrs.partial_subscribers === undefined;
-    const subscriber_user_ids = full_data ? attrs.subscribers : attrs.partial_subscribers;
+    const full_data = server_attrs.partial_subscribers === undefined;
+    const subscriber_user_ids = full_data
+        ? server_attrs.subscribers
+        : server_attrs.partial_subscribers;
 
-    delete attrs.subscribers;
-    delete attrs.partial_subscribers;
+    // Omit properties not used for the sub object
+    const {subscribers, subscriber_count, partial_subscribers, ...attrs} = server_attrs;
+
+    assert(server_attrs.subscriber_count !== undefined);
+    peer_data.set_subscriber_count(server_attrs.stream_id, server_attrs.subscriber_count);
 
     sub = {
         newly_subscribed: false,
@@ -1090,7 +1099,7 @@ export function create_sub_from_server_data(
         push_notifications: null,
         email_notifications: null,
         wildcard_mentions_notify: null,
-        color: "color" in attrs ? attrs.color : color_data.pick_color(),
+        color: "color" in server_attrs ? server_attrs.color : color_data.pick_color(),
         subscribed,
         previously_subscribed,
         ...attrs,
@@ -1240,7 +1249,7 @@ export function get_options_for_dropdown_widget(): (dropdown_widget.Option & {
             unique_id: stream.stream_id,
             stream,
         }))
-        .sort((a, b) => util.strcmp(a.name.toLowerCase(), b.name.toLowerCase()));
+        .toSorted((a, b) => util.strcmp(a.name.toLowerCase(), b.name.toLowerCase()));
 }
 
 export function get_streams_for_move_messages_widget(): (dropdown_widget.Option & {
@@ -1248,7 +1257,7 @@ export function get_streams_for_move_messages_widget(): (dropdown_widget.Option 
 })[] {
     return get_unsorted_subs_with_content_access()
         .filter((stream) => !stream.is_archived)
-        .sort((a, b) => {
+        .toSorted((a, b) => {
             if (a.subscribed !== b.subscribed) {
                 return a.subscribed ? -1 : 1;
             }

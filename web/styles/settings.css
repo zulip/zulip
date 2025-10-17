@@ -946,7 +946,7 @@ input[type="checkbox"] {
     }
 }
 
-.grey-box .wrapper {
+.settings-highlight-box .wrapper {
     margin: 10px 0;
 }
 
@@ -991,13 +991,9 @@ input[type="checkbox"] {
     /* Subtract 2 * (2px padding) + 2 * (1px border) */
     min-width: calc(var(--modal-input-width) - 6px);
 
-    .input {
-        flex-grow: 1;
-
-        &:first-child:empty::before {
-            opacity: 0.5;
-            content: attr(data-placeholder);
-        }
+    .input:first-child:empty::before {
+        opacity: 0.5;
+        content: attr(data-placeholder);
     }
 }
 
@@ -2368,6 +2364,7 @@ label.preferences-radio-choice-label {
 
     .integration-url {
         font-family: "Source Code Pro", monospace;
+        background-color: var(--color-background-integration-url);
         padding: 10px;
         font-size: 0.85rem;
         border: 1px solid hsl(0deg 0% 87%);

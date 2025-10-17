@@ -4134,12 +4134,12 @@ class RealmBillingSession(BillingSession):
         if stripe_customer_id is not None:
             # Support requests do not set any stripe billing information.
             assert self.support_session is False
-            customer, created = Customer.objects.update_or_create(
+            customer, _created = Customer.objects.update_or_create(
                 realm=self.realm, defaults={"stripe_customer_id": stripe_customer_id}
             )
             return customer
         else:
-            customer, created = Customer.objects.update_or_create(
+            customer, _created = Customer.objects.update_or_create(
                 realm=self.realm, defaults=defaults
             )
             return customer
@@ -5702,7 +5702,9 @@ def customer_has_last_n_invoices_open(customer: Customer, n: int) -> bool:
 
 
 def downgrade_small_realms_behind_on_payments_as_needed() -> None:
-    customers = Customer.objects.all().exclude(stripe_customer_id=None).exclude(realm=None)
+    customers = (
+        Customer.objects.all().exclude(stripe_customer_id=None).exclude(realm=None).order_by("id")
+    )
     for customer in customers:
         realm = customer.realm
         assert realm is not None

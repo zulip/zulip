@@ -497,7 +497,7 @@ def validate(
                             if state.html_context == "unknown"
                             else ""
                         )
-                        + " at {fn} line {token.line}, col {token.col}"
+                        + f" at {fn} line {token.line}, col {token.col}"
                     )
 
             if new_context not in FOREIGN_CONTEXTS:

@@ -281,8 +281,14 @@ export function compare_people_for_relevance(
 
         // If the client does not yet have complete subscriber data,
         // "unknown" and "not subscribed" are both represented as false here.
-        const a_is_sub = stream_data.is_user_subscribed(current_stream_id, person_a.user.user_id);
-        const b_is_sub = stream_data.is_user_subscribed(current_stream_id, person_b.user.user_id);
+        const a_is_sub = stream_data.is_user_loaded_and_subscribed(
+            current_stream_id,
+            person_a.user.user_id,
+        );
+        const b_is_sub = stream_data.is_user_loaded_and_subscribed(
+            current_stream_id,
+            person_b.user.user_id,
+        );
 
         if (a_is_sub && !b_is_sub) {
             return -1;

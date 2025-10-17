@@ -157,7 +157,7 @@ def user_directly_controls_user(user_profile: UserProfile, target: UserProfile) 
 def deactivate_stream_backend(
     request: HttpRequest, user_profile: UserProfile, stream_id: int
 ) -> HttpResponse:
-    (stream, sub) = access_stream_for_delete_or_update_requiring_metadata_access(
+    (stream, _sub) = access_stream_for_delete_or_update_requiring_metadata_access(
         user_profile, stream_id
     )
     do_deactivate_stream(stream, acting_user=user_profile)
@@ -169,7 +169,7 @@ def deactivate_stream_backend(
 def add_default_stream(
     request: HttpRequest, user_profile: UserProfile, *, stream_id: Json[int]
 ) -> HttpResponse:
-    (stream, sub) = access_stream_by_id(user_profile, stream_id)
+    (stream, _sub) = access_stream_by_id(user_profile, stream_id)
     if stream.invite_only:
         raise JsonableError(_("Private channels cannot be made default."))
     do_add_default_stream(stream)
@@ -188,7 +188,7 @@ def create_default_stream_group(
 ) -> HttpResponse:
     streams = []
     for stream_name in stream_names:
-        (stream, sub) = access_stream_by_name(user_profile, stream_name)
+        (stream, _sub) = access_stream_by_name(user_profile, stream_name)
         streams.append(stream)
     do_create_default_stream_group(user_profile.realm, group_name, description, streams)
     return json_success(request)
@@ -228,7 +228,7 @@ def update_default_stream_group_streams(
     group = access_default_stream_group_by_id(user_profile.realm, group_id)
     streams = []
     for stream_name in stream_names:
-        (stream, sub) = access_stream_by_name(user_profile, stream_name)
+        (stream, _sub) = access_stream_by_name(user_profile, stream_name)
         streams.append(stream)
 
     if op == "add":
@@ -255,7 +255,7 @@ def remove_default_stream_group(
 def remove_default_stream(
     request: HttpRequest, user_profile: UserProfile, *, stream_id: Json[int]
 ) -> HttpResponse:
-    (stream, sub) = access_stream_by_id(
+    (stream, _sub) = access_stream_by_id(
         user_profile,
         stream_id,
         require_content_access=False,
@@ -1091,7 +1091,7 @@ def get_subscribers_backend(
     *,
     stream_id: Annotated[NonNegativeInt, ApiParamConfig("stream", path_only=True)],
 ) -> HttpResponse:
-    (stream, sub) = access_stream_by_id(
+    (stream, _sub) = access_stream_by_id(
         user_profile,
         stream_id,
         require_content_access=False,
@@ -1141,7 +1141,7 @@ def get_stream_backend(
     *,
     stream_id: PathOnly[int],
 ) -> HttpResponse:
-    (stream, sub) = access_stream_by_id(user_profile, stream_id, require_content_access=False)
+    (stream, _sub) = access_stream_by_id(user_profile, stream_id, require_content_access=False)
 
     recent_traffic = get_streams_traffic({stream.id}, user_profile.realm)
     anonymous_group_membership = get_anonymous_group_membership_dict_for_streams([stream])
@@ -1180,7 +1180,7 @@ def get_topics_backend(
     else:
         assert user_profile is not None
 
-        (stream, sub) = access_stream_by_id(user_profile, stream_id)
+        (stream, _sub) = access_stream_by_id(user_profile, stream_id)
 
         assert stream.recipient_id is not None
         result = get_topic_history_for_stream(
@@ -1202,7 +1202,7 @@ def delete_in_topic(
     stream_id: PathOnly[NonNegativeInt],
     topic_name: str,
 ) -> HttpResponse:
-    stream, ignored_sub = access_stream_by_id(user_profile, stream_id)
+    stream, _sub = access_stream_by_id(user_profile, stream_id)
     topic_name = maybe_rename_general_chat_to_empty_topic(topic_name)
 
     messages = messages_for_topic(
@@ -1273,7 +1273,7 @@ def json_get_stream_id(
     *,
     stream_name: Annotated[str, ApiParamConfig("stream")],
 ) -> HttpResponse:
-    (stream, sub) = access_stream_by_name(user_profile, stream_name)
+    (stream, _sub) = access_stream_by_name(user_profile, stream_name)
     return json_success(request, data={"stream_id": stream.id})
 
 
@@ -1368,7 +1368,7 @@ def get_stream_email_address(
     sender_id: Json[NonNegativeInt] | None = None,
     stream_id: Annotated[NonNegativeInt, ApiParamConfig("stream", path_only=True)],
 ) -> HttpResponse:
-    (stream, sub) = access_stream_by_id(
+    (stream, _sub) = access_stream_by_id(
         user_profile,
         stream_id,
     )

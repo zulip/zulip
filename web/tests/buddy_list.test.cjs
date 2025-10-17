@@ -6,7 +6,7 @@ const _ = require("lodash");
 
 const {
     clear_buddy_list,
-    override_user_matches_narrow,
+    override_user_matches_narrow_using_loaded_data,
     buddy_list_add_user_matching_view,
     buddy_list_add_other_user,
     stub_buddy_list_elements,
@@ -99,7 +99,11 @@ run_test("split list", ({override, override_rewire, mock_template}) => {
     stub_buddy_list_elements();
     mock_template("buddy_list/view_all_users.hbs", false, () => "<view-all-users-stub>");
 
-    override_rewire(buddy_data, "user_matches_narrow", override_user_matches_narrow);
+    override_rewire(
+        buddy_data,
+        "user_matches_narrow_using_loaded_data",
+        override_user_matches_narrow_using_loaded_data,
+    );
 
     override(buddy_list, "items_to_html", (opts) => {
         assert.ok(opts.items.length > 0);
@@ -220,7 +224,11 @@ run_test("big_list", ({override, override_rewire, mock_template}) => {
     stub_buddy_list_elements();
     override(padded_widget, "update_padding", noop);
     override(message_viewport, "height", () => 550);
-    override_rewire(buddy_data, "user_matches_narrow", override_user_matches_narrow);
+    override_rewire(
+        buddy_data,
+        "user_matches_narrow_using_loaded_data",
+        override_user_matches_narrow_using_loaded_data,
+    );
     mock_template("buddy_list/view_all_users.hbs", false, () => "<view-all-users-stub>");
 
     let items_to_html_call_count = 0;

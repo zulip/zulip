@@ -166,7 +166,7 @@ def remote_server_dispatch(request: HttpRequest, /, **kwargs: Any) -> HttpRespon
     result = get_target_view_function_or_response(request, kwargs)
     if isinstance(result, HttpResponse):
         return result
-    target_function, view_flags = result
+    target_function, _view_flags = result
     return authenticated_remote_server_view(target_function)(request, **kwargs)
 
 

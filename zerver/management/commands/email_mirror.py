@@ -63,9 +63,9 @@ def get_imap_messages() -> Generator[EmailMessage, None, None]:
     try:
         mbox.select(settings.EMAIL_GATEWAY_IMAP_FOLDER)
         try:
-            status, num_ids_data = mbox.search(None, "ALL")
+            _status, num_ids_data = mbox.search(None, "ALL")
             for message_id in num_ids_data[0].split():
-                status, msg_data = mbox.fetch(message_id, "(RFC822)")
+                _status, msg_data = mbox.fetch(message_id, "(RFC822)")
                 assert isinstance(msg_data[0], tuple)
                 msg_as_bytes = msg_data[0][1]
                 yield email.parser.BytesParser(

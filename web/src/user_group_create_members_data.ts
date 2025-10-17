@@ -26,9 +26,10 @@ export function sorted_members(): (User | UserGroup)[] {
     const users = people.get_users_from_ids([...user_id_set]);
     people.sort_but_pin_current_user_on_top(users);
 
-    const subgroups = [...subgroup_id_set]
-        .map((group_id) => user_groups.get_user_group_from_id(group_id))
-        .sort(user_group_components.sort_group_member_name);
+    const subgroups = [...subgroup_id_set].map((group_id) =>
+        user_groups.get_user_group_from_id(group_id),
+    );
+    subgroups.sort(user_group_components.sort_group_member_name);
 
     return [...subgroups, ...users];
 }

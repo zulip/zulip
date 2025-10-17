@@ -402,7 +402,7 @@ test("show offline channel subscribers for small channels", ({override_rewire}) 
 
     const stream_id = 1001;
     const sub = {name: "Rome", subscribed: true, stream_id};
-    stream_data.add_sub(sub);
+    stream_data.add_sub_for_tests(sub);
     peer_data.set_subscribers(stream_id, [
         selma.user_id,
         alice.user_id,
@@ -433,7 +433,7 @@ test("get_conversation_participants", () => {
     people.add_active_user(selma);
 
     const rome_sub = {name: "Rome", subscribed: true, stream_id: 1001};
-    stream_data.add_sub(rome_sub);
+    stream_data.add_sub_for_tests(rome_sub);
     peer_data.set_subscribers(rome_sub.stream_id, [selma.user_id, me.user_id]);
 
     const filter_terms = [
@@ -486,7 +486,7 @@ test("compare_function", () => {
 
     const stream_id = 1001;
     const sub = {name: "Rome", subscribed: true, stream_id};
-    stream_data.add_sub(sub);
+    stream_data.add_sub_for_tests(sub);
     people.add_active_user(alice);
     people.add_active_user(fred);
 

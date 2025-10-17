@@ -579,7 +579,7 @@ class MarkdownFixtureTest(ZulipTestCase):
 
     def test_markdown_no_ignores(self) -> None:
         # We do not want any ignored tests to be committed and merged.
-        format_tests, linkify_tests = self.load_markdown_tests()
+        format_tests, _linkify_tests = self.load_markdown_tests()
         for name, test in format_tests.items():
             message = f'Test "{name}" shouldn\'t be ignored.'
             is_ignored = test.get("ignore", False)

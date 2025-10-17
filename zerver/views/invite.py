@@ -91,7 +91,7 @@ def access_streams_for_invite(stream_ids: list[int], user_profile: UserProfile) 
 
     for stream_id in stream_ids:
         try:
-            (stream, sub) = access_stream_by_id(user_profile, stream_id)
+            (stream, _sub) = access_stream_by_id(user_profile, stream_id)
         except JsonableError:
             raise JsonableError(
                 _("Invalid channel ID {channel_id}. No invites were sent.").format(

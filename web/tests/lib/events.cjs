@@ -63,6 +63,7 @@ exports.test_streams = {
         can_send_message_group: 2,
         can_remove_subscribers_group: 2,
         is_recently_active: true,
+        subscriber_count: 10,
     },
     test: {
         is_archived: false,
@@ -88,6 +89,7 @@ exports.test_streams = {
         can_send_message_group: 2,
         can_remove_subscribers_group: 2,
         is_recently_active: true,
+        subscriber_count: 2,
     },
 };
 
@@ -511,7 +513,7 @@ exports.fixtures = {
         bot: {
             email: "the-bot@example.com",
             user_id: 42,
-            avatar_url: "/some/path/to/avatar",
+            avatar_url: "/avatar/42",
             api_key: "SOME_KEY",
             full_name: "The Bot",
             bot_type: 1,
@@ -621,7 +623,7 @@ exports.fixtures = {
         op: "add",
         person: {
             ...test_user,
-            avatar_url: "/some/path/to/avatar",
+            avatar_url: `/avatar/${test_user.user_id}`,
             avatar_version: 1,
             is_admin: false,
             is_active: true,
@@ -641,7 +643,7 @@ exports.fixtures = {
         op: "add",
         person: {
             ...test_user,
-            avatar_url: "/some/path/to/avatar",
+            avatar_url: `/avatar/${test_user.user_id}`,
             avatar_version: 1,
             is_admin: false,
             is_active: true,

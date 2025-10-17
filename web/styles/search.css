@@ -215,6 +215,15 @@
         }
     }
 
+    /* for both input container and search suggestions */
+    .user-pill-container {
+        > .pill-label {
+            min-width: fit-content;
+            white-space: nowrap;
+            width: fit-content;
+        }
+    }
+
     #searchbox-input-container {
         display: grid;
         /* The next two styles override .input-append style from app_components.js */
@@ -279,9 +288,6 @@
             }
 
             > .pill-label {
-                min-width: fit-content;
-                white-space: nowrap;
-                width: fit-content;
                 /* Replaced by the 5px gap. */
                 margin-right: 0;
                 /* Don't inherit large line-height for user pill labels. */
@@ -418,9 +424,18 @@
                     1fr
                 );
 
+            /* We don't show a border for focused pills
+               in the search typeahead */
             &:focus {
-                /* Keep the border the same color, there's no user interaction for users in the typeahead menu */
+                /* Regular pills use box-shadow. */
+                box-shadow: none;
+
+                /* User pills use border */
                 border-color: var(--color-background-input-pill);
+
+                .pill-image-border {
+                    border-color: var(--color-border-input-pill-image);
+                }
             }
 
             .exit {
