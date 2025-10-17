@@ -1,7 +1,7 @@
 {
   "data": [
     {
-      "api_version": "2025-04-30.basil",
+      "api_version": "2025-09-30.clover",
       "created": 1000000000,
       "data": {
         "object": {
@@ -209,7 +209,7 @@
       "type": "invoice.payment_succeeded"
     },
     {
-      "api_version": "2025-04-30.basil",
+      "api_version": "2025-09-30.clover",
       "created": 1000000000,
       "data": {
         "object": {
@@ -417,7 +417,7 @@
       "type": "invoice.paid"
     },
     {
-      "api_version": "2025-04-30.basil",
+      "api_version": "2025-09-30.clover",
       "created": 1000000000,
       "data": {
         "object": {
@@ -635,7 +635,7 @@
       "type": "invoice.updated"
     },
     {
-      "api_version": "2025-04-30.basil",
+      "api_version": "2025-09-30.clover",
       "created": 1000000000,
       "data": {
         "object": {
@@ -657,6 +657,7 @@
           "currency": "usd",
           "customer": "cus_NORMALIZED",
           "description": "Payment for Invoice",
+          "excluded_payment_method_types": null,
           "id": "schedule_server_upgrade_to_fixed_price_business_plan--Event.list.2.json",
           "last_payment_error": null,
           "latest_charge": "ch_NORMALIZED",
