@@ -13,9 +13,9 @@
         {{else if this.is_external_account}}
             <a tabindex="0" href="{{this.link}}" target="_blank" rel="noopener noreferrer" class="value custom-profile-fields-link {{#if ../for_user_card_popover}}tippy-zulip-tooltip{{/if}}" data-tippy-content="{{this.name}}">
                 {{#if (eq this.subtype "github") }}
-                <i class="fa fa-github" aria-hidden="true"></i>
+                <i class="zulip-icon zulip-icon-github" aria-hidden="true"></i>
                 {{else if (eq this.subtype "twitter") }}
-                <i class="fa fa-twitter" aria-hidden="true"></i>
+                <i class="zulip-icon zulip-icon-twitter" aria-hidden="true"></i>
                 {{/if}}
                 {{this.value}}
             </a>
