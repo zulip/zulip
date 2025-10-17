@@ -8,7 +8,7 @@ class CanarytokensHookTests(WebhookTestCase):
 
     def test_canarytoken_new(self) -> None:
         expected_message = (
-            "**:alert: Canarytoken has been triggered on 2020-06-09 14:04:39!**\n\n"
+            "**:alert: Canarytoken has been triggered on <time:2020-06-09 14:04:39Z>!**\n\n"
             "Congrats! The newly saved webhook works \n\n"
             "[Manage this canarytoken](http://example.com/test/url/for/webhook)"
         )
@@ -22,8 +22,7 @@ class CanarytokensHookTests(WebhookTestCase):
 
     def test_canarytoken_real(self) -> None:
         expected_message = (
-            "**:alert: Canarytoken has been triggered on 2020-06-09 14:04:47 "
-            "(UTC)!**\n\n"
+            "**:alert: Canarytoken has been triggered on <time:2020-06-09 14:04:47Z>!**\n\n"
             "Canarytoken example \n\n"
             "[Manage this canarytoken]"
             "(https://canarytokens.org/manage?token=foo&auth=bar)"
@@ -39,8 +38,7 @@ class CanarytokensHookTests(WebhookTestCase):
     def test_canarytoken_with_specific_topic(self) -> None:
         self.url = self.build_webhook_url(topic="foo")
         expected_message = (
-            "**:alert: Canarytoken has been triggered on 2020-06-09 14:04:47 "
-            "(UTC)!**\n\n"
+            "**:alert: Canarytoken has been triggered on <time:2020-06-09 14:04:47Z>!**\n\n"
             "Canarytoken example \n\n"
             "[Manage this canarytoken]"
             "(https://canarytokens.org/manage?token=foo&auth=bar)"
