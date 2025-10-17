@@ -1,0 +1,54 @@
+name: Notify of issues resolved in latest Zulip Cloud deploy
+
+on:
+  push:
+    branches:
+      - zulip-cloud-current
+
+permissions:
+  contents: read
+  issues: read
+  pull-requests: read
+
+jobs:
+  zulip-cloud-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Install uv
+        run: |
+          ./scripts/lib/install-uv
+
+      - name: Generate list of resolved issues
+        id: generate
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          BASE="${{ github.event.before }}"
+          HEAD="${{ github.event.after }}"
+
+          ./tools/closed-by-commits "$BASE" "$HEAD" | tee release_notes.md
+          echo "content<<EOF" >> $GITHUB_OUTPUT
+          cat release_notes.md >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Send to Zulip
+        if: ${{github.repository == 'zulip/zulip'}}
+        uses: zulip/github-actions-zulip/send-message@v1
+        with:
+          api-key: ${{ secrets.ZULIP_BOT_KEY }}
+          email: "github-actions-bot@chat.zulip.org"
+          organization-url: "https://chat.zulip.org"
+          to: "zulip cloud"
+          topic: "latest deploy"
+          type: "stream"
+          content: ${{ steps.generate.outputs.content }}
