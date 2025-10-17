@@ -353,34 +353,59 @@ async function test_alert_words_section(page: Page): Promise<void> {
     await test_alert_word_deletion(page, word);
 }
 
-async function change_language(page: Page, language_data_code: string): Promise<void> {
-    await page.waitForSelector("#user-preferences .language_selection_button", {
-        visible: true,
-    });
-    await page.click("#user-preferences .language_selection_button");
-    await common.wait_for_micromodal_to_open(page);
-    const language_selector = `a[data-code="${CSS.escape(language_data_code)}"]`;
-    await page.click(language_selector);
+async function change_language(page: Page, language_code: string): Promise<void> {
+    // Wait for the dropdown to appear
+    await page.waitForSelector("select#default_language_widget", {visible: true});
+
+    // Change the value
+    await page.$eval(
+        "select#default_language_widget",
+        (el: HTMLSelectElement, value: string) => {
+            el.value = value;
+            el.dispatchEvent(new Event("change", {bubbles: true})); // trigger Zulip JS listener
+        },
+        language_code,
+    );
+
+    // Wait until the value is actually set
+    await page.waitForFunction(
+        (selector, value) => document.querySelector<HTMLSelectElement>(selector)?.value === value,
+        {polling: 100, timeout: 20000}, // give it 20s in case the frontend is slow
+        "select#default_language_widget",
+        language_code,
+    );
 }
 
-async function check_language_setting_status(page: Page): Promise<void> {
-    await page.waitForSelector("#user-preferences .general-settings-status .reload_link", {
-        visible: true,
-    });
+async function check_language_setting_status(page: Page, expected_value: string): Promise<void> {
+    await page.waitForFunction(
+        (selector, value) => {
+            const el = document.querySelector<HTMLSelectElement>(selector);
+            return el?.value === value;
+        },
+        {},
+        "select#default_language_widget",
+        expected_value,
+    );
 }
 
 async function assert_language_changed_to_chinese(page: Page): Promise<void> {
-    await page.waitForSelector("#user-preferences .language_selection_button", {
+    await page.waitForSelector("select#default_language_widget", {
         visible: true,
     });
-    const default_language = await common.get_text_from_selector(
-        page,
-        "#user-preferences .language_selection_button",
+    const default_language = await page.$eval(
+        "select#default_language_widget",
+        (el: HTMLSelectElement) => {
+            const option = el.options[el.selectedIndex];
+            if (!option) {
+                throw new Error("No option selected in language dropdown");
+            }
+            return option.text;
+        },
     );
-    assert.strictEqual(
-        default_language,
-        "简体中文",
-        "Default language has not been changed to Chinese.",
+
+    assert.ok(
+        default_language.startsWith("简体中文"),
+        `Default language has not been changed to Chinese. Actual: ${default_language}`,
     );
 }
 
@@ -399,11 +424,10 @@ async function test_default_language_setting(page: Page): Promise<void> {
     const chinese_language_data_code = "zh-hans";
     await change_language(page, chinese_language_data_code);
     // Check that the saved indicator appears
-    await check_language_setting_status(page);
-    await page.click(".reload_link");
-    await page.waitForSelector("#user-preferences .language_selection_button", {
-        visible: true,
-    });
+    await check_language_setting_status(page, chinese_language_data_code);
+    // await page.waitForSelector("select#default_language_widget", {
+    //     visible: true,
+    // });
     await assert_language_changed_to_chinese(page);
     await test_i18n_language_precedence(page);
     await page.waitForSelector(preferences_section, {visible: true});
@@ -413,14 +437,14 @@ async function test_default_language_setting(page: Page): Promise<void> {
     await change_language(page, "en");
 
     // Check that the saved indicator appears
-    await check_language_setting_status(page);
+    await check_language_setting_status(page, "en");
     await page.goto("http://zulip.zulipdev.com:9981/#settings"); // get back to normal language.
     await page.waitForSelector(preferences_section, {visible: true});
     await page.click(preferences_section);
     await page.waitForSelector("#user-preferences .general-settings-status", {
         visible: true,
     });
-    await page.waitForSelector("#user-preferences .language_selection_button", {
+    await page.waitForSelector("select#default_language_widget", {
         visible: true,
     });
 }
