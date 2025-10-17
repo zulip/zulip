@@ -865,19 +865,10 @@ export let update_dom_with_unread_counts = function (counts: FullUnreadCountsDat
         pinned_unread_counts.muted,
     );
 
-    update_section_unread_count(
-        $("#stream-list-normal-streams-container .stream-list-subsection-header"),
-        normal_section_unread_counts.unmuted,
-        normal_section_unread_counts.muted,
-    );
-    update_section_unread_count(
-        $("#stream-list-normal-streams-container .show-inactive-or-muted-channels"),
-        normal_section_unread_counts.inactive_unmuted +
-            normal_section_unread_counts.muted_channel_unmuted,
-        normal_section_unread_counts.inactive_muted +
-            normal_section_unread_counts.muted_channel_muted,
-    );
-
+    let folder_unmuted_count = 0;
+    let folder_muted_count = 0;
+    let folder_inactive_and_unmuted = 0;
+    let folder_inactive_and_muted = 0;
     for (const folder_id of channel_folders.get_all_folder_ids()) {
         const unread_counts = folder_unread_counts.get(folder_id) ?? {
             unmuted: 0,
@@ -887,17 +878,44 @@ export let update_dom_with_unread_counts = function (counts: FullUnreadCountsDat
             muted_channel_unmuted: 0,
             muted_channel_muted: 0,
         };
-        update_section_unread_count(
-            $(`#stream-list-${folder_id}-container .stream-list-subsection-header`),
-            unread_counts.unmuted,
-            unread_counts.muted,
-        );
-        update_section_unread_count(
-            $(`#stream-list-${folder_id}-container .show-inactive-or-muted-channels`),
-            unread_counts.inactive_unmuted + unread_counts.muted_channel_unmuted,
-            unread_counts.inactive_muted + unread_counts.muted_channel_muted,
-        );
+        if (user_settings.web_left_sidebar_show_channel_folders) {
+            update_section_unread_count(
+                $(`#stream-list-${folder_id}-container .stream-list-subsection-header`),
+                unread_counts.unmuted,
+                unread_counts.muted,
+            );
+            update_section_unread_count(
+                $(`#stream-list-${folder_id}-container .show-inactive-or-muted-channels`),
+                unread_counts.inactive_unmuted + unread_counts.muted_channel_unmuted,
+                unread_counts.inactive_muted + unread_counts.muted_channel_muted,
+            );
+        } else {
+            folder_unmuted_count += unread_counts.unmuted;
+            folder_muted_count += unread_counts.muted;
+            folder_inactive_and_unmuted +=
+                unread_counts.inactive_unmuted + unread_counts.muted_channel_unmuted;
+            folder_inactive_and_muted +=
+                unread_counts.inactive_muted + unread_counts.muted_channel_muted;
+        }
     }
+
+    // If we're not displaying folders separately, those unreads should be counted here.
+    // If `web_left_sidebar_show_channel_folders` is true, the folder counts should be 0
+    // so adding them here is a noop.
+    update_section_unread_count(
+        $("#stream-list-normal-streams-container .stream-list-subsection-header"),
+        normal_section_unread_counts.unmuted + folder_unmuted_count,
+        normal_section_unread_counts.muted + folder_muted_count,
+    );
+    update_section_unread_count(
+        $("#stream-list-normal-streams-container .show-inactive-or-muted-channels"),
+        normal_section_unread_counts.inactive_unmuted +
+            normal_section_unread_counts.muted_channel_unmuted +
+            folder_inactive_and_unmuted,
+        normal_section_unread_counts.inactive_muted +
+            normal_section_unread_counts.muted_channel_muted +
+            folder_inactive_and_muted,
+    );
 };
 
 export function rewire_update_dom_with_unread_counts(
