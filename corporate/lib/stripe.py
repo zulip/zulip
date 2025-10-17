@@ -4349,9 +4349,9 @@ class RealmBillingSession(BillingSession):
         # anything weird.
         pass
 
-    def send_realm_created_internal_admin_message(self) -> None:
+    def send_realm_created_internal_admin_message(self, is_demo_organization: bool = False) -> None:
         channel = "signups"
-        topic = "new organizations"
+        topic = "new demo organizations" if is_demo_organization else "new organizations"
         support_url = self.support_url()
         organization_type = get_org_type_display_name(self.realm.org_type)
         message = f"[{self.realm.name}]({support_url}) ([{self.realm.display_subdomain}]({self.realm.url})). Organization type: {organization_type}"

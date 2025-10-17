@@ -1374,6 +1374,10 @@ class EmailUnsubscribeTests(ZulipTestCase):
 class DemoCreationTest(ZulipTestCase):
     @override_settings(OPEN_REALM_CREATION=True)
     def test_create_demo_organization(self) -> None:
+        internal_realm = get_realm(settings.SYSTEM_BOT_REALM)
+        notification_bot = get_system_bot(settings.NOTIFICATION_BOT, internal_realm.id)
+        signups_channel, _ = create_stream_if_needed(notification_bot.realm, "signups")
+
         result = self.submit_demo_creation_form("demo test")
         realm = Realm.objects.latest("date_created")
         self.assertEqual(result.status_code, 302)
@@ -1418,6 +1422,18 @@ class DemoCreationTest(ZulipTestCase):
         self.assertIn("getting started guide", welcome_msg.content)
         self.assertNotIn("using Zulip for a class guide", welcome_msg.content)
         self.assertIn("demo organization", welcome_msg.content)
+
+        # Check admin organization's signups channel messages
+        recipient = signups_channel.recipient
+        messages = Message.objects.filter(realm_id=internal_realm.id, recipient=recipient).order_by(
+            "id"
+        )
+        self.assert_length(messages, 1)
+        # Check organization name, subdomain and organization type are in message content
+        self.assertIn(realm.name, messages[0].content)
+        self.assertIn(realm.string_id, messages[0].content)
+        self.assertIn("Organization type: Business", messages[0].content)
+        self.assertEqual("new demo organizations", messages[0].topic_name())
 
     @ratelimit_rule(10, 2, domain="demo_realm_creation_by_ip")
     def test_demo_creation_rate_limiter(self) -> None:
