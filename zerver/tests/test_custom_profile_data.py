@@ -3,6 +3,7 @@ from typing import Any, cast
 from unittest import mock
 
 import orjson
+from django.conf import settings
 from typing_extensions import override
 
 from zerver.actions.custom_profile_fields import (
@@ -16,9 +17,10 @@ from zerver.lib.external_accounts import DEFAULT_EXTERNAL_ACCOUNTS
 from zerver.lib.markdown import markdown_convert
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.types import ProfileDataElementUpdateDict, ProfileDataElementValue
-from zerver.models import CustomProfileField, CustomProfileFieldValue, UserProfile
+from zerver.models import CustomProfileField, CustomProfileFieldValue, Message, UserProfile
 from zerver.models.custom_profile_fields import custom_profile_fields_for_realm
 from zerver.models.realms import get_realm
+from zerver.models.users import get_system_bot
 
 
 class CustomProfileFieldTestCase(ZulipTestCase):
@@ -1297,3 +1299,128 @@ class ReorderCustomProfileFieldTest(CustomProfileFieldTestCase):
             "/json/realm/profile_fields", info={"order": orjson.dumps(order).decode()}
         )
         self.assert_json_error(result, "Invalid order mapping.")
+
+
+class CustomProfileFieldNotificationTest(CustomProfileFieldTestCase):
+    """Test notifications for custom profile field changes."""
+
+    def test_notification_sent_when_admin_updates_custom_field(self) -> None:
+        """Test notification when admin updates custom profile field."""
+        admin = self.example_user("hamlet")
+        user = self.example_user("iago")
+
+        # Create a custom field
+        field = CustomProfileField.objects.get(realm=user.realm, name="Biography")
+
+        # Admin updates the field
+        data: list[ProfileDataElementUpdateDict] = [{"id": field.id, "value": "New bio"}]
+
+        do_update_user_custom_profile_data_if_changed(user, data, admin)
+
+        # Check notification
+        notification_bot = get_system_bot(settings.NOTIFICATION_BOT, user.realm_id)
+        messages = Message.objects.filter(
+            realm=user.realm,
+            sender=notification_bot,
+            recipient=user.recipient,
+        )
+
+        self.assert_length(messages, 1)
+        message = messages[0]
+        self.assertIn(admin.full_name, message.content)
+        self.assertIn("Biography", message.content)
+        self.assertIn("New bio", message.content)
+
+    def test_notification_for_select_field_shows_text_not_id(self) -> None:
+        """Test that SELECT field shows option text, not ID."""
+        admin = self.example_user("hamlet")
+        user = self.example_user("iago")
+        realm = user.realm
+
+        # Create SELECT field
+        field = CustomProfileField.objects.create(
+            realm=realm,
+            name="Editor",
+            field_type=CustomProfileField.SELECT,
+            field_data=orjson.dumps(
+                {"0": {"text": "Vim", "order": "1"}, "1": {"text": "Emacs", "order": "2"}}
+            ).decode(),
+        )
+
+        data: list[ProfileDataElementUpdateDict] = [{"id": field.id, "value": "0"}]
+
+        do_update_user_custom_profile_data_if_changed(user, data, admin)
+
+        notification_bot = get_system_bot(settings.NOTIFICATION_BOT, user.realm_id)
+        messages = Message.objects.filter(
+            realm=realm,
+            sender=notification_bot,
+            recipient=user.recipient,
+        )
+
+        message = messages[0]
+        # Should show "Vim", not "0"
+        self.assertIn(admin.full_name, message.content)
+        self.assertIn("Vim", message.content)
+        self.assertNotIn('"0"', message.content)
+
+    def test_notification_for_user_field_shows_names(self) -> None:
+        """Test that USER field shows user names, not IDs."""
+        admin = self.example_user("hamlet")
+        user = self.example_user("iago")
+        othello = self.example_user("othello")
+        cordelia = self.example_user("cordelia")
+        realm = user.realm
+
+        # Create USER field
+        field = CustomProfileField.objects.create(
+            realm=realm,
+            name="Mentors",
+            field_type=CustomProfileField.USER,
+        )
+
+        # Set mentors
+        user_ids = [othello.id, cordelia.id]
+        data: list[ProfileDataElementUpdateDict] = [
+            {"id": field.id, "value": orjson.dumps(user_ids).decode()}
+        ]
+
+        do_update_user_custom_profile_data_if_changed(user, data, admin)
+
+        notification_bot = get_system_bot(settings.NOTIFICATION_BOT, user.realm_id)
+        messages = Message.objects.filter(
+            realm=user.realm,
+            sender=notification_bot,
+            recipient=user.recipient,
+        )
+
+        message = messages[0]
+        # Should show names, not IDs
+        self.assertIn(admin.full_name, message.content)
+        self.assertIn(othello.full_name, message.content)
+        self.assertIn(cordelia.full_name, message.content)
+
+    def test_no_notification_when_no_actual_change(self) -> None:
+        """Test no notification when value doesn't actually change."""
+        admin = self.example_user("hamlet")
+        user = self.example_user("iago")
+
+        field = CustomProfileField.objects.get(realm=user.realm, name="Biography")
+
+        # Set initial value
+        data: list[ProfileDataElementUpdateDict] = [{"id": field.id, "value": "Same bio"}]
+        do_update_user_custom_profile_data_if_changed(user, data, admin)
+
+        message_count = Message.objects.filter(
+            realm=user.realm, sender__email=settings.NOTIFICATION_BOT
+        ).count()
+
+        # Try to set same value again
+        do_update_user_custom_profile_data_if_changed(user, data, admin)
+
+        new_message_count = Message.objects.filter(
+            realm=user.realm, sender__email=settings.NOTIFICATION_BOT
+        ).count()
+
+        # Should not send another notification
+        self.assertEqual(message_count, new_message_count)
