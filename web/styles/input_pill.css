@@ -33,6 +33,7 @@
         border-radius: 4px;
         background-color: var(--color-background-input-pill);
         cursor: pointer;
+        transition: background 0.1s;
 
         /* Not focus-visible, because we want to support mouse+backpace to
            delete pills */
@@ -234,6 +235,37 @@
         border-color: var(--color-invalid-input-border);
         box-shadow: var(--invalid-input-box-shadow);
     }
+}
+
+/* Make display-only pills (read-only/display) always clickable */
+.pill {
+    cursor: pointer !important;
+}
+
+/* Remove shadow, border, and outline on all interactive states (hover, focus, active, click) for clickable/display pills */
+.pill:not(.not-editable):hover,
+.pill:not(.not-editable):focus,
+.pill:not(.not-editable):active {
+    background: var(--color-background-input-pill-hover, #f3f0fa) !important;
+    border: none !important;
+    box-shadow: none !important;
+    outline: none !important;
+}
+
+.pill:focus,
+.pill:active,
+.pill:focus-visible,
+.pill *:focus,
+.pill *:focus-visible,
+.pill *:active {
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+.pill::-webkit-focus-ring,
+.pill *::-webkit-focus-ring {
+    outline: none !important;
+    box-shadow: none !important;
 }
 
 #compose-direct-recipient .pill-container {
