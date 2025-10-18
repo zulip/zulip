@@ -29,18 +29,20 @@
         margin: 0;
 
         color: inherit;
+        border: 1px solid var(--color-border-pill-container);
 
         border-radius: 4px;
         background-color: var(--color-background-input-pill);
         cursor: pointer;
+        transition: background 0.1s;
 
         /* Not focus-visible, because we want to support mouse+backpace to
            delete pills */
         &:focus {
             /* Box shadow instead of border, because user pills have avatars
                that extend all the way to the edge of the pill. */
-            box-shadow: 0 0 0 1px var(--color-focus-outline-input-pill) inset;
-            outline: none;
+            /* box-shadow: 0 0 0 1px var(--color-focus-outline-input-pill) inset; */
+            /* outline: none; */
 
             /* For user pills with avatars, the avatar covers up the box
                shadow, so we also have to make a border around the avatar. */
@@ -234,6 +236,39 @@
         border-color: var(--color-invalid-input-border);
         box-shadow: var(--invalid-input-box-shadow);
     }
+}
+
+
+.pill {
+    cursor: pointer !important;
+    border:1px solid var(--color-focus-outline-input-pill);
+   
+}
+
+
+.pill:not(.not-editable):hover,
+.pill:not(.not-editable):focus,
+.pill:not(.not-editable):active {
+    background: var(--color-background-input-pill-hover, #f3f0fa) !important;
+    border: none !important;
+    box-shadow: none !important;
+    outline: none !important;
+}
+
+.pill:focus,
+.pill:active,
+.pill:focus-visible,
+.pill *:focus,
+.pill *:focus-visible,
+.pill *:active {
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+.pill::-webkit-focus-ring,
+.pill *::-webkit-focus-ring {
+    outline: none !important;
+    box-shadow: none !important;
 }
 
 #compose-direct-recipient .pill-container {
