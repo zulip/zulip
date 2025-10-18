@@ -2503,7 +2503,7 @@ body:not(.spectator-view) {
 }
 
 .above_compose_banner .above_compose_banner_action_button {
-    background-color:  hsl(148, 58%, 17%) !important;
+    background-color: hsl(148deg 58% 17%) !important;
     border: 1.5px solid hsl(148deg 58% 17%) !important;
     color: hsl(147.5deg 41.2% 72.5%) !important;
     padding: 2px 8px !important;
@@ -2514,6 +2514,6 @@ body:not(.spectator-view) {
 }
 
 .above_compose_banner .above_compose_banner_action_button:hover {
-    background-color: hsl(147, 57%, 16%) !important;
-    border-color: hsl(147, 57%, 16%) !important;
+    background-color: hsl(147deg 57% 16%) !important;
+    border-color: hsl(147deg 57% 16%) !important;
 }
