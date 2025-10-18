@@ -482,6 +482,15 @@
     }
 }
 
+#change_stream_info_modal {
+    #change_stream_name {
+        /* Allow channel name field to expand while maintaining minimum width */
+        min-width: calc(var(--modal-input-width) - 14px);
+        width: auto;
+        max-width: 100%;
+    }
+}
+
 .edit_profile_field_choices_container,
 #profile_field_choices {
     .modal_text_input {
