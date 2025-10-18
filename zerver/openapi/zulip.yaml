@@ -20306,6 +20306,10 @@ paths:
                           names contained in this list, to obtain the desired
                           thumbnail size.
 
+                          See [Images in Markdown messages](/api/message-formatting#images)
+                          for details of how Zulip renders images, and how
+                          clients should handle them.
+
                           **Changes**: New in Zulip 9.0 (feature level 273).
                         type: array
                         items:
