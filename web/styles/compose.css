@@ -1247,10 +1247,9 @@ textarea.new_message_textarea {
    interactions (e.g., Shift-Tabbing from the compose textarea
    to the topic box) show instant changes, so we don't need to
    accommodate them here, which we prevent by applying the
-   transitions only when focus isn't within the recipient row,
-   or hasn't recently been within the topic box. */
+   transitions only when focus isn't within the recipient row. */
 #compose.compose-box-open {
-    .low-attention-recipient-row:not(.recently-focused, :focus-within) {
+    .low-attention-recipient-row:hover:not(:focus-within) {
         #compose_select_recipient_widget,
         #compose_recipient_box,
         #compose-direct-recipient .pill-container {

@@ -174,7 +174,6 @@ class RegistrationForm(RealmDetailsForm):
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         # Since the superclass doesn't except random extra kwargs, we
         # remove it from the kwargs dict before initializing.
-        self.realm_creation = kwargs["realm_creation"]
         self.realm = kwargs.pop("realm", None)
 
         super().__init__(*args, **kwargs)
@@ -390,6 +389,7 @@ class CaptchaRealmCreationForm(RealmCreationForm):
 
     @override
     def clean(self) -> None:
+        super().clean()
         if not self.data.get("captcha"):
             self.add_error("captcha", _("Validation failed, please try again."))
 

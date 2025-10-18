@@ -983,6 +983,11 @@ export class MessageListView {
                 update_group_date(second_group, curr_msg_container.msg, prev_msg_container?.msg);
                 // We could add an action to update the date row, but for now rerender the group.
                 message_actions.rerender_groups.push(second_group);
+            } else if (second_group.bookend_top) {
+                // We know there was no bookend_top before since we
+                // are adding messages to the top.
+                const rendered_bookend_html = render_bookend(second_group);
+                this.$list.prepend($(rendered_bookend_html));
             }
             message_actions.prepend_groups = new_message_groups;
             this._message_groups = [...new_message_groups, ...this._message_groups];

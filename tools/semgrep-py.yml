@@ -379,3 +379,15 @@ rules:
       - pattern: urllib.parse.ParseResult
     severity: ERROR
     message: "Use urlsplit rather than urlparse"
+
+  - id: argparse-redundant-str
+    patterns:
+      - pattern: |
+          ....add_argument(..., type=str, ...)
+    message: |
+      The `type=str` argument is redundant in `argparse` because `str` is the default type.
+    fix-regex:
+      regex: ',\s*type=str'
+      replacement: ""
+    languages: [python]
+    severity: ERROR

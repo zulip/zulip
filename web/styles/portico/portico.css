@@ -776,16 +776,6 @@ input#terminal:checked ~ #tab-terminal {
     margin-left: 10px;
 }
 
-.new-organization-button {
-    margin-top: 10px;
-}
-
-input.new-organization-button {
-    display: block;
-    margin-left: auto;
-    margin-right: auto;
-}
-
 .login-form {
     margin: auto;
     /* plus input padding. */
