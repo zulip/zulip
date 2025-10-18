@@ -1504,14 +1504,14 @@ test("initialize", ({override, override_rewire, mock_template}) => {
                     [make_emoji(emoji_thermometer), make_emoji(emoji_thumbs_up)],
                     "th",
                 );
-                expected_value = [make_emoji(emoji_thumbs_up), make_emoji(emoji_thermometer)];
+                expected_value = [make_emoji(emoji_thermometer), make_emoji(emoji_thumbs_up)];
                 assert.deepEqual(actual_value, expected_value);
 
                 actual_value = typeahead.sort_emojis(
                     [make_emoji(emoji_headphones), make_emoji(emoji_heart)],
                     "he",
                 );
-                expected_value = [make_emoji(emoji_heart), make_emoji(emoji_headphones)];
+                expected_value = [make_emoji(emoji_headphones), make_emoji(emoji_heart)];
                 assert.deepEqual(actual_value, expected_value);
 
                 actual_value = typeahead_helper.sort_slash_commands(
