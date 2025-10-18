@@ -2491,17 +2491,29 @@ body:not(.spectator-view) {
     }
 }
 
+.above_compose_banner {
+    padding: 4px 2px !important; /* Upar-niche padding badhao */
+}
+
+.above_compose_banner .banner-content-wrapper {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    width: 100% !important;
+}
+
 .above_compose_banner .above_compose_banner_action_button {
-    background-color: transparent !important;
-    border: 1.5px solid hsl(147.5deg 57.1% 23.1%) !important;
+    background-color:  hsl(148, 58%, 17%) !important;
+    border: 1.5px solid hsl(148deg 58% 17%) !important;
     color: hsl(147.5deg 41.2% 72.5%) !important;
-    padding: 4px 12px !important;
-    margin-left: 2px !important;
+    padding: 2px 8px !important;
     border-radius: 4px !important;
     font-size: 15px !important;
+    text-align: center !important;
+    margin: 2px 0 !important;
 }
 
 .above_compose_banner .above_compose_banner_action_button:hover {
-    background-color: hsl(147.5deg 96.8% 15.3%) !important;
-    border-color: hsl(147.5deg 18.7% 49.6%) !important;
+    background-color: hsl(147, 57%, 16%) !important;
+    border-color: hsl(147, 57%, 16%) !important;
 }
