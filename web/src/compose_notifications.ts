@@ -61,6 +61,7 @@ export function notify_above_composebox(
     link_msg_id: number,
     message_recipient: MessageRecipient | null,
     link_text: string | null,
+    action_button_text: string | null = null,
 ): void {
     const $notification = $(
         render_message_sent_banner({
@@ -70,6 +71,7 @@ export function notify_above_composebox(
             link_msg_id,
             message_recipient,
             link_text,
+            action_button_text,
         }),
     );
     // We pass in include_unmute_banner as false because we don't want to
@@ -234,6 +236,7 @@ function show_scroll_to_view_banner(link_msg_id: number): void {
         link_msg_id,
         null,
         link_text,
+        $t({defaultMessage: "Scroll down"}),
     );
     compose_banner.set_scroll_to_message_banner_message_id(link_msg_id);
 }
@@ -434,7 +437,7 @@ export function initialize(opts: {
     on_click_scroll_to_selected: () => void;
     on_narrow_to_recipient: (message_id: number) => void;
 }): void {
-    const {on_click_scroll_to_selected, on_narrow_to_recipient} = opts;
+    const {on_narrow_to_recipient} = opts;
     $("#compose_banners").on(
         "click",
         ".narrow_to_recipient .above_compose_banner_action_link, .automatic_new_visibility_policy .above_compose_banner_action_link",
@@ -445,17 +448,16 @@ export function initialize(opts: {
             e.preventDefault();
         },
     );
-    $("#compose_banners").on(
-        "click",
-        ".sent_scroll_to_view .above_compose_banner_action_link",
-        (e) => {
-            assert(message_lists.current !== undefined);
-            const message_id = Number($(e.currentTarget).attr("data-message-id"));
-            message_lists.current.select_id(message_id);
-            on_click_scroll_to_selected();
-            compose_banner.clear_message_sent_banners(false);
-            e.stopPropagation();
-            e.preventDefault();
-        },
-    );
+    $("#compose_banners").on("click", ".sent_scroll_to_view .action-button", (e) => {
+        const $message_list = $(".focused-message-list .message-list");
+        if ($message_list.length > 0 && $message_list[0]) {
+            $message_list.animate({scrollTop: $message_list[0].scrollHeight}, 500);
+        } else {
+            window.scrollTo(0, document.body.scrollHeight);
+        }
+
+        compose_banner.clear_message_sent_banners(false);
+        e.stopPropagation();
+        e.preventDefault();
+    });
 }
