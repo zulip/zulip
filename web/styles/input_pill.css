@@ -29,6 +29,7 @@
         margin: 0;
 
         color: inherit;
+        border: 1px solid var(--color-border-pill-container);
 
         border-radius: 4px;
         background-color: var(--color-background-input-pill);
@@ -40,8 +41,8 @@
         &:focus {
             /* Box shadow instead of border, because user pills have avatars
                that extend all the way to the edge of the pill. */
-            box-shadow: 0 0 0 1px var(--color-focus-outline-input-pill) inset;
-            outline: none;
+            /* box-shadow: 0 0 0 1px var(--color-focus-outline-input-pill) inset; */
+            /* outline: none; */
 
             /* For user pills with avatars, the avatar covers up the box
                shadow, so we also have to make a border around the avatar. */
@@ -237,12 +238,14 @@
     }
 }
 
-/* Make display-only pills (read-only/display) always clickable */
+
 .pill {
     cursor: pointer !important;
+    border:1px solid var(--color-focus-outline-input-pill);
+   
 }
 
-/* Remove shadow, border, and outline on all interactive states (hover, focus, active, click) for clickable/display pills */
+
 .pill:not(.not-editable):hover,
 .pill:not(.not-editable):focus,
 .pill:not(.not-editable):active {
