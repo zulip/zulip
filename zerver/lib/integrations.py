@@ -1,7 +1,7 @@
 import os
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass, field
-from itertools import zip_longest
+from itertools import chain, zip_longest
 from typing import Any, TypeAlias
 
 from django.contrib.staticfiles.storage import staticfiles_storage
@@ -1067,19 +1067,16 @@ HUBOT_INTEGRATIONS: list[HubotIntegration] = [
     ),
 ]
 
-INTEGRATIONS: dict[str, Integration] = {**OTHER_INTEGRATIONS}
 
-for python_api_integration in PYTHON_API_INTEGRATIONS:
-    INTEGRATIONS[python_api_integration.name] = python_api_integration
-
-for hubot_integration in HUBOT_INTEGRATIONS:
-    INTEGRATIONS[hubot_integration.name] = hubot_integration
-
-for webhook_integration in WEBHOOK_INTEGRATIONS:
-    INTEGRATIONS[webhook_integration.name] = webhook_integration
-
-for bot_integration in BOT_INTEGRATIONS:
-    INTEGRATIONS[bot_integration.name] = bot_integration
+INTEGRATIONS: dict[str, Integration] = {
+    integration.name: integration
+    for integration in chain(
+        WEBHOOK_INTEGRATIONS,
+        PYTHON_API_INTEGRATIONS,
+        BOT_INTEGRATIONS,
+        HUBOT_INTEGRATIONS,
+    )
+} | OTHER_INTEGRATIONS
 
 hubot_integration_names = {integration.name for integration in HUBOT_INTEGRATIONS}
 
