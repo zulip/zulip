@@ -15,6 +15,7 @@ import * as settings_ui from "./settings_ui.ts";
 import {current_user, realm} from "./state_data.ts";
 import * as typeahead_helper from "./typeahead_helper.ts";
 import * as ui_report from "./ui_report.ts";
+import * as user_card_popover from "./user_card_popover.ts";
 import type {UserPillWidget} from "./user_pill.ts";
 import * as user_pill from "./user_pill.ts";
 
@@ -197,6 +198,20 @@ export function initialize_custom_user_type_fields(
                 .find(".person_picker.pill-container .input");
             $input_element.trigger("focus");
         });
+
+    // Attach user card popover to user pills in custom profile fields if not already handled by global event
+    $(element_id).on('click', '.pill[data-user-id]', function (e) {
+        // Avoid double popover in case global handler already present from .person_picker
+        if (!$(this).closest('.person_picker').length) {
+            const user_id = Number.parseInt($(this).attr('data-user-id'), 10);
+            if (!isNaN(user_id)) {
+                const user = people.get_by_user_id(user_id);
+                user_card_popover.toggle_user_card_popover(this, user);
+                e.stopPropagation();
+                e.preventDefault();
+            }
+        }
+    });
 
     return user_pills;
 }

@@ -3,15 +3,14 @@
     gap: var(--vertical-spacing-input-pill) var(--horizontal-spacing-input-pill);
     flex-wrap: wrap;
     min-width: 0;
-
     background-color: var(--color-background-pill-container);
-
     padding: var(--outer-spacing-input-pill-container);
     border: 1px solid var(--color-border-pill-container);
     border-radius: 4px;
     align-items: center;
-
     cursor: text;
+    
+    
 
     .pill {
         display: inline-flex;
@@ -29,10 +28,12 @@
         margin: 0;
 
         color: inherit;
+        border: 1px solid var(--color-border-pill-container);
 
         border-radius: 4px;
         background-color: var(--color-background-input-pill);
         cursor: pointer;
+        transition: background 0.1s;
 
         /* Not focus-visible, because we want to support mouse+backpace to
            delete pills */
@@ -127,6 +128,7 @@
 
             &:hover {
                 background: var(--color-background-input-pill-exit-hover);
+                
 
                 .pill-close-button,
                 .pill-expand-button {
@@ -234,6 +236,51 @@
         border-color: var(--color-invalid-input-border);
         box-shadow: var(--invalid-input-box-shadow);
     }
+}
+
+
+.pill {
+    cursor: pointer !important;
+    border:1px solid var(--color-focus-outline-input-pill);
+   
+}
+
+
+.pill:not(.not-editable):hover,
+.pill:not(.not-editable):focus,
+.pill:not(.not-editable):active {
+    background: var(--color-background-input-pill-hover, #f3f0fa) !important;
+    border: none !important;
+    box-shadow: none !important;
+    outline: none !important;
+}
+
+.pill:focus,
+.pill:active,
+.pill:focus-visible,
+.pill *:focus,
+.pill *:focus-visible,
+.pill *:active {
+    outline: none !important;
+    box-shadow: none !important;
+    -webkit-box-shadow: none !important;
+    -moz-box-shadow: none !important;
+}
+
+.pill::-webkit-focus-ring,
+.pill *::-webkit-focus-ring {
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+/* Nuclear option - remove ALL possible focus shadows from pills */
+.pill:focus {
+    box-shadow: none !important;
+    -webkit-box-shadow: none !important;
+    -moz-box-shadow: none !important;
+    outline: none !important;
+    -webkit-outline: none !important;
+    -moz-outline: none !important;
 }
 
 #compose-direct-recipient .pill-container {
