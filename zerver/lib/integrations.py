@@ -955,36 +955,62 @@ WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
     ),
 ]
 
-OTHER_INTEGRATIONS: dict[str, Integration] = {
-    "asana": Integration("asana", ["project-management"]),
-    "big-blue-button": Integration(
+VIDEO_CALL_INTEGRATIONS: list[Integration] = [
+    Integration(
         "big-blue-button", ["video-calling", "communication"], display_name="BigBlueButton"
     ),
-    "capistrano": Integration("capistrano", ["deployment"], display_name="Capistrano"),
-    "discourse": Integration("discourse", ["communication"]),
-    "email": Integration("email", ["communication"]),
-    "errbot": Integration("errbot", ["meta-integration", "bots"]),
-    "giphy": Integration("giphy", ["misc"], display_name="GIPHY"),
-    "github-actions": Integration(
+    Integration("jitsi", ["video-calling", "communication"], display_name="Jitsi Meet"),
+    Integration("zoom", ["video-calling", "communication"]),
+]
+
+EMBEDDED_INTEGRATIONS: list[Integration] = [
+    Integration("email", ["communication"]),
+    Integration("giphy", ["misc"], display_name="GIPHY"),
+]
+
+ZAPIER_INTEGRATIONS: list[Integration] = [
+    Integration("asana", ["project-management"]),
+    # Can be used with RSS integration too
+    Integration("mastodon", ["communication"]),
+    Integration("notion", ["productivity"]),
+]
+
+PLUGIN_INTEGRATIONS: list[Integration] = [
+    Integration("discourse", ["communication"]),
+    Integration(
+        "jenkins",
+        ["continuous-integration"],
+        [FixturelessScreenshotConfigOptions(image_name="004.png")],
+    ),
+    Integration("onyx", ["productivity"], logo="images/integrations/logos/onyx.png"),
+]
+
+# Each of these integrations have their own Zulip repository in GitHub.
+STANDALONE_REPO_INTEGRATIONS: list[Integration] = [
+    Integration("errbot", ["meta-integration", "bots"]),
+    Integration(
         "github-actions",
         ["continuous-integration"],
         [FixturelessScreenshotConfigOptions(channel="github-actions updates")],
         display_name="GitHub Actions",
     ),
-    "hubot": Integration("hubot", ["meta-integration", "bots"]),
-    "jenkins": Integration(
-        "jenkins",
-        ["continuous-integration"],
-        [FixturelessScreenshotConfigOptions(image_name="004.png")],
-    ),
-    "jitsi": Integration("jitsi", ["video-calling", "communication"], display_name="Jitsi Meet"),
-    "mastodon": Integration("mastodon", ["communication"]),
-    "notion": Integration("notion", ["productivity"]),
-    "onyx": Integration("onyx", ["productivity"], logo="images/integrations/logos/onyx.png"),
-    "puppet": Integration("puppet", ["deployment"]),
-    "redmine": Integration("redmine", ["project-management"]),
-    "zoom": Integration("zoom", ["video-calling", "communication"]),
-}
+    Integration("hubot", ["meta-integration", "bots"]),
+    Integration("puppet", ["deployment"]),
+    Integration("redmine", ["project-management"]),
+]
+
+ZULIP_SEND_INTEGRATIONS: list[Integration] = [
+    Integration("capistrano", ["deployment"]),
+]
+
+OTHER_INTEGRATIONS = [
+    *VIDEO_CALL_INTEGRATIONS,
+    *EMBEDDED_INTEGRATIONS,
+    *ZAPIER_INTEGRATIONS,
+    *PLUGIN_INTEGRATIONS,
+    *STANDALONE_REPO_INTEGRATIONS,
+    *ZULIP_SEND_INTEGRATIONS,
+]
 
 PYTHON_API_INTEGRATIONS: list[PythonAPIIntegration] = [
     PythonAPIIntegration("codebase", ["version-control"]),
@@ -1075,8 +1101,9 @@ INTEGRATIONS: dict[str, Integration] = {
         PYTHON_API_INTEGRATIONS,
         BOT_INTEGRATIONS,
         HUBOT_INTEGRATIONS,
+        OTHER_INTEGRATIONS,
     )
-} | OTHER_INTEGRATIONS
+}
 
 hubot_integration_names = {integration.name for integration in HUBOT_INTEGRATIONS}
 

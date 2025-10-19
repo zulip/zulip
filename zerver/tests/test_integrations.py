@@ -2,14 +2,19 @@ import os
 
 from zerver.lib.integrations import (
     BOT_INTEGRATIONS,
+    EMBEDDED_INTEGRATIONS,
     HUBOT_INTEGRATIONS,
     INTEGRATIONS,
     NO_SCREENSHOT_CONFIG,
-    OTHER_INTEGRATIONS,
+    PLUGIN_INTEGRATIONS,
     PYTHON_API_INTEGRATIONS,
+    STANDALONE_REPO_INTEGRATIONS,
+    VIDEO_CALL_INTEGRATIONS,
     WEBHOOK_INTEGRATIONS,
+    ZAPIER_INTEGRATIONS,
     BotIntegration,
     HubotIntegration,
+    Integration,
     PythonAPIIntegration,
     WebhookIntegration,
     WebhookScreenshotConfig,
@@ -118,7 +123,8 @@ class IntegrationsTestCase(ZulipTestCase):
     def test_sorting(self) -> None:
         integration_lists: dict[
             str,
-            list[WebhookIntegration]
+            list[Integration]
+            | list[WebhookIntegration]
             | list[BotIntegration]
             | list[HubotIntegration]
             | list[PythonAPIIntegration],
@@ -127,6 +133,11 @@ class IntegrationsTestCase(ZulipTestCase):
             "PYTHON_API_INTEGRATIONS": PYTHON_API_INTEGRATIONS,
             "BOT_INTEGRATIONS": BOT_INTEGRATIONS,
             "HUBOT_INTEGRATIONS": HUBOT_INTEGRATIONS,
+            "VIDEO_CALL_INTEGRATIONS": VIDEO_CALL_INTEGRATIONS,
+            "EMBEDDED_INTEGRATIONS": EMBEDDED_INTEGRATIONS,
+            "ZAPIER_INTEGRATIONS": ZAPIER_INTEGRATIONS,
+            "PLUGIN_INTEGRATIONS": PLUGIN_INTEGRATIONS,
+            "STANDALONE_REPO_INTEGRATIONS": STANDALONE_REPO_INTEGRATIONS,
         }
 
         errors: list[str] = []
@@ -138,12 +149,5 @@ class IntegrationsTestCase(ZulipTestCase):
                 for i in range(len(names) - 1)
                 if names[i] > names[i + 1]
             )
-
-        keys = list(OTHER_INTEGRATIONS.keys())
-        errors.extend(
-            f"OTHER_INTEGRATIONS dict is not sorted: '{keys[i]}' > '{keys[i + 1]}'"
-            for i in range(len(keys) - 1)
-            if keys[i] > keys[i + 1]
-        )
 
         assert not errors, "\n".join(errors)
