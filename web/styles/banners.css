@@ -73,6 +73,9 @@
     grid-area: banner-close-button;
     padding: 0.6875em; /* 11px at 16px/1em */
     margin-left: 0.3125em; /* 5px at 16px/1em */
+    /* Ensure the close button is always vertically centered
+       regardless of banner content height */
+    align-self: center;
 
     &:focus-visible {
         outline-offset: -2px;
