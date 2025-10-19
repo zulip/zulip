@@ -400,6 +400,7 @@ function initialize_unread_ui() {
         pm_list.update_dom_with_unread_counts(counts),
     );
     unread_ui.register_update_unread_counts_hook(() => topic_list.update());
+    unread_ui.register_update_unread_counts_hook(() => compose.update_compose_unread());
     unread_ui.register_update_unread_counts_hook((counts) =>
         narrow_title.update_unread_counts(counts),
     );
