@@ -1048,10 +1048,31 @@ div.focused-message-list.is-conversation-view .recipient_row {
 }
 
 .topic_edit_save {
-    border-color: light-dark(hsl(0deg 0% 0% / 10%), hsl(0deg 0% 0% / 60%));
-    border-width: 1px;
-    border-style: solid;
-    background-clip: padding-box;
+    /* Match Save button's basic colors to
+       the compose box Send button. */
+    color: var(--color-compose-send-button-icon-color);
+    background-color: var(--color-compose-send-button-background);
+
+    &:hover {
+        background-color: var(
+            --color-compose-send-button-background-interactive
+        );
+    }
+
+    &:disabled {
+        /* Replicate disabled values, without any color shifts. */
+        cursor: not-allowed;
+        opacity: 0.5;
+    }
+}
+
+.topic_edit_cancel {
+    color: var(--color-exit-button-text);
+    background: var(--color-exit-button-background);
+
+    &:hover {
+        background: var(--color-exit-button-background-interactive);
+    }
 }
 
 .information-settings .user-profile-picture,
