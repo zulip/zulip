@@ -60,6 +60,8 @@ import "../../styles/widgets.css";
 import "../../styles/print.css";
 import "../../styles/inbox.css";
 import "../../styles/color_picker.css";
+import "@uppy/core/css/style.min.css";
+import "@uppy/image-editor/css/style.min.css";
 
 // This should be last.
 import "../ui_init.js";
