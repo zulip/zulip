@@ -20,7 +20,7 @@ PAGER_DUTY_EVENT_NAMES = {
     "incident.resolve": "resolved",
     "incident.assign": "assigned",
     "incident.escalate": "escalated",
-    "incident.delegate": "delineated",
+    "incident.delegate": "delegated",
 }
 
 PAGER_DUTY_EVENT_NAMES_V2 = {
