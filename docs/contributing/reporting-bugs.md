@@ -8,10 +8,12 @@ There are several ways to report bugs (or possible bugs) you encounter in Zulip:
   reproduce it, [start a
   conversation](#starting-a-conversation-about-a-possible-bug) in the Zulip
   development community.
-- To report a possible security issue, contact Zulip's security team at
-  [security@zulip.com](mailto:security@zulip.com). _Do not_ report security issues
-  publicly (in GitHub or in the Zulip development community). We create a CVE for
-  every security issue in our released software.
+- To report a possible security vulnerability in Zulip, please [contact our
+  security
+  team](./reporting-security-vulnerabilities.md#how-to-report-a-possible-security-issue)
+  as soon as possible. To allow us to responsibly remediate security issues,
+  please _do not_ report them publicly on GitHub, in the Zulip development
+  community, or anywhere else.
 - If reporting a bug requires sharing private details about your
   organization, email [support@zulip.com](mailto:support@zulip.com).
 
