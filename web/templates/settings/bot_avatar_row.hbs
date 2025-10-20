@@ -9,7 +9,7 @@
                     <i class="zulip-icon zulip-icon-user-cog blue" aria-hidden="true"></i>
                 </button>
                 <a type="submit" download="{{zuliprc}}" class="bootstrap-btn download_bot_zuliprc tippy-zulip-delayed-tooltip" data-tippy-content="{{t 'Download zuliprc' }}" data-email="{{email}}">
-                    <i class="fa fa-download sea-green" aria-hidden="true"></i>
+                    <i class="zulip-icon zulip-icon-download sea-green" aria-hidden="true"></i>
                 </a>
                 <button type="submit" id="copy_zuliprc" class="bootstrap-btn copy_zuliprc tippy-zulip-delayed-tooltip" data-tippy-content="{{t 'Copy zuliprc' }}">
                     <i class="zulip-icon zulip-icon-copy" aria-hidden="true"></i>
@@ -18,11 +18,11 @@
                     <i class="zulip-icon zulip-icon-user-x" aria-hidden="true"></i>
                 </button>
                 <button type="submit" class="bootstrap-btn open_bots_subscribed_streams tippy-zulip-delayed-tooltip" data-tippy-content="{{t 'Subscribed channels' }}" data-user-id="{{user_id}}">
-                    <i class="fa fa-hashtag purple" aria-hidden="true"></i>
+                    <i class="zulip-icon zulip-icon-hashtag purple" aria-hidden="true"></i>
                 </button>
                 {{#if is_incoming_webhook_bot}}
                 <button type="submit" class="bootstrap-btn open-generate-integration-url-modal tippy-zulip-delayed-tooltip" data-tippy-content="{{t 'Generate URL for an integration'}}" data-api-key="{{api_key}}">
-                    <i class="fa fa-link steel-blue" aria-hidden="true"></i>
+                    <i class="zulip-icon zulip-icon-link steel-blue" aria-hidden="true"></i>
                 </button>
                 {{/if}}
             </div>
@@ -45,7 +45,7 @@
                 <!-- have the `.text-select` in `.no-select` so that the value doesn't have trailing whitespace. -->
                 <span class="bot-card-value text-select">{{api_key}}</span>
                 <button type="submit" class="button no-style bot-card-regenerate-bot-api-key tippy-zulip-delayed-tooltip" data-tippy-content="{{t 'Generate new API key' }}" data-user-id="{{user_id}}">
-                    <i class="fa fa-refresh" aria-hidden="true"></i>
+                    <i class="zulip-icon zulip-icon-refresh" aria-hidden="true"></i>
                 </button>
             </div>
             <div class="bot-card-api-key-error text-error"></div>
